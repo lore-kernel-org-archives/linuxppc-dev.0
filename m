@@ -1,27 +1,29 @@
-Return-Path: <zhaolei@cn.fujitsu.com>
-Received: from heian.cn.fujitsu.com (unknown [59.151.112.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qgC8C66KwzDq65
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 03:17:15 +1000 (AEST)
-From: Zhao Lei <zhaolei@cn.fujitsu.com>
-To: 'Srikar Dronamraju' <srikar@linux.vnet.ibm.com>, 'Anton Blanchard'
- <anton@samba.org>
-CC: 'Peter Zijlstra' <peterz@infradead.org>, 'Ingo Molnar' <mingo@kernel.org>,
- <tglx@linutronix.de>, <efault@gmx.de>, <htejun@gmail.com>,
- <linux-kernel@vger.kernel.org>, <tj@kernel.org>,
- <torvalds@linux-foundation.org>, <yangds.fnst@cn.fujitsu.com>,
- <hpa@zytor.com>, 'Stephen Rothwell' <sfr@canb.auug.org.au>, 'Michael
- Ellerman' <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>
-References: <aa171da036b520b51c79549e9b3215d29473f19d.1458635566.git.zhaolei@cn.fujitsu.com>
- <tip-d740037fac7052e49450f6fa1454f1144a103b55@git.kernel.org>
- <20160404140312.GA28495@linux.vnet.ibm.com> <20160406065436.GB3078@gmail.com>
- <20160406203219.788ae7cf@kryten> <20160406110803.GI2906@worktop>
- <20160406215950.04bc3f0b@kryten> <20160406132637.GA2108@linux.vnet.ibm.com>
-In-Reply-To: <20160406132637.GA2108@linux.vnet.ibm.com>
-Subject: RE: [PATCH] sched/cpuacct: Check for NULL when using task_pt_regs()
-Date: Thu, 7 Apr 2016 01:05:52 +0800
-Message-ID: <000101d19026$94249f00$bc6ddd00$@cn.fujitsu.com>
+Return-Path: <leoyang.li@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0055.outbound.protection.outlook.com [157.55.234.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgG2M4s1czDq65
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 05:27:22 +1000 (AEST)
+From: Yang-Leo Li <leoyang.li@nxp.com>
+To: Brian Norris <computersforpeace@gmail.com>, Li Yang <leoli@freescale.com>
+CC: Scott Wood <oss@buserror.net>, Raghav Dogra <raghav.dogra@nxp.com>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Prabhakar Kushwaha
+ <prabhakar.kushwaha@nxp.com>, Raghav Dogra <raghav@freescale.com>, Jaiprakash
+ Singh <b44839@freescale.com>, Boris Brezillon
+ <boris.brezillon@free-electrons.com>
+Subject: RE: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+Date: Wed, 6 Apr 2016 18:53:39 +0000
+Message-ID: <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
+References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
+ <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
+ <1455840434.2463.97.camel@buserror.net>
+ <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
+ <20160406175254.GC5243@localhost>
+In-Reply-To: <20160406175254.GC5243@localhost>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,98 +36,90 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 > -----Original Message-----
-> From: Srikar Dronamraju [mailto:srikar@linux.vnet.ibm.com]
-> Sent: Wednesday, April 06, 2016 9:27 PM
-> To: Anton Blanchard <anton@samba.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>; Ingo Molnar <mingo@kernel.org>;
-> tglx@linutronix.de; efault@gmx.de; htejun@gmail.com;
-> linux-kernel@vger.kernel.org; tj@kernel.org; torvalds@linux-foundation.or=
-g;
-> zhaolei@cn.fujitsu.com; yangds.fnst@cn.fujitsu.com; hpa@zytor.com; Stephen
-> Rothwell <sfr@canb.auug.org.au>; Michael Ellerman <mpe@ellerman.id.au>;
-> linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] sched/cpuacct: Check for NULL when using task_pt_reg=
-s()
+> From: Brian Norris [mailto:computersforpeace@gmail.com]
+> Sent: Wednesday, April 06, 2016 12:53 PM
+> To: Li Yang <leoli@freescale.com>
+> Cc: Scott Wood <oss@buserror.net>; Raghav Dogra <raghav.dogra@nxp.com>;
+> linux-mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.or=
+g>;
+> Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>; Raghav Dogra
+> <raghav@freescale.com>; Jaiprakash Singh <b44839@freescale.com>; Boris
+> Brezillon <boris.brezillon@free-electrons.com>
+> Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version =
+2.0
 >=20
-> * Anton Blanchard <anton@samba.org> [2016-04-06 21:59:50]:
+> Hi,
 >=20
-> > Looks good, and the patch below does fix the oops for me.
+> On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:
+> > Hi Brian,
 > >
-> > Anton
+> > Could you help to review and pull in this patch and the Kconfig update
+> > after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
+>=20
+> It's probably best for Boris to apply this now.
+
+Thanks Brian.  I see Boris is taking over the maintenance of NAND recently,=
+ we will follow up with him.
+
+Hi Boris,
+
+Can you consider to pull in this patch and then Kconfig patch (https://patc=
+hwork.ozlabs.org/patch/557389/)?
+
+Regards,
+Leo
+
+>=20
+> > stated a dependency in the notes, but actually it should be applied
+> > cleanly without that patch.  These patches are critical to make NAND
+> > mtd feature work for our new chips.
+> >
+> > Regards,
+> > Leo
+> >
+> > On Thu, Feb 18, 2016 at 6:07 PM, Scott Wood <oss@buserror.net> wrote:
+> > > On Thu, 2016-02-18 at 15:18 -0600, Leo Li wrote:
+> > >> On Wed, Feb 17, 2016 at 5:24 AM, Raghav Dogra <raghav.dogra@nxp.com>
+> wrote:
+> > >> > The new IFC controller version 2.0 has a different memory map page=
+.
+> > >> > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
+> > >> > This patch segregates the IFC global and runtime registers to
+> > >> > appropriate PAGE sizes.
+> > >> >
+> > >> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+> > >> > Signed-off-by: Raghav Dogra <raghav@freescale.com>
+> > >> > Acked-by: Li Yang <leoyang.li@nxp.com>
+> > >> > Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
+> > >> > ---
+> > >> > Changes for v3: not dependent on
+> > >> > "drivers/memory: Add deep sleep support for IFC" patch
+> > >> >
+> > >> > Changes for v2: rebased to resolve conflicts Applicable to
+> > >> > git://git.infradead.org/l2-mtd.git
+> > >> >
+> > >> > This patch is dependent on "drivers/memory: Add deep sleep
+> > >> > support for IFC"
+> > >> > https://patchwork.ozlabs.org/patch/582762/
+> > >> > which is also applicable to git://git.infradead.org/l2-mtd.git
+>=20
+> For the patch:
+>=20
+> Acked-by: Brian Norris <computersforpeace@gmail.com>
+>=20
+> > >> This patch seems to be in good shape, but the dependency is still
+> > >> having quite some feedback to be addressed.  Depending on it will
+> > >> greatly delay the time that this critical patch for LS2 to be merged=
+.
+> > >> Could you remove the dependency like Scott already suggested?
+> > >
+> > > According to the changelog the dependency has been removed (it would
+> > > have been clearer to remove this comment as well...).
+> > >
+> > > -Scott
+> > >
+> >
+> >
+> >
 > > --
-> >
-> > task_pt_regs() can return NULL for kernel threads, so add a check.
-> > This fixes an oops at boot on ppc64.
-> >
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
->=20
-> Works for me too.
->=20
-> Reported-and-Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
->=20
-Thanks, all
-
-I tested it in the vm(can not boot before fix):
-
-[single cpu]
-# for f in cpuacct.*; do echo "$f: "; cat $f; done
-cpuacct.stat:
-user 260
-system 451
-cpuacct.usage:
-6923456654
-cpuacct.usage_percpu:
-6963446178
-cpuacct.usage_percpu_sys:
-2610934362
-cpuacct.usage_percpu_user:
-4451667140
-cpuacct.usage_sys:
-2612684054
-cpuacct.usage_user:
-4540275322
-#
-
-[2 cpu wih 8 maxcpus]
-# for f in cpuacct.*; do echo "$f: "; cat $f; done
-cpuacct.stat:
-user 205
-system 536
-cpuacct.usage:
-7293688020
-cpuacct.usage_percpu:
-3785674990 3551323200 0 0 0 0 0 0
-cpuacct.usage_percpu_sys:
-2227281124 1635060584 0 0 0 0 0 0
-cpuacct.usage_percpu_user:
-1567487176 1992278818 0 0 0 0 0 0
-cpuacct.usage_sys:
-3863445982
-cpuacct.usage_user:
-3643874038
-#
-
-# cat /proc/cpuinfo
-processor       : 0
-cpu             : POWER7 (raw), altivec supported
-clock           : 1000.000000MHz
-revision        : 2.3 (pvr 003f 0203)
-
-processor       : 1
-cpu             : POWER7 (raw), altivec supported
-clock           : 1000.000000MHz
-revision        : 2.3 (pvr 003f 0203)
-
-timebase        : 512000000
-platform        : pSeries
-model           : IBM pSeries (emulated by qemu)
-machine         : CHRP IBM pSeries (emulated by qemu)
-#
-
-Thanks
-Zhaolei
-
-> --
-> Thanks and Regards
-> Srikar Dronamraju
->=20
+> > - Leo
