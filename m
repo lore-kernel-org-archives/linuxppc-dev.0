@@ -1,35 +1,31 @@
-Return-Path: <jallen@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c00::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgBY05NyKzDq65
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 02:50:12 +1000 (AEST)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 10:50:10 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DB1641FF004B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 10:38:16 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id u36Go8k535717196
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 09:50:08 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u36Go6Bt010752
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 10:50:07 -0600
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- davem@davemloft.net
-Cc: linuxppc-dev@lists.ozlabs.org
-From: John Allen <jallen@linux.vnet.ibm.com>
-Subject: [PATCH net-next] ibmvnic: Enable use of multiple tx/rx scrqs
-Message-ID: <57053E33.6020706@linux.vnet.ibm.com>
-Date: Wed, 6 Apr 2016 11:49:55 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgCxY6Y11zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 03:53:05 +1000 (AEST)
+Received: by mail-pf0-x22f.google.com with SMTP id c20so38164925pfc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Apr 2016 10:53:05 -0700 (PDT)
+Date: Wed, 6 Apr 2016 10:52:54 -0700
+From: Brian Norris <computersforpeace@gmail.com>
+To: Li Yang <leoli@freescale.com>
+Cc: Scott Wood <oss@buserror.net>, Raghav Dogra <raghav.dogra@nxp.com>,
+ linux-mtd@lists.infradead.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
+ Raghav Dogra <raghav@freescale.com>,
+ Jaiprakash Singh <b44839@freescale.com>,
+ Boris Brezillon <boris.brezillon@free-electrons.com>
+Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+Message-ID: <20160406175254.GC5243@localhost>
+References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
+ <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
+ <1455840434.2463.97.camel@buserror.net>
+ <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,134 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enables the use of multiple transmit and receive scrqs allowing the ibmvnic
-driver to take advantage of multiqueue functionality. To achieve this, the
-driver must implement the process of negotiating the maximum number of
-queues allowed by the server. Initially, the driver will attempt to login
-with the maximum number of tx and rx queues supported by the server. If
-the server fails to allocate the requested number of scrqs, it will return
-partial success in the login response. In this case, we must reinitiate
-the login process from the request capabilities stage and attempt to login
-requesting fewer scrqs.
+Hi,
 
-Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
----
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 21bccf6..6e9b91d 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -800,11 +800,12 @@ static int ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
- 			ret = NETDEV_TX_BUSY;
- 			goto out;
- 		}
--		lpar_rc = send_subcrq_indirect(adapter, handle_array[0],
-+		lpar_rc = send_subcrq_indirect(adapter, handle_array[queue_num],
- 					       (u64)tx_buff->indir_dma,
- 					       (u64)num_entries);
- 	} else {
--		lpar_rc = send_subcrq(adapter, handle_array[0], &tx_crq);
-+		lpar_rc = send_subcrq(adapter, handle_array[queue_num],
-+				      &tx_crq);
- 	}
- 	if (lpar_rc != H_SUCCESS) {
- 		dev_err(dev, "tx failed with code %ld\n", lpar_rc);
-@@ -989,7 +990,7 @@ restart_poll:
- 		netdev->stats.rx_bytes += length;
- 		frames_processed++;
- 	}
--	replenish_pools(adapter);
-+	replenish_rx_pool(adapter, &adapter->rx_pool[scrq_num]);
+On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:
+> Hi Brian,
+> 
+> Could you help to review and pull in this patch and the Kconfig update
+> after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
 
- 	if (frames_processed < budget) {
- 		enable_scrq_irq(adapter, adapter->rx_scrq[scrq_num]);
-@@ -1426,9 +1427,9 @@ static void init_sub_crqs(struct ibmvnic_adapter *adapter, int retry)
- 		    entries_page : adapter->max_rx_add_entries_per_subcrq;
+It's probably best for Boris to apply this now.
 
- 		/* Choosing the maximum number of queues supported by firmware*/
--		adapter->req_tx_queues = adapter->min_tx_queues;
--		adapter->req_rx_queues = adapter->min_rx_queues;
--		adapter->req_rx_add_queues = adapter->min_rx_add_queues;
-+		adapter->req_tx_queues = adapter->max_tx_queues;
-+		adapter->req_rx_queues = adapter->max_rx_queues;
-+		adapter->req_rx_add_queues = adapter->max_rx_add_queues;
+> stated a dependency in the notes, but actually it should be applied
+> cleanly without that patch.  These patches are critical to make NAND
+> mtd feature work for our new chips.
+> 
+> Regards,
+> Leo
+> 
+> On Thu, Feb 18, 2016 at 6:07 PM, Scott Wood <oss@buserror.net> wrote:
+> > On Thu, 2016-02-18 at 15:18 -0600, Leo Li wrote:
+> >> On Wed, Feb 17, 2016 at 5:24 AM, Raghav Dogra <raghav.dogra@nxp.com> wrote:
+> >> > The new IFC controller version 2.0 has a different memory map page.
+> >> > Upto IFC 1.4 PAGE size is 4 KB and from IFC2.0 PAGE size is 64KB.
+> >> > This patch segregates the IFC global and runtime registers to appropriate
+> >> > PAGE sizes.
+> >> >
+> >> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+> >> > Signed-off-by: Raghav Dogra <raghav@freescale.com>
+> >> > Acked-by: Li Yang <leoyang.li@nxp.com>
+> >> > Signed-off-by: Raghav Dogra <raghav.dogra@nxp.com>
+> >> > ---
+> >> > Changes for v3: not dependent on
+> >> > "drivers/memory: Add deep sleep support for IFC" patch
+> >> >
+> >> > Changes for v2: rebased to resolve conflicts
+> >> > Applicable to git://git.infradead.org/l2-mtd.git
+> >> >
+> >> > This patch is dependent on "drivers/memory: Add deep sleep support for
+> >> > IFC"
+> >> > https://patchwork.ozlabs.org/patch/582762/
+> >> > which is also applicable to git://git.infradead.org/l2-mtd.git
 
- 		adapter->req_mtu = adapter->max_mtu;
- 	}
-@@ -1776,13 +1777,11 @@ static void send_login(struct ibmvnic_adapter *adapter)
- 		goto buf_map_failed;
- 	}
+For the patch:
 
--	rsp_buffer_size =
--	    sizeof(struct ibmvnic_login_rsp_buffer) +
--	    sizeof(u64) * (adapter->req_tx_queues +
--			   adapter->req_rx_queues *
--			   adapter->req_rx_add_queues + adapter->
--			   req_rx_add_queues) +
--	    sizeof(u8) * (IBMVNIC_TX_DESC_VERSIONS);
-+	rsp_buffer_size = sizeof(struct ibmvnic_login_rsp_buffer) +
-+			  sizeof(u64) * adapter->req_tx_queues +
-+			  sizeof(u64) * adapter->req_rx_queues +
-+			  sizeof(u64) * adapter->req_rx_queues +
-+			  sizeof(u8) * IBMVNIC_TX_DESC_VERSIONS;
+Acked-by: Brian Norris <computersforpeace@gmail.com>
 
- 	login_rsp_buffer = kmalloc(rsp_buffer_size, GFP_ATOMIC);
- 	if (!login_rsp_buffer)
-@@ -2401,6 +2400,16 @@ static int handle_login_rsp(union ibmvnic_crq *login_rsp_crq,
- 	dma_unmap_single(dev, adapter->login_rsp_buf_token,
- 			 adapter->login_rsp_buf_sz, DMA_BIDIRECTIONAL);
-
-+	/* If the number of queues requested can't be allocated by the
-+	 * server, the login response will return with code 1. We will need
-+	 * to resend the login buffer with fewer queues requested.
-+	 */
-+	if (login_rsp_crq->generic.rc.code) {
-+		adapter->renegotiate = true;
-+		complete(&adapter->init_done);
-+		return 0;
-+	}
-+
- 	netdev_dbg(adapter->netdev, "Login Response Buffer:\n");
- 	for (i = 0; i < (adapter->login_rsp_buf_sz - 1) / 8 + 1; i++) {
- 		netdev_dbg(adapter->netdev, "%016lx\n",
-@@ -3627,15 +3636,22 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
-
- 	init_completion(&adapter->init_done);
- 	wait_for_completion(&adapter->init_done);
-+
-+	do {
-+		adapter->renegotiate = false;
-
--	/* needed to pull init_sub_crqs outside of an interrupt context
--	 * because it creates IRQ mappings for the subCRQ queues, causing
--	 * a kernel warning
--	 */
--	init_sub_crqs(adapter, 0);
-+		init_sub_crqs(adapter, 0);
-+		reinit_completion(&adapter->init_done);
-+		wait_for_completion(&adapter->init_done);
-
--	reinit_completion(&adapter->init_done);
--	wait_for_completion(&adapter->init_done);
-+		if (adapter->renegotiate) {
-+			release_sub_crqs(adapter);
-+			send_cap_queries(adapter);
-+
-+			reinit_completion(&adapter->init_done);
-+			wait_for_completion(&adapter->init_done);
-+		}
-+	} while (adapter->renegotiate);
-
- 	/* if init_sub_crqs is partially successful, retry */
- 	while (!adapter->tx_scrq || !adapter->rx_scrq) {
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
-index 5af8a79..0b66a50 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.h
-+++ b/drivers/net/ethernet/ibm/ibmvnic.h
-@@ -980,6 +980,7 @@ struct ibmvnic_adapter {
- 	struct ibmvnic_sub_crq_queue **tx_scrq;
- 	struct ibmvnic_sub_crq_queue **rx_scrq;
- 	int requested_caps;
-+	bool renegotiate;
-
- 	/* rx structs */
- 	struct napi_struct *napi;
+> >> This patch seems to be in good shape, but the dependency is still
+> >> having quite some feedback to be addressed.  Depending on it will
+> >> greatly delay the time that this critical patch for LS2 to be merged.
+> >> Could you remove the dependency like Scott already suggested?
+> >
+> > According to the changelog the dependency has been removed (it would have been
+> > clearer to remove this comment as well...).
+> >
+> > -Scott
+> >
+> 
+> 
+> 
+> -- 
+> - Leo
