@@ -1,44 +1,38 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgxPm20PMzDq6b
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 08:01:32 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qgxPm0SCzz9s5J
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2016 08:01:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgzht0YJGzDq6b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 09:44:45 +1000 (AEST)
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 8 Apr 2016 08:01:31 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6221F357805A
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2016 08:01:26 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u37M1HE831588458
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Apr 2016 08:01:26 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u37M0qKN032098
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Apr 2016 08:00:53 +1000
-Subject: [PATCH v4 3/3] ppc64/book3s: remove __end_handlers marker
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 08 Apr 2016 03:30:34 +0530
-Message-ID: <20160407215914.8404.10459.stgit@hbathini.in.ibm.com>
-In-Reply-To: <20160407215541.8404.15022.stgit@hbathini.in.ibm.com>
-References: <20160407215541.8404.15022.stgit@hbathini.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 8 Apr 2016 09:44:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DB1F83578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 09:44:41 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u37NiXYZ9109778
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 09:44:41 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u37Ni8lR020644
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 09:44:09 +1000
+Date: Fri, 8 Apr 2016 09:43:44 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V3 2/2] pseries/eeh: Refactor the configure_bridge RTAS
+ tokens
+Message-ID: <20160407234344.GA6644@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1460010507-24777-1-git-send-email-ruscur@russell.cc>
+ <1460010507-24777-2-git-send-email-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1460010507-24777-2-git-send-email-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,48 +42,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__end_handlers marker was intended to mark down upto code that gets
-called from exception prologs. But that hasn't kept pace with code
-changes. Case in point, slb_miss_realmode being called from exception
-prolog code but isn't below __end_handlers marker. So, __end_handlers
-marker is as good as a comment but could be misleading at times if
-it isn't in sync with the code, as is the case now. So, let us avoid
-this confusion by having a better comment and removing __end_handlers
-marker altogether.
+On Thu, Apr 07, 2016 at 04:28:27PM +1000, Russell Currey wrote:
+>The RTAS calls "ibm,configure-pe" and "ibm,configure-bridge" perform the
+>same actions, however the former can skip configuration if unnecessary.
+>The existing code treats them as different tokens even though only one
+>will ever be called.  Refactor this by making a single token that is
+>assigned during init.
+>
+>Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/exceptions-64s.S |   13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index c193ebd..80f9fc4 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -764,11 +764,10 @@ kvmppc_skip_Hinterrupt:
- #endif
- 
- /*
-- * Code from here down to __end_handlers is invoked from the
-- * exception prologs above.  Because the prologs assemble the
-- * addresses of these handlers using the LOAD_HANDLER macro,
-- * which uses an ori instruction, these handlers must be in
-- * the first 64k of the kernel image.
-+ * Ensure that any handlers that get invoked from the exception prologs
-+ * above are below the first 64KB (0x10000) of the kernel image because
-+ * the prologs assemble the addresses of these handlers using the
-+ * LOAD_HANDLER macro, which uses an ori instruction.
-  */
- 
- /*** Common interrupt handlers ***/
-@@ -1243,10 +1242,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	bl	vsx_unavailable_exception
- 	b	ret_from_except
- 
--	.align	7
--	.globl	__end_handlers
--__end_handlers:
--
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
- /*
-  * Data area reserved for FWNMI option.
+>---
+>V3: Reorder commits so the previous patch doesn't depend on this
+>
+>I had a look at doing the same with some other duplicated tokens but
+>they had slight differences in semantics so it wasn't helping clarity.
+>---
+> arch/powerpc/platforms/pseries/eeh_pseries.c | 28 ++++++++++++----------------
+> 1 file changed, 12 insertions(+), 16 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>index 405baaf..3998e0f 100644
+>--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>@@ -53,7 +53,6 @@ static int ibm_read_slot_reset_state2;
+> static int ibm_slot_error_detail;
+> static int ibm_get_config_addr_info;
+> static int ibm_get_config_addr_info2;
+>-static int ibm_configure_bridge;
+> static int ibm_configure_pe;
+> 
+> /*
+>@@ -81,7 +80,14 @@ static int pseries_eeh_init(void)
+> 	ibm_get_config_addr_info2	= rtas_token("ibm,get-config-addr-info2");
+> 	ibm_get_config_addr_info	= rtas_token("ibm,get-config-addr-info");
+> 	ibm_configure_pe		= rtas_token("ibm,configure-pe");
+>-	ibm_configure_bridge		= rtas_token("ibm,configure-bridge");
+>+
+>+	/*
+>+	 * ibm,configure-pe and ibm,configure-bridge have the same semantics,
+>+	 * however ibm,configure-pe can be faster.  If we can't find
+>+	 * ibm,configure-pe then fall back to using ibm,configure-bridge.
+>+	 */
+>+	if (ibm_configure_pe == RTAS_UNKNOWN_SERVICE)
+>+		ibm_configure_pe 	= rtas_token("ibm,configure-bridge");
+> 
+> 	/*
+> 	 * Necessary sanity check. We needn't check "get-config-addr-info"
+>@@ -93,8 +99,7 @@ static int pseries_eeh_init(void)
+> 	    (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
+> 	     ibm_read_slot_reset_state == RTAS_UNKNOWN_SERVICE)	||
+> 	    ibm_slot_error_detail == RTAS_UNKNOWN_SERVICE	||
+>-	    (ibm_configure_pe == RTAS_UNKNOWN_SERVICE		&&
+>-	     ibm_configure_bridge == RTAS_UNKNOWN_SERVICE)) {
+>+	    ibm_configure_pe == RTAS_UNKNOWN_SERVICE) {
+> 		pr_info("EEH functionality not supported\n");
+> 		return -EINVAL;
+> 	}
+>@@ -624,18 +629,9 @@ static int pseries_eeh_configure_bridge(struct eeh_pe *pe)
+> 		config_addr = pe->addr;
+> 
+> 	while (max_wait > 0) {
+>-		/* Use new configure-pe function, if supported */
+>-		if (ibm_configure_pe != RTAS_UNKNOWN_SERVICE) {
+>-			ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
+>-					config_addr, BUID_HI(pe->phb->buid),
+>-					BUID_LO(pe->phb->buid));
+>-		} else if (ibm_configure_bridge != RTAS_UNKNOWN_SERVICE) {
+>-			ret = rtas_call(ibm_configure_bridge, 3, 1, NULL,
+>-					config_addr, BUID_HI(pe->phb->buid),
+>-					BUID_LO(pe->phb->buid));
+>-		} else {
+>-			return -EFAULT;
+>-		}
+>+		ret = rtas_call(ibm_configure_pe, 3, 1, NULL,
+>+				config_addr, BUID_HI(pe->phb->buid),
+>+				BUID_LO(pe->phb->buid));
+> 
+> 		if (!ret)
+> 			return ret;
+>-- 
+>2.8.0
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
