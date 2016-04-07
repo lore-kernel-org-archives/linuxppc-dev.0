@@ -2,22 +2,22 @@ Return-Path: <lvivier@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qggRV43GzzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 21:32:06 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qggRx3fczzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 21:32:29 +1000 (AEST)
+Subject: Re: [PATCH] kvm-pr: manage single-step mode
 To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
+References: <1458658428-19566-1-git-send-email-lvivier@redhat.com>
 Cc: Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
  Alexander Graf <agraf@suse.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org, dgibson@redhat.com, thuth@redhat.com
 From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <5706452E.1040007@redhat.com>
-Date: Thu, 7 Apr 2016 13:31:58 +0200
+Message-ID: <57064547.7060201@redhat.com>
+Date: Thu, 7 Apr 2016 13:32:23 +0200
 MIME-Version: 1.0
-In-Reply-To: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
+In-Reply-To: <1458658428-19566-1-git-send-email-lvivier@redhat.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,45 +30,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Ping?
 
-On 15/03/2016 21:18, Laurent Vivier wrote:
-> While writing some instruction tests for kvm-unit-tests for powerpc,
-> I've found that illegal instructions are not managed correctly with kvm-pr,
-> while it is fine with kvm-hv.
+On 22/03/2016 15:53, Laurent Vivier wrote:
+> Until now, when we connect gdb to the QEMU gdb-server, the
+> single-step mode is not managed.
 > 
-> When an illegal instruction (like ".long 0") is processed by kvm-pr,
-> the kernel logs are filled with:
+> This patch adds this, only for kvm-pr:
 > 
->      Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->      kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
-> 
-> While the exception handler receives an interrupt for each instruction
-> executed after the illegal instruction.
+> If KVM_GUESTDBG_SINGLESTEP is set, we enable single-step trace bit in the
+> MSR (MSR_SE) just before the __kvmppc_vcpu_run(), and disable it just after.
+> In kvmppc_handle_exit_pr, instead of routing the interrupt to
+> the guest, we return to host, with KVM_EXIT_DEBUG reason.
 > 
 > Signed-off-by: Laurent Vivier <lvivier@redhat.com>
 > ---
->  arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  arch/powerpc/kvm/book3s_pr.c | 31 +++++++++++++++++++++++++++++--
+>  1 file changed, 29 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-> index 2afdb9c..4ee969d 100644
-> --- a/arch/powerpc/kvm/book3s_emulate.c
-> +++ b/arch/powerpc/kvm/book3s_emulate.c
-> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index 95bceca..e6896f4 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -882,6 +882,24 @@ void kvmppc_set_fscr(struct kvm_vcpu *vcpu, u64 fscr)
+>  }
+>  #endif
 >  
->  	switch (get_op(inst)) {
->  	case 0:
-> -		emulated = EMULATE_FAIL;
->  		if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->  		    (inst == swab32(inst_sc))) {
->  			/*
-> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  			kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->  			kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->  			emulated = EMULATE_DONE;
+> +static void kvmppc_setup_debug(struct kvm_vcpu *vcpu)
+> +{
+> +	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
+> +		u64 msr = kvmppc_get_msr(vcpu);
+> +
+> +		kvmppc_set_msr(vcpu, msr | MSR_SE);
+> +	}
+> +}
+> +
+> +static void kvmppc_clear_debug(struct kvm_vcpu *vcpu)
+> +{
+> +	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
+> +		u64 msr = kvmppc_get_msr(vcpu);
+> +
+> +		kvmppc_set_msr(vcpu, msr & ~MSR_SE);
+> +	}
+> +}
+> +
+>  int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  			  unsigned int exit_nr)
+>  {
+> @@ -1208,8 +1226,13 @@ program_interrupt:
+>  #endif
+>  	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+>  	case BOOK3S_INTERRUPT_TRACE:
+> -		kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+> -		r = RESUME_GUEST;
+> +		if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
+> +			run->exit_reason = KVM_EXIT_DEBUG;
+> +			r = RESUME_HOST;
 > +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +			emulated = EMULATE_AGAIN;
->  		}
+> +			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+> +			r = RESUME_GUEST;
+> +		}
 >  		break;
->  	case 19:
+>  	default:
+>  	{
+> @@ -1479,6 +1502,8 @@ static int kvmppc_vcpu_run_pr(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+>  		goto out;
+>  	}
+>  
+> +	kvmppc_setup_debug(vcpu);
+> +
+>  	/*
+>  	 * Interrupts could be timers for the guest which we have to inject
+>  	 * again, so let's postpone them until we're in the guest and if we
+> @@ -1501,6 +1526,8 @@ static int kvmppc_vcpu_run_pr(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+>  
+>  	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
+>  
+> +	kvmppc_clear_debug(vcpu);
+> +
+>  	/* No need for kvm_guest_exit. It's done in handle_exit.
+>  	   We also get here with interrupts enabled. */
+>  
 > 
