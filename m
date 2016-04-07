@@ -1,32 +1,32 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgWb16zx7zDq6S
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 15:38:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgWb228cfzDqDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 15:38:06 +1000 (AEST)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Thu, 7 Apr 2016 11:08:03 +0530
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u375cISv22675780
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:08:18 +0530
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u375c0i832440532
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:08:01 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u375brKT006351
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:07:59 +0530
+ u375bq0b006292
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:08:00 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 Cc: hughd@google.com, kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
  akpm@linux-foundation.org, mgorman@techsingularity.net,
  dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH 09/10] powerpc/hugetlb: Selectively enable
- ARCH_ENABLE_HUGEPAGE_MIGRATION
-Date: Thu,  7 Apr 2016 11:07:43 +0530
-Message-Id: <1460007464-26726-10-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH 08/10] powerpc/hugetlb: Selectively enable
+ ARCH_WANT_GENERAL_HUGETLB
+Date: Thu,  7 Apr 2016 11:07:42 +0530
+Message-Id: <1460007464-26726-9-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,31 +38,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This change enables the config option ARCH_ENABLE_HUGEPAGE_MIGRATION
-depending on whether the platform has got ARCH_WANT_GENERAL_HUGETLB
-or not along with config option MIGRATION. In turn, it turns on the
-'hugepage_migration_supported' function which is checked for feature
-presence during HugeTLB page migration and clears the way.
+This enables ARCH_WANT_GENERAL_HUGETLB config option only for BOOK3S
+platforms with 64K page size implementation. Existing arch specific
+functions for ARCH_WANT_GENERAL_HUGETLB config like 'huge_pte_alloc'
+and 'huge_pte_offset' are no longer required and are removed with
+this change.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/Kconfig | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/Kconfig          |  4 +++
+ arch/powerpc/mm/hugetlbpage.c | 58 -------------------------------------------
+ 2 files changed, 4 insertions(+), 58 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9b3ce18..f2a45eb 100644
+index 7cd32c0..9b3ce18 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -86,6 +86,10 @@ config GENERIC_HWEIGHT
- config ARCH_HAS_DMA_SET_COHERENT_MASK
-         bool
+@@ -33,6 +33,10 @@ config HAVE_SETUP_PER_CPU_AREA
+ config NEED_PER_CPU_EMBED_FIRST_CHUNK
+ 	def_bool PPC64
  
-+config ARCH_ENABLE_HUGEPAGE_MIGRATION
++config ARCH_WANT_GENERAL_HUGETLB
++	depends on HUGETLB_PAGE && PPC_64K_PAGES && PPC_BOOK3S_64
 +	def_bool y
-+	depends on ARCH_WANT_GENERAL_HUGETLB && MIGRATION
 +
- config PPC
- 	bool
- 	default y
+ config NR_IRQS
+ 	int "Number of virtual interrupt numbers"
+ 	range 32 32768
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 4f44c62..bd0e584 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -59,39 +59,6 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ 	/* Only called for hugetlbfs pages, hence can ignore THP */
+ 	return __find_linux_pte_or_hugepte(mm->pgd, addr, NULL, NULL);
+ }
+-#else /* CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+-pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+-{
+-	pgd_t pgd, *pgdp;
+-	pud_t pud, *pudp;
+-	pmd_t pmd, *pmdp;
+-
+-	pgdp = mm->pgd + pgd_index(addr);
+-	pgd  = READ_ONCE(*pgdp);
+-
+-	if (pgd_none(pgd))
+-		return NULL;
+-
+-	if (pgd_huge(pgd))
+-		return (pte_t *)pgdp;
+-
+-	pudp = pud_offset(&pgd, addr);
+-	pud  = READ_ONCE(*pudp);
+-	if (pud_none(pud))
+-		return NULL;
+-
+-	if (pud_huge(pud))
+-		return (pte_t *)pudp;
+-
+-	pmdp = pmd_offset(&pud, addr);
+-	pmd  = READ_ONCE(*pmdp);
+-	if (pmd_none(pmd))
+-		return NULL;
+-
+-	if (pmd_huge(pmd))
+-		return (pte_t *)pmdp;
+-	return NULL;
+-}
+ #endif /* !CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+ 
+ #ifndef CONFIG_ARCH_WANT_GENERAL_HUGETLB
+@@ -210,31 +177,6 @@ hugepd_search:
+ 
+ 	return hugepte_offset(*hpdp, addr, pdshift);
+ }
+-
+-#else /* CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+-pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
+-{
+-	pgd_t *pg;
+-	pud_t *pu;
+-	pmd_t *pm;
+-	unsigned pshift = __ffs(sz);
+-
+-	addr &= ~(sz-1);
+-	pg = pgd_offset(mm, addr);
+-
+-	if (pshift == PGDIR_SHIFT)	/* 16GB Huge Page */
+-		return (pte_t *)pg;
+-
+-	pu = pud_alloc(mm, pg, addr);	/* NA, skipped */
+-	if (pshift == PUD_SHIFT)
+-		return (pte_t *)pu;
+-
+-	pm = pmd_alloc(mm, pu, addr);	/* 16MB Huge Page */
+-	if (pshift == PMD_SHIFT)
+-		return (pte_t *)pm;
+-
+-	return NULL;
+-}
+ #endif /* !CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+ #else
+ 
 -- 
 2.1.0
