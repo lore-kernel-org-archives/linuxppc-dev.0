@@ -1,33 +1,40 @@
 Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgNXG3XDlzDq6F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 10:20:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgNc32HBHzDq6F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 10:23:30 +1000 (AEST)
 Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 6 Apr 2016 21:20:09 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 8280D1DC0071
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 20:20:01 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u36NHpdB4698366
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 20:17:51 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u370K55s011214
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 21:20:06 -0300
+ Wed, 6 Apr 2016 21:23:28 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 714C4352005C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Apr 2016 20:23:14 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u36NNSVu24904004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 20:23:28 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u370NPCM002562
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Apr 2016 21:23:25 -0300
+Subject: Re: [PATCH 2/2] powerpc/pseries: Check if EEH is enabled on DDW
+ mechanism code
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1453234700-27593-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1453234700-27593-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <20160202234811.GA17911@gwshan> <56B1F1FC.1080403@linux.vnet.ibm.com>
+ <20160204053023.GB16304@gwshan>
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Michael Ellerman <mpe@ellerman.id.au>
 From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- nfont@linux.vnet.ibm.com
-Subject: [PATCH 1/2 v2] Revert "powerpc/eeh: Fix crash in
- eeh_add_device_early() on Cell"
-Date: Wed,  6 Apr 2016 21:20:04 -0300
-Message-Id: <1459988405-13991-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Message-ID: <5705A87C.2010901@linux.vnet.ibm.com>
+Date: Wed, 6 Apr 2016 21:23:24 -0300
+MIME-Version: 1.0
+In-Reply-To: <20160204053023.GB16304@gwshan>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,42 +44,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit 89a51df5ab1d38b257300b8ac940bbac3bb0eb9b.
+On 02/04/2016 03:30 AM, Gavin Shan wrote:
+> On Wed, Feb 03, 2016 at 10:26:36AM -0200, Guilherme G. Piccoli wrote:
+>> On 02/02/2016 09:48 PM, Gavin Shan wrote:
+>>
+>> Gavin, thanks very much for the clarification. So, we can interchange
+>> edev->config_addr with pdn->pci_ext_config_space ?
+>> This would solve the issue with DDW being enabled when EEH is not.
+>>
+>> I hit the issue on PowerVM (PHyp). I wasn't able to perform hotplug in qemu
+>> that time I was testing this - I can re-test on qemu. Can we use pci_dn
+>> config address in qemu guest too?
+>>
+>
+> On PowerKVM, QEMU can't recognize (1). pHyp is expected to support both
+> of them. Please have a try with (1) when eeh_enabled() returns false.
+> The address (1) can be retrieved from pci_dn as below:
+>
+> 	(pdn->busno << 8) | (pdn->devfn)
+>
+> Thanks,
+> Gavin
+>
 
-The function eeh_add_device_early() is used to perform EEH initialization in
-devices added later on the system, like in hotplug/DLPAR scenarios. Since the
-commit 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
-a new check was introduced in this function - Cell has no EEH capabilities
-which led to kernel oops if hotplug was performed, so checking for
-eeh_enabled() was introduced to avoid the issue.
+Gavin, thanks very much for your advice. And sorry for my huge delay in 
+replying this...
 
-However, in architectures that EEH is present like pSeries or PowerNV, we might
-reach a case in which no PCI devices are present on boot time and so EEH is not
-initialized. Then, if a device is added via DLPAR for example,
-eeh_add_device_early() fails because eeh_enabled() is false, and EEH end up
-not being enabled at all.
+I tested the pci_dn's busno/devfn solution in both PHyp and qemu and it 
+worked fine - DDW was enabled with success.
 
-This reverts the aforementioned patch since a new verification was introduced by
-the commit d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
-and so the original Cell issue does not happen anymore.
+I just sent v2 patches to the list - your review is much appreciated.
 
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks,
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 6544017..6758484 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1068,7 +1068,7 @@ void eeh_add_device_early(struct pci_dn *pdn)
- 	struct pci_controller *phb;
- 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
- 
--	if (!edev || !eeh_enabled())
-+	if (!edev)
- 		return;
- 
- 	if (!eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
--- 
-2.1.0
+
+Guilherme
