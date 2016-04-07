@@ -1,32 +1,31 @@
 Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgxMk31ZKzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 07:59:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgxPm20PMzDq6b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 08:01:32 +1000 (AEST)
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qgxMk1Zmpz9t5S
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2016 07:59:46 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3qgxPm0SCzz9s5J
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2016 08:01:32 +1000 (AEST)
 Received: from localhost
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Fri, 8 Apr 2016 07:59:45 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E21242CE8057
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2016 07:59:42 +1000 (EST)
+ Fri, 8 Apr 2016 08:01:31 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6221F357805A
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Apr 2016 08:01:26 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u37LxYIR11469268
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Apr 2016 07:59:42 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u37M1HE831588458
+ for <linuxppc-dev@ozlabs.org>; Fri, 8 Apr 2016 08:01:26 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u37Lx9pG029545
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Apr 2016 07:59:10 +1000
-Subject: [PATCH v4 2/3] ppc64/book3s: make some room for common interrupt
- vector code
+ u37M0qKN032098
+ for <linuxppc-dev@ozlabs.org>; Fri, 8 Apr 2016 08:00:53 +1000
+Subject: [PATCH v4 3/3] ppc64/book3s: remove __end_handlers marker
 From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
 Cc: Michael Neuling <mikey@neuling.org>,
@@ -34,8 +33,8 @@ Cc: Michael Neuling <mikey@neuling.org>,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
  Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 08 Apr 2016 03:28:50 +0530
-Message-ID: <20160407215811.8404.6733.stgit@hbathini.in.ibm.com>
+Date: Fri, 08 Apr 2016 03:30:34 +0530
+Message-ID: <20160407215914.8404.10459.stgit@hbathini.in.ibm.com>
 In-Reply-To: <20160407215541.8404.15022.stgit@hbathini.in.ibm.com>
 References: <20160407215541.8404.15022.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
@@ -49,111 +48,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the previous patch, we choke out whatever little space is left
-below 0x7000 (FWNMI hard block) while there is a hole of ~1400 bytes
-below __end_interrupts marker when CONFIG_CBE_RAS is disabled.
-Considering CONFIG_CBE_RAS is not enabled by default for BOOK3S, this
-is not a desirable scenario especially when we have to worry about
-each additional instruction that goes below 0x7000.
-
-Memory region from 0x1800 to 0x4000 is dedicated for common interrupt
-vector code. Also, we never hit an interrupt below 0x300 when IR=DR=1
-implying memory region between 0x4000 to 0x4300 can also be used for
-common interrupt vector code. So, we can effectively use memory region
-between 0x1800 to 0x4300 for common interrupt vector code.
-
-This patch tries to free up some space below 0x7000 by rearranging the
-common interrupt vector code. The approach here is to avoid large holes
-below 0x4300 for any kernel configuration. For this, let us move common
-interrupt vector code that only gets enabled with CONFIG_CBE_RAS above
-0x8000, as it doesn't need to be too close to the call sites and can be
-branched to with LOAD_HANDLER() as long as it is within the first 64KB
-(0x10000) of the kernel image. Instead, lets move common interrupt vector
-code marked h_instr_storage_common, facility_unavailable_common &
-hv_facility_unavailable_common below 0x4300. This leaves ~250 bytes
-free below 0x4300 and ~1150 bytes free below 0x7000 - enough space to
-stop worrying about every additional instruction that goes below 0x7000.
-
-This patch assumes at least commit 376af594, part of the patch series
-that starts with commit 468a3302, is part of the code to avoid messy
-compilation issues like:
-
-    relocation truncated to fit: R_PPC64_REL14 against `.text'+1c90
-    Makefile:864: recipe for target 'vmlinux' failed
-
-I tested this patch successfully on ppc64, ppc64le lpars and baremetal
-environments. Couldn't test it on IBM cell blade though but expecting no
-problems with this patch in IBM cell blade environment as well. If
-someone can test this patch in cell platform, it would be great.
+__end_handlers marker was intended to mark down upto code that gets
+called from exception prologs. But that hasn't kept pace with code
+changes. Case in point, slb_miss_realmode being called from exception
+prolog code but isn't below __end_handlers marker. So, __end_handlers
+marker is as good as a comment but could be misleading at times if
+it isn't in sync with the code, as is the case now. So, let us avoid
+this confusion by having a better comment and removing __end_handlers
+marker altogether.
 
 Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S |   13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index f76b2f3..c193ebd 100644
+index c193ebd..80f9fc4 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -786,6 +786,7 @@ kvmppc_skip_Hinterrupt:
- 	STD_EXCEPTION_COMMON(0xb00, trap_0b, unknown_exception)
- 	STD_EXCEPTION_COMMON(0xd00, single_step, single_step_exception)
- 	STD_EXCEPTION_COMMON(0xe00, trap_0e, unknown_exception)
-+	STD_EXCEPTION_COMMON(0xe20, h_instr_storage, unknown_exception)
- 	STD_EXCEPTION_COMMON(0xe40, emulation_assist, emulation_assist_interrupt)
- 	STD_EXCEPTION_COMMON_ASYNC(0xe60, hmi_exception, handle_hmi_exception)
- #ifdef CONFIG_PPC_DOORBELL
-@@ -794,6 +795,9 @@ kvmppc_skip_Hinterrupt:
- 	STD_EXCEPTION_COMMON_ASYNC(0xe80, h_doorbell, unknown_exception)
+@@ -764,11 +764,10 @@ kvmppc_skip_Hinterrupt:
  #endif
- 	STD_EXCEPTION_COMMON_ASYNC(0xf00, performance_monitor, performance_monitor_exception)
-+	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
-+	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
-+
- 	STD_EXCEPTION_COMMON(0x1300, instruction_breakpoint, instruction_breakpoint_exception)
- 	STD_EXCEPTION_COMMON(0x1502, denorm, unknown_exception)
- #ifdef CONFIG_ALTIVEC
-@@ -801,11 +805,6 @@ kvmppc_skip_Hinterrupt:
- #else
- 	STD_EXCEPTION_COMMON(0x1700, altivec_assist, unknown_exception)
- #endif
--#ifdef CONFIG_CBE_RAS
--	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, cbe_system_error_exception)
--	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, cbe_maintenance_exception)
--	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, cbe_thermal_exception)
--#endif /* CONFIG_CBE_RAS */
  
- 	/*
- 	 * Relocation-on interrupts: A subset of the interrupts can be delivered
-@@ -1029,8 +1028,6 @@ instruction_access_common:
- 	li	r5,0x400
- 	b	do_hash_page		/* Try to handle as hpte fault */
- 
--	STD_EXCEPTION_COMMON(0xe20, h_instr_storage, unknown_exception)
--
  /*
-  * Here is the common SLB miss user that is used when going to virtual
-  * mode for SLB misses, that is currently not used
-@@ -1246,9 +1243,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+- * Code from here down to __end_handlers is invoked from the
+- * exception prologs above.  Because the prologs assemble the
+- * addresses of these handlers using the LOAD_HANDLER macro,
+- * which uses an ori instruction, these handlers must be in
+- * the first 64k of the kernel image.
++ * Ensure that any handlers that get invoked from the exception prologs
++ * above are below the first 64KB (0x10000) of the kernel image because
++ * the prologs assemble the addresses of these handlers using the
++ * LOAD_HANDLER macro, which uses an ori instruction.
+  */
+ 
+ /*** Common interrupt handlers ***/
+@@ -1243,10 +1242,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
  	bl	vsx_unavailable_exception
  	b	ret_from_except
  
--	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
--	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
+-	.align	7
+-	.globl	__end_handlers
+-__end_handlers:
 -
- 	.align	7
- 	.globl	__end_handlers
- __end_handlers:
-@@ -1268,6 +1262,12 @@ fwnmi_data_area:
- 	. = 0x8000
- #endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
- 
-+#ifdef CONFIG_CBE_RAS
-+	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, cbe_system_error_exception)
-+	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, cbe_maintenance_exception)
-+	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, cbe_thermal_exception)
-+#endif /* CONFIG_CBE_RAS */
-+
- 	.globl hmi_exception_early
- hmi_exception_early:
- 	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+ /*
+  * Data area reserved for FWNMI option.
