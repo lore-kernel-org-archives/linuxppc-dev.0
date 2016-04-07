@@ -1,31 +1,33 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgWZs6LlKzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 15:37:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgWZv1j4wzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 15:37:59 +1000 (AEST)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 7 Apr 2016 11:07:54 +0530
+ Thu, 7 Apr 2016 11:07:57 +0530
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u375bqeS7143892
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:07:52 +0530
+ u375btWG47710304
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:07:55 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u375biSI005961
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:07:50 +0530
+ u375bjNQ006015
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:07:53 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 Cc: hughd@google.com, kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
  akpm@linux-foundation.org, mgorman@techsingularity.net,
  dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH 00/10] Enable HugeTLB page migration on POWER
-Date: Thu,  7 Apr 2016 11:07:34 +0530
-Message-Id: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH 02/10] mm/hugetlb: Add PGD based implementation awareness
+Date: Thu,  7 Apr 2016 11:07:36 +0530
+Message-Id: <1460007464-26726-3-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,42 +37,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series enables HugeTLB page migration on POWER platform.
-This series has some core VM changes (patch 1, 2, 3) and some powerpc
-specific changes (patch 4, 5, 6, 7, 8, 9, 10). Comments, suggestions
-and inputs are welcome.
+Currently the config ARCH_WANT_GENERAL_HUGETLB enabled functions like
+'huge_pte_alloc' and 'huge_pte_offset' dont take into account HugeTLB
+page implementation at the PGD level. This is also true for functions
+like 'follow_page_mask' which is called from move_pages() system call.
+This lack of PGD level huge page support prohibits some architectures
+to use these generic HugeTLB functions.
 
-Anshuman Khandual (10):
-  mm/mmap: Replace SHM_HUGE_MASK with MAP_HUGE_MASK inside mmap_pgoff
-  mm/hugetlb: Add PGD based implementation awareness
-  mm/hugetlb: Protect follow_huge_(pud|pgd) functions from race
-  powerpc/hugetlb: Add ABI defines for MAP_HUGE_16MB and MAP_HUGE_16GB
-  powerpc/hugetlb: Split the function 'huge_pte_alloc'
-  powerpc/hugetlb: Split the function 'huge_pte_offset'
-  powerpc/hugetlb: Prepare arch functions for ARCH_WANT_GENERAL_HUGETLB
-  powerpc/hugetlb: Selectively enable ARCH_WANT_GENERAL_HUGETLB
-  powerpc/hugetlb: Selectively enable ARCH_ENABLE_HUGEPAGE_MIGRATION
-  selfttest/powerpc: Add memory page migration tests
+This change adds the required PGD based implementation awareness and
+with that, more architectures like POWER which implements 16GB pages
+at the PGD level along with the 16MB pages at the PMD level can now
+use ARCH_WANT_GENERAL_HUGETLB config option.
 
- arch/powerpc/Kconfig                               |   8 +
- arch/powerpc/include/asm/book3s/64/hash-64k.h      |  10 +
- arch/powerpc/include/uapi/asm/mman.h               |   3 +
- arch/powerpc/mm/hugetlbpage.c                      |  60 +++---
- include/linux/hugetlb.h                            |   3 +
- include/linux/mm.h                                 |  33 ++++
- mm/gup.c                                           |   6 +
- mm/hugetlb.c                                       |  75 +++++++-
- mm/mmap.c                                          |   2 +-
- tools/testing/selftests/powerpc/mm/Makefile        |  14 +-
- .../selftests/powerpc/mm/hugepage-migration.c      |  30 +++
- tools/testing/selftests/powerpc/mm/migration.h     | 205 +++++++++++++++++++++
- .../testing/selftests/powerpc/mm/page-migration.c  |  33 ++++
- tools/testing/selftests/powerpc/mm/run_mmtests     | 104 +++++++++++
- 14 files changed, 552 insertions(+), 34 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/mm/hugepage-migration.c
- create mode 100644 tools/testing/selftests/powerpc/mm/migration.h
- create mode 100644 tools/testing/selftests/powerpc/mm/page-migration.c
- create mode 100755 tools/testing/selftests/powerpc/mm/run_mmtests
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ include/linux/hugetlb.h |  3 +++
+ mm/gup.c                |  6 ++++++
+ mm/hugetlb.c            | 20 ++++++++++++++++++++
+ 3 files changed, 29 insertions(+)
 
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 7d953c2..71832e1 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -115,6 +115,8 @@ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 				pmd_t *pmd, int flags);
+ struct page *follow_huge_pud(struct mm_struct *mm, unsigned long address,
+ 				pud_t *pud, int flags);
++struct page *follow_huge_pgd(struct mm_struct *mm, unsigned long address,
++				pgd_t *pgd, int flags);
+ int pmd_huge(pmd_t pmd);
+ int pud_huge(pud_t pmd);
+ unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
+@@ -143,6 +145,7 @@ static inline void hugetlb_show_meminfo(void)
+ }
+ #define follow_huge_pmd(mm, addr, pmd, flags)	NULL
+ #define follow_huge_pud(mm, addr, pud, flags)	NULL
++#define follow_huge_pgd(mm, addr, pgd, flags)	NULL
+ #define prepare_hugepage_range(file, addr, len)	(-EINVAL)
+ #define pmd_huge(x)	0
+ #define pud_huge(x)	0
+diff --git a/mm/gup.c b/mm/gup.c
+index fb87aea..9bac78c 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -234,6 +234,12 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
+ 	pgd = pgd_offset(mm, address);
+ 	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+ 		return no_page_table(vma, flags);
++	if (pgd_huge(*pgd) && vma->vm_flags & VM_HUGETLB) {
++		page = follow_huge_pgd(mm, address, pgd, flags);
++		if (page)
++			return page;
++		return no_page_table(vma, flags);
++	}
+ 
+ 	pud = pud_offset(pgd, address);
+ 	if (pud_none(*pud))
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 19d0d08..5ea3158 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -4250,6 +4250,11 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
+ 	pte_t *pte = NULL;
+ 
+ 	pgd = pgd_offset(mm, addr);
++	if (sz == PGDIR_SIZE) {
++		pte = (pte_t *)pgd;
++		goto huge_pgd;
++	}
++
+ 	pud = pud_alloc(mm, pgd, addr);
+ 	if (pud) {
+ 		if (sz == PUD_SIZE) {
+@@ -4262,6 +4267,8 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
+ 				pte = (pte_t *)pmd_alloc(mm, pud, addr);
+ 		}
+ 	}
++
++huge_pgd:
+ 	BUG_ON(pte && !pte_none(*pte) && !pte_huge(*pte));
+ 
+ 	return pte;
+@@ -4275,6 +4282,8 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ 
+ 	pgd = pgd_offset(mm, addr);
+ 	if (pgd_present(*pgd)) {
++		if (pgd_huge(*pgd))
++			return (pte_t *)pgd;
+ 		pud = pud_offset(pgd, addr);
+ 		if (pud_present(*pud)) {
+ 			if (pud_huge(*pud))
+@@ -4343,6 +4352,17 @@ follow_huge_pud(struct mm_struct *mm, unsigned long address,
+ 	return pte_page(*(pte_t *)pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
+ }
+ 
++struct page * __weak
++follow_huge_pgd(struct mm_struct *mm, unsigned long address,
++		pgd_t *pgd, int flags)
++{
++	if (flags & FOLL_GET)
++		return NULL;
++
++	return pte_page(*(pte_t *)pgd) +
++				((address & ~PGDIR_MASK) >> PAGE_SHIFT);
++}
++
+ #ifdef CONFIG_MEMORY_FAILURE
+ 
+ /*
 -- 
 2.1.0
