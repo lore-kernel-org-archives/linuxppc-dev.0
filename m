@@ -1,34 +1,25 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zhiqiang.hou@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0072.outbound.protection.outlook.com [157.56.112.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qgWpj0KpLzDqd2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 15:48:12 +1000 (AEST)
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 7 Apr 2016 11:08:01 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u375cECK15073600
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:08:14 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u375bl30006058
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Apr 2016 11:07:55 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: hughd@google.com, kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
- akpm@linux-foundation.org, mgorman@techsingularity.net,
- dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: [PATCH 03/10] mm/hugetlb: Protect follow_huge_(pud|pgd) functions
- from race
-Date: Thu,  7 Apr 2016 11:07:37 +0530
-Message-Id: <1460007464-26726-4-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qgWx86QSyzDq6L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Apr 2016 15:53:48 +1000 (AEST)
+From: Zhiqiang Hou <zhiqiang.hou@nxp.com>
+To: Scott Wood <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+CC: Mingkai Hu <mingkai.hu@nxp.com>
+Subject: RE: [PATCH] powerpc/config: Disable the 4KiB erase granularity of SPI
+ flash
+Date: Thu, 7 Apr 2016 03:17:29 +0000
+Message-ID: <AM4PR04MB21485158542FA13151D6B23484900@AM4PR04MB2148.eurprd04.prod.outlook.com>
+References: <1459937676-25668-1-git-send-email-Zhiqiang.Hou@nxp.com>
+ <1459980089.32510.78.camel@buserror.net>
+In-Reply-To: <1459980089.32510.78.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,165 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-follow_huge_(pmd|pud|pgd) functions are used to walk the page table and
-fetch the page struct during 'follow_page_mask' call. There are possible
-race conditions faced by these functions which arise out of simultaneous
-calls of move_pages() and freeing of huge pages. This was fixed partly
-by the previous commit e66f17ff7177 ("mm/hugetlb: take page table lock
-in follow_huge_pmd()") for only PMD based huge pages.
-
-After implementing similar logic, functions like follow_huge_(pud|pgd)
-are now safe from above mentioned race conditions and also can support
-FOLL_GET. Generic version of the function 'follow_huge_addr' has been
-left as it is and its upto the architecture to decide on it.
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- include/linux/mm.h | 33 +++++++++++++++++++++++++++
- mm/hugetlb.c       | 67 ++++++++++++++++++++++++++++++++++++++++++++++--------
- 2 files changed, 91 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ffcff53..734182a 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1751,6 +1751,19 @@ static inline void pgtable_page_dtor(struct page *page)
- 		NULL: pte_offset_kernel(pmd, address))
- 
- #if USE_SPLIT_PMD_PTLOCKS
-+static struct page *pgd_to_page(pgd_t *pgd)
-+{
-+	unsigned long mask = ~(PTRS_PER_PGD * sizeof(pgd_t) - 1);
-+
-+	return virt_to_page((void *)((unsigned long) pgd & mask));
-+}
-+
-+static struct page *pud_to_page(pud_t *pud)
-+{
-+	unsigned long mask = ~(PTRS_PER_PUD * sizeof(pud_t) - 1);
-+
-+	return virt_to_page((void *)((unsigned long) pud & mask));
-+}
- 
- static struct page *pmd_to_page(pmd_t *pmd)
- {
-@@ -1758,6 +1771,16 @@ static struct page *pmd_to_page(pmd_t *pmd)
- 	return virt_to_page((void *)((unsigned long) pmd & mask));
- }
- 
-+static inline spinlock_t *pgd_lockptr(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	return ptlock_ptr(pgd_to_page(pgd));
-+}
-+
-+static inline spinlock_t *pud_lockptr(struct mm_struct *mm, pud_t *pud)
-+{
-+	return ptlock_ptr(pud_to_page(pud));
-+}
-+
- static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
- {
- 	return ptlock_ptr(pmd_to_page(pmd));
-@@ -1783,6 +1806,16 @@ static inline void pgtable_pmd_page_dtor(struct page *page)
- 
- #else
- 
-+static inline spinlock_t *pgd_lockptr(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	return &mm->page_table_lock;
-+}
-+
-+static inline spinlock_t *pud_lockptr(struct mm_struct *mm, pud_t *pud)
-+{
-+	return &mm->page_table_lock;
-+}
-+
- static inline spinlock_t *pmd_lockptr(struct mm_struct *mm, pmd_t *pmd)
- {
- 	return &mm->page_table_lock;
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 5ea3158..e84e479 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -4346,21 +4346,70 @@ struct page * __weak
- follow_huge_pud(struct mm_struct *mm, unsigned long address,
- 		pud_t *pud, int flags)
- {
--	if (flags & FOLL_GET)
--		return NULL;
--
--	return pte_page(*(pte_t *)pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
-+	struct page *page = NULL;
-+	spinlock_t *ptl;
-+retry:
-+	ptl = pud_lockptr(mm, pud);
-+	spin_lock(ptl);
-+	/*
-+	 * make sure that the address range covered by this pud is not
-+	 * unmapped from other threads.
-+	 */
-+	if (!pud_huge(*pud))
-+		goto out;
-+	if (pud_present(*pud)) {
-+		page = pud_page(*pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
-+		if (flags & FOLL_GET)
-+			get_page(page);
-+	} else {
-+		if (is_hugetlb_entry_migration(huge_ptep_get((pte_t *)pud))) {
-+			spin_unlock(ptl);
-+			__migration_entry_wait(mm, (pte_t *)pud, ptl);
-+			goto retry;
-+		}
-+		/*
-+		 * hwpoisoned entry is treated as no_page_table in
-+		 * follow_page_mask().
-+		 */
-+	}
-+out:
-+	spin_unlock(ptl);
-+	return page;
- }
- 
- struct page * __weak
- follow_huge_pgd(struct mm_struct *mm, unsigned long address,
- 		pgd_t *pgd, int flags)
- {
--	if (flags & FOLL_GET)
--		return NULL;
--
--	return pte_page(*(pte_t *)pgd) +
--				((address & ~PGDIR_MASK) >> PAGE_SHIFT);
-+	struct page *page = NULL;
-+	spinlock_t *ptl;
-+retry:
-+	ptl = pgd_lockptr(mm, pgd);
-+	spin_lock(ptl);
-+	/*
-+	 * make sure that the address range covered by this pgd is not
-+	 * unmapped from other threads.
-+	 */
-+	if (!pgd_huge(*pgd))
-+		goto out;
-+	if (pgd_present(*pgd)) {
-+		page = pgd_page(*pgd) + ((address & ~PGDIR_MASK) >> PAGE_SHIFT);
-+		if (flags & FOLL_GET)
-+			get_page(page);
-+	} else {
-+		if (is_hugetlb_entry_migration(huge_ptep_get((pte_t *)pgd))) {
-+			spin_unlock(ptl);
-+			__migration_entry_wait(mm, (pte_t *)pgd, ptl);
-+			goto retry;
-+		}
-+		/*
-+		 * hwpoisoned entry is treated as no_page_table in
-+		 * follow_page_mask().
-+		 */
-+	}
-+out:
-+	spin_unlock(ptl);
-+	return page;
- }
- 
- #ifdef CONFIG_MEMORY_FAILURE
--- 
-2.1.0
+SGkgU2NvdHQsDQoNClRoYW5rcyBmb3IgeW91ciBjb21tZW50cy4NCg0KPiAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTY290dCBXb29kIFttYWlsdG86b3NzQGJ1c2Vycm9yLm5l
+dF0NCj4gU2VudDogMjAxNuW5tDTmnIg35pelIDY6MDENCj4gVG86IFpoaXFpYW5nIEhvdSA8emhp
+cWlhbmcuaG91QG54cC5jb20+OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gYmVu
+aEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBwYXVsdXNAc2FtYmEub3JnOyBtcGVAZWxsZXJtYW4uaWQu
+YXUNCj4gQ2M6IE1pbmdrYWkgSHUgPG1pbmdrYWkuaHVAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6
+IFtQQVRDSF0gcG93ZXJwYy9jb25maWc6IERpc2FibGUgdGhlIDRLaUIgZXJhc2UgZ3JhbnVsYXJp
+dHkgb2YgU1BJDQo+IGZsYXNoDQo+IA0KPiBPbiBXZWQsIDIwMTYtMDQtMDYgYXQgMTg6MTQgKzA4
+MDAsIFpoaXFpYW5nIEhvdSB3cm90ZToNCj4gPiBGcm9tOiBIb3UgWmhpcWlhbmcgPFpoaXFpYW5n
+LkhvdUBueHAuY29tPg0KPiA+DQo+ID4gRGlzYWJsZSB0aGUgc3Vic2VjdG9yICg0S2lCKSBlcmFz
+ZSBncmFudWxhcml0eSB0byBzcGVlZCB1cCB0aGUgZXJhc2UNCj4gPiBvcGVyYXRpb24uDQo+ID4N
+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBIb3UgWmhpcWlhbmcgPFpoaXFpYW5nLkhvdUBueHAuY29tPg0K
+PiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvY29uZmlncy84NXh4LWh3LmNvbmZpZyB8IDEgKw0K
+PiA+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gPg0KPiA+IGRpZmYgLS1naXQg
+YS9hcmNoL3Bvd2VycGMvY29uZmlncy84NXh4LWh3LmNvbmZpZw0KPiA+IGIvYXJjaC9wb3dlcnBj
+L2NvbmZpZ3MvODV4eCAtaHcuY29uZmlnIGluZGV4IDUyOGZmMGUuLmEwZjRlNzAgMTAwNjQ0DQo+
+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvODV4eC1ody5jb25maWcNCj4gPiArKysgYi9h
+cmNoL3Bvd2VycGMvY29uZmlncy84NXh4LWh3LmNvbmZpZw0KPiA+IEBAIC03Nyw2ICs3Nyw3IEBA
+IENPTkZJR19NVERfUEhZU01BUF9PRj15DQo+IENPTkZJR19NVERfUEhZU01BUD15DQo+ID4gQ09O
+RklHX01URF9QTEFUUkFNPXkgIENPTkZJR19NVERfU1BJX05PUj15DQo+ID4gKyMgQ09ORklHX01U
+RF9TUElfTk9SX1VTRV80S19TRUNUT1JTIGlzIG5vdCBzZXQNCj4gPiAgQ09ORklHX05FVERFVklD
+RVM9eQ0KPiA+ICBDT05GSUdfTlZSQU09eQ0KPiA+ICBDT05GSUdfUEFUQV9BTEk9eQ0KPiANCj4g
+SXMgdGhlcmUgYSByZWFzb24gc3BlY2lmaWMgdG8gODV4eCB0byBoYXZlIGEgZGlmZmVyZW50IGRl
+ZmF1bHQgdGhhbiBldmVyeSBvdGhlcg0KPiBwbGF0Zm9ybSBleGNlcHQgbHBjMTh4eD8gIFRoZSBk
+ZXNjcmlwdGlvbiBvZiBNVERfU1BJX05PUl9VU0VfNEtfU0VDVE9SUw0KPiBhY2tub3dsZWRnZXMg
+dGhhdCBlcmFzZSBzcGVlZCBpcyBhIHRyYWRlb2ZmLiAgV2h5IGlzIHRoYXQgY29uY2VybiBtb3Jl
+DQo+IGNvbXBlbGxpbmcgb24gODV4eCB0aGFuIGVsc2V3aGVyZT8NCj4gDQoNCkkgZG9uJ3Qgd2Fu
+dCB0byBzcGVjaWZ5IDg1eHgsIGJ1dCBjb25maWdzIG9mIGZzbC4gSSdtIHN0aWxsIGNvbmZ1c2lu
+ZyAgYWJvdXQgc28gbWFueQ0KY29uZmlncy4gV2lsbCBhZGQgb3RoZXIgcGxhdGZvcm1zIGlmIG5l
+Y2Vzc2FyeS4NCg0KRm9yIHRoaXMgcGF0Y2gsIGl0IHRha2VzIGFib3V0IDEzIG1pbnMgdG8gZXJh
+c2UgNjRNaUIgYnkgc3Vic2VjdG9yIGVyYXNlIGNvbW1hbmQNCig0S2lCIHBlciB0aW1lKSwgYnV0
+IHRha2VzIDIgbWlucyBieSBzZWN0b3IgZXJhc2UgY29tbWFuZCg2NEtpQiBwZXIgdGltZSkuIEl0
+IGlzDQpjb25zcGljdW91cyBkZWNyZWFzZS4gV2h5IGl0IHVzZXMgdGhlIDRLaUIgZ3JhbnVsYXJp
+dHkgYnkgZGVmYXVsdCwgd2hhdCdzIHRoZQ0KYmVuZWZpdD8NCg0KVGhhbmtzLA0KWmhpcWlhbmcN
+Cg0K
