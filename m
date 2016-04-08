@@ -1,16 +1,21 @@
-Return-Path: <thuth@redhat.com>
+Return-Path: <lvivier@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhPCX39r6zDq6T
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 01:54:15 +1000 (AEST)
-From: Thomas Huth <thuth@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org
-Subject: [PATCH] powerpc: Fix definition of SIAR register
-Date: Fri,  8 Apr 2016 17:54:11 +0200
-Message-Id: <1460130851-29021-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qhPSF44XzzDq6Y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 02:05:16 +1000 (AEST)
+From: Laurent Vivier <lvivier@redhat.com>
+To: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, dgibson@redhat.com, thuth@redhat.com,
+ Laurent Vivier <lvivier@redhat.com>
+Subject: [PATCH v2] kvm-pr: manage single-step mode
+Date: Fri,  8 Apr 2016 18:05:00 +0200
+Message-Id: <1460131500-19560-1-git-send-email-lvivier@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,42 +25,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SIAR register is available twice, one time as SPR 780 (unprivileged,
-but read-only), and one time as SPR 796 (privileged, but read and write).
-The Linux kernel code currently uses SPR 780 - and while this is OK for
-reading, writing to that register of course does not work.
-Since the KVM code tries to write to this register, too (see the mtspr
-in book3s_hv_rmhandlers.S), the contents of this register sometimes get
-lost for the guests, e.g. during migration of a VM.
-To fix this issue, simply switch to the other SPR numer 796 instead.
+Until now, when we connect gdb to the QEMU gdb-server, the
+single-step mode is not managed.
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
+This patch adds this, only for kvm-pr:
+
+If KVM_GUESTDBG_SINGLESTEP is set, we enable single-step trace bit in the
+MSR (MSR_SE) just before the __kvmppc_vcpu_run(), and disable it just after.
+In kvmppc_handle_exit_pr, instead of routing the interrupt to
+the guest, we return to host, with KVM_EXIT_DEBUG reason.
+
+Signed-off-by: Laurent Vivier <lvivier@redhat.com>
 ---
- Note: The perf code in core-book3s.c also seems to write to the SIAR
-       SPR, so that might be affected by this issue, too - but I did
-       not test the perf code, so I'm not sure about that part.
+v2: split BOOK3S_INTERRUPT_MACHINE_CHECK and BOOK3S_INTERRUPT_TRACE
 
- arch/powerpc/include/asm/reg.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_pr.c | 32 +++++++++++++++++++++++++++++++-
+ 1 file changed, 31 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index f5f4c66..6630420 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -752,13 +752,13 @@
- #define SPRN_PMC6	792
- #define SPRN_PMC7	793
- #define SPRN_PMC8	794
--#define SPRN_SIAR	780
- #define SPRN_SDAR	781
- #define SPRN_SIER	784
- #define   SIER_SIPR		0x2000000	/* Sampled MSR_PR */
- #define   SIER_SIHV		0x1000000	/* Sampled MSR_HV */
- #define   SIER_SIAR_VALID	0x0400000	/* SIAR contents valid */
- #define   SIER_SDAR_VALID	0x0200000	/* SDAR contents valid */
-+#define SPRN_SIAR	796
- #define SPRN_TACR	888
- #define SPRN_TCSCR	889
- #define SPRN_CSIGR	890
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 95bceca..8129b0d 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -882,6 +882,24 @@ void kvmppc_set_fscr(struct kvm_vcpu *vcpu, u64 fscr)
+ }
+ #endif
+ 
++static void kvmppc_setup_debug(struct kvm_vcpu *vcpu)
++{
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
++		u64 msr = kvmppc_get_msr(vcpu);
++
++		kvmppc_set_msr(vcpu, msr | MSR_SE);
++	}
++}
++
++static void kvmppc_clear_debug(struct kvm_vcpu *vcpu)
++{
++	if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
++		u64 msr = kvmppc_get_msr(vcpu);
++
++		kvmppc_set_msr(vcpu, msr & ~MSR_SE);
++	}
++}
++
+ int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 			  unsigned int exit_nr)
+ {
+@@ -1207,10 +1225,18 @@ program_interrupt:
+ 		break;
+ #endif
+ 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+-	case BOOK3S_INTERRUPT_TRACE:
+ 		kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+ 		r = RESUME_GUEST;
+ 		break;
++	case BOOK3S_INTERRUPT_TRACE:
++		if (vcpu->guest_debug & KVM_GUESTDBG_SINGLESTEP) {
++			run->exit_reason = KVM_EXIT_DEBUG;
++			r = RESUME_HOST;
++		} else {
++			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
++			r = RESUME_GUEST;
++		}
++		break;
+ 	default:
+ 	{
+ 		ulong shadow_srr1 = vcpu->arch.shadow_srr1;
+@@ -1479,6 +1505,8 @@ static int kvmppc_vcpu_run_pr(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 		goto out;
+ 	}
+ 
++	kvmppc_setup_debug(vcpu);
++
+ 	/*
+ 	 * Interrupts could be timers for the guest which we have to inject
+ 	 * again, so let's postpone them until we're in the guest and if we
+@@ -1501,6 +1529,8 @@ static int kvmppc_vcpu_run_pr(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
+ 
+ 	ret = __kvmppc_vcpu_run(kvm_run, vcpu);
+ 
++	kvmppc_clear_debug(vcpu);
++
+ 	/* No need for kvm_guest_exit. It's done in handle_exit.
+ 	   We also get here with interrupts enabled. */
+ 
 -- 
-1.8.3.1
+2.5.5
