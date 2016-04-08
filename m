@@ -1,37 +1,36 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qh7Jm1ZpnzDqDS
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 15:27:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qh8sj0nSKzDqDW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 16:37:58 +1000 (AEST)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 8 Apr 2016 01:27:49 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 86BF0C90042
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 01:27:41 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u385RkVL31588600
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 05:27:46 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u385Rj1X011442
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 01:27:46 -0400
-Subject: Re: [RFC FIX PATCH v0] powerpc,numa: Fix memory_hotplug_max()
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1459935883-29445-1-git-send-email-bharata@linux.vnet.ibm.com>
-Cc: nfonteno@us.ibm.com, aik@au1.ibm.com, mdroth@linux.vnet.ibm.com,
- david@gibson.dropbear.id.au
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Message-ID: <57074150.6070105@linux.vnet.ibm.com>
-Date: Fri, 8 Apr 2016 00:27:44 -0500
-MIME-Version: 1.0
-In-Reply-To: <1459935883-29445-1-git-send-email-bharata@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 8 Apr 2016 16:37:55 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7D28F2BB005F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 16:37:50 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u386barI1180114
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 16:37:50 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u386bBvr007141
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 16:37:12 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH kernel 2/2] powerpc/powernv/ioda2: Delay PE disposal
+Date: Fri,  8 Apr 2016 16:36:44 +1000
+Message-Id: <1460097404-35422-3-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1460097404-35422-1-git-send-email-aik@ozlabs.ru>
+References: <1460097404-35422-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,95 +40,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/06/2016 04:44 AM, Bharata B Rao wrote:
-> memory_hotplug_max() uses hot_add_drconf_memory_max() to get maxmimum
-> addressable memory by referring to ibm,dyanamic-memory property. There
-> are three problems with the current approach:
-> 
-> 1 hot_add_drconf_memory_max() assumes that ibm,dynamic-memory includes
->   all the LMBs of the guest, but that is not true for PowerKVM which
->   populates only DR LMBs (LMBs that can be hotplugged/removed) in that
->   property.
-> 2 hot_add_drconf_memory_max() multiplies lmb-size with lmb-count to arrive
->   at the max possible address. Since ibm,dynamic-memory doesn't include
->   RMA LMBs, the address thus obtained will be less than the actual max
->   address. For example, if max possible memory size is 32G, with lmb-size
->   of 256MB there can be 127 LMBs in ibm,dynamic-memory (1 LMB for RMA
->   which won't be present here).  hot_add_drconf_memory_max() would then
->   return the max addressable memory as 127 * 256MB = 31.75GB, the max
->   address should have been 32G which is what ibm,lrdr-capacity shows.
-> 3 In PowerKVM, there can be a gap between the end of boot time RAM and
->   beginning of hotplug RAM area. So just multiplying lmb-count with
->   lmb-size will not provide the correct max possible address for PowerKVM.
-> 
-> This patch fixes 1 by using ibm,lrdr-capacity property to return the max
-> addressable memory whenever the property is present. Then it fixes 2 & 3
-> by fetching the address of the last LMB in ibm,dynamic-memory property.
-> 
-> NOTE: There are some unnecessary changes in the patch because of converting
-> spaces to tabs w/o which checkpatch.pl complains.
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c | 29 ++++++++++++++++++++++-------
->  1 file changed, 22 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 669a15e..57d5877 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1164,17 +1164,32 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
->  static u64 hot_add_drconf_memory_max(void)
->  {
->          struct device_node *memory = NULL;
-> -        unsigned int drconf_cell_cnt = 0;
-> -        u64 lmb_size = 0;
-> +	struct device_node *dn = NULL;
-> +	unsigned int drconf_cell_cnt = 0;
-> +	u64 lmb_size = 0;
->  	const __be32 *dm = NULL;
-> +	const __be64 *lrdr = NULL;
-> +	struct of_drconf_cell drmem;
-> +
-> +	dn = of_find_node_by_path("/rtas");
-> +	if (dn) {
-> +		lrdr = of_get_property(dn, "ibm,lrdr-capacity", NULL);
-> +		of_node_put(dn);
-> +		if (lrdr)
-> +			return be64_to_cpup(lrdr);
-> +	}
->  
->          memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
->          if (memory) {
-> -                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
-> -                lmb_size = of_get_lmb_size(memory);
-> -                of_node_put(memory);
-> -        }
-> -        return lmb_size * drconf_cell_cnt;
-> +		drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
-> +		lmb_size = of_get_lmb_size(memory);
-> +
-> +		/* Advance to the last cell, each cell has 6 32 bit integers */
-> +		dm += (drconf_cell_cnt - 1) * 6;
+When SRIOV is disabled, the existing code presumes there is no
+virtual function (VF) in use and destroys all associated PEs.
+However it is possible to get into the situation when the user
+activated SRIOV disabling while a VF is still in use via VFIO.
+For example, unbinding a physical function (PF) while there is a guest
+running with a VF passed throuhgh via VFIO will trigger the bug.
 
-You could do this as follows to avoid hard-coding 6
-		dm += (drconf_cell_cnt - 1) * sizeof(struct of_drconf_cell)
+This defines an IODA2-specific IOMMU group release() callback.
+This moves all the disposal code from pnv_ioda_release_vf_PE() to this
+new callback so the cleanup happens when the last user of an IOMMU
+group released the reference.
 
-> +		read_drconf_cell(&drmem, &dm);
-> +		of_node_put(memory);
-> +	}
-> +	return drmem.base_addr + lmb_size;
+As pnv_pci_ioda2_release_dma_pe() was reduced to just calling
+iommu_group_put(), this merges pnv_pci_ioda2_release_dma_pe()
+into pnv_ioda_release_vf_PE().
 
-I assume it is a safe assumption that there will only be 1 RMA LMB?
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 33 +++++++++++++------------------
+ 1 file changed, 14 insertions(+), 19 deletions(-)
 
-I do see that the PAPR defines a bit in the flags field for each LMB
-in ibm,dynamic-memory as 'reserved'. Is this something you could use
-to flag RMA LMBs and put them in the ibm,dynamic-memory property?
-
-I'm just curious why these LMBs are not in this property.
-
--Nathan 
->  }
->  
->  /*
-> 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index ce9f2bf..8108c54 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1333,27 +1333,25 @@ static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
+ static void pnv_pci_ioda2_group_release(void *iommu_data)
+ {
+ 	struct iommu_table_group *table_group = iommu_data;
++	struct pnv_ioda_pe *pe = container_of(table_group,
++			struct pnv_ioda_pe, table_group);
++	struct pci_controller *hose = pci_bus_to_host(pe->parent_dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct iommu_table *tbl = pe->table_group.tables[0];
++	int64_t rc;
+ 
+-	table_group->group = NULL;
+-}
+-
+-static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
+-{
+-	struct iommu_table    *tbl;
+-	int64_t               rc;
+-
+-	tbl = pe->table_group.tables[0];
+ 	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+ 	if (rc)
+ 		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
+ 
+ 	pnv_pci_ioda2_set_bypass(pe, false);
+-	if (pe->table_group.group) {
+-		iommu_group_put(pe->table_group.group);
+-		BUG_ON(pe->table_group.group);
+-	}
++
++	BUG_ON(!tbl);
+ 	pnv_pci_ioda2_table_free_pages(tbl);
+-	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
++	iommu_free_table(tbl, of_node_full_name(pe->parent_dev->dev.of_node));
++
++	pnv_ioda_deconfigure_pe(phb, pe);
++	pnv_ioda_free_pe(phb, pe->pe_number);
+ }
+ 
+ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+@@ -1376,16 +1374,13 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+ 		if (pe->parent_dev != pdev)
+ 			continue;
+ 
+-		pnv_pci_ioda2_release_dma_pe(pdev, pe);
+-
+ 		/* Remove from list */
+ 		mutex_lock(&phb->ioda.pe_list_mutex);
+ 		list_del(&pe->list);
+ 		mutex_unlock(&phb->ioda.pe_list_mutex);
+ 
+-		pnv_ioda_deconfigure_pe(phb, pe);
+-
+-		pnv_ioda_free_pe(phb, pe->pe_number);
++		if (pe->table_group.group)
++			iommu_group_put(pe->table_group.group);
+ 	}
+ }
+ 
+-- 
+2.5.0.rc3
