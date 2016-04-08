@@ -1,48 +1,25 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zajec5@gmail.com>
+Received: from mail-lf0-x22b.google.com (mail-lf0-x22b.google.com
+ [IPv6:2a00:1450:4010:c07::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhG3R4mV2zDq6h
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 20:31:47 +1000 (AEST)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Fri, 8 Apr 2016 20:31:46 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 51D5F3578057
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 20:31:40 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u38AVWeE24182974
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 20:31:40 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u38AV6v7016169
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 20:31:08 +1000
-Subject: Re: [RFC v5 7/7] vfio-pci: Allow to mmap MSI-X table if interrupt
- remapping is supported
-To: Eric Auger <eric.auger@linaro.org>,
- Alex Williamson <alex.williamson@redhat.com>
-References: <1459864004-2869-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1459864004-2869-2-git-send-email-xyjxie@linux.vnet.ibm.com>
- <20160406084504.1a1cc16d@t450s.home> <570646AB.8050406@linux.vnet.ibm.com>
- <57066D76.9050303@linaro.org> <5707684B.7060901@linux.vnet.ibm.com>
- <5707758E.1010700@linaro.org>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org, bhelgaas@google.com, corbet@lwn.net,
- aik@ozlabs.ru, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, warrier@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- will.deacon@arm.com, gwshan@linux.vnet.ibm.com, alistair@popple.id.au,
- ruscur@russell.cc
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <57078856.40009@linux.vnet.ibm.com>
-Date: Fri, 8 Apr 2016 18:30:46 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qhG5X5rkGzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 20:33:36 +1000 (AEST)
+Received: by mail-lf0-x22b.google.com with SMTP id j11so76003683lfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Apr 2016 03:33:36 -0700 (PDT)
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+ Olof Johansson <olof@lixom.net>, David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC PA SEMI PWRFICIENT),
+ linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH] mtd: nand: pasemi: switch to pr_* functions
+Date: Fri,  8 Apr 2016 12:33:09 +0200
+Message-Id: <1460111589-18781-1-git-send-email-zajec5@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <5707758E.1010700@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,193 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Eric,
-On 2016/4/8 17:10, Eric Auger wrote:
-> Hi Yongji,
-> On 04/08/2016 10:14 AM, Yongji Xie wrote:
->> Hi Eric,
->> On 2016/4/7 22:23, Eric Auger wrote:
->>> Hi Yongji,
->>> On 04/07/2016 01:38 PM, Yongji Xie wrote:
->>>> On 2016/4/6 22:45, Alex Williamson wrote:
->>>>> On Tue,  5 Apr 2016 21:46:44 +0800
->>>>> Yongji Xie <xyjxie@linux.vnet.ibm.com> wrote:
->>>>>
->>>>>> This patch enables mmapping MSI-X tables if
->>>>>> hardware supports interrupt remapping which
->>>>>> can ensure that a given pci device can only
->>>>>> shoot the MSIs assigned for it.
->>>>>>
->>>>>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
->>>>>> ---
->>>>>>     drivers/vfio/pci/vfio_pci.c         |    9 +++++++--
->>>>>>     drivers/vfio/pci/vfio_pci_private.h |    1 +
->>>>>>     drivers/vfio/pci/vfio_pci_rdwr.c    |    2 +-
->>>>>>     3 files changed, 9 insertions(+), 3 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
->>>>>> index c60d790..ef02896 100644
->>>>>> --- a/drivers/vfio/pci/vfio_pci.c
->>>>>> +++ b/drivers/vfio/pci/vfio_pci.c
->>>>>> @@ -201,6 +201,10 @@ static int vfio_pci_enable(struct
->>>>>> vfio_pci_device *vdev)
->>>>>>         } else
->>>>>>             vdev->msix_bar = 0xFF;
->>>>>>     +    if (iommu_capable(pdev->dev.bus, IOMMU_CAP_INTR_REMAP) ||
->>>>> This doesn't address the issue I raised earlier where ARM SMMU sets
->>>>> this capability, but doesn't really provide per vector isolation.  ARM
->>>>> either needs to be fixed or we need to consider the whole capability
->>>>> tainted for this application and standardize around the bus flags.
->>>>> It's not very desirable to have two different ways to test this anyway.
->>>> I saw Eric posted a patchset [1] which introduce a flag
->>>> MSI_FLAG_IRQ_REMAPPING to indicate the capability
->>>> for ARM SMMU. With this patchset applied, it would
->>>> be  workable to use bus_flags to test the capability
->>>> of ARM SMMU:
->>> My purpose was to remove the advertising of IOMMU_CAP_INTR_REMAP from
->>> arm-smmu.c, "fix" mentionned by Alex (by the way I also need to do the
->>> same in v3 code) and to advertise the functionality on MSI controller
->>> instead (since the IRQ REMAPPING functionality is abstracted in GICv3
->>> ITS MSI controller)
->> Thank you for your explanation.  Now we have three
->> flags to test this capability with your and my patches
->> applied.  We need to test something like
->> IOMMU_CAP_INTR_REMAP || MSI_FLAG_IRQ_REMAPPING ||
->> PCI_BUS_FLAGS_MSI_REMAP if we want to mmap
->> MSI-X table. It's not very desirable if I understood
->> Alex correctly. So I'm thinking whether we can make
->> bus_flags compatible with other two flags and only
->> test bus_flags here.
->>
->>> On top of that, on ARM we have platform (non PCI) MSI controllers so my
->>> understanding is the capability advertising should be possible beyond
->>> the PCI bus?
->> Actually, we just need one flag which can standardize
->> the capability on PCI side. With this flag set, we can
->> easily know hardware supports the capability of
->> interrupt remapping and it's safe to mmap MSI-X
->> tables of PCI BARs in any userspace driver.
-> I agree with you on the fact storing the info at a single place looks
-> better. However my question was: if my understanding is correct, you
-> plan to store the info in pci_bus flags. What about platform_bus? Don't
-> we need to advertise the IRQ remapping capability also with a platform
-> bus topology? We can have platform devices writing to a platform MSI
-> controller that supports irq remapping. Assignment of such devices is
-> not considered yet though and maybe not feasible. I don't know if the
-> capability is used in other use cases.
+This patch also replaces %08llx with %08zx for printing resource start
+address. Old format was triggering:
+warning: format ‘%08llx’ expects type ‘long long unsigned int’, but argument 2 has type ‘resource_size_t’
 
-My purpose is to make bus_flags compatible with other
-two flags so that we can only test bus_flags when mmapping
-MSI-X table. We would not remove the flag
-MSI_FLAG_IRQ_REMAPPING and IOMMU_CAP_INTR_REMAP.
-So we still can test these two flags if we have platform
-devices writing to a platform MSI controller.
+Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
+---
+ drivers/mtd/nand/pasemi_nand.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Of course, it would be better to have a flag which can
-advertise the IRQ remapping capability for both PCI
-bus and platform bus.  But now I don't find a proper
-way to achieve that...
-
-Regards,
-Yongji
-
-> Best Regards
->
-> Eric
->> Of course, we can also achieve that by testing all the
->> three flags. But I'm not sure whether it is good enough.
->>
->> Regards,
->> Yongji
->>
->>> Best Regards
->>>
->>> Eric
->>>> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
->>>> index a080f44..b2d1756 100644
->>>> --- a/drivers/pci/msi.c
->>>> +++ b/drivers/pci/msi.c
->>>> @@ -1134,6 +1134,21 @@ void *msi_desc_to_pci_sysdata(struct msi_desc
->>>> *desc)
->>>>    }
->>>>    EXPORT_SYMBOL_GPL(msi_desc_to_pci_sysdata);
->>>>
->>>> +void pci_check_msi_remapping(struct pci_bus *bus)
->>>> +{
->>>> +#ifdef CONFIG_GENERIC_MSI_IRQ_DOMAIN
->>>> +        struct irq_domain *domain;
->>>> +        struct msi_domain_info *info;
->>>> +
->>>> +        domain = dev_get_msi_domain(&bus->dev);
->>>> +        if (domain) {
->>>> +                info = msi_get_domain_info(domain);
->>>> +                if (info->flags & MSI_FLAG_IRQ_REMAPPING)
->>>> +                        pdev->bus->bus_flags |=
->>>> PCI_BUS_FLAGS_MSI_REMAP;
->>>> +        }
->>>> +#endif
->>>> +}
->>>> +
->>>>    #ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
->>>>    /**
->>>>     * pci_msi_domain_write_msg - Helper to write MSI message to PCI
->>>> config
->>>> space
->>>> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->>>> index 6d7ab9b..24e9606 100644
->>>> --- a/drivers/pci/probe.c
->>>> +++ b/drivers/pci/probe.c
->>>> @@ -2115,6 +2115,7 @@ struct pci_bus *pci_create_root_bus(struct device
->>>> *parent, int bus,
->>>>           device_enable_async_suspend(b->bridge);
->>>>           pci_set_bus_of_node(b);
->>>>           pci_set_bus_msi_domain(b);
->>>> +       pci_check_msi_remapping(b);
->>>>
->>>>           if (!parent)
->>>>                   set_dev_node(b->bridge, pcibus_to_node(b));
->>>> diff --git a/include/linux/msi.h b/include/linux/msi.h
->>>> index a2a0068..fe8ce7b 100644
->>>> --- a/include/linux/msi.h
->>>> +++ b/include/linux/msi.h
->>>> @@ -15,6 +15,7 @@ extern int pci_msi_ignore_mask;
->>>>    struct irq_data;
->>>>    struct msi_desc;
->>>>    struct pci_dev;
->>>> +struct pci_bus;
->>>>    struct platform_msi_priv_data;
->>>>    void __get_cached_msi_msg(struct msi_desc *entry, struct msi_msg
->>>> *msg);
->>>>    void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg);
->>>> @@ -155,6 +156,8 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
->>>>    void default_teardown_msi_irqs(struct pci_dev *dev);
->>>>    void default_restore_msi_irqs(struct pci_dev *dev);
->>>>
->>>> +void pci_check_msi_remapping(struct pci_bus *bus);
->>>> +
->>>>    struct msi_controller {
->>>>           struct module *owner;
->>>>           struct device *dev;
->>>>
->>>> Next we just need to find a proper way to make
->>>> bus_flags compatible with IOMMU_CAP_INTR_REMAP, right?
->>>>
->>>> I think a good place to do that is add_iommu_group().
->>>> But I'm not sure whether iommu drivers must be
->>>> initialized after PCI enumeration.  Do you have any comment?
->>>>
->>>> [1] http://www.spinics.net/lists/kvm/msg130256.html
->>>>
->>>>>> +        pdev->bus->bus_flags | PCI_BUS_FLAGS_MSI_REMAP)
->>>>> Perhaps some sort of wrapper for testing these flags would help avoid
->>>>> this kind of coding error (| vs &)
->>>> Thank you.  I'll try not to make the same mistake again.
->>>>
->>>> Regards,
->>>> Yongji
->>>>
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe kvm" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
+diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
+index 63fcb8c..e928549 100644
+--- a/drivers/mtd/nand/pasemi_nand.c
++++ b/drivers/mtd/nand/pasemi_nand.c
+@@ -112,8 +112,7 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
+ 	/* Allocate memory for MTD device structure and private data */
+ 	chip = kzalloc(sizeof(struct nand_chip), GFP_KERNEL);
+ 	if (!chip) {
+-		printk(KERN_WARNING
+-		       "Unable to allocate PASEMI NAND MTD device structure\n");
++		pr_warn("Unable to allocate PASEMI NAND MTD device structure\n");
+ 		err = -ENOMEM;
+ 		goto out;
+ 	}
+@@ -163,13 +162,13 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
+ 	}
+ 
+ 	if (mtd_device_register(pasemi_nand_mtd, NULL, 0)) {
+-		printk(KERN_ERR "pasemi_nand: Unable to register MTD device\n");
++		pr_err("pasemi_nand: Unable to register MTD device\n");
+ 		err = -ENODEV;
+ 		goto out_lpc;
+ 	}
+ 
+-	printk(KERN_INFO "PA Semi NAND flash at %08llx, control at I/O %x\n",
+-	       res.start, lpcctl);
++	pr_info("PA Semi NAND flash at %08zx, control at I/O %x\n", res.start,
++		lpcctl);
+ 
+ 	return 0;
+ 
+-- 
+1.8.4.5
