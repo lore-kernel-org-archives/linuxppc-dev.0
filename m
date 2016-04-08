@@ -1,29 +1,34 @@
-Return-Path: <boris.brezillon@free-electrons.com>
-Received: from mail.free-electrons.com (down.free-electrons.com
- [37.187.137.238])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qh12h6WTDzDq7p
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 10:45:16 +1000 (AEST)
-Date: Fri, 8 Apr 2016 02:45:07 +0200
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-To: Yang-Leo Li <leoyang.li@nxp.com>
-Cc: Brian Norris <computersforpeace@gmail.com>, Li Yang
- <leoli@freescale.com>, Scott Wood <oss@buserror.net>, Raghav Dogra
- <raghav.dogra@nxp.com>, "linux-mtd@lists.infradead.org"
- <linux-mtd@lists.infradead.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Prabhakar Kushwaha
- <prabhakar.kushwaha@nxp.com>, Raghav Dogra <raghav@freescale.com>,
- "Jaiprakash Singh" <b44839@freescale.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-Message-ID: <20160408024507.69fb4fc1@bbrezillon>
-In-Reply-To: <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
-References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
- <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
- <1455840434.2463.97.camel@buserror.net>
- <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
- <20160406175254.GC5243@localhost>
- <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qh6cS3r9NzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 14:56:24 +1000 (AEST)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 8 Apr 2016 14:56:23 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A29452CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 14:55:49 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u384tWhx48300246
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 14:55:49 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u384t8PP006050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Apr 2016 14:55:08 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm@vger.kernel.org
+Subject: [PATCH kernel] vfio_iommu_spapr_tce: Remove unneeded
+ iommu_group_get_iommudata
+Date: Fri,  8 Apr 2016 14:54:41 +1000
+Message-Id: <1460091281-14664-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,46 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Apr 2016 18:53:39 +0000
-Yang-Leo Li <leoyang.li@nxp.com> wrote:
+This removes iommu_group_get_iommudata() as the result is never used.
+As this is a minor cleanup, no change in behavior is expected.
 
-> 
-> 
-> > -----Original Message-----
-> > From: Brian Norris [mailto:computersforpeace@gmail.com]
-> > Sent: Wednesday, April 06, 2016 12:53 PM
-> > To: Li Yang <leoli@freescale.com>
-> > Cc: Scott Wood <oss@buserror.net>; Raghav Dogra <raghav.dogra@nxp.com>;
-> > linux-mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
-> > Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>; Raghav Dogra
-> > <raghav@freescale.com>; Jaiprakash Singh <b44839@freescale.com>; Boris
-> > Brezillon <boris.brezillon@free-electrons.com>
-> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-> > 
-> > Hi,
-> > 
-> > On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:
-> > > Hi Brian,
-> > >
-> > > Could you help to review and pull in this patch and the Kconfig update
-> > > after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
-> > 
-> > It's probably best for Boris to apply this now.
-> 
-> Thanks Brian.  I see Boris is taking over the maintenance of NAND recently, we will follow up with him.
-> 
-> Hi Boris,
-> 
-> Can you consider to pull in this patch and then Kconfig patch (https://patchwork.ozlabs.org/patch/557389/)?
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Applied.
-
-Thanks,
-
-Boris
-
-
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 0582b72..6419566 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -331,14 +331,12 @@ static void tce_iommu_free_table(struct iommu_table *tbl);
+ static void tce_iommu_release(void *iommu_data)
+ {
+ 	struct tce_container *container = iommu_data;
+-	struct iommu_table_group *table_group;
+ 	struct tce_iommu_group *tcegrp;
+ 	long i;
+ 
+ 	while (tce_groups_attached(container)) {
+ 		tcegrp = list_first_entry(&container->group_list,
+ 				struct tce_iommu_group, next);
+-		table_group = iommu_group_get_iommudata(tcegrp->grp);
+ 		tce_iommu_detach_group(iommu_data, tcegrp->grp);
+ 	}
+ 
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.5.0.rc3
