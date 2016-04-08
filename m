@@ -1,26 +1,27 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
+Return-Path: <zajec5@gmail.com>
+Received: from mail-lb0-x229.google.com (mail-lb0-x229.google.com
+ [IPv6:2a00:1450:4010:c04::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhDJq4rtjzDqZ0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 19:13:15 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id zy2so8696874pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Apr 2016 02:13:15 -0700 (PDT)
-Subject: Re: [PATCH kernel 9/9] KVM: PPC: VFIO device: support SPAPR TCE
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1457322077-26640-1-git-send-email-aik@ozlabs.ru>
- <1457322077-26640-10-git-send-email-aik@ozlabs.ru>
- <20160309054544.GM22546@voom.fritz.box>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <57077622.4000002@ozlabs.ru>
-Date: Fri, 8 Apr 2016 19:13:06 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qhFtr4dLtzDq6h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 20:24:20 +1000 (AEST)
+Received: by mail-lb0-x229.google.com with SMTP id vo2so66614728lbb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Apr 2016 03:24:20 -0700 (PDT)
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
+ Olof Johansson <olof@lixom.net>, David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC PA SEMI PWRFICIENT),
+ linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 6/8] mtd: nand: pasemi: set ECC algorithm explicitly
+Date: Fri,  8 Apr 2016 12:23:49 +0200
+Message-Id: <1460111031-8706-7-git-send-email-zajec5@gmail.com>
+In-Reply-To: <1460111031-8706-1-git-send-email-zajec5@gmail.com>
+References: <1460111031-8706-1-git-send-email-zajec5@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20160309054544.GM22546@voom.fritz.box>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,58 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/09/2016 04:45 PM, David Gibson wrote:
+This is part of process deprecating NAND_ECC_SOFT_BCH (and switching to
+enum nand_ecc_algo).
 
->> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
->> index 7f7b6d8..71f577c 100644
->> --- a/arch/powerpc/kvm/Makefile
->> +++ b/arch/powerpc/kvm/Makefile
->> @@ -8,7 +8,7 @@ ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
->>   KVM := ../../../virt/kvm
->>
->>   common-objs-y = $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
->> -		$(KVM)/eventfd.o $(KVM)/vfio.o
->> +		$(KVM)/eventfd.o
->
-> Please don't disable the VFIO device for the non-book3s case.  I added
-> it (even though it didn't do anything until now) so that libvirt
-> wouldn't choke when it finds it's not available.  Obviously the new
-> ioctl needs to be only for the right IOMMU setup, but the device
-> itself should be available always.
+Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
+---
+ drivers/mtd/nand/pasemi_nand.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-
-After having a closer look, the statement above does not enable VFIO KVM 
-device on book3s but does for everything else:
-
-
-common-objs-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
-[...]
-kvm-e500-objs := \
-         $(common-objs-y) \
-[...]
-kvm-objs-$(CONFIG_KVM_E500V2) := $(kvm-e500-objs)
-[...]
-kvm-e500mc-objs := \
-         $(common-objs-y) \
-[...]
-kvm-objs-$(CONFIG_KVM_E500MC) := $(kvm-e500mc-objs)
-[...]
-kvm-book3s_32-objs := \
-         $(common-objs-y) \
-[...]
-kvm-objs-$(CONFIG_KVM_BOOK3S_32) := $(kvm-book3s_32-objs)
-
-
-This is becaise CONFIG_KVM_BOOK3S_64 does not use "common-objs-y":
-
-kvm-objs-$(CONFIG_KVM_BOOK3S_64) := $(kvm-book3s_64-module-objs)
-
-
-So I will keep vfio.o in the "common-objs-y" list and add:
-
-+kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
-+	$(KVM)/vfio.o
-
-
+diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
+index 3ab53ca..63fcb8c 100644
+--- a/drivers/mtd/nand/pasemi_nand.c
++++ b/drivers/mtd/nand/pasemi_nand.c
+@@ -151,6 +151,7 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
+ 	chip->write_buf = pasemi_write_buf;
+ 	chip->chip_delay = 0;
+ 	chip->ecc.mode = NAND_ECC_SOFT;
++	chip->ecc.algo = NAND_ECC_HAMMING;
+ 
+ 	/* Enable the following for a flash based bad block table */
+ 	chip->bbt_options = NAND_BBT_USE_FLASH;
 -- 
-Alexey
+1.8.4.5
