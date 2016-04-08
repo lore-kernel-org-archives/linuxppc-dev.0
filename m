@@ -1,29 +1,16 @@
-Return-Path: <zajec5@gmail.com>
-Received: from mail-lf0-x229.google.com (mail-lf0-x229.google.com
- [IPv6:2a00:1450:4010:c07::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhH0H3yc7zDq6T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Apr 2016 21:14:06 +1000 (AEST)
-Received: by mail-lf0-x229.google.com with SMTP id g184so76848472lfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Apr 2016 04:14:06 -0700 (PDT)
-From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
-To: Boris Brezillon <boris.brezillon@free-electrons.com>
-Cc: Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org,
- Egor Martovetsky <egor@pasemi.com>, Olof Johansson <olof@lixom.net>,
- Joe Perches <joe@perches.com>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC PA SEMI PWRFICIENT),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH V2] mtd: nand: pasemi: switch to pr_* functions
-Date: Fri,  8 Apr 2016 13:13:23 +0200
-Message-Id: <1460114003-19926-1-git-send-email-zajec5@gmail.com>
-In-Reply-To: <1460111589-18781-1-git-send-email-zajec5@gmail.com>
-References: <1460111589-18781-1-git-send-email-zajec5@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qhPCX39r6zDq6T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 01:54:15 +1000 (AEST)
+From: Thomas Huth <thuth@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc: Fix definition of SIAR register
+Date: Fri,  8 Apr 2016 17:54:11 +0200
+Message-Id: <1460130851-29021-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,53 +20,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-1) Use pr_fmt to keep messages consistent
-2) Don't warn if kzalloc fails as it dumps stack on its own
-3) Use %pR format for displaying whole resource to avoid:
-warning: format ‘%08llx’ expects type ‘long long unsigned int’, but argument 2 has type ‘resource_size_t’
+The SIAR register is available twice, one time as SPR 780 (unprivileged,
+but read-only), and one time as SPR 796 (privileged, but read and write).
+The Linux kernel code currently uses SPR 780 - and while this is OK for
+reading, writing to that register of course does not work.
+Since the KVM code tries to write to this register, too (see the mtspr
+in book3s_hv_rmhandlers.S), the contents of this register sometimes get
+lost for the guests, e.g. during migration of a VM.
+To fix this issue, simply switch to the other SPR numer 796 instead.
 
-Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
+Signed-off-by: Thomas Huth <thuth@redhat.com>
 ---
- drivers/mtd/nand/pasemi_nand.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ Note: The perf code in core-book3s.c also seems to write to the SIAR
+       SPR, so that might be affected by this issue, too - but I did
+       not test the perf code, so I'm not sure about that part.
 
-diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
-index 63fcb8c..e8372b4 100644
---- a/drivers/mtd/nand/pasemi_nand.c
-+++ b/drivers/mtd/nand/pasemi_nand.c
-@@ -22,6 +22,8 @@
- 
- #undef DEBUG
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/mtd/mtd.h>
-@@ -112,8 +114,6 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
- 	/* Allocate memory for MTD device structure and private data */
- 	chip = kzalloc(sizeof(struct nand_chip), GFP_KERNEL);
- 	if (!chip) {
--		printk(KERN_WARNING
--		       "Unable to allocate PASEMI NAND MTD device structure\n");
- 		err = -ENOMEM;
- 		goto out;
- 	}
-@@ -163,13 +163,12 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
- 	}
- 
- 	if (mtd_device_register(pasemi_nand_mtd, NULL, 0)) {
--		printk(KERN_ERR "pasemi_nand: Unable to register MTD device\n");
-+		pr_err("Unable to register MTD device\n");
- 		err = -ENODEV;
- 		goto out_lpc;
- 	}
- 
--	printk(KERN_INFO "PA Semi NAND flash at %08llx, control at I/O %x\n",
--	       res.start, lpcctl);
-+	pr_info("PA Semi NAND flash at %pR, control at I/O %x\n", &res, lpcctl);
- 
- 	return 0;
- 
+ arch/powerpc/include/asm/reg.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index f5f4c66..6630420 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -752,13 +752,13 @@
+ #define SPRN_PMC6	792
+ #define SPRN_PMC7	793
+ #define SPRN_PMC8	794
+-#define SPRN_SIAR	780
+ #define SPRN_SDAR	781
+ #define SPRN_SIER	784
+ #define   SIER_SIPR		0x2000000	/* Sampled MSR_PR */
+ #define   SIER_SIHV		0x1000000	/* Sampled MSR_HV */
+ #define   SIER_SIAR_VALID	0x0400000	/* SIAR contents valid */
+ #define   SIER_SDAR_VALID	0x0200000	/* SDAR contents valid */
++#define SPRN_SIAR	796
+ #define SPRN_TACR	888
+ #define SPRN_TCSCR	889
+ #define SPRN_CSIGR	890
 -- 
-1.8.4.5
+1.8.3.1
