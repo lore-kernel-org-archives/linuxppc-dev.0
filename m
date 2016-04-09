@@ -1,31 +1,38 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-oi0-x22a.google.com (mail-oi0-x22a.google.com
- [IPv6:2607:f8b0:4003:c06::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bharata@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhs5W6blJzDq6R
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 19:50:38 +1000 (AEST)
-Received: by mail-oi0-x22a.google.com with SMTP id y204so161253995oie.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 Apr 2016 02:50:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qhsfC5RFczDqgP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 20:15:31 +1000 (AEST)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
+ Sat, 9 Apr 2016 20:15:29 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CADF42BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 20:15:25 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u39AFHov36175924
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 20:15:25 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u39AEqRu000824
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 20:14:52 +1000
+Date: Sat, 9 Apr 2016 15:44:31 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, nfonteno@us.ibm.com, aik@au1.ibm.com,
+ mdroth@linux.vnet.ibm.com, david@gibson.dropbear.id.au
+Subject: Re: [RFC FIX PATCH v0] powerpc,numa: Fix memory_hotplug_max()
+Message-ID: <20160409101431.GA21158@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <1459935883-29445-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <57074150.6070105@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1460114003-19926-1-git-send-email-zajec5@gmail.com>
-References: <1460111589-18781-1-git-send-email-zajec5@gmail.com>
- <1460114003-19926-1-git-send-email-zajec5@gmail.com>
-Date: Sat, 9 Apr 2016 12:50:35 +0300
-Message-ID: <CAHp75VcAbjTLPs128b1ojmWkosXBmYL5BUTbzw6aSYWN-ZRDBA@mail.gmail.com>
-Subject: Re: [PATCH V2] mtd: nand: pasemi: switch to pr_* functions
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>,
- Richard Weinberger <richard@nod.at>,
- "open list:MEMORY TECHNOLOGY..." <linux-mtd@lists.infradead.org>,
- Egor Martovetsky <egor@pasemi.com>,
- Olof Johansson <olof@lixom.net>, Joe Perches <joe@perches.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <57074150.6070105@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,77 +42,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 8, 2016 at 2:13 PM, Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com> =
-wrote:
-> 1) Use pr_fmt to keep messages consistent
-> 2) Don't warn if kzalloc fails as it dumps stack on its own
-> 3) Use %pR format for displaying whole resource to avoid:
-> warning: format =E2=80=98%08llx=E2=80=99 expects type =E2=80=98long long =
-unsigned int=E2=80=99, but argument 2 has type =E2=80=98resource_size_t=E2=
-=80=99
->
-> Signed-off-by: Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>
-> ---
->  drivers/mtd/nand/pasemi_nand.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nan=
-d.c
-> index 63fcb8c..e8372b4 100644
-> --- a/drivers/mtd/nand/pasemi_nand.c
-> +++ b/drivers/mtd/nand/pasemi_nand.c
-> @@ -22,6 +22,8 @@
->
->  #undef DEBUG
->
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
->  #include <linux/slab.h>
->  #include <linux/module.h>
->  #include <linux/mtd/mtd.h>
-> @@ -112,8 +114,6 @@ static int pasemi_nand_probe(struct platform_device *=
-ofdev)
->         /* Allocate memory for MTD device structure and private data */
->         chip =3D kzalloc(sizeof(struct nand_chip), GFP_KERNEL);
->         if (!chip) {
-> -               printk(KERN_WARNING
-> -                      "Unable to allocate PASEMI NAND MTD device structu=
-re\n");
->                 err =3D -ENOMEM;
->                 goto out;
->         }
-> @@ -163,13 +163,12 @@ static int pasemi_nand_probe(struct platform_device=
- *ofdev)
->         }
->
->         if (mtd_device_register(pasemi_nand_mtd, NULL, 0)) {
-> -               printk(KERN_ERR "pasemi_nand: Unable to register MTD devi=
-ce\n");
-> +               pr_err("Unable to register MTD device\n");
+On Fri, Apr 08, 2016 at 12:27:44AM -0500, Nathan Fontenot wrote:
+> On 04/06/2016 04:44 AM, Bharata B Rao wrote:
+> > memory_hotplug_max() uses hot_add_drconf_memory_max() to get maxmimum
+> > addressable memory by referring to ibm,dyanamic-memory property. There
+> > are three problems with the current approach:
+> > 
+> > 1 hot_add_drconf_memory_max() assumes that ibm,dynamic-memory includes
+> >   all the LMBs of the guest, but that is not true for PowerKVM which
+> >   populates only DR LMBs (LMBs that can be hotplugged/removed) in that
+> >   property.
+> > 2 hot_add_drconf_memory_max() multiplies lmb-size with lmb-count to arrive
+> >   at the max possible address. Since ibm,dynamic-memory doesn't include
+> >   RMA LMBs, the address thus obtained will be less than the actual max
+> >   address. For example, if max possible memory size is 32G, with lmb-size
+> >   of 256MB there can be 127 LMBs in ibm,dynamic-memory (1 LMB for RMA
+> >   which won't be present here).  hot_add_drconf_memory_max() would then
+> >   return the max addressable memory as 127 * 256MB = 31.75GB, the max
+> >   address should have been 32G which is what ibm,lrdr-capacity shows.
+> > 3 In PowerKVM, there can be a gap between the end of boot time RAM and
+> >   beginning of hotplug RAM area. So just multiplying lmb-count with
+> >   lmb-size will not provide the correct max possible address for PowerKVM.
+> > 
+> > This patch fixes 1 by using ibm,lrdr-capacity property to return the max
+> > addressable memory whenever the property is present. Then it fixes 2 & 3
+> > by fetching the address of the last LMB in ibm,dynamic-memory property.
+> > 
+> > NOTE: There are some unnecessary changes in the patch because of converting
+> > spaces to tabs w/o which checkpatch.pl complains.
+> > 
+> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/mm/numa.c | 29 ++++++++++++++++++++++-------
+> >  1 file changed, 22 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> > index 669a15e..57d5877 100644
+> > --- a/arch/powerpc/mm/numa.c
+> > +++ b/arch/powerpc/mm/numa.c
+> > @@ -1164,17 +1164,32 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+> >  static u64 hot_add_drconf_memory_max(void)
+> >  {
+> >          struct device_node *memory = NULL;
+> > -        unsigned int drconf_cell_cnt = 0;
+> > -        u64 lmb_size = 0;
+> > +	struct device_node *dn = NULL;
+> > +	unsigned int drconf_cell_cnt = 0;
+> > +	u64 lmb_size = 0;
+> >  	const __be32 *dm = NULL;
+> > +	const __be64 *lrdr = NULL;
+> > +	struct of_drconf_cell drmem;
+> > +
+> > +	dn = of_find_node_by_path("/rtas");
+> > +	if (dn) {
+> > +		lrdr = of_get_property(dn, "ibm,lrdr-capacity", NULL);
+> > +		of_node_put(dn);
+> > +		if (lrdr)
+> > +			return be64_to_cpup(lrdr);
+> > +	}
+> >  
+> >          memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+> >          if (memory) {
+> > -                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
+> > -                lmb_size = of_get_lmb_size(memory);
+> > -                of_node_put(memory);
+> > -        }
+> > -        return lmb_size * drconf_cell_cnt;
+> > +		drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
+> > +		lmb_size = of_get_lmb_size(memory);
+> > +
+> > +		/* Advance to the last cell, each cell has 6 32 bit integers */
+> > +		dm += (drconf_cell_cnt - 1) * 6;
+> 
+> You could do this as follows to avoid hard-coding 6
 
-And why not to use dev_err(&ofdev->dev, =E2=80=A6); ?
+Can't do that since dm is of type __be32 pointer.
 
->                 err =3D -ENODEV;
->                 goto out_lpc;
->         }
->
-> -       printk(KERN_INFO "PA Semi NAND flash at %08llx, control at I/O %x=
-\n",
-> -              res.start, lpcctl);
-> +       pr_info("PA Semi NAND flash at %pR, control at I/O %x\n", &res, l=
-pcctl);
->
+> 		dm += (drconf_cell_cnt - 1) * sizeof(struct of_drconf_cell)
+> 
+> > +		read_drconf_cell(&drmem, &dm);
+> > +		of_node_put(memory);
+> > +	}
+> > +	return drmem.base_addr + lmb_size;
+> 
+> I assume it is a safe assumption that there will only be 1 RMA LMB?
 
-Ditto.
+No, I am not assuming RMA to have 1 LMB here. I fetch the last LMB and
+get the max possible address from it by adding the base address of the
+last LMB with the lmb_size.
 
->         return 0;
->
-> --
-> 1.8.4.5
->
+> 
+> I do see that the PAPR defines a bit in the flags field for each LMB
+> in ibm,dynamic-memory as 'reserved'. Is this something you could use
+> to flag RMA LMBs and put them in the ibm,dynamic-memory property?
+> 
+> I'm just curious why these LMBs are not in this property.
 
+Not sure about both the above observations.
 
+Section B.6.6 of LoPAPR mentions "... called the RMA, that is represented
+by the first value of the reg property of this first /memory node. Additional
+storage regions may each be represented by their own /memory node that
+includes dynamic reconfiguration (DR) properties or by an entry in
+/ibm,dynamic-reconfiguration-memory nodes"
 
---=20
-With Best Regards,
-Andy Shevchenko
+Section B.6.6.2 says "All memory which is not subject to dynamic
+reconfiguration (such as the RMA) is represented in /memory node(s).
+
+Currently PowerKVM puts RMA region and boot time memory (which is
+currently non DR in case of PowerKVM) in to their own /memory nodes and
+puts only DR LMBs (hot pluggable) RAM into
+ibm,dynamic-reconfiguration-memory node.
+
+Regards,
+Bharata.
