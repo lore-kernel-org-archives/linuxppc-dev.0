@@ -1,42 +1,20 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-wm0-x22a.google.com (mail-wm0-x22a.google.com
+ [IPv6:2a00:1450:400c:c09::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhyH90lVwzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 23:44:21 +1000 (AEST)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Sat, 9 Apr 2016 23:44:19 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 441C02CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 23:44:15 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u39Di6RM6357400
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 23:44:15 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u39DhgaL009638
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 23:43:42 +1000
-Date: Sat, 9 Apr 2016 19:12:39 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Mark Wielaard <mjw@redhat.com>
-Subject: Re: [PATCH 0/2] perf probe fixes for ppc64le
-Message-ID: <20160409134239.GL15993@naverao1-tp.in.ibm.com>
-References: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
- <57061802.7020508@gmail.com>
- <20160407092636.GK15993@naverao1-tp.in.ibm.com>
- <1460098663.6475.6.camel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qj2QT5dfDzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 02:50:53 +1000 (AEST)
+Received: by mail-wm0-x22a.google.com with SMTP id 191so45040082wmq.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 Apr 2016 09:50:53 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: mtk.manpages@gmail.com
+Cc: linux-man@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: clock_gettime.2: _COARSE clocks are not always faster...
+Date: Sat, 09 Apr 2016 18:50:47 +0200
+Message-ID: <87k2k67ml4.fsf@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1460098663.6475.6.camel@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,111 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/04/08 04:57PM, Balbir Singh wrote:
-> On Thu, 2016-04-07 at 14:56 +0530, Naveen N. Rao wrote:
-> > On 2016/04/07 06:19PM, Balbir Singh wrote:
-> > > 
-> > > 
-> > > On 06/04/16 22:32, Naveen N. Rao wrote:
-> > > > 
-> > > > This patchset fixes three issues found with perf probe on ppc64le:
-> > > > 1. 'perf test kallsyms' failure on ppc64le (reported by Michael
-> > > > Ellerman). This was due to the symbols being fixed up during symbol
-> > > > table load. This is fixed in patch 2 by delaying symbol fixup until
-> > > > later.
-> > > > 2. perf probe function offset was being calculated from the local entry
-> > > > point (LEP), which does not match user expectation when trying to look
-> > > > at function disassembly output (reported by Ananth N). This is fixed for
-> > > > kallsyms in patch 1 and for symbol table in patch 2.
-> > > I think the bit where the offset is w.r.t LEP when using a name, but w.r.t
-> > > GEP when using function+offset can be confusing.
-> > Thanks for your review!
-> > 
-> > The rationale for this is actually from the end-user perspective. The 
-> > two use cases we are considering are:
-> > 1. User just wants to probe at function entry point:
-> > 	# perf probe _do_fork
-> > 
-> > In this case, the user most definitely needs the local entry point, 
-> > without which the probe won't be hit. So, for this case, we 
-> > automatically insert the probe at the LEP.
-> > 
-> > [We really only want to alter perf probe behavior in this case only, but 
-> > we were incorrectly changing the behavior of perf with the below 
-> > scenario as well.]
-> > 
-> > 2. User wants to probe at a specific location. In this case, the user 
-> > most likely starts by looking at the function disassembly. For instance:
-> > 	# objdump -S -d vmlinux.bak | grep -A100 \<_do_fork\>:
-> > 	c0000000000b6a00 <_do_fork>:
-> > 		      unsigned long stack_start,
-> > 		      unsigned long stack_size,
-> > 		      int __user *parent_tidptr,
-> > 		      int __user *child_tidptr,
-> > 		      unsigned long tls)
-> > 	{
-> > 	c0000000000b6a00:	f7 00 4c 3c 	addis   r2,r12,247
-> > 	c0000000000b6a04:	00 86 42 38 	addi    r2,r2,-31232
-> > 	c0000000000b6a08:	a6 02 08 7c 	mflr    r0
-> > 	c0000000000b6a0c:	d0 ff 41 fb 	std     r26,-48(r1)
-> > 	c0000000000b6a10:	26 80 90 7d 	mfocrf  r12,8
-> > 	...<snip>...
-> > 		if (!(clone_flags & CLONE_UNTRACED)) {
-> > 	c0000000000b6a54:	e3 4f c7 7b 	rldicl. r7,r30,41,63
-> > 	c0000000000b6a58:	2c 00 82 40 	bne     c0000000000b6a84 <_do_fork+0x84>
-> > 			if (clone_flags & CLONE_VFORK)
-> > 	c0000000000b6a5c:	e3 97 c8 7b 	rldicl. r8,r30,50,63
-> > 	c0000000000b6a60:	a0 01 82 41 	beq     c0000000000b6c00 <_do_fork+0x200>
-> > 	c0000000000b6a64:	20 00 20 39 	li      r9,32
-> > 				trace = PTRACE_EVENT_VFORK;
-> > 	c0000000000b6a68:	02 00 80 3b 	li      r28,2
-> > 	c0000000000b6a6c:	10 02 4d e9 	ld      r10,528(r13)
-> > 
-> > If the user wants to probe at _do_fork+0x54, he'd do:
-> > 	# perf probe _do_fork+0x54
-> > 
-> > With the earlier approach, we would insert the probe at _do_fork+0x5c 
-> > (0x54 from the LEP) instead, which is incorrect.
-> > 
-> > In reality, user would probably just use debuginfo:
-> > 	# perf probe -L _do_fork
-> > 	<_do_fork@/root/linus/kernel/fork.c:0>
-> > 	      0  long _do_fork(unsigned long clone_flags,
-> > 			      unsigned long stack_start,
-> > 			      unsigned long stack_size,
-> > 			      int __user *parent_tidptr,
-> > 			      int __user *child_tidptr,
-> > 			      unsigned long tls)
-> > 	      6  {
-> > 			struct task_struct *p;
-> > 	      8         int trace = 0;
-> > 			long nr;
-> > 		 
-> > 			/*
-> > 			 * Determine whether and which event to report to ptracer.  When
-> > 			 * called from kernel_thread or CLONE_UNTRACED is explicitly
-> > 			 * requested, no event is reported; otherwise, report if the event
-> > 			 * for the type of forking is enabled.
-> > 			 */
-> > 	     17         if (!(clone_flags & CLONE_UNTRACED)) {
-> > 	     18                 if (clone_flags & CLONE_VFORK)
-> > 	     19                         trace = PTRACE_EVENT_VFORK;
-> > 	     20                 else if ((clone_flags & CSIGNAL) != SIGCHLD)
-> > 	     21                         trace = PTRACE_EVENT_CLONE;
-> > 
-> > 	# perf probe _do_fork:17
-> > 
-> > In this case, perf chooses the right address based on DWARF. The current 
-> > patchset matches the behavior of perf without debuginfo with this.
-> 
-> 
-> I agree what I worry is that perf probe _do_fork sets a breakpoint after
-> perf probe _do_fork+0x4. I am not sure if there is an easy solution to
-> the problem. 
+Hi Michael
 
-I suppose this boils down to the quirkiness of ABIv2. Though, in 
-reality, I don't think most users will notice. As I stated above, users 
-will most likely start with the disassembly or debuginfo and this patch 
-ensures there are actually no surprises there.
+The other day, I was curious how the vdso was implemented on ppc, and I
+noted that neither ppc32 or ppc64 handle the _COARSE versions of
+CLOCK_{REALTIME,MONOTONIC} in the vdso, so they fall back to an actual
+syscall. And sure enough, measuring CLOCK_MONOTONIC
+vs. CLOCK_MONOTONIC_COARSE shows that the latter has three times as much
+overhead as the former.
 
-- Naveen
+Whether it's worth adding a note to the man page is up to you.
+
+Best,
+Rasmus
