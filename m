@@ -1,35 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qhmLb2VZ4zDqGs
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 16:16:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qhmLc3DTnzDqPq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 16:16:40 +1000 (AEST)
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 9 Apr 2016 00:16:37 -0600
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B754019D8047
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 00:04:26 -0600 (MDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u396GYYY35520700
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 06:16:34 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u396GXME017214
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 02:16:33 -0400
+ Sat, 9 Apr 2016 02:16:38 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A911AC9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Apr 2016 02:16:31 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u396GaEj33685726
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 06:16:36 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u396AiUp017020
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Apr 2016 02:10:45 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: [PATCH V2 49/68] powerpc/mm: Revert changes made to nohash
- pgalloc-64.h
-Date: Sat,  9 Apr 2016 11:43:45 +0530
-Message-Id: <1460182444-2468-50-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 50/68] powerpc/mm: Simplify the code dropping 4 level table
+ #ifdef
+Date: Sat,  9 Apr 2016 11:43:46 +0530
+Message-Id: <1460182444-2468-51-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,56 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This revert pgalloc related changes w.r.t implementing 4 level page
-table for 64k linux page size and storing of physical address in
-higher level page table since they are only applicable to book3s 64
-variant and we now have a separate copy for book3s 64. This helps to
-keep these headers simpler
+Simplify the code by dropping 4 level page table #ifdef. We are always
+4 level now
 
-Cc: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/nohash/64/pgalloc.h | 42 +++++++---------------------
- arch/powerpc/include/asm/nohash/64/pgtable.h |  3 --
- 2 files changed, 10 insertions(+), 35 deletions(-)
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 57 +++++++++-------------------
+ 1 file changed, 18 insertions(+), 39 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-index 8d5fc3ac43da..69ef28a81733 100644
---- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-@@ -53,7 +53,7 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- 
- #ifndef CONFIG_PPC_64K_PAGES
- 
--#define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, __pgtable_ptr_val(PUD))
-+#define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, (unsigned long)PUD)
- 
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
-@@ -68,19 +68,19 @@ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
- 
- static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
- {
--	pud_set(pud, __pgtable_ptr_val(pmd));
-+	pud_set(pud, (unsigned long)pmd);
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index 54017260c8bf..2a246245eca0 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -51,7 +51,6 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ 	kmem_cache_free(PGT_CACHE(PGD_INDEX_SIZE), pgd);
  }
  
- static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- 				       pte_t *pte)
+-#ifndef CONFIG_PPC_64K_PAGES
+ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
  {
--	pmd_set(pmd, __pgtable_ptr_val(pte));
-+	pmd_set(pmd, (unsigned long)pte);
+ 	pgd_set(pgd, __pgtable_ptr_val(pud));
+@@ -78,7 +77,13 @@ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ {
+ 	pmd_set(pmd, __pgtable_ptr_val(pte));
  }
- 
+-
++/*
++ * FIXME!!
++ * Between 4K and 64K pages, we differ in what is stored in pmd. ie.
++ * typedef pte_t *pgtable_t; -> 64K
++ * typedef struct page *pgtable_t; -> 4k
++ */
++#ifdef CONFIG_PPC_4K_PAGES
  static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
  				pgtable_t pte_page)
  {
--	pmd_set(pmd, __pgtable_ptr_val(page_address(pte_page)));
-+	pmd_set(pmd, (unsigned long)page_address(pte_page));
- }
- 
- #define pmd_pgtable(pmd) pmd_page(pmd)
-@@ -171,45 +171,23 @@ extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+@@ -176,36 +181,6 @@ extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
  extern void __tlb_remove_table(void *_table);
  #endif
  
@@ -117,56 +102,48 @@ index 8d5fc3ac43da..69ef28a81733 100644
 -{
 -	pud_set(pud, __pgtable_ptr_val(pmd));
 -}
-+#define pud_populate(mm, pud, pmd)	pud_set(pud, (unsigned long)pmd)
- 
- static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- 				       pte_t *pte)
- {
+-
+-static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+-				       pte_t *pte)
+-{
 -	pmd_set(pmd, __pgtable_ptr_val(pte));
-+	pmd_set(pmd, (unsigned long)pte);
- }
- 
+-}
+-
  static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
  				pgtable_t pte_page)
  {
--	pmd_set(pmd, __pgtable_ptr_val(pte_page));
-+	pmd_set(pmd, (unsigned long)pte_page);
+@@ -245,7 +220,7 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 	tlb_flush_pgtable(tlb, address);
+ 	pgtable_free_tlb(tlb, table, 0);
  }
+-#endif /* CONFIG_PPC_64K_PAGES */
++#endif /* CONFIG_PPC_4K_PAGES */
  
- static inline pgtable_t pmd_pgtable(pmd_t pmd)
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
  {
--	return (pgtable_t)pmd_page_vaddr(pmd);
-+	return (pgtable_t)(pmd_val(pmd) & ~PMD_MASKED_BITS);
+@@ -258,13 +233,17 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ 	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
  }
  
- static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-@@ -255,11 +233,11 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
- 
- #define __pmd_free_tlb(tlb, pmd, addr)		      \
- 	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
+-#define __pmd_free_tlb(tlb, pmd, addr)		      \
+-	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
 -#ifndef __PAGETABLE_PUD_FOLDED
-+#ifndef CONFIG_PPC_64K_PAGES
- #define __pud_free_tlb(tlb, pud, addr)		      \
- 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
+-#define __pud_free_tlb(tlb, pud, addr)		      \
+-	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
++static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
++                                  unsigned long address)
++{
++        return pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX);
++}
  
 -#endif /* __PAGETABLE_PUD_FOLDED */
-+#endif /* CONFIG_PPC_64K_PAGES */
++static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
++                                  unsigned long address)
++{
++        pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE);
++}
  
  #define check_pgt_cache()	do { } while (0)
- 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index f143d6fb3576..d4d808cf905e 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -108,9 +108,6 @@
- #ifndef __ASSEMBLY__
- /* pte_clear moved to later in this file */
- 
--/* Pointers in the page table tree are virtual addresses */
--#define __pgtable_ptr_val(ptr)	((unsigned long)(ptr))
--
- #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
- #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
  
 -- 
 2.5.0
