@@ -1,23 +1,37 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0081.outbound.protection.outlook.com [157.56.112.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjt9X5q5CzDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 11:42:40 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id r187so13866679pfr.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 18:42:40 -0700 (PDT)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: arnd@arndb.de
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: [PATCH 2/2] powerpc/drivers: Add driver for operator panel on FSP
- machines
-Date: Mon, 11 Apr 2016 11:41:30 +1000
-Message-Id: <1460338890-19693-2-git-send-email-sjitindarsingh@gmail.com>
-In-Reply-To: <1460338890-19693-1-git-send-email-sjitindarsingh@gmail.com>
-References: <1460338890-19693-1-git-send-email-sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qjw6r1K0JzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 13:10:27 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Scott Wood <scott.wood@nxp.com>, Yang-Leo Li <leoyang.li@nxp.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Rob Herring
+ <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Jochen Friedrich
+ <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>, Zhao Qiang <qiang.zhao@freescale.com>, "Kumar
+ Gala" <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ "Xiaobo Xie" <xiaobo.xie@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Subject: RE: [v7, 0/5] Fix eSDHC host version register bug
+Date: Mon, 11 Apr 2016 02:54:31 +0000
+Message-ID: <HE1PR04MB0889938012DBB9B1F91C6C65F8940@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1459480051-3701-1-git-send-email-yangbo.lu@nxp.com>
+ <CAPDyKFqgMCvbqMYZ-uM-rTnVvfJkCYbhv2kucCRyNyc9FWoR=Q@mail.gmail.com>
+ <HE1PR04MB0889D75DC56E180D3508E7A1F89F0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+ <CAPDyKFp8GDzSkpbTKoRL=rwiBrsWmsgN95zB-QJwfZTnq4M8BA@mail.gmail.com>
+In-Reply-To: <CAPDyKFp8GDzSkpbTKoRL=rwiBrsWmsgN95zB-QJwfZTnq4M8BA@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,397 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement new character device driver to allow access from user space
-to the 2x16 character operator panel display present on powernv machines.
-
-This will allow status information to be presented on the display which
-is visible to a user.
-
-The driver implements a 32 character buffer which a user can read/write
-by accessing the device (/dev/oppanel). This buffer is then displayed on
-the operator panel display. Any attempt to write past the 32nd position
-will have no effect and attempts to write more than 32 characters will be
-truncated. Valid characters are ascii: '.', '/', ':', '0-9', 'a-z',
-'A-Z'. All other characters are considered invalid and will be replaced
-with '.'.
-
-A write call past the 32nd character will return zero characters
-written. A write call will not clear the display and it is up to the
-user to put spaces (' ') where blank space is required. The device may
-only be accessed by a single process at a time.
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
----
- MAINTAINERS                                    |   6 +
- arch/powerpc/configs/powernv_defconfig         |   1 +
- arch/powerpc/include/asm/opal.h                |   2 +
- arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
- arch/powerpc/platforms/powernv/opal.c          |   5 +
- drivers/char/Kconfig                           |  14 ++
- drivers/char/Makefile                          |   1 +
- drivers/char/op-panel-powernv.c                | 246 +++++++++++++++++++++++++
- 8 files changed, 276 insertions(+)
- create mode 100644 drivers/char/op-panel-powernv.c
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 40eb1db..dbacb12 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8817,6 +8817,12 @@ F:	drivers/firmware/psci.c
- F:	include/linux/psci.h
- F:	include/uapi/linux/psci.h
- 
-+POWERNV OPERATOR PANEL LCD DISPLAY DRIVER
-+M:	Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-+L:	linuxppc-dev@lists.ozlabs.org
-+S:	Maintained
-+F:	drivers/char/op-panel-powernv.c
-+
- PNP SUPPORT
- M:	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
- S:	Maintained
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 0450310..8f9f4ce 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -181,6 +181,7 @@ CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
- CONFIG_SERIAL_JSM=m
- CONFIG_VIRTIO_CONSOLE=m
-+CONFIG_IBM_OP_PANEL=m
- CONFIG_IPMI_HANDLER=y
- CONFIG_IPMI_DEVICE_INTERFACE=y
- CONFIG_IPMI_POWERNV=y
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 9d86c66..b33e349 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -178,6 +178,8 @@ int64_t opal_dump_ack(uint32_t dump_id);
- int64_t opal_dump_resend_notification(void);
- 
- int64_t opal_get_msg(uint64_t buffer, uint64_t size);
-+int64_t opal_write_oppanel_async(uint64_t token, oppanel_line_t *lines,
-+					uint64_t num_lines);
- int64_t opal_check_completion(uint64_t buffer, uint64_t size, uint64_t token);
- int64_t opal_sync_host_reboot(void);
- int64_t opal_get_param(uint64_t token, uint32_t param_id, uint64_t buffer,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index e45b88a..ddba8bf 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -278,6 +278,7 @@ OPAL_CALL(opal_dump_info2,			OPAL_DUMP_INFO2);
- OPAL_CALL(opal_dump_read,			OPAL_DUMP_READ);
- OPAL_CALL(opal_dump_ack,			OPAL_DUMP_ACK);
- OPAL_CALL(opal_get_msg,				OPAL_GET_MSG);
-+OPAL_CALL(opal_write_oppanel_async,		OPAL_WRITE_OPPANEL_ASYNC);
- OPAL_CALL(opal_check_completion,		OPAL_CHECK_ASYNC_COMPLETION);
- OPAL_CALL(opal_dump_resend_notification,	OPAL_DUMP_RESEND);
- OPAL_CALL(opal_sync_host_reboot,		OPAL_SYNC_HOST_REBOOT);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 0256d07..228751a 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -751,6 +751,9 @@ static int __init opal_init(void)
- 	opal_pdev_init(opal_node, "ibm,opal-flash");
- 	opal_pdev_init(opal_node, "ibm,opal-prd");
- 
-+	/* Initialise platform device: oppanel interface */
-+	opal_pdev_init(opal_node, "ibm,opal-oppanel");
-+
- 	/* Initialise OPAL kmsg dumper for flushing console on panic */
- 	opal_kmsg_init();
- 
-@@ -885,3 +888,5 @@ EXPORT_SYMBOL_GPL(opal_i2c_request);
- /* Export these symbols for PowerNV LED class driver */
- EXPORT_SYMBOL_GPL(opal_leds_get_ind);
- EXPORT_SYMBOL_GPL(opal_leds_set_ind);
-+/* Export this symbol for PowerNV Operator Panel class driver */
-+EXPORT_SYMBOL_GPL(opal_write_oppanel_async);
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 3ec0766..8c91edf 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -178,6 +178,20 @@ config IBM_BSR
- 	  of threads across a large system which avoids bouncing a cacheline
- 	  between several cores on a system
- 
-+config IBM_OP_PANEL
-+	tristate "IBM POWER Operator Panel Display support"
-+	depends on PPC_POWERNV
-+	default m
-+	help
-+	  If you say Y here, a special character device node /dev/oppanel will
-+	  be created which exposes the operator panel display on powernv
-+	  machines.
-+
-+	  If you don't require access to the operator panel display from user
-+	  space, say N.
-+
-+	  If unsure, say M here to build it as a module called op-panel-powernv.
-+
- source "drivers/char/ipmi/Kconfig"
- 
- config DS1620
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index d8a7579..a02c61b 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -60,3 +60,4 @@ js-rtc-y = rtc.o
- 
- obj-$(CONFIG_TILE_SROM)		+= tile-srom.o
- obj-$(CONFIG_XILLYBUS)		+= xillybus/
-+obj-$(CONFIG_IBM_OP_PANEL)	+= op-panel-powernv.o
-diff --git a/drivers/char/op-panel-powernv.c b/drivers/char/op-panel-powernv.c
-new file mode 100644
-index 0000000..cc72c5d
---- /dev/null
-+++ b/drivers/char/op-panel-powernv.c
-@@ -0,0 +1,246 @@
-+/*
-+ * OPAL Operator Panel Display Driver
-+ *
-+ * (C) Copyright IBM Corp. 2016
-+ *
-+ * Author: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/device.h>
-+#include <linux/errno.h>
-+#include <linux/mutex.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/platform_device.h>
-+#include <linux/miscdevice.h>
-+
-+#include <asm/opal.h>
-+#include <asm/opal-api.h>
-+
-+/*
-+ * This driver creates a character device (/dev/oppanel) which exposes the
-+ * operator panel display (2x16 character display) on IBM pSeries machines.
-+ * A 32 character buffer written to the device will be displayed on the
-+ * operator panel.
-+ */
-+
-+static DEFINE_MUTEX(oppanel_mutex);
-+
-+static oppanel_line_t	*oppanel_lines;
-+static char		*oppanel_data;
-+static u32		line_length, num_lines;
-+
-+static loff_t oppanel_llseek(struct file *filp, loff_t offset, int whence)
-+{
-+	return fixed_size_llseek(filp, offset, whence, num_lines *
-+		line_length);
-+}
-+
-+static ssize_t oppanel_read(struct file *filp, char __user *userbuf, size_t len,
-+		loff_t *f_pos)
-+{
-+	return simple_read_from_buffer(userbuf, len, f_pos, oppanel_data,
-+		(num_lines * line_length));
-+}
-+
-+static int __op_panel_write(void)
-+{
-+	int rc, token;
-+	struct opal_msg msg;
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		if (token != -ERESTARTSYS)
-+			pr_err("Couldn't get OPAL async token [token=%d]\n",
-+				token);
-+		return token;
-+	}
-+
-+	rc = opal_write_oppanel_async(token, oppanel_lines, (u64) num_lines);
-+	switch (rc) {
-+	case OPAL_ASYNC_COMPLETION:
-+		rc = opal_async_wait_response(token, &msg);
-+		if (rc) {
-+			pr_err("Failed to wait for async response [rc=%d]\n",
-+				rc);
-+			goto out_token;
-+		}
-+		rc = be64_to_cpu(msg.params[1]);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_err("OPAL async call returned failed [rc=%d]\n", rc);
-+			goto out_token;
-+		}
-+	case OPAL_SUCCESS:
-+		break;
-+	default:
-+		pr_err("OPAL write op-panel call failed [rc=%d]\n", rc);
-+	}
-+
-+out_token:
-+	opal_async_release_token(token);
-+	return rc;
-+}
-+
-+static ssize_t oppanel_write(struct file *filp, const char __user *userbuf,
-+		size_t len, loff_t *f_pos)
-+{
-+	ssize_t ret;
-+	loff_t f_pos_prev = *f_pos;
-+	int rc;
-+
-+	if (*f_pos >= (num_lines * line_length))
-+		return -EFBIG;
-+
-+	ret = simple_write_to_buffer(oppanel_data, (num_lines *
-+			line_length), f_pos, userbuf, len);
-+	if (ret > 0) {
-+		rc = __op_panel_write();
-+		if (rc != OPAL_SUCCESS) {
-+			pr_err("OPAL call failed to write to op panel display [rc=%d]\n",
-+				rc);
-+			*f_pos = f_pos_prev;
-+			return -EIO;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static int oppanel_open(struct inode *inode, struct file *filp)
-+{
-+	if (!mutex_trylock(&oppanel_mutex)) {
-+		pr_debug("Device Busy\n");
-+		return -EBUSY;
-+	}
-+	return 0;
-+}
-+
-+static int oppanel_release(struct inode *inode, struct file *filp)
-+{
-+	mutex_unlock(&oppanel_mutex);
-+	return 0;
-+}
-+
-+static const struct file_operations oppanel_fops = {
-+	.owner		= THIS_MODULE,
-+	.llseek		= oppanel_llseek,
-+	.read		= oppanel_read,
-+	.write		= oppanel_write,
-+	.open		= oppanel_open,
-+	.release	= oppanel_release
-+};
-+
-+static struct miscdevice oppanel_dev = {
-+	.minor		= MISC_DYNAMIC_MINOR,
-+	.name		= "oppanel",
-+	.fops		= &oppanel_fops
-+};
-+
-+static int oppanel_probe(struct platform_device *pdev)
-+{
-+	int rc, i;
-+	struct device_node *dev_node = pdev->dev.of_node;
-+	const u32 *length_val, *lines_val;
-+
-+	if (strncmp(dev_node->name, "oppanel", 7)) {
-+		pr_err("Operator panel not found\n");
-+		return -1;
-+	}
-+
-+	length_val = of_get_property(dev_node, "#length", NULL);
-+	if (!length_val) {
-+		pr_err("Operator panel length property not found\n");
-+		return -1;
-+	}
-+	line_length = be32_to_cpu(*length_val);
-+	lines_val = of_get_property(dev_node, "#lines", NULL);
-+	if (!lines_val) {
-+		pr_err("Operator panel lines property not found\n");
-+		return -1;
-+	}
-+	num_lines = be32_to_cpu(*lines_val);
-+
-+	pr_debug("Operator panel found with %u lines of length %u\n",
-+			num_lines, line_length);
-+
-+	oppanel_data = kcalloc((num_lines * line_length), sizeof(char),
-+		GFP_KERNEL);
-+	if (!oppanel_data)
-+		return -ENOMEM;
-+
-+	oppanel_lines = kcalloc(num_lines, sizeof(oppanel_line_t), GFP_KERNEL);
-+	if (!oppanel_lines) {
-+		kfree(oppanel_data);
-+		return -ENOMEM;
-+	}
-+
-+	memset(oppanel_data, ' ', (num_lines * line_length));
-+	for (i = 0; i < num_lines; i++) {
-+		oppanel_lines[i].line_len = cpu_to_be64((u64) line_length);
-+		oppanel_lines[i].line = cpu_to_be64((u64) &oppanel_data[i *
-+						line_length]);
-+	}
-+
-+	mutex_init(&oppanel_mutex);
-+
-+	rc = misc_register(&oppanel_dev);
-+	if (rc) {
-+		pr_err("Failed to register as misc device\n");
-+		goto remove_mutex;
-+	}
-+
-+	pr_info("Device Successfully Initialised\n");
-+	return 0;
-+
-+remove_mutex:
-+	mutex_destroy(&oppanel_mutex);
-+	kfree(oppanel_lines);
-+	kfree(oppanel_data);
-+	return rc;
-+}
-+
-+static int oppanel_remove(struct platform_device *pdev)
-+{
-+	misc_deregister(&oppanel_dev);
-+	mutex_destroy(&oppanel_mutex);
-+	kfree(oppanel_lines);
-+	kfree(oppanel_data);
-+	pr_info("Device Successfully Removed\n");
-+	return 0;
-+}
-+
-+static const struct of_device_id oppanel_match[] = {
-+	{ .compatible = "ibm,opal-oppanel" },
-+	{ },
-+};
-+
-+static struct platform_driver oppanel_driver = {
-+	.driver	= {
-+		.name		= "op-panel-powernv",
-+		.of_match_table	= oppanel_match,
-+	},
-+	.probe	= oppanel_probe,
-+	.remove	= oppanel_remove,
-+};
-+
-+module_platform_driver(oppanel_driver);
-+
-+MODULE_DEVICE_TABLE(of, oppanel_match);
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("PowerNV Operator Panel LCD Display Driver");
-+MODULE_AUTHOR("Suraj Jitindar Singh <sjitindarsingh@gmail.com>");
--- 
-2.5.0
+SGkgTGVvIGFuZCBTY290dCwNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IFVsZiBIYW5zc29uIFttYWlsdG86dWxmLmhhbnNzb25AbGluYXJvLm9yZ10NCj4gU2VudDog
+V2VkbmVzZGF5LCBBcHJpbCAwNiwgMjAxNiA0OjE1IFBNDQo+IFRvOiBZYW5nYm8gTHU7IFNjb3R0
+IFdvb2QNCj4gQ2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVs
+QGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4gY2xrQHZnZXIua2VybmVsLm9y
+ZzsgbGludXgtaTJjQHZnZXIua2VybmVsLm9yZzsgaW9tbXVAbGlzdHMubGludXgtDQo+IGZvdW5k
+YXRpb24ub3JnOyBuZXRkZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eC1tbWM7IFJvYiBIZXJyaW5n
+OyBSdXNzZWxsDQo+IEtpbmc7IEpvY2hlbiBGcmllZHJpY2g7IEpvZXJnIFJvZWRlbDsgQ2xhdWRp
+dSBNYW5vaWw7IEJodXBlc2ggU2hhcm1hOw0KPiBaaGFvIFFpYW5nOyBLdW1hciBHYWxhOyBTYW50
+b3NoIFNoaWxpbWthcjsgWWFuZy1MZW8gTGk7IFhpYW9ibyBYaWUNCj4gU3ViamVjdDogUmU6IFt2
+NywgMC81XSBGaXggZVNESEMgaG9zdCB2ZXJzaW9uIHJlZ2lzdGVyIGJ1Zw0KPiANCj4gPj4NCj4g
+Pj4gSSB3YXMgYWJvdXQgdG8gcXVldWUgdGhpcyBmb3IgbmV4dCwgd2hlbiBJIG5vdGljZWQgdGhh
+dCBjaGVja3BhdGNoIGlzDQo+ID4+IGNvbXBsYWluaW5nL3dhcm5pbmcgbG90cyBhYm91dCB0aGVz
+ZSBwYXRjaGVzLiBDYW4geW91IHBsZWFzZSBhIHJvdW5kDQo+ID4+IG9mIGNoZWNrcGF0Y2ggYW5k
+IGZpeCB3aGF0IG1ha2VzIHNlbnNlLg0KPiA+Pg0KPiA+PiBLaW5kIHJlZ2FyZHMNCj4gPj4gVWZm
+ZQ0KPiA+DQo+ID4gW0x1IFlhbmdiby1CNDcwOTNdIFNvcnJ5IGFib3V0IHRoaXMsIFVmZmUuLi4N
+Cj4gDQo+IE5vIHdvcnJpZXMhDQo+IA0KPiA+IFNob3VsZCBJIGlnbm9yZSB0aGUgd2FybmluZ3Mg
+dGhhdCB1cGRhdGUgTUFJTlRBSU5FUlM/DQo+IA0KPiBkcml2ZXJzL3NvYy9mc2wvZ3V0cy5jIGlz
+bid0IHBhcnQgb2YgdGhlIE1BSU5UQUlORVJTIGZpbGUsIGl0IHNob3VsZCBiZS4NCj4gDQo+IEkg
+YWxzbyByZWFsaXplIHRoYXQgdGhlIEZSRUVTQ0FMRSBRVUlDQyBFTkdJTkUgTElCUkFSWSBzZWN0
+aW9uDQo+IGRyaXZlcnMvc29jL2ZzbC9xZS8qIGFsc28gbmVlZCBhbiBhY3RpdmUgbWFpbnRhaW5l
+ciwgYXMgaXQncyBjdXJyZW50bHkNCj4gb3JwaGFuLg0KPiANCj4gUGVyaGFwcyB3ZSBzaG91bGQg
+aGF2ZSBjcmVhdGUgYSBuZXcgc2VjdGlvbiBmb3IgZHJpdmVycy9zb2MvZnNsLyogaW5zdGVhZA0K
+PiB0aGF0IGNvdmVycyBhbGwgb2YgdGhlIGFib3ZlPyBNYXliZSB5b3Ugb3IgU2NvdHQgYXJlIGlu
+dGVyZXN0ZWQgdG8gcGljaw0KPiBpdCB1cD8NCj4gDQo+IEkgYWxzbyBub3RlZCB0aGF0LCAiaW5j
+bHVkZS9saW51eC9mc2wvIiBpc24ndCBwcmVzZW50IGluIE1BSU5UQUlORVJTLA0KPiBwbGVhc2Ug
+YWRkIHRoYXQgYXMgd2VsbC4NCg0KW0x1IFlhbmdiby1CNDcwOTNdIENvdWxkIGdpdmUgc29tZSBh
+ZHZpY2Ugb24gdGhlIE1BSU5UQUlORVJTIGZvciB0aGVzZSAnZnNsJyBmaWxlcw0Kc2luY2UgSSBy
+ZWFsbHkgZG9u4oCZdCBrbm93IHdobyBzaG91bGQgYmUgdGhlIHJpZ2h0IHBlcnNvbj8NCkkgd2ls
+bCBhcHByZWNpYXRlIHRoYXQhDQoNClRoYW5rcyBhIGxvdC4NCg0KPiANCj4gPiBSZWdhcmRpbmcg
+dGhlICd1bmRvY3VtZW50ZWQnIHdhcm5pbmcsIEkgd2lsbCBhZGRlZCBhIHBhdGNoIHVwZGF0ZXMg
+ZG9jDQo+IGJlZm9yZSBhbGwgdGhlIHBhdGNoZXMsIE9rPw0KPiANCj4gWWVzLCBnb29kIQ0KPiAN
+Cj4gPg0KPiA+IFRoYW5rcyBhIGxvdCA6KQ0KPiA+DQo+IA0KPiBLaW5kIHJlZ2FyZHMNCj4gVWZm
+ZQ0K
