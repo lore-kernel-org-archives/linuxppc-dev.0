@@ -1,28 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8vZ0B1LzDrLM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:46:34 +1000 (AEST)
-Received: by mail-pa0-x22c.google.com with SMTP id zm5so121223491pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 05:46:33 -0700 (PDT)
-Subject: Re: [PATCH 03/10] mm/hugetlb: Protect follow_huge_(pud|pgd) functions
- from race
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1460007464-26726-4-git-send-email-khandual@linux.vnet.ibm.com>
- <570627C9.5030105@gmail.com> <570B3897.6040804@linux.vnet.ibm.com>
-Cc: hughd@google.com, dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com,
- kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
- mgorman@techsingularity.net, akpm@linux-foundation.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <570B9C93.5050507@gmail.com>
-Date: Mon, 11 Apr 2016 22:46:11 +1000
-MIME-Version: 1.0
-In-Reply-To: <570B3897.6040804@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk9Jz1th2zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:05:07 +1000 (AEST)
+In-Reply-To: <563CBD1B.1060407@gmail.com>
+To: =?utf-8?b?5oWV5Yas5Lqu?= <mudongliangabcd@gmail.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mudongliangabcd@gmail.com,
+ will.deacon@arm.com, takahiro.akashi@linaro.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: uapi elf: delete unused macros
+Message-Id: <3qk9Jy6NyYz9sC4@ozlabs.org>
+Date: Mon, 11 Apr 2016 23:05:06 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 11/04/16 15:39, Anshuman Khandual wrote:
-> On 04/07/2016 02:56 PM, Balbir Singh wrote:
->>
->> On 07/04/16 15:37, Anshuman Khandual wrote:
->>>> follow_huge_(pmd|pud|pgd) functions are used to walk the page table and
->>>> fetch the page struct during 'follow_page_mask' call. There are possible
->>>> race conditions faced by these functions which arise out of simultaneous
->>>> calls of move_pages() and freeing of huge pages. This was fixed partly
->>>> by the previous commit e66f17ff7177 ("mm/hugetlb: take page table lock
->>>> in follow_huge_pmd()") for only PMD based huge pages.
->>>>
->>>> After implementing similar logic, functions like follow_huge_(pud|pgd)
->>>> are now safe from above mentioned race conditions and also can support
->>>> FOLL_GET. Generic version of the function 'follow_huge_addr' has been
->>>> left as it is and its upto the architecture to decide on it.
->>>>
->>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>>> ---
->>>>  include/linux/mm.h | 33 +++++++++++++++++++++++++++
->>>>  mm/hugetlb.c       | 67 ++++++++++++++++++++++++++++++++++++++++++++++--------
->>>>  2 files changed, 91 insertions(+), 9 deletions(-)
->>>>
->>>> diff --git a/include/linux/mm.h b/include/linux/mm.h
->>>> index ffcff53..734182a 100644
->>>> --- a/include/linux/mm.h
->>>> +++ b/include/linux/mm.h
->>>> @@ -1751,6 +1751,19 @@ static inline void pgtable_page_dtor(struct page *page)
->>>>  		NULL: pte_offset_kernel(pmd, address))
->>>>  
->>>>  #if USE_SPLIT_PMD_PTLOCKS
->> Do we still use USE_SPLIT_PMD_PTLOCKS? I think its good enough. with pgd's
->> we are likely to use the same locks and the split nature may not be really
->> split.
->>
+On Fri, 2015-06-11 at 14:45:47 UTC, =?utf-8?b?5oWV5Yas5Lqu?= wrote:
+> >From 13f516acc709d88d3162e92bc891c8e39cc9fc1a Mon Sep 17 00:00:00 2001
+> From: mudongliang <mudongliangabcd@gmail.com>
+> Date: Fri, 6 Nov 2015 14:35:19 +0800
+> Subject: [PATCH] unify the comment form and delete unused macros
 > 
-> Sorry Balbir, did not get what you asked. Can you please elaborate on
-> this ?
-> 
+> diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+> index 71e1d0e..ff81b20 100644
+> --- a/include/uapi/linux/elf.h
+> +++ b/include/uapi/linux/elf.h
+> @@ -342,15 +342,13 @@ typedef struct elf64_shdr {
+>  #define	ELFCLASSNONE	0		/* EI_CLASS */
+>  #define	ELFCLASS32	1
+>  #define	ELFCLASS64	2
+> -#define	ELFCLASSNUM	3
+>  
+> -#define ELFDATANONE	0		/* e_ident[EI_DATA] */
+> +#define ELFDATANONE	0		/* EI_DATA */
+>  #define ELFDATA2LSB	1
+>  #define ELFDATA2MSB	2
+>  
+> -#define EV_NONE		0		/* e_version, EI_VERSION */
+> +#define EV_NONE		0		/* EI_VERSION */
+>  #define EV_CURRENT	1
+> -#define EV_NUM		2
 
-What I meant is that do we need SPLIT_PUD_PTLOCKS for example? I don't think we do
+How do you know there isn't a userspace program somewhere that's using this
+definition?
 
-Balbir
+cheers
