@@ -1,45 +1,26 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qkBC93RFxzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:45:09 +1000 (AEST)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 11 Apr 2016 23:45:06 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9AD2E2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:45:04 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3BDiu336160838
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:45:04 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3BDiViP011264
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:44:32 +1000
-Date: Mon, 11 Apr 2016 19:13:26 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linux-kernel@vger.kernel.org,
- Mark Wielaard <mjw@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH 0/2] perf probe fixes for ppc64le
-Message-ID: <20160411134325.GM15993@naverao1-tp.in.ibm.com>
-References: <cover.1459942081.git.naveen.n.rao@linux.vnet.ibm.com>
- <57061802.7020508@gmail.com>
- <20160407092636.GK15993@naverao1-tp.in.ibm.com>
- <1460098663.6475.6.camel@gmail.com>
- <20160409134239.GL15993@naverao1-tp.in.ibm.com>
- <1460349706.3444.2.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qkBLf2P4VzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:51:38 +1000 (AEST)
+Received: by mail-pa0-x22f.google.com with SMTP id td3so122049671pab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 06:51:38 -0700 (PDT)
+Subject: Re: [PATCH 05/10] powerpc/hugetlb: Split the function 'huge_pte_alloc'
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1460007464-26726-6-git-send-email-khandual@linux.vnet.ibm.com>
+Cc: hughd@google.com, kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
+ akpm@linux-foundation.org, mgorman@techsingularity.net,
+ dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <570BABD8.5080703@gmail.com>
+Date: Mon, 11 Apr 2016 23:51:20 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1460349706.3444.2.camel@ellerman.id.au>
+In-Reply-To: <1460007464-26726-6-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,40 +30,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/04/11 02:41PM, Michael Ellerman wrote:
-> On Sat, 2016-04-09 at 19:12 +0530, Naveen N. Rao wrote:
-> > 
-> > I suppose this boils down to the quirkiness of ABIv2. Though, in 
-> > reality, I don't think most users will notice. As I stated above, users 
-> > will most likely start with the disassembly or debuginfo and this patch 
-> > ensures there are actually no surprises there.
-> 
-> Yeah it's unfortunate that we have to handle these two cases differently.
-> 
-> But I think you've chosen the right trade off.
-> 
-> When we are just given the name we *must not* use the global entry point,
-> otherwise the probes will often not hit - because most calls go to the local
-> entry point and skip the global entry point entirely.
-> 
-> When we're given a name and offset, it's less confusing if we use the global
-> entry point as the base for the offset calculation.
-> 
-> So for the concept:
-> 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Thanks, Michael. That helps.
 
+On 07/04/16 15:37, Anshuman Khandual wrote:
+> Currently the function 'huge_pte_alloc' has got two versions, one for the
+> BOOK3S server and the other one for the BOOK3E embedded platforms. This
+> change splits only the BOOK3S server version into two parts, one for the
+> ARCH_WANT_GENERAL_HUGETLB config implementation and the other one for
+> everything else. This change is one of the prerequisites towards enabling
+> ARCH_WANT_GENERAL_HUGETLB config option on POWER platform.
 > 
-> I don't really know this part of the perf code enough to give you an ack for the
-> actual changes, I'll leave that to the perf maintainers.
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/hugetlbpage.c | 67 +++++++++++++++++++++++++++----------------
+>  1 file changed, 43 insertions(+), 24 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index d991b9e..e453918 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -59,6 +59,7 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+>  	return __find_linux_pte_or_hugepte(mm->pgd, addr, NULL, NULL);
+>  }
+>  
+> +#ifndef CONFIG_ARCH_WANT_GENERAL_HUGETLB
+>  static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  			   unsigned long address, unsigned pdshift, unsigned pshift)
+>  {
+> @@ -116,6 +117,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  	spin_unlock(&mm->page_table_lock);
+>  	return 0;
+>  }
+> +#endif /* !CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+>  
+>  /*
+>   * These macros define how to determine which level of the page table holds
+> @@ -130,6 +132,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>  #endif
+>  
+>  #ifdef CONFIG_PPC_BOOK3S_64
+> +#ifndef CONFIG_ARCH_WANT_GENERAL_HUGETLB
+>  /*
+>   * At this point we do the placement change only for BOOK3S 64. This would
+>   * possibly work on other subarchs.
+> @@ -145,32 +148,23 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+>  
+>  	addr &= ~(sz-1);
+>  	pg = pgd_offset(mm, addr);
+> -
+> -	if (pshift == PGDIR_SHIFT)
+> -		/* 16GB huge page */
+> -		return (pte_t *) pg;
+> -	else if (pshift > PUD_SHIFT)
+> -		/*
+> -		 * We need to use hugepd table
+> -		 */
+> +	if (pshift > PUD_SHIFT) {
+>  		hpdp = (hugepd_t *)pg;
+> -	else {
+> -		pdshift = PUD_SHIFT;
+> -		pu = pud_alloc(mm, pg, addr);
+> -		if (pshift == PUD_SHIFT)
+> -			return (pte_t *)pu;
+> -		else if (pshift > PMD_SHIFT)
+> -			hpdp = (hugepd_t *)pu;
+> -		else {
+> -			pdshift = PMD_SHIFT;
+> -			pm = pmd_alloc(mm, pu, addr);
+> -			if (pshift == PMD_SHIFT)
+> -				/* 16MB hugepage */
+> -				return (pte_t *)pm;
+> -			else
+> -				hpdp = (hugepd_t *)pm;
+> -		}
+> +		goto hugepd_search;
+>  	}
+> +
+> +	pdshift = PUD_SHIFT;
+> +	pu = pud_alloc(mm, pg, addr);
+> +	if (pshift > PMD_SHIFT) {
+> +		hpdp = (hugepd_t *)pu;
+> +		goto hugepd_search;
+> +	}
+> +
+> +	pdshift = PMD_SHIFT;
+> +	pm = pmd_alloc(mm, pu, addr);
+> +	hpdp = (hugepd_t *)pm;
+> +
+> +hugepd_search:
+>  	if (!hpdp)
+>  		return NULL;
+>  
+> @@ -182,6 +176,31 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+>  	return hugepte_offset(*hpdp, addr, pdshift);
+>  }
+>  
+> +#else /* CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+> +pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
 
-Sure.
+This is confusing, aren't we using the one from mm/hugetlb.c?
 
-Arnaldo,
-I will send a v2 soon with a bit more testing to make sure this covers 
-all scenarios properly (I am also trying to see if we can address 
-debuginfo-based probing properly).
+> +{
+> +	pgd_t *pg;
+> +	pud_t *pu;
+> +	pmd_t *pm;
+> +	unsigned pshift = __ffs(sz);
+> +
+> +	addr &= ~(sz-1);
 
-- Naveen
+Am I reading this right? Shouldn't this be addr &= ~(1 << pshift - 1)
+
+> +	pg = pgd_offset(mm, addr);
+> +
+> +	if (pshift == PGDIR_SHIFT)	/* 16GB Huge Page */
+> +		return (pte_t *)pg;
+> +
+> +	pu = pud_alloc(mm, pg, addr);	/* NA, skipped */
+> +	if (pshift == PUD_SHIFT)
+> +		return (pte_t *)pu;
+> +
+> +	pm = pmd_alloc(mm, pu, addr);	/* 16MB Huge Page */
+> +	if (pshift == PMD_SHIFT)
+> +		return (pte_t *)pm;
+> +
+> +	return NULL;
+> +}
+> +#endif /* !CONFIG_ARCH_WANT_GENERAL_HUGETLB */
+>  #else
+>  
+>  pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz)
+> 
