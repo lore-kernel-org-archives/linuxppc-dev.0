@@ -1,27 +1,40 @@
-Return-Path: <zhiqiang.hou@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0055.outbound.protection.outlook.com [157.55.234.55])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjzRK5rg4zDqBs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:39:57 +1000 (AEST)
-From: Zhiqiang Hou <zhiqiang.hou@nxp.com>
-To: David Laight <David.Laight@ACULAB.COM>, Scott Wood <oss@buserror.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-CC: Mingkai Hu <mingkai.hu@nxp.com>
-Subject: RE: [PATCH] powerpc/config: Disable the 4KiB erase granularity of SPI
- flash
-Date: Mon, 11 Apr 2016 05:25:10 +0000
-Message-ID: <AM4PR04MB2148DC5CA7B8D5053AC647B584940@AM4PR04MB2148.eurprd04.prod.outlook.com>
-References: <1459937676-25668-1-git-send-email-Zhiqiang.Hou@nxp.com>
- <1459980089.32510.78.camel@buserror.net>
- <AM4PR04MB21485158542FA13151D6B23484900@AM4PR04MB2148.eurprd04.prod.outlook.com>
- <063D6719AE5E284EB5DD2968C1650D6D54DC814C@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D54DC814C@AcuExch.aculab.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk00h59MKzDq9q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:05:24 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 11 Apr 2016 16:05:24 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3CACD2CE805C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:04:58 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3B64n0L41025724
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:04:57 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3B64O36004017
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:04:25 +1000
+Message-ID: <570B3E51.2090308@linux.vnet.ibm.com>
+Date: Mon, 11 Apr 2016 11:34:01 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
+To: kbuild test robot <lkp@intel.com>
+CC: dave.hansen@intel.com, mgorman@techsingularity.net, hughd@google.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, kbuild-all@01.org,
+ kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH 03/10] mm/hugetlb: Protect follow_huge_(pud|pgd) functions
+ from race
+References: <201604071708.osnfXWQP%fengguang.wu@intel.com>
+In-Reply-To: <201604071708.osnfXWQP%fengguang.wu@intel.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +44,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgRGF2aWQsDQoNClRoYW5rcyBmb3IgeW91ciBjb21tZW50cy4NCg0KPiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBEYXZpZCBMYWlnaHQgW21haWx0bzpEYXZpZC5MYWlnaHRA
-QUNVTEFCLkNPTV0NCj4gU2VudDogMjAxNuW5tDTmnIg55pelIDA6MDENCj4gVG86IFpoaXFpYW5n
-IEhvdSA8emhpcWlhbmcuaG91QG54cC5jb20+OyBTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0
-PjsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5n
-Lm9yZzsgcGF1bHVzQHNhbWJhLm9yZzsNCj4gbXBlQGVsbGVybWFuLmlkLmF1DQo+IENjOiBNaW5n
-a2FpIEh1IDxtaW5na2FpLmh1QG54cC5jb20+DQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0hdIHBvd2Vy
-cGMvY29uZmlnOiBEaXNhYmxlIHRoZSA0S2lCIGVyYXNlIGdyYW51bGFyaXR5IG9mIFNQSQ0KPiBm
-bGFzaA0KPiANCj4gRnJvbTogWmhpcWlhbmcgSG91DQo+ID4gU2VudDogMDcgQXByaWwgMjAxNiAw
-NDoxNw0KPiAuLi4NCj4gPiA+IElzIHRoZXJlIGEgcmVhc29uIHNwZWNpZmljIHRvIDg1eHggdG8g
-aGF2ZSBhIGRpZmZlcmVudCBkZWZhdWx0IHRoYW4NCj4gPiA+IGV2ZXJ5IG90aGVyIHBsYXRmb3Jt
-IGV4Y2VwdCBscGMxOHh4PyAgVGhlIGRlc2NyaXB0aW9uIG9mDQo+ID4gPiBNVERfU1BJX05PUl9V
-U0VfNEtfU0VDVE9SUyBhY2tub3dsZWRnZXMgdGhhdCBlcmFzZSBzcGVlZCBpcyBhDQo+ID4gPiB0
-cmFkZW9mZi4gIFdoeSBpcyB0aGF0IGNvbmNlcm4gbW9yZSBjb21wZWxsaW5nIG9uIDg1eHggdGhh
-biBlbHNld2hlcmU/DQo+ID4gPg0KPiA+DQo+ID4gSSBkb24ndCB3YW50IHRvIHNwZWNpZnkgODV4
-eCwgYnV0IGNvbmZpZ3Mgb2YgZnNsLiBJJ20gc3RpbGwgY29uZnVzaW5nDQo+ID4gYWJvdXQgc28g
-bWFueSBjb25maWdzLiBXaWxsIGFkZCBvdGhlciBwbGF0Zm9ybXMgaWYgbmVjZXNzYXJ5Lg0KPiA+
-DQo+ID4gRm9yIHRoaXMgcGF0Y2gsIGl0IHRha2VzIGFib3V0IDEzIG1pbnMgdG8gZXJhc2UgNjRN
-aUIgYnkgc3Vic2VjdG9yDQo+ID4gZXJhc2UgY29tbWFuZCAoNEtpQiBwZXIgdGltZSksIGJ1dCB0
-YWtlcyAyIG1pbnMgYnkgc2VjdG9yIGVyYXNlDQo+ID4gY29tbWFuZCg2NEtpQiBwZXIgdGltZSku
-IEl0IGlzIGNvbnNwaWN1b3VzIGRlY3JlYXNlLiBXaHkgaXQgdXNlcyB0aGUNCj4gPiA0S2lCIGdy
-YW51bGFyaXR5IGJ5IGRlZmF1bHQsIHdoYXQncyB0aGUgYmVuZWZpdD8NCj4gDQo+IFNob3VsZCBp
-dCBiZSBkb2luZyA2NEsgZXJhc2VzIGZvbGxvd2VkIGJ5IDAgdG8gMTUgNEsgZXJhc2VzIGZvciBh
-bnkgZmluYWwgZnJhZ21lbnQ/DQoNCldoZW4gd2lsbCB0aGlzIHNpdHVhdGlvbiBjb21lIHVwPw0K
-DQpUaGFua3MsDQpaaGlxaWFuZw0KDQo=
+On 04/07/2016 03:04 PM, kbuild test robot wrote:
+> All errors (new ones prefixed by >>):
+> 
+>    mm/hugetlb.c: In function 'follow_huge_pud':
+>>> >> mm/hugetlb.c:4360:3: error: implicit declaration of function 'pud_page' [-Werror=implicit-function-declaration]
+>       page = pud_page(*pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
+>       ^
+>    mm/hugetlb.c:4360:8: warning: assignment makes pointer from integer without a cast
+>       page = pud_page(*pud) + ((address & ~PUD_MASK) >> PAGE_SHIFT);
+>            ^
+>    mm/hugetlb.c: In function 'follow_huge_pgd':
+>    mm/hugetlb.c:4395:3: error: implicit declaration of function 'pgd_page' [-Werror=implicit-function-declaration]
+>       page = pgd_page(*pgd) + ((address & ~PGDIR_MASK) >> PAGE_SHIFT);
+
+Both the build errors here are because of the fact that pgd_page() is
+not available for some platforms and config options. It got missed as
+I ran only powerpc config options for build test purpose. My bad, will
+fix it.
