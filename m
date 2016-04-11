@@ -1,21 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fP0fjzzDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:09 +1000 (AEST)
-In-Reply-To: <1459116497-19991-3-git-send-email-paul.gortmaker@windriver.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>,
- <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fQ1QfxzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:10 +1000 (AEST)
+In-Reply-To: <56BB6F6D.8050806@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andrzej Hajda <a.hajda@samsung.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [2/3] powerpc: make kernel/nvram_64.c explicitly non-modular
-Message-Id: <3qk8fN6mWpz9t57@ozlabs.org>
-Date: Mon, 11 Apr 2016 22:35:08 +1000 (AEST)
+Subject: Re: [2/3] powerpc/pseries: Update LMB associativity index during
+ DLPAR add/remove
+Message-Id: <3qk8fP5kHDz9t49@ozlabs.org>
+Date: Mon, 11 Apr 2016 22:35:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-27-03 at 22:08:16 UTC, Paul Gortmaker wrote:
-> The Makefile/Kconfig currently controlling compilation of this code is:
+On Wed, 2016-10-02 at 17:12:13 UTC, Nathan Fontenot wrote:
+> The associativity array index specified for a LMB in the device tree,
+> /ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory, needs to be updated
+> prior to DLPAR adding a LMB and after DLPAR removing a LMB.
 > 
-> obj-$(CONFIG_PPC64)             += setup_64.o sys_ppc32.o \
->                                    signal_64.o ptrace32.o \
->                                    paca.o nvram_64.o firmware.o
+> Without doing this step in the DLPAR add process a LMB could be configured
+> with the incorrect affinity. For a LMB that was not present at boot the
+> affinity index is set to 0xffffffff, which defaults to adding the LMB to
+> the first online node since the index is not a valid value. Or, the
+> affinity index could contain a stale value if the LMB was present at boot
+> but later DLPAR removed and is being DLPAR added back to the system.
 > 
-> arch/powerpc/platforms/Kconfig.cputype:config PPC64
-> arch/powerpc/platforms/Kconfig.cputype: bool "64-bit kernel"
+> This patch adds a step in the DLPAR add flow to look up the associativity
+> index for a LMB prior to adding a LMB and setting the associativity to
+> 0xffffffff when a LMB is removed.
 > 
-> ...meaning that it currently is not being built as a module by anyone.
+> This patch also modifies the DLPAR add/remove flow to no longer do a single
+> update of the device tree property after all of the requested DLPAR
+> operations are complete and now does a property update during the add
+> or remove of each LMB.
 > 
-> Lets remove the modular code that is essentially orphaned, so that
-> when reading the driver there is no doubt it is builtin-only.
-...
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c0c523897d1f83bc8484cb58d1
+https://git.kernel.org/powerpc/c/bdf5fc6338047cfeba98d2ab62
 
 cheers
