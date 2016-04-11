@@ -1,24 +1,36 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjysf59dCzDq9r
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:14:14 +1000 (AEST)
-Received: by mail-pf0-x22c.google.com with SMTP id n1so116672083pfn.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 22:14:14 -0700 (PDT)
-Subject: Re: [PATCH V2 18/68] powerpc/mm: Move hash and no hash code to
- separate files
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <570B329E.8060607@gmail.com>
-Date: Mon, 11 Apr 2016 15:14:06 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qjz6P0wtNzDq9q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:25:16 +1000 (AEST)
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 11 Apr 2016 10:55:13 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3B5P9YD43647212
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:55:09 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3BArK8h015766
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:23:23 +0530
+Message-ID: <570B3531.2000808@linux.vnet.ibm.com>
+Date: Mon, 11 Apr 2016 10:55:05 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+CC: hughd@google.com, dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com,
+ kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
+ mgorman@techsingularity.net, akpm@linux-foundation.org
+Subject: Re: [PATCH 02/10] mm/hugetlb: Add PGD based implementation awareness
+References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1460007464-26726-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <570622B4.5020407@gmail.com>
+In-Reply-To: <570622B4.5020407@gmail.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,481 +41,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> This patch reduce #ifdef in C code and also help in adding radix changes
-> later. Only code movement in this patch.
+On 04/07/2016 02:34 PM, Balbir Singh wrote:
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/Makefile         |   3 +-
->  arch/powerpc/mm/init_64.c        |  74 ++--------------------
->  arch/powerpc/mm/pgtable-book3e.c | 128 +++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/mm/pgtable-hash64.c | 100 ++++++++++++++++++++++++++++++
->  arch/powerpc/mm/pgtable_64.c     |  83 -------------------------
->  5 files changed, 235 insertions(+), 153 deletions(-)
->  create mode 100644 arch/powerpc/mm/pgtable-book3e.c
->  create mode 100644 arch/powerpc/mm/pgtable-hash64.c
 > 
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index adfee3f1aeb9..ef778997daa9 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -13,7 +13,8 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
->  				   tlb_nohash_low.o
->  obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(CONFIG_WORD_SIZE)e.o
->  hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
-> -obj-$(CONFIG_PPC_STD_MMU_64)	+= hash_utils_64.o slb_low.o slb.o $(hash64-y)
-> +obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
-> +obj-$(CONFIG_PPC_STD_MMU_64)	+= pgtable-hash64.o hash_utils_64.o slb_low.o slb.o $(hash64-y)
->  obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o
->  obj-$(CONFIG_PPC_STD_MMU)	+= tlb_hash$(CONFIG_WORD_SIZE).o \
->  				   mmu_context_hash$(CONFIG_WORD_SIZE).o
-> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-> index ba655666186d..8d1daf7d9785 100644
-> --- a/arch/powerpc/mm/init_64.c
-> +++ b/arch/powerpc/mm/init_64.c
-> @@ -189,75 +189,6 @@ static int __meminit vmemmap_populated(unsigned long start, int page_size)
->  	return 0;
->  }
->  
-> -/* On hash-based CPUs, the vmemmap is bolted in the hash table.
-> - *
-> - * On Book3E CPUs, the vmemmap is currently mapped in the top half of
-> - * the vmalloc space using normal page tables, though the size of
-> - * pages encoded in the PTEs can be different
-> - */
-> -
-> -#ifdef CONFIG_PPC_BOOK3E
-> -static int __meminit vmemmap_create_mapping(unsigned long start,
-> -					    unsigned long page_size,
-> -					    unsigned long phys)
-> -{
-> -	/* Create a PTE encoding without page size */
-> -	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
-> -		_PAGE_KERNEL_RW;
-> -
-> -	/* PTEs only contain page size encodings up to 32M */
-> -	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
-> -
-> -	/* Encode the size in the PTE */
-> -	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
-> -
-> -	/* For each PTE for that area, map things. Note that we don't
-> -	 * increment phys because all PTEs are of the large size and
-> -	 * thus must have the low bits clear
-> -	 */
-> -	for (i = 0; i < page_size; i += PAGE_SIZE)
-> -		BUG_ON(map_kernel_page(start + i, phys, flags));
-> -
-> -	return 0;
-> -}
-> -
-> -#ifdef CONFIG_MEMORY_HOTPLUG
-> -static void vmemmap_remove_mapping(unsigned long start,
-> -				   unsigned long page_size)
-> -{
-> -}
-> -#endif
-> -#else /* CONFIG_PPC_BOOK3E */
-> -static int __meminit vmemmap_create_mapping(unsigned long start,
-> -					    unsigned long page_size,
-> -					    unsigned long phys)
-> -{
-> -	int rc = htab_bolt_mapping(start, start + page_size, phys,
-> -				   pgprot_val(PAGE_KERNEL),
-> -				   mmu_vmemmap_psize, mmu_kernel_ssize);
-> -	if (rc < 0) {
-> -		int rc2 = htab_remove_mapping(start, start + page_size,
-> -					      mmu_vmemmap_psize,
-> -					      mmu_kernel_ssize);
-> -		BUG_ON(rc2 && (rc2 != -ENOENT));
-> -	}
-> -	return rc;
-> -}
-> -
-> -#ifdef CONFIG_MEMORY_HOTPLUG
-> -static void vmemmap_remove_mapping(unsigned long start,
-> -				   unsigned long page_size)
-> -{
-> -	int rc = htab_remove_mapping(start, start + page_size,
-> -				     mmu_vmemmap_psize,
-> -				     mmu_kernel_ssize);
-> -	BUG_ON((rc < 0) && (rc != -ENOENT));
-> -	WARN_ON(rc == -ENOENT);
-> -}
-> -#endif
-> -
-> -#endif /* CONFIG_PPC_BOOK3E */
-> -
->  struct vmemmap_backing *vmemmap_list;
->  static struct vmemmap_backing *next;
->  static int num_left;
-> @@ -309,6 +240,9 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
->  	vmemmap_list = vmem_back;
->  }
->  
-> +extern int __meminit vmemmap_create_mapping(unsigned long start,
-> +					    unsigned long page_size,
-> +					    unsigned long phys);
->  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->  {
->  	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
-> @@ -347,6 +281,8 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> +extern void vmemmap_remove_mapping(unsigned long start,
-> +				   unsigned long page_size);
->  static unsigned long vmemmap_list_free(unsigned long start)
->  {
->  	struct vmemmap_backing *vmem_back, *vmem_back_prev;
-> diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/pgtable-book3e.c
-> new file mode 100644
-> index 000000000000..f75ba4142875
-> --- /dev/null
-> +++ b/arch/powerpc/mm/pgtable-book3e.c
-> @@ -0,0 +1,128 @@
-> +
-> +/*
-> + * Copyright IBM Corporation, 2015
-> + * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> + *
-
-You may want to retain the copyrights from the original file as well
-
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of version 2 of the GNU Lesser General Public License
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it would be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> + *
-> + */
-> +
-> +/*
-> + * PPC64 THP Support for hash based MMUs
-> + */
-> +#include <linux/sched.h>
-> +#include <linux/memblock.h>
-> +#include <asm/pgalloc.h>
-> +#include <asm/tlb.h>
-> +#include <asm/dma.h>
-> +
-> +#include "mmu_decl.h"
-> +
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
-> +/*
-> + * On Book3E CPUs, the vmemmap is currently mapped in the top half of
-> + * the vmalloc space using normal page tables, though the size of
-> + * pages encoded in the PTEs can be different
-> + */
-> +int __meminit vmemmap_create_mapping(unsigned long start,
-> +				     unsigned long page_size,
-> +				     unsigned long phys)
-> +{
-> +	/* Create a PTE encoding without page size */
-> +	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
-> +		_PAGE_KERNEL_RW;
-> +
-> +	/* PTEs only contain page size encodings up to 32M */
-> +	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
-> +
-> +	/* Encode the size in the PTE */
-> +	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
-> +
-> +	/* For each PTE for that area, map things. Note that we don't
-> +	 * increment phys because all PTEs are of the large size and
-> +	 * thus must have the low bits clear
-> +	 */
-> +	for (i = 0; i < page_size; i += PAGE_SIZE)
-> +		BUG_ON(map_kernel_page(start + i, phys, flags));
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_MEMORY_HOTPLUG
-> +void vmemmap_remove_mapping(unsigned long start,
-> +			    unsigned long page_size)
-> +{
-> +}
-> +#endif
-> +#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-> +
-> +static __ref void *early_alloc_pgtable(unsigned long size)
-> +{
-> +	void *pt;
-> +
-> +	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
-> +	memset(pt, 0, size);
-> +
-> +	return pt;
-> +}
-> +
-> +/*
-> + * map_kernel_page currently only called by __ioremap
-> + * map_kernel_page adds an entry to the ioremap page table
-> + * and adds an entry to the HPT, possibly bolting it
-> + */
-> +int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
-> +{
-> +	pgd_t *pgdp;
-> +	pud_t *pudp;
-> +	pmd_t *pmdp;
-> +	pte_t *ptep;
-> +
-> +	if (slab_is_available()) {
-> +		pgdp = pgd_offset_k(ea);
-> +		pudp = pud_alloc(&init_mm, pgdp, ea);
-> +		if (!pudp)
-> +			return -ENOMEM;
-> +		pmdp = pmd_alloc(&init_mm, pudp, ea);
-> +		if (!pmdp)
-> +			return -ENOMEM;
-> +		ptep = pte_alloc_kernel(pmdp, ea);
-> +		if (!ptep)
-> +			return -ENOMEM;
-> +		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> +							  __pgprot(flags)));
-> +	} else {
-> +		pgdp = pgd_offset_k(ea);
-> +#ifndef __PAGETABLE_PUD_FOLDED
-> +		if (pgd_none(*pgdp)) {
-> +			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
-> +			BUG_ON(pudp == NULL);
-> +			pgd_populate(&init_mm, pgdp, pudp);
-> +		}
-> +#endif /* !__PAGETABLE_PUD_FOLDED */
-> +		pudp = pud_offset(pgdp, ea);
-> +		if (pud_none(*pudp)) {
-> +			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
-> +			BUG_ON(pmdp == NULL);
-> +			pud_populate(&init_mm, pudp, pmdp);
-> +		}
-> +		pmdp = pmd_offset(pudp, ea);
-> +		if (!pmd_present(*pmdp)) {
-> +			ptep = early_alloc_pgtable(PAGE_SIZE);
-> +			BUG_ON(ptep == NULL);
-> +			pmd_populate_kernel(&init_mm, pmdp, ptep);
-> +		}
-> +		ptep = pte_offset_kernel(pmdp, ea);
-> +		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> +							  __pgprot(flags)));
-> +	}
-> +
-> +	smp_wmb();
-> +	return 0;
-> +}
-> diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-> new file mode 100644
-> index 000000000000..04d6fa12789e
-> --- /dev/null
-> +++ b/arch/powerpc/mm/pgtable-hash64.c
-> @@ -0,0 +1,100 @@
-> +/*
-> + * Copyright IBM Corporation, 2015
-> + * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> + *
-
-Same as before
-
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of version 2 of the GNU Lesser General Public License
-> + * as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it would be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> + *
-> + */
-> +
-> +/*
-> + * PPC64 THP Support for hash based MMUs
-> + */
-> +#include <linux/sched.h>
-> +#include <asm/pgalloc.h>
-> +#include <asm/tlb.h>
-> +
-> +#include "mmu_decl.h"
-> +
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
-> +/*
-> + * On hash-based CPUs, the vmemmap is bolted in the hash table.
-> + *
-> + */
-> +int __meminit vmemmap_create_mapping(unsigned long start,
-> +				     unsigned long page_size,
-> +				     unsigned long phys)
-> +{
-> +	int rc = htab_bolt_mapping(start, start + page_size, phys,
-> +				   pgprot_val(PAGE_KERNEL),
-> +				   mmu_vmemmap_psize, mmu_kernel_ssize);
-> +	if (rc < 0) {
-> +		int rc2 = htab_remove_mapping(start, start + page_size,
-> +					      mmu_vmemmap_psize,
-> +					      mmu_kernel_ssize);
-> +		BUG_ON(rc2 && (rc2 != -ENOENT));
-> +	}
-> +	return rc;
-> +}
-> +
-> +#ifdef CONFIG_MEMORY_HOTPLUG
-> +void vmemmap_remove_mapping(unsigned long start,
-> +			    unsigned long page_size)
-> +{
-> +	int rc = htab_remove_mapping(start, start + page_size,
-> +				     mmu_vmemmap_psize,
-> +				     mmu_kernel_ssize);
-> +	BUG_ON((rc < 0) && (rc != -ENOENT));
-> +	WARN_ON(rc == -ENOENT);
-> +}
-> +#endif
-> +#endif /* CONFIG_SPARSEMEM_VMEMMAP */
-> +
-> +/*
-> + * map_kernel_page currently only called by __ioremap
-> + * map_kernel_page adds an entry to the ioremap page table
-> + * and adds an entry to the HPT, possibly bolting it
-> + */
-> +int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
-> +{
-> +	pgd_t *pgdp;
-> +	pud_t *pudp;
-> +	pmd_t *pmdp;
-> +	pte_t *ptep;
-> +
-> +	if (slab_is_available()) {
-> +		pgdp = pgd_offset_k(ea);
-> +		pudp = pud_alloc(&init_mm, pgdp, ea);
-> +		if (!pudp)
-> +			return -ENOMEM;
-> +		pmdp = pmd_alloc(&init_mm, pudp, ea);
-> +		if (!pmdp)
-> +			return -ENOMEM;
-> +		ptep = pte_alloc_kernel(pmdp, ea);
-> +		if (!ptep)
-> +			return -ENOMEM;
-> +		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> +							  __pgprot(flags)));
-> +	} else {
-> +		/*
-> +		 * If the mm subsystem is not fully up, we cannot create a
-> +		 * linux page table entry for this mapping.  Simply bolt an
-> +		 * entry in the hardware page table.
-> +		 *
-> +		 */
-> +		if (htab_bolt_mapping(ea, ea + PAGE_SIZE, pa, flags,
-> +				      mmu_io_psize, mmu_kernel_ssize)) {
-> +			printk(KERN_ERR "Failed to do bolted mapping IO "
-> +			       "memory at %016lx !\n", pa);
-> +			return -ENOMEM;
-
-What happens when we do unmap this? I know this code has been around for a while
-so its not new
-
-> +		}
-> +	}
-> +
-> +	smp_wmb();
-> +	return 0;
-> +}
-> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index 5fff787da17a..d493f62d12eb 100644
-> --- a/arch/powerpc/mm/pgtable_64.c
-> +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -78,89 +78,6 @@ struct patb_entry *partition_tb;
->  #endif
->  unsigned long ioremap_bot = IOREMAP_BASE;
->  
-> -#ifdef CONFIG_PPC_MMU_NOHASH
-> -static __ref void *early_alloc_pgtable(unsigned long size)
-> -{
-> -	void *pt;
-> -
-> -	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
-> -	memset(pt, 0, size);
-> -
-> -	return pt;
-> -}
-> -#endif /* CONFIG_PPC_MMU_NOHASH */
-> -
-> -/*
-> - * map_kernel_page currently only called by __ioremap
-> - * map_kernel_page adds an entry to the ioremap page table
-> - * and adds an entry to the HPT, possibly bolting it
-> - */
-> -int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
-> -{
-> -	pgd_t *pgdp;
-> -	pud_t *pudp;
-> -	pmd_t *pmdp;
-> -	pte_t *ptep;
-> -
-> -	if (slab_is_available()) {
-> -		pgdp = pgd_offset_k(ea);
-> -		pudp = pud_alloc(&init_mm, pgdp, ea);
-> -		if (!pudp)
-> -			return -ENOMEM;
-> -		pmdp = pmd_alloc(&init_mm, pudp, ea);
-> -		if (!pmdp)
-> -			return -ENOMEM;
-> -		ptep = pte_alloc_kernel(pmdp, ea);
-> -		if (!ptep)
-> -			return -ENOMEM;
-> -		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> -							  __pgprot(flags)));
-> -	} else {
-> -#ifdef CONFIG_PPC_MMU_NOHASH
-> -		pgdp = pgd_offset_k(ea);
-> -#ifdef PUD_TABLE_SIZE
-> -		if (pgd_none(*pgdp)) {
-> -			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
-> -			BUG_ON(pudp == NULL);
-> -			pgd_populate(&init_mm, pgdp, pudp);
-> -		}
-> -#endif /* PUD_TABLE_SIZE */
-> -		pudp = pud_offset(pgdp, ea);
-> -		if (pud_none(*pudp)) {
-> -			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
-> -			BUG_ON(pmdp == NULL);
-> -			pud_populate(&init_mm, pudp, pmdp);
-> -		}
-> -		pmdp = pmd_offset(pudp, ea);
-> -		if (!pmd_present(*pmdp)) {
-> -			ptep = early_alloc_pgtable(PAGE_SIZE);
-> -			BUG_ON(ptep == NULL);
-> -			pmd_populate_kernel(&init_mm, pmdp, ptep);
-> -		}
-> -		ptep = pte_offset_kernel(pmdp, ea);
-> -		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> -							  __pgprot(flags)));
-> -#else /* CONFIG_PPC_MMU_NOHASH */
-> -		/*
-> -		 * If the mm subsystem is not fully up, we cannot create a
-> -		 * linux page table entry for this mapping.  Simply bolt an
-> -		 * entry in the hardware page table.
-> -		 *
-> -		 */
-> -		if (htab_bolt_mapping(ea, ea + PAGE_SIZE, pa, flags,
-> -				      mmu_io_psize, mmu_kernel_ssize)) {
-> -			printk(KERN_ERR "Failed to do bolted mapping IO "
-> -			       "memory at %016lx !\n", pa);
-> -			return -ENOMEM;
-> -		}
-> -#endif /* !CONFIG_PPC_MMU_NOHASH */
-> -	}
-> -
-> -	smp_wmb();
-> -	return 0;
-> -}
-> -
-> -
->  /**
->   * __ioremap_at - Low level function to establish the page tables
->   *                for an IO mapping
+> On 07/04/16 15:37, Anshuman Khandual wrote:
+>> Currently the config ARCH_WANT_GENERAL_HUGETLB enabled functions like
+>> 'huge_pte_alloc' and 'huge_pte_offset' dont take into account HugeTLB
+>> page implementation at the PGD level. This is also true for functions
+>> like 'follow_page_mask' which is called from move_pages() system call.
+>> This lack of PGD level huge page support prohibits some architectures
+>> to use these generic HugeTLB functions.
+>>
 > 
+> From what I know of move_pages(), it will always call follow_page_mask()
+> with FOLL_GET (I could be wrong here) and the implementation below
+> returns NULL for follow_huge_pgd().
 
-Otherwise looks good!
+You are right. This patch makes ARCH_WANT_GENERAL_HUGETLB functions aware
+of PGD implementation so that we can do all transactions on 16GB pages
+using these function instead of the present arch overrides. But that also
+requires follow_page_mask() changes for every other access to the page
+than the migrate_pages() usage.
 
-Balbir Singh
+But yes, we dont support migrate_pages() on PGD based pages yet, hence
+it just returns NULL in that case. May be the commit message needs to
+reflect this.
+
+> 
+>> This change adds the required PGD based implementation awareness and
+>> with that, more architectures like POWER which implements 16GB pages
+>> at the PGD level along with the 16MB pages at the PMD level can now
+>> use ARCH_WANT_GENERAL_HUGETLB config option.
+>>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> ---
+>>  include/linux/hugetlb.h |  3 +++
+>>  mm/gup.c                |  6 ++++++
+>>  mm/hugetlb.c            | 20 ++++++++++++++++++++
+>>  3 files changed, 29 insertions(+)
+>>
+>> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+>> index 7d953c2..71832e1 100644
+>> --- a/include/linux/hugetlb.h
+>> +++ b/include/linux/hugetlb.h
+>> @@ -115,6 +115,8 @@ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+>>  				pmd_t *pmd, int flags);
+>>  struct page *follow_huge_pud(struct mm_struct *mm, unsigned long address,
+>>  				pud_t *pud, int flags);
+>> +struct page *follow_huge_pgd(struct mm_struct *mm, unsigned long address,
+>> +				pgd_t *pgd, int flags);
+>>  int pmd_huge(pmd_t pmd);
+>>  int pud_huge(pud_t pmd);
+>>  unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
+>> @@ -143,6 +145,7 @@ static inline void hugetlb_show_meminfo(void)
+>>  }
+>>  #define follow_huge_pmd(mm, addr, pmd, flags)	NULL
+>>  #define follow_huge_pud(mm, addr, pud, flags)	NULL
+>> +#define follow_huge_pgd(mm, addr, pgd, flags)	NULL
+>>  #define prepare_hugepage_range(file, addr, len)	(-EINVAL)
+>>  #define pmd_huge(x)	0
+>>  #define pud_huge(x)	0
+>> diff --git a/mm/gup.c b/mm/gup.c
+>> index fb87aea..9bac78c 100644
+>> --- a/mm/gup.c
+>> +++ b/mm/gup.c
+>> @@ -234,6 +234,12 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
+>>  	pgd = pgd_offset(mm, address);
+>>  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+>>  		return no_page_table(vma, flags);
+>> +	if (pgd_huge(*pgd) && vma->vm_flags & VM_HUGETLB) {
+>> +		page = follow_huge_pgd(mm, address, pgd, flags);
+>> +		if (page)
+>> +			return page;
+>> +		return no_page_table(vma, flags);
+> This will return NULL as well?
+
+That right, no_page_table() returns NULL for FOLL_GET when we fall through
+after failing on follow_huge_pgd().
+
+>> +	}
+>>  
+>>  	pud = pud_offset(pgd, address);
+>>  	if (pud_none(*pud))
+>> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+>> index 19d0d08..5ea3158 100644
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -4250,6 +4250,11 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
+>>  	pte_t *pte = NULL;
+>>  
+>>  	pgd = pgd_offset(mm, addr);
+>> +	if (sz == PGDIR_SIZE) {
+>> +		pte = (pte_t *)pgd;
+>> +		goto huge_pgd;
+>> +	}
+>> +
+> 
+> No allocation for a pgd slot - right?
+
+No, its already allocated for the mm during creation.
