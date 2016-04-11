@@ -2,20 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fQ5RCJzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:10 +1000 (AEST)
-In-Reply-To: <1459116497-19991-4-git-send-email-paul.gortmaker@windriver.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>,
- <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fR5HtGzDq9q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:11 +1000 (AEST)
+In-Reply-To: <1441063363-24107-1-git-send-email-vipin@linux.vnet.ibm.com>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- Christian Krafft <krafft@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [3/3] drivers/cpufreq: make ppc_cbe_cpufreq_pmi driver explicitly
- non-modular
-Message-Id: <3qk8fQ3wrVz9t3p@ozlabs.org>
-Date: Mon, 11 Apr 2016 22:35:10 +1000 (AEST)
+Cc: stewart@linux.vnet.ibm.com, Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Subject: Re: asm/opal-api: Assign numbers to OPAL_MSG macros of enum
+ opal_msg_type
+Message-Id: <3qk8fR2zxnz9t3n@ozlabs.org>
+Date: Mon, 11 Apr 2016 22:35:11 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-27-03 at 22:08:17 UTC, Paul Gortmaker wrote:
-> The Kconfig for this driver is currently:
+On Mon, 2015-31-08 at 23:22:43 UTC, Vipin K Parashar wrote:
+> This patch assigns numbers to OPAL_MSG macros of enum opal_msg_type
+> to prevent accidental insertion of any new value in between and thus
+> break OPAL API. This is also helpful while backporting mainline kernel
+> changes to distros which run downlevel kernel and thus don't have all
+> OPAL messages defined, avoiding unnecessary bugs due to enum values
+> order mismatch.
 > 
-> config CPU_FREQ_CBE_PMI
->     bool "CBE frequency scaling using PMI interface"
-> 
-> ...meaning that it currently is not being built as a module by
-> anyone.  Lets remove the modular and unused code here, so that
-> when reading the driver there is no doubt it is builtin-only.
-> 
-...
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6a0bcab9c6c337e14689cabd27
+https://git.kernel.org/powerpc/c/b3d79eaa6c97b04965fa479652
 
 cheers
