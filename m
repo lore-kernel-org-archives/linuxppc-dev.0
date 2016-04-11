@@ -1,36 +1,29 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk0CH6qHkzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:14:35 +1000 (AEST)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 11 Apr 2016 16:14:34 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 51C0A3578056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:14:30 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3B6ELhL4522402
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:14:30 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3B6Dvb8010354
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:13:57 +1000
-Message-ID: <570B4093.1010600@linux.vnet.ibm.com>
-Date: Mon, 11 Apr 2016 11:43:39 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-CC: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH V2] powerpc/mm: Add validation for platform reserved memory
- ranges
-References: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk0FF2HxQzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:16:17 +1000 (AEST)
+Message-ID: <1460355375.3444.6.camel@ellerman.id.au>
+Subject: Ping? Re: [PATCH] sched/cpuacct: Check for NULL when using
+ task_pt_regs()
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>, Peter Zijlstra
+ <peterz@infradead.org>,  Ingo Molnar <mingo@kernel.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, tglx@linutronix.de,
+ efault@gmx.de, htejun@gmail.com, linux-kernel@vger.kernel.org,
+ tj@kernel.org,  torvalds@linux-foundation.org, zhaolei@cn.fujitsu.com,
+ yangds.fnst@cn.fujitsu.com, hpa@zytor.com, Stephen Rothwell
+ <sfr@canb.auug.org.au>,  linuxppc-dev@lists.ozlabs.org
+Date: Mon, 11 Apr 2016 16:16:15 +1000
+In-Reply-To: <20160406215950.04bc3f0b@kryten>
+References: <aa171da036b520b51c79549e9b3215d29473f19d.1458635566.git.zhaolei@cn.fujitsu.com>
+ <tip-d740037fac7052e49450f6fa1454f1144a103b55@git.kernel.org>
+ <20160404140312.GA28495@linux.vnet.ibm.com>
+ <20160406065436.GB3078@gmail.com> <20160406203219.788ae7cf@kryten>
+ <20160406110803.GI2906@worktop> <20160406215950.04bc3f0b@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,25 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/07/2016 03:25 PM, Anshuman Khandual wrote:
-> For partition running on PHYP, there can be a adjunct partition
-> which shares the virtual address range with the operating system.
-> Virtual address ranges which can be used by the adjunct partition
-> are communicated with virtual device node of the device tree with
-> a property known as "ibm,reserved-virtual-addresses". This patch
-> introduces a new function named 'validate_reserved_va_range' which
-> is called  during initialization to validate that these reserved
-> virtual address ranges do not overlap with the address ranges used
-> by the kernel for all supported memory contexts. This helps prevent
-> the possibility of getting return codes similar to H_RESOURCE for
-> H_PROTECT hcalls for conflicting HPTE entries.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
-> - Tested on both POWER8 LE and BE platforms
-> 
-> Changes in V2:
-> - Added braces to the definition of LINUX_VA_BITS
-> - Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
+Hi Peter/Ingo,
 
-mpe, any updates on this ?
+On Wed, 2016-04-06 at 21:59 +1000, Anton Blanchard wrote:
+> Hi Peter,
+> 
+> > Ah, so sometihng like:
+> > 
+> > 	struct pt_regs *regs = task_pt_regs();
+> > 	int index = CPUACCT_USAGE_SYSTEM;
+> > 
+> > 	if (regs && user_mode(regs))
+> > 		index = CPUACCT_USAGE_USER;
+> > 
+> > should work, right?
+> 
+> Looks good, and the patch below does fix the oops for me.
+
+Can we get this merged please? It's blocking all my boot tests.
+
+If anyone's bothered:
+
+Fixes: d740037fac70 ("sched/cpuacct: Split usage accounting into user_usage and sys_usage")
+
+cheers
+
+> task_pt_regs() can return NULL for kernel threads, so add a check.
+> This fixes an oops at boot on ppc64.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> diff --git a/kernel/sched/cpuacct.c b/kernel/sched/cpuacct.c
+> index df947e0..41f85c4 100644
+> --- a/kernel/sched/cpuacct.c
+> +++ b/kernel/sched/cpuacct.c
+> @@ -316,12 +316,11 @@ static struct cftype files[] = {
+>  void cpuacct_charge(struct task_struct *tsk, u64 cputime)
+>  {
+>  	struct cpuacct *ca;
+> -	int index;
+> +	int index = CPUACCT_USAGE_SYSTEM;
+> +	struct pt_regs *regs = task_pt_regs(tsk);
+>  
+> -	if (user_mode(task_pt_regs(tsk)))
+> +	if (regs && user_mode(regs))
+>  		index = CPUACCT_USAGE_USER;
+> -	else
+> -		index = CPUACCT_USAGE_SYSTEM;
+>  
+>  	rcu_read_lock();
+>  
+> 
