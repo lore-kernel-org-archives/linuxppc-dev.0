@@ -1,36 +1,35 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk0750L1ZzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:10:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk0CH6qHkzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:14:35 +1000 (AEST)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 11 Apr 2016 11:40:55 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3B6Apnp6226288
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 11:40:51 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3B6Ahsc009363
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 11:40:47 +0530
-Message-ID: <570B3FDB.90305@linux.vnet.ibm.com>
-Date: Mon, 11 Apr 2016 11:40:35 +0530
+ Mon, 11 Apr 2016 16:14:34 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 51C0A3578056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:14:30 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3B6ELhL4522402
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:14:30 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3B6Dvb8010354
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:13:57 +1000
+Message-ID: <570B4093.1010600@linux.vnet.ibm.com>
+Date: Mon, 11 Apr 2016 11:43:39 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Balbir Singh <bsingharora@gmail.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: hughd@google.com, dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com,
- kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
- mgorman@techsingularity.net, akpm@linux-foundation.org
-Subject: Re: [PATCH 02/10] mm/hugetlb: Add PGD based implementation awareness
-References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1460007464-26726-3-git-send-email-khandual@linux.vnet.ibm.com>
- <570622B4.5020407@gmail.com> <570B3531.2000808@linux.vnet.ibm.com>
-In-Reply-To: <570B3531.2000808@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+CC: aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH V2] powerpc/mm: Add validation for platform reserved memory
+ ranges
+References: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,31 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/11/2016 10:55 AM, Anshuman Khandual wrote:
-> On 04/07/2016 02:34 PM, Balbir Singh wrote:
->> > 
->> > 
->> > On 07/04/16 15:37, Anshuman Khandual wrote:
->>> >> Currently the config ARCH_WANT_GENERAL_HUGETLB enabled functions like
->>> >> 'huge_pte_alloc' and 'huge_pte_offset' dont take into account HugeTLB
->>> >> page implementation at the PGD level. This is also true for functions
->>> >> like 'follow_page_mask' which is called from move_pages() system call.
->>> >> This lack of PGD level huge page support prohibits some architectures
->>> >> to use these generic HugeTLB functions.
->>> >>
->> > 
->> > From what I know of move_pages(), it will always call follow_page_mask()
->> > with FOLL_GET (I could be wrong here) and the implementation below
->> > returns NULL for follow_huge_pgd().
-> You are right. This patch makes ARCH_WANT_GENERAL_HUGETLB functions aware
-> of PGD implementation so that we can do all transactions on 16GB pages
-> using these function instead of the present arch overrides. But that also
-> requires follow_page_mask() changes for every other access to the page
-> than the migrate_pages() usage.
+On 03/07/2016 03:25 PM, Anshuman Khandual wrote:
+> For partition running on PHYP, there can be a adjunct partition
+> which shares the virtual address range with the operating system.
+> Virtual address ranges which can be used by the adjunct partition
+> are communicated with virtual device node of the device tree with
+> a property known as "ibm,reserved-virtual-addresses". This patch
+> introduces a new function named 'validate_reserved_va_range' which
+> is called  during initialization to validate that these reserved
+> virtual address ranges do not overlap with the address ranges used
+> by the kernel for all supported memory contexts. This helps prevent
+> the possibility of getting return codes similar to H_RESOURCE for
+> H_PROTECT hcalls for conflicting HPTE entries.
 > 
-> But yes, we dont support migrate_pages() on PGD based pages yet, hence
-> it just returns NULL in that case. May be the commit message needs to
-> reflect this.
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> - Tested on both POWER8 LE and BE platforms
+> 
+> Changes in V2:
+> - Added braces to the definition of LINUX_VA_BITS
+> - Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
 
-The next commit actually changes follow_huge_pud|pgd() functions to
-support FOLL_GET and PGD based huge page migration.
+mpe, any updates on this ?
