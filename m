@@ -1,19 +1,22 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk9Jz1th2zDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:05:07 +1000 (AEST)
-In-Reply-To: <563CBD1B.1060407@gmail.com>
-To: =?utf-8?b?5oWV5Yas5Lqu?= <mudongliangabcd@gmail.com>,
- benh@kernel.crashing.org, paulus@samba.org, mudongliangabcd@gmail.com,
- will.deacon@arm.com, takahiro.akashi@linaro.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk9w41l7BzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 23:32:04 +1000 (AEST)
+Message-ID: <1460381518.32475.0.camel@ellerman.id.au>
+Subject: Re: [PATCH V2] powerpc/mm: Add validation for platform reserved
+ memory ranges
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: uapi elf: delete unused macros
-Message-Id: <3qk9Jy6NyYz9sC4@ozlabs.org>
-Date: Mon, 11 Apr 2016 23:05:06 +1000 (AEST)
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Date: Mon, 11 Apr 2016 23:31:58 +1000
+In-Reply-To: <570B4093.1010600@linux.vnet.ibm.com>
+References: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <570B4093.1010600@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-06-11 at 14:45:47 UTC, =?utf-8?b?5oWV5Yas5Lqu?= wrote:
-> >From 13f516acc709d88d3162e92bc891c8e39cc9fc1a Mon Sep 17 00:00:00 2001
-> From: mudongliang <mudongliangabcd@gmail.com>
-> Date: Fri, 6 Nov 2015 14:35:19 +0800
-> Subject: [PATCH] unify the comment form and delete unused macros
+On Mon, 2016-04-11 at 11:43 +0530, Anshuman Khandual wrote:
+> On 03/07/2016 03:25 PM, Anshuman Khandual wrote:
+> > For partition running on PHYP, there can be a adjunct partition
+> > which shares the virtual address range with the operating system.
+> > Virtual address ranges which can be used by the adjunct partition
+> > are communicated with virtual device node of the device tree with
+> > a property known as "ibm,reserved-virtual-addresses". This patch
+> > introduces a new function named 'validate_reserved_va_range' which
+> > is called  during initialization to validate that these reserved
+> > virtual address ranges do not overlap with the address ranges used
+> > by the kernel for all supported memory contexts. This helps prevent
+> > the possibility of getting return codes similar to H_RESOURCE for
+> > H_PROTECT hcalls for conflicting HPTE entries.
+> > 
+> > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> > ---
+> > - Tested on both POWER8 LE and BE platforms
+> > 
+> > Changes in V2:
+> > - Added braces to the definition of LINUX_VA_BITS
+> > - Adjusted tabs as spaces for the definition of PARTIAL_LINUX_VA_MASK
 > 
-> diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-> index 71e1d0e..ff81b20 100644
-> --- a/include/uapi/linux/elf.h
-> +++ b/include/uapi/linux/elf.h
-> @@ -342,15 +342,13 @@ typedef struct elf64_shdr {
->  #define	ELFCLASSNONE	0		/* EI_CLASS */
->  #define	ELFCLASS32	1
->  #define	ELFCLASS64	2
-> -#define	ELFCLASSNUM	3
->  
-> -#define ELFDATANONE	0		/* e_ident[EI_DATA] */
-> +#define ELFDATANONE	0		/* EI_DATA */
->  #define ELFDATA2LSB	1
->  #define ELFDATA2MSB	2
->  
-> -#define EV_NONE		0		/* e_version, EI_VERSION */
-> +#define EV_NONE		0		/* EI_VERSION */
->  #define EV_CURRENT	1
-> -#define EV_NUM		2
+> mpe, any updates on this ?
 
-How do you know there isn't a userspace program somewhere that's using this
-definition?
+I'm just starting to look at things for next. So will try and get to it this
+week.
 
 cheers
