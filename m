@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fS3lxWzDq9q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:12 +1000 (AEST)
-In-Reply-To: <1457524393-6717-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
- michael.neuling@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fV0jllzDqBG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:14 +1000 (AEST)
+In-Reply-To: <1456882616-26811-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: cxl: Remove dead code
-Message-Id: <3qk8fS2Vsnz9t0r@ozlabs.org>
-Date: Mon, 11 Apr 2016 22:35:11 +1000 (AEST)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MAINTAINERS: Add powerpc drivers to the powerpc section
+Message-Id: <3qk8fT2f7vz9t5C@ozlabs.org>
+Date: Mon, 11 Apr 2016 22:35:12 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,17 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-09-03 at 11:53:13 UTC, Frederic Barrat wrote:
-> Function cxl_get_phys_dev() was removed from the kernel API by a
-> previous patch, but it's actually dead code. Remove it.
+On Wed, 2016-02-03 at 01:36:56 UTC, Michael Ellerman wrote:
+> We'd like folks working on drivers for powerpc to also Cc linuxppc-dev,
+> so we can be aware of what's going on in drivers and/or review the
+> changes.
 > 
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Michael Neuling <mikey@neuling.org>
+> So add patterns to the powerpc MAINTAINERS section to catch some of the
+> drivers we're interested in.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/d88e397f12ba0c8c672952c471
+https://git.kernel.org/powerpc/c/ef69b03dfd321ffa1bcb4248e9
 
 cheers
