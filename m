@@ -1,24 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjsD712ktzDqGd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:59:51 +1000 (AEST)
-Received: by mail-pa0-x233.google.com with SMTP id bx7so94523857pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 17:59:51 -0700 (PDT)
-Subject: Re: [PATCH V2 16/68] powerpc/mm/power9: Add partition table format
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <570AF6FE.70407@gmail.com>
-Date: Mon, 11 Apr 2016 10:59:42 +1000
-MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qjt9K2JtxzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 11:42:29 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id vv3so695086pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 18:42:29 -0700 (PDT)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: arnd@arndb.de
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: [PATCH 1/2] devicetree/bindings: Add binding for operator panel on
+ FSP machines
+Date: Mon, 11 Apr 2016 11:41:29 +1000
+Message-Id: <1460338890-19693-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,92 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add a binding to Documentation/devicetree/bindings/powerpc/opal
+(oppanel-opal.txt) for the operator panel which is present on IBM
+pseries machines with FSPs.
 
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ .../devicetree/bindings/powerpc/opal/oppanel-opal.txt      | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
 
-On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> We also add mach dep call back for updating partition table entry.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu.h | 31 +++++++++++++++++++++++++++++--
->  arch/powerpc/include/asm/machdep.h       |  1 +
->  arch/powerpc/include/asm/reg.h           |  1 +
->  3 files changed, 31 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index aadb0bbc5c71..b86786f2521c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -21,12 +21,39 @@ struct mmu_psize_def {
->  extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
->  #endif /* __ASSEMBLY__ */
->  
-> -#ifdef CONFIG_PPC_STD_MMU_64
->  /* 64-bit classic hash table MMU */
->  #include <asm/book3s/64/mmu-hash.h>
-> -#endif
->  
->  #ifndef __ASSEMBLY__
-> +/*
-> + * ISA 3.0 partiton and process table entry format
-> + */
-> +struct prtb_entry {
-> +	__be64 prtb0;
-> +	__be64 prtb1;
-> +};
-> +extern struct prtb_entry *process_tb;
-> +
-> +struct patb_entry {
-> +	__be64 patb0;
-> +	__be64 patb1;
-> +};
-> +extern struct patb_entry *partition_tb;
-> +
-> +#define PATB_HR		(1UL << 63)
-> +#define PATB_GR		(1UL << 63)
-
-Some comments would help - Host Radix/Guest Radix
-
-> +#define RPDB_MASK	0x0ffffffffffff00fUL
-> +#define RPDB_SHIFT	(1UL << 8)
-
-Same here
-
-> +/*
-> + * Limit process table to PAGE_SIZE table. This
-> + * also limit the max pid we can support.
-> + * MAX_USER_CONTEXT * 16 bytes of space.
-> + */
-> +#define PRTB_SIZE_SHIFT	(CONTEXT_BITS + 4)
-> +/*
-> + * Power9 currently only support 64K partition table size.
-> + */
-> +#define PATB_SIZE_SHIFT	16
->  
->  typedef unsigned long mm_context_id_t;
->  struct spinlock;
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index fd22442d30a9..6bdcd0da9e21 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -256,6 +256,7 @@ struct machdep_calls {
->  #ifdef CONFIG_ARCH_RANDOM
->  	int (*get_random_seed)(unsigned long *v);
->  #endif
-> +	int (*update_partition_table)(u64);
->  };
->  
->  extern void e500_idle(void);
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index f5f4c66bbbc9..b546e6f28d44 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -587,6 +587,7 @@
->  #define SPRN_PIR	0x3FF	/* Processor Identification Register */
->  #endif
->  #define SPRN_TIR	0x1BE	/* Thread Identification Register */
-> +#define SPRN_PTCR	0x1D0	/* Partition table control Register */
->  #define SPRN_PSPB	0x09F	/* Problem State Priority Boost reg */
->  #define SPRN_PTEHI	0x3D5	/* 981 7450 PTE HI word (S/W TLB load) */
->  #define SPRN_PTELO	0x3D6	/* 982 7450 PTE LO word (S/W TLB load) */
-> 
+diff --git a/Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt b/Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
+new file mode 100644
+index 0000000..dffb791
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
+@@ -0,0 +1,14 @@
++IBM OPAL Operator Panel Binding
++-------------------------------
++
++Required properties:
++- compatible : Should be "ibm,opal-oppanel".
++- #lines     : Number of lines on the operator panel e.g. <0x2>.
++- #length    : Number of characters per line of the operator panel e.g. <0x10>.
++
++Example:
++	oppanel {
++		compatible = "ibm,opal-oppanel";
++		#lines = <0x2>;
++		#length = <0x10>;
++	};
+-- 
+2.5.0
