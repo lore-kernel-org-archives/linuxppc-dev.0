@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fX24h4zDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:16 +1000 (AEST)
-In-Reply-To: <1458125780-22841-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fY0yb6zDqBt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:17 +1000 (AEST)
+In-Reply-To: <1455624365-4200-1-git-send-email-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/mm: Remove long disabled SLB code
-Message-Id: <3qk8fW6FNqz9t42@ozlabs.org>
-Date: Mon, 11 Apr 2016 22:35:15 +1000 (AEST)
+Subject: Re: powerpc/eeh: rename EEH from "extended" to "enhanced" error
+ handling
+Message-Id: <3qk8fX4hX5z9ssM@ozlabs.org>
+Date: Mon, 11 Apr 2016 22:35:16 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,21 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-16-03 at 10:56:20 UTC, Michael Ellerman wrote:
-> We have a bunch of SLB related code in the tree which is there to handle
-> dynamic VSIDs - but currently it's all disabled at compile time. The
-> comments say "Keep that around for when we re-implement dynamic VSIDs".
+On Tue, 2016-16-02 at 12:06:05 UTC, Russell Currey wrote:
+> IBM online documentation for EEH uses "extended error handling" and
+> "enhanced error handling" to refer to the same thing, in different
+> places.  The only place mentioning it as "enhanced error handling" in the
+> kernel is the MAINTAINERS file, and it's "extended" in some documentation.
 > 
-> But that was over 10 years ago (commit 3c726f8dee6f ("[PATCH] ppc64:
-> support 64k pages")). The chance that it would still work unchanged is
-> minimal, and in the meantime it's confusing to folks browsing/grepping
-> the code. If we ever want to re-instate it, it's in the git history.
+> IBM originally defined EEH as "enhanced error handling", so standardise
+> all mentions of EEH to use that term.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1f4c66e80574e85aff25179fc7
+https://git.kernel.org/powerpc/c/8ee26530bb189909cca6f4b1f3
 
 cheers
