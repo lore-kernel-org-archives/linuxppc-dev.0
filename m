@@ -1,34 +1,33 @@
-Return-Path: <millerjo@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qkK9l4MwkzDq9q
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 04:59:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qkKZk30lrzDq9q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 05:17:34 +1000 (AEST)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <millerjo@us.ibm.com>;
- Mon, 11 Apr 2016 12:59:21 -0600
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5D25819D8042
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 12:47:10 -0600 (MDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3BIxIex32440510
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 18:59:18 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3BIxHtv013745
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 14:59:17 -0400
-From: Jack Miller <jack@codezen.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Mon, 11 Apr 2016 16:17:29 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 617DC352006E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:17:13 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3BIHP1b23331280
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:17:25 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3BJHNqu024176
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:17:24 -0400
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: michaele@au1.ibm.com, michael.neuling@au1.ibm.com
-Subject: [PATCH 3/3] powerpc: Load Monitor Register Tests
-Date: Mon, 11 Apr 2016 13:57:45 -0500
-Message-Id: <1460401065-10540-4-git-send-email-jack@codezen.org>
-In-Reply-To: <1460401065-10540-1-git-send-email-jack@codezen.org>
-References: <1460401065-10540-1-git-send-email-jack@codezen.org>
+Cc: gwshan@linux.vnet.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ paulus@samba.org, nfont@linux.vnet.ibm.com
+Subject: [PATCH 1/2 v3] Revert "powerpc/eeh: Fix crash in
+ eeh_add_device_early() on Cell"
+Date: Mon, 11 Apr 2016 16:17:22 -0300
+Message-Id: <1460402243-24346-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,290 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds two tests. One is a simple test to ensure that the new registers
-LMRR and LMSER are properly maintained. The other actually uses the
-existing EBB test infrastructure to test that LMRR and LMSER behave as
-documented.
+This reverts commit 89a51df5ab1d38b257300b8ac940bbac3bb0eb9b.
 
-Signed-off-by: Jack Miller <jack@codezen.org>
+The function eeh_add_device_early() is used to perform EEH initialization in
+devices added later on the system, like in hotplug/DLPAR scenarios. Since the
+commit 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
+a new check was introduced in this function - Cell has no EEH capabilities
+which led to kernel oops if hotplug was performed, so checking for
+eeh_enabled() was introduced to avoid the issue.
+
+However, in architectures that EEH is present like pSeries or PowerNV, we might
+reach a case in which no PCI devices are present on boot time and so EEH is not
+initialized. Then, if a device is added via DLPAR for example,
+eeh_add_device_early() fails because eeh_enabled() is false, and EEH end up
+not being enabled at all.
+
+This reverts the aforementioned patch since a new verification was introduced by
+the commit d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
+and so the original Cell issue does not happen anymore.
+
+Cc: stable@vger.kernel.org
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
- tools/testing/selftests/powerpc/pmu/ebb/Makefile   |   2 +-
- tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c  | 144 +++++++++++++++++++++
- tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h  |  39 ++++++
- .../selftests/powerpc/pmu/ebb/ebb_lmr_regs.c       |  38 ++++++
- tools/testing/selftests/powerpc/pmu/ebb/reg.h      |   5 +
- 5 files changed, 227 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
- create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
+ arch/powerpc/kernel/eeh.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-index 8d2279c4..6b0453e 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-@@ -14,7 +14,7 @@ TEST_PROGS := reg_access_test event_attributes_test cycles_test	\
- 	 fork_cleanup_test ebb_on_child_test			\
- 	 ebb_on_willing_child_test back_to_back_ebbs_test	\
- 	 lost_exception_test no_handler_test			\
--	 cycles_with_mmcr2_test
-+	 cycles_with_mmcr2_test ebb_lmr ebb_lmr_regs
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 6544017..6758484 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1068,7 +1068,7 @@ void eeh_add_device_early(struct pci_dn *pdn)
+ 	struct pci_controller *phb;
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
  
- all: $(TEST_PROGS)
+-	if (!edev || !eeh_enabled())
++	if (!edev)
+ 		return;
  
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
-new file mode 100644
-index 0000000..266062b7
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
-@@ -0,0 +1,144 @@
-+/*
-+ * Copyright 2016, Jack Miller, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+
-+#include "ebb.h"
-+#include "ebb_lmr.h"
-+
-+#define SIZE		(32 * 1024 * 1024)	/* 32M */
-+#define LM_SIZE		0	/* Smallest encoding, 32M */
-+
-+#define SECTIONS	64	/* 1 per bit in LMSER */
-+#define SECTION_SIZE	(SIZE / SECTIONS)
-+#define SECTION_LONGS   (SECTION_SIZE / sizeof(long))
-+
-+static unsigned long *test_mem;
-+
-+static int lmr_count = 0;
-+
-+void ebb_lmr_handler(void)
-+{
-+	lmr_count++;
-+}
-+
-+void ldmx_full_section(unsigned long *mem, int section)
-+{
-+	unsigned long *ptr;
-+	int i;
-+
-+	for (i = 0; i < SECTION_LONGS; i++) {
-+		ptr = &mem[(SECTION_LONGS * section) + i];
-+		ldmx((unsigned long) &ptr);
-+		ebb_lmr_reset();
-+	}
-+}
-+
-+unsigned long section_masks[] = {
-+	0x8000000000000000,
-+	0xFF00000000000000,
-+	0x0000000F70000000,
-+	0x8000000000000001,
-+	0xF0F0F0F0F0F0F0F0,
-+	0x0F0F0F0F0F0F0F0F,
-+	0x0
-+};
-+
-+int ebb_lmr_section_test(unsigned long *mem)
-+{
-+	unsigned long *mask = section_masks;
-+	int i;
-+
-+	for (; *mask; mask++) {
-+		mtspr(SPRN_LMSER, *mask);
-+		printf("Testing mask 0x%016lx\n", mfspr(SPRN_LMSER));
-+
-+		for (i = 0; i < 64; i++) {
-+			lmr_count = 0;
-+			ldmx_full_section(mem, i);
-+			if (*mask & (1UL << (63 - i)))
-+				FAIL_IF(lmr_count != SECTION_LONGS);
-+			else
-+				FAIL_IF(lmr_count);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+int ebb_lmr(void)
-+{
-+	int i;
-+
-+	SKIP_IF(!ebb_is_supported());
-+	SKIP_IF(!lmr_is_supported());
-+
-+	setup_ebb_handler(ebb_lmr_handler);
-+
-+	ebb_global_enable();
-+
-+	FAIL_IF(posix_memalign((void **)&test_mem, SIZE, SIZE) != 0);
-+
-+	mtspr(SPRN_LMSER, 0);
-+
-+	FAIL_IF(mfspr(SPRN_LMSER) != 0);
-+
-+	mtspr(SPRN_LMRR, ((unsigned long)test_mem | LM_SIZE));
-+
-+	FAIL_IF(mfspr(SPRN_LMRR) != ((unsigned long)test_mem | LM_SIZE));
-+
-+	/* Read every single byte to ensure we get no false positives */
-+	for (i = 0; i < SECTIONS; i++)
-+		ldmx_full_section(test_mem, i);
-+
-+	FAIL_IF(lmr_count != 0);
-+
-+	/* Turn on the first section */
-+
-+	mtspr(SPRN_LMSER, (1UL << 63));
-+	FAIL_IF(mfspr(SPRN_LMSER) != (1UL << 63));
-+
-+	/* Enable LM (BESCR) */
-+
-+	mtspr(SPRN_BESCR, mfspr(SPRN_BESCR) | BESCR_LME);
-+	FAIL_IF(!(mfspr(SPRN_BESCR) & BESCR_LME));
-+
-+	ldmx((unsigned long)&test_mem);
-+
-+	FAIL_IF(lmr_count != 1);	// exactly one exception
-+	FAIL_IF(mfspr(SPRN_BESCR) & BESCR_LME);	// LM now disabled
-+	FAIL_IF(!(mfspr(SPRN_BESCR) & BESCR_LMEO));	// occurred bit set
-+
-+	printf("Simple LMR EBB OK\n");
-+
-+	/* This shouldn't cause an EBB since it's been disabled */
-+	ldmx((unsigned long)&test_mem);
-+	FAIL_IF(lmr_count != 1);
-+
-+	printf("LMR disable on EBB OK\n");
-+
-+	ebb_lmr_reset();
-+
-+	/* This should cause an EBB or reset is broken */
-+	ldmx((unsigned long)&test_mem);
-+	FAIL_IF(lmr_count != 2);
-+
-+	printf("LMR reset EBB OK\n");
-+
-+	ebb_lmr_reset();
-+
-+	return ebb_lmr_section_test(test_mem);
-+}
-+
-+int main(void)
-+{
-+	int ret = test_harness(ebb_lmr, "ebb_lmr");
-+
-+	if (test_mem)
-+		free(test_mem);
-+
-+	return ret;
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
-new file mode 100644
-index 0000000..7911756
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
-@@ -0,0 +1,39 @@
-+#ifndef _SELFTESTS_POWERPC_PMU_EBB_LMR_H
-+#define _SELFTESTS_POWERPC_PMU_EBB_LMR_H
-+
-+#include "reg.h"
-+
-+#ifndef PPC_FEATURE2_ARCH_3_00
-+#define PPC_FEATURE2_ARCH_3_00 0x00800000
-+#endif
-+
-+#define lmr_is_supported() have_hwcap2(PPC_FEATURE2_ARCH_3_00)
-+
-+static inline void ebb_lmr_reset(void)
-+{
-+	unsigned long bescr = mfspr(SPRN_BESCR);
-+	bescr &= ~(BESCR_LMEO);
-+	bescr |= BESCR_LME;
-+	mtspr(SPRN_BESCR, bescr);
-+}
-+
-+#define LDMX(t, a, b)\
-+    (0x7c00026a |\
-+    ((t & 0x1f) << 21) |\
-+    ((a & 0x1f) << 16) |\
-+    ((b & 0x1f) << 11))
-+
-+static inline unsigned long ldmx(unsigned long address)
-+{
-+	unsigned long ret;
-+
-+	asm volatile ("mr 9, %1\r\n"
-+		      ".long " __stringify(LDMX(9, 0, 9)) "\r\n"
-+		      "mr %0, 9\r\n":"=r"(ret)
-+		      :"r"(address)
-+		      :"r9");
-+
-+	return ret;
-+}
-+
-+#endif
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
-new file mode 100644
-index 0000000..d2a4898
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
-@@ -0,0 +1,38 @@
-+/*
-+ * Copyright 2016, Jack Miller, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <unistd.h>
-+
-+#include "ebb.h"
-+#include "ebb_lmr.h"
-+
-+#define CHECKS 10000
-+
-+int ebb_lmr_regs(void)
-+{
-+	int i;
-+
-+	SKIP_IF(!ebb_is_supported());
-+	SKIP_IF(!lmr_is_supported());
-+
-+	ebb_global_enable();
-+
-+	for (i = 0; i < CHECKS; i++) {
-+		mtspr(SPRN_LMRR, i << 25);	// skip size and rsvd bits
-+		mtspr(SPRN_LMSER, i);
-+
-+		FAIL_IF(mfspr(SPRN_LMRR) != (i << 25));
-+		FAIL_IF(mfspr(SPRN_LMSER) != i);
-+	}
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(ebb_lmr_regs, "ebb_lmr_regs");
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/reg.h b/tools/testing/selftests/powerpc/pmu/ebb/reg.h
-index 5921b0d..0659a7b 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/reg.h
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/reg.h
-@@ -34,6 +34,11 @@
- 
- #define BESCR_PMEO     0x1     /* PMU Event-based exception Occurred */
- #define BESCR_PME      (0x1ul << 32) /* PMU Event-based exception Enable */
-+#define BESCR_LME      (0x1ul << 34) /* Load Monitor Enable */
-+#define BESCR_LMEO     (0x1ul << 2)  /* Load Monitor Exception Occurred */
-+
-+#define SPRN_LMRR      813     /* Load Monitor Region Register */
-+#define SPRN_LMSER     814     /* Load Monitor Section Enable Register */
- 
- #define SPRN_PMC1      771
- #define SPRN_PMC2      772
+ 	if (!eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
 -- 
-2.8.0
+2.1.0
