@@ -1,19 +1,37 @@
-Return-Path: <aaro.koskinen@iki.fi>
-Received: from emh01.mail.saunalahti.fi (emh01.mail.saunalahti.fi
- [62.142.5.107])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjkYQ1NgzzDqCY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 05:59:22 +1000 (AEST)
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
-Subject: [PATCH RESEND 2/2] drivers: macintosh: rack-meter: fix bogus memsets
-Date: Sun, 10 Apr 2016 22:53:48 +0300
-Message-Id: <1460318028-28056-2-git-send-email-aaro.koskinen@iki.fi>
-In-Reply-To: <1460318028-28056-1-git-send-email-aaro.koskinen@iki.fi>
-References: <1460318028-28056-1-git-send-email-aaro.koskinen@iki.fi>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qjrlB4GTYzDqGd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:38:14 +1000 (AEST)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 11 Apr 2016 10:38:13 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 687F02CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:38:03 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3B0bo3i65011940
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:38:03 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3B0bP3i027794
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:37:26 +1000
+Subject: Re: [PATCH V2 01/68] powerpc/cxl: Use REGION_ID instead of opencoding
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <570AF1AC.7070509@au1.ibm.com>
+Date: Mon, 11 Apr 2016 10:37:00 +1000
+MIME-Version: 1.0
+In-Reply-To: <1460182444-2468-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +41,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix bogus memsets pointed out by sparse:
+On 09/04/16 16:12, Aneesh Kumar K.V wrote:
+> Also note that the `~` operation is wrong.
+>
+> Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-linux-v4.3/drivers/macintosh/rack-meter.c:157:15: warning: memset with byte count of 0
-linux-v4.3/drivers/macintosh/rack-meter.c:158:15: warning: memset with byte count of 0
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Probably "&" is mistyped "*"; use ARRAY_SIZE to make it more safe.
-
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
----
- drivers/macintosh/rack-meter.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
-index ba7e330..465c522 100644
---- a/drivers/macintosh/rack-meter.c
-+++ b/drivers/macintosh/rack-meter.c
-@@ -154,8 +154,8 @@ static void rackmeter_do_pause(struct rackmeter *rm, int pause)
- 		DBDMA_DO_STOP(rm->dma_regs);
- 		return;
- 	}
--	memset(rdma->buf1, 0, SAMPLE_COUNT & sizeof(u32));
--	memset(rdma->buf2, 0, SAMPLE_COUNT & sizeof(u32));
-+	memset(rdma->buf1, 0, ARRAY_SIZE(rdma->buf1));
-+	memset(rdma->buf2, 0, ARRAY_SIZE(rdma->buf2));
- 
- 	rm->dma_buf_v->mark = 0;
- 
 -- 
-2.7.2
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
