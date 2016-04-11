@@ -2,15 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fV0jllzDqBG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qk8fV2YsYzDqBR
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 22:35:14 +1000 (AEST)
-In-Reply-To: <1456882616-26811-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1456899165-21624-1-git-send-email-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: MAINTAINERS: Add powerpc drivers to the powerpc section
-Message-Id: <3qk8fT2f7vz9t5C@ozlabs.org>
-Date: Mon, 11 Apr 2016 22:35:12 +1000 (AEST)
+Subject: Re: powerpc/swsusp: Only use tlbie in POWER4 mode
+Message-Id: <3qk8fV0pgyz9t5h@ozlabs.org>
+Date: Mon, 11 Apr 2016 22:35:13 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,18 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-02-03 at 01:36:56 UTC, Michael Ellerman wrote:
-> We'd like folks working on drivers for powerpc to also Cc linuxppc-dev,
-> so we can be aware of what's going on in drivers and/or review the
-> changes.
+On Wed, 2016-02-03 at 06:12:45 UTC, Russell Currey wrote:
+> If CONFIG_HIBERNATION and CONFIG_PPC_BOOK3S_64 are set, code in
+> arch/powerpc/kernel/swsusp_amd64.S which uses the tlbia macro is enabled.
+> tlbia in turn uses tlbie, an instruction which takes more than one
+> operand in newer versions of POWER.  As such, the kernel fails to build
+> due to the assembler complaining about missing operands.
 > 
-> So add patterns to the powerpc MAINTAINERS section to catch some of the
-> drivers we're interested in.
+> This can be worked around by assembling the instruction as in POWER4.
+> This fixes the build breakage caused by enabling CONFIG_HIBERNATION.
+> Hibernation is currently only tested on G5 PowerMacs, which should be
+> unaffected by this change.  For other platforms it may now build,
+> whether or not it works is a different story.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ef69b03dfd321ffa1bcb4248e9
+https://git.kernel.org/powerpc/c/e3824e4281b8e31d55c08a06b2
 
 cheers
