@@ -1,23 +1,24 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
- [IPv6:2607:f8b0:400e:c00::235])
+Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c00::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjySP3P3tzDq9q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 14:55:49 +1000 (AEST)
-Received: by mail-pf0-x235.google.com with SMTP id e128so116283365pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 21:55:49 -0700 (PDT)
-Subject: Re: [PATCH V2 17/68] powerpc/mm/hash: Add support for POWER9 hash
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qjysf59dCzDq9r
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:14:14 +1000 (AEST)
+Received: by mail-pf0-x22c.google.com with SMTP id n1so116672083pfn.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Apr 2016 22:14:14 -0700 (PDT)
+Subject: Re: [PATCH V2 18/68] powerpc/mm: Move hash and no hash code to
+ separate files
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <570B2E4E.10708@gmail.com>
-Date: Mon, 11 Apr 2016 14:55:42 +1000
+Message-ID: <570B329E.8060607@gmail.com>
+Date: Mon, 11 Apr 2016 15:14:06 +1000
 MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1460182444-2468-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,223 +30,479 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-
 On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> PowerISA 3.0 adds a parition table indexed by LPID. Parition table allow
-> us to specify the MMU model that will be used for guest and host
-> translation.
-> 
-> This patch add support with SLB based hash model (UPRT = 0). What is
-> required with this model is to support the new hash page table entry
-> format and also setup Partition table such we use hash table for
-> address translation.
-> 
-> We don't have segment table support yet.
-> 
-> Inorder to make sure we don't load KVM module on Power9 (since we
-> don't have kvm support yet) this patch also disable kvm on Power9
+> This patch reduce #ifdef in C code and also help in adding radix changes
+> later. Only code movement in this patch.
 > 
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/book3s/64/mmu-hash.h | 13 +++++++--
->  arch/powerpc/kvm/book3s_hv.c                  |  6 ++++
->  arch/powerpc/kvm/book3s_pr.c                  |  6 +++-
->  arch/powerpc/mm/hash_native_64.c              | 11 ++++++-
->  arch/powerpc/mm/hash_utils_64.c               | 42 +++++++++++++++++++++++++--
->  arch/powerpc/mm/pgtable_64.c                  |  7 +++++
->  arch/powerpc/platforms/ps3/htab.c             |  2 +-
->  arch/powerpc/platforms/pseries/lpar.c         |  2 +-
->  8 files changed, 81 insertions(+), 8 deletions(-)
+>  arch/powerpc/mm/Makefile         |   3 +-
+>  arch/powerpc/mm/init_64.c        |  74 ++--------------------
+>  arch/powerpc/mm/pgtable-book3e.c | 128 +++++++++++++++++++++++++++++++++++++++
+>  arch/powerpc/mm/pgtable-hash64.c | 100 ++++++++++++++++++++++++++++++
+>  arch/powerpc/mm/pgtable_64.c     |  83 -------------------------
+>  5 files changed, 235 insertions(+), 153 deletions(-)
+>  create mode 100644 arch/powerpc/mm/pgtable-book3e.c
+>  create mode 100644 arch/powerpc/mm/pgtable-hash64.c
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> index ce73736b42db..843b5d839904 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> @@ -78,6 +78,10 @@
->  #define HPTE_V_SECONDARY	ASM_CONST(0x0000000000000002)
->  #define HPTE_V_VALID		ASM_CONST(0x0000000000000001)
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index adfee3f1aeb9..ef778997daa9 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -13,7 +13,8 @@ obj-$(CONFIG_PPC_MMU_NOHASH)	+= mmu_context_nohash.o tlb_nohash.o \
+>  				   tlb_nohash_low.o
+>  obj-$(CONFIG_PPC_BOOK3E)	+= tlb_low_$(CONFIG_WORD_SIZE)e.o
+>  hash64-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+> -obj-$(CONFIG_PPC_STD_MMU_64)	+= hash_utils_64.o slb_low.o slb.o $(hash64-y)
+> +obj-$(CONFIG_PPC_BOOK3E_64)   += pgtable-book3e.o
+> +obj-$(CONFIG_PPC_STD_MMU_64)	+= pgtable-hash64.o hash_utils_64.o slb_low.o slb.o $(hash64-y)
+>  obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o
+>  obj-$(CONFIG_PPC_STD_MMU)	+= tlb_hash$(CONFIG_WORD_SIZE).o \
+>  				   mmu_context_hash$(CONFIG_WORD_SIZE).o
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index ba655666186d..8d1daf7d9785 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -189,75 +189,6 @@ static int __meminit vmemmap_populated(unsigned long start, int page_size)
+>  	return 0;
+>  }
 >  
+> -/* On hash-based CPUs, the vmemmap is bolted in the hash table.
+> - *
+> - * On Book3E CPUs, the vmemmap is currently mapped in the top half of
+> - * the vmalloc space using normal page tables, though the size of
+> - * pages encoded in the PTEs can be different
+> - */
+> -
+> -#ifdef CONFIG_PPC_BOOK3E
+> -static int __meminit vmemmap_create_mapping(unsigned long start,
+> -					    unsigned long page_size,
+> -					    unsigned long phys)
+> -{
+> -	/* Create a PTE encoding without page size */
+> -	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
+> -		_PAGE_KERNEL_RW;
+> -
+> -	/* PTEs only contain page size encodings up to 32M */
+> -	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
+> -
+> -	/* Encode the size in the PTE */
+> -	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
+> -
+> -	/* For each PTE for that area, map things. Note that we don't
+> -	 * increment phys because all PTEs are of the large size and
+> -	 * thus must have the low bits clear
+> -	 */
+> -	for (i = 0; i < page_size; i += PAGE_SIZE)
+> -		BUG_ON(map_kernel_page(start + i, phys, flags));
+> -
+> -	return 0;
+> -}
+> -
+> -#ifdef CONFIG_MEMORY_HOTPLUG
+> -static void vmemmap_remove_mapping(unsigned long start,
+> -				   unsigned long page_size)
+> -{
+> -}
+> -#endif
+> -#else /* CONFIG_PPC_BOOK3E */
+> -static int __meminit vmemmap_create_mapping(unsigned long start,
+> -					    unsigned long page_size,
+> -					    unsigned long phys)
+> -{
+> -	int rc = htab_bolt_mapping(start, start + page_size, phys,
+> -				   pgprot_val(PAGE_KERNEL),
+> -				   mmu_vmemmap_psize, mmu_kernel_ssize);
+> -	if (rc < 0) {
+> -		int rc2 = htab_remove_mapping(start, start + page_size,
+> -					      mmu_vmemmap_psize,
+> -					      mmu_kernel_ssize);
+> -		BUG_ON(rc2 && (rc2 != -ENOENT));
+> -	}
+> -	return rc;
+> -}
+> -
+> -#ifdef CONFIG_MEMORY_HOTPLUG
+> -static void vmemmap_remove_mapping(unsigned long start,
+> -				   unsigned long page_size)
+> -{
+> -	int rc = htab_remove_mapping(start, start + page_size,
+> -				     mmu_vmemmap_psize,
+> -				     mmu_kernel_ssize);
+> -	BUG_ON((rc < 0) && (rc != -ENOENT));
+> -	WARN_ON(rc == -ENOENT);
+> -}
+> -#endif
+> -
+> -#endif /* CONFIG_PPC_BOOK3E */
+> -
+>  struct vmemmap_backing *vmemmap_list;
+>  static struct vmemmap_backing *next;
+>  static int num_left;
+> @@ -309,6 +240,9 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
+>  	vmemmap_list = vmem_back;
+>  }
+>  
+> +extern int __meminit vmemmap_create_mapping(unsigned long start,
+> +					    unsigned long page_size,
+> +					    unsigned long phys);
+>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+>  {
+>  	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
+> @@ -347,6 +281,8 @@ int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
+> +extern void vmemmap_remove_mapping(unsigned long start,
+> +				   unsigned long page_size);
+>  static unsigned long vmemmap_list_free(unsigned long start)
+>  {
+>  	struct vmemmap_backing *vmem_back, *vmem_back_prev;
+> diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/pgtable-book3e.c
+> new file mode 100644
+> index 000000000000..f75ba4142875
+> --- /dev/null
+> +++ b/arch/powerpc/mm/pgtable-book3e.c
+> @@ -0,0 +1,128 @@
+> +
 > +/*
-> + * ISA 3.0 have a different HPTE format.
+> + * Copyright IBM Corporation, 2015
+> + * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> + *
+
+You may want to retain the copyrights from the original file as well
+
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of version 2 of the GNU Lesser General Public License
+> + * as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it would be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> + *
 > + */
-> +#define HPTE_R_3_0_SSIZE_SHIFT	58
->  #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
->  #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
->  #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
-> @@ -224,7 +228,8 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
->  	 */
->  	v = (vpn >> (23 - VPN_SHIFT)) & ~(mmu_psize_defs[psize].avpnm);
->  	v <<= HPTE_V_AVPN_SHIFT;
-> -	v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +		v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
->  	return v;
->  }
->  
-> @@ -248,8 +253,12 @@ static inline unsigned long hpte_encode_v(unsigned long vpn, int base_psize,
->   * aligned for the requested page size
->   */
->  static inline unsigned long hpte_encode_r(unsigned long pa, int base_psize,
-> -					  int actual_psize)
-> +					  int actual_psize, int ssize)
->  {
 > +
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		pa |= ((unsigned long) ssize) << HPTE_R_3_0_SSIZE_SHIFT;
+> +/*
+> + * PPC64 THP Support for hash based MMUs
+> + */
+> +#include <linux/sched.h>
+> +#include <linux/memblock.h>
+> +#include <asm/pgalloc.h>
+> +#include <asm/tlb.h>
+> +#include <asm/dma.h>
 > +
-
-Looks good, I was wondering if we can compute cpu_has_feature(CPU_FTR_ARCH_300) once for the instance
-and use it, but I am just nit-picking. I've never tried using ASM_MMU_FTR_IF(), I don't know
-if you've explored it. Not very important for this patchset though
-
->  	/* A 4K page needs no special encoding */
->  	if (actual_psize == MMU_PAGE_4K)
->  		return pa & HPTE_R_RPN;
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index baeddb06811d..c07600efcef6 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -3083,6 +3083,12 @@ static int kvmppc_core_check_processor_compat_hv(void)
->  	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
->  	    !cpu_has_feature(CPU_FTR_ARCH_206))
->  		return -EIO;
-> +	/*
-> +	 * Disable KVM for Power9, untill the required bits merged.
-> +	 */
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return -EIO;
+> +#include "mmu_decl.h"
 > +
->  	return 0;
->  }
->  
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 95bceca8f40e..ffbaf40b7f31 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -1683,7 +1683,11 @@ static void kvmppc_core_destroy_vm_pr(struct kvm *kvm)
->  
->  static int kvmppc_core_check_processor_compat_pr(void)
->  {
-> -	/* we are always compatible */
-> +	/*
-> +	 * Disable KVM for Power9 untill the required bits merged.
-> +	 */
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return -EIO;
->  	return 0;
->  }
->  
-> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-> index 8eaac81347fd..d873f6507f72 100644
-> --- a/arch/powerpc/mm/hash_native_64.c
-> +++ b/arch/powerpc/mm/hash_native_64.c
-> @@ -221,7 +221,7 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
->  		return -1;
->  
->  	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
-> -	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
-> +	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
->  
->  	if (!(vflags & HPTE_V_BOLTED)) {
->  		DBG_LOW(" i=%x hpte_v=%016lx, hpte_r=%016lx\n",
-> @@ -719,6 +719,12 @@ static void native_flush_hash_range(unsigned long number, int local)
->  	local_irq_restore(flags);
->  }
->  
-> +static int native_update_partition_table(u64 patb1)
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
+> +/*
+> + * On Book3E CPUs, the vmemmap is currently mapped in the top half of
+> + * the vmalloc space using normal page tables, though the size of
+> + * pages encoded in the PTEs can be different
+> + */
+> +int __meminit vmemmap_create_mapping(unsigned long start,
+> +				     unsigned long page_size,
+> +				     unsigned long phys)
 > +{
-> +	partition_tb->patb1 = cpu_to_be64(patb1);
-
-Do we need to tell the hardware that patb1 was updated?
-
+> +	/* Create a PTE encoding without page size */
+> +	unsigned long i, flags = _PAGE_PRESENT | _PAGE_ACCESSED |
+> +		_PAGE_KERNEL_RW;
+> +
+> +	/* PTEs only contain page size encodings up to 32M */
+> +	BUG_ON(mmu_psize_defs[mmu_vmemmap_psize].enc > 0xf);
+> +
+> +	/* Encode the size in the PTE */
+> +	flags |= mmu_psize_defs[mmu_vmemmap_psize].enc << 8;
+> +
+> +	/* For each PTE for that area, map things. Note that we don't
+> +	 * increment phys because all PTEs are of the large size and
+> +	 * thus must have the low bits clear
+> +	 */
+> +	for (i = 0; i < page_size; i += PAGE_SIZE)
+> +		BUG_ON(map_kernel_page(start + i, phys, flags));
+> +
 > +	return 0;
 > +}
 > +
->  void __init hpte_init_native(void)
->  {
->  	ppc_md.hpte_invalidate	= native_hpte_invalidate;
-> @@ -729,4 +735,7 @@ void __init hpte_init_native(void)
->  	ppc_md.hpte_clear_all	= native_hpte_clear;
->  	ppc_md.flush_hash_range = native_flush_hash_range;
->  	ppc_md.hugepage_invalidate   = native_hugepage_invalidate;
-> +
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		ppc_md.update_partition_table = native_update_partition_table;
->  }
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index e924690a5a0e..43e0d86b7ca1 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -674,6 +674,41 @@ int remove_section_mapping(unsigned long start, unsigned long end)
->  }
->  #endif /* CONFIG_MEMORY_HOTPLUG */
->  
-> +static void __init hash_init_partition_table(phys_addr_t hash_table,
-> +					     unsigned long pteg_count)
+> +#ifdef CONFIG_MEMORY_HOTPLUG
+> +void vmemmap_remove_mapping(unsigned long start,
+> +			    unsigned long page_size)
 > +{
-> +	unsigned long ps_field;
-> +	unsigned long htab_size;
-> +	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
+> +}
+> +#endif
+> +#endif /* CONFIG_SPARSEMEM_VMEMMAP */
 > +
-> +	/*
-> +	 * slb llp encoding for the page size used in VPM real mode.
-> +	 * We can ignore that for lpid 0
-> +	 */
-> +	ps_field = 0;
-> +	htab_size =  __ilog2(pteg_count) - 11;
+> +static __ref void *early_alloc_pgtable(unsigned long size)
+> +{
+> +	void *pt;
 > +
-> +	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
-> +	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
-> +						MEMBLOCK_ALLOC_ANYWHERE));
+> +	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
+> +	memset(pt, 0, size);
 > +
-> +	/* Initialize the Partition Table with no entries */
-> +	memset((void *)partition_tb, 0, patb_size);
-> +	partition_tb->patb0 = cpu_to_be64(ps_field | hash_table | htab_size);
-> +	/*
-> +	 * FIXME!! This should be done via update_partition table
-> +	 * For now UPRT is 0 for us.
-> +	 */
-> +	partition_tb->patb1 = 0;
-
-So the design is that we allocate upto 2^24/16 entries for the partition table
-and set the first entry LPID0 to use HPT with ps_field set to 0 and patb1
-to be updated by the callback we provide via native_update_partition_table?
-
-> +	DBG("Partition table %p\n", partition_tb);
-> +	/*
-> +	 * update partition table control register,
-> +	 * 64 K size.
-> +	 */
-> +	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-> +
+> +	return pt;
 > +}
 > +
->  static void __init htab_initialize(void)
->  {
->  	unsigned long table;
-> @@ -742,8 +777,11 @@ static void __init htab_initialize(void)
->  		/* Initialize the HPT with no entries */
->  		memset((void *)table, 0, htab_size_bytes);
->  
-> -		/* Set SDR1 */
-> -		mtspr(SPRN_SDR1, _SDR1);
-> +		if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +			/* Set SDR1 */
-> +			mtspr(SPRN_SDR1, _SDR1);
-> +		else
-> +			hash_init_partition_table(table, pteg_count);
->  	}
->  
->  	prot = pgprot_val(PAGE_KERNEL);
+> +/*
+> + * map_kernel_page currently only called by __ioremap
+> + * map_kernel_page adds an entry to the ioremap page table
+> + * and adds an entry to the HPT, possibly bolting it
+> + */
+> +int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
+> +{
+> +	pgd_t *pgdp;
+> +	pud_t *pudp;
+> +	pmd_t *pmdp;
+> +	pte_t *ptep;
+> +
+> +	if (slab_is_available()) {
+> +		pgdp = pgd_offset_k(ea);
+> +		pudp = pud_alloc(&init_mm, pgdp, ea);
+> +		if (!pudp)
+> +			return -ENOMEM;
+> +		pmdp = pmd_alloc(&init_mm, pudp, ea);
+> +		if (!pmdp)
+> +			return -ENOMEM;
+> +		ptep = pte_alloc_kernel(pmdp, ea);
+> +		if (!ptep)
+> +			return -ENOMEM;
+> +		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+> +							  __pgprot(flags)));
+> +	} else {
+> +		pgdp = pgd_offset_k(ea);
+> +#ifndef __PAGETABLE_PUD_FOLDED
+> +		if (pgd_none(*pgdp)) {
+> +			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
+> +			BUG_ON(pudp == NULL);
+> +			pgd_populate(&init_mm, pgdp, pudp);
+> +		}
+> +#endif /* !__PAGETABLE_PUD_FOLDED */
+> +		pudp = pud_offset(pgdp, ea);
+> +		if (pud_none(*pudp)) {
+> +			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
+> +			BUG_ON(pmdp == NULL);
+> +			pud_populate(&init_mm, pudp, pmdp);
+> +		}
+> +		pmdp = pmd_offset(pudp, ea);
+> +		if (!pmd_present(*pmdp)) {
+> +			ptep = early_alloc_pgtable(PAGE_SIZE);
+> +			BUG_ON(ptep == NULL);
+> +			pmd_populate_kernel(&init_mm, pmdp, ptep);
+> +		}
+> +		ptep = pte_offset_kernel(pmdp, ea);
+> +		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+> +							  __pgprot(flags)));
+> +	}
+> +
+> +	smp_wmb();
+> +	return 0;
+> +}
+> diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+> new file mode 100644
+> index 000000000000..04d6fa12789e
+> --- /dev/null
+> +++ b/arch/powerpc/mm/pgtable-hash64.c
+> @@ -0,0 +1,100 @@
+> +/*
+> + * Copyright IBM Corporation, 2015
+> + * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> + *
+
+Same as before
+
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of version 2 of the GNU Lesser General Public License
+> + * as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it would be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> + *
+> + */
+> +
+> +/*
+> + * PPC64 THP Support for hash based MMUs
+> + */
+> +#include <linux/sched.h>
+> +#include <asm/pgalloc.h>
+> +#include <asm/tlb.h>
+> +
+> +#include "mmu_decl.h"
+> +
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
+> +/*
+> + * On hash-based CPUs, the vmemmap is bolted in the hash table.
+> + *
+> + */
+> +int __meminit vmemmap_create_mapping(unsigned long start,
+> +				     unsigned long page_size,
+> +				     unsigned long phys)
+> +{
+> +	int rc = htab_bolt_mapping(start, start + page_size, phys,
+> +				   pgprot_val(PAGE_KERNEL),
+> +				   mmu_vmemmap_psize, mmu_kernel_ssize);
+> +	if (rc < 0) {
+> +		int rc2 = htab_remove_mapping(start, start + page_size,
+> +					      mmu_vmemmap_psize,
+> +					      mmu_kernel_ssize);
+> +		BUG_ON(rc2 && (rc2 != -ENOENT));
+> +	}
+> +	return rc;
+> +}
+> +
+> +#ifdef CONFIG_MEMORY_HOTPLUG
+> +void vmemmap_remove_mapping(unsigned long start,
+> +			    unsigned long page_size)
+> +{
+> +	int rc = htab_remove_mapping(start, start + page_size,
+> +				     mmu_vmemmap_psize,
+> +				     mmu_kernel_ssize);
+> +	BUG_ON((rc < 0) && (rc != -ENOENT));
+> +	WARN_ON(rc == -ENOENT);
+> +}
+> +#endif
+> +#endif /* CONFIG_SPARSEMEM_VMEMMAP */
+> +
+> +/*
+> + * map_kernel_page currently only called by __ioremap
+> + * map_kernel_page adds an entry to the ioremap page table
+> + * and adds an entry to the HPT, possibly bolting it
+> + */
+> +int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
+> +{
+> +	pgd_t *pgdp;
+> +	pud_t *pudp;
+> +	pmd_t *pmdp;
+> +	pte_t *ptep;
+> +
+> +	if (slab_is_available()) {
+> +		pgdp = pgd_offset_k(ea);
+> +		pudp = pud_alloc(&init_mm, pgdp, ea);
+> +		if (!pudp)
+> +			return -ENOMEM;
+> +		pmdp = pmd_alloc(&init_mm, pudp, ea);
+> +		if (!pmdp)
+> +			return -ENOMEM;
+> +		ptep = pte_alloc_kernel(pmdp, ea);
+> +		if (!ptep)
+> +			return -ENOMEM;
+> +		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+> +							  __pgprot(flags)));
+> +	} else {
+> +		/*
+> +		 * If the mm subsystem is not fully up, we cannot create a
+> +		 * linux page table entry for this mapping.  Simply bolt an
+> +		 * entry in the hardware page table.
+> +		 *
+> +		 */
+> +		if (htab_bolt_mapping(ea, ea + PAGE_SIZE, pa, flags,
+> +				      mmu_io_psize, mmu_kernel_ssize)) {
+> +			printk(KERN_ERR "Failed to do bolted mapping IO "
+> +			       "memory at %016lx !\n", pa);
+> +			return -ENOMEM;
+
+What happens when we do unmap this? I know this code has been around for a while
+so its not new
+
+> +		}
+> +	}
+> +
+> +	smp_wmb();
+> +	return 0;
+> +}
 > diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-> index 98c91ad18ba7..5fff787da17a 100644
+> index 5fff787da17a..d493f62d12eb 100644
 > --- a/arch/powerpc/mm/pgtable_64.c
 > +++ b/arch/powerpc/mm/pgtable_64.c
-> @@ -69,6 +69,13 @@
+> @@ -78,89 +78,6 @@ struct patb_entry *partition_tb;
 >  #endif
->  #endif
-
-<snip>
+>  unsigned long ioremap_bot = IOREMAP_BASE;
+>  
+> -#ifdef CONFIG_PPC_MMU_NOHASH
+> -static __ref void *early_alloc_pgtable(unsigned long size)
+> -{
+> -	void *pt;
+> -
+> -	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
+> -	memset(pt, 0, size);
+> -
+> -	return pt;
+> -}
+> -#endif /* CONFIG_PPC_MMU_NOHASH */
+> -
+> -/*
+> - * map_kernel_page currently only called by __ioremap
+> - * map_kernel_page adds an entry to the ioremap page table
+> - * and adds an entry to the HPT, possibly bolting it
+> - */
+> -int map_kernel_page(unsigned long ea, unsigned long pa, unsigned long flags)
+> -{
+> -	pgd_t *pgdp;
+> -	pud_t *pudp;
+> -	pmd_t *pmdp;
+> -	pte_t *ptep;
+> -
+> -	if (slab_is_available()) {
+> -		pgdp = pgd_offset_k(ea);
+> -		pudp = pud_alloc(&init_mm, pgdp, ea);
+> -		if (!pudp)
+> -			return -ENOMEM;
+> -		pmdp = pmd_alloc(&init_mm, pudp, ea);
+> -		if (!pmdp)
+> -			return -ENOMEM;
+> -		ptep = pte_alloc_kernel(pmdp, ea);
+> -		if (!ptep)
+> -			return -ENOMEM;
+> -		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+> -							  __pgprot(flags)));
+> -	} else {
+> -#ifdef CONFIG_PPC_MMU_NOHASH
+> -		pgdp = pgd_offset_k(ea);
+> -#ifdef PUD_TABLE_SIZE
+> -		if (pgd_none(*pgdp)) {
+> -			pudp = early_alloc_pgtable(PUD_TABLE_SIZE);
+> -			BUG_ON(pudp == NULL);
+> -			pgd_populate(&init_mm, pgdp, pudp);
+> -		}
+> -#endif /* PUD_TABLE_SIZE */
+> -		pudp = pud_offset(pgdp, ea);
+> -		if (pud_none(*pudp)) {
+> -			pmdp = early_alloc_pgtable(PMD_TABLE_SIZE);
+> -			BUG_ON(pmdp == NULL);
+> -			pud_populate(&init_mm, pudp, pmdp);
+> -		}
+> -		pmdp = pmd_offset(pudp, ea);
+> -		if (!pmd_present(*pmdp)) {
+> -			ptep = early_alloc_pgtable(PAGE_SIZE);
+> -			BUG_ON(ptep == NULL);
+> -			pmd_populate_kernel(&init_mm, pmdp, ptep);
+> -		}
+> -		ptep = pte_offset_kernel(pmdp, ea);
+> -		set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+> -							  __pgprot(flags)));
+> -#else /* CONFIG_PPC_MMU_NOHASH */
+> -		/*
+> -		 * If the mm subsystem is not fully up, we cannot create a
+> -		 * linux page table entry for this mapping.  Simply bolt an
+> -		 * entry in the hardware page table.
+> -		 *
+> -		 */
+> -		if (htab_bolt_mapping(ea, ea + PAGE_SIZE, pa, flags,
+> -				      mmu_io_psize, mmu_kernel_ssize)) {
+> -			printk(KERN_ERR "Failed to do bolted mapping IO "
+> -			       "memory at %016lx !\n", pa);
+> -			return -ENOMEM;
+> -		}
+> -#endif /* !CONFIG_PPC_MMU_NOHASH */
+> -	}
+> -
+> -	smp_wmb();
+> -	return 0;
+> -}
+> -
+> -
+>  /**
+>   * __ioremap_at - Low level function to establish the page tables
+>   *                for an IO mapping
+> 
 
 Otherwise looks good!
 
