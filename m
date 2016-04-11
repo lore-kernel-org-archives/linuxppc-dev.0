@@ -1,37 +1,38 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qjz6P0wtNzDq9q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:25:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qjzBL0lfMzDq9q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:28:41 +1000 (AEST)
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 11 Apr 2016 10:55:13 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3B5P9YD43647212
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 10:55:09 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3BArK8h015766
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 16:23:23 +0530
-Message-ID: <570B3531.2000808@linux.vnet.ibm.com>
-Date: Mon, 11 Apr 2016 10:55:05 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 11 Apr 2016 15:28:40 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 902DF2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:28:26 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3B5SIl68323582
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:28:26 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3B5Rrd4032103
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 15:27:53 +1000
+Subject: Re: [PATCH 2/2] powerpc/drivers: Add driver for operator panel on FSP
+ machines
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, arnd@arndb.de
+References: <1460338890-19693-1-git-send-email-sjitindarsingh@gmail.com>
+ <1460338890-19693-2-git-send-email-sjitindarsingh@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <570B35C0.9040205@au1.ibm.com>
+Date: Mon, 11 Apr 2016 15:27:28 +1000
 MIME-Version: 1.0
-To: Balbir Singh <bsingharora@gmail.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: hughd@google.com, dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com,
- kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
- mgorman@techsingularity.net, akpm@linux-foundation.org
-Subject: Re: [PATCH 02/10] mm/hugetlb: Add PGD based implementation awareness
-References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1460007464-26726-3-git-send-email-khandual@linux.vnet.ibm.com>
- <570622B4.5020407@gmail.com>
-In-Reply-To: <570622B4.5020407@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1460338890-19693-2-git-send-email-sjitindarsingh@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,102 +42,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/07/2016 02:34 PM, Balbir Singh wrote:
-> 
-> 
-> On 07/04/16 15:37, Anshuman Khandual wrote:
->> Currently the config ARCH_WANT_GENERAL_HUGETLB enabled functions like
->> 'huge_pte_alloc' and 'huge_pte_offset' dont take into account HugeTLB
->> page implementation at the PGD level. This is also true for functions
->> like 'follow_page_mask' which is called from move_pages() system call.
->> This lack of PGD level huge page support prohibits some architectures
->> to use these generic HugeTLB functions.
->>
-> 
-> From what I know of move_pages(), it will always call follow_page_mask()
-> with FOLL_GET (I could be wrong here) and the implementation below
-> returns NULL for follow_huge_pgd().
+On 11/04/16 11:41, Suraj Jitindar Singh wrote:
+> Implement new character device driver to allow access from user space
+> to the 2x16 character operator panel display present on powernv machines.
 
-You are right. This patch makes ARCH_WANT_GENERAL_HUGETLB functions aware
-of PGD implementation so that we can do all transactions on 16GB pages
-using these function instead of the present arch overrides. But that also
-requires follow_page_mask() changes for every other access to the page
-than the migrate_pages() usage.
+Specifically, on IBM Power Systems machines with FSPs (see comments below).
 
-But yes, we dont support migrate_pages() on PGD based pages yet, hence
-it just returns NULL in that case. May be the commit message needs to
-reflect this.
+> This will allow status information to be presented on the display which
+> is visible to a user.
+>
+> The driver implements a 32 character buffer which a user can read/write
+> by accessing the device (/dev/oppanel). This buffer is then displayed on
+> the operator panel display. Any attempt to write past the 32nd position
+> will have no effect and attempts to write more than 32 characters will be
+> truncated. Valid characters are ascii: '.', '/', ':', '0-9', 'a-z',
+> 'A-Z'. All other characters are considered invalid and will be replaced
+> with '.'.
 
-> 
->> This change adds the required PGD based implementation awareness and
->> with that, more architectures like POWER which implements 16GB pages
->> at the PGD level along with the 16MB pages at the PMD level can now
->> use ARCH_WANT_GENERAL_HUGETLB config option.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  include/linux/hugetlb.h |  3 +++
->>  mm/gup.c                |  6 ++++++
->>  mm/hugetlb.c            | 20 ++++++++++++++++++++
->>  3 files changed, 29 insertions(+)
->>
->> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
->> index 7d953c2..71832e1 100644
->> --- a/include/linux/hugetlb.h
->> +++ b/include/linux/hugetlb.h
->> @@ -115,6 +115,8 @@ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
->>  				pmd_t *pmd, int flags);
->>  struct page *follow_huge_pud(struct mm_struct *mm, unsigned long address,
->>  				pud_t *pud, int flags);
->> +struct page *follow_huge_pgd(struct mm_struct *mm, unsigned long address,
->> +				pgd_t *pgd, int flags);
->>  int pmd_huge(pmd_t pmd);
->>  int pud_huge(pud_t pmd);
->>  unsigned long hugetlb_change_protection(struct vm_area_struct *vma,
->> @@ -143,6 +145,7 @@ static inline void hugetlb_show_meminfo(void)
->>  }
->>  #define follow_huge_pmd(mm, addr, pmd, flags)	NULL
->>  #define follow_huge_pud(mm, addr, pud, flags)	NULL
->> +#define follow_huge_pgd(mm, addr, pgd, flags)	NULL
->>  #define prepare_hugepage_range(file, addr, len)	(-EINVAL)
->>  #define pmd_huge(x)	0
->>  #define pud_huge(x)	0
->> diff --git a/mm/gup.c b/mm/gup.c
->> index fb87aea..9bac78c 100644
->> --- a/mm/gup.c
->> +++ b/mm/gup.c
->> @@ -234,6 +234,12 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
->>  	pgd = pgd_offset(mm, address);
->>  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
->>  		return no_page_table(vma, flags);
->> +	if (pgd_huge(*pgd) && vma->vm_flags & VM_HUGETLB) {
->> +		page = follow_huge_pgd(mm, address, pgd, flags);
->> +		if (page)
->> +			return page;
->> +		return no_page_table(vma, flags);
-> This will return NULL as well?
+For reference, the ASCII character whitelist is enforced by skiboot, not 
+by the driver (see 
+https://github.com/open-power/skiboot/blob/master/hw/fsp/fsp-op-panel.c#L217). 
+It's been included ever since the first public release of skiboot, so 
+this statement is true for all machines at present, though theoretically 
+might not be true in future skiboots or alternative OPAL implementations 
+(should someone be crazy enough to write one).
 
-That right, no_page_table() returns NULL for FOLL_GET when we fall through
-after failing on follow_huge_pgd().
+> A write call past the 32nd character will return zero characters
+> written. A write call will not clear the display and it is up to the
+> user to put spaces (' ') where blank space is required. The device may
+> only be accessed by a single process at a time.
+>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
->> +	}
->>  
->>  	pud = pud_offset(pgd, address);
->>  	if (pud_none(*pud))
->> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
->> index 19d0d08..5ea3158 100644
->> --- a/mm/hugetlb.c
->> +++ b/mm/hugetlb.c
->> @@ -4250,6 +4250,11 @@ pte_t *huge_pte_alloc(struct mm_struct *mm,
->>  	pte_t *pte = NULL;
->>  
->>  	pgd = pgd_offset(mm, addr);
->> +	if (sz == PGDIR_SIZE) {
->> +		pte = (pte_t *)pgd;
->> +		goto huge_pgd;
->> +	}
->> +
-> 
-> No allocation for a pgd slot - right?
+I reviewed an earlier version of this patch internally and Suraj has 
+fixed a bunch of issues which I raised. I'm not hugely experienced with 
+this, but all the obvious things I noticed have gone, so...
 
-No, its already allocated for the mm during creation.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+A couple of minor nitpicks below.
+
+> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+> index 3ec0766..8c91edf 100644
+> --- a/drivers/char/Kconfig
+> +++ b/drivers/char/Kconfig
+> @@ -178,6 +178,20 @@ config IBM_BSR
+>   	  of threads across a large system which avoids bouncing a cacheline
+>   	  between several cores on a system
+>
+> +config IBM_OP_PANEL
+> +	tristate "IBM POWER Operator Panel Display support"
+> +	depends on PPC_POWERNV
+> +	default m
+> +	help
+> +	  If you say Y here, a special character device node /dev/oppanel will
+
+Add commas: "node, /dev/oppanel, will"
+
+> diff --git a/drivers/char/op-panel-powernv.c b/drivers/char/op-panel-powernv.c
+> new file mode 100644
+> index 0000000..cc72c5d
+> --- /dev/null
+> +++ b/drivers/char/op-panel-powernv.c
+[...]
+> +/*
+> + * This driver creates a character device (/dev/oppanel) which exposes the
+> + * operator panel display (2x16 character display) on IBM pSeries machines.
+
+I'd prefer "IBM Power Systems machines with FSPs" so as to avoid 
+confusion with the Linux pseries platform, to be in line with current 
+IBM branding, and to emphasise that it's only FSP machines (the Power 
+Systems LC models are not).
+
+Hmm, perhaps also mention that in the Kconfig description too?
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
