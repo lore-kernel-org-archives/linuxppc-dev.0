@@ -1,25 +1,25 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qkgMy4zkdzDqGV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qkgNM2Qq2zDqCp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:47 +1000 (AEST)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 12 Apr 2016 18:39:26 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 35CCC3578057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:20 +1000 (EST)
+ Tue, 12 Apr 2016 18:39:47 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8D5713578057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:44 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3C8d7TG62586982
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:20 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3C8da5B47644898
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:44 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3C8cf4a026900
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:38:42 +1000
+ u3C8dBoK027882
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 18:39:12 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -28,9 +28,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel v3 9/9] powerpc/powernv/npu: Enable NVLink pass through
-Date: Tue, 12 Apr 2016 18:37:50 +1000
-Message-Id: <1460450270-42354-10-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v3 6/9] powerpc/powernv/npu: Simplify DMA setup
+Date: Tue, 12 Apr 2016 18:37:47 +1000
+Message-Id: <1460450270-42354-7-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1460450270-42354-1-git-send-email-aik@ozlabs.ru>
 References: <1460450270-42354-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,339 +42,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IBM POWER8 NVlink systems come with Tesla K40-ish GPUs each of which
-also has a couple of fast speed links (NVLink). The interface to links
-is exposed as an emulated PCI bridge which is included into the same
-IOMMU group as the corresponding GPU.
+NPU devices are emulated in firmware and mainly used for NPU NVLink
+training; one NPU device is per a hardware link. Their DMA/TCE setup
+must match the GPU which is connected via PCIe and NVLink so any changes
+to the DMA/TCE setup on the GPU PCIe device need to be propagated to
+the NVLink device as this is what device drivers expect and it doesn't
+make much sense to do anything else.
 
-In the kernel, NPUs get a separate PHB of the PNV_PHB_NPU type and a PE.
+This makes NPU DMA setup explicit.
+pnv_npu_ioda_controller_ops::pnv_npu_dma_set_mask is moved to pci-ioda,
+made static and prints warning as dma_set_mask() should never be called
+on this function as in any case it will not configure GPU; so we make
+this explicit.
 
-In order to make these links work when GPU is passed to the guest,
-these bridges need to be passed as well; otherwise performance will
-degrade.
+Instead of using PNV_IODA_PE_PEER and peers[] (which the next patch will
+remove), we test every PCI device if there are corresponding NVLink
+devices. If there are any, we propagate bypass mode to just found NPU
+devices by calling the setup helper directly (which takes @bypass) and
+avoid guessing (i.e. calculating from DMA mask) whether we need bypass
+or not on NPU devices. Since DMA setup happens in very rare occasion,
+this will not slow down booting or VFIO start/stop much.
 
-This implements and exports API to manage NPU state in regard to VFIO;
-it replicates iommu_table_group_ops.
+This renames pnv_npu_disable_bypass to pnv_npu_dma_set_32 to make it
+more clear what the function really does which is programming 32bit
+table address to the TVT ("disabling bypass" means writing zeroes to
+the TVT).
 
-This defines a new pnv_pci_ioda2_npu_ops which is assigned to
-the IODA2 bridge if there are NPUs for a GPU on the bridge.
-The new callbacks call the default IODA2 callbacks plus new NPU API.
-This adds a gpe_table_group_to_npe() helper to find NPU PE for the IODA2
-table_group, it is not expected to fail as the helper is only called
-from the pnv_pci_ioda2_npu_ops.
+This removes pnv_npu_dma_set_bypass() from pnv_npu_ioda_fixup() as
+the DMA configuration on NPU does not matter until dma_set_mask() is
+called on GPU and that will do the NPU DMA configuration.
 
-This adds a pnv_pci_npu_setup_iommu() helper which adds NPUs to
-the GPU group if any found. The helper uses helpers to look for
-the "ibm,gpu" property in the device tree which is a phandle of
-the corresponding GPU.
+This removes phb->dma_dev_setup initialization for NPU as
+pnv_pci_ioda_dma_dev_setup is no-op for it anyway.
 
-This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
-loop skips NPU PEs as they do not have 32bit DMA segments.
+This stops using npe->tce_bypass_base as it never changes and values
+other than zero are not supported.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: Alistair Popple <alistair@popple.id.au>
 ---
 Changes:
-v3:
-* moved NPU-to-GPU IOMMU grouping later after all PHBs are discovered
-* removed hack to make iommu_add_device() work, iommu_group_add_device()
-is used instead
-* cleanup in gpe_table_group_to_npe_cb()
-
 v2:
-* reimplemented to support NPU + GPU in the same group
-* merged "powerpc/powernv/npu: Add NPU devices to IOMMU group" and
-"powerpc/powernv/npu: Enable passing through via VFIO" into this patch
+* changed first paragraph of the commit log from Alistair comment
+* removed npe->tce_bypass_base
 ---
- arch/powerpc/platforms/powernv/npu-dma.c  | 126 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c | 105 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h      |   6 ++
- 3 files changed, 237 insertions(+)
+ arch/powerpc/platforms/powernv/npu-dma.c  | 89 ++++++++++++++-----------------
+ arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++------
+ arch/powerpc/platforms/powernv/pci.h      |  3 +-
+ 3 files changed, 53 insertions(+), 69 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 8e70221..7cb9f6a 100644
+index 5bd5fee..bec9267 100644
 --- a/arch/powerpc/platforms/powernv/npu-dma.c
 +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -12,6 +12,7 @@
- #include <linux/export.h>
- #include <linux/pci.h>
- #include <linux/memblock.h>
-+#include <linux/iommu.h>
+@@ -196,10 +196,9 @@ void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
+ }
  
- #include <asm/iommu.h>
- #include <asm/pnv-pci.h>
-@@ -262,3 +263,128 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+ /*
+- * For the NPU we want to point the TCE table at the same table as the
+- * real PCI device.
++ * Enables 32 bit DMA on NPU.
+  */
+-static void pnv_npu_disable_bypass(struct pnv_ioda_pe *npe)
++static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+ {
+ 	struct pnv_phb *phb = npe->phb;
+ 	struct pci_dev *gpdev;
+@@ -235,72 +234,62 @@ static void pnv_npu_disable_bypass(struct pnv_ioda_pe *npe)
+ }
+ 
+ /*
+- * Enable/disable bypass mode on the NPU. The NPU only supports one
++ * Enables bypass mode on the NPU. The NPU only supports one
+  * window per link, so bypass needs to be explicitly enabled or
+  * disabled. Unlike for a PHB3 bypass and non-bypass modes can't be
+  * active at the same time.
+  */
+-int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe, bool enable)
++static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
+ {
+ 	struct pnv_phb *phb = npe->phb;
+ 	int64_t rc = 0;
++	phys_addr_t top = memblock_end_of_DRAM();
+ 
+ 	if (phb->type != PNV_PHB_NPU || !npe->pdev)
+ 		return -EINVAL;
+ 
+-	if (enable) {
+-		/* Enable the bypass window */
+-		phys_addr_t top = memblock_end_of_DRAM();
++	/* Enable the bypass window */
+ 
+-		npe->tce_bypass_base = 0;
+-		top = roundup_pow_of_two(top);
+-		dev_info(&npe->pdev->dev, "Enabling bypass for PE %d\n",
+-			 npe->pe_number);
+-		rc = opal_pci_map_pe_dma_window_real(phb->opal_id,
+-					npe->pe_number, npe->pe_number,
+-					npe->tce_bypass_base, top);
+-	} else {
+-		/*
+-		 * Disable the bypass window by replacing it with the
+-		 * TCE32 window.
+-		 */
+-		pnv_npu_disable_bypass(npe);
+-	}
++	top = roundup_pow_of_two(top);
++	dev_info(&npe->pdev->dev, "Enabling bypass for PE %d\n",
++			npe->pe_number);
++	rc = opal_pci_map_pe_dma_window_real(phb->opal_id,
++			npe->pe_number, npe->pe_number,
++			0 /* bypass base */, top);
+ 
+ 	return rc;
+ }
+ 
+-int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask)
++void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+ {
+-	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
+-	struct pnv_phb *phb = hose->private_data;
+-	struct pci_dn *pdn = pci_get_pdn(npdev);
+-	struct pnv_ioda_pe *npe, *gpe;
+-	struct pci_dev *gpdev;
+-	uint64_t top;
+-	bool bypass = false;
++	int i;
++	struct pnv_phb *phb;
++	struct pci_dn *pdn;
++	struct pnv_ioda_pe *npe;
++	struct pci_dev *npdev;
+ 
+-	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+-		return -ENXIO;
++	for (i = 0; ; ++i) {
++		npdev = pnv_pci_get_npu_dev(gpdev, i);
+ 
+-	/* We only do bypass if it's enabled on the linked device */
+-	npe = &phb->ioda.pe_array[pdn->pe_number];
+-	gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+-	if (!gpe)
+-		return -ENODEV;
++		if (!npdev)
++			break;
+ 
+-	if (gpe->tce_bypass_enabled) {
+-		top = gpe->tce_bypass_base + memblock_end_of_DRAM() - 1;
+-		bypass = (dma_mask >= top);
++		pdn = pci_get_pdn(npdev);
++		if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
++			return;
++
++		phb = pci_bus_to_host(npdev->bus)->private_data;
++
++		/* We only do bypass if it's enabled on the linked device */
++		npe = &phb->ioda.pe_array[pdn->pe_number];
++
++		if (bypass) {
++			dev_info(&npdev->dev,
++					"Using 64-bit DMA iommu bypass\n");
++			pnv_npu_dma_set_bypass(npe);
++		} else {
++			dev_info(&npdev->dev, "Using 32-bit DMA via iommu\n");
++			pnv_npu_dma_set_32(npe);
++		}
+ 	}
+-
+-	if (bypass)
+-		dev_info(&npdev->dev, "Using 64-bit DMA iommu bypass\n");
+-	else
+-		dev_info(&npdev->dev, "Using 32-bit DMA via iommu\n");
+-
+-	pnv_npu_dma_set_bypass(npe, bypass);
+-	*npdev->dev.dma_mask = dma_mask;
+-
+-	return 0;
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index a67d51e..272521e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1640,8 +1640,6 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+ 	struct pnv_ioda_pe *pe;
+ 	uint64_t top;
+ 	bool bypass = false;
+-	struct pci_dev *linked_npu_dev;
+-	int i;
+ 
+ 	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+ 		return -ENODEV;;
+@@ -1662,15 +1660,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+ 	*pdev->dev.dma_mask = dma_mask;
+ 
+ 	/* Update peer npu devices */
+-	if (pe->flags & PNV_IODA_PE_PEER)
+-		for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+-			if (!pe->peers[i])
+-				continue;
+-
+-			linked_npu_dev = pe->peers[i]->pdev;
+-			if (dma_get_mask(&linked_npu_dev->dev) != dma_mask)
+-				dma_set_mask(&linked_npu_dev->dev, dma_mask);
+-		}
++	pnv_npu_try_dma_set_bypass(pdev, bypass);
+ 
+ 	return 0;
+ }
+@@ -3094,7 +3084,6 @@ static void pnv_npu_ioda_fixup(void)
+ 			enable_bypass = dma_get_mask(&pe->pdev->dev) ==
+ 				DMA_BIT_MASK(64);
+ 			pnv_npu_init_dma_pe(pe);
+-			pnv_npu_dma_set_bypass(pe, enable_bypass);
  		}
  	}
  }
-+
-+long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
-+		struct iommu_table *tbl)
-+{
-+	struct pnv_phb *phb = npe->phb;
-+	int64_t rc;
-+	const unsigned long size = tbl->it_indirect_levels ?
-+		tbl->it_level_size : tbl->it_size;
-+	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
-+	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
-+
-+	pe_info(npe, "Setting up window#%d %llx..%llx pg=%lx\n", num,
-+			start_addr, start_addr + win_size - 1,
-+			IOMMU_PAGE_SIZE(tbl));
-+
-+	/* Ignore @num as there is just one window per NPU */
-+	rc = opal_pci_map_pe_dma_window(phb->opal_id,
-+			npe->pe_number,
-+			npe->pe_number,
-+			tbl->it_indirect_levels + 1,
-+			__pa(tbl->it_base),
-+			size << 3,
-+			IOMMU_PAGE_SIZE(tbl));
-+	if (rc) {
-+		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
-+		return rc;
-+	}
-+
-+	pnv_pci_link_table_and_group(phb->hose->node, num,
-+			tbl, &npe->table_group);
-+	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+
-+	return rc;
-+}
-+
-+long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
-+{
-+	struct pnv_phb *phb = npe->phb;
-+	long ret;
-+
-+	pe_info(npe, "Removing DMA window #%d\n", num);
-+
-+	/* Ignore @num as there is just one window per NPU */
-+	ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-+			npe->pe_number,
-+			0/* levels */, 0/* table address */,
-+			0/* table size */, 0/* page size */);
-+	if (ret)
-+		pe_warn(npe, "Unmapping failed, ret = %ld\n", ret);
-+	else
-+		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+
-+	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
-+			&npe->table_group);
-+
-+	return ret;
-+}
-+
-+/* Switch ownership from platform code to external user (e.g. VFIO) */
-+void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
-+{
-+	struct pnv_phb *phb = npe->phb;
-+	int64_t ret;
-+
-+	if (npe->table_group.tables[0]) {
-+		/* Disable 32bit window */
-+		pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
-+				&npe->table_group);
-+		npe->table_group.tables[0] = NULL;
-+		ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-+				npe->pe_number,
-+				0/* levels */, 0/* table address */,
-+				0/* table size */, 0/* page size */);
-+	} else {
-+		/* Disable bypass */
-+		ret = opal_pci_map_pe_dma_window_real(phb->opal_id,
-+				npe->pe_number, npe->pe_number,
-+				0 /* bypass base */, 0);
-+	}
-+
-+	if (ret != OPAL_SUCCESS)
-+		pe_err(npe, "Failed to remove DMA window");
-+	else
-+		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+}
-+
-+/* Switch ownership from external user (e.g. VFIO) back to core */
-+void pnv_npu_release_ownership(struct pnv_ioda_pe *npe)
-+{
-+	struct pnv_phb *phb = npe->phb;
-+	int64_t ret;
-+
-+	/* Disable a window (not bypass) as external users do not use bypass */
-+	ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-+			npe->pe_number,
-+			0/* levels */, 0/* table address */,
-+			0/* table size */, 0/* page size */);
-+	if (ret != OPAL_SUCCESS)
-+		pe_err(npe, "Failed to remove DMA window");
-+	else
-+		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+}
-+
-+struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
-+{
-+	struct pnv_phb *phb = npe->phb;
-+	struct pci_bus *pbus = phb->hose->bus;
-+	struct pci_dev *npdev, *gpdev = NULL, *gptmp;
-+	struct pnv_ioda_pe *gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
-+
-+	if (!gpe || !gpdev)
-+		return NULL;
-+
-+	list_for_each_entry(npdev, &pbus->devices, bus_list) {
-+		gptmp = pnv_pci_get_gpu_dev(npdev);
-+
-+		if (gptmp != gpdev)
-+			continue;
-+
-+		pe_info(gpe, "Attached NPU %s\n", dev_name(&npdev->dev));
-+		iommu_group_add_device(gpe->table_group.group, &npdev->dev);
-+	}
-+
-+	return gpe;
-+}
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 922c74c..95f9e19 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2273,6 +2273,93 @@ static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
- 	.take_ownership = pnv_ioda2_take_ownership,
- 	.release_ownership = pnv_ioda2_release_ownership,
+@@ -3246,6 +3235,14 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+        .shutdown = pnv_pci_ioda_shutdown,
  };
-+
-+static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	struct pnv_ioda_pe **ptmppe = opaque;
-+	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
-+	struct pci_dn *pdn = pci_get_pdn(pdev);
-+
-+	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
-+		return 0;
-+
-+	hose = pci_bus_to_host(pdev->bus);
-+	phb = hose->private_data;
-+	if (phb->type != PNV_PHB_NPU)
-+		return 0;
-+
-+	*ptmppe = &phb->ioda.pe_array[pdn->pe_number];
-+
-+	return 1;
-+}
-+
-+/*
-+ * This returns PE of associated NPU.
-+ * This assumes that NPU is in the same IOMMU group with GPU and there is
-+ * no other PEs.
-+ */
-+static struct pnv_ioda_pe *gpe_table_group_to_npe(
-+		struct iommu_table_group *table_group)
-+{
-+	struct pnv_ioda_pe *npe = NULL;
-+	int ret = iommu_group_for_each_dev(table_group->group, &npe,
-+			gpe_table_group_to_npe_cb);
-+
-+	BUG_ON(!ret || !npe);
-+
-+	return npe;
-+}
-+
-+static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group *table_group,
-+		int num, struct iommu_table *tbl)
-+{
-+	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
-+
-+	if (ret)
-+		return ret;
-+
-+	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, tbl);
-+	if (ret)
-+		pnv_pci_ioda2_unset_window(table_group, num);
-+
-+	return ret;
-+}
-+
-+static long pnv_pci_ioda2_npu_unset_window(
-+		struct iommu_table_group *table_group,
-+		int num)
-+{
-+	long ret = pnv_pci_ioda2_unset_window(table_group, num);
-+
-+	if (ret)
-+		return ret;
-+
-+	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
-+}
-+
-+static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
-+{
-+	pnv_ioda2_take_ownership(table_group);
-+	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
-+}
-+
-+static void pnv_ioda2_npu_release_ownership(
-+		struct iommu_table_group *table_group)
-+{
-+	pnv_npu_release_ownership(gpe_table_group_to_npe(table_group));
-+	pnv_ioda2_release_ownership(table_group);
-+}
-+
-+static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
-+	.get_table_size = pnv_pci_ioda2_get_table_size,
-+	.create_table = pnv_pci_ioda2_create_table,
-+	.set_window = pnv_pci_ioda2_npu_set_window,
-+	.unset_window = pnv_pci_ioda2_npu_unset_window,
-+	.take_ownership = pnv_ioda2_npu_take_ownership,
-+	.release_ownership = pnv_ioda2_npu_release_ownership,
-+};
- #endif
  
- static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb)
-@@ -3012,6 +3099,7 @@ static void pnv_pci_ioda_setup_DMA(void)
- {
- 	struct pci_controller *hose, *tmp;
- 	struct pnv_phb *phb;
-+	struct pnv_ioda_pe *pe, *gpe;
++static int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask)
++{
++	dev_err_once(&npdev->dev,
++			"%s operation unsupported for NVLink devices\n",
++			__func__);
++	return -EPERM;
++}
++
+ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ 	.dma_dev_setup = pnv_pci_dma_dev_setup,
+ #ifdef CONFIG_PCI_MSI
+@@ -3402,9 +3399,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	/* Setup RID -> PE mapping function */
+ 	phb->bdfn_to_pe = pnv_ioda_bdfn_to_pe;
  
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		pnv_ioda_setup_dma(hose->private_data);
-@@ -3020,6 +3108,23 @@ static void pnv_pci_ioda_setup_DMA(void)
- 		phb = hose->private_data;
- 		phb->initialized = 1;
- 	}
-+
-+	/*
-+	 * Now we have all PHBs discovered, time to add NPU devices to
-+	 * the corresponding IOMMU groups.
-+	 */
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+		phb = hose->private_data;
-+
-+		if (phb->type != PNV_PHB_NPU)
-+			continue;
-+
-+		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
-+			gpe = pnv_pci_npu_setup_iommu(pe);
-+			if (gpe)
-+				gpe->table_group.ops = &pnv_pci_ioda2_npu_ops;
-+		}
+-	/* Setup TCEs */
+-	phb->dma_dev_setup = pnv_pci_ioda_dma_dev_setup;
+-
+ 	/* Setup MSI support */
+ 	pnv_pci_init_ioda_msis(phb);
+ 
+@@ -3417,10 +3411,12 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	 */
+ 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+ 
+-	if (phb->type == PNV_PHB_NPU)
++	if (phb->type == PNV_PHB_NPU) {
+ 		hose->controller_ops = pnv_npu_ioda_controller_ops;
+-	else
++	} else {
++		phb->dma_dev_setup = pnv_pci_ioda_dma_dev_setup;
+ 		hose->controller_ops = pnv_pci_ioda_controller_ops;
 +	}
- }
  
- static void pnv_pci_ioda_create_dbgfs(void)
+ #ifdef CONFIG_PCI_IOV
+ 	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov_resources;
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index e117bd8..ebc6ee4 100644
+index 0b89a4c..d574a9d 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -244,5 +244,11 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+@@ -239,8 +239,7 @@ extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
  /* Nvlink functions */
- extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+ extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
+ extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
+-extern int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe, bool enabled);
+-extern int pnv_npu_dma_set_mask(struct pci_dev *npdev, u64 dma_mask);
++extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
-+extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
-+extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
-+		struct iommu_table *tbl);
-+extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
-+extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
-+extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
  
  #endif /* __POWERNV_PCI_H */
 -- 
