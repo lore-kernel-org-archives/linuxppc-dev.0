@@ -1,18 +1,22 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qkTJJ4mgZzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 11:05:36 +1000 (AEST)
-Message-ID: <1460423136.24701.30.camel@neuling.org>
-Subject: Re: [RFC] P9 ldmx support
-From: Michael Neuling <mikey@neuling.org>
-To: Jack Miller <jack@codezen.org>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 12 Apr 2016 11:05:36 +1000
-In-Reply-To: <1460401065-10540-1-git-send-email-jack@codezen.org>
-References: <1460401065-10540-1-git-send-email-jack@codezen.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qkTJl537wzDqCT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 11:05:59 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id k3so216232pav.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Apr 2016 18:05:59 -0700 (PDT)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: arnd@arndb.de
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, andrew.donnellan@au1.ibm.com,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Subject: [PATCH V2 1/2] devicetree/bindings: Add binding for operator panel on
+ FSP machines
+Date: Tue, 12 Apr 2016 11:05:06 +1000
+Message-Id: <1460423107-7270-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add a binding to Documentation/devicetree/bindings/powerpc/opal
+(oppanel-opal.txt) for the operator panel which is present on IBM
+pseries machines with FSPs.
 
-> Re: [RFC] P9 ldmx support
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ .../devicetree/bindings/powerpc/opal/oppanel-opal.txt      | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
 
-These are good to go and don't need to be marked as RFC.
-
-FWIW, we've been testing these internally and they've been solid.
-
-> These are patches based on next to support the forthcoming ldmx
-> instruction through the existing P8 EBB infrastructure. Obviously it
-> doesn't actually *work* without some other patches and a P9 system,
-> but with the context switch change to FSCR it makes sense to get
-> this upstream for testing ASAP.
-
-Yep.
-
-Thanks,
-Mikey
-
-> The first patch context switches FSCR per thread so that the second patch=
- can
-> lazily enable this feature (FSCR.LM) with a facility unavailable exceptio=
-n
-> and context switch two new ldmx registers (LMRR / LMSER) per thread as we=
-ll.
-> Third patch is a couple of basic tests.
+diff --git a/Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt b/Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
+new file mode 100644
+index 0000000..dffb791
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
+@@ -0,0 +1,14 @@
++IBM OPAL Operator Panel Binding
++-------------------------------
++
++Required properties:
++- compatible : Should be "ibm,opal-oppanel".
++- #lines     : Number of lines on the operator panel e.g. <0x2>.
++- #length    : Number of characters per line of the operator panel e.g. <0x10>.
++
++Example:
++	oppanel {
++		compatible = "ibm,opal-oppanel";
++		#lines = <0x2>;
++		#length = <0x10>;
++	};
+-- 
+2.5.0
