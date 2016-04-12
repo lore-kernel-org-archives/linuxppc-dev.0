@@ -1,19 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qknbn4vbVzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 23:20:05 +1000 (AEST)
-Message-ID: <1460467199.23581.3.camel@ellerman.id.au>
-Subject: Re: [PATCH] lib/test-hexdump: Changed to work on BE
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: kbuild test robot <lkp@intel.com>, Rashmica Gupta <rashmicy@gmail.com>
-Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 12 Apr 2016 23:19:59 +1000
-In-Reply-To: <201604121734.YNETaRqP%fengguang.wu@intel.com>
-References: <201604121734.YNETaRqP%fengguang.wu@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qkpFy72bJzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Apr 2016 23:49:42 +1000 (AEST)
+Date: Tue, 12 Apr 2016 08:49:36 -0500
+From: Rob Herring <robh@kernel.org>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: arnd@arndb.de, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 1/2] devicetree/bindings: Add binding for operator panel
+ on FSP machines
+Message-ID: <20160412134936.GA3700@rob-hp-laptop>
+References: <1460338890-19693-1-git-send-email-sjitindarsingh@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1460338890-19693-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-04-12 at 17:39 +0800, kbuild test robot wrote:
-> Hi Rashmica,
+On Mon, Apr 11, 2016 at 11:41:29AM +1000, Suraj Jitindar Singh wrote:
+> Add a binding to Documentation/devicetree/bindings/powerpc/opal
+> (oppanel-opal.txt) for the operator panel which is present on IBM
+> pseries machines with FSPs.
 > 
-> [auto build test WARNING on v4.6-rc3]
-> [also build test WARNING on next-20160412]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Rashmica-Gupta/lib-test-hexdump-Changed-to-work-on-BE/20160412-133656
-> config: mn10300-allmodconfig (attached as .config)
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=mn10300 
-> 
-> All warnings (new ones prefixed by >>):
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> ---
+>  .../devicetree/bindings/powerpc/opal/oppanel-opal.txt      | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/opal/oppanel-opal.txt
 
-> > > /kbuild/src/defs/lib/test_hexdump.c:45:7: warning: "__BIG_ENDIAN" is not defined [-Wundef]
->     #elif __BIG_ENDIAN
-
-I think you want:
-
-#elif __BYTE_ORDER == __BIG_ENDIAN
-
-?
-
-cheers
+Acked-by: Rob Herring <robh@kernel.org>
