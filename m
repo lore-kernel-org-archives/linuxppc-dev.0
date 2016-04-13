@@ -1,34 +1,26 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlG4v2kzFzDqBg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 17:43:27 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id y144so11404286wmd.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 00:43:27 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 13 Apr 2016 09:43:19 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Anton Blanchard <anton@samba.org>,
- Peter Zijlstra <peterz@infradead.org>, tglx@linutronix.de,
- efault@gmx.de, htejun@gmail.com, linux-kernel@vger.kernel.org,
- tj@kernel.org, torvalds@linux-foundation.org,
- zhaolei@cn.fujitsu.com, yangds.fnst@cn.fujitsu.com, hpa@zytor.com,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] sched/cpuacct: Check for NULL when using task_pt_regs()
-Message-ID: <20160413074319.GA8968@gmail.com>
-References: <aa171da036b520b51c79549e9b3215d29473f19d.1458635566.git.zhaolei@cn.fujitsu.com>
- <tip-d740037fac7052e49450f6fa1454f1144a103b55@git.kernel.org>
- <20160404140312.GA28495@linux.vnet.ibm.com>
- <20160406065436.GB3078@gmail.com> <20160406203219.788ae7cf@kryten>
- <20160406110803.GI2906@worktop> <20160406215950.04bc3f0b@kryten>
- <20160406132637.GA2108@linux.vnet.ibm.com>
+Return-Path: <boris.brezillon@free-electrons.com>
+Received: from mail.free-electrons.com (down.free-electrons.com
+ [37.187.137.238])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qlG6b1CX4zDqHY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 17:44:55 +1000 (AEST)
+Date: Wed, 13 Apr 2016 09:44:40 +0200
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Richard Weinberger
+ <richard@nod.at>, "open list:MEMORY TECHNOLOGY..."
+ <linux-mtd@lists.infradead.org>, Egor Martovetsky <egor@pasemi.com>, Olof
+ Johansson <olof@lixom.net>, Joe Perches <joe@perches.com>, David Woodhouse
+ <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, "open
+ list:LINUX FOR POWERPC PA SEMI PWRFICIENT" <linuxppc-dev@lists.ozlabs.org>,
+ open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH V2] mtd: nand: pasemi: switch to pr_* functions
+Message-ID: <20160413094440.1b883491@bbrezillon>
+In-Reply-To: <CAHp75VcAbjTLPs128b1ojmWkosXBmYL5BUTbzw6aSYWN-ZRDBA@mail.gmail.com>
+References: <1460111589-18781-1-git-send-email-zajec5@gmail.com>
+ <1460114003-19926-1-git-send-email-zajec5@gmail.com>
+ <CAHp75VcAbjTLPs128b1ojmWkosXBmYL5BUTbzw6aSYWN-ZRDBA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160406132637.GA2108@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +30,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi,
 
-* Srikar Dronamraju <srikar@linux.vnet.ibm.com> wrote:
+On Sat, 9 Apr 2016 12:50:35 +0300
+Andy Shevchenko <andy.shevchenko@gmail.com> wrote:
 
-> * Anton Blanchard <anton@samba.org> [2016-04-06 21:59:50]:
-> 
-> > Looks good, and the patch below does fix the oops for me.
-> > 
-> > Anton
-> > --
-> > 
-> > task_pt_regs() can return NULL for kernel threads, so add a check.
-> > This fixes an oops at boot on ppc64.
-> > 
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> 
-> Works for me too.
-> 
-> Reported-and-Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> On Fri, Apr 8, 2016 at 2:13 PM, Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com=
+> wrote:
+> > 1) Use pr_fmt to keep messages consistent
+> > 2) Don't warn if kzalloc fails as it dumps stack on its own
+> > 3) Use %pR format for displaying whole resource to avoid:
+> > warning: format =E2=80=98%08llx=E2=80=99 expects type =E2=80=98long lon=
+g unsigned int=E2=80=99, but argument 2 has type =E2=80=98resource_size_t=
+=E2=80=99
+> >
+> > Signed-off-by: Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>
+> > ---
+> >  drivers/mtd/nand/pasemi_nand.c | 9 ++++-----
+> >  1 file changed, 4 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_n=
+and.c
+> > index 63fcb8c..e8372b4 100644
+> > --- a/drivers/mtd/nand/pasemi_nand.c
+> > +++ b/drivers/mtd/nand/pasemi_nand.c
+> > @@ -22,6 +22,8 @@
+> >
+> >  #undef DEBUG
+> >
+> > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > +
+> >  #include <linux/slab.h>
+> >  #include <linux/module.h>
+> >  #include <linux/mtd/mtd.h>
+> > @@ -112,8 +114,6 @@ static int pasemi_nand_probe(struct platform_device=
+ *ofdev)
+> >         /* Allocate memory for MTD device structure and private data */
+> >         chip =3D kzalloc(sizeof(struct nand_chip), GFP_KERNEL);
+> >         if (!chip) {
+> > -               printk(KERN_WARNING
+> > -                      "Unable to allocate PASEMI NAND MTD device struc=
+ture\n");
+> >                 err =3D -ENOMEM;
+> >                 goto out;
+> >         }
+> > @@ -163,13 +163,12 @@ static int pasemi_nand_probe(struct platform_devi=
+ce *ofdev)
+> >         }
+> >
+> >         if (mtd_device_register(pasemi_nand_mtd, NULL, 0)) {
+> > -               printk(KERN_ERR "pasemi_nand: Unable to register MTD de=
+vice\n");
+> > +               pr_err("Unable to register MTD device\n");
+>=20
+> And why not to use dev_err(&ofdev->dev, =E2=80=A6); ?
 
-Could someone please re-send the fix, because it has not reached me nor lkml.
+Yep, I think it's better to use dev_err().
 
-Thanks,
+Best Regards,
 
-	Ingo
+Boris
+
+--=20
+Boris Brezillon, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
