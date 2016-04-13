@@ -1,27 +1,22 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wm0-f67.google.com (mail-wm0-f67.google.com [74.125.82.67])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlGKV1tTmzDq9q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 17:54:22 +1000 (AEST)
-Received: by mail-wm0-f67.google.com with SMTP id y144so11476695wmd.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 00:54:22 -0700 (PDT)
-Date: Wed, 13 Apr 2016 09:54:17 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, hughd@google.com,
- kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
- akpm@linux-foundation.org, mgorman@techsingularity.net,
- dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: Re: [PATCH 01/10] mm/mmap: Replace SHM_HUGE_MASK with MAP_HUGE_MASK
- inside mmap_pgoff
-Message-ID: <20160413075417.GA14356@dhcp22.suse.cz>
-References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1460007464-26726-2-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlGt14pk8zDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 18:19:05 +1000 (AEST)
+Date: Wed, 13 Apr 2016 18:17:38 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, tglx@linutronix.de,
+ efault@gmx.de, htejun@gmail.com, tj@kernel.org,
+ torvalds@linux-foundation.org, zhaolei@cn.fujitsu.com,
+ yangds.fnst@cn.fujitsu.com, hpa@zytor.com, Stephen Rothwell
+ <sfr@canb.auug.org.au>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] sched/cpuacct: Check for NULL when using task_pt_regs()
+Message-ID: <20160413181738.5936e98a@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1460007464-26726-2-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 07-04-16 11:07:35, Anshuman Khandual wrote:
-> The commit 091d0d55b286 ("shm: fix null pointer deref when userspace
-> specifies invalid hugepage size") had replaced MAP_HUGE_MASK with
-> SHM_HUGE_MASK. Though both of them contain the same numeric value of
-> 0x3f, MAP_HUGE_MASK flag sounds more appropriate than the other one
-> in the context. Hence change it back.
+task_pt_regs() can return NULL for kernel threads, so add a check.
+This fixes an oops at boot on ppc64.
 
-Yes, SHM_HUGE_MASK mixing with MAP_HUGE_SHIFT is not only misleading
-it might bite us later should any of the two change.
+Fixes: d740037fac70 ("sched/cpuacct: Split usage accounting into user_usage and sys_usage")
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Reported-and-Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
 
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-
-> ---
->  mm/mmap.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index bd2e1a53..7d730a4 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1315,7 +1315,7 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
->  		struct user_struct *user = NULL;
->  		struct hstate *hs;
->  
-> -		hs = hstate_sizelog((flags >> MAP_HUGE_SHIFT) & SHM_HUGE_MASK);
-> +		hs = hstate_sizelog((flags >> MAP_HUGE_SHIFT) & MAP_HUGE_MASK);
->  		if (!hs)
->  			return -EINVAL;
->  
-> -- 
-> 2.1.0
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
--- 
-Michal Hocko
-SUSE Labs
+diff --git a/kernel/sched/cpuacct.c b/kernel/sched/cpuacct.c
+index df947e0..41f85c4 100644
+--- a/kernel/sched/cpuacct.c
++++ b/kernel/sched/cpuacct.c
+@@ -316,12 +316,11 @@ static struct cftype files[] = {
+ void cpuacct_charge(struct task_struct *tsk, u64 cputime)
+ {
+ 	struct cpuacct *ca;
+-	int index;
++	int index = CPUACCT_USAGE_SYSTEM;
++	struct pt_regs *regs = task_pt_regs(tsk);
+ 
+-	if (user_mode(task_pt_regs(tsk)))
++	if (regs && user_mode(regs))
+ 		index = CPUACCT_USAGE_USER;
+-	else
+-		index = CPUACCT_USAGE_SYSTEM;
+ 
+ 	rcu_read_lock();
+ 
