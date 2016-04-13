@@ -1,29 +1,27 @@
-Return-Path: <zajec5@gmail.com>
-Received: from mail-lf0-x22e.google.com (mail-lf0-x22e.google.com
- [IPv6:2a00:1450:4010:c07::22e])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlJrz0lBMzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 19:48:19 +1000 (AEST)
-Received: by mail-lf0-x22e.google.com with SMTP id j11so61785555lfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 02:48:18 -0700 (PDT)
-From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
-To: Boris Brezillon <boris.brezillon@free-electrons.com>
-Cc: Richard Weinberger <richard@nod.at>, linux-mtd@lists.infradead.org,
- Egor Martovetsky <egor@pasemi.com>, Olof Johansson <olof@lixom.net>,
- Joe Perches <joe@perches.com>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC PA SEMI PWRFICIENT),
- linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH V3] mtd: nand: pasemi: switch to dev_* printing functions
-Date: Wed, 13 Apr 2016 11:48:05 +0200
-Message-Id: <1460540885-4506-1-git-send-email-zajec5@gmail.com>
-In-Reply-To: <1460114003-19926-1-git-send-email-zajec5@gmail.com>
-References: <1460114003-19926-1-git-send-email-zajec5@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlJyw0GYPzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 19:53:27 +1000 (AEST)
+Received: by mail-pa0-x22d.google.com with SMTP id zm5so30858989pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 02:53:27 -0700 (PDT)
+Subject: Re: [PATCH v8 08/45] powerpc/powernv: Fix initial IO and M32 segmap
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-9-git-send-email-gwshan@linux.vnet.ibm.com>
+ <570DE553.80708@ozlabs.ru> <20160413075324.GA31320@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
+ grant.likely@linaro.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <570E170C.1040301@ozlabs.ru>
+Date: Wed, 13 Apr 2016 19:53:16 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20160413075324.GA31320@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,73 +31,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It also contains some minor related changes:
-1) Don't warn if kzalloc fails as it dumps stack on its own
-2) Use %pR format for displaying whole resource to avoid:
-warning: format ‘%08llx’ expects type ‘long long unsigned int’, but argument 2 has type ‘resource_size_t’
+On 04/13/2016 05:53 PM, Gavin Shan wrote:
+> On Wed, Apr 13, 2016 at 04:21:07PM +1000, Alexey Kardashevskiy wrote:
+>> On 02/17/2016 02:43 PM, Gavin Shan wrote:
+>>> There are two arrays for IO and M32 segment maps on every PHB.
+>>> The index of the arrays are segment number and the value stored
+>>> in the corresponding element is PE number, indicating the segment
+>>> is assigned to the PE. Initially, all elements in those two arrays
+>>> are zeroes, meaning all segments are assigned to PE#0. It's wrong.
+>>>
+>>> This fixes the initial values in the elements of those two arrays
+>>> to IODA_INVALID_PE, meaning all segments aren't assigned to any
+>>> PE.
+>>
+>> This is ok.
+>>
+>>> In order to use IODA_INVALID_PE (-1) to represent invalid PE
+>>> number, the types of those two arrays are changed from "unsigned int"
+>>> to "int".
+>>
+>> "unsigned" can carry (-1) perfectly fine, just add a type cast to
+>> IODA_INVALID_PE:
+>>
+>> #define IODA_INVALID_PE    (unsigned int)(-1)
+>>
+>> Using "signed" type for indexes which cannot be negative does not make much
+>> sense - instead of checking for the upper boundary, you have to check for "<
+>> 0" too.
+>>
+>> OPAL uses unsigned type for PE (uint64_t or uint32_t or uint16_t - this is
+>> quite funny).
+>>
+>> pnv_ioda_pe::pe_number is "unsigned" and this pe_number is the same thing as
+>> I can see in pnv_ioda_setup_dev_PE().
+>>
+>> Some printk() print the PE number as "%x" (which implies "unsigned").
+>>
+>
+> Yes, I can simply have something like below when PE number as well as
+> segment index are represented by "unsigned int" values, right?
+>
+> #define IODA_INVALID_PE		0xffffffff
 
-Signed-off-by: Rafał Miłecki <zajec5@gmail.com>
----
-V3: Switch to dev_* instead of pr_*
----
- drivers/mtd/nand/pasemi_nand.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
-index 63fcb8c..5de7591 100644
---- a/drivers/mtd/nand/pasemi_nand.c
-+++ b/drivers/mtd/nand/pasemi_nand.c
-@@ -92,8 +92,9 @@ int pasemi_device_ready(struct mtd_info *mtd)
- 
- static int pasemi_nand_probe(struct platform_device *ofdev)
- {
-+	struct device *dev = &ofdev->dev;
- 	struct pci_dev *pdev;
--	struct device_node *np = ofdev->dev.of_node;
-+	struct device_node *np = dev->of_node;
- 	struct resource res;
- 	struct nand_chip *chip;
- 	int err = 0;
-@@ -107,13 +108,11 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
- 	if (pasemi_nand_mtd)
- 		return -ENODEV;
- 
--	pr_debug("pasemi_nand at %pR\n", &res);
-+	dev_dbg(dev, "pasemi_nand at %pR\n", &res);
- 
- 	/* Allocate memory for MTD device structure and private data */
- 	chip = kzalloc(sizeof(struct nand_chip), GFP_KERNEL);
- 	if (!chip) {
--		printk(KERN_WARNING
--		       "Unable to allocate PASEMI NAND MTD device structure\n");
- 		err = -ENOMEM;
- 		goto out;
- 	}
-@@ -121,7 +120,7 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
- 	pasemi_nand_mtd = nand_to_mtd(chip);
- 
- 	/* Link the private data with the MTD structure */
--	pasemi_nand_mtd->dev.parent = &ofdev->dev;
-+	pasemi_nand_mtd->dev.parent = dev;
- 
- 	chip->IO_ADDR_R = of_iomap(np, 0);
- 	chip->IO_ADDR_W = chip->IO_ADDR_R;
-@@ -163,13 +162,13 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
- 	}
- 
- 	if (mtd_device_register(pasemi_nand_mtd, NULL, 0)) {
--		printk(KERN_ERR "pasemi_nand: Unable to register MTD device\n");
-+		dev_err(dev, "Unable to register MTD device\n");
- 		err = -ENODEV;
- 		goto out_lpc;
- 	}
- 
--	printk(KERN_INFO "PA Semi NAND flash at %08llx, control at I/O %x\n",
--	       res.start, lpcctl);
-+	dev_info(dev, "PA Semi NAND flash at %pR, control at I/O %x\n", &res,
-+		 lpcctl);
- 
- 	return 0;
- 
+This will work too, yes.
+
+>
+>>
+>> I suggest changing the pci_dn::pe_number type from "int" to "unsigned int" to
+>> match pnv_ioda_pe::pe_number, in a separate patch. Or do not touch types for
+>> now.
+>>
+>
+> Yes, I will have a separate patch right before this one to address it.
+>
+>>
+>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> ---
+>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 9 +++++++--
+>>>   arch/powerpc/platforms/powernv/pci.h      | 4 ++--
+>>>   2 files changed, 9 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> index 1d2514f..44cc5f3 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> @@ -3239,7 +3239,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>   	unsigned long size, m32map_off, pemap_off, iomap_off = 0;
+>>>   	const __be64 *prop64;
+>>>   	const __be32 *prop32;
+>>> -	int len;
+>>> +	int i, len;
+>>>   	u64 phb_id;
+>>>   	void *aux;
+>>>   	long rc;
+>>> @@ -3334,8 +3334,13 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>   	aux = memblock_virt_alloc(size, 0);
+>>>   	phb->ioda.pe_alloc = aux;
+>>>   	phb->ioda.m32_segmap = aux + m32map_off;
+>>> -	if (phb->type == PNV_PHB_IODA1)
+>>> +	for (i = 0; i < phb->ioda.total_pe_num; i++)
+>>> +		phb->ioda.m32_segmap[i] = IODA_INVALID_PE;
+>>> +	if (phb->type == PNV_PHB_IODA1) {
+>>>   		phb->ioda.io_segmap = aux + iomap_off;
+>>> +		for (i = 0; i < phb->ioda.total_pe_num; i++)
+>>> +			phb->ioda.io_segmap[i] = IODA_INVALID_PE;
+>>> +	}
+>>>   	phb->ioda.pe_array = aux + pemap_off;
+>>>   	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>> index 784882a..36c4965 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci.h
+>>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>>> @@ -146,8 +146,8 @@ struct pnv_phb {
+>>>   		struct pnv_ioda_pe	*pe_array;
+>>>
+>>>   		/* M32 & IO segment maps */
+>>> -		unsigned int		*m32_segmap;
+>>> -		unsigned int		*io_segmap;
+>>> +		int			*m32_segmap;
+>>> +		int			*io_segmap;
+>>>
+>>>   		/* IRQ chip */
+>>>   		int			irq_chip_init;
+>>>
+>>
+>>
+>> --
+>> Alexey
+>>
+>
+
+
 -- 
-1.8.4.5
+Alexey
