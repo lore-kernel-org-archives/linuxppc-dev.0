@@ -1,27 +1,26 @@
-Return-Path: <waiman.long@hpe.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0103.outbound.protection.outlook.com [65.55.169.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <themoken@gmail.com>
+Received: from mail-ig0-x243.google.com (mail-ig0-x243.google.com
+ [IPv6:2607:f8b0:4001:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlW1Q2rMVzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 03:26:17 +1000 (AEST)
-Message-ID: <570E6B76.5080306@hpe.com>
-Date: Wed, 13 Apr 2016 11:53:26 -0400
-From: Waiman Long <waiman.long@hpe.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlWK501YYzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 03:39:52 +1000 (AEST)
+Received: by mail-ig0-x243.google.com with SMTP id fn8so7504157igb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 10:39:52 -0700 (PDT)
 MIME-Version: 1.0
-To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-CC: Peter Zijlstra <peterz@infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Boqun Feng <boqun.feng@gmail.com>, "Thomas
- Gleixner" <tglx@linutronix.de>
-Subject: Re: [PATCH] powerpc: introduce {cmp}xchg for u8 and u16
-References: <570752AA.9050603@linux.vnet.ibm.com>
- <20160408074744.GU3430@twins.programming.kicks-ass.net>
- <570A6078.2050002@linux.vnet.ibm.com> <20160412143023.GH1087@worktop>
- <570E2A45.9080702@linux.vnet.ibm.com>
-In-Reply-To: <570E2A45.9080702@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Sender: themoken@gmail.com
+In-Reply-To: <20160412054041.GA21633@gate.crashing.org>
+References: <1460401065-10540-1-git-send-email-jack@codezen.org>
+ <1460401065-10540-3-git-send-email-jack@codezen.org>
+ <20160412054041.GA21633@gate.crashing.org>
+Date: Wed, 13 Apr 2016 12:39:50 -0500
+Message-ID: <CAGXwabSfGfpfRvCDzbKy-f4-tkZHgCo-ZHEfviajvnkXEby+ew@mail.gmail.com>
+Subject: Re: [PATCH 2/3] powerpc: Load Monitor Register Support
+From: Jack Miller <jack@codezen.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, michael.neuling@au1.ibm.com,
+ michaele@au1.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,31 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/13/2016 07:15 AM, Pan Xinhui wrote:
-> Hello Peter,
+Thanks, yeah, that's more readable and more correct. I'll change it in
+the next spin.
+
+- Jack
+
+On Tue, Apr 12, 2016 at 12:40 AM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> Hi,
 >
-> On 2016年04月12日 22:30, Peter Zijlstra wrote:
+> On Mon, Apr 11, 2016 at 01:57:44PM -0500, Jack Miller wrote:
+>>  __init_FSCR:
+>>       mfspr   r3,SPRN_FSCR
+>> +     andi.   r3,r3,(~FSCR_LM)@L
+>>       ori     r3,r3,FSCR_TAR|FSCR_DSCR|FSCR_EBB
+>>       mtspr   SPRN_FSCR,r3
+>>       blr
 >
->>> I am working on the qspinlock implementation on PPC.
->>> Your and Waiman's patches are so nice. :)
->> Thanks!, last time I looked at PPC spinlocks they could not use things
->> like ticket locks because PPC might be a guest and fairness blows etc..
->>
->> You're making the qspinlock-paravirt thing work on PPC, or doing
->> qspinlock only for bare-metal PPC?
->>
-> I am making the both work. :)
-> qspinlock works on PPC now. I am preparing the patches and will send them out in next weeks :)
-
-What of performance improvement are you seeing in PPC?
-
-> The paravirt work is a little hard.
-> currently, there are pv_wait() and pv_kick(). but only pv_kick has the parameter cpu(who will hold the lock as soon as the lock is unlocked).
-> We need parameter cpu(who holds the lock now) in pv_wait,too.
-
-That can be doable to a certain extent. However, if the current lock 
-holder acquired the lock via the fastpath only. The CPU information is 
-not logged anywhere. For a contended lock, the information should be there.
-
-Cheers,
-Longman
+> This clears the top 48 bits as well.  Shouldn't matter currently; but
+> more robust (and easier to read, if you know the idiom) is
+>
+>         ori     r3,r3,FSCR_LM|FSCR_TAR|FSCR_DSCR|FSCR_EBB
+>         xori    r3,r3,FSCR_LM
+>
+>
+> Segher
