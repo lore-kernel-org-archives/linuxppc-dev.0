@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlNyv6dMrzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 22:53:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlNyw3YjNzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 22:53:44 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: bsingharora@gmail.com, duwe@lst.de, <linux-kernel@vger.kernel.org>,
  rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
  jeyu@redhat.com, jikos@kernel.org, live-patching@vger.kernel.org,
  mbenes@suse.cz
-Subject: [PATCH 1/5] ftrace: Make ftrace_location_range() global
-Date: Wed, 13 Apr 2016 22:53:19 +1000
-Message-Id: <1460552003-15409-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/5] livepatch: Allow architectures to specify an alternate
+ ftrace location
+Date: Wed, 13 Apr 2016 22:53:20 +1000
+Message-Id: <1460552003-15409-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
 References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,53 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to support live patching on powerpc we would like to call
-ftrace_location_range(), so make it global.
+When livepatch tries to patch a function it takes the function address
+and asks ftrace to install the livepatch handler at that location.
+ftrace will look for an mcount call site at that exact address.
+
+On powerpc the mcount location is not the first instruction of the
+function, and in fact it's not at a constant offset from the start of
+the function. To accommodate this add a hook which arch code can
+override to customise the behaviour.
 
 Signed-off-by: Torsten Duwe <duwe@suse.de>
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Petr Mladek <pmladek@suse.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- include/linux/ftrace.h |  1 +
- kernel/trace/ftrace.c  | 14 +++++++++++++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
+ kernel/livepatch/core.c | 34 +++++++++++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index dea12a6e413b..66a36a815f0a 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -455,6 +455,7 @@ int ftrace_update_record(struct dyn_ftrace *rec, int enable);
- int ftrace_test_record(struct dyn_ftrace *rec, int enable);
- void ftrace_run_stop_machine(int command);
- unsigned long ftrace_location(unsigned long ip);
-+unsigned long ftrace_location_range(unsigned long start, unsigned long end);
- unsigned long ftrace_get_addr_new(struct dyn_ftrace *rec);
- unsigned long ftrace_get_addr_curr(struct dyn_ftrace *rec);
- 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index b1870fbd2b67..7e8d792da963 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1530,7 +1530,19 @@ static int ftrace_cmp_recs(const void *a, const void *b)
- 	return 0;
+diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+index d68fbf63b083..b0476bb30f92 100644
+--- a/kernel/livepatch/core.c
++++ b/kernel/livepatch/core.c
+@@ -298,6 +298,19 @@ unlock:
+ 	rcu_read_unlock();
  }
  
--static unsigned long ftrace_location_range(unsigned long start, unsigned long end)
-+/**
-+ * ftrace_location_range - return the first address of a traced location
-+ *	if it touches the given ip range
-+ * @start: start of range to search.
-+ * @end: end of range to search (inclusive). @end points to the last byte
-+ *	to check.
++/*
++ * Convert a function address into the appropriate ftrace location.
 + *
-+ * Returns rec->ip if the related ftrace location is a least partly within
-+ * the given address range. That is, the first address of the instruction
-+ * that is either a NOP or call to the function tracer. It checks the ftrace
-+ * internal tables to determine if the address belongs or not.
++ * Usually this is just the address of the function, but on some architectures
++ * it's more complicated so allow them to provide a custom behaviour.
 + */
-+unsigned long ftrace_location_range(unsigned long start, unsigned long end)
++#ifndef klp_get_ftrace_location
++static unsigned long klp_get_ftrace_location(unsigned long faddr)
++{
++	return faddr;
++}
++#endif
++
+ static void klp_disable_func(struct klp_func *func)
  {
- 	struct ftrace_page *pg;
- 	struct dyn_ftrace *rec;
+ 	struct klp_ops *ops;
+@@ -312,8 +325,14 @@ static void klp_disable_func(struct klp_func *func)
+ 		return;
+ 
+ 	if (list_is_singular(&ops->func_stack)) {
++		unsigned long ftrace_loc;
++
++		ftrace_loc = klp_get_ftrace_location(func->old_addr);
++		if (WARN_ON(!ftrace_loc))
++			return;
++
+ 		WARN_ON(unregister_ftrace_function(&ops->fops));
+-		WARN_ON(ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0));
++		WARN_ON(ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0));
+ 
+ 		list_del_rcu(&func->stack_node);
+ 		list_del(&ops->node);
+@@ -338,6 +357,15 @@ static int klp_enable_func(struct klp_func *func)
+ 
+ 	ops = klp_find_ops(func->old_addr);
+ 	if (!ops) {
++		unsigned long ftrace_loc;
++
++		ftrace_loc = klp_get_ftrace_location(func->old_addr);
++		if (!ftrace_loc) {
++			pr_err("failed to find location for function '%s'\n",
++				func->old_name);
++			return -EINVAL;
++		}
++
+ 		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
+ 		if (!ops)
+ 			return -ENOMEM;
+@@ -352,7 +380,7 @@ static int klp_enable_func(struct klp_func *func)
+ 		INIT_LIST_HEAD(&ops->func_stack);
+ 		list_add_rcu(&func->stack_node, &ops->func_stack);
+ 
+-		ret = ftrace_set_filter_ip(&ops->fops, func->old_addr, 0, 0);
++		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
+ 		if (ret) {
+ 			pr_err("failed to set ftrace filter for function '%s' (%d)\n",
+ 			       func->old_name, ret);
+@@ -363,7 +391,7 @@ static int klp_enable_func(struct klp_func *func)
+ 		if (ret) {
+ 			pr_err("failed to register ftrace handler for function '%s' (%d)\n",
+ 			       func->old_name, ret);
+-			ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0);
++			ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0);
+ 			goto err;
+ 		}
+ 
 -- 
 2.5.0
