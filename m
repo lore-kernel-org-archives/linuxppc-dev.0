@@ -1,22 +1,42 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlgWj5C8CzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 09:49:37 +1000 (AEST)
-Message-ID: <1460591377.30121.3.camel@neuling.org>
-Subject: Re: [PATCH 1/3] powerpc: Complete FSCR context switch
-From: Michael Neuling <mikey@neuling.org>
-To: Jack Miller <jack@codezen.org>, Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, michael@ozlabs.au.ibm.com
-Date: Thu, 14 Apr 2016 09:49:37 +1000
-In-Reply-To: <CAGXwabRb-Wc8W8m0qP4kLb-oR+fZED8urYr4Asw0bq9kAc8C1w@mail.gmail.com>
-References: <1460401065-10540-1-git-send-email-jack@codezen.org>
- <1460401065-10540-2-git-send-email-jack@codezen.org>
- <20160413205112.425444de@kryten>
- <CAGXwabRb-Wc8W8m0qP4kLb-oR+fZED8urYr4Asw0bq9kAc8C1w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlgfm4nL9zDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 09:55:44 +1000 (AEST)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 14 Apr 2016 09:55:44 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BBB993578057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 09:55:32 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3DNtIVW55902336
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 09:55:32 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3DNsrJF025823
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 09:54:54 +1000
+Date: Thu, 14 Apr 2016 09:54:29 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dja@axtens.net,
+ bhelgaas@google.com, robherring2@gmail.com, grant.likely@linaro.org
+Subject: Re: [PATCH v8 15/45] powerpc/powernv/ioda1: Introduce
+ PNV_IODA1_DMA32_SEGSIZE
+Message-ID: <20160413235429.GB5330@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-16-git-send-email-gwshan@linux.vnet.ibm.com>
+ <570E0376.3030704@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <570E0376.3030704@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +46,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-13 at 12:52 -0500, Jack Miller wrote:
+On Wed, Apr 13, 2016 at 06:29:42PM +1000, Alexey Kardashevskiy wrote:
+>On 02/17/2016 02:43 PM, Gavin Shan wrote:
+>>Currently, there is one macro (TCE32_TABLE_SIZE) representing the
+>>TCE table size for one DMA32 segment. The constant representing
+>>the DMA32 segment size (1 << 28) is still used in the code.
+>>
+>>This defines PNV_IODA1_DMA32_SEGSIZE representing one DMA32
+>>segment size. the TCE table size can be calcualted when the page
+>
+>s/calcualted/calculated/
+>
+>
+>>has fixed 4KB size. So all the related calculation depends on one
+>>macro (PNV_IODA1_DMA32_SEGSIZE). No logical changes introduced.
+>
+>Please move PNV_IODA1_DMA32_SEGSIZE where TCE32_TABLE_SIZE was.
+>
+>
+>>
+>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>---
+>>  arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++-------------
+>>  arch/powerpc/platforms/powernv/pci.h      |  1 +
+>>  2 files changed, 18 insertions(+), 13 deletions(-)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index d18b95e..e60cff6 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -48,9 +48,6 @@
+>>  #include "powernv.h"
+>>  #include "pci.h"
+>>
+>>-/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
+>>-#define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
+>>-
+>>  #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+>>  #define POWERNV_IOMMU_MAX_LEVELS	5
+>>
+>>@@ -2034,7 +2031,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>
+>>  	struct page *tce_mem = NULL;
+>>  	struct iommu_table *tbl;
+>>-	unsigned int i;
+>>+	unsigned int tce32_segsz, i;
+>
+>
+>PNV_IODA1_DMA32_SEGSIZE is a segment size in bytes. The name @tce32_segsz
+>also suggests that it is a segment size in bytes (otherwise it would be
+>tce32_seg_entries or something like this) but it is not, it is a number of
+>TCE entries (arch/powerpc/kernel/iommu.c uses "entry" for these). And
+>tce32_segsz never changes. So:
+>
+>const unsigned int entries = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K
+>- 3);
+>
 
-> Hi Anton.
->=20
-> On Wed, Apr 13, 2016 at 5:51 AM, Anton Blanchard <anton@samba.org> wrote:
+Are you sure @tce32_segsz and equation you gave are for number of TCE entries,
+not the size of meory required for the DMA32 segment TCE table?
 
-> > Hi Jack,
-> >=20
+>>  	int64_t rc;
+>>  	void *addr;
+>>
+>>@@ -2054,29 +2051,34 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>  	/* Grab a 32-bit TCE table */
+>>  	pe->tce32_seg = base;
+>>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+>>-		(base << 28), ((base + segs) << 28) - 1);
+>>+		base * PNV_IODA1_DMA32_SEGSIZE,
+>>+		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
+>>
+>>  	/* XXX Currently, we allocate one big contiguous table for the
+>>  	 * TCEs. We only really need one chunk per 256M of TCE space
+>>  	 * (ie per segment) but that's an optimization for later, it
+>>  	 * requires some added smarts with our get/put_tce implementation
+>>+	 *
+>>+	 * Each TCE page is 4KB in size and each TCE entry occupies 8
+>>+	 * bytes
+>>  	 */
+>>+	tce32_segsz = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K - 3);
+>
+>>  	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
+>>-				   get_order(TCE32_TABLE_SIZE * segs));
+>>+				   get_order(tce32_segsz * segs));
+>>  	if (!tce_mem) {
+>>  		pe_err(pe, " Failed to allocate a 32-bit TCE memory\n");
+>>  		goto fail;
+>>  	}
+>>  	addr = page_address(tce_mem);
+>>-	memset(addr, 0, TCE32_TABLE_SIZE * segs);
+>>+	memset(addr, 0, tce32_segsz * segs);
+>>
+>>  	/* Configure HW */
+>>  	for (i = 0; i < segs; i++) {
+>>  		rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>>  					      pe->pe_number,
+>>  					      base + i, 1,
+>>-					      __pa(addr) + TCE32_TABLE_SIZE * i,
+>>-					      TCE32_TABLE_SIZE, 0x1000);
+>>+					      __pa(addr) + tce32_segsz * i,
+>>+					      tce32_segsz, 0x1000);
+>
+>
+>As you started using IOMMU_PAGE_SHIFT_4K and you are also touching this piece
+>of code -
+>
+>s/0x1000/IOMMU_PAGE_SHIFT_4K/
+>
 
-> > > Previously we just saved the FSCR, but only restored it in some
-> > > settings, and never copied it thread to thread. This patch always
-> > > restores the FSCR and formalizes new threads inheriting its setting s=
-o
-> > > that later we can manipulate FSCR bits in start_thread.
-> >=20
-> > Will this break the existing FSCR_DSCR bit handling?
-> >=20
-> >          if (cpu_has_feature(CPU_FTR_DSCR)) {
-> >                 u64 dscr =3D get_paca()->dscr_default;
-> >                 u64 fscr =3D old_thread->fscr & ~FSCR_DSCR;
-> >=20
-> >                 if (new_thread->dscr_inherit) {
-> >                         dscr =3D new_thread->dscr;
-> >                         fscr |=3D FSCR_DSCR;
-> >                 }
-> >=20
-> >                 if (old_thread->dscr !=3D dscr)
-> >                         mtspr(SPRN_DSCR, dscr);
-> >=20
-> >                 if (old_thread->fscr !=3D fscr)
-> >                         mtspr(SPRN_FSCR, fscr);
-> >         }
-> >=20
-> > If not, we should modify the above so we don't write the FSCR twice.
->=20
-> I think this code is just partially redundant. I think it's trying to
-> predict the right FSCR value based on this dscr_inherit flag. Now that
-> we fully switch it, we could skip setting FSCR here, and just set DSCR
-> if FSCR.DSCR is set (similar to what my patches do with FSCR.LM). In
-> fact, we might be able to just entirely get rid of the dscr_inherit
-> flag, but I'd have to look harder at that.
+Does 0x1000 is equal to IOMMU_PAGE_SHIFT_4K? I guess you probably suggested
+to use IOMMU_PAGE_SIZE_4K instead?
 
-I'm not sure that works on processes before power8.
-
-There DSCR SPR number 0x11 will always trap and emulate from userspace
-(see arch/powerpc/kernel/traps.c:emulate_instruction()).  That is not
-controlled by FSCR and should work on POWER7 where FSCR is not
-present.  We need to set the inherit bit there too.
-
-DSCR SPR number 0x3 is controlled by fscr, but it's only avaliable on
-POWER8.
-
-> Right now the FSCR switch is conditional on FTR_ARCH_207S which is
-> more exclusive than FTR_DSCR, but I guess the actual FSCR register is
-> universal to PPC64 like the fscr field in the thread struct? If so, I
-> can just move the FSCR save/restore out of the 207 conditional.
-
-FSCR was only introduced in power8, so it needs to be 207 conditional
-
-Mikey
-
->=20
-> Anyway, I'll clean this up a bit, add the little asm tweak from
-> Segher, and put another spin on the list.
->=20
-> - Jack
->=20
+>>  		if (rc) {
+>>  			pe_err(pe, " Failed to configure 32-bit TCE table,"
+>>  			       " err %ld\n", rc);
+>>@@ -2085,8 +2087,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>  	}
+>>
+>>  	/* Setup linux iommu table */
+>>-	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+>>-				  base << 28, IOMMU_PAGE_SHIFT_4K);
+>>+	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
+>>+				  base * PNV_IODA1_DMA32_SEGSIZE,
+>>+				  IOMMU_PAGE_SHIFT_4K);
+>>
+>>  	/* OPAL variant of P7IOC SW invalidated TCEs */
+>>  	if (phb->ioda.tce_inval_reg)
+>>@@ -2116,7 +2119,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>  	if (pe->tce32_seg >= 0)
+>>  		pe->tce32_seg = -1;
+>>  	if (tce_mem)
+>>-		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+>>+		__free_pages(tce_mem, get_order(tce32_segsz * segs));
+>>  	if (tbl) {
+>>  		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
+>>  		iommu_free_table(tbl, "pnv");
+>>@@ -3445,7 +3448,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>  	mutex_init(&phb->ioda.pe_list_mutex);
+>>
+>>  	/* Calculate how many 32-bit TCE segments we have */
+>>-	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
+>>+	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
+>>+				PNV_IODA1_DMA32_SEGSIZE;
+>>
+>>  #if 0 /* We should really do that ... */
+>>  	rc = opal_pci_set_phb_mem_window(opal->phb_id,
+>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>index 00539ff..1d8e775 100644
+>>--- a/arch/powerpc/platforms/powernv/pci.h
+>>+++ b/arch/powerpc/platforms/powernv/pci.h
+>>@@ -84,6 +84,7 @@ struct pnv_ioda_pe {
+>>
+>>  #define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs   */
+>>  #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR */
+>>+#define PNV_IODA1_DMA32_SEGSIZE	0x10000000
+>>
+>>  #define PNV_PHB_FLAG_EEH	(1 << 0)
+>>
+>>
+>
+>
+>-- 
+>Alexey
+>
