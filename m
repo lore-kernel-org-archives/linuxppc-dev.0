@@ -1,28 +1,19 @@
-Return-Path: <jikos@kernel.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlPbz4nN0zDqBC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 23:22:23 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qlPbz1RgDz9t5w
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Apr 2016 23:22:22 +1000 (AEST)
-Date: Wed, 13 Apr 2016 15:22:17 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: Miroslav Benes <mbenes@suse.cz>
-cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- bsingharora@gmail.com, duwe@lst.de, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
- jeyu@redhat.com, live-patching@vger.kernel.org
-Subject: Re: [PATCH 0/5] Live patching for powerpc
-In-Reply-To: <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
-Message-ID: <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
-References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlPrs2vyQzDqBC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 23:33:33 +1000 (AEST)
+In-Reply-To: <1460318028-28056-1-git-send-email-aaro.koskinen@iki.fi>
+To: Aaro Koskinen <aaro.koskinen@iki.fi>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: Re: [RESEND,
+ 1/2] drivers: macintosh: rack-meter: limit idle ticks to total ticks
+Message-Id: <3qlPrs1bdzz9t3V@ozlabs.org>
+Date: Wed, 13 Apr 2016 23:33:33 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,34 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Apr 2016, Miroslav Benes wrote:
-
-> > This series adds live patching support for powerpc (ppc64le only ATM).
-> > 
-> > It's unchanged since the version I posted on March 24, with the exception that
-> > I've dropped the first patch, which was a testing-only patch.
-> > 
-> > If there's no further comments I'll put this in a topic branch in the next day
-> > or two and Jiri & I will both merge that into next.
+On Sun, 2016-10-04 at 19:53:47 UTC, Aaro Koskinen wrote:
+> Limit idle ticks to total ticks. This prevents the annoying rackmeter
+> leds fully ON / OFF blinking state that happens on fully idling
+> G5 Xserve systems.
 > 
-> Hi,
-> 
-> I'll definitely give it a proper look today or tomorrow, but there is one 
-> thing that needs to be solved. The patch set from Jessica reworking 
-> relocations for live patching is now merged in our for-next branch. This 
-> means that we need to find out if there is something in struct 
-> mod_arch_specific for powerpc which needs to be preserved and do it.
+> Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-Michael, if the plan is still the original one, i.e. you push it to your 
-branch, and I merge it to livepatching (and resolve any dependencies on 
-the relocations code during the merge) and push it to Linus from 
-livepatching.git, then there shouldn't be anything do to on your side.
+Series applied to powerpc next, thanks.
 
-Alternatively, you can rebase on top of livepatching.git#for-next, and 
-I'll take it directly.
+https://git.kernel.org/powerpc/c/c796d1d97c3035cf54d4d5a9e7
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+cheers
