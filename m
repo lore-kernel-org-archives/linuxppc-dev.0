@@ -1,21 +1,31 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [IPv6:2a01:4f8:192:486::147:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlLFq2tHGzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 20:51:26 +1000 (AEST)
-Date: Wed, 13 Apr 2016 20:51:12 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Jack Miller <jack@codezen.org>
-Cc: linuxppc-dev@lists.ozlabs.org, michael.neuling@au1.ibm.com,
- michaele@au1.ibm.com
-Subject: Re: [PATCH 1/3] powerpc: Complete FSCR context switch
-Message-ID: <20160413205112.425444de@kryten>
-In-Reply-To: <1460401065-10540-2-git-send-email-jack@codezen.org>
-References: <1460401065-10540-1-git-send-email-jack@codezen.org>
- <1460401065-10540-2-git-send-email-jack@codezen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlLV53rnHzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 21:02:05 +1000 (AEST)
+Message-ID: <1460545318.24090.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] sched/cpuacct: Check for NULL when using task_pt_regs()
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ingo Molnar <mingo@kernel.org>, Srikar Dronamraju
+ <srikar@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>, Peter Zijlstra
+ <peterz@infradead.org>,  tglx@linutronix.de, efault@gmx.de,
+ htejun@gmail.com, linux-kernel@vger.kernel.org,  tj@kernel.org,
+ torvalds@linux-foundation.org, zhaolei@cn.fujitsu.com,
+ yangds.fnst@cn.fujitsu.com, hpa@zytor.com, Stephen Rothwell
+ <sfr@canb.auug.org.au>,  linuxppc-dev@lists.ozlabs.org
+Date: Wed, 13 Apr 2016 21:01:58 +1000
+In-Reply-To: <20160413074319.GA8968@gmail.com>
+References: <aa171da036b520b51c79549e9b3215d29473f19d.1458635566.git.zhaolei@cn.fujitsu.com>
+ <tip-d740037fac7052e49450f6fa1454f1144a103b55@git.kernel.org>
+ <20160404140312.GA28495@linux.vnet.ibm.com>
+ <20160406065436.GB3078@gmail.com> <20160406203219.788ae7cf@kryten>
+ <20160406110803.GI2906@worktop> <20160406215950.04bc3f0b@kryten>
+ <20160406132637.GA2108@linux.vnet.ibm.com>
+ <20160413074319.GA8968@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jack,
+On Wed, 2016-04-13 at 09:43 +0200, Ingo Molnar wrote:
+> * Srikar Dronamraju <srikar@linux.vnet.ibm.com> wrote:
+> 
+> > * Anton Blanchard <anton@samba.org> [2016-04-06 21:59:50]:
+> > 
+> > > Looks good, and the patch below does fix the oops for me.
+> > > 
+> > > Anton
+> > > --
+> > > 
+> > > task_pt_regs() can return NULL for kernel threads, so add a check.
+> > > This fixes an oops at boot on ppc64.
+> > > 
+> > > Signed-off-by: Anton Blanchard <anton@samba.org>
+> > 
+> > Works for me too.
+> > 
+> > Reported-and-Tested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> 
+> Could someone please re-send the fix, because it has not reached me nor lkml.
 
-> Previously we just saved the FSCR, but only restored it in some
-> settings, and never copied it thread to thread. This patch always
-> restores the FSCR and formalizes new threads inheriting its setting so
-> that later we can manipulate FSCR bits in start_thread.
+It did hit LKML:
 
-Will this break the existing FSCR_DSCR bit handling?
+http://lkml.kernel.org/r/20160406215950.04bc3f0b@kryten
 
-         if (cpu_has_feature(CPU_FTR_DSCR)) {
-                u64 dscr = get_paca()->dscr_default;
-                u64 fscr = old_thread->fscr & ~FSCR_DSCR;
+But that did have some verbiage at the top.
 
-                if (new_thread->dscr_inherit) {
-                        dscr = new_thread->dscr;
-                        fscr |= FSCR_DSCR;
-                }
+Anton's also resent it directly To you.
 
-                if (old_thread->dscr != dscr)
-                        mtspr(SPRN_DSCR, dscr);
-
-                if (old_thread->fscr != fscr)
-                        mtspr(SPRN_FSCR, fscr);
-        }
-
-If not, we should modify the above so we don't write the FSCR twice.
-
-Anton
+cheers
