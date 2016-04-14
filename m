@@ -1,24 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c00::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlrrb1JS1zDq64
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 16:49:51 +1000 (AEST)
-Message-ID: <1460616590.2754.6.camel@ellerman.id.au>
-Subject: Re: [PATCH 0/5] Live patching for powerpc
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>
-Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com, duwe@lst.de,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com,  pmladek@suse.com, jeyu@redhat.com,
- live-patching@vger.kernel.org
-Date: Thu, 14 Apr 2016 16:49:50 +1000
-In-Reply-To: <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
-References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlrs34TlLzDqCp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 16:50:15 +1000 (AEST)
+Received: by mail-pf0-x22f.google.com with SMTP id c20so43169231pfc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 23:50:15 -0700 (PDT)
+Subject: Re: [PATCH V2 25/68] powerpc/mm: Move pte related function together
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-26-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <570F3D9A.6050301@gmail.com>
+Date: Thu, 14 Apr 2016 16:50:02 +1000
+MIME-Version: 1.0
+In-Reply-To: <1460182444-2468-26-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-13 at 15:22 +0200, Jiri Kosina wrote:
-> On Wed, 13 Apr 2016, Miroslav Benes wrote:
-> > > This series adds live patching support for powerpc (ppc64le only ATM).
-> > > 
-> > > It's unchanged since the version I posted on March 24, with the exception that
-> > > I've dropped the first patch, which was a testing-only patch.
-> > > 
-> > > If there's no further comments I'll put this in a topic branch in the next day
-> > > or two and Jiri & I will both merge that into next.
-> > 
-> > Hi,
-> > 
-> > I'll definitely give it a proper look today or tomorrow, but there is one 
-> > thing that needs to be solved. The patch set from Jessica reworking 
-> > relocations for live patching is now merged in our for-next branch. This 
-> > means that we need to find out if there is something in struct 
-> > mod_arch_specific for powerpc which needs to be preserved and do it.
+
+
+On 09/04/16 16:13, Aneesh Kumar K.V wrote:
+> Only code movement. No functionality change.
 > 
-> Michael, if the plan is still the original one, i.e. you push it to your 
-> branch, and I merge it to livepatching (and resolve any dependencies on 
-> the relocations code during the merge) and push it to Linus from 
-> livepatching.git, then there shouldn't be anything do to on your side.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable.h | 142 +++++++++++++--------------
+>  1 file changed, 71 insertions(+), 71 deletions(-)
 
-That is my plan yeah.
-
-Topic branch here:
-
-  https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/log/?h=topic/livepatch
-
-I will merge that before Monday (my time) if I don't hear any objections.
-
-cheers
+Acked-by: balbir Singh <bsingharora@gmail.com>
