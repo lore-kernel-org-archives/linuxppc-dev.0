@@ -1,24 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qm1Dz3pDNzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 23:08:03 +1000 (AEST)
-Message-ID: <1460639282.21066.5.camel@ellerman.id.au>
-Subject: Re: [PATCH 0/5] Live patching for powerpc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qm1LM4MDzzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 23:12:43 +1000 (AEST)
+Message-ID: <1460639562.21066.7.camel@ellerman.id.au>
+Subject: Re: [PATCH 3/5] powerpc/livepatch: Add livepatch header
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
- linux-kernel@vger.kernel.org,  rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com, pmladek@suse.com,  jeyu@redhat.com,
- live-patching@vger.kernel.org
-Date: Thu, 14 Apr 2016 23:08:02 +1000
-In-Reply-To: <20160414125735.GA20296@lst.de>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com, duwe@lst.de,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com,  pmladek@suse.com, jeyu@redhat.com,
+ jikos@kernel.org, live-patching@vger.kernel.org
+Date: Thu, 14 Apr 2016 23:12:42 +1000
+In-Reply-To: <alpine.LNX.2.00.1604141422220.10605@pobox.suse.cz>
 References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
- <1460616590.2754.6.camel@ellerman.id.au> <20160414125735.GA20296@lst.de>
+ <1460552003-15409-4-git-send-email-mpe@ellerman.id.au>
+ <alpine.LNX.2.00.1604141417310.10605@pobox.suse.cz>
+ <alpine.LNX.2.00.1604141422220.10605@pobox.suse.cz>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,29 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-04-14 at 14:57 +0200, Torsten Duwe wrote:
-> On Thu, Apr 14, 2016 at 04:49:50PM +1000, Michael Ellerman wrote:
-> > On Wed, 2016-04-13 at 15:22 +0200, Jiri Kosina wrote:
-> > > On Wed, 13 Apr 2016, Miroslav Benes wrote:
-> > > > > This series adds live patching support for powerpc (ppc64le only ATM).
-> > > > > 
-> > > > > It's unchanged since the version I posted on March 24, with the exception that
-> > > > > I've dropped the first patch, which was a testing-only patch.
+On Thu, 2016-04-14 at 14:23 +0200, Miroslav Benes wrote:
+> On Thu, 14 Apr 2016, Miroslav Benes wrote:
+> > On Wed, 13 Apr 2016, Michael Ellerman wrote:
+> > > diff --git a/arch/powerpc/include/asm/livepatch.h b/arch/powerpc/include/asm/livepatch.h
+> > > new file mode 100644
+> > > index 000000000000..ad36e8e34fa1
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/include/asm/livepatch.h
+> > > @@ -0,0 +1,54 @@
+...
+> > > +#ifndef _ASM_POWERPC_LIVEPATCH_H
+> > > +#define _ASM_POWERPC_LIVEPATCH_H
+> > > +
+> > > +#include <linux/module.h>
+> > > +#include <linux/ftrace.h>
+> > > +
+> > > +#ifdef CONFIG_LIVEPATCH
+> > 
+> > We don't use these guards in our header files since 335e073faacc ("klp: 
+> > remove CONFIG_LIVEPATCH dependency from klp headers").
 > 
-> Confirmed. And it still works on top of 4.6-rc3, even with the additional testing.
- 
-Thanks. Yeah I tested on top of rc3 as well as back on the topic branch (4.5-rc).
+> ...but you're gonna need it in the next patch...
 
-> > > > > If there's no further comments I'll put this in a topic branch in the next day
-> > > > > or two and Jiri & I will both merge that into next.
-> 
-> "Go" from my side.
- 
-Throttle up!
-
-> FTR: then I still have a few ppc64 hunks floating around to support certain consistency
-> models...
-
-OK. I'm not quite sure what you mean but post them and we'll see I guess :)
+Yeah I know I said at one point those #ifdefs were unneeded, but then it turns
+out we did want it on powerpc for other reasons.
 
 cheers
