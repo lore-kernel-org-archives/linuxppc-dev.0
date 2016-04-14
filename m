@@ -1,22 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xinhui@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlsKh29LBzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 17:11:36 +1000 (AEST)
-Message-ID: <1460617895.2754.8.camel@ellerman.id.au>
-Subject: Re: [PATCH] ftrace: filter: Match dot symbols when searching
- functions on ppc64.
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>
-Date: Thu, 14 Apr 2016 17:11:35 +1000
-In-Reply-To: <1459480972-20238-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1459480972-20238-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlv7D6rbqzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 18:32:40 +1000 (AEST)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
+ Thu, 14 Apr 2016 18:32:39 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 379992CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 18:32:27 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3E8WIH21311092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 18:32:27 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3E8Vrd3010621
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 18:31:54 +1000
+Message-ID: <570F5557.1070207@linux.vnet.ibm.com>
+Date: Thu, 14 Apr 2016 16:31:19 +0800
+From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Waiman Long <waiman.long@hpe.com>
+CC: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Boqun Feng <boqun.feng@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] powerpc: introduce {cmp}xchg for u8 and u16
+References: <570752AA.9050603@linux.vnet.ibm.com>
+ <20160408074744.GU3430@twins.programming.kicks-ass.net>
+ <570A6078.2050002@linux.vnet.ibm.com> <20160412143023.GH1087@worktop>
+ <570E2A45.9080702@linux.vnet.ibm.com> <570E6B76.5080306@hpe.com>
+In-Reply-To: <570E6B76.5080306@hpe.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,128 +46,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-04-01 at 00:22 -0300, Thiago Jung Bauermann wrote:
+Hello, Waiman
 
-> In the ppc64 big endian ABI, function symbols point to function
-> descriptors. The symbols which point to the function entry points
-> have a dot in front of the function name. Consequently, when the
-> ftrace filter mechanism searches for the symbol corresponding to
-> an entry point address, it gets the dot symbol.
+On 2016年04月13日 23:53, Waiman Long wrote:
+> On 04/13/2016 07:15 AM, Pan Xinhui wrote:
+>> Hello Peter,
+>>
+>> On 2016年04月12日 22:30, Peter Zijlstra wrote:
+>>
+>>>> I am working on the qspinlock implementation on PPC.
+>>>> Your and Waiman's patches are so nice. :)
+>>> Thanks!, last time I looked at PPC spinlocks they could not use things
+>>> like ticket locks because PPC might be a guest and fairness blows etc..
+>>>
+>>> You're making the qspinlock-paravirt thing work on PPC, or doing
+>>> qspinlock only for bare-metal PPC?
+>>>
+>> I am making the both work. :)
+>> qspinlock works on PPC now. I am preparing the patches and will send them out in next weeks :)
 > 
-> As a result, ftrace filter users have to be aware of this ABI detail on
-> ppc64 and prepend a dot to the function name when setting the filter.
+> What of performance improvement are you seeing in PPC?
 > 
-> The perf probe command insulates the user from this by ignoring the dot
-> in front of the symbol name when matching function names to symbols,
-> but the sysfs interface does not. This patch makes the ftrace filter
-> mechanism do the same when searching symbols.
+well, not good. I wrote one small benchmark which just increase a integer with spinlock hold.
+the overhead of lock itself is high. But the fairness is good.
+I just do the tests in guestOS, and the qspinlock does not make use of paravirt, but spinlock does. So the performance gap now is a little big.
+looks like I need change the kernel config, and re-test.
+
+I does not measure the system impact in real world now. Let's see the kernel build times with two different locks.
+If possible, Could you share us how you do the performance test?
+
+>> The paravirt work is a little hard.
+>> currently, there are pv_wait() and pv_kick(). but only pv_kick has the parameter cpu(who will hold the lock as soon as the lock is unlocked).
+>> We need parameter cpu(who holds the lock now) in pv_wait,too.
 > 
-> Fixes the following failure in ftracetest's kprobe_ftrace.tc:
+> That can be doable to a certain extent. However, if the current lock holder acquired the lock via the fastpath only. The CPU information is not logged anywhere. For a contended lock, the information should be there.
 > 
->   .../kprobe_ftrace.tc: line 9: echo: write error: Invalid argument
+yes. Maybe we could use hashtable. We could put lock, lock holder in pv_node, too. :)
+Just my thoughts.
+
+thanks
+xinhui
+
+> Cheers, 
+> Longman
 > 
-> That failure is on this line of kprobe_ftrace.tc:
-> 
->   echo _do_fork > set_ftrace_filter
-> 
-> This is because there's no _do_fork entry in the functions list:
-> 
->   # cat available_filter_functions | grep _do_fork
->   ._do_fork
-> 
-> This change introduces no regressions on the perf and ftracetest
-> testsuite results.
-> 
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/ftrace.h |  9 +++++++++
->  kernel/trace/ftrace.c             | 13 +++++++++++++
->  2 files changed, 22 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-> index 50ca7585abe2..68f1858796c6 100644
-> --- a/arch/powerpc/include/asm/ftrace.h
-> +++ b/arch/powerpc/include/asm/ftrace.h
-> @@ -58,6 +58,15 @@ struct dyn_arch_ftrace {
->  	struct module *mod;
->  };
->  #endif /*  CONFIG_DYNAMIC_FTRACE */
-> +
-> +#if CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF != 2)
-> +#define ARCH_HAS_FTRACE_MATCH_ADJUST
-
-I *think* the consenus these days is that we don't add ARCH_HAS #defines in
-headers. Instead you should either:
- - add a CONFIG_HAVE_ARCH_FOO and use that
- - use the #define foo foo trick
-
-The latter being that you do:
-
-static inline void arch_ftrace_match_adjust(char **str, char *search)
-{
-	...
-}
-#define arch_ftrace_match_adjust arch_ftrace_match_adjust
-
-And in ftrace.c:
-
-#ifndef arch_ftrace_match_adjust
-static inline void arch_ftrace_match_adjust(char **str, char *search) {}
-#endif
-
-
-Presumably Steve will have a preference for which style you use.
-
-> +static inline void arch_ftrace_match_adjust(char **str, char *search)
-> +{
-> +	if ((*str)[0] == '.' && search[0] != '.')
-> +		(*str)++;
-> +}
-> +#endif /* CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF != 2) */
->  #endif /* __ASSEMBLY__ */
-
-It seems unfortunate that we need to introduce yet another mechanism to deal
-with dot symbols. But I guess none of the existing mechanisms work, eg.
-kprobe_lookup_name().
-
-
->  #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index b1870fbd2b67..e806c2a3b7a8 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -3444,11 +3444,24 @@ struct ftrace_glob {
->  	int type;
->  };
->  
-> +#ifndef ARCH_HAS_FTRACE_MATCH_ADJUST
-> +/*
-> + * If symbols in an architecture don't correspond exactly to the user-visible
-> + * name of what they represent, it is possible to define this function to
-> + * perform the necessary adjustments.
-> +*/
-> +static inline void arch_ftrace_match_adjust(char **str, char *search)
-> +{
-> +}
-> +#endif
-> +
->  static int ftrace_match(char *str, struct ftrace_glob *g)
->  {
->  	int matched = 0;
->  	int slen;
->  
-> +	arch_ftrace_match_adjust(&str, g->search);
-
-I think this would less magical if it didn't modify str directly, instead doing:
-
-	str = arch_ftrace_match_adjust(str, g->search);
-
-And arch_ftrace_match_adjust() would return the adjusted char *.
-
-That would mean the generic version would need to return str rather than being
-empty.
-
-cheers
