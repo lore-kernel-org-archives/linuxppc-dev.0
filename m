@@ -1,24 +1,29 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0178.hostedemail.com
- [216.40.44.178])
+Return-Path: <mbenes@suse.cz>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qlyMK2QSpzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 20:58:19 +1000 (AEST)
-Date: Thu, 14 Apr 2016 06:58:05 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlzmB58rmzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 22:01:30 +1000 (AEST)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qlzm95Xz0z9sD9
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Apr 2016 22:01:29 +1000 (AEST)
+Date: Thu, 14 Apr 2016 14:01:20 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
- <mingo@redhat.com>
-Subject: Re: [PATCH] ftrace: filter: Match dot symbols when searching
- functions on ppc64.
-Message-ID: <20160414065805.102dfd90@grimm.local.home>
-In-Reply-To: <1460617895.2754.8.camel@ellerman.id.au>
-References: <1459480972-20238-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1460617895.2754.8.camel@ellerman.id.au>
+cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com, duwe@lst.de,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
+ jikos@kernel.org, live-patching@vger.kernel.org
+Subject: Re: [PATCH 2/5] livepatch: Allow architectures to specify an alternate
+ ftrace location
+In-Reply-To: <1460552003-15409-3-git-send-email-mpe@ellerman.id.au>
+Message-ID: <alpine.LNX.2.00.1604141354130.10605@pobox.suse.cz>
+References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
+ <1460552003-15409-3-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,122 +33,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Apr 2016 17:11:35 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > 
-> > diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-> > index 50ca7585abe2..68f1858796c6 100644
-> > --- a/arch/powerpc/include/asm/ftrace.h
-> > +++ b/arch/powerpc/include/asm/ftrace.h
-> > @@ -58,6 +58,15 @@ struct dyn_arch_ftrace {
-> >  	struct module *mod;
-> >  };
-> >  #endif /*  CONFIG_DYNAMIC_FTRACE */
-> > +
-> > +#if CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF != 2)
-> > +#define ARCH_HAS_FTRACE_MATCH_ADJUST  
-> 
-> I *think* the consenus these days is that we don't add ARCH_HAS #defines in
-> headers. Instead you should either:
->  - add a CONFIG_HAVE_ARCH_FOO and use that
->  - use the #define foo foo trick
-> 
-> The latter being that you do:
-> 
-> static inline void arch_ftrace_match_adjust(char **str, char *search)
-> {
-> 	...
-> }
-> #define arch_ftrace_match_adjust arch_ftrace_match_adjust
-> 
-> And in ftrace.c:
-> 
-> #ifndef arch_ftrace_match_adjust
-> static inline void arch_ftrace_match_adjust(char **str, char *search) {}
-> #endif
-> 
-> 
-> Presumably Steve will have a preference for which style you use.
+On Wed, 13 Apr 2016, Michael Ellerman wrote:
 
-Actually, what I usually do is simply make a "weak" stub function and
-let the arch override it.
-
+> When livepatch tries to patch a function it takes the function address
+> and asks ftrace to install the livepatch handler at that location.
+> ftrace will look for an mcount call site at that exact address.
 > 
-> > +static inline void arch_ftrace_match_adjust(char **str, char *search)
-> > +{
-> > +	if ((*str)[0] == '.' && search[0] != '.')
-> > +		(*str)++;
-> > +}
-> > +#endif /* CONFIG_PPC64 && (!defined(_CALL_ELF) || _CALL_ELF != 2) */
-> >  #endif /* __ASSEMBLY__ */  
+> On powerpc the mcount location is not the first instruction of the
+> function, and in fact it's not at a constant offset from the start of
+> the function. To accommodate this add a hook which arch code can
+> override to customise the behaviour.
 > 
-> It seems unfortunate that we need to introduce yet another mechanism to deal
-> with dot symbols. But I guess none of the existing mechanisms work, eg.
-> kprobe_lookup_name().
-
-What about making a generic conversion to function name, like:
-
-	arch_sane_function_name(str);
-
-Where all sane archs simply return the string name and powerpc can
-strip the '.' prefix. ;-)
-
-Of course that would require:
-
-	sane_str = arch_sane_function(str);
-	sane_search = arch_sane_function(g->search);
-
-	and then compare sane_str with sane_search.
-
+> Signed-off-by: Torsten Duwe <duwe@suse.de>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Petr Mladek <pmladek@suse.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  kernel/livepatch/core.c | 34 +++++++++++++++++++++++++++++++---
+>  1 file changed, 31 insertions(+), 3 deletions(-)
 > 
-> 
-> >  #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> > index b1870fbd2b67..e806c2a3b7a8 100644
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -3444,11 +3444,24 @@ struct ftrace_glob {
-> >  	int type;
-> >  };
-> >  
-> > +#ifndef ARCH_HAS_FTRACE_MATCH_ADJUST
-> > +/*
-> > + * If symbols in an architecture don't correspond exactly to the user-visible
-> > + * name of what they represent, it is possible to define this function to
-> > + * perform the necessary adjustments.
-> > +*/
-> > +static inline void arch_ftrace_match_adjust(char **str, char *search)
-> > +{
-> > +}
-> > +#endif
-> > +
-> >  static int ftrace_match(char *str, struct ftrace_glob *g)
-> >  {
-> >  	int matched = 0;
-> >  	int slen;
-> >  
-> > +	arch_ftrace_match_adjust(&str, g->search);  
-> 
-> I think this would less magical if it didn't modify str directly, instead doing:
-> 
-> 	str = arch_ftrace_match_adjust(str, g->search);
-> 
-> And arch_ftrace_match_adjust() would return the adjusted char *.
-> 
-> That would mean the generic version would need to return str rather than being
-> empty.
+> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+> index d68fbf63b083..b0476bb30f92 100644
+> --- a/kernel/livepatch/core.c
+> +++ b/kernel/livepatch/core.c
+> @@ -298,6 +298,19 @@ unlock:
+>  	rcu_read_unlock();
+>  }
+>  
+> +/*
+> + * Convert a function address into the appropriate ftrace location.
+> + *
+> + * Usually this is just the address of the function, but on some architectures
+> + * it's more complicated so allow them to provide a custom behaviour.
+> + */
+> +#ifndef klp_get_ftrace_location
+> +static unsigned long klp_get_ftrace_location(unsigned long faddr)
+> +{
+> +	return faddr;
+> +}
+> +#endif
 
-I agree, because if we need to free the string passed it, the function
-would modify the pointer and we wouldn't be able to free it. In those
-cases we could do:
+Whoah, what an ugly hack :)
 
-	tmp_str = arch_ftrace_match_adjust(str, search);
-	/* use tmp_str and then ignore */
-	kfree(str);
+Note to my future self - This is what you want to do if you need a weak 
+static inline function.
 
-** Disclaimer **
+static inline is probably unnecessary here so __weak function would be 
+enough. It would introduce powerpc-specific livepatch.c though because of 
+it and this is not worth it.
 
-Note, I just took the red-eye (2 hours of sleep on the plane) and
-waiting for my next flight. My focus may be off in this email.
+>  static void klp_disable_func(struct klp_func *func)
+>  {
+>  	struct klp_ops *ops;
+> @@ -312,8 +325,14 @@ static void klp_disable_func(struct klp_func *func)
+>  		return;
+>  
+>  	if (list_is_singular(&ops->func_stack)) {
+> +		unsigned long ftrace_loc;
 
--- Steve
+This is a nit, but could you move the definition up to have them all in 
+one place to be consistent with the rest of the code? The same applies to 
+klp_enable_func() below.
+
+> +
+> +		ftrace_loc = klp_get_ftrace_location(func->old_addr);
+> +		if (WARN_ON(!ftrace_loc))
+> +			return;
+> +
+>  		WARN_ON(unregister_ftrace_function(&ops->fops));
+> -		WARN_ON(ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0));
+> +		WARN_ON(ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0));
+>  
+>  		list_del_rcu(&func->stack_node);
+>  		list_del(&ops->node);
+> @@ -338,6 +357,15 @@ static int klp_enable_func(struct klp_func *func)
+>  
+>  	ops = klp_find_ops(func->old_addr);
+>  	if (!ops) {
+> +		unsigned long ftrace_loc;
+
+Here.
+
+> +
+> +		ftrace_loc = klp_get_ftrace_location(func->old_addr);
+> +		if (!ftrace_loc) {
+> +			pr_err("failed to find location for function '%s'\n",
+> +				func->old_name);
+> +			return -EINVAL;
+> +		}
+> +
+>  		ops = kzalloc(sizeof(*ops), GFP_KERNEL);
+>  		if (!ops)
+>  			return -ENOMEM;
+> @@ -352,7 +380,7 @@ static int klp_enable_func(struct klp_func *func)
+>  		INIT_LIST_HEAD(&ops->func_stack);
+>  		list_add_rcu(&func->stack_node, &ops->func_stack);
+>  
+> -		ret = ftrace_set_filter_ip(&ops->fops, func->old_addr, 0, 0);
+> +		ret = ftrace_set_filter_ip(&ops->fops, ftrace_loc, 0, 0);
+>  		if (ret) {
+>  			pr_err("failed to set ftrace filter for function '%s' (%d)\n",
+>  			       func->old_name, ret);
+> @@ -363,7 +391,7 @@ static int klp_enable_func(struct klp_func *func)
+>  		if (ret) {
+>  			pr_err("failed to register ftrace handler for function '%s' (%d)\n",
+>  			       func->old_name, ret);
+> -			ftrace_set_filter_ip(&ops->fops, func->old_addr, 1, 0);
+> +			ftrace_set_filter_ip(&ops->fops, ftrace_loc, 1, 0);
+>  			goto err;
+>  		}
+
+Otherwise it is ok.
+
+Miroslav
