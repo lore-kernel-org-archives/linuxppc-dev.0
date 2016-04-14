@@ -1,27 +1,29 @@
 Return-Path: <mbenes@suse.cz>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qm1hj47bDzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 23:28:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qm2Y65pDhzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 00:07:06 +1000 (AEST)
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qm1hj0BC8z9sDD
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Apr 2016 23:28:36 +1000 (AEST)
-Date: Thu, 14 Apr 2016 15:28:31 +0200 (CEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3qm2Y61Q1mz9sRB
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 00:07:06 +1000 (AEST)
+Date: Thu, 14 Apr 2016 16:06:59 +0200 (CEST)
 From: Miroslav Benes <mbenes@suse.cz>
-To: Jessica Yu <jeyu@redhat.com>
-cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- bsingharora@gmail.com, duwe@lst.de, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com, duwe@lst.de,
+ linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
  jikos@kernel.org, live-patching@vger.kernel.org
-Subject: Re: Live patching for powerpc
-In-Reply-To: <20160413182228.GA16776@packer-debian-8-amd64.digitalocean.com>
-Message-ID: <alpine.LNX.2.00.1604141514420.10605@pobox.suse.cz>
+Subject: Re: [PATCH 2/5] livepatch: Allow architectures to specify an alternate
+ ftrace location
+In-Reply-To: <1460639178.21066.3.camel@ellerman.id.au>
+Message-ID: <alpine.LNX.2.00.1604141604410.10605@pobox.suse.cz>
 References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <20160413182228.GA16776@packer-debian-8-amd64.digitalocean.com>
+ <1460552003-15409-3-git-send-email-mpe@ellerman.id.au>
+ <alpine.LNX.2.00.1604141354130.10605@pobox.suse.cz>
+ <1460639178.21066.3.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,60 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Apr 2016, Jessica Yu wrote:
+On Thu, 14 Apr 2016, Michael Ellerman wrote:
 
-> +++ Miroslav Benes [13/04/16 15:01 +0200]:
+> On Thu, 2016-04-14 at 14:01 +0200, Miroslav Benes wrote:
 > > On Wed, 13 Apr 2016, Michael Ellerman wrote:
-> > 
-> > > This series adds live patching support for powerpc (ppc64le only ATM).
-> > > 
-> > > It's unchanged since the version I posted on March 24, with the exception
-> > > that
-> > > I've dropped the first patch, which was a testing-only patch.
-> > > 
-> > > If there's no further comments I'll put this in a topic branch in the next
-> > > day
-> > > or two and Jiri & I will both merge that into next.
-> > 
-> > Hi,
-> > 
-> > I'll definitely give it a proper look today or tomorrow, but there is one
-> > thing that needs to be solved. The patch set from Jessica reworking
-> > relocations for live patching is now merged in our for-next branch. This
-> > means that we need to find out if there is something in struct
-> > mod_arch_specific for powerpc which needs to be preserved and do it.
-> > 
 > 
-> I took a look around the powerpc module.c code and it looks like the
-> mod_arch_specific stuff should be fine, since it is statically allocated
-> in the module struct (unlike the situation in s390, where
-> mod->arch.syminfo was vmalloc'd and we had to delay the free).
-> However I'm not familiar with the powerpc code so I need to dig around
-> a bit more to be 100% sure.
+> > >  static void klp_disable_func(struct klp_func *func)
+> > >  {
+> > >       struct klp_ops *ops;
+> > > @@ -312,8 +325,14 @@ static void klp_disable_func(struct klp_func *func)
+> > >               return;
+> > >  
+> > >       if (list_is_singular(&ops->func_stack)) {
+> > > +             unsigned long ftrace_loc;
+> > 
+> > This is a nit, but could you move the definition up to have them all in 
+> > one place to be consistent with the rest of the code? The same applies to 
+> > klp_enable_func() below.
+> 
+> Hmm, actually I moved it in there because you pointed out we only needed it
+> inside the if:
+> 
+> http://lkml.kernel.org/r/alpine.LNX.2.00.1603151113020.20252@pobox.suse.cz
+> 
+>     Thinking about it, we need ftrace_loc only in cases where we call 
+>     ftrace_set_filter_ip() right? So we can move klp_get_ftrace_location() 
+>     call to appropriate if branch both in klp_disable_func() and 
+>     klp_enable_func().
+> 
+> But I guess you meant the function call, not the variable declaration.
 
-I came to the same conclusion. There is only struct bug_entry *bug_table 
-in mod_arch_specific but it looks unimportant wrt relocations.
+Exactly.
 
-> A second concern I have is that apply_relocate_add() relies on
-> sections like .stubs and .toc (for 64-bit) and .init.plt and .plt
-> sections (for 32-bit). In order for apply_relocate_add() to work for
-> livepatch, we must make sure these sections aren't thrown away and are
-> not in init module memory since this memory will be freed at the end
-> of module load (see how INIT_OFFSET_MASK is used in kernel/module.c).
-> As long as these sections are placed in module core memory, we will be
-> OK. I need to think about this a bit more.
+> Personally I think it's better this way, as the variable is in scope for the
+> shortest possible amount of time, but I can change it if you want me to.
 
-I knew I shouldn't have opened arch/powerpc/kernel/module*.c.
+No, it is nothing I would insist on.
 
-We could always hack sh_flags of those sections in 
-module_arch_frob_sections() to make them stay.
-
+Thanks,
 Miroslav
-
-> 
-> Third and unrelated comment: the klp_write_module_reloc stub isn't
-> needed anymore :-)
-> 
-> Thanks,
-> Jessica
-> 
