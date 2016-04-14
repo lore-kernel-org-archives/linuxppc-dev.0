@@ -1,20 +1,27 @@
-Return-Path: <zengzhaoxiu@163.com>
-Received: from m50-132.163.com (m50-132.163.com [123.125.50.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qllvP1TqwzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 13:06:56 +1000 (AEST)
-From: zengzhaoxiu@163.com
-To: linux-kernel@vger.kernel.org
-Cc: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@samba.org>, Torsten Duwe <duwe@lst.de>,
- Scott Wood <oss@buserror.net>, Christophe Leroy <christophe.leroy@c-s.fr>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH V3 07/29] Add powerpc-specific parity functions
-Date: Thu, 14 Apr 2016 11:06:13 +0800
-Message-Id: <1460603183-4717-1-git-send-email-zengzhaoxiu@163.com>
-In-Reply-To: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
-References: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qlmLb1JdszDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 13:27:03 +1000 (AEST)
+Received: by mail-pa0-x229.google.com with SMTP id ot11so40578316pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 20:27:03 -0700 (PDT)
+Subject: Re: [PATCH v8 00/45] powerpc/powernv: PCI hotplug support
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <570DF50F.6010805@ozlabs.ru> <20160413074236.GA28853@gwshan>
+ <570E0E13.6080409@ozlabs.ru> <20160413234246.GA5330@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
+ grant.likely@linaro.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <570F0DFB.9090509@ozlabs.ru>
+Date: Thu, 14 Apr 2016 13:26:51 +1000
+MIME-Version: 1.0
+In-Reply-To: <20160413234246.GA5330@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,217 +31,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
+On 04/14/2016 09:42 AM, Gavin Shan wrote:
+> On Wed, Apr 13, 2016 at 07:14:59PM +1000, Alexey Kardashevskiy wrote:
+>> On 04/13/2016 05:42 PM, Gavin Shan wrote:
+>>> On Wed, Apr 13, 2016 at 05:28:15PM +1000, Alexey Kardashevskiy wrote:
+>>>> On 02/17/2016 02:43 PM, Gavin Shan wrote:
+>>>>> This series of patches rebases on powerpc/next branch, plus below additional
+>>>>> patches:
+>>>>>
+>>>>>     <This series of patches>
+>>>>>     <Followup 3 patches from Gavin on SRIOV EEH, which aren't posted>
+>>>>>     https://patchwork.ozlabs.org/patch/581315/	(PATCH[1/9] Richard's SRIOV EEH)
+>>>>>     https://patchwork.ozlabs.org/patch/582639/	(PATCH[1/1] Gavin's EEH fix)
+>>>>>     https://patchwork.ozlabs.org/patch/582093/	(PATCH[1/1] Gavin's EEH fix)
+>>>>>     https://patchwork.ozlabs.org/patch/580626/	(PATCH[1/4] Gavin's PCI fix)
+>>>>>     https://patchwork.ozlabs.org/patch/580153/	(PATCH[1/1] Andrew's EEH minor fix)
+>>>>>     https://patchwork.ozlabs.org/patch/566827/	(PATCH[1/1] Russell's P5IOC2 removal)
+>>>>>     https://patchwork.ozlabs.org/patch/534154/	(PATCH[1/7] Richard's SRIOV rework)
+>>>>>     commit 388f7b1 ("Linux 4.5-rc3")
+>>>>>
+>>>>> The series of patches intend to support PCI slot for PowerPC PowerNV platform,
+>>>>> which is running on top of skiboot firmware. The patchset requires corresponding
+>>>>> changes from skiboot firmware, which is sent to skiboot@lists.ozlabs.org
+>>>>> for review. The PCI slots are exposed by skiboot with device node properties,
+>>>>> and kernel utilizes those properties to populated PCI slots accordingly.
+>>>>>
+>>>>> The original PCI infrastructure on PowerNV platform can't support hotplug
+>>>>> because the PE is assigned during PHB fixup time, which is called for once
+>>>>> during system boot time. For this, the PCI infrastructure on PowerNV platform
+>>>>> has been reworked for a lot. After that, the PE and its corresponding resources
+>>>>> (IODT, M32DT, M64 segments, DMA32 and bypass window) are assigned upon updating
+>>>>> PCI bridge's resources, which might decide PE# assigned to the PE (e.g. M64
+>>>>> resources, on P8 strictly speaking). Each PE will maintain a reference count,
+>>>>> which is (number of child PCI devices + 1). That indicates when last child PCI
+>>>>> device leaves the PE, the PE and its included resources will be relased and put
+>>>>> back into free pool again. With this design, the PE will be released when EEH PE
+>>>>> is released. PATCH[1 - 23] are related to this part.
+>>>>>
+>>>>>  From skiboot perspective, PCI slot is providing (hot/fundamental/complete)
+>>>>> resets to EEH. The kernel gets to know if skiboot supports various reset on one
+>>>>> particular PCI slot through device-tree node. If it does, EEH will utilize the
+>>>>> functionality provided by skiboot. Besides, the device-tree nodes have to change
+>>>>> in order to support PCI hotplug. For example, when one PCI adapter inserted to
+>>>>> one slot, its device-tree node should be added to the system dynamically. Conversely,
+>>>>> the device-tree node should be removed from the system when the PCI adapter is going
+>>>>> to be offline. Since pci_dn and eeh_dev have same life cyle as PCI device nodes,
+>>>>> they should be added/removed accordingly during PCI hotplug. PATCH[24 - 39] are
+>>>>> doing the related work.
+>>>>>
+>>>>> The OF driver is changed to support unflattening FDT blob for sub-stree, which
+>>>>> is covered by PATCH[40 - 44].
+>>>>>
+>>>>> The last one, PATCH[45], is the standalone PCI hotplug driver for PowerPC PowerNV
+>>>>> platform.
+>>>>>
+>>>>> =======
+>>>>> Testing
+>>>>> =======
+>>>>> 1. Unplug adapters behind non-empty slot, then plug them.
+>>>>>
+>>>>>     1.1 Check status
+>>>>>     # cat /sys/bus/pci/slots/C10/address
+>>>>>     0003:09:00
+>>>>>     # cat /sys/bus/pci/slots/C10/adapter
+>>>>>     1
+>>>>>     # cat /sys/bus/pci/slots/C10/power
+>>>>>     1
+>>>>>     # lspci
+>>>>>     0003:09:00.0 Ethernet controller: \
+>>>>>     Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+>>>>>     0003:09:00.1 Ethernet controller: \
+>>>>>     Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+>>>>>     0003:09:00.2 Ethernet controller: \
+>>>>>     Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+>>>>>     0003:09:00.3 Ethernet controller: \
+>>>>>     Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
+>>>>>     # lspci -t
+>>>>>     # lspci -t
+>>>>>     -+-[0003:00]---00.0-[01-13]----00.0-[02-13]--+-01.0-[03]----00.0
+>>>>>      |                                           +-08.0-[04-08]--
+>>>>>      |                                           +-09.0-[09]--+-00.0
+>>>>>      |                                           |            +-00.1
+>>>>>      |                                           |            +-00.2
+>>>>>      |                                           |            \-00.3
+>>>>>      |                                           +-10.0-[0a-0e]--
+>>>>>      |                                           \-11.0-[0f-13]--
+>>>>>
+>>>>>     1.2 Unplug adapter 0003:09.00.x
+>>>>>     # echo 0 > /sys/bus/pci/slots/C10/power
+>>>>>     # lspci -t
+>>>>>     -+-[0003:00]---00.0-[01-13]----00.0-[02-13]--+-01.0-[03]----00.0
+>>>>>      |                                           +-08.0-[04-08]--
+>>>>>      |                                           +-09.0-[09]--
+>>>>>      |                                           +-10.0-[0a-0e]--
+>>>>>      |                                           \-11.0-[0f-13]--
+>>>>>
+>>>>>     1.3 Plug adapter 0003:09.00.x
+>>>>>     # echo 1 > /sys/bus/pci/slots/C10/power
+>>>>
+>>>>
+>>>> Do I understand correctly that the adapter was not physically moved in/out of
+>>>> the slot between 1.2 and 1.3?
+>>>>
+>>>
+>>> Correct.
+>>
+>>
+>> This is not right then... Someone should try it, on both P7 and P8.
+>>
+>
+> Do you mean physically pull the adapter out and insert the same
+> adapter back? What's the point for the test case?
 
-Use runtime patching for ppc64, lifted from hweight_64
 
-Signed-off-by: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
----
- arch/powerpc/include/asm/bitops.h |  11 +++
- arch/powerpc/lib/Makefile         |   2 +-
- arch/powerpc/lib/parity_64.S      | 142 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/lib/ppc_ksyms.c      |   5 ++
- 4 files changed, 159 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/lib/parity_64.S
+Because this is what the patchset is for - to replace a physical device on 
+a physical machine. Powering on/off the slots via sysfs is just an 
+approximation (which is fine when you are debugging), something can go 
+wrong and require some work but you do not know it for sure.
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 59abc62..cd34030 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -269,8 +269,19 @@ unsigned int __arch_hweight16(unsigned int w);
- unsigned int __arch_hweight32(unsigned int w);
- unsigned long __arch_hweight64(__u64 w);
- #include <asm-generic/bitops/const_hweight.h>
-+static inline unsigned int __arch_parity4(unsigned int w)
-+{
-+	w &= 0xf;
-+	return ((PARITY_MAGIC) >> w) & 1;
-+}
-+unsigned int __arch_parity8(unsigned int w);
-+unsigned int __arch_parity16(unsigned int w);
-+unsigned int __arch_parity32(unsigned int w);
-+unsigned int __arch_parity64(__u64 w);
-+#include <asm-generic/bitops/const_parity.h>
- #else
- #include <asm-generic/bitops/hweight.h>
-+#include <asm-generic/bitops/parity.h>
- #endif
- 
- #include <asm-generic/bitops/find.h>
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index ba21be1..cae2e7f 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -16,7 +16,7 @@ obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
- 
- obj64-y	+= copypage_64.o copyuser_64.o usercopy_64.o mem_64.o hweight_64.o \
- 	   copyuser_power7.o string_64.o copypage_power7.o memcpy_power7.o \
--	   memcpy_64.o memcmp_64.o
-+	   memcpy_64.o memcmp_64.o parity_64.o
- 
- obj64-$(CONFIG_SMP)	+= locks.o
- obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
-diff --git a/arch/powerpc/lib/parity_64.S b/arch/powerpc/lib/parity_64.S
-new file mode 100644
-index 0000000..7eff686
---- /dev/null
-+++ b/arch/powerpc/lib/parity_64.S
-@@ -0,0 +1,142 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Author: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
-+ */
-+
-+#include <asm/processor.h>
-+#include <asm/ppc_asm.h>
-+
-+/*
-+ * This file contains the generic code to calculate the odd parity
-+ * of N-bits number, and the POPCNT feature sections.
-+ *
-+ * Note: This code relies on -mminimal-toc
-+ */
-+
-+/*
-+ * unsigned int __arch_parity8(unsigned int w)
-+ */
-+_GLOBAL(__arch_parity8)
-+BEGIN_FTR_SECTION
-+	srdi	r4,r3,4
-+	xor	r3,r3,r4
-+	clrldi	r3,r3,64-4
-+	li	r4,0x6996
-+	srd	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+FTR_SECTION_ELSE
-+	PPC_POPCNTB(R3,R3)
-+	clrldi  r3,r3,64-1
-+	blr
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
-+
-+/*
-+ * unsigned int __arch_parity16(unsigned int w)
-+ */
-+_GLOBAL(__arch_parity16)
-+BEGIN_FTR_SECTION
-+	srdi	r4,r3,8
-+	xor	r3,r3,r4
-+	srdi	r4,r3,4
-+	xor	r3,r3,r4
-+	clrldi	r3,r3,64-4
-+	li	r4,0x6996
-+	srd	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+FTR_SECTION_ELSE
-+  BEGIN_FTR_SECTION_NESTED(50)
-+	PPC_POPCNTB(R3,R3)
-+	srdi	r4,r3,8
-+	add	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+  FTR_SECTION_ELSE_NESTED(50)
-+	clrlwi  r3,r3,16
-+	PPC_POPCNTW(R3,R3)
-+	clrldi	r3,r3,64-1
-+	blr
-+  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_POPCNTD, 50)
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
-+
-+/*
-+ * unsigned int __arch_parity32(unsigned int w)
-+ */
-+_GLOBAL(__arch_parity32)
-+BEGIN_FTR_SECTION
-+	srdi	r4,r3,16
-+	xor	r3,r3,r4
-+	srdi	r4,r3,8
-+	xor	r3,r3,r4
-+	srdi	r4,r3,4
-+	xor	r3,r3,r4
-+	clrldi	r3,r3,64-4
-+	li	r4,0x6996
-+	srd	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+FTR_SECTION_ELSE
-+  BEGIN_FTR_SECTION_NESTED(51)
-+	PPC_POPCNTB(R3,R3)
-+	srdi	r4,r3,16
-+	add	r3,r4,r3
-+	srdi	r4,r3,8
-+	add	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+  FTR_SECTION_ELSE_NESTED(51)
-+	PPC_POPCNTW(R3,R3)
-+	clrldi	r3,r3,64-1
-+	blr
-+  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_POPCNTD, 51)
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
-+
-+/*
-+ * unsigned int __arch_parity64(__u64 w)
-+ */
-+_GLOBAL(__arch_parity64)
-+BEGIN_FTR_SECTION
-+	srdi	r4,r3,32
-+	xor	r3,r3,r4
-+	srdi	r4,r3,16
-+	xor	r3,r3,r4
-+	srdi	r4,r3,8
-+	xor	r3,r3,r4
-+	srdi	r4,r3,4
-+	xor	r3,r3,r4
-+	clrldi	r3,r3,64-4
-+	li	r4,0x6996
-+	srd	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+FTR_SECTION_ELSE
-+  BEGIN_FTR_SECTION_NESTED(52)
-+	PPC_POPCNTB(R3,R3)
-+	srdi	r4,r3,32
-+	add	r3,r4,r3
-+	srdi	r4,r3,16
-+	add	r3,r4,r3
-+	srdi	r4,r3,8
-+	add	r3,r4,r3
-+	clrldi	r3,r3,64-1
-+	blr
-+  FTR_SECTION_ELSE_NESTED(52)
-+	PPC_POPCNTD(R3,R3)
-+	clrldi	r3,r3,64-1
-+	blr
-+  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_POPCNTD, 52)
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
-diff --git a/arch/powerpc/lib/ppc_ksyms.c b/arch/powerpc/lib/ppc_ksyms.c
-index c422812..1ccfc29 100644
---- a/arch/powerpc/lib/ppc_ksyms.c
-+++ b/arch/powerpc/lib/ppc_ksyms.c
-@@ -30,4 +30,9 @@ EXPORT_SYMBOL(__arch_hweight8);
- EXPORT_SYMBOL(__arch_hweight16);
- EXPORT_SYMBOL(__arch_hweight32);
- EXPORT_SYMBOL(__arch_hweight64);
-+
-+EXPORT_SYMBOL(__arch_parity8);
-+EXPORT_SYMBOL(__arch_parity16);
-+EXPORT_SYMBOL(__arch_parity32);
-+EXPORT_SYMBOL(__arch_parity64);
- #endif
+
+
 -- 
-2.5.0
+Alexey
