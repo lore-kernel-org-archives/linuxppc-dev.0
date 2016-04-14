@@ -1,69 +1,20 @@
 Return-Path: <zengzhaoxiu@163.com>
 Received: from m50-132.163.com (m50-132.163.com [123.125.50.132])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qlljq0N9qzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 12:58:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qllvP1TqwzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 13:06:56 +1000 (AEST)
 From: zengzhaoxiu@163.com
 To: linux-kernel@vger.kernel.org
 Cc: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>,
- adi-buildroot-devel@lists.sourceforge.net,
- Andrew Morton <akpm@linux-foundation.org>,
- Anton Blanchard <anton@samba.org>, Arnd Bergmann <arnd@arndb.de>,
- Benjamin Tissoires <benjamin.tissoires@redhat.com>,
- Borislav Petkov <bp@suse.de>, Bruce Allan <bruce.w.allan@intel.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- David Herrmann <dh.herrmann@gmail.com>,
- "David S. Miller" <davem@davemloft.net>,
- Denys Vlasenko <dvlasenk@redhat.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Duson Lin <dusonlin@emc.com.tw>, Guenter Roeck <linux@roeck-us.net>,
- Hans de Goede <hdegoede@redhat.com>, Hans Verkuil <hans.verkuil@cisco.com>,
- Hartmut Knaack <knaack.h@gmx.de>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, Ingo Molnar <mingo@kernel.org>,
- Jiri Pirko <jiri@resnulli.us>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Julian Calaby <julian.calaby@gmail.com>,
- Krzysztof Kozlowski <k.kozlowski@samsung.com>,
- Lars-Peter Clausen <lars@metafoo.de>,
- Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>, linux-alpha@vger.kernel.org,
- linux-am33-list@redhat.com, linux-arch@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-c6x-dev@linux-c6x.org,
- linux-cris-kernel@axis.com, linux-crypto@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-input@vger.kernel.org,
- linux@lists.openrisc.net, linux-m68k@lists.linux-m68k.org,
- linux-media@vger.kernel.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linux-mtd@lists.infradead.org,
- linux-nfs@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-xtensa@linux-xtensa.org, Martin Kepplinger <martink@posteo.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Michal Nazarewicz <mina86@mina86.com>, netdev@vger.kernel.org,
- Peter Hutterer <peter.hutterer@who-t.net>,
- Peter Meerwald <pmeerw@pmeerw.net>,
- "Peter Zijlstra (Intel)" <peterz@infradead.org>,
- Pingchao Yang <pingchao.yang@intel.com>, qat-linux@intel.com,
- Ralf Baechle <ralf@linux-mips.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Sasha Levin <sasha.levin@oracle.com>, Scott Wood <oss@buserror.net>,
- sparclinux@vger.kernel.org, Tadeusz Struk <tadeusz.struk@intel.com>,
- Takashi Iwai <tiwai@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
- Torsten Duwe <duwe@lst.de>, uclinux-h8-devel@lists.sourceforge.jp,
- Ulrik De Bie <ulrik.debie-os@e2big.org>,
- Vineet Gupta <vgupta@synopsys.com>, Vlastimil Babka <vbabka@suse.cz>,
- "wim.coekaerts@oracle.com" <wim.coekaerts@oracle.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Yury Norov <yury.norov@gmail.com>,
- =?UTF-8?q?=E6=B4=AA=E4=B8=80=E7=AB=B9?= <sam.hung@emc.com.tw>
-Subject: [PATCH V3 00/29] bitops: add parity functions
-Date: Thu, 14 Apr 2016 10:36:41 +0800
-Message-Id: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anton Blanchard <anton@samba.org>, Torsten Duwe <duwe@lst.de>,
+ Scott Wood <oss@buserror.net>, Christophe Leroy <christophe.leroy@c-s.fr>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V3 07/29] Add powerpc-specific parity functions
+Date: Thu, 14 Apr 2016 11:06:13 +0800
+Message-Id: <1460603183-4717-1-git-send-email-zengzhaoxiu@163.com>
+In-Reply-To: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
+References: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -75,152 +26,215 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
 
-When I do "grep parity -r linux", I found many parity calculations
-distributed in many drivers.
+Use runtime patching for ppc64, lifted from hweight_64
 
-This patch series does:
-  1. provide generic and architecture-specific parity calculations
-  2. remove drivers' local parity calculations, use bitops' parity
-     functions instead
-  3. replace "hweightN(x) & 1" with "parityN(x)" to improve readability,
-     and improve performance on some CPUs that without popcount support
-
-I did not use GCC's __builtin_parity* functions, based on the following reasons:
-  1. I don't know where to identify which version of GCC from the beginning
-     supported __builtin_parity for the architecture.
-  2. For the architecture that doesn't has popcount instruction, GCC instead use
-     "call __paritysi2" (__paritydi2 for 64-bits). So if use __builtin_parity, we must
-     provide __paritysi2 and __paritydi2 functions for these architectures.
-     Additionally, parity4,8,16 might be "__builtin_parity(x & mask)", but the "& mask"
-     operation is totally unnecessary.
-  3. For the architecture that has popcount instruction, we do the same things.
-  4. For powerpc, sparc, and x86, we do runtime patching to use popcount instruction
-     if the CPU support.
-
-I have compiled successfully with x86_64_defconfig, i386_defconfig, pseries_defconfig
-and sparc64_defconfig.
-
-Changes to v2:
-- Add constant PARITY_MAGIC (proposals by Sam Ravnborg)
-- Add include/asm-generic/bitops/popc-parity.h (proposals by Chris Metcalf)
-- Tile uses popc-parity.h directly
-- Mips uses popc-parity.h if has usable __builtin_popcount
-- Add few comments in powerpc's and sparc's parity.S
-- X86, remove custom calling convention
-
-Changes to v1:
-- Add runtime patching for powerpc, sparc, and x86
-- Avr32 use grenric parity too
-- Fix error in ssfdc's patch, and add commit message
-- Don't change the original code composition of drivers/iio/gyro/adxrs450.c
-- Directly assignement to phy_cap.parity in drivers/scsi/isci/phy.c
-
-Regards,
-
-=== diffstat ===
-
-Zhaoxiu Zeng (29):
-  bitops: add parity functions
-  Include generic parity.h in some architectures' bitops.h
-  Add alpha-specific parity functions
-  Add blackfin-specific parity functions
-  Add ia64-specific parity functions
-  Tile and MIPS (if has usable __builtin_popcount) use popcount parity
-    functions
-  Add powerpc-specific parity functions
-  Add sparc-specific parity functions
-  Add x86-specific parity functions
-  sunrpc: use parity8
-  mips: use parity functions in cerr-sb1.c
-  bch: use parity32
-  media: use parity8 in vivid-vbi-gen.c
-  media: use parity functions in saa7115
-  input: use parity32 in grip_mp
-  input: use parity64 in sidewinder
-  input: use parity16 in ams_delta_serio
-  scsi: use parity32 in isci's phy
-  mtd: use parity16 in ssfdc
-  mtd: use parity functions in inftlcore
-  crypto: use parity functions in qat_hal
-  mtd: use parity16 in sm_ftl
-  ethernet: use parity8 in sun/niu.c
-  input: use parity8 in pcips2
-  input: use parity8 in sa1111ps2
-  iio: use parity32 in adxrs450
-  serial: use parity32 in max3100
-  input: use parity8 in elantech
-  ethernet: use parity8 in broadcom/tg3.c
-
- arch/alpha/include/asm/bitops.h              |  27 +++++
- arch/arc/include/asm/bitops.h                |   1 +
- arch/arm/include/asm/bitops.h                |   1 +
- arch/arm64/include/asm/bitops.h              |   1 +
- arch/avr32/include/asm/bitops.h              |   1 +
- arch/blackfin/include/asm/bitops.h           |  31 ++++++
- arch/c6x/include/asm/bitops.h                |   1 +
- arch/cris/include/asm/bitops.h               |   1 +
- arch/frv/include/asm/bitops.h                |   1 +
- arch/h8300/include/asm/bitops.h              |   1 +
- arch/hexagon/include/asm/bitops.h            |   1 +
- arch/ia64/include/asm/bitops.h               |  31 ++++++
- arch/m32r/include/asm/bitops.h               |   1 +
- arch/m68k/include/asm/bitops.h               |   1 +
- arch/metag/include/asm/bitops.h              |   1 +
- arch/mips/include/asm/bitops.h               |   7 ++
- arch/mips/mm/cerr-sb1.c                      |  67 ++++---------
- arch/mn10300/include/asm/bitops.h            |   1 +
- arch/openrisc/include/asm/bitops.h           |   1 +
- arch/parisc/include/asm/bitops.h             |   1 +
- arch/powerpc/include/asm/bitops.h            |  11 +++
- arch/powerpc/lib/Makefile                    |   2 +-
- arch/powerpc/lib/parity_64.S                 | 142 +++++++++++++++++++++++++++
- arch/powerpc/lib/ppc_ksyms.c                 |   5 +
- arch/s390/include/asm/bitops.h               |   1 +
- arch/sh/include/asm/bitops.h                 |   1 +
- arch/sparc/include/asm/bitops_32.h           |   1 +
- arch/sparc/include/asm/bitops_64.h           |  18 ++++
- arch/sparc/kernel/sparc_ksyms_64.c           |   6 ++
- arch/sparc/lib/Makefile                      |   2 +-
- arch/sparc/lib/parity.S                      | 128 ++++++++++++++++++++++++
- arch/tile/include/asm/bitops.h               |   2 +
- arch/x86/include/asm/arch_hweight.h          |   5 +
- arch/x86/include/asm/arch_parity.h           | 117 ++++++++++++++++++++++
- arch/x86/include/asm/bitops.h                |   4 +-
- arch/xtensa/include/asm/bitops.h             |   1 +
- drivers/crypto/qat/qat_common/qat_hal.c      |  32 ++----
- drivers/iio/gyro/adxrs450.c                  |   4 +-
- drivers/input/joystick/grip_mp.c             |  16 +--
- drivers/input/joystick/sidewinder.c          |  24 +----
- drivers/input/mouse/elantech.c               |  10 +-
- drivers/input/mouse/elantech.h               |   1 -
- drivers/input/serio/ams_delta_serio.c        |   8 +-
- drivers/input/serio/pcips2.c                 |   2 +-
- drivers/input/serio/sa1111ps2.c              |   2 +-
- drivers/media/i2c/saa7115.c                  |  17 +---
- drivers/media/platform/vivid/vivid-vbi-gen.c |   9 +-
- drivers/mtd/inftlcore.c                      |  17 +---
- drivers/mtd/sm_ftl.c                         |   5 +-
- drivers/mtd/ssfdc.c                          |  31 ++----
- drivers/net/ethernet/broadcom/tg3.c          |   6 +-
- drivers/net/ethernet/sun/niu.c               |  10 +-
- drivers/scsi/isci/phy.c                      |  15 +--
- drivers/tty/serial/max3100.c                 |   2 +-
- include/asm-generic/bitops.h                 |   1 +
- include/asm-generic/bitops/arch_parity.h     |  39 ++++++++
- include/asm-generic/bitops/const_parity.h    |  36 +++++++
- include/asm-generic/bitops/parity.h          |   7 ++
- include/asm-generic/bitops/popc-parity.h     |  32 ++++++
- include/linux/bitops.h                       |  10 ++
- lib/bch.c                                    |  14 +--
- net/sunrpc/auth_gss/gss_krb5_keys.c          |   6 +-
- 62 files changed, 745 insertions(+), 235 deletions(-)
+Signed-off-by: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
+---
+ arch/powerpc/include/asm/bitops.h |  11 +++
+ arch/powerpc/lib/Makefile         |   2 +-
+ arch/powerpc/lib/parity_64.S      | 142 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/lib/ppc_ksyms.c      |   5 ++
+ 4 files changed, 159 insertions(+), 1 deletion(-)
  create mode 100644 arch/powerpc/lib/parity_64.S
- create mode 100644 arch/sparc/lib/parity.S
- create mode 100644 arch/x86/include/asm/arch_parity.h
- create mode 100644 include/asm-generic/bitops/arch_parity.h
- create mode 100644 include/asm-generic/bitops/const_parity.h
- create mode 100644 include/asm-generic/bitops/parity.h
- create mode 100644 include/asm-generic/bitops/popc-parity.h
 
+diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
+index 59abc62..cd34030 100644
+--- a/arch/powerpc/include/asm/bitops.h
++++ b/arch/powerpc/include/asm/bitops.h
+@@ -269,8 +269,19 @@ unsigned int __arch_hweight16(unsigned int w);
+ unsigned int __arch_hweight32(unsigned int w);
+ unsigned long __arch_hweight64(__u64 w);
+ #include <asm-generic/bitops/const_hweight.h>
++static inline unsigned int __arch_parity4(unsigned int w)
++{
++	w &= 0xf;
++	return ((PARITY_MAGIC) >> w) & 1;
++}
++unsigned int __arch_parity8(unsigned int w);
++unsigned int __arch_parity16(unsigned int w);
++unsigned int __arch_parity32(unsigned int w);
++unsigned int __arch_parity64(__u64 w);
++#include <asm-generic/bitops/const_parity.h>
+ #else
+ #include <asm-generic/bitops/hweight.h>
++#include <asm-generic/bitops/parity.h>
+ #endif
+ 
+ #include <asm-generic/bitops/find.h>
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index ba21be1..cae2e7f 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -16,7 +16,7 @@ obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
+ 
+ obj64-y	+= copypage_64.o copyuser_64.o usercopy_64.o mem_64.o hweight_64.o \
+ 	   copyuser_power7.o string_64.o copypage_power7.o memcpy_power7.o \
+-	   memcpy_64.o memcmp_64.o
++	   memcpy_64.o memcmp_64.o parity_64.o
+ 
+ obj64-$(CONFIG_SMP)	+= locks.o
+ obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+diff --git a/arch/powerpc/lib/parity_64.S b/arch/powerpc/lib/parity_64.S
+new file mode 100644
+index 0000000..7eff686
+--- /dev/null
++++ b/arch/powerpc/lib/parity_64.S
+@@ -0,0 +1,142 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Author: Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>
++ */
++
++#include <asm/processor.h>
++#include <asm/ppc_asm.h>
++
++/*
++ * This file contains the generic code to calculate the odd parity
++ * of N-bits number, and the POPCNT feature sections.
++ *
++ * Note: This code relies on -mminimal-toc
++ */
++
++/*
++ * unsigned int __arch_parity8(unsigned int w)
++ */
++_GLOBAL(__arch_parity8)
++BEGIN_FTR_SECTION
++	srdi	r4,r3,4
++	xor	r3,r3,r4
++	clrldi	r3,r3,64-4
++	li	r4,0x6996
++	srd	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++FTR_SECTION_ELSE
++	PPC_POPCNTB(R3,R3)
++	clrldi  r3,r3,64-1
++	blr
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
++
++/*
++ * unsigned int __arch_parity16(unsigned int w)
++ */
++_GLOBAL(__arch_parity16)
++BEGIN_FTR_SECTION
++	srdi	r4,r3,8
++	xor	r3,r3,r4
++	srdi	r4,r3,4
++	xor	r3,r3,r4
++	clrldi	r3,r3,64-4
++	li	r4,0x6996
++	srd	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++FTR_SECTION_ELSE
++  BEGIN_FTR_SECTION_NESTED(50)
++	PPC_POPCNTB(R3,R3)
++	srdi	r4,r3,8
++	add	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++  FTR_SECTION_ELSE_NESTED(50)
++	clrlwi  r3,r3,16
++	PPC_POPCNTW(R3,R3)
++	clrldi	r3,r3,64-1
++	blr
++  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_POPCNTD, 50)
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
++
++/*
++ * unsigned int __arch_parity32(unsigned int w)
++ */
++_GLOBAL(__arch_parity32)
++BEGIN_FTR_SECTION
++	srdi	r4,r3,16
++	xor	r3,r3,r4
++	srdi	r4,r3,8
++	xor	r3,r3,r4
++	srdi	r4,r3,4
++	xor	r3,r3,r4
++	clrldi	r3,r3,64-4
++	li	r4,0x6996
++	srd	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++FTR_SECTION_ELSE
++  BEGIN_FTR_SECTION_NESTED(51)
++	PPC_POPCNTB(R3,R3)
++	srdi	r4,r3,16
++	add	r3,r4,r3
++	srdi	r4,r3,8
++	add	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++  FTR_SECTION_ELSE_NESTED(51)
++	PPC_POPCNTW(R3,R3)
++	clrldi	r3,r3,64-1
++	blr
++  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_POPCNTD, 51)
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
++
++/*
++ * unsigned int __arch_parity64(__u64 w)
++ */
++_GLOBAL(__arch_parity64)
++BEGIN_FTR_SECTION
++	srdi	r4,r3,32
++	xor	r3,r3,r4
++	srdi	r4,r3,16
++	xor	r3,r3,r4
++	srdi	r4,r3,8
++	xor	r3,r3,r4
++	srdi	r4,r3,4
++	xor	r3,r3,r4
++	clrldi	r3,r3,64-4
++	li	r4,0x6996
++	srd	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++FTR_SECTION_ELSE
++  BEGIN_FTR_SECTION_NESTED(52)
++	PPC_POPCNTB(R3,R3)
++	srdi	r4,r3,32
++	add	r3,r4,r3
++	srdi	r4,r3,16
++	add	r3,r4,r3
++	srdi	r4,r3,8
++	add	r3,r4,r3
++	clrldi	r3,r3,64-1
++	blr
++  FTR_SECTION_ELSE_NESTED(52)
++	PPC_POPCNTD(R3,R3)
++	clrldi	r3,r3,64-1
++	blr
++  ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_POPCNTD, 52)
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
+diff --git a/arch/powerpc/lib/ppc_ksyms.c b/arch/powerpc/lib/ppc_ksyms.c
+index c422812..1ccfc29 100644
+--- a/arch/powerpc/lib/ppc_ksyms.c
++++ b/arch/powerpc/lib/ppc_ksyms.c
+@@ -30,4 +30,9 @@ EXPORT_SYMBOL(__arch_hweight8);
+ EXPORT_SYMBOL(__arch_hweight16);
+ EXPORT_SYMBOL(__arch_hweight32);
+ EXPORT_SYMBOL(__arch_hweight64);
++
++EXPORT_SYMBOL(__arch_parity8);
++EXPORT_SYMBOL(__arch_parity16);
++EXPORT_SYMBOL(__arch_parity32);
++EXPORT_SYMBOL(__arch_parity64);
+ #endif
 -- 
 2.5.0
