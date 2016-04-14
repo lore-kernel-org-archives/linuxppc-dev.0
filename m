@@ -1,28 +1,30 @@
-Return-Path: <themoken@gmail.com>
-Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
- [IPv6:2607:f8b0:4001:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jeyu@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qm8bW2wLXzDq68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 04:39:35 +1000 (AEST)
-Received: by mail-ig0-x244.google.com with SMTP id fn8so89393igb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:39:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qm9Vv1g6czDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 05:20:39 +1000 (AEST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qm9Vt5RTTz9ssM
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 05:20:38 +1000 (AEST)
+Date: Thu, 14 Apr 2016 15:20:32 -0400
+From: Jessica Yu <jeyu@redhat.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ bsingharora@gmail.com, duwe@lst.de, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+ jikos@kernel.org, live-patching@vger.kernel.org
+Subject: Re: Live patching for powerpc
+Message-ID: <20160414192031.GB25297@packer-debian-8-amd64.digitalocean.com>
+References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
+ <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
+ <20160413182228.GA16776@packer-debian-8-amd64.digitalocean.com>
+ <alpine.LNX.2.00.1604141514420.10605@pobox.suse.cz>
 MIME-Version: 1.0
-Sender: themoken@gmail.com
-In-Reply-To: <1460591377.30121.3.camel@neuling.org>
-References: <1460401065-10540-1-git-send-email-jack@codezen.org>
- <1460401065-10540-2-git-send-email-jack@codezen.org>
- <20160413205112.425444de@kryten>
- <CAGXwabRb-Wc8W8m0qP4kLb-oR+fZED8urYr4Asw0bq9kAc8C1w@mail.gmail.com>
- <1460591377.30121.3.camel@neuling.org>
-Date: Thu, 14 Apr 2016 13:39:32 -0500
-Message-ID: <CAGXwabSNfXNPZ1-N9f0MnNRVbarHYQY2bfvCsnvGbbQDE4qTRQ@mail.gmail.com>
-Subject: Re: [PATCH 1/3] powerpc: Complete FSCR context switch
-From: Jack Miller <jack@codezen.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Jack Miller <jack@codezen.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, michael@ozlabs.au.ibm.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <alpine.LNX.2.00.1604141514420.10605@pobox.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +34,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> I'm not sure that works on processes before power8.
++++ Miroslav Benes [14/04/16 15:28 +0200]:
+>On Wed, 13 Apr 2016, Jessica Yu wrote:
 >
-> There DSCR SPR number 0x11 will always trap and emulate from userspace
-> (see arch/powerpc/kernel/traps.c:emulate_instruction()).  That is not
-> controlled by FSCR and should work on POWER7 where FSCR is not
-> present.  We need to set the inherit bit there too.
+>> +++ Miroslav Benes [13/04/16 15:01 +0200]:
+>> > On Wed, 13 Apr 2016, Michael Ellerman wrote:
+>> >
+>> > > This series adds live patching support for powerpc (ppc64le only ATM).
+>> > >
+>> > > It's unchanged since the version I posted on March 24, with the exception
+>> > > that
+>> > > I've dropped the first patch, which was a testing-only patch.
+>> > >
+>> > > If there's no further comments I'll put this in a topic branch in the next
+>> > > day
+>> > > or two and Jiri & I will both merge that into next.
+>> >
+>> > Hi,
+>> >
+>> > I'll definitely give it a proper look today or tomorrow, but there is one
+>> > thing that needs to be solved. The patch set from Jessica reworking
+>> > relocations for live patching is now merged in our for-next branch. This
+>> > means that we need to find out if there is something in struct
+>> > mod_arch_specific for powerpc which needs to be preserved and do it.
+>> >
+>>
+>> I took a look around the powerpc module.c code and it looks like the
+>> mod_arch_specific stuff should be fine, since it is statically allocated
+>> in the module struct (unlike the situation in s390, where
+>> mod->arch.syminfo was vmalloc'd and we had to delay the free).
+>> However I'm not familiar with the powerpc code so I need to dig around
+>> a bit more to be 100% sure.
 >
-> DSCR SPR number 0x3 is controlled by fscr, but it's only avaliable on
-> POWER8.
+>I came to the same conclusion. There is only struct bug_entry *bug_table
+>in mod_arch_specific but it looks unimportant wrt relocations.
+
+Yeah, I think we are fine. As long as none of the values in
+mod_arch_specific are "cleared," and I don't see that happening
+anywhere.
+
+>> A second concern I have is that apply_relocate_add() relies on
+>> sections like .stubs and .toc (for 64-bit) and .init.plt and .plt
+>> sections (for 32-bit). In order for apply_relocate_add() to work for
+>> livepatch, we must make sure these sections aren't thrown away and are
+>> not in init module memory since this memory will be freed at the end
+>> of module load (see how INIT_OFFSET_MASK is used in kernel/module.c).
+>> As long as these sections are placed in module core memory, we will be
+>> OK. I need to think about this a bit more.
 >
->> Right now the FSCR switch is conditional on FTR_ARCH_207S which is
->> more exclusive than FTR_DSCR, but I guess the actual FSCR register is
->> universal to PPC64 like the fscr field in the thread struct? If so, I
->> can just move the FSCR save/restore out of the 207 conditional.
+>I knew I shouldn't have opened arch/powerpc/kernel/module*.c.
 >
-> FSCR was only introduced in power8, so it needs to be 207 conditional
+>We could always hack sh_flags of those sections in
+>module_arch_frob_sections() to make them stay.
 >
 
-So on P6/P7 (which have FTR_DSCR) set we're potentially mtspr'ing to a
-non-existent register? Yuck. Can at least strip that logic out thanks
-to the full context switch, I think, even if dscr_inherit actually has
-a use.
+I think we are fine here too. The onus would be on the patch build
+tool (e.g., kpatch) to set the sh_flags to SHF_ALLOC, like we
+already do to keep the klp relocation sections in memory :-)
 
-- Jack
+For the 32-bit module code, I don't believe we would need to preserve
+the .init.plt section for livepatch's call to apply_relocate_add(),
+since relocations to init sections should've been applied during
+module initialization, and we don't patch those types of functions.
+Please correct me if my understanding is off.
+
+Jessica
