@@ -1,34 +1,28 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <themoken@gmail.com>
+Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
+ [IPv6:2607:f8b0:4001:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qm5zB5yd8zDq64
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 02:41:26 +1000 (AEST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qm5zB2Y22z9t3n
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 02:41:26 +1000 (AEST)
-Date: Thu, 14 Apr 2016 11:41:22 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, linuxppc-dev@ozlabs.org,
- bsingharora@gmail.com, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
- jeyu@redhat.com, live-patching@vger.kernel.org
-Subject: Re: [PATCH 0/5] Live patching for powerpc
-Message-ID: <20160414164122.7ubcqqm43advdscb@treble>
-References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
- <1460616590.2754.6.camel@ellerman.id.au>
- <20160414125735.GA20296@lst.de>
- <1460639282.21066.5.camel@ellerman.id.au>
- <20160414152029.GA24525@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qm8bW2wLXzDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 04:39:35 +1000 (AEST)
+Received: by mail-ig0-x244.google.com with SMTP id fn8so89393igb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:39:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160414152029.GA24525@lst.de>
+Sender: themoken@gmail.com
+In-Reply-To: <1460591377.30121.3.camel@neuling.org>
+References: <1460401065-10540-1-git-send-email-jack@codezen.org>
+ <1460401065-10540-2-git-send-email-jack@codezen.org>
+ <20160413205112.425444de@kryten>
+ <CAGXwabRb-Wc8W8m0qP4kLb-oR+fZED8urYr4Asw0bq9kAc8C1w@mail.gmail.com>
+ <1460591377.30121.3.camel@neuling.org>
+Date: Thu, 14 Apr 2016 13:39:32 -0500
+Message-ID: <CAGXwabSNfXNPZ1-N9f0MnNRVbarHYQY2bfvCsnvGbbQDE4qTRQ@mail.gmail.com>
+Subject: Re: [PATCH 1/3] powerpc: Complete FSCR context switch
+From: Jack Miller <jack@codezen.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: Jack Miller <jack@codezen.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, michael@ozlabs.au.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,108 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 14, 2016 at 05:20:29PM +0200, Torsten Duwe wrote:
-> On Thu, Apr 14, 2016 at 11:08:02PM +1000, Michael Ellerman wrote:
-> > On Thu, 2016-04-14 at 14:57 +0200, Torsten Duwe wrote:
-> > 
-> > > FTR: then I still have a few ppc64 hunks floating around to support certain consistency
-> > > models...
-> > 
-> > OK. I'm not quite sure what you mean but post them and we'll see I guess :)
-> 
-> It's *roughly* the ppc64 equivalent of Josh Poimboeuf's Mar 25
-> | [RFC PATCH v1.9 14/14] livepatch: update task universe when exiting kernel
-> which only considers x86.
-> 
-> It's forward ported from an earlier code base; there's some glue missing,
-> but here it is, for reference.
-> 
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
+> I'm not sure that works on processes before power8.
+>
+> There DSCR SPR number 0x11 will always trap and emulate from userspace
+> (see arch/powerpc/kernel/traps.c:emulate_instruction()).  That is not
+> controlled by FSCR and should work on POWER7 where FSCR is not
+> present.  We need to set the inherit bit there too.
+>
+> DSCR SPR number 0x3 is controlled by fscr, but it's only avaliable on
+> POWER8.
+>
+>> Right now the FSCR switch is conditional on FTR_ARCH_207S which is
+>> more exclusive than FTR_DSCR, but I guess the actual FSCR register is
+>> universal to PPC64 like the fscr field in the thread struct? If so, I
+>> can just move the FSCR save/restore out of the 207 conditional.
+>
+> FSCR was only introduced in power8, so it needs to be 207 conditional
+>
 
-Hi Torsten,
+So on P6/P7 (which have FTR_DSCR) set we're potentially mtspr'ing to a
+non-existent register? Yuck. Can at least strip that logic out thanks
+to the full context switch, I think, even if dscr_inherit actually has
+a use.
 
-Thanks for sharing.  This is quite fortuitous as Miroslav just today
-mentioned to me that we would need something like this.  If you don't
-mind, I may pull this patch or some variant of it into v2 of the
-consistency model.
-
-> 
-> 
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index b034ecd..3e749f4 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -92,6 +92,7 @@ static inline struct thread_info *current_thread_info(void)
->  					   TIF_NEED_RESCHED */
->  #define TIF_32BIT		4	/* 32 bit binary */
->  #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
-> +#define TIF_KLP_NEED_UPDATE	6	/* kGraft patching in progress */
->  #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
->  #define TIF_SINGLESTEP		8	/* singlestepping active */
->  #define TIF_NOHZ		9	/* in adaptive nohz mode */
-> @@ -115,8 +116,10 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
->  #define _TIF_32BIT		(1<<TIF_32BIT)
->  #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
-> +#define _TIF_KLP_NEED_UPDATE	(1<<TIF_KLP_NEED_UPDATE)
->  #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
->  #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
-> +#define _TIF_NOHZ		(1<<TIF_NOHZ)
->  #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
->  #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
->  #define _TIF_NOERROR		(1<<TIF_NOERROR)
-> @@ -124,7 +127,7 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_UPROBE		(1<<TIF_UPROBE)
->  #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
->  #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
-> -#define _TIF_NOHZ		(1<<TIF_NOHZ)
-> +
->  #define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
->  				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
->  				 _TIF_NOHZ)
-> @@ -132,7 +135,8 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->  				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
->  				 _TIF_RESTORE_TM)
-> -#define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
-> +
-> +#define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR|_TIF_KLP_NEED_UPDATE)
->  
->  /* Bits in local_flags */
->  /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index 5bbd1bc..17f8a18 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -151,8 +151,8 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  
->  	CURRENT_THREAD_INFO(r11, r1)
->  	ld	r10,TI_FLAGS(r11)
-> -	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
-> -	bne	syscall_dotrace		/* does not return */
-> +	andi.	r10,r10,(_TIF_SYSCALL_DOTRACE|_TIF_KLP_NEED_UPDATE)
-> +	bne-	syscall_precall		/* does not return */
->  	cmpldi	0,r0,NR_syscalls
->  	bge-	syscall_enosys
->  
-> @@ -245,6 +245,17 @@ syscall_error:
->  	neg	r3,r3
->  	std	r5,_CCR(r1)
->  	b	.Lsyscall_error_cont
-> +
-> +syscall_precall:
-> +	andi.	r10,r10,(_TIF_KLP_NEED_UPDATE)
-> +	beq+	syscall_dotrace
-> +
-> +	addi	r11,r11,TI_FLAGS
-> +1:	ldarx	r12,0,r11
-> +	andc	r12,r12,r10
-> +	stdcx.	r12,0,r11
-> +	bne-	1b
-> +	subi	r11,r11,TI_FLAGS
->  	
->  /* Traced system call support */
->  syscall_dotrace:
-
--- 
-Josh
+- Jack
