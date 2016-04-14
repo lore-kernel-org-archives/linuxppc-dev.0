@@ -1,30 +1,30 @@
 Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmDbf47PHzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 07:39:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmDcP49pyzDqDS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 07:40:37 +1000 (AEST)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 14 Apr 2016 17:39:56 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BAB256E8041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 17:26:41 -0400 (EDT)
+ Thu, 14 Apr 2016 15:40:34 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E62CE19D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 15:28:22 -0600 (MDT)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3ELdqXs32309490
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 21:39:52 GMT
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3ELeU7M40042660
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 21:40:31 GMT
 Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3ELdmBo007590
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 17:39:52 -0400
-Date: Thu, 14 Apr 2016 14:40:15 -0700
+ u3ELeR9o010699
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 17:40:30 -0400
+Date: Thu, 14 Apr 2016 14:40:54 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Will Deacon <will.deacon@arm.com>,
+To: David Howells <dhowells@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
  Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
  "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
@@ -45,7 +45,7 @@ Cc: Will Deacon <will.deacon@arm.com>,
  ddaney.cavm@gmail.com, james.hogan@imgtec.com,
  Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH] documentation: Add disclaimer
-Message-ID: <20160414214015.GA31866@linux.vnet.ibm.com>
+Message-ID: <20160414214054.GB31866@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
 References: <20160114120445.GB15828@arm.com> <56980145.5030901@imgtec.com>
  <20160114204827.GE3818@linux.vnet.ibm.com>
@@ -55,10 +55,10 @@ References: <20160114120445.GB15828@arm.com> <56980145.5030901@imgtec.com>
  <20160126103200.GI6375@twins.programming.kicks-ass.net>
  <20160126110053.GA21553@arm.com>
  <20160126201143.GV4503@linux.vnet.ibm.com>
- <20160127083546.GJ6357@twins.programming.kicks-ass.net>
+ <15882.1453906627@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160127083546.GJ6357@twins.programming.kicks-ass.net>
+In-Reply-To: <15882.1453906627@warthog.procyon.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -68,74 +68,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 27, 2016 at 09:35:46AM +0100, Peter Zijlstra wrote:
-> On Tue, Jan 26, 2016 at 12:11:43PM -0800, Paul E. McKenney wrote:
-> > So Peter, would you like to update your patch to include yourself
-> > and Will as authors?
+On Wed, Jan 27, 2016 at 02:57:07PM +0000, David Howells wrote:
+> Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> Sure, here goes.
+> > +==========
+> > +DISCLAIMER
+> > +==========
+> > +
+> > +This document is not a specification; it is intentionally (for the sake of
+> > +brevity) and unintentionally (due to being human) incomplete. This document is
+> > +meant as a guide to using the various memory barriers provided by Linux, but
+> > +in case of any doubt (and there are many) please ask.
+> > +
+> > +I repeat, this document is not a specification of what Linux expects from
+> > +hardware.
 > 
-> ---
-> Subject: documentation: Add disclaimer
+> The purpose of this document is twofold:
 > 
-> It appears people are reading this document as a requirements list for
-> building hardware. This is not the intent of this document. Nor is it
-> particularly suited for this purpose.
+>  (1) to specify the minimum functionality that one can rely on for any
+>      particular barrier, and
 > 
-> The primary purpose of this document is our collective attempt to define
-> a set of primitives that (hopefully) allow us to write correct code on
-> the myriad of SMP platforms Linux supports.
+>  (2) to provide a guide as to how to use the barriers that are available.
 > 
-> Its a definite work in progress as our understanding of these platforms,
-> and memory ordering in general, progresses.
+> Note that an architecture can provide more than the minimum requirement for
+> any particular barrier, but if the barrier provides less than that, it is
+> incorrect.
 > 
-> Nor does being mentioned in this document mean we think its a
-> particularly good idea; the data dependency barrier required by Alpha
-> being a prime example. Yes we have it, no you're insane to require it
-> when building new hardware.
+> Note also that it is possible that a barrier may be a no-op for an
+> architecture because the way that arch works renders an explicit barrier
+> unnecessary in that case.
 > 
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> > +
+> 
+> Can you bung an extra blank line in here if you have to redo this at all?
 
-Rather belatedly queued and pushed to -rcu, apologies for the delay.
-One minor edit noted below.
+Done as part of your patch.  Again, apologies for the delay.
 
 							Thanx, Paul
 
-> ---
->  Documentation/memory-barriers.txt | 18 +++++++++++++++++-
->  1 file changed, 17 insertions(+), 1 deletion(-)
+> > +========
+> > +CONTENTS
+> > +========
+> >  
+> >   (*) Abstract memory access model.
+> >  
 > 
-> diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-> index a61be39c7b51..98626125f484 100644
-> --- a/Documentation/memory-barriers.txt
-> +++ b/Documentation/memory-barriers.txt
-> @@ -4,8 +4,24 @@
-> 
->  By: David Howells <dhowells@redhat.com>
->      Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> +    Will Deacon <will.deacon@arm.com>
-> +    Peter Zijlstra <peterz@infradead.org>
-> 
-> -Contents:
-> +==========
-> +DISCLAIMER
-> +==========
-> +
-> +This document is not a specification; it is intentionally (for the sake of
-> +brevity) and unintentionally (due to being human) incomplete. This document is
-> +meant as a guide to using the various memory barriers provided by Linux, but
-> +in case of any doubt (and there are many) please ask.
-> +
-> +I repeat, this document is not a specification of what Linux expects from
-
-s/I/To/ because there is more than one author.
-
-> +hardware.
-> +
-> +========
-> +CONTENTS
-> +========
-> 
->   (*) Abstract memory access model.
-> 
+> David
 > 
