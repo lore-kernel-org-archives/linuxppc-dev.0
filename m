@@ -1,36 +1,27 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmDxr6qltzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 07:55:44 +1000 (AEST)
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Thu, 14 Apr 2016 18:55:39 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id BF9451DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 17:55:29 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3EKsuas16122200
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 17:54:56 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3ELtYZl004263
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 18:55:35 -0300
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, imunsie@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Cc: linux-pci@vger.kernel.org, paulus@samba.org, mikey@neuling.org,
- andrew.donnellan@au1.ibm.com, bhelgaas@google.com,
- gpiccoli@linux.vnet.ibm.com, frederic.barrat@fr.ibm.com,
- mrochs@linux.vnet.ibm.com
-Subject: [PATCH v5] powerpc/pci: Assign fixed PHB number based on device-tree
- properties
-Date: Thu, 14 Apr 2016 18:55:24 -0300
-Message-Id: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmGXk02lpzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 09:07:34 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id n3so1695367wmn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 16:07:33 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1455758364.2463.95.camel@buserror.net>
+References: <1455516864-3594-1-git-send-email-raghav.dogra@nxp.com>
+ <1455611695.2463.56.camel@buserror.net>
+ <DB4PR04MB346600B0CB57C4F161C896589AE0@DB4PR04MB346.eurprd04.prod.outlook.com>
+ <1455758364.2463.95.camel@buserror.net>
+Date: Thu, 14 Apr 2016 18:07:30 -0500
+Message-ID: <CADRPPNTfdR3LtmqsD_cM1Lvip4V6qnWgfHhObs8+j4ECXcme3A@mail.gmail.com>
+Subject: Re: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
+From: Leo Li <pku.leo@gmail.com>
+To: Scott Wood <oss@buserror.net>
+Cc: Raghav Dogra <raghav.dogra@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,166 +31,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The domain/PHB field of PCI addresses has its value obtained from a
-global variable, incremented each time a new domain (represented by
-struct pci_controller) is added on the system. The domain addition
-process happens during boot or due to PCI device hotplug.
+Hi Raghav,
 
-As recent kernels are using predictable naming for network interfaces,
-the network stack is more tied to PCI naming. This can be a problem in
-hotplug scenarios, because PCI addresses will change if devices are
-removed and then re-added. This situation seems unusual, but it can
-happen if a user wants to replace a NIC without rebooting the machine,
-for example.
+Are we planning to send a new version of this patch?  Btw, I see that
+the current patch covers NOR/GPCM related registers, but the driver is
+only built when IFC NAND is enabled right now.  Do we want to change
+the Kconfig to make it not depending on NAND?
 
-This patch changes the way PCI domain values are generated: now, we use
-device-tree properties to assign fixed PHB numbers to PCI addresses
-when available (meaning pSeries and PowerNV cases). We also use a bitmap
-to allow dynamic PHB numbering when device-tree properties are not
-used. This bitmap keeps track of used PHB numbers and if a PHB is
-released (by hotplug operations for example), it allows the reuse of
-this PHB number, avoiding PCI address to change in case of device remove
-and re-add soon after. No functional changes were introduced.
+Regards,
+Leo
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/pci-common.c | 66 ++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 63 insertions(+), 3 deletions(-)
+On Wed, Feb 17, 2016 at 7:19 PM, Scott Wood <oss@buserror.net> wrote:
+> On Wed, 2016-02-17 at 14:40 +0000, Raghav Dogra wrote:
+>>
+>> > -----Original Message-----
+>> > From: Scott Wood [mailto:oss@buserror.net]
+>> > Sent: Tuesday, February 16, 2016 2:05 PM
+>> > To: Raghav Dogra <raghav.dogra@nxp.com>; linuxppc-dev@lists.ozlabs.org
+>> > Cc: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+>> > Subject: Re: [PATCH][v3] drivers/memory: Add deep sleep support for IFC
+>> >
+>> > On Mon, 2016-02-15 at 11:44 +0530, Raghav Dogra wrote:
+>> > >
+>> > > +
+>> > > + ctrl->saved_regs = kzalloc(sizeof(struct fsl_ifc_regs),
+>> > > GFP_KERNEL);
+>> > > + if (!ctrl->saved_regs)
+>> > > +         return -ENOMEM;
+>> >
+>> > Allocate memory at probe time, not here.
+>> >
+>>
+>> But, why allocate memory at the probe when it is not known at that time
+>> whether
+>> deep sleep state would be required or not? Is that because we want to save
+>> time
+>> while going to deep sleep?
+>
+> We also want to avoid potential failures here.  We can also keep the code
+> simpler by embedding this into the ctrl struct itself, and not dynamically
+> allocating it at all.
+>
+>> > >
+>> > > + ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
+>> > > + ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
+>> > > + ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
+>> > > +
+>> > > + memcpy_fromio(ctrl->saved_regs, ifc, sizeof(struct
+>> > > fsl_ifc_regs));
+>> > > +
+>> > > +/* save the interrupt values */
+>> > > + ctrl->saved_regs->cm_evter_intr_en = cm_evter_intr_en;
+>> > > + ctrl->saved_regs->ifc_nand.nand_evter_intr_en =
+>> > nand_evter_intr_en;
+>> > > + ctrl->saved_regs->ifc_nor.nor_evter_intr_en =
+>> > > nor_evter_intr_en;
+>> > > + ctrl->saved_regs->ifc_gpcm.gpcm_evter_intr_en =
+>> > gpcm_evter_intr_en;
+>> >
+>> > Why didn't you use the memcpy_fromio() to save these, and clear intr_en
+>> > later?
+>> >
+>>
+>> I used it whenever I did a write/read on iomem. In this case, both memories
+>> are non iomem.
+>
+> Huh?  &ifc->ifc_nand.nand_evter_intr_en and such are iomem.
+>
+>> > > +
+>> > > +/*
+>> > > + * IFC interrupts disabled
+>> > > + */
+>> > > + ifc_out32(0x0, &ifc->cm_evter_intr_en);
+>> > > + ifc_out32(0x0, &ifc->ifc_nand.nand_evter_intr_en);
+>> > > + ifc_out32(0x0, &ifc->ifc_nor.nor_evter_intr_en);
+>> > > + ifc_out32(0x0, &ifc->ifc_gpcm.gpcm_evter_intr_en);
+>> > > +
+>> > > +
+>> > > + if (ctrl->saved_regs) {
+>> > > +         for (ifc_bank = 0; ifc_bank < FSL_IFC_BANK_COUNT;
+>> > > ifc_bank++) {
+>> > > +                 ifc_out32(savd_regs
+>> > > ->cspr_cs[ifc_bank].cspr_ext,
+>> > > +                                 &ifc
+>> > > ->cspr_cs[ifc_bank].cspr_ext);
+>> > > +                 ifc_out32(savd_regs->cspr_cs[ifc_bank].cspr,
+>> > > +                                 &ifc->cspr_cs[ifc_bank].cspr);
+>> > > +                 ifc_out32(savd_regs->amask_cs[ifc_bank].amask,
+>> > > +                                 &ifc
+>> > > ->amask_cs[ifc_bank].amask);
+>> > > +                 ifc_out32(savd_regs
+>> > > ->csor_cs[ifc_bank].csor_ext,
+>> > > +                                 &ifc
+>> > > ->csor_cs[ifc_bank].csor_ext);
+>> > > +                 ifc_out32(savd_regs->csor_cs[ifc_bank].csor,
+>> > > +                                 &ifc->csor_cs[ifc_bank].csor);
+>> >
+>> > Align continuation lines the way patchwork suggests ("&ifc" aligned with
+>> > "savd").
+>>
+>> Okay, I will take care of this in the next patch.
+>>
+>> >
+>> > Does resume from deep sleep go via U-Boot (which would initialize these
+>> > registers) on these chips?
+>>
+>> Yes, deep sleep resume goes via u-boot and these registers should be
+>> initialized
+>> By u-boot.
+>
+> So then we don't need to save/restore them.
+>
+>>
+>
+>> > > +
+>> > > +/*
+>> > > +* IFC controller NOR machine registers */
+>> > > +         ifc_out32(savd_regs->ifc_nor.nor_evter_en,
+>> > > +                                 &ifc->ifc_nor.nor_evter_en);
+>> > > +         ifc_out32(savd_regs->ifc_nor.norcr, &ifc
+>> > > ->ifc_nor.norcr);
+>> >
+>> > What uses these?
+>> >
+>>
+>> These registers are not used as such, but we would like to retain their
+>> value as they
+>> can be of help in case of error conditions.
+>
+> I don't follow.  Neither of those registers reports errors, and the registers
+> that *do* report errors are generally w1c and thus you can't save/restore
+> them.
+>
+>> > >
+>> > > +
+>> > > + ver = ifc_in32(&ctrl->regs->ifc_rev);
+>> > > + ncfgr = ifc_in32(&ifc->ifc_nand.ncfgr);
+>> > > + if (ver >= FSL_IFC_V1_3_0) {
+>> > > +
+>> > > +         ifc_out32(ncfgr | IFC_NAND_SRAM_INIT_EN,
+>> > > +                                 &ifc->ifc_nand.ncfgr);
+>> > > +         /* wait for  SRAM_INIT bit to be clear or timeout */
+>> > > +         timeout = IFC_TIMEOUT_MSECS;
+>> > > +         while ((ifc_in32(&ifc->ifc_nand.ncfgr) &
+>> > > +                                 IFC_NAND_SRAM_INIT_EN) &&
+>> > timeout)
+>> > > {
+>> > > +                 cpu_relax();
+>> > > +                 timeout--;
+>> > > +         }
+>> >
+>> > How can this timeout be in milliseconds or any other real unit of time, if
+>> > it's
+>> > actually measuring loop iterations with no udelay() or similar?
+>> >
+>>
+>> Yes, it's not in millisecond any longer. Will change the name to
+>> IFC_WAIT_ITR
+>
+> What does ITR mean?  And my complaint was not just about naming -- this type
+> of delay loop is inherently unpredictable.  Future chips might go through
+> 100,000 loops a lot faster than current chips.  Use a timeout that reflects
+> actual time.
+>
+>
+>> > > +
+>> > > +         if (!timeout)
+>> > > +                 dev_err(ctrl->dev, "Timeout waiting for IFC
+>> > > SRAM
+>> > > INIT");
+>> > > + }
+>> >
+>> > U-boot does this when the version is > 1.1.0 -- why >= 1.3.0 here?  Are
+>> > there
+>> > any versions in between 1.1.0 and 1.3.0?
+>>
+>> Because only B4 and T4 are based on 1.1.0 which do not support deep sleep.
+>> The first board which supports deep sleep is T1040 which has version 1.3.0.
+>
+> That's a lousy excuse for making the code look like only >= 1.3.0 needs SRAM
+> init.  BTW, we should be doing this SRAM init on regular boot as well, since
+> we shouldn't rely on it having happened in the bootloader.
+>
+>> > Also, how did Linux and U-Boot end up having opposite argument ordering
+>> > for ifc_out32()? :-(
+>> >
+>> > -Scott
+>>
+>> I guess it happened in the patch:
+>> https://patchwork.ozlabs.org/patch/474719/
+>> Let's keep it that way now? Changing it would require significant work.
+>
+> I'm not suggesting that it be changed now -- just grumbling, and hoping that
+> we're more careful next time.
+>
+> -Scott
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-v5:
-  * Improved comments.
 
-  * Changed the the Fixed PHB Numbering to set the PHB number bit
-  on the bitmap anyway, avoiding issues when system has virtual PHBs.
 
-  * Changed the device-tree check order - now, firstly we check for
-  "ibm,opal-phbid" and if it's not available, we try the pSeries case.
-
-v4:
-  * Minor change (if/else nesting rearranged).
-
-v3:
-  * Made the bitmap static.
-
-  * Rearranged if/else statements of Fixed PHB checking.
-
-  * Improved bitmap checkings, by removing loop and using instead the
-  find_first_zero_bit() function.
-
-  * Removed the single-statement function release_phb_number() by
-  adding its logic directly into pcibios_free_controller().
-
-  *Added check for bitmap size before clearing bit, avoiding memory
-  corruption.
-
-v2:
-  * Added the Fixed PHB Numbering mechanism based on device-tree
-  properties.
-
-  * Changed list approach to bitmap on the Dynamic PHB Numbering
-  mechanism.
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 0f7a60f..ad423c1 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -41,11 +41,17 @@
- #include <asm/ppc-pci.h>
- #include <asm/eeh.h>
- 
-+/* hose_spinlock protects accesses to the the phb_bitmap. */
- static DEFINE_SPINLOCK(hose_spinlock);
- LIST_HEAD(hose_list);
- 
--/* XXX kill that some day ... */
--static int global_phb_number;		/* Global phb counter */
-+/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
-+#define	MAX_PHBS	8192
-+
-+/* For dynamic PHB numbering: used/free PHBs tracking bitmap.
-+ * Accesses to this bitmap should be protected by hose_spinlock.
-+ */
-+static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
- 
- /* ISA Memory physical address */
- resource_size_t isa_mem_base;
-@@ -64,6 +70,55 @@ struct dma_map_ops *get_pci_dma_ops(void)
- }
- EXPORT_SYMBOL(get_pci_dma_ops);
- 
-+/* get_phb_number() function should run under locking
-+ * protection, specifically hose_spinlock.
-+ */
-+static int get_phb_number(struct device_node *dn)
-+{
-+	const __be64 *prop64;
-+	const __be32 *regs;
-+	int phb_id = 0;
-+
-+	/* Try fixed PHB numbering first, by checking archs and reading
-+	 * the respective device-tree properties. Firstly, try PowerNV by
-+	 * reading "ibm,opal-phbid", only present in OPAL environment.
-+	 */
-+	prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
-+	if (prop64) {
-+		phb_id = (int)(be64_to_cpup(prop64) & 0xFFFF);
-+
-+	} else if (machine_is(pseries)) {
-+		regs = of_get_property(dn, "reg", NULL);
-+		if (regs)
-+			phb_id = (int)(be32_to_cpu(regs[1]) & 0xFFFF);
-+	} else {
-+		goto dynamic_phb_numbering;
-+	}
-+
-+	/* If we have a huge PHB number obtained from device-tree, no need
-+	 * to worry with the bitmap. Otherwise, we need to be sure we're
-+	 * not trying to use the same PHB number twice.
-+	 */
-+	if (phb_id < MAX_PHBS) {
-+		if (test_bit(phb_id, phb_bitmap))
-+			goto dynamic_phb_numbering;
-+		set_bit(phb_id, phb_bitmap);
-+	}
-+
-+	return phb_id;
-+
-+	/* If not pSeries nor PowerNV, or if fixed PHB numbering tried to add
-+	 * the same PHB number twice, then fallback to dynamic PHB numbering.
-+	 */
-+dynamic_phb_numbering:
-+
-+	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
-+	BUG_ON(phb_id >= MAX_PHBS); /* Reached maximum number of PHBs. */
-+	set_bit(phb_id, phb_bitmap);
-+
-+	return phb_id;
-+}
-+
- struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
- {
- 	struct pci_controller *phb;
-@@ -72,7 +127,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
- 	if (phb == NULL)
- 		return NULL;
- 	spin_lock(&hose_spinlock);
--	phb->global_number = global_phb_number++;
-+	phb->global_number = get_phb_number(dev);
- 	list_add_tail(&phb->list_node, &hose_list);
- 	spin_unlock(&hose_spinlock);
- 	phb->dn = dev;
-@@ -94,6 +149,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
- void pcibios_free_controller(struct pci_controller *phb)
- {
- 	spin_lock(&hose_spinlock);
-+
-+	/* Clear bit of phb_bitmap to allow reuse of this PHB number. */
-+	if (phb->global_number < MAX_PHBS)
-+		clear_bit(phb->global_number, phb_bitmap);
-+
- 	list_del(&phb->list_node);
- 	spin_unlock(&hose_spinlock);
- 
 -- 
-2.1.0
+- Leo
