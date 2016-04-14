@@ -1,29 +1,29 @@
-Return-Path: <mbenes@suse.cz>
+Return-Path: <jikos@kernel.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qm2Y65pDhzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 00:07:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qm38r1qYvzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 00:34:36 +1000 (AEST)
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qm2Y61Q1mz9sRB
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 00:07:06 +1000 (AEST)
-Date: Thu, 14 Apr 2016 16:06:59 +0200 (CEST)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Michael Ellerman <mpe@ellerman.id.au>
-cc: linuxppc-dev@ozlabs.org, bsingharora@gmail.com, duwe@lst.de,
+ by ozlabs.org (Postfix) with ESMTPS id 3qm38q4Ggtz9s4n
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 00:34:35 +1000 (AEST)
+Date: Thu, 14 Apr 2016 16:34:28 +0200 (CEST)
+From: Jiri Kosina <jikos@kernel.org>
+To: Torsten Duwe <duwe@lst.de>
+cc: Michael Ellerman <mpe@ellerman.id.au>, Miroslav Benes <mbenes@suse.cz>,
+ linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
  linux-kernel@vger.kernel.org, rostedt@goodmis.org,
  kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
- jikos@kernel.org, live-patching@vger.kernel.org
-Subject: Re: [PATCH 2/5] livepatch: Allow architectures to specify an alternate
- ftrace location
-In-Reply-To: <1460639178.21066.3.camel@ellerman.id.au>
-Message-ID: <alpine.LNX.2.00.1604141604410.10605@pobox.suse.cz>
+ live-patching@vger.kernel.org
+Subject: Re: [PATCH 0/5] Live patching for powerpc
+In-Reply-To: <20160414125735.GA20296@lst.de>
+Message-ID: <alpine.LNX.2.00.1604141631430.27368@cbobk.fhfr.pm>
 References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <1460552003-15409-3-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604141354130.10605@pobox.suse.cz>
- <1460639178.21066.3.camel@ellerman.id.au>
+ <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
+ <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
+ <1460616590.2754.6.camel@ellerman.id.au> <20160414125735.GA20296@lst.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,42 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Apr 2016, Michael Ellerman wrote:
+On Thu, 14 Apr 2016, Torsten Duwe wrote:
 
-> On Thu, 2016-04-14 at 14:01 +0200, Miroslav Benes wrote:
-> > On Wed, 13 Apr 2016, Michael Ellerman wrote:
+> > > > > It's unchanged since the version I posted on March 24, with the exception that
+> > > > > I've dropped the first patch, which was a testing-only patch.
 > 
-> > >  static void klp_disable_func(struct klp_func *func)
-> > >  {
-> > >       struct klp_ops *ops;
-> > > @@ -312,8 +325,14 @@ static void klp_disable_func(struct klp_func *func)
-> > >               return;
-> > >  
-> > >       if (list_is_singular(&ops->func_stack)) {
-> > > +             unsigned long ftrace_loc;
-> > 
-> > This is a nit, but could you move the definition up to have them all in 
-> > one place to be consistent with the rest of the code? The same applies to 
-> > klp_enable_func() below.
-> 
-> Hmm, actually I moved it in there because you pointed out we only needed it
-> inside the if:
-> 
-> http://lkml.kernel.org/r/alpine.LNX.2.00.1603151113020.20252@pobox.suse.cz
-> 
->     Thinking about it, we need ftrace_loc only in cases where we call 
->     ftrace_set_filter_ip() right? So we can move klp_get_ftrace_location() 
->     call to appropriate if branch both in klp_disable_func() and 
->     klp_enable_func().
-> 
-> But I guess you meant the function call, not the variable declaration.
+> Confirmed. And it still works on top of 4.6-rc3, even with the 
+> additional testing.
 
-Exactly.
+Thanks a lot for testing.
 
-> Personally I think it's better this way, as the variable is in scope for the
-> shortest possible amount of time, but I can change it if you want me to.
+The imporant part here is testing on top of 
+livepatching.git#for-4.7/arch-independent-klp-relocations as well.
 
-No, it is nothing I would insist on.
+I am pretty sure there will be adjustments needed for the merge, as we'll 
+have to figure out which parts of ELF can't be thrown away and need to be 
+preserved in order for the relocation entry to be successfully 
+constructed.
 
-Thanks,
-Miroslav
+Michael, I think this is an additional reason why the whole final pile 
+will have to go through livepatching.git, as the merge with what we have 
+in for-4.7/arch-independent-klp-relocations might not be completely 
+trivial.
+
+-- 
+Jiri Kosina
+SUSE Labs
