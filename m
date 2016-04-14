@@ -1,27 +1,41 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qljSn1gYpzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:17:13 +1000 (AEST)
-Received: by mail-pa0-x230.google.com with SMTP id ot11so39600953pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Apr 2016 18:17:13 -0700 (PDT)
-Subject: Re: [PATCH v2 0/2] perf probe fixes for ppc64le
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1460451721.git.naveen.n.rao@linux.vnet.ibm.com>
-Cc: Mark Wielaard <mjw@redhat.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <570EEF89.5080107@gmail.com>
-Date: Thu, 14 Apr 2016 11:16:57 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qljnm4GZjzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:31:56 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 14 Apr 2016 11:31:55 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9FDB22CE805E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:31:50 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3E1Vgiv56361118
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:31:50 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3E1VHFd009097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 11:31:18 +1000
+Date: Thu, 14 Apr 2016 11:30:52 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alistair Popple <alistair@popple.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, devicetree@vger.kernel.org,
+ grant.likely@linaro.org, robherring2@gmail.com,
+ linux-pci@vger.kernel.org, bhelgaas@google.com, dja@axtens.net
+Subject: Re: [PATCH v8 00/45] powerpc/powernv: PCI hotplug support
+Message-ID: <20160414013052.GA23214@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <570E0E13.6080409@ozlabs.ru> <20160413234246.GA5330@gwshan>
+ <8771729.bnzLL9sLJY@new-mexico>
 MIME-Version: 1.0
-In-Reply-To: <cover.1460451721.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8771729.bnzLL9sLJY@new-mexico>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +45,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Apr 14, 2016 at 09:57:32AM +1000, Alistair Popple wrote:
+>Hi Gavin,
+>
+><snip>
+>
+>> >Why exactly cannot EEH reset changes go to a smaller separate patchset
+>> >(before hotplug)?
+>> >
+>> 
+>> As I explained before, the patchset's order is: PCI generic part,
+>> PowerNV PCI related, EEH related, device-tree part and hotplug driver.
+>> 
+>> The EEH reset change is included in PATCH[37/45]. There is no point
+>> to reorder the patches.
+>
+>I don't understand all of the dependencies but if possible splitting the 
+>series up into a set of smaller self-contained patch series makes things 
+>easier to review and may make it easier for you to get this functionality 
+>reviewed and accepted into upstream.
+>
 
+Thanks, Alistair. I will move those cleanup/refactor related patches
+to form a separate series which is expected to be merged first. That
+will helps the reviewers to focus on the patches with complicated
+changes as you suggested. Alexey, please let me know if that way is
+you like to see or not.
 
-On 12/04/16 19:10, Naveen N. Rao wrote:
-> This patchset fixes three issues found with perf probe on ppc64le:
-> 1. 'perf test kallsyms' failure on ppc64le (reported by Michael
-> Ellerman). This was due to the symbols being fixed up during symbol
-> table load. This is fixed in patch 2 by delaying symbol fixup until
-> later.
-> 2. perf probe function offset was being calculated from the local entry
-> point (LEP), which does not match user expectation when trying to look
-> at function disassembly output (reported by Ananth N). This is fixed for
-> kallsyms in patch 1 and for symbol table in patch 2.
-> 3. perf probe failure with kretprobe when using kallsyms. This was
-> failing as we were specifying an offset. This is fixed in patch 1.
-> 
-> A few examples demonstrating the issues and the fix:
-> 
+Thanks,
+Gavin
 
-Given the choices, I think this makes sense
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+>Regards,
+>
+>Alistair
+>
