@@ -1,20 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@nxp.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0099.outbound.protection.outlook.com [157.56.110.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmZVq0LStzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:06:59 +1000 (AEST)
-In-Reply-To: <20160407215811.8404.6733.stgit@hbathini.in.ibm.com>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [v4,
- 2/3] ppc64/book3s: make some room for common interrupt vector code
-Message-Id: <3qmZVp4lgdz9t5C@ozlabs.org>
-Date: Fri, 15 Apr 2016 21:06:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmZfV1XB2zDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:13:37 +1000 (AEST)
+From: Chenhui Zhao <chenhui.zhao@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <oss@buserror.net>
+CC: <jason.jin@nxp.com>, <chenhui.zhao@nxp.com>
+Subject: [PATCH v2 3/5] powerpc/dts: add a compatible string to gpio0
+Date: Fri, 15 Apr 2016 19:13:15 +0800
+Message-ID: <1460718797-21744-4-git-send-email-chenhui.zhao@nxp.com>
+In-Reply-To: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
+References: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Hari,
+All gpio nodes used the same compatible string "fsl,qoriq-gpio".
+To identify the node corresponding to the GPIO1 pins, add a
+compatible string "fsl,qoriq-gpio-1".
 
-Thanks for persisting with this.
+Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Thu, 2016-07-04 at 21:58:50 UTC, Hari Bathini wrote:
-> With the previous patch, we choke out whatever little space is left
-> below 0x7000 (FWNMI hard block) while there is a hole of ~1400 bytes
-> below __end_interrupts marker when CONFIG_CBE_RAS is disabled.
-> Considering CONFIG_CBE_RAS is not enabled by default for BOOK3S, this
-> is not a desirable scenario especially when we have to worry about
-> each additional instruction that goes below 0x7000.
-> 
-> Memory region from 0x1800 to 0x4000 is dedicated for common interrupt
-> vector code. Also, we never hit an interrupt below 0x300 when IR=DR=1
-> implying memory region between 0x4000 to 0x4300 can also be used for
-> common interrupt vector code. So, we can effectively use memory region
-> between 0x1800 to 0x4300 for common interrupt vector code.
-
-On Power9 the system-call-vectored instruction will use the region at 0x3000, so
-moving code into that space is not a good long term plan.
-
-I'll take your v2 and put it in next next week.
-
-cheers
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+index cf714f5..1a26d6b 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+@@ -33,7 +33,7 @@
+  */
+ 
+ gpio0: gpio@130000 {
+-	compatible = "fsl,qoriq-gpio";
++	compatible = "fsl,qoriq-gpio-1", "fsl,qoriq-gpio";
+ 	reg = <0x130000 0x1000>;
+ 	interrupts = <55 2 0 0>;
+ 	#gpio-cells = <2>;
+-- 
+1.9.1
