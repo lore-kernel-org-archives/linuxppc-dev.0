@@ -1,15 +1,36 @@
 Return-Path: <alessio.bogani@elettra.eu>
-Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qmVv16S5GzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 18:24:08 +1000 (AEST)
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmVyh1B8CzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 18:27:24 +1000 (AEST)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 3D8CE440DB6_710A5E8B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 08:27:20 +0000 (GMT)
+Received: from mail-qg0-f42.google.com (mail-qg0-f42.google.com
+ [209.85.192.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ CA38843E091_710A5E6F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 08:27:18 +0000 (GMT)
+Received: by mail-qg0-f42.google.com with SMTP id f52so77057835qga.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 01:27:18 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1459950325-10327-1-git-send-email-alessio.bogani@elettra.eu>
+References: <1459950325-10327-1-git-send-email-alessio.bogani@elettra.eu>
+Date: Fri, 15 Apr 2016 10:27:17 +0200
+Message-ID: <CAPk1OjHEe+qcPYakD0BbikSkK+Dipj-9P2vatSceTcjMWYAPYg@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/1] powerpc/fsl: Fix build of the dtb embedded kernel
+ images
 From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
 To: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Subject: [PATCH 1/1] powerpc/86xx: Set the right interrupt-cells for pcie nodes
-Date: Fri, 15 Apr 2016 10:24:03 +0200
-Message-Id: <1460708643-11204-1-git-send-email-alessio.bogani@elettra.eu>
+Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,78 +40,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 595207b93fe4 ("powerpc/86xx: Update device tree") removes
-wrongly #interrupt-cells from pcie nodes. Fix it letting these
-come back to the right place.
+Hi,
 
-Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
----
- arch/powerpc/boot/dts/fsl/gef_sbc310.dts       | 1 +
- arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts     | 1 +
- arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts | 1 +
- arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi  | 1 +
- arch/powerpc/boot/dts/fsl/sbc8641d.dts         | 1 +
- 5 files changed, 5 insertions(+)
+On 6 April 2016 at 15:45, Alessio Igor Bogani <alessio.bogani@elettra.eu> wrote:
+> The commit dc37374 move a lot of device tree files into fsl directory
+> fixing Makefile for cuImage target only. Unfortunately there are others
+> target which require to embebbed device tree into the kernel image
+> (i.e. dtbImage.%). So use a more generic approach.
+>
+> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+> ---
+>  arch/powerpc/boot/Makefile | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 6116510..8fe78a3 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -362,9 +362,6 @@ $(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>  $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>         $(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
+>
+> -$(obj)/cuImage.%: vmlinux $(obj)/fsl/%.dtb $(wrapperbits)
+> -       $(call if_changed,wrap,cuboot-$*,,$(obj)/fsl/$*.dtb)
+> -
+>  $(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>         $(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
+>
+> @@ -381,6 +378,9 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+>  $(obj)/%.dtb: $(src)/dts/%.dts FORCE
+>         $(call if_changed_dep,dtc)
+>
+> +$(obj)/%.dtb: $(src)/dts/fsl/%.dts FORCE
+> +       $(call if_changed_dep,dtc)
+> +
+>  # If there isn't a platform selected then just strip the vmlinux.
+>  ifeq (,$(image-y))
+>  image-y := vmlinux.strip
 
-diff --git a/arch/powerpc/boot/dts/fsl/gef_sbc310.dts b/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
-index 84b3d38..6856167 100644
---- a/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
-+++ b/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
-@@ -225,6 +225,7 @@
- 	pci1: pcie@fef09000 {
- 		compatible = "fsl,mpc8641-pcie";
- 		device_type = "pci";
-+		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		reg = <0xfef09000 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-index 554001f..09e47a3 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-@@ -361,6 +361,7 @@
- 	pci1: pcie@ffe09000 {
- 		compatible = "fsl,mpc8641-pcie";
- 		device_type = "pci";
-+		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		reg = <0xffe09000 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-index fec5867..9e5f4a6 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-+++ b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-@@ -328,6 +328,7 @@
- 	pci1: pcie@fffe09000 {
- 		compatible = "fsl,mpc8641-pcie";
- 		device_type = "pci";
-+		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		reg = <0x0f 0xffe09000 0x0 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
-index 70889d8..48d1bfc 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
-@@ -97,6 +97,7 @@
- &pci0 {
- 	compatible = "fsl,mpc8641-pcie";
- 	device_type = "pci";
-+	#interrupt-cells = <1>;
- 	#size-cells = <2>;
- 	#address-cells = <3>;
- 	bus-range = <0x0 0xff>;
-diff --git a/arch/powerpc/boot/dts/fsl/sbc8641d.dts b/arch/powerpc/boot/dts/fsl/sbc8641d.dts
-index 0a9733c..efcad7c 100644
---- a/arch/powerpc/boot/dts/fsl/sbc8641d.dts
-+++ b/arch/powerpc/boot/dts/fsl/sbc8641d.dts
-@@ -167,6 +167,7 @@
- 	pci1: pcie@f8009000 {
- 		compatible = "fsl,mpc8641-pcie";
- 		device_type = "pci";
-+		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		reg = <0xf8009000 0x1000>;
--- 
-2.8.0
+Any comments?
+
+Ciao,
+Alessio
