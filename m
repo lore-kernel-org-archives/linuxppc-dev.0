@@ -1,19 +1,28 @@
-Return-Path: <chenhui.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0072.outbound.protection.outlook.com [157.56.111.72])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmZpQ3YdHzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:20:29 +1000 (AEST)
-From: Chenhui Zhao <chenhui.zhao@nxp.com>
-To: <oss@buserror.net>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <jason.jin@nxp.com>, <chenhui.zhao@nxp.com>
-Subject: [PATCH] powerpc/dts: fix rcpm compatible string
-Date: Fri, 15 Apr 2016 18:47:46 +0800
-Message-ID: <1460717266-21314-1-git-send-email-chenhui.zhao@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmZsD27qNzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:22:56 +1000 (AEST)
+Message-ID: <1460719369.22415.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 0/5] Live patching for powerpc
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Torsten Duwe <duwe@lst.de>
+Cc: Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
+ linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
+ linux-kernel@vger.kernel.org,  rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com,  jeyu@redhat.com,
+ live-patching@vger.kernel.org
+Date: Fri, 15 Apr 2016 21:22:49 +1000
+In-Reply-To: <20160414164122.7ubcqqm43advdscb@treble>
+References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
+ <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
+ <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
+ <1460616590.2754.6.camel@ellerman.id.au> <20160414125735.GA20296@lst.de>
+ <1460639282.21066.5.camel@ellerman.id.au> <20160414152029.GA24525@lst.de>
+ <20160414164122.7ubcqqm43advdscb@treble>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For T1040, T1042, T1023, and T1024, they should use the compatible
-string "fsl,qoriq-rcpm-2.1".
+On Thu, 2016-04-14 at 11:41 -0500, Josh Poimboeuf wrote:
+> On Thu, Apr 14, 2016 at 05:20:29PM +0200, Torsten Duwe wrote:
+> > On Thu, Apr 14, 2016 at 11:08:02PM +1000, Michael Ellerman wrote:
+> > > On Thu, 2016-04-14 at 14:57 +0200, Torsten Duwe wrote:
+> > > > FTR: then I still have a few ppc64 hunks floating around to support certain consistency
+> > > > models...
+> > > 
+> > > OK. I'm not quite sure what you mean but post them and we'll see I guess :)
+> > 
+> > It's *roughly* the ppc64 equivalent of Josh Poimboeuf's Mar 25
 
-Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
----
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> > > [RFC PATCH v1.9 14/14] livepatch: update task universe when exiting kernel
+> > which only considers x86.
+> > 
+> > It's forward ported from an earlier code base; there's some glue missing,
+> > but here it is, for reference.
+> > 
+> > Signed-off-by: Torsten Duwe <duwe@suse.de>
+> 
+> Hi Torsten,
+> 
+> Thanks for sharing.  This is quite fortuitous as Miroslav just today
+> mentioned to me that we would need something like this.  If you don't
+> mind, I may pull this patch or some variant of it into v2 of the
+> consistency model.
+ 
+Well please wait for me to review & ack it before you pull it into anything
+permanent.
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-index 99e421d..6e0b489 100644
---- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-@@ -263,7 +263,7 @@
- 	};
- 
- 	rcpm: global-utilities@e2000 {
--		compatible = "fsl,t1023-rcpm", "fsl,qoriq-rcpm-2.0";
-+		compatible = "fsl,t1023-rcpm", "fsl,qoriq-rcpm-2.1";
- 		reg = <0xe2000 0x1000>;
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index e0f4da5..507649e 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -472,7 +472,7 @@
- 	};
- 
- 	rcpm: global-utilities@e2000 {
--		compatible = "fsl,t1040-rcpm", "fsl,qoriq-rcpm-2.0";
-+		compatible = "fsl,t1040-rcpm", "fsl,qoriq-rcpm-2.1";
- 		reg = <0xe2000 0x1000>;
- 	};
- 
--- 
-1.9.1
+At a quick glance it seems OK but I'd probably do it a little differently. I'll
+try and have a closer look next week.
+
+cheers
