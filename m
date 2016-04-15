@@ -1,30 +1,30 @@
-Return-Path: <jikos@kernel.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yw0-x22a.google.com (mail-yw0-x22a.google.com
+ [IPv6:2607:f8b0:4002:c05::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmgqv5bm8zDq62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Apr 2016 01:07:07 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qmgqv20qQz9t6T
- for <linuxppc-dev@ozlabs.org>; Sat, 16 Apr 2016 01:07:06 +1000 (AEST)
-Date: Fri, 15 Apr 2016 17:07:01 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-cc: Miroslav Benes <mbenes@suse.cz>, linuxppc-dev@ozlabs.org,
- bsingharora@gmail.com, duwe@lst.de, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
- jeyu@redhat.com, live-patching@vger.kernel.org
-Subject: Re: [PATCH 0/5] Live patching for powerpc
-In-Reply-To: <1460616590.2754.6.camel@ellerman.id.au>
-Message-ID: <alpine.LNX.2.00.1604151136320.27368@cbobk.fhfr.pm>
-References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
- <1460616590.2754.6.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmjFK18YpzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Apr 2016 02:10:45 +1000 (AEST)
+Received: by mail-yw0-x22a.google.com with SMTP id d68so141238103ywe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 09:10:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20160414013052.GA23214@gwshan>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <570E0E13.6080409@ozlabs.ru> <20160413234246.GA5330@gwshan>
+ <8771729.bnzLL9sLJY@new-mexico> <20160414013052.GA23214@gwshan>
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 15 Apr 2016 11:10:21 -0500
+Message-ID: <CAL_JsqKc2i6rDGYXvEzQRJ4fxi=xqXTG4ngtNkFR+XkEaWDU1Q@mail.gmail.com>
+Subject: Re: [PATCH v8 00/45] powerpc/powernv: PCI hotplug support
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Alistair Popple <alistair@popple.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, dja@axtens.net
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,23 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Apr 2016, Michael Ellerman wrote:
+On Wed, Apr 13, 2016 at 8:30 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
+> On Thu, Apr 14, 2016 at 09:57:32AM +1000, Alistair Popple wrote:
+>>Hi Gavin,
+>>
+>><snip>
+>>
+>>> >Why exactly cannot EEH reset changes go to a smaller separate patchset
+>>> >(before hotplug)?
+>>> >
+>>>
+>>> As I explained before, the patchset's order is: PCI generic part,
+>>> PowerNV PCI related, EEH related, device-tree part and hotplug driver.
+>>>
+>>> The EEH reset change is included in PATCH[37/45]. There is no point
+>>> to reorder the patches.
+>>
+>>I don't understand all of the dependencies but if possible splitting the
+>>series up into a set of smaller self-contained patch series makes things
+>>easier to review and may make it easier for you to get this functionality
+>>reviewed and accepted into upstream.
+>>
+>
+> Thanks, Alistair. I will move those cleanup/refactor related patches
+> to form a separate series which is expected to be merged first. That
+> will helps the reviewers to focus on the patches with complicated
+> changes as you suggested. Alexey, please let me know if that way is
+> you like to see or not.
 
-> Topic branch here:
-> 
->   https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/log/?h=topic/livepatch
-> 
-> I will merge that before Monday (my time) if I don't hear any objections.
+As I said last cycle, I'll happily take the DT refactoring patches
+separately, but you have to tell me if you want me to apply them and
+it has to be well before the merge window.
 
-I've now pulled this into livepatching.git#for-4.7/livepatching-ppc64 and 
-merged that branch into for-next as well.
-
-That branch already contains all the relocation changes queued for 4.7, so 
-as much testing of the merged result as possible on ppc64 would be 
-appreciated.
-
-Thanks everybody,
-
--- 
-Jiri Kosina
-SUSE Labs
+Rob
