@@ -1,30 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmdV20tbCzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 23:21:30 +1000 (AEST)
-Message-ID: <1460726483.4754.0.camel@ellerman.id.au>
-Subject: Re: [PATCH 0/5] Live patching for powerpc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmfyl1NzmzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Apr 2016 00:27:59 +1000 (AEST)
+In-Reply-To: <20160415120613.1bbdc5d5@kryten>
+To: <anton@samba.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ David Gibson <david@gibson.dropbear.id.au>, Alexander Graf <agraf@suse.de>,
+ <matt@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Torsten Duwe <duwe@lst.de>, Jiri Kosina <jikos@kernel.org>, Miroslav
- Benes <mbenes@suse.cz>, linuxppc-dev@ozlabs.org, bsingharora@gmail.com,
- linux-kernel@vger.kernel.org, rostedt@goodmis.org,
- kamalesh@linux.vnet.ibm.com,  pmladek@suse.com, jeyu@redhat.com,
- live-patching@vger.kernel.org
-Date: Fri, 15 Apr 2016 23:21:23 +1000
-In-Reply-To: <20160415125939.lrft3nawlzuozjkb@treble>
-References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
- <1460616590.2754.6.camel@ellerman.id.au> <20160414125735.GA20296@lst.de>
- <1460639282.21066.5.camel@ellerman.id.au> <20160414152029.GA24525@lst.de>
- <20160414164122.7ubcqqm43advdscb@treble>
- <1460719369.22415.1.camel@ellerman.id.au>
- <20160415125939.lrft3nawlzuozjkb@treble>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org, qemu-devel@nongnu.org
+Subject: Re: [1/3] powerpc: scan_features() updates incorrect bits
+Message-Id: <3qmfyk6wGYz9t6X@ozlabs.org>
+Date: Sat, 16 Apr 2016 00:27:58 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +25,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-04-15 at 07:59 -0500, Josh Poimboeuf wrote:
-> On Fri, Apr 15, 2016 at 09:22:49PM +1000, Michael Ellerman wrote:
-> > On Thu, 2016-04-14 at 11:41 -0500, Josh Poimboeuf wrote:
-> > > On Thu, Apr 14, 2016 at 05:20:29PM +0200, Torsten Duwe wrote:
-> > > > On Thu, Apr 14, 2016 at 11:08:02PM +1000, Michael Ellerman wrote:
-> > > > > On Thu, 2016-04-14 at 14:57 +0200, Torsten Duwe wrote:
-> > > > > > FTR: then I still have a few ppc64 hunks floating around to support certain consistency
-> > > > > > models...
-> > > > > 
-> > > > > OK. I'm not quite sure what you mean but post them and we'll see I guess :)
-> > > > 
-> > > > It's *roughly* the ppc64 equivalent of Josh Poimboeuf's Mar 25
-> > > > > [RFC PATCH v1.9 14/14] livepatch: update task universe when exiting kernel
-> > > > which only considers x86.
-> > > > 
-> > > > It's forward ported from an earlier code base; there's some glue missing,
-> > > > but here it is, for reference.
-> > > > 
-> > > > Signed-off-by: Torsten Duwe <duwe@suse.de>
-> > > 
-> > > Hi Torsten,
-> > > 
-> > > Thanks for sharing.  This is quite fortuitous as Miroslav just today
-> > > mentioned to me that we would need something like this.  If you don't
-> > > mind, I may pull this patch or some variant of it into v2 of the
-> > > consistency model.
-> >  
-> > Well please wait for me to review & ack it before you pull it into anything
-> > permanent.
-> > 
-> > At a quick glance it seems OK but I'd probably do it a little differently. I'll
-> > try and have a closer look next week.
-> 
-> Sure, no problem.  The consistency model patches are still in
-> development so they won't be merged anytime soon.  And we wouldn't merge
-> any powerpc code without maintainer acks anyway.  I'm just glad you guys
-> are looking at it so I don't have to butcher it ;-)
+On Fri, 2016-15-04 at 02:06:13 UTC, Unknown sender due to SPF wrote:
+> The real LE feature entry in the ibm_pa_feature struct has the
+> wrong number of elements. Instead of checking for byte 5, bit 0,
+> we check for byte 0, bit 0, and we also incorrectly update cpu user
+> feature bit 5.
+>
+> Fixes: 44ae3ab3358e ("powerpc: Free up some CPU feature bits by moving out MMU-related features")
 
-I'm paid to butcher it ;)
+So pulling that apart a bit.
+
+> -	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5,         0,   0},   (invert 0)
+	 ^                ^                    ^          ^    ^
+	 cpu feat	  mmu feat	       user feat  byte bit
+
+By checking byte 0 bit 0 (IBM numbering), means we're looking at the "Memory
+Management Unit (MMU)" feature - ie. does the CPU have an MMU.
+
+As you'd expect that bit is set on most platforms we care about. I see it set on
+a P6 & P7 here running PowerVM, as well as by recent Qemu on P8.
+
+Which means on all those systems we'll be enabling those bits.
+
+As far as the cpu feature bits:
+
+  #define CPU_FTR_REAL_LE			0x00400000
+
+On a guest running on P8 on older qemu which has no ibm,pa-features property I
+see:
+
+  cpu_features      = 0x17fc7aec18500249
+                                  ^
+
+So it's set, but not by this logic, because it's already in cpu_features for P8.
+
+On Power6, which does have the ibm,pa-feature property with bit 0,0 set:
+
+  cpu_features      = 0x090d1ae018500049
+                                  ^
+
+Also set, from the property, but it's also in the Power6 mask by default. So all
+we've lost there is the ability to turn it off.
+
+
+For the MMU feature, we're setting:
+
+  #define PPC_FEATURE_TRUE_LE		0x00000002
+
+Which matches:
+
+  #define MMU_FTR_TYPE_8xx		0x00000002
+
+And on the Power6 I do indeed see:
+
+  mmu_features      = 0x7c000003
+
+Which says I have MMU_FTR_HPTE_TABLE and MMU_FTR_TYPE_8xx.
+
+Luckily it looks like the only place that looks at MMU_FTR_TYPE_8xx is in Book3E
+code, so will never be affected by this bug.
+
+
+Finally the user feature, we're setting 5, ie. 0x4 | 0x1, which is:
+
+#define PPC_FEATURE_PPC_LE		0x00000001
+
+And nothing else, 0x4 is free.
+
+On the Power6, I can see it in /proc/pid/auxv:
+
+00000060  00 00 00 00 00 00 00 10  00 00 00 00 dc 00 74 47  |..............tG|
+							 ^
+							 0x4 | 0x2 | 0x1
+
+LD_SHOW_AUXV=1 doesn't show it, but that's just because my glibc is old.
+
+
+Net result:
+ - on P6 & P7 (& P8 with newer Qemu) we can't disable CPU_FTR_REAL_LE - but
+   luckily we've never wanted to.
+ - we're stuffing up mmu_features but it doesn't matter
+ - we're advertising PPC_LE when we shouldn't be, but *probably* nothing cares.
+ - we're advertising 0x4 in HWCAP which is undefined, but *almost certainly*
+   nothing cares.
+
+So that could have been a doozy but turns out not actually that bad. Phew :)
 
 cheers
+
+
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -158,7 +158,7 @@ static struct ibm_pa_feature {
+>  	{CPU_FTR_NOEXECUTE, 0, 0,	0, 6, 0},
+>  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
+>  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
+> -	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
+> +	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 0, 5, 0, 0},
+>  	/*
+>  	 * If the kernel doesn't support TM (ie. CONFIG_PPC_TRANSACTIONAL_MEM=n),
+>  	 * we don't want to turn on CPU_FTR_TM here, so we use CPU_FTR_TM_COMP
