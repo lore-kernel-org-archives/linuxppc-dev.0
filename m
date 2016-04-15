@@ -1,18 +1,26 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qmbdN6wgHzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:57:27 +1000 (AEST)
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Subject: [PATCH v2 1/1] powerpc/86xx: Set the right interrupt-cells for pcie
- nodes
-Date: Fri, 15 Apr 2016 13:57:22 +0200
-Message-Id: <1460721442-6209-1-git-send-email-alessio.bogani@elettra.eu>
-In-Reply-To: <1460708643-11204-1-git-send-email-alessio.bogani@elettra.eu>
-References: <1460708643-11204-1-git-send-email-alessio.bogani@elettra.eu>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmcDP4CkKzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 22:24:37 +1000 (AEST)
+Message-ID: <1460723070.22415.5.camel@ellerman.id.au>
+Subject: Re: [PATCH 0/5] Live patching for powerpc
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jiri Kosina <jikos@kernel.org>, Torsten Duwe <duwe@lst.de>
+Cc: Miroslav Benes <mbenes@suse.cz>, linuxppc-dev@ozlabs.org,
+ bsingharora@gmail.com, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+ kamalesh@linux.vnet.ibm.com, pmladek@suse.com, jeyu@redhat.com,
+ live-patching@vger.kernel.org
+Date: Fri, 15 Apr 2016 22:24:30 +1000
+In-Reply-To: <alpine.LNX.2.00.1604141631430.27368@cbobk.fhfr.pm>
+References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
+ <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
+ <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
+ <1460616590.2754.6.camel@ellerman.id.au> <20160414125735.GA20296@lst.de>
+ <alpine.LNX.2.00.1604141631430.27368@cbobk.fhfr.pm>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 595207b93fe4 ("powerpc/86xx: Update device tree") removes
-wrongly #interrupt-cells from pcie nodes. Fix it letting these
-come back to the right place.
+On Thu, 2016-04-14 at 16:34 +0200, Jiri Kosina wrote:
+> On Thu, 14 Apr 2016, Torsten Duwe wrote:
+> > > > > > It's unchanged since the version I posted on March 24, with the exception that
+> > > > > > I've dropped the first patch, which was a testing-only patch.
+> > 
+> > Confirmed. And it still works on top of 4.6-rc3, even with the 
+> > additional testing.
+> 
+> Thanks a lot for testing.
+> 
+> The imporant part here is testing on top of 
+> livepatching.git#for-4.7/arch-independent-klp-relocations as well.
+> 
+> I am pretty sure there will be adjustments needed for the merge, as we'll 
+> have to figure out which parts of ELF can't be thrown away and need to be 
+> preserved in order for the relocation entry to be successfully 
+> constructed.
+> 
+> Michael, I think this is an additional reason why the whole final pile 
+> will have to go through livepatching.git, as the merge with what we have 
+> in for-4.7/arch-independent-klp-relocations might not be completely 
+> trivial.
 
-Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
----
-v1 -> v2
-  Move #interrupt-cells on the pcie child-node
-    to avoid 'of_irq_parse_pci() failed with rc=-22'
+Well it will go through both :)
 
- arch/powerpc/boot/dts/fsl/gef_sbc310.dts       | 1 +
- arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts     | 1 +
- arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts | 1 +
- arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi  | 1 +
- arch/powerpc/boot/dts/fsl/sbc8641d.dts         | 1 +
- 5 files changed, 5 insertions(+)
+I'll merge it into powerpc#next, and you can merge it into livepatching and do
+what ever else is needed as part of, or after, that merge.
 
-diff --git a/arch/powerpc/boot/dts/fsl/gef_sbc310.dts b/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
-index 84b3d38..9131c0a 100644
---- a/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
-+++ b/arch/powerpc/boot/dts/fsl/gef_sbc310.dts
-@@ -243,6 +243,7 @@
- 
- 		pcie@0 {
- 			reg = <0 0 0 0 0>;
-+			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-index 554001f..712a7c6 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-@@ -379,6 +379,7 @@
- 			>;
- 		pcie@0 {
- 			reg = <0 0 0 0 0>;
-+			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-index fec5867..a724287 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-+++ b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-@@ -346,6 +346,7 @@
- 			>;
- 		pcie@0 {
- 			reg = <0 0 0 0 0>;
-+			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
-index 70889d8..2b8752e 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi
-@@ -113,6 +113,7 @@
- 
- 	pcie@0 {
- 		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
- 		#size-cells = <2>;
- 		#address-cells = <3>;
- 		device_type = "pci";
-diff --git a/arch/powerpc/boot/dts/fsl/sbc8641d.dts b/arch/powerpc/boot/dts/fsl/sbc8641d.dts
-index 0a9733c..1fe73a8 100644
---- a/arch/powerpc/boot/dts/fsl/sbc8641d.dts
-+++ b/arch/powerpc/boot/dts/fsl/sbc8641d.dts
-@@ -186,6 +186,7 @@
- 
- 		pcie@0 {
- 			reg = <0 0 0 0 0>;
-+			#interrupt-cells = <1>;
- 			#size-cells = <2>;
- 			#address-cells = <3>;
- 			device_type = "pci";
--- 
-2.8.0
+cheers
