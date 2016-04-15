@@ -1,26 +1,41 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmKhh0FjJzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 11:29:40 +1000 (AEST)
-Received: by mail-pf0-x232.google.com with SMTP id e128so51307076pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Apr 2016 18:29:39 -0700 (PDT)
-Subject: Re: [PATCH kernel 2/2] powerpc/powernv/ioda2: Delay PE disposal
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <1460097404-35422-1-git-send-email-aik@ozlabs.ru>
- <1460097404-35422-3-git-send-email-aik@ozlabs.ru>
- <20160414014033.GD18218@voom.redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <571043FC.8040509@ozlabs.ru>
-Date: Fri, 15 Apr 2016 11:29:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmKws2z4NzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 11:40:13 +1000 (AEST)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 15 Apr 2016 11:40:12 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A46632CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 11:40:08 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3F1e0KP31785028
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 11:40:08 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3F1dZHe011874
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 11:39:36 +1000
+Date: Fri, 15 Apr 2016 11:39:10 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alistair Popple <alistair@popple.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ devicetree@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
+ grant.likely@linaro.org, robherring2@gmail.com, bhelgaas@google.com,
+ dja@axtens.net
+Subject: Re: [PATCH v8 45/45] PCI/hotplug: PowerPC PowerNV PCI hotplug driver
+Message-ID: <20160415013909.GA22105@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-46-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1907698.219Ro8drPf@new-mexico>
 MIME-Version: 1.0
-In-Reply-To: <20160414014033.GD18218@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1907698.219Ro8drPf@new-mexico>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,131 +45,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/14/2016 11:40 AM, David Gibson wrote:
-> On Fri, Apr 08, 2016 at 04:36:44PM +1000, Alexey Kardashevskiy wrote:
->> When SRIOV is disabled, the existing code presumes there is no
->> virtual function (VF) in use and destroys all associated PEs.
->> However it is possible to get into the situation when the user
->> activated SRIOV disabling while a VF is still in use via VFIO.
->> For example, unbinding a physical function (PF) while there is a guest
->> running with a VF passed throuhgh via VFIO will trigger the bug.
->>
->> This defines an IODA2-specific IOMMU group release() callback.
->> This moves all the disposal code from pnv_ioda_release_vf_PE() to this
->> new callback so the cleanup happens when the last user of an IOMMU
->> group released the reference.
->>
->> As pnv_pci_ioda2_release_dma_pe() was reduced to just calling
->> iommu_group_put(), this merges pnv_pci_ioda2_release_dma_pe()
->> into pnv_ioda_release_vf_PE().
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>   arch/powerpc/platforms/powernv/pci-ioda.c | 33 +++++++++++++------------------
->>   1 file changed, 14 insertions(+), 19 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index ce9f2bf..8108c54 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -1333,27 +1333,25 @@ static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
->>   static void pnv_pci_ioda2_group_release(void *iommu_data)
->>   {
->>   	struct iommu_table_group *table_group = iommu_data;
->> +	struct pnv_ioda_pe *pe = container_of(table_group,
->> +			struct pnv_ioda_pe, table_group);
->> +	struct pci_controller *hose = pci_bus_to_host(pe->parent_dev->bus);
->> +	struct pnv_phb *phb = hose->private_data;
->> +	struct iommu_table *tbl = pe->table_group.tables[0];
->> +	int64_t rc;
->>
->> -	table_group->group = NULL;
->> -}
->> -
->> -static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
->> -{
->> -	struct iommu_table    *tbl;
->> -	int64_t               rc;
->> -
->> -	tbl = pe->table_group.tables[0];
->>   	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+On Fri, Apr 15, 2016 at 10:47:52AM +1000, Alistair Popple wrote:
+>Hi Gavin,
 >
-> Is it safe to go manipulating the PE windows, etc. after SR-IOV is
-> disabled?
+>I was reading through this to understand how it all works and noticed a couple
+>of things, comments below.
+>
 
-Manipulating windows in this case is just updating 8 bytes in the TVT. At 
-this point a VF is expected to be destroyed but PE is expected to remain 
-not free so pnv_ioda2_pick_m64_pe() (or pnv_ioda2_reserve_m64_pe()?) won't 
-use it.
+Alistair, thanks for your time on review.
 
 >
-> When SR-IOV is disabled, you need to immediately disable the VF (I'm
-> guessing that happens somewhere) and stop all access to the VF
-> "hardware".
-
-drivers/pci/iov.c
-===
-static void sriov_disable(struct pci_dev *dev)
-{
-...
-for (i = 0; i < iov->num_VFs; i++)
-         pci_iov_remove_virtfn(dev, i, 0);
-...
-pcibios_sriov_disable(dev);
-===
-
-pcibios_sriov_disable() is where pnv_pci_ioda2_release_dma_pe() is called from.
-
-> Only the iommu group structure *has* to stick around
-> until the reference count drops to zero.  I think other structures and
-> hardware reconfiguration can be deferred or done immediately,
-> whichever is more convenient.
-
-I deferred everything because of convenience as iommu_table_group is 
-embedded into pnv_ioda struct, not a pointer.
-
-
-
->>   	if (rc)
->>   		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
->>
->>   	pnv_pci_ioda2_set_bypass(pe, false);
->> -	if (pe->table_group.group) {
->> -		iommu_group_put(pe->table_group.group);
->> -		BUG_ON(pe->table_group.group);
->> -	}
+>On Wed, 17 Feb 2016 14:44:28 Gavin Shan wrote:
+>
+><snip>
+>
 >> +
->> +	BUG_ON(!tbl);
->>   	pnv_pci_ioda2_table_free_pages(tbl);
->> -	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
->> +	iommu_free_table(tbl, of_node_full_name(pe->parent_dev->dev.of_node));
+>> +static void pnv_php_handle_poweron(struct pnv_php_slot *php_slot)
+>> +{
+>> +	void *fdt, *fdt1, *dt;
+>> +	int confirm = PNV_PHP_POWER_CONFIRMED_SUCCESS;
+>> +	int ret;
 >> +
->> +	pnv_ioda_deconfigure_pe(phb, pe);
->> +	pnv_ioda_free_pe(phb, pe->pe_number);
->>   }
->>
->>   static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->> @@ -1376,16 +1374,13 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->>   		if (pe->parent_dev != pdev)
->>   			continue;
->>
->> -		pnv_pci_ioda2_release_dma_pe(pdev, pe);
->> -
->>   		/* Remove from list */
->>   		mutex_lock(&phb->ioda.pe_list_mutex);
->>   		list_del(&pe->list);
->>   		mutex_unlock(&phb->ioda.pe_list_mutex);
->>
->> -		pnv_ioda_deconfigure_pe(phb, pe);
->> -
->> -		pnv_ioda_free_pe(phb, pe->pe_number);
->> +		if (pe->table_group.group)
->> +			iommu_group_put(pe->table_group.group);
->>   	}
->>   }
->>
+>> +	/* We don't know the FDT blob size. We try to get it through
+>> +	 * maximal memory chunk and then copy it to another chunk that
+>> +	 * fits the real size.
+>> +	 */
+>> +	fdt1 = kzalloc(0x10000, GFP_KERNEL);
+>> +	if (!fdt1)
+>> +		goto error;
+>> +
+>> +	ret = pnv_pci_get_device_tree(php_slot->dn->phandle, fdt1, 0x10000);
+>> +	if (ret)
+>> +		goto free_fdt1;
+>> +
+>> +	fdt = kzalloc(fdt_totalsize(fdt1), GFP_KERNEL);
+>> +	if (!fdt)
+>> +		goto free_fdt1;
+>> +
+>> +	/* Unflatten device tree blob */
+>> +	memcpy(fdt, fdt1, fdt_totalsize(fdt1));
+>> +	dt = of_fdt_unflatten_tree(fdt, php_slot->dn, NULL);
+>> +	if (!dt) {
+>> +		dev_warn(&php_slot->pdev->dev, "Cannot unflatten FDT\n");
+>> +		goto free_fdt;
+>> +	}
+>> +
+>> +	/* Initialize and apply the changeset */
+>> +	of_changeset_init(&php_slot->ocs);
+>> +	ret = pnv_php_populate_changeset(&php_slot->ocs, php_slot->dn);
+>> +	if (ret) {
+>> +		dev_warn(&php_slot->pdev->dev, "Error %d populating changeset\n",
+>> +			 ret);
+>> +		goto free_dt;
+>> +	}
+>> +
+>> +	php_slot->dn->child = NULL;
+>> +	ret = of_changeset_apply(&php_slot->ocs);
+>> +	if (ret) {
+>> +		dev_warn(&php_slot->pdev->dev, "Error %d applying changeset\n",
+>> +			 ret);
+>> +		goto destroy_changeset;
+>> +	}
+>> +
+>> +	/* Add device node firmware data */
+>> +	pnv_php_add_pdns(php_slot);
+>> +	php_slot->fdt = fdt;
+>> +	php_slot->dt  = dt;
+>> +	goto out;
+>
+>Doesn't this leak memory from fdt1? I can't see where it gets freed in this
+>case.
 >
 
+You're right that @fdt1 should be released here. I'll fix it in
+next revision.
 
--- 
-Alexey
+>> +destroy_changeset:
+>> +	of_changeset_destroy(&php_slot->ocs);
+>> +free_dt:
+>> +	kfree(dt);
+>> +	php_slot->dn->child = NULL;
+>> +free_fdt:
+>> +	kfree(fdt);
+>> +free_fdt1:
+>> +	kfree(fdt1);
+>> +error:
+>> +	confirm = PNV_PHP_POWER_CONFIRMED_FAIL;
+>> +out:
+>> +	/* Confirm status change */
+>> +	php_slot->power_state_confirmed = confirm;
+>> +	wake_up_interruptible(&php_slot->queue);
+>> +}
+>> +
+>
+><snip>
+>
+>> +
+>> +static void __exit pnv_php_exit(void)
+>> +{
+>> +	struct device_node *dn;
+>> +
+>> +	for_each_compatible_node(dn, NULL, "ibm,ioda-phb")
+>> +		pnv_php_unregister(dn);
+>> +	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
+>> +		pnv_php_unregister(dn);
+>> +
+>> +	pnv_pci_hotplug_notifier_unregister(&php_msg_nb);
+>
+>Do you flush the workqueues anywhere? Usually you would stop work being queued 
+>and call something like flush_workqueue() to ensure no work is still
+>running/queued before unloading the module.
+>
+
+Good question. Yeah, I'll flush the workqueue before the module is going
+to be unloaded.
+
+Thanks,
+Gavin
+
+>- Alistair
+>
+>> +}
+>> +
+>> +module_init(pnv_php_init);
+>> +module_exit(pnv_php_exit);
+>> +
+>> +MODULE_VERSION(DRIVER_VERSION);
+>> +MODULE_LICENSE("GPL v2");
+>> +MODULE_AUTHOR(DRIVER_AUTHOR);
+>> +MODULE_DESCRIPTION(DRIVER_DESC);
+>> 
+>
