@@ -1,36 +1,22 @@
-Return-Path: <jpoimboe@redhat.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmd0x0tptzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 22:59:45 +1000 (AEST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qmd0w5b8Sz9t64
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 22:59:44 +1000 (AEST)
-Date: Fri, 15 Apr 2016 07:59:39 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Torsten Duwe <duwe@lst.de>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, linuxppc-dev@ozlabs.org,
- bsingharora@gmail.com, linux-kernel@vger.kernel.org,
- rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
- jeyu@redhat.com, live-patching@vger.kernel.org
-Subject: Re: [PATCH 0/5] Live patching for powerpc
-Message-ID: <20160415125939.lrft3nawlzuozjkb@treble>
-References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
- <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
- <alpine.LNX.2.00.1604131508500.27368@cbobk.fhfr.pm>
- <1460616590.2754.6.camel@ellerman.id.au>
- <20160414125735.GA20296@lst.de>
- <1460639282.21066.5.camel@ellerman.id.au>
- <20160414152029.GA24525@lst.de>
- <20160414164122.7ubcqqm43advdscb@treble>
- <1460719369.22415.1.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1460719369.22415.1.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmd1J0gByzDqFD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 23:00:04 +1000 (AEST)
+Message-ID: <1460725197.22415.7.camel@ellerman.id.au>
+Subject: Re: [v4, 2/3] ppc64/book3s: make some room for common interrupt
+ vector code
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, Michael Neuling
+ <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+Date: Fri, 15 Apr 2016 22:59:57 +1000
+In-Reply-To: <3qmZVp4lgdz9t5C@ozlabs.org>
+References: <3qmZVp4lgdz9t5C@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,43 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 15, 2016 at 09:22:49PM +1000, Michael Ellerman wrote:
-> On Thu, 2016-04-14 at 11:41 -0500, Josh Poimboeuf wrote:
-> > On Thu, Apr 14, 2016 at 05:20:29PM +0200, Torsten Duwe wrote:
-> > > On Thu, Apr 14, 2016 at 11:08:02PM +1000, Michael Ellerman wrote:
-> > > > On Thu, 2016-04-14 at 14:57 +0200, Torsten Duwe wrote:
-> > > > > FTR: then I still have a few ppc64 hunks floating around to support certain consistency
-> > > > > models...
-> > > > 
-> > > > OK. I'm not quite sure what you mean but post them and we'll see I guess :)
-> > > 
-> > > It's *roughly* the ppc64 equivalent of Josh Poimboeuf's Mar 25
-> 
-> > > > [RFC PATCH v1.9 14/14] livepatch: update task universe when exiting kernel
-> > > which only considers x86.
-> > > 
-> > > It's forward ported from an earlier code base; there's some glue missing,
-> > > but here it is, for reference.
-> > > 
-> > > Signed-off-by: Torsten Duwe <duwe@suse.de>
-> > 
-> > Hi Torsten,
-> > 
-> > Thanks for sharing.  This is quite fortuitous as Miroslav just today
-> > mentioned to me that we would need something like this.  If you don't
-> > mind, I may pull this patch or some variant of it into v2 of the
-> > consistency model.
->  
-> Well please wait for me to review & ack it before you pull it into anything
-> permanent.
-> 
-> At a quick glance it seems OK but I'd probably do it a little differently. I'll
-> try and have a closer look next week.
+On Fri, 2016-04-15 at 21:06 +1000, Michael Ellerman wrote:
+> Hi Hari,
+>
+> Thanks for persisting with this.
+>
+> On Thu, 2016-07-04 at 21:58:50 UTC, Hari Bathini wrote:
 
-Sure, no problem.  The consistency model patches are still in
-development so they won't be merged anytime soon.  And we wouldn't merge
-any powerpc code without maintainer acks anyway.  I'm just glad you guys
-are looking at it so I don't have to butcher it ;-)
+> > With the previous patch, we choke out whatever little space is left
+> > below 0x7000 (FWNMI hard block) while there is a hole of ~1400 bytes
+> > below __end_interrupts marker when CONFIG_CBE_RAS is disabled.
+> > Considering CONFIG_CBE_RAS is not enabled by default for BOOK3S, this
+> > is not a desirable scenario especially when we have to worry about
+> > each additional instruction that goes below 0x7000.
+> >
+> > Memory region from 0x1800 to 0x4000 is dedicated for common interrupt
+> > vector code. Also, we never hit an interrupt below 0x300 when IR=DR=1
+> > implying memory region between 0x4000 to 0x4300 can also be used for
+> > common interrupt vector code. So, we can effectively use memory region
+> > between 0x1800 to 0x4300 for common interrupt vector code.
+>
+> On Power9 the system-call-vectored instruction will use the region at 0x3000, so
+> moving code into that space is not a good long term plan.
+>
+> I'll take your v2 and put it in next next week.
 
--- 
-Josh
+I'll add this fixes line, which I think is correct:
+
+Fixes: c1fb6816fb1b ("powerpc: Add relocation on exception vector handlers")
+
+cheers
