@@ -1,36 +1,31 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmVyh1B8CzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 18:27:24 +1000 (AEST)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 3D8CE440DB6_710A5E8B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 08:27:20 +0000 (GMT)
-Received: from mail-qg0-f42.google.com (mail-qg0-f42.google.com
- [209.85.192.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- CA38843E091_710A5E6F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 08:27:18 +0000 (GMT)
-Received: by mail-qg0-f42.google.com with SMTP id f52so77057835qga.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 01:27:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmW0d1F43zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 18:29:05 +1000 (AEST)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qmW0c5JJPz9sDb
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Apr 2016 18:29:03 +1000 (AEST)
+Date: Fri, 15 Apr 2016 10:28:58 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Jessica Yu <jeyu@redhat.com>
+cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ bsingharora@gmail.com, duwe@lst.de, linux-kernel@vger.kernel.org,
+ rostedt@goodmis.org, kamalesh@linux.vnet.ibm.com, pmladek@suse.com,
+ jikos@kernel.org, live-patching@vger.kernel.org
+Subject: Re: Live patching for powerpc
+In-Reply-To: <20160414192031.GB25297@packer-debian-8-amd64.digitalocean.com>
+Message-ID: <alpine.LNX.2.00.1604151018220.4334@pobox.suse.cz>
+References: <1460552003-15409-1-git-send-email-mpe@ellerman.id.au>
+ <alpine.LNX.2.00.1604131457180.16586@pobox.suse.cz>
+ <20160413182228.GA16776@packer-debian-8-amd64.digitalocean.com>
+ <alpine.LNX.2.00.1604141514420.10605@pobox.suse.cz>
+ <20160414192031.GB25297@packer-debian-8-amd64.digitalocean.com>
 MIME-Version: 1.0
-In-Reply-To: <1459950325-10327-1-git-send-email-alessio.bogani@elettra.eu>
-References: <1459950325-10327-1-git-send-email-alessio.bogani@elettra.eu>
-Date: Fri, 15 Apr 2016 10:27:17 +0200
-Message-ID: <CAPk1OjHEe+qcPYakD0BbikSkK+Dipj-9P2vatSceTcjMWYAPYg@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/1] powerpc/fsl: Fix build of the dtb embedded kernel
- images
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 14 Apr 2016, Jessica Yu wrote:
 
-On 6 April 2016 at 15:45, Alessio Igor Bogani <alessio.bogani@elettra.eu> wrote:
-> The commit dc37374 move a lot of device tree files into fsl directory
-> fixing Makefile for cuImage target only. Unfortunately there are others
-> target which require to embebbed device tree into the kernel image
-> (i.e. dtbImage.%). So use a more generic approach.
->
-> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-> ---
->  arch/powerpc/boot/Makefile | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 6116510..8fe78a3 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -362,9 +362,6 @@ $(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
->  $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
->         $(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
->
-> -$(obj)/cuImage.%: vmlinux $(obj)/fsl/%.dtb $(wrapperbits)
-> -       $(call if_changed,wrap,cuboot-$*,,$(obj)/fsl/$*.dtb)
-> -
->  $(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
->         $(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
->
-> @@ -381,6 +378,9 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
->  $(obj)/%.dtb: $(src)/dts/%.dts FORCE
->         $(call if_changed_dep,dtc)
->
-> +$(obj)/%.dtb: $(src)/dts/fsl/%.dts FORCE
-> +       $(call if_changed_dep,dtc)
-> +
->  # If there isn't a platform selected then just strip the vmlinux.
->  ifeq (,$(image-y))
->  image-y := vmlinux.strip
+> +++ Miroslav Benes [14/04/16 15:28 +0200]:
+> > On Wed, 13 Apr 2016, Jessica Yu wrote:
+> 
+> > > A second concern I have is that apply_relocate_add() relies on
+> > > sections like .stubs and .toc (for 64-bit) and .init.plt and .plt
+> > > sections (for 32-bit). In order for apply_relocate_add() to work for
+> > > livepatch, we must make sure these sections aren't thrown away and are
+> > > not in init module memory since this memory will be freed at the end
+> > > of module load (see how INIT_OFFSET_MASK is used in kernel/module.c).
+> > > As long as these sections are placed in module core memory, we will be
+> > > OK. I need to think about this a bit more.
+> > 
+> > I knew I shouldn't have opened arch/powerpc/kernel/module*.c.
+> > 
+> > We could always hack sh_flags of those sections in
+> > module_arch_frob_sections() to make them stay.
+> > 
+> 
+> I think we are fine here too. The onus would be on the patch build
+> tool (e.g., kpatch) to set the sh_flags to SHF_ALLOC, like we
+> already do to keep the klp relocation sections in memory :-)
 
-Any comments?
+Yes, this is probably the best way.
 
-Ciao,
-Alessio
+> For the 32-bit module code, I don't believe we would need to preserve
+> the .init.plt section for livepatch's call to apply_relocate_add(),
+> since relocations to init sections should've been applied during
+> module initialization, and we don't patch those types of functions.
+> Please correct me if my understanding is off.
+
+I think you are right, but I also think we don't have to worry about 
+32-bit powerpc anyway. This patch set supports ppc64le only so we can 
+leave it for now.
+
+Miroslav
