@@ -1,17 +1,16 @@
 Return-Path: <chenhui.zhao@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0082.outbound.protection.outlook.com [207.46.100.82])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0087.outbound.protection.outlook.com [65.55.169.87])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmbNm3LDlzDqP7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:46:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmbPR6CjzzDqSZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 21:47:23 +1000 (AEST)
 From: Chenhui Zhao <chenhui.zhao@nxp.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <oss@buserror.net>
 CC: <jason.jin@nxp.com>, <chenhui.zhao@nxp.com>
-Subject: [PATCH v2 5/5] powerpc/pm: save and restore registers during deep
- sleep
-Date: Fri, 15 Apr 2016 19:13:17 +0800
-Message-ID: <1460718797-21744-6-git-send-email-chenhui.zhao@nxp.com>
+Subject: [PATCH v2 4/5] powerpc/pm: support deep sleep feature on T104x
+Date: Fri, 15 Apr 2016 19:13:16 +0800
+Message-ID: <1460718797-21744-5-git-send-email-chenhui.zhao@nxp.com>
 In-Reply-To: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
 References: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
 MIME-Version: 1.0
@@ -25,199 +24,1049 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some CCSR registers will lost during deep sleep. Therefore,
-should save them before entering deep sleep, and restore them
-when resuming from deep sleep.
+T104x has deep sleep feature, which can switch off most parts of
+the SoC when it is in deep sleep mode. This way, it becomes more
+energy-efficient.
 
-Signed-off-by: Tang Yuantian <yuantian.tang@nxp.com>
+The DDR controller will also be powered off in deep sleep. Therefore,
+the last stage (the latter part of fsl_dp_enter_low) will run without DDR
+access. This piece of code and related TLBs are prefetched in advance.
+
+Due to the different initialization code between 32-bit and 64-bit, they
+have separate resume entry and precedure.
+
+The feature supports 32-bit and 64-bit kernel mode.
+
 Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
 ---
- arch/powerpc/include/asm/fsl_pm.h       |   2 +
- arch/powerpc/platforms/85xx/deepsleep.c | 108 +++++++++++++++++++++++++++++++-
- 2 files changed, 109 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/fsl_pm.h             |  24 ++
+ arch/powerpc/kernel/asm-offsets.c             |  12 +
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S |  10 +
+ arch/powerpc/kernel/head_64.S                 |   2 +-
+ arch/powerpc/platforms/85xx/Makefile          |   1 +
+ arch/powerpc/platforms/85xx/deepsleep.c       | 259 +++++++++++++
+ arch/powerpc/platforms/85xx/qoriq_pm.c        |  25 ++
+ arch/powerpc/platforms/85xx/t104x_deepsleep.S | 531 ++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_rcpm.c                |   8 +-
+ 9 files changed, 870 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+ create mode 100644 arch/powerpc/platforms/85xx/t104x_deepsleep.S
 
 diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
-index 48c2631..95601fb 100644
+index e05049b..48c2631 100644
 --- a/arch/powerpc/include/asm/fsl_pm.h
 +++ b/arch/powerpc/include/asm/fsl_pm.h
-@@ -61,7 +61,9 @@ extern void fsl_dp_enter_low(void *priv);
- extern void fsl_booke_deep_sleep_resume(void);
+@@ -20,6 +20,7 @@
  
- struct fsl_iomap {
-+	void *ccsr_lcc_base;
- 	void *ccsr_scfg_base;
-+	void *ccsr_dcfg_base;
- 	void *ccsr_rcpm_base;
- 	void *ccsr_ddr_base;
- 	void *ccsr_gpio1_base;
+ #define PLAT_PM_SLEEP	20
+ #define PLAT_PM_LPM20	30
++#define PLAT_PM_LPM35	40
+ 
+ #define FSL_PM_SLEEP		(1 << 0)
+ #define FSL_PM_DEEP_SLEEP	(1 << 1)
+@@ -48,4 +49,27 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
+ 
+ int __init fsl_rcpm_init(void);
+ 
++#ifdef CONFIG_FSL_QORIQ_PM
++int fsl_enter_deepsleep(void);
++int fsl_deepsleep_init(void);
++#else
++static inline int fsl_enter_deepsleep(void) { return -1; }
++static inline int fsl_deepsleep_init(void) { return -1; }
++#endif
++
++extern void fsl_dp_enter_low(void *priv);
++extern void fsl_booke_deep_sleep_resume(void);
++
++struct fsl_iomap {
++	void *ccsr_scfg_base;
++	void *ccsr_rcpm_base;
++	void *ccsr_ddr_base;
++	void *ccsr_gpio1_base;
++	void *ccsr_cpc_base;
++	void *dcsr_epu_base;
++	void *dcsr_npc_base;
++	void *dcsr_rcpm_base;
++	void *cpld_base;
++	void *fpga_base;
++};
+ #endif /* __PPC_FSL_PM_H */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 0d0183d..8ddd336 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -68,6 +68,10 @@
+ #include "../mm/mmu_decl.h"
+ #endif
+ 
++#ifdef CONFIG_FSL_QORIQ_PM
++#include <asm/fsl_pm.h>
++#endif
++
+ int main(void)
+ {
+ 	DEFINE(THREAD, offsetof(struct task_struct, thread));
+@@ -775,5 +779,13 @@ int main(void)
+ 
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+ 
++#ifdef CONFIG_FSL_QORIQ_PM
++	DEFINE(CCSR_CPC_BASE, offsetof(struct fsl_iomap, ccsr_cpc_base));
++	DEFINE(CCSR_GPIO1_BASE, offsetof(struct fsl_iomap, ccsr_gpio1_base));
++	DEFINE(CCSR_RCPM_BASE, offsetof(struct fsl_iomap, ccsr_rcpm_base));
++	DEFINE(CCSR_DDR_BASE, offsetof(struct fsl_iomap, ccsr_ddr_base));
++	DEFINE(CCSR_SCFG_BASE, offsetof(struct fsl_iomap, ccsr_scfg_base));
++	DEFINE(DCSR_EPU_BASE, offsetof(struct fsl_iomap, dcsr_epu_base));
++#endif
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/fsl_booke_entry_mapping.S b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+index 83dd0f6..659b059 100644
+--- a/arch/powerpc/kernel/fsl_booke_entry_mapping.S
++++ b/arch/powerpc/kernel/fsl_booke_entry_mapping.S
+@@ -173,6 +173,10 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	lis	r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@h
+ 	ori	r6,r6,MAS2_VAL(PAGE_OFFSET, BOOK3E_PAGESZ_64M, M_IF_NEEDED)@l
+ 	mtspr	SPRN_MAS2,r6
++#ifdef ENTRY_DEEPSLEEP_SETUP
++	LOAD_REG_IMMEDIATE(r8, MEMORY_START)
++	ori	r8,r8,(MAS3_SX|MAS3_SW|MAS3_SR)
++#endif
+ 	mtspr	SPRN_MAS3,r8
+ 	tlbwe
+ 
+@@ -215,12 +219,18 @@ next_tlb_setup:
+ 	#error You need to specify the mapping or not use this at all.
+ #endif
+ 
++#ifdef ENTRY_DEEPSLEEP_SETUP
++	LOAD_REG_ADDR(r6, 2f)
++	mfmsr	r7
++	rlwinm	r7,r7,0,~(MSR_IS|MSR_DS)
++#else
+ 	lis	r7,MSR_KERNEL@h
+ 	ori	r7,r7,MSR_KERNEL@l
+ 	bl	1f			/* Find our address */
+ 1:	mflr	r9
+ 	rlwimi	r6,r9,0,20,31
+ 	addi	r6,r6,(2f - 1b)
++#endif
+ 	mtspr	SPRN_SRR0,r6
+ 	mtspr	SPRN_SRR1,r7
+ 	rfi				/* start execution out of TLB1[0] entry */
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 4286775..f941450 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -829,7 +829,7 @@ _GLOBAL(start_secondary_resume)
+ /*
+  * This subroutine clobbers r11 and r12
+  */
+-enable_64b_mode:
++_GLOBAL(enable_64b_mode)
+ 	mfmsr	r11			/* grab the current MSR */
+ #ifdef CONFIG_PPC_BOOK3E
+ 	oris	r11,r11,0x8000		/* CM bit set, we'll set ICM later */
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 87fb847..a73d563 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -4,6 +4,7 @@
+ obj-$(CONFIG_SMP) += smp.o
+ obj-$(CONFIG_FSL_PMC)		  += mpc85xx_pm_ops.o
+ obj-$(CONFIG_FSL_QORIQ_PM)	  += qoriq_pm.o sleep_fsm.o
++obj-$(CONFIG_FSL_QORIQ_PM)	  += deepsleep.o t104x_deepsleep.o
+ 
+ obj-y += common.o
+ 
 diff --git a/arch/powerpc/platforms/85xx/deepsleep.c b/arch/powerpc/platforms/85xx/deepsleep.c
-index 347c588..26f3640 100644
---- a/arch/powerpc/platforms/85xx/deepsleep.c
+new file mode 100644
+index 0000000..347c588
+--- /dev/null
 +++ b/arch/powerpc/platforms/85xx/deepsleep.c
-@@ -23,6 +23,8 @@
- 
- #include "sleep_fsm.h"
- 
-+#define CCSR_LAW_OFFSET		0xC00
+@@ -0,0 +1,259 @@
++/*
++ * Support deep sleep feature for T104x
++ *
++ * Copyright 2016 NXP Semiconductors
++ *
++ * Author: Chenhui Zhao <chenhui.zhao@nxp.com>
++ *
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
- #define CPC_CPCHDBCR0		0x0f00
- #define CPC_CPCHDBCR0_SPEC_DIS	0x08000000
- 
-@@ -42,6 +44,17 @@
- #define QORIQ_CPLD_MISCCSR		0x17
- #define QORIQ_CPLD_MISCCSR_SLEEPEN	0x40
- 
-+#define CCSR_LCC_BSTRH	0x20
-+#define CCSR_LCC_BSTRL	0x24
-+#define CCSR_LCC_BSTAR	0x28
++#define pr_fmt(fmt) "%s: " fmt, __func__
 +
-+#define CCSR_DCFG_BRR	0xE4
++#include <linux/kernel.h>
++#include <linux/of_platform.h>
++#include <linux/of_address.h>
++#include <linux/slab.h>
++#include <sysdev/fsl_soc.h>
++#include <asm/machdep.h>
++#include <asm/fsl_pm.h>
 +
-+#define CCSR_RCPM_PCTBENR	0x1A0
++#include "sleep_fsm.h"
 +
-+/* the target id for the memory complex 1 (MC1) */
-+#define MC1_TRGT_ID		0x10
++#define CPC_CPCHDBCR0		0x0f00
++#define CPC_CPCHDBCR0_SPEC_DIS	0x08000000
 +
- /* 128 bytes buffer for restoring data broke by DDR training initialization */
- #define DDR_BUF_SIZE	128
- static u8 ddr_buff[DDR_BUF_SIZE] __aligned(64);
-@@ -50,6 +63,23 @@ static void fsl_dp_iounmap(void);
- 
- static struct fsl_iomap fsl_dp_priv;
- 
-+struct fsl_ccsr_law {
-+	u32	lawbarh;	/* LAWn base address high */
-+	u32	lawbarl;	/* LAWn base address low */
-+	u32	lawar;		/* LAWn attributes */
-+	u32	reserved;
++#define CCSR_SCFG_DPSLPCR	0x000
++#define CCSR_SCFG_DPSLPCR_WDRR_EN	0x1
++#define CCSR_SCFG_SPARECR2	0x504
++#define CCSR_SCFG_SPARECR3	0x508
++
++#define CCSR_GPIO1_GPDIR	0x000
++#define CCSR_GPIO1_GPODR	0x004
++#define CCSR_GPIO1_GPDAT	0x008
++#define CCSR_GPIO1_GPDIR_29	0x4
++
++#define QIXIS_PWR_CTL2		0x21
++#define QIXIS_PWR_CTL2_PCTL	0x2
++
++#define QORIQ_CPLD_MISCCSR		0x17
++#define QORIQ_CPLD_MISCCSR_SLEEPEN	0x40
++
++/* 128 bytes buffer for restoring data broke by DDR training initialization */
++#define DDR_BUF_SIZE	128
++static u8 ddr_buff[DDR_BUF_SIZE] __aligned(64);
++
++static void fsl_dp_iounmap(void);
++
++static struct fsl_iomap fsl_dp_priv;
++
++static const struct of_device_id fsl_dp_cpld_ids[] __initconst = {
++	{ .compatible = "fsl,t1024-cpld", },
++	{ .compatible = "fsl,t1040rdb-cpld", },
++	{ .compatible = "fsl,t1042rdb-cpld", },
++	{ .compatible = "fsl,t1042rdb_pi-cpld", },
++	{ .compatible = "fsl,t1040d4rdb-cpld", },
++	{}
 +};
 +
-+static struct fsl_regs_buffer {
-+	u32 bstrh;
-+	u32 bstrl;
-+	u32 bstar;
-+	u32 brr;
-+	u32 pctbenr;
-+	u32 law_count;
-+	void *law_regs;
-+} fsl_dp_buffer;
++static const struct of_device_id fsl_dp_fpga_ids[] __initconst = {
++	{ .compatible = "fsl,fpga-qixis", },
++	{ .compatible = "fsl,tetra-fpga", },
++	{}
++};
 +
- static const struct of_device_id fsl_dp_cpld_ids[] __initconst = {
- 	{ .compatible = "fsl,t1024-cpld", },
- 	{ .compatible = "fsl,t1040rdb-cpld", },
-@@ -65,6 +95,60 @@ static const struct of_device_id fsl_dp_fpga_ids[] __initconst = {
- 	{}
- };
- 
-+static void fsl_regs_save(struct fsl_iomap *base,
-+			  struct fsl_regs_buffer *buffer)
++static void fsl_dp_set_resume_pointer(void)
 +{
-+	int i;
-+	struct fsl_ccsr_law *src = base->ccsr_lcc_base + CCSR_LAW_OFFSET;
-+	struct fsl_ccsr_law *dst = buffer->law_regs;
++	u32 resume_addr;
 +
-+	buffer->bstrh = in_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRH);
-+	buffer->bstrl = in_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRL);
-+	buffer->bstar = in_be32(base->ccsr_lcc_base + CCSR_LCC_BSTAR);
-+	buffer->brr = in_be32(base->ccsr_dcfg_base + CCSR_DCFG_BRR);
-+	buffer->pctbenr = in_be32(base->ccsr_rcpm_base + CCSR_RCPM_PCTBENR);
++	/* the bootloader will finally jump to this address to return kernel */
++#ifdef CONFIG_PPC32
++	resume_addr = (u32)(__pa(fsl_booke_deep_sleep_resume));
++#else
++	resume_addr = (u32)(__pa(*(u64 *)fsl_booke_deep_sleep_resume)
++			    & 0xffffffff);
++#endif
 +
-+	for (i = 0; i < buffer->law_count; i++) {
-+		dst->lawbarh = in_be32(&src->lawbarh);
-+		dst->lawbarl = in_be32(&src->lawbarl);
-+		dst->lawar = in_be32(&src->lawar);
-+		dst++;
-+		src++;
++	/* use the register SPARECR2 to save the resume address */
++	out_be32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_SPARECR2,
++							resume_addr);
++}
++
++static void fsl_dp_pins_setup(void)
++{
++	/* set GPIO1_29 as an output pin (not open-drain), and output 0 */
++	clrbits32(fsl_dp_priv.ccsr_gpio1_base + CCSR_GPIO1_GPDAT,
++						CCSR_GPIO1_GPDIR_29);
++	clrbits32(fsl_dp_priv.ccsr_gpio1_base + CCSR_GPIO1_GPODR,
++						CCSR_GPIO1_GPDIR_29);
++	setbits32(fsl_dp_priv.ccsr_gpio1_base + CCSR_GPIO1_GPDIR,
++						CCSR_GPIO1_GPDIR_29);
++
++	/* wait for the stabilization of GPIO1_29 */
++	udelay(10);
++
++	/* enable the functionality of pins relevant to deep sleep */
++	if (fsl_dp_priv.cpld_base) {
++		setbits8(fsl_dp_priv.cpld_base + QORIQ_CPLD_MISCCSR,
++			 QORIQ_CPLD_MISCCSR_SLEEPEN);
++	} else if (fsl_dp_priv.fpga_base) {
++		setbits8(fsl_dp_priv.fpga_base + QIXIS_PWR_CTL2,
++			 QIXIS_PWR_CTL2_PCTL);
 +	}
 +}
 +
-+static void fsl_regs_restore(struct fsl_iomap *base,
-+			     struct fsl_regs_buffer *buffer)
++static void fsl_dp_ddr_save(void *scfg_base)
 +{
-+	int i;
-+	u32 attr;
-+	struct fsl_ccsr_law *src = buffer->law_regs;
-+	struct fsl_ccsr_law *dst = base->ccsr_lcc_base + CCSR_LAW_OFFSET;
++	u32 ddr_buff_addr;
 +
-+	out_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRH, buffer->bstrh);
-+	out_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRL, buffer->bstrl);
-+	out_be32(base->ccsr_lcc_base + CCSR_LCC_BSTAR, buffer->bstar);
-+	out_be32(base->ccsr_dcfg_base + CCSR_DCFG_BRR, buffer->brr);
-+	out_be32(base->ccsr_rcpm_base + CCSR_RCPM_PCTBENR, buffer->pctbenr);
++	/*
++	 * DDR training initialization will break 128 bytes at the beginning
++	 * of DDR, therefore, save them so that the bootloader will restore
++	 * them. Assume that DDR is mapped to the address space started with
++	 * CONFIG_PAGE_OFFSET.
++	 */
++	memcpy(ddr_buff, (void *)CONFIG_PAGE_OFFSET, DDR_BUF_SIZE);
 +
-+	for (i = 0; i < buffer->law_count; i++) {
-+		/*
-+		 * If the LAW with the target id of MC1 has been set,
-+		 * skip. Because changing it here causes memory
-+		 * access error.
-+		 */
-+		attr = in_be32(&dst->lawar);
-+		if (((attr >> 20) & 0xff) == MC1_TRGT_ID)
-+			continue;
-+		out_be32(&dst->lawar, 0);
-+		out_be32(&dst->lawbarl, src->lawbarl);
-+		out_be32(&dst->lawbarh, src->lawbarh);
-+		out_be32(&dst->lawar, src->lawar);
-+		src++;
-+		dst++;
-+	}
++	/* assume ddr_buff is in the physical address space of 4GB */
++	ddr_buff_addr = (u32)(__pa(ddr_buff) & 0xffffffff);
++
++	/*
++	 * the bootloader will restore the first 128 bytes of DDR from
++	 * the location indicated by the register SPARECR3
++	 */
++	out_be32(scfg_base + CCSR_SCFG_SPARECR3, ddr_buff_addr);
 +}
 +
- static void fsl_dp_set_resume_pointer(void)
- {
- 	u32 resume_addr;
-@@ -133,6 +217,8 @@ int fsl_enter_deepsleep(void)
- 
- 	fsl_dp_set_resume_pointer();
- 
-+	fsl_regs_save(&fsl_dp_priv, &fsl_dp_buffer);
++int fsl_enter_deepsleep(void)
++{
++	fsl_dp_ddr_save(fsl_dp_priv.ccsr_scfg_base);
 +
- 	/*  enable Warm Device Reset request. */
- 	setbits32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_DPSLPCR,
- 					CCSR_SCFG_DPSLPCR_WDRR_EN);
-@@ -153,6 +239,8 @@ int fsl_enter_deepsleep(void)
- 
- 	fsl_dp_enter_low(&fsl_dp_priv);
- 
-+	fsl_regs_restore(&fsl_dp_priv, &fsl_dp_buffer);
++	fsl_dp_set_resume_pointer();
 +
- 	/* disable Warm Device Reset request */
- 	clrbits32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_DPSLPCR,
- 					CCSR_SCFG_DPSLPCR_WDRR_EN);
-@@ -194,6 +282,11 @@ static int __init fsl_dp_iomap(void)
- 			goto err;
- 	}
- 
-+	fsl_dp_priv.ccsr_dcfg_base =
-+			fsl_of_iomap("fsl,qoriq-device-config-2.0");
-+	if (!fsl_dp_priv.ccsr_dcfg_base)
++	/*  enable Warm Device Reset request. */
++	setbits32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_DPSLPCR,
++					CCSR_SCFG_DPSLPCR_WDRR_EN);
++
++	/*
++	 * Disable CPC speculation to avoid deep sleep hang, especially
++	 * in secure boot mode. This bit will be cleared automatically
++	 * when resuming from deep sleep.
++	 */
++	setbits32(fsl_dp_priv.ccsr_cpc_base + CPC_CPCHDBCR0,
++					CPC_CPCHDBCR0_SPEC_DIS);
++
++	fsl_epu_setup_default(fsl_dp_priv.dcsr_epu_base);
++	fsl_npc_setup_default(fsl_dp_priv.dcsr_npc_base);
++	fsl_dcsr_rcpm_setup(fsl_dp_priv.dcsr_rcpm_base);
++
++	fsl_dp_pins_setup();
++
++	fsl_dp_enter_low(&fsl_dp_priv);
++
++	/* disable Warm Device Reset request */
++	clrbits32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_DPSLPCR,
++					CCSR_SCFG_DPSLPCR_WDRR_EN);
++
++	fsl_epu_clean_default(fsl_dp_priv.dcsr_epu_base);
++
++	return 0;
++}
++
++static void __init *fsl_of_iomap(char *comp)
++{
++	struct device_node *np;
++	void *addr;
++
++	np = of_find_compatible_node(NULL, NULL, comp);
++	if (np) {
++		addr = of_iomap(np, 0);
++		of_node_put(np);
++		return addr;
++	}
++
++	return NULL;
++}
++
++static int __init fsl_dp_iomap(void)
++{
++	struct device_node *np;
++
++	np = of_find_matching_node(NULL, fsl_dp_cpld_ids);
++	if (np) {
++		fsl_dp_priv.cpld_base = of_iomap(np, 0);
++		of_node_put(np);
++	} else {
++		np = of_find_matching_node(NULL, fsl_dp_fpga_ids);
++		if (np) {
++			fsl_dp_priv.fpga_base = of_iomap(np, 0);
++			of_node_put(np);
++		} else
++			goto err;
++	}
++
++	fsl_dp_priv.ccsr_scfg_base = fsl_of_iomap("fsl,t1040-scfg");
++	if (!fsl_dp_priv.ccsr_scfg_base) {
++		fsl_dp_priv.ccsr_scfg_base = fsl_of_iomap("fsl,t1023-scfg");
++		if (!fsl_dp_priv.ccsr_scfg_base)
++			goto err;
++	}
++
++	fsl_dp_priv.ccsr_rcpm_base = fsl_of_iomap("fsl,qoriq-rcpm-2.1");
++	if (!fsl_dp_priv.ccsr_rcpm_base)
 +		goto err;
 +
- 	fsl_dp_priv.ccsr_scfg_base = fsl_of_iomap("fsl,t1040-scfg");
- 	if (!fsl_dp_priv.ccsr_scfg_base) {
- 		fsl_dp_priv.ccsr_scfg_base = fsl_of_iomap("fsl,t1023-scfg");
-@@ -234,8 +327,21 @@ static int __init fsl_dp_iomap(void)
- 	if (!fsl_dp_priv.dcsr_rcpm_base)
- 		goto err;
- 
--	return 0;
-+	fsl_dp_priv.ccsr_lcc_base = fsl_of_iomap("fsl,corenet-law");
-+	if (!fsl_dp_priv.ccsr_lcc_base)
++	fsl_dp_priv.ccsr_ddr_base = fsl_of_iomap("fsl,qoriq-memory-controller");
++	if (!fsl_dp_priv.ccsr_ddr_base)
 +		goto err;
 +
-+	np = of_find_compatible_node(NULL, NULL, "fsl,corenet-law");
-+	if (of_property_read_u32(np, "fsl,num-laws",
-+					&fsl_dp_buffer.law_count))
++	fsl_dp_priv.ccsr_gpio1_base = fsl_of_iomap("fsl,qoriq-gpio-1");
++	if (!fsl_dp_priv.ccsr_gpio1_base)
 +		goto err;
- 
-+	fsl_dp_buffer.law_regs = kcalloc(fsl_dp_buffer.law_count,
-+				sizeof(struct fsl_ccsr_law), GFP_KERNEL);
-+	if (!fsl_dp_buffer.law_regs)
++
++	fsl_dp_priv.ccsr_cpc_base =
++			fsl_of_iomap("fsl,t1040-l3-cache-controller");
++	if (!fsl_dp_priv.ccsr_cpc_base) {
++		fsl_dp_priv.ccsr_cpc_base =
++			fsl_of_iomap("fsl,t1023-l3-cache-controlle");
++		if (!fsl_dp_priv.ccsr_cpc_base)
++			goto err;
++	}
++
++	fsl_dp_priv.dcsr_epu_base = fsl_of_iomap("fsl,dcsr-epu");
++	if (!fsl_dp_priv.dcsr_epu_base)
++		goto err;
++
++	fsl_dp_priv.dcsr_npc_base = fsl_of_iomap("fsl,dcsr-cnpc");
++	if (!fsl_dp_priv.dcsr_npc_base)
++		goto err;
++
++	fsl_dp_priv.dcsr_rcpm_base = fsl_of_iomap("fsl,dcsr-rcpm");
++	if (!fsl_dp_priv.dcsr_rcpm_base)
 +		goto err;
 +
 +	return 0;
- err:
- 	fsl_dp_iounmap();
- 	return -1;
++
++err:
++	fsl_dp_iounmap();
++	return -1;
++}
++
++static void __init fsl_dp_iounmap(void)
++{
++	void **p = (void *)&fsl_dp_priv;
++	int i;
++
++	for (i = 0; i < sizeof(struct fsl_iomap)/sizeof(void *); i++) {
++		iounmap(*p);
++		*p = NULL;
++		p++;
++	}
++}
++
++int __init fsl_deepsleep_init(void)
++{
++	return fsl_dp_iomap();
++}
+diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
+index 8332e44..e39f73a 100644
+--- a/arch/powerpc/platforms/85xx/qoriq_pm.c
++++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/suspend.h>
+ #include <linux/of_platform.h>
++#include <linux/of_fdt.h>
+ 
+ #include <asm/fsl_pm.h>
+ 
+@@ -27,6 +28,11 @@ static int qoriq_suspend_enter(suspend_state_t state)
+ 	case PM_SUSPEND_STANDBY:
+ 		ret = qoriq_pm_ops->plat_enter_sleep(FSL_PM_SLEEP);
+ 		break;
++
++	case PM_SUSPEND_MEM:
++		ret = qoriq_pm_ops->plat_enter_sleep(FSL_PM_DEEP_SLEEP);
++		break;
++
+ 	default:
+ 		ret = -EINVAL;
+ 	}
+@@ -40,9 +46,24 @@ static int qoriq_suspend_valid(suspend_state_t state)
+ 	if (state == PM_SUSPEND_STANDBY && (pm_modes & FSL_PM_SLEEP))
+ 		return 1;
+ 
++	if (state == PM_SUSPEND_MEM && (pm_modes & FSL_PM_DEEP_SLEEP))
++		return 1;
++
+ 	return 0;
+ }
+ 
++static const char * const boards_deepsleep[] __initconst = {
++	"fsl,T1024QDS",
++	"fsl,T1024RDB",
++	"fsl,T1040QDS",
++	"fsl,T1040RDB",
++	"fsl,T1040D4RDB",
++	"fsl,T1042QDS",
++	"fsl,T1042D4RDB",
++	"fsl,T1042RDB",
++	"fsl,T1042RDB_PI",
++};
++
+ static const struct platform_suspend_ops qoriq_suspend_ops = {
+ 	.valid = qoriq_suspend_valid,
+ 	.enter = qoriq_suspend_enter,
+@@ -53,6 +74,10 @@ static int __init qoriq_suspend_init(void)
+ 	/* support sleep by default */
+ 	pm_modes |= FSL_PM_SLEEP;
+ 
++	if (of_flat_dt_match(of_get_flat_dt_root(), boards_deepsleep) &&
++	    !fsl_deepsleep_init())
++		pm_modes |= FSL_PM_DEEP_SLEEP;
++
+ 	suspend_set_ops(&qoriq_suspend_ops);
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/85xx/t104x_deepsleep.S b/arch/powerpc/platforms/85xx/t104x_deepsleep.S
+new file mode 100644
+index 0000000..231a5ce
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/t104x_deepsleep.S
+@@ -0,0 +1,531 @@
++/*
++ * Enter and resume from deep sleep state
++ *
++ * Copyright 2016 NXP Semiconductors
++ *
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <asm/page.h>
++#include <asm/ppc_asm.h>
++#include <asm/reg.h>
++#include <asm/asm-offsets.h>
++#include <asm/mmu.h>
++
++/*
++ * the number of bytes occupied by one register
++ * the value of 8 is compatible with both 32-bit and 64-bit registers
++ */
++#define STRIDE_SIZE		8
++
++/* GPR0 - GPR31 */
++#define BOOKE_GPR0_OFF		0x0000
++#define BOOKE_GPR_COUNT		32
++/* IVOR0 - IVOR42 */
++#define BOOKE_IVOR0_OFF	   (BOOKE_GPR0_OFF + BOOKE_GPR_COUNT * STRIDE_SIZE)
++#define BOOKE_IVOR_COUNT	43
++/* SPRG0 - SPRG9 */
++#define BOOKE_SPRG0_OFF	   (BOOKE_IVOR0_OFF + BOOKE_IVOR_COUNT * STRIDE_SIZE)
++#define BOOKE_SPRG_COUNT	10
++/* IVPR */
++#define BOOKE_IVPR_OFF	   (BOOKE_SPRG0_OFF + BOOKE_SPRG_COUNT * STRIDE_SIZE)
++
++#define BOOKE_LR_OFF		(BOOKE_IVPR_OFF + STRIDE_SIZE)
++#define BOOKE_MSR_OFF		(BOOKE_LR_OFF + STRIDE_SIZE)
++#define BOOKE_TBU_OFF		(BOOKE_MSR_OFF + STRIDE_SIZE)
++#define BOOKE_TBL_OFF		(BOOKE_TBU_OFF + STRIDE_SIZE)
++#define BOOKE_EPCR_OFF		(BOOKE_TBL_OFF + STRIDE_SIZE)
++#define BOOKE_HID0_OFF		(BOOKE_EPCR_OFF + STRIDE_SIZE)
++#define BOOKE_PIR_OFF		(BOOKE_HID0_OFF + STRIDE_SIZE)
++#define BOOKE_PID0_OFF		(BOOKE_PIR_OFF + STRIDE_SIZE)
++#define BOOKE_BUCSR_OFF		(BOOKE_PID0_OFF + STRIDE_SIZE)
++
++#define BUFFER_SIZE		(BOOKE_BUCSR_OFF + STRIDE_SIZE)
++
++#undef SAVE_GPR
++#define SAVE_GPR(gpr, offset) \
++	PPC_STL gpr, offset(r10)
++
++#define RESTORE_GPR(gpr, offset) \
++	PPC_LL gpr, offset(r10)
++
++#define SAVE_SPR(spr, offset)	\
++	mfspr	r0, spr;	\
++	PPC_STL	r0, offset(r10)
++
++#define RESTORE_SPR(spr, offset) \
++	PPC_LL	r0, offset(r10); \
++	mtspr	spr, r0
++
++#define SAVE_ALL_GPR \
++	SAVE_GPR(r1, BOOKE_GPR0_OFF + STRIDE_SIZE * 1) ;\
++	SAVE_GPR(r2, BOOKE_GPR0_OFF + STRIDE_SIZE * 2) ;\
++	SAVE_GPR(r13, BOOKE_GPR0_OFF + STRIDE_SIZE * 13) ;\
++	SAVE_GPR(r14, BOOKE_GPR0_OFF + STRIDE_SIZE * 14) ;\
++	SAVE_GPR(r15, BOOKE_GPR0_OFF + STRIDE_SIZE * 15) ;\
++	SAVE_GPR(r16, BOOKE_GPR0_OFF + STRIDE_SIZE * 16) ;\
++	SAVE_GPR(r17, BOOKE_GPR0_OFF + STRIDE_SIZE * 17) ;\
++	SAVE_GPR(r18, BOOKE_GPR0_OFF + STRIDE_SIZE * 18) ;\
++	SAVE_GPR(r19, BOOKE_GPR0_OFF + STRIDE_SIZE * 19) ;\
++	SAVE_GPR(r20, BOOKE_GPR0_OFF + STRIDE_SIZE * 20) ;\
++	SAVE_GPR(r21, BOOKE_GPR0_OFF + STRIDE_SIZE * 21) ;\
++	SAVE_GPR(r22, BOOKE_GPR0_OFF + STRIDE_SIZE * 22) ;\
++	SAVE_GPR(r23, BOOKE_GPR0_OFF + STRIDE_SIZE * 23) ;\
++	SAVE_GPR(r24, BOOKE_GPR0_OFF + STRIDE_SIZE * 24) ;\
++	SAVE_GPR(r25, BOOKE_GPR0_OFF + STRIDE_SIZE * 25) ;\
++	SAVE_GPR(r26, BOOKE_GPR0_OFF + STRIDE_SIZE * 26) ;\
++	SAVE_GPR(r27, BOOKE_GPR0_OFF + STRIDE_SIZE * 27) ;\
++	SAVE_GPR(r28, BOOKE_GPR0_OFF + STRIDE_SIZE * 28) ;\
++	SAVE_GPR(r29, BOOKE_GPR0_OFF + STRIDE_SIZE * 29) ;\
++	SAVE_GPR(r30, BOOKE_GPR0_OFF + STRIDE_SIZE * 30) ;\
++	SAVE_GPR(r31, BOOKE_GPR0_OFF + STRIDE_SIZE * 31)
++
++#define RESTORE_ALL_GPR \
++	RESTORE_GPR(r1, BOOKE_GPR0_OFF + STRIDE_SIZE * 1) ;\
++	RESTORE_GPR(r2, BOOKE_GPR0_OFF + STRIDE_SIZE * 2) ;\
++	RESTORE_GPR(r13, BOOKE_GPR0_OFF + STRIDE_SIZE * 13) ;\
++	RESTORE_GPR(r14, BOOKE_GPR0_OFF + STRIDE_SIZE * 14) ;\
++	RESTORE_GPR(r15, BOOKE_GPR0_OFF + STRIDE_SIZE * 15) ;\
++	RESTORE_GPR(r16, BOOKE_GPR0_OFF + STRIDE_SIZE * 16) ;\
++	RESTORE_GPR(r17, BOOKE_GPR0_OFF + STRIDE_SIZE * 17) ;\
++	RESTORE_GPR(r18, BOOKE_GPR0_OFF + STRIDE_SIZE * 18) ;\
++	RESTORE_GPR(r19, BOOKE_GPR0_OFF + STRIDE_SIZE * 19) ;\
++	RESTORE_GPR(r20, BOOKE_GPR0_OFF + STRIDE_SIZE * 20) ;\
++	RESTORE_GPR(r21, BOOKE_GPR0_OFF + STRIDE_SIZE * 21) ;\
++	RESTORE_GPR(r22, BOOKE_GPR0_OFF + STRIDE_SIZE * 22) ;\
++	RESTORE_GPR(r23, BOOKE_GPR0_OFF + STRIDE_SIZE * 23) ;\
++	RESTORE_GPR(r24, BOOKE_GPR0_OFF + STRIDE_SIZE * 24) ;\
++	RESTORE_GPR(r25, BOOKE_GPR0_OFF + STRIDE_SIZE * 25) ;\
++	RESTORE_GPR(r26, BOOKE_GPR0_OFF + STRIDE_SIZE * 26) ;\
++	RESTORE_GPR(r27, BOOKE_GPR0_OFF + STRIDE_SIZE * 27) ;\
++	RESTORE_GPR(r28, BOOKE_GPR0_OFF + STRIDE_SIZE * 28) ;\
++	RESTORE_GPR(r29, BOOKE_GPR0_OFF + STRIDE_SIZE * 29) ;\
++	RESTORE_GPR(r30, BOOKE_GPR0_OFF + STRIDE_SIZE * 30) ;\
++	RESTORE_GPR(r31, BOOKE_GPR0_OFF + STRIDE_SIZE * 31)
++
++#define SAVE_ALL_SPRG \
++	SAVE_SPR(SPRN_SPRG0, BOOKE_SPRG0_OFF + STRIDE_SIZE * 0) ;\
++	SAVE_SPR(SPRN_SPRG1, BOOKE_SPRG0_OFF + STRIDE_SIZE * 1) ;\
++	SAVE_SPR(SPRN_SPRG2, BOOKE_SPRG0_OFF + STRIDE_SIZE * 2) ;\
++	SAVE_SPR(SPRN_SPRG3, BOOKE_SPRG0_OFF + STRIDE_SIZE * 3) ;\
++	SAVE_SPR(SPRN_SPRG4, BOOKE_SPRG0_OFF + STRIDE_SIZE * 4) ;\
++	SAVE_SPR(SPRN_SPRG5, BOOKE_SPRG0_OFF + STRIDE_SIZE * 5) ;\
++	SAVE_SPR(SPRN_SPRG6, BOOKE_SPRG0_OFF + STRIDE_SIZE * 6) ;\
++	SAVE_SPR(SPRN_SPRG7, BOOKE_SPRG0_OFF + STRIDE_SIZE * 7) ;\
++	SAVE_SPR(SPRN_SPRG8, BOOKE_SPRG0_OFF + STRIDE_SIZE * 8) ;\
++	SAVE_SPR(SPRN_SPRG9, BOOKE_SPRG0_OFF + STRIDE_SIZE * 9)
++
++#define RESTORE_ALL_SPRG \
++	RESTORE_SPR(SPRN_SPRG0, BOOKE_SPRG0_OFF + STRIDE_SIZE * 0) ;\
++	RESTORE_SPR(SPRN_SPRG1, BOOKE_SPRG0_OFF + STRIDE_SIZE * 1) ;\
++	RESTORE_SPR(SPRN_SPRG2, BOOKE_SPRG0_OFF + STRIDE_SIZE * 2) ;\
++	RESTORE_SPR(SPRN_SPRG3, BOOKE_SPRG0_OFF + STRIDE_SIZE * 3) ;\
++	RESTORE_SPR(SPRN_SPRG4, BOOKE_SPRG0_OFF + STRIDE_SIZE * 4) ;\
++	RESTORE_SPR(SPRN_SPRG5, BOOKE_SPRG0_OFF + STRIDE_SIZE * 5) ;\
++	RESTORE_SPR(SPRN_SPRG6, BOOKE_SPRG0_OFF + STRIDE_SIZE * 6) ;\
++	RESTORE_SPR(SPRN_SPRG7, BOOKE_SPRG0_OFF + STRIDE_SIZE * 7) ;\
++	RESTORE_SPR(SPRN_SPRG8, BOOKE_SPRG0_OFF + STRIDE_SIZE * 8) ;\
++	RESTORE_SPR(SPRN_SPRG9, BOOKE_SPRG0_OFF + STRIDE_SIZE * 9)
++
++#define SAVE_ALL_IVOR \
++	SAVE_SPR(SPRN_IVOR0, BOOKE_IVOR0_OFF + STRIDE_SIZE * 0) ;\
++	SAVE_SPR(SPRN_IVOR1, BOOKE_IVOR0_OFF + STRIDE_SIZE * 1) ;\
++	SAVE_SPR(SPRN_IVOR2, BOOKE_IVOR0_OFF + STRIDE_SIZE * 2) ;\
++	SAVE_SPR(SPRN_IVOR3, BOOKE_IVOR0_OFF + STRIDE_SIZE * 3) ;\
++	SAVE_SPR(SPRN_IVOR4, BOOKE_IVOR0_OFF + STRIDE_SIZE * 4) ;\
++	SAVE_SPR(SPRN_IVOR5, BOOKE_IVOR0_OFF + STRIDE_SIZE * 5) ;\
++	SAVE_SPR(SPRN_IVOR6, BOOKE_IVOR0_OFF + STRIDE_SIZE * 6) ;\
++	SAVE_SPR(SPRN_IVOR7, BOOKE_IVOR0_OFF + STRIDE_SIZE * 7) ;\
++	SAVE_SPR(SPRN_IVOR8, BOOKE_IVOR0_OFF + STRIDE_SIZE * 8) ;\
++	SAVE_SPR(SPRN_IVOR9, BOOKE_IVOR0_OFF + STRIDE_SIZE * 9) ;\
++	SAVE_SPR(SPRN_IVOR10, BOOKE_IVOR0_OFF + STRIDE_SIZE * 10) ;\
++	SAVE_SPR(SPRN_IVOR11, BOOKE_IVOR0_OFF + STRIDE_SIZE * 11) ;\
++	SAVE_SPR(SPRN_IVOR12, BOOKE_IVOR0_OFF + STRIDE_SIZE * 12) ;\
++	SAVE_SPR(SPRN_IVOR13, BOOKE_IVOR0_OFF + STRIDE_SIZE * 13) ;\
++	SAVE_SPR(SPRN_IVOR14, BOOKE_IVOR0_OFF + STRIDE_SIZE * 14) ;\
++	SAVE_SPR(SPRN_IVOR15, BOOKE_IVOR0_OFF + STRIDE_SIZE * 15) ;\
++	SAVE_SPR(SPRN_IVOR35, BOOKE_IVOR0_OFF + STRIDE_SIZE * 35) ;\
++	SAVE_SPR(SPRN_IVOR36, BOOKE_IVOR0_OFF + STRIDE_SIZE * 36) ;\
++	SAVE_SPR(SPRN_IVOR37, BOOKE_IVOR0_OFF + STRIDE_SIZE * 37) ;\
++	SAVE_SPR(SPRN_IVOR38, BOOKE_IVOR0_OFF + STRIDE_SIZE * 38) ;\
++	SAVE_SPR(SPRN_IVOR39, BOOKE_IVOR0_OFF + STRIDE_SIZE * 39) ;\
++	SAVE_SPR(SPRN_IVOR40, BOOKE_IVOR0_OFF + STRIDE_SIZE * 40) ;\
++	SAVE_SPR(SPRN_IVOR41, BOOKE_IVOR0_OFF + STRIDE_SIZE * 41)
++
++#define RESTORE_ALL_IVOR \
++	RESTORE_SPR(SPRN_IVOR0, BOOKE_IVOR0_OFF + STRIDE_SIZE * 0) ;\
++	RESTORE_SPR(SPRN_IVOR1, BOOKE_IVOR0_OFF + STRIDE_SIZE * 1) ;\
++	RESTORE_SPR(SPRN_IVOR2, BOOKE_IVOR0_OFF + STRIDE_SIZE * 2) ;\
++	RESTORE_SPR(SPRN_IVOR3, BOOKE_IVOR0_OFF + STRIDE_SIZE * 3) ;\
++	RESTORE_SPR(SPRN_IVOR4, BOOKE_IVOR0_OFF + STRIDE_SIZE * 4) ;\
++	RESTORE_SPR(SPRN_IVOR5, BOOKE_IVOR0_OFF + STRIDE_SIZE * 5) ;\
++	RESTORE_SPR(SPRN_IVOR6, BOOKE_IVOR0_OFF + STRIDE_SIZE * 6) ;\
++	RESTORE_SPR(SPRN_IVOR7, BOOKE_IVOR0_OFF + STRIDE_SIZE * 7) ;\
++	RESTORE_SPR(SPRN_IVOR8, BOOKE_IVOR0_OFF + STRIDE_SIZE * 8) ;\
++	RESTORE_SPR(SPRN_IVOR9, BOOKE_IVOR0_OFF + STRIDE_SIZE * 9) ;\
++	RESTORE_SPR(SPRN_IVOR10, BOOKE_IVOR0_OFF + STRIDE_SIZE * 10) ;\
++	RESTORE_SPR(SPRN_IVOR11, BOOKE_IVOR0_OFF + STRIDE_SIZE * 11) ;\
++	RESTORE_SPR(SPRN_IVOR12, BOOKE_IVOR0_OFF + STRIDE_SIZE * 12) ;\
++	RESTORE_SPR(SPRN_IVOR13, BOOKE_IVOR0_OFF + STRIDE_SIZE * 13) ;\
++	RESTORE_SPR(SPRN_IVOR14, BOOKE_IVOR0_OFF + STRIDE_SIZE * 14) ;\
++	RESTORE_SPR(SPRN_IVOR15, BOOKE_IVOR0_OFF + STRIDE_SIZE * 15) ;\
++	RESTORE_SPR(SPRN_IVOR35, BOOKE_IVOR0_OFF + STRIDE_SIZE * 35) ;\
++	RESTORE_SPR(SPRN_IVOR36, BOOKE_IVOR0_OFF + STRIDE_SIZE * 36) ;\
++	RESTORE_SPR(SPRN_IVOR37, BOOKE_IVOR0_OFF + STRIDE_SIZE * 37) ;\
++	RESTORE_SPR(SPRN_IVOR38, BOOKE_IVOR0_OFF + STRIDE_SIZE * 38) ;\
++	RESTORE_SPR(SPRN_IVOR39, BOOKE_IVOR0_OFF + STRIDE_SIZE * 39) ;\
++	RESTORE_SPR(SPRN_IVOR40, BOOKE_IVOR0_OFF + STRIDE_SIZE * 40) ;\
++	RESTORE_SPR(SPRN_IVOR41, BOOKE_IVOR0_OFF + STRIDE_SIZE * 41)
++
++/* reset time base to prevent from overflow */
++#define DELAY(count)		\
++	li	r3, count;	\
++	li	r4, 0;		\
++	mtspr	SPRN_TBWL, r4;	\
++101:	mfspr	r4, SPRN_TBRL;	\
++	cmpw	r4, r3;		\
++	blt	101b
++
++#define FSL_DIS_ALL_IRQ		\
++	mfmsr	r8;			\
++	rlwinm	r8, r8, 0, ~MSR_CE;	\
++	rlwinm	r8, r8, 0, ~MSR_ME;	\
++	rlwinm	r8, r8, 0, ~MSR_EE;	\
++	rlwinm	r8, r8, 0, ~MSR_DE;	\
++	mtmsr	r8;			\
++	isync
++
++	.section .data
++	.align	6
++regs_buffer:
++	.space BUFFER_SIZE
++
++	.section .text
++/*
++ * Save CPU registers
++ * r3 : the base address of the buffer which stores the values of registers
++ */
++e5500_cpu_state_save:
++	/* store the base address to r10 */
++	mr	r10, r3
++
++	SAVE_ALL_GPR
++	SAVE_ALL_SPRG
++	SAVE_ALL_IVOR
++
++	SAVE_SPR(SPRN_IVPR, BOOKE_IVPR_OFF)
++	SAVE_SPR(SPRN_PID0, BOOKE_PID0_OFF)
++	SAVE_SPR(SPRN_EPCR, BOOKE_EPCR_OFF)
++	SAVE_SPR(SPRN_HID0, BOOKE_HID0_OFF)
++	SAVE_SPR(SPRN_PIR, BOOKE_PIR_OFF)
++	SAVE_SPR(SPRN_BUCSR, BOOKE_BUCSR_OFF)
++1:
++	mfspr	r5, SPRN_TBRU
++	mfspr	r4, SPRN_TBRL
++	SAVE_GPR(r5, BOOKE_TBU_OFF)
++	SAVE_GPR(r4, BOOKE_TBL_OFF)
++	mfspr	r3, SPRN_TBRU
++	cmpw	r3, r5
++	bne	1b
++
++	blr
++
++/*
++ * Restore CPU registers
++ * r3 : the base address of the buffer which stores the values of registers
++ */
++e5500_cpu_state_restore:
++	/* store the base address to r10 */
++	mr	r10, r3
++
++	RESTORE_ALL_GPR
++	RESTORE_ALL_SPRG
++	RESTORE_ALL_IVOR
++
++	RESTORE_SPR(SPRN_IVPR, BOOKE_IVPR_OFF)
++	RESTORE_SPR(SPRN_PID0, BOOKE_PID0_OFF)
++	RESTORE_SPR(SPRN_EPCR, BOOKE_EPCR_OFF)
++	RESTORE_SPR(SPRN_HID0, BOOKE_HID0_OFF)
++	RESTORE_SPR(SPRN_PIR, BOOKE_PIR_OFF)
++	RESTORE_SPR(SPRN_BUCSR, BOOKE_BUCSR_OFF)
++
++	li	r0, 0
++	mtspr	SPRN_TBWL, r0
++	RESTORE_SPR(SPRN_TBWU, BOOKE_TBU_OFF)
++	RESTORE_SPR(SPRN_TBWL, BOOKE_TBL_OFF)
++
++	blr
++
++#define CPC_CPCCSR0		0x0
++#define CPC_CPCCSR0_CPCFL	0x800
++
++/*
++ * Flush the CPC cache.
++ * r3 : the base address of CPC
++ */
++flush_cpc_cache:
++	lwz	r6, CPC_CPCCSR0(r3)
++	ori	r6, r6, CPC_CPCCSR0_CPCFL
++	stw	r6, CPC_CPCCSR0(r3)
++	sync
++
++	/* Wait until completing the flush */
++1:	lwz	r6, CPC_CPCCSR0(r3)
++	andi.	r6, r6, CPC_CPCCSR0_CPCFL
++	bne	1b
++
++	blr
++
++/*
++ * the last stage to enter deep sleep
++ */
++	.align 6
++_GLOBAL(fsl_dp_enter_low)
++deepsleep_start:
++	LOAD_REG_ADDR(r9, buf_tmp)
++	/* save the return address and MSR */
++	mflr	r8
++	PPC_STL r8, 0(r9)
++	mfmsr	r8
++	PPC_STL r8, 8(r9)
++	mfspr	r8, SPRN_TCR
++	PPC_STL r8, 16(r9)
++	mfcr	r8
++	PPC_STL	r8, 24(r9)
++
++	li	r8, 0
++	mtspr	SPRN_TCR, r8
++
++	/* save the parameters */
++	PPC_STL	r3, 32(r9)
++
++	LOAD_REG_ADDR(r3, regs_buffer)
++	bl	e5500_cpu_state_save
++
++	/* restore the parameters */
++	LOAD_REG_ADDR(r9, buf_tmp)
++	PPC_LL	r31, 32(r9)
++
++	/* flush caches inside CPU */
++	LOAD_REG_ADDR(r3, cur_cpu_spec)
++	PPC_LL	r3, 0(r3)
++	PPC_LL	r3, CPU_DOWN_FLUSH(r3)
++	PPC_LCMPI  0, r3, 0
++	beq	10f
++#ifdef CONFIG_PPC64
++	PPC_LL	r3, 0(r3)
++#endif
++	mtctr	r3
++	bctrl
++10:
++	/* Flush the CPC cache */
++	PPC_LL	r3, CCSR_CPC_BASE(r31)
++	bl	flush_cpc_cache
++
++	/* prefecth TLB */
++#define CCSR_GPIO1_GPDAT	0x0008
++#define CCSR_GPIO1_GPDAT_29	0x4
++	PPC_LL	r11, CCSR_GPIO1_BASE(r31)
++	addi	r11, r11, CCSR_GPIO1_GPDAT
++	lwz	r10, 0(r11)
++
++#define CCSR_RCPM_PCPH15SETR	0x0b4
++#define CCSR_RCPM_PCPH15SETR_CORE0	0x1
++	PPC_LL	r12, CCSR_RCPM_BASE(r31)
++	addi	r12, r12, CCSR_RCPM_PCPH15SETR
++	lwz	r10, 0(r12)
++
++#define CCSR_DDR_SDRAM_CFG_2	0x114
++#define CCSR_DDR_SDRAM_CFG_2_FRC_SR	0x80000000
++	PPC_LL	r13, CCSR_DDR_BASE(r31)
++	addi	r13, r13, CCSR_DDR_SDRAM_CFG_2
++	lwz	r10, 0(r13)
++
++#define	DCSR_EPU_EPGCR		0x000
++#define DCSR_EPU_EPGCR_GCE	0x80000000
++	PPC_LL	r14, DCSR_EPU_BASE(r31)
++	addi	r14, r14, DCSR_EPU_EPGCR
++	lwz	r10, 0(r14)
++
++#define	DCSR_EPU_EPECR15	0x33C
++#define DCSR_EPU_EPECR15_IC0	0x80000000
++	PPC_LL	r15, DCSR_EPU_BASE(r31)
++	addi	r15, r15, DCSR_EPU_EPECR15
++	lwz	r10, 0(r15)
++
++#define CCSR_SCFG_QMIFRSTCR		0x40c
++#define CCSR_SCFG_QMIFRSTCR_QMIFRST	0x80000000
++	PPC_LL	r16, CCSR_SCFG_BASE(r31)
++	addi	r16, r16, CCSR_SCFG_QMIFRSTCR
++	lwz	r10, 0(r16)
++
++	LOAD_REG_ADDR(r8, deepsleep_start)
++	LOAD_REG_ADDR(r9, deepsleep_end)
++
++	/* prefecth code to cache so that executing code after disable DDR */
++1:	icbtls	2, 0, r8
++	addi	r8, r8, 64
++	cmpw	r8, r9
++	blt	1b
++	sync
++
++	FSL_DIS_ALL_IRQ
++
++	/*
++	 * Place DDR controller in self refresh mode.
++	 * From here on, can't access DDR any more.
++	 */
++	lwz	r10, 0(r13)
++	oris	r10, r10, CCSR_DDR_SDRAM_CFG_2_FRC_SR@h
++	stw	r10, 0(r13)
++	lwz	r10, 0(r13)
++	sync
++
++	DELAY(500)
++
++	/*
++	 * Set GPIO1_29 to lock the signal MCKE down during deep sleep.
++	 * The bootloader will clear it when wakeup.
++	 */
++	lwz	r10, 0(r11)
++	ori	r10, r10, CCSR_GPIO1_GPDAT_29
++	stw	r10, 0(r11)
++	lwz	r10, 0(r11)
++
++	DELAY(100)
++
++	/* Reset QMan system bus interface */
++	lwz	r10, 0(r16)
++	oris	r10, r10, CCSR_SCFG_QMIFRSTCR_QMIFRST@h
++	stw	r10, 0(r16)
++	lwz	r10, 0(r16)
++
++	/* Enable all EPU Counters */
++	li	r10, 0
++	oris	r10, r10, DCSR_EPU_EPGCR_GCE@h
++	stw	r10, 0(r14)
++	lwz	r10, 0(r14)
++
++	/* Enable SCU15 to trigger on RCPM Concentrator 0 */
++	lwz	r10, 0(r15)
++	oris	r10, r10, DCSR_EPU_EPECR15_IC0@h
++	stw	r10, 0(r15)
++	lwz	r10, 0(r15)
++
++	/* put Core0 in PH15 mode, trigger EPU FSM */
++	lwz	r10, 0(r12)
++	ori	r10, r10, CCSR_RCPM_PCPH15SETR_CORE0
++	stw	r10, 0(r12)
++2:
++	b 2b
++
++	/*
++	 * Leave some space to prevent prefeching instruction
++	 * beyond deepsleep_end. The space also can be used as heap.
++	 */
++buf_tmp:
++	.space 128
++	.align 6
++deepsleep_end:
++
++	.align 12
++#ifdef CONFIG_PPC32
++_GLOBAL(fsl_booke_deep_sleep_resume)
++	/* disable interrupts */
++	FSL_DIS_ALL_IRQ
++
++#define ENTRY_DEEPSLEEP_SETUP
++#define ENTRY_MAPPING_BOOT_SETUP
++#include <../../kernel/fsl_booke_entry_mapping.S>
++#undef ENTRY_DEEPSLEEP_SETUP
++#undef ENTRY_MAPPING_BOOT_SETUP
++
++	li	r3, 0
++	mfspr   r4, SPRN_PIR
++	bl	call_setup_cpu
++
++	/* Load each CAM entry */
++	LOAD_REG_ADDR(r3, tlbcam_index)
++	lwz	r3, 0(r3)
++	mtctr	r3
++	li	r9, 0
++3:	mr	r3, r9
++	bl	loadcam_entry
++	addi	r9, r9, 1
++	bdnz	3b
++
++	/* restore cpu registers */
++	LOAD_REG_ADDR(r3, regs_buffer)
++	bl	e5500_cpu_state_restore
++
++	/* restore return address */
++	LOAD_REG_ADDR(r3, buf_tmp)
++	lwz	r4, 16(r3)
++	mtspr	SPRN_TCR, r4
++	lwz	r4, 0(r3)
++	mtlr	r4
++	lwz	r4, 8(r3)
++	mtmsr	r4
++	lwz	r4, 24(r3)
++	mtcr	r4
++
++	blr
++
++#else /* CONFIG_PPC32 */
++
++_GLOBAL(fsl_booke_deep_sleep_resume)
++	/* disable interrupts */
++	FSL_DIS_ALL_IRQ
++
++	/* switch to 64-bit mode */
++	bl	.enable_64b_mode
++
++	/* set TOC pointer */
++	bl	.relative_toc
++
++	/* setup initial TLBs, switch to kernel space ... */
++	bl	.start_initialization_book3e
++
++	/* address space changed, set TOC pointer again */
++	bl	.relative_toc
++
++	/* call a cpu state restore handler */
++	LOAD_REG_ADDR(r23, cur_cpu_spec)
++	ld	r23,0(r23)
++	ld	r23,CPU_SPEC_RESTORE(r23)
++	cmpdi	0,r23,0
++	beq	1f
++	ld	r23,0(r23)
++	mtctr	r23
++	bctrl
++1:
++	LOAD_REG_ADDR(r3, regs_buffer)
++	bl	e5500_cpu_state_restore
++
++	/* Load each CAM entry */
++	LOAD_REG_ADDR(r3, tlbcam_index)
++	lwz	r3, 0(r3)
++	mtctr	r3
++	li	r0, 0
++3:	mr	r3, r0
++	bl	loadcam_entry
++	addi	r0, r0, 1
++	bdnz	3b
++
++	/* restore return address */
++	LOAD_REG_ADDR(r3, buf_tmp)
++	ld	r4, 16(r3)
++	mtspr	SPRN_TCR, r4
++	ld	r4, 0(r3)
++	mtlr	r4
++	ld	r4, 8(r3)
++	mtmsr	r4
++	ld	r4, 24(r3)
++	mtcr	r4
++
++	blr
++
++#endif /* CONFIG_PPC32 */
+diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
+index e5447ac..c2d8d37 100644
+--- a/arch/powerpc/sysdev/fsl_rcpm.c
++++ b/arch/powerpc/sysdev/fsl_rcpm.c
+@@ -249,7 +249,7 @@ static int rcpm_v2_plat_enter_sleep(int state)
+ {
+ 	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
+ 	int ret = 0;
+-	int result;
++	int result, cpu;
+ 
+ 	switch (state) {
+ 	case FSL_PM_SLEEP:
+@@ -269,6 +269,12 @@ static int rcpm_v2_plat_enter_sleep(int state)
+ 			ret = -ETIMEDOUT;
+ 		}
+ 		break;
++	case FSL_PM_DEEP_SLEEP:
++		cpu = smp_processor_id();
++		rcpm_v2_irq_mask(cpu);
++		ret = fsl_enter_deepsleep();
++		rcpm_v2_irq_unmask(cpu);
++		break;
+ 	default:
+ 		pr_warn("Unknown platform PM state (%d)\n", state);
+ 		ret = -EINVAL;
 -- 
 1.9.1
