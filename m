@@ -1,30 +1,19 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yw0-x22a.google.com (mail-yw0-x22a.google.com
- [IPv6:2607:f8b0:4002:c05::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <leoyang.li@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0078.outbound.protection.outlook.com [157.56.112.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmjFK18YpzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Apr 2016 02:10:45 +1000 (AEST)
-Received: by mail-yw0-x22a.google.com with SMTP id d68so141238103ywe.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Apr 2016 09:10:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qmkpW57jZzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Apr 2016 03:21:06 +1000 (AEST)
+From: Yang-Leo Li <leoyang.li@nxp.com>
+To: Chenhui Zhao <chenhui.zhao@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "oss@buserror.net" <oss@buserror.net>
+CC: Chenhui Zhao <chenhui.zhao@nxp.com>, Zhengxiong Jin <jason.jin@nxp.com>
+Subject: RE: [PATCH v2 3/5] powerpc/dts: add a compatible	string to gpio0
+Date: Fri, 15 Apr 2016 16:47:29 +0000
+Message-ID: <AM2PR04MB07707AC7D99349C2A636CC938F680@AM2PR04MB0770.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <20160414013052.GA23214@gwshan>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <570E0E13.6080409@ozlabs.ru> <20160413234246.GA5330@gwshan>
- <8771729.bnzLL9sLJY@new-mexico> <20160414013052.GA23214@gwshan>
-From: Rob Herring <robherring2@gmail.com>
-Date: Fri, 15 Apr 2016 11:10:21 -0500
-Message-ID: <CAL_JsqKc2i6rDGYXvEzQRJ4fxi=xqXTG4ngtNkFR+XkEaWDU1Q@mail.gmail.com>
-Subject: Re: [PATCH v8 00/45] powerpc/powernv: PCI hotplug support
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Alistair Popple <alistair@popple.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Grant Likely <grant.likely@linaro.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, dja@axtens.net
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,36 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 13, 2016 at 8:30 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> On Thu, Apr 14, 2016 at 09:57:32AM +1000, Alistair Popple wrote:
->>Hi Gavin,
->>
->><snip>
->>
->>> >Why exactly cannot EEH reset changes go to a smaller separate patchset
->>> >(before hotplug)?
->>> >
->>>
->>> As I explained before, the patchset's order is: PCI generic part,
->>> PowerNV PCI related, EEH related, device-tree part and hotplug driver.
->>>
->>> The EEH reset change is included in PATCH[37/45]. There is no point
->>> to reorder the patches.
->>
->>I don't understand all of the dependencies but if possible splitting the
->>series up into a set of smaller self-contained patch series makes things
->>easier to review and may make it easier for you to get this functionality
->>reviewed and accepted into upstream.
->>
->
-> Thanks, Alistair. I will move those cleanup/refactor related patches
-> to form a separate series which is expected to be merged first. That
-> will helps the reviewers to focus on the patches with complicated
-> changes as you suggested. Alexey, please let me know if that way is
-> you like to see or not.
 
-As I said last cycle, I'll happily take the DT refactoring patches
-separately, but you have to tell me if you want me to apply them and
-it has to be well before the merge window.
 
-Rob
+> -----Original Message-----
+> From: linuxppc-release-bounces@linux.freescale.net [mailto:linuxppc-relea=
+se-
+> bounces@linux.freescale.net] On Behalf Of Chenhui Zhao
+> Sent: Friday, April 15, 2016 6:13 AM
+> To: linuxppc-dev@lists.ozlabs.org; oss@buserror.net
+> Cc: Chenhui Zhao <chenhui.zhao@nxp.com>; Zhengxiong Jin
+> <jason.jin@nxp.com>
+> Subject: [linuxppc-release] [PATCH v2 3/5] powerpc/dts: add a compatible =
+string
+> to gpio0
+>=20
+> All gpio nodes used the same compatible string "fsl,qoriq-gpio".
+> To identify the node corresponding to the GPIO1 pins, add a compatible st=
+ring
+> "fsl,qoriq-gpio-1".
+
+This is not a documented binding.  And we normally don't add compatible str=
+ings for this purpose.  If you want to reference a specific GPIO pin, use t=
+he binding described at Documentation/devicetree/bindings/gpio/gpio.txt
+
+Regards,
+Leo
+
+>=20
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> index cf714f5..1a26d6b 100644
+> --- a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> @@ -33,7 +33,7 @@
+>   */
+>=20
+>  gpio0: gpio@130000 {
+> -	compatible =3D "fsl,qoriq-gpio";
+> +	compatible =3D "fsl,qoriq-gpio-1", "fsl,qoriq-gpio";
+>  	reg =3D <0x130000 0x1000>;
+>  	interrupts =3D <55 2 0 0>;
+>  	#gpio-cells =3D <2>;
+> --
+> 1.9.1
+>=20
+> _______________________________________________
+> linuxppc-release mailing list
+> linuxppc-release@linux.freescale.net
+> http://linux.freescale.net/mailman/listinfo/linuxppc-release
