@@ -1,19 +1,23 @@
-Return-Path: <leoyang.li@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0078.outbound.protection.outlook.com [157.56.112.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qmkpW57jZzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Apr 2016 03:21:06 +1000 (AEST)
-From: Yang-Leo Li <leoyang.li@nxp.com>
-To: Chenhui Zhao <chenhui.zhao@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "oss@buserror.net" <oss@buserror.net>
-CC: Chenhui Zhao <chenhui.zhao@nxp.com>, Zhengxiong Jin <jason.jin@nxp.com>
-Subject: RE: [PATCH v2 3/5] powerpc/dts: add a compatible	string to gpio0
-Date: Fri, 15 Apr 2016 16:47:29 +0000
-Message-ID: <AM2PR04MB07707AC7D99349C2A636CC938F680@AM2PR04MB0770.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qnQ3v3m36zDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 05:50:03 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Pan Xinhui <xinhui@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] powerpc: introduce {cmp}xchg for u8 and u16
+Date: Sat, 16 Apr 2016 21:43:24 +0200
+Message-ID: <10192543.Wmc5qtLitu@wuerfel>
+In-Reply-To: <570E2A45.9080702@linux.vnet.ibm.com>
+References: <570752AA.9050603@linux.vnet.ibm.com>
+ <20160412143023.GH1087@worktop> <570E2A45.9080702@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: linuxppc-release-bounces@linux.freescale.net [mailto:linuxppc-relea=
-se-
-> bounces@linux.freescale.net] On Behalf Of Chenhui Zhao
-> Sent: Friday, April 15, 2016 6:13 AM
-> To: linuxppc-dev@lists.ozlabs.org; oss@buserror.net
-> Cc: Chenhui Zhao <chenhui.zhao@nxp.com>; Zhengxiong Jin
-> <jason.jin@nxp.com>
-> Subject: [linuxppc-release] [PATCH v2 3/5] powerpc/dts: add a compatible =
-string
-> to gpio0
+On Wednesday 13 April 2016 19:15:17 Pan Xinhui wrote:
+> Hello Peter,
 >=20
-> All gpio nodes used the same compatible string "fsl,qoriq-gpio".
-> To identify the node corresponding to the GPIO1 pins, add a compatible st=
-ring
-> "fsl,qoriq-gpio-1".
+> On 2016=E5=B9=B404=E6=9C=8812=E6=97=A5 22:30, Peter Zijlstra wrote:
+> > On Sun, Apr 10, 2016 at 10:17:28PM +0800, Pan Xinhui wrote:
+> >>
+> >> On 2016=E5=B9=B404=E6=9C=8808=E6=97=A5 15:47, Peter Zijlstra wrote=
+:
+> >>> On Fri, Apr 08, 2016 at 02:41:46PM +0800, Pan Xinhui wrote:
+> >>>> From: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
+> >>>>
+> >>>> Implement xchg{u8,u16}{local,relaxed}, and
+> >>>> cmpxchg{u8,u16}{,local,acquire,relaxed}.
+> >>>>
+> >>>> Atomic operation on 8-bit and 16-bit data type is supported from=
+ power7
+> >>>
+> >>> And yes I see nothing P7 specific here, this implementation is fo=
+r
+> >>> everything PPC64 afaict, no?
+> >>>
+> >> Hello Peter,
+> >> =09No, it's not for every ppc. So yes, I need add #ifdef here. Tha=
+nks for pointing it out.
+> >> We might need a new config option and let it depend on POWER7/POWE=
+R8_CPU or even POWER9...
+> >=20
+> > Right, I'm not sure if PPC has alternatives, but you could of cours=
+e
+> > runtime patch the code from emulated with 32bit ll/sc to native 8/1=
+6bit
+> > ll/sc if present on the current CPU if you have infrastructure for =
+these
+> > things.
+> >=20
+> seems interesting. I have no idea about how to runtime patch the code=
+. I will try to learn that.
+> If so, we need change {cmp}xchg into uninline functions?
 
-This is not a documented binding.  And we normally don't add compatible str=
-ings for this purpose.  If you want to reference a specific GPIO pin, use t=
-he binding described at Documentation/devicetree/bindings/gpio/gpio.txt
+I think you don't need to, see do_feature_fixups()/patch_feature_sectio=
+n()
 
-Regards,
-Leo
+Note that an #ifdef by itself has to worry about any combination of
+architectures, so in a kernel that has both POWER6 and POWER7 enabled,
+you cannot call the POWER7-only function.
 
->=20
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
-> ---
->  arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
-> b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
-> index cf714f5..1a26d6b 100644
-> --- a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
-> @@ -33,7 +33,7 @@
->   */
->=20
->  gpio0: gpio@130000 {
-> -	compatible =3D "fsl,qoriq-gpio";
-> +	compatible =3D "fsl,qoriq-gpio-1", "fsl,qoriq-gpio";
->  	reg =3D <0x130000 0x1000>;
->  	interrupts =3D <55 2 0 0>;
->  	#gpio-cells =3D <2>;
-> --
-> 1.9.1
->=20
-> _______________________________________________
-> linuxppc-release mailing list
-> linuxppc-release@linux.freescale.net
-> http://linux.freescale.net/mailman/listinfo/linuxppc-release
+=09Arnd
