@@ -1,23 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qnQ3v3m36zDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 05:50:03 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Pan Xinhui <xinhui@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] powerpc: introduce {cmp}xchg for u8 and u16
-Date: Sat, 16 Apr 2016 21:43:24 +0200
-Message-ID: <10192543.Wmc5qtLitu@wuerfel>
-In-Reply-To: <570E2A45.9080702@linux.vnet.ibm.com>
-References: <570752AA.9050603@linux.vnet.ibm.com>
- <20160412143023.GH1087@worktop> <570E2A45.9080702@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qnZ2P2HqczDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 11:49:16 +1000 (AEST)
+Message-ID: <1460857751.32510.175.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Sat, 16 Apr 2016 20:49:11 -0500
+In-Reply-To: <5705FAD3.40106@keymile.com>
+References: <1459949825-10533-1-git-send-email-valentin.longchamp@keymile.com>
+ <1459979380.32510.75.camel@buserror.net> <5705FAD3.40106@keymile.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH] powerpc: define the fman node for the kmcoge4 DTS
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 13 April 2016 19:15:17 Pan Xinhui wrote:
-> Hello Peter,
->=20
-> On 2016=E5=B9=B404=E6=9C=8812=E6=97=A5 22:30, Peter Zijlstra wrote:
-> > On Sun, Apr 10, 2016 at 10:17:28PM +0800, Pan Xinhui wrote:
-> >>
-> >> On 2016=E5=B9=B404=E6=9C=8808=E6=97=A5 15:47, Peter Zijlstra wrote=
-:
-> >>> On Fri, Apr 08, 2016 at 02:41:46PM +0800, Pan Xinhui wrote:
-> >>>> From: pan xinhui <xinhui.pan@linux.vnet.ibm.com>
-> >>>>
-> >>>> Implement xchg{u8,u16}{local,relaxed}, and
-> >>>> cmpxchg{u8,u16}{,local,acquire,relaxed}.
-> >>>>
-> >>>> Atomic operation on 8-bit and 16-bit data type is supported from=
- power7
-> >>>
-> >>> And yes I see nothing P7 specific here, this implementation is fo=
-r
-> >>> everything PPC64 afaict, no?
-> >>>
-> >> Hello Peter,
-> >> =09No, it's not for every ppc. So yes, I need add #ifdef here. Tha=
-nks for pointing it out.
-> >> We might need a new config option and let it depend on POWER7/POWE=
-R8_CPU or even POWER9...
-> >=20
-> > Right, I'm not sure if PPC has alternatives, but you could of cours=
-e
-> > runtime patch the code from emulated with 32bit ll/sc to native 8/1=
-6bit
-> > ll/sc if present on the current CPU if you have infrastructure for =
-these
-> > things.
-> >=20
-> seems interesting. I have no idea about how to runtime patch the code=
-. I will try to learn that.
-> If so, we need change {cmp}xchg into uninline functions?
+On Thu, 2016-04-07 at 08:14 +0200, Valentin Longchamp wrote:
+> On 06/04/16 23:49, Scott Wood wrote:
+> > On Wed, 2016-04-06 at 15:37 +0200, Valentin Longchamp wrote:
+> > > Now that the FMAN mac driver has been merged the fman node is relevant.
+> > > 
+> > > The kmcoge4 board implements 3 ethernet interfaces, 1 with a RGMII phy
+> > > and 2 with fixed 1 Giga SGMII links.
+> > > 
+> > > Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+> > > ---
+> > >  arch/powerpc/boot/dts/fsl/kmcoge4.dts | 39
+> > > +++++++++++++++++++++++++++++++++++
+> > >  1 file changed, 39 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/boot/dts/fsl/kmcoge4.dts
+> > > b/arch/powerpc/boot/dts/fsl/kmcoge4.dts
+> > > index 6858ec9..1cec66d 100644
+> > > --- a/arch/powerpc/boot/dts/fsl/kmcoge4.dts
+> > > +++ b/arch/powerpc/boot/dts/fsl/kmcoge4.dts
+> > > @@ -106,6 +106,45 @@
+> > >  		sata@221000 {
+> > >  			status = "disabled";
+> > >  		};
+> > > +
+> > > +		fman0: fman@400000 {
+> > > +			enet0: ethernet@e0000 {
+> > > +				phy-connection-type = "sgmii";
+> > > +				local-mac-address = [00 11 22 33 44
+> > > 55];
+> > > +				fixed-link {
+> > > +					speed = <1000>;
+> > > +					full-duplex;
+> > > +				};
+> > > +			};
+> > > +			mdio0: mdio@e1120 {
+> > > +				front_phy: ethernet-phy@11 {
+> > > +					reg = <0x11>;
+> > > +				};
+> > > +			};
+> > > +
+> > > +			enet1: ethernet@e2000 {
+> > > +				phy-connection-type = "sgmii";
+> > > +				local-mac-address = [00 11 22 33 44
+> > > 56];
+> > > +				fixed-link {
+> > > +					speed = <1000>;
+> > > +					full-duplex;
+> > > +				};
+> > > +			};
+> > 
+> > No hardcoded MAC addresses.
+> > 
+> 
+> For these 2 interfaces where I have the local-mac-address field, the MAC
+> addresses are set later by an application that reads the real address in
+> some
+> EEPROM. However, in order to let the fman mac_probe to run successfully in
+> the
+> first place I have set non-zero MAC addresses since the local-mac-address
+> fields
+> are not set by u-boot.
 
-I think you don't need to, see do_feature_fixups()/patch_feature_sectio=
-n()
+Why can't it be set from U-Boot?
 
-Note that an #ifdef by itself has to worry about any combination of
-architectures, so in a kernel that has both POWER6 and POWER7 enabled,
-you cannot call the POWER7-only function.
+If you absolutely must hardcode a mac address, use one with the locally
+-administered bit set (0x02 in the first byte).
 
-=09Arnd
+> I have found several local-mac-address fields in other DTS files that are
+> all
+> zeros, and thus are rejected by of_get_mac_address. Are they leftovers from
+> the
+> past or should they be used here as well ? If not, I will simply drop these
+> 2
+> fields.
+
+That's a relic from ancient U-Boots that could only overwrite existing
+properties rather than insert them from scratch.
+
+-Scott
