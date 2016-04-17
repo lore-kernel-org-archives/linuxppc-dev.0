@@ -1,23 +1,79 @@
-Return-Path: <sasha.levin@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c00::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qnn1f5DQ3zDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 20:04:22 +1000 (AEST)
-From: Sasha Levin <sasha.levin@oracle.com>
-To: stable@vger.kernel.org, stable-commits@vger.kernel.org
-Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- <gkurz@linux.vnet.ibm.com>, <grant.likely@linaro.org>,
- <nikunj@linux.vnet.ibm.com>, <vdavydov@parallels.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-mm@kvack.org>,
- <peterz@infradead.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
- <mpe@ellerman.id.au>, <anton@samba.org>,
- Ingo Molnar <mingo@kernel.org>, Sasha Levin <sasha.levin@oracle.com>
-Subject: [added to the 3.18 stable tree] sched: Fix crash in sched_init_numa()
-Date: Sun, 17 Apr 2016 06:00:17 -0400
-Message-Id: <1460887352-20128-32-git-send-email-sasha.levin@oracle.com>
-In-Reply-To: <1460887352-20128-1-git-send-email-sasha.levin@oracle.com>
-References: <1460887352-20128-1-git-send-email-sasha.levin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qnrS821nJzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 22:39:04 +1000 (AEST)
+Received: by mail-pf0-x22d.google.com with SMTP id 184so71894817pff.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 05:39:04 -0700 (PDT)
+Date: Sun, 17 Apr 2016 05:38:57 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: zengzhaoxiu@163.com
+Cc: linux-kernel@vger.kernel.org, Zhaoxiu Zeng <zhaoxiu.zeng@gmail.com>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Anton Blanchard <anton@samba.org>, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Tissoires <benjamin.tissoires@redhat.com>,
+ Borislav Petkov <bp@suse.de>, Bruce Allan <bruce.w.allan@intel.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ David Herrmann <dh.herrmann@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Denys Vlasenko <dvlasenk@redhat.com>,
+ Duson Lin <dusonlin@emc.com.tw>, Guenter Roeck <linux@roeck-us.net>,
+ Hans de Goede <hdegoede@redhat.com>, Hans Verkuil <hans.verkuil@cisco.com>,
+ Hartmut Knaack <knaack.h@gmx.de>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ Ingo Molnar <mingo@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Julian Calaby <julian.calaby@gmail.com>,
+ Krzysztof Kozlowski <k.kozlowski@samsung.com>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Leonid Yegoshin <Leonid.Yegoshin@imgtec.com>,
+ linux-alpha@vger.kernel.org, linux-am33-list@redhat.com,
+ linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com,
+ linux-crypto@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-input@vger.kernel.org, linux@lists.openrisc.net,
+ linux-m68k@lists.linux-m68k.org, linux-media@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-mtd@lists.infradead.org, linux-nfs@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org,
+ Martin Kepplinger <martink@posteo.de>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michal Nazarewicz <mina86@mina86.com>, netdev@vger.kernel.org,
+ Peter Hutterer <peter.hutterer@who-t.net>,
+ Peter Meerwald <pmeerw@pmeerw.net>,
+ "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+ Pingchao Yang <pingchao.yang@intel.com>, qat-linux@intel.com,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Sasha Levin <sasha.levin@oracle.com>, Scott Wood <oss@buserror.net>,
+ sparclinux@vger.kernel.org, Tadeusz Struk <tadeusz.struk@intel.com>,
+ Takashi Iwai <tiwai@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+ Torsten Duwe <duwe@lst.de>, uclinux-h8-devel@lists.sourceforge.jp,
+ Ulrik De Bie <ulrik.debie-os@e2big.org>,
+ Vineet Gupta <vgupta@synopsys.com>, Vlastimil Babka <vbabka@suse.cz>,
+ "wim.coekaerts@oracle.com" <wim.coekaerts@oracle.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Yury Norov <yury.norov@gmail.com>,
+ =?utf-8?B?5rSq5LiA56u5?= <sam.hung@emc.com.tw>
+Subject: Re: [PATCH V3 00/29] bitops: add parity functions
+Message-ID: <20160417123857.GD33215@dtor-ws>
+References: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1460601525-3822-1-git-send-email-zengzhaoxiu@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,62 +83,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+On Thu, Apr 14, 2016 at 10:36:41AM +0800, zengzhaoxiu@163.com wrote:
+>  drivers/input/joystick/grip_mp.c             |  16 +--
+>  drivers/input/joystick/sidewinder.c          |  24 +----
+>  drivers/input/mouse/elantech.c               |  10 +-
+>  drivers/input/mouse/elantech.h               |   1 -
+>  drivers/input/serio/ams_delta_serio.c        |   8 +-
+>  drivers/input/serio/pcips2.c                 |   2 +-
+>  drivers/input/serio/sa1111ps2.c              |   2 +-
 
-This patch has been added to the 3.18 stable tree. If you have any
-objections, please let us know.
+For input bits:
 
-===============
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-[ Upstream commit 9c03ee147193645be4c186d3688232fa438c57c7 ]
+Thanks.
 
-The following PowerPC commit:
-
-  c118baf80256 ("arch/powerpc/mm/numa.c: do not allocate bootmem memory for non existing nodes")
-
-avoids allocating bootmem memory for non existent nodes.
-
-But when DEBUG_PER_CPU_MAPS=y is enabled, my powerNV system failed to boot
-because in sched_init_numa(), cpumask_or() operation was done on
-unallocated nodes.
-
-Fix that by making cpumask_or() operation only on existing nodes.
-
-[ Tested with and w/o DEBUG_PER_CPU_MAPS=y on x86 and PowerPC. ]
-
-Reported-by: Jan Stancek <jstancek@redhat.com>
-Tested-by: Jan Stancek <jstancek@redhat.com>
-Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-Cc: <gkurz@linux.vnet.ibm.com>
-Cc: <grant.likely@linaro.org>
-Cc: <nikunj@linux.vnet.ibm.com>
-Cc: <vdavydov@parallels.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Cc: <linux-mm@kvack.org>
-Cc: <peterz@infradead.org>
-Cc: <benh@kernel.crashing.org>
-Cc: <paulus@samba.org>
-Cc: <mpe@ellerman.id.au>
-Cc: <anton@samba.org>
-Link: http://lkml.kernel.org/r/1452884483-11676-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
----
- kernel/sched/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d650e1e..4317f01 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6416,7 +6416,7 @@ static void sched_init_numa(void)
- 
- 			sched_domains_numa_masks[i][j] = mask;
- 
--			for (k = 0; k < nr_node_ids; k++) {
-+			for_each_node(k) {
- 				if (node_distance(j, k) > sched_domains_numa_distance[i])
- 					continue;
- 
 -- 
-2.5.0
+Dmitry
