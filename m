@@ -1,9 +1,9 @@
 Return-Path: <sasha.levin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qnmpw6PsYzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 19:55:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qnn1f5DQ3zDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 20:04:22 +1000 (AEST)
 From: Sasha Levin <sasha.levin@oracle.com>
 To: stable@vger.kernel.org, stable-commits@vger.kernel.org
 Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
@@ -13,11 +13,11 @@ Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
  <peterz@infradead.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
  <mpe@ellerman.id.au>, <anton@samba.org>,
  Ingo Molnar <mingo@kernel.org>, Sasha Levin <sasha.levin@oracle.com>
-Subject: [added to the 4.1 stable tree] sched: Fix crash in sched_init_numa()
-Date: Sun, 17 Apr 2016 05:50:09 -0400
-Message-Id: <1460886804-19372-10-git-send-email-sasha.levin@oracle.com>
-In-Reply-To: <1460886804-19372-1-git-send-email-sasha.levin@oracle.com>
-References: <1460886804-19372-1-git-send-email-sasha.levin@oracle.com>
+Subject: [added to the 3.18 stable tree] sched: Fix crash in sched_init_numa()
+Date: Sun, 17 Apr 2016 06:00:17 -0400
+Message-Id: <1460887352-20128-32-git-send-email-sasha.levin@oracle.com>
+In-Reply-To: <1460887352-20128-1-git-send-email-sasha.levin@oracle.com>
+References: <1460887352-20128-1-git-send-email-sasha.levin@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,7 +29,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
 
-This patch has been added to the 4.1 stable tree. If you have any
+This patch has been added to the 3.18 stable tree. If you have any
 objections, please let us know.
 
 ===============
@@ -72,10 +72,10 @@ Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 4d870eb..3b0f4c0 100644
+index d650e1e..4317f01 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -6480,7 +6480,7 @@ static void sched_init_numa(void)
+@@ -6416,7 +6416,7 @@ static void sched_init_numa(void)
  
  			sched_domains_numa_masks[i][j] = mask;
  
