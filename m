@@ -1,34 +1,17 @@
-Return-Path: <millerjo@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpd4j00kfzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 05:09:56 +1000 (AEST)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <millerjo@us.ibm.com>;
- Mon, 18 Apr 2016 13:09:55 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2A7C21FF0023
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 12:58:00 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3IJ9p4A45547668
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 12:09:51 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3IJ9puq005365
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 13:09:51 -0600
-From: Jack Miller <jack@codezen.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, mikey@neuling.org, anton@samba.org
-Subject: [PATCH 3/3] powerpc: Load Monitor Register Tests
-Date: Mon, 18 Apr 2016 14:08:02 -0500
-Message-Id: <1461006482-20595-4-git-send-email-jack@codezen.org>
-In-Reply-To: <1461006482-20595-1-git-send-email-jack@codezen.org>
-References: <1461006482-20595-1-git-send-email-jack@codezen.org>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qpgGk2s4FzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 06:48:46 +1000 (AEST)
+Date: Tue, 19 Apr 2016 04:47:28 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Jack Miller <jack@codezen.org>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org, mikey@neuling.org,
+ anton@samba.org
+Subject: Re: [PATCH 2/3] powerpc: Load Monitor Register Support
+Message-ID: <201604190414.NkLxbSQl%fengguang.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="ew6BAiZeqk4r7MaW"
+In-Reply-To: <1461006482-20595-3-git-send-email-jack@codezen.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,290 +21,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds two tests. One is a simple test to ensure that the new registers
-LMRR and LMSER are properly maintained. The other actually uses the
-existing EBB test infrastructure to test that LMRR and LMSER behave as
-documented.
 
-Signed-off-by: Jack Miller <jack@codezen.org>
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi Jack,
+
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on v4.6-rc4 next-20160418]
+[if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+
+url:    https://github.com/0day-ci/linux/commits/Jack-Miller/powerpc-Complete-FSCR-context-switch/20160419-031650
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+config: powerpc-allnoconfig (attached as .config)
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
+
+All errors (new ones prefixed by >>):
+
+   arch/powerpc/kernel/process.c: In function 'start_thread':
+>> arch/powerpc/kernel/process.c:1615:17: error: 'struct thread_struct' has no member named 'fscr'
+     current->thread.fscr &= ~FSCR_LM;
+                    ^
+
+vim +1615 arch/powerpc/kernel/process.c
+
+  1609		if (cpu_has_feature(CPU_FTR_TM))
+  1610			regs->msr |= MSR_TM;
+  1611		current->thread.tm_tfhar = 0;
+  1612		current->thread.tm_texasr = 0;
+  1613		current->thread.tm_tfiar = 0;
+  1614	#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+> 1615		current->thread.fscr &= ~FSCR_LM;
+  1616	}
+  1617	EXPORT_SYMBOL(start_thread);
+  1618	
+
 ---
- tools/testing/selftests/powerpc/pmu/ebb/Makefile   |   2 +-
- tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c  | 144 +++++++++++++++++++++
- tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h  |  39 ++++++
- .../selftests/powerpc/pmu/ebb/ebb_lmr_regs.c       |  38 ++++++
- tools/testing/selftests/powerpc/pmu/ebb/reg.h      |   5 +
- 5 files changed, 227 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
- create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
- create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-index 8d2279c4..6b0453e 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
-@@ -14,7 +14,7 @@ TEST_PROGS := reg_access_test event_attributes_test cycles_test	\
- 	 fork_cleanup_test ebb_on_child_test			\
- 	 ebb_on_willing_child_test back_to_back_ebbs_test	\
- 	 lost_exception_test no_handler_test			\
--	 cycles_with_mmcr2_test
-+	 cycles_with_mmcr2_test ebb_lmr ebb_lmr_regs
- 
- all: $(TEST_PROGS)
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
-new file mode 100644
-index 0000000..266062b7
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
-@@ -0,0 +1,144 @@
-+/*
-+ * Copyright 2016, Jack Miller, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+
-+#include "ebb.h"
-+#include "ebb_lmr.h"
-+
-+#define SIZE		(32 * 1024 * 1024)	/* 32M */
-+#define LM_SIZE		0	/* Smallest encoding, 32M */
-+
-+#define SECTIONS	64	/* 1 per bit in LMSER */
-+#define SECTION_SIZE	(SIZE / SECTIONS)
-+#define SECTION_LONGS   (SECTION_SIZE / sizeof(long))
-+
-+static unsigned long *test_mem;
-+
-+static int lmr_count = 0;
-+
-+void ebb_lmr_handler(void)
-+{
-+	lmr_count++;
-+}
-+
-+void ldmx_full_section(unsigned long *mem, int section)
-+{
-+	unsigned long *ptr;
-+	int i;
-+
-+	for (i = 0; i < SECTION_LONGS; i++) {
-+		ptr = &mem[(SECTION_LONGS * section) + i];
-+		ldmx((unsigned long) &ptr);
-+		ebb_lmr_reset();
-+	}
-+}
-+
-+unsigned long section_masks[] = {
-+	0x8000000000000000,
-+	0xFF00000000000000,
-+	0x0000000F70000000,
-+	0x8000000000000001,
-+	0xF0F0F0F0F0F0F0F0,
-+	0x0F0F0F0F0F0F0F0F,
-+	0x0
-+};
-+
-+int ebb_lmr_section_test(unsigned long *mem)
-+{
-+	unsigned long *mask = section_masks;
-+	int i;
-+
-+	for (; *mask; mask++) {
-+		mtspr(SPRN_LMSER, *mask);
-+		printf("Testing mask 0x%016lx\n", mfspr(SPRN_LMSER));
-+
-+		for (i = 0; i < 64; i++) {
-+			lmr_count = 0;
-+			ldmx_full_section(mem, i);
-+			if (*mask & (1UL << (63 - i)))
-+				FAIL_IF(lmr_count != SECTION_LONGS);
-+			else
-+				FAIL_IF(lmr_count);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+int ebb_lmr(void)
-+{
-+	int i;
-+
-+	SKIP_IF(!ebb_is_supported());
-+	SKIP_IF(!lmr_is_supported());
-+
-+	setup_ebb_handler(ebb_lmr_handler);
-+
-+	ebb_global_enable();
-+
-+	FAIL_IF(posix_memalign((void **)&test_mem, SIZE, SIZE) != 0);
-+
-+	mtspr(SPRN_LMSER, 0);
-+
-+	FAIL_IF(mfspr(SPRN_LMSER) != 0);
-+
-+	mtspr(SPRN_LMRR, ((unsigned long)test_mem | LM_SIZE));
-+
-+	FAIL_IF(mfspr(SPRN_LMRR) != ((unsigned long)test_mem | LM_SIZE));
-+
-+	/* Read every single byte to ensure we get no false positives */
-+	for (i = 0; i < SECTIONS; i++)
-+		ldmx_full_section(test_mem, i);
-+
-+	FAIL_IF(lmr_count != 0);
-+
-+	/* Turn on the first section */
-+
-+	mtspr(SPRN_LMSER, (1UL << 63));
-+	FAIL_IF(mfspr(SPRN_LMSER) != (1UL << 63));
-+
-+	/* Enable LM (BESCR) */
-+
-+	mtspr(SPRN_BESCR, mfspr(SPRN_BESCR) | BESCR_LME);
-+	FAIL_IF(!(mfspr(SPRN_BESCR) & BESCR_LME));
-+
-+	ldmx((unsigned long)&test_mem);
-+
-+	FAIL_IF(lmr_count != 1);	// exactly one exception
-+	FAIL_IF(mfspr(SPRN_BESCR) & BESCR_LME);	// LM now disabled
-+	FAIL_IF(!(mfspr(SPRN_BESCR) & BESCR_LMEO));	// occurred bit set
-+
-+	printf("Simple LMR EBB OK\n");
-+
-+	/* This shouldn't cause an EBB since it's been disabled */
-+	ldmx((unsigned long)&test_mem);
-+	FAIL_IF(lmr_count != 1);
-+
-+	printf("LMR disable on EBB OK\n");
-+
-+	ebb_lmr_reset();
-+
-+	/* This should cause an EBB or reset is broken */
-+	ldmx((unsigned long)&test_mem);
-+	FAIL_IF(lmr_count != 2);
-+
-+	printf("LMR reset EBB OK\n");
-+
-+	ebb_lmr_reset();
-+
-+	return ebb_lmr_section_test(test_mem);
-+}
-+
-+int main(void)
-+{
-+	int ret = test_harness(ebb_lmr, "ebb_lmr");
-+
-+	if (test_mem)
-+		free(test_mem);
-+
-+	return ret;
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
-new file mode 100644
-index 0000000..7911756
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
-@@ -0,0 +1,39 @@
-+#ifndef _SELFTESTS_POWERPC_PMU_EBB_LMR_H
-+#define _SELFTESTS_POWERPC_PMU_EBB_LMR_H
-+
-+#include "reg.h"
-+
-+#ifndef PPC_FEATURE2_ARCH_3_00
-+#define PPC_FEATURE2_ARCH_3_00 0x00800000
-+#endif
-+
-+#define lmr_is_supported() have_hwcap2(PPC_FEATURE2_ARCH_3_00)
-+
-+static inline void ebb_lmr_reset(void)
-+{
-+	unsigned long bescr = mfspr(SPRN_BESCR);
-+	bescr &= ~(BESCR_LMEO);
-+	bescr |= BESCR_LME;
-+	mtspr(SPRN_BESCR, bescr);
-+}
-+
-+#define LDMX(t, a, b)\
-+    (0x7c00026a |\
-+    ((t & 0x1f) << 21) |\
-+    ((a & 0x1f) << 16) |\
-+    ((b & 0x1f) << 11))
-+
-+static inline unsigned long ldmx(unsigned long address)
-+{
-+	unsigned long ret;
-+
-+	asm volatile ("mr 9, %1\r\n"
-+		      ".long " __stringify(LDMX(9, 0, 9)) "\r\n"
-+		      "mr %0, 9\r\n":"=r"(ret)
-+		      :"r"(address)
-+		      :"r9");
-+
-+	return ret;
-+}
-+
-+#endif
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
-new file mode 100644
-index 0000000..d2a4898
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
-@@ -0,0 +1,38 @@
-+/*
-+ * Copyright 2016, Jack Miller, IBM Corp.
-+ * Licensed under GPLv2.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <unistd.h>
-+
-+#include "ebb.h"
-+#include "ebb_lmr.h"
-+
-+#define CHECKS 10000
-+
-+int ebb_lmr_regs(void)
-+{
-+	int i;
-+
-+	SKIP_IF(!ebb_is_supported());
-+	SKIP_IF(!lmr_is_supported());
-+
-+	ebb_global_enable();
-+
-+	for (i = 0; i < CHECKS; i++) {
-+		mtspr(SPRN_LMRR, i << 25);	// skip size and rsvd bits
-+		mtspr(SPRN_LMSER, i);
-+
-+		FAIL_IF(mfspr(SPRN_LMRR) != (i << 25));
-+		FAIL_IF(mfspr(SPRN_LMSER) != i);
-+	}
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(ebb_lmr_regs, "ebb_lmr_regs");
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/reg.h b/tools/testing/selftests/powerpc/pmu/ebb/reg.h
-index 5921b0d..0659a7b 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/reg.h
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/reg.h
-@@ -34,6 +34,11 @@
- 
- #define BESCR_PMEO     0x1     /* PMU Event-based exception Occurred */
- #define BESCR_PME      (0x1ul << 32) /* PMU Event-based exception Enable */
-+#define BESCR_LME      (0x1ul << 34) /* Load Monitor Enable */
-+#define BESCR_LMEO     (0x1ul << 2)  /* Load Monitor Exception Occurred */
-+
-+#define SPRN_LMRR      813     /* Load Monitor Region Register */
-+#define SPRN_LMSER     814     /* Load Monitor Section Enable Register */
- 
- #define SPRN_PMC1      771
- #define SPRN_PMC2      772
--- 
-2.8.0
+--ew6BAiZeqk4r7MaW
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+H4sICJxGFVcAAy5jb25maWcAjFxbk9s4rn6fX6GaOQ+ZqjNJXzNJneoHmqIsxrqFpGx3XlSO
+W0lc6bZ7bfdM8u8PQMq2LqCzWzW1aQLiBQSBDyDoP377I2Av+83TYr9aLh4ffwZf63W9Xezr
+h+DL6rH+vyDMgyw3gQileQ3MyWr98uPN8+bfevu8DG5ev3198dd2eR1M6u26fgz4Zv1l9fUF
+Olht1r/9AR/wPIvkuCoK/vYmWO2C9WYf7Or9b5ZYbDfLerfbbIPdy/PzZruH1tMH1SjPJ9e6
+ur66+9npqXp3++NHu7Mu0UO7ufC039Dt4uriok0YTAxm1bS9/fHj9AcyREXZnjNLjJwK7ulN
+m7BK07LbQ9NILD5NK51ILrSnu5hNRVXAp7osilyZ9vc6LbxyC/NcjUSSEN1OQ53biTR/86Ks
+RiiiLJQs60y8zXZ9NZLm9OcsV2Gl5Sdxd33Vko3icVXE97piYagqU729ga/IWVrWMGVezobP
+CfP4mRWIFqYsqkIoO3mmBCOHyIQIj1wiHcFfkVTaVDwuswkxVqYqqT7qu9vLq0OTNoxPjGJc
+tLagoblm+CJK2FgP6UnOJ6EohgQ10yKt5jwew+JBoca5kiZOTwxWODHTlUzy8VVVtjdiLDKh
+JKjGTMhxbIiPUKogoornsVAiM1XK9KSzsW2JHvrjukwJmQimkvuqUDIz7T5YBp8YmYq8NHeX
+7y76s8umirUWpHkM0s9TaaoICKDTOXQoVG/2KbtvVB6OXcj7p6UMR+Pq8u3t7QW534exzUjf
+Z9QBZSVYPjtSu2dRsEKhGaAVNRQRKxNTlTJlY0H1auUuR0JlzMg8g7VpLUeJ6E8/5KpClqnw
+n1tgSVOZ+4ZpVAn2WIxK3IaxYAnoWU+OR7ayUPlItKxbMTYMplYlYioSfXfUc1jlQWulNne/
+v3lcfX7ztHl4eax3b/6nzHDPlEgE0+LN66X1DL87uz+2TuYRp/ryfLL5I5VPRFaBOMBOncaX
+GeyAyKYwTxwKFAINyMEUKZAcqG1aSJDe77+fZNO0VUZoykiABFgyFUqD+DvftQmw/YYS7GGD
+41wbXOfd76/Wm3X9Z6sbfa+nsuDktrlJpyLN1X3FDNiLmOSLYpaFCb31pRaJHBFzs4fBbqnV
+XZgHrCcBcVrRg+kBZ/t593O3r59Ooj+cAyBXOs5nQ9txoDg1aO0OtId5ymTWbYtyxeH8mhhM
+bSizcetgF0xpawSHo6B5qKbNnKs8CYcsHG0kzCEzmiCmOWpwyIw4rNisnurtjlp0/AlNvcxD
+2TEbWY4U6RO8JZOUGIwraLy2q1B6AHfAp7wxi933YA9TChbrh2C3X+x3wWK53Lys96v119Pc
+jOQT56o4z8vMOAnabhQvAz1cDbDcV0BrLwX+rMQcFknbKQNGXiMTScWPwZfBPsBRSvOM7kIJ
+YTmtZ/P2g5MAZRR+mzkqZRICqsiu6DMjJ+4f9IEaq7wsNE2LBZ9Y34F7Y3JFz9K5Gzzvti96
+JSJh9/TskwkYham1VSqk58GrvADNAACEh8MiIeL4ou6bBATGRWFdgxXsSdPddrY3OQVLJMEc
+KHpdY2HQmVfNoaKZ7nWkz3JMgKDvU1rEB2LFRjpPSthmmCMoL+2zLC7w6AC9vSNwIVVUeqYW
+wYBzGsIXuW/BcpyxJKJ3yh5fD80aHg9tVETnpRyDyaeRbdd9n9rDqYSlN53Swsedt97IM6uC
+y+pjKdWE/hymNGJKya76HFaLCDgULSvsoBaMWB1NsDVKTQBY1Nsvm+3TYr2sA/FPvQbrxsDO
+cbRvYIU7IeGpE3Ji09RRK2v/eva04+WZAehAa5ROGOUjdVKOOnFRko98B8MA7gZ/wirABDKS
+3AI2j2bnkUzAUvu8cu44OijvQ5kWFcxS0DrToDHa32CfNgiCgAAUGu0Xh8CQigwtr4hg/hJl
+Cuis80UPDIJOWYMMPqUa6RkregogwYqmrMAVmx5p0oePrlUJQxLscNbExRBUDx06IEHrihsg
+0ftaCQiiACO5mKtZS8UK2eOzQWMhHQSmZnDahUFwBCxZKivNIgHwosAQrMczYyBRwHqVAzYH
+UEkMowVHhYWYMnGRTNs72DWgRAUHL+XbwzQPm74KwVEfT+MAqUwAfuDuiSSy7qq/cYDMxBwU
+BhyLRXQ4JhEP2s9BsDm6q1bgn+QZaAZ8M2MqbO0lIDW0qbqEWWXhoJ1x4yTi4D/Pp399Xuzq
+h+C7MxvP282X1WMHAB2ngtzN0QIpWiTbPQEHVcFNPsSvhPSsE9Ep9nDZMn9OZh6nDkiT6Elm
+cMihrwJOR5khUxfMNnTU14Z+jkZ+O1MIljwft4ndr7uRHDOwfbxS6awtswgQ2ycPWMB4ci45
+LQ4kSl78Kh5Flnh6hgyIE4CnJxyvomLcSc24ROHjYo9+pZUn7HTKY+VPbKUFv7288icMkX51
+JqFYpIyGpHZk4XH2B+KvxPXOO/THKxb6d+Ld9bkc6FsP8eDQfXSWwmGFM07DPHDJ47IXTvdy
+ImAC2VR64g2cWh7ZGABtfgrwTHrGkoWkhZ76CNi5m0MM9uLM19VMSA9Gtwr67ur2vZfqVV1M
+wbgUln/g8rqKjc0XnlPGy4u3XvL7vy9Aofy6XvzdJx8izyDa1v95qdfLn8FuuWhs7cn9QKQJ
+huEj9aV8eKyDh+3qn3oLTcf+sLnfhTdotoYJk6v6yIe4rkiEB4IzOniIdFKViby8/fvWg+tT
+6LMaF11A3Yaom2e8nOhAUQzcfdA8/lRdkhcBQLi6veh4o0/V9QWdZ3S90N3cQTf9ODRWmACg
+MvxgvdPCVBkc0k6ysGmfQvyVGaboMLXhoryjzKLUoN9v99q0aq5kQR9ph23y0hPUu+9TqT2J
+MMCRYem5lJA5XoDEIil8oe1M5iah8L1VN5HZtGWTZotzUyRlH7ohwJgxCN4dV4866AFQbz7t
+yH0i5sKX5GM6rvqra3cfJcxA380wp7Gb9m4D7Hhop1KlAziOMVwXKXSam08Hnx2AEyZoxmWL
+muXWRrs5dLe6aQcoEuW2Xyq6KhJAmIWxY8Nx13c3vYCNe2Mo8D/qTIR17p6o4fmEEBWxIF6x
+ANQ7hJPglCoDCyt1Z/80dYNxyO+mGOSkAPNwzLubi/dvjyJqXxRNOnLiiWAZZ3COab1I6aun
+T0We01Di06ikreQnC2dz8t6il/qPhIKjBnhfldzYSwCbq+peOt5MLKWF620WF1RnbsWaqxCi
+lssWfLYoB8NaC6896w0tah31lneADXNAAmDv1VgY3UnEF9TOSM0O0dwhnBi97FpGvacFncQu
+7hl+jLsKkY+hlNcy6bHlS0Q2NjGRC3eT6F/WyCyUSqB4uaRMN2+FpZiVcWlz3W085evbGRyB
++wiq683wpFp6aTbq9VKVuw46GLv+jUeHV5uSzpMgUeYe1A+0QvmnVzAtO/rtID/I8Ntmtw+W
+m/V+u3l8rLcNCOlmkUA2VTirCjCRnhE486A9NP4KFCn0ZN/O0cD/ogaBMkyEyrrJGzs/9vAP
+ZsEesMVecrWTemAf8G7TJniH9wRh/WXx8mgb8FJgF0DoEywO/S3bNRYHxQ8W2zp4gYj6dAKS
+fIaG2l64X/wAYGL/d7qNBQuQR5EWBqjLHtWtCc+IoshohiVo6ZHhosdgbMLZjXz8uAsGXXaB
+lq2g7LpzP0VUfbBmq5HUP6tlHYRHvThdL66WTXOQDwFf6TKLZ7BFKKYmLSL6wMGys5AlvjgJ
+UJbtPpIQejPlUmm0CkYz2CcWeiaBB3Nm7xXOAiV3sRsqCDN9i7EMYqo8mQ4wOlV8D7KYSp3T
+fRxv2MDfQU/9ApTTWFhJEDN0NqMyirozOtrrB7txnT1JTUjsemhaCa68A04hkizBhXnud4GK
+sAnvp9odNMUJJAmdfCcXemrrGm9o76Rd4O8+3RrEHg90BBIGwfSAFZAAVare3VL7sKRYtnEs
+c4AYu1/Y0zQNZJ2udktK2KBL6T1O0AOzWGY8h1OP0dLzG5JoZJRaXaUzBBlPcl0qrMZRfg2K
+C6xhoQf3hdf8ily+EABNUipr5CjV+2s+p6NtPvr78mKwFnejXP9Y7AK53u23L0/2jmP3Dezv
+Q7DfLtY7HCmA+BpiZhD+6hn/ebBM7HFfbxeBzXF9WW2f/kWz/bD5d/24WTwErnbiwCvXe4hW
+U8ntgQk78bfmMiKap3lBtJ46itGf+oh8sX2ghvHyb56P5Xt6v9jXQbpYL77WKJHgFc91+mff
+MOP8jt2dtoLH9G7zeXIGVgKxcVPgpr0sQsQ+XyLDY42A5gCf3DEZliIiEfPEnQsjbAs9SD4q
+dS+AcaITQgSX1+9vglfRalvP4L8/KdUEtyFm0nOGDkQAIJqO8VPGJZxejD2tRxjiC7l+ftkP
+l3sKvLOiHJ6lGPTD6qt8kwf4ScegaCyk+O/Ml2XtlJOxVJDHl8OxWiz3iPyGJswYev3gnHy5
+HCBNfDRZpLJy9Ta0A4xnZzGLN/MHjrNShs4RsAJCZe7p0nD4jwyCYB19BzCXSXLfCxDcZl9x
+co89ZRbac5Y0iIcWSzfwcNi90HSmfjg9bGtqjje2SufwlaOaIlg+bpbf+wSxXnx+rAMAolgE
+haU0ABpnuZogNrUX+IDR0gLvYvcbGK0O9t9qwNAPK8SCi0fX6+51777J3uQ5WA7oFrOI0H1H
+VV0TKYnZJe1M85lQNhRPPEk5y4DgwBPBWDqberzlzFuaEwuVMjqlMGOGx2FO3VRrPWqXIzr7
+uFmvlrtArx5XEH4Eo8Xy+/PjYt3J/8J3VF6RAx7sdzfagrtbbp6C3XO9XH0BqM7SEWt3Nupl
+SRyYgaBo9eVlvbSRT2O/iJgwjUI/CEEiptcSwIBi7jt7J6444aHnLgF4Yvn25uqyKtAhkrtj
+uI1v+TVJTuyFGF38hzTtoeHQH1j2CevdfBEq8kxEWngiDySn5u31+7+9ZBXy66tLurTG0o2e
+93MdHQad3l7Qh4KN5rcXQ3jV/fpec1+WEMhGViy9vr6dV0ZzdmaPTHpGQtP5u1v6KkGJcQlR
+giccSkUo2SHBNtDU8Xbx/A1PDGEF2ZiO4qZjBkaINi2hSgdjMF4Er9jLw2oDUOz4kuJP/xsM
+6AQkhhUfwwuiaLt4qoPPL1++gLMNh842oueFlQCJde5wSihptFc3yLidTEdeZlTwV4IpymOI
+pBII8xIxeG+A9EGlPDYec/sx78C2smuj7AqxzWL2hy5Yxfbi288dPowJksVPOv+Eo4HL8eSI
+CkufcyHp1BhSxywceyx/OaPFnqYebRep7t8btbIqWLvruVF2lTNyJEHSVBQqQsYP9QSaK1s9
+1SYRb02wnT5YBot4mfbmD86lF1g5D6UufHWYpeeo2+y/Dw9PV1s4K9Tu4mcy99q4htyvvm8i
+7+V2s9t82Qfxz+d6+9c0+PpSQ/hFWAQ4GONe1VgXcevn1dqioJ6KctuoNy9b2hE6D1Z4ntNA
+hGArHcGJ/IIhNeXVeQ6T0ve1Im0YQC890YpMRjntY9wFoM/Gqvpps68xBqWWro0tlYLxFQT6
+fPj189Pua1+eGhhfaVtXHeRrCD9Wz3+eMEpIjFJmc+nPSkB/lWfdRYoovn/lfpLb3Hh9n72N
+pAXmS1Yb2o5AoFR5LxVm5PWL+shj2boqZOBUxmAU8IooU+3KKllgSZ6vewt3wf9nRuWJL+SK
+0uHGobFtV78PEpQ+a4yBQTFn1dW7LMWoxVNF0uYC80zrPcDTagIxguXwj4jAnXuqNVI+dEXt
+6tkngNz7zsvIk+w8JSgmBjcq1ChPhqeFrR+2m9VDxzpkocoljQ4zbwytjSd+zgzYGhMPRrbJ
+rg4ogf0bJj2osq9oBTGe2+kuGtEYUsg5uC1PSTjWCuL1c8+stnrIciMjTwbhDE06WuWtt4/Y
+ma8/lrmhc0aWwg29HLyTi/RN5bmOiLDg00NrEss9shPmYvmth/L04Nra6eWufnnY2BfBxG6g
+ffUNb2lgMZJQCdqcYQ7Pd82CrxLosKoEyJSM7C0WyeD+D/TE0wFWpFgtcQXeNFPmqbgfyYyp
+5oFjNBBWsvq8XWx/BtvNy361rlt30iNp8GZI6U4Fyak6+EQnLO+xINqojBewoZi+Ri0kaqaB
+JRGZh+quajvVIMd77U5ajivYOg7Im5aw4peezDl8Zy4vQhl5ydKUFXVpA7Tug2fbUGmRRJ5r
+noYBH0SP7t8RnzoKfV3RsDA180UmjsP3IBmodPScyJH90lcZxN95zvnhsenhXUOzM7QLtdlI
+j3iOXPNPADToDhwJnNkHQrD2KXHeKUNyTQjG+sVEuimH6OmTCxje3hBFVweSnYGMrD3HOtnO
+DuYq9Kw9DGnrizXt/Uc/pz2Jwu5r+KZUiWA+zlPjAzL3uLFdRPhtsfzuSiht6/N2td5/t3nI
+h6cagOWgHiWF8Aqv3JN8bB9QHkqM7m4aY7x5egbz+pd9Ggh2efl9Z7tbuvYtVbbornWxEovG
+kK6gY8ZUBqyFEhy03POqqSl0K+1Ld0FWHrpH2Njb3eXF1U0bEShZVEynlfeBGJa7u+oSTaOH
+MgNjhSmfFNCLx5XYioVZdvaOu2vuD/op8IZdu5W1FcB9o4UtR0OfkGJalPZFPSYn1jzz5HSb
+2djqqZlgk0OpmCcGQgQNnqh7Hdvpyl11HbQwhdgHXExYf375+rVXymvlBPGDyPq3UL3ZHV+C
++8Vd5FLnmQ9EuW7y0QeQjffNUTN9MCQJyGEo/QPlzAjucU+pfc7ecU19dz5IbEo4seTt/ETt
+WAiaoiSfEbrSJp+bcty7W2/KVWC/ggSC9pdnd7zjxfpr50wjaC0L6GX4Cqg1BBIBBGWu0oZk
+mn0kk/yt/cWfYwCNzvOC2rwOvZqypBR3gzJlr+1xZLdxIguHRqUnL0wSTIQoqDQIyuuk6sGr
+XZMN2f1v8PSyr3/U8I96v3z9+vWfQ+uIj3T6z3j6uoHvR33VLJZjNnNM+E5wBm6ZNhGO1xa9
+njlWCrTnbGhiO8Bc6ZlBDpm4BET2i7nAMPbp2wEk0Ou0g4K+GazO8GKJ0y+bnBl04gzCuWlJ
+T/+NXZK/4tDn7JENv6Tvvajj4UqEIjOSJcOwCJ/D04bVbp3vtXzzqwZYS938UAkdo/9KxvYt
+/X/FdP7B/Ud9pu6zUevmVxoq5fdNB2lWQqlcwYH/IPzF265omuRpW9qozPjpabu6+0lTx4oV
+Mc0T3mcMD0DUexzvOnA/spPad8MAPRBG9lgOPzBhOe12taq+sBFPDZHTjgZCdyqDv94AuM3U
+u31PaXALrTpX2nc1Mjr9XBA+u/Rv+sj+2IKXfoTUZ+MBO6FYzL3VhJYBMV02bgokPdkm5JsA
+o/Gkby3DMEju0iG0Sj0ZMktXAMJj+/szhDa534wIc65V5xc8Os99/X2Xoff3HAAv+K0gwzdG
+XsBjQ4fJOOzUDeDf58KMcqRZBj0DPsHfh+gVgFvquc9dzUsltSsZFd1aJdhLgAtn6mLszwhJ
+7cIFe9ApQFDwhkh0nqaVuS+EdfMkmkA1aPAAxCImvnvbiiA4vk8pEK3Yc3dOfeEEVpGcA0Q6
+y5b+/4I9oUmLQO8Y1+IJJxdP0P4iXN0B0DaYCGAqisC90RGy0BQjCUImGlKTS4sySyqx9eq8
+XSNxDIe5OocGeYYAzQR2JsEj6OCwx6sWa38ItrsFYaAj0iJbdFnUQ5WCIgNw7A8ATYaFOvp4
+RmFs3wEAMdonrGZQAAA=
+
+--ew6BAiZeqk4r7MaW--
