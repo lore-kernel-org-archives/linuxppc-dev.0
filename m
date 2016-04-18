@@ -1,44 +1,20 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpDZW11Q4zDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 13:45:55 +1000 (AEST)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qpDZV5wNwz9sDb
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:54 +1000 (AEST)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Mon, 18 Apr 2016 13:45:53 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B09FA3578058
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:44 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3I3ja6m10485934
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:44 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3I3jBXF031174
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:12 +1000
-Subject: Re: [v4, 2/3] ppc64/book3s: make some room for common interrupt
- vector code
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-References: <3qmZVp4lgdz9t5C@ozlabs.org>
- <1460725197.22415.7.camel@ellerman.id.au>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Message-ID: <5714582D.7070606@linux.vnet.ibm.com>
-Date: Mon, 18 Apr 2016 09:14:45 +0530
-MIME-Version: 1.0
-In-Reply-To: <1460725197.22415.7.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpFFw6bqBzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 14:16:36 +1000 (AEST)
+In-Reply-To: <20160415120613.1bbdc5d5@kryten>
+To: Unknown sender due to SPF <linuxppc-dev@lists.ozlabs.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ David Gibson <david@gibson.dropbear.id.au>, Alexander Graf <agraf@suse.de>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org, qemu-devel@nongnu.org
+Subject: Re: [1/3] powerpc: scan_features() updates incorrect bits
+Message-Id: <3qpFFw5n3Gz9t3x@ozlabs.org>
+Date: Mon, 18 Apr 2016 14:16:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,40 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2016-15-04 at 02:06:13 UTC, Unknown sender due to SPF wrote:
+> The real LE feature entry in the ibm_pa_feature struct has the
+> wrong number of elements. Instead of checking for byte 5, bit 0,
+> we check for byte 0, bit 0, and we also incorrectly update cpu user
+> feature bit 5.
+> 
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 7030b03..9a3a7c6 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -158,7 +158,7 @@ static struct ibm_pa_feature {
+>  	{CPU_FTR_NOEXECUTE, 0, 0,	0, 6, 0},
+>  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
+>  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
+> -	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
+> +	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 0, 5, 0, 0},
+
+This should be:
+
+> +	{CPU_FTR_REAL_LE, 0, PPC_FEATURE_TRUE_LE, 5, 0, 0},
+
+Because the struct layout is:
+
+static struct ibm_pa_feature {
+	unsigned long	cpu_features;	/* CPU_FTR_xxx bit */
+	unsigned long	mmu_features;	/* MMU_FTR_xxx bit */
+	unsigned int	cpu_user_ftrs;	/* PPC_FEATURE_xxx bit */
+	unsigned int	cpu_user_ftrs2;	/* PPC_FEATURE2_xxx bit */
+	unsigned char	pabyte;		/* byte number in ibm,pa-features */
+	unsigned char	pabit;		/* bit number (big-endian) */
+	unsigned char	invert;		/* if 1, pa bit set => clear feature */
+}
 
 
-On 04/15/2016 06:29 PM, Michael Ellerman wrote:
-> On Fri, 2016-04-15 at 21:06 +1000, Michael Ellerman wrote:
->> Hi Hari,
->>
->> Thanks for persisting with this.
->>
->> On Thu, 2016-07-04 at 21:58:50 UTC, Hari Bathini wrote:
->>> With the previous patch, we choke out whatever little space is left
->>> below 0x7000 (FWNMI hard block) while there is a hole of ~1400 bytes
->>> below __end_interrupts marker when CONFIG_CBE_RAS is disabled.
->>> Considering CONFIG_CBE_RAS is not enabled by default for BOOK3S, this
->>> is not a desirable scenario especially when we have to worry about
->>> each additional instruction that goes below 0x7000.
->>>
->>> Memory region from 0x1800 to 0x4000 is dedicated for common interrupt
->>> vector code. Also, we never hit an interrupt below 0x300 when IR=DR=1
->>> implying memory region between 0x4000 to 0x4300 can also be used for
->>> common interrupt vector code. So, we can effectively use memory region
->>> between 0x1800 to 0x4300 for common interrupt vector code.
->> On Power9 the system-call-vectored instruction will use the region at 0x3000, so
->> moving code into that space is not a good long term plan.
->>
->> I'll take your v2 and put it in next next week.
-> I'll add this fixes line, which I think is correct:
->
-> Fixes: c1fb6816fb1b ("powerpc: Add relocation on exception vector handlers")
+I'll fix it up locally.
 
-Yeah. Thanks!
-
-> cheers
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+cheers
