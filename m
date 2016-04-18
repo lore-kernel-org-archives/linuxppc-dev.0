@@ -1,20 +1,38 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0089.outbound.protection.outlook.com [207.46.100.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpLmX1GfHzDqFb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 18:24:59 +1000 (AEST)
-From: Jia Hongtao <hongtao.jia@nxp.com>
-To: <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <scott.wood@nxp.com>,
- <yuantian.tang@nxp.com>, <hongtao.jia@nxp.com>
-Subject: [PATCH 1/2] cpufreq: qoriq: Fix cooling device registration issue
- during suspend
-Date: Mon, 18 Apr 2016 15:59:31 +0800
-Message-ID: <1460966372-4877-1-git-send-email-hongtao.jia@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpLxV4FNczDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 18:32:46 +1000 (AEST)
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 18 Apr 2016 09:32:41 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 72D921B08069
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 09:32:56 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3I8WCeR917842
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 08:32:12 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3I8WBnQ013553
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 02:32:12 -0600
+Subject: Re: [PATCH] cxl: static-ify variables to fix sparse warnings
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1460955830-27267-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Cc: imunsie@au1.ibm.com, clombard@linux.vnet.ibm.com
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Message-ID: <57149B8A.3080806@linux.vnet.ibm.com>
+Date: Mon, 18 Apr 2016 10:32:10 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1460955830-27267-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cooling device is registered by ready callback. It's also invoked while
-system resuming from sleep (Enabling non-boot cpus). Thus cooling device
-may be multiple registered. Stop_cpu callback is invoked during suspend
-(Disabling non-boot cpus). So matchable unregistration is added to fix
-this issue.
 
-Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
----
- drivers/cpufreq/qoriq-cpufreq.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Thanks Andrew!
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index b23e525..1c2fdc1 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -305,6 +305,7 @@ static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct cpu_data *data = policy->driver_data;
- 
-+	cpufreq_cooling_unregister(data->cdev);
- 	kfree(data->pclk);
- 	kfree(data->table);
- 	kfree(data);
-@@ -323,6 +324,12 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
- 	return clk_set_parent(policy->clk, parent);
- }
- 
-+static void qoriq_cpufreq_stop_cpu(struct cpufreq_policy *policy)
-+{
-+	struct cpu_data *cpud = policy->driver_data;
-+
-+	cpufreq_cooling_unregister(cpud->cdev);
-+}
- 
- static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
- {
-@@ -352,6 +359,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= qoriq_cpufreq_target,
- 	.get		= cpufreq_generic_get,
-+	.stop_cpu	= qoriq_cpufreq_stop_cpu,
- 	.ready		= qoriq_cpufreq_ready,
- 	.attr		= cpufreq_generic_attr,
- };
--- 
-2.1.0.27.g96db324
+Reviewed-by: fbarrat@linux.vnet.ibm.com
+
+  Fred
+
+
+Le 18/04/2016 07:03, Andrew Donnellan a écrit :
+> Make a couple more variables static. Found by sparse.
+>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> ---
+>   drivers/misc/cxl/flash.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
+> index 68dd0b7..c63d61e 100644
+> --- a/drivers/misc/cxl/flash.c
+> +++ b/drivers/misc/cxl/flash.c
+> @@ -24,8 +24,8 @@ struct ai_header {
+>   };
+>
+>   static struct semaphore sem;
+> -unsigned long *buffer[CXL_AI_MAX_ENTRIES];
+> -struct sg_list *le;
+> +static unsigned long *buffer[CXL_AI_MAX_ENTRIES];
+> +static struct sg_list *le;
+>   static u64 continue_token;
+>   static unsigned int transfer;
+>
+>
