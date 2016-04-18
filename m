@@ -1,32 +1,37 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpGQ61Sc9zDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 15:08:46 +1000 (AEST)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 18 Apr 2016 15:08:44 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1BEDA2CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 15:08:41 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3I58Wgu6816162
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 15:08:41 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3I588nh030457
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 15:08:08 +1000
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: imunsie@au1.ibm.com, clombard@linux.vnet.ibm.com,
- fbarrat@linux.vnet.ibm.com
-Subject: [PATCH] cxl: static-ify variables to fix sparse warnings
-Date: Mon, 18 Apr 2016 15:03:50 +1000
-Message-Id: <1460955830-27267-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpJMD3wmgzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 16:36:18 +1000 (AEST)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id F2C78440D6F_714805CB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 06:36:12 +0000 (GMT)
+Received: from mail-qg0-f42.google.com (mail-qg0-f42.google.com
+ [209.85.192.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 874CD43E03A_714805BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 06:36:11 +0000 (GMT)
+Received: by mail-qg0-f42.google.com with SMTP id v14so20564542qge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 23:36:11 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1460857857.32510.176.camel@buserror.net>
+References: <1459950325-10327-1-git-send-email-alessio.bogani@elettra.eu>
+ <CAPk1OjHEe+qcPYakD0BbikSkK+Dipj-9P2vatSceTcjMWYAPYg@mail.gmail.com>
+ <1460857857.32510.176.camel@buserror.net>
+Date: Mon, 18 Apr 2016 08:36:09 +0200
+Message-ID: <CAPk1OjFrwn588U8mNXjmMtRcEV8+n1=w0Y-NBXhBz34mO-GLRg@mail.gmail.com>
+Subject: Re: [RFC PATCH 1/1] powerpc/fsl: Fix build of the dtb embedded kernel
+ images
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+To: Scott Wood <oss@buserror.net>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,28 +41,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make a couple more variables static. Found by sparse.
+Scott,
 
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- drivers/misc/cxl/flash.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On 17 April 2016 at 03:50, Scott Wood <oss@buserror.net> wrote:
+> On Fri, 2016-04-15 at 10:27 +0200, Alessio Igor Bogani wrote:
+[...]
+>> Any comments?
+>
+> Looks OK to me.
 
-diff --git a/drivers/misc/cxl/flash.c b/drivers/misc/cxl/flash.c
-index 68dd0b7..c63d61e 100644
---- a/drivers/misc/cxl/flash.c
-+++ b/drivers/misc/cxl/flash.c
-@@ -24,8 +24,8 @@ struct ai_header {
- };
- 
- static struct semaphore sem;
--unsigned long *buffer[CXL_AI_MAX_ENTRIES];
--struct sg_list *le;
-+static unsigned long *buffer[CXL_AI_MAX_ENTRIES];
-+static struct sg_list *le;
- static u64 continue_token;
- static unsigned int transfer;
- 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Thanks for review it. Follow a no-RFC version.
+
+Ciao,
+Alessio
