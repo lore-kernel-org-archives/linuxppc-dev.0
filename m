@@ -1,22 +1,37 @@
-Return-Path: <chunkeey@googlemail.com>
-Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
- [IPv6:2a00:1450:400c:c09::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpR8v1zwgzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 21:42:55 +1000 (AEST)
-Received: by mail-wm0-x235.google.com with SMTP id n3so120147742wmn.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 04:42:54 -0700 (PDT)
-From: Christian Lamparter <chunkeey@googlemail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: crash in ppc4xx-rng on canyonland
-Date: Mon, 18 Apr 2016 13:42:49 +0200
-Message-ID: <14761928.ine93l7C6D@debian64>
-In-Reply-To: <20160418095939.GA18915@gondor.apana.org.au>
-References: <20160418095939.GA18915@gondor.apana.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpSzy5CsrzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 23:05:18 +1000 (AEST)
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Mon, 18 Apr 2016 14:05:14 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1257617D80AB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 14:05:49 +0100 (BST)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3ID52XT49545290
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 13:05:02 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3ID51Ut000312
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 09:05:01 -0400
+From: Christophe Lombard <clombard@linux.vnet.ibm.com>
+To: imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com,
+ fbarrat@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] cxl: Add a kernel thread to check the coherent platform
+ function's state
+Date: Mon, 18 Apr 2016 15:05:01 +0200
+Message-Id: <1460984701-21490-1-git-send-email-clombard@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,547 +41,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, April 18, 2016 05:59:39 PM Herbert Xu wrote:
-> Christian Lamparter <chunkeey@googlemail.com> wrote:
-> > 
-> > I tried to move ppc4xx-rng into crypto4xx (see attachment - patch #1).
-> > The driver works as is. But I can't come up with a way to attach the
-> > crypto4xx driver to the ppc4xx-rng OF node cleanly. Basically,
-> > I'm looking for a way to have one driver (with one context) be 
-> > in charge of two different OF nodes (ppc4xx-rng and ppc4xx-crypto).
-> > Is there any solution to this? Because otherwise, I would add a
-> 
-> Is it possible to have an RNG unit without the crypto unit?
-No. In AMCC's product brief the TRNG (true random number generator) is
-part of the security engine. The security engine also provides more 
-features like a "public key authentication" core which has it's own
-address range.
-<http://www.rlocman.ru/i/File/2010/04/20/APM-821xx%20product%20family%20launch.pdf>
+In the POWERVM environement, the PHYP CoherentAccel component manages
+the state of the Coherant Accelerator Processor Interface adapter and
+virtualizes CAPI resources, handles CAPP, PSL, PSL Slice errors - and
+interrupts - and provides a new set of HCALLs for the OS APIs to utilize
+AFUs.
 
-> If not then your first patch should be OK, provided that you add
-> some error handling when the RNG probe fails.  For example, if 
-> the RNG probe fails we should probably not call remove on it later.
-I checked the error handling code again and verified it works on the
-device. The original code resets the dev->trng_base = NULL and
-core_dev->trng = NULL; in the err_out case. the "dev and core_dev"
-are coming from the main crypto driver, they will always be
-valid. Hence ppc4xx_trng_remove can safely be executed, even if 
-ppc4xx_trng_probe fails as devm_hwrng_unregister, iounmap and kfree
-can deal with the NULL properly. Nevertheless, I added an early
-bailout if core_dev->trng == NULL.
+During the course of operation, a coherent platform function can
+encounter errors. Some possible reason for errors are:
+• Hardware recoverable and unrecoverable errors
+• Transient and over-threshold correctable errors
 
-what else I fixed in v1->v2: 
- - added a check to test trng device's status state with
-   of_device_is_available.
- - if the hwrng device registration failed, the flag which
-   enables the trng was left enabled (note: the v1 code
-   disabled the hwrng device as part of crypto4xx_remove.
-   so it wasn't enabled when the crypto4xx driver was
-   unloaded)
+PHYP implements its own state model for the coherent platform function.
+The current state of this Acclerator Fonction Unit (AFU) is available
+through a hcall.
 
+In case of low-level troubles (or error injection), The PHYP component
+may reset the card and change the AFU state. The PHYP interface doesn't
+provide any way to be notified when that happens.
+
+The current implementation of the cxl driver, for the POWERVM
+environment, follows the general error recovery procedures required to
+reset operation of the coherent platform function. The platform firmware
+resets and reconfigures hardware when an external action is required -
+attach/detach a process, link ok, ....
+
+The purpose of this patch is to interact with the external driver
+(where the AFU is shown) even if no action is required. A kernel thread
+is needed to check every x seconds the current state of the AFU to see
+if we need to enter an error recovery path.
+
+Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 ---
->From c0b580a50bdade97f0d06c98fc7dccbf64d25eb2 Mon Sep 17 00:00:00 2001
-From: Christian Lamparter <chunkeey@googlemail.com>
-Date: Mon, 18 Apr 2016 12:57:41 +0200
-Subject: [PATCH v2] crypto4xx: integrate ppc4xx-rng into crypto4xx
+ drivers/misc/cxl/cxl.h   |  3 +-
+ drivers/misc/cxl/guest.c | 81 ++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 57 insertions(+), 27 deletions(-)
 
-This patch integrates the ppc4xx-rng driver into the existing
-crypto4xx. This is because the true random number generator
-is controlled and part of the security core.
-
-Signed-off-by: Christian Lamparter <chunkeey@googlemail.com>
----
- drivers/char/hw_random/Kconfig          |  13 ---
- drivers/char/hw_random/Makefile         |   1 -
- drivers/char/hw_random/ppc4xx-rng.c     | 147 --------------------------------
- drivers/crypto/Kconfig                  |   8 ++
- drivers/crypto/amcc/Makefile            |   1 +
- drivers/crypto/amcc/crypto4xx_core.c    |   7 +-
- drivers/crypto/amcc/crypto4xx_core.h    |   4 +
- drivers/crypto/amcc/crypto4xx_reg_def.h |   1 +
- drivers/crypto/amcc/crypto4xx_trng.c    | 131 ++++++++++++++++++++++++++++
- drivers/crypto/amcc/crypto4xx_trng.h    |  34 ++++++++
- 10 files changed, 184 insertions(+), 163 deletions(-)
- delete mode 100644 drivers/char/hw_random/ppc4xx-rng.c
- create mode 100644 drivers/crypto/amcc/crypto4xx_trng.c
- create mode 100644 drivers/crypto/amcc/crypto4xx_trng.h
-
-diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
-index 3c5be60..abc8720 100644
---- a/drivers/char/hw_random/Kconfig
-+++ b/drivers/char/hw_random/Kconfig
-@@ -268,19 +268,6 @@ config HW_RANDOM_NOMADIK
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 38e21cf..a26c210 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -19,6 +19,7 @@
+ #include <linux/io.h>
+ #include <linux/pci.h>
+ #include <linux/fs.h>
++#include <linux/kthread.h>
+ #include <asm/cputable.h>
+ #include <asm/mmu.h>
+ #include <asm/reg.h>
+@@ -379,7 +380,7 @@ struct cxl_afu_guest {
+ 	phys_addr_t p2n_phys;
+ 	u64 p2n_size;
+ 	int max_ints;
+-	struct mutex recovery_lock;
++	struct task_struct *kthread_tsk;
+ 	int previous_state;
+ };
  
- 	  If unsure, say Y.
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 8213372..06dfe7f 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -19,6 +19,10 @@
+ #define CXL_SLOT_RESET_EVENT		2
+ #define CXL_RESUME_EVENT		3
  
--config HW_RANDOM_PPC4XX
--	tristate "PowerPC 4xx generic true random number generator support"
--	depends on PPC && 4xx
--	default HW_RANDOM
--	---help---
--	 This driver provides the kernel-side support for the TRNG hardware
--	 found in the security function of some PowerPC 4xx SoCs.
--
--	 To compile this driver as a module, choose M here: the
--	 module will be called ppc4xx-rng.
--
--	 If unsure, say N.
--
- config HW_RANDOM_PSERIES
- 	tristate "pSeries HW Random Number Generator support"
- 	depends on PPC64 && IBMVIO
-diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
-index f5a6fa7..079745f 100644
---- a/drivers/char/hw_random/Makefile
-+++ b/drivers/char/hw_random/Makefile
-@@ -22,7 +22,6 @@ obj-$(CONFIG_HW_RANDOM_TX4939) += tx4939-rng.o
- obj-$(CONFIG_HW_RANDOM_MXC_RNGA) += mxc-rnga.o
- obj-$(CONFIG_HW_RANDOM_OCTEON) += octeon-rng.o
- obj-$(CONFIG_HW_RANDOM_NOMADIK) += nomadik-rng.o
--obj-$(CONFIG_HW_RANDOM_PPC4XX) += ppc4xx-rng.o
- obj-$(CONFIG_HW_RANDOM_PSERIES) += pseries-rng.o
- obj-$(CONFIG_HW_RANDOM_POWERNV) += powernv-rng.o
- obj-$(CONFIG_HW_RANDOM_EXYNOS)	+= exynos-rng.o
-diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
-deleted file mode 100644
-index c0db438..0000000
---- a/drivers/char/hw_random/ppc4xx-rng.c
-+++ /dev/null
-@@ -1,147 +0,0 @@
--/*
-- * Generic PowerPC 44x RNG driver
-- *
-- * Copyright 2011 IBM Corporation
-- *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published by the
-- * Free Software Foundation; version 2 of the License.
-- */
--
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/hw_random.h>
--#include <linux/delay.h>
--#include <linux/of_address.h>
--#include <linux/of_platform.h>
--#include <asm/io.h>
--
--#define PPC4XX_TRNG_DEV_CTRL 0x60080
--
--#define PPC4XX_TRNGE 0x00020000
--#define PPC4XX_TRNG_CTRL 0x0008
--#define PPC4XX_TRNG_CTRL_DALM 0x20
--#define PPC4XX_TRNG_STAT 0x0004
--#define PPC4XX_TRNG_STAT_B 0x1
--#define PPC4XX_TRNG_DATA 0x0000
--
--#define MODULE_NAME "ppc4xx_rng"
--
--static int ppc4xx_rng_data_present(struct hwrng *rng, int wait)
--{
--	void __iomem *rng_regs = (void __iomem *) rng->priv;
--	int busy, i, present = 0;
--
--	for (i = 0; i < 20; i++) {
--		busy = (in_le32(rng_regs + PPC4XX_TRNG_STAT) & PPC4XX_TRNG_STAT_B);
--		if (!busy || !wait) {
--			present = 1;
--			break;
--		}
--		udelay(10);
--	}
--	return present;
--}
--
--static int ppc4xx_rng_data_read(struct hwrng *rng, u32 *data)
--{
--	void __iomem *rng_regs = (void __iomem *) rng->priv;
--	*data = in_le32(rng_regs + PPC4XX_TRNG_DATA);
--	return 4;
--}
--
--static int ppc4xx_rng_enable(int enable)
--{
--	struct device_node *ctrl;
--	void __iomem *ctrl_reg;
--	int err = 0;
--	u32 val;
--
--	/* Find the main crypto device node and map it to turn the TRNG on */
--	ctrl = of_find_compatible_node(NULL, NULL, "amcc,ppc4xx-crypto");
--	if (!ctrl)
--		return -ENODEV;
--
--	ctrl_reg = of_iomap(ctrl, 0);
--	if (!ctrl_reg) {
--		err = -ENODEV;
--		goto out;
--	}
--
--	val = in_le32(ctrl_reg + PPC4XX_TRNG_DEV_CTRL);
--
--	if (enable)
--		val |= PPC4XX_TRNGE;
--	else
--		val = val & ~PPC4XX_TRNGE;
--
--	out_le32(ctrl_reg + PPC4XX_TRNG_DEV_CTRL, val);
--	iounmap(ctrl_reg);
--
--out:
--	of_node_put(ctrl);
--
--	return err;
--}
--
--static struct hwrng ppc4xx_rng = {
--	.name = MODULE_NAME,
--	.data_present = ppc4xx_rng_data_present,
--	.data_read = ppc4xx_rng_data_read,
--};
--
--static int ppc4xx_rng_probe(struct platform_device *dev)
--{
--	void __iomem *rng_regs;
--	int err = 0;
--
--	rng_regs = of_iomap(dev->dev.of_node, 0);
--	if (!rng_regs)
--		return -ENODEV;
--
--	err = ppc4xx_rng_enable(1);
--	if (err)
--		return err;
--
--	out_le32(rng_regs + PPC4XX_TRNG_CTRL, PPC4XX_TRNG_CTRL_DALM);
--	ppc4xx_rng.priv = (unsigned long) rng_regs;
--
--	err = hwrng_register(&ppc4xx_rng);
--
--	return err;
--}
--
--static int ppc4xx_rng_remove(struct platform_device *dev)
--{
--	void __iomem *rng_regs = (void __iomem *) ppc4xx_rng.priv;
--
--	hwrng_unregister(&ppc4xx_rng);
--	ppc4xx_rng_enable(0);
--	iounmap(rng_regs);
--
--	return 0;
--}
--
--static const struct of_device_id ppc4xx_rng_match[] = {
--	{ .compatible = "ppc4xx-rng", },
--	{ .compatible = "amcc,ppc460ex-rng", },
--	{ .compatible = "amcc,ppc440epx-rng", },
--	{},
--};
--MODULE_DEVICE_TABLE(of, ppc4xx_rng_match);
--
--static struct platform_driver ppc4xx_rng_driver = {
--	.driver = {
--		.name = MODULE_NAME,
--		.of_match_table = ppc4xx_rng_match,
--	},
--	.probe = ppc4xx_rng_probe,
--	.remove = ppc4xx_rng_remove,
--};
--
--module_platform_driver(ppc4xx_rng_driver);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Josh Boyer <jwboyer@linux.vnet.ibm.com>");
--MODULE_DESCRIPTION("HW RNG driver for PPC 4xx processors");
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index 8c141f0..2a44cfa 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -279,6 +279,14 @@ config CRYPTO_DEV_PPC4XX
- 	help
- 	  This option allows you to have support for AMCC crypto acceleration.
- 
-+config HW_RANDOM_PPC4XX
-+	bool "PowerPC 4xx generic true random number generator support"
-+	depends on CRYPTO_DEV_PPC4XX && HW_RANDOM
-+	default y
-+	---help---
-+	 This option provides the kernel-side support for the TRNG hardware
-+	 found in the security function of some PowerPC 4xx SoCs.
++#define CXL_KTHREAD 			"cxl_kthread"
 +
- config CRYPTO_DEV_OMAP_SHAM
- 	tristate "Support for OMAP MD5/SHA1/SHA2 hw accelerator"
- 	depends on ARCH_OMAP2PLUS
-diff --git a/drivers/crypto/amcc/Makefile b/drivers/crypto/amcc/Makefile
-index 5c0c62b..b955399 100644
---- a/drivers/crypto/amcc/Makefile
-+++ b/drivers/crypto/amcc/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_CRYPTO_DEV_PPC4XX) += crypto4xx.o
- crypto4xx-y :=  crypto4xx_core.o crypto4xx_alg.o crypto4xx_sa.o
-+crypto4xx-$(CONFIG_HW_RANDOM_PPC4XX) += crypto4xx_trng.o
-diff --git a/drivers/crypto/amcc/crypto4xx_core.c b/drivers/crypto/amcc/crypto4xx_core.c
-index 62134c8..dae1e39 100644
---- a/drivers/crypto/amcc/crypto4xx_core.c
-+++ b/drivers/crypto/amcc/crypto4xx_core.c
-@@ -40,6 +40,7 @@
- #include "crypto4xx_reg_def.h"
- #include "crypto4xx_core.h"
- #include "crypto4xx_sa.h"
-+#include "crypto4xx_trng.h"
- 
- #define PPC4XX_SEC_VERSION_STR			"0.5"
- 
-@@ -1225,6 +1226,7 @@ static int crypto4xx_probe(struct platform_device *ofdev)
- 	if (rc)
- 		goto err_start_dev;
- 
-+	ppc4xx_trng_probe(core_dev);
- 	return 0;
- 
- err_start_dev:
-@@ -1252,6 +1254,8 @@ static int crypto4xx_remove(struct platform_device *ofdev)
- 	struct device *dev = &ofdev->dev;
- 	struct crypto4xx_core_device *core_dev = dev_get_drvdata(dev);
- 
-+	ppc4xx_trng_remove(core_dev);
++void stop_state_thread(struct cxl_afu *afu);
 +
- 	free_irq(core_dev->irq, dev);
- 	irq_dispose_mapping(core_dev->irq);
+ static void pci_error_handlers(struct cxl_afu *afu,
+ 				int bus_error_event,
+ 				pci_channel_state_t state)
+@@ -178,6 +182,9 @@ static int afu_read_error_state(struct cxl_afu *afu, int *state_out)
+ 	u64 state;
+ 	int rc = 0;
  
-@@ -1272,7 +1276,7 @@ MODULE_DEVICE_TABLE(of, crypto4xx_match);
++	if (!afu)
++		return -EIO;
++
+ 	rc = cxl_h_read_error_state(afu->guest->handle, &state);
+ 	if (!rc) {
+ 		WARN_ON(state != H_STATE_NORMAL &&
+@@ -645,6 +652,8 @@ static void guest_release_afu(struct device *dev)
  
- static struct platform_driver crypto4xx_driver = {
- 	.driver = {
--		.name = "crypto4xx",
-+		.name = MODULE_NAME,
- 		.of_match_table = crypto4xx_match,
- 	},
- 	.probe		= crypto4xx_probe,
-@@ -1284,4 +1288,3 @@ module_platform_driver(crypto4xx_driver);
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("James Hsiao <jhsiao@amcc.com>");
- MODULE_DESCRIPTION("Driver for AMCC PPC4xx crypto accelerator");
--
-diff --git a/drivers/crypto/amcc/crypto4xx_core.h b/drivers/crypto/amcc/crypto4xx_core.h
-index bac0bde..ecfdcfe 100644
---- a/drivers/crypto/amcc/crypto4xx_core.h
-+++ b/drivers/crypto/amcc/crypto4xx_core.h
-@@ -24,6 +24,8 @@
+ 	idr_destroy(&afu->contexts_idr);
  
- #include <crypto/internal/hash.h>
++	stop_state_thread(afu);
++
+ 	kfree(afu->guest);
+ 	kfree(afu);
+ }
+@@ -818,7 +827,6 @@ static int afu_update_state(struct cxl_afu *afu)
+ 	switch (cur_state) {
+ 	case H_STATE_NORMAL:
+ 		afu->guest->previous_state = cur_state;
+-		rc = 1;
+ 		break;
  
-+#define MODULE_NAME "crypto4xx"
-+
- #define PPC460SX_SDR0_SRST                      0x201
- #define PPC405EX_SDR0_SRST                      0x200
- #define PPC460EX_SDR0_SRST                      0x201
-@@ -72,6 +74,7 @@ struct crypto4xx_device {
- 	char *name;
- 	u64  ce_phy_address;
- 	void __iomem *ce_base;
-+	void __iomem *trng_base;
+ 	case H_STATE_DISABLE:
+@@ -834,7 +842,6 @@ static int afu_update_state(struct cxl_afu *afu)
+ 			pci_error_handlers(afu, CXL_SLOT_RESET_EVENT,
+ 					pci_channel_io_normal);
+ 			pci_error_handlers(afu, CXL_RESUME_EVENT, 0);
+-			rc = 1;
+ 		}
+ 		afu->guest->previous_state = 0;
+ 		break;
+@@ -859,39 +866,61 @@ static int afu_update_state(struct cxl_afu *afu)
+ 	return rc;
+ }
  
- 	void *pdr;			/* base address of packet
- 					descriptor ring */
-@@ -106,6 +109,7 @@ struct crypto4xx_core_device {
- 	struct device *device;
- 	struct platform_device *ofdev;
- 	struct crypto4xx_device *dev;
-+	struct hwrng *trng;
- 	u32 int_status;
- 	u32 irq;
- 	struct tasklet_struct tasklet;
-diff --git a/drivers/crypto/amcc/crypto4xx_reg_def.h b/drivers/crypto/amcc/crypto4xx_reg_def.h
-index 5f5fbc0..46fe57c 100644
---- a/drivers/crypto/amcc/crypto4xx_reg_def.h
-+++ b/drivers/crypto/amcc/crypto4xx_reg_def.h
-@@ -125,6 +125,7 @@
- #define PPC4XX_INTERRUPT_CLR			0x3ffff
- #define PPC4XX_PRNG_CTRL_AUTO_EN		0x3
- #define PPC4XX_DC_3DES_EN			1
-+#define PPC4XX_TRNG_EN				0x00020000
- #define PPC4XX_INT_DESCR_CNT			4
- #define PPC4XX_INT_TIMEOUT_CNT			0
- #define PPC4XX_INT_CFG				1
-diff --git a/drivers/crypto/amcc/crypto4xx_trng.c b/drivers/crypto/amcc/crypto4xx_trng.c
-new file mode 100644
-index 0000000..677ca17
---- /dev/null
-+++ b/drivers/crypto/amcc/crypto4xx_trng.c
-@@ -0,0 +1,131 @@
-+/*
-+ * Generic PowerPC 44x RNG driver
-+ *
-+ * Copyright 2011 IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; version 2 of the License.
-+ */
+-static int afu_do_recovery(struct cxl_afu *afu)
++static int handle_state_thread(void *data)
+ {
+-	int rc;
++	struct cxl_afu *afu;
++	int rc = 0;
+ 
+-	/* many threads can arrive here, in case of detach_all for example.
+-	 * Only one needs to drive the recovery
+-	 */
+-	if (mutex_trylock(&afu->guest->recovery_lock)) {
+-		rc = afu_update_state(afu);
+-		mutex_unlock(&afu->guest->recovery_lock);
+-		return rc;
++	pr_devel("in %s\n", __func__);
 +
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/interrupt.h>
-+#include <linux/platform_device.h>
-+#include <linux/hw_random.h>
-+#include <linux/delay.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/io.h>
++	afu = (struct cxl_afu*)data;
++	do {
++		set_current_state(TASK_INTERRUPTIBLE);
 +
-+#include "crypto4xx_core.h"
-+#include "crypto4xx_trng.h"
-+#include "crypto4xx_reg_def.h"
++		if (afu) {
++			afu_update_state(afu);
++			if (afu->guest->previous_state == H_STATE_PERM_UNAVAILABLE)
++				goto out;
++		} else
++			return -ENODEV;
++		schedule_timeout(msecs_to_jiffies(3000));
++	} while(!kthread_should_stop());
 +
-+#define PPC4XX_TRNG_CTRL	0x0008
-+#define PPC4XX_TRNG_CTRL_DALM	0x20
-+#define PPC4XX_TRNG_STAT	0x0004
-+#define PPC4XX_TRNG_STAT_B	0x1
-+#define PPC4XX_TRNG_DATA	0x0000
-+
-+static int ppc4xx_trng_data_present(struct hwrng *rng, int wait)
-+{
-+	struct crypto4xx_device *dev = (void *)rng->priv;
-+	int busy, i, present = 0;
-+
-+	for (i = 0; i < 20; i++) {
-+		busy = (in_le32(dev->trng_base + PPC4XX_TRNG_STAT) &
-+			PPC4XX_TRNG_STAT_B);
-+		if (!busy || !wait) {
-+			present = 1;
-+			break;
-+		}
-+		udelay(10);
-+	}
-+	return present;
++out:
++	afu->guest->kthread_tsk = NULL;
++	return rc;
 +}
 +
-+static int ppc4xx_trng_data_read(struct hwrng *rng, u32 *data)
++void start_state_thread(struct cxl_afu *afu)
 +{
-+	struct crypto4xx_device *dev = (void *)rng->priv;
-+	*data = in_le32(dev->trng_base + PPC4XX_TRNG_DATA);
-+	return 4;
-+}
-+
-+static void ppc4xx_trng_enable(struct crypto4xx_device *dev, bool enable)
-+{
-+	u32 device_ctrl;
-+
-+	device_ctrl = readl(dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
-+	if (enable)
-+		device_ctrl |= PPC4XX_TRNG_EN;
-+	else
-+		device_ctrl &= ~PPC4XX_TRNG_EN;
-+	writel(device_ctrl, dev->ce_base + CRYPTO4XX_DEVICE_CTRL);
-+}
-+
-+static const struct of_device_id ppc4xx_trng_match[] = {
-+	{ .compatible = "ppc4xx-rng", },
-+	{ .compatible = "amcc,ppc460ex-rng", },
-+	{ .compatible = "amcc,ppc440epx-rng", },
-+	{},
-+};
-+
-+void ppc4xx_trng_probe(struct crypto4xx_core_device *core_dev)
-+{
-+	struct crypto4xx_device *dev = core_dev->dev;
-+	struct device_node *trng = NULL;
-+	struct hwrng *rng = NULL;
-+	int err;
-+
-+	/* Find the TRNG device node and map it */
-+	trng = of_find_matching_node(NULL, ppc4xx_trng_match);
-+	if (!trng || !of_device_is_available(trng))
++	if (afu->guest->kthread_tsk)
 +		return;
 +
-+	dev->trng_base = of_iomap(trng, 0);
-+	of_node_put(trng);
-+	if (!dev->trng_base)
-+		goto err_out;
-+
-+	rng = kzalloc(sizeof(*rng), GFP_KERNEL);
-+	if (!rng)
-+		goto err_out;
-+
-+	rng->name = MODULE_NAME;
-+	rng->data_present = ppc4xx_trng_data_present;
-+	rng->data_read = ppc4xx_trng_data_read;
-+	rng->priv = (unsigned long) dev;
-+	core_dev->trng = rng;
-+	ppc4xx_trng_enable(dev, true);
-+	out_le32(dev->trng_base + PPC4XX_TRNG_CTRL, PPC4XX_TRNG_CTRL_DALM);
-+	err = devm_hwrng_register(core_dev->device, core_dev->trng);
-+	if (err) {
-+		ppc4xx_trng_enable(dev, false);
-+		dev_err(core_dev->device, "failed to register hwrng (%d).\n",
-+			err);
-+		goto err_out;
-+	}
-+	return;
-+
-+err_out:
-+	of_node_put(trng);
-+	iounmap(dev->trng_base);
-+	kfree(rng);
-+	dev->trng_base = NULL;
-+	core_dev->trng = NULL;
++	/* start kernel thread to handle the state of the afu */
++	afu->guest->kthread_tsk = kthread_run(&handle_state_thread,
++				  (void *)afu, CXL_KTHREAD);
++	if (IS_ERR(afu->guest->kthread_tsk)) {
++		pr_devel("cannot start state kthread\n");
++		afu->guest->kthread_tsk = NULL;
+ 	}
+-	return 0;
 +}
 +
-+void ppc4xx_trng_remove(struct crypto4xx_core_device *core_dev)
++void stop_state_thread(struct cxl_afu *afu)
 +{
-+	if (core_dev && core_dev->trng) {
-+		struct crypto4xx_device *dev = core_dev->dev;
++	if (afu->guest->kthread_tsk)
++		kthread_stop(afu->guest->kthread_tsk);
+ }
+ 
+ static bool guest_link_ok(struct cxl *cxl, struct cxl_afu *afu)
+ {
+ 	int state;
+ 
+-	if (afu) {
+-		if (afu_read_error_state(afu, &state) ||
+-			state != H_STATE_NORMAL) {
+-			if (afu_do_recovery(afu) > 0) {
+-				/* check again in case we've just fixed it */
+-				if (!afu_read_error_state(afu, &state) &&
+-					state == H_STATE_NORMAL)
+-					return true;
+-			}
+-			return false;
+-		}
++	if (afu && (!afu_read_error_state(afu, &state))) {
++		if (state == H_STATE_NORMAL)
++			return true;
+ 	}
+ 
+-	return true;
++	return false;
+ }
+ 
+ static int afu_properties_look_ok(struct cxl_afu *afu)
+@@ -929,8 +958,6 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+ 		return -ENOMEM;
+ 	}
+ 
+-	mutex_init(&afu->guest->recovery_lock);
+-
+ 	if ((rc = dev_set_name(&afu->dev, "afu%i.%i",
+ 					  adapter->adapter_num,
+ 					  slice)))
+@@ -986,6 +1013,8 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+ 
+ 	afu->enabled = true;
+ 
++	start_state_thread(afu);
 +
-+		devm_hwrng_unregister(core_dev->device, core_dev->trng);
-+		ppc4xx_trng_enable(dev, false);
-+		iounmap(dev->trng_base);
-+		kfree(core_dev->trng);
-+	}
-+}
-+
-+MODULE_ALIAS("ppc4xx_rng");
-diff --git a/drivers/crypto/amcc/crypto4xx_trng.h b/drivers/crypto/amcc/crypto4xx_trng.h
-new file mode 100644
-index 0000000..931d225
---- /dev/null
-+++ b/drivers/crypto/amcc/crypto4xx_trng.h
-@@ -0,0 +1,34 @@
-+/**
-+ * AMCC SoC PPC4xx Crypto Driver
-+ *
-+ * Copyright (c) 2008 Applied Micro Circuits Corporation.
-+ * All rights reserved. James Hsiao <jhsiao@amcc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * This file defines the security context
-+ * associate format.
-+ */
-+
-+#ifndef __CRYPTO4XX_TRNG_H__
-+#define __CRYPTO4XX_TRNG_H__
-+
-+#ifdef CONFIG_HW_RANDOM_PPC4XX
-+void ppc4xx_trng_probe(struct crypto4xx_core_device *core_dev);
-+void ppc4xx_trng_remove(struct crypto4xx_core_device *core_dev);
-+#else
-+static inline void ppc4xx_trng_probe(
-+	struct crypto4xx_device *dev __maybe_unused) { }
-+static inline void ppc4xx_trng_remove(
-+	struct crypto4xx_device *dev __maybe_unused) { }
-+#endif
-+
-+#endif
+ 	if ((rc = cxl_pci_vphb_add(afu)))
+ 		dev_info(&afu->dev, "Can't register vPHB\n");
+ 
 -- 
-2.8.0.rc3
+1.9.1
