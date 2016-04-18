@@ -1,37 +1,17 @@
 Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpJMD3wmgzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 16:36:18 +1000 (AEST)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id F2C78440D6F_714805CB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 06:36:12 +0000 (GMT)
-Received: from mail-qg0-f42.google.com (mail-qg0-f42.google.com
- [209.85.192.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 874CD43E03A_714805BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 06:36:11 +0000 (GMT)
-Received: by mail-qg0-f42.google.com with SMTP id v14so20564542qge.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Apr 2016 23:36:11 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1460857857.32510.176.camel@buserror.net>
-References: <1459950325-10327-1-git-send-email-alessio.bogani@elettra.eu>
- <CAPk1OjHEe+qcPYakD0BbikSkK+Dipj-9P2vatSceTcjMWYAPYg@mail.gmail.com>
- <1460857857.32510.176.camel@buserror.net>
-Date: Mon, 18 Apr 2016 08:36:09 +0200
-Message-ID: <CAPk1OjFrwn588U8mNXjmMtRcEV8+n1=w0Y-NBXhBz34mO-GLRg@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/1] powerpc/fsl: Fix build of the dtb embedded kernel
- images
+Received: from elettra.eu (m1.elettra.trieste.it [140.105.206.201])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qpJMD3fXTzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 16:36:23 +1000 (AEST)
 From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Subject: [PATCH 1/1] powerpc/fsl: Fix build of the dtb embedded kernel images
+Date: Mon, 18 Apr 2016 08:36:19 +0200
+Message-Id: <1460961379-1951-1-git-send-email-alessio.bogani@elettra.eu>
+In-Reply-To: <1460857857.32510.176.camel@buserror.net>
+References: <1460857857.32510.176.camel@buserror.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,16 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott,
+The commit dc37374 move a lot of device tree files into fsl directory
+fixing Makefile for cuImage target only. Unfortunately there are others
+target which require to embebbed device tree into the kernel image
+(i.e. dtbImage.%). So use a more generic approach.
 
-On 17 April 2016 at 03:50, Scott Wood <oss@buserror.net> wrote:
-> On Fri, 2016-04-15 at 10:27 +0200, Alessio Igor Bogani wrote:
-[...]
->> Any comments?
->
-> Looks OK to me.
+Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+---
+ arch/powerpc/boot/Makefile | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Thanks for review it. Follow a no-RFC version.
-
-Ciao,
-Alessio
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 6116510..8fe78a3 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -362,9 +362,6 @@ $(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ 	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
+ 
+-$(obj)/cuImage.%: vmlinux $(obj)/fsl/%.dtb $(wrapperbits)
+-	$(call if_changed,wrap,cuboot-$*,,$(obj)/fsl/$*.dtb)
+-
+ $(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ 	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+@@ -381,6 +378,9 @@ $(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ $(obj)/%.dtb: $(src)/dts/%.dts FORCE
+ 	$(call if_changed_dep,dtc)
+ 
++$(obj)/%.dtb: $(src)/dts/fsl/%.dts FORCE
++	$(call if_changed_dep,dtc)
++
+ # If there isn't a platform selected then just strip the vmlinux.
+ ifeq (,$(image-y))
+ image-y := vmlinux.strip
+-- 
+2.8.0
