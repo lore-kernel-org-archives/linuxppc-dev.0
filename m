@@ -1,23 +1,17 @@
-Return-Path: <mtk.manpages@gmail.com>
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpX3P3WbzzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 01:23:28 +1000 (AEST)
-Received: by mail-wm0-x231.google.com with SMTP id l6so22556455wml.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 08:23:28 -0700 (PDT)
-Subject: Re: clock_gettime.2: _COARSE clocks are not always faster...
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-References: <87k2k67ml4.fsf@rasmusvillemoes.dk> <5714F972.6080603@gmail.com>
-Cc: mtk.manpages@gmail.com, linux-man@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-From: "Michael Kerrisk (man-pages)" <mtk.manpages@gmail.com>
-Message-ID: <5714FBEC.80209@gmail.com>
-Date: Mon, 18 Apr 2016 16:23:24 +0100
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from valiant.selinc.com (valiant.selinc.com [74.117.214.141])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qphl41nv1zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 07:54:54 +1000 (AEST)
+Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
+ by valiant.selinc.com (8.16.0.11/8.16.0.11) with ESMTP id u3ILsqVB011083
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 14:54:52 -0700
+To: linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-In-Reply-To: <5714F972.6080603@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Subject: Trouble with DMA on PPC linux question
+Message-ID: <OFDB971D2B.A484FAC0-ON88257F99.0075C134-88257F99.00786154@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Mon, 18 Apr 2016 14:54:51 -0700
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/18/2016 04:12 PM, Michael Kerrisk (man-pages) wrote:
-> Hello Rasmus,
-> 
-> On 04/09/2016 05:50 PM, Rasmus Villemoes wrote:
->> Hi Michael
->>
->> The other day, I was curious how the vdso was implemented on ppc, and I
->> noted that neither ppc32 or ppc64 handle the _COARSE versions of
->> CLOCK_{REALTIME,MONOTONIC} in the vdso, so they fall back to an actual
->> syscall. And sure enough, measuring CLOCK_MONOTONIC
->> vs. CLOCK_MONOTONIC_COARSE shows that the latter has three times as much
->> overhead as the former.
->>
->> Whether it's worth adding a note to the man page is up to you.
-> 
-> I think it's useful to do so. For both *COARSE flags, I added:
-> 
-> [[
-> Requires per-architecture support, and probably also architecture support
-> for this flag in the vdso(7).
-> ]]
+Good afternoon everyone,
 
-And in the PowerPC sections of vdso(7), I added:
+We're trying to get some performance gains in an older embedded design by 
+adding DMA to our NAND driver.  The HW is an MPC8349 talking across a PCI 
+bus to a NAND controller and we have 512Mb of RAM.  We're using the 3.18 
+kernel and the Freescale "fsl,mpc8349-dma" driver.  I've verified using a 
+bus analyzer that DMA transactions are occurring on the PCI bus correctly 
+(correct addresses and the data I'm reading is coming across the bus to 
+the processor correctly).  What's not happening is periodically the data 
+being read doesn't make it to RAM.  I've narrowed this down to the 
+dma_addr_t I get back from dma_map_single().
 
-       The CLOCK_REALTIME_COARSE and CLOCK_MONOTONIC_COARSE clocks are
-       not   supported   by   the   __kernel_clock_getres  and  __ker‐
-       nel_clock_gettime interfaces; the kernel falls back to the real
-       system call.
+Now I'm not an expert on how memory management in the PPC linux kernel 
+works, but based on some experimentation and stepping through some of the 
+code, translating a kernel virtual address is essentially subtracting 
+0xC0000000 from the virtual address.  I know the equations a bit more than 
+that, I've dug into some of the macros, but many of the constants compile 
+to zero on my setup, so the end result is just the subtraction.
 
-Cheers,
+On the DMA transactions that work, the virtual address I hand to 
+dma_map_single() is something like 0xe0840000 and the dma_addr_t result is 
+0x10840000 which is less than my 512Mb limit.  On the transactions that 
+don't work, the virtual address is 0xd5390000 with the mapped result being 
+0x25390000, which is past my upper bound on my RAM.  In fact it's not even 
+in my memory map, there's a hole there.  (Evidently the MPC4349 DMA engine 
+bypasses the TLBs, since I'm not getting an exception of any 
+kind...learned something new today!)  So on the transactions that don't 
+work, they fail because the physical address I give to the DMA engine 
+doesn't exist.  The only error indication I get is when I get an ECC error 
+because what's pointed to be the virtual address (where ever that may be) 
+still contains zeros and it fails the ECC comparison check.
 
-Michael
+So my question is, where should I be looking or what config option should 
+I be checking to try and figure out why the upper layers 
+(MTD/UBI/UBIFS/user space) should be giving the NAND layer or my driver a 
+virtual address that can't be translated into a physical address?  One 
+thing I have noticed (though I don't know if it's relevant or not) is that 
+when I get a "good" virtual address it's through a call to 
+nand_subpage_read() and when I get a "bad" virtual address it's through a 
+call to nand_read_page_swecc().
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Linux/UNIX System Programming Training: http://man7.org/training/
+I'm not asking if someone can solve my problem for me, but any suggestions 
+of what rocks I can turn over to look for clues would be greatly 
+appreciated.
+
+Thanks for you time and suggestions!
+
+Bruce
