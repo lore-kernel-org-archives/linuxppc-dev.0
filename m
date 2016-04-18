@@ -1,25 +1,44 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [150.101.137.129])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qpB4D1d4czDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 11:53:00 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Russell Currey <ruscur@russell.cc>
-Subject: Re: [PATCH kernel v3 9/9] powerpc/powernv/npu: Enable NVLink pass
- through
-Date: Mon, 18 Apr 2016 11:52:55 +1000
-Message-ID: <14207424.6AAakbByxl@new-mexico>
-In-Reply-To: <20160415044020.GK18218@voom.redhat.com>
-References: <1460450270-42354-1-git-send-email-aik@ozlabs.ru>
- <1460450270-42354-10-git-send-email-aik@ozlabs.ru>
- <20160415044020.GK18218@voom.redhat.com>
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpDZW11Q4zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 13:45:55 +1000 (AEST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qpDZV5wNwz9sDb
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:54 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Mon, 18 Apr 2016 13:45:53 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B09FA3578058
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:44 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3I3ja6m10485934
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:44 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3I3jBXF031174
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Apr 2016 13:45:12 +1000
+Subject: Re: [v4, 2/3] ppc64/book3s: make some room for common interrupt
+ vector code
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <3qmZVp4lgdz9t5C@ozlabs.org>
+ <1460725197.22415.7.camel@ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Message-ID: <5714582D.7070606@linux.vnet.ibm.com>
+Date: Mon, 18 Apr 2016 09:14:45 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1460725197.22415.7.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,179 +48,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
 
-On Fri, 15 Apr 2016 14:40:20 David Gibson wrote:
-> On Tue, Apr 12, 2016 at 06:37:50PM +1000, Alexey Kardashevskiy wrote:
-> > IBM POWER8 NVlink systems come with Tesla K40-ish GPUs each of which
-> > also has a couple of fast speed links (NVLink). The interface to links
-> > is exposed as an emulated PCI bridge which is included into the same
-> > IOMMU group as the corresponding GPU.
-> > 
-> > In the kernel, NPUs get a separate PHB of the PNV_PHB_NPU type and a PE.
-> > 
-> > In order to make these links work when GPU is passed to the guest,
-> > these bridges need to be passed as well; otherwise performance will
-> > degrade.
-> > 
-> > This implements and exports API to manage NPU state in regard to VFIO;
-> > it replicates iommu_table_group_ops.
-> > 
-> > This defines a new pnv_pci_ioda2_npu_ops which is assigned to
-> > the IODA2 bridge if there are NPUs for a GPU on the bridge.
-> > The new callbacks call the default IODA2 callbacks plus new NPU API.
-> > This adds a gpe_table_group_to_npe() helper to find NPU PE for the IODA2
-> > table_group, it is not expected to fail as the helper is only called
-> > from the pnv_pci_ioda2_npu_ops.
-> > 
-> > This adds a pnv_pci_npu_setup_iommu() helper which adds NPUs to
-> > the GPU group if any found. The helper uses helpers to look for
-> > the "ibm,gpu" property in the device tree which is a phandle of
-> > the corresponding GPU.
-> > 
-> > This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
-> > loop skips NPU PEs as they do not have 32bit DMA segments.
-> > 
-> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > ---
-> > Changes:
-> > v3:
-> > * moved NPU-to-GPU IOMMU grouping later after all PHBs are discovered
-> > * removed hack to make iommu_add_device() work, iommu_group_add_device()
-> > is used instead
-> > * cleanup in gpe_table_group_to_npe_cb()
-> > 
-> > v2:
-> > * reimplemented to support NPU + GPU in the same group
-> > * merged "powerpc/powernv/npu: Add NPU devices to IOMMU group" and
-> > "powerpc/powernv/npu: Enable passing through via VFIO" into this patch
-> > ---
-> >  arch/powerpc/platforms/powernv/npu-dma.c  | 126 ++++++++++++++++++++++++++++++
-> >  arch/powerpc/platforms/powernv/pci-ioda.c | 105 +++++++++++++++++++++++++
-> >  arch/powerpc/platforms/powernv/pci.h      |   6 ++
-> >  3 files changed, 237 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> > index 8e70221..7cb9f6a 100644
-> > --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> > +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> > @@ -12,6 +12,7 @@
-> >  #include <linux/export.h>
-> >  #include <linux/pci.h>
-> >  #include <linux/memblock.h>
-> > +#include <linux/iommu.h>
-> >  
-> >  #include <asm/iommu.h>
-> >  #include <asm/pnv-pci.h>
-> > @@ -262,3 +263,128 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
-> >  		}
-> >  	}
-> >  }
-> > +
-> > +long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
-> > +		struct iommu_table *tbl)
-> > +{
-> > +	struct pnv_phb *phb = npe->phb;
-> > +	int64_t rc;
-> > +	const unsigned long size = tbl->it_indirect_levels ?
-> > +		tbl->it_level_size : tbl->it_size;
-> > +	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
-> > +	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
-> > +
-> > +	pe_info(npe, "Setting up window#%d %llx..%llx pg=%lx\n", num,
-> > +			start_addr, start_addr + win_size - 1,
-> > +			IOMMU_PAGE_SIZE(tbl));
-> > +
-> > +	/* Ignore @num as there is just one window per NPU */
-> > +	rc = opal_pci_map_pe_dma_window(phb->opal_id,
-> > +			npe->pe_number,
-> > +			npe->pe_number,
-> > +			tbl->it_indirect_levels + 1,
-> > +			__pa(tbl->it_base),
-> > +			size << 3,
-> > +			IOMMU_PAGE_SIZE(tbl));
-> > +	if (rc) {
-> > +		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
-> > +		return rc;
-> > +	}
-> > +
-> > +	pnv_pci_link_table_and_group(phb->hose->node, num,
-> > +			tbl, &npe->table_group);
-> > +	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> > +
-> > +	return rc;
-> > +}
-> > +
-> > +long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
-> > +{
-> > +	struct pnv_phb *phb = npe->phb;
-> > +	long ret;
-> > +
-> > +	pe_info(npe, "Removing DMA window #%d\n", num);
-> > +
-> > +	/* Ignore @num as there is just one window per NPU */
-> > +	ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-> > +			npe->pe_number,
-> > +			0/* levels */, 0/* table address */,
-> > +			0/* table size */, 0/* page size */);
-> > +	if (ret)
-> > +		pe_warn(npe, "Unmapping failed, ret = %ld\n", ret);
-> > +	else
-> > +		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> > +
-> > +	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
-> > +			&npe->table_group);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +/* Switch ownership from platform code to external user (e.g. VFIO) */
-> > +void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
-> > +{
-> > +	struct pnv_phb *phb = npe->phb;
-> > +	int64_t ret;
-> > +
-> > +	if (npe->table_group.tables[0]) {
-> > +		/* Disable 32bit window */
-> > +		pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
-> > +				&npe->table_group);
-> > +		npe->table_group.tables[0] = NULL;
-> > +		ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
-> > +				npe->pe_number,
-> > +				0/* levels */, 0/* table address */,
-> > +				0/* table size */, 0/* page size */);
-> > +	} else {
-> > +		/* Disable bypass */
-> > +		ret = opal_pci_map_pe_dma_window_real(phb->opal_id,
-> > +				npe->pe_number, npe->pe_number,
-> > +				0 /* bypass base */, 0);
-> > +	}
-> 
-> It's not immediately obvious to me why this is an if/else.  I'm
-> assuming that the way the kernel uses the NPE IOMMU it always either
-> has a 32-bit DMA window, or it's in bypass mode.  Is that inherent to
-> the way the hardware works, or just the way Linux uses it?
 
-Unlike the IODA2 the NPU only has a single TVE/window meaning the NPU IOMMU is
-either disabled, in bypass or has a 32-bit DMA window. Alexey can comment on
-the if/else but I agree that it isn't strictly necessary - calling either 
-map_pe_dma_window() or map_pe_dma_window_real() with the arguments in both the
-if and else cases will zero the TVE effectively disabling DMA.
+On 04/15/2016 06:29 PM, Michael Ellerman wrote:
+> On Fri, 2016-04-15 at 21:06 +1000, Michael Ellerman wrote:
+>> Hi Hari,
+>>
+>> Thanks for persisting with this.
+>>
+>> On Thu, 2016-07-04 at 21:58:50 UTC, Hari Bathini wrote:
+>>> With the previous patch, we choke out whatever little space is left
+>>> below 0x7000 (FWNMI hard block) while there is a hole of ~1400 bytes
+>>> below __end_interrupts marker when CONFIG_CBE_RAS is disabled.
+>>> Considering CONFIG_CBE_RAS is not enabled by default for BOOK3S, this
+>>> is not a desirable scenario especially when we have to worry about
+>>> each additional instruction that goes below 0x7000.
+>>>
+>>> Memory region from 0x1800 to 0x4000 is dedicated for common interrupt
+>>> vector code. Also, we never hit an interrupt below 0x300 when IR=DR=1
+>>> implying memory region between 0x4000 to 0x4300 can also be used for
+>>> common interrupt vector code. So, we can effectively use memory region
+>>> between 0x1800 to 0x4300 for common interrupt vector code.
+>> On Power9 the system-call-vectored instruction will use the region at 0x3000, so
+>> moving code into that space is not a good long term plan.
+>>
+>> I'll take your v2 and put it in next next week.
+> I'll add this fixes line, which I think is correct:
+>
+> Fixes: c1fb6816fb1b ("powerpc: Add relocation on exception vector handlers")
 
-> I'm just worrying if this could open an exploitable hole if the host
-> kernel ever changes so that it could have bypass windows and TCE
-> windows simultaneously active.  Is there any way to unconditionally
-> disable bypass *and* disable any existing DMA window.
+Yeah. Thanks!
 
-I'm not a VFIO expert, but from the perspective of the NPU HW this situation 
-couldn't exist for the reasons described above. Calling
-opal_pci_map_pe_dma_window/_real() with either a zero table size or PCI memory
-size will unconditionally disable all DMA windows for that PE# on the NPU.
-
-- Alistair
- 
-> Apart from that nit,
-> 
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> 
-> 
+> cheers
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
