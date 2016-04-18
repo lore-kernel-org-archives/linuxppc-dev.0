@@ -1,23 +1,23 @@
 Return-Path: <mtk.manpages@gmail.com>
-Received: from mail-wm0-x22e.google.com (mail-wm0-x22e.google.com
- [IPv6:2a00:1450:400c:c09::22e])
+Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
+ [IPv6:2a00:1450:400c:c09::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpWqF6rpFzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 01:12:57 +1000 (AEST)
-Received: by mail-wm0-x22e.google.com with SMTP id l6so22492481wml.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 08:12:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpX3P3WbzzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 01:23:28 +1000 (AEST)
+Received: by mail-wm0-x231.google.com with SMTP id l6so22556455wml.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 08:23:28 -0700 (PDT)
 Subject: Re: clock_gettime.2: _COARSE clocks are not always faster...
 To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-References: <87k2k67ml4.fsf@rasmusvillemoes.dk>
+References: <87k2k67ml4.fsf@rasmusvillemoes.dk> <5714F972.6080603@gmail.com>
 Cc: mtk.manpages@gmail.com, linux-man@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
 From: "Michael Kerrisk (man-pages)" <mtk.manpages@gmail.com>
-Message-ID: <5714F972.6080603@gmail.com>
-Date: Mon, 18 Apr 2016 16:12:50 +0100
+Message-ID: <5714FBEC.80209@gmail.com>
+Date: Mon, 18 Apr 2016 16:23:24 +0100
 MIME-Version: 1.0
-In-Reply-To: <87k2k67ml4.fsf@rasmusvillemoes.dk>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <5714F972.6080603@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Rasmus,
-
-On 04/09/2016 05:50 PM, Rasmus Villemoes wrote:
-> Hi Michael
+On 04/18/2016 04:12 PM, Michael Kerrisk (man-pages) wrote:
+> Hello Rasmus,
 > 
-> The other day, I was curious how the vdso was implemented on ppc, and I
-> noted that neither ppc32 or ppc64 handle the _COARSE versions of
-> CLOCK_{REALTIME,MONOTONIC} in the vdso, so they fall back to an actual
-> syscall. And sure enough, measuring CLOCK_MONOTONIC
-> vs. CLOCK_MONOTONIC_COARSE shows that the latter has three times as much
-> overhead as the former.
+> On 04/09/2016 05:50 PM, Rasmus Villemoes wrote:
+>> Hi Michael
+>>
+>> The other day, I was curious how the vdso was implemented on ppc, and I
+>> noted that neither ppc32 or ppc64 handle the _COARSE versions of
+>> CLOCK_{REALTIME,MONOTONIC} in the vdso, so they fall back to an actual
+>> syscall. And sure enough, measuring CLOCK_MONOTONIC
+>> vs. CLOCK_MONOTONIC_COARSE shows that the latter has three times as much
+>> overhead as the former.
+>>
+>> Whether it's worth adding a note to the man page is up to you.
 > 
-> Whether it's worth adding a note to the man page is up to you.
+> I think it's useful to do so. For both *COARSE flags, I added:
+> 
+> [[
+> Requires per-architecture support, and probably also architecture support
+> for this flag in the vdso(7).
+> ]]
 
-I think it's useful to do so. For both *COARSE flags, I added:
+And in the PowerPC sections of vdso(7), I added:
 
-[[
-Requires per-architecture support, and probably also architecture support
-for this flag in the vdso(7).
-]]
+       The CLOCK_REALTIME_COARSE and CLOCK_MONOTONIC_COARSE clocks are
+       not   supported   by   the   __kernel_clock_getres  and  __ker‐
+       nel_clock_gettime interfaces; the kernel falls back to the real
+       system call.
 
-Thanks!
+Cheers,
 
 Michael
-
 
 -- 
 Michael Kerrisk
