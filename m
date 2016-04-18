@@ -1,35 +1,40 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpMN95qf4zDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 18:52:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpNbb2kh2zDqBD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 19:47:23 +1000 (AEST)
 Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 18 Apr 2016 14:22:22 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3I8qKuC38273138
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 14:22:20 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3I8qGIU013024
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 14:22:19 +0530
-Message-ID: <5714A040.9090903@linux.vnet.ibm.com>
-Date: Mon, 18 Apr 2016 14:22:16 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Mon, 18 Apr 2016 03:47:19 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0CACF19D8048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 03:35:09 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3I9lHGI44761204
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 02:47:17 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3I9lHC3019239
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 03:47:17 -0600
+Subject: Re: [PATCH V11 0/4]perf/powerpc: Add ability to sample intr machine
+ state in powerpc
+To: linux-kernel@vger.kernel.org
+References: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, acme@redhat.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
-CC: hughd@google.com, dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com,
- kirill@shutemov.name, n-horiguchi@ah.jp.nec.com,
- mgorman@techsingularity.net, akpm@linux-foundation.org
-Subject: Re: [PATCH 00/10] Enable HugeTLB page migration on POWER
-References: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1460007464-26726-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+From: Anju T <anju@linux.vnet.ibm.com>
+Message-ID: <5714AD1F.9020807@linux.vnet.ibm.com>
+Date: Mon, 18 Apr 2016 15:17:11 +0530
+MIME-Version: 1.0
+In-Reply-To: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,25 +44,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/07/2016 11:07 AM, Anshuman Khandual wrote:
-> This patch series enables HugeTLB page migration on POWER platform.
-> This series has some core VM changes (patch 1, 2, 3) and some powerpc
-> specific changes (patch 4, 5, 6, 7, 8, 9, 10). Comments, suggestions
-> and inputs are welcome.
-> 
-> Anshuman Khandual (10):
->   mm/mmap: Replace SHM_HUGE_MASK with MAP_HUGE_MASK inside mmap_pgoff
->   mm/hugetlb: Add PGD based implementation awareness
->   mm/hugetlb: Protect follow_huge_(pud|pgd) functions from race
+On Saturday 20 February 2016 10:32 AM, Anju T wrote:
+> This short patch series adds the ability to sample the interrupted
+> machine state for each hardware sample.
+>
+> To test this patchset,
+> Eg:
+>
+> $ perf record -I?       # list supported registers
+>
+> output:
+> available registers: r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31 nip msr orig_r3 ctr link xer ccr softe trap dar dsisr
+>
+>   usage: perf record [<options>] [<command>]
+>      or: perf record [<options>] -- <command> [<options>]
+>
+>      -I, --intr-regs[=<any register>]
+>                            sample selected machine registers on interrupt, use -I ? to list register names
+>
+>
+> $ perf record -I ls   # record machine state at interrupt
+> $ perf script -D      # read the perf.data file
+>
+> Sample output obtained for this patchset/ output looks like as follows:
+>
+> 496768515470 0x1988 [0x188]: PERF_RECORD_SAMPLE(IP, 0x1): 4522/4522: 0xc0000000001e538c period: 1 addr: 0
+> ... intr regs: mask 0x7ffffffffff ABI 64-bit
+> .... r0    0xc0000000001e5e34
+> .... r1    0xc000000fe733f9a0
+> .... r2    0xc000000001523100
+> .... r3    0xc000000ffaadeb60
+> .... r4    0xc000000003456800
+> .... r5    0x73a9b5e000
+> .... r6    0x1e000000
+> .... r7    0x0
+> .... r8    0x0
+> .... r9    0x0
+> .... r10   0x1
+> .... r11   0x0
+> .... r12   0x24022822
+> .... r13   0xc00000000feec180
+> .... r14   0x0
+> .... r15   0xc000001e4be18800
+> .... r16   0x0
+> .... r17   0xc000000ffaac5000
+> .... r18   0xc000000fe733f8a0
+> .... r19   0xc000000001523100
+> .... r20   0xc00000000009fd1c
+> .... r21   0xc000000fcaa69000
+> .... r22   0xc0000000001e4968
+> .... r23   0xc000000001523100
+> .... r24   0xc000000fe733f850
+> .... r25   0xc000000fcaa69000
+> .... r26   0xc000000003b8fcf0
+> .... r27   0xfffffffffffffead
+> .... r28   0x0
+> .... r29   0xc000000fcaa69000
+> .... r30   0x1
+> .... r31   0x0
+> .... nip   0xc0000000001dd320
+> .... msr   0x9000000000009032
+> .... orig_r3 0xc0000000001e538c
+> .... ctr   0xc00000000009d550
+> .... link  0xc0000000001e5e34
+> .... xer   0x0
+> .... ccr   0x84022882
+> .... softe 0x0
+> .... trap  0xf01
+> .... dar   0x0
+> .... dsisr 0xf00040060000004
+>   ... thread: :4522:4522
+>   ...... dso: /root/.debug/.build-id/b0/ef11b1a1629e62ac9de75199117ee5ef9469e9
+>             :4522  4522   496.768515:          1 cycles:  c0000000001e538c .perf_event_context_sched_in (/boot/vmlinux)
+>
+>
+>
+> Changes from v10:
+>
+> - Included SOFTE as suggested by mpe
+> - The name of registers displayed is  changed from
+>    gpr* to r* also the macro names changed from
+>    PERF_REG_POWERPC_GPR* to PERF_REG_POWERPC_R*.
+> - The conflict in returning the ABI is resolved.
+> - #define PERF_REG_SP  is again changed to  PERF_REG_POWERPC_R1
+> - Comment in tools/perf/config/Makefile is updated.
+> - removed the "Reviewed-By" tag as the patch has logic changes.
+>
+>
+> Changes from V9:
+>
+> - Changed the name displayed for link register from "lnk" to "link" in
+>    tools/perf/arch/powerpc/include/perf_regs.h
+>
+> changes from V8:
+>
+> - Corrected the indentation issue in the Makefile mentioned in 3rd patch
+>
+> Changes from V7:
+>
+> - Addressed the new line issue in 3rd patch.
+>
+> Changes from V6:
+>
+> - Corrected the typo in patch  tools/perf: Map the ID values with register names.
+>    ie #define PERF_REG_SP  PERF_REG_POWERPC_R1 should be #define PERF_REG_SP   PERF_REG_POWERPC_GPR1
+>
+>
+> Changes from V5:
+>
+> - Enabled perf_sample_regs_user also in this patch set.Functions added in
+>     arch/powerpc/perf/perf_regs.c
+> - Added Maddy's patch to this patchset for enabling -I? option which will
+>    list the supported register names.
+>
+>
+> Changes from V4:
+>
+> - Removed the softe and MQ from all patches
+> - Switch case is replaced with an array in the 3rd patch
+>
+> Changes from V3:
+>
+> - Addressed the comments by Sukadev regarding the nits in the descriptions.
+> - Modified the subject of first patch.
+> - Included the sample output in the 3rd patch also.
+>
+> Changes from V2:
+>
+> - tools/perf/config/Makefile is moved to the patch tools/perf.
+> - The patchset is reordered.
+> - perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
+>    it is removed from tools/perf/arch/powerpc/include/perf_regs.h
+> - PERF_REGS_POWERPC_RESULT is removed.
+>
+> Changes from V1:
+>
+> - Solved the name missmatch issue in the from and signed-off field of the patch series.
+> - Added necessary comments in the 3rd patch ie perf/powerpc ,as suggested by Maddy.
+>
+>
+>
+> Anju T (3):
+>    perf/powerpc: assign an id to each powerpc register
+>    perf/powerpc: add support for sampling intr machine state
+>    tools/perf: Map the ID values with register names
+>
+> Madhavan Srinivasan (1):
+>    tool/perf: Add sample_reg_mask to include all perf_regs regs
+>
+>
+>   arch/powerpc/Kconfig                        |  1 +
+>   arch/powerpc/include/uapi/asm/perf_regs.h   | 50 ++++++++++++++++
+>   arch/powerpc/perf/Makefile                  |  1 +
+>   arch/powerpc/perf/perf_regs.c               | 91 +++++++++++++++++++++++++++++
+>   tools/perf/arch/powerpc/include/perf_regs.h | 69 ++++++++++++++++++++++
+>   tools/perf/arch/powerpc/util/Build          |  1 +
+>   tools/perf/arch/powerpc/util/perf_regs.c    | 49 ++++++++++++++++
+>   tools/perf/config/Makefile                  |  5 ++
+>   8 files changed, 267 insertions(+)
+>   create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+>   create mode 100644 arch/powerpc/perf/perf_regs.c
+>   create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+>   create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
+>
 
-Hugh/Mel/Naoya/Andrew,
+Hi,
 
-Andrew had already reviewed the changes in the first two patches during
-the RFC phase and was okay with them. Could you please review the third
-patch here as well and let me know your inputs/suggestions. Currently
-the third patch has got build failures on SPARC and S390 platforms
-(details of which are on the thread with possible fixes). Thank you.
+Can this be taken into the next tree?
 
 
-
-	
+Thanks
+Anju.
