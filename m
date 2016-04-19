@@ -1,40 +1,24 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
+ [IPv6:2607:f8b0:4001:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpzs212p2zDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 19:16:05 +1000 (AEST)
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Tue, 19 Apr 2016 10:16:02 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id EA0062190046
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 10:15:34 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3J9FuXW2949508
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 09:15:56 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3J9FuGJ031500
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 03:15:56 -0600
-Subject: Re: [PATCH] cxl: Add a kernel thread to check the coherent platform
- function's state
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, imunsie@au1.ibm.com,
- fbarrat@linux.vnet.ibm.com
-References: <1460984701-21490-1-git-send-email-clombard@linux.vnet.ibm.com>
- <57159A87.70705@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: christophe lombard <clombard@linux.vnet.ibm.com>
-Message-ID: <5715F74B.8000405@linux.vnet.ibm.com>
-Date: Tue, 19 Apr 2016 11:15:55 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpzvm5RvpzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 19:18:28 +1000 (AEST)
+Received: by mail-ig0-x232.google.com with SMTP id gy3so95098155igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 02:18:28 -0700 (PDT)
+Date: Tue, 19 Apr 2016 17:18:18 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ peterz@infradead.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de
+Subject: Re: [PATCH V2] powerpc: Implement {cmp}xchg for u8 and u16
+Message-ID: <20160419091818.GA69264@boquns-mbp.cn.ibm.com>
+References: <5715D04E.9050009@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <57159A87.70705@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5715D04E.9050009@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,141 +28,220 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/04/2016 04:40, Andrew Donnellan wrote:
-> On 18/04/16 23:05, Christophe Lombard wrote:
->> In the POWERVM environement, the PHYP CoherentAccel component manages
->
-> environment
->
->> the state of the Coherant Accelerator Processor Interface adapter and
->
-> Coherent
->
->> virtualizes CAPI resources, handles CAPP, PSL, PSL Slice errors - and
->> interrupts - and provides a new set of HCALLs for the OS APIs to utilize
->> AFUs.
->>
->> During the course of operation, a coherent platform function can
->> encounter errors. Some possible reason for errors are:
->> • Hardware recoverable and unrecoverable errors
->> • Transient and over-threshold correctable errors
->>
->> PHYP implements its own state model for the coherent platform function.
->> The current state of this Acclerator Fonction Unit (AFU) is available
->
-> Accelerator Function Unit
->
->> through a hcall.
->>
->> In case of low-level troubles (or error injection), The PHYP component
->
-> the
->
->> may reset the card and change the AFU state. The PHYP interface doesn't
->> provide any way to be notified when that happens.
->>
->> The current implementation of the cxl driver, for the POWERVM
->> environment, follows the general error recovery procedures required to
->> reset operation of the coherent platform function. The platform firmware
->> resets and reconfigures hardware when an external action is required -
->> attach/detach a process, link ok, ....
->>
->> The purpose of this patch is to interact with the external driver
->> (where the AFU is shown) even if no action is required. A kernel thread
->> is needed to check every x seconds the current state of the AFU to see
->> if we need to enter an error recovery path.
->>
->> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
->
-> A few minor issues below.
->
->> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
->> index 8213372..06dfe7f 100644
->> --- a/drivers/misc/cxl/guest.c
->> +++ b/drivers/misc/cxl/guest.c
->> @@ -19,6 +19,10 @@
->>   #define CXL_SLOT_RESET_EVENT        2
->>   #define CXL_RESUME_EVENT        3
->>
->> +#define CXL_KTHREAD             "cxl_kthread"
->> +
->> +void stop_state_thread(struct cxl_afu *afu);
->
-> static?
->
-> [...]
->
->> -static int afu_do_recovery(struct cxl_afu *afu)
->> +static int handle_state_thread(void *data)
->>   {
->> -    int rc;
->> +    struct cxl_afu *afu;
->> +    int rc = 0;
->
-> It looks like we don't use rc (see also comment below).
->
->>
->> -    /* many threads can arrive here, in case of detach_all for example.
->> -     * Only one needs to drive the recovery
->> -     */
->> -    if (mutex_trylock(&afu->guest->recovery_lock)) {
->> -        rc = afu_update_state(afu);
->> -        mutex_unlock(&afu->guest->recovery_lock);
->> -        return rc;
->> +    pr_devel("in %s\n", __func__);
->> +
->> +    afu = (struct cxl_afu*)data;
->
-> CodingStyle: space between cxl_afu and *
->
->> +    do {
->> +        set_current_state(TASK_INTERRUPTIBLE);
->> +
->> +        if (afu) {
->> +            afu_update_state(afu);
->
-> Should we be checking the retval here?
+Hi Xinhui,
 
-Right, We have to check the retval here. Thanks
+On Tue, Apr 19, 2016 at 02:29:34PM +0800, Pan Xinhui wrote:
+> From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+>=20
+> Implement xchg{u8,u16}{local,relaxed}, and
+> cmpxchg{u8,u16}{,local,acquire,relaxed}.
+>=20
+> It works on all ppc.
+>=20
 
+Nice work!
 
->
->> +            if (afu->guest->previous_state == H_STATE_PERM_UNAVAILABLE)
->> +                goto out;
->> +        } else
->> +            return -ENODEV;
->> +        schedule_timeout(msecs_to_jiffies(3000));
->> +    } while(!kthread_should_stop());
->
-> CodingStyle: space between while and (
->
->> +
->> +out:
->> +    afu->guest->kthread_tsk = NULL;
->> +    return rc;
->> +}
->> +
->> +void start_state_thread(struct cxl_afu *afu)
->
-> static?
->
->> +{
->> +    if (afu->guest->kthread_tsk)
->> +        return;
->> +
->> +    /* start kernel thread to handle the state of the afu */
->> +    afu->guest->kthread_tsk = kthread_run(&handle_state_thread,
->> +                  (void *)afu, CXL_KTHREAD);
->> +    if (IS_ERR(afu->guest->kthread_tsk)) {
->> +        pr_devel("cannot start state kthread\n");
->> +        afu->guest->kthread_tsk = NULL;
->>       }
->> -    return 0;
->> +}
->> +
->> +void stop_state_thread(struct cxl_afu *afu)
->
-> static?
->
+AFAICT, your work doesn't depend on anything that ppc-specific, right?
+So maybe we can use it as a general approach for a fallback
+implementation on the archs without u8/u16 atomics. ;-)
 
-Thanks for the review. I will send a patch update.
+> Suggested-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+> ---
+> change from V1:
+> 	rework totally.
+> ---
+>  arch/powerpc/include/asm/cmpxchg.h | 83 ++++++++++++++++++++++++++++++++=
+++++++
+>  1 file changed, 83 insertions(+)
+>=20
+> diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/as=
+m/cmpxchg.h
+> index 44efe73..79a1f45 100644
+> --- a/arch/powerpc/include/asm/cmpxchg.h
+> +++ b/arch/powerpc/include/asm/cmpxchg.h
+> @@ -7,6 +7,37 @@
+>  #include <asm/asm-compat.h>
+>  #include <linux/bug.h>
+> =20
+> +#ifdef __BIG_ENDIAN
+> +#define BITOFF_CAL(size, off)	((sizeof(u32) - size - off) * BITS_PER_BYT=
+E)
+> +#else
+> +#define BITOFF_CAL(size, off)	(off * BITS_PER_BYTE)
+> +#endif
+> +
+> +static __always_inline unsigned long
+> +__cmpxchg_u32_local(volatile unsigned int *p, unsigned long old,
+> +			unsigned long new);
+> +
+> +#define __XCHG_GEN(cmp, type, sfx, u32sfx, skip, v)			\
+> +static __always_inline u32						\
+> +__##cmp##xchg_##type##sfx(v void *ptr, u32 old, u32 new)		\
+> +{									\
+> +	int size =3D sizeof (type);					\
+> +	int off =3D (unsigned long)ptr % sizeof(u32);			\
+> +	volatile u32 *p =3D ptr - off;					\
+> +	int bitoff =3D BITOFF_CAL(size, off);				\
+> +	u32 bitmask =3D ((0x1 << size * BITS_PER_BYTE) - 1) << bitoff;	\
+> +	u32 oldv, newv;							\
+> +	u32 ret;							\
+> +	do {								\
+> +		oldv =3D READ_ONCE(*p);					\
+> +		ret =3D (oldv & bitmask) >> bitoff;			\
+> +		if (skip && ret !=3D old)					\
+> +			break;						\
+> +		newv =3D (oldv & ~bitmask) | (new << bitoff);		\
+> +	} while (__cmpxchg_u32##u32sfx((v void*)p, oldv, newv) !=3D oldv);\
+
+Forgive me if this is too paranoid, but I think we can save the
+READ_ONCE() in the loop if we change the code into the following,
+because cmpxchg will return the "new" value, if the cmp part fails.
+
+	newv =3D READ_ONCE(*p);
+
+	do {
+		oldv =3D newv;
+		ret =3D (oldv & bitmask) >> bitoff;
+		if (skip && ret !=3D old)
+			break;
+		newv =3D (oldv & ~bitmask) | (new << bitoff);
+		newv =3D __cmpxchg_u32##u32sfx((void *)p, oldv, newv);
+	} while(newv !=3D oldv);
+
+> +	return ret;							\
+> +}
+> +
+>  /*
+>   * Atomic exchange
+>   *
+> @@ -14,6 +45,19 @@
+>   * the previous value stored there.
+>   */
+> =20
+> +#define XCHG_GEN(type, sfx, v)						\
+> +		__XCHG_GEN(_, type, sfx, _local, 0, v)			\
+                                         ^^^^^^^
+
+This should be sfx, right? Otherwise, all the newly added xchg will
+call __cmpxchg_u32_local, this will result in wrong ordering guarantees.
+
+> +static __always_inline u32 __xchg_##type##sfx(v void *p, u32 n)	\
+> +{									\
+> +	return ___xchg_##type##sfx(p, 0, n);				\
+> +}
+> +
+> +XCHG_GEN(u8, _local, volatile);
+
+I don't think we need the "volatile" modifier here, because READ_ONCE()
+and __cmpxchg_u32_* all have "volatile" semantics IIUC, so maybe we can
+save a paramter for the __XCHG_GEN macro.
+
+Regards,
+Boqun
+
+> +XCHG_GEN(u8, _relaxed, );
+> +XCHG_GEN(u16, _local, volatile);
+> +XCHG_GEN(u16, _relaxed, );
+> +#undef XCHG_GEN
+> +
+>  static __always_inline unsigned long
+>  __xchg_u32_local(volatile void *p, unsigned long val)
+>  {
+> @@ -88,6 +132,10 @@ static __always_inline unsigned long
+>  __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
+>  {
+>  	switch (size) {
+> +	case 1:
+> +		return __xchg_u8_local(ptr, x);
+> +	case 2:
+> +		return __xchg_u16_local(ptr, x);
+>  	case 4:
+>  		return __xchg_u32_local(ptr, x);
+>  #ifdef CONFIG_PPC64
+> @@ -103,6 +151,10 @@ static __always_inline unsigned long
+>  __xchg_relaxed(void *ptr, unsigned long x, unsigned int size)
+>  {
+>  	switch (size) {
+> +	case 1:
+> +		return __xchg_u8_relaxed(ptr, x);
+> +	case 2:
+> +		return __xchg_u16_relaxed(ptr, x);
+>  	case 4:
+>  		return __xchg_u32_relaxed(ptr, x);
+>  #ifdef CONFIG_PPC64
+> @@ -226,6 +278,21 @@ __cmpxchg_u32_acquire(u32 *p, unsigned long old, uns=
+igned long new)
+>  	return prev;
+>  }
+> =20
+> +
+> +#define CMPXCHG_GEN(type, sfx, v)				\
+> +	__XCHG_GEN(cmp, type, sfx, sfx, 1, v)
+> +
+> +CMPXCHG_GEN(u8, , volatile);
+> +CMPXCHG_GEN(u8, _local, volatile);
+> +CMPXCHG_GEN(u8, _relaxed, );
+> +CMPXCHG_GEN(u8, _acquire, );
+> +CMPXCHG_GEN(u16, , volatile);
+> +CMPXCHG_GEN(u16, _local, volatile);
+> +CMPXCHG_GEN(u16, _relaxed, );
+> +CMPXCHG_GEN(u16, _acquire, );
+> +#undef CMPXCHG_GEN
+> +#undef __XCHG_GEN
+> +
+>  #ifdef CONFIG_PPC64
+>  static __always_inline unsigned long
+>  __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned lon=
+g new)
+> @@ -316,6 +383,10 @@ __cmpxchg(volatile void *ptr, unsigned long old, uns=
+igned long new,
+>  	  unsigned int size)
+>  {
+>  	switch (size) {
+> +	case 1:
+> +		return __cmpxchg_u8(ptr, old, new);
+> +	case 2:
+> +		return __cmpxchg_u16(ptr, old, new);
+>  	case 4:
+>  		return __cmpxchg_u32(ptr, old, new);
+>  #ifdef CONFIG_PPC64
+> @@ -332,6 +403,10 @@ __cmpxchg_local(volatile void *ptr, unsigned long ol=
+d, unsigned long new,
+>  	  unsigned int size)
+>  {
+>  	switch (size) {
+> +	case 1:
+> +		return __cmpxchg_u8_local(ptr, old, new);
+> +	case 2:
+> +		return __cmpxchg_u16_local(ptr, old, new);
+>  	case 4:
+>  		return __cmpxchg_u32_local(ptr, old, new);
+>  #ifdef CONFIG_PPC64
+> @@ -348,6 +423,10 @@ __cmpxchg_relaxed(void *ptr, unsigned long old, unsi=
+gned long new,
+>  		  unsigned int size)
+>  {
+>  	switch (size) {
+> +	case 1:
+> +		return __cmpxchg_u8_relaxed(ptr, old, new);
+> +	case 2:
+> +		return __cmpxchg_u16_relaxed(ptr, old, new);
+>  	case 4:
+>  		return __cmpxchg_u32_relaxed(ptr, old, new);
+>  #ifdef CONFIG_PPC64
+> @@ -364,6 +443,10 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsi=
+gned long new,
+>  		  unsigned int size)
+>  {
+>  	switch (size) {
+> +	case 1:
+> +		return __cmpxchg_u8_acquire(ptr, old, new);
+> +	case 2:
+> +		return __cmpxchg_u16_acquire(ptr, old, new);
+>  	case 4:
+>  		return __cmpxchg_u32_acquire(ptr, old, new);
+>  #ifdef CONFIG_PPC64
+> --=20
+> 2.4.3
+>=20
