@@ -1,21 +1,43 @@
-Return-Path: <rsalvaterra@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qq4212JXyzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 22:24:09 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id vv3so1633499pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 05:24:09 -0700 (PDT)
-From: Rui Salvaterra <rsalvaterra@gmail.com>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rui Salvaterra <rsalvaterra@gmail.com>
-Subject: [PATCH] powerpc: wire up preadv2 and pwritev2 syscalls
-Date: Tue, 19 Apr 2016 13:23:36 +0100
-Message-Id: <1461068616-16646-1-git-send-email-rsalvaterra@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qq5WZ0xmRzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 23:31:21 +1000 (AEST)
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Tue, 19 Apr 2016 10:31:17 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 9A7EB1DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 09:31:06 -0400 (EDT)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3JCUVvi9830876
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 09:30:32 -0300
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3JDVBJO021168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 10:31:11 -0300
+Subject: Re: [PATCH v5] powerpc/pci: Assign fixed PHB number based on
+ device-tree properties
+To: Ian Munsie <imunsie@au1.ibm.com>
+References: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1461050766-sup-136@x230.ozlabs.ibm.com>
+Cc: mikey <mikey@neuling.org>, Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ gwshan <gwshan@linux.vnet.ibm.com>, paulus <paulus@samba.org>,
+ "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
+ bhelgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Message-ID: <5716331E.80207@linux.vnet.ibm.com>
+Date: Tue, 19 Apr 2016 10:31:10 -0300
+MIME-Version: 1.0
+In-Reply-To: <1461050766-sup-136@x230.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +47,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wire up preadv2/pwritev2 in the same way as preadv/pwritev. Fixes two
-build warnings on ppc64.
+On 04/19/2016 04:27 AM, Ian Munsie wrote:
+> Thanks for addressing my feedback :)
+>
+> Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Signed-off-by: Rui Salvaterra <rsalvaterra@gmail.com>
----
- arch/powerpc/include/asm/systbl.h      | 2 ++
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
+Thanks very much for reviewing Ian =)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 3fa9df7..2fc5d4d 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -384,3 +384,5 @@ SYSCALL(ni_syscall)
- SYSCALL(ni_syscall)
- SYSCALL(mlock2)
- SYSCALL(copy_file_range)
-+COMPAT_SYS_SPU(preadv2)
-+COMPAT_SYS_SPU(pwritev2)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 1f2594d..cf12c58 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define NR_syscalls		380
-+#define NR_syscalls		382
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 940290d..e9f5f41 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -390,5 +390,7 @@
- #define __NR_membarrier		365
- #define __NR_mlock2		378
- #define __NR_copy_file_range	379
-+#define __NR_preadv2		380
-+#define __NR_pwritev2		381
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.7.4
+Cheers,
+
+
+Guilherme
