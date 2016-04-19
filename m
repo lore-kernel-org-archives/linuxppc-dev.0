@@ -1,20 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
+ [IPv6:2607:f8b0:400e:c00::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpllf2gBLzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 10:10:38 +1000 (AEST)
-Message-ID: <1461024638.22587.1.camel@ellerman.id.au>
-Subject: Re: [RFC v4] powerpc/devtree: Parse new DRC mem/cpu/dev device tree
- elements
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: mwb@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, mbringm@us.ibm.com
-Date: Tue, 19 Apr 2016 10:10:38 +1000
-In-Reply-To: <201604181438.u3IEcmG7023884@oc1376853207.ibm.com>
-References: <201604181438.u3IEcmG7023884@oc1376853207.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpnXq46YYzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 11:31:22 +1000 (AEST)
+Received: by mail-pf0-x229.google.com with SMTP id n1so895823pfn.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 18:31:22 -0700 (PDT)
+Subject: Re: [PATCH kernel v3 9/9] powerpc/powernv/npu: Enable NVLink pass
+ through
+To: Alistair Popple <alistair@popple.id.au>,
+ David Gibson <david@gibson.dropbear.id.au>
+References: <1460450270-42354-1-git-send-email-aik@ozlabs.ru>
+ <1460450270-42354-10-git-send-email-aik@ozlabs.ru>
+ <20160415044020.GK18218@voom.redhat.com> <14207424.6AAakbByxl@new-mexico>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Daniel Axtens <dja@axtens.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Russell Currey <ruscur@russell.cc>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <57158A60.9030305@ozlabs.ru>
+Date: Tue, 19 Apr 2016 11:31:12 +1000
+MIME-Version: 1.0
+In-Reply-To: <14207424.6AAakbByxl@new-mexico>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +34,200 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-04-18 at 09:38 -0500, mwb@linux.vnet.ibm.com wrote:
+On 04/18/2016 11:52 AM, Alistair Popple wrote:
+> Hi David,
+>
+> On Fri, 15 Apr 2016 14:40:20 David Gibson wrote:
+>> On Tue, Apr 12, 2016 at 06:37:50PM +1000, Alexey Kardashevskiy wrote:
+>>> IBM POWER8 NVlink systems come with Tesla K40-ish GPUs each of which
+>>> also has a couple of fast speed links (NVLink). The interface to links
+>>> is exposed as an emulated PCI bridge which is included into the same
+>>> IOMMU group as the corresponding GPU.
+>>>
+>>> In the kernel, NPUs get a separate PHB of the PNV_PHB_NPU type and a PE.
+>>>
+>>> In order to make these links work when GPU is passed to the guest,
+>>> these bridges need to be passed as well; otherwise performance will
+>>> degrade.
+>>>
+>>> This implements and exports API to manage NPU state in regard to VFIO;
+>>> it replicates iommu_table_group_ops.
+>>>
+>>> This defines a new pnv_pci_ioda2_npu_ops which is assigned to
+>>> the IODA2 bridge if there are NPUs for a GPU on the bridge.
+>>> The new callbacks call the default IODA2 callbacks plus new NPU API.
+>>> This adds a gpe_table_group_to_npe() helper to find NPU PE for the IODA2
+>>> table_group, it is not expected to fail as the helper is only called
+>>> from the pnv_pci_ioda2_npu_ops.
+>>>
+>>> This adds a pnv_pci_npu_setup_iommu() helper which adds NPUs to
+>>> the GPU group if any found. The helper uses helpers to look for
+>>> the "ibm,gpu" property in the device tree which is a phandle of
+>>> the corresponding GPU.
+>>>
+>>> This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
+>>> loop skips NPU PEs as they do not have 32bit DMA segments.
+>>>
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> ---
+>>> Changes:
+>>> v3:
+>>> * moved NPU-to-GPU IOMMU grouping later after all PHBs are discovered
+>>> * removed hack to make iommu_add_device() work, iommu_group_add_device()
+>>> is used instead
+>>> * cleanup in gpe_table_group_to_npe_cb()
+>>>
+>>> v2:
+>>> * reimplemented to support NPU + GPU in the same group
+>>> * merged "powerpc/powernv/npu: Add NPU devices to IOMMU group" and
+>>> "powerpc/powernv/npu: Enable passing through via VFIO" into this patch
+>>> ---
+>>>   arch/powerpc/platforms/powernv/npu-dma.c  | 126 ++++++++++++++++++++++++++++++
+>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 105 +++++++++++++++++++++++++
+>>>   arch/powerpc/platforms/powernv/pci.h      |   6 ++
+>>>   3 files changed, 237 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+>>> index 8e70221..7cb9f6a 100644
+>>> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+>>> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+>>> @@ -12,6 +12,7 @@
+>>>   #include <linux/export.h>
+>>>   #include <linux/pci.h>
+>>>   #include <linux/memblock.h>
+>>> +#include <linux/iommu.h>
+>>>
+>>>   #include <asm/iommu.h>
+>>>   #include <asm/pnv-pci.h>
+>>> @@ -262,3 +263,128 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass)
+>>>   		}
+>>>   	}
+>>>   }
+>>> +
+>>> +long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+>>> +		struct iommu_table *tbl)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	int64_t rc;
+>>> +	const unsigned long size = tbl->it_indirect_levels ?
+>>> +		tbl->it_level_size : tbl->it_size;
+>>> +	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
+>>> +	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
+>>> +
+>>> +	pe_info(npe, "Setting up window#%d %llx..%llx pg=%lx\n", num,
+>>> +			start_addr, start_addr + win_size - 1,
+>>> +			IOMMU_PAGE_SIZE(tbl));
+>>> +
+>>> +	/* Ignore @num as there is just one window per NPU */
+>>> +	rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>>> +			npe->pe_number,
+>>> +			npe->pe_number,
+>>> +			tbl->it_indirect_levels + 1,
+>>> +			__pa(tbl->it_base),
+>>> +			size << 3,
+>>> +			IOMMU_PAGE_SIZE(tbl));
+>>> +	if (rc) {
+>>> +		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
+>>> +		return rc;
+>>> +	}
+>>> +
+>>> +	pnv_pci_link_table_and_group(phb->hose->node, num,
+>>> +			tbl, &npe->table_group);
+>>> +	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>>> +
+>>> +	return rc;
+>>> +}
+>>> +
+>>> +long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	long ret;
+>>> +
+>>> +	pe_info(npe, "Removing DMA window #%d\n", num);
+>>> +
+>>> +	/* Ignore @num as there is just one window per NPU */
+>>> +	ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+>>> +			npe->pe_number,
+>>> +			0/* levels */, 0/* table address */,
+>>> +			0/* table size */, 0/* page size */);
+>>> +	if (ret)
+>>> +		pe_warn(npe, "Unmapping failed, ret = %ld\n", ret);
+>>> +	else
+>>> +		pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+>>> +
+>>> +	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
+>>> +			&npe->table_group);
+>>> +
+>>> +	return ret;
+>>> +}
+>>> +
+>>> +/* Switch ownership from platform code to external user (e.g. VFIO) */
+>>> +void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+>>> +{
+>>> +	struct pnv_phb *phb = npe->phb;
+>>> +	int64_t ret;
+>>> +
+>>> +	if (npe->table_group.tables[0]) {
+>>> +		/* Disable 32bit window */
+>>> +		pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
+>>> +				&npe->table_group);
+>>> +		npe->table_group.tables[0] = NULL;
+>>> +		ret = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+>>> +				npe->pe_number,
+>>> +				0/* levels */, 0/* table address */,
+>>> +				0/* table size */, 0/* page size */);
+>>> +	} else {
+>>> +		/* Disable bypass */
+>>> +		ret = opal_pci_map_pe_dma_window_real(phb->opal_id,
+>>> +				npe->pe_number, npe->pe_number,
+>>> +				0 /* bypass base */, 0);
+>>> +	}
+>>
+>> It's not immediately obvious to me why this is an if/else.  I'm
+>> assuming that the way the kernel uses the NPE IOMMU it always either
+>> has a 32-bit DMA window, or it's in bypass mode.  Is that inherent to
+>> the way the hardware works, or just the way Linux uses it?
+>
+> Unlike the IODA2 the NPU only has a single TVE/window meaning the NPU IOMMU is
+> either disabled, in bypass or has a 32-bit DMA window.
 
-> Several properties in the DRC device tree format are replaced by
-> more compact representations to allow, for example, for the encoding
-> of vast amounts of memory, and or reduced duplication of information
-> in related data structures.
-> 
-> "ibm,drc-info": This property, when present, replaces the following
-> four properties: ibm,drc-indexes, ibm,drc-names, ibm,drc-types
-> and ibm,drc-power-domains.  This property is defined for all
-> dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
-> are intended to provide a more compact representation, and reduce some
-> search overhead.
-> 
-> "ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
-> node representation within the "ibm,dynamic-reconfiguration-memory"
-> property.  This element format is intended to provide a more compact
-> representation of memory, especially, for systems with massive amounts
-> of RAM.
-> 
-> "ibm,architecture.vec": Bit flags are added to this data structure
-> by the front end processor to inform the kernel as to whether to expect
-> the changes to one or both of the device tree structures "ibm,drc-info"
-> and "ibm,dynamic-memory-v2".
-> 
-> The new element structures, "ibm,dynamic-memory-v2" and "ibm,drc-info",
-> should completely replace the previously used structures at execution.
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
 
-What's changed in version 2, 3 and 4?
+... or has a 64-bit DMA window.
 
-I also sent you comments on v2, did you see them?
 
-cheers
+> Alexey can comment on
+> the if/else but I agree that it isn't strictly necessary - calling either
+> map_pe_dma_window() or map_pe_dma_window_real() with the arguments in both the
+> if and else cases will zero the TVE effectively disabling DMA.
+
+Right, OPAL does essentially the same thing when I disable DMA (window or 
+bypass).
+
+
+>> I'm just worrying if this could open an exploitable hole if the host
+>> kernel ever changes so that it could have bypass windows and TCE
+>> windows simultaneously active.  Is there any way to unconditionally
+>> disable bypass *and* disable any existing DMA window.
+>
+> I'm not a VFIO expert, but from the perspective of the NPU HW this situation
+> couldn't exist for the reasons described above. Calling
+> opal_pci_map_pe_dma_window/_real() with either a zero table size or PCI memory
+> size will unconditionally disable all DMA windows for that PE# on the NPU.
+>
+> - Alistair
+>
+>> Apart from that nit,
+>>
+>> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+
+Thanks!
+
+However there are still issues with the patchset which I am planning to fix 
+and at least one bug with continuing DMA after GPU was reset, when I figure 
+out what is going on, I'll respin.
+
+
+
+-- 
+Alexey
