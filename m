@@ -1,21 +1,24 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from valiant.selinc.com (valiant.selinc.com [74.117.214.141])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qqBPw0XKDzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 03:11:47 +1000 (AEST)
-Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
- by valiant.selinc.com (8.16.0.11/8.16.0.11) with ESMTP id u3JHBkZq012666
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 10:11:46 -0700
-In-Reply-To: <1461055540.2801.10.camel@au1.ibm.com>
-References: <OFDB971D2B.A484FAC0-ON88257F99.0075C134-88257F99.00786154@selinc.com>
- <1461055540.2801.10.camel@au1.ibm.com>
-To: benh@au1.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-MIME-Version: 1.0
-Subject: Re: Trouble with DMA on PPC linux question
-Message-ID: <OF1B7D552A.E30361EF-ON88257F9A.005E3646-88257F9A.005E7647@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Tue, 19 Apr 2016 10:11:45 -0700
-Content-Type: text/plain; charset="US-ASCII"
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqJCr2KDFzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 07:33:27 +1000 (AEST)
+Message-ID: <1461101600.32510.207.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Date: Tue, 19 Apr 2016 16:33:20 -0500
+In-Reply-To: <CAPk1OjHbNZfcsGfmt_tyD=3YBcJaVYLvpExtVYWaSo=5jZb+sQ@mail.gmail.com>
+References: <460384482-21320-1-git-send-email-alessio.bogani@elettra.eu>
+ <1460966279-29188-1-git-send-email-alessio.bogani@elettra.eu>
+ <1461039981.32510.201.camel@buserror.net>
+ <CAPk1OjHbNZfcsGfmt_tyD=3YBcJaVYLvpExtVYWaSo=5jZb+sQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v2 1/1] powerpc/86xx: Add support for Emerson/Artesyn
+ MVME7100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
-
-Benjamin Herrenschmidt <benh@au1.ibm.com> wrote on 04/19/2016 01:45:40 AM:
-
-> From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-> To: Bruce_Leonard@selinc.com, linuxppc-dev@lists.ozlabs.org
-> Date: 04/19/2016 01:46 AM
-> Subject: Re: Trouble with DMA on PPC linux question
+On Tue, 2016-04-19 at 10:33 +0200, Alessio Igor Bogani wrote:
+> Hi Scott,
 > 
-> On Mon, 2016-04-18 at 14:54 -0700, Bruce_Leonard@selinc.com wrote:
+> Thanks for reviewing it!
+> 
+> On 19 April 2016 at 06:26, Scott Wood <oss@buserror.net> wrote:
+> > On Mon, 2016-04-18 at 09:57 +0200, Alessio Igor Bogani wrote:
+> > > +     pci0: pcie@f1008000 {
+> > > +             reg = <0xf1008000 0x1000>;
+> > > +             ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0
+> > > 0x50000000
+> > > +                       0x01000000 0x0 0x00000000 0xf0000000 0x0
+> > > 0x00800000>;
+> [...]
+> > > +
+> > > +     pci1: pcie@f1009000 {
+> > > +             compatible = "fsl,mpc8641-pcie";
+> > > +             device_type = "pci";
+> > > +             #size-cells = <2>;
+> > > +             #address-cells = <3>;
+> > > +             reg = <0xf1009000 0x1000>;
+> > > +             bus-range = <0 0xff>;
 > > 
-> > On the DMA transactions that work, the virtual address I hand to 
-> > dma_map_single() is something like 0xe0840000 and the dma_addr_t 
-result is 
-> > 0x10840000 which is less than my 512Mb limit.  On the transactions 
-that 
-> > don't work, the virtual address is 0xd5390000 with the mapped result 
-being 
-> > 0x25390000, which is past my upper bound on my RAM.  In fact it's not 
-even 
-> > in my memory map, there's a hole there. 
+> > Why are pci0 and pci1 so different? Why does mpc8641si-post.dtsi not have
+> > pci1?
 > 
-> Where does this virtual address come from ?
-> 
-> The kernel has two types of virtual addresses. Those coming from the
-> linear mapping (the stuff you get from kmalloc() for example, or
-> get_pages()) which can be translated using that simple substraction.
-> 
-> The other is the vmalloc space, and that is a non-linear mapping of
-> random pages.
-> 
-> If your vaddr comes from the latter it can't be passed to
-> dma_map_single as-is, you need to get to the underlying pages first.
-> 
-> Ben.
-> 
+> You are right. The MPC8641 processor offers two pci so
+> mpc8641si-post.dtsi should be the right place where to define both.
+> What about the boards which don't use the pci1? Will 'status =
+> "disabled"' be enough?
 
-That's a good question.  I'm not sure where the addresses come from right 
-now (they're handed to me from the MTD layer), but I'll certainly dig into 
-that and see.
+Yes.
 
-Thanks for the help!  I appreciate the pointer.
-
-Bruce
+-Scott
