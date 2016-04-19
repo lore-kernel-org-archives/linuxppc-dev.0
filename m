@@ -1,32 +1,21 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qq9Zw2vFQzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 02:34:32 +1000 (AEST)
-Received: from localhost
- by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Tue, 19 Apr 2016 17:34:28 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 989DC17D8056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:35:12 +0100 (BST)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3JGYP2851380272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 16:34:25 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3JGYOTF000745
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 10:34:25 -0600
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] cxl: Increase timeout for detection of AFU mmio hang
-Date: Tue, 19 Apr 2016 18:34:24 +0200
-Message-Id: <1461083664-12283-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from valiant.selinc.com (valiant.selinc.com [74.117.214.141])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qqBPw0XKDzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 03:11:47 +1000 (AEST)
+Received: from edison.ad.selinc.com (edison.ad.selinc.com [10.100.0.15])
+ by valiant.selinc.com (8.16.0.11/8.16.0.11) with ESMTP id u3JHBkZq012666
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 10:11:46 -0700
+In-Reply-To: <1461055540.2801.10.camel@au1.ibm.com>
+References: <OFDB971D2B.A484FAC0-ON88257F99.0075C134-88257F99.00786154@selinc.com>
+ <1461055540.2801.10.camel@au1.ibm.com>
+To: benh@au1.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Subject: Re: Trouble with DMA on PPC linux question
+Message-ID: <OF1B7D552A.E30361EF-ON88257F9A.005E3646-88257F9A.005E7647@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Tue, 19 Apr 2016 10:11:45 -0700
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,34 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PSL designers recommend a larger value for the mmio hang pulse, 256 us
-instead of 1 us. The CAIA architecture states that it needs to be
-smaller than 1/2 of the RTOS timeout set in the PHB for outbound
-non-posted transactions, which is still (easily) the case here.
+Ben,
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
----
-Needs to be applied on top of http://patchwork.ozlabs.org/patch/604029/
+Benjamin Herrenschmidt <benh@au1.ibm.com> wrote on 04/19/2016 01:45:40 AM:
 
+> From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+> To: Bruce_Leonard@selinc.com, linuxppc-dev@lists.ozlabs.org
+> Date: 04/19/2016 01:46 AM
+> Subject: Re: Trouble with DMA on PPC linux question
+> 
+> On Mon, 2016-04-18 at 14:54 -0700, Bruce_Leonard@selinc.com wrote:
+> > 
+> > On the DMA transactions that work, the virtual address I hand to 
+> > dma_map_single() is something like 0xe0840000 and the dma_addr_t 
+result is 
+> > 0x10840000 which is less than my 512Mb limit.  On the transactions 
+that 
+> > don't work, the virtual address is 0xd5390000 with the mapped result 
+being 
+> > 0x25390000, which is past my upper bound on my RAM.  In fact it's not 
+even 
+> > in my memory map, there's a hole there. 
+> 
+> Where does this virtual address come from ?
+> 
+> The kernel has two types of virtual addresses. Those coming from the
+> linear mapping (the stuff you get from kmalloc() for example, or
+> get_pages()) which can be translated using that simple substraction.
+> 
+> The other is the vmalloc space, and that is a non-linear mapping of
+> random pages.
+> 
+> If your vaddr comes from the latter it can't be passed to
+> dma_map_single as-is, you need to get to the underlying pages first.
+> 
+> Ben.
+> 
 
- drivers/misc/cxl/pci.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+That's a good question.  I'm not sure where the addresses come from right 
+now (they're handed to me from the MTD layer), but I'll certainly dig into 
+that and see.
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 94fd3f7..0a9c15b 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -375,8 +375,10 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
- 		return -ENODEV;
- 	}
- 
-+	psl_dsnctl = 0x0000900000000000ULL; /* pteupd ttype, scdone */
-+	psl_dsnctl |= (0x2ULL << (63-38)); /* MMIO hang pulse: 256 us */
- 	/* Tell PSL where to route data to */
--	psl_dsnctl = 0x0000900002000000ULL | (chipid << (63-5));
-+	psl_dsnctl |= (chipid << (63-5));
- 	psl_dsnctl |= (capp_unit_id << (63-13));
- 
- 	cxl_p1_write(adapter, CXL_PSL_DSNDCTL, psl_dsnctl);
--- 
-1.9.1
+Thanks for the help!  I appreciate the pointer.
+
+Bruce
