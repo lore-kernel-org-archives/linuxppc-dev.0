@@ -1,24 +1,24 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
+Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c00::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpybj49b3zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:19:29 +1000 (AEST)
-Received: by mail-pa0-x231.google.com with SMTP id er2so4415554pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 01:19:29 -0700 (PDT)
-Subject: Re: [PATCH v8 30/45] powerpc/pci: Delay populating pdn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpycQ37LgzDqCv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:20:06 +1000 (AEST)
+Received: by mail-pf0-x22d.google.com with SMTP id 184so4578781pff.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 01:20:06 -0700 (PDT)
+Subject: Re: [PATCH v8 31/45] powerpc/pci: Don't scan empty slot
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-31-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-32-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, dja@axtens.net,
  bhelgaas@google.com, robherring2@gmail.com, grant.likely@linaro.org
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <5715EA08.3040901@ozlabs.ru>
-Date: Tue, 19 Apr 2016 18:19:20 +1000
+Message-ID: <5715EA2E.4090105@ozlabs.ru>
+Date: Tue, 19 Apr 2016 18:19:58 +1000
 MIME-Version: 1.0
-In-Reply-To: <1455680668-23298-31-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1455680668-23298-32-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,40 +30,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 02/17/2016 02:44 PM, Gavin Shan wrote:
-> The pdn (struct pci_dn) instances are allocated from memblock or
-> bootmem when creating PCI controller (hoses) in setup_arch(). PCI
-> hotplug, which will be supported by proceeding patches, releases
-> PCI device nodes and their corresponding pdn on unplugging event.
-> The memory chunks for pdn instances allocated from memblock or
-> bootmem are hard to reused after being released.
+> In hotplug case, function pci_add_pci_devices() is called to rescan
+> the specified PCI bus, which might not have any child devices. Access
+> to the PCI bus's child device node will cause kernel crash without
+> exception.
 >
-> This delays creating pdn by pci_devs_phb_init() from setup_arch()
-> to core_initcall() so that they are allocated from slab. The memory
-> consumed by pdn can be released to system without problem during
-> PCI unplugging time. It indicates that pci_dn is unavailable in
-> setup_arch() and the the fixup on pdn (like AGP's) can't be carried
-> out that time. We have to do that in ppc_md.pcibios_root_bridge_prepare()
-> on maple/pasemi/powermac platforms where/when the pdn is available.
->
-> At the mean while, the EEH device is created when pdn is populated,
-> meaning pdn and EEH device have same life cycle. In turn, we needn't
-> call eeh_dev_init() to create EEH device explicitly.
+> This adds one more check to skip scanning PCI bus that doesn't have
+> any subordinate devices from device-tree, in order to avoid kernel
+> crash.
 >
 > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 
-Uff. It would not hurt to mention that  pcibios_root_bridge_prepare is 
-called from subsys_initcall() which is executed after core_initcall() so 
-the code flow does not change.
-
-Have you checked if there is anything in between 
-core_initcall(pci_devs_phb_init) and subsys_initcall(pcibios_init) which 
-might need device tree nodes? For example, subsys_initcall(pcibios_init) 
-calls (eventually) pnv_pci_ioda_fixup(), if we are unlucky and 
-pcibios_init() (and therefore pnv_pci_ioda_fixup() or what pseries/others 
-do) is called before pcibios_init() - won't we crash or something?
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 
+> ---
+>   arch/powerpc/kernel/pci-hotplug.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+> index 7929a1c..3628c38 100644
+> --- a/arch/powerpc/kernel/pci-hotplug.c
+> +++ b/arch/powerpc/kernel/pci-hotplug.c
+> @@ -120,7 +120,8 @@ void pci_add_pci_devices(struct pci_bus *bus)
+>   	if (mode == PCI_PROBE_DEVTREE) {
+>   		/* use ofdt-based probe */
+>   		of_rescan_bus(dn, bus);
+> -	} else if (mode == PCI_PROBE_NORMAL) {
+> +	} else if (mode == PCI_PROBE_NORMAL &&
+> +		   dn->child && PCI_DN(dn->child)) {
+>   		/*
+>   		 * Use legacy probe. In the partial hotplug case, we
+>   		 * probably have grandchildren devices unplugged. So
+>
 
 
 -- 
