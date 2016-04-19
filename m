@@ -1,19 +1,21 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0096.outbound.protection.outlook.com [207.46.100.96])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qq0Sb3bstzDqGs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 19:43:27 +1000 (AEST)
-From: Jia Hongtao <hongtao.jia@nxp.com>
-To: <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <scott.wood@nxp.com>,
- <yuantian.tang@nxp.com>, <hongtao.jia@nxp.com>
-Subject: [PATCH V3 1/2] cpufreq: qoriq: Remove __exit macro from .exit callback
-Date: Tue, 19 Apr 2016 17:00:06 +0800
-Message-ID: <1461056407-22542-1-git-send-email-hongtao.jia@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qq0Yn2MkWzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 19:47:57 +1000 (AEST)
+Message-ID: <1461059270.17661.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: Add a kernel thread to check the coherent platform
+ function's state
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 19 Apr 2016 19:47:50 +1000
+In-Reply-To: <1460984701-21490-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1460984701-21490-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-.exit callback (qoriq_cpufreq_cpu_exit()) is also used during suspend.
-So __exit macro should be removed or the function will be discarded.
+On Mon, 2016-04-18 at 15:05 +0200, Christophe Lombard wrote:
 
-Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
----
- drivers/cpufreq/qoriq-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> In the POWERVM environement, the PHYP CoherentAccel component manages
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index b23e525..3a3fe39 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -301,7 +301,7 @@ err_np:
- 	return -ENODEV;
- }
- 
--static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct cpu_data *data = policy->driver_data;
- 
-@@ -348,7 +348,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.name		= "qoriq_cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
- 	.init		= qoriq_cpufreq_cpu_init,
--	.exit		= __exit_p(qoriq_cpufreq_cpu_exit),
-+	.exit		= qoriq_cpufreq_cpu_exit,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= qoriq_cpufreq_target,
- 	.get		= cpufreq_generic_get,
--- 
-2.1.0.27.g96db324
+PowerVM is correct I think.
+
+> the state of the Coherant Accelerator Processor Interface adapter and
+							   ^
+							   (CAPI)
+> virtualizes CAPI resources, handles CAPP, PSL, PSL Slice errors - and
+> interrupts - and provides a new set of HCALLs for the OS APIs to utilize
+					 ^
+					 hcall (as below?)
+> AFUs.
+
+AFUs ? (you define it below)
+
+> During the course of operation, a coherent platform function can
+> encounter errors. Some possible reason for errors are:
+> • Hardware recoverable and unrecoverable errors
+> • Transient and over-threshold correctable errors
+> 
+> PHYP implements its own state model for the coherent platform function.
+> The current state of this Acclerator Fonction Unit (AFU) is available
+> through a hcall.
+> 
+> In case of low-level troubles (or error injection), The PHYP component
+> may reset the card and change the AFU state. The PHYP interface doesn't
+> provide any way to be notified when that happens.
+
+Ugh.
+
+> The current implementation of the cxl driver, for the POWERVM
+> environment, follows the general error recovery procedures required to
+
+What are "the general error recovery procedures" ?
+
+> reset operation of the coherent platform function. The platform firmware
+> resets and reconfigures hardware when an external action is required -
+> attach/detach a process, link ok, ....
+
+Platform firmware does that at our request or by itself?
+
+> The purpose of this patch is to interact with the external driver
+
+What's an external driver?
+
+> (where the AFU is shown) even if no action is required. A kernel thread
+
+But no action is required, so why do we need to do anything?
+
+> is needed to check every x seconds the current state of the AFU to see
+> if we need to enter an error recovery path.
+
+
+I don't really understand what this is doing and why we want it. It sounds like
+we're waking the cpu up every 3 seconds and having it poll the hypervisor, for
+each AFU?
+
+As far as the implementation, I can't see any reason why you need your own
+kthreads, can't you just use queue_work() ?
+
+cheers
