@@ -1,37 +1,35 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpywp0MS2zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:34:14 +1000 (AEST)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 527CF440DD2_715ED82B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 08:34:10 +0000 (GMT)
-Received: from mail-qk0-f170.google.com (mail-qk0-f170.google.com
- [209.85.220.170])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- A07F443E046_715ED6CF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 08:33:48 +0000 (GMT)
-Received: by mail-qk0-f170.google.com with SMTP id r191so2017102qke.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 01:33:48 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1461039981.32510.201.camel@buserror.net>
-References: <460384482-21320-1-git-send-email-alessio.bogani@elettra.eu>
- <1460966279-29188-1-git-send-email-alessio.bogani@elettra.eu>
- <1461039981.32510.201.camel@buserror.net>
-Date: Tue, 19 Apr 2016 10:33:47 +0200
-Message-ID: <CAPk1OjHbNZfcsGfmt_tyD=3YBcJaVYLvpExtVYWaSo=5jZb+sQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] powerpc/86xx: Add support for Emerson/Artesyn
- MVME7100
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: Scott Wood <oss@buserror.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpzCC5HrBzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:46:47 +1000 (AEST)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Tue, 19 Apr 2016 18:46:46 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7DAB03578053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:46:42 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3J8kYlG7274974
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:46:42 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3J8k6wT028349
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 18:46:06 +1000
+Message-ID: <1461055540.2801.10.camel@au1.ibm.com>
+Subject: Re: Trouble with DMA on PPC linux question
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Bruce_Leonard@selinc.com, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 19 Apr 2016 18:45:40 +1000
+In-Reply-To: <OFDB971D2B.A484FAC0-ON88257F99.0075C134-88257F99.00786154@selinc.com>
+References: <OFDB971D2B.A484FAC0-ON88257F99.0075C134-88257F99.00786154@selinc.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,67 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On Mon, 2016-04-18 at 14:54 -0700, Bruce_Leonard@selinc.com wrote:
+> 
+> On the DMA transactions that work, the virtual address I hand to 
+> dma_map_single() is something like 0xe0840000 and the dma_addr_t result is 
+> 0x10840000 which is less than my 512Mb limit.  On the transactions that 
+> don't work, the virtual address is 0xd5390000 with the mapped result being 
+> 0x25390000, which is past my upper bound on my RAM.  In fact it's not even 
+> in my memory map, there's a hole there. 
 
-Thanks for reviewing it!
+Where does this virtual address come from ?
 
-On 19 April 2016 at 06:26, Scott Wood <oss@buserror.net> wrote:
-> On Mon, 2016-04-18 at 09:57 +0200, Alessio Igor Bogani wrote:
->> +     pci0: pcie@f1008000 {
->> +             reg = <0xf1008000 0x1000>;
->> +             ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0
->> 0x50000000
->> +                       0x01000000 0x0 0x00000000 0xf0000000 0x0
->> 0x00800000>;
-[...]
->> +
->> +     pci1: pcie@f1009000 {
->> +             compatible = "fsl,mpc8641-pcie";
->> +             device_type = "pci";
->> +             #size-cells = <2>;
->> +             #address-cells = <3>;
->> +             reg = <0xf1009000 0x1000>;
->> +             bus-range = <0 0xff>;
->
-> Why are pci0 and pci1 so different? Why does mpc8641si-post.dtsi not have pci1?
+The kernel has two types of virtual addresses. Those coming from the
+linear mapping (the stuff you get from kmalloc() for example, or
+get_pages()) which can be translated using that simple substraction.
 
-You are right. The MPC8641 processor offers two pci so
-mpc8641si-post.dtsi should be the right place where to define both.
-What about the boards which don't use the pci1? Will 'status =
-"disabled"' be enough?
+The other is the vmalloc space, and that is a non-linear mapping of
+random pages.
 
->> +asm("        .globl _zimage_start\n\
->> +     _zimage_start:\n\
->> +             mfmsr   10\n\
->> +             rlwinm  10,10,0,~(1<<15)        /* Clear MSR_EE */\n\
->> +             sync\n\
->> +             mtmsr   10\n\
->> +             isync\n\
->> +             b _zimage_start_lib\n\
->> +");
->
-> Please put this in an asm file.
+If your vaddr comes from the latter it can't be passed to
+dma_map_single as-is, you need to get to the underlying pages first.
 
-Ok.
-
-> Is U-Boot really not clearing MSR[EE]?  How old is this U-Boot?
-[...]
->> +     defined(TARGET_83xx) || defined(TARGET_MVME7100)
->>       unsigned long   bi_immr_base;   /* base of IMMR register
-[...]
-> TARGET_86xx would match the U-Boot definition better.
-[...]
->> +     _set_L2CR(_get_L2CR() | L2CR_L2E);
-[...]
-> U-Boot doesn't enable L2 cache?
-
-In fact it isn't U-Boot but MotLoad which it doesn't clear MSR[EE] and
-disable L2 cache just before pass control to operating system. It
-seems to be partially compatible with older version of U-Boot
-(boot/mvme7100.c) but I wasn't able to use an uImage to boot so I have
-switched to the dtbImage target.
-
-Thanks!
-
-Ciao,
-Alessio
+Ben.
