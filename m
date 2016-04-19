@@ -1,24 +1,43 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0088.outbound.protection.outlook.com [157.56.112.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpx0G5MVZzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:07:09 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@nxp.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scott.wood@nxp.com>, Yuantian Tang <yuantian.tang@nxp.com>
-Subject: =?gb2312?B?tPC4tDogW1BBVENIIDEvMl0gY3B1ZnJlcTogcW9yaXE6IEZpeCBjb29saW5n?=
- =?gb2312?Q?_device_registration_issue_during_suspend?=
-Date: Tue, 19 Apr 2016 06:52:17 +0000
-Message-ID: <HE1PR0401MB18512E402535DE12512A1991EB6C0@HE1PR0401MB1851.eurprd04.prod.outlook.com>
-References: <1460966372-4877-1-git-send-email-hongtao.jia@nxp.com>
- <20160418103254.GD2322@vireshk-i7>
-In-Reply-To: <20160418103254.GD2322@vireshk-i7>
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpxTT2tM0zDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:29:01 +1000 (AEST)
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 19 Apr 2016 17:28:59 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 866772CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:28:56 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3J7SmiN10486228
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:28:56 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3J7SN38031169
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:28:24 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, benh <benh@kernel.crashing.org>,
+ gwshan <gwshan@linux.vnet.ibm.com>,
+ linux-pci <linux-pci@vger.kernel.org>, paulus <paulus@samba.org>,
+ mikey <mikey@neuling.org>,
+ "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
+ bhelgaas <bhelgaas@google.com>,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5] powerpc/pci: Assign fixed PHB number based on
+ device-tree properties
+In-reply-to: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Date: Tue, 19 Apr 2016 17:27:57 +1000
+Message-Id: <1461050766-sup-136@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +47,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS3Tyrz+1K28/i0tLS0tDQo+ILeivP7IyzogVmlyZXNoIEt1bWFyIFttYWlsdG86
-dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+ILeiy83KsbzkOiBNb25kYXksIEFwcmlsIDE4LCAy
-MDE2IDY6MzMgUE0NCj4gytW8/sjLOiBIb25ndGFvIEppYSA8aG9uZ3Rhby5qaWFAbnhwLmNvbT4N
-Cj4gs63LzTogbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
-YWJzLm9yZzsgU2NvdHQgV29vZA0KPiA8c2NvdHQud29vZEBueHAuY29tPjsgWXVhbnRpYW4gVGFu
-ZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPg0KPiDW98ziOiBSZTogW1BBVENIIDEvMl0gY3B1ZnJl
-cTogcW9yaXE6IEZpeCBjb29saW5nIGRldmljZSByZWdpc3RyYXRpb24gaXNzdWUNCj4gZHVyaW5n
-IHN1c3BlbmQNCj4gDQo+IE9uIDE4LTA0LTE2LCAxNTo1OSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+
-ID4gQ29vbGluZyBkZXZpY2UgaXMgcmVnaXN0ZXJlZCBieSByZWFkeSBjYWxsYmFjay4gSXQncyBh
-bHNvIGludm9rZWQNCj4gPiB3aGlsZSBzeXN0ZW0gcmVzdW1pbmcgZnJvbSBzbGVlcCAoRW5hYmxp
-bmcgbm9uLWJvb3QgY3B1cykuIFRodXMNCj4gPiBjb29saW5nIGRldmljZSBtYXkgYmUgbXVsdGlw
-bGUgcmVnaXN0ZXJlZC4gU3RvcF9jcHUgY2FsbGJhY2sgaXMNCj4gPiBpbnZva2VkIGR1cmluZyBz
-dXNwZW5kIChEaXNhYmxpbmcgbm9uLWJvb3QgY3B1cykuIFNvIG1hdGNoYWJsZQ0KPiA+IHVucmVn
-aXN0cmF0aW9uIGlzIGFkZGVkIHRvIGZpeCB0aGlzIGlzc3VlLg0KPiA+DQo+ID4gU2lnbmVkLW9m
-Zi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQG54cC5jb20+DQo+ID4gLS0tDQo+ID4gIGRy
-aXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMgfCA4ICsrKysrKysrDQo+ID4gIDEgZmlsZSBj
-aGFuZ2VkLCA4IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nw
-dWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQo+ID4gYi9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJl
-cS5jIGluZGV4IGIyM2U1MjUuLjFjMmZkYzEgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVm
-cmVxL3FvcmlxLWNwdWZyZXEuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVm
-cmVxLmMNCj4gPiBAQCAtMzA1LDYgKzMwNSw3IEBAIHN0YXRpYyBpbnQgX19leGl0IHFvcmlxX2Nw
-dWZyZXFfY3B1X2V4aXQoc3RydWN0DQo+ID4gY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkgIHsNCj4g
-PiAgCXN0cnVjdCBjcHVfZGF0YSAqZGF0YSA9IHBvbGljeS0+ZHJpdmVyX2RhdGE7DQo+ID4NCj4g
-PiArCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0KPiA+ICAJa2ZyZWUo
-ZGF0YS0+cGNsayk7DQo+ID4gIAlrZnJlZShkYXRhLT50YWJsZSk7DQo+ID4gIAlrZnJlZShkYXRh
-KTsNCj4gPiBAQCAtMzIzLDYgKzMyNCwxMiBAQCBzdGF0aWMgaW50IHFvcmlxX2NwdWZyZXFfdGFy
-Z2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeQ0KPiAqcG9saWN5LA0KPiA+ICAJcmV0dXJuIGNsa19z
-ZXRfcGFyZW50KHBvbGljeS0+Y2xrLCBwYXJlbnQpOyAgfQ0KPiA+DQo+ID4gK3N0YXRpYyB2b2lk
-IHFvcmlxX2NwdWZyZXFfc3RvcF9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpIHsN
-Cj4gPiArCXN0cnVjdCBjcHVfZGF0YSAqY3B1ZCA9IHBvbGljeS0+ZHJpdmVyX2RhdGE7DQo+ID4g
-Kw0KPiA+ICsJY3B1ZnJlcV9jb29saW5nX3VucmVnaXN0ZXIoY3B1ZC0+Y2Rldik7DQo+ID4gK30N
-Cj4gPg0KPiA+ICBzdGF0aWMgdm9pZCBxb3JpcV9jcHVmcmVxX3JlYWR5KHN0cnVjdCBjcHVmcmVx
-X3BvbGljeSAqcG9saWN5KSAgeyBAQA0KPiA+IC0zNTIsNiArMzU5LDcgQEAgc3RhdGljIHN0cnVj
-dCBjcHVmcmVxX2RyaXZlciBxb3JpcV9jcHVmcmVxX2RyaXZlciA9IHsNCj4gPiAgCS52ZXJpZnkJ
-CT0gY3B1ZnJlcV9nZW5lcmljX2ZyZXF1ZW5jeV90YWJsZV92ZXJpZnksDQo+ID4gIAkudGFyZ2V0
-X2luZGV4CT0gcW9yaXFfY3B1ZnJlcV90YXJnZXQsDQo+ID4gIAkuZ2V0CQk9IGNwdWZyZXFfZ2Vu
-ZXJpY19nZXQsDQo+ID4gKwkuc3RvcF9jcHUJPSBxb3JpcV9jcHVmcmVxX3N0b3BfY3B1LA0KPiA+
-ICAJLnJlYWR5CQk9IHFvcmlxX2NwdWZyZXFfcmVhZHksDQo+ID4gIAkuYXR0cgkJPSBjcHVmcmVx
-X2dlbmVyaWNfYXR0ciwNCj4gPiAgfTsNCj4gDQo+IFlvdSBkb24ndCBuZWVkIHRvIGRvIGl0IGZy
-b20gc3RvcF9jcHUoKSwgcGxlYXNlIHVzZQ0KPiBxb3JpcV9jcHVmcmVxX2NwdV9leGl0KCkgZm9y
-IHRoaXMuDQoNClRoYW5rcy4gVGhlIG5ldyBwYXRjaCB3aWxsIGJlIHN1Ym1pdHRlZCBzb29uLg0K
-DQotSG9uZ3Rhby4NCg0KPiANCj4gLS0NCj4gdmlyZXNoDQo=
+Thanks for addressing my feedback :)
+
+Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
