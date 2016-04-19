@@ -1,43 +1,24 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpxTT2tM0zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:29:01 +1000 (AEST)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Tue, 19 Apr 2016 17:28:59 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 866772CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:28:56 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3J7SmiN10486228
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:28:56 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3J7SN38031169
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:28:24 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, benh <benh@kernel.crashing.org>,
- gwshan <gwshan@linux.vnet.ibm.com>,
- linux-pci <linux-pci@vger.kernel.org>, paulus <paulus@samba.org>,
- mikey <mikey@neuling.org>,
- "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
- bhelgaas <bhelgaas@google.com>,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5] powerpc/pci: Assign fixed PHB number based on
- device-tree properties
-In-reply-to: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-Date: Tue, 19 Apr 2016 17:27:57 +1000
-Message-Id: <1461050766-sup-136@x230.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpy2S184TzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:54:06 +1000 (AEST)
+Received: by mail-pf0-x234.google.com with SMTP id n1so4318666pfn.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 00:54:06 -0700 (PDT)
+Date: Tue, 19 Apr 2016 13:24:00 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Jia Hongtao <hongtao.jia@nxp.com>
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ scott.wood@nxp.com, yuantian.tang@nxp.com
+Subject: Re: [PATCH V2] cpufreq: qoriq: Fix cooling device registration issue
+ during suspend
+Message-ID: <20160419075400.GB2715@vireshk-i7>
+References: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461048206-23567-1-git-send-email-hongtao.jia@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,6 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for addressing my feedback :)
+On 19-04-16, 14:43, Jia Hongtao wrote:
+> Cooling device is registered by ready callback. It's also invoked while
+> system resuming from sleep (Enabling non-boot cpus). Thus cooling device
+> may be multiple registered. Matchable unregistration is added to exit
+> callback to fix this issue.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+> ---
+> Changes for V2:
+> * Using qoriq_cpufreq_cpu_exit() callback instead of adding stop_cpu().
+> 
+>  drivers/cpufreq/qoriq-cpufreq.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> index b23e525..0b85f90 100644
+> --- a/drivers/cpufreq/qoriq-cpufreq.c
+> +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> @@ -301,10 +301,11 @@ err_np:
+>  	return -ENODEV;
+>  }
+>  
+> -static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+> +static int qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
 
-Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
+Yes, __exit should have been removed, but not in this patch to create confusion.
+You should have submitted two separate patches for these changes.
+
+>  {
+>  	struct cpu_data *data = policy->driver_data;
+>  
+> +	cpufreq_cooling_unregister(data->cdev);
+>  	kfree(data->pclk);
+>  	kfree(data->table);
+>  	kfree(data);
+> @@ -348,7 +349,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+>  	.name		= "qoriq_cpufreq",
+>  	.flags		= CPUFREQ_CONST_LOOPS,
+>  	.init		= qoriq_cpufreq_cpu_init,
+> -	.exit		= __exit_p(qoriq_cpufreq_cpu_exit),
+> +	.exit		= qoriq_cpufreq_cpu_exit,
+>  	.verify		= cpufreq_generic_frequency_table_verify,
+>  	.target_index	= qoriq_cpufreq_target,
+>  	.get		= cpufreq_generic_get,
+> -- 
+> 2.1.0.27.g96db324
+
+-- 
+viresh
