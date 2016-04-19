@@ -1,25 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ig0-x241.google.com (mail-ig0-x241.google.com
- [IPv6:2607:f8b0:4001:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hongtao.jia@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0088.outbound.protection.outlook.com [157.56.112.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qpwnJ1dbhzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 16:57:40 +1000 (AEST)
-Received: by mail-ig0-x241.google.com with SMTP id g8so1288763igr.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Apr 2016 23:57:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qpx0G5MVZzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 17:07:09 +1000 (AEST)
+From: Hongtao Jia <hongtao.jia@nxp.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
+ <scott.wood@nxp.com>, Yuantian Tang <yuantian.tang@nxp.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIIDEvMl0gY3B1ZnJlcTogcW9yaXE6IEZpeCBjb29saW5n?=
+ =?gb2312?Q?_device_registration_issue_during_suspend?=
+Date: Tue, 19 Apr 2016 06:52:17 +0000
+Message-ID: <HE1PR0401MB18512E402535DE12512A1991EB6C0@HE1PR0401MB1851.eurprd04.prod.outlook.com>
+References: <1460966372-4877-1-git-send-email-hongtao.jia@nxp.com>
+ <20160418103254.GD2322@vireshk-i7>
+In-Reply-To: <20160418103254.GD2322@vireshk-i7>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1461048813-28712-1-git-send-email-geert@linux-m68k.org>
-References: <1461048813-28712-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 19 Apr 2016 08:57:37 +0200
-Message-ID: <CAMuHMdUqJ0dj25oXhC4MgqSk0SaOHvT262ew+sBs7eV2SCwyUA@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.6-rc4
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 19, 2016 at 8:53 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v4.6-rc4[1] compared to v4.5[2].
->
-> Summarized:
->   - build errors: +11/-7
->   - build warnings: +16376/-165
-
-Sorry for the delay, initially I didn't realize why my first report didn't make
-it to the list. It was too big, due to 16211 warnings in parisc-allmodconfig
-about "-ffunction-sections disabled; it makes profiling impossible [enabled by
-default]".
-
-> JFYI, when comparing v4.6-rc4[1] to v4.6-rc3[3], the summaries are:
->   - build errors: +9/-9
-
-  + /home/kisskb/slave/src/arch/powerpc/kernel/pci_dn.c: error:
-'struct pci_dn' has no member named 'edev':  => 272:8
-  + /home/kisskb/slave/src/arch/powerpc/kernel/pci_dn.c: error:
-dereferencing pointer to incomplete type:  => 215:7
-  + /home/kisskb/slave/src/arch/powerpc/kernel/pci_dn.c: error:
-implicit declaration of function 'eeh_dev_init'
-[-Werror=implicit-function-declaration]:  => 212:3
-
-powerpc-randconfig
-
-  + /home/kisskb/slave/src/drivers/thermal/mtk_thermal.c: error:
-implicit declaration of function 'device_reset'
-[-Werror=implicit-function-declaration]:  => 560:2
-
-x86_64-randconfig (patch available)
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/10194/ (all 262 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/10162/ (all 262 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+DQoNCj4gLS0tLS3Tyrz+1K28/i0tLS0tDQo+ILeivP7IyzogVmlyZXNoIEt1bWFyIFttYWlsdG86
+dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+ILeiy83KsbzkOiBNb25kYXksIEFwcmlsIDE4LCAy
+MDE2IDY6MzMgUE0NCj4gytW8/sjLOiBIb25ndGFvIEppYSA8aG9uZ3Rhby5qaWFAbnhwLmNvbT4N
+Cj4gs63LzTogbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZzsgU2NvdHQgV29vZA0KPiA8c2NvdHQud29vZEBueHAuY29tPjsgWXVhbnRpYW4gVGFu
+ZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPg0KPiDW98ziOiBSZTogW1BBVENIIDEvMl0gY3B1ZnJl
+cTogcW9yaXE6IEZpeCBjb29saW5nIGRldmljZSByZWdpc3RyYXRpb24gaXNzdWUNCj4gZHVyaW5n
+IHN1c3BlbmQNCj4gDQo+IE9uIDE4LTA0LTE2LCAxNTo1OSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+
+ID4gQ29vbGluZyBkZXZpY2UgaXMgcmVnaXN0ZXJlZCBieSByZWFkeSBjYWxsYmFjay4gSXQncyBh
+bHNvIGludm9rZWQNCj4gPiB3aGlsZSBzeXN0ZW0gcmVzdW1pbmcgZnJvbSBzbGVlcCAoRW5hYmxp
+bmcgbm9uLWJvb3QgY3B1cykuIFRodXMNCj4gPiBjb29saW5nIGRldmljZSBtYXkgYmUgbXVsdGlw
+bGUgcmVnaXN0ZXJlZC4gU3RvcF9jcHUgY2FsbGJhY2sgaXMNCj4gPiBpbnZva2VkIGR1cmluZyBz
+dXNwZW5kIChEaXNhYmxpbmcgbm9uLWJvb3QgY3B1cykuIFNvIG1hdGNoYWJsZQ0KPiA+IHVucmVn
+aXN0cmF0aW9uIGlzIGFkZGVkIHRvIGZpeCB0aGlzIGlzc3VlLg0KPiA+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQG54cC5jb20+DQo+ID4gLS0tDQo+ID4gIGRy
+aXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMgfCA4ICsrKysrKysrDQo+ID4gIDEgZmlsZSBj
+aGFuZ2VkLCA4IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nw
+dWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQo+ID4gYi9kcml2ZXJzL2NwdWZyZXEvcW9yaXEtY3B1ZnJl
+cS5jIGluZGV4IGIyM2U1MjUuLjFjMmZkYzEgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL3FvcmlxLWNwdWZyZXEuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVm
+cmVxLmMNCj4gPiBAQCAtMzA1LDYgKzMwNSw3IEBAIHN0YXRpYyBpbnQgX19leGl0IHFvcmlxX2Nw
+dWZyZXFfY3B1X2V4aXQoc3RydWN0DQo+ID4gY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkgIHsNCj4g
+PiAgCXN0cnVjdCBjcHVfZGF0YSAqZGF0YSA9IHBvbGljeS0+ZHJpdmVyX2RhdGE7DQo+ID4NCj4g
+PiArCWNwdWZyZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0KPiA+ICAJa2ZyZWUo
+ZGF0YS0+cGNsayk7DQo+ID4gIAlrZnJlZShkYXRhLT50YWJsZSk7DQo+ID4gIAlrZnJlZShkYXRh
+KTsNCj4gPiBAQCAtMzIzLDYgKzMyNCwxMiBAQCBzdGF0aWMgaW50IHFvcmlxX2NwdWZyZXFfdGFy
+Z2V0KHN0cnVjdCBjcHVmcmVxX3BvbGljeQ0KPiAqcG9saWN5LA0KPiA+ICAJcmV0dXJuIGNsa19z
+ZXRfcGFyZW50KHBvbGljeS0+Y2xrLCBwYXJlbnQpOyAgfQ0KPiA+DQo+ID4gK3N0YXRpYyB2b2lk
+IHFvcmlxX2NwdWZyZXFfc3RvcF9jcHUoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpIHsN
+Cj4gPiArCXN0cnVjdCBjcHVfZGF0YSAqY3B1ZCA9IHBvbGljeS0+ZHJpdmVyX2RhdGE7DQo+ID4g
+Kw0KPiA+ICsJY3B1ZnJlcV9jb29saW5nX3VucmVnaXN0ZXIoY3B1ZC0+Y2Rldik7DQo+ID4gK30N
+Cj4gPg0KPiA+ICBzdGF0aWMgdm9pZCBxb3JpcV9jcHVmcmVxX3JlYWR5KHN0cnVjdCBjcHVmcmVx
+X3BvbGljeSAqcG9saWN5KSAgeyBAQA0KPiA+IC0zNTIsNiArMzU5LDcgQEAgc3RhdGljIHN0cnVj
+dCBjcHVmcmVxX2RyaXZlciBxb3JpcV9jcHVmcmVxX2RyaXZlciA9IHsNCj4gPiAgCS52ZXJpZnkJ
+CT0gY3B1ZnJlcV9nZW5lcmljX2ZyZXF1ZW5jeV90YWJsZV92ZXJpZnksDQo+ID4gIAkudGFyZ2V0
+X2luZGV4CT0gcW9yaXFfY3B1ZnJlcV90YXJnZXQsDQo+ID4gIAkuZ2V0CQk9IGNwdWZyZXFfZ2Vu
+ZXJpY19nZXQsDQo+ID4gKwkuc3RvcF9jcHUJPSBxb3JpcV9jcHVmcmVxX3N0b3BfY3B1LA0KPiA+
+ICAJLnJlYWR5CQk9IHFvcmlxX2NwdWZyZXFfcmVhZHksDQo+ID4gIAkuYXR0cgkJPSBjcHVmcmVx
+X2dlbmVyaWNfYXR0ciwNCj4gPiAgfTsNCj4gDQo+IFlvdSBkb24ndCBuZWVkIHRvIGRvIGl0IGZy
+b20gc3RvcF9jcHUoKSwgcGxlYXNlIHVzZQ0KPiBxb3JpcV9jcHVmcmVxX2NwdV9leGl0KCkgZm9y
+IHRoaXMuDQoNClRoYW5rcy4gVGhlIG5ldyBwYXRjaCB3aWxsIGJlIHN1Ym1pdHRlZCBzb29uLg0K
+DQotSG9uZ3Rhby4NCg0KPiANCj4gLS0NCj4gdmlyZXNoDQo=
