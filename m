@@ -1,28 +1,43 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
- [IPv6:2607:f8b0:400e:c00::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRxQ3jlwzDqD5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:21:30 +1000 (AEST)
-Received: by mail-pf0-x229.google.com with SMTP id e128so13181761pfe.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 20:21:30 -0700 (PDT)
-Subject: Re: [PATCH v8 24/45] powerpc/pci: Rename
- pcibios_{add,remove}_pci_devices()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqSHN071qzDqBt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:37:04 +1000 (AEST)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 20 Apr 2016 13:37:02 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 159752CE805F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:36:42 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3K3aXIw42467428
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:36:41 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3K3a7rY029191
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:36:08 +1000
+Date: Wed, 20 Apr 2016 13:35:11 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dja@axtens.net,
+ bhelgaas@google.com, robherring2@gmail.com, grant.likely@linaro.org
+Subject: Re: [PATCH v8 21/45] powerpc/powernv: Create PEs at PCI hot plugging
+ time
+Message-ID: <20160420033511.GA11634@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-25-git-send-email-gwshan@linux.vnet.ibm.com>
- <5715C204.20004@ozlabs.ru> <20160420012304.GC21871@gwshan>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
- grant.likely@linaro.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <5716F5B1.2040505@ozlabs.ru>
-Date: Wed, 20 Apr 2016 13:21:21 +1000
+ <1455680668-23298-22-git-send-email-gwshan@linux.vnet.ibm.com>
+ <5715B12A.6020203@ozlabs.ru> <20160420011205.GA21871@gwshan>
+ <5716F0D6.7010609@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20160420012304.GC21871@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5716F0D6.7010609@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,243 +47,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/20/2016 11:23 AM, Gavin Shan wrote:
-> On Tue, Apr 19, 2016 at 03:28:36PM +1000, Alexey Kardashevskiy wrote:
->> On 02/17/2016 02:44 PM, Gavin Shan wrote:
->>> This renames pcibios_{add,remove}_pci_devices() to avoid conflicts
->>> with names of the weak functions in PCI subsystem, which have the
->>> prefix "pcibios". No logical changes introduced.
+On Wed, Apr 20, 2016 at 01:00:38PM +1000, Alexey Kardashevskiy wrote:
+>On 04/20/2016 11:12 AM, Gavin Shan wrote:
+>>On Tue, Apr 19, 2016 at 02:16:42PM +1000, Alexey Kardashevskiy wrote:
+>>>On 02/17/2016 02:44 PM, Gavin Shan wrote:
+>>>>Currently, the PEs and their associated resources are assigned
+>>>>in ppc_md.pcibios_fixup() except those used by SRIOV VFs.
 >>>
->>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> ---
->>>   arch/powerpc/include/asm/pci-bridge.h |  4 ++--
->>>   arch/powerpc/kernel/eeh_driver.c      | 12 ++++++------
->>>   arch/powerpc/kernel/pci-hotplug.c     | 15 +++++++--------
->>>   drivers/pci/hotplug/rpadlpar_core.c   |  2 +-
->>>   drivers/pci/hotplug/rpaphp_core.c     |  4 ++--
->>>   drivers/pci/hotplug/rpaphp_pci.c      |  2 +-
->>>   6 files changed, 19 insertions(+), 20 deletions(-)
+>>>But this new code does not affect IOV and VF's PEs will still be created
+>>>somewhere else rather than pnv_pci_setup_bridge()?
 >>>
->>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>> index 4dd6ef4..c817f38 100644
->>> --- a/arch/powerpc/include/asm/pci-bridge.h
->>> +++ b/arch/powerpc/include/asm/pci-bridge.h
->>> @@ -263,10 +263,10 @@ static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
->>>   extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
+>>
+>>Correct. VF PEs cannot be created in pnv_pci_setup_bridge() as the PF's
+>>IOV capability isn't enabled at that point.
+>>
 >>>
->>>   /** Remove all of the PCI devices under this bus */
->>> -extern void pcibios_remove_pci_devices(struct pci_bus *bus);
->>> +extern void pci_remove_pci_devices(struct pci_bus *bus);
+>>>>The
+>>>>function is called for once after PCI probing and resources
+>>>>assignment is completed. So it isn't hotplug friendly.
+>>>>
+>>>>This creates PEs dynamically by ppc_md.pcibios_setup_bridge(), which
+>>>>is called on the event during system bootup and PCI hotplug: updating
+>>>>PCI bridge's windows after resource assignment/reassignment are done.
+>>>>For partial hotplug case, where not all PCI devices belonging to the
+>>>>PE are unplugged and plugged again, we just need unbinding/binding
+>>>>the affected PCI devices with the corresponding PE without creating
+>>>>new one.
+>>>>
+>>>>As there is no upstream bridge for root bus that needs to be covered
+>>>>by PE, we have to create PE for root bus in ppc_md.pcibios_setup_bridge()
+>>>>before any other PEs can be created, as PE for root bus is the ancestor
+>>>>to anyone else.
+>>>
+>>>We did not need a root bus PE before? What is the other PE reserved for?
+>>>Comments only say "reserved"...
+>>>
 >>
->>
->> pci_lala_pci_lala() ("pci" is used twice) looks weird, if the prefix is
->> "pci", what other device types can they handle?...
->>
->> May be pcihp_add_devices(), pcihp_remove_devices() as these as defined in
->> pci-hotplug.c?
->>
+>>No, A PE for root bus is needed before.
 >
-> I assume you're talking about drivers/pci/hotplug/pci_hotplug_core.c.
-
-No, the helpers you are renaming are in pci-hotplug.c which uses "pci_" as 
-a prefix even though the file is supposed to be about hotplug.
-
-
-> pci_hotplug_core.c uses pci_hp_ prefix rather than pcihp_. I will
-> rename them to pci_hp_*() in next revision.
-
-Anyway, this will work too.
-
-
->
-> gwshan@gwshan:~/sandbox/linux$ find . -name pci-hotplug.c
-> ./arch/powerpc/kernel/pci-hotplug.c
-> gwshan@gwshan:~/sandbox/linux$ grep pci*hp arch/powerpc/kernel/pci-hotplug.c
->
->>
->>>
->>>   /** Discover new pci devices under this bus, and add them */
->>> -extern void pcibios_add_pci_devices(struct pci_bus *bus);
->>> +extern void pci_add_pci_devices(struct pci_bus *bus);
->>>
->>>
->>>   extern void isa_bridge_find_early(struct pci_controller *hose);
->>> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->>> index fb6207d..59e53fe 100644
->>> --- a/arch/powerpc/kernel/eeh_driver.c
->>> +++ b/arch/powerpc/kernel/eeh_driver.c
->>> @@ -621,7 +621,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->>>   	 * We don't remove the corresponding PE instances because
->>>   	 * we need the information afterwords. The attached EEH
->>>   	 * devices are expected to be attached soon when calling
->>> -	 * into pcibios_add_pci_devices().
->>> +	 * into pci_add_pci_devices().
->>>   	 */
->>>   	eeh_pe_state_mark(pe, EEH_PE_KEEP);
->>>   	if (bus) {
->>> @@ -630,7 +630,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->>>   		} else {
->>>   			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
->>>   			pci_lock_rescan_remove();
->>> -			pcibios_remove_pci_devices(bus);
->>> +			pci_remove_pci_devices(bus);
->>>   			pci_unlock_rescan_remove();
->>>   		}
->>>   	} else if (frozen_bus) {
->>> @@ -681,7 +681,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->>>   		if (pe->type & EEH_PE_VF)
->>>   			eeh_add_virt_device(edev, NULL);
->>>   		else
->>> -			pcibios_add_pci_devices(bus);
->>> +			pci_add_pci_devices(bus);
->>>   	} else if (frozen_bus && rmv_data->removed) {
->>>   		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
->>>   		ssleep(5);
->>> @@ -691,7 +691,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
->>>   		if (pe->type & EEH_PE_VF)
->>>   			eeh_add_virt_device(edev, NULL);
->>>   		else
->>> -			pcibios_add_pci_devices(frozen_bus);
->>> +			pci_add_pci_devices(frozen_bus);
->>>   	}
->>>   	eeh_pe_state_clear(pe, EEH_PE_KEEP);
->>>
->>> @@ -896,7 +896,7 @@ perm_error:
->>>   			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->>>
->>>   			pci_lock_rescan_remove();
->>> -			pcibios_remove_pci_devices(frozen_bus);
->>> +			pci_remove_pci_devices(frozen_bus);
->>>   			pci_unlock_rescan_remove();
->>>   		}
->>>   	}
->>> @@ -981,7 +981,7 @@ static void eeh_handle_special_event(void)
->>>   				bus = eeh_pe_bus_get(phb_pe);
->>>   				eeh_pe_dev_traverse(pe,
->>>   					eeh_report_failure, NULL);
->>> -				pcibios_remove_pci_devices(bus);
->>> +				pci_remove_pci_devices(bus);
->>>   			}
->>>   			pci_unlock_rescan_remove();
->>>   		}
->>> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
->>> index 59c4361..78bf2a1 100644
->>> --- a/arch/powerpc/kernel/pci-hotplug.c
->>> +++ b/arch/powerpc/kernel/pci-hotplug.c
->>> @@ -38,20 +38,20 @@ void pcibios_release_device(struct pci_dev *dev)
->>>   }
->>>
->>>   /**
->>> - * pcibios_remove_pci_devices - remove all devices under this bus
->>> + * pci_remove_pci_devices - remove all devices under this bus
->>>    * @bus: the indicated PCI bus
->>>    *
->>>    * Remove all of the PCI devices under this bus both from the
->>>    * linux pci device tree, and from the powerpc EEH address cache.
->>>    */
->>> -void pcibios_remove_pci_devices(struct pci_bus *bus)
->>> +void pci_remove_pci_devices(struct pci_bus *bus)
->>>   {
->>>   	struct pci_dev *dev, *tmp;
->>>   	struct pci_bus *child_bus;
->>>
->>>   	/* First go down child busses */
->>>   	list_for_each_entry(child_bus, &bus->children, node)
->>> -		pcibios_remove_pci_devices(child_bus);
->>> +		pci_remove_pci_devices(child_bus);
->>>
->>>   	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
->>>   		 pci_domain_nr(bus),  bus->number);
->>> @@ -60,11 +60,10 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
->>>   		pci_stop_and_remove_bus_device(dev);
->>>   	}
->>>   }
->>> -
->>> -EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
->>> +EXPORT_SYMBOL_GPL(pci_remove_pci_devices);
->>>
->>>   /**
->>> - * pcibios_add_pci_devices - adds new pci devices to bus
->>> + * pci_add_pci_devices - adds new pci devices to bus
->>>    * @bus: the indicated PCI bus
->>>    *
->>>    * This routine will find and fixup new pci devices under
->>> @@ -74,7 +73,7 @@ EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
->>>    * is how this routine differs from other, similar pcibios
->>>    * routines.)
->>>    */
->>> -void pcibios_add_pci_devices(struct pci_bus * bus)
->>> +void pci_add_pci_devices(struct pci_bus *bus)
->>>   {
->>>   	int slotno, mode, pass, max;
->>>   	struct pci_dev *dev;
->>> @@ -114,4 +113,4 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
->>>   	}
->>>   	pcibios_finish_adding_to_bus(bus);
->>>   }
->>> -EXPORT_SYMBOL_GPL(pcibios_add_pci_devices);
->>> +EXPORT_SYMBOL_GPL(pci_add_pci_devices);
->>> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
->>> index b46b57d..730982b 100644
->>> --- a/drivers/pci/hotplug/rpadlpar_core.c
->>> +++ b/drivers/pci/hotplug/rpadlpar_core.c
->>> @@ -380,7 +380,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
->>>   	}
->>>
->>>   	/* Remove all devices below slot */
->>> -	pcibios_remove_pci_devices(bus);
->>> +	pci_remove_pci_devices(bus);
->>>
->>>   	/* Unmap PCI IO space */
->>>   	if (pcibios_unmap_io_space(bus)) {
->>> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
->>> index 611f605..bba07b3 100644
->>> --- a/drivers/pci/hotplug/rpaphp_core.c
->>> +++ b/drivers/pci/hotplug/rpaphp_core.c
->>> @@ -404,7 +404,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
->>>
->>>   	if (state == PRESENT) {
->>>   		pci_lock_rescan_remove();
->>> -		pcibios_add_pci_devices(slot->bus);
->>> +		pci_add_pci_devices(slot->bus);
->>>   		pci_unlock_rescan_remove();
->>>   		slot->state = CONFIGURED;
->>>   	} else if (state == EMPTY) {
->>> @@ -426,7 +426,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
->>>   		return -EINVAL;
->>>
->>>   	pci_lock_rescan_remove();
->>> -	pcibios_remove_pci_devices(slot->bus);
->>> +	pci_remove_pci_devices(slot->bus);
->>>   	pci_unlock_rescan_remove();
->>>   	vm_unmap_aliases();
->>>
->>> diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
->>> index 7836d69..1099b38 100644
->>> --- a/drivers/pci/hotplug/rpaphp_pci.c
->>> +++ b/drivers/pci/hotplug/rpaphp_pci.c
->>> @@ -116,7 +116,7 @@ int rpaphp_enable_slot(struct slot *slot)
->>>   		}
->>>
->>>   		if (list_empty(&bus->devices))
->>> -			pcibios_add_pci_devices(bus);
->>> +			pci_add_pci_devices(bus);
->>>
->>>   		if (!list_empty(&bus->devices)) {
->>>   			info->adapter_status = CONFIGURED;
->>>
->>
->>
->> --
->> Alexey
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Ok. We needed a PE for the root bus and we need it now. What changed? Why do
+>you reserve another PE?
 >
 
+Originally, all PEs (include the one for root bus) were created at PHB fixup time
+in pnv_pci_ioda_fixup(). With this patch, all PEs are created in pnv_pci_setup_bridge().
+pnv_pci_setup_bridge() is called for every PCI buses other than root bus. It means
+pnv_pci_setup_bridge() isn't called for root bus. So we have to create PE for root
+bus before the left PEs are created there. The PE# for root bus is reserved in advance
+and used in pnv_pci_setup_bridge() at that point.
 
--- 
-Alexey
+>
+>>
+>other PEs can be for the PCI bus
+>>originated from root port and the subordinate domains.
+>>
+>>>>
+>>>>Also, the windows of root port or the upstream port of PCIe switch behind
+>>>>root port are extended to be PHB's apertures to accommodate the additional
+>>>>resources needed by newly plugged devices based on the fact: hotpluggable
+>>>>slot is behind root port or downstream port of the PCIe switch behind
+>>>>root port. The extension for those PCI brdiges' windows is done in
+>>>>ppc_md.pcibios_setup_bridge() as well.
+>>>
+>>>
+>>>This patch seems to be doing way too many things, hard to follow.
+>>>
+>>>Could you please split the patch into smaller chunks? For example (you can do
+>>>it totally different):
+>>>- move pnv_pci_ioda_setup_opal_tce_kill()
+>>>- move PE creation from pnv_pci_ioda_fixup() to pnv_pci_setup_bridge();
+>>>- add pnv_pci_fixup_bridge_resources()
+>>>- add an extra reserved PE for the root bus (and all this magic with
+>>>root_pe_idx/root_pe_populated)
+>>>- ...
+>>>
+>>
+>>I'll evaluate it later. It's always nice to have small patches. Thanks
+>>for the comments.
+>>
+>>>
+>>>
+>>>
+>>>--
+>>>Alexey
+>>>
+>>
+>>--
+>>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>>the body of a message to majordomo@vger.kernel.org
+>>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>
+>
+>-- 
+>Alexey
+>
