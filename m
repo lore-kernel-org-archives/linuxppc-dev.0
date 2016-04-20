@@ -1,28 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
- [IPv6:2607:f8b0:400e:c00::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRTX2tlCzDqTy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:00:48 +1000 (AEST)
-Received: by mail-pf0-x235.google.com with SMTP id n1so13127339pfn.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 20:00:48 -0700 (PDT)
-Subject: Re: [PATCH v8 21/45] powerpc/powernv: Create PEs at PCI hot plugging
- time
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-22-git-send-email-gwshan@linux.vnet.ibm.com>
- <5715B12A.6020203@ozlabs.ru> <20160420011205.GA21871@gwshan>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
- grant.likely@linaro.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <5716F0D6.7010609@ozlabs.ru>
-Date: Wed, 20 Apr 2016 13:00:38 +1000
-MIME-Version: 1.0
-In-Reply-To: <20160420011205.GA21871@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRY63gjZzDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:03:54 +1000 (AEST)
+Message-ID: <1461121434.13404.1.camel@ellerman.id.au>
+Subject: Re: [PATCH V2 01/68] powerpc/cxl: Use REGION_ID instead of opencoding
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org, Frederic Barrat
+ <fbarrat@linux.vnet.ibm.com>,  Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>
+Date: Wed, 20 Apr 2016 13:03:54 +1000
+In-Reply-To: <87mvoy9ql8.fsf@skywalker.in.ibm.com>
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <87mvoy9ql8.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,88 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/20/2016 11:12 AM, Gavin Shan wrote:
-> On Tue, Apr 19, 2016 at 02:16:42PM +1000, Alexey Kardashevskiy wrote:
->> On 02/17/2016 02:44 PM, Gavin Shan wrote:
->>> Currently, the PEs and their associated resources are assigned
->>> in ppc_md.pcibios_fixup() except those used by SRIOV VFs.
->>
->> But this new code does not affect IOV and VF's PEs will still be created
->> somewhere else rather than pnv_pci_setup_bridge()?
->>
->
-> Correct. VF PEs cannot be created in pnv_pci_setup_bridge() as the PF's
-> IOV capability isn't enabled at that point.
->
->>
->>> The
->>> function is called for once after PCI probing and resources
->>> assignment is completed. So it isn't hotplug friendly.
->>>
->>> This creates PEs dynamically by ppc_md.pcibios_setup_bridge(), which
->>> is called on the event during system bootup and PCI hotplug: updating
->>> PCI bridge's windows after resource assignment/reassignment are done.
->>> For partial hotplug case, where not all PCI devices belonging to the
->>> PE are unplugged and plugged again, we just need unbinding/binding
->>> the affected PCI devices with the corresponding PE without creating
->>> new one.
->>>
->>> As there is no upstream bridge for root bus that needs to be covered
->>> by PE, we have to create PE for root bus in ppc_md.pcibios_setup_bridge()
->>> before any other PEs can be created, as PE for root bus is the ancestor
->>> to anyone else.
->>
->> We did not need a root bus PE before? What is the other PE reserved for?
->> Comments only say "reserved"...
->>
->
-> No, A PE for root bus is needed before.
+On Wed, 2016-04-13 at 08:12 +0530, Aneesh Kumar K.V wrote:
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+> > Also note that the `~` operation is wrong.
+> > 
+> > Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> > Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> > Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > ---
+> >  drivers/misc/cxl/fault.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+> > index 9a8650bcb042..9a236543da23 100644
+> > --- a/drivers/misc/cxl/fault.c
+> > +++ b/drivers/misc/cxl/fault.c
+> > @@ -152,7 +152,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+> >  	access = _PAGE_PRESENT;
+> >  	if (dsisr & CXL_PSL_DSISR_An_S)
+> >  		access |= _PAGE_RW;
+> > -	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
+> > +	if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
+> >  		access |= _PAGE_USER;
+> > 
+> >  	if (dsisr & DSISR_NOHPTE)
+> 
+> Posted an updated version of this patch alone with improved commit
+> message here
+> 
+> http://mid.gmane.org/1460482475-20782-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
 
-Ok. We needed a PE for the root bus and we need it now. What changed? Why 
-do you reserve another PE?
+I never saw it. And that link is empty?
 
-
->
-other PEs can be for the PCI bus
-> originated from root port and the subordinate domains.
->
->>>
->>> Also, the windows of root port or the upstream port of PCIe switch behind
->>> root port are extended to be PHB's apertures to accommodate the additional
->>> resources needed by newly plugged devices based on the fact: hotpluggable
->>> slot is behind root port or downstream port of the PCIe switch behind
->>> root port. The extension for those PCI brdiges' windows is done in
->>> ppc_md.pcibios_setup_bridge() as well.
->>
->>
->> This patch seems to be doing way too many things, hard to follow.
->>
->> Could you please split the patch into smaller chunks? For example (you can do
->> it totally different):
->> - move pnv_pci_ioda_setup_opal_tce_kill()
->> - move PE creation from pnv_pci_ioda_fixup() to pnv_pci_setup_bridge();
->> - add pnv_pci_fixup_bridge_resources()
->> - add an extra reserved PE for the root bus (and all this magic with
->> root_pe_idx/root_pe_populated)
->> - ...
->>
->
-> I'll evaluate it later. It's always nice to have small patches. Thanks
-> for the comments.
->
->>
->>
->>
->> --
->> Alexey
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
--- 
-Alexey
+cheers
