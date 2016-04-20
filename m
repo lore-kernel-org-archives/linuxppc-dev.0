@@ -2,12 +2,12 @@ Return-Path: <geert@linux-m68k.org>
 Received: from leibniz.telenet-ops.be (leibniz.telenet-ops.be [195.130.137.77])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqmJy14b1zDqb6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 01:39:30 +1000 (AEST)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:15])
- by leibniz.telenet-ops.be (Postfix) with ESMTP id 3qqm8k1QZszMrP6G
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:32:22 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqmK15VMwzDqZb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 01:39:33 +1000 (AEST)
+Received: from baptiste.telenet-ops.be (baptiste.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:13])
+ by leibniz.telenet-ops.be (Postfix) with ESMTP id 3qqm8j1Bv6zMrP5t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:32:21 +0200 (CEST)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
  Rob Herring <robh+dt@kernel.org>, Lee Jones <lee@kernel.org>,
@@ -21,9 +21,10 @@ Cc: devicetree@vger.kernel.org, linux-input@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, dmaengine@vger.kernel.org,
  Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 11/14] PCI: hisi: DT spelling s/interrupts-*/interrupt-*/
-Date: Wed, 20 Apr 2016 17:32:16 +0200
-Message-Id: <1461166339-11109-12-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 14/14] regulator: ti-abb: DT spelling s/#{address,
+ size}-cell/#{address, size}-cells/
+Date: Wed, 20 Apr 2016 17:32:19 +0200
+Message-Id: <1461166339-11109-15-git-send-email-geert+renesas@glider.be>
 In-Reply-To: <1461166339-11109-1-git-send-email-geert+renesas@glider.be>
 References: <1461166339-11109-1-git-send-email-geert+renesas@glider.be>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,30 +38,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- Documentation/devicetree/bindings/pci/hisilicon-pcie.txt | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ .../devicetree/bindings/regulator/ti-abb-regulator.txt         | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/pci/hisilicon-pcie.txt b/Documentation/devicetree/bindings/pci/hisilicon-pcie.txt
-index b721beacfe4dae6c..59c2f47aa303ae24 100644
---- a/Documentation/devicetree/bindings/pci/hisilicon-pcie.txt
-+++ b/Documentation/devicetree/bindings/pci/hisilicon-pcie.txt
-@@ -34,11 +34,11 @@ Hip05 Example (note that Hip06 is the same except compatible):
- 		ranges = <0x82000000 0 0x00000000 0x220 0x00000000 0 0x10000000>;
- 		num-lanes = <8>;
- 		port-id = <1>;
--		#interrupts-cells = <1>;
--		interrupts-map-mask = <0xf800 0 0 7>;
--		interrupts-map = <0x0 0 0 1 &mbigen_pcie 1 10
--				  0x0 0 0 2 &mbigen_pcie 2 11
--				  0x0 0 0 3 &mbigen_pcie 3 12
--				  0x0 0 0 4 &mbigen_pcie 4 13>;
-+		#interrupt-cells = <1>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <0x0 0 0 1 &mbigen_pcie 1 10
-+				 0x0 0 0 2 &mbigen_pcie 2 11
-+				 0x0 0 0 3 &mbigen_pcie 3 12
-+				 0x0 0 0 4 &mbigen_pcie 4 13>;
- 		status = "ok";
- 	};
+diff --git a/Documentation/devicetree/bindings/regulator/ti-abb-regulator.txt b/Documentation/devicetree/bindings/regulator/ti-abb-regulator.txt
+index c58db75f959e601f..c3f6546ebac77742 100644
+--- a/Documentation/devicetree/bindings/regulator/ti-abb-regulator.txt
++++ b/Documentation/devicetree/bindings/regulator/ti-abb-regulator.txt
+@@ -14,8 +14,8 @@ Required Properties:
+   - "setup-address"	- contains setup register address of ABB module (ti,abb-v3)
+   - "int-address"	- contains address of interrupt register for ABB module
+   (also see Optional properties)
+-- #address-cell: should be 0
+-- #size-cell: should be 0
++- #address-cells: should be 0
++- #size-cells: should be 0
+ - clocks: should point to the clock node used by ABB module
+ - ti,settling-time: Settling time in uSecs from SoC documentation for ABB module
+ 	to settle down(target time for SR2_WTCNT_VALUE).
+@@ -69,7 +69,7 @@ Example #1: Simplest configuration (no efuse data, hard coded ABB table):
+ abb_x: regulator-abb-x {
+ 	compatible = "ti,abb-v1";
+ 	regulator-name = "abb_x";
+-	#address-cell = <0>;
++	#address-cells = <0>;
+ 	#size-cells = <0>;
+ 	reg = <0x483072f0 0x8>, <0x48306818 0x4>;
+ 	reg-names = "base-address", "int-address";
+@@ -89,7 +89,7 @@ Example #2: Efuse bits contain ABB mode setting (no LDO override capability)
+ abb_y: regulator-abb-y {
+ 	compatible = "ti,abb-v2";
+ 	regulator-name = "abb_y";
+-	#address-cell = <0>;
++	#address-cells = <0>;
+ 	#size-cells = <0>;
+ 	reg = <0x4a307bd0 0x8>, <0x4a306014 0x4>, <0x4A002268 0x8>;
+ 	reg-names = "base-address", "int-address", "efuse-address";
+@@ -110,7 +110,7 @@ Example #3: Efuse bits contain ABB mode setting and LDO override capability
+ abb_z: regulator-abb-z {
+ 	compatible = "ti,abb-v2";
+ 	regulator-name = "abb_z";
+-	#address-cell = <0>;
++	#address-cells = <0>;
+ 	#size-cells = <0>;
+ 	reg = <0x4ae07ce4 0x8>, <0x4ae06010 0x4>,
+ 	      <0x4a002194 0x8>, <0x4ae0C314 0x4>;
 -- 
 1.9.1
