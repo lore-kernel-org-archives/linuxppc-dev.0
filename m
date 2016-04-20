@@ -1,44 +1,19 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRQl3Sf6zDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 12:58:23 +1000 (AEST)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 20 Apr 2016 12:58:22 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 87DD62BB0061
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 12:58:03 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3K2vttA34734332
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 12:58:03 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3K2vTlU003221
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 12:57:29 +1000
-Date: Wed, 20 Apr 2016 12:38:49 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru, dja@axtens.net,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v8 40/45] drivers/of: Split unflatten_dt_node()
-Message-ID: <20160420023848.GB3754@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-41-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_Jsq++L-D=RD6ZYK=CPnhqcZbhEbxsKk3xT-vK2R=Qe9Z_pg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_Jsq++L-D=RD6ZYK=CPnhqcZbhEbxsKk3xT-vK2R=Qe9Z_pg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRSV6bx7zDqBS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 12:59:54 +1000 (AEST)
+In-Reply-To: <1460182444-2468-69-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [V2,
+ 68/68] powerpc/mm/radix: Use firmware feature to disable radix
+Message-Id: <3qqRSV5jq0z9sRB@ozlabs.org>
+Date: Wed, 20 Apr 2016 12:59:54 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,48 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2016 at 08:30:42AM -0600, Rob Herring wrote:
->On Tue, Feb 16, 2016 at 9:44 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> The function unflatten_dt_node() is called recursively to unflatten
->> device nodes and properties in the FDT blob. It looks complicated
->> and hard to be understood.
->>
->> This splits the function into 3 functions: populate_properties(),
->> populate_node() and unflatten_dt_node(). populate_properties(),
->> which is called by populate_node(), creates properties for the
->> indicated device node. The later one creates the device nodes
->> from FDT blob. populate_node() gets the offset in FDT blob for
->> next device nodes and then calls populate_node(). No logical
->> changes introduced.
->>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  drivers/of/fdt.c | 249 ++++++++++++++++++++++++++++++++-----------------------
->>  1 file changed, 147 insertions(+), 102 deletions(-)
->
->One nit, otherwise:
->
->Acked-by: Rob Herring <robh@kernel.org>
->
->[...]
->
->> +               /* And we process the "ibm,phandle" property
->> +                * used in pSeries dynamic device tree
->> +                * stuff
->> +                */
->> +               if (!strcmp(pname, "ibm,phandle"))
->> +                       np->phandle = be32_to_cpup(val);
->> +
->> +               pp->name   = (char *)pname;
->> +               pp->length = sz;
->> +               pp->value  = (__be32 *)val;
->
->This cast should not be needed.
->
+On Sat, 2016-09-04 at 06:14:04 UTC, "Aneesh Kumar K.V" wrote:
+> We can depend on ibm,pa-features to enable/disable radix. This gives us
+> a nice way to test p9 hash config, by changing device tree property.
 
-Rob, very sorry to response so lately. I will fix it up in next revision.
+I think we might want to be more careful here.
 
->> +               *pprev     = pp;
->> +               pprev      = &pp->next;
->> +       }
->
+You set MMU_FTR_RADIX in the cputable entry. So it's on by default on P9 cpus.
+
+Then if there is an ibm,pa-features property *and* it is >= 41 bytes long, the
+below feature entry will hit. In that case the firmware controls whether it's on
+or off.
+
+I think it would be clearer if we removed RADIX from the cputable, and the below
+became the only way to turn it on. Would that break anything?
+
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 7030b035905d..a4d1f44364b8 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -165,6 +165,7 @@ static struct ibm_pa_feature {
+>  	 * which is 0 if the kernel doesn't support TM.
+>  	 */
+>  	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
+> +	{0, MMU_FTR_RADIX, 0,		40, 0, 0},
+
+So that says bit 0 of byte 40 enables MMU_FTR_RADIX. Where is that documented?
+
+cheers
