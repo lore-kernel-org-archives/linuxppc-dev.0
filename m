@@ -2,40 +2,35 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqZ0V19RczDq68
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:54:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqZ5z6T6GzDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:59:19 +1000 (AEST)
 Received: from localhost
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 20 Apr 2016 17:54:32 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D52012BB0066
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:54:24 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3K7sAVR4981162
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:54:24 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3K7rhhV004585
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:53:43 +1000
+ Wed, 20 Apr 2016 17:59:19 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5F997357805B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:59:15 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3K7x7M716974072
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:59:15 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3K7wgAN008024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:58:43 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: Re: [PATCH V2 01/68] powerpc/cxl: Use REGION_ID instead of opencoding
-In-Reply-To: <1461121434.13404.1.camel@ellerman.id.au>
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87mvoy9ql8.fsf@skywalker.in.ibm.com>
- <1461121434.13404.1.camel@ellerman.id.au>
-Date: Wed, 20 Apr 2016 03:53:21 -0400
-Message-ID: <87shyg3edq.fsf@skywalker.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Mike Marciniszyn <infinipath@intel.com>,
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org
+Subject: [PATCH V2] powerpc/infiniband: Use cache inhibitted and guarded
+ mapping on powerpc
+Date: Wed, 20 Apr 2016 03:58:17 -0400
+Message-Id: <1461139097-10213-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,42 +40,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+The driver was requesting for a writethrough mapping. But with thoses
+flags we will end up with a SAO mapping because we now have memory
+conherence always enabled. ie, the existing mapping will end up with
+a WIMG value 0b1110 which is Strong Access Order.
 
-> On Wed, 2016-04-13 at 08:12 +0530, Aneesh Kumar K.V wrote:
->> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->> > Also note that the `~` operation is wrong.
->> > 
->> > Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->> > Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->> > Acked-by: Ian Munsie <imunsie@au1.ibm.com>
->> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> > ---
->> >  drivers/misc/cxl/fault.c | 2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> > 
->> > diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
->> > index 9a8650bcb042..9a236543da23 100644
->> > --- a/drivers/misc/cxl/fault.c
->> > +++ b/drivers/misc/cxl/fault.c
->> > @@ -152,7 +152,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
->> >  	access = _PAGE_PRESENT;
->> >  	if (dsisr & CXL_PSL_DSISR_An_S)
->> >  		access |= _PAGE_RW;
->> > -	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
->> > +	if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
->> >  		access |= _PAGE_USER;
->> > 
->> >  	if (dsisr & DSISR_NOHPTE)
->> 
->> Posted an updated version of this patch alone with improved commit
->> message here
->> 
->> http://mid.gmane.org/1460482475-20782-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
->
-> I never saw it. And that link is empty?
->
+Update this to use cache inhibitted guarded mapping
 
-Interesting . I will send this again.
+Cc: Mike Marciniszyn <infinipath@intel.com>
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: linux-rdma@vger.kernel.org
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+Changes from v1:
+* resend because V1 never reached mailing list.
 
--aneesh
+NOTE: This is only compile tested and I am also not sure why ppc64 needs special handling.
+We need this patch because the series at http://mid.gmane.org/1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+will drop _PAGE_WRITETHRU
+
+ drivers/infiniband/hw/qib/qib_file_ops.c | 5 +----
+ drivers/infiniband/hw/qib/qib_pcie.c     | 6 ------
+ 2 files changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/drivers/infiniband/hw/qib/qib_file_ops.c b/drivers/infiniband/hw/qib/qib_file_ops.c
+index e449e394963f..a3d593f546ec 100644
+--- a/drivers/infiniband/hw/qib/qib_file_ops.c
++++ b/drivers/infiniband/hw/qib/qib_file_ops.c
+@@ -822,10 +822,7 @@ static int mmap_piobufs(struct vm_area_struct *vma,
+ 	phys = dd->physaddr + piobufs;
+ 
+ #if defined(__powerpc__)
+-	/* There isn't a generic way to specify writethrough mappings */
+-	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
+-	pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
+-	pgprot_val(vma->vm_page_prot) &= ~_PAGE_GUARDED;
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ #endif
+ 
+ 	/*
+diff --git a/drivers/infiniband/hw/qib/qib_pcie.c b/drivers/infiniband/hw/qib/qib_pcie.c
+index 4758a3801ae8..6abe1c621aa4 100644
+--- a/drivers/infiniband/hw/qib/qib_pcie.c
++++ b/drivers/infiniband/hw/qib/qib_pcie.c
+@@ -144,13 +144,7 @@ int qib_pcie_ddinit(struct qib_devdata *dd, struct pci_dev *pdev,
+ 	addr = pci_resource_start(pdev, 0);
+ 	len = pci_resource_len(pdev, 0);
+ 
+-#if defined(__powerpc__)
+-	/* There isn't a generic way to specify writethrough mappings */
+-	dd->kregbase = __ioremap(addr, len, _PAGE_NO_CACHE | _PAGE_WRITETHRU);
+-#else
+ 	dd->kregbase = ioremap_nocache(addr, len);
+-#endif
+-
+ 	if (!dd->kregbase)
+ 		return -ENOMEM;
+ 
+-- 
+2.5.0
