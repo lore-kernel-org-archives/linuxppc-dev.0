@@ -1,37 +1,40 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqpWx71nzzDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 03:19:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqpX81xsWzDqZc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 03:19:20 +1000 (AEST)
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Wed, 20 Apr 2016 18:19:05 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 884882190056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 18:18:39 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3KHJ1A12752982
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:19:01 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3KHJ0SS029489
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 11:19:01 -0600
-Subject: Re: [PATCH] cxl: Increase timeout for detection of AFU mmio hang
-To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- Frank Haverkamp <HAVERKAM@de.ibm.com>
-References: <1461083664-12283-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <5717BA03.8090805@linux.vnet.ibm.com>
-Date: Wed, 20 Apr 2016 19:18:59 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 20 Apr 2016 13:19:17 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 29D1938C804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:18:56 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3KHIump33554508
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 17:18:56 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3KHIsJD013006
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:18:55 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, rjw@rjwysocki.net,
+ viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Ramp-down global pstate slower
+ than local-pstate
+In-Reply-To: <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1460701739-31549-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1460701739-31549-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Date: Wed, 20 Apr 2016 10:18:51 -0700
+Message-ID: <8737qgmc5g.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1461083664-12283-1-git-send-email-fbarrat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,39 +44,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
+> Iozone results show fairly consistent performance boost.
+> YCSB on redis shows improved Max latencies in most cases.
 
-Received privately:
-Tested-by: Frank Haverkamp <haver@linux.vnet.ibm.com>
+What about power consumption?
 
+> Iozone write/rewite test were made with filesizes 200704Kb and 401408Kb
+> with different record sizes . The following table shows IOoperations/sec
+> with and without patch.
 
-Le 19/04/2016 18:34, Frederic Barrat a écrit :
-> PSL designers recommend a larger value for the mmio hang pulse, 256 us
-> instead of 1 us. The CAIA architecture states that it needs to be
-> smaller than 1/2 of the RTOS timeout set in the PHB for outbound
-> non-posted transactions, which is still (easily) the case here.
+> Iozone Results ( in op/sec) ( mean over 3 iterations )
+
+What's the variance between runs?
+
+> Tested with YCSB workload (50% update + 50% read) over redis for 1 million
+> records and 1 million operation. Each test was carried out with target
+> operations per second and persistence disabled.
 >
-> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> ---
-> Needs to be applied on top of http://patchwork.ozlabs.org/patch/604029/
->
->
->   drivers/misc/cxl/pci.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 94fd3f7..0a9c15b 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -375,8 +375,10 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
->   		return -ENODEV;
->   	}
->
-> +	psl_dsnctl = 0x0000900000000000ULL; /* pteupd ttype, scdone */
-> +	psl_dsnctl |= (0x2ULL << (63-38)); /* MMIO hang pulse: 256 us */
->   	/* Tell PSL where to route data to */
-> -	psl_dsnctl = 0x0000900002000000ULL | (chipid << (63-5));
-> +	psl_dsnctl |= (chipid << (63-5));
->   	psl_dsnctl |= (capp_unit_id << (63-13));
->
->   	cxl_p1_write(adapter, CXL_PSL_DSNDCTL, psl_dsnctl);
->
+> Max-latency (in us)( mean over 5 iterations )
+
+What's the variance between runs?
+
+std dev? 95th percentile?
+
+> ---------------------------------------------------------------
+> op/s    Operation       with patch      without patch   %change
+> ---------------------------------------------------------------
+> 15000   Read            61480.6         50261.4         22.32
+
+This seems fairly significant regression. Any idea why at 15K op/s
+there's such a regression?
+
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+[ 15 more citation lines. Click/Enter to show. ]
+> @@ -36,12 +36,56 @@
+>  #include <asm/reg.h>
+>  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+>  #include <asm/opal.h>
+> +#include <linux/timer.h>
+>  
+>  #define POWERNV_MAX_PSTATES	256
+>  #define PMSR_PSAFE_ENABLE	(1UL << 30)
+>  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+>  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
+>  
+> +#define MAX_RAMP_DOWN_TIME				5120
+> +/*
+> + * On an idle system we want the global pstate to ramp-down from max value
+> to
+> + * min over a span of ~5 secs. Also we want it to initially ramp-down
+> slowly and
+> + * then ramp-down rapidly later on.
+
+Where does 5 seconds come from?
+
+Why 5 and not 10, or not 2? Is there some time period inherit in
+hardware or software that this is computed from?
+
+> +/* Interval after which the timer is queued to bring down global pstate */
+> +#define GPSTATE_TIMER_INTERVAL				2000
+
+in ms?
+
+-- 
+Stewart Smith
+OPAL Architect, IBM.
