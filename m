@@ -1,37 +1,38 @@
-Return-Path: <xinhui@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqjLB15grzDqZH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:25:22 +1000 (AEST)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui@linux.vnet.ibm.com>;
- Wed, 20 Apr 2016 23:25:20 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 17BBD2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:25:03 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3KDOnK16816158
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:25:03 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3KDOOfe012964
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:24:25 +1000
-Message-ID: <571782F0.2020201@linux.vnet.ibm.com>
-Date: Wed, 20 Apr 2016 21:24:00 +0800
-From: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqjsx6YDQzDqZJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:49:25 +1000 (AEST)
+Date: Wed, 20 Apr 2016 15:49:14 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v4 1/5] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20160420134914.GK6862@pathway.suse.cz>
+References: <1459353210-20260-1-git-send-email-pmladek@suse.com>
+ <1459353210-20260-2-git-send-email-pmladek@suse.com>
+ <20160404044928.GD6164@swordfish>
+ <20160404093819.GH1023@pathway.suse.cz>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- boqun.feng@gmail.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- tglx@linutronix.de
-Subject: [PATCH V3] powerpc: Implement {cmp}xchg for u8 and u16
-References: <5715D04E.9050009@linux.vnet.ibm.com>
-In-Reply-To: <5715D04E.9050009@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160404093819.GH1023@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,175 +42,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+On Mon 2016-04-04 11:38:19, Petr Mladek wrote:
+> On Mon 2016-04-04 13:49:28, Sergey Senozhatsky wrote:
+> > Hello,
+> > 
+> > On (03/30/16 17:53), Petr Mladek wrote:
+> > > +/*
+> > > + * Flush data from the associated per_CPU buffer. The function
+> > > + * can be called either via IRQ work or independently.
+> > > + */
+> > > +static void __printk_nmi_flush(struct irq_work *work)
+> > > +{
+> > > +	static raw_spinlock_t read_lock =
+> > > +		__RAW_SPIN_LOCK_INITIALIZER(read_lock);
+> > > +	struct nmi_seq_buf *s = container_of(work, struct nmi_seq_buf, work);
+> > > +	unsigned long flags;
+> > > +	size_t len, size;
+> > > +	int i, last_i;
+> > > +
+> > > +	/*
+> > > +	 * The lock has two functions. First, one reader has to flush all
+> > > +	 * available message to make the lockless synchronization with
+> > > +	 * writers easier. Second, we do not want to mix messages from
+> > > +	 * different CPUs. This is especially important when printing
+> > > +	 * a backtrace.
+> > > +	 */
+> > > +	raw_spin_lock_irqsave(&read_lock, flags);
+> > > +
+> > 
+> > hm... so here we have
+> > 	for (; i < size; i++)
+> > 		printk()
+> > 
+> > under the spinlock. the thing is that one of printk() can end up
+> > in console_unlock()->call_console_drivers() loop, iterating there
+> > long enough to spinlock lockup other CPUs that might want to flush
+> > NMI buffers (if any), assuming that there are enough printk() (or
+> > may be a slow serial console) happening concurrently on other CPUs
+> > to keep the current ->read_lock busy. async printk can help here,
+> > but user can request sync version of printk.
+> 
+> I think that printk() is called on many other locations under
+> a spinlock and they all are waiting for the async printk.
+>
+> > how about using deferred printk for nmi flush?
+> > print_nmi_seq_line()->printk_deferred() ?
 
-Implement xchg{u8,u16}{local,relaxed}, and
-cmpxchg{u8,u16}{,local,acquire,relaxed}.
+I thought more about it. printk_nmi_flush() is primary called
+via irq work. If we use deferred printk() here we will just delay
+the console stuff to another irq work.
 
-It works on all ppc.
-The basic idea is from commit 3226aad81aa6 ("sh: support 1 and 2 byte xchg")
+If we use async printk from your patch set, it will unnecessary
+create another irq work and delay the waking of the printk kthread.
 
-Suggested-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
----
-change from v2:
-	in the do{}while(), we save one load and use corresponding cmpxchg suffix.
-	Also add corresponding __cmpxchg_u32 function declaration in the __XCHG_GEN 
-change from V1:
-	rework totally.
----
- arch/powerpc/include/asm/cmpxchg.h | 83 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
+If anyone forces sync printk, it will not help much. We will still
+call console from the IRQ context and the potential flood of messages
+still might cause a soft lookup.
 
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index 44efe73..2aec04e 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -7,6 +7,38 @@
- #include <asm/asm-compat.h>
- #include <linux/bug.h>
- 
-+#ifdef __BIG_ENDIAN
-+#define BITOFF_CAL(size, off)	((sizeof(u32) - size - off) * BITS_PER_BYTE)
-+#else
-+#define BITOFF_CAL(size, off)	(off * BITS_PER_BYTE)
-+#endif
-+
-+#define __XCHG_GEN(cmp, type, sfx, skip, v)				\
-+static __always_inline unsigned long					\
-+__cmpxchg_u32##sfx(v unsigned int *p, unsigned long old,		\
-+			 unsigned long new);				\
-+static __always_inline u32						\
-+__##cmp##xchg_##type##sfx(v void *ptr, u32 old, u32 new)		\
-+{									\
-+	int size = sizeof (type);					\
-+	int off = (unsigned long)ptr % sizeof(u32);			\
-+	volatile u32 *p = ptr - off;					\
-+	int bitoff = BITOFF_CAL(size, off);				\
-+	u32 bitmask = ((0x1 << size * BITS_PER_BYTE) - 1) << bitoff;	\
-+	u32 oldv, newv, tmp;						\
-+	u32 ret;							\
-+	oldv = READ_ONCE(*p);						\
-+	do {								\
-+		ret = (oldv & bitmask) >> bitoff;			\
-+		if (skip && ret != old)					\
-+			break;						\
-+		newv = (oldv & ~bitmask) | (new << bitoff);		\
-+		tmp = oldv;						\
-+		oldv = __cmpxchg_u32##sfx((v u32*)p, oldv, newv);	\
-+	} while (tmp != oldv);						\
-+	return ret;							\
-+}
-+
- /*
-  * Atomic exchange
-  *
-@@ -14,6 +46,19 @@
-  * the previous value stored there.
-  */
- 
-+#define XCHG_GEN(type, sfx, v)						\
-+		__XCHG_GEN(_, type, sfx, 0, v)				\
-+static __always_inline u32 __xchg_##type##sfx(v void *p, u32 n)		\
-+{									\
-+	return ___xchg_##type##sfx(p, 0, n);				\
-+}
-+
-+XCHG_GEN(u8, _local, volatile);
-+XCHG_GEN(u8, _relaxed, );
-+XCHG_GEN(u16, _local, volatile);
-+XCHG_GEN(u16, _relaxed, );
-+#undef XCHG_GEN
-+
- static __always_inline unsigned long
- __xchg_u32_local(volatile void *p, unsigned long val)
- {
-@@ -88,6 +133,10 @@ static __always_inline unsigned long
- __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
- {
- 	switch (size) {
-+	case 1:
-+		return __xchg_u8_local(ptr, x);
-+	case 2:
-+		return __xchg_u16_local(ptr, x);
- 	case 4:
- 		return __xchg_u32_local(ptr, x);
- #ifdef CONFIG_PPC64
-@@ -103,6 +152,10 @@ static __always_inline unsigned long
- __xchg_relaxed(void *ptr, unsigned long x, unsigned int size)
- {
- 	switch (size) {
-+	case 1:
-+		return __xchg_u8_relaxed(ptr, x);
-+	case 2:
-+		return __xchg_u16_relaxed(ptr, x);
- 	case 4:
- 		return __xchg_u32_relaxed(ptr, x);
- #ifdef CONFIG_PPC64
-@@ -131,6 +184,20 @@ __xchg_relaxed(void *ptr, unsigned long x, unsigned int size)
-  * and return the old value of *p.
-  */
- 
-+#define CMPXCHG_GEN(type, sfx, v)				\
-+	__XCHG_GEN(cmp, type, sfx, 1, v)
-+
-+CMPXCHG_GEN(u8, , volatile);
-+CMPXCHG_GEN(u8, _local,	volatile);
-+CMPXCHG_GEN(u8, _relaxed, );
-+CMPXCHG_GEN(u8, _acquire, );
-+CMPXCHG_GEN(u16, , volatile);
-+CMPXCHG_GEN(u16, _local, volatile);
-+CMPXCHG_GEN(u16, _relaxed, );
-+CMPXCHG_GEN(u16, _acquire, );
-+#undef CMPXCHG_GEN
-+#undef __XCHG_GEN
-+
- static __always_inline unsigned long
- __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
- {
-@@ -316,6 +383,10 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new,
- 	  unsigned int size)
- {
- 	switch (size) {
-+	case 1:
-+		return __cmpxchg_u8(ptr, old, new);
-+	case 2:
-+		return __cmpxchg_u16(ptr, old, new);
- 	case 4:
- 		return __cmpxchg_u32(ptr, old, new);
- #ifdef CONFIG_PPC64
-@@ -332,6 +403,10 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
- 	  unsigned int size)
- {
- 	switch (size) {
-+	case 1:
-+		return __cmpxchg_u8_local(ptr, old, new);
-+	case 2:
-+		return __cmpxchg_u16_local(ptr, old, new);
- 	case 4:
- 		return __cmpxchg_u32_local(ptr, old, new);
- #ifdef CONFIG_PPC64
-@@ -348,6 +423,10 @@ __cmpxchg_relaxed(void *ptr, unsigned long old, unsigned long new,
- 		  unsigned int size)
- {
- 	switch (size) {
-+	case 1:
-+		return __cmpxchg_u8_relaxed(ptr, old, new);
-+	case 2:
-+		return __cmpxchg_u16_relaxed(ptr, old, new);
- 	case 4:
- 		return __cmpxchg_u32_relaxed(ptr, old, new);
- #ifdef CONFIG_PPC64
-@@ -364,6 +443,10 @@ __cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
- 		  unsigned int size)
- {
- 	switch (size) {
-+	case 1:
-+		return __cmpxchg_u8_acquire(ptr, old, new);
-+	case 2:
-+		return __cmpxchg_u16_acquire(ptr, old, new);
- 	case 4:
- 		return __cmpxchg_u32_acquire(ptr, old, new);
- #ifdef CONFIG_PPC64
--- 
-2.4.3
+Finally, as I already said. This is not different from any other
+printk() call under a spinlock.
+
+After all, I am going to use the normal printk() when flushing
+the NMI buffers.
+
+The only exception will be when this is called on panic in NMI
+context. In this case, printk_deferred() will do exactly what
+we need.
+
+Best Regards,
+Petr
