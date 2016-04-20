@@ -1,23 +1,37 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
+ [IPv6:2607:f8b0:4001:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqkfF326KzDqZJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 00:24:21 +1000 (AEST)
-Date: Wed, 20 Apr 2016 16:24:08 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- boqun.feng@gmail.com, paulmck@linux.vnet.ibm.com, tglx@linutronix.de
-Subject: Re: [PATCH V3] powerpc: Implement {cmp}xchg for u8 and u16
-Message-ID: <20160420142408.GF3430@twins.programming.kicks-ass.net>
-References: <5715D04E.9050009@linux.vnet.ibm.com>
- <571782F0.2020201@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqmGj6c92zDqZQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 01:37:32 +1000 (AEST)
+Received: by mail-io0-x244.google.com with SMTP id z133so7447425iod.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 08:37:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <571782F0.2020201@linux.vnet.ibm.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1461166339-11109-1-git-send-email-geert+renesas@glider.be>
+References: <1461166339-11109-1-git-send-email-geert+renesas@glider.be>
+Date: Wed, 20 Apr 2016 17:37:30 +0200
+Message-ID: <CAMuHMdUUCJEAyhstdi1oxJXmyOh5wFbsE1JiaMs4f2ojGwSoig@mail.gmail.com>
+Subject: Re: [PATCH 00/14] DT: Fix spelling of standard properties
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Lee Jones <lee@kernel.org>, Zhou Wang <wangzhou1@hisilicon.com>,
+ Tony Lindgren <tony@atomide.com>,
+ Srinivas Kandagatla <srinivas.kandagatla@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Vinod Koul <vinod.koul@intel.com>,
+ Mark Brown <broonie@kernel.org>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Joe Perches <joe@perches.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ dmaengine@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +41,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 20, 2016 at 09:24:00PM +0800, Pan Xinhui wrote:
+On Wed, Apr 20, 2016 at 5:32 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> This patch series fixes misspellings of various standard DT properties
+> in DT binding documentation, DTS files, and error messages.
 
-> +#define __XCHG_GEN(cmp, type, sfx, skip, v)				\
-> +static __always_inline unsigned long					\
-> +__cmpxchg_u32##sfx(v unsigned int *p, unsigned long old,		\
-> +			 unsigned long new);				\
-> +static __always_inline u32						\
-> +__##cmp##xchg_##type##sfx(v void *ptr, u32 old, u32 new)		\
-> +{									\
-> +	int size = sizeof (type);					\
-> +	int off = (unsigned long)ptr % sizeof(u32);			\
-> +	volatile u32 *p = ptr - off;					\
-> +	int bitoff = BITOFF_CAL(size, off);				\
-> +	u32 bitmask = ((0x1 << size * BITS_PER_BYTE) - 1) << bitoff;	\
-> +	u32 oldv, newv, tmp;						\
-> +	u32 ret;							\
-> +	oldv = READ_ONCE(*p);						\
-> +	do {								\
-> +		ret = (oldv & bitmask) >> bitoff;			\
-> +		if (skip && ret != old)					\
-> +			break;						\
-> +		newv = (oldv & ~bitmask) | (new << bitoff);		\
-> +		tmp = oldv;						\
-> +		oldv = __cmpxchg_u32##sfx((v u32*)p, oldv, newv);	\
-> +	} while (tmp != oldv);						\
-> +	return ret;							\
-> +}
+BTW, this is against next-20160420.
 
-So for an LL/SC based arch using cmpxchg() like that is sub-optimal.
+Gr{oetje,eeting}s,
 
-Why did you choose to write it entirely in C?
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
