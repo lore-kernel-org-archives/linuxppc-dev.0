@@ -1,22 +1,43 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <robh+dt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqyB162hfzDqb0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 09:04:09 +1000 (AEST)
-Message-ID: <1461193440.32510.211.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>, Kumar Gala
- <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Date: Wed, 20 Apr 2016 18:04:00 -0500
-In-Reply-To: <1461146533-9500-1-git-send-email-alessio.bogani@elettra.eu>
-References: <1461140309-2522-1-git-send-email-alessio.bogani@elettra.eu>
- <1461146533-9500-1-git-send-email-alessio.bogani@elettra.eu>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v3 1/1] powerpc/86xx: Add support for Emerson/Artesyn
- MVME7100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqz7g3S6DzDqb3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 09:47:11 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 08EFA202EC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:47:09 +0000 (UTC)
+Received: from mail-yw0-f170.google.com (mail-yw0-f170.google.com
+ [209.85.161.170])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 403A92034E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:47:06 +0000 (UTC)
+Received: by mail-yw0-f170.google.com with SMTP id t10so72017589ywa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 16:47:06 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1461166339-11109-5-git-send-email-geert+renesas@glider.be>
+References: <1461166339-11109-1-git-send-email-geert+renesas@glider.be>
+ <1461166339-11109-5-git-send-email-geert+renesas@glider.be>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Wed, 20 Apr 2016 18:46:45 -0500
+Message-ID: <CAL_JsqKSbGPKNZdZnowGpdF8zxXbh6g-wkq96+KmBNLwp7n=HQ@mail.gmail.com>
+Subject: Re: [PATCH 04/14] ARM: dts: OMAP36xx: : DT spelling
+ s/#address-cell/#address-cells/
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee@kernel.org>,
+ Zhou Wang <wangzhou1@hisilicon.com>, Tony Lindgren <tony@atomide.com>,
+ Srinivas Kandagatla <srinivas.kandagatla@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Vinod Koul <vinod.koul@intel.com>, Mark Brown <broonie@kernel.org>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Joe Perches <joe@perches.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, dmaengine@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +47,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-20 at 12:02 +0200, Alessio Igor Bogani wrote:
-> Add support for the Artesyn MVME7100 Single Board Computer.
-> 
-> The MVME7100 is a 6U form factor VME64 computer with:
-> 
->     - A two e600 cores Freescale MPC8641D CPU
->     - 2 GB of DDR2 onboard memory
->     - Four Gigabit Ethernets
->     - Five 16550 compatible UARTs
->     - One USB 2.0 port
->     - Two PCI/PCI eXpress Mezzanine Card (PMC/XMC) Slots
->     - A DS1375 Real Time Clock (RTC)
->     - 512 KB of Non-Volatile Memory (NVRAM)
->     - Two 64 KB EEPROMs
->     - 128 MB NOR and 4/8 GB NAND Flash
-> 
-> This patch is based on linux-4.6-rc4 and has been only boot tested.
-> 
-> Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+On Wed, Apr 20, 2016 at 10:32 AM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
-> This patch requires 
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-April/141813.html
-> to be built and 
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-April/141980.html to
-> work correctly.
-> 
-> v2 -> v3
->     Simplify device tree using pci1 definition from the header file
->         as suggested bt Scott Wood
->     Move assembly code into a separated file as suggested by Scott Wood
->     Increase from 2 to 5 the number of UARTs
-> 
-> v1 -> v2
->     Fix BCSR handling
->     Add missing @interrupt-cells in the device tree
->         to avoid 'of_irq_parse_pci() failed with rc=-22'
->     Reduce from 3 to 2 the PCI windows to avoid
->         'Ran out of outbound PCI ATMUs for IO resource'
-> 
-> Limitations:
->     This patch covers only models 171 and 173
->     No plans to support CPLD timers
-> 
-> Know issues:
->     All four PHYs work in polling mode
-> 
-> Configuration is missing for:
->     PCI IDSEL and PCI Interrupt definition
-> 
-> Support is missing for:
->     Cache and memory controllers (which are very similar to the 85xx ones
->         but right now I don't know if we can re-use their support)
->     Watchdog, USB, NVRAM, NOR, NAND, EEPROMs, VME, PMC/XMC and RTC
+>  arch/arm/boot/dts/omap36xx.dtsi | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/boot/dts/omap36xx.dtsi b/arch/arm/boot/dts/omap36xx.dtsi
+> index ce1e242d4dc07ea8..8b797915300894d8 100644
+> --- a/arch/arm/boot/dts/omap36xx.dtsi
+> +++ b/arch/arm/boot/dts/omap36xx.dtsi
+> @@ -44,7 +44,7 @@
+>                 abb_mpu_iva: regulator-abb-mpu {
+>                         compatible = "ti,abb-v1";
+>                         regulator-name = "abb_mpu_iva";
+> -                       #address-cell = <0>;
+> +                       #address-cells = <0>;
 
-All of the above other than the changelog should go above the --- line
+dtc should flag this if it was really needed. However, it looks like
+it isn't as there are no child nodes (unless the board files add
+them).
 
-Until you figure out the PCI interrupt mapping, the PCI nodes should be marked
-disabled.  Likewise anything else that has an incorrect/incomplete device tree
-node.
+A nice dtc check would be to flag unnecessary #address-cells or
+#size-cells. That would only help here after your fix though.
 
--Scott
+Rob
+
+>                         #size-cells = <0>;
+>                         reg = <0x483072f0 0x8>, <0x48306818 0x4>;
+>                         reg-names = "base-address", "int-address";
+> --
+> 1.9.1
+>
