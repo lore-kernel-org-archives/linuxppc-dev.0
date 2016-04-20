@@ -1,27 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
- [IPv6:2607:f8b0:400e:c00::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <acme@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqSh76Gz5zDqCB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:55:03 +1000 (AEST)
-Received: by mail-pf0-x229.google.com with SMTP id c20so13530985pfc.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 20:55:03 -0700 (PDT)
-Subject: Re: [PATCH v8 30/45] powerpc/pci: Delay populating pdn
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-31-git-send-email-gwshan@linux.vnet.ibm.com>
- <5715EA08.3040901@ozlabs.ru> <20160420021318.GB28594@gwshan>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
- grant.likely@linaro.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <5716FD8E.5010700@ozlabs.ru>
-Date: Wed, 20 Apr 2016 13:54:54 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqSlW0DkVzDqCB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:57:58 +1000 (AEST)
+Date: Wed, 20 Apr 2016 00:57:54 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Anju T <anju@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com, jolsa@redhat.com,
+ dsahern@gmail.com, sukadev@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V11 0/4]perf/powerpc: Add ability to sample intr machine
+ state in powerpc
+Message-ID: <20160420035754.GH2527@redhat.com>
+References: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
+ <5714AD1F.9020807@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20160420021318.GB28594@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5714AD1F.9020807@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,93 +28,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/20/2016 12:13 PM, Gavin Shan wrote:
-> On Tue, Apr 19, 2016 at 06:19:20PM +1000, Alexey Kardashevskiy wrote:
->> On 02/17/2016 02:44 PM, Gavin Shan wrote:
->>> The pdn (struct pci_dn) instances are allocated from memblock or
->>> bootmem when creating PCI controller (hoses) in setup_arch(). PCI
->>> hotplug, which will be supported by proceeding patches, releases
->>> PCI device nodes and their corresponding pdn on unplugging event.
->>> The memory chunks for pdn instances allocated from memblock or
->>> bootmem are hard to reused after being released.
->>>
->>> This delays creating pdn by pci_devs_phb_init() from setup_arch()
->>> to core_initcall() so that they are allocated from slab. The memory
->>> consumed by pdn can be released to system without problem during
->>> PCI unplugging time. It indicates that pci_dn is unavailable in
->>> setup_arch() and the the fixup on pdn (like AGP's) can't be carried
->>> out that time. We have to do that in ppc_md.pcibios_root_bridge_prepare()
->>> on maple/pasemi/powermac platforms where/when the pdn is available.
->>>
->>> At the mean while, the EEH device is created when pdn is populated,
->>> meaning pdn and EEH device have same life cycle. In turn, we needn't
->>> call eeh_dev_init() to create EEH device explicitly.
->>>
->>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>
->>
->> Uff. It would not hurt to mention that  pcibios_root_bridge_prepare is called
->>from subsys_initcall() which is executed after core_initcall() so the code
->> flow does not change.
->>
->
-> Yes, will do in next revision.
->
->> Have you checked if there is anything in between
->> core_initcall(pci_devs_phb_init) and subsys_initcall(pcibios_init) which
->> might need device tree nodes? For example, subsys_initcall(pcibios_init)
->> calls (eventually) pnv_pci_ioda_fixup(), if we are unlucky and pcibios_init()
->> (and therefore pnv_pci_ioda_fixup() or what pseries/others do) is called
->> before pcibios_init() - won't we crash or something?
->>
->
-> I don't catch what you were asking. device-tree nodes (struct device_node)
-> are always there. This patch doesn't affect them. Perhaps you were talking
-> about pdn (PCI_DN). If it's the case, this patch delays creating pdn from
-> setup_arch() to core_initcall(pci_devs_phb_init).
+Em Mon, Apr 18, 2016 at 03:17:11PM +0530, Anju T escreveu:
+> On Saturday 20 February 2016 10:32 AM, Anju T wrote:
+> >This short patch series adds the ability to sample the interrupted
+> >machine state for each hardware sample.
+> >
+> >To test this patchset,
+> >Eg:
+> >
+> >$ perf record -I?       # list supported registers
+> >
+> >output:
+> >available registers: r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15 r16 r17 r18 r19 r20 r21 r22 r23 r24 r25 r26 r27 r28 r29 r30 r31 nip msr orig_r3 ctr link xer ccr softe trap dar dsisr
+> >
+> >  usage: perf record [<options>] [<command>]
+> >     or: perf record [<options>] -- <command> [<options>]
+> >
+> >     -I, --intr-regs[=<any register>]
+> >                           sample selected machine registers on interrupt, use -I ? to list register names
+> >
+> >
+> >$ perf record -I ls   # record machine state at interrupt
+> >$ perf script -D      # read the perf.data file
+> >
+> >Sample output obtained for this patchset/ output looks like as follows:
+> >
+> >496768515470 0x1988 [0x188]: PERF_RECORD_SAMPLE(IP, 0x1): 4522/4522: 0xc0000000001e538c period: 1 addr: 0
+> >... intr regs: mask 0x7ffffffffff ABI 64-bit
+> >.... r0    0xc0000000001e5e34
+> >.... r1    0xc000000fe733f9a0
+> >.... r2    0xc000000001523100
+> >.... r3    0xc000000ffaadeb60
+> >.... r4    0xc000000003456800
+> >.... r5    0x73a9b5e000
+> >.... r6    0x1e000000
+> >.... r7    0x0
+> >.... r8    0x0
+> >.... r9    0x0
+> >.... r10   0x1
+> >.... r11   0x0
+> >.... r12   0x24022822
+> >.... r13   0xc00000000feec180
+> >.... r14   0x0
+> >.... r15   0xc000001e4be18800
+> >.... r16   0x0
+> >.... r17   0xc000000ffaac5000
+> >.... r18   0xc000000fe733f8a0
+> >.... r19   0xc000000001523100
+> >.... r20   0xc00000000009fd1c
+> >.... r21   0xc000000fcaa69000
+> >.... r22   0xc0000000001e4968
+> >.... r23   0xc000000001523100
+> >.... r24   0xc000000fe733f850
+> >.... r25   0xc000000fcaa69000
+> >.... r26   0xc000000003b8fcf0
+> >.... r27   0xfffffffffffffead
+> >.... r28   0x0
+> >.... r29   0xc000000fcaa69000
+> >.... r30   0x1
+> >.... r31   0x0
+> >.... nip   0xc0000000001dd320
+> >.... msr   0x9000000000009032
+> >.... orig_r3 0xc0000000001e538c
+> >.... ctr   0xc00000000009d550
+> >.... link  0xc0000000001e5e34
+> >.... xer   0x0
+> >.... ccr   0x84022882
+> >.... softe 0x0
+> >.... trap  0xf01
+> >.... dar   0x0
+> >.... dsisr 0xf00040060000004
+> >  ... thread: :4522:4522
+> >  ...... dso: /root/.debug/.build-id/b0/ef11b1a1629e62ac9de75199117ee5ef9469e9
+> >            :4522  4522   496.768515:          1 cycles:  c0000000001e538c .perf_event_context_sched_in (/boot/vmlinux)
+> >
+> >
+> >
+> >Changes from v10:
+> >
+> >- Included SOFTE as suggested by mpe
+> >- The name of registers displayed is  changed from
+> >   gpr* to r* also the macro names changed from
+> >   PERF_REG_POWERPC_GPR* to PERF_REG_POWERPC_R*.
+> >- The conflict in returning the ABI is resolved.
+> >- #define PERF_REG_SP  is again changed to  PERF_REG_POWERPC_R1
+> >- Comment in tools/perf/config/Makefile is updated.
+> >- removed the "Reviewed-By" tag as the patch has logic changes.
+> >
+> >
+> >Changes from V9:
+> >
+> >- Changed the name displayed for link register from "lnk" to "link" in
+> >   tools/perf/arch/powerpc/include/perf_regs.h
+> >
+> >changes from V8:
+> >
+> >- Corrected the indentation issue in the Makefile mentioned in 3rd patch
+> >
+> >Changes from V7:
+> >
+> >- Addressed the new line issue in 3rd patch.
+> >
+> >Changes from V6:
+> >
+> >- Corrected the typo in patch  tools/perf: Map the ID values with register names.
+> >   ie #define PERF_REG_SP  PERF_REG_POWERPC_R1 should be #define PERF_REG_SP   PERF_REG_POWERPC_GPR1
+> >
+> >
+> >Changes from V5:
+> >
+> >- Enabled perf_sample_regs_user also in this patch set.Functions added in
+> >    arch/powerpc/perf/perf_regs.c
+> >- Added Maddy's patch to this patchset for enabling -I? option which will
+> >   list the supported register names.
+> >
+> >
+> >Changes from V4:
+> >
+> >- Removed the softe and MQ from all patches
+> >- Switch case is replaced with an array in the 3rd patch
+> >
+> >Changes from V3:
+> >
+> >- Addressed the comments by Sukadev regarding the nits in the descriptions.
+> >- Modified the subject of first patch.
+> >- Included the sample output in the 3rd patch also.
+> >
+> >Changes from V2:
+> >
+> >- tools/perf/config/Makefile is moved to the patch tools/perf.
+> >- The patchset is reordered.
+> >- perf_regs_load() function is used for the dwarf unwind test.Since it is not required here,
+> >   it is removed from tools/perf/arch/powerpc/include/perf_regs.h
+> >- PERF_REGS_POWERPC_RESULT is removed.
+> >
+> >Changes from V1:
+> >
+> >- Solved the name missmatch issue in the from and signed-off field of the patch series.
+> >- Added necessary comments in the 3rd patch ie perf/powerpc ,as suggested by Maddy.
+> >
+> >
+> >
+> >Anju T (3):
+> >   perf/powerpc: assign an id to each powerpc register
+> >   perf/powerpc: add support for sampling intr machine state
+> >   tools/perf: Map the ID values with register names
+> >
+> >Madhavan Srinivasan (1):
+> >   tool/perf: Add sample_reg_mask to include all perf_regs regs
+> >
+> >
+> >  arch/powerpc/Kconfig                        |  1 +
+> >  arch/powerpc/include/uapi/asm/perf_regs.h   | 50 ++++++++++++++++
+> >  arch/powerpc/perf/Makefile                  |  1 +
+> >  arch/powerpc/perf/perf_regs.c               | 91 +++++++++++++++++++++++++++++
+> >  tools/perf/arch/powerpc/include/perf_regs.h | 69 ++++++++++++++++++++++
+> >  tools/perf/arch/powerpc/util/Build          |  1 +
+> >  tools/perf/arch/powerpc/util/perf_regs.c    | 49 ++++++++++++++++
+> >  tools/perf/config/Makefile                  |  5 ++
+> >  8 files changed, 267 insertions(+)
+> >  create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+> >  create mode 100644 arch/powerpc/perf/perf_regs.c
+> >  create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+> >  create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
+> >
+> 
+> Hi,
+> 
+> Can this be taken into the next tree?
 
+Even the bits in tools/perf/ are arch specific, so I guess this goes via
+the powerpc tree? Michael?
 
-While thinking of explaining what I wanted to ask, I found my answer :)
-
-pcibios_init() calls ppc_md.pcibios_root_bridge_prepare() first, then 
-ppc_md.pcibios_fixup() so we are fine here with ordering.
-
-
-> I don't see anything need pdn between setup_arch() and core_initcall().
-> The changes introduced to powermac/pasemi platforms are: move fixing the child
-> pdns of the specifiec PHB's pdn from setup_arch() to subsys_initcall(pcibios_init).
-> I don't see anything between them needs the fixed pdns.
->
-> I don't understand how pcibios_init() is called before pcibios_init() in your
-
-pcibios_init() is used twice in the sentence above :)
-
-Anyway,
-
-
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-
-
-
-> context. Sorry for my bad English. Perhaps you're asking the the called sequence
-> on core_initcall() and subsys_init()? If so, they're defined like below:
->
-> #define core_initcall(fn)		__define_initcall(fn, 1)
-> #define subsys_initcall(fn)		__define_initcall(fn, 4)
- >
->
->>
->> --
->> Alexey
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
--- 
-Alexey
+- Arnaldo
