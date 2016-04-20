@@ -1,23 +1,26 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <acme@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqfhS5lTSzDqZD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 21:26:00 +1000 (AEST)
-Message-ID: <1461151559.2643.65.camel@neuling.org>
-Subject: Re: [V2, 68/68] powerpc/mm/radix: Use firmware feature to disable
- radix
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org, Stewart Smith <sesmith@au1.ibm.com>,
- oliveroh <oliveroh@au1.ibm.com>
-Date: Wed, 20 Apr 2016 21:25:59 +1000
-In-Reply-To: <3qqRSV5jq0z9sRB@ozlabs.org>
-References: <3qqRSV5jq0z9sRB@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqj8102TVzDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:16:32 +1000 (AEST)
+Date: Wed, 20 Apr 2016 10:16:33 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anju T <anju@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, jolsa@redhat.com, dsahern@gmail.com,
+ sukadev@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com, acme@kernel.org,
+ naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V11 0/4]perf/powerpc: Add ability to sample intr machine
+ state in powerpc
+Message-ID: <20160420131633.GI2527@redhat.com>
+References: <1455944568-7231-1-git-send-email-anju@linux.vnet.ibm.com>
+ <5714AD1F.9020807@linux.vnet.ibm.com>
+ <20160420035754.GH2527@redhat.com>
+ <1461128158.13404.3.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461128158.13404.3.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-20 at 12:59 +1000, Michael Ellerman wrote:
+Em Wed, Apr 20, 2016 at 02:55:58PM +1000, Michael Ellerman escreveu:
+> On Wed, 2016-04-20 at 00:57 -0300, Arnaldo Carvalho de Melo wrote:
+> > Em Mon, Apr 18, 2016 at 03:17:11PM +0530, Anju T escreveu:
+> > > On Saturday 20 February 2016 10:32 AM, Anju T wrote:
+> > > >  tools/perf/arch/powerpc/include/perf_regs.h | 69 ++++++++++++++++++++++
+> > > >  tools/perf/arch/powerpc/util/Build          |  1 +
+> > > >  tools/perf/arch/powerpc/util/perf_regs.c    | 49 ++++++++++++++++
+> > > >  tools/perf/config/Makefile                  |  5 ++
+> > > >  create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+> > > >  create mode 100644 tools/perf/arch/powerpc/util/perf_regs.c
 
-> On Sat, 2016-09-04 at 06:14:04 UTC, "Aneesh Kumar K.V" wrote:
+> > > Can this be taken into the next tree?
 
-> > We can depend on ibm,pa-features to enable/disable radix. This gives us
-> > a nice way to test p9 hash config, by changing device tree property.
->=20
-> I think we might want to be more careful here.
->=20
-> You set MMU_FTR_RADIX in the cputable entry. So it's on by default on P9 =
-cpus.
->=20
-> Then if there is an ibm,pa-features property *and* it is >=3D 41 bytes lo=
-ng, the
-> below feature entry will hit. In that case the firmware controls whether =
-it's on
-> or off.
->=20
-> I think it would be clearer if we removed RADIX from the cputable, and th=
-e below
-> became the only way to turn it on. Would that break anything?
+> > Even the bits in tools/perf/ are arch specific, so I guess this goes via
+> > the powerpc tree? Michael?
 
-I don't think it'll break anything.  FWIW I'm good with this approach.
+> Yeah if that's OK with you.
+> 
+> It doesn't look like it will generate much in the way of merge conflicts.
+> 
+> Do you want to send an ack?
 
-We'll need to teach firmware about this feature, but I think we should
-do that anyway.  skiboot is a bit of a mess WRT to this property with
-HDAT vs device tree, but we can clean that up there.
+For the tools/perf/ bits:
 
-Mikey
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-
->=20
-
-> > diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> > index 7030b035905d..a4d1f44364b8 100644
-> > --- a/arch/powerpc/kernel/prom.c
-> > +++ b/arch/powerpc/kernel/prom.c
-> > @@ -165,6 +165,7 @@ static struct ibm_pa_feature {
-> >  	 * which is 0 if the kernel doesn't support TM.
-> >  	 */
-> >  	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
-> > +	{0, MMU_FTR_RADIX, 0,		40, 0, 0},
->=20
-> So that says bit 0 of byte 40 enables MMU_FTR_RADIX. Where is that docume=
-nted?
->=20
-> cheers
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+- Arnaldo
