@@ -1,19 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRSV6bx7zDqBS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 12:59:54 +1000 (AEST)
-In-Reply-To: <1460182444-2468-69-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V2,
- 68/68] powerpc/mm/radix: Use firmware feature to disable radix
-Message-Id: <3qqRSV5jq0z9sRB@ozlabs.org>
-Date: Wed, 20 Apr 2016 12:59:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRTX2tlCzDqTy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:00:48 +1000 (AEST)
+Received: by mail-pf0-x235.google.com with SMTP id n1so13127339pfn.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Apr 2016 20:00:48 -0700 (PDT)
+Subject: Re: [PATCH v8 21/45] powerpc/powernv: Create PEs at PCI hot plugging
+ time
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-22-git-send-email-gwshan@linux.vnet.ibm.com>
+ <5715B12A.6020203@ozlabs.ru> <20160420011205.GA21871@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ dja@axtens.net, bhelgaas@google.com, robherring2@gmail.com,
+ grant.likely@linaro.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <5716F0D6.7010609@ozlabs.ru>
+Date: Wed, 20 Apr 2016 13:00:38 +1000
+MIME-Version: 1.0
+In-Reply-To: <20160420011205.GA21871@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +32,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-09-04 at 06:14:04 UTC, "Aneesh Kumar K.V" wrote:
-> We can depend on ibm,pa-features to enable/disable radix. This gives us
-> a nice way to test p9 hash config, by changing device tree property.
+On 04/20/2016 11:12 AM, Gavin Shan wrote:
+> On Tue, Apr 19, 2016 at 02:16:42PM +1000, Alexey Kardashevskiy wrote:
+>> On 02/17/2016 02:44 PM, Gavin Shan wrote:
+>>> Currently, the PEs and their associated resources are assigned
+>>> in ppc_md.pcibios_fixup() except those used by SRIOV VFs.
+>>
+>> But this new code does not affect IOV and VF's PEs will still be created
+>> somewhere else rather than pnv_pci_setup_bridge()?
+>>
+>
+> Correct. VF PEs cannot be created in pnv_pci_setup_bridge() as the PF's
+> IOV capability isn't enabled at that point.
+>
+>>
+>>> The
+>>> function is called for once after PCI probing and resources
+>>> assignment is completed. So it isn't hotplug friendly.
+>>>
+>>> This creates PEs dynamically by ppc_md.pcibios_setup_bridge(), which
+>>> is called on the event during system bootup and PCI hotplug: updating
+>>> PCI bridge's windows after resource assignment/reassignment are done.
+>>> For partial hotplug case, where not all PCI devices belonging to the
+>>> PE are unplugged and plugged again, we just need unbinding/binding
+>>> the affected PCI devices with the corresponding PE without creating
+>>> new one.
+>>>
+>>> As there is no upstream bridge for root bus that needs to be covered
+>>> by PE, we have to create PE for root bus in ppc_md.pcibios_setup_bridge()
+>>> before any other PEs can be created, as PE for root bus is the ancestor
+>>> to anyone else.
+>>
+>> We did not need a root bus PE before? What is the other PE reserved for?
+>> Comments only say "reserved"...
+>>
+>
+> No, A PE for root bus is needed before.
 
-I think we might want to be more careful here.
+Ok. We needed a PE for the root bus and we need it now. What changed? Why 
+do you reserve another PE?
 
-You set MMU_FTR_RADIX in the cputable entry. So it's on by default on P9 cpus.
 
-Then if there is an ibm,pa-features property *and* it is >= 41 bytes long, the
-below feature entry will hit. In that case the firmware controls whether it's on
-or off.
+>
+other PEs can be for the PCI bus
+> originated from root port and the subordinate domains.
+>
+>>>
+>>> Also, the windows of root port or the upstream port of PCIe switch behind
+>>> root port are extended to be PHB's apertures to accommodate the additional
+>>> resources needed by newly plugged devices based on the fact: hotpluggable
+>>> slot is behind root port or downstream port of the PCIe switch behind
+>>> root port. The extension for those PCI brdiges' windows is done in
+>>> ppc_md.pcibios_setup_bridge() as well.
+>>
+>>
+>> This patch seems to be doing way too many things, hard to follow.
+>>
+>> Could you please split the patch into smaller chunks? For example (you can do
+>> it totally different):
+>> - move pnv_pci_ioda_setup_opal_tce_kill()
+>> - move PE creation from pnv_pci_ioda_fixup() to pnv_pci_setup_bridge();
+>> - add pnv_pci_fixup_bridge_resources()
+>> - add an extra reserved PE for the root bus (and all this magic with
+>> root_pe_idx/root_pe_populated)
+>> - ...
+>>
+>
+> I'll evaluate it later. It's always nice to have small patches. Thanks
+> for the comments.
+>
+>>
+>>
+>>
+>> --
+>> Alexey
+>>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-I think it would be clearer if we removed RADIX from the cputable, and the below
-became the only way to turn it on. Would that break anything?
 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 7030b035905d..a4d1f44364b8 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -165,6 +165,7 @@ static struct ibm_pa_feature {
->  	 * which is 0 if the kernel doesn't support TM.
->  	 */
->  	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
-> +	{0, MMU_FTR_RADIX, 0,		40, 0, 0},
-
-So that says bit 0 of byte 40 enables MMU_FTR_RADIX. Where is that documented?
-
-cheers
+-- 
+Alexey
