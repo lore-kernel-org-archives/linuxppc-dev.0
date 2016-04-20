@@ -1,43 +1,23 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqjvs2tbKzDqK8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:51:05 +1000 (AEST)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 20 Apr 2016 10:26:50 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 37D3F2CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 10:26:35 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3K0QQK666912420
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 10:26:35 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3K0Q1ZL028003
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 10:26:02 +1000
-Date: Wed, 20 Apr 2016 10:25:36 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, dja@axtens.net,
- bhelgaas@google.com, robherring2@gmail.com, grant.likely@linaro.org
-Subject: Re: [PATCH v8 15/45] powerpc/powernv/ioda1: Introduce
- PNV_IODA1_DMA32_SEGSIZE
-Message-ID: <20160420002536.GA15693@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-16-git-send-email-gwshan@linux.vnet.ibm.com>
- <570E0376.3030704@ozlabs.ru> <20160413235429.GB5330@gwshan>
- <570F1041.5090901@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqkfF326KzDqZJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 00:24:21 +1000 (AEST)
+Date: Wed, 20 Apr 2016 16:24:08 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ boqun.feng@gmail.com, paulmck@linux.vnet.ibm.com, tglx@linutronix.de
+Subject: Re: [PATCH V3] powerpc: Implement {cmp}xchg for u8 and u16
+Message-ID: <20160420142408.GF3430@twins.programming.kicks-ass.net>
+References: <5715D04E.9050009@linux.vnet.ibm.com>
+ <571782F0.2020201@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <570F1041.5090901@ozlabs.ru>
+In-Reply-To: <571782F0.2020201@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,186 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 14, 2016 at 01:36:33PM +1000, Alexey Kardashevskiy wrote:
->On 04/14/2016 09:54 AM, Gavin Shan wrote:
->>On Wed, Apr 13, 2016 at 06:29:42PM +1000, Alexey Kardashevskiy wrote:
->>>On 02/17/2016 02:43 PM, Gavin Shan wrote:
->>>>Currently, there is one macro (TCE32_TABLE_SIZE) representing the
->>>>TCE table size for one DMA32 segment. The constant representing
->>>>the DMA32 segment size (1 << 28) is still used in the code.
->>>>
->>>>This defines PNV_IODA1_DMA32_SEGSIZE representing one DMA32
->>>>segment size. the TCE table size can be calcualted when the page
->>>
->>>s/calcualted/calculated/
->>>
->>>
->>>>has fixed 4KB size. So all the related calculation depends on one
->>>>macro (PNV_IODA1_DMA32_SEGSIZE). No logical changes introduced.
->>>
->>>Please move PNV_IODA1_DMA32_SEGSIZE where TCE32_TABLE_SIZE was.
->>>
->>>
->>>>
->>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>---
->>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++-------------
->>>>  arch/powerpc/platforms/powernv/pci.h      |  1 +
->>>>  2 files changed, 18 insertions(+), 13 deletions(-)
->>>>
->>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>index d18b95e..e60cff6 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>@@ -48,9 +48,6 @@
->>>>  #include "powernv.h"
->>>>  #include "pci.h"
->>>>
->>>>-/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
->>>>-#define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
->>>>-
->>>>  #define POWERNV_IOMMU_DEFAULT_LEVELS	1
->>>>  #define POWERNV_IOMMU_MAX_LEVELS	5
->>>>
->>>>@@ -2034,7 +2031,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
->>>>
->>>>  	struct page *tce_mem = NULL;
->>>>  	struct iommu_table *tbl;
->>>>-	unsigned int i;
->>>>+	unsigned int tce32_segsz, i;
->>>
->>>
->>>PNV_IODA1_DMA32_SEGSIZE is a segment size in bytes. The name @tce32_segsz
->>>also suggests that it is a segment size in bytes (otherwise it would be
->>>tce32_seg_entries or something like this) but it is not, it is a number of
->>>TCE entries (arch/powerpc/kernel/iommu.c uses "entry" for these). And
->>>tce32_segsz never changes. So:
->>>
->>>const unsigned int entries = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K
->>>- 3);
->>>
->>
->>Are you sure @tce32_segsz and equation you gave are for number of TCE entries,
->>not the size of meory required for the DMA32 segment TCE table?
->
->No, I am not :) "-3" makes it a table size in bytes, so it is rather tablesz
->then.
->
+On Wed, Apr 20, 2016 at 09:24:00PM +0800, Pan Xinhui wrote:
 
-Ok. @tce32_segsz is the size of memory used for TCE entries for one segment (256MB),
-not a whole TCE table. So I think @tce32_segsz is better than @tablesz from the
-perspective.
+> +#define __XCHG_GEN(cmp, type, sfx, skip, v)				\
+> +static __always_inline unsigned long					\
+> +__cmpxchg_u32##sfx(v unsigned int *p, unsigned long old,		\
+> +			 unsigned long new);				\
+> +static __always_inline u32						\
+> +__##cmp##xchg_##type##sfx(v void *ptr, u32 old, u32 new)		\
+> +{									\
+> +	int size = sizeof (type);					\
+> +	int off = (unsigned long)ptr % sizeof(u32);			\
+> +	volatile u32 *p = ptr - off;					\
+> +	int bitoff = BITOFF_CAL(size, off);				\
+> +	u32 bitmask = ((0x1 << size * BITS_PER_BYTE) - 1) << bitoff;	\
+> +	u32 oldv, newv, tmp;						\
+> +	u32 ret;							\
+> +	oldv = READ_ONCE(*p);						\
+> +	do {								\
+> +		ret = (oldv & bitmask) >> bitoff;			\
+> +		if (skip && ret != old)					\
+> +			break;						\
+> +		newv = (oldv & ~bitmask) | (new << bitoff);		\
+> +		tmp = oldv;						\
+> +		oldv = __cmpxchg_u32##sfx((v u32*)p, oldv, newv);	\
+> +	} while (tmp != oldv);						\
+> +	return ret;							\
+> +}
 
->
->>
->>>>  	int64_t rc;
->>>>  	void *addr;
->>>>
->>>>@@ -2054,29 +2051,34 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
->>>>  	/* Grab a 32-bit TCE table */
->>>>  	pe->tce32_seg = base;
->>>>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
->>>>-		(base << 28), ((base + segs) << 28) - 1);
->>>>+		base * PNV_IODA1_DMA32_SEGSIZE,
->>>>+		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
->>>>
->>>>  	/* XXX Currently, we allocate one big contiguous table for the
->>>>  	 * TCEs. We only really need one chunk per 256M of TCE space
->>>>  	 * (ie per segment) but that's an optimization for later, it
->>>>  	 * requires some added smarts with our get/put_tce implementation
->>>>+	 *
->>>>+	 * Each TCE page is 4KB in size and each TCE entry occupies 8
->>>>+	 * bytes
->>>>  	 */
->>>>+	tce32_segsz = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K - 3);
->>>
->>>>  	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
->>>>-				   get_order(TCE32_TABLE_SIZE * segs));
->>>>+				   get_order(tce32_segsz * segs));
->>>>  	if (!tce_mem) {
->>>>  		pe_err(pe, " Failed to allocate a 32-bit TCE memory\n");
->>>>  		goto fail;
->>>>  	}
->>>>  	addr = page_address(tce_mem);
->>>>-	memset(addr, 0, TCE32_TABLE_SIZE * segs);
->>>>+	memset(addr, 0, tce32_segsz * segs);
->>>>
->>>>  	/* Configure HW */
->>>>  	for (i = 0; i < segs; i++) {
->>>>  		rc = opal_pci_map_pe_dma_window(phb->opal_id,
->>>>  					      pe->pe_number,
->>>>  					      base + i, 1,
->>>>-					      __pa(addr) + TCE32_TABLE_SIZE * i,
->>>>-					      TCE32_TABLE_SIZE, 0x1000);
->>>>+					      __pa(addr) + tce32_segsz * i,
->>>>+					      tce32_segsz, 0x1000);
->>>
->>>
->>>As you started using IOMMU_PAGE_SHIFT_4K and you are also touching this piece
->>>of code -
->>>
->>>s/0x1000/IOMMU_PAGE_SHIFT_4K/
->>>
->>
->>Does 0x1000 is equal to IOMMU_PAGE_SHIFT_4K? I guess you probably suggested
->>to use IOMMU_PAGE_SIZE_4K instead?
->
->
->Ah, my bad, should have been IOMMU_PAGE_SIZE_4K. I'll pay more attention to
->the details, sorry.
->
+So for an LL/SC based arch using cmpxchg() like that is sub-optimal.
 
-No worries. Thanks for your review anyway.
-
->>
->>>>  		if (rc) {
->>>>  			pe_err(pe, " Failed to configure 32-bit TCE table,"
->>>>  			       " err %ld\n", rc);
->>>>@@ -2085,8 +2087,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
->>>>  	}
->>>>
->>>>  	/* Setup linux iommu table */
->>>>-	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
->>>>-				  base << 28, IOMMU_PAGE_SHIFT_4K);
->>>>+	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
->>>>+				  base * PNV_IODA1_DMA32_SEGSIZE,
->>>>+				  IOMMU_PAGE_SHIFT_4K);
->>>>
->>>>  	/* OPAL variant of P7IOC SW invalidated TCEs */
->>>>  	if (phb->ioda.tce_inval_reg)
->>>>@@ -2116,7 +2119,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
->>>>  	if (pe->tce32_seg >= 0)
->>>>  		pe->tce32_seg = -1;
->>>>  	if (tce_mem)
->>>>-		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
->>>>+		__free_pages(tce_mem, get_order(tce32_segsz * segs));
->>>>  	if (tbl) {
->>>>  		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
->>>>  		iommu_free_table(tbl, "pnv");
->>>>@@ -3445,7 +3448,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->>>>  	mutex_init(&phb->ioda.pe_list_mutex);
->>>>
->>>>  	/* Calculate how many 32-bit TCE segments we have */
->>>>-	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
->>>>+	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
->>>>+				PNV_IODA1_DMA32_SEGSIZE;
->>>>
->>>>  #if 0 /* We should really do that ... */
->>>>  	rc = opal_pci_set_phb_mem_window(opal->phb_id,
->>>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->>>>index 00539ff..1d8e775 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci.h
->>>>+++ b/arch/powerpc/platforms/powernv/pci.h
->>>>@@ -84,6 +84,7 @@ struct pnv_ioda_pe {
->>>>
->>>>  #define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs   */
->>>>  #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR */
->>>>+#define PNV_IODA1_DMA32_SEGSIZE	0x10000000
->>>>
->>>>  #define PNV_PHB_FLAG_EEH	(1 << 0)
->>>>
->>>>
->
->-- 
->Alexey
->
+Why did you choose to write it entirely in C?
