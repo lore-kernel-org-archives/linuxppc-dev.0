@@ -1,24 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRY63gjZzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:03:54 +1000 (AEST)
-Message-ID: <1461121434.13404.1.camel@ellerman.id.au>
-Subject: Re: [PATCH V2 01/68] powerpc/cxl: Use REGION_ID instead of opencoding
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org, Frederic Barrat
- <fbarrat@linux.vnet.ibm.com>,  Andrew Donnellan
- <andrew.donnellan@au1.ibm.com>
-Date: Wed, 20 Apr 2016 13:03:54 +1000
-In-Reply-To: <87mvoy9ql8.fsf@skywalker.in.ibm.com>
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87mvoy9ql8.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqRYD15gnzDqKG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:04:00 +1000 (AEST)
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 20 Apr 2016 13:03:58 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C75D53578065
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:03:44 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3K33U2Q55115800
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:03:44 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3K3310D018711
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 13:03:06 +1000
+Date: Wed, 20 Apr 2016 12:38:04 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dja@axtens.net,
+ bhelgaas@google.com, robherring2@gmail.com, grant.likely@linaro.org
+Subject: Re: [PATCH v8 39/45] powerpc/powernv: Select OF_DYNAMIC
+Message-ID: <20160420023804.GA3754@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-40-git-send-email-gwshan@linux.vnet.ibm.com>
+ <5715FD69.3060302@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5715FD69.3060302@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +45,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-13 at 08:12 +0530, Aneesh Kumar K.V wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-> > Also note that the `~` operation is wrong.
-> > 
-> > Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> > Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> > Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> > ---
-> >  drivers/misc/cxl/fault.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> > index 9a8650bcb042..9a236543da23 100644
-> > --- a/drivers/misc/cxl/fault.c
-> > +++ b/drivers/misc/cxl/fault.c
-> > @@ -152,7 +152,7 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
-> >  	access = _PAGE_PRESENT;
-> >  	if (dsisr & CXL_PSL_DSISR_An_S)
-> >  		access |= _PAGE_RW;
-> > -	if ((!ctx->kernel) || ~(dar & (1ULL << 63)))
-> > +	if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
-> >  		access |= _PAGE_USER;
-> > 
-> >  	if (dsisr & DSISR_NOHPTE)
-> 
-> Posted an updated version of this patch alone with improved commit
-> message here
-> 
-> http://mid.gmane.org/1460482475-20782-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+On Tue, Apr 19, 2016 at 07:42:01PM +1000, Alexey Kardashevskiy wrote:
+>On 02/17/2016 02:44 PM, Gavin Shan wrote:
+>>The device tree will change dynamically in PowerNV PCI hotplug
+>>driver. This enables CONFIG_OF_DYNAMIC to support that.
+>>
+>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>---
+>>  arch/powerpc/platforms/powernv/Kconfig | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+>>index 604190c..e7b1ad7 100644
+>>--- a/arch/powerpc/platforms/powernv/Kconfig
+>>+++ b/arch/powerpc/platforms/powernv/Kconfig
+>>@@ -18,6 +18,7 @@ config PPC_POWERNV
+>>  	select CPU_FREQ_GOV_ONDEMAND
+>>  	select CPU_FREQ_GOV_CONSERVATIVE
+>>  	select PPC_DOORBELL
+>>+	select OF_DYNAMIC
+>
+>
+>Why not to enable it in 45/45 under config HOTPLUG_PCI_POWERNV? Is there any
+>benefit of having it always on if HOTPLUG_PCI_POWERNV is not enabled?
+>
 
-I never saw it. And that link is empty?
+Agree, I will move accordingly in next revision. Note that we have to move
+it back here once something else depends on OF_DYNAMIC in future.
 
-cheers
+>>  	default y
+>>
+>>  config OPAL_PRD
+>>
+>
+>
+>-- 
+>Alexey
+>
