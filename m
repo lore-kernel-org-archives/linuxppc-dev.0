@@ -1,38 +1,43 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqjsx6YDQzDqZJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:49:25 +1000 (AEST)
-Date: Wed, 20 Apr 2016 15:49:14 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v4 1/5] printk/nmi: generic solution for safe printk in NMI
-Message-ID: <20160420134914.GK6862@pathway.suse.cz>
-References: <1459353210-20260-1-git-send-email-pmladek@suse.com>
- <1459353210-20260-2-git-send-email-pmladek@suse.com>
- <20160404044928.GD6164@swordfish>
- <20160404093819.GH1023@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqjvs2tbKzDqK8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 23:51:05 +1000 (AEST)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 20 Apr 2016 10:26:50 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 37D3F2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 10:26:35 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3K0QQK666912420
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 10:26:35 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3K0Q1ZL028003
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 10:26:02 +1000
+Date: Wed, 20 Apr 2016 10:25:36 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dja@axtens.net,
+ bhelgaas@google.com, robherring2@gmail.com, grant.likely@linaro.org
+Subject: Re: [PATCH v8 15/45] powerpc/powernv/ioda1: Introduce
+ PNV_IODA1_DMA32_SEGSIZE
+Message-ID: <20160420002536.GA15693@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1455680668-23298-16-git-send-email-gwshan@linux.vnet.ibm.com>
+ <570E0376.3030704@ozlabs.ru> <20160413235429.GB5330@gwshan>
+ <570F1041.5090901@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160404093819.GH1023@pathway.suse.cz>
+In-Reply-To: <570F1041.5090901@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +47,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 2016-04-04 11:38:19, Petr Mladek wrote:
-> On Mon 2016-04-04 13:49:28, Sergey Senozhatsky wrote:
-> > Hello,
-> > 
-> > On (03/30/16 17:53), Petr Mladek wrote:
-> > > +/*
-> > > + * Flush data from the associated per_CPU buffer. The function
-> > > + * can be called either via IRQ work or independently.
-> > > + */
-> > > +static void __printk_nmi_flush(struct irq_work *work)
-> > > +{
-> > > +	static raw_spinlock_t read_lock =
-> > > +		__RAW_SPIN_LOCK_INITIALIZER(read_lock);
-> > > +	struct nmi_seq_buf *s = container_of(work, struct nmi_seq_buf, work);
-> > > +	unsigned long flags;
-> > > +	size_t len, size;
-> > > +	int i, last_i;
-> > > +
-> > > +	/*
-> > > +	 * The lock has two functions. First, one reader has to flush all
-> > > +	 * available message to make the lockless synchronization with
-> > > +	 * writers easier. Second, we do not want to mix messages from
-> > > +	 * different CPUs. This is especially important when printing
-> > > +	 * a backtrace.
-> > > +	 */
-> > > +	raw_spin_lock_irqsave(&read_lock, flags);
-> > > +
-> > 
-> > hm... so here we have
-> > 	for (; i < size; i++)
-> > 		printk()
-> > 
-> > under the spinlock. the thing is that one of printk() can end up
-> > in console_unlock()->call_console_drivers() loop, iterating there
-> > long enough to spinlock lockup other CPUs that might want to flush
-> > NMI buffers (if any), assuming that there are enough printk() (or
-> > may be a slow serial console) happening concurrently on other CPUs
-> > to keep the current ->read_lock busy. async printk can help here,
-> > but user can request sync version of printk.
-> 
-> I think that printk() is called on many other locations under
-> a spinlock and they all are waiting for the async printk.
+On Thu, Apr 14, 2016 at 01:36:33PM +1000, Alexey Kardashevskiy wrote:
+>On 04/14/2016 09:54 AM, Gavin Shan wrote:
+>>On Wed, Apr 13, 2016 at 06:29:42PM +1000, Alexey Kardashevskiy wrote:
+>>>On 02/17/2016 02:43 PM, Gavin Shan wrote:
+>>>>Currently, there is one macro (TCE32_TABLE_SIZE) representing the
+>>>>TCE table size for one DMA32 segment. The constant representing
+>>>>the DMA32 segment size (1 << 28) is still used in the code.
+>>>>
+>>>>This defines PNV_IODA1_DMA32_SEGSIZE representing one DMA32
+>>>>segment size. the TCE table size can be calcualted when the page
+>>>
+>>>s/calcualted/calculated/
+>>>
+>>>
+>>>>has fixed 4KB size. So all the related calculation depends on one
+>>>>macro (PNV_IODA1_DMA32_SEGSIZE). No logical changes introduced.
+>>>
+>>>Please move PNV_IODA1_DMA32_SEGSIZE where TCE32_TABLE_SIZE was.
+>>>
+>>>
+>>>>
+>>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>>---
+>>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++-------------
+>>>>  arch/powerpc/platforms/powernv/pci.h      |  1 +
+>>>>  2 files changed, 18 insertions(+), 13 deletions(-)
+>>>>
+>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>index d18b95e..e60cff6 100644
+>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>@@ -48,9 +48,6 @@
+>>>>  #include "powernv.h"
+>>>>  #include "pci.h"
+>>>>
+>>>>-/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
+>>>>-#define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
+>>>>-
+>>>>  #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+>>>>  #define POWERNV_IOMMU_MAX_LEVELS	5
+>>>>
+>>>>@@ -2034,7 +2031,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>>>
+>>>>  	struct page *tce_mem = NULL;
+>>>>  	struct iommu_table *tbl;
+>>>>-	unsigned int i;
+>>>>+	unsigned int tce32_segsz, i;
+>>>
+>>>
+>>>PNV_IODA1_DMA32_SEGSIZE is a segment size in bytes. The name @tce32_segsz
+>>>also suggests that it is a segment size in bytes (otherwise it would be
+>>>tce32_seg_entries or something like this) but it is not, it is a number of
+>>>TCE entries (arch/powerpc/kernel/iommu.c uses "entry" for these). And
+>>>tce32_segsz never changes. So:
+>>>
+>>>const unsigned int entries = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K
+>>>- 3);
+>>>
+>>
+>>Are you sure @tce32_segsz and equation you gave are for number of TCE entries,
+>>not the size of meory required for the DMA32 segment TCE table?
 >
-> > how about using deferred printk for nmi flush?
-> > print_nmi_seq_line()->printk_deferred() ?
+>No, I am not :) "-3" makes it a table size in bytes, so it is rather tablesz
+>then.
+>
 
-I thought more about it. printk_nmi_flush() is primary called
-via irq work. If we use deferred printk() here we will just delay
-the console stuff to another irq work.
+Ok. @tce32_segsz is the size of memory used for TCE entries for one segment (256MB),
+not a whole TCE table. So I think @tce32_segsz is better than @tablesz from the
+perspective.
 
-If we use async printk from your patch set, it will unnecessary
-create another irq work and delay the waking of the printk kthread.
+>
+>>
+>>>>  	int64_t rc;
+>>>>  	void *addr;
+>>>>
+>>>>@@ -2054,29 +2051,34 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>>>  	/* Grab a 32-bit TCE table */
+>>>>  	pe->tce32_seg = base;
+>>>>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+>>>>-		(base << 28), ((base + segs) << 28) - 1);
+>>>>+		base * PNV_IODA1_DMA32_SEGSIZE,
+>>>>+		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
+>>>>
+>>>>  	/* XXX Currently, we allocate one big contiguous table for the
+>>>>  	 * TCEs. We only really need one chunk per 256M of TCE space
+>>>>  	 * (ie per segment) but that's an optimization for later, it
+>>>>  	 * requires some added smarts with our get/put_tce implementation
+>>>>+	 *
+>>>>+	 * Each TCE page is 4KB in size and each TCE entry occupies 8
+>>>>+	 * bytes
+>>>>  	 */
+>>>>+	tce32_segsz = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K - 3);
+>>>
+>>>>  	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
+>>>>-				   get_order(TCE32_TABLE_SIZE * segs));
+>>>>+				   get_order(tce32_segsz * segs));
+>>>>  	if (!tce_mem) {
+>>>>  		pe_err(pe, " Failed to allocate a 32-bit TCE memory\n");
+>>>>  		goto fail;
+>>>>  	}
+>>>>  	addr = page_address(tce_mem);
+>>>>-	memset(addr, 0, TCE32_TABLE_SIZE * segs);
+>>>>+	memset(addr, 0, tce32_segsz * segs);
+>>>>
+>>>>  	/* Configure HW */
+>>>>  	for (i = 0; i < segs; i++) {
+>>>>  		rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>>>>  					      pe->pe_number,
+>>>>  					      base + i, 1,
+>>>>-					      __pa(addr) + TCE32_TABLE_SIZE * i,
+>>>>-					      TCE32_TABLE_SIZE, 0x1000);
+>>>>+					      __pa(addr) + tce32_segsz * i,
+>>>>+					      tce32_segsz, 0x1000);
+>>>
+>>>
+>>>As you started using IOMMU_PAGE_SHIFT_4K and you are also touching this piece
+>>>of code -
+>>>
+>>>s/0x1000/IOMMU_PAGE_SHIFT_4K/
+>>>
+>>
+>>Does 0x1000 is equal to IOMMU_PAGE_SHIFT_4K? I guess you probably suggested
+>>to use IOMMU_PAGE_SIZE_4K instead?
+>
+>
+>Ah, my bad, should have been IOMMU_PAGE_SIZE_4K. I'll pay more attention to
+>the details, sorry.
+>
 
-If anyone forces sync printk, it will not help much. We will still
-call console from the IRQ context and the potential flood of messages
-still might cause a soft lookup.
+No worries. Thanks for your review anyway.
 
-Finally, as I already said. This is not different from any other
-printk() call under a spinlock.
-
-After all, I am going to use the normal printk() when flushing
-the NMI buffers.
-
-The only exception will be when this is called on panic in NMI
-context. In this case, printk_deferred() will do exactly what
-we need.
-
-Best Regards,
-Petr
+>>
+>>>>  		if (rc) {
+>>>>  			pe_err(pe, " Failed to configure 32-bit TCE table,"
+>>>>  			       " err %ld\n", rc);
+>>>>@@ -2085,8 +2087,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>>>  	}
+>>>>
+>>>>  	/* Setup linux iommu table */
+>>>>-	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+>>>>-				  base << 28, IOMMU_PAGE_SHIFT_4K);
+>>>>+	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
+>>>>+				  base * PNV_IODA1_DMA32_SEGSIZE,
+>>>>+				  IOMMU_PAGE_SHIFT_4K);
+>>>>
+>>>>  	/* OPAL variant of P7IOC SW invalidated TCEs */
+>>>>  	if (phb->ioda.tce_inval_reg)
+>>>>@@ -2116,7 +2119,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>>>  	if (pe->tce32_seg >= 0)
+>>>>  		pe->tce32_seg = -1;
+>>>>  	if (tce_mem)
+>>>>-		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+>>>>+		__free_pages(tce_mem, get_order(tce32_segsz * segs));
+>>>>  	if (tbl) {
+>>>>  		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
+>>>>  		iommu_free_table(tbl, "pnv");
+>>>>@@ -3445,7 +3448,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>>  	mutex_init(&phb->ioda.pe_list_mutex);
+>>>>
+>>>>  	/* Calculate how many 32-bit TCE segments we have */
+>>>>-	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
+>>>>+	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
+>>>>+				PNV_IODA1_DMA32_SEGSIZE;
+>>>>
+>>>>  #if 0 /* We should really do that ... */
+>>>>  	rc = opal_pci_set_phb_mem_window(opal->phb_id,
+>>>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>>>index 00539ff..1d8e775 100644
+>>>>--- a/arch/powerpc/platforms/powernv/pci.h
+>>>>+++ b/arch/powerpc/platforms/powernv/pci.h
+>>>>@@ -84,6 +84,7 @@ struct pnv_ioda_pe {
+>>>>
+>>>>  #define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs   */
+>>>>  #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR */
+>>>>+#define PNV_IODA1_DMA32_SEGSIZE	0x10000000
+>>>>
+>>>>  #define PNV_PHB_FLAG_EEH	(1 << 0)
+>>>>
+>>>>
+>
+>-- 
+>Alexey
+>
