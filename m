@@ -1,20 +1,21 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0076.outbound.protection.outlook.com [157.56.110.76])
+Return-Path: <chenhui.zhao@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0067.outbound.protection.outlook.com [157.55.234.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qqdpZ64mmzDqWs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 20:46:13 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <devicetree@vger.kernel.org>
-CC: <ulf.hansson@linaro.org>, <scott.wood@nxp.com>, Rob Herring
- <robh+dt@kernel.org>, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [PATCH 1/2] powerpc/85xx: adapt QorIQ eSDHC to the new clocking model
-Date: Wed, 20 Apr 2016 18:20:43 +0800
-Message-ID: <1461147644-18041-1-git-send-email-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qqf861F98zDqWw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 21:01:25 +1000 (AEST)
+From: Chenhui Zhao <chenhui.zhao@nxp.com>
+To: Yang-Leo Li <leoyang.li@nxp.com>
+CC: Zhengxiong Jin <jason.jin@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "oss@buserror.net" <oss@buserror.net>
+Subject: Re: [PATCH v2 3/5] powerpc/dts: add a compatible	string to gpio0
+Date: Wed, 20 Apr 2016 10:28:06 +0000
+Message-ID: <HE1PR04MB1164925AD5BACFE9C91D5E3B956D0@HE1PR04MB1164.eurprd04.prod.outlook.com>
+References: <AM2PR04MB07707AC7D99349C2A636CC938F680@AM2PR04MB0770.eurprd04.prod.outlook.com>
+In-Reply-To: <AM2PR04MB07707AC7D99349C2A636CC938F680@AM2PR04MB0770.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Provide clocks property instead of clock-frequency for QorIQ eSDHC
-dts node to adapt to the new clocking model, so that the driver
-could get clock value by the common clk API and the u-boot could
-remove the clock fixup.
 
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
----
- arch/powerpc/boot/dts/fsl/qoriq-esdhc-0.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thank you for your comment. I'll change it according to the GPIO binding do=
+cument.
 
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-esdhc-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-esdhc-0.dtsi
-index 20835ae..ddbe562 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-esdhc-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-esdhc-0.dtsi
-@@ -36,5 +36,5 @@ sdhc: sdhc@114000 {
- 	compatible = "fsl,esdhc";
- 	reg = <0x114000 0x1000>;
- 	interrupts = <48 2 0 0>;
--	clock-frequency = <0>;
-+	clocks = <&clockgen 4 1>;
- };
--- 
-2.1.0.27.g96db324
+Thanks,
+Chenhui
+
+________________________________________
+From: Yang-Leo Li
+Sent: Saturday, April 16, 2016 12:47 AM
+To: Chenhui Zhao; linuxppc-dev@lists.ozlabs.org; oss@buserror.net
+Cc: Chenhui Zhao; Zhengxiong Jin
+Subject: RE: [PATCH v2 3/5] powerpc/dts: add a compatible       string to g=
+pio0
+
+> -----Original Message-----
+> From: linuxppc-release-bounces@linux.freescale.net [mailto:linuxppc-relea=
+se-
+> bounces@linux.freescale.net] On Behalf Of Chenhui Zhao
+> Sent: Friday, April 15, 2016 6:13 AM
+> To: linuxppc-dev@lists.ozlabs.org; oss@buserror.net
+> Cc: Chenhui Zhao <chenhui.zhao@nxp.com>; Zhengxiong Jin
+> <jason.jin@nxp.com>
+> Subject: [linuxppc-release] [PATCH v2 3/5] powerpc/dts: add a compatible =
+string
+> to gpio0
+>
+> All gpio nodes used the same compatible string "fsl,qoriq-gpio".
+> To identify the node corresponding to the GPIO1 pins, add a compatible st=
+ring
+> "fsl,qoriq-gpio-1".
+
+This is not a documented binding.  And we normally don't add compatible str=
+ings for this purpose.  If you want to reference a specific GPIO pin, use t=
+he binding described at Documentation/devicetree/bindings/gpio/gpio.txt
+
+Regards,
+Leo
+
+>
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> index cf714f5..1a26d6b 100644
+> --- a/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi
+> @@ -33,7 +33,7 @@
+>   */
+>
+>  gpio0: gpio@130000 {
+> -     compatible =3D "fsl,qoriq-gpio";
+> +     compatible =3D "fsl,qoriq-gpio-1", "fsl,qoriq-gpio";
+>       reg =3D <0x130000 0x1000>;
+>       interrupts =3D <55 2 0 0>;
+>       #gpio-cells =3D <2>;
+> --
+> 1.9.1
+>
+> _______________________________________________
+> linuxppc-release mailing list
+> linuxppc-release@linux.freescale.net
+> http://linux.freescale.net/mailman/listinfo/linuxppc-release
