@@ -1,53 +1,25 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrNxn55mzzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 02:10:05 +1000 (AEST)
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qrNxm2q7Cz9sDk
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Apr 2016 02:10:04 +1000 (AEST)
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 21 Apr 2016 17:10:00 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5D4AA219007A
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Apr 2016 16:59:46 +0100 (BST)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3LG08hj5046550
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Apr 2016 16:00:08 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3LG04QF011779
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Apr 2016 10:00:08 -0600
-Subject: Re: [PATCH V10 00/28] Add new powerpc specific ELF core notes
-To: Michael Ellerman <michael@ellerman.id.au>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
- <57062722.5090706@linux.vnet.ibm.com>
- <5EA48413-85A1-4CB7-8843-CE22B2BB1F08@ellerman.id.au>
- <570B54EB.90507@linux.vnet.ibm.com> <1460524468.30704.5.camel@ellerman.id.au>
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, davem@davemloft.net, peterz@infradead.org,
- palves@redhat.com, shuahkh@osg.samsung.com, oleg@redhat.com,
- dhowells@redhat.com, Ulrich.Weigand@de.ibm.com, kirjanov@gmail.com,
- tglx@linutronix.de, davej@redhat.com, akpm@linux-foundation.org,
- sukadev@linux.vnet.ibm.com, emachado@linux.vnet.ibm.com,
- sam.bobroff@au1.ibm.com
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Message-ID: <5718F901.6010104@linux.vnet.ibm.com>
-Date: Thu, 21 Apr 2016 18:00:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrP2M0d68zDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 02:14:03 +1000 (AEST)
+Date: Thu, 21 Apr 2016 18:13:54 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ boqun.feng@gmail.com, paulmck@linux.vnet.ibm.com, tglx@linutronix.de
+Subject: Re: [PATCH V3] powerpc: Implement {cmp}xchg for u8 and u16
+Message-ID: <20160421161354.GI3430@twins.programming.kicks-ass.net>
+References: <5715D04E.9050009@linux.vnet.ibm.com>
+ <571782F0.2020201@linux.vnet.ibm.com>
+ <20160420142408.GF3430@twins.programming.kicks-ass.net>
+ <5718F32B.3050409@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1460524468.30704.5.camel@ellerman.id.au>
-Content-Type: multipart/mixed; boundary="------------010609080808060004030507"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5718F32B.3050409@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,102 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010609080808060004030507
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+On Thu, Apr 21, 2016 at 11:35:07PM +0800, Pan Xinhui wrote:
+> yes, you are right. more load/store will be done in C code.
+> However such xchg_u8/u16 is just used by qspinlock now. and I did not see any performance regression.
+> So just wrote in C, for simple. :)
 
-On 13/04/2016 07:14, Michael Ellerman wrote:
-> On Mon, 2016-04-11 at 09:40 +0200, Laurent Dufour wrote:
->> On 07/04/2016 23:49, Michael Ellerman wrote:
->>> On 7 April 2016 7:23:46 pm AEST, Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
->>>> This series is required to handle TM state in CRIU.
->>>> Is there a chance to get it upstream soon ?
->>>
->>> We were waiting on the gdb support to make sure it had some testing. If it's working for CRIU that would be a good data point, have you actually tested it with CRIU?
->>
->> I just started integrating it in CRIU, my basic tests didn't report any
->> issue with the new ptrace API, but I can't state that it is bug free ;)
+Which is fine; but worthy of a note in your Changelog.
+
+> Of course I have done xchg tests.
+> we run code just like xchg((u8*)&v, j++); in several threads.
+> and the result is,
+> [  768.374264] use time[1550072]ns in xchg_u8_asm
+> [  768.377102] use time[2826802]ns in xchg_u8_c
 > 
-> Sure. But if it's working for CRIU that's at least postive :)
+> I think this is because there is one more load in C.
+> If possible, we can move such code in asm-generic/.
 
-I did additional tests and the Anshuman's series is working fine for
-CRIU's support with the attached patch applied.
+So I'm not actually _that_ familiar with the PPC LL/SC implementation;
+but there are things a CPU can do to optimize these loops.
 
-Michael, could you please applied the attached patch among the
-Anshuman's series ?
+For example, a CPU might choose to not release the exclusive hold of the
+line for a number of cycles, except when it passes SC or an interrupt
+happens. This way there's a smaller chance the SC fails and inhibits
+forward progress.
 
-Thanks,
-Laurent.
+By doing the modification outside of the LL/SC you loose such
+advantages.
 
-
---------------010609080808060004030507
-Content-Type: text/x-patch;
- name="ppc64-allow-ptrace-to-set-TM-bits.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="ppc64-allow-ptrace-to-set-TM-bits.patch"
-
->From 7a4f07c54afdbe7bef84d1f700ab9262f449513a Mon Sep 17 00:00:00 2001
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 11 Apr 2016 18:59:16 +0200
-Subject: [PATCH] ppc64: allow ptrace to set TM bits
-
-This patch allows the MSR bits relative to the Transactional memory
-state to be manipulated through the ptrace API.
-
-However, in the case the TM available bit is not set in the
-manipulated MSR, the changes are ignored.
-
-When dealing with the checkpointed MSR, we must be sure that the TM
-state bits will not be set since the checkpointed state can't be a
-transactional one.
-
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/ptrace.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index b063fc499c1d..5c792f0bf1ca 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -161,8 +161,12 @@ const char *regs_query_register_name(unsigned int offset)
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- #define MSR_DEBUGCHANGE	0
- #else
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+#define MSR_DEBUGCHANGE	(MSR_TS_MASK | MSR_SE | MSR_BE)
-+#else
- #define MSR_DEBUGCHANGE	(MSR_SE | MSR_BE)
- #endif
-+#endif
- 
- /*
-  * Max register writeable via put_reg
-@@ -180,6 +184,12 @@ static unsigned long get_user_msr(struct task_struct *task)
- 
- static int set_user_msr(struct task_struct *task, unsigned long msr)
- {
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	if (!(task->thread.regs->msr & MSR_TM)) {
-+		/* If TM is not available, discard TM bits changes */
-+		msr &= ~(MSR_TM | MSR_TS_MASK);
-+	}
-+#endif
- 	task->thread.regs->msr &= ~MSR_DEBUGCHANGE;
- 	task->thread.regs->msr |= msr & MSR_DEBUGCHANGE;
- 	return 0;
-@@ -193,6 +203,7 @@ static unsigned long get_user_ckpt_msr(struct task_struct *task)
- 
- static int set_user_ckpt_msr(struct task_struct *task, unsigned long msr)
- {
-+	msr &= ~MSR_TS_MASK;	/* Checkpoint state can't be in transaction */
- 	task->thread.ckpt_regs.msr &= ~MSR_DEBUGCHANGE;
- 	task->thread.ckpt_regs.msr |= msr & MSR_DEBUGCHANGE;
- 	return 0;
--- 
-1.9.1
-
-
---------------010609080808060004030507--
+And yes, doing a !exclusive load prior to the exclusive load leads to an
+even bigger window where the data can get changed out from under you.
