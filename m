@@ -1,7 +1,7 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRl06Dh5zDqgc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:56 +1000 (AEST)
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRl12bcxzDqh1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:57 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
@@ -10,10 +10,9 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 17/23] ata: sata_dwc_460ex: supply physical address of FIFO
- to DMA
-Date: Thu, 21 Apr 2016 21:15:38 +0300
-Message-Id: <1461262544-115408-18-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 22/23] ata: sata_dwc_460ex: make debug messages neat
+Date: Thu, 21 Apr 2016 21:15:43 +0300
+Message-Id: <1461262544-115408-23-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,74 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DMA operates with physical addresses which is not exactly the same as ioremap()
-returns.
-
-Introduce variable to keep physical address of the SATA FIFO register and
-supply it when prepare DMA channel.
+There is a duplication in the debug messages when accessing SCR registers.
+Remove duplication to make the messages neat.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 42248b2..7810405 100644
+index 44dca8c..2d73cdf 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -100,7 +100,7 @@ struct sata_dwc_regs {
- 	u32 versionr;		/* Version Register */
- 	u32 idr;		/* ID Register */
- 	u32 unimpl[192];	/* Unimplemented */
--	u32 dmadr[256];	/* FIFO Locations in DMA Mode */
-+	u32 dmadr[256];		/* FIFO Locations in DMA Mode */
- };
- 
- enum {
-@@ -149,6 +149,7 @@ struct sata_dwc_device {
- 	u32			sactive_issued;
- 	u32			sactive_queued;
- 	struct phy		*phy;
-+	phys_addr_t		dmadr;
- #ifdef CONFIG_SATA_DWC_OLD_DMA
- 	struct dw_dma_chip	*dma;
- #endif
-@@ -380,15 +381,14 @@ static struct dma_async_tx_descriptor *dma_dwc_xfer_setup(struct ata_queued_cmd
- 	struct ata_port *ap = qc->ap;
- 	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
- 	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
--	dma_addr_t addr = (dma_addr_t)&hsdev->sata_dwc_regs->dmadr;
- 	struct dma_slave_config sconf;
- 	struct dma_async_tx_descriptor *desc;
- 
- 	if (qc->dma_dir == DMA_DEV_TO_MEM) {
--		sconf.src_addr = addr;
-+		sconf.src_addr = hsdev->dmadr;
- 		sconf.device_fc = false;
- 	} else {	/* DMA_MEM_TO_DEV */
--		sconf.dst_addr = addr;
-+		sconf.dst_addr = hsdev->dmadr;
- 		sconf.device_fc = false;
+@@ -414,16 +414,16 @@ static int sata_dwc_scr_read(struct ata_link *link, unsigned int scr, u32 *val)
  	}
  
-@@ -411,8 +411,8 @@ static struct dma_async_tx_descriptor *dma_dwc_xfer_setup(struct ata_queued_cmd
- 	desc->callback = dma_dwc_xfer_done;
- 	desc->callback_param = hsdev;
+ 	*val = sata_dwc_readl(link->ap->ioaddr.scr_addr + (scr * 4));
+-	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=val=0x%08x\n",
+-		__func__, link->ap->print_id, scr, *val);
++	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=0x%08x\n", __func__,
++		link->ap->print_id, scr, *val);
  
--	dev_dbg(hsdev->dev, "%s sg: 0x%p, count: %d addr: %pad\n",
--		__func__, qc->sg, qc->n_elem, &addr);
-+	dev_dbg(hsdev->dev, "%s sg: 0x%p, count: %d addr: %pa\n", __func__,
-+		qc->sg, qc->n_elem, &hsdev->dmadr);
- 
- 	return desc;
+ 	return 0;
  }
-@@ -1249,6 +1249,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
  
- 	/* Synopsys DWC SATA specific Registers */
- 	hsdev->sata_dwc_regs = base + SATA_DWC_REG_OFFSET;
-+	hsdev->dmadr = res->start + SATA_DWC_REG_OFFSET + offsetof(struct sata_dwc_regs, dmadr);
- 
- 	/* Setup port */
- 	host->ports[0]->ioaddr.cmd_addr = base;
+ static int sata_dwc_scr_write(struct ata_link *link, unsigned int scr, u32 val)
+ {
+-	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=val=0x%08x\n",
+-		__func__, link->ap->print_id, scr, val);
++	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=0x%08x\n", __func__,
++		link->ap->print_id, scr, val);
+ 	if (scr > SCR_NOTIFICATION) {
+ 		dev_err(link->ap->dev, "%s: Incorrect SCR offset 0x%02x\n",
+ 			 __func__, scr);
 -- 
 2.8.0.rc3
