@@ -1,26 +1,16 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x22c.google.com (mail-pf0-x22c.google.com
- [IPv6:2607:f8b0:400e:c00::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qr3sY06XTzDqbl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 13:20:17 +1000 (AEST)
-Received: by mail-pf0-x22c.google.com with SMTP id 184so25150955pff.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 20:20:16 -0700 (PDT)
-Subject: Re: [PATCH kernel 2/2] powerpc/powernv/ioda2: Delay PE disposal
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1460097404-35422-1-git-send-email-aik@ozlabs.ru>
- <1460097404-35422-3-git-send-email-aik@ozlabs.ru>
- <20160421002107.GB8367@gwshan>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <571846E9.80800@ozlabs.ru>
-Date: Thu, 21 Apr 2016 13:20:09 +1000
-MIME-Version: 1.0
-In-Reply-To: <20160421002107.GB8367@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qr4G64DSnzDqbx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 13:38:06 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com,
+ linux-mm@kvack.org
+Subject: [PATCH] powerpc/mm: Always use STRICT_MM_TYPECHECKS
+Date: Thu, 21 Apr 2016 13:37:59 +1000
+Message-Id: <1461209879-15044-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,138 +20,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/21/2016 10:21 AM, Gavin Shan wrote:
-> On Fri, Apr 08, 2016 at 04:36:44PM +1000, Alexey Kardashevskiy wrote:
->> When SRIOV is disabled, the existing code presumes there is no
->> virtual function (VF) in use and destroys all associated PEs.
->> However it is possible to get into the situation when the user
->> activated SRIOV disabling while a VF is still in use via VFIO.
->> For example, unbinding a physical function (PF) while there is a guest
->> running with a VF passed throuhgh via VFIO will trigger the bug.
->>
->> This defines an IODA2-specific IOMMU group release() callback.
->> This moves all the disposal code from pnv_ioda_release_vf_PE() to this
->> new callback so the cleanup happens when the last user of an IOMMU
->> group released the reference.
->>
->> As pnv_pci_ioda2_release_dma_pe() was reduced to just calling
->> iommu_group_put(), this merges pnv_pci_ioda2_release_dma_pe()
->> into pnv_ioda_release_vf_PE().
->>
->
-> Sorry, I don't understand how it works. When PF's driver disables
-> IOV capability, the VF cannnot work. The guest is unlikely to know
-> that and still continue accessing the VF's resources (e.g. config
-> space and MMIO registers). It would cause EEH errors.
+Testing done by Paul Mackerras has shown that with a modern compiler
+there is no negative effect on code generation from enabling
+STRICT_MM_TYPECHECKS.
 
-The host disables IOV which removes VF devices which unbinds vfio_pci 
-driver and does all the cleanup, eventually we get to QEMU's 
-vfio_req_notifier_handler() and PCI hot unplug is initiated and the device 
-disappears from the guest.
+So remove the option, and always use the strict type definitions.
 
-If the guest cannot do PCI hotunplug, then EEH will make host stop it anyway.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Kconfig.debug               |  8 ------
+ arch/powerpc/include/asm/pgtable-types.h | 46 --------------------------------
+ 2 files changed, 54 deletions(-)
 
-Here we do not really care what happens to the guest (it can detect EEH or 
-hotunplug or simply crash), we need to make sure that the _host_ does not 
-crash in any case because the root user did something weird.
-
-
->
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> arch/powerpc/platforms/powernv/pci-ioda.c | 33 +++++++++++++------------------
->> 1 file changed, 14 insertions(+), 19 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index ce9f2bf..8108c54 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -1333,27 +1333,25 @@ static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
->> static void pnv_pci_ioda2_group_release(void *iommu_data)
->> {
->> 	struct iommu_table_group *table_group = iommu_data;
->> +	struct pnv_ioda_pe *pe = container_of(table_group,
->> +			struct pnv_ioda_pe, table_group);
->> +	struct pci_controller *hose = pci_bus_to_host(pe->parent_dev->bus);
->
-> pe->parent_dev would be NULL for non-VF-PEs and it's protected by CONFIG_PCI_IOV
-> in pci.h.
-
-
-Yeah, I'll fix it.
-
->
->> +	struct pnv_phb *phb = hose->private_data;
->> +	struct iommu_table *tbl = pe->table_group.tables[0];
->> +	int64_t rc;
->>
->> -	table_group->group = NULL;
->> -}
->> -
->> -static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
->> -{
->> -	struct iommu_table    *tbl;
->> -	int64_t               rc;
->> -
->> -	tbl = pe->table_group.tables[0];
->> 	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
->> 	if (rc)
->> 		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
->>
->> 	pnv_pci_ioda2_set_bypass(pe, false);
->> -	if (pe->table_group.group) {
->> -		iommu_group_put(pe->table_group.group);
->> -		BUG_ON(pe->table_group.group);
->> -	}
->> +
->> +	BUG_ON(!tbl);
->> 	pnv_pci_ioda2_table_free_pages(tbl);
->> -	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
->> +	iommu_free_table(tbl, of_node_full_name(pe->parent_dev->dev.of_node));
->> +
->> +	pnv_ioda_deconfigure_pe(phb, pe);
->> +	pnv_ioda_free_pe(phb, pe->pe_number);
->> }
->
-> It's not correct enough. One PE is comprised of DMA, MMIO, mapping info etc.
-> This function disposes all of them when DMA finishes its job. I don't figure
-> out a better way to represent all of them and their relationship. I guess it's
-> worthy to have something in long term though it's not trival work.
-
-
-Sorry, I am missing your point here. I am not changing the resource 
-deallocation here, I am just doing it slightly later and all I wonder at 
-the moment is if there are races - like having 2 scripts - one doing unbind 
-PF and another doing bind PF - will this crash the host in theory?
-
-
->
->>
->> static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->> @@ -1376,16 +1374,13 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->> 		if (pe->parent_dev != pdev)
->> 			continue;
->>
->> -		pnv_pci_ioda2_release_dma_pe(pdev, pe);
->> -
->> 		/* Remove from list */
->> 		mutex_lock(&phb->ioda.pe_list_mutex);
->> 		list_del(&pe->list);
->> 		mutex_unlock(&phb->ioda.pe_list_mutex);
->>
->> -		pnv_ioda_deconfigure_pe(phb, pe);
->> -
->> -		pnv_ioda_free_pe(phb, pe->pe_number);
->> +		if (pe->table_group.group)
->> +			iommu_group_put(pe->table_group.group);
->> 	}
->> }
->>
->> --
->> 2.5.0.rc3
->>
->
-
-
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 638f9ce740f5..d3fcf7e64e3a 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -19,14 +19,6 @@ config PPC_WERROR
+ 	depends on !PPC_DISABLE_WERROR
+ 	default y
+ 
+-config STRICT_MM_TYPECHECKS
+-	bool "Do extra type checking on mm types"
+-	default n
+-	help
+-	  This option turns on extra type checking for some mm related types.
+-
+-	  If you don't know what this means, say N.
+-
+ config PRINT_STACK_DEPTH
+ 	int "Stack depth to print" if DEBUG_KERNEL
+ 	default 64
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+index 43140f8b0592..1464e74178d8 100644
+--- a/arch/powerpc/include/asm/pgtable-types.h
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -1,9 +1,6 @@
+ #ifndef _ASM_POWERPC_PGTABLE_TYPES_H
+ #define _ASM_POWERPC_PGTABLE_TYPES_H
+ 
+-#ifdef CONFIG_STRICT_MM_TYPECHECKS
+-/* These are used to make use of C type-checking. */
+-
+ /* PTE level */
+ typedef struct { pte_basic_t pte; } pte_t;
+ #define __pte(x)	((pte_t) { (x) })
+@@ -48,49 +45,6 @@ typedef struct { unsigned long pgprot; } pgprot_t;
+ #define pgprot_val(x)	((x).pgprot)
+ #define __pgprot(x)	((pgprot_t) { (x) })
+ 
+-#else
+-
+-/*
+- * .. while these make it easier on the compiler
+- */
+-
+-typedef pte_basic_t pte_t;
+-#define __pte(x)	(x)
+-static inline pte_basic_t pte_val(pte_t pte)
+-{
+-	return pte;
+-}
+-
+-#ifdef CONFIG_PPC64
+-typedef unsigned long pmd_t;
+-#define __pmd(x)	(x)
+-static inline unsigned long pmd_val(pmd_t pmd)
+-{
+-	return pmd;
+-}
+-
+-#if defined(CONFIG_PPC_BOOK3S_64) || !defined(CONFIG_PPC_64K_PAGES)
+-typedef unsigned long pud_t;
+-#define __pud(x)	(x)
+-static inline unsigned long pud_val(pud_t pud)
+-{
+-	return pud;
+-}
+-#endif /* CONFIG_PPC_BOOK3S_64 || !CONFIG_PPC_64K_PAGES */
+-#endif /* CONFIG_PPC64 */
+-
+-typedef unsigned long pgd_t;
+-#define __pgd(x)	(x)
+-static inline unsigned long pgd_val(pgd_t pgd)
+-{
+-	return pgd;
+-}
+-
+-typedef unsigned long pgprot_t;
+-#define pgprot_val(x)	(x)
+-#define __pgprot(x)	(x)
+-
+-#endif /* CONFIG_STRICT_MM_TYPECHECKS */
+ /*
+  * With hash config 64k pages additionally define a bigger "real PTE" type that
+  * gathers the "second half" part of the PTE for pseudo 64k pages
 -- 
-Alexey
+2.5.0
