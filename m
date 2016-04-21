@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRl03xHQzDqgf
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRl06Dh5zDqgc
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:56 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -10,10 +10,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 23/23] powerpc/4xx: Device tree update for the 460ex DWC
- SATA
-Date: Thu, 21 Apr 2016 21:15:44 +0300
-Message-Id: <1461262544-115408-24-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 17/23] ata: sata_dwc_460ex: supply physical address of FIFO
+ to DMA
+Date: Thu, 21 Apr 2016 21:15:38 +0300
+Message-Id: <1461262544-115408-18-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,42 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Device tree update for the Applied micro processor 460ex on-chip SATA to use
-"dmas" property.
+DMA operates with physical addresses which is not exactly the same as ioremap()
+returns.
+
+Introduce variable to keep physical address of the SATA FIFO register and
+supply it when prepare DMA channel.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/powerpc/boot/dts/canyonlands.dts | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
-index 3dc75de..549c24c 100644
---- a/arch/powerpc/boot/dts/canyonlands.dts
-+++ b/arch/powerpc/boot/dts/canyonlands.dts
-@@ -190,12 +190,21 @@
- 					 /* DMA */ 0x2 &UIC0 0xc 0x4>;
- 		};
+diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
+index 42248b2..7810405 100644
+--- a/drivers/ata/sata_dwc_460ex.c
++++ b/drivers/ata/sata_dwc_460ex.c
+@@ -100,7 +100,7 @@ struct sata_dwc_regs {
+ 	u32 versionr;		/* Version Register */
+ 	u32 idr;		/* ID Register */
+ 	u32 unimpl[192];	/* Unimplemented */
+-	u32 dmadr[256];	/* FIFO Locations in DMA Mode */
++	u32 dmadr[256];		/* FIFO Locations in DMA Mode */
+ };
  
-+		AHBDMA: dma@bffd0800 {
-+			compatible = "snps,dma-spear1340";
-+			reg = <4 0xbffd0800 0x400>;
-+			interrupt-parent = <&UIC3>;
-+			interrupts = <0x5 0x4>;
-+			#dma-cells = <3>;
-+		};
-+
- 		SATA0: sata@bffd1000 {
- 			compatible = "amcc,sata-460ex";
--			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
-+			reg = <4 0xbffd1000 0x800>;
- 			interrupt-parent = <&UIC3>;
--			interrupts = <0x0 0x4       /* SATA */
--				      0x5 0x4>;     /* AHBDMA */
-+			interrupts = <0x0 0x4>;
-+			dmas = <&AHBDMA 0 1 0>;
-+			dma-names = "sata-dma";
- 		};
+ enum {
+@@ -149,6 +149,7 @@ struct sata_dwc_device {
+ 	u32			sactive_issued;
+ 	u32			sactive_queued;
+ 	struct phy		*phy;
++	phys_addr_t		dmadr;
+ #ifdef CONFIG_SATA_DWC_OLD_DMA
+ 	struct dw_dma_chip	*dma;
+ #endif
+@@ -380,15 +381,14 @@ static struct dma_async_tx_descriptor *dma_dwc_xfer_setup(struct ata_queued_cmd
+ 	struct ata_port *ap = qc->ap;
+ 	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+ 	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
+-	dma_addr_t addr = (dma_addr_t)&hsdev->sata_dwc_regs->dmadr;
+ 	struct dma_slave_config sconf;
+ 	struct dma_async_tx_descriptor *desc;
  
- 		POB0: opb {
+ 	if (qc->dma_dir == DMA_DEV_TO_MEM) {
+-		sconf.src_addr = addr;
++		sconf.src_addr = hsdev->dmadr;
+ 		sconf.device_fc = false;
+ 	} else {	/* DMA_MEM_TO_DEV */
+-		sconf.dst_addr = addr;
++		sconf.dst_addr = hsdev->dmadr;
+ 		sconf.device_fc = false;
+ 	}
+ 
+@@ -411,8 +411,8 @@ static struct dma_async_tx_descriptor *dma_dwc_xfer_setup(struct ata_queued_cmd
+ 	desc->callback = dma_dwc_xfer_done;
+ 	desc->callback_param = hsdev;
+ 
+-	dev_dbg(hsdev->dev, "%s sg: 0x%p, count: %d addr: %pad\n",
+-		__func__, qc->sg, qc->n_elem, &addr);
++	dev_dbg(hsdev->dev, "%s sg: 0x%p, count: %d addr: %pa\n", __func__,
++		qc->sg, qc->n_elem, &hsdev->dmadr);
+ 
+ 	return desc;
+ }
+@@ -1249,6 +1249,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
+ 
+ 	/* Synopsys DWC SATA specific Registers */
+ 	hsdev->sata_dwc_regs = base + SATA_DWC_REG_OFFSET;
++	hsdev->dmadr = res->start + SATA_DWC_REG_OFFSET + offsetof(struct sata_dwc_regs, dmadr);
+ 
+ 	/* Setup port */
+ 	host->ports[0]->ioaddr.cmd_addr = base;
 -- 
 2.8.0.rc3
