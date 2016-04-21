@@ -1,21 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrDg01FrwzDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 19:56:43 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/mm: Always use STRICT_MM_TYPECHECKS
-Date: Thu, 21 Apr 2016 11:56:21 +0200
-Message-ID: <4231376.YDJ7xlGR0L@wuerfel>
-In-Reply-To: <1461209879-15044-1-git-send-email-mpe@ellerman.id.au>
-References: <1461209879-15044-1-git-send-email-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrDkj39QGzDqBK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 19:59:57 +1000 (AEST)
+Message-ID: <1461232790.26743.0.camel@ellerman.id.au>
+Subject: Re: [PATCH V2 29/68] powerpc/mm: Move hugetlb and THP related pmd
+ accessors to pgtable.h
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 21 Apr 2016 19:59:50 +1000
+In-Reply-To: <5718A328.10309@gmail.com>
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-30-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <5718A328.10309@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 21 April 2016 13:37:59 Michael Ellerman wrote:
-> Testing done by Paul Mackerras has shown that with a modern compiler
-> there is no negative effect on code generation from enabling
-> STRICT_MM_TYPECHECKS.
+On Thu, 2016-04-21 at 19:53 +1000, Balbir Singh wrote:
+> On 09/04/16 16:13, Aneesh Kumar K.V wrote:
+> > +static inline int pgd_huge(pgd_t pgd)
+> > +{
+> > +	/*
+> > +	 * leaf pte for huge page
+> > +	 */
+> > +	return !!(pgd_val(pgd) & _PAGE_PTE);
+> > +}
+> > +#define pgd_huge pgd_huge
+> > +
 > 
-> So remove the option, and always use the strict type definitions.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
+> ??
 
-I recently ran into the same thing on ARM and have checked the history
-on the symbol. It seems that some architectures cannot pass structures
-in registers as function arguments, but powerpc can, so it was never
-needed in the first place.
+#ifndef pgd_huge
+#define pgd_huge(x)	0
+#endif
 
-	Arnd
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/linux/hugetlb.h#n185
+
+cheers
