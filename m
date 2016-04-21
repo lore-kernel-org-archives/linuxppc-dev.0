@@ -1,7 +1,7 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkz4jdPzDqgc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRl025w1zDqgl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:56 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
@@ -9,9 +9,9 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 11/23] ata: sata_dwc_460ex: get rid of global data
-Date: Thu, 21 Apr 2016 21:15:32 +0300
-Message-Id: <1461262544-115408-12-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 10/23] ata: sata_dwc_460ex: add phy support
+Date: Thu, 21 Apr 2016 21:15:31 +0300
+Message-Id: <1461262544-115408-11-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,230 +25,106 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mans Rullgard <mans@mansr.com>
 
-This moves all global data into the driver private struct, thus
-permitting multiple devices of this type to be used.
-
-The core_scr_read/write() functions are replaced with equivalent
-calls to the existing sata_dwc_scr_read/write().
+This adds support for powering on an optional PHY when activating the
+device.
 
 Signed-off-by: Mans Rullgard <mans@mansr.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 79 ++++++++++++++++----------------------------
- 1 file changed, 29 insertions(+), 50 deletions(-)
+ drivers/ata/Kconfig          |  1 +
+ drivers/ata/sata_dwc_460ex.c | 22 ++++++++++++++++++++++
+ 2 files changed, 23 insertions(+)
 
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index ede126d..41b0725 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -313,6 +313,7 @@ config ATA_PIIX
+ 
+ config SATA_DWC
+ 	tristate "DesignWare Cores SATA support"
++	select GENERIC_PHY
+ 	help
+ 	  This option enables support for the on-chip SATA controller of the
+ 	  AppliedMicro processor 460EX.
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 4d23fbd..8e7c1b0 100644
+index daaa8a6..4d23fbd 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -146,6 +146,8 @@ struct sata_dwc_device {
+@@ -35,6 +35,7 @@
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
++#include <linux/phy/phy.h>
+ #include <linux/libata.h>
+ #include <linux/slab.h>
+ 
+@@ -145,6 +146,7 @@ struct sata_dwc_device {
  	struct ata_host		*host;
  	u8 __iomem		*reg_base;
  	struct sata_dwc_regs	*sata_dwc_regs;	/* DW Synopsys SATA specific */
-+	u32			sactive_issued;
-+	u32			sactive_queued;
- 	struct phy		*phy;
++	struct phy		*phy;
  #ifdef CONFIG_SATA_DWC_OLD_DMA
  	struct dw_dma_chip	*dma;
-@@ -190,14 +192,6 @@ enum {
- 	SATA_DWC_DMA_PENDING_RX		= 2,
- };
+ #endif
+@@ -948,6 +950,10 @@ static int sata_dwc_port_start(struct ata_port *ap)
+ 	if (err)
+ 		goto CLEANUP_ALLOC;
  
--struct sata_dwc_host_priv {
--	void	__iomem	 *scr_addr_sstatus;
--	u32	sata_dwc_sactive_issued ;
--	u32	sata_dwc_sactive_queued ;
--};
--
--static struct sata_dwc_host_priv host_pvt;
--
- /*
-  * Prototypes
-  */
-@@ -457,21 +451,11 @@ static int sata_dwc_scr_write(struct ata_link *link, unsigned int scr, u32 val)
- 	return 0;
- }
++	err = phy_power_on(hsdev->phy);
++	if (err)
++		goto CLEANUP_ALLOC;
++
+ 	for (i = 0; i < SATA_DWC_QCMD_MAX; i++)
+ 		hsdevp->cmd_issued[i] = SATA_DWC_CMD_ISSUED_NOT;
  
--static u32 core_scr_read(unsigned int scr)
--{
--	return in_le32(host_pvt.scr_addr_sstatus + (scr * 4));
--}
--
--static void core_scr_write(unsigned int scr, u32 val)
--{
--	out_le32(host_pvt.scr_addr_sstatus + (scr * 4), val);
--}
--
--static void clear_serror(void)
-+static void clear_serror(struct ata_port *ap)
+@@ -983,11 +989,13 @@ CLEANUP:
+ static void sata_dwc_port_stop(struct ata_port *ap)
  {
- 	u32 val;
--	val = core_scr_read(SCR_ERROR);
--	core_scr_write(SCR_ERROR, val);
-+	sata_dwc_scr_read(&ap->link, SCR_ERROR, &val);
-+	sata_dwc_scr_write(&ap->link, SCR_ERROR, val);
- }
- 
- static void clear_interrupt_bit(struct sata_dwc_device *hsdev, u32 bit)
-@@ -498,7 +482,7 @@ static void sata_dwc_error_intr(struct ata_port *ap,
- 
- 	ata_ehi_clear_desc(ehi);
- 
--	serror = core_scr_read(SCR_ERROR);
-+	sata_dwc_scr_read(&ap->link, SCR_ERROR, &serror);
- 	status = ap->ops->sff_check_status(ap);
- 
- 	tag = ap->link.active_tag;
-@@ -509,7 +493,7 @@ static void sata_dwc_error_intr(struct ata_port *ap,
- 		hsdevp->dma_pending[tag], hsdevp->cmd_issued[tag]);
- 
- 	/* Clear error register and interrupt bit */
--	clear_serror();
-+	clear_serror(ap);
- 	clear_interrupt_bit(hsdev, SATA_DWC_INTPR_ERR);
- 
- 	/* This is the only error happening now.  TODO check for exact error */
-@@ -548,7 +532,7 @@ static irqreturn_t sata_dwc_isr(int irq, void *dev_instance)
- 	int handled, num_processed, port = 0;
- 	uint intpr, sactive, sactive2, tag_mask;
- 	struct sata_dwc_device_port *hsdevp;
--	host_pvt.sata_dwc_sactive_issued = 0;
-+	hsdev->sactive_issued = 0;
- 
- 	spin_lock_irqsave(&host->lock, flags);
- 
-@@ -577,7 +561,7 @@ static irqreturn_t sata_dwc_isr(int irq, void *dev_instance)
- 		if (hsdevp->cmd_issued[tag] != SATA_DWC_CMD_ISSUED_PEND)
- 			dev_warn(ap->dev, "CMD tag=%d not pending?\n", tag);
- 
--		host_pvt.sata_dwc_sactive_issued |= qcmd_tag_to_mask(tag);
-+		hsdev->sactive_issued |= qcmd_tag_to_mask(tag);
- 
- 		qc = ata_qc_from_tag(ap, tag);
- 		/*
-@@ -591,11 +575,11 @@ static irqreturn_t sata_dwc_isr(int irq, void *dev_instance)
- 		handled = 1;
- 		goto DONE;
- 	}
--	sactive = core_scr_read(SCR_ACTIVE);
--	tag_mask = (host_pvt.sata_dwc_sactive_issued | sactive) ^ sactive;
-+	sata_dwc_scr_read(&ap->link, SCR_ACTIVE, &sactive);
-+	tag_mask = (hsdev->sactive_issued | sactive) ^ sactive;
- 
- 	/* If no sactive issued and tag_mask is zero then this is not NCQ */
--	if (host_pvt.sata_dwc_sactive_issued == 0 && tag_mask == 0) {
-+	if (hsdev->sactive_issued == 0 && tag_mask == 0) {
- 		if (ap->link.active_tag == ATA_TAG_POISON)
- 			tag = 0;
- 		else
-@@ -665,22 +649,19 @@ DRVSTILLBUSY:
- 	 */
- 
- 	 /* process completed commands */
--	sactive = core_scr_read(SCR_ACTIVE);
--	tag_mask = (host_pvt.sata_dwc_sactive_issued | sactive) ^ sactive;
-+	sata_dwc_scr_read(&ap->link, SCR_ACTIVE, &sactive);
-+	tag_mask = (hsdev->sactive_issued | sactive) ^ sactive;
- 
--	if (sactive != 0 || (host_pvt.sata_dwc_sactive_issued) > 1 || \
--							tag_mask > 1) {
-+	if (sactive != 0 || hsdev->sactive_issued > 1 || tag_mask > 1) {
- 		dev_dbg(ap->dev,
- 			"%s NCQ:sactive=0x%08x  sactive_issued=0x%08x tag_mask=0x%08x\n",
--			__func__, sactive, host_pvt.sata_dwc_sactive_issued,
--			tag_mask);
-+			__func__, sactive, hsdev->sactive_issued, tag_mask);
- 	}
- 
--	if ((tag_mask | (host_pvt.sata_dwc_sactive_issued)) != \
--					(host_pvt.sata_dwc_sactive_issued)) {
-+	if ((tag_mask | hsdev->sactive_issued) != hsdev->sactive_issued) {
- 		dev_warn(ap->dev,
--			 "Bad tag mask?  sactive=0x%08x (host_pvt.sata_dwc_sactive_issued)=0x%08x  tag_mask=0x%08x\n",
--			 sactive, host_pvt.sata_dwc_sactive_issued, tag_mask);
-+			 "Bad tag mask?  sactive=0x%08x sactive_issued=0x%08x  tag_mask=0x%08x\n",
-+			 sactive, hsdev->sactive_issued, tag_mask);
- 	}
- 
- 	/* read just to clear ... not bad if currently still busy */
-@@ -742,7 +723,7 @@ STILLBUSY:
- 	 * we were processing --we read status as part of processing a completed
- 	 * command).
- 	 */
--	sactive2 = core_scr_read(SCR_ACTIVE);
-+	sata_dwc_scr_read(&ap->link, SCR_ACTIVE, &sactive2);
- 	if (sactive2 != sactive) {
- 		dev_dbg(ap->dev,
- 			"More completed - sactive=0x%x sactive2=0x%x\n",
-@@ -828,8 +809,9 @@ static int sata_dwc_qc_complete(struct ata_port *ap, struct ata_queued_cmd *qc,
- 	u8 status = 0;
- 	u32 mask = 0x0;
- 	u8 tag = qc->tag;
-+	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
  	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
--	host_pvt.sata_dwc_sactive_queued = 0;
-+	hsdev->sactive_queued = 0;
- 	dev_dbg(ap->dev, "%s checkstatus? %x\n", __func__, check_status);
++	struct sata_dwc_device *hsdev = HSDEV_FROM_AP(ap);
  
- 	if (hsdevp->dma_pending[tag] == SATA_DWC_DMA_PENDING_TX)
-@@ -842,10 +824,8 @@ static int sata_dwc_qc_complete(struct ata_port *ap, struct ata_queued_cmd *qc,
+ 	dev_dbg(ap->dev, "%s: ap->id = %d\n", __func__, ap->print_id);
  
- 	/* clear active bit */
- 	mask = (~(qcmd_tag_to_mask(tag)));
--	host_pvt.sata_dwc_sactive_queued = (host_pvt.sata_dwc_sactive_queued) \
--						& mask;
--	host_pvt.sata_dwc_sactive_issued = (host_pvt.sata_dwc_sactive_issued) \
--						& mask;
-+	hsdev->sactive_queued = hsdev->sactive_queued & mask;
-+	hsdev->sactive_issued = hsdev->sactive_issued & mask;
- 	ata_qc_complete(qc);
- 	return 0;
- }
-@@ -974,7 +954,7 @@ static int sata_dwc_port_start(struct ata_port *ap)
+ 	dmaengine_terminate_all(hsdevp->chan);
+ 	dma_release_channel(hsdevp->chan);
++	phy_power_off(hsdev->phy);
+ 
+ 	kfree(hsdevp);
+ 	ap->private_data = NULL;
+@@ -1323,6 +1331,17 @@ static int sata_dwc_probe(struct platform_device *ofdev)
  	}
+ #endif
  
- 	/* Clear any error bits before libata starts issuing commands */
--	clear_serror();
-+	clear_serror(ap);
- 	ap->private_data = hsdevp;
- 	dev_dbg(ap->dev, "%s: done\n", __func__);
++	hsdev->phy = devm_phy_optional_get(hsdev->dev, "sata-phy");
++	if (IS_ERR(hsdev->phy)) {
++		err = PTR_ERR(hsdev->phy);
++		hsdev->phy = NULL;
++		goto error_out;
++	}
++
++	err = phy_init(hsdev->phy);
++	if (err)
++		goto error_out;
++
+ 	/*
+ 	 * Now, register with libATA core, this will also initiate the
+ 	 * device discovery process, invoking our port_start() handler &
+@@ -1336,6 +1355,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
  	return 0;
-@@ -1025,7 +1005,7 @@ static void sata_dwc_exec_command_by_tag(struct ata_port *ap,
- 	 * managed SError register for the disk needs to be done before the
- 	 * task file is loaded.
- 	 */
--	clear_serror();
-+	clear_serror(ap);
- 	ata_sff_exec_command(ap, tf);
+ 
+ error_out:
++	phy_exit(hsdev->phy);
+ 	iounmap(base);
+ 	return err;
  }
+@@ -1348,6 +1368,8 @@ static int sata_dwc_remove(struct platform_device *ofdev)
  
-@@ -1078,7 +1058,7 @@ static void sata_dwc_bmdma_start_by_tag(struct ata_queued_cmd *qc, u8 tag)
- 	sata_dwc_tf_dump(ap, &qc->tf);
+ 	ata_host_detach(host);
  
- 	if (start_dma) {
--		reg = core_scr_read(SCR_ERROR);
-+		sata_dwc_scr_read(&ap->link, SCR_ERROR, &reg);
- 		if (reg & SATA_DWC_SERROR_ERR_BITS) {
- 			dev_err(ap->dev, "%s: ****** SError=0x%08x ******\n",
- 				__func__, reg);
-@@ -1140,9 +1120,9 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
- 	}
- 
- 	if (ata_is_ncq(qc->tf.protocol)) {
--		sactive = core_scr_read(SCR_ACTIVE);
-+		sata_dwc_scr_read(&ap->link, SCR_ACTIVE, &sactive);
- 		sactive |= (0x00000001 << tag);
--		core_scr_write(SCR_ACTIVE, sactive);
-+		sata_dwc_scr_write(&ap->link, SCR_ACTIVE, sactive);
- 
- 		dev_dbg(qc->ap->dev,
- 			"%s: tag=%d ap->link.sactive = 0x%08x sactive=0x%08x\n",
-@@ -1300,7 +1280,6 @@ static int sata_dwc_probe(struct platform_device *ofdev)
- 	/* Setup port */
- 	host->ports[0]->ioaddr.cmd_addr = base;
- 	host->ports[0]->ioaddr.scr_addr = base + SATA_DWC_SCR_OFFSET;
--	host_pvt.scr_addr_sstatus = base + SATA_DWC_SCR_OFFSET;
- 	sata_dwc_setup_port(&host->ports[0]->ioaddr, (unsigned long)base);
- 
- 	/* Read the ID and Version Registers */
++	phy_exit(hsdev->phy);
++
+ #ifdef CONFIG_SATA_DWC_OLD_DMA
+ 	/* Free SATA DMA resources */
+ 	sata_dwc_dma_exit_old(hsdev);
 -- 
 2.8.0.rc3
