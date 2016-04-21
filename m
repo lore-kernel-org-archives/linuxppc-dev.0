@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkw5P1rzDqgd
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkw647qzDqgf
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:52 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,10 +9,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 07/23] ata: sata_dwc_460ex: skip dma setup for non-dma
- commands
-Date: Thu, 21 Apr 2016 21:15:28 +0300
-Message-Id: <1461262544-115408-8-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 05/23] ata: sata_dwc_460ex: DMA is always a flow controller
+Date: Thu, 21 Apr 2016 21:15:26 +0300
+Message-Id: <1461262544-115408-6-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,78 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mans Rullgard <mans@mansr.com>
+In the original code the DMA is always a flow controller. Set this accordingly
+in updated code.
 
-Calling dmaengine_prep_slave_sg() for non-dma ATA commands is
-unnecessary at best and could be harmful if the dma driver reacts
-badly to this.  It also causes this driver to print a bogus error
-message in these cases.
-
-This patch changes sata_dwc_qc_issue() to only do the dma setup
-for dma commands and also reports an error to libata if if fails.
-
-Signed-off-by: Mans Rullgard <mans@mansr.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 35 +++++++++--------------------------
- 1 file changed, 9 insertions(+), 26 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 1250e18..038e5fb 100644
+index 4cac27d..1250e18 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1023,36 +1023,12 @@ static void sata_dwc_bmdma_start(struct ata_queued_cmd *qc)
- 	sata_dwc_bmdma_start_by_tag(qc, tag);
- }
+@@ -311,7 +311,7 @@ static struct dma_async_tx_descriptor *dma_dwc_xfer_setup(struct ata_queued_cmd
  
--/*
-- * Function : sata_dwc_qc_prep_by_tag
-- * arguments : ata_queued_cmd *qc, u8 tag
-- * Return value : None
-- * qc_prep for a particular queued command based on tag
-- */
--static void sata_dwc_qc_prep_by_tag(struct ata_queued_cmd *qc, u8 tag)
--{
--	struct dma_async_tx_descriptor *desc;
--	struct ata_port *ap = qc->ap;
--	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
--
--	dev_dbg(ap->dev, "%s: port=%d dma dir=%s n_elem=%d\n",
--		__func__, ap->port_no, get_dma_dir_descript(qc->dma_dir),
--		 qc->n_elem);
--
--	desc = dma_dwc_xfer_setup(qc);
--	if (!desc) {
--		dev_err(ap->dev, "%s: dma_dwc_xfer_setup returns NULL\n",
--			__func__);
--		return;
--	}
--	hsdevp->desc[tag] = desc;
--}
--
- static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
- {
- 	u32 sactive;
- 	u8 tag = qc->tag;
- 	struct ata_port *ap = qc->ap;
-+	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
- 
- #ifdef DEBUG_NCQ
- 	if (qc->tag > 0 || ap->link.sactive > 1)
-@@ -1066,7 +1042,14 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
- 
- 	if (!ata_is_ncq(qc->tf.protocol))
- 		tag = 0;
--	sata_dwc_qc_prep_by_tag(qc, tag);
-+
-+	if (ata_is_dma(qc->tf.protocol)) {
-+		hsdevp->desc[tag] = dma_dwc_xfer_setup(qc);
-+		if (!hsdevp->desc[tag])
-+			return AC_ERR_SYSTEM;
-+	} else {
-+		hsdevp->desc[tag] = NULL;
-+	}
- 
- 	if (ata_is_ncq(qc->tf.protocol)) {
- 		sactive = core_scr_read(SCR_ACTIVE);
+ 	if (qc->dma_dir == DMA_DEV_TO_MEM) {
+ 		sconf.src_addr = addr;
+-		sconf.device_fc = true;
++		sconf.device_fc = false;
+ 	} else {	/* DMA_MEM_TO_DEV */
+ 		sconf.dst_addr = addr;
+ 		sconf.device_fc = false;
 -- 
 2.8.0.rc3
