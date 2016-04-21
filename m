@@ -1,7 +1,7 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkv755kzDqgY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkx4vTKzDqgY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:53 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
@@ -9,10 +9,9 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 02/23] ata: sata_dwc_460ex: fix crash on offline links
- without an attached drive
-Date: Thu, 21 Apr 2016 21:15:23 +0300
-Message-Id: <1461262544-115408-3-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 14/23] ata: sata_dwc_460ex: get rid of some pointless casts
+Date: Thu, 21 Apr 2016 21:15:35 +0300
+Message-Id: <1461262544-115408-15-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,58 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christian Lamparter <chunkeey@googlemail.com>
+From: Mans Rullgard <mans@mansr.com>
 
-This patch fixes Machine Check "Data Write PLB Error" which happens
-when libata-sff's ata_sff_dev_select is trying to write into the
-device_addr in order to select a drive. However, SATA has no master
-or slave devices like the old ATA Bus, therefore selecting a
-different drive is kind of pointless.
+Casting a pointer to unsigned long only to immediately cast it back
+to a pointer makes no sense.  Fix this.
 
-Data Write PLB Error
-Oops: Machine check, sig: 7 [#1]
-PowerPC 44x Platform
-Modules linked in:
-CPU: 0 PID: 508 Comm: scsi_eh_0 Not tainted 4.6.0-rc3-next-20160412+ #10
-[...]
-NIP [c027e820] ata_sff_dev_select+0x3c/0x44
-LR [c027e810] ata_sff_dev_select+0x2c/0x44
-Call Trace:
-[cec31cd0] [c027da00] ata_sff_postreset+0x40/0xb4 (unreliable)
-[cec31ce0] [c027a03c] ata_eh_reset+0x5cc/0x928
-[cec31d60] [c027a840] ata_eh_recover+0x330/0x10bc
-[cec31df0] [c027bae0] ata_do_eh+0x4c/0xa4
-[...]
 
-Signed-off-by: Christian Lamparter <chunkeey@googlemail.com>
+Signed-off-by: Mans Rullgard <mans@mansr.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/ata/sata_dwc_460ex.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 5213e22..7f95389 100644
+index 571ecd1..9e8271d 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1134,6 +1134,11 @@ static int sata_dwc_hardreset(struct ata_link *link, unsigned int *class,
- 	return ret;
+@@ -844,26 +844,26 @@ static void sata_dwc_enable_interrupts(struct sata_dwc_device *hsdev)
+ 		in_le32(&hsdev->sata_dwc_regs->errmr));
  }
  
-+static void sata_dwc_dev_select(struct ata_port *ap, unsigned int device)
-+{
-+	/* SATA DWC is master only */
-+}
-+
- /*
-  * scsi mid-layer and libata interface structures
-  */
-@@ -1164,6 +1169,8 @@ static struct ata_port_operations sata_dwc_ops = {
- 	.port_start		= sata_dwc_port_start,
- 	.port_stop		= sata_dwc_port_stop,
+-static void sata_dwc_setup_port(struct ata_ioports *port, unsigned long base)
++static void sata_dwc_setup_port(struct ata_ioports *port, void __iomem *base)
+ {
+-	port->cmd_addr = (void __iomem *)base + 0x00;
+-	port->data_addr = (void __iomem *)base + 0x00;
++	port->cmd_addr		= base + 0x00;
++	port->data_addr		= base + 0x00;
  
-+	.sff_dev_select		= sata_dwc_dev_select,
-+
- 	.bmdma_setup		= sata_dwc_bmdma_setup,
- 	.bmdma_start		= sata_dwc_bmdma_start,
- };
+-	port->error_addr = (void __iomem *)base + 0x04;
+-	port->feature_addr = (void __iomem *)base + 0x04;
++	port->error_addr	= base + 0x04;
++	port->feature_addr	= base + 0x04;
+ 
+-	port->nsect_addr = (void __iomem *)base + 0x08;
++	port->nsect_addr	= base + 0x08;
+ 
+-	port->lbal_addr = (void __iomem *)base + 0x0c;
+-	port->lbam_addr = (void __iomem *)base + 0x10;
+-	port->lbah_addr = (void __iomem *)base + 0x14;
++	port->lbal_addr		= base + 0x0c;
++	port->lbam_addr		= base + 0x10;
++	port->lbah_addr		= base + 0x14;
+ 
+-	port->device_addr = (void __iomem *)base + 0x18;
+-	port->command_addr = (void __iomem *)base + 0x1c;
+-	port->status_addr = (void __iomem *)base + 0x1c;
++	port->device_addr	= base + 0x18;
++	port->command_addr	= base + 0x1c;
++	port->status_addr	= base + 0x1c;
+ 
+-	port->altstatus_addr = (void __iomem *)base + 0x20;
+-	port->ctl_addr = (void __iomem *)base + 0x20;
++	port->altstatus_addr	= base + 0x20;
++	port->ctl_addr		= base + 0x20;
+ }
+ 
+ static int sata_dwc_dma_get_channel(struct sata_dwc_device_port *hsdevp)
+@@ -1253,7 +1253,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
+ 	/* Setup port */
+ 	host->ports[0]->ioaddr.cmd_addr = base;
+ 	host->ports[0]->ioaddr.scr_addr = base + SATA_DWC_SCR_OFFSET;
+-	sata_dwc_setup_port(&host->ports[0]->ioaddr, (unsigned long)base);
++	sata_dwc_setup_port(&host->ports[0]->ioaddr, base);
+ 
+ 	/* Read the ID and Version Registers */
+ 	idr = in_le32(&hsdev->sata_dwc_regs->idr);
 -- 
 2.8.0.rc3
