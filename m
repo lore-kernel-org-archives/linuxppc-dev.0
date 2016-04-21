@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkz4fN9zDqgb
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkz5rFQzDqgf
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:55 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,9 +9,11 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 15/23] ata: sata_dwc_460ex: get rid of incorrect cast
-Date: Thu, 21 Apr 2016 21:15:36 +0300
-Message-Id: <1461262544-115408-16-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 18/23] ata: sata_dwc_460ex: switch to new
+ dmaengine_terminate_* API
+Date: Thu, 21 Apr 2016 21:15:39 +0300
+Message-Id: <1461262544-115408-19-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,37 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mans Rullgard <mans@mansr.com>
+Convert dmaengine_terminate_all() calls to synchronous and asynchronous
+versions where appropriate.
 
-The (void *__iomem) cast is wrong.  Change the target type of the
-"base" pointer to void __iomem instead and drop the cast.
-
-Signed-off-by: Mans Rullgard <mans@mansr.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 9e8271d..0eca56f2 100644
+index 7810405..229e122 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1221,7 +1221,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
- 	struct sata_dwc_device *hsdev;
- 	u32 idr, versionr;
- 	char *ver = (char *)&versionr;
--	u8 __iomem *base;
-+	void __iomem *base;
- 	int err = 0;
- 	int irq;
- 	struct ata_host *host;
-@@ -1248,7 +1248,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
- 	dev_dbg(&ofdev->dev, "ioremap done for SATA register address\n");
+@@ -968,7 +968,7 @@ static void sata_dwc_port_stop(struct ata_port *ap)
  
- 	/* Synopsys DWC SATA specific Registers */
--	hsdev->sata_dwc_regs = (void *__iomem)(base + SATA_DWC_REG_OFFSET);
-+	hsdev->sata_dwc_regs = base + SATA_DWC_REG_OFFSET;
+ 	dev_dbg(ap->dev, "%s: ap->id = %d\n", __func__, ap->print_id);
  
- 	/* Setup port */
- 	host->ports[0]->ioaddr.cmd_addr = base;
+-	dmaengine_terminate_all(hsdevp->chan);
++	dmaengine_terminate_sync(hsdevp->chan);
+ 	dma_release_channel(hsdevp->chan);
+ 	phy_power_off(hsdev->phy);
+ 
 -- 
 2.8.0.rc3
