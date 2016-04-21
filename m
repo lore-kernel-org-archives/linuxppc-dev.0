@@ -1,17 +1,25 @@
-Return-Path: <adi.gangidi@rackspace.com>
-Received: from esg01.rackspace.com (esg02.rackspace.com [192.237.132.25])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrBZG1hHHzDqcy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 18:22:29 +1000 (AEST)
-From: Adi Gangidi <adi.gangidi@rackspace.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: "joel@jms.id.au" <joel@jms.id.au>, "jk@ozlabs.org" <jk@ozlabs.org>
-Subject: ATA errors with Fedora 23 Kexec
-Date: Thu, 21 Apr 2016 08:07:11 +0000
-Message-ID: <1461226038502.70296@rackspace.com>
-Content-Type: multipart/mixed; boundary="_004_146122603850270296rackspacecom_"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrDbj4QP6zDqbG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 19:53:53 +1000 (AEST)
+Received: by mail-pf0-x235.google.com with SMTP id e128so28458768pfe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 02:53:53 -0700 (PDT)
+Subject: Re: [PATCH V2 29/68] powerpc/mm: Move hugetlb and THP related pmd
+ accessors to pgtable.h
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-30-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <5718A328.10309@gmail.com>
+Date: Thu, 21 Apr 2016 19:53:44 +1000
 MIME-Version: 1.0
+In-Reply-To: <1460182444-2468-30-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,276 +29,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_004_146122603850270296rackspacecom_
-Content-Type: multipart/alternative;
-	boundary="_000_146122603850270296rackspacecom_"
-
---_000_146122603850270296rackspacecom_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-Hi All
-
-At Rackspace, we are working with our Barreleye servers that runs a Fedora =
-23 Live Hypervisor. We usually do NOT hit any issues with the mSATA device =
-during bootup / Kexec from Petitboot.
-
-But with Fedora 23 OS, we noticed an issue we are hitting, while we kexec f=
-rom Fedora 23 Live Instance  into an updated Live instance. I wanted to bri=
-ng this to your notice a?nd see if guys have ever run into something simila=
-r. During the kexec process, we see  errors on ATA driver resulting in fail=
-ed initialization of mircron mSATA device. Ultimately the kexec process fai=
-ls.
-
-Attached is a boot log after kexec.  Please look into this. We'd like to kn=
-ow what you guys think.
-
-Here is lshw for micron:
-/0/a1/0.0.0       /dev/sdb   disk       256GB Micron_M600_MTFD
-
-Does kexec command in Petitboot automatically unmount / power cycle all dev=
-ices ? Is there something different that Petitboot does when kexec command =
-is issued compared with other OS
-
-?Best
-Adi
 
 
+On 09/04/16 16:13, Aneesh Kumar K.V wrote:
+> Here we create pgtable-64/4k.h and move pmd accessors that is common
+> between hash and radix there. We can't do much sharing with 4k linux
+> page size [1]. So for now it is empty. In later patches we will add
+> functions that does conditional hash/radix accessors there.
+> 
+> [1] 4k linux page size with hash config don't support THP.
+					 does not
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/hash-64k.h    | 83 ---------------------
+>  arch/powerpc/include/asm/book3s/64/pgtable-4k.h  |  7 ++
+>  arch/powerpc/include/asm/book3s/64/pgtable-64k.h | 94 ++++++++++++++++++++++++
+>  arch/powerpc/include/asm/book3s/64/pgtable.h     |  7 ++
+>  4 files changed, 108 insertions(+), 83 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> index d60c431c96cb..173f35e9faef 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+> @@ -118,57 +118,6 @@ static inline int remap_4k_pfn(struct vm_area_struct *vma, unsigned long addr,
+>  #define H_PUD_TABLE_SIZE	(sizeof(pud_t) << PUD_INDEX_SIZE)
+>  #define H_PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
+>  
+> -#ifdef CONFIG_HUGETLB_PAGE
+> -/*
+> - * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
+> - * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
+> - *
+> - * Defined in such a way that we can optimize away code block at build time
+> - * if CONFIG_HUGETLB_PAGE=n.
+> - */
+> -static inline int pmd_huge(pmd_t pmd)
+> -{
+> -	/*
+> -	 * leaf pte for huge page
+> -	 */
+> -	return !!(pmd_val(pmd) & _PAGE_PTE);
+> -}
+> -
+> -static inline int pud_huge(pud_t pud)
+> -{
+> -	/*
+> -	 * leaf pte for huge page
+> -	 */
+> -	return !!(pud_val(pud) & _PAGE_PTE);
+> -}
+> -
+> -static inline int pgd_huge(pgd_t pgd)
+> -{
+> -	/*
+> -	 * leaf pte for huge page
+> -	 */
+> -	return !!(pgd_val(pgd) & _PAGE_PTE);
+> -}
+> -#define pgd_huge pgd_huge
+> -
+> -#ifdef CONFIG_DEBUG_VM
+> -extern int hugepd_ok(hugepd_t hpd);
+> -#define is_hugepd(hpd)               (hugepd_ok(hpd))
+> -#else
+> -/*
+> - * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
+> - * need to setup hugepage directory for them. Our pte and page directory format
+> - * enable us to have this enabled.
+> - */
+> -static inline int hugepd_ok(hugepd_t hpd)
+> -{
+> -	return 0;
+> -}
+> -#define is_hugepd(pdep)			0
+> -#endif /* CONFIG_DEBUG_VM */
+> -
+> -#endif /* CONFIG_HUGETLB_PAGE */
+> -
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
+>  					 unsigned long addr,
+> @@ -239,44 +188,12 @@ static inline int pmd_trans_huge(pmd_t pmd)
+>  		  (_PAGE_PTE | H_PAGE_THP_HUGE));
+>  }
+>  
+> -static inline int pmd_large(pmd_t pmd)
+> -{
+> -	return !!(pmd_val(pmd) & _PAGE_PTE);
+> -}
+> -
+> -static inline pmd_t pmd_mknotpresent(pmd_t pmd)
+> -{
+> -	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
+> -}
+> -
+>  #define __HAVE_ARCH_PMD_SAME
+>  static inline int pmd_same(pmd_t pmd_a, pmd_t pmd_b)
+>  {
+>  	return (((pmd_val(pmd_a) ^ pmd_val(pmd_b)) & ~_PAGE_HPTEFLAGS) == 0);
+>  }
+>  
+> -static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
+> -					      unsigned long addr, pmd_t *pmdp)
+> -{
+> -	unsigned long old;
+> -
+> -	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
+> -		return 0;
+> -	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
+> -	return ((old & _PAGE_ACCESSED) != 0);
+> -}
+> -
+> -#define __HAVE_ARCH_PMDP_SET_WRPROTECT
+> -static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+> -				      pmd_t *pmdp)
+> -{
+> -
+> -	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
+> -		return;
+> -
+> -	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
+> -}
+> -
+>  #endif /*  CONFIG_TRANSPARENT_HUGEPAGE */
+>  #endif	/* __ASSEMBLY__ */
+>  
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> new file mode 100644
+> index 000000000000..423735f897f5
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> @@ -0,0 +1,7 @@
+> +#ifndef _ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H
+> +#define _ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H
+> +/*
+> + * hash 4k can't share hugetlb and also doesn't support THP
+> + */
+> +
+> +#endif /*_ASM_POWERPC_BOOK3S_64_PGTABLE_4K_H */
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+> new file mode 100644
+> index 000000000000..ceadc2fd408f
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
+> @@ -0,0 +1,94 @@
+> +#ifndef _ASM_POWERPC_BOOK3S_64_PGTABLE_64K_H
+> +#define _ASM_POWERPC_BOOK3S_64_PGTABLE_64K_H
+> +
+> +#ifndef __ASSEMBLY__
+> +#ifdef CONFIG_HUGETLB_PAGE
+> +/*
+> + * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
+PGD_INDEX_SIZE
+> + * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
+> + *
+> + * Defined in such a way that we can optimize away code block at build time
+> + * if CONFIG_HUGETLB_PAGE=n.
+> + */
+> +static inline int pmd_huge(pmd_t pmd)
+> +{
+> +	/*
+> +	 * leaf pte for huge page
+> +	 */
+> +	return !!(pmd_val(pmd) & _PAGE_PTE);
+> +}
+> +
+> +static inline int pud_huge(pud_t pud)
+> +{
+> +	/*
+> +	 * leaf pte for huge page
+> +	 */
+> +	return !!(pud_val(pud) & _PAGE_PTE);
+> +}
+> +
+> +static inline int pgd_huge(pgd_t pgd)
+> +{
+> +	/*
+> +	 * leaf pte for huge page
+> +	 */
+> +	return !!(pgd_val(pgd) & _PAGE_PTE);
+> +}
+> +#define pgd_huge pgd_huge
+> +
 
+??
+<snip>
 
---_000_146122603850270296rackspacecom_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
-1">
-<style type=3D"text/css" style=3D"display:none"><!-- p { margin-top: 0px; m=
-argin-bottom: 0px; }--></style>
-</head>
-<body dir=3D"ltr" style=3D"font-size:12pt;color:#000000;background-color:#F=
-FFFFF;font-family:Calibri,Arial,Helvetica,sans-serif;">
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-Hi All<br>
-</div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-<br>
-</div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-At Rackspace, we are working with&nbsp;our&nbsp;Barreleye servers that runs=
- a&nbsp;Fedora 23 Live Hypervisor.&nbsp;We usually&nbsp;do NOT hit any issu=
-es with the&nbsp;mSATA device during bootup / Kexec from Petitboot.&nbsp;
-<div><br>
-But with Fedora 23 OS, we noticed an issue we are hitting, while we kexec f=
-rom Fedora 23 Live Instance &nbsp;into an updated Live&nbsp;instance. I wan=
-ted to bring this to your notice a&#8203;nd see if guys&nbsp;have ever&nbsp=
-;run into something similar. During the kexec process, we
- see &nbsp;errors on ATA driver resulting in failed initialization of mircr=
-on&nbsp;mSATA device. Ultimately the kexec process fails.&nbsp;<br>
-</div>
-</div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-<br>
-</div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-Attached is a boot&nbsp;log after kexec.&nbsp;&nbsp;Please look into this.&=
-nbsp;We'd like to know what you guys think.&nbsp;<br>
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 16px; margin-top: 0px; margin-bottom: 0px;">
-<br>
-</div>
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 16px; margin-top: 0px; margin-bottom: 0px;">
-Here is lshw for micron:<br>
-</div>
-<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
-: 16px; margin-top: 0px; margin-bottom: 0px;">
-/0/a1/0.0.0 &nbsp; &nbsp; &nbsp; /dev/sdb &nbsp; disk &nbsp; &nbsp; &nbsp; =
-256GB Micron_M600_MTFD<br>
-</div>
-<br>
-Does kexec command in Petitboot automatically&nbsp;unmount / power cycle al=
-l devices ? Is there something different that Petitboot does when kexec com=
-mand is issued compared with other OS<br>
-<br>
-</div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-&#8203;Best</div>
-<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
-x; margin-top:0px; margin-bottom:0px">
-Adi<br>
-</div>
-<div><br>
-<br>
-</div>
-<p><br>
-</p>
-</body>
-</html>
-
---_000_146122603850270296rackspacecom_--
-
---_004_146122603850270296rackspacecom_
-Content-Type: text/plain; name="ATA error during kexec (1).txt"
-Content-Description: ATA error during kexec (1).txt
-Content-Disposition: attachment; filename="ATA error during kexec (1).txt";
-	size=8344; creation-date="Thu, 21 Apr 2016 07:57:57 GMT";
-	modification-date="Thu, 21 Apr 2016 07:57:57 GMT"
-Content-Transfer-Encoding: base64
-
-WyAgICAzLjc5NzYyN10gYXRhMTogU0FUQSBsaW5rIHVwIDYuMCBHYnBzIChTU3RhdHVzIDEzMyBT
-Q29udHJvbCAzMDApDQpbICAgIDMuNzk3OTgxXSBhdGExLjAwOiBzdXBwb3J0cyBEUk0gZnVuY3Rp
-b25zIGFuZCBtYXkgbm90IGJlIGZ1bGx5IGFjY2Vzc2libGUNClsgICAgMy44MDM0MzZdIGF0YTEu
-MDA6IEFUQS0xMDogTWljcm9uX002MDBfTVRGRERBWTI1Nk1CRiwgTVUwMywgbWF4IFVETUEvMTMz
-DQpbICAgIDMuODA5OTk1XSBhdGExLjAwOiA1MDAxMTgxOTIgc2VjdG9ycywgbXVsdGkgMTY6IExC
-QTQ4IE5DUSAoZGVwdGggMzEvMzIpLCBBQQ0KWyAgICAzLjgxNzk5Ml0gYXRhMS4wMDogc3VwcG9y
-dHMgRFJNIGZ1bmN0aW9ucyBhbmQgbWF5IG5vdCBiZSBmdWxseSBhY2Nlc3NpYmxlDQpbICAgIDMu
-ODI1NDU1XSBhdGExLjAwOiBjb25maWd1cmVkIGZvciBVRE1BLzEzMw0KWyAgICAzLjgyODQyM10g
-c2NzaSAwOjA6MDowOiBEaXJlY3QtQWNjZXNzICAgICBBVEEgICAgICBNaWNyb25fTTYwMF9NVEZE
-IE1VMDMgUFE6IDAgQU5TSTogNQ0KWyAgICAzLjgzNjc3OV0gYXRhMS4wMDogRW5hYmxpbmcgZGlz
-Y2FyZF96ZXJvZXNfZGF0YQ0KWyAgICAzLjgzNjgwOF0gc2QgMDowOjA6MDogQXR0YWNoZWQgc2Nz
-aSBnZW5lcmljIHNnMCB0eXBlIDANClsgICAgMy44NDYxNjRdIHNkIDA6MDowOjA6IFtzZGFdIDUw
-MDExODE5MiA1MTItYnl0ZSBsb2dpY2FsIGJsb2NrczogKDI1NiBHQi8yMzggR2lCKQ0KWyAgICAz
-Ljg1MzA4NV0gc2QgMDowOjA6MDogW3NkYV0gNDA5Ni1ieXRlIHBoeXNpY2FsIGJsb2Nrcw0KWyAg
-ICAzLjg1ODY5MF0gc2QgMDowOjA6MDogW3NkYV0gV3JpdGUgUHJvdGVjdCBpcyBvZmYNClsgICAg
-My44NjI4MDldIHNkIDA6MDowOjA6IFtzZGFdIFdyaXRlIGNhY2hlOiBlbmFibGVkLCByZWFkIGNh
-Y2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9yIEZVQQ0KWyAgICAzLjg3MjYyMV0g
-YXRhMS4wMDogRW5hYmxpbmcgZGlzY2FyZF96ZXJvZXNfZGF0YQ0KWyAgICA0LjE4NzYzMl0gYXRh
-MjogU0FUQSBsaW5rIGRvd24gKFNTdGF0dXMgMCBTQ29udHJvbCAzMDApDQpbICAgIDQuNTM3NjI5
-XSBhdGEzOiBTQVRBIGxpbmsgZG93biAoU1N0YXR1cyAwIFNDb250cm9sIDMwMCkNClsgICAgNC44
-ODc2MzJdIGF0YTQ6IFNBVEEgbGluayBkb3duIChTU3RhdHVzIDAgU0NvbnRyb2wgMzAwKQ0KWyAg
-IDM0LjQ5NzYzM10gYXRhMS4wMDogZXhjZXB0aW9uIEVtYXNrIDB4MCBTQWN0IDB4NzgwMDAwMGYg
-U0VyciAweDAgYWN0aW9uIDB4NiBmcm96ZW4NClsgICAzNC40OTc3MjBdIGF0YTEuMDA6IGZhaWxl
-ZCBjb21tYW5kOiBSRUFEIEZQRE1BIFFVRVVFRA0KWyAgIDM0LjQ5Nzc2N10gYXRhMS4wMDogY21k
-IDYwLzEwOjAwOjQwOjAwOjAwLzAwOjAwOjAwOjAwOjAwLzQwIHRhZyAwIG5jcSA4MTkyIGluDQpb
-ICAgMzQuNDk3NzY3XSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6
-MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5Nzg4Ml0gYXRhMS4wMDogc3RhdHVz
-OiB7IERSRFkgfQ0KWyAgIDM0LjQ5NzkxNV0gYXRhMS4wMDogZmFpbGVkIGNvbW1hbmQ6IFJFQUQg
-RlBETUEgUVVFVUVEDQpbICAgMzQuNDk3OTYwXSBhdGExLjAwOiBjbWQgNjAvMTA6MDg6NTA6MDA6
-MDAvMDA6MDA6MDA6MDA6MDAvNDAgdGFnIDEgbmNxIDgxOTIgaW4NClsgICAzNC40OTc5NjBdICAg
-ICAgICAgIHJlcyA0MC8wMDowMDowMDowMDowMC8wMDowMDowMDowMDowMC8wMCBFbWFzayAweDQg
-KHRpbWVvdXQpDQpbICAgMzQuNDk4MDc1XSBhdGExLjAwOiBzdGF0dXM6IHsgRFJEWSB9DQpbICAg
-MzQuNDk4MTA4XSBhdGExLjAwOiBmYWlsZWQgY29tbWFuZDogUkVBRCBGUERNQSBRVUVVRUQNClsg
-ICAzNC40OTgxNTRdIGF0YTEuMDA6IGNtZCA2MC8xMDoxMDo2MDowMDowMC8wMDowMDowMDowMDow
-MC80MCB0YWcgMiBuY3EgODE5MiBpbg0KWyAgIDM0LjQ5ODE1NF0gICAgICAgICAgcmVzIDQwLzAw
-OjAwOjAwOjAwOjAwLzAwOjAwOjAwOjAwOjAwLzAwIEVtYXNrIDB4NCAodGltZW91dCkNClsgICAz
-NC40OTgzMDNdIGF0YTEuMDA6IHN0YXR1czogeyBEUkRZIH0NClsgICAzNC40OTgzMzVdIGF0YTEu
-MDA6IGZhaWxlZCBjb21tYW5kOiBSRUFEIEZQRE1BIFFVRVVFRA0KWyAgIDM0LjQ5ODM4MF0gYXRh
-MS4wMDogY21kIDYwLzEwOjE4OjcwOjAwOjAwLzAwOjAwOjAwOjAwOjAwLzQwIHRhZyAzIG5jcSA4
-MTkyIGluDQpbICAgMzQuNDk4MzgwXSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6
-MDA6MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5ODQ5M10gYXRhMS4w
-MDogc3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5ODUyNl0gYXRhMS4wMDogZmFpbGVkIGNvbW1h
-bmQ6IFJFQUQgRlBETUEgUVVFVUVEDQpbICAgMzQuNDk4NTcwXSBhdGExLjAwOiBjbWQgNjAvMTA6
-ZDg6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvNDAgdGFnIDI3IG5jcSA4MTkyIGluDQpbICAgMzQu
-NDk4NTcwXSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvMDAg
-RW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5ODY4NF0gYXRhMS4wMDogc3RhdHVzOiB7IERS
-RFkgfQ0KWyAgIDM0LjQ5ODcxN10gYXRhMS4wMDogZmFpbGVkIGNvbW1hbmQ6IFJFQUQgRlBETUEg
-UVVFVUVEDQpbICAgMzQuNDk4NzYxXSBhdGExLjAwOiBjbWQgNjAvMTA6ZTA6MTA6MDA6MDAvMDA6
-MDA6MDA6MDA6MDAvNDAgdGFnIDI4IG5jcSA4MTkyIGluDQpbICAgMzQuNDk4NzYxXSAgICAgICAg
-ICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1l
-b3V0KQ0KWyAgIDM0LjQ5ODg3NV0gYXRhMS4wMDogc3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5
-ODkwOF0gYXRhMS4wMDogZmFpbGVkIGNvbW1hbmQ6IFJFQUQgRlBETUEgUVVFVUVEDQpbICAgMzQu
-NDk4OTUyXSBhdGExLjAwOiBjbWQgNjAvMTA6ZTg6MjA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvNDAg
-dGFnIDI5IG5jcSA4MTkyIGluDQpbICAgMzQuNDk4OTUyXSAgICAgICAgICByZXMgNDAvMDA6MDA6
-MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5
-OTA2N10gYXRhMS4wMDogc3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5OTA5OV0gYXRhMS4wMDog
-ZmFpbGVkIGNvbW1hbmQ6IFJFQUQgRlBETUEgUVVFVUVEDQpbICAgMzQuNDk5MTQ2XSBhdGExLjAw
-OiBjbWQgNjAvMTA6ZjA6MzA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvNDAgdGFnIDMwIG5jcSA4MTky
-IGluDQpbICAgMzQuNDk5MTQ2XSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6
-MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5OTI2Ml0gYXRhMS4wMDog
-c3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5OTI5NV0gYXRhMTogaGFyZCByZXNldHRpbmcgbGlu
-aw0KWyAgIDQ0LjUwNzYyMl0gYXRhMTogc29mdHJlc2V0IGZhaWxlZCAoMXN0IEZJUyBmYWlsZWQp
-DQpbICAgNDQuNTA3NjkxXSBhdGExOiBoYXJkIHJlc2V0dGluZyBsaW5rDQpbICAgNTQuNTE3NjIw
-XSBhdGExOiBzb2Z0cmVzZXQgZmFpbGVkICgxc3QgRklTIGZhaWxlZCkNClsgICA1NC41MTc2ODNd
-IGF0YTE6IGhhcmQgcmVzZXR0aW5nIGxpbmsNClsgICA4OS41Mjc2MTldIGF0YTE6IHNvZnRyZXNl
-dCBmYWlsZWQgKDFzdCBGSVMgZmFpbGVkKQ0KWyAgIDg5LjUyNzY4MV0gYXRhMTogbGltaXRpbmcg
-U0FUQSBsaW5rIHNwZWVkIHRvIDMuMCBHYnBzDQpbICAgODkuNTI3NzI0XSBhdGExOiBoYXJkIHJl
-c2V0dGluZyBsaW5rDQpbICAgOTQuNTM3NjE4XSBhdGExOiBzb2Z0cmVzZXQgZmFpbGVkICgxc3Qg
-RklTIGZhaWxlZCkNClsgICA5NC41Mzc2ODRdIGF0YTE6IHJlc2V0IGZhaWxlZCwgZ2l2aW5nIHVw
-DQpbICAgOTQuNTM3NzE4XSBhdGExLjAwOiBkaXNhYmxlZA0KWyAgIDk0LjUzNzc1Ml0gYXRhMS4w
-MDogZGV2aWNlIHJlcG9ydGVkIGludmFsaWQgQ0hTIHNlY3RvciAwDQpbICAgOTQuNTM3Nzk0XSBh
-dGExLjAwOiBkZXZpY2UgcmVwb3J0ZWQgaW52YWxpZCBDSFMgc2VjdG9yIDANClsgICA5NC41Mzc4
-MzddIGF0YTEuMDA6IGRldmljZSByZXBvcnRlZCBpbnZhbGlkIENIUyBzZWN0b3IgMA0KWyAgIDk0
-LjUzNzg3OV0gYXRhMS4wMDogZGV2aWNlIHJlcG9ydGVkIGludmFsaWQgQ0hTIHNlY3RvciAwDQpb
-ICAgOTQuNTM3OTIxXSBhdGExLjAwOiBkZXZpY2UgcmVwb3J0ZWQgaW52YWxpZCBDSFMgc2VjdG9y
-IDANClsgICA5NC41Mzc5NjNdIGF0YTEuMDA6IGRldmljZSByZXBvcnRlZCBpbnZhbGlkIENIUyBz
-ZWN0b3IgMA0KWyAgIDk0LjUzODAwNV0gYXRhMS4wMDogZGV2aWNlIHJlcG9ydGVkIGludmFsaWQg
-Q0hTIHNlY3RvciAwDQpbICAgOTQuNTM4MDQ4XSBhdGExLjAwOiBkZXZpY2UgcmVwb3J0ZWQgaW52
-YWxpZCBDSFMgc2VjdG9yIDANClsgICA5NC41MzgwOThdIGF0YTE6IEVIIGNvbXBsZXRlDQpbICAg
-OTQuNTM4MTQ4XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjNCBGQUlMRUQgUmVzdWx0OiBob3N0Ynl0
-ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjUzODIyMV0gc2Qg
-MDowOjA6MDogW3NkYV0gdGFnIzQgQ0RCOiBSZWFkKDEwKSAyOCAwMCAwMCAwMCAwMCAzMCAwMCAw
-MCAxMCAwMA0KWyAgIDk0LjUzODI4MF0gYmxrX3VwZGF0ZV9yZXF1ZXN0OiBJL08gZXJyb3IsIGRl
-diBzZGEsIHNlY3RvciA0OA0KWyAgIDk0LjUzODM1OV0gQnVmZmVyIEkvTyBlcnJvciBvbiBkZXYg
-c2RhLCBsb2dpY2FsIGJsb2NrIDMsIGFzeW5jIHBhZ2UgcmVhZA0KWyAgIDk0LjUzODQxMV0gc2Qg
-MDowOjA6MDogW3NkYV0gdGFnIzUgRkFJTEVEIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJH
-RVQgZHJpdmVyYnl0ZT1EUklWRVJfT0sNClsgICA5NC41Mzg0ODFdIHNkIDA6MDowOjA6IFtzZGFd
-IHRhZyM1IENEQjogUmVhZCgxMCkgMjggMDAgMDAgMDAgMDAgMjAgMDAgMDAgMTAgMDANClsgICA5
-NC41Mzg1NDBdIGJsa191cGRhdGVfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2RhLCBzZWN0b3Ig
-MzINClsgICA5NC41Mzg1ODhdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2IHNkYSwgbG9naWNhbCBi
-bG9jayAyLCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41Mzg2NDFdIHNkIDA6MDowOjA6IFtzZGFd
-IHRhZyM2IEZBSUxFRCBSZXN1bHQ6IGhvc3RieXRlPURJRF9CQURfVEFSR0VUIGRyaXZlcmJ5dGU9
-RFJJVkVSX09LDQpbICAgOTQuNTM4NzA5XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjNiBDREI6IFJl
-YWQoMTApIDI4IDAwIDAwIDAwIDAwIDEwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTM4NzY5XSBibGtf
-dXBkYXRlX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9yIDE2DQpbICAgOTQuNTM4
-ODE3XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgMSwgYXN5bmMg
-cGFnZSByZWFkDQpbICAgOTQuNTM4ODcxXSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjNyBGQUlMRUQg
-UmVzdWx0OiBob3N0Ynl0ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAg
-IDk0LjUzODkzOV0gc2QgMDowOjA6MDogW3NkYV0gdGFnIzcgQ0RCOiBSZWFkKDEwKSAyOCAwMCAw
-MCAwMCAwMCAwMCAwMCAwMCAxMCAwMA0KWyAgIDk0LjUzODk5Nl0gYmxrX3VwZGF0ZV9yZXF1ZXN0
-OiBJL08gZXJyb3IsIGRldiBzZGEsIHNlY3RvciAwDQpbICAgOTQuNTM5MDQ1XSBCdWZmZXIgSS9P
-IGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgMCwgYXN5bmMgcGFnZSByZWFkDQpbICAg
-OTQuNTM5MDk2XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjOCBGQUlMRUQgUmVzdWx0OiBob3N0Ynl0
-ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjUzOTE2Nl0gc2Qg
-MDowOjA6MDogW3NkYV0gdGFnIzggQ0RCOiBSZWFkKDEwKSAyOCAwMCAwMCAwMCAwMCA3MCAwMCAw
-MCAxMCAwMA0KWyAgIDk0LjUzOTIyNV0gYmxrX3VwZGF0ZV9yZXF1ZXN0OiBJL08gZXJyb3IsIGRl
-diBzZGEsIHNlY3RvciAxMTINClsgICA5NC41MzkyNzRdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2
-IHNkYSwgbG9naWNhbCBibG9jayA3LCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41MzkzMjVdIHNk
-IDA6MDowOjA6IFtzZGFdIHRhZyM5IEZBSUxFRCBSZXN1bHQ6IGhvc3RieXRlPURJRF9CQURfVEFS
-R0VUIGRyaXZlcmJ5dGU9RFJJVkVSX09LDQpbICAgOTQuNTM5Mzk2XSBzZCAwOjA6MDowOiBbc2Rh
-XSB0YWcjOSBDREI6IFJlYWQoMTApIDI4IDAwIDAwIDAwIDAwIDYwIDAwIDAwIDEwIDAwDQpbICAg
-OTQuNTM5NDUzXSBibGtfdXBkYXRlX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9y
-IDk2DQpbICAgOTQuNTM5NTA1XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwg
-YmxvY2sgNiwgYXN5bmMgcGFnZSByZWFkDQpbICAgOTQuNTM5NTU2XSBzZCAwOjA6MDowOiBbc2Rh
-XSB0YWcjMTAgRkFJTEVEIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJpdmVyYnl0
-ZT1EUklWRVJfT0sNClsgICA5NC41Mzk2MjVdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMCBDREI6
-IFJlYWQoMTApIDI4IDAwIDAwIDAwIDAwIDUwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTM5NjgzXSBi
-bGtfdXBkYXRlX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9yIDgwDQpbICAgOTQu
-NTM5NzY0XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgNSwgYXN5
-bmMgcGFnZSByZWFkDQpbICAgOTQuNTM5ODE1XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjMTEgRkFJ
-TEVEIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJpdmVyYnl0ZT1EUklWRVJfT0sN
-ClsgICA5NC41Mzk4ODNdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMSBDREI6IFJlYWQoMTApIDI4
-IDAwIDAwIDAwIDAwIDQwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTM5OTQxXSBibGtfdXBkYXRlX3Jl
-cXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9yIDY0DQpbICAgOTQuNTM5OTg5XSBCdWZm
-ZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgNCwgYXN5bmMgcGFnZSByZWFk
-DQpbICAgOTQuNTQwMDUyXSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjMTIgRkFJTEVEIFJlc3VsdDog
-aG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJpdmVyYnl0ZT1EUklWRVJfT0sNClsgICA5NC41NDAx
-MjFdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMiBDREI6IFJlYWQoMTApIDI4IDAwIDAwIDAwIDAw
-IDAwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTQwMTc4XSBibGtfdXBkYXRlX3JlcXVlc3Q6IEkvTyBl
-cnJvciwgZGV2IHNkYSwgc2VjdG9yIDANClsgICA5NC41NDAyMjddIEJ1ZmZlciBJL08gZXJyb3Ig
-b24gZGV2IHNkYSwgbG9naWNhbCBibG9jayAwLCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41NDAy
-ODJdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMyBGQUlMRUQgUmVzdWx0OiBob3N0Ynl0ZT1ESURf
-QkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjU0MDM1MF0gc2QgMDowOjA6
-MDogW3NkYV0gdGFnIzEzIENEQjogUmVhZCgxMCkgMjggMDAgMDAgMDAgMDAgMTAgMDAgMDAgMTAg
-MDANClsgICA5NC41NDA0MDhdIGJsa191cGRhdGVfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2Rh
-LCBzZWN0b3IgMTYNClsgICA5NC41NDA0NTddIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2IHNkYSwg
-bG9naWNhbCBibG9jayAxLCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41NDA2MDldIGxkbV92YWxp
-ZGF0ZV9wYXJ0aXRpb25fdGFibGUoKTogRGlzayByZWFkIGZhaWxlZC4NClsgICA5NC41NDA5NTdd
-IERldiBzZGE6IHVuYWJsZSB0byByZWFkIFJEQiBibG9jayAwDQpbICAgOTQuNTQxMTMyXSAgc2Rh
-OiB1bmFibGUgdG8gcmVhZCBwYXJ0aXRpb24gdGFibGUNClsgICA5NC41NDEzNTZdIHNkIDA6MDow
-OjA6IFtzZGFdIFJlYWQgQ2FwYWNpdHkoMTYpIGZhaWxlZDogUmVzdWx0OiBob3N0Ynl0ZT1ESURf
-QkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjU0OTQ3N10gc2QgMDowOjA6
-MDogW3NkYV0gU2Vuc2Ugbm90IGF2YWlsYWJsZS4NClsgICA5NC41NTM2NTBdIHNkIDA6MDowOjA6
-IFtzZGFdIFJlYWQgQ2FwYWNpdHkoMTApIGZhaWxlZDogUmVzdWx0OiBob3N0Ynl0ZT1ESURfQkFE
-X1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjU2MzMzOV0gc2QgMDowOjA6MDog
-W3NkYV0gU2Vuc2Ugbm90IGF2YWlsYWJsZS4NClsgICA5NC41Njg5MDddIHNkIDA6MDowOjA6IFtz
-ZGFdIEF0dGFjaGVkIFNDU0kgZGlzaw==
-
---_004_146122603850270296rackspacecom_--
+Balbir Singh.
