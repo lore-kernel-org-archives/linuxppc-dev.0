@@ -1,24 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
- [IPv6:2607:f8b0:400e:c00::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qr5Qq0sTrzDqbD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 14:30:43 +1000 (AEST)
-Received: by mail-pf0-x22e.google.com with SMTP id 184so25793321pff.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 21:30:43 -0700 (PDT)
-Subject: Re: [PATCH V2 28/68] powerpc/mm: Add radix callbacks to pte accessors
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-29-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <5718576C.6010605@gmail.com>
-Date: Thu, 21 Apr 2016 14:30:36 +1000
-MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-29-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qr8CQ5KbzzDqcM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 16:36:02 +1000 (AEST)
+Message-ID: <1461220562.3245.3.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm: Always use STRICT_MM_TYPECHECKS
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com,
+ linux-mm@kvack.org
+Date: Thu, 21 Apr 2016 16:36:02 +1000
+In-Reply-To: <571853FA.5080901@gmail.com>
+References: <1461209879-15044-1-git-send-email-mpe@ellerman.id.au>
+ <571853FA.5080901@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> For those pte accessors, that operate on a different set of pte bits
-> between hash/radix, we add a generic variant that does a conditional
-> to hash linux or radix variant.
+On Thu, 2016-04-21 at 14:15 +1000, Balbir Singh wrote:
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
+> On 21/04/16 13:37, Michael Ellerman wrote:
 
-Looks good!
+> > Testing done by Paul Mackerras has shown that with a modern compiler
+> > there is no negative effect on code generation from enabling
+> > STRICT_MM_TYPECHECKS.
+> > 
+> > So remove the option, and always use the strict type definitions.
+> > 
+> 
+> Should we wait for Aneesh's patches before merging this in.
 
-Balbir
+Preferably not.
+
+I've already rebased his patches on top of this, it's trivial, it's just
+removing code.
+
+It also makes some things we might want to do as part of his series easier
+(like adding a raw accessor to get the __be64 pmd/pte val).
+
+cheers
