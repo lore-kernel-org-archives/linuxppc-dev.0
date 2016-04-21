@@ -1,25 +1,37 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x232.google.com (mail-pf0-x232.google.com
- [IPv6:2607:f8b0:400e:c00::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrKmW642rzDrFq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 23:46:51 +1000 (AEST)
-Received: by mail-pf0-x232.google.com with SMTP id y69so13295687pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 06:46:51 -0700 (PDT)
-Subject: Re: [PATCH V2 34/68] powerpc/mm/radix: Add radix callback for vmemmap
- and map_kernel page
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-35-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <5718D9C0.2060403@gmail.com>
-Date: Thu, 21 Apr 2016 23:46:40 +1000
-MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-35-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrKrd19FCzDqrR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 23:50:24 +1000 (AEST)
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Thu, 21 Apr 2016 07:50:22 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7725D19D804E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 07:38:12 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3LDoLcq29753364
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 06:50:21 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3LDoJSH002110
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 07:50:20 -0600
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
+ linux-kernel@vger.kernel.org, mikey@neuling.org,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+Subject: [PATCH 0/9] powerpc/powernv/cpuidle: Add support for POWER ISA v3
+ idle states
+Date: Thu, 21 Apr 2016 19:19:50 +0530
+Message-Id: <1461246599-6098-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,102 +41,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
+This patch series adds support for this new mechanism.
 
-On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/pgtable.h | 12 ++++++++++++
->  arch/powerpc/include/asm/book3s/64/radix.h   |  6 ++++++
->  arch/powerpc/mm/pgtable-radix.c              | 20 ++++++++++++++++++++
->  3 files changed, 38 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index 623911ed64e9..c16037116625 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -725,6 +725,13 @@ void pgtable_cache_init(void);
->  static inline int map_kernel_page(unsigned long ea, unsigned long pa,
->  				  unsigned long flags)
->  {
-> +	if (radix_enabled()) {
-> +#if defined(CONFIG_PPC_RADIX_MMU) && defined(DEBUG_VM)
-Do you need the defined(CONFIG_PPC_RADIX_MMU) is radix_enabled() not sufficient?
+Patches 1-6 are cleanups and code movement.
+Patch 7 adds platform specific support for stop and psscr handling.
+Patch 8 adds cpuidle driver support.
+Patch 9 makes offlined cpu use stop state.
 
-> +		unsigned long page_size = 1 << mmu_psize_defs[mmu_io_psize].shift;
-> +		WARN((page_size != PAGE_SIZE), "I/O page size != PAGE_SIZE");
-> +#endif
-> +		return map_radix_kernel_page(ea, pa, __pgprot(flags), PAGE_SIZE);
-> +	}
->  	return hlmap_kernel_page(ea, pa, flags);
->  }
->  
-> @@ -732,6 +739,8 @@ static inline int __meminit vmemmap_create_mapping(unsigned long start,
->  						   unsigned long page_size,
->  						   unsigned long phys)
->  {
-> +	if (radix_enabled())
-> +		return rvmemmap_create_mapping(start, page_size, phys);
->  	return hlvmemmap_create_mapping(start, page_size, phys);
->  }
->  
-> @@ -739,6 +748,9 @@ static inline int __meminit vmemmap_create_mapping(unsigned long start,
->  static inline void vmemmap_remove_mapping(unsigned long start,
->  					  unsigned long page_size)
->  {
-> +
-> +	if (radix_enabled())
-> +		return rvmemmap_remove_mapping(start, page_size);
->  	return hlvmemmap_remove_mapping(start, page_size);
->  }
->  #endif
-> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-> index 806dc2195f85..040c4a56d07b 100644
-> --- a/arch/powerpc/include/asm/book3s/64/radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
-> @@ -133,6 +133,12 @@ static inline int rpmd_trans_huge(pmd_t pmd)
->  
->  #endif
->  
-> +extern int __meminit rvmemmap_create_mapping(unsigned long start,
-> +					     unsigned long page_size,
-> +					     unsigned long phys);
-> +extern void rvmemmap_remove_mapping(unsigned long start,
-> +				    unsigned long page_size);
-> +
->  extern int map_radix_kernel_page(unsigned long ea, unsigned long pa,
->  				 pgprot_t flags, unsigned int psz);
->  #endif /* __ASSEMBLY__ */
-> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-> index 5737769469b3..a5d0ae5630b3 100644
-> --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -342,3 +342,23 @@ void rsetup_initial_memory_limit(phys_addr_t first_memblock_base,
->  	/* Finally limit subsequent allocations */
->  	memblock_set_current_limit(first_memblock_base + first_memblock_size);
->  }
-> +
-> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
-> +int __meminit rvmemmap_create_mapping(unsigned long start,
-> +				      unsigned long page_size,
-> +				      unsigned long phys)
-> +{
-> +	/* Create a PTE encoding */
-> +	unsigned long flags = _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_KERNEL_RW;
-> +
-> +	BUG_ON(map_radix_kernel_page(start, phys, __pgprot(flags), page_size));
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_MEMORY_HOTPLUG
-> +void rvmemmap_remove_mapping(unsigned long start, unsigned long page_size)
-> +{
-> +	/* FIXME!! intel does more. We should free page tables mapping vmemmap ? */
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 
-You mean x86/x86_64? Are we going to not remove this entry from the kernel page table?
-Will we leave this around?
+Shreyas B. Prabhu (9):
+  powerpc/powernv: Move CHECK_HMI_INTERRUPT to exception-64s header
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Move idle code usable by multiple hardware to common
+    location
+  powerpc/powernv: Make power7_powersave_common more generic
+  powerpc/powernv: Move idle related macros to cpuidle.h
+  powerpc/powernv: set power_save func after the idle states are
+    initialized
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
 
-> +}
-> +#endif
-> +#endif
-> 
+ arch/powerpc/include/asm/cpuidle.h        |  29 ++++
+ arch/powerpc/include/asm/cputable.h       |   4 +-
+ arch/powerpc/include/asm/exception-64s.h  |  18 +++
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/machdep.h        |   1 +
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/paca.h           |   4 +
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   1 +
+ arch/powerpc/include/asm/reg.h            |  11 ++
+ arch/powerpc/kernel/Makefile              |   2 +
+ arch/powerpc/kernel/asm-offsets.c         |   4 +
+ arch/powerpc/kernel/exceptions-64s.S      |  29 +---
+ arch/powerpc/kernel/idle_power7.S         | 212 +++-------------------------
+ arch/powerpc/kernel/idle_power_common.S   | 185 +++++++++++++++++++++++++
+ arch/powerpc/kernel/idle_power_stop.S     | 221 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig            |   4 +
+ arch/powerpc/platforms/powernv/Kconfig    |   1 +
+ arch/powerpc/platforms/powernv/idle.c     |  94 +++++++++++--
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/setup.c    |   2 +-
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  57 +++++++-
+ 23 files changed, 662 insertions(+), 239 deletions(-)
+ create mode 100644 arch/powerpc/kernel/idle_power_common.S
+ create mode 100644 arch/powerpc/kernel/idle_power_stop.S
+
+-- 
+2.1.4
