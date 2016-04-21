@@ -1,25 +1,17 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <adi.gangidi@rackspace.com>
+Received: from esg01.rackspace.com (esg02.rackspace.com [192.237.132.25])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrCyh3Sg7zDqcy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 19:25:16 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
-To: Laurent Vivier <lvivier@redhat.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
-Cc: Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Alexander Graf <agraf@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <57189C75.2060701@redhat.com>
-Date: Thu, 21 Apr 2016 11:25:09 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrBZG1hHHzDqcy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 18:22:29 +1000 (AEST)
+From: Adi Gangidi <adi.gangidi@rackspace.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: "joel@jms.id.au" <joel@jms.id.au>, "jk@ozlabs.org" <jk@ozlabs.org>
+Subject: ATA errors with Fedora 23 Kexec
+Date: Thu, 21 Apr 2016 08:07:11 +0000
+Message-ID: <1461226038502.70296@rackspace.com>
+Content-Type: multipart/mixed; boundary="_004_146122603850270296rackspacecom_"
 MIME-Version: 1.0
-In-Reply-To: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +21,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15.03.2016 21:18, Laurent Vivier wrote:
-> While writing some instruction tests for kvm-unit-tests for powerpc,
-> I've found that illegal instructions are not managed correctly with kvm-pr,
-> while it is fine with kvm-hv.
-> 
-> When an illegal instruction (like ".long 0") is processed by kvm-pr,
-> the kernel logs are filled with:
-> 
->      Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->      kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
-> 
-> While the exception handler receives an interrupt for each instruction
-> executed after the illegal instruction.
-> 
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> ---
->  arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-> index 2afdb9c..4ee969d 100644
-> --- a/arch/powerpc/kvm/book3s_emulate.c
-> +++ b/arch/powerpc/kvm/book3s_emulate.c
-> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  
->  	switch (get_op(inst)) {
->  	case 0:
-> -		emulated = EMULATE_FAIL;
->  		if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->  		    (inst == swab32(inst_sc))) {
->  			/*
-> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  			kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->  			kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->  			emulated = EMULATE_DONE;
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> +			emulated = EMULATE_AGAIN;
->  		}
->  		break;
->  	case 19:
-> 
+--_004_146122603850270296rackspacecom_
+Content-Type: multipart/alternative;
+	boundary="_000_146122603850270296rackspacecom_"
 
-Tested-by: Thomas Huth <thuth@redhat.com>
+--_000_146122603850270296rackspacecom_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Hi All
+
+At Rackspace, we are working with our Barreleye servers that runs a Fedora =
+23 Live Hypervisor. We usually do NOT hit any issues with the mSATA device =
+during bootup / Kexec from Petitboot.
+
+But with Fedora 23 OS, we noticed an issue we are hitting, while we kexec f=
+rom Fedora 23 Live Instance  into an updated Live instance. I wanted to bri=
+ng this to your notice a?nd see if guys have ever run into something simila=
+r. During the kexec process, we see  errors on ATA driver resulting in fail=
+ed initialization of mircron mSATA device. Ultimately the kexec process fai=
+ls.
+
+Attached is a boot log after kexec.  Please look into this. We'd like to kn=
+ow what you guys think.
+
+Here is lshw for micron:
+/0/a1/0.0.0       /dev/sdb   disk       256GB Micron_M600_MTFD
+
+Does kexec command in Petitboot automatically unmount / power cycle all dev=
+ices ? Is there something different that Petitboot does when kexec command =
+is issued compared with other OS
+
+?Best
+Adi
+
+
+
+
+--_000_146122603850270296rackspacecom_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<style type=3D"text/css" style=3D"display:none"><!-- p { margin-top: 0px; m=
+argin-bottom: 0px; }--></style>
+</head>
+<body dir=3D"ltr" style=3D"font-size:12pt;color:#000000;background-color:#F=
+FFFFF;font-family:Calibri,Arial,Helvetica,sans-serif;">
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+Hi All<br>
+</div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+<br>
+</div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+At Rackspace, we are working with&nbsp;our&nbsp;Barreleye servers that runs=
+ a&nbsp;Fedora 23 Live Hypervisor.&nbsp;We usually&nbsp;do NOT hit any issu=
+es with the&nbsp;mSATA device during bootup / Kexec from Petitboot.&nbsp;
+<div><br>
+But with Fedora 23 OS, we noticed an issue we are hitting, while we kexec f=
+rom Fedora 23 Live Instance &nbsp;into an updated Live&nbsp;instance. I wan=
+ted to bring this to your notice a&#8203;nd see if guys&nbsp;have ever&nbsp=
+;run into something similar. During the kexec process, we
+ see &nbsp;errors on ATA driver resulting in failed initialization of mircr=
+on&nbsp;mSATA device. Ultimately the kexec process fails.&nbsp;<br>
+</div>
+</div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+<br>
+</div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+Attached is a boot&nbsp;log after kexec.&nbsp;&nbsp;Please look into this.&=
+nbsp;We'd like to know what you guys think.&nbsp;<br>
+<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
+: 16px; margin-top: 0px; margin-bottom: 0px;">
+<br>
+</div>
+<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
+: 16px; margin-top: 0px; margin-bottom: 0px;">
+Here is lshw for micron:<br>
+</div>
+<div style=3D"font-family: Calibri, Arial, Helvetica, sans-serif; font-size=
+: 16px; margin-top: 0px; margin-bottom: 0px;">
+/0/a1/0.0.0 &nbsp; &nbsp; &nbsp; /dev/sdb &nbsp; disk &nbsp; &nbsp; &nbsp; =
+256GB Micron_M600_MTFD<br>
+</div>
+<br>
+Does kexec command in Petitboot automatically&nbsp;unmount / power cycle al=
+l devices ? Is there something different that Petitboot does when kexec com=
+mand is issued compared with other OS<br>
+<br>
+</div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+&#8203;Best</div>
+<div style=3D"font-family:Calibri,Arial,Helvetica,sans-serif; font-size:16p=
+x; margin-top:0px; margin-bottom:0px">
+Adi<br>
+</div>
+<div><br>
+<br>
+</div>
+<p><br>
+</p>
+</body>
+</html>
+
+--_000_146122603850270296rackspacecom_--
+
+--_004_146122603850270296rackspacecom_
+Content-Type: text/plain; name="ATA error during kexec (1).txt"
+Content-Description: ATA error during kexec (1).txt
+Content-Disposition: attachment; filename="ATA error during kexec (1).txt";
+	size=8344; creation-date="Thu, 21 Apr 2016 07:57:57 GMT";
+	modification-date="Thu, 21 Apr 2016 07:57:57 GMT"
+Content-Transfer-Encoding: base64
+
+WyAgICAzLjc5NzYyN10gYXRhMTogU0FUQSBsaW5rIHVwIDYuMCBHYnBzIChTU3RhdHVzIDEzMyBT
+Q29udHJvbCAzMDApDQpbICAgIDMuNzk3OTgxXSBhdGExLjAwOiBzdXBwb3J0cyBEUk0gZnVuY3Rp
+b25zIGFuZCBtYXkgbm90IGJlIGZ1bGx5IGFjY2Vzc2libGUNClsgICAgMy44MDM0MzZdIGF0YTEu
+MDA6IEFUQS0xMDogTWljcm9uX002MDBfTVRGRERBWTI1Nk1CRiwgTVUwMywgbWF4IFVETUEvMTMz
+DQpbICAgIDMuODA5OTk1XSBhdGExLjAwOiA1MDAxMTgxOTIgc2VjdG9ycywgbXVsdGkgMTY6IExC
+QTQ4IE5DUSAoZGVwdGggMzEvMzIpLCBBQQ0KWyAgICAzLjgxNzk5Ml0gYXRhMS4wMDogc3VwcG9y
+dHMgRFJNIGZ1bmN0aW9ucyBhbmQgbWF5IG5vdCBiZSBmdWxseSBhY2Nlc3NpYmxlDQpbICAgIDMu
+ODI1NDU1XSBhdGExLjAwOiBjb25maWd1cmVkIGZvciBVRE1BLzEzMw0KWyAgICAzLjgyODQyM10g
+c2NzaSAwOjA6MDowOiBEaXJlY3QtQWNjZXNzICAgICBBVEEgICAgICBNaWNyb25fTTYwMF9NVEZE
+IE1VMDMgUFE6IDAgQU5TSTogNQ0KWyAgICAzLjgzNjc3OV0gYXRhMS4wMDogRW5hYmxpbmcgZGlz
+Y2FyZF96ZXJvZXNfZGF0YQ0KWyAgICAzLjgzNjgwOF0gc2QgMDowOjA6MDogQXR0YWNoZWQgc2Nz
+aSBnZW5lcmljIHNnMCB0eXBlIDANClsgICAgMy44NDYxNjRdIHNkIDA6MDowOjA6IFtzZGFdIDUw
+MDExODE5MiA1MTItYnl0ZSBsb2dpY2FsIGJsb2NrczogKDI1NiBHQi8yMzggR2lCKQ0KWyAgICAz
+Ljg1MzA4NV0gc2QgMDowOjA6MDogW3NkYV0gNDA5Ni1ieXRlIHBoeXNpY2FsIGJsb2Nrcw0KWyAg
+ICAzLjg1ODY5MF0gc2QgMDowOjA6MDogW3NkYV0gV3JpdGUgUHJvdGVjdCBpcyBvZmYNClsgICAg
+My44NjI4MDldIHNkIDA6MDowOjA6IFtzZGFdIFdyaXRlIGNhY2hlOiBlbmFibGVkLCByZWFkIGNh
+Y2hlOiBlbmFibGVkLCBkb2Vzbid0IHN1cHBvcnQgRFBPIG9yIEZVQQ0KWyAgICAzLjg3MjYyMV0g
+YXRhMS4wMDogRW5hYmxpbmcgZGlzY2FyZF96ZXJvZXNfZGF0YQ0KWyAgICA0LjE4NzYzMl0gYXRh
+MjogU0FUQSBsaW5rIGRvd24gKFNTdGF0dXMgMCBTQ29udHJvbCAzMDApDQpbICAgIDQuNTM3NjI5
+XSBhdGEzOiBTQVRBIGxpbmsgZG93biAoU1N0YXR1cyAwIFNDb250cm9sIDMwMCkNClsgICAgNC44
+ODc2MzJdIGF0YTQ6IFNBVEEgbGluayBkb3duIChTU3RhdHVzIDAgU0NvbnRyb2wgMzAwKQ0KWyAg
+IDM0LjQ5NzYzM10gYXRhMS4wMDogZXhjZXB0aW9uIEVtYXNrIDB4MCBTQWN0IDB4NzgwMDAwMGYg
+U0VyciAweDAgYWN0aW9uIDB4NiBmcm96ZW4NClsgICAzNC40OTc3MjBdIGF0YTEuMDA6IGZhaWxl
+ZCBjb21tYW5kOiBSRUFEIEZQRE1BIFFVRVVFRA0KWyAgIDM0LjQ5Nzc2N10gYXRhMS4wMDogY21k
+IDYwLzEwOjAwOjQwOjAwOjAwLzAwOjAwOjAwOjAwOjAwLzQwIHRhZyAwIG5jcSA4MTkyIGluDQpb
+ICAgMzQuNDk3NzY3XSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6
+MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5Nzg4Ml0gYXRhMS4wMDogc3RhdHVz
+OiB7IERSRFkgfQ0KWyAgIDM0LjQ5NzkxNV0gYXRhMS4wMDogZmFpbGVkIGNvbW1hbmQ6IFJFQUQg
+RlBETUEgUVVFVUVEDQpbICAgMzQuNDk3OTYwXSBhdGExLjAwOiBjbWQgNjAvMTA6MDg6NTA6MDA6
+MDAvMDA6MDA6MDA6MDA6MDAvNDAgdGFnIDEgbmNxIDgxOTIgaW4NClsgICAzNC40OTc5NjBdICAg
+ICAgICAgIHJlcyA0MC8wMDowMDowMDowMDowMC8wMDowMDowMDowMDowMC8wMCBFbWFzayAweDQg
+KHRpbWVvdXQpDQpbICAgMzQuNDk4MDc1XSBhdGExLjAwOiBzdGF0dXM6IHsgRFJEWSB9DQpbICAg
+MzQuNDk4MTA4XSBhdGExLjAwOiBmYWlsZWQgY29tbWFuZDogUkVBRCBGUERNQSBRVUVVRUQNClsg
+ICAzNC40OTgxNTRdIGF0YTEuMDA6IGNtZCA2MC8xMDoxMDo2MDowMDowMC8wMDowMDowMDowMDow
+MC80MCB0YWcgMiBuY3EgODE5MiBpbg0KWyAgIDM0LjQ5ODE1NF0gICAgICAgICAgcmVzIDQwLzAw
+OjAwOjAwOjAwOjAwLzAwOjAwOjAwOjAwOjAwLzAwIEVtYXNrIDB4NCAodGltZW91dCkNClsgICAz
+NC40OTgzMDNdIGF0YTEuMDA6IHN0YXR1czogeyBEUkRZIH0NClsgICAzNC40OTgzMzVdIGF0YTEu
+MDA6IGZhaWxlZCBjb21tYW5kOiBSRUFEIEZQRE1BIFFVRVVFRA0KWyAgIDM0LjQ5ODM4MF0gYXRh
+MS4wMDogY21kIDYwLzEwOjE4OjcwOjAwOjAwLzAwOjAwOjAwOjAwOjAwLzQwIHRhZyAzIG5jcSA4
+MTkyIGluDQpbICAgMzQuNDk4MzgwXSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6
+MDA6MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5ODQ5M10gYXRhMS4w
+MDogc3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5ODUyNl0gYXRhMS4wMDogZmFpbGVkIGNvbW1h
+bmQ6IFJFQUQgRlBETUEgUVVFVUVEDQpbICAgMzQuNDk4NTcwXSBhdGExLjAwOiBjbWQgNjAvMTA6
+ZDg6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvNDAgdGFnIDI3IG5jcSA4MTkyIGluDQpbICAgMzQu
+NDk4NTcwXSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvMDAg
+RW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5ODY4NF0gYXRhMS4wMDogc3RhdHVzOiB7IERS
+RFkgfQ0KWyAgIDM0LjQ5ODcxN10gYXRhMS4wMDogZmFpbGVkIGNvbW1hbmQ6IFJFQUQgRlBETUEg
+UVVFVUVEDQpbICAgMzQuNDk4NzYxXSBhdGExLjAwOiBjbWQgNjAvMTA6ZTA6MTA6MDA6MDAvMDA6
+MDA6MDA6MDA6MDAvNDAgdGFnIDI4IG5jcSA4MTkyIGluDQpbICAgMzQuNDk4NzYxXSAgICAgICAg
+ICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1l
+b3V0KQ0KWyAgIDM0LjQ5ODg3NV0gYXRhMS4wMDogc3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5
+ODkwOF0gYXRhMS4wMDogZmFpbGVkIGNvbW1hbmQ6IFJFQUQgRlBETUEgUVVFVUVEDQpbICAgMzQu
+NDk4OTUyXSBhdGExLjAwOiBjbWQgNjAvMTA6ZTg6MjA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvNDAg
+dGFnIDI5IG5jcSA4MTkyIGluDQpbICAgMzQuNDk4OTUyXSAgICAgICAgICByZXMgNDAvMDA6MDA6
+MDA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5
+OTA2N10gYXRhMS4wMDogc3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5OTA5OV0gYXRhMS4wMDog
+ZmFpbGVkIGNvbW1hbmQ6IFJFQUQgRlBETUEgUVVFVUVEDQpbICAgMzQuNDk5MTQ2XSBhdGExLjAw
+OiBjbWQgNjAvMTA6ZjA6MzA6MDA6MDAvMDA6MDA6MDA6MDA6MDAvNDAgdGFnIDMwIG5jcSA4MTky
+IGluDQpbICAgMzQuNDk5MTQ2XSAgICAgICAgICByZXMgNDAvMDA6MDA6MDA6MDA6MDAvMDA6MDA6
+MDA6MDA6MDAvMDAgRW1hc2sgMHg0ICh0aW1lb3V0KQ0KWyAgIDM0LjQ5OTI2Ml0gYXRhMS4wMDog
+c3RhdHVzOiB7IERSRFkgfQ0KWyAgIDM0LjQ5OTI5NV0gYXRhMTogaGFyZCByZXNldHRpbmcgbGlu
+aw0KWyAgIDQ0LjUwNzYyMl0gYXRhMTogc29mdHJlc2V0IGZhaWxlZCAoMXN0IEZJUyBmYWlsZWQp
+DQpbICAgNDQuNTA3NjkxXSBhdGExOiBoYXJkIHJlc2V0dGluZyBsaW5rDQpbICAgNTQuNTE3NjIw
+XSBhdGExOiBzb2Z0cmVzZXQgZmFpbGVkICgxc3QgRklTIGZhaWxlZCkNClsgICA1NC41MTc2ODNd
+IGF0YTE6IGhhcmQgcmVzZXR0aW5nIGxpbmsNClsgICA4OS41Mjc2MTldIGF0YTE6IHNvZnRyZXNl
+dCBmYWlsZWQgKDFzdCBGSVMgZmFpbGVkKQ0KWyAgIDg5LjUyNzY4MV0gYXRhMTogbGltaXRpbmcg
+U0FUQSBsaW5rIHNwZWVkIHRvIDMuMCBHYnBzDQpbICAgODkuNTI3NzI0XSBhdGExOiBoYXJkIHJl
+c2V0dGluZyBsaW5rDQpbICAgOTQuNTM3NjE4XSBhdGExOiBzb2Z0cmVzZXQgZmFpbGVkICgxc3Qg
+RklTIGZhaWxlZCkNClsgICA5NC41Mzc2ODRdIGF0YTE6IHJlc2V0IGZhaWxlZCwgZ2l2aW5nIHVw
+DQpbICAgOTQuNTM3NzE4XSBhdGExLjAwOiBkaXNhYmxlZA0KWyAgIDk0LjUzNzc1Ml0gYXRhMS4w
+MDogZGV2aWNlIHJlcG9ydGVkIGludmFsaWQgQ0hTIHNlY3RvciAwDQpbICAgOTQuNTM3Nzk0XSBh
+dGExLjAwOiBkZXZpY2UgcmVwb3J0ZWQgaW52YWxpZCBDSFMgc2VjdG9yIDANClsgICA5NC41Mzc4
+MzddIGF0YTEuMDA6IGRldmljZSByZXBvcnRlZCBpbnZhbGlkIENIUyBzZWN0b3IgMA0KWyAgIDk0
+LjUzNzg3OV0gYXRhMS4wMDogZGV2aWNlIHJlcG9ydGVkIGludmFsaWQgQ0hTIHNlY3RvciAwDQpb
+ICAgOTQuNTM3OTIxXSBhdGExLjAwOiBkZXZpY2UgcmVwb3J0ZWQgaW52YWxpZCBDSFMgc2VjdG9y
+IDANClsgICA5NC41Mzc5NjNdIGF0YTEuMDA6IGRldmljZSByZXBvcnRlZCBpbnZhbGlkIENIUyBz
+ZWN0b3IgMA0KWyAgIDk0LjUzODAwNV0gYXRhMS4wMDogZGV2aWNlIHJlcG9ydGVkIGludmFsaWQg
+Q0hTIHNlY3RvciAwDQpbICAgOTQuNTM4MDQ4XSBhdGExLjAwOiBkZXZpY2UgcmVwb3J0ZWQgaW52
+YWxpZCBDSFMgc2VjdG9yIDANClsgICA5NC41MzgwOThdIGF0YTE6IEVIIGNvbXBsZXRlDQpbICAg
+OTQuNTM4MTQ4XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjNCBGQUlMRUQgUmVzdWx0OiBob3N0Ynl0
+ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjUzODIyMV0gc2Qg
+MDowOjA6MDogW3NkYV0gdGFnIzQgQ0RCOiBSZWFkKDEwKSAyOCAwMCAwMCAwMCAwMCAzMCAwMCAw
+MCAxMCAwMA0KWyAgIDk0LjUzODI4MF0gYmxrX3VwZGF0ZV9yZXF1ZXN0OiBJL08gZXJyb3IsIGRl
+diBzZGEsIHNlY3RvciA0OA0KWyAgIDk0LjUzODM1OV0gQnVmZmVyIEkvTyBlcnJvciBvbiBkZXYg
+c2RhLCBsb2dpY2FsIGJsb2NrIDMsIGFzeW5jIHBhZ2UgcmVhZA0KWyAgIDk0LjUzODQxMV0gc2Qg
+MDowOjA6MDogW3NkYV0gdGFnIzUgRkFJTEVEIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJH
+RVQgZHJpdmVyYnl0ZT1EUklWRVJfT0sNClsgICA5NC41Mzg0ODFdIHNkIDA6MDowOjA6IFtzZGFd
+IHRhZyM1IENEQjogUmVhZCgxMCkgMjggMDAgMDAgMDAgMDAgMjAgMDAgMDAgMTAgMDANClsgICA5
+NC41Mzg1NDBdIGJsa191cGRhdGVfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2RhLCBzZWN0b3Ig
+MzINClsgICA5NC41Mzg1ODhdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2IHNkYSwgbG9naWNhbCBi
+bG9jayAyLCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41Mzg2NDFdIHNkIDA6MDowOjA6IFtzZGFd
+IHRhZyM2IEZBSUxFRCBSZXN1bHQ6IGhvc3RieXRlPURJRF9CQURfVEFSR0VUIGRyaXZlcmJ5dGU9
+RFJJVkVSX09LDQpbICAgOTQuNTM4NzA5XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjNiBDREI6IFJl
+YWQoMTApIDI4IDAwIDAwIDAwIDAwIDEwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTM4NzY5XSBibGtf
+dXBkYXRlX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9yIDE2DQpbICAgOTQuNTM4
+ODE3XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgMSwgYXN5bmMg
+cGFnZSByZWFkDQpbICAgOTQuNTM4ODcxXSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjNyBGQUlMRUQg
+UmVzdWx0OiBob3N0Ynl0ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAg
+IDk0LjUzODkzOV0gc2QgMDowOjA6MDogW3NkYV0gdGFnIzcgQ0RCOiBSZWFkKDEwKSAyOCAwMCAw
+MCAwMCAwMCAwMCAwMCAwMCAxMCAwMA0KWyAgIDk0LjUzODk5Nl0gYmxrX3VwZGF0ZV9yZXF1ZXN0
+OiBJL08gZXJyb3IsIGRldiBzZGEsIHNlY3RvciAwDQpbICAgOTQuNTM5MDQ1XSBCdWZmZXIgSS9P
+IGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgMCwgYXN5bmMgcGFnZSByZWFkDQpbICAg
+OTQuNTM5MDk2XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjOCBGQUlMRUQgUmVzdWx0OiBob3N0Ynl0
+ZT1ESURfQkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjUzOTE2Nl0gc2Qg
+MDowOjA6MDogW3NkYV0gdGFnIzggQ0RCOiBSZWFkKDEwKSAyOCAwMCAwMCAwMCAwMCA3MCAwMCAw
+MCAxMCAwMA0KWyAgIDk0LjUzOTIyNV0gYmxrX3VwZGF0ZV9yZXF1ZXN0OiBJL08gZXJyb3IsIGRl
+diBzZGEsIHNlY3RvciAxMTINClsgICA5NC41MzkyNzRdIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2
+IHNkYSwgbG9naWNhbCBibG9jayA3LCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41MzkzMjVdIHNk
+IDA6MDowOjA6IFtzZGFdIHRhZyM5IEZBSUxFRCBSZXN1bHQ6IGhvc3RieXRlPURJRF9CQURfVEFS
+R0VUIGRyaXZlcmJ5dGU9RFJJVkVSX09LDQpbICAgOTQuNTM5Mzk2XSBzZCAwOjA6MDowOiBbc2Rh
+XSB0YWcjOSBDREI6IFJlYWQoMTApIDI4IDAwIDAwIDAwIDAwIDYwIDAwIDAwIDEwIDAwDQpbICAg
+OTQuNTM5NDUzXSBibGtfdXBkYXRlX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9y
+IDk2DQpbICAgOTQuNTM5NTA1XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwg
+YmxvY2sgNiwgYXN5bmMgcGFnZSByZWFkDQpbICAgOTQuNTM5NTU2XSBzZCAwOjA6MDowOiBbc2Rh
+XSB0YWcjMTAgRkFJTEVEIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJpdmVyYnl0
+ZT1EUklWRVJfT0sNClsgICA5NC41Mzk2MjVdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMCBDREI6
+IFJlYWQoMTApIDI4IDAwIDAwIDAwIDAwIDUwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTM5NjgzXSBi
+bGtfdXBkYXRlX3JlcXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9yIDgwDQpbICAgOTQu
+NTM5NzY0XSBCdWZmZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgNSwgYXN5
+bmMgcGFnZSByZWFkDQpbICAgOTQuNTM5ODE1XSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjMTEgRkFJ
+TEVEIFJlc3VsdDogaG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJpdmVyYnl0ZT1EUklWRVJfT0sN
+ClsgICA5NC41Mzk4ODNdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMSBDREI6IFJlYWQoMTApIDI4
+IDAwIDAwIDAwIDAwIDQwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTM5OTQxXSBibGtfdXBkYXRlX3Jl
+cXVlc3Q6IEkvTyBlcnJvciwgZGV2IHNkYSwgc2VjdG9yIDY0DQpbICAgOTQuNTM5OTg5XSBCdWZm
+ZXIgSS9PIGVycm9yIG9uIGRldiBzZGEsIGxvZ2ljYWwgYmxvY2sgNCwgYXN5bmMgcGFnZSByZWFk
+DQpbICAgOTQuNTQwMDUyXSBzZCAwOjA6MDowOiBbc2RhXSB0YWcjMTIgRkFJTEVEIFJlc3VsdDog
+aG9zdGJ5dGU9RElEX0JBRF9UQVJHRVQgZHJpdmVyYnl0ZT1EUklWRVJfT0sNClsgICA5NC41NDAx
+MjFdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMiBDREI6IFJlYWQoMTApIDI4IDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIDEwIDAwDQpbICAgOTQuNTQwMTc4XSBibGtfdXBkYXRlX3JlcXVlc3Q6IEkvTyBl
+cnJvciwgZGV2IHNkYSwgc2VjdG9yIDANClsgICA5NC41NDAyMjddIEJ1ZmZlciBJL08gZXJyb3Ig
+b24gZGV2IHNkYSwgbG9naWNhbCBibG9jayAwLCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41NDAy
+ODJdIHNkIDA6MDowOjA6IFtzZGFdIHRhZyMxMyBGQUlMRUQgUmVzdWx0OiBob3N0Ynl0ZT1ESURf
+QkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjU0MDM1MF0gc2QgMDowOjA6
+MDogW3NkYV0gdGFnIzEzIENEQjogUmVhZCgxMCkgMjggMDAgMDAgMDAgMDAgMTAgMDAgMDAgMTAg
+MDANClsgICA5NC41NDA0MDhdIGJsa191cGRhdGVfcmVxdWVzdDogSS9PIGVycm9yLCBkZXYgc2Rh
+LCBzZWN0b3IgMTYNClsgICA5NC41NDA0NTddIEJ1ZmZlciBJL08gZXJyb3Igb24gZGV2IHNkYSwg
+bG9naWNhbCBibG9jayAxLCBhc3luYyBwYWdlIHJlYWQNClsgICA5NC41NDA2MDldIGxkbV92YWxp
+ZGF0ZV9wYXJ0aXRpb25fdGFibGUoKTogRGlzayByZWFkIGZhaWxlZC4NClsgICA5NC41NDA5NTdd
+IERldiBzZGE6IHVuYWJsZSB0byByZWFkIFJEQiBibG9jayAwDQpbICAgOTQuNTQxMTMyXSAgc2Rh
+OiB1bmFibGUgdG8gcmVhZCBwYXJ0aXRpb24gdGFibGUNClsgICA5NC41NDEzNTZdIHNkIDA6MDow
+OjA6IFtzZGFdIFJlYWQgQ2FwYWNpdHkoMTYpIGZhaWxlZDogUmVzdWx0OiBob3N0Ynl0ZT1ESURf
+QkFEX1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjU0OTQ3N10gc2QgMDowOjA6
+MDogW3NkYV0gU2Vuc2Ugbm90IGF2YWlsYWJsZS4NClsgICA5NC41NTM2NTBdIHNkIDA6MDowOjA6
+IFtzZGFdIFJlYWQgQ2FwYWNpdHkoMTApIGZhaWxlZDogUmVzdWx0OiBob3N0Ynl0ZT1ESURfQkFE
+X1RBUkdFVCBkcml2ZXJieXRlPURSSVZFUl9PSw0KWyAgIDk0LjU2MzMzOV0gc2QgMDowOjA6MDog
+W3NkYV0gU2Vuc2Ugbm90IGF2YWlsYWJsZS4NClsgICA5NC41Njg5MDddIHNkIDA6MDowOjA6IFtz
+ZGFdIEF0dGFjaGVkIFNDU0kgZGlzaw==
+
+--_004_146122603850270296rackspacecom_--
