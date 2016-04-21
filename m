@@ -1,7 +1,7 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkx4vTKzDqgY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:53 +1000 (AEST)
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRky5Zb8zDqgY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:54 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
@@ -9,9 +9,9 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 14/23] ata: sata_dwc_460ex: get rid of some pointless casts
-Date: Thu, 21 Apr 2016 21:15:35 +0300
-Message-Id: <1461262544-115408-15-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 13/23] ata: sata_dwc_460ex: remove empty libata callback
+Date: Thu, 21 Apr 2016 21:15:34 +0300
+Message-Id: <1461262544-115408-14-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,68 +25,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mans Rullgard <mans@mansr.com>
 
-Casting a pointer to unsigned long only to immediately cast it back
-to a pointer makes no sense.  Fix this.
-
+The sata_dwc_qc_prep() does nothing.  Use the default ata_noop_qc_prep
+instead.
 
 Signed-off-by: Mans Rullgard <mans@mansr.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 22 ----------------------
+ 1 file changed, 22 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 571ecd1..9e8271d 100644
+index 5bec790..571ecd1 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -844,26 +844,26 @@ static void sata_dwc_enable_interrupts(struct sata_dwc_device *hsdev)
- 		in_le32(&hsdev->sata_dwc_regs->errmr));
+@@ -1134,27 +1134,6 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
+ 	return 0;
  }
  
--static void sata_dwc_setup_port(struct ata_ioports *port, unsigned long base)
-+static void sata_dwc_setup_port(struct ata_ioports *port, void __iomem *base)
+-/*
+- * Function : sata_dwc_qc_prep
+- * arguments : ata_queued_cmd *qc
+- * Return value : None
+- * qc_prep for a particular queued command
+- */
+-
+-static void sata_dwc_qc_prep(struct ata_queued_cmd *qc)
+-{
+-	if ((qc->dma_dir == DMA_NONE) || (qc->tf.protocol == ATA_PROT_PIO))
+-		return;
+-
+-#ifdef DEBUG_NCQ
+-	if (qc->tag > 0)
+-		dev_info(qc->ap->dev, "%s: qc->tag=%d ap->active_tag=0x%08x\n",
+-			 __func__, qc->tag, qc->ap->link.active_tag);
+-
+-	return ;
+-#endif
+-}
+-
+ static void sata_dwc_error_handler(struct ata_port *ap)
  {
--	port->cmd_addr = (void __iomem *)base + 0x00;
--	port->data_addr = (void __iomem *)base + 0x00;
-+	port->cmd_addr		= base + 0x00;
-+	port->data_addr		= base + 0x00;
+ 	ata_sff_error_handler(ap);
+@@ -1214,7 +1193,6 @@ static struct ata_port_operations sata_dwc_ops = {
+ 	.error_handler		= sata_dwc_error_handler,
+ 	.hardreset		= sata_dwc_hardreset,
  
--	port->error_addr = (void __iomem *)base + 0x04;
--	port->feature_addr = (void __iomem *)base + 0x04;
-+	port->error_addr	= base + 0x04;
-+	port->feature_addr	= base + 0x04;
+-	.qc_prep		= sata_dwc_qc_prep,
+ 	.qc_issue		= sata_dwc_qc_issue,
  
--	port->nsect_addr = (void __iomem *)base + 0x08;
-+	port->nsect_addr	= base + 0x08;
- 
--	port->lbal_addr = (void __iomem *)base + 0x0c;
--	port->lbam_addr = (void __iomem *)base + 0x10;
--	port->lbah_addr = (void __iomem *)base + 0x14;
-+	port->lbal_addr		= base + 0x0c;
-+	port->lbam_addr		= base + 0x10;
-+	port->lbah_addr		= base + 0x14;
- 
--	port->device_addr = (void __iomem *)base + 0x18;
--	port->command_addr = (void __iomem *)base + 0x1c;
--	port->status_addr = (void __iomem *)base + 0x1c;
-+	port->device_addr	= base + 0x18;
-+	port->command_addr	= base + 0x1c;
-+	port->status_addr	= base + 0x1c;
- 
--	port->altstatus_addr = (void __iomem *)base + 0x20;
--	port->ctl_addr = (void __iomem *)base + 0x20;
-+	port->altstatus_addr	= base + 0x20;
-+	port->ctl_addr		= base + 0x20;
- }
- 
- static int sata_dwc_dma_get_channel(struct sata_dwc_device_port *hsdevp)
-@@ -1253,7 +1253,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
- 	/* Setup port */
- 	host->ports[0]->ioaddr.cmd_addr = base;
- 	host->ports[0]->ioaddr.scr_addr = base + SATA_DWC_SCR_OFFSET;
--	sata_dwc_setup_port(&host->ports[0]->ioaddr, (unsigned long)base);
-+	sata_dwc_setup_port(&host->ports[0]->ioaddr, base);
- 
- 	/* Read the ID and Version Registers */
- 	idr = in_le32(&hsdev->sata_dwc_regs->idr);
+ 	.scr_read		= sata_dwc_scr_read,
 -- 
 2.8.0.rc3
