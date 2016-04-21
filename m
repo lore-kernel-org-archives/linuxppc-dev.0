@@ -1,29 +1,24 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qr4m04R0KzDqZn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 14:00:32 +1000 (AEST)
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 21 Apr 2016 09:30:28 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3L40L5Z52035788
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 09:30:22 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3L40KNH015884
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 09:30:21 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH]powerpc/perf: Replace raw event hex values with #def
-Date: Thu, 21 Apr 2016 09:30:14 +0530
-Message-Id: <1461211214-4705-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qr51b62XzzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Apr 2016 14:12:19 +1000 (AEST)
+Received: by mail-pf0-x235.google.com with SMTP id y69so8763345pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Apr 2016 21:12:19 -0700 (PDT)
+Subject: Re: [PATCH V2 26/68] powerpc/mm/radix: Add radix pte defines
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-27-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <5718531C.80903@gmail.com>
+Date: Thu, 21 Apr 2016 14:12:12 +1000
+MIME-Version: 1.0
+In-Reply-To: <1460182444-2468-27-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,133 +28,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Minor cleanup patch to replace the raw event hex values in
-power8-pmu.c with #def.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/power8-events-list.h | 42 ++++++++++++++++++++++++++++++++++
- arch/powerpc/perf/power8-pmu.c         | 41 +++++++++++++++++----------------
- 2 files changed, 63 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/perf/power8-events-list.h b/arch/powerpc/perf/power8-events-list.h
-index 741b77edd03e..fc9ff370b199 100644
---- a/arch/powerpc/perf/power8-events-list.h
-+++ b/arch/powerpc/perf/power8-events-list.h
-@@ -49,3 +49,45 @@ EVENT(PM_L3_PREF_ALL,				0x4e052)
- EVENT(PM_DTLB_MISS,				0x300fc)
- /* ITLB Reloaded */
- EVENT(PM_ITLB_MISS,				0x400fc)
-+/* Run_Instructions */
-+EVENT(PM_RUN_INST_CMPL,				0x500fa)
-+/* Alternate event code for PM_RUN_INST_CMPL */
-+EVENT(_PM_RUN_INST_CMPL,			0x400fa)
-+/* Run_cycles */
-+EVENT(PM_RUN_CYC,				0x600f4)
-+/* Alternate event code for Run_cycles */
-+EVENT(_PM_RUN_CYC,				0x200f4)
-+/* Marked store completed */
-+EVENT(PM_MRK_ST_CMPL,				0x10134)
-+/* Alternate event code for Marked store completed */
-+EVENT(_PM_MRK_ST_CMPL,				0x301e2)
-+/* PM_BR_MRK_2PATH */
-+EVENT(PM_BR_MRK_2PATH,				0x10138)
-+/* Alternate event code for PM_BR_MRK_2PATH */
-+EVENT(PM_BR_MRK_2PATH,				0x40138)
-+/* PM_L3_CO_MEPF */
-+EVENT(PM_L3_CO_MEPF,				0x18082)
-+/* Alternate event code for PM_L3_CO_MEPF */
-+EVENT(_PM_L3_CO_MEPF,				0x3e05e)
-+/* PM_MRK_DATA_FROM_L2MISS */
-+EVENT(PM_MRK_DATA_FROM_L2MISS,			0x1d14e)
-+/* Alternate event code for PM_MRK_DATA_FROM_L2MISS */
-+EVENT(_PM_MRK_DATA_FROM_L2MISS,			0x401e8)
-+/* PM_CMPLU_STALL */
-+EVENT(PM_CMPLU_STALL,				0x1e054)
-+/* Alternate event code for  PM_CMPLU_STALL */
-+EVENT(_PM_CMPLU_STALL,				0x4000a)
-+/* PM_BR_2PATH */
-+EVENT(PM_BR_2PATH,				0x20036)
-+/* Alternate event code for PM_BR_2PATH */
-+EVENT(_PM_BR_2PATH,				0x40036)
-+/* PM_INST_DISP */
-+EVENT(PM_INST_DISP,				0x200f2)
-+/* Alternate event code for PM_INST_DISP */
-+EVENT(_PM_INST_DISP,				0x300f2)
-+/* PM_MRK_FILT_MATCH */
-+EVENT(PM_MRK_FILT_MATCH,			0x2013c)
-+/* Alternate event code for PM_MRK_FILT_MATCH */
-+EVENT(_PM_MRK_FILT_MATCH,			0x3012e)
-+/* Alternate event code for PM_LD_MISS_L1 */
-+EVENT(_PM_LD_MISS_L1,				0x400f0)
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 690d9186a855..0d7a176fcd74 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -274,7 +274,8 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
- 		/* Ignore Linux defined bits when checking event below */
- 		base_event = event & ~EVENT_LINUX_MASK;
- 
--		if (pmc >= 5 && base_event != 0x500fa && base_event != 0x600f4)
-+		if (pmc >= 5 && base_event != PM_RUN_INST_CMPL &&
-+				base_event != PM_RUN_CYC)
- 			return -1;
- 
- 		mask  |= CNST_PMC_MASK(pmc);
-@@ -488,17 +489,17 @@ static int power8_compute_mmcr(u64 event[], int n_ev,
- 
- /* Table of alternatives, sorted by column 0 */
- static const unsigned int event_alternatives[][MAX_ALT] = {
--	{ 0x10134, 0x301e2 },		/* PM_MRK_ST_CMPL */
--	{ 0x10138, 0x40138 },		/* PM_BR_MRK_2PATH */
--	{ 0x18082, 0x3e05e },		/* PM_L3_CO_MEPF */
--	{ 0x1d14e, 0x401e8 },		/* PM_MRK_DATA_FROM_L2MISS */
--	{ 0x1e054, 0x4000a },		/* PM_CMPLU_STALL */
--	{ 0x20036, 0x40036 },		/* PM_BR_2PATH */
--	{ 0x200f2, 0x300f2 },		/* PM_INST_DISP */
--	{ 0x200f4, 0x600f4 },		/* PM_RUN_CYC */
--	{ 0x2013c, 0x3012e },		/* PM_MRK_FILT_MATCH */
--	{ 0x3e054, 0x400f0 },		/* PM_LD_MISS_L1 */
--	{ 0x400fa, 0x500fa },		/* PM_RUN_INST_CMPL */
-+	{ PM_MRK_ST_CMPL,		_PM_MRK_ST_CMPL },
-+	{ PM_BR_MRK_2PATH,		_PM_BR_MRK_2PATH },
-+	{ PM_L3_CO_MEPF,		_PM_L3_CO_MEPF },
-+	{ PM_MRK_DATA_FROM_L2MISS,	_PM_MRK_DATA_FROM_L2MISS },
-+	{ PM_CMPLU_STALL,		_PM_CMPLU_STALL },
-+	{ PM_BR_2PATH,			_PM_BR_2PATH },
-+	{ PM_INST_DISP,			_PM_INST_DISP },
-+	{ _PM_RUN_CYC,			PM_RUN_CYC },
-+	{ PM_MRK_FILT_MATCH,		_PM_MRK_FILT_MATCH },
-+	{ PM_LD_MISS_L1,		_PM_LD_MISS_L1 },
-+	{ _PM_RUN_INST_CMPL,		PM_RUN_INST_CMPL },
- };
- 
- /*
-@@ -546,17 +547,17 @@ static int power8_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- 		j = num_alt;
- 		for (i = 0; i < num_alt; ++i) {
- 			switch (alt[i]) {
--			case 0x1e:	/* PM_CYC */
--				alt[j++] = 0x600f4;	/* PM_RUN_CYC */
-+			case PM_CYC:
-+				alt[j++] = PM_RUN_CYC;
- 				break;
--			case 0x600f4:	/* PM_RUN_CYC */
--				alt[j++] = 0x1e;
-+			case PM_RUN_CYC:
-+				alt[j++] = PM_CYC;
- 				break;
--			case 0x2:	/* PM_PPC_CMPL */
--				alt[j++] = 0x500fa;	/* PM_RUN_INST_CMPL */
-+			case PM_INST_CMPL:
-+				alt[j++] = PM_RUN_INST_CMPL;
- 				break;
--			case 0x500fa:	/* PM_RUN_INST_CMPL */
--				alt[j++] = 0x2;	/* PM_PPC_CMPL */
-+			case PM_RUN_INST_CMPL:
-+				alt[j++] = PM_INST_CMPL;
- 				break;
- 			}
- 		}
--- 
-1.9.1
+On 09/04/16 16:13, Aneesh Kumar K.V wrote:
+> This add PowerISA 3.0 specific pte defines. We share most of the
+> details with hash linux page table format. This patch indicate only
+> things where we differ
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgtable.h   |   1 +
+>  arch/powerpc/include/asm/book3s/64/radix-4k.h  |  12 +++
+>  arch/powerpc/include/asm/book3s/64/radix-64k.h |  12 +++
+>  arch/powerpc/include/asm/book3s/64/radix.h     | 128 +++++++++++++++++++++++++
+>  4 files changed, 153 insertions(+)
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/radix-4k.h
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/radix-64k.h
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/radix.h
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 2643487affac..c47c3f7fc4e0 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -205,6 +205,7 @@ extern unsigned long __pgd_table_size;
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #include <asm/book3s/64/hash.h>
+> +#include <asm/book3s/64/radix.h>
+>  #include <asm/barrier.h>
+>  
+>  /*
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix-4k.h b/arch/powerpc/include/asm/book3s/64/radix-4k.h
+> new file mode 100644
+> index 000000000000..1966ee977206
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/radix-4k.h
+> @@ -0,0 +1,12 @@
+> +#ifndef _ASM_POWERPC_PGTABLE_RADIX_4K_H
+> +#define _ASM_POWERPC_PGTABLE_RADIX_4K_H
+> +
+> +/*
+> + * For 4K page size supported index is 13/9/9/9
+> + */
+> +#define R_PTE_INDEX_SIZE  9  /* 2MB huge page */
+> +#define R_PMD_INDEX_SIZE  9  /* 1G huge page */
+> +#define R_PUD_INDEX_SIZE	 9
+> +#define R_PGD_INDEX_SIZE  13
+> +
+> +#endif /* _ASM_POWERPC_PGTABLE_RADIX_4K_H */
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix-64k.h b/arch/powerpc/include/asm/book3s/64/radix-64k.h
+> new file mode 100644
+> index 000000000000..fe1cebe55e01
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/radix-64k.h
+> @@ -0,0 +1,12 @@
+> +#ifndef _ASM_POWERPC_PGTABLE_RADIX_64K_H
+> +#define _ASM_POWERPC_PGTABLE_RADIX_64K_H
+> +
+> +/*
+> + * For 64K page size supported index is 13/9/9/5
+> + */
+> +#define R_PTE_INDEX_SIZE  5  /* 2MB huge page */
+> +#define R_PMD_INDEX_SIZE  9  /* 1G huge page */
+> +#define R_PUD_INDEX_SIZE	 9
+> +#define R_PGD_INDEX_SIZE  13
+> +
+> +#endif /* _ASM_POWERPC_PGTABLE_RADIX_64K_H */
+> diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+> new file mode 100644
+> index 000000000000..72e18d5c96b4
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/book3s/64/radix.h
+> @@ -0,0 +1,128 @@
+> +#ifndef _ASM_POWERPC_PGTABLE_RADIX_H
+> +#define _ASM_POWERPC_PGTABLE_RADIX_H
+> +
+> +#ifndef __ASSEMBLY__
+> +#include <asm/cmpxchg.h>
+> +#endif
+> +
+> +#ifdef CONFIG_PPC_64K_PAGES
+> +#include <asm/book3s/64/radix-64k.h>
+> +#else
+> +#include <asm/book3s/64/radix-4k.h>
+> +#endif
+> +
+> +/* An empty PTE can still have a R or C writeback */
+> +#define R_PTE_NONE_MASK		(_PAGE_DIRTY | _PAGE_ACCESSED)
+> +
+> +/* Bits to set in a RPMD/RPUD/RPGD */
+> +#define R_PMD_VAL_BITS		(0x8000000000000000UL | R_PTE_INDEX_SIZE)
+> +#define R_PUD_VAL_BITS		(0x8000000000000000UL | R_PMD_INDEX_SIZE)
+> +#define R_PGD_VAL_BITS		(0x8000000000000000UL | R_PUD_INDEX_SIZE)
+> +
+> +/* Don't have anything in the reserved bits and leaf bits */
+> +#define R_PMD_BAD_BITS		0x60000000000000e0UL
+> +#define R_PUD_BAD_BITS		0x60000000000000e0UL
+> +#define R_PGD_BAD_BITS		0x60000000000000e0UL
+> +
+> +/*
+> + * Size of EA range mapped by our pagetables.
+> + */
+> +#define R_PGTABLE_EADDR_SIZE (R_PTE_INDEX_SIZE + R_PMD_INDEX_SIZE +	\
+> +			      R_PUD_INDEX_SIZE + R_PGD_INDEX_SIZE + PAGE_SHIFT)
+> +#define R_PGTABLE_RANGE (ASM_CONST(1) << R_PGTABLE_EADDR_SIZE)
+> +
+> +#ifndef __ASSEMBLY__
+> +#define R_PTE_TABLE_SIZE	(sizeof(pte_t) << R_PTE_INDEX_SIZE)
+> +#define R_PMD_TABLE_SIZE	(sizeof(pmd_t) << R_PMD_INDEX_SIZE)
+> +#define R_PUD_TABLE_SIZE	(sizeof(pud_t) << R_PUD_INDEX_SIZE)
+> +#define R_PGD_TABLE_SIZE	(sizeof(pgd_t) << R_PGD_INDEX_SIZE)
+> +
+> +static inline unsigned long rpte_update(struct mm_struct *mm,
+> +					unsigned long addr,
+> +					pte_t *ptep, unsigned long clr,
+> +					unsigned long set,
+> +					int huge)
+> +{
+> +
+> +	pte_t pte;
+> +	unsigned long old_pte, new_pte;
+> +
+> +	do {
+> +		pte = READ_ONCE(*ptep);
+> +		old_pte = pte_val(pte);
+> +		new_pte = (old_pte | set) & ~clr;
+> +
+> +	} while (cpu_to_be64(old_pte) != __cmpxchg_u64((unsigned long *)ptep,
+> +						       cpu_to_be64(old_pte),
+> +						       cpu_to_be64(new_pte)));
+> +	/* We already do a sync in cmpxchg, is ptesync needed ?*/
+> +	asm volatile("ptesync" : : : "memory");
+
+Yes, I think ptesync is required after PTE changes
+
+
+> +	/* huge pages use the old page table lock */
+> +	if (!huge)
+> +		assert_pte_locked(mm, addr);
+
+Are we passing huge, addr only for the assert? I think on most occasions huge is 0,
+it is better to do it in the caller. It's probably worth refactoring at some point
+for both types of *pte_update*
+
+> +
+> +	return old_pte;
+> +}
+> +
+> +/*
+> + * Set the dirty and/or accessed bits atomically in a linux PTE, this
+> + * function doesn't need to invalidate tlb.
+> + */
+> +static inline void __rptep_set_access_flags(pte_t *ptep, pte_t entry)
+> +{
+> +	pte_t pte;
+> +	unsigned long old_pte, new_pte;
+> +	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
+> +					      _PAGE_RW | _PAGE_EXEC);
+> +	do {
+> +		pte = READ_ONCE(*ptep);
+> +		old_pte = pte_val(pte);
+> +		new_pte = old_pte | set;
+> +
+> +	} while (cpu_to_be64(old_pte) != __cmpxchg_u64((unsigned long *)ptep,
+> +						       cpu_to_be64(old_pte),
+> +						       cpu_to_be64(new_pte)));
+> +	/* We already do a sync in cmpxchg, is ptesync needed ?*/
+> +	asm volatile("ptesync" : : : "memory");
+
+Can this be implemented as 
+	rpte_update(ptep, 0, set) if we refactored the code to remove mm, addr and huge
+Making the code more legible and will remove duplication of code.
+
+> +}
+> +
+> +static inline int rpte_same(pte_t pte_a, pte_t pte_b)
+> +{
+> +	return ((pte_val(pte_a) == pte_val(pte_b)));
+> +}
+> +
+> +static inline int rpte_none(pte_t pte)
+> +{
+> +	return (pte_val(pte) & ~R_PTE_NONE_MASK) == 0;
+> +}
+> +
+> +static inline void __set_rpte_at(struct mm_struct *mm, unsigned long addr,
+> +				 pte_t *ptep, pte_t pte, int percpu)
+> +{
+> +	*ptep = pte;
+
+Do we need WRITE_ONCE? I guess not since we have ptesync below
+
+> +	asm volatile("ptesync" : : : "memory");
+> +}
+> +
+> +static inline int rpmd_bad(pmd_t pmd)
+> +{
+> +	return !!(pmd_val(pmd) & R_PMD_BAD_BITS);
+> +}
+> +
+> +static inline int rpmd_same(pmd_t pmd_a, pmd_t pmd_b)
+> +{
+> +	return ((pmd_val(pmd_a) == pmd_val(pmd_b)));
+> +}
+> +
+> +static inline int rpud_bad(pud_t pud)
+> +{
+> +	return !!(pud_val(pud) & R_PUD_BAD_BITS);
+> +}
+> +
+> +
+> +static inline int rpgd_bad(pgd_t pgd)
+> +{
+> +	return !!(pgd_val(pgd) & R_PGD_BAD_BITS);
+> +}
+> +
+> +#endif /* __ASSEMBLY__ */
+> +#endif
+> 
