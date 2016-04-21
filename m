@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRky5Zb8zDqgY
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRky6Sq5zDqgZ
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:54 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,9 +9,11 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 13/23] ata: sata_dwc_460ex: remove empty libata callback
-Date: Thu, 21 Apr 2016 21:15:34 +0300
-Message-Id: <1461262544-115408-14-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 08/23] ata: sata_dwc_460ex: don't call ata_sff_qc_issue()
+ on DMA commands
+Date: Thu, 21 Apr 2016 21:15:29 +0300
+Message-Id: <1461262544-115408-9-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,55 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mans Rullgard <mans@mansr.com>
+ata_sff_qc_issue() can't handle DMA commands and thus we have to avoid it for
+them. Do call ata_bmdma_qc_issue() instead for this case.
 
-The sata_dwc_qc_prep() does nothing.  Use the default ata_noop_qc_prep
-instead.
-
-Signed-off-by: Mans Rullgard <mans@mansr.com>
+Suggested-by: Christian Lamparter <chunkeey@googlemail.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 22 ----------------------
- 1 file changed, 22 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 5bec790..571ecd1 100644
+index 038e5fb..845c35d 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1134,27 +1134,6 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
+@@ -1061,10 +1061,12 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
+ 			__func__, tag, qc->ap->link.sactive, sactive);
+ 
+ 		ap->ops->sff_tf_load(ap, &qc->tf);
+-		sata_dwc_exec_command_by_tag(ap, &qc->tf, qc->tag,
++		sata_dwc_exec_command_by_tag(ap, &qc->tf, tag,
+ 					     SATA_DWC_CMD_ISSUED_PEND);
++	} else if (ata_is_dma(qc->tf.protocol)) {
++		return ata_bmdma_qc_issue(qc);
+ 	} else {
+-		ata_sff_qc_issue(qc);
++		return ata_sff_qc_issue(qc);
+ 	}
  	return 0;
  }
- 
--/*
-- * Function : sata_dwc_qc_prep
-- * arguments : ata_queued_cmd *qc
-- * Return value : None
-- * qc_prep for a particular queued command
-- */
--
--static void sata_dwc_qc_prep(struct ata_queued_cmd *qc)
--{
--	if ((qc->dma_dir == DMA_NONE) || (qc->tf.protocol == ATA_PROT_PIO))
--		return;
--
--#ifdef DEBUG_NCQ
--	if (qc->tag > 0)
--		dev_info(qc->ap->dev, "%s: qc->tag=%d ap->active_tag=0x%08x\n",
--			 __func__, qc->tag, qc->ap->link.active_tag);
--
--	return ;
--#endif
--}
--
- static void sata_dwc_error_handler(struct ata_port *ap)
- {
- 	ata_sff_error_handler(ap);
-@@ -1214,7 +1193,6 @@ static struct ata_port_operations sata_dwc_ops = {
- 	.error_handler		= sata_dwc_error_handler,
- 	.hardreset		= sata_dwc_hardreset,
- 
--	.qc_prep		= sata_dwc_qc_prep,
- 	.qc_issue		= sata_dwc_qc_issue,
- 
- 	.scr_read		= sata_dwc_scr_read,
 -- 
 2.8.0.rc3
