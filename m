@@ -1,7 +1,7 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkw06MYzDqgb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:51 +1000 (AEST)
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qrRkw5P1rzDqgd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 04:15:52 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
@@ -9,9 +9,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v1 01/23] ata: sata_dwc_460ex: remove incorrect locking
-Date: Thu, 21 Apr 2016 21:15:22 +0300
-Message-Id: <1461262544-115408-2-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 07/23] ata: sata_dwc_460ex: skip dma setup for non-dma
+ commands
+Date: Thu, 21 Apr 2016 21:15:28 +0300
+Message-Id: <1461262544-115408-8-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,109 +26,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mans Rullgard <mans@mansr.com>
 
-This lock is already taken in ata_scsi_queuecmd() a few levels up the
-call stack so attempting to take it here is an error.  Moreover, it is
-pointless in the first place since it only protects a single, atomic
-assignment.
+Calling dmaengine_prep_slave_sg() for non-dma ATA commands is
+unnecessary at best and could be harmful if the dma driver reacts
+badly to this.  It also causes this driver to print a bogus error
+message in these cases.
 
-Enabling lock debugging gives the following output:
+This patch changes sata_dwc_qc_issue() to only do the dma setup
+for dma commands and also reports an error to libata if if fails.
 
-=============================================
-[ INFO: possible recursive locking detected ]
-4.4.0-rc5+ #189 Not tainted
----------------------------------------------
-kworker/u2:3/37 is trying to acquire lock:
- (&(&host->lock)->rlock){-.-...}, at: [<90283294>] sata_dwc_exec_command_by_tag.constprop.14+0x44/0x8c
-
-but task is already holding lock:
- (&(&host->lock)->rlock){-.-...}, at: [<902761ac>] ata_scsi_queuecmd+0x2c/0x330
-
-other info that might help us debug this:
- Possible unsafe locking scenario:
-
-       CPU0
-       ----
-  lock(&(&host->lock)->rlock);
-  lock(&(&host->lock)->rlock);
-
- *** DEADLOCK ***
- May be due to missing lock nesting notation
-
-4 locks held by kworker/u2:3/37:
- #0:  ("events_unbound"){.+.+.+}, at: [<9003a0a4>] process_one_work+0x12c/0x430
- #1:  ((&entry->work)){+.+.+.}, at: [<9003a0a4>] process_one_work+0x12c/0x430
- #2:  (&bdev->bd_mutex){+.+.+.}, at: [<9011fd54>] __blkdev_get+0x50/0x380
- #3:  (&(&host->lock)->rlock){-.-...}, at: [<902761ac>] ata_scsi_queuecmd+0x2c/0x330
-
-stack backtrace:
-CPU: 0 PID: 37 Comm: kworker/u2:3 Not tainted 4.4.0-rc5+ #189
-Workqueue: events_unbound async_run_entry_fn
-Stack : 90b38e30 00000021 00000003 9b2a6040 00000000 9005f3f0 904fc8dc 00000025
-        906b96e4 00000000 90528648 9b3336c4 904fc8dc 9009bf18 00000002 00000004
-        00000000 00000000 9b3336c4 9b3336e4 904fc8dc 9003d074 00000000 90500000
-        9005e738 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-        6e657665 755f7374 756f626e 0000646e 00000000 00000000 9b00ca00 9b025000
-          ...
-Call Trace:
-[<90009d6c>] show_stack+0x88/0xa4
-[<90057744>] __lock_acquire+0x1ce8/0x2154
-[<900583e4>] lock_acquire+0x64/0x8c
-[<9045ff10>] _raw_spin_lock_irqsave+0x54/0x78
-[<90283294>] sata_dwc_exec_command_by_tag.constprop.14+0x44/0x8c
-[<90283484>] sata_dwc_qc_issue+0x1a8/0x24c
-[<9026b39c>] ata_qc_issue+0x1f0/0x410
-[<90273c6c>] ata_scsi_translate+0xb4/0x200
-[<90276234>] ata_scsi_queuecmd+0xb4/0x330
-[<9025800c>] scsi_dispatch_cmd+0xd0/0x128
-[<90259934>] scsi_request_fn+0x58c/0x638
-[<901a3e50>] __blk_run_queue+0x40/0x5c
-[<901a83d4>] blk_queue_bio+0x27c/0x28c
-[<901a5914>] generic_make_request+0xf0/0x188
-[<901a5a54>] submit_bio+0xa8/0x194
-[<9011adcc>] submit_bh_wbc.isra.23+0x15c/0x17c
-[<9011c908>] block_read_full_page+0x3e4/0x428
-[<9009e2e0>] do_read_cache_page+0xac/0x210
-[<9009fd90>] read_cache_page+0x18/0x24
-[<901bbd18>] read_dev_sector+0x38/0xb0
-[<901bd174>] msdos_partition+0xb4/0x5c0
-[<901bcb8c>] check_partition+0x140/0x274
-[<901bba60>] rescan_partitions+0xa0/0x2b0
-[<9011ff68>] __blkdev_get+0x264/0x380
-[<901201ac>] blkdev_get+0x128/0x36c
-[<901b9378>] add_disk+0x3c0/0x4bc
-[<90268268>] sd_probe_async+0x100/0x224
-[<90043a44>] async_run_entry_fn+0x50/0x124
-[<9003a11c>] process_one_work+0x1a4/0x430
-[<9003a4f4>] worker_thread+0x14c/0x4fc
-[<900408f4>] kthread+0xd0/0xe8
-[<90004338>] ret_from_kernel_thread+0x14/0x1c
-
-Fixes: 62936009f35a ("[libata] Add 460EX on-chip SATA driver, sata_dwc_460ex")
 Signed-off-by: Mans Rullgard <mans@mansr.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 35 +++++++++--------------------------
+ 1 file changed, 9 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 2cb6f7e..5213e22 100644
+index 1250e18..038e5fb 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -924,15 +924,13 @@ static void sata_dwc_exec_command_by_tag(struct ata_port *ap,
- 					 struct ata_taskfile *tf,
- 					 u8 tag, u32 cmd_issued)
+@@ -1023,36 +1023,12 @@ static void sata_dwc_bmdma_start(struct ata_queued_cmd *qc)
+ 	sata_dwc_bmdma_start_by_tag(qc, tag);
+ }
+ 
+-/*
+- * Function : sata_dwc_qc_prep_by_tag
+- * arguments : ata_queued_cmd *qc, u8 tag
+- * Return value : None
+- * qc_prep for a particular queued command based on tag
+- */
+-static void sata_dwc_qc_prep_by_tag(struct ata_queued_cmd *qc, u8 tag)
+-{
+-	struct dma_async_tx_descriptor *desc;
+-	struct ata_port *ap = qc->ap;
+-	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+-
+-	dev_dbg(ap->dev, "%s: port=%d dma dir=%s n_elem=%d\n",
+-		__func__, ap->port_no, get_dma_dir_descript(qc->dma_dir),
+-		 qc->n_elem);
+-
+-	desc = dma_dwc_xfer_setup(qc);
+-	if (!desc) {
+-		dev_err(ap->dev, "%s: dma_dwc_xfer_setup returns NULL\n",
+-			__func__);
+-		return;
+-	}
+-	hsdevp->desc[tag] = desc;
+-}
+-
+ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
  {
--	unsigned long flags;
- 	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
+ 	u32 sactive;
+ 	u8 tag = qc->tag;
+ 	struct ata_port *ap = qc->ap;
++	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
  
- 	dev_dbg(ap->dev, "%s cmd(0x%02x): %s tag=%d\n", __func__, tf->command,
- 		ata_get_cmd_descript(tf->command), tag);
+ #ifdef DEBUG_NCQ
+ 	if (qc->tag > 0 || ap->link.sactive > 1)
+@@ -1066,7 +1042,14 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
  
--	spin_lock_irqsave(&ap->host->lock, flags);
- 	hsdevp->cmd_issued[tag] = cmd_issued;
--	spin_unlock_irqrestore(&ap->host->lock, flags);
+ 	if (!ata_is_ncq(qc->tf.protocol))
+ 		tag = 0;
+-	sata_dwc_qc_prep_by_tag(qc, tag);
 +
- 	/*
- 	 * Clear SError before executing a new command.
- 	 * sata_dwc_scr_write and read can not be used here. Clearing the PM
++	if (ata_is_dma(qc->tf.protocol)) {
++		hsdevp->desc[tag] = dma_dwc_xfer_setup(qc);
++		if (!hsdevp->desc[tag])
++			return AC_ERR_SYSTEM;
++	} else {
++		hsdevp->desc[tag] = NULL;
++	}
+ 
+ 	if (ata_is_ncq(qc->tf.protocol)) {
+ 		sactive = core_scr_read(SCR_ACTIVE);
 -- 
 2.8.0.rc3
