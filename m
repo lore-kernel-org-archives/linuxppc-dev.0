@@ -1,38 +1,40 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrkN13C8QzDqgC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrkNM0yRrzDqmG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:47 +1000 (AEST)
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 22 Apr 2016 15:15:27 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E2C9B2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:12 +1000 (EST)
+ Fri, 22 Apr 2016 15:15:45 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 999C03578053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:41 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3M5F46T12517750
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:12 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3M5FXfV59113612
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:41 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3M5EdMm012841
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:14:40 +1000
-Subject: Re: [PATCH 1/2] cxl: Keep IRQ mappings on context teardown
+ u3M5F87X013599
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:15:09 +1000
+Subject: Re: [PATCH 2/2] cxl: Poll for outstanding IRQs when detaching a
+ context
 To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
 References: <1461301069-12331-1-git-send-email-mikey@neuling.org>
+ <1461301069-12331-2-git-send-email-mikey@neuling.org>
 Cc: Joerg-Stephan Vogt <JSVOGT@de.ibm.com>,
  Frederic Barrat <frederic.barrat@fr.ibm.com>,
  Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
  Wolfgang Bolz1 <Wolfgang.Bolz@de.ibm.com>, imunsie@au1.ibm.com,
  Frank Haverkamp <HAVERKAM@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <5719B326.7030500@au1.ibm.com>
-Date: Fri, 22 Apr 2016 15:14:14 +1000
+Message-ID: <5719B342.4020306@au1.ibm.com>
+Date: Fri, 22 Apr 2016 15:14:42 +1000
 MIME-Version: 1.0
-In-Reply-To: <1461301069-12331-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1461301069-12331-2-git-send-email-mikey@neuling.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,22 +46,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 22/04/16 14:57, Michael Neuling wrote:
-> Keep IRQ mappings on context teardown.  This won't leak IRQs as if we
-> allocate the mapping again, the generic code will give the same
-> mapping used last time.
+> When detaching contexts, we may still have interrupts in the system
+> which are yet to be delivered to any CPU and be acked in the PSL.
+> This can result in a subsequent unrelated process getting an spurious
+> IRQ or an interrupt for a non-existent context.
 >
-> Doing this works around a race in the generic code. Masking the
-> interrupt introduces a race which can crash the kernel or result in
-> IRQ that is never EOIed. The lost of EOI results in all subsequent
-> mappings to the same HW IRQ never receiving an interrupt.
->
-> We've seen this race with cxl test cases which are doing heavy context
-> startup and teardown at the same time as heavy interrupt load.
->
-> A fix to the generic code is being investigated also.
+> This polls the PSL to ensure that the PSL is clear of IRQs for the
+> detached context, before removing the context from the idr.
 >
 > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> cc: stable@vger.kernel.org # 3.8
 
 Tested on top of 4.6-rc3 using the genwqe-echo test utility[0].
 
