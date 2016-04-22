@@ -1,29 +1,27 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qrwxq3tPTzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 23:11:59 +1000 (AEST)
-Date: Fri, 22 Apr 2016 14:11:51 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Yangbo Lu <yangbo.lu@nxp.com>
-Cc: linux-mmc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
- linux-i2c@vger.kernel.org, iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, ulf.hansson@linaro.org, scott.wood@nxp.com,
- Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
- Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- Zhao Qiang <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>,
- Santosh Shilimkar <ssantosh@kernel.org>, leoyang.li@nxp.com,
- xiaobo.xie@nxp.com
-Subject: Re: [v8, 1/7] Documentation: DT: update Freescale DCFG compatible
-Message-ID: <20160422131151.GJ10606@leverpostej>
-References: <1461306464-19521-1-git-send-email-yangbo.lu@nxp.com>
- <1461306464-19521-2-git-send-email-yangbo.lu@nxp.com>
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
+ [IPv6:2a00:1450:4010:c07::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrwz95MqZzDqbs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 23:13:07 +1000 (AEST)
+Received: by mail-lf0-x232.google.com with SMTP id g184so79052805lfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 06:13:07 -0700 (PDT)
+Subject: Re: [PATCH v1 03/23] ata: sata_dwc_460ex: set dma_boundary to 0x1fff
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Christian Lamparter <chunkeey@googlemail.com>,
+ =?UTF-8?B?TcOlbnMgUnVsbGfDpXJk?= <mans@mansr.com>,
+ Julian Margetson <runaway@candw.ms>
+References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1461262544-115408-4-git-send-email-andriy.shevchenko@linux.intel.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Message-ID: <571A235C.5070007@cogentembedded.com>
+Date: Fri, 22 Apr 2016 16:13:00 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1461306464-19521-2-git-send-email-yangbo.lu@nxp.com>
+In-Reply-To: <1461262544-115408-4-git-send-email-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,47 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 22, 2016 at 02:27:38PM +0800, Yangbo Lu wrote:
-> Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead
-> of 'fsl,ls1021a-dcfg' to include more chips.
-> 
-> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Hello.
+
+On 04/21/2016 09:15 PM, Andy Shevchenko wrote:
+
+> The original code states:
+>
+> 	Make sure a LLI block is not created that will span 8K max FIS
+> 	boundary. If the block spans such a FIS boundary, there is a chance
+> 	that a DMA burst will cross that boundary -- this results in an error
+> 	in the host controller.
+>
+> Since we have switched to generic DMAengine API we satisfy above by setting
+> dma_boundary value to 0x1fff.
+>
+> Suggested-by: Mans Rullgard <mans@mansr.com>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > ---
-> Changes for v8:
-> 	- Added this patch
-> ---
->  Documentation/devicetree/bindings/arm/fsl.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
-> index 752a685..1d5f512 100644
-> --- a/Documentation/devicetree/bindings/arm/fsl.txt
-> +++ b/Documentation/devicetree/bindings/arm/fsl.txt
-> @@ -119,7 +119,7 @@ Freescale DCFG
->  configuration and status for the device. Such as setting the secondary
->  core start address and release the secondary core from holdoff and startup.
->    Required properties:
-> -  - compatible: should be "fsl,ls1021a-dcfg"
-> +  - compatible: should be "fsl,<chip>-dcfg"
+>   drivers/ata/sata_dwc_460ex.c | 8 +++++++-
+>   1 file changed, 7 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
+> index 7f95389..aee8873 100644
+> --- a/drivers/ata/sata_dwc_460ex.c
+> +++ b/drivers/ata/sata_dwc_460ex.c
+> @@ -1151,7 +1151,13 @@ static struct scsi_host_template sata_dwc_sht = {
+>   	 */
+>   	.sg_tablesize		= LIBATA_MAX_PRD,
+>   	/* .can_queue		= ATA_MAX_QUEUE, */
+> -	.dma_boundary		= ATA_DMA_BOUNDARY,
+> +	/*
+> +	 * Make sure a LLI block is not created that will span 8K max FIS
+> +	 * boundary. If the block spans such a FIS boundary, there is a chance
+> +	 * that a DMA burst will cross that boundary -- this results in an
+> +	 * error in the host controller.
+> +	 */
+> +	.dma_boundary		= 0x1fff /* ATA_DMA_BOUNDARY */,
 
-Please list specific values expected for <chip>, while jusy saying
-<chip> may be more generic, it makes it practically impossible to search
-for the correct binding given a compatible string, and it's vague as to
-exaclty what <chip> should be.
+    Not ~0x1fff?
 
-Thanks,
-Mark.
+[...]
 
-
-
->    - reg : should contain base address and length of DCFG memory-mapped registers
->  
->  Example:
-> -- 
-> 2.1.0.27.g96db324
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+MBR, Sergei
