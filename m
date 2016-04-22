@@ -1,23 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qrlFv3DJczDq68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 15:55:15 +1000 (AEST)
-Date: Fri, 22 Apr 2016 15:15:01 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, alistair@popple.id.au, ruscur@russell.cc,
- mpe@ellerman.id.au
-Subject: Re: [PATCH 3/3] powerpc/eeh: Drop unnecessary label in
- eeh_pe_change_owner()
-Message-ID: <20160422051501.GF15176@voom.fritz.box>
-References: <1461239595-5627-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1461239595-5627-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qrlRG4JyvzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 16:03:22 +1000 (AEST)
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 22 Apr 2016 11:33:19 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3M63FBQ56754400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 11:33:16 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3M63BQ9011330
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Apr 2016 11:33:13 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+Cc: mikey@neuling.org, Joerg-Stephan Vogt <JSVOGT@de.ibm.com>,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ Wolfgang Bolz1 <Wolfgang.Bolz@de.ibm.com>, imunsie@au1.ibm.com,
+ andrew.donnellan@au1.ibm.com, Frank Haverkamp <HAVERKAM@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] cxl: Keep IRQ mappings on context teardown
+In-Reply-To: <1461301069-12331-1-git-send-email-mikey@neuling.org>
+References: <1461301069-12331-1-git-send-email-mikey@neuling.org>
+Date: Fri, 22 Apr 2016 11:33:05 +0530
+Message-ID: <87y4866uzq.fsf@vajain21.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="l+goss899txtYvYf"
-In-Reply-To: <1461239595-5627-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,70 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Neuling <mikey@neuling.org> writes:
 
---l+goss899txtYvYf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Keep IRQ mappings on context teardown.  This won't leak IRQs as if we
+> allocate the mapping again, the generic code will give the same
+> mapping used last time.
+>
+> Doing this works around a race in the generic code. Masking the
+> interrupt introduces a race which can crash the kernel or result in
+> IRQ that is never EOIed. The lost of EOI results in all subsequent
+> mappings to the same HW IRQ never receiving an interrupt.
+>
+> We've seen this race with cxl test cases which are doing heavy context
+> startup and teardown at the same time as heavy interrupt load.
+>
+> A fix to the generic code is being investigated also.
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> cc: stable@vger.kernel.org # 3.8
 
-On Thu, Apr 21, 2016 at 09:53:07PM +1000, Gavin Shan wrote:
-> The label "reset" in eeh_pe_change_owner() is used only for once.
-> No need to keep it and just drop it. No logicial changes introduced.
->=20
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Tested on top of following skiboot patches that fix potential races in
+phb.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+http://patchwork.ozlabs.org/patch/581764/
+http://patchwork.ozlabs.org/patch/581765/
 
-> ---
->  arch/powerpc/kernel/eeh.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index 6544017..4b40d56 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -1336,14 +1336,11 @@ static int eeh_pe_change_owner(struct eeh_pe *pe)
->  			    id->subdevice !=3D pdev->subsystem_device)
->  				continue;
-> =20
-> -			goto reset;
-> +			return eeh_pe_reset_and_recover(pe);
->  		}
->  	}
-> =20
->  	return eeh_unfreeze_pe(pe, true);
-> -
-> -reset:
-> -	return eeh_pe_reset_and_recover(pe);
->  }
-> =20
->  /**
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---l+goss899txtYvYf
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXGbNVAAoJEGw4ysog2bOS97cQAIuEnu+plgKX/Rb/zWIyDMX/
-aFRaBR3GWPoaGgR+lFa1lNnh2LmxWyGtRrz9962/tgBIpfPGyOgfUjyBln8apbcc
-3k1BDPB3MdeZQ8zcPHi6r/+f+0Bgk4eIReO78zttFDt0QjHj+QpukGrDpIUEYbQs
-zzztRi59CbanZr2uU+gVfBYaXD+706QOfPc3CrpwpD1YnzmfHZW+allDCLG1mv1X
-hzvWAfLN2CEeP1H7sr3dd7k0n+4jUCFM3dZo5fR6y5QMkNmOuTjLAKe7K/fl9XMs
-3rbiVCbgT+4Mvev3YW3vHZYbMmwPuIRnGtm/p02YDFbp0cWlUdqRFgYqc6rQd//t
-CQ5mlE23meu6fxxYCPnKzfpwjCrLHDvTCqinUhpiBvoHfqRWVldhr7dAQMkeAUs8
-x+pyq+1Iwtn/QbnU5kspc0Pz5aG83kK4WU42yHFh3epcByAgLxE+gzoiZybl2dXQ
-2CyQQS282YESrneJ39QInlcLYGxwuqZUaRKF1vKo2w0X+efeqpEd9xjQeJz8QfCD
-y6MZQeTyAoLbGQD2e9htlTzgShFoMxk0j8oQH1iPviFy0uAzIZTUxuRY4sSbyMLd
-diu4gAe63ADvrmqCgqlBM6OKoA1/YzdDw0fIsVacMEnOEOCUZHZ8gFpFLpgt6Xf2
-JNaNxB+VJELeckpVSiu7
-=rrkk
------END PGP SIGNATURE-----
-
---l+goss899txtYvYf--
+Tested-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
