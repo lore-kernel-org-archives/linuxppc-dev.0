@@ -1,25 +1,43 @@
-Return-Path: <runaway@candw.ms>
-Received: from smtp754.redcondor.net (smtp754.redcondor.net [208.80.206.54])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtH403YyYzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:51:58 +1000 (AEST)
-Subject: Re: [PATCH v1 00/23] ata: sata_dwc_460ex: make it working again
-To: Christian Lamparter <chunkeey@googlemail.com>
-References: <1461262544-115408-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <4252844.GfFuvxr01B@debian64> <571CC4A7.8050808@candw.ms>
- <33998356.WVR1zQ2T7Q@debian64>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, =?UTF-8?B?TcOlbnMgUnVsbGfDpXJk?=
- <mans@mansr.com>
-From: Julian Margetson <runaway@candw.ms>
-Message-ID: <571D07A4.6040904@candw.ms>
-Date: Sun, 24 Apr 2016 13:51:32 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qtH9F5ly4zDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:56:33 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 25 Apr 2016 03:46:27 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E64E53578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:46:21 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3OHkD2b4915622
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:46:21 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3OHjmmj005716
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:45:49 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ Mike Marciniszyn <infinipath@intel.com>,
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org
+Subject: Re: [PATCH V2] powerpc/infiniband: Use cache inhibitted and guarded
+ mapping on powerpc
+In-Reply-To: <1461399949.3135.52.camel@kernel.crashing.org>
+References: <1461139097-10213-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1461278876.3135.18.camel@kernel.crashing.org>
+ <20160422160927.GB12897@obsidianresearch.com>
+ <1461399949.3135.52.camel@kernel.crashing.org>
+Date: Sun, 24 Apr 2016 23:03:10 +0530
+Message-ID: <87shyanc89.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <33998356.WVR1zQ2T7Q@debian64>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +47,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 4/24/2016 11:21 AM, Christian Lamparter wrote:
-> On Sunday, April 24, 2016 09:05:43 AM Julian Margetson wrote:
->> On 4/23/2016 3:41 PM, Christian Lamparter wrote:
->>> There's a known errata for the 460EX, with the CPU lockup upon
->>> high AHB traffic:
->>> <http://lists.denx.de/pipermail/u-boot/2008-June/036078.html>
->>>
->>> "This patch implements a fix provided by AMCC so that the lockup upon
->>> simultanious traffic on AHB USB OTG, USB 2.0 and SATA doesn't occur
->>> anymore:..."
->>>
->>> This should be fixed by u-boot. However, there's no telling if
->>> there's more to this workaround in the dma engine. You could try
->>> to do the testing without anything connected to the USB ports
->>> and disable/remove all usb hcds modules. As for fixing this:
->>> I did a quick search but couldn't find any public information.
->>> There's always support@apm.com (contact them!), or maybe someone
->>> from the Amiga community knows more?
->>>
->>>
->> Tested with kernel with all USB disabled. No sata error messages
->> during the partition copy but the copying is quite slow.
-> Ok. The CONFIG_DMADEVICES_DEBUG and CONFIG_DMADEVICES_VDEBUG option
-> have quite a large overhead, if this fixed the issue for now you
-> could try to disable them and look if the issue comes back or not.
-> (also, you can drop the mdelay patch if it's still applied). If
-> the issue doesn't come back, you could add your "Tested-by" tag
-> too.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+> On Fri, 2016-04-22 at 10:09 -0600, Jason Gunthorpe wrote:
+>> On Fri, Apr 22, 2016 at 08:47:56AM +1000, Benjamin Herrenschmidt
+>> wrote:
+>> > 
+>> > On Wed, 2016-04-20 at 03:58 -0400, Aneesh Kumar K.V wrote:
+>> > > 
+>> > > The driver was requesting for a writethrough mapping. But with
+>> > > thoses
+>> > > flags we will end up with a SAO mapping because we now have
+>> > > memory
+>> > > conherence always enabled. ie, the existing mapping will end up
+>> > > with
+>> > > a WIMG value 0b1110 which is Strong Access Order.
+>> > > 
+>> > > Update this to use cache inhibitted guarded mapping
+>> > Why guarded ? If it's performance sensitive (and the driver has
+>> > appropriate barriers where needed), you will get write combining
+>> > without guarded, you won't with it.
+>> This driver uses uncached write combining on x86
 >
-> Another thing, the sata dwc driver doesn't yet support NCQ. Do you
-> know if the driver for the Amiga OS does?
+> Right so if you want something similar on power, use the _wc variant,
+> and make sure you have the appropriate barriers when you need to
+> break combining.
 >
->> so this does appear to be the problem.
-> So, how to fix this? I know, there's an AHB DMA Arbiter. But I can't
-> get any documentation for it from AMCC/APM. Maybe denx.de or someone
-> from the Amiga community knows how to deal with it. In theory, we
-> could try if limiting the burst length, pending dma request count or
-> add code to retry failed dma transfers and reinit the usb-cores would
-> help.
->
-> Regards,
-> Christian
->
->
-Disabled
+> Cheers,
+> Ben.
 
-CONFIG_DMADEVICES_DEBUG and CONFIG_DMADEVICES_VDEBUG
+The code after change looks like below
 
-Still see issues with the USB enabled.
-With USB also disabled I was able to finish the partition copy. But 
-again it is very slow.
+#if defined(__powerpc__)
+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+#endif
 
-(parted) mklabel msdos
-Warning: The existing disk label on /dev/sda will be destroyed and all 
-data on
-this disk will be lost. Do you want to continue?
-Yes/No? y
-(parted) p
-Model: ATA WDC WD5000AAKX-0 (scsi)
-Disk /dev/sda: 500GB
-Sector size (logical/physical): 512B/512B
-Partition Table: msdos
-Disk Flags:
+	/*
+	 * don't allow them to later change to readable with mprotect (for when
+	 * not initially mapped readable, as is normally the case)
+	 */
+	vma->vm_flags &= ~VM_MAYREAD;
+	vma->vm_flags |= VM_DONTCOPY | VM_DONTEXPAND;
 
-Number  Start  End  Size  Type  File system  Flags
+	/* We used PAT if wc_cookie == 0 */
+	if (!dd->wc_cookie)
+		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 
-(parted) q
-Information: You may need to update /etc/fstab.
+So it uses pgprot_noncached_wc if (!dd->wc_cookie). Hence I was thinking
+it needs more stricter mapping otherwise.
 
-root@Amigaone:/home/amigaone# dd if=/dev/sdb6 of=/dev/sda
-43597824+0 records in
-43597824+0 records out
-22322085888 bytes (22 GB, 21 GiB) copied, 2825.93 s, 7.9 MB/s
-
-Regards
-Julian
+-aneesh
