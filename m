@@ -1,41 +1,37 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtH9F5ly4zDq64
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:56:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qtQpn5tswzDq9q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 09:41:05 +1000 (AEST)
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 25 Apr 2016 03:46:27 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E64E53578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:46:21 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3OHkD2b4915622
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:46:21 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3OHjmmj005716
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 03:45:49 +1000
+ Mon, 25 Apr 2016 08:30:40 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ADF082CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 08:30:35 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3OMUJ1K1573224
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 08:30:35 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3OMTtKr030479
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 08:29:55 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- Mike Marciniszyn <infinipath@intel.com>,
- Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
- Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org
-Subject: Re: [PATCH V2] powerpc/infiniband: Use cache inhibitted and guarded
- mapping on powerpc
-In-Reply-To: <1461399949.3135.52.camel@kernel.crashing.org>
-References: <1461139097-10213-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461278876.3135.18.camel@kernel.crashing.org>
- <20160422160927.GB12897@obsidianresearch.com>
- <1461399949.3135.52.camel@kernel.crashing.org>
-Date: Sun, 24 Apr 2016 23:03:10 +0530
-Message-ID: <87shyanc89.fsf@skywalker.in.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2 04/68] powerpc/mm: Use big endian page table for book3s
+ 64
+In-Reply-To: <1461322918.22163.5.camel@ellerman.id.au>
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1461322918.22163.5.camel@ellerman.id.au>
+Date: Mon, 25 Apr 2016 03:59:36 +0530
+Message-ID: <87shya8wtr.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,53 +43,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> On Fri, 2016-04-22 at 10:09 -0600, Jason Gunthorpe wrote:
->> On Fri, Apr 22, 2016 at 08:47:56AM +1000, Benjamin Herrenschmidt
->> wrote:
->> > 
->> > On Wed, 2016-04-20 at 03:58 -0400, Aneesh Kumar K.V wrote:
->> > > 
->> > > The driver was requesting for a writethrough mapping. But with
->> > > thoses
->> > > flags we will end up with a SAO mapping because we now have
->> > > memory
->> > > conherence always enabled. ie, the existing mapping will end up
->> > > with
->> > > a WIMG value 0b1110 which is Strong Access Order.
->> > > 
->> > > Update this to use cache inhibitted guarded mapping
->> > Why guarded ? If it's performance sensitive (and the driver has
->> > appropriate barriers where needed), you will get write combining
->> > without guarded, you won't with it.
->> This driver uses uncached write combining on x86
+> On Sat, 2016-04-09 at 11:43 +0530, Aneesh Kumar K.V wrote:
 >
-> Right so if you want something similar on power, use the _wc variant,
-> and make sure you have the appropriate barriers when you need to
-> break combining.
+>> This enables us to share the same page table code for
+>> both radix and hash.
 >
-> Cheers,
-> Ben.
+> To be clear, only 64-bit hash.
+>
+> In theory there's no reason we can't *always* mark the page tables as BE, after
+> all everything other than the new ppc64le systems are BE.
+>
+> But looking at it, that will cause knock-on effects in a few places. So we
+> won't do it now. But it would be a good clean-up in the medium term I think. It
+> would get us back to a single pgtable-types.h.
+>
+>> Radix use a hardware defined big endian page table
+>
+> So everyone keeps telling me :)
+>
+> Where is this specified? I can't find it in the ISA. But I must be searching
+> for the wrong words.
 
-The code after change looks like below
-
-#if defined(__powerpc__)
-	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-#endif
-
-	/*
-	 * don't allow them to later change to readable with mprotect (for when
-	 * not initially mapped readable, as is normally the case)
-	 */
-	vma->vm_flags &= ~VM_MAYREAD;
-	vma->vm_flags |= VM_DONTCOPY | VM_DONTEXPAND;
-
-	/* We used PAT if wc_cookie == 0 */
-	if (!dd->wc_cookie)
-		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-
-So it uses pgprot_noncached_wc if (!dd->wc_cookie). Hence I was thinking
-it needs more stricter mapping otherwise.
+It is definied by the pte entry format. We don't call it out as
+Big-endian format. But it is derived from powerpc bit naming convention. The same is
+true for hash page table entry.
 
 -aneesh
