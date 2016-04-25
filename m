@@ -1,22 +1,42 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtgvm3HRLzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 19:31:16 +1000 (AEST)
-Subject: Re: [PATCH] powerpc: Fix definition of SIAR register
-To: Thomas Huth <thuth@redhat.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-References: <1460130851-29021-1-git-send-email-thuth@redhat.com>
- <571DD072.6040305@linux.vnet.ibm.com>
- <182287E9-40B9-4774-A932-08A0AA499AE3@suse.de> <571DE05C.8080805@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-From: Alexander Graf <agraf@suse.de>
-Message-ID: <571DE3DF.9070506@suse.de>
-Date: Mon, 25 Apr 2016 11:31:11 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qthjk4dMczDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 20:07:38 +1000 (AEST)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Mon, 25 Apr 2016 20:07:34 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E705F2BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 20:06:55 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3PA6laX4915478
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 20:06:55 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3PA6LYk005414
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 20:06:22 +1000
+Subject: Re: [RFC v6 00/10] vfio-pci: Allow to mmap sub-page MMIO BARs and
+ MSI-X table
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org, linux-doc@vger.kernel.org,
+ alex.williamson@redhat.com
+References: <1460976816-29294-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, joro@8bytes.org, corbet@lwn.net,
+ warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <571DEC01.5040802@linux.vnet.ibm.com>
+Date: Mon, 25 Apr 2016 18:05:53 +0800
 MIME-Version: 1.0
-In-Reply-To: <571DE05C.8080805@redhat.com>
+In-Reply-To: <1460976816-29294-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,72 +47,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/25/2016 11:16 AM, Thomas Huth wrote:
-> On 25.04.2016 10:15, Alexander Graf wrote:
->>
->>> Am 25.04.2016 um 10:08 schrieb Madhavan Srinivasan <maddy@linux.vnet.ibm.com>:
->>>
->>>
->>>
->>>> On Friday 08 April 2016 09:24 PM, Thomas Huth wrote:
->>>> The SIAR register is available twice, one time as SPR 780 (unprivileged,
->>>> but read-only), and one time as SPR 796 (privileged, but read and write).
->>>> The Linux kernel code currently uses SPR 780 - and while this is OK for
->>>> reading, writing to that register of course does not work.
->>>> Since the KVM code tries to write to this register, too (see the mtspr
->>>> in book3s_hv_rmhandlers.S), the contents of this register sometimes get
->>>> lost for the guests, e.g. during migration of a VM.
->>>> To fix this issue, simply switch to the other SPR numer 796 instead.
->>> IIUC, SIAR and SDAR are updated by hardware when we take
->>> a pmu exception with sampling mode enabled (based on instr).
->>> And these register contents are mainly for OS consumption.
->>> So, we dont need to restore these register values at all,
->>> kindly correct me if I missing something here.
->> What if you migrate between a pmu event firing and the os reading siar? Or what if the host gets pmu events? Or we migrate the guest to a different pcpu? In all those cases we need to ensure the register contents are consistent.
-> Right. Or a guest could use the SIAR as a temporary scratch register
-> while not using the performance monitoring stuff. In that case the
-> contents of the register of course have to be preserved, too.
+Hi Alex,
+
+Any comment?
+
+Thanks,
+Yongji
+
+On 2016/4/18 18:53, Yongji Xie wrote:
+> Current vfio-pci implementation disallows to mmap
+> sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
+> sub-page BARs' mmio page may be shared with other BARs and MSI-X table
+> should not be accessed directly from the guest for security reasons.
 >
->>>> Signed-off-by: Thomas Huth <thuth@redhat.com>
->>>> ---
->>>> Note: The perf code in core-book3s.c also seems to write to the SIAR
->>>>        SPR, so that might be affected by this issue, too - but I did
->>>>        not test the perf code, so I'm not sure about that part.
->> Please write a small unit test that fires off pmu events constantly and checks whtether they arrive correctly. Run perf in parallel on the host to increase the chance for breakage.
-> I'm not very familiar with that PMU stuff yet, but I can have a try...
+> But it will easily cause some performance issues for mmio accesses
+> in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
+> table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
+> on PPC64 platform and the big page may easily hit the sub-page MMIO
+> BARs' unmmapping and cause the unmmaping of the mmio page which
+> MSI-X table locate in, which lead to mmio emulation in host.
 >
->>>> arch/powerpc/include/asm/reg.h | 2 +-
->>>> 1 file changed, 1 insertion(+), 1 deletion(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
->>>> index f5f4c66..6630420 100644
->>>> --- a/arch/powerpc/include/asm/reg.h
->>>> +++ b/arch/powerpc/include/asm/reg.h
->>>> @@ -752,13 +752,13 @@
->>>> #define SPRN_PMC6    792
->>>> #define SPRN_PMC7    793
->>>> #define SPRN_PMC8    794
->>>> -#define SPRN_SIAR    780
->>>> #define SPRN_SDAR    781
->>>> #define SPRN_SIER    784
->>>> #define   SIER_SIPR        0x2000000    /* Sampled MSR_PR */
->>>> #define   SIER_SIHV        0x1000000    /* Sampled MSR_HV */
->>>> #define   SIER_SIAR_VALID    0x0400000    /* SIAR contents valid */
->>>> #define   SIER_SDAR_VALID    0x0200000    /* SDAR contents valid */
->>>> +#define SPRN_SIAR    796
->> I'm sure there's a reason (iSeries?) we used the r/o version before. Better introduce a new constant that gives us rw access and use that in the kvm entry/exit code.
-> Sure. Any suggestions on the naming? I could either rename the current
-> SPRN_SIAR to SPRN_USIAR (so that it is named similar to other registers
-> that behave that way, like SPRN_USPRG3 - and also QEMU uses USIAR for
-> this already). Or I could leave the old name untouched and use something
-> like "SPRN_SIAR_WR" for the 796 register. What do you prefer?
-
-I'd defer that decision to Michael :).
-
-> By the way, I just noticed that SPRN_SDAR (781) seems to suffer from the
-> same problem, too!
-
-Great! The more the merrier :)
-
-
-Alex
+> For sub-page MMIO BARs' unmmapping, this patchset modifies
+> resource_alignment kernel parameter to enforce the alignment of all
+> MMIO BARs to be at least PAGE_SZIE so that sub-page BAR's mmio page
+> will not be shared with other BARs. And we also add shadow resources
+> to the vfio device and put them into the holes of mmio pages in case
+> that hot-add device's BARs are assigned into the holes. Then we can
+> mmap sub-page MMIO BARs safely.
+>
+> For MSI-X table's unmmapping, we think MSI-X table is safe to access
+> directly from userspace if hardware supports the capability of
+> interrupt remapping which can ensure that a given pci device can
+> only shoot the MSIs assigned for it. But the implenmentation of
+> this capability is arch-independent. To have a universal way
+> to test this capability on PCI side for different archs, we introduce
+> a new bus_flags PCI_BUS_FLAGS_MSI_REMAP.
+>
+> With this patchset applied, we can get almost 100% improvement on
+> performance for small block 4k random read when we passthrough a FC
+> HBA containing sub-page BARs and MSI-X BARs to guest on PPC64 in
+> our test.
+>
+> The patch 8 are based on the proposed patchset[2].
+>
+> Changelog v6:
+> - Rebase on vfio/next with patchset[2] applied
+> - Fix some bugs of v5
+> - Add three patches to make PCI_BUS_FLAGS_MSI_REMAP as
+>    a universal flag to test IRQ remapping
+>
+> Changelog v5:
+> - Rebase on vfio/next
+> - Change the order of patch 1,2,3
+> - Move the warning "resource_alignment will not work with
+>    PCI_PROBE_ONLY set" from documentation to kernel log
+> - Remove IORESOURCE_WINDOW
+> - Add description for parameter "resize"
+> - Add PCIBIOS_MIN_ALIGNMENT to force all MMIO BARs to
+>    get minimum alignment
+> - Add shadow resources to make sure sub-page BAR's mmio
+>    page will not be shared with hot-add BARs.
+> - Add a new bit to pci_bus_flags to indicate the capbility
+>    of interrupt remapping on PPC64
+> - Remove IOMMU_CAP_INTR_REMAP on PPC64
+> - Add a property msi_remap to vfio_pci_device to cache the
+>    capbility of interrupt remapping
+>
+> Changelog v4:
+> - Rebase on v4.5-rc6 with patchset[1] applied.
+> - Remove resource_page_aligned kernel parameter
+> - Fix some problems with resource_alignment kernel parameter
+> - Modify resource_alignment kernel parameter to support multiple
+>    devices.
+> - Remove host bridge attribute: msi_filtered
+> - Use IOMMU_CAP_INTR_REMAP to check if MSI-X table can be mmapped
+> - Add IOMMU_CAP_INTR_REMAP for IODA host bridge on PPC64 platform
+>
+> Changelog v3:
+> - Rebase on new linux kernel mainline with the patchset[1] applied.
+> - Add a function to check whether PCI BARs'mmio page is shared with
+>    other BARs.
+> - Add a host bridge attribute to indicate PCI host bridge support
+>    filtering of MSIs.
+> - Use the new host bridge attribute to check if MSI-X table can
+>    be mmapped instead of CONFIG_EEH.
+> - Remove Kconfig option VFIO_PCI_MMAP_MSIX
+>
+> Changelog v2:
+> - Rebase on v4.4-rc6 with the patchset[1] applied.
+> - Use kernel parameter to enforce all MMIO BARs to be page aligned
+>    on PCI core code instead of doing it on PPC64 arch code.
+> - Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
+>
+> [1] http://www.spinics.net/lists/kvm/msg127812.html
+> [2] http://www.spinics.net/lists/kvm/msg130256.html
+>
+> Yongji Xie (10):
+>    PCI: Ignore resource_alignment if PCI_PROBE_ONLY was set
+>    PCI: Do not Use IORESOURCE_STARTALIGN to identify bridge resources
+>    PCI: Add a new option for resource_alignment to reassign alignment
+>    PCI: Add support for enforcing all MMIO BARs to be page aligned
+>    vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page is exclusive
+>    PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+>    iommu: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have capability of IRQ remapping
+>    PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller supports IRQ remapping
+>    pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host bridge
+>    vfio-pci: Allow to mmap MSI-X table if interrupt remapping is supported
+>
+>   Documentation/kernel-parameters.txt       |    7 +-
+>   arch/powerpc/include/asm/pci.h            |    2 +
+>   arch/powerpc/platforms/powernv/pci-ioda.c |    8 +++
+>   drivers/iommu/iommu.c                     |   15 +++++
+>   drivers/pci/msi.c                         |   12 ++++
+>   drivers/pci/pci.c                         |  105 +++++++++++++++++++++++------
+>   drivers/pci/probe.c                       |    3 +
+>   drivers/pci/setup-bus.c                   |    9 ++-
+>   drivers/vfio/pci/vfio_pci.c               |   65 +++++++++++++++---
+>   drivers/vfio/pci/vfio_pci_private.h       |    8 +++
+>   drivers/vfio/pci/vfio_pci_rdwr.c          |    3 +-
+>   include/linux/msi.h                       |    6 +-
+>   include/linux/pci.h                       |    1 +
+>   13 files changed, 208 insertions(+), 36 deletions(-)
+>
