@@ -1,19 +1,20 @@
-Return-Path: <raj.khem@gmail.com>
-Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
- [IPv6:2607:f8b0:400e:c00::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtbDH6x7YzDq9q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 16:00:15 +1000 (AEST)
-Received: by mail-pf0-x22e.google.com with SMTP id c189so17661358pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Apr 2016 23:00:15 -0700 (PDT)
-From: Khem Raj <raj.khem@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Khem Raj <raj.khem@gmail.com>, Kees Cook <keescook@chromium.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/ptrace: Fix out of bounds array access warning
-Date: Sun, 24 Apr 2016 23:00:06 -0700
-Message-Id: <1461564006-22331-1-git-send-email-raj.khem@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qtcL32wstzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 16:50:18 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: Fix definition of SIAR register
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1460130851-29021-1-git-send-email-thuth@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <571DBE20.8070501@redhat.com>
+Date: Mon, 25 Apr 2016 08:50:08 +0200
+MIME-Version: 1.0
+In-Reply-To: <1460130851-29021-1-git-send-email-thuth@redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gcc-6 correctly warns about a out of bounds access
+On 08.04.2016 17:54, Thomas Huth wrote:
+> The SIAR register is available twice, one time as SPR 780 (unprivileged,
+> but read-only), and one time as SPR 796 (privileged, but read and write).
+> The Linux kernel code currently uses SPR 780 - and while this is OK for
+> reading, writing to that register of course does not work.
+> Since the KVM code tries to write to this register, too (see the mtspr
+> in book3s_hv_rmhandlers.S), the contents of this register sometimes get
+> lost for the guests, e.g. during migration of a VM.
+> To fix this issue, simply switch to the other SPR numer 796 instead.
+> 
+> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> ---
+>  Note: The perf code in core-book3s.c also seems to write to the SIAR
+>        SPR, so that might be affected by this issue, too - but I did
+>        not test the perf code, so I'm not sure about that part.
+> 
+>  arch/powerpc/include/asm/reg.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index f5f4c66..6630420 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -752,13 +752,13 @@
+>  #define SPRN_PMC6	792
+>  #define SPRN_PMC7	793
+>  #define SPRN_PMC8	794
+> -#define SPRN_SIAR	780
+>  #define SPRN_SDAR	781
+>  #define SPRN_SIER	784
+>  #define   SIER_SIPR		0x2000000	/* Sampled MSR_PR */
+>  #define   SIER_SIHV		0x1000000	/* Sampled MSR_HV */
+>  #define   SIER_SIAR_VALID	0x0400000	/* SIAR contents valid */
+>  #define   SIER_SDAR_VALID	0x0200000	/* SDAR contents valid */
+> +#define SPRN_SIAR	796
+>  #define SPRN_TACR	888
+>  #define SPRN_TCSCR	889
+>  #define SPRN_CSIGR	890
 
-arch/powerpc/kernel/ptrace.c:407:24: warning: index 32 denotes an offset greater than size of 'u64[32][1] {aka long long unsigned int[32][1]}' [-Warray-bounds]
-        offsetof(struct thread_fp_state, fpr[32][0]));
-                        ^
+Ping!
 
-check the end of array instead of beginning of next element to fix this
+Anybody any comments?
 
-Signed-off-by: Khem Raj <raj.khem@gmail.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/ptrace.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 30a03c0..269f80f 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -377,7 +377,7 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
- 
- #else
- 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
--		     offsetof(struct thread_fp_state, fpr[32][0]));
-+		     offsetof(struct thread_fp_state, fpr[31][1]));
- 
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				   &target->thread.fp_state, 0, -1);
-@@ -405,7 +405,7 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- 	return 0;
- #else
- 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
--		     offsetof(struct thread_fp_state, fpr[32][0]));
-+		     offsetof(struct thread_fp_state, fpr[31][1]));
- 
- 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				  &target->thread.fp_state, 0, -1);
--- 
-2.8.0
+ Thomas
