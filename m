@@ -1,20 +1,39 @@
-Return-Path: <raj.khem@gmail.com>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
+ [IPv6:2607:f8b0:4001:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtryr1qyvzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 02:19:32 +1000 (AEST)
-Received: by mail-pa0-x235.google.com with SMTP id zm5so66829180pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 09:19:32 -0700 (PDT)
-From: Khem Raj <raj.khem@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Khem Raj <raj.khem@gmail.com>, Kees Cook <keescook@chromium.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [PATCH V2] powerpc/ptrace: Fix out of bounds array access warning
-Date: Mon, 25 Apr 2016 09:19:17 -0700
-Message-Id: <1461601157-27478-1-git-send-email-raj.khem@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qtsD53qXZzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 02:31:01 +1000 (AEST)
+Received: by mail-ig0-x244.google.com with SMTP id qu10so11651595igc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 09:31:01 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20160425152643.GZ2274@localhost>
+References: <1461166339-11109-1-git-send-email-geert+renesas@glider.be>
+ <1461166339-11109-7-git-send-email-geert+renesas@glider.be>
+ <20160425152643.GZ2274@localhost>
+Date: Mon, 25 Apr 2016 18:30:58 +0200
+Message-ID: <CAMuHMdWsAj2Tmp3hQQAwZaB39j0KM=kcsobf+NtnrAG-aX5ohg@mail.gmail.com>
+Subject: Re: [PATCH 06/14] dmaengine: bcm2835: DT spelling
+ s/interrupts-names/interrupt-names/
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Vinod Koul <vinod.koul@intel.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Lee Jones <lee@kernel.org>,
+ Zhou Wang <wangzhou1@hisilicon.com>, Tony Lindgren <tony@atomide.com>,
+ Srinivas Kandagatla <srinivas.kandagatla@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mark Brown <broonie@kernel.org>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Joe Perches <joe@perches.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-pci <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ dmaengine@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +43,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gcc-6 correctly warns about a out of bounds access
+Hi Vinod,
 
-arch/powerpc/kernel/ptrace.c:407:24: warning: index 32 denotes an offset greater than size of 'u64[32][1] {aka long long unsigned int[32][1]}' [-Warray-bounds]
-        offsetof(struct thread_fp_state, fpr[32][0]));
-                        ^
+On Mon, Apr 25, 2016 at 5:26 PM, Vinod Koul <vinod.koul@intel.com> wrote:
+> On Wed, Apr 20, 2016 at 05:32:11PM +0200, Geert Uytterhoeven wrote:
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> ---
+>>  Documentation/devicetree/bindings/sound/davinci-mcbsp.txt | 2 +-
+>
+> This change does not apply for me, can you please split it up and send the
+> sound ones thru sound tree
 
-check the end of array instead of beginning of next element to fix this
+Sorry, I seem to have mixed two unrelated drivers.
+Will split and resend...
 
-Signed-off-by: Khem Raj <raj.khem@gmail.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>
----
-Changes from v1 to v2:
-- Check for fpr[32] instead of fpr[31][1]
+Gr{oetje,eeting}s,
 
- arch/powerpc/kernel/ptrace.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+                        Geert
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 30a03c0..060b140 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -377,7 +377,7 @@ static int fpr_get(struct task_struct *target, const struct user_regset *regset,
- 
- #else
- 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
--		     offsetof(struct thread_fp_state, fpr[32][0]));
-+		     offsetof(struct thread_fp_state, fpr[32]));
- 
- 	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				   &target->thread.fp_state, 0, -1);
-@@ -405,7 +405,7 @@ static int fpr_set(struct task_struct *target, const struct user_regset *regset,
- 	return 0;
- #else
- 	BUILD_BUG_ON(offsetof(struct thread_fp_state, fpscr) !=
--		     offsetof(struct thread_fp_state, fpr[32][0]));
-+		     offsetof(struct thread_fp_state, fpr[32]));
- 
- 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				  &target->thread.fp_state, 0, -1);
--- 
-2.8.0
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
