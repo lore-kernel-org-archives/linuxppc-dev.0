@@ -1,28 +1,26 @@
-Return-Path: <caleb@crome.org>
-Received: from mail-oi0-x22c.google.com (mail-oi0-x22c.google.com
- [IPv6:2607:f8b0:4003:c06::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtvvP0d4RzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 04:31:44 +1000 (AEST)
-Received: by mail-oi0-x22c.google.com with SMTP id r78so185975919oie.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 11:31:44 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20160425180613.GR3217@sirena.org.uk>
-References: <1461606624-130216-1-git-send-email-caleb@crome.org>
- <20160425180613.GR3217@sirena.org.uk>
-From: Caleb Crome <caleb@crome.org>
-Date: Mon, 25 Apr 2016 11:31:22 -0700
-Message-ID: <CAG5mAdwtMBJB-5UwF+dYddvb=06JfJEexCRauAvHLYB2Ze0_AQ@mail.gmail.com>
-Subject: Re: [PATCH 1/1] ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register
- list
-To: Mark Brown <broonie@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qtwBf3MpRzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 04:44:58 +1000 (AEST)
+Date: Mon, 25 Apr 2016 19:06:13 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Caleb Crome <caleb@crome.org>
 Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
  Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
  Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <20160425180613.GR3217@sirena.org.uk>
+References: <1461606624-130216-1-git-send-email-caleb@crome.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="RCQbRqFVGRR2abej"
+In-Reply-To: <1461606624-130216-1-git-send-email-caleb@crome.org>
+Subject: Re: [PATCH 1/1] ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register
+ list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 25, 2016 at 11:06 AM, Mark Brown <broonie@kernel.org> wrote:
-> On Mon, Apr 25, 2016 at 10:50:24AM -0700, Caleb Crome wrote:
->
->> Due to caching, SOR wasn't written when it should have been.  This
->> patch simply adds SOR to the volatile list.
->
-> Could you expand on when it wasn't written and why it needed to be
-> please?
 
-Yes, sorry.
+--RCQbRqFVGRR2abej
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The CCSR_SSI_SOR is a register that clears the TX and/or the RX fifo
-on the i.MX6 SSI port.  The fsl_ssi_trigger writes this register in
-order to clear the fifo at trigger time.
+On Mon, Apr 25, 2016 at 10:50:24AM -0700, Caleb Crome wrote:
 
-However, since the CCSR_SSI_SOR register is not in the volatile list,
-the caching mechanism prevented the register write in the trigger
-function.  This caused the fifo to not be cleared (because the value
-was unchanged from the last time the register was written), and thus
-causes the channels in both TDM or simple I2S mode to slip and be in
-the wrong time slots on SSI restart.
+> Due to caching, SOR wasn't written when it should have been.  This
+> patch simply adds SOR to the volatile list.
 
-By adding CCSR_SSI_SOR to the volatile list, along with arnaud's
-patches that I just tested (and sent tested-by slugs), fix most of the
-problems  with the SSI port drivers for multi-channel operation (there
-is one more to come that I think really fixes the last bit).
+Could you expand on when it wasn't written and why it needed to be
+please?
 
-Most people never noticed the problem because with simple stereo mode,
-the consequence is that left and right are swapped, which isn't that
-noticeable.
+--RCQbRqFVGRR2abej
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I can re-submit the patch if you like with this more descriptive comment.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Thanks,
- -Caleb
+iQEcBAEBCAAGBQJXHlyUAAoJECTWi3JdVIfQH7QH/iiFtjnWj6/tyzk4VnfXeKLj
+t6mfUR7Gd2cL1OhVsDg9HJJ2hhuxw/FuOK20MRE2UZbdhMGQwZq0zfpNs1bp+JIR
+MhzF1GFfJrRvY6HbsKtk/mRvUysPKjnWuV8UwA2Ec0W0Kn7AKfib6TO10HSNag3I
+UEfH66jQZmOle4mSmARzlHDyZvplDp9W+ABqQrgKNObUjJVEfZJRm2C5xOaAaABB
+RxGVnEJjcBK4yaCSITI51Lqs12V7zgDDg2fndkqQjA1zQG3du3N0CcTCIYCsxt7K
+n2HHvnG/oDYQs3wrz9w0d+DwQX/GD0AQvg6BSvWQz2CIRM7O3bEDFoACTi7o7Y0=
+=ew4i
+-----END PGP SIGNATURE-----
+
+--RCQbRqFVGRR2abej--
