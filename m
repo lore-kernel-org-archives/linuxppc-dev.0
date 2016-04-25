@@ -1,26 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <caleb@crome.org>
+Received: from mail-pf0-x233.google.com (mail-pf0-x233.google.com
+ [IPv6:2607:f8b0:400e:c00::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qtwBf3MpRzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 04:44:58 +1000 (AEST)
-Date: Mon, 25 Apr 2016 19:06:13 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Caleb Crome <caleb@crome.org>
-Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qtwGS3lK5zDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 04:48:16 +1000 (AEST)
+Received: by mail-pf0-x233.google.com with SMTP id n1so72029489pfn.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 11:48:16 -0700 (PDT)
+From: Caleb Crome <caleb@crome.org>
+To: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
  Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Message-ID: <20160425180613.GR3217@sirena.org.uk>
-References: <1461606624-130216-1-git-send-email-caleb@crome.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="RCQbRqFVGRR2abej"
-In-Reply-To: <1461606624-130216-1-git-send-email-caleb@crome.org>
-Subject: Re: [PATCH 1/1] ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Caleb Crome <caleb@crome.org>
+Subject: [PATCH v2 1/1] ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register
  list
+Date: Mon, 25 Apr 2016 11:36:18 -0700
+Message-Id: <1461609378-467-1-git-send-email-caleb@crome.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The CCSR_SSI_SOR is a register that clears the TX and/or the RX fifo
+on the i.MX SSI port.  The fsl_ssi_trigger writes this register in
+order to clear the fifo at trigger time.
 
---RCQbRqFVGRR2abej
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+However, since the CCSR_SSI_SOR register is not in the volatile list,
+the caching mechanism prevented the register write in the trigger
+function.  This caused the fifo to not be cleared (because the value
+was unchanged from the last time the register was written), and thus
+causes the channels in both TDM or simple I2S mode to slip and be in
+the wrong time slots on SSI restart.
 
-On Mon, Apr 25, 2016 at 10:50:24AM -0700, Caleb Crome wrote:
+This has gone unnoticed for so long because with simple stereo mode,
+the consequence is that left and right are swapped, which isn't that
+noticeable.  However, it's catestrophic in some systems that
+require the channels to be in the right slots.
 
-> Due to caching, SOR wasn't written when it should have been.  This
-> patch simply adds SOR to the volatile list.
+Signed-off-by: Caleb Crome <caleb@crome.org>
+Suggested-by: Arnaud Mouiche <arnaud.mouiche@invoxia.com>
 
-Could you expand on when it wasn't written and why it needed to be
-please?
+---
+ sound/soc/fsl/fsl_ssi.c | 1 +
+ 1 file changed, 1 insertion(+)
 
---RCQbRqFVGRR2abej
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXHlyUAAoJECTWi3JdVIfQH7QH/iiFtjnWj6/tyzk4VnfXeKLj
-t6mfUR7Gd2cL1OhVsDg9HJJ2hhuxw/FuOK20MRE2UZbdhMGQwZq0zfpNs1bp+JIR
-MhzF1GFfJrRvY6HbsKtk/mRvUysPKjnWuV8UwA2Ec0W0Kn7AKfib6TO10HSNag3I
-UEfH66jQZmOle4mSmARzlHDyZvplDp9W+ABqQrgKNObUjJVEfZJRm2C5xOaAaABB
-RxGVnEJjcBK4yaCSITI51Lqs12V7zgDDg2fndkqQjA1zQG3du3N0CcTCIYCsxt7K
-n2HHvnG/oDYQs3wrz9w0d+DwQX/GD0AQvg6BSvWQz2CIRM7O3bEDFoACTi7o7Y0=
-=ew4i
------END PGP SIGNATURE-----
-
---RCQbRqFVGRR2abej--
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 216e3cb..2f3bf9c 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -151,6 +151,7 @@ static bool fsl_ssi_volatile_reg(struct device *dev, unsigned int reg)
+ 	case CCSR_SSI_SACDAT:
+ 	case CCSR_SSI_SATAG:
+ 	case CCSR_SSI_SACCST:
++	case CCSR_SSI_SOR:
+ 		return true;
+ 	default:
+ 		return false;
+-- 
+1.9.1
