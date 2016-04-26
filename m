@@ -1,25 +1,33 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvPbh00mdzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 23:49:51 +1000 (AEST)
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qvPbg0Kz7z9t5Y
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 23:49:50 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id zy2so1861089pac.2
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 06:49:50 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org,
-	mpe@ellerman.id.au
-Cc: andrew.donnellan@au1.ibm.com, bsingharora@gmail.com,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH v2 1/6] powerpc: rework sparse for lib/xor_vmx.c
-Date: Tue, 26 Apr 2016 23:49:09 +1000
-Message-Id: <1461678549-12330-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvQJv6gjhzDq9s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 00:22:06 +1000 (AEST)
+Date: Tue, 26 Apr 2016 16:21:57 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v5 4/4] printk/nmi: flush NMI messages on the system panic
+Message-ID: <20160426142157.GK2749@pathway.suse.cz>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-5-git-send-email-pmladek@suse.com>
+ <20160423034924.GA535@swordfish>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160423034924.GA535@swordfish>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sparse doesn't seem to be passing -maltivec around properly, leading
-to lots of errors:
+On Sat 2016-04-23 12:49:24, Sergey Senozhatsky wrote:
+> Hello Petr,
+> 
+> On (04/21/16 13:48), Petr Mladek wrote:
+> >  extern void printk_nmi_flush(void);
+> > +extern void printk_nmi_flush_on_panic(void);
+> >  #else
+> >  static inline void printk_nmi_flush(void) { }
+> > +static inline void printk_nmi_flush_on_panic(void) { }
+> [..]
+> > +void printk_nmi_flush_on_panic(void)
+> > +{
+> > +	/*
+> > +	 * Make sure that we could access the main ring buffer.
+> > +	 * Do not risk a double release when more CPUs are up.
+> > +	 */
+> > +	if (in_nmi() && raw_spin_is_locked(&logbuf_lock)) {
+> > +		if (num_online_cpus() > 1)
+> > +			return;
+> > +
+> > +		debug_locks_off();
+> > +		raw_spin_lock_init(&logbuf_lock);
+> > +	}
+> > +
+> > +	printk_nmi_flush();
+> > +}
+> [..]
+> > -static DEFINE_RAW_SPINLOCK(logbuf_lock);
+> > +DEFINE_RAW_SPINLOCK(logbuf_lock);
+> 
+> just an idea,
+> 
+> how about doing it a bit differently?
+> 
+> 
+> move printk_nmi_flush_on_panic() to printk.c, and place it next to
+> printk_flush_on_panic() (so we will have two printk "flush-on-panic"
+> functions sitting together). /* printk_nmi_flush() is in printk.h,
+> so it's visible to printk anyway */
+> 
+> it also will let us keep logbuf_lock static, it's a bit too internal
+> to printk to expose it, I think.
+> 
+> IOW, something like this?
 
-.../include/altivec.h:34:2: error: Use the "-maltivec" flag to enable PowerPC AltiVec support
-arch/powerpc/lib/xor_vmx.c:27:16: error: Expected ; at end of declaration
-arch/powerpc/lib/xor_vmx.c:27:16: error: got signed
-arch/powerpc/lib/xor_vmx.c:60:9: error: No right hand side of '*'-expression
-arch/powerpc/lib/xor_vmx.c:60:9: error: Expected ; at end of statement
-arch/powerpc/lib/xor_vmx.c:60:9: error: got v1_in
-...
-arch/powerpc/lib/xor_vmx.c:87:9: error: too many errors
+It is rather cosmetic change. I 
 
-Only include the altivec.h header for non-__CHECKER__ builds.
-For builds with __CHECKER__, make up some stubs instead, as
-suggested by Balbir. (The vector size of 16 is arbitrary.)
+> ---
+> 
+>  kernel/printk/internal.h |  2 --
+>  kernel/printk/nmi.c      | 27 ---------------------------
+>  kernel/printk/printk.c   | 29 ++++++++++++++++++++++++++++-
+>  3 files changed, 28 insertions(+), 30 deletions(-)
+> 
+> diff --git a/kernel/printk/internal.h b/kernel/printk/internal.h
+> index 7fd2838..341bedc 100644
+> --- a/kernel/printk/internal.h
+> +++ b/kernel/printk/internal.h
+> @@ -22,8 +22,6 @@ int __printf(1, 0) vprintk_default(const char *fmt, va_list args);
+>  
+>  #ifdef CONFIG_PRINTK_NMI
+>  
+> -extern raw_spinlock_t logbuf_lock;
 
-Suggested-by: Balbir Singh <bsingharora@gmail.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
-This version works, which is - embarassingly - an improvement over
-v1. I should test things better, sorry.
----
- arch/powerpc/lib/xor_vmx.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Well, it was exposed only in the internal.h header file. I consider
+this rather a cosmetic change and do not have strong opinion about it. :-)
 
-diff --git a/arch/powerpc/lib/xor_vmx.c b/arch/powerpc/lib/xor_vmx.c
-index 07f49f1568e5..f9de69a04e88 100644
---- a/arch/powerpc/lib/xor_vmx.c
-+++ b/arch/powerpc/lib/xor_vmx.c
-@@ -17,7 +17,17 @@
-  *
-  * Author: Anton Blanchard <anton@au.ibm.com>
-  */
-+
-+/*
-+ * Sparse (as at v0.5.0) gets very, very confused by this file.
-+ * Make it a bit simpler for it.
-+ */
-+#if !defined(__CHECKER__)
- #include <altivec.h>
-+#else
-+#define vec_xor(a, b) a ^ b
-+#define vector __attribute__((vector_size(16)))
-+#endif
- 
- #include <linux/preempt.h>
- #include <linux/export.h>
--- 
-2.5.0
+Anyway, thanks a lot for review.
+
+Best Regards,
+Petr
