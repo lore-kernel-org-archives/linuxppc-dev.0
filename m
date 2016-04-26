@@ -1,38 +1,25 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0060.outbound.protection.outlook.com [157.55.234.60])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qv6pY6snszDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 12:43:17 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: Mark Rutland <mark.rutland@arm.com>
-CC: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
- <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- Scott Wood <scott.wood@nxp.com>, Rob Herring <robh+dt@kernel.org>, "Russell
- King" <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, "Joerg
- Roedel" <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Zhao Qiang
- <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>, "Santosh
- Shilimkar" <ssantosh@kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo
- Xie <xiaobo.xie@nxp.com>
-Subject: RE: [v8, 1/7] Documentation: DT: update Freescale DCFG compatible
-Date: Tue, 26 Apr 2016 02:43:10 +0000
-Message-ID: <HE1PR04MB0889A68C6D275D3102382D8BF8630@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1461306464-19521-1-git-send-email-yangbo.lu@nxp.com>
- <1461306464-19521-2-git-send-email-yangbo.lu@nxp.com>
- <20160422131151.GJ10606@leverpostej>
-In-Reply-To: <20160422131151.GJ10606@leverpostej>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qv77x5RJdzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 12:58:21 +1000 (AEST)
+Received: by mail-pa0-x22c.google.com with SMTP id bt5so814187pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 19:58:21 -0700 (PDT)
+Subject: Re: [PATCH V2 52/68] powerpc/mm: make 4k and 64k use pte_t for
+ pgtable_t
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-53-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <571ED946.3030900@gmail.com>
+Date: Tue, 26 Apr 2016 12:58:14 +1000
 MIME-Version: 1.0
+In-Reply-To: <1460182444-2468-53-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,71 +29,329 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mark,
 
 
-> -----Original Message-----
-> From: Mark Rutland [mailto:mark.rutland@arm.com]
-> Sent: Friday, April 22, 2016 9:12 PM
-> To: Yangbo Lu
-> Cc: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
-> kernel@vger.kernel.org; linux-clk@vger.kernel.org; linux-
-> i2c@vger.kernel.org; iommu@lists.linux-foundation.org;
-> netdev@vger.kernel.org; ulf.hansson@linaro.org; Scott Wood; Rob Herring;
-> Russell King; Jochen Friedrich; Joerg Roedel; Claudiu Manoil; Bhupesh
-> Sharma; Zhao Qiang; Kumar Gala; Santosh Shilimkar; Yang-Leo Li; Xiaobo
-> Xie
-> Subject: Re: [v8, 1/7] Documentation: DT: update Freescale DCFG
-> compatible
->=20
-> On Fri, Apr 22, 2016 at 02:27:38PM +0800, Yangbo Lu wrote:
-> > Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead of
-> > 'fsl,ls1021a-dcfg' to include more chips.
-> >
-> > Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-> > ---
-> > Changes for v8:
-> > 	- Added this patch
-> > ---
-> >  Documentation/devicetree/bindings/arm/fsl.txt | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/arm/fsl.txt
-> > b/Documentation/devicetree/bindings/arm/fsl.txt
-> > index 752a685..1d5f512 100644
-> > --- a/Documentation/devicetree/bindings/arm/fsl.txt
-> > +++ b/Documentation/devicetree/bindings/arm/fsl.txt
-> > @@ -119,7 +119,7 @@ Freescale DCFG
-> >  configuration and status for the device. Such as setting the
-> > secondary  core start address and release the secondary core from
-> holdoff and startup.
-> >    Required properties:
-> > -  - compatible: should be "fsl,ls1021a-dcfg"
-> > +  - compatible: should be "fsl,<chip>-dcfg"
->=20
-> Please list specific values expected for <chip>, while jusy saying <chip>
-> may be more generic, it makes it practically impossible to search for the
-> correct binding given a compatible string, and it's vague as to exaclty
-> what <chip> should be.
+On 09/04/16 16:13, Aneesh Kumar K.V wrote:
+> pgtable_page_dtor for nohash is now moved to pte_fragment_free_mm()
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-[Lu Yangbo-B47093] Thanks for your comment. I will list the possible chips.
+This needs a better changelog
 
->=20
-> Thanks,
-> Mark.
->=20
->=20
->=20
-> >    - reg : should contain base address and length of DCFG
-> > memory-mapped registers
-> >
-> >  Example:
-> > --
-> > 2.1.0.27.g96db324
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe devicetree"
-> > in the body of a message to majordomo@vger.kernel.org More majordomo
-> > info at  http://vger.kernel.org/majordomo-info.html
-> >
+> ---
+>  arch/powerpc/include/asm/book3s/64/pgalloc.h | 147 +++++++--------------------
+>  arch/powerpc/include/asm/nohash/64/pgalloc.h |  38 +------
+>  arch/powerpc/include/asm/page.h              |  10 +-
+>  arch/powerpc/mm/pgtable_64.c                 |   2 +-
+>  4 files changed, 52 insertions(+), 145 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+> index 37283e3d8e56..faad1319ba26 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+> @@ -41,6 +41,15 @@ extern struct kmem_cache *pgtable_cache[];
+>  			pgtable_cache[(shift) - 1];	\
+>  		})
+>  
+> +#define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
+> +
+> +extern pte_t *pte_fragment_alloc(struct mm_struct *, unsigned long, int);
+> +extern void pte_fragment_free(unsigned long *, int);
+> +extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+> +#ifdef CONFIG_SMP
+> +extern void __tlb_remove_table(void *_table);
+> +#endif
+> +
+>  static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+>  {
+>  	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE), GFP_KERNEL);
+> @@ -72,29 +81,47 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+>  	pud_set(pud, __pgtable_ptr_val(pmd));
+>  }
+>  
+> +static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
+> +                                  unsigned long address)
+> +{
+> +        pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE);
+> +}
+> +
+> +static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+> +{
+> +	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
+> +				GFP_KERNEL|__GFP_REPEAT);
+
+PGALLOC_GFP?
+
+> +}
+> +
+> +static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+> +{
+> +	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
+> +}
+> +
+> +static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
+> +                                  unsigned long address)
+> +{
+> +        return pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX);
+> +}
+> +
+>  static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+>  				       pte_t *pte)
+>  {
+>  	pmd_set(pmd, __pgtable_ptr_val(pte));
+>  }
+> -/*
+> - * FIXME!!
+> - * Between 4K and 64K pages, we differ in what is stored in pmd. ie.
+> - * typedef pte_t *pgtable_t; -> 64K
+> - * typedef struct page *pgtable_t; -> 4k
+> - */
+> -#ifdef CONFIG_PPC_4K_PAGES
+> +
+>  static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+>  				pgtable_t pte_page)
+>  {
+> -	pmd_set(pmd, __pgtable_ptr_val(page_address(pte_page)));
+> +	pmd_set(pmd, __pgtable_ptr_val(pte_page));
+>  }
+>  
+>  static inline pgtable_t pmd_pgtable(pmd_t pmd)
+>  {
+> -	return pmd_page(pmd);
+> +	return (pgtable_t)pmd_page_vaddr(pmd);
+>  }
+>  
+> +#ifdef CONFIG_PPC_4K_PAGES
+>  static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+>  					  unsigned long address)
+>  {
+> @@ -115,83 +142,10 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
+>  		__free_page(page);
+>  		return NULL;
+>  	}
+> -	return page;
+> -}
+> -
+> -static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+> -{
+> -	free_page((unsigned long)pte);
+> -}
+> -
+> -static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+> -{
+> -	pgtable_page_dtor(ptepage);
+> -	__free_page(ptepage);
+> -}
+> -
+> -static inline void pgtable_free(void *table, unsigned index_size)
+> -{
+> -	if (!index_size)
+> -		free_page((unsigned long)table);
+> -	else {
+> -		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+> -		kmem_cache_free(PGT_CACHE(index_size), table);
+> -	}
+> -}
+> -
+> -#ifdef CONFIG_SMP
+> -static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+> -				    void *table, int shift)
+> -{
+> -	unsigned long pgf = (unsigned long)table;
+> -	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+> -	pgf |= shift;
+> -	tlb_remove_table(tlb, (void *)pgf);
+> -}
+> -
+> -static inline void __tlb_remove_table(void *_table)
+> -{
+> -	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
+> -	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
+> -
+> -	pgtable_free(table, shift);
+> -}
+> -#else /* !CONFIG_SMP */
+> -static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+> -				    void *table, int shift)
+> -{
+> -	pgtable_free(table, shift);
+> -}
+> -#endif /* CONFIG_SMP */
+> -
+> -static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+> -				  unsigned long address)
+> -{
+> -	tlb_flush_pgtable(tlb, address);
+> -	pgtable_page_dtor(table);
+> -	pgtable_free_tlb(tlb, page_address(table), 0);
+> +	return pte;
+>  }
+> -
+>  #else /* if CONFIG_PPC_64K_PAGES */
+>  
+> -extern pte_t *pte_fragment_alloc(struct mm_struct *, unsigned long, int);
+> -extern void pte_fragment_free(unsigned long *, int);
+> -extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+> -#ifdef CONFIG_SMP
+> -extern void __tlb_remove_table(void *_table);
+> -#endif
+> -
+> -static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+> -				pgtable_t pte_page)
+> -{
+> -	pmd_set(pmd, __pgtable_ptr_val(pte_page));
+> -}
+> -
+> -static inline pgtable_t pmd_pgtable(pmd_t pmd)
+> -{
+> -	return (pgtable_t)pmd_page_vaddr(pmd);
+> -}
+> -
+>  static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+>  					  unsigned long address)
+>  {
+> @@ -199,10 +153,11 @@ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
+>  }
+>  
+>  static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
+> -					unsigned long address)
+> +				      unsigned long address)
+>  {
+>  	return (pgtable_t)pte_fragment_alloc(mm, address, 0);
+>  }
+> +#endif
+>  
+>  static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+>  {
+> @@ -220,30 +175,6 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+>  	tlb_flush_pgtable(tlb, address);
+>  	pgtable_free_tlb(tlb, table, 0);
+>  }
+> -#endif /* CONFIG_PPC_4K_PAGES */
+> -
+> -static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+> -{
+> -	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
+> -				GFP_KERNEL|__GFP_REPEAT);
+> -}
+> -
+> -static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+> -{
+> -	kmem_cache_free(PGT_CACHE(PMD_CACHE_INDEX), pmd);
+> -}
+> -
+> -static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
+> -                                  unsigned long address)
+> -{
+> -        return pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX);
+> -}
+> -
+> -static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
+> -                                  unsigned long address)
+> -{
+> -        pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE);
+> -}
+>  
+>  #define check_pgt_cache()	do { } while (0)
+>  
+> diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> index be0cce7f7d4e..0c12a3bfe2ab 100644
+> --- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> +++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> @@ -119,46 +119,14 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+>  	__free_page(ptepage);
+>  }
+>  
+> -static inline void pgtable_free(void *table, unsigned index_size)
+> -{
+> -	if (!index_size)
+> -		free_page((unsigned long)table);
+> -	else {
+> -		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+> -		kmem_cache_free(PGT_CACHE(index_size), table);
+> -	}
+> -}
+> -
+> +extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+>  #ifdef CONFIG_SMP
+> -static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+> -				    void *table, int shift)
+> -{
+> -	unsigned long pgf = (unsigned long)table;
+> -	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+> -	pgf |= shift;
+> -	tlb_remove_table(tlb, (void *)pgf);
+> -}
+> -
+> -static inline void __tlb_remove_table(void *_table)
+> -{
+> -	void *table = (void *)((unsigned long)_table & ~MAX_PGTABLE_INDEX_SIZE);
+> -	unsigned shift = (unsigned long)_table & MAX_PGTABLE_INDEX_SIZE;
+> -
+> -	pgtable_free(table, shift);
+> -}
+> -#else /* !CONFIG_SMP */
+> -static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+> -				    void *table, int shift)
+> -{
+> -	pgtable_free(table, shift);
+> -}
+> -#endif /* CONFIG_SMP */
+> -
+> +extern void __tlb_remove_table(void *_table);
+> +#endif
+>  static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+>  				  unsigned long address)
+>  {
+>  	tlb_flush_pgtable(tlb, address);
+> -	pgtable_page_dtor(table);
+>  	pgtable_free_tlb(tlb, page_address(table), 0);
+>  }
+>  
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 158574d2acf4..51db3a37bced 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -316,12 +316,20 @@ void arch_free_page(struct page *page, int order);
+>  #endif
+>  
+>  struct vm_area_struct;
+> -
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +/*
+> + * For BOOK3s 64 with 4k and 64K linux page size
+> + * we want to use pointers, because the page table
+> + * actually store pfn
+> + */
+> +typedef pte_t *pgtable_t;
+> +#else
+>  #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC64)
+>  typedef pte_t *pgtable_t;
+>  #else
+>  typedef struct page *pgtable_t;
+>  #endif
+> +#endif
+>  
+>  #include <asm-generic/memory_model.h>
+>  #endif /* __ASSEMBLY__ */
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index 2304b9cac59e..78910035cbca 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -367,6 +367,7 @@ pte_t *pte_fragment_alloc(struct mm_struct *mm, unsigned long vmaddr, int kernel
+>  
+>  	return __alloc_for_cache(mm, kernel);
+>  }
+> +#endif /* CONFIG_PPC_64K_PAGES */
+>  
+>  void pte_fragment_free(unsigned long *table, int kernel)
+>  {
+> @@ -413,7 +414,6 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+>  	}
+>  }
+>  #endif
+> -#endif /* CONFIG_PPC_64K_PAGES */
+>  
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>  
+> 
