@@ -1,25 +1,23 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
+Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c00::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvCdc5z4WzDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:20:52 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id 206so2881466pfu.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 23:20:52 -0700 (PDT)
-Subject: Re: [PATCH V2 55/68] powerpc/mm: VMALLOC abstraction
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvChb14thzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:23:27 +1000 (AEST)
+Received: by mail-pf0-x22a.google.com with SMTP id y69so2878637pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 23:23:27 -0700 (PDT)
+Subject: Re: [PATCH V2 56/68] powerpc/radix: update mmu cache
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-56-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461307925.32306.46.camel@neuling.org> <87h9etypdu.fsf@skywalker.in.ibm.com>
+ <1460182444-2468-57-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <571F08BB.5010906@gmail.com>
-Date: Tue, 26 Apr 2016 16:20:43 +1000
+Message-ID: <571F0958.40007@gmail.com>
+Date: Tue, 26 Apr 2016 16:23:20 +1000
 MIME-Version: 1.0
-In-Reply-To: <87h9etypdu.fsf@skywalker.in.ibm.com>
+In-Reply-To: <1460182444-2468-57-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,21 +30,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 23/04/16 13:29, Aneesh Kumar K.V wrote:
-> Michael Neuling <mikey@neuling.org> writes:
+On 09/04/16 16:13, Aneesh Kumar K.V wrote:
+> With radix there is no mmu cache. Hence we don't need to do much
+> in update_mmu_cache.
 > 
->> Aneesh,
->>
->> I'm not sure why we need this patch.
->>
->> It seems to be moving the initialisation of some global variables into
->> init functions from the definitions.  And renames some things.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/mem.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index f980da6d7569..3164ce720b3e 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -499,6 +499,8 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
+>  	 * called with either mm->page_table_lock held or ptl lock held
+>  	 */
+>  	unsigned long access = 0, trap;
+> +	if (radix_enabled())
+> +		return;
+>  
+>  	/* We only want HPTEs for linux PTEs that have _PAGE_ACCESSED set */
+>  	if (!pte_young(*ptep) || address >= TASK_SIZE)
 > 
-> because the value to which it is getting initialized is no more a
-> constant.
-> 
-
-Isn't it still a constant depending on the type of page table? Or is it a run time value depending on the chosen page table type?
-
-Balbir Singh
+Acked-by: Balbir Singh <bsingharora@gmail.com>
