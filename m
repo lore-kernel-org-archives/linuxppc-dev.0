@@ -1,32 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvT3512T1zDq9s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 02:25:21 +1000 (AEST)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 27 Apr 2016 02:25:19 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 16C222BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 02:25:15 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3QGP2EH61407396
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 02:25:15 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3QGObaI009808
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 02:24:37 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
-Date: Tue, 26 Apr 2016 21:54:15 +0530
-Message-Id: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvTPM4ZVczDq9s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 02:41:11 +1000 (AEST)
+Date: Tue, 26 Apr 2016 10:40:58 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org, linux-doc@vger.kernel.org,
+ bhelgaas@google.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, joro@8bytes.org, corbet@lwn.net,
+ warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc
+Subject: Re: [RFC v6 00/10] vfio-pci: Allow to mmap sub-page MMIO BARs and
+ MSI-X table
+Message-ID: <20160426104058.250c7e61@t450s.home>
+In-Reply-To: <571DEC01.5040802@linux.vnet.ibm.com>
+References: <1460976816-29294-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <571DEC01.5040802@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,204 +32,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This add generic mmu_feature_enabled() function that get patched
-to take right code path based on the feature bit enabled. The main
-difference between the existing mmu_has_feature() function is the
-hot patching using jump label framework.
+On Mon, 25 Apr 2016 18:05:53 +0800
+Yongji Xie <xyjxie@linux.vnet.ibm.com> wrote:
 
-The implementation wraps around mmu_has_feature so that we can use this
-in early bootup code before we do the hotpatching.
+> Hi Alex,
+> 
+> Any comment?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/mmu.h |  2 +-
- arch/powerpc/include/asm/mmu.h           | 28 ++++++++++++++++++++++++
- arch/powerpc/include/asm/synch.h         |  1 +
- arch/powerpc/kernel/module.c             |  5 +++++
- arch/powerpc/kernel/setup_64.c           |  3 +++
- arch/powerpc/kernel/vmlinux.lds.S        |  7 ++++++
- arch/powerpc/lib/feature-fixups.c        | 37 ++++++++++++++++++++++++++++++++
- 7 files changed, 82 insertions(+), 1 deletion(-)
+TBH, I shuffled this to the bottom of the review pile because you're
+depending on a patch series for ARM MSI mapping that's still very much
+in flux.  You've really got 3 or 4 separate patch series here that
+should be separated so they can be sent as non-RFC and you can start
+making progress.  For instance, patches 1-4 are PCI-core enabling
+PAGE_SIZE aligned BARs, patch 5 discovers PAGE_SIZE aligned BARs and
+enables mmapping them through vfio.  Now that you're using shadow
+resources to attempt to reserve the remainder of the page in patch 5,
+doesn't that make it independent of patches 1-4?  These could be sent
+as separate series in parallel.  Patches 6-9 are another separate
+series, but here you start to depend on the changes happening with ARM
+MSI mapping to determine whether we have real interrupt isolation. Once
+that gets settled, patch 10 becomes a much less controversial follow-on
+patch.  Thanks,
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 0835a8f9904b..696b7c5cc31f 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -23,7 +23,7 @@ struct mmu_psize_def {
- };
- extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
- 
--#define radix_enabled() mmu_has_feature(MMU_FTR_RADIX)
-+#define radix_enabled() mmu_feature_enabled(MMU_FTR_RADIX)
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 9e8c05f9c562..fdb70dc218e5 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -3,6 +3,7 @@
- #ifdef __KERNEL__
- 
- #include <linux/types.h>
-+#include <linux/jump_label.h>
- 
- #include <asm/asm-compat.h>
- #include <asm/feature-fixups.h>
-@@ -125,6 +126,7 @@ static inline void mmu_clear_feature(unsigned long feature)
- }
- 
- extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
-+extern unsigned int __start___mmu_ftr_fixup_c, __stop___mmu_ftr_fixup_c;
- 
- #ifdef CONFIG_PPC64
- /* This is our real memory area size on ppc64 server, on embedded, we
-@@ -142,6 +144,32 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- }
- #endif /* !CONFIG_DEBUG_VM */
- 
-+#ifdef HAVE_JUMP_LABEL
-+static __always_inline bool mmu_feature_enabled(unsigned long feature)
-+{
-+	asm_volatile_goto("1:\n\t"
-+			  ".pushsection __mmu_ftr_fixup_c,  \"a\"\n\t"
-+			  JUMP_ENTRY_TYPE "%0\n\t" /* feature bit */
-+			  JUMP_ENTRY_TYPE "1b\n\t"
-+			  JUMP_ENTRY_TYPE "%l[l_true]\n\t"
-+			  JUMP_ENTRY_TYPE "%l[l_false]\n\t"
-+			  ".popsection\n\t"
-+			  : : "i"(feature) : : l_true, l_false);
-+	if (mmu_has_feature(feature))
-+l_true:
-+		return true;
-+l_false:
-+	return false;
-+}
-+#else
-+static __always_inline bool mmu_feature_enabled(unsigned long feature)
-+{
-+	if (mmu_has_feature(feature))
-+		return true;
-+	return false;
-+}
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
- 
- /* The kernel use the constants below to index in the page sizes array.
-diff --git a/arch/powerpc/include/asm/synch.h b/arch/powerpc/include/asm/synch.h
-index c50868681f9e..c34dd7ae176f 100644
---- a/arch/powerpc/include/asm/synch.h
-+++ b/arch/powerpc/include/asm/synch.h
-@@ -14,6 +14,7 @@ extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
- extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
- 			     void *fixup_end);
- extern void do_final_fixups(void);
-+extern void do_feature_fixups_in_c(unsigned long value, void *fixup_start, void *fixup_end);
- 
- static inline void eieio(void)
- {
-diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
-index d1f1b35bf0c7..ea109d0b9494 100644
---- a/arch/powerpc/kernel/module.c
-+++ b/arch/powerpc/kernel/module.c
-@@ -80,5 +80,10 @@ int module_finalize(const Elf_Ehdr *hdr,
- 				 (void *)sect->sh_addr,
- 				 (void *)sect->sh_addr + sect->sh_size);
- 
-+	sect = find_section(hdr, sechdrs, "__mmu_ftr_fixup_c");
-+	if (sect != NULL)
-+		do_feature_fixups_in_c(cur_cpu_spec->mmu_features,
-+				       (void *)sect->sh_addr,
-+				       (void *)sect->sh_addr + sect->sh_size);
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 5c03a6a9b054..79ab96ea7a6e 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -479,6 +479,9 @@ void __init setup_system(void)
- 			  &__start___mmu_ftr_fixup, &__stop___mmu_ftr_fixup);
- 	do_feature_fixups(powerpc_firmware_features,
- 			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
-+	do_feature_fixups_in_c(cur_cpu_spec->mmu_features,
-+			       &__start___mmu_ftr_fixup_c,
-+			       &__stop___mmu_ftr_fixup_c);
- 	do_lwsync_fixups(cur_cpu_spec->cpu_features,
- 			 &__start___lwsync_fixup, &__stop___lwsync_fixup);
- 	do_final_fixups();
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index d41fd0af8980..ffeed71987f6 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -147,6 +147,13 @@ SECTIONS
- 		*(__fw_ftr_fixup)
- 		__stop___fw_ftr_fixup = .;
- 	}
-+
-+	. = ALIGN(8);
-+	__mmu_ftr_fixup_c :  AT(ADDR(__mmu_ftr_fixup_c) - LOAD_OFFSET) {
-+		__start___mmu_ftr_fixup_c = .;
-+		*(__mmu_ftr_fixup_c)
-+		__stop___mmu_ftr_fixup_c = .;
-+	}
- #endif
- 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
- 		INIT_RAM_FS
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 7ce3870d7ddd..8e5fd8c71b0c 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -31,6 +31,13 @@ struct fixup_entry {
- 	long		alt_end_off;
- };
- 
-+struct ftr_fixup_entry {
-+	unsigned long feature_bit;
-+	int *code;
-+	unsigned long true_target;
-+	unsigned long false_target;
-+};
-+
- static unsigned int *calc_addr(struct fixup_entry *fcur, long offset)
- {
- 	/*
-@@ -151,6 +158,36 @@ void do_final_fixups(void)
- #endif
- }
- 
-+void do_feature_fixups_in_c(unsigned long value, void *fixup_start,
-+			    void *fixup_end)
-+{
-+	unsigned long target;
-+	struct ftr_fixup_entry *fcur, *fend;
-+
-+	fcur = fixup_start;
-+	fend = fixup_end;
-+
-+	for (; fcur < fend; fcur++) {
-+		if (fcur->code &&
-+		    kernel_text_address((unsigned long)fcur->code)) {
-+			if (value & fcur->feature_bit)
-+				target = fcur->true_target;
-+			else
-+				target = fcur->false_target;
-+
-+			/* Are we looping ? */
-+			if ((unsigned long)fcur->code == target)
-+				continue;
-+
-+			if (patch_branch(fcur->code, target, 0)) {
-+				WARN_ON(1);
-+				pr_err("Unable to patch radix section at %p\n",
-+				       fcur->code);
-+			}
-+		}
-+	}
-+}
-+
- #ifdef CONFIG_FTR_FIXUP_SELFTEST
- 
- #define check(x)	\
--- 
-2.7.4
+Alex
+
+> On 2016/4/18 18:53, Yongji Xie wrote:
+> > Current vfio-pci implementation disallows to mmap
+> > sub-page(size < PAGE_SIZE) MMIO BARs and MSI-X table. This is because
+> > sub-page BARs' mmio page may be shared with other BARs and MSI-X table
+> > should not be accessed directly from the guest for security reasons.
+> >
+> > But it will easily cause some performance issues for mmio accesses
+> > in guest when vfio passthrough sub-page BARs or BARs containing MSI-X
+> > table on PPC64 platform. This is because PAGE_SIZE is 64KB by default
+> > on PPC64 platform and the big page may easily hit the sub-page MMIO
+> > BARs' unmmapping and cause the unmmaping of the mmio page which
+> > MSI-X table locate in, which lead to mmio emulation in host.
+> >
+> > For sub-page MMIO BARs' unmmapping, this patchset modifies
+> > resource_alignment kernel parameter to enforce the alignment of all
+> > MMIO BARs to be at least PAGE_SZIE so that sub-page BAR's mmio page
+> > will not be shared with other BARs. And we also add shadow resources
+> > to the vfio device and put them into the holes of mmio pages in case
+> > that hot-add device's BARs are assigned into the holes. Then we can
+> > mmap sub-page MMIO BARs safely.
+> >
+> > For MSI-X table's unmmapping, we think MSI-X table is safe to access
+> > directly from userspace if hardware supports the capability of
+> > interrupt remapping which can ensure that a given pci device can
+> > only shoot the MSIs assigned for it. But the implenmentation of
+> > this capability is arch-independent. To have a universal way
+> > to test this capability on PCI side for different archs, we introduce
+> > a new bus_flags PCI_BUS_FLAGS_MSI_REMAP.
+> >
+> > With this patchset applied, we can get almost 100% improvement on
+> > performance for small block 4k random read when we passthrough a FC
+> > HBA containing sub-page BARs and MSI-X BARs to guest on PPC64 in
+> > our test.
+> >
+> > The patch 8 are based on the proposed patchset[2].
+> >
+> > Changelog v6:
+> > - Rebase on vfio/next with patchset[2] applied
+> > - Fix some bugs of v5
+> > - Add three patches to make PCI_BUS_FLAGS_MSI_REMAP as
+> >    a universal flag to test IRQ remapping
+> >
+> > Changelog v5:
+> > - Rebase on vfio/next
+> > - Change the order of patch 1,2,3
+> > - Move the warning "resource_alignment will not work with
+> >    PCI_PROBE_ONLY set" from documentation to kernel log
+> > - Remove IORESOURCE_WINDOW
+> > - Add description for parameter "resize"
+> > - Add PCIBIOS_MIN_ALIGNMENT to force all MMIO BARs to
+> >    get minimum alignment
+> > - Add shadow resources to make sure sub-page BAR's mmio
+> >    page will not be shared with hot-add BARs.
+> > - Add a new bit to pci_bus_flags to indicate the capbility
+> >    of interrupt remapping on PPC64
+> > - Remove IOMMU_CAP_INTR_REMAP on PPC64
+> > - Add a property msi_remap to vfio_pci_device to cache the
+> >    capbility of interrupt remapping
+> >
+> > Changelog v4:
+> > - Rebase on v4.5-rc6 with patchset[1] applied.
+> > - Remove resource_page_aligned kernel parameter
+> > - Fix some problems with resource_alignment kernel parameter
+> > - Modify resource_alignment kernel parameter to support multiple
+> >    devices.
+> > - Remove host bridge attribute: msi_filtered
+> > - Use IOMMU_CAP_INTR_REMAP to check if MSI-X table can be mmapped
+> > - Add IOMMU_CAP_INTR_REMAP for IODA host bridge on PPC64 platform
+> >
+> > Changelog v3:
+> > - Rebase on new linux kernel mainline with the patchset[1] applied.
+> > - Add a function to check whether PCI BARs'mmio page is shared with
+> >    other BARs.
+> > - Add a host bridge attribute to indicate PCI host bridge support
+> >    filtering of MSIs.
+> > - Use the new host bridge attribute to check if MSI-X table can
+> >    be mmapped instead of CONFIG_EEH.
+> > - Remove Kconfig option VFIO_PCI_MMAP_MSIX
+> >
+> > Changelog v2:
+> > - Rebase on v4.4-rc6 with the patchset[1] applied.
+> > - Use kernel parameter to enforce all MMIO BARs to be page aligned
+> >    on PCI core code instead of doing it on PPC64 arch code.
+> > - Remove flags: VFIO_DEVICE_FLAGS_PCI_PAGE_ALIGNED
+> >
+> > [1] http://www.spinics.net/lists/kvm/msg127812.html
+> > [2] http://www.spinics.net/lists/kvm/msg130256.html
+> >
+> > Yongji Xie (10):
+> >    PCI: Ignore resource_alignment if PCI_PROBE_ONLY was set
+> >    PCI: Do not Use IORESOURCE_STARTALIGN to identify bridge resources
+> >    PCI: Add a new option for resource_alignment to reassign alignment
+> >    PCI: Add support for enforcing all MMIO BARs to be page aligned
+> >    vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page is exclusive
+> >    PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+> >    iommu: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have capability of IRQ remapping
+> >    PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller supports IRQ remapping
+> >    pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host bridge
+> >    vfio-pci: Allow to mmap MSI-X table if interrupt remapping is supported
+> >
+> >   Documentation/kernel-parameters.txt       |    7 +-
+> >   arch/powerpc/include/asm/pci.h            |    2 +
+> >   arch/powerpc/platforms/powernv/pci-ioda.c |    8 +++
+> >   drivers/iommu/iommu.c                     |   15 +++++
+> >   drivers/pci/msi.c                         |   12 ++++
+> >   drivers/pci/pci.c                         |  105 +++++++++++++++++++++++------
+> >   drivers/pci/probe.c                       |    3 +
+> >   drivers/pci/setup-bus.c                   |    9 ++-
+> >   drivers/vfio/pci/vfio_pci.c               |   65 +++++++++++++++---
+> >   drivers/vfio/pci/vfio_pci_private.h       |    8 +++
+> >   drivers/vfio/pci/vfio_pci_rdwr.c          |    3 +-
+> >   include/linux/msi.h                       |    6 +-
+> >   include/linux/pci.h                       |    1 +
+> >   13 files changed, 208 insertions(+), 36 deletions(-)
+> >  
+> 
