@@ -1,24 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0055.outbound.protection.outlook.com [157.55.234.55])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvChb14thzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:23:27 +1000 (AEST)
-Received: by mail-pf0-x22a.google.com with SMTP id y69so2878637pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 23:23:27 -0700 (PDT)
-Subject: Re: [PATCH V2 56/68] powerpc/radix: update mmu cache
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-57-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <571F0958.40007@gmail.com>
-Date: Tue, 26 Apr 2016 16:23:20 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvCqj5LXZzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:29:37 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Yangbo Lu <yangbo.lu@nxp.com>, Scott Wood <oss@buserror.net>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+CC: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Rob Herring
+ <robh+dt@kernel.org>, Scott Wood <scott.wood@nxp.com>
+Subject: RE: [PATCH 1/2] powerpc/85xx: adapt QorIQ eSDHC to the new clocking
+ model
+Date: Tue, 26 Apr 2016 06:29:28 +0000
+Message-ID: <HE1PR04MB0889A9EA3955E0723146A2A9F8630@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1461147644-18041-1-git-send-email-yangbo.lu@nxp.com>
+ <1461280096.32510.213.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-57-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> With radix there is no mmu cache. Hence we don't need to do much
-> in update_mmu_cache.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/mem.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index f980da6d7569..3164ce720b3e 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -499,6 +499,8 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
->  	 * called with either mm->page_table_lock held or ptl lock held
->  	 */
->  	unsigned long access = 0, trap;
-> +	if (radix_enabled())
-> +		return;
->  
->  	/* We only want HPTEs for linux PTEs that have _PAGE_ACCESSED set */
->  	if (!pte_young(*ptep) || address >= TASK_SIZE)
-> 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogWWFuZ2JvIEx1DQo+IFNl
+bnQ6IFR1ZXNkYXksIEFwcmlsIDI2LCAyMDE2IDI6MTkgUE0NCj4gVG86ICdTY290dCBXb29kJzsg
+bGludXgtbW1jQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
+b3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZw0KPiBDYzogdWxmLmhhbnNzb25AbGluYXJv
+Lm9yZzsgUm9iIEhlcnJpbmc7IFNjb3R0IFdvb2QNCj4gU3ViamVjdDogUkU6IFtQQVRDSCAxLzJd
+IHBvd2VycGMvODV4eDogYWRhcHQgUW9ySVEgZVNESEMgdG8gdGhlIG5ldw0KPiBjbG9ja2luZyBt
+b2RlbA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IFNjb3R0
+IFdvb2QgW21haWx0bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiA+IFNlbnQ6IEZyaWRheSwgQXByaWwg
+MjIsIDIwMTYgNzowOCBBTQ0KPiA+IFRvOiBZYW5nYm8gTHU7IGxpbnV4LW1tY0B2Z2VyLmtlcm5l
+bC5vcmc7DQo+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdl
+ci5rZXJuZWwub3JnDQo+ID4gQ2M6IHVsZi5oYW5zc29uQGxpbmFyby5vcmc7IFJvYiBIZXJyaW5n
+OyBTY290dCBXb29kDQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIHBvd2VycGMvODV4eDog
+YWRhcHQgUW9ySVEgZVNESEMgdG8gdGhlIG5ldw0KPiA+IGNsb2NraW5nIG1vZGVsDQo+ID4NCj4g
+PiBPbiBXZWQsIDIwMTYtMDQtMjAgYXQgMTg6MjAgKzA4MDAsIFlhbmdibyBMdSB3cm90ZToNCj4g
+PiA+IFByb3ZpZGUgY2xvY2tzIHByb3BlcnR5IGluc3RlYWQgb2YgY2xvY2stZnJlcXVlbmN5IGZv
+ciBRb3JJUSBlU0RIQw0KPiA+ID4gZHRzIG5vZGUgdG8gYWRhcHQgdG8gdGhlIG5ldyBjbG9ja2lu
+ZyBtb2RlbCwgc28gdGhhdCB0aGUgZHJpdmVyDQo+ID4gPiBjb3VsZCBnZXQgY2xvY2sgdmFsdWUg
+YnkgdGhlIGNvbW1vbiBjbGsgQVBJIGFuZCB0aGUgdS1ib290IGNvdWxkDQo+ID4gPiByZW1vdmUg
+dGhlIGNsb2NrIGZpeHVwLg0KPiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IFlhbmdibyBMdSA8
+eWFuZ2JvLmx1QG54cC5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9k
+dHMvZnNsL3FvcmlxLWVzZGhjLTAuZHRzaSB8IDIgKy0NCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwg
+MSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gPiA+DQo+ID4gPiBkaWZmIC0tZ2l0IGEv
+YXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiA+IGIvYXJj
+aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiA+IGluZGV4IDIw
+ODM1YWUuLmRkYmU1NjIgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMv
+ZnNsL3FvcmlxLWVzZGhjLTAuZHRzaQ0KPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
+L2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiA+IEBAIC0zNiw1ICszNiw1IEBAIHNkaGM6IHNk
+aGNAMTE0MDAwIHsNCj4gPiA+ICAJY29tcGF0aWJsZSA9ICJmc2wsZXNkaGMiOw0KPiA+ID4gIAly
+ZWcgPSA8MHgxMTQwMDAgMHgxMDAwPjsNCj4gPiA+ICAJaW50ZXJydXB0cyA9IDw0OCAyIDAgMD47
+DQo+ID4gPiAtCWNsb2NrLWZyZXF1ZW5jeSA9IDwwPjsNCj4gPiA+ICsJY2xvY2tzID0gPCZjbG9j
+a2dlbiA0IDE+Ow0KPiA+ID4gIH07DQo+ID4NCj4gPiBCaW5kaW5nIHVwZGF0ZT8NCj4gPg0KPiA+
+IC1TY290dA0KPiANCj4gW0x1IFlhbmdiby1CNDcwOTNdIFNvcnJ5LCBkaWQgeW91IG1lYW4gdGhl
+IGRvYyB1cGRhdGU/IC4uLg0KPiBJdCBoYXMgYWxyZWFkeSBoYWQgYSBkZXNjcmlwdGlvbiBpbg0K
+PiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0
+DQo+IA0KPiAtIGNsb2NrLWZyZXF1ZW5jeTogSW5wdXQgc3lzdGVtIGNsb2NrIGZyZXF1ZW5jeSAo
+U1lTQ0xLKQ0KPiAtIGNsb2NrczogSWYgY2xvY2stZnJlcXVlbmN5IGlzIG5vdCBzcGVjaWZpZWQs
+IHN5c2NsayBtYXkgYmUgcHJvdmlkZWQNCj4gICAgICAgICBhcyBhbiBpbnB1dCBjbG9jay4gIEVp
+dGhlciBjbG9jay1mcmVxdWVuY3kgb3IgY2xvY2tzIG11c3QgYmUNCj4gICAgICAgICBwcm92aWRl
+ZC4NCg0KW0x1IFlhbmdiby1CNDcwOTNdIE9yIHVwZGF0ZSBtbWMgZG9jPw0KVGhhbmtzLg0K
