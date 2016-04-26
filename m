@@ -2,7 +2,7 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvc8t6YYpzDq9s
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvc8v1mgzzDqB2
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 07:45:50 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
@@ -16,9 +16,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, tony.luck@intel.com, geert@linux-m68k.org,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH 6/8] char/genrtc: parisc: use asm-generic/rtc.h
-Date: Tue, 26 Apr 2016 23:44:10 +0200
-Message-Id: <1461707052-1337718-7-git-send-email-arnd@arndb.de>
+Subject: [PATCH 3/8] char/rtc: remove empty asm/mc146818rtc.h files
+Date: Tue, 26 Apr 2016 23:44:07 +0200
+Message-Id: <1461707052-1337718-4-git-send-email-arnd@arndb.de>
 In-Reply-To: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
 References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,90 +30,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The asm-generic/rtc.h header can now be included by
-architectures that provide their own set_rtc_time/get_rtc_time
-macros, letting us remove most of the common contents in
-the powerpc implementation.
+Nothing on these architectures ever includes the asm/mc146818rtc.h
+file, the drivers that used to do this have been fixed long ago,
+and the remaining users are all PC-specific.
+
+This removes the files for good.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/parisc/include/asm/rtc.h | 38 +++++---------------------------------
- 1 file changed, 5 insertions(+), 33 deletions(-)
+ arch/frv/include/asm/mc146818rtc.h    | 16 ----------------
+ arch/h8300/include/asm/mc146818rtc.h  |  9 ---------
+ arch/ia64/include/asm/mc146818rtc.h   | 10 ----------
+ arch/parisc/include/asm/mc146818rtc.h |  9 ---------
+ arch/sh/include/asm/mc146818rtc.h     |  7 -------
+ 5 files changed, 51 deletions(-)
+ delete mode 100644 arch/frv/include/asm/mc146818rtc.h
+ delete mode 100644 arch/h8300/include/asm/mc146818rtc.h
+ delete mode 100644 arch/ia64/include/asm/mc146818rtc.h
+ delete mode 100644 arch/parisc/include/asm/mc146818rtc.h
+ delete mode 100644 arch/sh/include/asm/mc146818rtc.h
 
-diff --git a/arch/parisc/include/asm/rtc.h b/arch/parisc/include/asm/rtc.h
-index 099d641a42c2..d06cc581ecc2 100644
---- a/arch/parisc/include/asm/rtc.h
-+++ b/arch/parisc/include/asm/rtc.h
-@@ -12,26 +12,15 @@
- 
- #ifdef __KERNEL__
- 
--#include <linux/rtc.h>
-+#define get_rtc_time parisc_get_rtc_time
-+#define set_rtc_time parisc_set_rtc_time
-+#include <asm-generic/rtc.h>
- 
- #include <asm/pdc.h>
- 
- #define SECS_PER_HOUR   (60 * 60)
- #define SECS_PER_DAY    (SECS_PER_HOUR * 24)
- 
+diff --git a/arch/frv/include/asm/mc146818rtc.h b/arch/frv/include/asm/mc146818rtc.h
+deleted file mode 100644
+index 90dfb7a633d1..000000000000
+--- a/arch/frv/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* mc146818rtc.h: RTC defs
+- *
+- * Copyright (C) 2005 Red Hat, Inc. All Rights Reserved.
+- * Written by David Howells (dhowells@redhat.com)
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
 -
--#define RTC_PIE 0x40		/* periodic interrupt enable */
--#define RTC_AIE 0x20		/* alarm interrupt enable */
--#define RTC_UIE 0x10		/* update-finished interrupt enable */
+-#ifndef _ASM_MC146818RTC_H
+-#define _ASM_MC146818RTC_H
 -
--#define RTC_BATT_BAD 0x100	/* battery bad */
 -
--/* some dummy definitions */
--#define RTC_SQWE 0x08		/* enable square-wave output */
--#define RTC_DM_BINARY 0x04	/* all time/date values are BCD if clear */
--#define RTC_24H 0x02		/* 24 hour mode - else hours bit 7 means pm */
--#define RTC_DST_EN 0x01	        /* auto switch DST - works f. USA only */
+-#endif /* _ASM_MC146818RTC_H */
+diff --git a/arch/h8300/include/asm/mc146818rtc.h b/arch/h8300/include/asm/mc146818rtc.h
+deleted file mode 100644
+index ab9d9646d241..000000000000
+--- a/arch/h8300/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-#ifndef _H8300_MC146818RTC_H
+-#define _H8300_MC146818RTC_H
 -
- # define __isleap(year) \
-   ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
- 
-@@ -44,7 +33,7 @@ static const unsigned short int __mon_yday[2][13] =
- 	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
- };
- 
--static inline unsigned int get_rtc_time(struct rtc_time *wtime)
-+static inline unsigned int parisc_get_rtc_time(struct rtc_time *wtime)
- {
- 	struct pdc_tod tod_data;
- 	long int days, rem, y;
-@@ -96,7 +85,7 @@ static inline unsigned int get_rtc_time(struct rtc_time *wtime)
- 	return RTC_24H;
- }
- 
--static int set_rtc_time(struct rtc_time *wtime)
-+static int parisc_set_rtc_time(struct rtc_time *wtime)
- {
- 	u_int32_t secs;
- 
-@@ -110,22 +99,5 @@ static int set_rtc_time(struct rtc_time *wtime)
- 
- }
- 
--static inline unsigned int get_rtc_ss(void)
--{
--	struct rtc_time h;
+-/* empty include file to satisfy the include in genrtc.c/ide-geometry.c */
 -
--	get_rtc_time(&h);
--	return h.tm_sec;
--}
+-#endif /* _H8300_MC146818RTC_H */
+diff --git a/arch/ia64/include/asm/mc146818rtc.h b/arch/ia64/include/asm/mc146818rtc.h
+deleted file mode 100644
+index 407787a237ba..000000000000
+--- a/arch/ia64/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef _ASM_IA64_MC146818RTC_H
+-#define _ASM_IA64_MC146818RTC_H
 -
--static inline int get_rtc_pll(struct rtc_pll_info *pll)
--{
--	return -EINVAL;
--}
--static inline int set_rtc_pll(struct rtc_pll_info *pll)
--{
--	return -EINVAL;
--}
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
 -
- #endif /* __KERNEL__ */
- #endif /* __ASM_RTC_H__ */
+-/* empty include file to satisfy the include in genrtc.c */
+-
+-#endif /* _ASM_IA64_MC146818RTC_H */
+diff --git a/arch/parisc/include/asm/mc146818rtc.h b/arch/parisc/include/asm/mc146818rtc.h
+deleted file mode 100644
+index adf41631449f..000000000000
+--- a/arch/parisc/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-#ifndef _ASM_MC146818RTC_H
+-#define _ASM_MC146818RTC_H
+-
+-/* empty include file to satisfy the include in genrtc.c */
+-
+-#endif /* _ASM_MC146818RTC_H */
+diff --git a/arch/sh/include/asm/mc146818rtc.h b/arch/sh/include/asm/mc146818rtc.h
+deleted file mode 100644
+index 0aee96a97330..000000000000
+--- a/arch/sh/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,7 +0,0 @@
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-#ifndef _ASM_MC146818RTC_H
+-#define _ASM_MC146818RTC_H
+-
+-#endif /* _ASM_MC146818RTC_H */
 -- 
 2.7.0
