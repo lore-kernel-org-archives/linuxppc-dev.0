@@ -1,22 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0057.outbound.protection.outlook.com [157.56.112.57])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvBxd4Kw6zDq64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 15:49:41 +1000 (AEST)
-Date: Tue, 26 Apr 2016 15:29:59 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, alistair@popple.id.au, ruscur@russell.cc,
- mpe@ellerman.id.au
-Subject: Re: [PATCH v2 1/3] powerpc/eeh: Ignore error handlers in
- eeh_pe_reset_and_recover()
-Message-ID: <20160426052959.GJ15176@voom.fritz.box>
-References: <1461331687-1069-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvCc04CyHzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:19:28 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Scott Wood <oss@buserror.net>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>
+CC: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Rob Herring
+ <robh+dt@kernel.org>, Scott Wood <scott.wood@nxp.com>
+Subject: RE: [PATCH 1/2] powerpc/85xx: adapt QorIQ eSDHC to the new clocking
+ model
+Date: Tue, 26 Apr 2016 06:19:18 +0000
+Message-ID: <HE1PR04MB08892307F28380E4096AA730F8630@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1461147644-18041-1-git-send-email-yangbo.lu@nxp.com>
+ <1461280096.32510.213.camel@buserror.net>
+In-Reply-To: <1461280096.32510.213.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="sT9gWZPUZYhvPS56"
-In-Reply-To: <1461331687-1069-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,112 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---sT9gWZPUZYhvPS56
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Apr 22, 2016 at 11:28:02PM +1000, Gavin Shan wrote:
-> The function eeh_pe_reset_and_recover() is used to recover EEH
-> error when the passthrough device are transferred to guest and
-> backwards, meaning the device's driver is vfio-pci or none.
-> When the driver is vfio-pci that provides error_detected() error
-> handler only, the handler simply stops the guest and it's not
-> expected behaviour. On the other hand, no error handlers will
-> be called if we don't have a bound driver.
->=20
-> This ignores all error handlers provided by device driver in
-> eeh_pe_reset_and_recover() to avoid the exceptional behaviour.
->=20
-> Fixes: 5cfb20b9 ("powerpc/eeh: Emulate EEH recovery for VFIO devices")
-> Cc: stable@vger.kernel.org #v3.18+
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Reviewed-by: Russell Currey <ruscur@russell.cc>
-> ---
->  arch/powerpc/kernel/eeh_driver.c | 11 +----------
->  1 file changed, 1 insertion(+), 10 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_d=
-river.c
-> index fb6207d..1c7d703 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -552,7 +552,7 @@ static int eeh_clear_pe_frozen_state(struct eeh_pe *p=
-e,
-> =20
->  int eeh_pe_reset_and_recover(struct eeh_pe *pe)
->  {
-> -	int result, ret;
-> +	int ret;
-> =20
->  	/* Bail if the PE is being recovered */
->  	if (pe->state & EEH_PE_RECOVERING)
-> @@ -564,9 +564,6 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
->  	/* Save states */
->  	eeh_pe_dev_traverse(pe, eeh_dev_save_state, NULL);
-> =20
-> -	/* Report error */
-> -	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
-
-Ok, so after chatting to Gavin, I've made sense of this.  The basic
-thing here is that eeh_pe_reset_and_recover() should be discarding any
-errors from before the reset, not reporting them - the whole point is
-that we know things have gone bad, and we want to clear back to a good
-state.
-
->  	/* Issue reset */
->  	ret =3D eeh_reset_pe(pe);
->  	if (ret) {
-> @@ -581,15 +578,9 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
->  		return ret;
->  	}
-> =20
-> -	/* Notify completion of reset */
-> -	eeh_pe_dev_traverse(pe, eeh_report_reset, &result);
-
-However, it's not clear if removing the report of a reset makes sense.
-There are no current users of reset notification IIUC, but if we're
-going to remove the reset reporting, we should put that in a separate
-patch with its own justification, and remove the other caller as well.
-
->  	/* Restore device state */
->  	eeh_pe_dev_traverse(pe, eeh_dev_restore_state, NULL);
-> =20
-> -	/* Resume */
-> -	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
-
-And I'm not sure if it makes sense to remove the resume notification either.
-
->  	/* Clear recovery mode */
->  	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
-> =20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---sT9gWZPUZYhvPS56
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXHvzWAAoJEGw4ysog2bOSrpsP/1ggIA7ZMFL8UI9ObtxtIopw
-1zqAOin+QlxhFQURlCTX6fRcrcq8pKjzRNdr3jBty62Ar9oN1xu/hFh7tFOCslY1
-I1m3oGFVTouGyVX8xr8tYYeuZ79c42lPHx9CZvK+35X1uqwaXwIZMxc0pD1wlnde
-9vntGCpXJVpyeK5zfXslS3qZLE/WklixAguIurfay+aK4PrQPWo0GMGSe9oWygFB
-3/sCffKcGZC+PE8PHCUcsiLKu5c6Hfn4APq8CT3IUMqYusdaFugaTpzjzG75D8xV
-HcdaedV8jm9p/GAG96HeM1L03pn0uR8fkR0stvVrspDHnr/ryQM9nAohlTzucNEG
-8ajwxZTS5YkAbQHWXm3gN4i/G3vPsjezZyry6W5Y4S7XJSZOtSNffvs6W+XpYzsm
-13c7gdhQeYZvPYxtMHQZkANI/h0cfBVgPu7C37dYksPKXi3aJ7bRKU7L4i4xLFuT
-yIBGr6RLuT0trAKmYSYbDPbZ6OhxLiVsh/pZDoPnwzg+uDJqg29T0Rq98x0kdLYv
-GAq/5+UzJ16nbg7VNC+a4YxJiz5wgokvyeAToA2iOilAb2aUcROa4SJBa9RaXRHP
-rjebOS9DrRjfAspDD70MmB5L3syLFbWTGk3MJN11NA4mMa9pdEJnD0cJiXK3rvJE
-sJCzlM89aqcgns/uHiZd
-=Twf9
------END PGP SIGNATURE-----
-
---sT9gWZPUZYhvPS56--
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTY290dCBXb29kIFttYWlsdG86
+b3NzQGJ1c2Vycm9yLm5ldF0NCj4gU2VudDogRnJpZGF5LCBBcHJpbCAyMiwgMjAxNiA3OjA4IEFN
+DQo+IFRvOiBZYW5nYm8gTHU7IGxpbnV4LW1tY0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZw0KPiBDYzog
+dWxmLmhhbnNzb25AbGluYXJvLm9yZzsgUm9iIEhlcnJpbmc7IFNjb3R0IFdvb2QNCj4gU3ViamVj
+dDogUmU6IFtQQVRDSCAxLzJdIHBvd2VycGMvODV4eDogYWRhcHQgUW9ySVEgZVNESEMgdG8gdGhl
+IG5ldw0KPiBjbG9ja2luZyBtb2RlbA0KPiANCj4gT24gV2VkLCAyMDE2LTA0LTIwIGF0IDE4OjIw
+ICswODAwLCBZYW5nYm8gTHUgd3JvdGU6DQo+ID4gUHJvdmlkZSBjbG9ja3MgcHJvcGVydHkgaW5z
+dGVhZCBvZiBjbG9jay1mcmVxdWVuY3kgZm9yIFFvcklRIGVTREhDIGR0cw0KPiA+IG5vZGUgdG8g
+YWRhcHQgdG8gdGhlIG5ldyBjbG9ja2luZyBtb2RlbCwgc28gdGhhdCB0aGUgZHJpdmVyIGNvdWxk
+IGdldA0KPiA+IGNsb2NrIHZhbHVlIGJ5IHRoZSBjb21tb24gY2xrIEFQSSBhbmQgdGhlIHUtYm9v
+dCBjb3VsZCByZW1vdmUgdGhlDQo+ID4gY2xvY2sgZml4dXAuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBZYW5nYm8gTHUgPHlhbmdiby5sdUBueHAuY29tPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bv
+d2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWVzZGhjLTAuZHRzaSB8IDIgKy0NCj4gPiAgMSBmaWxl
+IGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0t
+Z2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiBi
+L2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtZXNkaGMtMC5kdHNpDQo+ID4gaW5kZXgg
+MjA4MzVhZS4uZGRiZTU2MiAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMv
+ZnNsL3FvcmlxLWVzZGhjLTAuZHRzaQ0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9m
+c2wvcW9yaXEtZXNkaGMtMC5kdHNpDQo+ID4gQEAgLTM2LDUgKzM2LDUgQEAgc2RoYzogc2RoY0Ax
+MTQwMDAgew0KPiA+ICAJY29tcGF0aWJsZSA9ICJmc2wsZXNkaGMiOw0KPiA+ICAJcmVnID0gPDB4
+MTE0MDAwIDB4MTAwMD47DQo+ID4gIAlpbnRlcnJ1cHRzID0gPDQ4IDIgMCAwPjsNCj4gPiAtCWNs
+b2NrLWZyZXF1ZW5jeSA9IDwwPjsNCj4gPiArCWNsb2NrcyA9IDwmY2xvY2tnZW4gNCAxPjsNCj4g
+PiAgfTsNCj4gDQo+IEJpbmRpbmcgdXBkYXRlPw0KPiANCj4gLVNjb3R0DQoNCltMdSBZYW5nYm8t
+QjQ3MDkzXSBTb3JyeSwgZGlkIHlvdSBtZWFuIHRoZSBkb2MgdXBkYXRlPyAuLi4NCkl0IGhhcyBh
+bHJlYWR5IGhhZCBhIGRlc2NyaXB0aW9uIGluIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
+aW5ncy9jbG9jay9xb3JpcS1jbG9jay50eHQNCg0KLSBjbG9jay1mcmVxdWVuY3k6IElucHV0IHN5
+c3RlbSBjbG9jayBmcmVxdWVuY3kgKFNZU0NMSykNCi0gY2xvY2tzOiBJZiBjbG9jay1mcmVxdWVu
+Y3kgaXMgbm90IHNwZWNpZmllZCwgc3lzY2xrIG1heSBiZSBwcm92aWRlZA0KICAgICAgICBhcyBh
+biBpbnB1dCBjbG9jay4gIEVpdGhlciBjbG9jay1mcmVxdWVuY3kgb3IgY2xvY2tzIG11c3QgYmUN
+CiAgICAgICAgcHJvdmlkZWQuDQoNCg==
