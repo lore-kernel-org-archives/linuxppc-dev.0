@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFG6557zDq68
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFG66TpzDq9m
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:30 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,12 +9,12 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 00/23] ata: sata_dwc_460ex: make it working again
-Date: Tue, 26 Apr 2016 12:03:01 +0300
-Message-Id: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH v2 02/23] ata: sata_dwc_460ex: fix crash on offline links
+ without an attached drive
+Date: Tue, 26 Apr 2016 12:03:03 +0300
+Message-Id: <1461661404-1952-3-git-send-email-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
+References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The last approach in the commit 8b3444852a2b ("sata_dwc_460ex: move to generic
-DMA driver") to switch to generic DMA engine API wasn't tested on bare metal.
-Besides that we expecting new board support coming with the same SATA IP but
-with different DMA.
+From: Christian Lamparter <chunkeey@googlemail.com>
 
-This series is targetting the following things:
-- a few bug fixes to the original driver
-- a part to fix the DMA engine usage and in particularly dw_dmac driver
-- move driver to use generic PHY and "dmas" property which leads to update in DTS
+This patch fixes Machine Check "Data Write PLB Error" which happens
+when libata-sff's ata_sff_dev_select is trying to write into the
+device_addr in order to select a drive. However, SATA has no master
+or slave devices like the old ATA Bus, therefore selecting a
+different drive is kind of pointless.
 
-The driver has been tested myself on Sam460ex and WD MyBookLive (apollo3g)
-boards. In any case I ask Christian, Måns, and Julian to independently test and
-provide Tested-by tag or an error report.
+Data Write PLB Error
+Oops: Machine check, sig: 7 [#1]
+PowerPC 44x Platform
+Modules linked in:
+CPU: 0 PID: 508 Comm: scsi_eh_0 Not tainted 4.6.0-rc3-next-20160412+ #10
+[...]
+NIP [c027e820] ata_sff_dev_select+0x3c/0x44
+LR [c027e810] ata_sff_dev_select+0x2c/0x44
+Call Trace:
+[cec31cd0] [c027da00] ata_sff_postreset+0x40/0xb4 (unreliable)
+[cec31ce0] [c027a03c] ata_eh_reset+0x5cc/0x928
+[cec31d60] [c027a840] ata_eh_recover+0x330/0x10bc
+[cec31df0] [c027bae0] ata_do_eh+0x4c/0xa4
+[...]
 
-Series depends on previously published but not yet fully applied series [1].
+Signed-off-by: Christian Lamparter <chunkeey@googlemail.com>
+---
+ drivers/ata/sata_dwc_460ex.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-The patches are also available via public branch [2].
-
-[1] http://www.spinics.net/lists/dmaengine/msg09250.html
-[2] https://bitbucket.org/andy-shev/linux/branch/topic%2Fdw%2Fsata
-
-Since v1:
-- simplify patch 8 (David Laight)
-- add Tested-by and Acked-by tags
-
-Andy Shevchenko (11):
-  ata: sata_dwc_460ex: set dma_boundary to 0x1fff
-  ata: sata_dwc_460ex: burst size must be in items not bytes
-  ata: sata_dwc_460ex: DMA is always a flow controller
-  ata: sata_dwc_460ex: select only core part of DMA driver
-  ata: sata_dwc_460ex: don't call ata_sff_qc_issue() on DMA commands
-  ata: sata_dwc_460ex: correct HOSTDEV{P}_FROM_*() macros
-  ata: sata_dwc_460ex: supply physical address of FIFO to DMA
-  ata: sata_dwc_460ex: switch to new dmaengine_terminate_* API
-  ata: sata_dwc_460ex: use devm_ioremap
-  ata: sata_dwc_460ex: make debug messages neat
-  powerpc/4xx: Device tree update for the 460ex DWC SATA
-
-Christian Lamparter (1):
-  ata: sata_dwc_460ex: fix crash on offline links without an attached
-    drive
-
-Mans Rullgard (11):
-  ata: sata_dwc_460ex: remove incorrect locking
-  ata: sata_dwc_460ex: skip dma setup for non-dma commands
-  ata: sata_dwc_460ex: use "dmas" DT property to find dma channel
-  ata: sata_dwc_460ex: add phy support
-  ata: sata_dwc_460ex: get rid of global data
-  ata: sata_dwc_460ex: remove empty libata callback
-  ata: sata_dwc_460ex: get rid of some pointless casts
-  ata: sata_dwc_460ex: get rid of incorrect cast
-  ata: sata_dwc_460ex: add __iomem to register base pointer
-  ata: sata_dwc_460ex: use readl/writel_relaxed()
-  ata: sata_dwc_460ex: tidy up sata_dwc_clear_dmacr()
-
- arch/powerpc/boot/dts/canyonlands.dts |  15 +-
- drivers/ata/Kconfig                   |  12 +-
- drivers/ata/sata_dwc_460ex.c          | 552 +++++++++++++++++-----------------
- 3 files changed, 305 insertions(+), 274 deletions(-)
-
+diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
+index 5213e22..7f95389 100644
+--- a/drivers/ata/sata_dwc_460ex.c
++++ b/drivers/ata/sata_dwc_460ex.c
+@@ -1134,6 +1134,11 @@ static int sata_dwc_hardreset(struct ata_link *link, unsigned int *class,
+ 	return ret;
+ }
+ 
++static void sata_dwc_dev_select(struct ata_port *ap, unsigned int device)
++{
++	/* SATA DWC is master only */
++}
++
+ /*
+  * scsi mid-layer and libata interface structures
+  */
+@@ -1164,6 +1169,8 @@ static struct ata_port_operations sata_dwc_ops = {
+ 	.port_start		= sata_dwc_port_start,
+ 	.port_stop		= sata_dwc_port_stop,
+ 
++	.sff_dev_select		= sata_dwc_dev_select,
++
+ 	.bmdma_setup		= sata_dwc_bmdma_setup,
+ 	.bmdma_start		= sata_dwc_bmdma_start,
+ };
 -- 
 2.8.0.rc3
