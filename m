@@ -1,39 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0076.outbound.protection.outlook.com [157.55.234.76])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvK0Y4z9szDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:22:37 +1000 (AEST)
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 26 Apr 2016 20:22:37 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 81D7A2CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:22:26 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3QAMIZI54657038
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:22:26 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3QALrkG018490
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:21:54 +1000
-Date: Tue, 26 Apr 2016 20:21:31 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, alistair@popple.id.au,
- david@gibson.dropbear.id.au, ruscur@russell.cc, mpe@ellerman.id.au
-Subject: Re: [PATCH v2 2/3] powerpc/eeh: Restore config from edev in
- eeh_pe_reset_and_recover()
-Message-ID: <20160426102130.GB11928@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1461331687-1069-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1461331687-1069-2-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvKSX1cfvzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:43:23 +1000 (AEST)
+From: Chenhui Zhao <chenhui.zhao@nxp.com>
+To: "oss@buserror.net" <oss@buserror.net>, Yang-Leo Li <leoyang.li@nxp.com>
+CC: Zhengxiong Jin <jason.jin@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 0/5] powerpc/pm: QorIQ deep sleep
+Date: Tue, 26 Apr 2016 10:27:53 +0000
+Message-ID: <HE1PR04MB11643986E8F0D4DC9861353F95630@HE1PR04MB1164.eurprd04.prod.outlook.com>
+References: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
+In-Reply-To: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1461331687-1069-2-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,107 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 22, 2016 at 11:28:03PM +1000, Gavin Shan wrote:
->The function eeh_pe_reset_and_recover() is used to recover EEH
->error when the passthrou device are transferred to guest and
->backwards. The content in the device's config space will be lost
->on PE reset issued in the middle of the recovery. The function
->saves/restores it before/after the reset. However, config access
->to some adapters like Broadcom BCM5719 at this point will causes
->fenced PHB. The config space is always blocked and we save 0xFF's
->that are restored at late point. The memory BARs are totally
->corrupted, causing another EEH error upon access to one of the
->memory BARs.
->
->This restores the config space from the content saved to the
->EEH device when it's populated, to resolve above issue.
->
->Fixes: 5cfb20b9 ("powerpc/eeh: Emulate EEH recovery for VFIO devices")
->Cc: stable@vger.kernel.org #v3.18+
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Reviewed-by: Russell Currey <ruscur@russell.cc>
->---
-> arch/powerpc/kernel/eeh_driver.c | 39 ++-------------------------------------
-> 1 file changed, 2 insertions(+), 37 deletions(-)
->
->diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->index 1c7d703..ec6e889 100644
->--- a/arch/powerpc/kernel/eeh_driver.c
->+++ b/arch/powerpc/kernel/eeh_driver.c
->@@ -163,22 +163,6 @@ static bool eeh_dev_removed(struct eeh_dev *edev)
-> 	return false;
-> }
->
->-static void *eeh_dev_save_state(void *data, void *userdata)
->-{
->-	struct eeh_dev *edev = data;
->-	struct pci_dev *pdev;
->-
->-	if (!edev)
->-		return NULL;
->-
->-	pdev = eeh_dev_to_pci_dev(edev);
->-	if (!pdev)
->-		return NULL;
->-
->-	pci_save_state(pdev);
->-	return NULL;
->-}
->-
-> /**
->  * eeh_report_error - Report pci error to each device driver
->  * @data: eeh device
->@@ -304,22 +288,6 @@ static void *eeh_report_reset(void *data, void *userdata)
-> 	return NULL;
-> }
->
->-static void *eeh_dev_restore_state(void *data, void *userdata)
->-{
->-	struct eeh_dev *edev = data;
->-	struct pci_dev *pdev;
->-
->-	if (!edev)
->-		return NULL;
->-
->-	pdev = eeh_dev_to_pci_dev(edev);
->-	if (!pdev)
->-		return NULL;
->-
->-	pci_restore_state(pdev);
->-	return NULL;
->-}
->-
-> /**
->  * eeh_report_resume - Tell device to resume normal operations
->  * @data: eeh device
->@@ -561,9 +529,6 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
-> 	/* Put the PE into recovery mode */
-> 	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
->
->-	/* Save states */
->-	eeh_pe_dev_traverse(pe, eeh_dev_save_state, NULL);
->-
-> 	/* Issue reset */
-> 	ret = eeh_reset_pe(pe);
-> 	if (ret) {
->@@ -578,8 +543,8 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
-> 		return ret;
-> 	}
->
->-	/* Restore device state */
->-	eeh_pe_dev_traverse(pe, eeh_dev_restore_state, NULL);
->+	/* Restore device's config space */
->+	eeh_pe_restore_bars(pe);
 
-As talked with David Gibson offline, it's not good enough to pick
-the initial config space if the PE doesn't have blocked config property.
-For that case, we still need rely on pci_{save,restore}_state() to
-pick config space in last site. Thanks to David for checking the code
-carefully. I will respin to fix it in next revision.
+Any comment?
 
->
-> 	/* Clear recovery mode */
-> 	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
->-- 
->2.1.0
->
+Thanks,
+Chenhui
+
+________________________________________
+From: Chenhui Zhao <chenhui.zhao@nxp.com>
+Sent: Friday, April 15, 2016 7:13 PM
+To: linuxppc-dev@lists.ozlabs.org; oss@buserror.net
+Cc: Zhengxiong Jin; Chenhui Zhao
+Subject: [PATCH v2 0/5] powerpc/pm: QorIQ deep sleep
+
+Changes for v2:
+* Ioremap every dts node used in the patches.
+* Check the board compatible string to see if the board supports deep sleep=
+.
+* Can not reserve the first page of DDR memory, because PPC64 doesn't suppo=
+rt
+  changing the kernel base address. So still save and restore the first 128=
+ bytes
+  of DDR memory.
+* Still save and restoer CCSR registers in kernel, because bootloader doesn=
+'t
+  know what register values to restore
+* Changed copyright and email address from freescale to NXP
+
+Please refer to the version 1:
+[1/4] powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
+http://patchwork.ozlabs.org/patch/502549/
+
+[2/4] powerpc: get the physical base address of DCSR
+http://patchwork.ozlabs.org/patch/502551/
+It is removed.
+
+[3/4] powerpc: pm: add EPU FSM configuration for deep sleep
+http://patchwork.ozlabs.org/patch/502548/
+
+[4/4] powerpc: pm: support deep sleep feature on T104x
+http://patchwork.ozlabs.org/patch/502550/
+
+
+Chenhui Zhao (5):
+  powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
+  powerpc: pm: add EPU FSM configuration for deep sleep
+  powerpc/dts: add a compatible string to gpio0
+  powerpc/pm: support deep sleep feature on T104x
+  powerpc/pm: save and restore registers during deep sleep
+
+ arch/powerpc/Kconfig                          |   3 +-
+ arch/powerpc/boot/dts/fsl/qoriq-gpio-0.dtsi   |   2 +-
+ arch/powerpc/include/asm/fsl_pm.h             |  28 +-
+ arch/powerpc/kernel/asm-offsets.c             |  12 +
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S |  10 +
+ arch/powerpc/kernel/head_64.S                 |   2 +-
+ arch/powerpc/platforms/85xx/Kconfig           |   5 +
+ arch/powerpc/platforms/85xx/Makefile          |   2 +
+ arch/powerpc/platforms/85xx/deepsleep.c       | 365 ++++++++++++++++++
+ arch/powerpc/platforms/85xx/qoriq_pm.c        |  84 ++++
+ arch/powerpc/platforms/85xx/sleep_fsm.c       | 267 +++++++++++++
+ arch/powerpc/platforms/85xx/sleep_fsm.h       |  92 +++++
+ arch/powerpc/platforms/85xx/t104x_deepsleep.S | 531 ++++++++++++++++++++++=
+++++
+ arch/powerpc/platforms/86xx/Kconfig           |   1 +
+ arch/powerpc/sysdev/fsl_rcpm.c                |  28 +-
+ 15 files changed, 1412 insertions(+), 20 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+ create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
+ create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.c
+ create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.h
+ create mode 100644 arch/powerpc/platforms/85xx/t104x_deepsleep.S
+
+--
+1.9.1
