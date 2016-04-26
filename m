@@ -1,33 +1,39 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvJLb6KkwzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:53:11 +1000 (AEST)
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qvJLZ62Cgz9t3w
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 19:53:10 +1000 (AEST)
-Received: by mail-pa0-x22f.google.com with SMTP id iv1so4583475pac.2
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 02:53:10 -0700 (PDT)
-Subject: Re: [PATCH v2] livepatch: Add some basic LivePatch documentation
-To: Petr Mladek <pmladek@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>
-References: <1461597275-32120-1-git-send-email-pmladek@suse.com>
-Cc: live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linuxppc-dev@ozlabs.org,
- Torsten Duwe <duwe@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Nikolay Borisov <kernel@kyup.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <571F3A7C.5050701@gmail.com>
-Date: Tue, 26 Apr 2016 19:53:00 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvJvz0cmQzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:18:39 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 26 Apr 2016 20:18:37 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 972F2357806D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:18:32 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3QAIOtV64618518
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:18:32 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3QAHxEr015134
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 20:17:59 +1000
+Date: Tue, 26 Apr 2016 20:17:31 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ alistair@popple.id.au, ruscur@russell.cc, mpe@ellerman.id.au
+Subject: Re: [PATCH v2 1/3] powerpc/eeh: Ignore error handlers in
+ eeh_pe_reset_and_recover()
+Message-ID: <20160426101731.GA11928@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1461331687-1069-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20160426052959.GJ15176@voom.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <1461597275-32120-1-git-send-email-pmladek@suse.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160426052959.GJ15176@voom.fritz.box>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,527 +43,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Petr
+On Tue, Apr 26, 2016 at 03:29:59PM +1000, David Gibson wrote:
+>On Fri, Apr 22, 2016 at 11:28:02PM +1000, Gavin Shan wrote:
+>> The function eeh_pe_reset_and_recover() is used to recover EEH
+>> error when the passthrough device are transferred to guest and
+>> backwards, meaning the device's driver is vfio-pci or none.
+>> When the driver is vfio-pci that provides error_detected() error
+>> handler only, the handler simply stops the guest and it's not
+>> expected behaviour. On the other hand, no error handlers will
+>> be called if we don't have a bound driver.
+>> 
+>> This ignores all error handlers provided by device driver in
+>> eeh_pe_reset_and_recover() to avoid the exceptional behaviour.
+>> 
+>> Fixes: 5cfb20b9 ("powerpc/eeh: Emulate EEH recovery for VFIO devices")
+>> Cc: stable@vger.kernel.org #v3.18+
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> Reviewed-by: Russell Currey <ruscur@russell.cc>
+>> ---
+>>  arch/powerpc/kernel/eeh_driver.c | 11 +----------
+>>  1 file changed, 1 insertion(+), 10 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+>> index fb6207d..1c7d703 100644
+>> --- a/arch/powerpc/kernel/eeh_driver.c
+>> +++ b/arch/powerpc/kernel/eeh_driver.c
+>> @@ -552,7 +552,7 @@ static int eeh_clear_pe_frozen_state(struct eeh_pe *pe,
+>>  
+>>  int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+>>  {
+>> -	int result, ret;
+>> +	int ret;
+>>  
+>>  	/* Bail if the PE is being recovered */
+>>  	if (pe->state & EEH_PE_RECOVERING)
+>> @@ -564,9 +564,6 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+>>  	/* Save states */
+>>  	eeh_pe_dev_traverse(pe, eeh_dev_save_state, NULL);
+>>  
+>> -	/* Report error */
+>> -	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
+>
+>Ok, so after chatting to Gavin, I've made sense of this.  The basic
+>thing here is that eeh_pe_reset_and_recover() should be discarding any
+>errors from before the reset, not reporting them - the whole point is
+>that we know things have gone bad, and we want to clear back to a good
+>state.
+>
+>>  	/* Issue reset */
+>>  	ret = eeh_reset_pe(pe);
+>>  	if (ret) {
+>> @@ -581,15 +578,9 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+>>  		return ret;
+>>  	}
+>>  
+>> -	/* Notify completion of reset */
+>> -	eeh_pe_dev_traverse(pe, eeh_report_reset, &result);
+>
+>However, it's not clear if removing the report of a reset makes sense.
+>There are no current users of reset notification IIUC, but if we're
+>going to remove the reset reporting, we should put that in a separate
+>patch with its own justification, and remove the other caller as well.
+>
 
-Very very nice documentation, some comments inline
+Thanks, David. It makes sense to me. I will split it into two: one removes
+eeh_report_error notification and another removes the left notification
+handlers.
 
-Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+>>  	/* Restore device state */
+>>  	eeh_pe_dev_traverse(pe, eeh_dev_restore_state, NULL);
+>>  
+>> -	/* Resume */
+>> -	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+>
+>And I'm not sure if it makes sense to remove the resume notification either.
+>
 
-Balbir
+Based on the offline talk, we either keep all notification handlers or remove
+all of them. As we can't keep eeh_report_error, we have to remove all of them.
 
-On 26/04/16 01:14, Petr Mladek wrote:
-> LivePatch framework deserves some documentation, definitely.
-> This is an attempt to provide some basic info. I hope that
-> it will be useful for both LivePatch producers and also
-> potential developers of the framework itself.
-> 
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
-> ---
-> 
-> This version incorporates feedback from all people who
-> commented on v1. Thanks a lot for it.
-> 
-> Sometimes I copy&pasted the suggested text. Sometimes,
-> I used my own invention. The text has grown from 277 to
-> 400 lines. I wish I had a lighter pen. Anyway, please
-> see what I hammered together.
-> 
-> Changes against v1:
-> 
-> + switched the order of the section 4 and 5
-> + tiny changes in sections 1,2,6
-> + heavily updated sections 3,4,5,7
-> 
->  Documentation/livepatch/livepatch.txt | 400 ++++++++++++++++++++++++++++++++++
->  MAINTAINERS                           |   1 +
->  2 files changed, 401 insertions(+)
->  create mode 100644 Documentation/livepatch/livepatch.txt
-> 
-> diff --git a/Documentation/livepatch/livepatch.txt b/Documentation/livepatch/livepatch.txt
-> new file mode 100644
-> index 000000000000..7c4777e3170c
-> --- /dev/null
-> +++ b/Documentation/livepatch/livepatch.txt
-> @@ -0,0 +1,400 @@
-> +=========
-> +Livepatch
-> +=========
-> +
-> +This document outlines basic information about kernel livepatching.
-> +
-> +Table of Contents:
-> +
-> +1. Motivation
-> +2. Kprobes, Ftrace, Livepatching
-> +3. Consistency model
-> +4. Livepatch module
-> +   4.1. New functions
-> +   4.2. Metadata
-> +   4.3. Livepatch module handling
-> +5. Livepatch life-cycle
-> +   5.1. Registration
-> +   5.2. Enabling
-> +   5.3. Disabling
-> +   5.4. Unregistration
-> +6. Sysfs
-> +7. Limitations
-> +
-> +
-> +1. Motivation
-> +=============
-> +
-> +There are situations when people are really reluctant to reboot a system.
-
-Could we just state that
-
-"It is usually desired in production systems to have an uptime as large as possible, unless
-it is really necessary for things like updates (most frequently security updates and bug fixes)
-
-> +It might be because the computer is in the middle of a complex scientific
-> +computation. Or the system is busy handling customer requests in the high
-> +season.
-> +
-> +On the other hand, people also want to keep the system stable and secure.
-> +This is where livepatch infrastructure comes handy. It allows selected
-> +function calls to be redirected to a fixed implementation without
-
-I think a fixed implementation's meaning might not be clear, can we say
-that livepatch patches or fixes potentially buggy functionality and in
-some cases might enhance functionality (not recommended) without
-
-> +requiring a system reboot.
-> +
-> +
-> +2. Kprobes, Ftrace, Livepatching
-> +================================
-> +
-> +There are multiple mechanisms in the Linux kernel that are directly related
-> +to redirection of code execution; namely: kernel probes, function tracing,
-> +and livepatching:
-> +
-> +  + The kernel probes are the most generic way. The code can be redirected
-> +    by putting an interrupt instruction instead of any instruction.
-> +
-
-interrupt instruction is not clear. I think you mean a breakpoint
-
-> +  + The function tracer calls the code from a predefined location that is
-> +    close the function entry. The location is generated by the compiler,
-> +    see -pg gcc option.
-> +
-> +  + Livepatching typically needs to redirect the code at the very beginning
-> +    of the function entry before the function parameters or the stack
-> +    are anyhow muffled.
-> +
-
-
-> +All three approaches need to modify the existing code at runtime. Therefore
-
-
-I think 1 and 2 are approaches, 3 is a statement about live-patching.
-
-> +they need to be aware of each other and do not step over each other's toes.
-> +Most of these problems are solved by using the dynamic ftrace framework as
-> +a base. A Kprobe is registered as a ftrace handler when the function entry
-> +is probed, see CONFIG_KPROBES_ON_FTRACE. Also an alternative function from
-> +a live patch is called with help of a custom ftrace handler. But there are
-> +some limitations, see below.
-> +
-> +
-> +3. Consistency model
-> +====================
-> +
-> +Functions are there for a reason. They take some input parameters, get or
-> +release locks, read, process, and even write some data in a defined way,
-> +have return values. In other words, each function has a defined semantic.
-> +
-> +Many fixes do not change the semantic of the modified functions. For
-> +example, they add a NULL pointer or a boundary check, fix a race by adding
-> +a missing memory barrier, or add some locking about a critical section.
-> +Most of these changes are self contained and the function present itself
-> +the same way to the rest of the system. In this case, the functions might
-> +be updated independently one by one.
-> +
-> +But there are more complex fixes. For example, a patch might change
-> +ordering of locking in more functions at the same time. Or a patch
-> +might exchange meaning of some temporary structures and update
-
-exchange? change?
-
-> +all the relevant functions. In this case, the affected unit
-> +(thread, whole kernel) need to start using all new versions of
-> +the functions at the same time. Also the switch must happen only
-> +when it is safe to do so, e.g. when the affected locks are released
-> +or no data are stored in the modified structures at the moment.
-> +
-> +The theory about how to apply functions a safe way is rather complex.
-> +The aim is to define a so-called consistency model. It means to define
-> +conditions when the new implementation could be used so that the system
-> +stays consistent. The theory is not yet finished. See the discussion at
-> +http://thread.gmane.org/gmane.linux.kernel/1823033/focus=1828189
-> +
-> +The current consistency model is very simple. It guarantees that either
-> +the old or the new function is called. But various functions get redirected
-> +one by one without any synchronization.
-> +
-
-But it is possible in practice that both the old and new version of the function
-are being used at the same time. Consider for example
-
-T1
-
-a()
-+
---> (b)
-     +
-     --> (sleep)
-
-Now a() is patched with a'()
-
-Now T2 will come in at a'() and can go through the following path
-
-a'()
-+
---> (b)
-     +
-     --> (sleep)
-
-When the condition that they are sleeping on is signall'ed, they can wake up together.
-
-The consistency model requires that we support the case where both T1 and T2 will execute
-correctly
-
-> +By other words, the current implementation _never_ modifies the behavior
-> +in the middle of the call. It is because it does _not_ rewrite the entire
-> +function in the memory. Instead, the function gets redirected at the
-> +very beginning. But this redirection is used immediately even when
-> +some other functions from the same patch have not been redirected yet.
-> +
-> +See also the section "Limitations" below.
-> +
-> +
-> +4. Livepatch module
-> +===================
-> +
-> +Livepatches are distributed using kernel modules, see
-> +samples/livepatch/livepatch-sample.c.
-> +
-> +The module includes a new implementation of functions that we want
-> +to replace. In addition, it defines some structures describing the
-> +relation between the original and the new implementation. Then there
-> +is a code that makes kernel to start using the new code when the livepatch
-> +module is loaded. Also there is a code that do some clean up before the
-> +livepatch module is removed. All this is explained in more details in
-> +the next sections.
-> +
-> +
-> +4.1. New functions
-> +------------------
-> +
-> +New versions of functions are typically just copied from the fixed
-> +sources. A good practice is to add a prefix to the names so that they
-> +can be distinguished from the original ones, e.g. in a backtrace. Also
-> +they can be declared as static because they are not called directly
-> +and do not need the global visibility.
-> +
-> +The patch contains only functions that are really modified. But they
-> +might want to access functions or data from the original source.c
-> +that have a local visibility there. This can be solved by a special
-> +relocation section in the generated livepatch module, see
-> +Documentation/livepatch/module-elf-format.txt for more details.
-> +
-
-It is recommended that no special flags, tricks be required to compile
-the new function. The implementation of the new function should be such
-that it would eventually replace the current code when it is rebooted,
-but there might be some exceptions. Such exceptions should be well understood
-and reviewed
-
-> +
-> +4.2. Metadata
-> +------------
-> +
-> +The patch is described by several structures that split the information
-> +into three levels:
-> +
-> +  + struct klp_func is defined for each patched function. It describes
-> +    the relation between the original and the new implementation of a
-> +    particular function.
-> +
-> +    The structure includes the name, as a string, of the original function.
-> +    The function address is found via kallsyms at runtime.
-> +
-> +    Then it includes the address of the new function. It is defined
-> +    directly by assigning the function pointer. Note that the new
-> +    function is typically defined in the same source file.
-> +
-> +    Optionally it includes a position of the original function in the
-> +    kallsyms database. It is not the absolute position. Instead it is
-> +    the sequence order in compare with the other symbols of the same name
-> +    inside the same object. Where the object is either vmlinux or a kernel
-
-Could you rephrase the compare with .... inside the same object bits?
-
-> +    module. Note that kallsyms allows to search symbols according to
-> +    the object name.
-> +
-> +
-> +  + struct klp_object defines an array of patched functions (struct
-> +    klp_func) in the same object. Where the object is either vmlinux
-> +    (NULL) or a module name.
-> +
-> +    The structure helps to group and handle functions for each object
-> +    together. Note that patched modules might be loaded later than
-> +    the patch itself and the relevant functions might be patched
-> +    only when they are available.
-> +
-> +
-> +  + struct klp_patch defines an array of patched objects (struct
-> +    klp_object).
-> +
-> +    It allows to handle all patched functions consistently and eventually
-> +    synchronously. The whole patch is applied only when all patched
-> +    symbols are found. The only exception are symbols from objects
-> +    (kernel modules) that have not been loaded yet. Also if a more complex
-> +    consistency model is supported then a selected unit (thread,
-> +    kernel as a whole) will see the new code from the entire patch
-> +    only when it is in a safe state.
-> +
-> +
-> +4.3. Livepatch module handling
-> +------------------------------
-> +
-> +The usual behavior is that the new functions will get used when
-> +the livepatch module is loaded. For this, the module init() function
-> +has to register the patch (struct klp_patch) and enable it. See
-> +below the section "Livepatch life-cycle" for more details about
-> +these two operations.
-> +
-> +The module removal is safe only when nobody is using the code.
-> +The current consistency mode is not able to prove this. Therefore
-> +the livepatch modules could not get removed at the moment. See
-> +the limitations below.
-> +
-> +
-> +5. Livepatch life-cycle
-> +=======================
-> +
-> +Livepatching defines four basic operations that define the life cycle
-> +of each live patch. There are several reasons why it is done this way.
-> +
-> +First, the patch is applied only when all patched symbols for already
-> +loaded objects are found. The error handling is much easier if this
-> +check is done before particular functions get redirected.
-> +
-> +Second, the simply consistency model does not guarantee that anyone is
-> +not sleeping in the new code after the the patch got reverted. It means
-> +that the new code would need to stay around "forever". If the code is
-> +there, one might want to apply it again. Then it makes sense to separate
-> +the operations that are might be done once and that need to be repeated
-> +when the patch is enabled (applied) again.
-> +
-> +Third, it might take some time until the entire system is migrated
-> +when a more complex consistency model is used. The patch revert might
-> +block the livepatch module removal for too long. Therefore it is useful
-> +to revert the patch using a separate operation that might be called
-> +explicitly. But it does not make sense to remove all information
-> +until the livepatch module is really removed.
-> +
-
-Well said
-
-> +
-> +5.1. Registration
-> +-----------------
-> +
-> +Each patch has first to be registered using klp_register_patch(). It makes
-> +the patch known to the livepatch framework. Also it does some preliminary
-> +computing and checks.
-> +
-> +In particular. the patch is added into the list of known patches. The
-> +addresses of the patched functions are found according to their names.
-> +The special relocations, mentioned in the section "New functions", are
-> +applied. The relevant entries are created under
-> +/sys/kernel/livepatch/<name>. The patch is rejected when any operation
-> +fails.
-> +
-> +
-> +5.2. Enabling
-> +-------------
-> +
-> +Registered patches might be enabled either by calling klp_enable_patch() or
-> +by writing '1' to /sys/kernel/livepatch/<name>/enabled. The system will
-> +start using the new implementation of the patched functions at this stage.
-> +
-> +In particular, if an original function is patched for the first time, a
-> +function specific struct klp_ops is created and an universal ftrace handler
-> +is registered.
-> +
-> +Functions might be patched multiple times. The ftrace handler is registered
-> +only once for the given function. Further patches just add an entry to the
-> +list (see field `func_stack`) of the struct klp_ops. The last added
-> +entry is chosen by the ftrace handler and becomes the active function
-> +replacement.
-> +
-> +Note that the patches might be enabled in a different order than they were
-> +registered.
-> +
-> +
-> +5.3. Disabling
-> +--------------
-> +
-> +Enabled patches might get disabled either by calling klp_disable_patch() or
-> +by writing '0' to /sys/kernel/livepatch/<name>/enabled. At this stage
-> +either the code from the previously enabled patch or even the original
-> +code gets used.
-> +
-> +Here all the functions (struct klp_func) associated with the to-be-disabled
-> +patch are removed from the corresponding struct klp_ops. The ftrace handler
-> +is unregistered and the struct klp_ops is freed when the func_stack list
-> +gets empty.
-> +
-> +Patches must be disabled in the exactly reverse order in which they were
-> +enabled. It makes the problem and the implementation much easier.
-> +
-> +
-> +5.4. Unregistration
-> +-------------------
-> +
-> +Disabled patches might be unregistered by calling klp_unregister_patch().
-> +This can be done only when the patch is disabled and the code is not longer
-> +used. It must be called before the livepatch module gets unloaded.
-> +
-> +At this stage, all the relevant sys-fs entries are removed and the patch
-> +is removed from the list of known patches.
-> +
-> +
-> +6. Sysfs
-> +========
-> +
-> +Information about the registered patches might be found under
-> +/sys/kernel/livepatch. The patches could be enabled and disabled
-> +by writing there.
-> +
-> +See Documentation/ABI/testing/sysfs-kernel-livepatch for more details.
-> +
-> +
-> +7. Limitations
-> +==============
-> +
-> +The current Livepatch implementation has several limitations:
-> +
-> +
-> +  + The patch must not change the semantic of the patched functions.
-> +
-> +    The current implementation guarantees only that either the old
-> +    or the new function is called. The functions are patched one
-> +    by one. It means that the patch must _not_ change the semantic
-> +    of the function.
-> +
-> +
-> +  + Data structures can not be patched.
-> +
-> +    There is no support to version data structures or anyhow migrate
-> +    one structure into another. Also the simple consistency model does
-> +    not allow to switch more functions atomically.
-> +
-> +    Once there is more complex consistency mode, it will be possible to
-> +    use some workarounds. For example, it will be possible to use a hole
-> +    for a new member because the data structure is aligned. Or it will
-> +    be possible to use an existing member for something else.
-> +
-> +    There are no plans to add more generic support for modified structures
-> +    at the moment.
-> +
-> +
-> +  + Only functions that can be traced could be patched.
-> +
-> +    Livepatch is based on the dynamic ftrace. In particular, functions
-> +    implementing ftrace or the livepatch ftrace handler could not be
-> +    patched. Otherwise, the code would end up in an infinite loop. A
-> +    potential mistake is prevented by marking the problematic functions
-> +    by "notrace".
-> +
-> +
-> +  + Anything inlined into __schedule() can not be patched.
-> +
-> +    The switch_to macro is inlined into __schedule(). It switches the
-> +    context between two processes in the middle of the macro. It does
-> +    not save RIP in x86_64 version (contrary to 32-bit version). Instead,
-> +    the currently used __schedule()/switch_to() handles both processes.
-> +
-> +    Now, let's have two different tasks. One calls the original
-> +    __schedule(), its registers are stored in a defined order and it
-> +    goes to sleep in the switch_to macro and some other task is restored
-> +    using the original __schedule(). Then there is the second task which
-> +    calls patched__schedule(), it goes to sleep there and the first task
-> +    is picked by the patched__schedule(). Its RSP is restored and now
-> +    the registers should be restored as well. But the order is different
-> +    in the new patched__schedule(), so...
-> +
-> +    There is a work in progress to remove this limitation.
-> +
-
-I am afraid the example requires more clarification. I don't quite get the order is different
-
-> +
-> +  + The livepatch modules could not be removed.
-> +
-> +    The current implementation just redirects the functions at the very
-> +    beginning. It does not check if the functions are in use. By other
-> +    words, it knows when the functions get called but it does not
-> +    know when the functions return. Therefore it could not decide when
-> +    the livepatch module could get removed.
-> +
-> +    This will get most likely solved once a more complex consistency model
-> +    is supported. The idea is that a safe state for patching should also
-> +    mean a safe state for removing the patch.
-> +
-> +    Note that the patch itself might get disabled by writing zero
-> +    to /sys/kernel/livepatch/<patch>/enabled. It causes that the new
-> +    code will not longer get called. But it does not guarantee
-> +    that anyone is not sleeping anywhere in the new code.
-> +
-> +
-> +  + Livepatch works reliably only when the dynamic ftrace is located at
-> +    the very beginning of the function.
-> +
-> +    The function need to be redirected before the stack or the function
-> +    parameters are muffled any way. For example, livepatch requires
-> +    using -fentry gcc compiler option on x86_64.
-> +
-> +    One exception is the PPC port. It uses relative addressing and TOC.
-> +    Each function has to handle TOC and save LR before it could call
-> +    the ftrace handler. This operation has to be reverted on return.
-> +    Fortunately, the generic ftrace code has the same problem and all
-> +    this is is handled on the ftrace level.
-> +
-
-Can we mention PPC64 LE port, the port is not generic to PPC or PPC64
-
-> +
-> +  + Kretprobes using the ftrace framework conflict with the patched
-> +    functions.
-> +
-> +    Both kretprobes and livepatches use a ftrace handler that modifies
-> +    the return address. The first user wins. Either the probe or the patch
-> +    is rejected when the handler is already in use by the other.
-> +
-> +
-> +  + Kprobes in the original function are ignored when the code is
-> +    redirected to the new implementation.
-> +
-> +    There is a work in progress to add warnings about this situation.
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 1d5b4becab6f..d94ec31d5369 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6688,6 +6688,7 @@ F:	kernel/livepatch/
->  F:	include/linux/livepatch.h
->  F:	arch/x86/include/asm/livepatch.h
->  F:	arch/x86/kernel/livepatch.c
-> +F:	Documentation/livepatch/
->  F:	Documentation/ABI/testing/sysfs-kernel-livepatch
->  F:	samples/livepatch/
->  L:	live-patching@vger.kernel.org
-> 
+>>  	/* Clear recovery mode */
+>>  	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+>>  
+>
+>-- 
+>David Gibson			| I'll have my music baroque, and my code
+>david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+>				| _way_ _around_!
+>http://www.ozlabs.org/~dgibson
