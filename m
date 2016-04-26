@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFQ2xBTzDq9q
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFQ4CL2zDq9s
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:38 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,10 +9,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v2 16/23] ata: sata_dwc_460ex: add __iomem to register base
- pointer
-Date: Tue, 26 Apr 2016 12:03:17 +0300
-Message-Id: <1461661404-1952-17-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 22/23] ata: sata_dwc_460ex: make debug messages neat
+Date: Tue, 26 Apr 2016 12:03:23 +0300
+Message-Id: <1461661404-1952-23-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,29 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mans Rullgard <mans@mansr.com>
-
-The pointer to the mmio register base is missing the __iomem
-annotation.  Fix this.
+There is a duplication in the debug messages when accessing SCR registers.
+Remove duplication to make the messages neat.
 
 Tested-by: Christian Lamparter <chunkeey@googlemail.com>
-Signed-off-by: Mans Rullgard <mans@mansr.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ata/sata_dwc_460ex.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 90e3e14..25e00f2 100644
+index 6f145f8..00c2af1 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -145,7 +145,7 @@ struct sata_dwc_device {
- 	struct ata_probe_ent	*pe;		/* ptr to probe-ent */
- 	struct ata_host		*host;
- 	u8 __iomem		*reg_base;
--	struct sata_dwc_regs	*sata_dwc_regs;	/* DW Synopsys SATA specific */
-+	struct sata_dwc_regs __iomem *sata_dwc_regs;	/* DW SATA specific */
- 	u32			sactive_issued;
- 	u32			sactive_queued;
- 	struct phy		*phy;
+@@ -414,16 +414,16 @@ static int sata_dwc_scr_read(struct ata_link *link, unsigned int scr, u32 *val)
+ 	}
+ 
+ 	*val = sata_dwc_readl(link->ap->ioaddr.scr_addr + (scr * 4));
+-	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=val=0x%08x\n",
+-		__func__, link->ap->print_id, scr, *val);
++	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=0x%08x\n", __func__,
++		link->ap->print_id, scr, *val);
+ 
+ 	return 0;
+ }
+ 
+ static int sata_dwc_scr_write(struct ata_link *link, unsigned int scr, u32 val)
+ {
+-	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=val=0x%08x\n",
+-		__func__, link->ap->print_id, scr, val);
++	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=0x%08x\n", __func__,
++		link->ap->print_id, scr, val);
+ 	if (scr > SCR_NOTIFICATION) {
+ 		dev_err(link->ap->dev, "%s: Incorrect SCR offset 0x%02x\n",
+ 			 __func__, scr);
 -- 
 2.8.0.rc3
