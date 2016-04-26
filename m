@@ -1,21 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <eike-kernel@sf-tec.de>
+Received: from mail.sf-mail.de (mail.sf-mail.de
+ [IPv6:2a01:4f8:d15:1c06:616d:6c69:616d:6c69])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvdxH5qjxzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 09:05:55 +1000 (AEST)
-Message-ID: <1461711943.3135.72.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Balbir Singh <bsingharora@gmail.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 27 Apr 2016 09:05:43 +1000
-In-Reply-To: <571FE8C1.4030903@gmail.com>
-References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvcpK0gsQzDqBR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 08:14:49 +1000 (AEST)
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, tony.luck@intel.com,
+ geert@linux-m68k.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
+ dhowells@redhat.com, yasutake.koichi@jp.panasonic.com, rth@twiddle.net,
+ ink@jurassic.park.msu.ru, linux-alpha@vger.kernel.org, x86@kernel.org,
+ a.zummo@towertech.it, alexandre.belloni@free-electrons.com,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH 6/8] char/genrtc: parisc: use asm-generic/rtc.h
+Date: Wed, 27 Apr 2016 00:07:47 +0200
+Message-ID: <3034953.EvqV1iv2Ef@caliban.sf-tec.de>
+In-Reply-To: <1461707052-1337718-7-git-send-email-arnd@arndb.de>
+References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
+ <1461707052-1337718-7-git-send-email-arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1484825.uGIj57kKZR";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,34 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-27 at 08:16 +1000, Balbir Singh wrote:
-> 
-> On 27/04/16 07:05, Benjamin Herrenschmidt wrote:
-> > 
-> > On Tue, 2016-04-26 at 21:54 +0530, Aneesh Kumar K.V wrote:
-> > > 
-> > > This add generic mmu_feature_enabled() function that get patched
-> > > to take right code path based on the feature bit enabled. The
-> > > main
-> > > difference between the existing mmu_has_feature() function is the
-> > > hot patching using jump label framework.
-> > > 
-> > > The implementation wraps around mmu_has_feature so that we can
-> > > use
-> > > this in early bootup code before we do the hotpatching.
-> > I'd rather we make mmu_has_feature() use jump labels and is the
-> > "main"
-> > API to be used by most code. If we have a need for a lower-level
-> > version for use by early boot code, call it __mmu_has_feature().
-> > 
-> > This is more in-line with existing kernel practices and avoids
-> > having
-> > two APIs that somewhat look the same where it's not clear which one
-> > should be used.
-> > 
-> Makes sense, but I suspect its a larger impact with loads of testing
-> required across platforms. Should this be done incrementally?
+--nextPart1484825.uGIj57kKZR
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-What kind of impact do you expect ?
+Arnd Bergmann wrote:
+> The asm-generic/rtc.h header can now be included by
+> architectures that provide their own set_rtc_time/get_rtc_time
+> macros, letting us remove most of the common contents in
+> the powerpc implementation.
 
-Ben.
+parisc in this case.
+
+Eike
+--nextPart1484825.uGIj57kKZR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iEYEABECAAYFAlcf5rgACgkQXKSJPmm5/E4XHQCfYLbFGGoGa3RONzYALJ5wXGhV
+eswAoJzCfTkDFm06E5j/I7xKraT4hn9i
+=TRZX
+-----END PGP SIGNATURE-----
+
+--nextPart1484825.uGIj57kKZR--
