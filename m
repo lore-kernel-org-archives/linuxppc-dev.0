@@ -1,39 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvFxr4kjLzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 18:05:04 +1000 (AEST)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 26 Apr 2016 18:05:02 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 627A42BB005C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 18:04:48 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3Q84Tci15925398
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 18:04:37 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3Q8453g008662
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 18:04:05 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u3Q845AF007562
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 18:04:05 +1000
-Received: from ajd.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D8593A0268
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 17:55:19 +1000 (AEST)
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mpic: handle subsys_system_register() failure
-Date: Tue, 26 Apr 2016 17:55:04 +1000
-Message-Id: <1461657304-22011-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFG6557zDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:30 +1000 (AEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
+ Julian Margetson <runaway@candw.ms>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 00/23] ata: sata_dwc_460ex: make it working again
+Date: Tue, 26 Apr 2016 12:03:01 +0300
+Message-Id: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpic_init_sys() currently doesn't check whether
-subsys_system_register() succeeded or not. Check the return code of
-subsys_system_register() and clean up if there's an error.
+The last approach in the commit 8b3444852a2b ("sata_dwc_460ex: move to generic
+DMA driver") to switch to generic DMA engine API wasn't tested on bare metal.
+Besides that we expecting new board support coming with the same SATA IP but
+with different DMA.
 
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+This series is targetting the following things:
+- a few bug fixes to the original driver
+- a part to fix the DMA engine usage and in particularly dw_dmac driver
+- move driver to use generic PHY and "dmas" property which leads to update in DTS
 
----
+The driver has been tested myself on Sam460ex and WD MyBookLive (apollo3g)
+boards. In any case I ask Christian, Måns, and Julian to independently test and
+provide Tested-by tag or an error report.
 
-Found by Coverity Scan. Build-tested only.
----
- arch/powerpc/sysdev/mpic.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Series depends on previously published but not yet fully applied series [1].
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index afe3c7c..7de45b2 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -2004,8 +2004,15 @@ static struct syscore_ops mpic_syscore_ops = {
- 
- static int mpic_init_sys(void)
- {
-+	int rc;
-+
- 	register_syscore_ops(&mpic_syscore_ops);
--	subsys_system_register(&mpic_subsys, NULL);
-+	rc = subsys_system_register(&mpic_subsys, NULL);
-+	if (rc) {
-+		unregister_syscore_ops(&mpic_syscore_ops);
-+		pr_err("mpic: Failed to register subsystem!\n");
-+		return rc;
-+	}
- 
- 	return 0;
- }
+The patches are also available via public branch [2].
+
+[1] http://www.spinics.net/lists/dmaengine/msg09250.html
+[2] https://bitbucket.org/andy-shev/linux/branch/topic%2Fdw%2Fsata
+
+Since v1:
+- simplify patch 8 (David Laight)
+- add Tested-by and Acked-by tags
+
+Andy Shevchenko (11):
+  ata: sata_dwc_460ex: set dma_boundary to 0x1fff
+  ata: sata_dwc_460ex: burst size must be in items not bytes
+  ata: sata_dwc_460ex: DMA is always a flow controller
+  ata: sata_dwc_460ex: select only core part of DMA driver
+  ata: sata_dwc_460ex: don't call ata_sff_qc_issue() on DMA commands
+  ata: sata_dwc_460ex: correct HOSTDEV{P}_FROM_*() macros
+  ata: sata_dwc_460ex: supply physical address of FIFO to DMA
+  ata: sata_dwc_460ex: switch to new dmaengine_terminate_* API
+  ata: sata_dwc_460ex: use devm_ioremap
+  ata: sata_dwc_460ex: make debug messages neat
+  powerpc/4xx: Device tree update for the 460ex DWC SATA
+
+Christian Lamparter (1):
+  ata: sata_dwc_460ex: fix crash on offline links without an attached
+    drive
+
+Mans Rullgard (11):
+  ata: sata_dwc_460ex: remove incorrect locking
+  ata: sata_dwc_460ex: skip dma setup for non-dma commands
+  ata: sata_dwc_460ex: use "dmas" DT property to find dma channel
+  ata: sata_dwc_460ex: add phy support
+  ata: sata_dwc_460ex: get rid of global data
+  ata: sata_dwc_460ex: remove empty libata callback
+  ata: sata_dwc_460ex: get rid of some pointless casts
+  ata: sata_dwc_460ex: get rid of incorrect cast
+  ata: sata_dwc_460ex: add __iomem to register base pointer
+  ata: sata_dwc_460ex: use readl/writel_relaxed()
+  ata: sata_dwc_460ex: tidy up sata_dwc_clear_dmacr()
+
+ arch/powerpc/boot/dts/canyonlands.dts |  15 +-
+ drivers/ata/Kconfig                   |  12 +-
+ drivers/ata/sata_dwc_460ex.c          | 552 +++++++++++++++++-----------------
+ 3 files changed, 305 insertions(+), 274 deletions(-)
+
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.8.0.rc3
