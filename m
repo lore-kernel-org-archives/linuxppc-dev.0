@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFJ2cPbzDq9m
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFJ1yDZzDq68
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:32 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -10,10 +10,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 08/23] ata: sata_dwc_460ex: don't call ata_sff_qc_issue()
- on DMA commands
-Date: Tue, 26 Apr 2016 12:03:09 +0300
-Message-Id: <1461661404-1952-9-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 06/23] ata: sata_dwc_460ex: select only core part of DMA
+ driver
+Date: Tue, 26 Apr 2016 12:03:07 +0300
+Message-Id: <1461661404-1952-7-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,32 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ata_sff_qc_issue() can't handle DMA commands and thus we have to avoid it for
-them. Do call ata_bmdma_qc_issue() instead for this case. Note that the former
-one distinguishes PIO and DMA mode and behaves accordingly.
+There is no need to have a platform driver compiled since the DMA driver is
+used as a library.
 
-Suggested-by: Christian Lamparter <chunkeey@googlemail.com>
+Tested-by: Christian Lamparter <chunkeey@googlemail.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/ata/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 038e5fb..f1a4d49 100644
---- a/drivers/ata/sata_dwc_460ex.c
-+++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1061,10 +1061,10 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
- 			__func__, tag, qc->ap->link.sactive, sactive);
- 
- 		ap->ops->sff_tf_load(ap, &qc->tf);
--		sata_dwc_exec_command_by_tag(ap, &qc->tf, qc->tag,
-+		sata_dwc_exec_command_by_tag(ap, &qc->tf, tag,
- 					     SATA_DWC_CMD_ISSUED_PEND);
- 	} else {
--		ata_sff_qc_issue(qc);
-+		return ata_bmdma_qc_issue(qc);
- 	}
- 	return 0;
- }
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index cfa936a..7c6e43a 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -314,7 +314,7 @@ config ATA_PIIX
+ config SATA_DWC
+ 	tristate "DesignWare Cores SATA support"
+ 	depends on 460EX
+-	select DW_DMAC
++	select DW_DMAC_CORE
+ 	help
+ 	  This option enables support for the on-chip SATA controller of the
+ 	  AppliedMicro processor 460EX.
 -- 
 2.8.0.rc3
