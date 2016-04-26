@@ -1,7 +1,7 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFH2y4wzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:31 +1000 (AEST)
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFJ2cPbzDq9m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:32 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
@@ -10,9 +10,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 03/23] ata: sata_dwc_460ex: set dma_boundary to 0x1fff
-Date: Tue, 26 Apr 2016 12:03:04 +0300
-Message-Id: <1461661404-1952-4-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 08/23] ata: sata_dwc_460ex: don't call ata_sff_qc_issue()
+ on DMA commands
+Date: Tue, 26 Apr 2016 12:03:09 +0300
+Message-Id: <1461661404-1952-9-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,41 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The original code states:
+ata_sff_qc_issue() can't handle DMA commands and thus we have to avoid it for
+them. Do call ata_bmdma_qc_issue() instead for this case. Note that the former
+one distinguishes PIO and DMA mode and behaves accordingly.
 
-	Make sure a LLI block is not created that will span 8K max FIS
-	boundary. If the block spans such a FIS boundary, there is a chance
-	that a DMA burst will cross that boundary -- this results in an error
-	in the host controller.
-
-Since we have switched to generic DMAengine API we satisfy above by setting
-dma_boundary value to 0x1fff.
-
-Suggested-by: Mans Rullgard <mans@mansr.com>
-Tested-by: Christian Lamparter <chunkeey@googlemail.com>
+Suggested-by: Christian Lamparter <chunkeey@googlemail.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/ata/sata_dwc_460ex.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 7f95389..aee8873 100644
+index 038e5fb..f1a4d49 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1151,7 +1151,13 @@ static struct scsi_host_template sata_dwc_sht = {
- 	 */
- 	.sg_tablesize		= LIBATA_MAX_PRD,
- 	/* .can_queue		= ATA_MAX_QUEUE, */
--	.dma_boundary		= ATA_DMA_BOUNDARY,
-+	/*
-+	 * Make sure a LLI block is not created that will span 8K max FIS
-+	 * boundary. If the block spans such a FIS boundary, there is a chance
-+	 * that a DMA burst will cross that boundary -- this results in an
-+	 * error in the host controller.
-+	 */
-+	.dma_boundary		= 0x1fff /* ATA_DMA_BOUNDARY */,
- };
+@@ -1061,10 +1061,10 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
+ 			__func__, tag, qc->ap->link.sactive, sactive);
  
- static struct ata_port_operations sata_dwc_ops = {
+ 		ap->ops->sff_tf_load(ap, &qc->tf);
+-		sata_dwc_exec_command_by_tag(ap, &qc->tf, qc->tag,
++		sata_dwc_exec_command_by_tag(ap, &qc->tf, tag,
+ 					     SATA_DWC_CMD_ISSUED_PEND);
+ 	} else {
+-		ata_sff_qc_issue(qc);
++		return ata_bmdma_qc_issue(qc);
+ 	}
+ 	return 0;
+ }
 -- 
 2.8.0.rc3
