@@ -1,24 +1,32 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0062.outbound.protection.outlook.com [157.56.112.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qv7K02NZXzDqCC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 13:06:12 +1000 (AEST)
-Received: by mail-pa0-x22b.google.com with SMTP id zm5so1155749pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 20:06:12 -0700 (PDT)
-Subject: Re: [PATCH V2 54/68] powerpc/mm: Update pte filter for radix
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-55-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <571EDB1E.1060005@gmail.com>
-Date: Tue, 26 Apr 2016 13:06:06 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qv7SW3GtZzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 13:12:43 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Scott Wood <oss@buserror.net>, Yang-Leo Li <leoyang.li@nxp.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+CC: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Zhao Qiang
+ <qiang.zhao@freescale.com>, Russell King <linux@arm.linux.org.uk>, "Bhupesh
+ Sharma" <bhupesh.sharma@freescale.com>, Scott Wood <scott.wood@nxp.com>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>, Kumar Gala
+ <galak@codeaurora.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: RE: [v8, 6/7] MAINTAINERS: add entry for Freescale SoC specific driver
+Date: Tue, 26 Apr 2016 03:12:30 +0000
+Message-ID: <HE1PR04MB088907CD90586FC83D058003F8630@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1461306464-19521-1-git-send-email-yangbo.lu@nxp.com>
+ <1461306464-19521-7-git-send-email-yangbo.lu@nxp.com>
+ <1461367352.32510.218.camel@buserror.net>
+In-Reply-To: <1461367352.32510.218.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1460182444-2468-55-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +36,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 09/04/16 16:13, Aneesh Kumar K.V wrote:
-> ---
->  arch/powerpc/mm/pgtable.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> index 115a0a19d5a2..0a9658fbf8b9 100644
-> --- a/arch/powerpc/mm/pgtable.c
-> +++ b/arch/powerpc/mm/pgtable.c
-> @@ -82,6 +82,9 @@ static struct page *maybe_pte_to_page(pte_t pte)
->  
->  static pte_t set_pte_filter(pte_t pte)
->  {
-> +	if (radix_enabled())
-> +		return pte;
-> +
->  	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
->  	if (pte_looks_normal(pte) && !(cpu_has_feature(CPU_FTR_COHERENT_ICACHE) ||
->  				       cpu_has_feature(CPU_FTR_NOEXECUTE))) {
-> 
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+SGkgU2NvdHQgYW5kIExlbywNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IGxpbnV4LW1tYy1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1tbWMtDQo+
+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFNjb3R0IFdvb2QNCj4gU2VudDog
+U2F0dXJkYXksIEFwcmlsIDIzLCAyMDE2IDc6MjMgQU0NCj4gVG86IFlhbmdibyBMdTsgbGludXgt
+bW1jQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxp
+bnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgta2VybmVsQHZnZXIua2Vy
+bmVsLm9yZw0KPiBDYzogdWxmLmhhbnNzb25AbGluYXJvLm9yZzsgWmhhbyBRaWFuZzsgUnVzc2Vs
+bCBLaW5nOyBCaHVwZXNoIFNoYXJtYTsNCj4gU2NvdHQgV29vZDsgQ2xhdWRpdSBNYW5vaWw7IEt1
+bWFyIEdhbGE7IFlhbmctTGVvIExpOyBYaWFvYm8gWGllOyBNaWNoYWVsDQo+IEVsbGVybWFuDQo+
+IFN1YmplY3Q6IFJlOiBbdjgsIDYvN10gTUFJTlRBSU5FUlM6IGFkZCBlbnRyeSBmb3IgRnJlZXNj
+YWxlIFNvQyBzcGVjaWZpYw0KPiBkcml2ZXINCj4gDQo+IE9uIEZyaSwgMjAxNi0wNC0yMiBhdCAx
+NDoyNyArMDgwMCwgWWFuZ2JvIEx1IHdyb3RlOg0KPiA+IEFkZCBtYWludGFpbmVyIGVudHJ5IGZv
+ciBGcmVlc2NhbGUgU29DIHNwZWNpZmljIGRyaXZlciBpbmNsdWRpbmcgdGhlDQo+ID4gUUUgbGli
+cmFyeSBhbmQgdGhlIEdVVFMgZHJpdmVyLiBBbHNvIGFkZCBlbnRyeSBmb3IgR1VUUyBkcml2ZXIg
+YW5kIGFkZA0KPiA+IG1haW50YWluZXIgZm9yIFFFIGxpYnJhcnkuDQo+ID4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBZYW5nYm8gTHUgPHlhbmdiby5sdUBueHAuY29tPg0KPiA+IC0tLQ0KPiA+IENoYW5n
+ZXMgZm9yIHY4Og0KPiA+IAktIEFkZGVkIHRoaXMgcGF0Y2gNCj4gPiAtLS0NCj4gPiAgTUFJTlRB
+SU5FUlMgfCAxNiArKysrKysrKysrKysrKystDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNl
+cnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvTUFJTlRBSU5F
+UlMgYi9NQUlOVEFJTkVSUyBpbmRleCAxZDViNGJlLi5kMjBhZWI2IDEwMDY0NA0KPiA+IC0tLSBh
+L01BSU5UQUlORVJTDQo+ID4gKysrIGIvTUFJTlRBSU5FUlMNCj4gPiBAQCAtNDYyMiwxMyArNDYy
+MiwyNyBAQCBGOglkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZmVjX3B0cC5jDQo+ID4g
+IEY6CWRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9mZWMuaA0KPiA+ICBGOglEb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbmV0L2ZzbC1mZWMudHh0DQo+ID4NCj4gPiArRlJF
+RVNDQUxFIFNPQyBTUEVDSUZJQyBEUklWRVINCj4gDQo+IEZSRUVTQ0FMRSBTT0MgRFJJVkVSUw0K
+DQpbTHUgWWFuZ2JvLUI0NzA5M10gT2ssIHdpbGwgY2hhbmdlIGl0IHRvICdGUkVFU0NBTEUgU09D
+IERSSVZFUlMnLg0KDQo+IA0KPiA+ICtNOglTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0Pg0K
+PiANCj4gUGxlYXNlIENDIG1lIGF0IHRoaXMgYWRkcmVzcywgbm90IHRoZSBOWFAgYWRkcmVzcyB0
+aGF0IHlvdSBzZW50IHRoaXMgdG8uLi4NCg0KW0x1IFlhbmdiby1CNDcwOTNdIFNvcnJ5IGZvciBt
+aXN0YWtpbmcgeW91ciBlbWFpbC4gV2lsbCBzZW5kIHRoZSBvbmUgeW91IHNhaWQuDQoNCj4gDQo+
+ID4gK0w6CWxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gK1M6CU1haW50YWluZWQN
+Cj4gPiArRjoJZHJpdmVycy9zb2MvZnNsLw0KPiA+ICtGOglpbmNsdWRlL2xpbnV4L2ZzbC8NCj4g
+DQo+IFRoaXMgZGlyZWN0b3J5IHdpbGwgY29udGFpbiBkcml2ZXJzIHRoYXQgd29yayBvbiBQUEMg
+YW5kIEFSTS4uLiBJJ20gbm90DQo+IHN1cmUgd2hhdCB0byBwdXQgaGVyZSBpbiB0ZXJtcyBvZiBt
+YWlsaW5nIGxpc3RzICh3ZSBjb3VsZCBwdXQgYm90aCwgYnV0DQo+IHBlb3BsZSBwcm9iYWJseSBz
+aG91bGRuJ3Qgc3BhbSBib3RoIGxpc3RzIGlmIG9ubHkgb25lIGFyY2ggaXMgcmVsZXZhbnQgdG8N
+Cj4gdGhlIHBhdGNoKSwgYW5kIHdob20gdG8gbWFrZSBwdWxsIHJlcXVlc3RzIHRvLg0KDQpbTHUg
+WWFuZ2JvLUI0NzA5M10gQnV0IHNvb25lciBvciBsYXRlciB3ZSBuZWVkIHRvIGRvIHRoaXMgZm9y
+IGZpbGVzIGluIGZzbC8gLi4uDQo6KQ0KDQpIaSBMZW8sIGRvIHlvdSBoYXZlIGFueSBpZGVhPw0K
+DQoNCj4gDQo+ID4gK0ZSRUVTQ0FMRSBHVVRTIERSSVZFUg0KPiA+ICtNOglZYW5nYm8gTHUgPHlh
+bmdiby5sdUBueHAuY29tPg0KPiA+ICtMOglsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0K
+PiA+ICtTOglNYWludGFpbmVkDQo+ID4gK0Y6CWRyaXZlcnMvc29jL2ZzbC9ndXRzLmMNCj4gDQo+
+IFdoYXQgYWJvdXQgdGhlIGhlYWRlcj8NCj4gDQo+IERvZXMgZ3V0cyByZWFsbHkgbmVlZCBhIHNl
+cGFyYXRlIG1haW50YWluZXIgZnJvbSBkcml2ZXJzL3NvYy9mc2w/DQoNCltMdSBZYW5nYm8tQjQ3
+MDkzXSBJIHdhcyBoZXNpdGF0aW5nIHRvIGFkZCB0aGUgbWFpbnRhaW5lci4uLg0KQW5kIEkgd2Fz
+IG5vdCBzbyBmYW1pbGlhciB3aXRoIGl0LiBMZXQgbWUgbGVhdmUgaXQgdG8gdGhlIGZzbC8gZGly
+ZWN0b3J5IGFuZCByZW1vdmUgdGhpcy4uLg0KDQo+IA0KPiAtU2NvdHQNCj4gDQo+IA0KPiAtLQ0K
+PiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3Jp
+YmUgbGludXgtbW1jIiBpbg0KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZn
+ZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5l
+bC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0K
