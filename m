@@ -1,25 +1,22 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0055.outbound.protection.outlook.com [157.55.234.55])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvCqj5LXZzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:29:37 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: Yangbo Lu <yangbo.lu@nxp.com>, Scott Wood <oss@buserror.net>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-CC: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Rob Herring
- <robh+dt@kernel.org>, Scott Wood <scott.wood@nxp.com>
-Subject: RE: [PATCH 1/2] powerpc/85xx: adapt QorIQ eSDHC to the new clocking
- model
-Date: Tue, 26 Apr 2016 06:29:28 +0000
-Message-ID: <HE1PR04MB0889A9EA3955E0723146A2A9F8630@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1461147644-18041-1-git-send-email-yangbo.lu@nxp.com>
- <1461280096.32510.213.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvD6N6FL8zDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:42:20 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id 145so670551pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 23:42:20 -0700 (PDT)
+Date: Tue, 26 Apr 2016 16:42:09 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Chris Smart <chris@distroguy.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Add support for userspace P9 copy paste
+Message-ID: <20160426164209.7c28ca8c@camb691>
+In-Reply-To: <20160426002844.GA9198@x1.distroguy.com>
+References: <20160426002844.GA9198@x1.distroguy.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +26,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogWWFuZ2JvIEx1DQo+IFNl
-bnQ6IFR1ZXNkYXksIEFwcmlsIDI2LCAyMDE2IDI6MTkgUE0NCj4gVG86ICdTY290dCBXb29kJzsg
-bGludXgtbW1jQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
-b3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZw0KPiBDYzogdWxmLmhhbnNzb25AbGluYXJv
-Lm9yZzsgUm9iIEhlcnJpbmc7IFNjb3R0IFdvb2QNCj4gU3ViamVjdDogUkU6IFtQQVRDSCAxLzJd
-IHBvd2VycGMvODV4eDogYWRhcHQgUW9ySVEgZVNESEMgdG8gdGhlIG5ldw0KPiBjbG9ja2luZyBt
-b2RlbA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IFNjb3R0
-IFdvb2QgW21haWx0bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiA+IFNlbnQ6IEZyaWRheSwgQXByaWwg
-MjIsIDIwMTYgNzowOCBBTQ0KPiA+IFRvOiBZYW5nYm8gTHU7IGxpbnV4LW1tY0B2Z2VyLmtlcm5l
-bC5vcmc7DQo+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGRldmljZXRyZWVAdmdl
-ci5rZXJuZWwub3JnDQo+ID4gQ2M6IHVsZi5oYW5zc29uQGxpbmFyby5vcmc7IFJvYiBIZXJyaW5n
-OyBTY290dCBXb29kDQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIHBvd2VycGMvODV4eDog
-YWRhcHQgUW9ySVEgZVNESEMgdG8gdGhlIG5ldw0KPiA+IGNsb2NraW5nIG1vZGVsDQo+ID4NCj4g
-PiBPbiBXZWQsIDIwMTYtMDQtMjAgYXQgMTg6MjAgKzA4MDAsIFlhbmdibyBMdSB3cm90ZToNCj4g
-PiA+IFByb3ZpZGUgY2xvY2tzIHByb3BlcnR5IGluc3RlYWQgb2YgY2xvY2stZnJlcXVlbmN5IGZv
-ciBRb3JJUSBlU0RIQw0KPiA+ID4gZHRzIG5vZGUgdG8gYWRhcHQgdG8gdGhlIG5ldyBjbG9ja2lu
-ZyBtb2RlbCwgc28gdGhhdCB0aGUgZHJpdmVyDQo+ID4gPiBjb3VsZCBnZXQgY2xvY2sgdmFsdWUg
-YnkgdGhlIGNvbW1vbiBjbGsgQVBJIGFuZCB0aGUgdS1ib290IGNvdWxkDQo+ID4gPiByZW1vdmUg
-dGhlIGNsb2NrIGZpeHVwLg0KPiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IFlhbmdibyBMdSA8
-eWFuZ2JvLmx1QG54cC5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9k
-dHMvZnNsL3FvcmlxLWVzZGhjLTAuZHRzaSB8IDIgKy0NCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwg
-MSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gPiA+DQo+ID4gPiBkaWZmIC0tZ2l0IGEv
-YXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiA+IGIvYXJj
-aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiA+IGluZGV4IDIw
-ODM1YWUuLmRkYmU1NjIgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMv
-ZnNsL3FvcmlxLWVzZGhjLTAuZHRzaQ0KPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
-L2ZzbC9xb3JpcS1lc2RoYy0wLmR0c2kNCj4gPiA+IEBAIC0zNiw1ICszNiw1IEBAIHNkaGM6IHNk
-aGNAMTE0MDAwIHsNCj4gPiA+ICAJY29tcGF0aWJsZSA9ICJmc2wsZXNkaGMiOw0KPiA+ID4gIAly
-ZWcgPSA8MHgxMTQwMDAgMHgxMDAwPjsNCj4gPiA+ICAJaW50ZXJydXB0cyA9IDw0OCAyIDAgMD47
-DQo+ID4gPiAtCWNsb2NrLWZyZXF1ZW5jeSA9IDwwPjsNCj4gPiA+ICsJY2xvY2tzID0gPCZjbG9j
-a2dlbiA0IDE+Ow0KPiA+ID4gIH07DQo+ID4NCj4gPiBCaW5kaW5nIHVwZGF0ZT8NCj4gPg0KPiA+
-IC1TY290dA0KPiANCj4gW0x1IFlhbmdiby1CNDcwOTNdIFNvcnJ5LCBkaWQgeW91IG1lYW4gdGhl
-IGRvYyB1cGRhdGU/IC4uLg0KPiBJdCBoYXMgYWxyZWFkeSBoYWQgYSBkZXNjcmlwdGlvbiBpbg0K
-PiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0
-DQo+IA0KPiAtIGNsb2NrLWZyZXF1ZW5jeTogSW5wdXQgc3lzdGVtIGNsb2NrIGZyZXF1ZW5jeSAo
-U1lTQ0xLKQ0KPiAtIGNsb2NrczogSWYgY2xvY2stZnJlcXVlbmN5IGlzIG5vdCBzcGVjaWZpZWQs
-IHN5c2NsayBtYXkgYmUgcHJvdmlkZWQNCj4gICAgICAgICBhcyBhbiBpbnB1dCBjbG9jay4gIEVp
-dGhlciBjbG9jay1mcmVxdWVuY3kgb3IgY2xvY2tzIG11c3QgYmUNCj4gICAgICAgICBwcm92aWRl
-ZC4NCg0KW0x1IFlhbmdiby1CNDcwOTNdIE9yIHVwZGF0ZSBtbWMgZG9jPw0KVGhhbmtzLg0K
+On Tue, 26 Apr 2016 10:28:50 +1000
+Chris Smart <chris@distroguy.com> wrote:
+
+> The copy paste facility introduced in POWER9 provides an optimised
+> mechanism for a userspace application to copy a cacheline. This is
+> provided by a pair of instructions, copy and paste, while a third,
+> cp_abort (copy paste abort), provides a clean up of the state in case of
+> a failure.
+> 
+> The copy instruction will read a 128 byte cacheline and store it in an
+> internal buffer. The subsequent paste instruction will store this
+> internal buffer to memory and set a CR field if the paste succeeds.
+> 
+> Since the state of the copy paste buffer is internal (and not
+> architecturally visible), in the unlikely event of a context switch, the
+> state cannot be stored and the paste should therefore fail.
+> 
+> The cp_abort instruction exists to fail and clean up any such
+> interrupted copy paste sequence and is to be called by the kernel as
+> part of the context switch. Doing so prevents data from a preceding copy
+> in one process leaking into the paste of another.
+> 
+> This code enables use of the cp_abort instruction if a supported
+> processor is detected.
+> 
+> NOTE: this is for userspace only, not in kernel, and does not deal
+> with KVM guests.
+> 
+> Patch created with much assistance from Michael Neuling
+> <mikey@neuling.org>
+> 
+
+Hi Chris,
+
+Patch looks good. Looks like you've put 8 spaces (instead of a tab) on the
+PPC_CP_ABORT line.
+
+Apart from that,
+
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+
+> Signed-off-by: Chris Smart <chris@distroguy.com>
+> ---
+> 
+> Note: A follow-up patch is expected soon with a working self-test.
+> 
+>  arch/powerpc/include/asm/ppc-opcode.h | 2 ++
+>  arch/powerpc/kernel/entry_64.S        | 9 +++++++++
+>  2 files changed, 11 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> index 7ab04fc59e24..1d035c1cc889 100644
+> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -131,6 +131,7 @@
+>  /* sorted alphabetically */
+>  #define PPC_INST_BHRBE			0x7c00025c
+>  #define PPC_INST_CLRBHRB		0x7c00035c
+> +#define PPC_INST_CP_ABORT		0x7c00068c
+>  #define PPC_INST_DCBA			0x7c0005ec
+>  #define PPC_INST_DCBA_MASK		0xfc0007fe
+>  #define PPC_INST_DCBAL			0x7c2005ec
+> @@ -285,6 +286,7 @@
+>  #endif
+>  
+>  /* Deal with instructions that older assemblers aren't aware of */
+> +#define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
+>  #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
+>  					__PPC_RA(a) | __PPC_RB(b))
+>  #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 8b9d68676d2b..ab1457c3f1d1 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -36,6 +36,7 @@
+>  #include <asm/hw_irq.h>
+>  #include <asm/context_tracking.h>
+>  #include <asm/tm.h>
+> +#include <asm/ppc-opcode.h>
+>  
+>  /*
+>   * System calls.
+> @@ -508,6 +509,14 @@ BEGIN_FTR_SECTION
+>  	ldarx	r6,0,r1
+>  END_FTR_SECTION_IFSET(CPU_FTR_STCX_CHECKS_ADDRESS)
+>  
+> +BEGIN_FTR_SECTION
+> +/*
+> + * A cp_abort (copy paste abort) here ensures that when context switching, a
+> + * copy from one process can't leak into the paste of another.
+> + */
+> +        PPC_CP_ABORT
+> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> +
+>  #ifdef CONFIG_PPC_BOOK3S
+>  /* Cancel all explict user streams as they will have no use after context
+>   * switch and will stop the HW from creating streams itself
