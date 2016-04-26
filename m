@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFN2vV5zDqBK
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFN4BhLzDqBR
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:36 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,9 +9,9 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v2 15/23] ata: sata_dwc_460ex: get rid of incorrect cast
-Date: Tue, 26 Apr 2016 12:03:16 +0300
-Message-Id: <1461661404-1952-16-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 14/23] ata: sata_dwc_460ex: get rid of some pointless casts
+Date: Tue, 26 Apr 2016 12:03:15 +0300
+Message-Id: <1461661404-1952-15-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,36 +25,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mans Rullgard <mans@mansr.com>
 
-The (void *__iomem) cast is wrong.  Change the target type of the
-"base" pointer to void __iomem instead and drop the cast.
+Casting a pointer to unsigned long only to immediately cast it back
+to a pointer makes no sense.  Fix this.
 
 Tested-by: Christian Lamparter <chunkeey@googlemail.com>
 Signed-off-by: Mans Rullgard <mans@mansr.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 2912e4d..90e3e14 100644
+index 3a9dd82..2912e4d 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1219,7 +1219,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
- 	struct sata_dwc_device *hsdev;
- 	u32 idr, versionr;
- 	char *ver = (char *)&versionr;
--	u8 __iomem *base;
-+	void __iomem *base;
- 	int err = 0;
- 	int irq;
- 	struct ata_host *host;
-@@ -1246,7 +1246,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
- 	dev_dbg(&ofdev->dev, "ioremap done for SATA register address\n");
+@@ -844,26 +844,26 @@ static void sata_dwc_enable_interrupts(struct sata_dwc_device *hsdev)
+ 		in_le32(&hsdev->sata_dwc_regs->errmr));
+ }
  
- 	/* Synopsys DWC SATA specific Registers */
--	hsdev->sata_dwc_regs = (void *__iomem)(base + SATA_DWC_REG_OFFSET);
-+	hsdev->sata_dwc_regs = base + SATA_DWC_REG_OFFSET;
+-static void sata_dwc_setup_port(struct ata_ioports *port, unsigned long base)
++static void sata_dwc_setup_port(struct ata_ioports *port, void __iomem *base)
+ {
+-	port->cmd_addr = (void __iomem *)base + 0x00;
+-	port->data_addr = (void __iomem *)base + 0x00;
++	port->cmd_addr		= base + 0x00;
++	port->data_addr		= base + 0x00;
  
+-	port->error_addr = (void __iomem *)base + 0x04;
+-	port->feature_addr = (void __iomem *)base + 0x04;
++	port->error_addr	= base + 0x04;
++	port->feature_addr	= base + 0x04;
+ 
+-	port->nsect_addr = (void __iomem *)base + 0x08;
++	port->nsect_addr	= base + 0x08;
+ 
+-	port->lbal_addr = (void __iomem *)base + 0x0c;
+-	port->lbam_addr = (void __iomem *)base + 0x10;
+-	port->lbah_addr = (void __iomem *)base + 0x14;
++	port->lbal_addr		= base + 0x0c;
++	port->lbam_addr		= base + 0x10;
++	port->lbah_addr		= base + 0x14;
+ 
+-	port->device_addr = (void __iomem *)base + 0x18;
+-	port->command_addr = (void __iomem *)base + 0x1c;
+-	port->status_addr = (void __iomem *)base + 0x1c;
++	port->device_addr	= base + 0x18;
++	port->command_addr	= base + 0x1c;
++	port->status_addr	= base + 0x1c;
+ 
+-	port->altstatus_addr = (void __iomem *)base + 0x20;
+-	port->ctl_addr = (void __iomem *)base + 0x20;
++	port->altstatus_addr	= base + 0x20;
++	port->ctl_addr		= base + 0x20;
+ }
+ 
+ static int sata_dwc_dma_get_channel(struct sata_dwc_device_port *hsdevp)
+@@ -1251,7 +1251,7 @@ static int sata_dwc_probe(struct platform_device *ofdev)
  	/* Setup port */
  	host->ports[0]->ioaddr.cmd_addr = base;
+ 	host->ports[0]->ioaddr.scr_addr = base + SATA_DWC_SCR_OFFSET;
+-	sata_dwc_setup_port(&host->ports[0]->ioaddr, (unsigned long)base);
++	sata_dwc_setup_port(&host->ports[0]->ioaddr, base);
+ 
+ 	/* Read the ID and Version Registers */
+ 	idr = in_le32(&hsdev->sata_dwc_regs->idr);
 -- 
 2.8.0.rc3
