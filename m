@@ -1,31 +1,25 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x22e.google.com (mail-pf0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c00::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvcmS0fNTzDq9s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 08:13:12 +1000 (AEST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qvcmR5hvXz9t61
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2016 08:13:11 +1000 (AEST)
-Date: Tue, 26 Apr 2016 17:13:07 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- Torsten Duwe <duwe@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Nikolay Borisov <kernel@kyup.com>
-Subject: Re: [PATCH v2] livepatch: Add some basic LivePatch documentation
-Message-ID: <20160426221307.hmtfa7n6uokipwru@treble>
-References: <1461597275-32120-1-git-send-email-pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvcrW5QJBzDqBR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 08:16:43 +1000 (AEST)
+Received: by mail-pf0-x22e.google.com with SMTP id c189so12184795pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 15:16:43 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au
+References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1461704701.3135.68.camel@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <571FE8C1.4030903@gmail.com>
+Date: Wed, 27 Apr 2016 08:16:33 +1000
 MIME-Version: 1.0
+In-Reply-To: <1461704701.3135.68.camel@kernel.crashing.org>
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1461597275-32120-1-git-send-email-pmladek@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,16 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 25, 2016 at 05:14:35PM +0200, Petr Mladek wrote:
-> LivePatch framework deserves some documentation, definitely.
-> This is an attempt to provide some basic info. I hope that
-> it will be useful for both LivePatch producers and also
-> potential developers of the framework itself.
+
+
+On 27/04/16 07:05, Benjamin Herrenschmidt wrote:
+> On Tue, 2016-04-26 at 21:54 +0530, Aneesh Kumar K.V wrote:
+>> This add generic mmu_feature_enabled() function that get patched
+>> to take right code path based on the feature bit enabled. The main
+>> difference between the existing mmu_has_feature() function is the
+>> hot patching using jump label framework.
+>>
+>> The implementation wraps around mmu_has_feature so that we can use
+>> this in early bootup code before we do the hotpatching.
 > 
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
+> I'd rather we make mmu_has_feature() use jump labels and is the "main"
+> API to be used by most code. If we have a need for a lower-level
+> version for use by early boot code, call it __mmu_has_feature().
+> 
+> This is more in-line with existing kernel practices and avoids having
+> two APIs that somewhat look the same where it's not clear which one
+> should be used.
+> 
 
-My only comment is s/LivePatch/livepatch/ here and in the subject.
-Otherwise it looks great to me.  Really nice work!
+Makes sense, but I suspect its a larger impact with loads of testing required across platforms. Should this be done incrementally?
 
--- 
-Josh
+Balbir Singh
