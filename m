@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFQ4CL2zDq9s
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFQ4Py2zDqB9
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:38 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -10,9 +10,10 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 22/23] ata: sata_dwc_460ex: make debug messages neat
-Date: Tue, 26 Apr 2016 12:03:23 +0300
-Message-Id: <1461661404-1952-23-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 04/23] ata: sata_dwc_460ex: burst size must be in items not
+ bytes
+Date: Tue, 26 Apr 2016 12:03:05 +0300
+Message-Id: <1461661404-1952-5-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,39 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a duplication in the debug messages when accessing SCR registers.
-Remove duplication to make the messages neat.
+The burst size as defined by DMAengine API is in items of address width. Derive
+burst size from AHB_DMA_BRST_DFLT (64 bytes) by dividing it to
+DMA_SLAVE_BUSWIDTH_4_BYTES (4 bytes) that gives us 16 items.
 
 Tested-by: Christian Lamparter <chunkeey@googlemail.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/ata/sata_dwc_460ex.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 6f145f8..00c2af1 100644
+index aee8873..4cac27d 100644
 --- a/drivers/ata/sata_dwc_460ex.c
 +++ b/drivers/ata/sata_dwc_460ex.c
-@@ -414,16 +414,16 @@ static int sata_dwc_scr_read(struct ata_link *link, unsigned int scr, u32 *val)
+@@ -65,7 +65,7 @@
+ #define NO_IRQ		0
+ #endif
+ 
+-#define AHB_DMA_BRST_DFLT	64	/* 16 data items burst length*/
++#define AHB_DMA_BRST_DFLT	64	/* 16 data items burst length */
+ 
+ enum {
+ 	SATA_DWC_MAX_PORTS = 1,
+@@ -318,8 +318,8 @@ static struct dma_async_tx_descriptor *dma_dwc_xfer_setup(struct ata_queued_cmd
  	}
  
- 	*val = sata_dwc_readl(link->ap->ioaddr.scr_addr + (scr * 4));
--	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=val=0x%08x\n",
--		__func__, link->ap->print_id, scr, *val);
-+	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=0x%08x\n", __func__,
-+		link->ap->print_id, scr, *val);
+ 	sconf.direction = qc->dma_dir;
+-	sconf.src_maxburst = AHB_DMA_BRST_DFLT;
+-	sconf.dst_maxburst = AHB_DMA_BRST_DFLT;
++	sconf.src_maxburst = AHB_DMA_BRST_DFLT / 4;	/* in items */
++	sconf.dst_maxburst = AHB_DMA_BRST_DFLT / 4;	/* in items */
+ 	sconf.src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+ 	sconf.dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
  
- 	return 0;
- }
- 
- static int sata_dwc_scr_write(struct ata_link *link, unsigned int scr, u32 val)
- {
--	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=val=0x%08x\n",
--		__func__, link->ap->print_id, scr, val);
-+	dev_dbg(link->ap->dev, "%s: id=%d reg=%d val=0x%08x\n", __func__,
-+		link->ap->print_id, scr, val);
- 	if (scr > SCR_NOTIFICATION) {
- 		dev_err(link->ap->dev, "%s: Incorrect SCR offset 0x%02x\n",
- 			 __func__, scr);
 -- 
 2.8.0.rc3
