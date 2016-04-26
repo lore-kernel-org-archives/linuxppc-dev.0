@@ -1,22 +1,27 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <bsingharora@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvD7225m7zDqCT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:42:54 +1000 (AEST)
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvD6N6FL8zDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 16:42:20 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id 145so670551pfz.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 23:42:20 -0700 (PDT)
-Date: Tue, 26 Apr 2016 16:42:09 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Chris Smart <chris@distroguy.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Add support for userspace P9 copy paste
-Message-ID: <20160426164209.7c28ca8c@camb691>
-In-Reply-To: <20160426002844.GA9198@x1.distroguy.com>
-References: <20160426002844.GA9198@x1.distroguy.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3qvD715NKzz9rxl
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 16:42:53 +1000 (AEST)
+Received: by mail-pa0-x22b.google.com with SMTP id zm5so3283363pac.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Apr 2016 23:42:53 -0700 (PDT)
+Subject: Re: [PATCH] powerpc: disable sparse for lib/xor_vmx.c
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+References: <1461646737-500-1-git-send-email-dja@axtens.net>
+Cc: andrew.donnellan@au1.ibm.com
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <571F0DE7.5080904@gmail.com>
+Date: Tue, 26 Apr 2016 16:42:47 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1461646737-500-1-git-send-email-dja@axtens.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,100 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 26 Apr 2016 10:28:50 +1000
-Chris Smart <chris@distroguy.com> wrote:
 
-> The copy paste facility introduced in POWER9 provides an optimised
-> mechanism for a userspace application to copy a cacheline. This is
-> provided by a pair of instructions, copy and paste, while a third,
-> cp_abort (copy paste abort), provides a clean up of the state in case of
-> a failure.
-> 
-> The copy instruction will read a 128 byte cacheline and store it in an
-> internal buffer. The subsequent paste instruction will store this
-> internal buffer to memory and set a CR field if the paste succeeds.
-> 
-> Since the state of the copy paste buffer is internal (and not
-> architecturally visible), in the unlikely event of a context switch, the
-> state cannot be stored and the paste should therefore fail.
-> 
-> The cp_abort instruction exists to fail and clean up any such
-> interrupted copy paste sequence and is to be called by the kernel as
-> part of the context switch. Doing so prevents data from a preceding copy
-> in one process leaking into the paste of another.
-> 
-> This code enables use of the cp_abort instruction if a supported
-> processor is detected.
-> 
-> NOTE: this is for userspace only, not in kernel, and does not deal
-> with KVM guests.
-> 
-> Patch created with much assistance from Michael Neuling
-> <mikey@neuling.org>
-> 
 
-Hi Chris,
-
-Patch looks good. Looks like you've put 8 spaces (instead of a tab) on the
-PPC_CP_ABORT line.
-
-Apart from that,
-
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
-
-> Signed-off-by: Chris Smart <chris@distroguy.com>
+On 26/04/16 14:58, Daniel Axtens wrote:
+> Sparse doesn't seem to be passing -maltivec around properly, leading
+> to lots of errors:
+> 
+> .../include/altivec.h:34:2: error: Use the "-maltivec" flag to enable PowerPC AltiVec support
+> arch/powerpc/lib/xor_vmx.c:27:16: error: Expected ; at end of declaration
+> arch/powerpc/lib/xor_vmx.c:27:16: error: got signed
+> arch/powerpc/lib/xor_vmx.c:60:9: error: No right hand side of '*'-expression
+> arch/powerpc/lib/xor_vmx.c:60:9: error: Expected ; at end of statement
+> arch/powerpc/lib/xor_vmx.c:60:9: error: got v1_in
+> ...
+> arch/powerpc/lib/xor_vmx.c:87:9: error: too many errors
+> 
+> Disable sparse checking for xor_vmx.c.
+> 
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 > ---
+>  arch/powerpc/lib/xor_vmx.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 > 
-> Note: A follow-up patch is expected soon with a working self-test.
-> 
->  arch/powerpc/include/asm/ppc-opcode.h | 2 ++
->  arch/powerpc/kernel/entry_64.S        | 9 +++++++++
->  2 files changed, 11 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index 7ab04fc59e24..1d035c1cc889 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -131,6 +131,7 @@
->  /* sorted alphabetically */
->  #define PPC_INST_BHRBE			0x7c00025c
->  #define PPC_INST_CLRBHRB		0x7c00035c
-> +#define PPC_INST_CP_ABORT		0x7c00068c
->  #define PPC_INST_DCBA			0x7c0005ec
->  #define PPC_INST_DCBA_MASK		0xfc0007fe
->  #define PPC_INST_DCBAL			0x7c2005ec
-> @@ -285,6 +286,7 @@
->  #endif
->  
->  /* Deal with instructions that older assemblers aren't aware of */
-> +#define	PPC_CP_ABORT		stringify_in_c(.long PPC_INST_CP_ABORT)
->  #define	PPC_DCBAL(a, b)		stringify_in_c(.long PPC_INST_DCBAL | \
->  					__PPC_RA(a) | __PPC_RB(b))
->  #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index 8b9d68676d2b..ab1457c3f1d1 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -36,6 +36,7 @@
->  #include <asm/hw_irq.h>
->  #include <asm/context_tracking.h>
->  #include <asm/tm.h>
-> +#include <asm/ppc-opcode.h>
->  
->  /*
->   * System calls.
-> @@ -508,6 +509,14 @@ BEGIN_FTR_SECTION
->  	ldarx	r6,0,r1
->  END_FTR_SECTION_IFSET(CPU_FTR_STCX_CHECKS_ADDRESS)
->  
-> +BEGIN_FTR_SECTION
-> +/*
-> + * A cp_abort (copy paste abort) here ensures that when context switching, a
-> + * copy from one process can't leak into the paste of another.
-> + */
-> +        PPC_CP_ABORT
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> diff --git a/arch/powerpc/lib/xor_vmx.c b/arch/powerpc/lib/xor_vmx.c
+> index 07f49f1568e5..eccf37db9512 100644
+> --- a/arch/powerpc/lib/xor_vmx.c
+> +++ b/arch/powerpc/lib/xor_vmx.c
+> @@ -17,6 +17,16 @@
+>   *
+>   * Author: Anton Blanchard <anton@au.ibm.com>
+>   */
 > +
->  #ifdef CONFIG_PPC_BOOK3S
->  /* Cancel all explict user streams as they will have no use after context
->   * switch and will stop the HW from creating streams itself
+> +/*
+> + * Sparse (as at v0.5.0) gets very, very confused by this file.
+> + * Just disable it.
+> + */
+> +#ifdef __CHECKER__
+> +#undef __CHECKER__
+> +#warning "Sparse checking disabled for this file"
+> +#endif
+> +
+>  #include <altivec.h>
+>  
+
+Isn't it better to do this
+
+#if !defined(__CHECKER__)
+#include <altivec.h>
+#else
+#define vec_xor(a, b) a ^ b
+#endif
+
+This will probably let to sparse check the rest of the file. I've not checked it, just recommending it.
+See how it goes
+
+>  #include <linux/preempt.h>
+> 
