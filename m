@@ -1,6 +1,6 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFR2Z88zDq9q
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvHFR4qx7zDqB5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 19:03:39 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
@@ -9,10 +9,11 @@ To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
  Christian Lamparter <chunkeey@googlemail.com>,
  =?UTF-8?q?M=C3=A5ns=20Rullg=C3=A5rd?= <mans@mansr.com>,
  Julian Margetson <runaway@candw.ms>
-Subject: [PATCH v2 07/23] ata: sata_dwc_460ex: skip dma setup for non-dma
- commands
-Date: Tue, 26 Apr 2016 12:03:08 +0300
-Message-Id: <1461661404-1952-8-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 23/23] powerpc/4xx: Device tree update for the 460ex DWC
+ SATA
+Date: Tue, 26 Apr 2016 12:03:24 +0300
+Message-Id: <1461661404-1952-24-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,79 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mans Rullgard <mans@mansr.com>
+Device tree update for the Applied micro processor 460ex on-chip SATA to use
+"dmas" property.
 
-Calling dmaengine_prep_slave_sg() for non-dma ATA commands is
-unnecessary at best and could be harmful if the dma driver reacts
-badly to this.  It also causes this driver to print a bogus error
-message in these cases.
-
-This patch changes sata_dwc_qc_issue() to only do the dma setup
-for dma commands and also reports an error to libata if if fails.
-
-Tested-by: Christian Lamparter <chunkeey@googlemail.com>
-Signed-off-by: Mans Rullgard <mans@mansr.com>
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/ata/sata_dwc_460ex.c | 35 +++++++++--------------------------
- 1 file changed, 9 insertions(+), 26 deletions(-)
+ arch/powerpc/boot/dts/canyonlands.dts | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/ata/sata_dwc_460ex.c b/drivers/ata/sata_dwc_460ex.c
-index 1250e18..038e5fb 100644
---- a/drivers/ata/sata_dwc_460ex.c
-+++ b/drivers/ata/sata_dwc_460ex.c
-@@ -1023,36 +1023,12 @@ static void sata_dwc_bmdma_start(struct ata_queued_cmd *qc)
- 	sata_dwc_bmdma_start_by_tag(qc, tag);
- }
+diff --git a/arch/powerpc/boot/dts/canyonlands.dts b/arch/powerpc/boot/dts/canyonlands.dts
+index 3dc75de..549c24c 100644
+--- a/arch/powerpc/boot/dts/canyonlands.dts
++++ b/arch/powerpc/boot/dts/canyonlands.dts
+@@ -190,12 +190,21 @@
+ 					 /* DMA */ 0x2 &UIC0 0xc 0x4>;
+ 		};
  
--/*
-- * Function : sata_dwc_qc_prep_by_tag
-- * arguments : ata_queued_cmd *qc, u8 tag
-- * Return value : None
-- * qc_prep for a particular queued command based on tag
-- */
--static void sata_dwc_qc_prep_by_tag(struct ata_queued_cmd *qc, u8 tag)
--{
--	struct dma_async_tx_descriptor *desc;
--	struct ata_port *ap = qc->ap;
--	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
--
--	dev_dbg(ap->dev, "%s: port=%d dma dir=%s n_elem=%d\n",
--		__func__, ap->port_no, get_dma_dir_descript(qc->dma_dir),
--		 qc->n_elem);
--
--	desc = dma_dwc_xfer_setup(qc);
--	if (!desc) {
--		dev_err(ap->dev, "%s: dma_dwc_xfer_setup returns NULL\n",
--			__func__);
--		return;
--	}
--	hsdevp->desc[tag] = desc;
--}
--
- static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
- {
- 	u32 sactive;
- 	u8 tag = qc->tag;
- 	struct ata_port *ap = qc->ap;
-+	struct sata_dwc_device_port *hsdevp = HSDEVP_FROM_AP(ap);
- 
- #ifdef DEBUG_NCQ
- 	if (qc->tag > 0 || ap->link.sactive > 1)
-@@ -1066,7 +1042,14 @@ static unsigned int sata_dwc_qc_issue(struct ata_queued_cmd *qc)
- 
- 	if (!ata_is_ncq(qc->tf.protocol))
- 		tag = 0;
--	sata_dwc_qc_prep_by_tag(qc, tag);
++		AHBDMA: dma@bffd0800 {
++			compatible = "snps,dma-spear1340";
++			reg = <4 0xbffd0800 0x400>;
++			interrupt-parent = <&UIC3>;
++			interrupts = <0x5 0x4>;
++			#dma-cells = <3>;
++		};
 +
-+	if (ata_is_dma(qc->tf.protocol)) {
-+		hsdevp->desc[tag] = dma_dwc_xfer_setup(qc);
-+		if (!hsdevp->desc[tag])
-+			return AC_ERR_SYSTEM;
-+	} else {
-+		hsdevp->desc[tag] = NULL;
-+	}
+ 		SATA0: sata@bffd1000 {
+ 			compatible = "amcc,sata-460ex";
+-			reg = <4 0xbffd1000 0x800 4 0xbffd0800 0x400>;
++			reg = <4 0xbffd1000 0x800>;
+ 			interrupt-parent = <&UIC3>;
+-			interrupts = <0x0 0x4       /* SATA */
+-				      0x5 0x4>;     /* AHBDMA */
++			interrupts = <0x0 0x4>;
++			dmas = <&AHBDMA 0 1 0>;
++			dma-names = "sata-dma";
+ 		};
  
- 	if (ata_is_ncq(qc->tf.protocol)) {
- 		sactive = core_scr_read(SCR_ACTIVE);
+ 		POB0: opb {
 -- 
 2.8.0.rc3
