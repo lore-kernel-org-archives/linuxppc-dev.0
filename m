@@ -1,22 +1,25 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0027.hostedemail.com
- [216.40.44.27])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvPHr4bQMzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 23:36:07 +1000 (AEST)
-Date: Tue, 26 Apr 2016 09:36:01 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Michael
- Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] ftrace: Match dot symbols when searching functions
- on ppc64
-Message-ID: <20160426093601.72b17896@gandalf.local.home>
-In-Reply-To: <1461621374-14408-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1461621374-14408-1-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvPbh00mdzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 23:49:51 +1000 (AEST)
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qvPbg0Kz7z9t5Y
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 23:49:50 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id zy2so1861089pac.2
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Apr 2016 06:49:50 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org,
+	mpe@ellerman.id.au
+Cc: andrew.donnellan@au1.ibm.com, bsingharora@gmail.com,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH v2 1/6] powerpc: rework sparse for lib/xor_vmx.c
+Date: Tue, 26 Apr 2016 23:49:09 +1000
+Message-Id: <1461678549-12330-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 25 Apr 2016 18:56:14 -0300
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
+Sparse doesn't seem to be passing -maltivec around properly, leading
+to lots of errors:
 
-> In the ppc64 big endian ABI, function symbols point to function
-> descriptors. The symbols which point to the function entry points
-> have a dot in front of the function name. Consequently, when the
-> ftrace filter mechanism searches for the symbol corresponding to
-> an entry point address, it gets the dot symbol.
-> 
-> As a result, ftrace filter users have to be aware of this ABI detail on
-> ppc64 and prepend a dot to the function name when setting the filter.
-> 
-> The perf probe command insulates the user from this by ignoring the dot
-> in front of the symbol name when matching function names to symbols,
-> but the sysfs interface does not. This patch makes the ftrace filter
-> mechanism do the same when searching symbols.
-> 
-> Fixes the following failure in ftracetest's kprobe_ftrace.tc:
-> 
->   .../kprobe_ftrace.tc: line 9: echo: write error: Invalid argument
-> 
-> That failure is on this line of kprobe_ftrace.tc:
-> 
->   echo _do_fork > set_ftrace_filter
-> 
-> This is because there's no _do_fork entry in the functions list:
-> 
->   # cat available_filter_functions | grep _do_fork
->   ._do_fork
-> 
-> This change introduces no regressions on the perf and ftracetest
-> testsuite results.
-> 
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> ---
+.../include/altivec.h:34:2: error: Use the "-maltivec" flag to enable PowerPC AltiVec support
+arch/powerpc/lib/xor_vmx.c:27:16: error: Expected ; at end of declaration
+arch/powerpc/lib/xor_vmx.c:27:16: error: got signed
+arch/powerpc/lib/xor_vmx.c:60:9: error: No right hand side of '*'-expression
+arch/powerpc/lib/xor_vmx.c:60:9: error: Expected ; at end of statement
+arch/powerpc/lib/xor_vmx.c:60:9: error: got v1_in
+...
+arch/powerpc/lib/xor_vmx.c:87:9: error: too many errors
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Only include the altivec.h header for non-__CHECKER__ builds.
+For builds with __CHECKER__, make up some stubs instead, as
+suggested by Balbir. (The vector size of 16 is arbitrary.)
 
-This can go through the ppc tree.
+Suggested-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+This version works, which is - embarassingly - an improvement over
+v1. I should test things better, sorry.
+---
+ arch/powerpc/lib/xor_vmx.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
--- Steve
+diff --git a/arch/powerpc/lib/xor_vmx.c b/arch/powerpc/lib/xor_vmx.c
+index 07f49f1568e5..f9de69a04e88 100644
+--- a/arch/powerpc/lib/xor_vmx.c
++++ b/arch/powerpc/lib/xor_vmx.c
+@@ -17,7 +17,17 @@
+  *
+  * Author: Anton Blanchard <anton@au.ibm.com>
+  */
++
++/*
++ * Sparse (as at v0.5.0) gets very, very confused by this file.
++ * Make it a bit simpler for it.
++ */
++#if !defined(__CHECKER__)
+ #include <altivec.h>
++#else
++#define vec_xor(a, b) a ^ b
++#define vector __attribute__((vector_size(16)))
++#endif
+ 
+ #include <linux/preempt.h>
+ #include <linux/export.h>
+-- 
+2.5.0
