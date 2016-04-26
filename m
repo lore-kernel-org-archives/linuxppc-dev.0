@@ -1,26 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0060.outbound.protection.outlook.com [157.55.234.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qv6Vc3jgTzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 12:29:28 +1000 (AEST)
-Received: by mail-pf0-x230.google.com with SMTP id 206so740385pfu.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 19:29:28 -0700 (PDT)
-Subject: Re: [PATCH kernel 2/2] powerpc/powernv/ioda2: Delay PE disposal
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1460097404-35422-1-git-send-email-aik@ozlabs.ru>
- <1460097404-35422-3-git-send-email-aik@ozlabs.ru>
- <20160421002107.GB8367@gwshan> <571846E9.80800@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Daniel Axtens <dja@axtens.net>, David Gibson <david@gibson.dropbear.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <571ED281.7070607@ozlabs.ru>
-Date: Tue, 26 Apr 2016 12:29:21 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qv6pY6snszDqBK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 12:43:17 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Mark Rutland <mark.rutland@arm.com>
+CC: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+ Scott Wood <scott.wood@nxp.com>, Rob Herring <robh+dt@kernel.org>, "Russell
+ King" <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, "Joerg
+ Roedel" <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Zhao Qiang
+ <qiang.zhao@freescale.com>, Kumar Gala <galak@codeaurora.org>, "Santosh
+ Shilimkar" <ssantosh@kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaobo
+ Xie <xiaobo.xie@nxp.com>
+Subject: RE: [v8, 1/7] Documentation: DT: update Freescale DCFG compatible
+Date: Tue, 26 Apr 2016 02:43:10 +0000
+Message-ID: <HE1PR04MB0889A68C6D275D3102382D8BF8630@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1461306464-19521-1-git-send-email-yangbo.lu@nxp.com>
+ <1461306464-19521-2-git-send-email-yangbo.lu@nxp.com>
+ <20160422131151.GJ10606@leverpostej>
+In-Reply-To: <20160422131151.GJ10606@leverpostej>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <571846E9.80800@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,152 +42,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/21/2016 01:20 PM, Alexey Kardashevskiy wrote:
-> On 04/21/2016 10:21 AM, Gavin Shan wrote:
->> On Fri, Apr 08, 2016 at 04:36:44PM +1000, Alexey Kardashevskiy wrote:
->>> When SRIOV is disabled, the existing code presumes there is no
->>> virtual function (VF) in use and destroys all associated PEs.
->>> However it is possible to get into the situation when the user
->>> activated SRIOV disabling while a VF is still in use via VFIO.
->>> For example, unbinding a physical function (PF) while there is a guest
->>> running with a VF passed throuhgh via VFIO will trigger the bug.
->>>
->>> This defines an IODA2-specific IOMMU group release() callback.
->>> This moves all the disposal code from pnv_ioda_release_vf_PE() to this
->>> new callback so the cleanup happens when the last user of an IOMMU
->>> group released the reference.
->>>
->>> As pnv_pci_ioda2_release_dma_pe() was reduced to just calling
->>> iommu_group_put(), this merges pnv_pci_ioda2_release_dma_pe()
->>> into pnv_ioda_release_vf_PE().
->>>
->>
->> Sorry, I don't understand how it works. When PF's driver disables
->> IOV capability, the VF cannnot work. The guest is unlikely to know
->> that and still continue accessing the VF's resources (e.g. config
->> space and MMIO registers). It would cause EEH errors.
->
-> The host disables IOV which removes VF devices which unbinds vfio_pci
-> driver and does all the cleanup, eventually we get to QEMU's
-> vfio_req_notifier_handler() and PCI hot unplug is initiated and the device
-> disappears from the guest.
->
-> If the guest cannot do PCI hotunplug, then EEH will make host stop it anyway.
->
-> Here we do not really care what happens to the guest (it can detect EEH or
-> hotunplug or simply crash), we need to make sure that the _host_ does not
-> crash in any case because the root user did something weird.
+Hi Mark,
 
 
-Ping?
+> -----Original Message-----
+> From: Mark Rutland [mailto:mark.rutland@arm.com]
+> Sent: Friday, April 22, 2016 9:12 PM
+> To: Yangbo Lu
+> Cc: linux-mmc@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linux-
+> kernel@vger.kernel.org; linux-clk@vger.kernel.org; linux-
+> i2c@vger.kernel.org; iommu@lists.linux-foundation.org;
+> netdev@vger.kernel.org; ulf.hansson@linaro.org; Scott Wood; Rob Herring;
+> Russell King; Jochen Friedrich; Joerg Roedel; Claudiu Manoil; Bhupesh
+> Sharma; Zhao Qiang; Kumar Gala; Santosh Shilimkar; Yang-Leo Li; Xiaobo
+> Xie
+> Subject: Re: [v8, 1/7] Documentation: DT: update Freescale DCFG
+> compatible
+>=20
+> On Fri, Apr 22, 2016 at 02:27:38PM +0800, Yangbo Lu wrote:
+> > Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead of
+> > 'fsl,ls1021a-dcfg' to include more chips.
+> >
+> > Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+> > ---
+> > Changes for v8:
+> > 	- Added this patch
+> > ---
+> >  Documentation/devicetree/bindings/arm/fsl.txt | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/arm/fsl.txt
+> > b/Documentation/devicetree/bindings/arm/fsl.txt
+> > index 752a685..1d5f512 100644
+> > --- a/Documentation/devicetree/bindings/arm/fsl.txt
+> > +++ b/Documentation/devicetree/bindings/arm/fsl.txt
+> > @@ -119,7 +119,7 @@ Freescale DCFG
+> >  configuration and status for the device. Such as setting the
+> > secondary  core start address and release the secondary core from
+> holdoff and startup.
+> >    Required properties:
+> > -  - compatible: should be "fsl,ls1021a-dcfg"
+> > +  - compatible: should be "fsl,<chip>-dcfg"
+>=20
+> Please list specific values expected for <chip>, while jusy saying <chip>
+> may be more generic, it makes it practically impossible to search for the
+> correct binding given a compatible string, and it's vague as to exaclty
+> what <chip> should be.
 
->
->
->>
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> ---
->>> arch/powerpc/platforms/powernv/pci-ioda.c | 33
->>> +++++++++++++------------------
->>> 1 file changed, 14 insertions(+), 19 deletions(-)
->>>
->>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
->>> b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> index ce9f2bf..8108c54 100644
->>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> @@ -1333,27 +1333,25 @@ static void pnv_pci_ioda2_set_bypass(struct
->>> pnv_ioda_pe *pe, bool enable);
->>> static void pnv_pci_ioda2_group_release(void *iommu_data)
->>> {
->>>     struct iommu_table_group *table_group = iommu_data;
->>> +    struct pnv_ioda_pe *pe = container_of(table_group,
->>> +            struct pnv_ioda_pe, table_group);
->>> +    struct pci_controller *hose = pci_bus_to_host(pe->parent_dev->bus);
->>
->> pe->parent_dev would be NULL for non-VF-PEs and it's protected by
->> CONFIG_PCI_IOV
->> in pci.h.
->
->
-> Yeah, I'll fix it.
->
->>
->>> +    struct pnv_phb *phb = hose->private_data;
->>> +    struct iommu_table *tbl = pe->table_group.tables[0];
->>> +    int64_t rc;
->>>
->>> -    table_group->group = NULL;
->>> -}
->>> -
->>> -static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct
->>> pnv_ioda_pe *pe)
->>> -{
->>> -    struct iommu_table    *tbl;
->>> -    int64_t               rc;
->>> -
->>> -    tbl = pe->table_group.tables[0];
->>>     rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
->>>     if (rc)
->>>         pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
->>>
->>>     pnv_pci_ioda2_set_bypass(pe, false);
->>> -    if (pe->table_group.group) {
->>> -        iommu_group_put(pe->table_group.group);
->>> -        BUG_ON(pe->table_group.group);
->>> -    }
->>> +
->>> +    BUG_ON(!tbl);
->>>     pnv_pci_ioda2_table_free_pages(tbl);
->>> -    iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
->>> +    iommu_free_table(tbl, of_node_full_name(pe->parent_dev->dev.of_node));
->>> +
->>> +    pnv_ioda_deconfigure_pe(phb, pe);
->>> +    pnv_ioda_free_pe(phb, pe->pe_number);
->>> }
->>
->> It's not correct enough. One PE is comprised of DMA, MMIO, mapping info etc.
->> This function disposes all of them when DMA finishes its job. I don't figure
->> out a better way to represent all of them and their relationship. I guess
->> it's
->> worthy to have something in long term though it's not trival work.
->
->
-> Sorry, I am missing your point here. I am not changing the resource
-> deallocation here, I am just doing it slightly later and all I wonder at
-> the moment is if there are races - like having 2 scripts - one doing unbind
-> PF and another doing bind PF - will this crash the host in theory?
->
->
->>
->>>
->>> static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->>> @@ -1376,16 +1374,13 @@ static void pnv_ioda_release_vf_PE(struct
->>> pci_dev *pdev)
->>>         if (pe->parent_dev != pdev)
->>>             continue;
->>>
->>> -        pnv_pci_ioda2_release_dma_pe(pdev, pe);
->>> -
->>>         /* Remove from list */
->>>         mutex_lock(&phb->ioda.pe_list_mutex);
->>>         list_del(&pe->list);
->>>         mutex_unlock(&phb->ioda.pe_list_mutex);
->>>
->>> -        pnv_ioda_deconfigure_pe(phb, pe);
->>> -
->>> -        pnv_ioda_free_pe(phb, pe->pe_number);
->>> +        if (pe->table_group.group)
->>> +            iommu_group_put(pe->table_group.group);
->>>     }
->>> }
->>>
->>> --
->>> 2.5.0.rc3
->>>
->>
->
->
+[Lu Yangbo-B47093] Thanks for your comment. I will list the possible chips.
 
-
--- 
-Alexey
+>=20
+> Thanks,
+> Mark.
+>=20
+>=20
+>=20
+> >    - reg : should contain base address and length of DCFG
+> > memory-mapped registers
+> >
+> >  Example:
+> > --
+> > 2.1.0.27.g96db324
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe devicetree"
+> > in the body of a message to majordomo@vger.kernel.org More majordomo
+> > info at  http://vger.kernel.org/majordomo-info.html
+> >
