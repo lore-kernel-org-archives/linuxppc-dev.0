@@ -1,30 +1,22 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvBm36P9czDq64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 15:41:23 +1000 (AEST)
-Received: by mail-pa0-x235.google.com with SMTP id iv1so2368119pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Apr 2016 22:41:23 -0700 (PDT)
-Subject: Re: [RFC v6 04/10] PCI: Add support for enforcing all MMIO BARs to be
- page aligned
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
- linux-doc@vger.kernel.org
-References: <1460976961-29328-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1460976961-29328-4-git-send-email-xyjxie@linux.vnet.ibm.com>
-Cc: alex.williamson@redhat.com, bhelgaas@google.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <571EFF78.2050603@ozlabs.ru>
-Date: Tue, 26 Apr 2016 15:41:12 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvBxd4Kw6zDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Apr 2016 15:49:41 +1000 (AEST)
+Date: Tue, 26 Apr 2016 15:29:59 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, alistair@popple.id.au, ruscur@russell.cc,
+ mpe@ellerman.id.au
+Subject: Re: [PATCH v2 1/3] powerpc/eeh: Ignore error handlers in
+ eeh_pe_reset_and_recover()
+Message-ID: <20160426052959.GJ15176@voom.fritz.box>
+References: <1461331687-1069-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1460976961-29328-4-git-send-email-xyjxie@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="sT9gWZPUZYhvPS56"
+In-Reply-To: <1461331687-1069-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,194 +26,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/18/2016 08:56 PM, Yongji Xie wrote:
-> When vfio passthrough a PCI device of which MMIO BARs are
-> smaller than PAGE_SIZE, guest will not handle the mmio
-> accesses to the BARs which leads to mmio emulations in host.
->
-> This is because vfio will not allow to passthrough one BAR's
-> mmio page which may be shared with other BARs. Otherwise,
-> there will be a backdoor that guest can use to access BARs
-> of other guest.
->
-> To solve this issue, this patch modifies resource_alignment
-> to support syntax where multiple devices get the same
-> alignment. So we can use something like
-> "pci=resource_alignment=*:*:*.*:noresize" to enforce the
-> alignment of all MMIO BARs to be at least PAGE_SIZE so that
-> one BAR's mmio page would not be shared with other BARs.
->
-> And we also define a macro PCIBIOS_MIN_ALIGNMENT to enable this
-> automatically on PPC64 platform which can easily hit this issue
-> because its PAGE_SIZE is 64KB.
->
-> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+
+--sT9gWZPUZYhvPS56
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Apr 22, 2016 at 11:28:02PM +1000, Gavin Shan wrote:
+> The function eeh_pe_reset_and_recover() is used to recover EEH
+> error when the passthrough device are transferred to guest and
+> backwards, meaning the device's driver is vfio-pci or none.
+> When the driver is vfio-pci that provides error_detected() error
+> handler only, the handler simply stops the guest and it's not
+> expected behaviour. On the other hand, no error handlers will
+> be called if we don't have a bound driver.
+>=20
+> This ignores all error handlers provided by device driver in
+> eeh_pe_reset_and_recover() to avoid the exceptional behaviour.
+>=20
+> Fixes: 5cfb20b9 ("powerpc/eeh: Emulate EEH recovery for VFIO devices")
+> Cc: stable@vger.kernel.org #v3.18+
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Reviewed-by: Russell Currey <ruscur@russell.cc>
 > ---
->   Documentation/kernel-parameters.txt |    2 ++
->   arch/powerpc/include/asm/pci.h      |    2 ++
->   drivers/pci/pci.c                   |   64 +++++++++++++++++++++++++++++------
->   3 files changed, 57 insertions(+), 11 deletions(-)
->
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index d8b29ab..542be4a 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2918,6 +2918,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->   				aligned memory resources.
->   				If <order of align> is not specified,
->   				PAGE_SIZE is used as alignment.
-> +				<domain>, <bus>, <slot> and <func> can be set to
-> +				"*" which means match all values.
->   				PCI-PCI bridge can be specified, if resource
->   				windows need to be expanded.
->   				noresize: Don't change the resources' sizes when
-> diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-> index 6f8065a..78f230f 100644
-> --- a/arch/powerpc/include/asm/pci.h
-> +++ b/arch/powerpc/include/asm/pci.h
-> @@ -30,6 +30,8 @@
->   #define PCIBIOS_MIN_IO		0x1000
->   #define PCIBIOS_MIN_MEM		0x10000000
->
-> +#define PCIBIOS_MIN_ALIGNMENT  PAGE_SIZE
-> +
->   struct pci_dev;
->
->   /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 7564ccc..0381c28 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -4605,7 +4605,12 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->   	int seg, bus, slot, func, align_order, count;
->   	resource_size_t align = 0;
->   	char *p;
-> +	bool invalid = false;
->
-> +#ifdef PCIBIOS_MIN_ALIGNMENT
-> +	align = PCIBIOS_MIN_ALIGNMENT;
-> +	*resize = false;
-> +#endif
->   	spin_lock(&resource_alignment_lock);
->   	p = resource_alignment_param;
->   	while (*p) {
-> @@ -4622,16 +4627,49 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->   		} else {
->   			align_order = -1;
->   		}
-> -		if (sscanf(p, "%x:%x:%x.%x%n",
-> -			&seg, &bus, &slot, &func, &count) != 4) {
+>  arch/powerpc/kernel/eeh_driver.c | 11 +----------
+>  1 file changed, 1 insertion(+), 10 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_d=
+river.c
+> index fb6207d..1c7d703 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -552,7 +552,7 @@ static int eeh_clear_pe_frozen_state(struct eeh_pe *p=
+e,
+> =20
+>  int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+>  {
+> -	int result, ret;
+> +	int ret;
+> =20
+>  	/* Bail if the PE is being recovered */
+>  	if (pe->state & EEH_PE_RECOVERING)
+> @@ -564,9 +564,6 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+>  	/* Save states */
+>  	eeh_pe_dev_traverse(pe, eeh_dev_save_state, NULL);
+> =20
+> -	/* Report error */
+> -	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
 
+Ok, so after chatting to Gavin, I've made sense of this.  The basic
+thing here is that eeh_pe_reset_and_recover() should be discarding any
+errors from before the reset, not reporting them - the whole point is
+that we know things have gone bad, and we want to clear back to a good
+state.
 
-I'd replace the above lines with:
+>  	/* Issue reset */
+>  	ret =3D eeh_reset_pe(pe);
+>  	if (ret) {
+> @@ -581,15 +578,9 @@ int eeh_pe_reset_and_recover(struct eeh_pe *pe)
+>  		return ret;
+>  	}
+> =20
+> -	/* Notify completion of reset */
+> -	eeh_pe_dev_traverse(pe, eeh_report_reset, &result);
 
-	char segstr[5] = "*", busstr[3] = "*";
-	char slotstr[3] = "*", funstr[2] = "*";
+However, it's not clear if removing the report of a reset makes sense.
+There are no current users of reset notification IIUC, but if we're
+going to remove the reset reporting, we should put that in a separate
+patch with its own justification, and remove the other caller as well.
 
-	if (sscanf(p, "%4[^:]:%2[^:]:%2[^.].%1s%n",
-		&segstr, &busstr, &slotstr, &funcstr, &count) != 4) {
+>  	/* Restore device state */
+>  	eeh_pe_dev_traverse(pe, eeh_dev_restore_state, NULL);
+> =20
+> -	/* Resume */
+> -	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
 
+And I'm not sure if it makes sense to remove the resume notification either.
 
-and add some wrapper like:
+>  	/* Clear recovery mode */
+>  	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+> =20
 
-static bool glob_match_hex(char const *pat, int val)
-{
-	char valstr[5]; /* 5 should be enough for PCI */
-	snprintf(valstr, sizeof(valstr) - 1, "%4x", val);
-	return glob_match(pat, valstr);
-}
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-and then use glob_match_hex() (or make a wrapper like above on top of 
-fnmatch()), this would enable better mask handling.
+--sT9gWZPUZYhvPS56
+Content-Type: application/pgp-signature; name="signature.asc"
 
-If anyone finds this useful (which I am not sure about).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iQIcBAEBAgAGBQJXHvzWAAoJEGw4ysog2bOSrpsP/1ggIA7ZMFL8UI9ObtxtIopw
+1zqAOin+QlxhFQURlCTX6fRcrcq8pKjzRNdr3jBty62Ar9oN1xu/hFh7tFOCslY1
+I1m3oGFVTouGyVX8xr8tYYeuZ79c42lPHx9CZvK+35X1uqwaXwIZMxc0pD1wlnde
+9vntGCpXJVpyeK5zfXslS3qZLE/WklixAguIurfay+aK4PrQPWo0GMGSe9oWygFB
+3/sCffKcGZC+PE8PHCUcsiLKu5c6Hfn4APq8CT3IUMqYusdaFugaTpzjzG75D8xV
+HcdaedV8jm9p/GAG96HeM1L03pn0uR8fkR0stvVrspDHnr/ryQM9nAohlTzucNEG
+8ajwxZTS5YkAbQHWXm3gN4i/G3vPsjezZyry6W5Y4S7XJSZOtSNffvs6W+XpYzsm
+13c7gdhQeYZvPYxtMHQZkANI/h0cfBVgPu7C37dYksPKXi3aJ7bRKU7L4i4xLFuT
+yIBGr6RLuT0trAKmYSYbDPbZ6OhxLiVsh/pZDoPnwzg+uDJqg29T0Rq98x0kdLYv
+GAq/5+UzJ16nbg7VNC+a4YxJiz5wgokvyeAToA2iOilAb2aUcROa4SJBa9RaXRHP
+rjebOS9DrRjfAspDD70MmB5L3syLFbWTGk3MJN11NA4mMa9pdEJnD0cJiXK3rvJE
+sJCzlM89aqcgns/uHiZd
+=Twf9
+-----END PGP SIGNATURE-----
 
-
-
-> +		if (p[0] == '*' && p[1] == ':') {
-> +			seg = -1;
-> +			count = 1;
-> +		} else if (sscanf(p, "%x%n", &seg, &count) != 1 ||
-> +				p[count] != ':') {
-> +			invalid = true;
-> +			break;
-> +		}
-> +		p += count + 1;
-> +		if (*p == '*') {
-> +			bus = -1;
-> +			count = 1;
-> +		} else if (sscanf(p, "%x%n", &bus, &count) != 1) {
-> +			invalid = true;
-> +			break;
-> +		}
-> +		p += count;
-> +		if (*p == '.') {
-> +			slot = bus;
-> +			bus = seg;
->   			seg = 0;
-> -			if (sscanf(p, "%x:%x.%x%n",
-> -					&bus, &slot, &func, &count) != 3) {
-> -				/* Invalid format */
-> -				printk(KERN_ERR "PCI: Can't parse resource_alignment parameter: %s\n",
-> -					p);
-> +			p++;
-> +		} else if (*p == ':') {
-> +			p++;
-> +			if (p[0] == '*' && p[1] == '.') {
-> +				slot = -1;
-> +				count = 1;
-> +			} else if (sscanf(p, "%x%n", &slot, &count) != 1 ||
-> +					p[count] != '.') {
-> +				invalid = true;
->   				break;
->   			}
-> +			p += count + 1;
-> +		} else {
-> +			invalid = true;
-> +			break;
-> +		}
-> +		if (*p == '*') {
-> +			func = -1;
-> +			count = 1;
-> +		} else if (sscanf(p, "%x%n", &func, &count) != 1) {
-> +			invalid = true;
-> +			break;
->   		}
->   		p += count;
->   		if (!strncmp(p, ":noresize", 9)) {
-> @@ -4639,10 +4677,10 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->   			p += 9;
->   		} else
->   			*resize = true;
-> -		if (seg == pci_domain_nr(dev->bus) &&
-> -			bus == dev->bus->number &&
-> -			slot == PCI_SLOT(dev->devfn) &&
-> -			func == PCI_FUNC(dev->devfn)) {
-> +		if ((seg == pci_domain_nr(dev->bus) || seg == -1) &&
-> +			(bus == dev->bus->number || bus == -1) &&
-> +			(slot == PCI_SLOT(dev->devfn) || slot == -1) &&
-> +			(func == PCI_FUNC(dev->devfn) || func == -1)) {
->   			if (align_order == -1)
->   				align = PAGE_SIZE;
->   			else
-> @@ -4652,10 +4690,14 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->   		}
->   		if (*p != ';' && *p != ',') {
->   			/* End of param or invalid format */
-> +			invalid = true;
->   			break;
->   		}
->   		p++;
->   	}
-> +	if (invalid)
-> +		printk(KERN_ERR "PCI: Can't parse resource_alignment parameter:%s\n",
-> +				p);
->   	spin_unlock(&resource_alignment_lock);
->   	return align;
->   }
->
-
-
--- 
-Alexey
+--sT9gWZPUZYhvPS56--
