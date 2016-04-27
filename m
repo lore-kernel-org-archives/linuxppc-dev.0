@@ -1,20 +1,38 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qw3k4285nzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 01:27:39 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Chris Smart' <chris@distroguy.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] powerpc: Add support for userspace P9 copy paste
-Date: Wed, 27 Apr 2016 15:25:59 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4AB9A0@AcuExch.aculab.com>
-References: <20160426002844.GA9198@x1.distroguy.com>
-In-Reply-To: <20160426002844.GA9198@x1.distroguy.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qw4v40RHHzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 02:20:31 +1000 (AEST)
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 27 Apr 2016 21:50:28 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3RGKPIO26214528
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 21:50:25 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3RGKKfK001252
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 21:50:24 +0530
+Date: Wed, 27 Apr 2016 21:50:14 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Mark Wielaard <mjw@redhat.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v2 0/2] perf probe fixes for ppc64le
+Message-ID: <20160427162014.GD15073@naverao1-tp.in.ibm.com>
+References: <cover.1460451721.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cover.1460451721.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +42,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQ2hyaXMgU21hcnQNCj4gU2VudDogMjYgQXByaWwgMjAxNiAwMToyOQ0KPiBUaGUgY29w
-eSBwYXN0ZSBmYWNpbGl0eSBpbnRyb2R1Y2VkIGluIFBPV0VSOSBwcm92aWRlcyBhbiBvcHRpbWlz
-ZWQNCj4gbWVjaGFuaXNtIGZvciBhIHVzZXJzcGFjZSBhcHBsaWNhdGlvbiB0byBjb3B5IGEgY2Fj
-aGVsaW5lLiBUaGlzIGlzDQo+IHByb3ZpZGVkIGJ5IGEgcGFpciBvZiBpbnN0cnVjdGlvbnMsIGNv
-cHkgYW5kIHBhc3RlLCB3aGlsZSBhIHRoaXJkLA0KPiBjcF9hYm9ydCAoY29weSBwYXN0ZSBhYm9y
-dCksIHByb3ZpZGVzIGEgY2xlYW4gdXAgb2YgdGhlIHN0YXRlIGluIGNhc2Ugb2YNCj4gYSBmYWls
-dXJlLg0KPiANCj4gVGhlIGNvcHkgaW5zdHJ1Y3Rpb24gd2lsbCByZWFkIGEgMTI4IGJ5dGUgY2Fj
-aGVsaW5lIGFuZCBzdG9yZSBpdCBpbiBhbg0KPiBpbnRlcm5hbCBidWZmZXIuIFRoZSBzdWJzZXF1
-ZW50IHBhc3RlIGluc3RydWN0aW9uIHdpbGwgc3RvcmUgdGhpcw0KPiBpbnRlcm5hbCBidWZmZXIg
-dG8gbWVtb3J5IGFuZCBzZXQgYSBDUiBmaWVsZCBpZiB0aGUgcGFzdGUgc3VjY2VlZHMuDQo+IA0K
-PiBTaW5jZSB0aGUgc3RhdGUgb2YgdGhlIGNvcHkgcGFzdGUgYnVmZmVyIGlzIGludGVybmFsIChh
-bmQgbm90DQo+IGFyY2hpdGVjdHVyYWxseSB2aXNpYmxlKSwgaW4gdGhlIHVubGlrZWx5IGV2ZW50
-IG9mIGEgY29udGV4dCBzd2l0Y2gsIHRoZQ0KPiBzdGF0ZSBjYW5ub3QgYmUgc3RvcmVkIGFuZCB0
-aGUgcGFzdGUgc2hvdWxkIHRoZXJlZm9yZSBmYWlsLg0KPiANCj4gVGhlIGNwX2Fib3J0IGluc3Ry
-dWN0aW9uIGV4aXN0cyB0byBmYWlsIGFuZCBjbGVhbiB1cCBhbnkgc3VjaA0KPiBpbnRlcnJ1cHRl
-ZCBjb3B5IHBhc3RlIHNlcXVlbmNlIGFuZCBpcyB0byBiZSBjYWxsZWQgYnkgdGhlIGtlcm5lbCBh
-cw0KPiBwYXJ0IG9mIHRoZSBjb250ZXh0IHN3aXRjaC4gRG9pbmcgc28gcHJldmVudHMgZGF0YSBm
-cm9tIGEgcHJlY2VkaW5nIGNvcHkNCj4gaW4gb25lIHByb2Nlc3MgbGVha2luZyBpbnRvIHRoZSBw
-YXN0ZSBvZiBhbm90aGVyLg0KPiANCj4gVGhpcyBjb2RlIGVuYWJsZXMgdXNlIG9mIHRoZSBjcF9h
-Ym9ydCBpbnN0cnVjdGlvbiBpZiBhIHN1cHBvcnRlZA0KPiBwcm9jZXNzb3IgaXMgZGV0ZWN0ZWQu
-DQoNCkluIHRoYXQgY2FzZSB3aGF0IGFjdHVhbGx5IGNvbXBsZXRlcyB0aGUgY29weT8NCkkgdGhp
-bmsgeW91J2QgbmVlZCB0byBiZSBpbnNpZGUgYSAncmVzdGFydGFibGUgYXRvbWljIHNlcXVlbmNl
-Jw0KaW4gd2hpY2ggY2FzZSB0aGUgY3BfYWJvcnQgbmVlZCBvbmx5IGJlIGRvbmUgd2hlbiB0aGUv
-YSBSQVMNCmJsb2NrIGlzIGRldGVjdGVkLg0KDQpPciBoYXZlIEkgbWlzc2VkIHNvbWV0aGluZz8/
-DQoNCglEYXZpZA0KDQo=
+On 2016/04/12 02:40PM, Naveen N Rao wrote:
+> This patchset fixes three issues found with perf probe on ppc64le:
+> 1. 'perf test kallsyms' failure on ppc64le (reported by Michael
+> Ellerman). This was due to the symbols being fixed up during symbol
+> table load. This is fixed in patch 2 by delaying symbol fixup until
+> later.
+> 2. perf probe function offset was being calculated from the local entry
+> point (LEP), which does not match user expectation when trying to look
+> at function disassembly output (reported by Ananth N). This is fixed for
+> kallsyms in patch 1 and for symbol table in patch 2.
+> 3. perf probe failure with kretprobe when using kallsyms. This was
+> failing as we were specifying an offset. This is fixed in patch 1.
+> 
+> A few examples demonstrating the issues and the fix:
+> 
+> Example for issue (2):
+> --------------------
+>     # objdump -d vmlinux | grep -A8 \<_do_fork\>:
+>     c0000000000b6a00 <_do_fork>:
+>     c0000000000b6a00:	f7 00 4c 3c 	addis   r2,r12,247
+>     c0000000000b6a04:	00 86 42 38 	addi    r2,r2,-31232
+>     c0000000000b6a08:	a6 02 08 7c 	mflr    r0
+>     c0000000000b6a0c:	d0 ff 41 fb 	std     r26,-48(r1)
+>     c0000000000b6a10:	26 80 90 7d 	mfocrf  r12,8
+>     c0000000000b6a14:	d8 ff 61 fb 	std     r27,-40(r1)
+>     c0000000000b6a18:	e0 ff 81 fb 	std     r28,-32(r1)
+>     c0000000000b6a1c:	e8 ff a1 fb 	std     r29,-24(r1)
+>     # perf probe -v _do_fork+4
+>     probe-definition(0): _do_fork+4 
+>     symbol:_do_fork file:(null) line:0 offset:4 return:0 lazy:(null)
+>     0 arguments
+>     Looking at the vmlinux_path (8 entries long)
+>     Using /proc/kcore for kernel object code
+>     Using /proc/kallsyms for symbols
+>     Opening /sys/kernel/debug/tracing//kprobe_events write=1
+>     Writing event: p:probe/_do_fork _text+748044
+>     Added new event:
+>       probe:_do_fork       (on _do_fork+4)
+> 
+>     You can now use it in all perf tools, such as:
+> 
+> 	    perf record -e probe:_do_fork -aR sleep 1
+> 
+>     # printf "%x\n" 748044
+>     b6a0c
+>     ^^^^^
+> This is offset from the LEP. With this, there is also no way to ever
+> probe between the GEP and the LEP.
+> 
+> With this patchset:
+>     # perf probe -v _do_fork+4
+>     probe-definition(0): _do_fork+4 
+>     symbol:_do_fork file:(null) line:0 offset:4 return:0 lazy:(null)
+>     0 arguments
+>     Looking at the vmlinux_path (8 entries long)
+>     Using /proc/kcore for kernel object code
+>     Using /proc/kallsyms for symbols
+>     Opening /sys/kernel/debug/tracing//kprobe_events write=1
+>     Writing event: p:probe/_do_fork _text+748036
+>     Added new event:
+>       probe:_do_fork       (on _do_fork+4)
+> 
+>     You can now use it in all perf tools, such as:
+> 
+> 	    perf record -e probe:_do_fork -aR sleep 1
+> 
+>     # perf probe -v _do_fork
+>     probe-definition(0): _do_fork 
+>     symbol:_do_fork file:(null) line:0 offset:0 return:0 lazy:(null)
+>     0 arguments
+>     Looking at the vmlinux_path (8 entries long)
+>     Using /proc/kcore for kernel object code
+>     Using /proc/kallsyms for symbols
+>     Opening /sys/kernel/debug/tracing//kprobe_events write=1
+>     Writing event: p:probe/_do_fork _text+748040
+>     Added new event:
+>       probe:_do_fork       (on _do_fork)
+> 
+>     You can now use it in all perf tools, such as:
+> 
+> 	    perf record -e probe:_do_fork -aR sleep 1
+> 
+> We only offset to the LEP if function entry is specified, otherwise, we
+> offset from the GEP.
+> 
+> Example for issue (3):
+> ---------------------
+> Before patch:
+>     # perf probe -v _do_fork:%return
+>     probe-definition(0): _do_fork:%return 
+>     symbol:_do_fork file:(null) line:0 offset:0 return:1 lazy:(null)
+>     0 arguments
+>     Looking at the vmlinux_path (8 entries long)
+>     Using /proc/kcore for kernel object code
+>     Using /proc/kallsyms for symbols
+>     Opening /sys/kernel/debug/tracing//kprobe_events write=1
+>     Writing event: r:probe/_do_fork _do_fork+8
+>     Failed to write event: Invalid argument
+>       Error: Failed to add events. Reason: Invalid argument (Code: -22)
+> 
+> After patch:
+>     # perf probe _do_fork:%return
+>     Added new event:
+>       probe:_do_fork       (on _do_fork%return)
+> 
+>     You can now use it in all perf tools, such as:
+> 
+> 	    perf record -e probe:_do_fork -aR sleep 1
+> 
+> 
+> Concept Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> Cc: Mark Wielaard <mjw@redhat.com>
+> Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Masami Hiramatsu <mhiramat@kernel.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+Arnaldo,
+Can you please pick this up if you're ok with the changes?
+
+- Naveen
+
+> 
+> Naveen N. Rao (2):
+>   perf tools: Fix kprobe and kretprobe handling with kallsyms on ppc64le
+>   perf tools: Fix kallsyms perf test on ppc64le
+> 
+>  tools/perf/arch/powerpc/util/sym-handling.c | 43 +++++++++++++++++++++--------
+>  tools/perf/util/probe-event.c               |  5 ++--
+>  tools/perf/util/probe-event.h               |  3 +-
+>  tools/perf/util/symbol-elf.c                |  7 +++--
+>  tools/perf/util/symbol.h                    |  3 +-
+>  5 files changed, 43 insertions(+), 18 deletions(-)
+> 
+> -- 
+> 2.7.4
+> 
