@@ -1,28 +1,37 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (down.free-electrons.com
- [37.187.137.238])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qvtV34zZwzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:31:39 +1000 (AEST)
-Date: Wed, 27 Apr 2016 10:31:24 +0200
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, tony.luck@intel.com,
- geert@linux-m68k.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
- dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
- rth@twiddle.net, ink@jurassic.park.msu.ru,
- linux-alpha@vger.kernel.org, x86@kernel.org, a.zummo@towertech.it,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/8] char/rtc: replace blacklist with whitelist
-Message-ID: <20160427083124.GF3264@piout.net>
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvtYK20NszDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:34:28 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Tony Luck <tony.luck@intel.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Rich Felker <dalias@libc.org>,
+ David Howells <dhowells@redhat.com>,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ alpha <linux-alpha@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>,
+ Alessandro Zummo <a.zummo@towertech.it>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ RTCLINUX <rtc-linux@googlegroups.com>, Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: char: legacy RTC cleanups
+Date: Wed, 27 Apr 2016 10:33:04 +0200
+Message-ID: <6883809.SRgmlLMdyd@wuerfel>
+In-Reply-To: <CAMuHMdV=R3ad33vPdMZNvZZ8A_DF+F2C8nyAmXOmFiiP50D_UQ@mail.gmail.com>
 References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
- <1461707052-1337718-2-git-send-email-arnd@arndb.de>
+ <CAMuHMdV=R3ad33vPdMZNvZZ8A_DF+F2C8nyAmXOmFiiP50D_UQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1461707052-1337718-2-git-send-email-arnd@arndb.de>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/04/2016 at 23:44:05 +0200, Arnd Bergmann wrote :
-> Every new architecture has to add itself to the growing list of those
-> that do not support the legacy PC RTC driver.
+On Wednesday 27 April 2016 09:54:41 Geert Uytterhoeven wrote:
+> Hi Arnd,
 > 
-> This replaces the long list of architectures that don't support it
-> with a shorter list of those that do.
+> On Tue, Apr 26, 2016 at 11:44 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > For the genrtc driver, rearranging the headers makes it simpler
+> > to use and reduces duplication. In case of alpha and mn10300,
+> > I've shown that the genrtc and rtc drivers are doing the same
+> > thing, so we don't need them both. The remaining three
+> > architectures (m68k, parisc, powerpc) actually all support
+> > the newer rtc-generic driver, so we could remove genrtc completely
+> > if we want to.
 > 
-> The list is taken from those architectures that have a non-empty
-> asm/mc146818rtc.h header file and were not explicitly blacklisted.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> CONFIG_GEN_RTC is not enabled in any of the m68k defconfigs, so I think genrtc
+> has been unused for a while.
+> All defconfigs either use CONFIG_RTC_DRV_GENERIC, or enable a more specific
+> RTC driver.
 
-> ---
->  drivers/char/Kconfig | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-> index 3ec0766ed5e9..66b5d48f409a 100644
-> --- a/drivers/char/Kconfig
-> +++ b/drivers/char/Kconfig
-> @@ -279,8 +279,7 @@ if RTC_LIB=n
->  
->  config RTC
->  	tristate "Enhanced Real Time Clock Support (legacy PC RTC driver)"
-> -	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV \
-> -			&& !ARM && !SUPERH && !S390 && !AVR32 && !BLACKFIN && !UML
-> +	depends on ALPHA || (MIPS && MACH_LOONGSON64) || MN10300 || X86
->  	---help---
->  	  If you say Y here and create a character special file /dev/rtc with
->  	  major number 10 and minor number 135 using mknod ("man mknod"), you
-> -- 
-> 2.7.0
-> 
+Ok, good to know. I'm guessing the same is true for parisc, but there are
+also very few users.
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+Regarding the Q40 specific ioctls, what do you think this means, is it
+
+a) nobody uses Q40 with modern kernels,
+b) nobody calls RTC_PLL_GET/RTC_PLL_SET on q40, or
+c) Q40 users have their own configurations and enable GEN_RTC?
+
+On powerpc, a quarter of the defconfigs (mostly for really old hardware)
+still use GEN_RTC, but I guess we can either bulk-convert them to RTC_GENERIC,
+or convert the five implementations of .get_rtc_time/.set_rtc_time
+(8xx, rtas, chrp, powermac, maple) into five regular RTC class drivers.
+
+	Arnd
