@@ -1,32 +1,27 @@
-Return-Path: <mbenes@suse.cz>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvvxx5lC4zDqdG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 19:37:25 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qvvxx2Z5Mz9t50
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2016 19:37:25 +1000 (AEST)
-Date: Wed, 27 Apr 2016 11:37:20 +0200 (CEST)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Balbir Singh <bsingharora@gmail.com>
-cc: Petr Mladek <pmladek@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, live-patching@vger.kernel.org,
- linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- Ingo Molnar <mingo@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@ozlabs.org, Torsten Duwe <duwe@suse.de>,
- Michael Ellerman <mpe@ellerman.id.au>, Nikolay Borisov <kernel@kyup.com>
-Subject: Re: [PATCH v2] livepatch: Add some basic LivePatch documentation
-In-Reply-To: <571F3A7C.5050701@gmail.com>
-Message-ID: <alpine.LNX.2.00.1604271120480.3836@pobox.suse.cz>
-References: <1461597275-32120-1-git-send-email-pmladek@suse.com>
- <571F3A7C.5050701@gmail.com>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (down.free-electrons.com
+ [37.187.137.238])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvwJt4mNJzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 19:53:50 +1000 (AEST)
+Date: Wed, 27 Apr 2016 11:44:10 +0200
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, tony.luck@intel.com,
+ geert@linux-m68k.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
+ dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
+ rth@twiddle.net, ink@jurassic.park.msu.ru,
+ linux-alpha@vger.kernel.org, x86@kernel.org, a.zummo@towertech.it,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
+ linux-arch@vger.kernel.org
+Subject: Re: char: legacy RTC cleanups
+Message-ID: <20160427094410.GJ3264@piout.net>
+References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 26 Apr 2016, Balbir Singh wrote:
-
-> > +  + Anything inlined into __schedule() can not be patched.
-> > +
-> > +    The switch_to macro is inlined into __schedule(). It switches the
-> > +    context between two processes in the middle of the macro. It does
-> > +    not save RIP in x86_64 version (contrary to 32-bit version). Instead,
-> > +    the currently used __schedule()/switch_to() handles both processes.
-> > +
-> > +    Now, let's have two different tasks. One calls the original
-> > +    __schedule(), its registers are stored in a defined order and it
-> > +    goes to sleep in the switch_to macro and some other task is restored
-> > +    using the original __schedule(). Then there is the second task which
-> > +    calls patched__schedule(), it goes to sleep there and the first task
-> > +    is picked by the patched__schedule(). Its RSP is restored and now
-> > +    the registers should be restored as well. But the order is different
-> > +    in the new patched__schedule(), so...
-> > +
-> > +    There is a work in progress to remove this limitation.
-> > +
+On 26/04/2016 at 23:44:04 +0200, Arnd Bergmann wrote :
+> I've had these patches in my tree for a while, after the first one
+> had a few issues that are fixed in this new version. The old-style
+> PC RTC driver is now also disabled on m68k (as pointed out by
+> Geert), ppc (it was also blacklisted), and m32r (I showed that
+> it did not build).
 > 
-> I am afraid the example requires more clarification. I don't quite get the order is different
+> For the genrtc driver, rearranging the headers makes it simpler
+> to use and reduces duplication. In case of alpha and mn10300,
+> I've shown that the genrtc and rtc drivers are doing the same
+> thing, so we don't need them both. The remaining three
+> architectures (m68k, parisc, powerpc) actually all support
+> the newer rtc-generic driver, so we could remove genrtc completely
+> if we want to.
+> 
 
-Different order is not inevitable but perfectly possible (even probable). 
-GCC may simply generate different object code for patched__schedule() than 
-it did for __schedule(). The problem is when the prologue and epilogue are 
-different.
+Personally, I'd go for the kill and remove genrtc instead of cleaning it
+up.
 
-Miroslav
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
