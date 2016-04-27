@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFKr4HFBzDqhB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:40:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFKx668RzDqhl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:40:53 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
@@ -13,10 +13,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v3 14/16] rtc: generic: remove get_rtc_time/set_rtc_time
- wrappers
-Date: Thu, 28 Apr 2016 00:34:28 +0200
-Message-Id: <1461796470-1291527-15-git-send-email-arnd@arndb.de>
+Subject: [PATCH v3 05/16] char/genrtc: remove alpha support
+Date: Thu, 28 Apr 2016 00:34:19 +0200
+Message-Id: <1461796470-1291527-6-git-send-email-arnd@arndb.de>
 In-Reply-To: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,63 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All architectures using this driver are now converted to
-provide their own operations, so this one can be turned
-into a trivial stub driver relying on its platform data.
+The genrtc driver serves no purpose on Alpha because it drives the
+same hardware as the original rtc.c driver, and the newer rtc-generic.c
+or rtc-cmos.c drivers on architectures that use the asm-generic/rtc.h
+header.
+
+The defconfig uses CONFIG_RTC=y, so this driver is not used by default.
+At one point it was used to abstract a quirk for the "Marvel" platform,
+but it does not do this any more after the code was moved into yet
+another driver in arch/alpha/kernel/rtc.c.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/rtc/rtc-generic.c | 35 +----------------------------------
- 1 file changed, 1 insertion(+), 34 deletions(-)
+ arch/alpha/include/asm/rtc.h    | 1 -
+ arch/alpha/kernel/core_marvel.c | 1 -
+ drivers/char/Kconfig            | 2 +-
+ 3 files changed, 1 insertion(+), 3 deletions(-)
+ delete mode 100644 arch/alpha/include/asm/rtc.h
 
-diff --git a/drivers/rtc/rtc-generic.c b/drivers/rtc/rtc-generic.c
-index efcb9833cac8..1bf5d2347928 100644
---- a/drivers/rtc/rtc-generic.c
-+++ b/drivers/rtc/rtc-generic.c
-@@ -9,43 +9,10 @@
- #include <linux/platform_device.h>
- #include <linux/rtc.h>
- 
--#if 0
+diff --git a/arch/alpha/include/asm/rtc.h b/arch/alpha/include/asm/rtc.h
+deleted file mode 100644
+index f71c3b0ed360..000000000000
+--- a/arch/alpha/include/asm/rtc.h
++++ /dev/null
+@@ -1 +0,0 @@
+-#include <asm-generic/rtc.h>
+diff --git a/arch/alpha/kernel/core_marvel.c b/arch/alpha/kernel/core_marvel.c
+index 53dd2f1a53aa..d5f0580746a5 100644
+--- a/arch/alpha/kernel/core_marvel.c
++++ b/arch/alpha/kernel/core_marvel.c
+@@ -24,7 +24,6 @@
+ #include <asm/gct.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
 -#include <asm/rtc.h>
--
--static int generic_get_time(struct device *dev, struct rtc_time *tm)
--{
--	unsigned int ret = get_rtc_time(tm);
--
--	if (ret & RTC_BATT_BAD)
--		return -EOPNOTSUPP;
--
--	return rtc_valid_tm(tm);
--}
--
--static int generic_set_time(struct device *dev, struct rtc_time *tm)
--{
--	if (set_rtc_time(tm) < 0)
--		return -EOPNOTSUPP;
--
--	return 0;
--}
--
--static const struct rtc_class_ops generic_rtc_ops = {
--	.read_time = generic_get_time,
--	.set_time = generic_set_time,
--};
--#else
--#define generic_rtc_ops *(struct rtc_class_ops*)NULL
--#endif
--
- static int __init generic_rtc_probe(struct platform_device *dev)
- {
- 	struct rtc_device *rtc;
--	const struct rtc_class_ops *ops;
--
--	ops = dev_get_platdata(&dev->dev);
--	if (!ops)
--		ops = &generic_rtc_ops;
-+	const struct rtc_class_ops *ops = dev_get_platdata(&dev->dev);
+ #include <asm/vga.h>
  
- 	rtc = devm_rtc_device_register(&dev->dev, "rtc-generic",
- 					ops, THIS_MODULE);
+ #include "proto.h"
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 9bdb629fbaae..697510325b1d 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -328,7 +328,7 @@ config JS_RTC
+ config GEN_RTC
+ 	tristate "Generic /dev/rtc emulation"
+ 	depends on RTC!=y
+-	depends on ALPHA || M68K || MN10300 || PARISC || PPC
++	depends on M68K || MN10300 || PARISC || PPC
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/rtc with
+ 	  major number 10 and minor number 135 using mknod ("man mknod"), you
 -- 
 2.7.0
