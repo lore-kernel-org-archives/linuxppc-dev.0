@@ -1,22 +1,25 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qw07t5NGFzDqBC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qw08427TszDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:28 +1000 (AEST)
 Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Wed, 27 Apr 2016 18:16:16 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3RCkFrr20578720
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:16:15 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3RCk89e026506
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:16:12 +0530
+ Wed, 27 Apr 2016 22:46:27 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5CEB2357805A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:00 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3RCjq2C13500784
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:00 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3RCjQ1q031494
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:45:27 +1000
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -28,12 +31,9 @@ Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
  gwshan@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
  alistair@popple.id.au, ruscur@russell.cc,
  Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Subject: [PATCH 3/5] PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller
- supports IRQ remapping
-Date: Wed, 27 Apr 2016 20:43:28 +0800
-Message-Id: <1461761010-5452-4-git-send-email-xyjxie@linux.vnet.ibm.com>
-In-Reply-To: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [PATCH 0/5] vfio-pci: Add support for mmapping MSI-X table
+Date: Wed, 27 Apr 2016 20:43:25 +0800
+Message-Id: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,90 +43,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On ARM HW the capability of IRQ remapping is abstracted on
-MSI controller side. MSI_FLAG_IRQ_REMAPPING is used to advertise
-this [1].
+Current vfio-pci implementation disallows to mmap the page 
+containing MSI-X table in case that users can write to MSI-X
+table and generate an incorrect MSIs.
 
-To have a universal flag to test this capability for different
-archs on PCI side, we set PCI_BUS_FLAGS_MSI_REMAP for PCI buses
-when MSI_FLAG_IRQ_REMAPPING is set.
+However, this will cause some performance issue when there
+are some critical device registers in the same page as the 
+MSI-X table. We have to handle the mmio access to these 
+registers in QEMU emulation rather than in guest.
+
+To solve this issue, this series allows to mmap MSI-X table 
+when hardware supports the capability of interrupt remapping 
+which can ensure that a given pci device can only shoot the 
+MSIs assigned for it. And we introduce a new bus_flags 
+PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side 
+for different archs.
+
+The patch 3 are based on the proposed patchset[1].
 
 [1] http://www.spinics.net/lists/kvm/msg130256.html
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- drivers/pci/msi.c   |   12 ++++++++++++
- drivers/pci/probe.c |    3 +++
- include/linux/msi.h |    6 +++++-
- 3 files changed, 20 insertions(+), 1 deletion(-)
+Yongji Xie (5):
+  PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+  iommu: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have capability of IRQ remapping
+  PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller supports IRQ remapping
+  pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host bridge
+  vfio-pci: Allow to mmap MSI-X table if interrupt remapping is supported
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index a080f44..1661cdf 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -1134,6 +1134,18 @@ void *msi_desc_to_pci_sysdata(struct msi_desc *desc)
- }
- EXPORT_SYMBOL_GPL(msi_desc_to_pci_sysdata);
- 
-+void pci_bus_check_msi_remapping(struct pci_bus *bus,
-+				 struct irq_domain *domain)
-+{
-+#ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
-+	struct msi_domain_info *info;
-+
-+	info = msi_get_domain_info(domain);
-+	if (info->flags & MSI_FLAG_IRQ_REMAPPING)
-+		bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
-+#endif
-+}
-+
- #ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
- /**
-  * pci_msi_domain_write_msg - Helper to write MSI message to PCI config space
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 6d7ab9b..25cf1b1 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -696,6 +696,9 @@ static void pci_set_bus_msi_domain(struct pci_bus *bus)
- 	if (!d)
- 		d = pci_host_bridge_msi_domain(b);
- 
-+	if (d && b == bus)
-+		pci_bus_check_msi_remapping(bus, d);
-+
- 	dev_set_msi_domain(&bus->dev, d);
- }
- 
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 03eda72..b4c649e 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -15,6 +15,8 @@ extern int pci_msi_ignore_mask;
- struct irq_data;
- struct msi_desc;
- struct pci_dev;
-+struct pci_bus;
-+struct irq_domain;
- struct platform_msi_priv_data;
- void __get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
- void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg);
-@@ -155,6 +157,9 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
- void default_teardown_msi_irqs(struct pci_dev *dev);
- void default_restore_msi_irqs(struct pci_dev *dev);
- 
-+void pci_bus_check_msi_remapping(struct pci_bus *bus,
-+				 struct irq_domain *domain);
-+
- struct msi_controller {
- 	struct module *owner;
- 	struct device *dev;
-@@ -173,7 +178,6 @@ struct msi_controller {
- #include <linux/irqhandler.h>
- #include <asm/msi.h>
- 
--struct irq_domain;
- struct irq_domain_ops;
- struct irq_chip;
- struct device_node;
+ arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
+ drivers/iommu/iommu.c                     |   15 +++++++++++++++
+ drivers/pci/msi.c                         |   12 ++++++++++++
+ drivers/pci/probe.c                       |    3 +++
+ drivers/vfio/pci/vfio_pci.c               |    7 +++++--
+ drivers/vfio/pci/vfio_pci_rdwr.c          |    3 ++-
+ include/linux/msi.h                       |    6 +++++-
+ include/linux/pci.h                       |    1 +
+ 8 files changed, 51 insertions(+), 4 deletions(-)
+
 -- 
 1.7.9.5
