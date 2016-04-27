@@ -1,39 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
- [IPv6:2607:f8b0:4001:c05::244])
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvsgR67X0zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 17:54:43 +1000 (AEST)
-Received: by mail-ig0-x244.google.com with SMTP id qu10so5517881igc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 00:54:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvspX190XzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:00:52 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id p185so4314393pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 01:00:52 -0700 (PDT)
+Subject: Re: [PATCH V2 1/2] devicetree/bindings: Add binding for operator
+ panel on FSP machines
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+References: <1460423107-7270-1-git-send-email-sjitindarsingh@gmail.com>
+ <87mvofiqxr.fsf@linux.vnet.ibm.com>
+Cc: arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org, andrew.donnellan@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Message-ID: <572071AB.1010307@gmail.com>
+Date: Wed, 27 Apr 2016 18:00:43 +1000
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
-References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
-Date: Wed, 27 Apr 2016 09:54:41 +0200
-Message-ID: <CAMuHMdV=R3ad33vPdMZNvZZ8A_DF+F2C8nyAmXOmFiiP50D_UQ@mail.gmail.com>
-Subject: Re: char: legacy RTC cleanups
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Tony Luck <tony.luck@intel.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Rich Felker <dalias@libc.org>, David Howells <dhowells@redhat.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, alpha <linux-alpha@vger.kernel.org>,
- "the arch/x86 maintainers" <x86@kernel.org>,
- Alessandro Zummo <a.zummo@towertech.it>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- RTCLINUX <rtc-linux@googlegroups.com>, Linux-Arch <linux-arch@vger.kernel.org>
+In-Reply-To: <87mvofiqxr.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,29 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On 27/04/16 15:03, Stewart Smith wrote:
+> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+>> Add a binding to Documentation/devicetree/bindings/powerpc/opal
+>> (oppanel-opal.txt) for the operator panel which is present on IBM
+>> pseries machines with FSPs.
+> It's not pseries (as that implies PowerVM / PAPR) - while here we're all
+> about OPAL.
 
-On Tue, Apr 26, 2016 at 11:44 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> For the genrtc driver, rearranging the headers makes it simpler
-> to use and reduces duplication. In case of alpha and mn10300,
-> I've shown that the genrtc and rtc drivers are doing the same
-> thing, so we don't need them both. The remaining three
-> architectures (m68k, parisc, powerpc) actually all support
-> the newer rtc-generic driver, so we could remove genrtc completely
-> if we want to.
+Thanks, will fix that up.
 
-CONFIG_GEN_RTC is not enabled in any of the m68k defconfigs, so I think genrtc
-has been unused for a while.
-All defconfigs either use CONFIG_RTC_DRV_GENERIC, or enable a more specific
-RTC driver.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> With a slight change to the commit message,
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+>
+>
