@@ -1,39 +1,39 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qw07q5rGgzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:14 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Tony Luck <tony.luck@intel.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Rich Felker <dalias@libc.org>,
- David Howells <dhowells@redhat.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- alpha <linux-alpha@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>,
- Alessandro Zummo <a.zummo@towertech.it>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- RTCLINUX <rtc-linux@googlegroups.com>, Linux-Arch <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH 6/8] char/genrtc: parisc: use asm-generic/rtc.h
-Date: Wed, 27 Apr 2016 14:44:34 +0200
-Message-ID: <4737487.5iYaado825@wuerfel>
-In-Reply-To: <CAMuHMdV0DwdMkJURBH05ntrJWz0eY_wT__vHG32sx-sjSp0m_w@mail.gmail.com>
-References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
- <4599222.az1Zyv5Lrl@wuerfel>
- <CAMuHMdV0DwdMkJURBH05ntrJWz0eY_wT__vHG32sx-sjSp0m_w@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qw07t5NGFzDqBC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:18 +1000 (AEST)
+Received: from localhost
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Wed, 27 Apr 2016 18:16:16 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3RCkFrr20578720
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:16:15 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3RCk89e026506
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:16:12 +0530
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org
+Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ joro@8bytes.org, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ alistair@popple.id.au, ruscur@russell.cc,
+ Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Subject: [PATCH 3/5] PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller
+ supports IRQ remapping
+Date: Wed, 27 Apr 2016 20:43:28 +0800
+Message-Id: <1461761010-5452-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,33 +43,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 27 April 2016 13:55:43 Geert Uytterhoeven wrote:
-> On Wed, Apr 27, 2016 at 1:35 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Wednesday 27 April 2016 13:21:16 Arnd Bergmann wrote:
-> >> On Wednesday 27 April 2016 00:07:47 Rolf Eike Beer wrote:
-> >> > Arnd Bergmann wrote:
-> >> > > The asm-generic/rtc.h header can now be included by
-> >> > > architectures that provide their own set_rtc_time/get_rtc_time
-> >> > > macros, letting us remove most of the common contents in
-> >> > > the powerpc implementation.
-> >> >
-> >> > parisc in this case.
-> >> >
-> >>
-> >> Fixed, thanks!
-> >
-> > Actually, after the comment about just removing the gen_rtc driver
-> > in the long run, I checked again and found that PARISC unconditionally
-> > selects RTC_CLASS, so this driver can't even be built here.
-> > We should just remove the header and drop PARISC from the list.
-> >
-> > If we also drop m68k, that just leaves powerpc.
-> 
-> I've just checked Debian's unofficial linux-image-4.5.0-1-m68k_4.5.1-1_m68k,
-> and it also enables RTC_CLASS and CONFIG_RTC_DRV_GENERIC, so gen_rtc
-> can be dropped on m68k for sure.
+On ARM HW the capability of IRQ remapping is abstracted on
+MSI controller side. MSI_FLAG_IRQ_REMAPPING is used to advertise
+this [1].
 
-Ok, excellent. I'll try to rework the series then to completely eliminate
-the driver (or leaving it ppc-only).
+To have a universal flag to test this capability for different
+archs on PCI side, we set PCI_BUS_FLAGS_MSI_REMAP for PCI buses
+when MSI_FLAG_IRQ_REMAPPING is set.
 
-	Arnd
+[1] http://www.spinics.net/lists/kvm/msg130256.html
+
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+---
+ drivers/pci/msi.c   |   12 ++++++++++++
+ drivers/pci/probe.c |    3 +++
+ include/linux/msi.h |    6 +++++-
+ 3 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index a080f44..1661cdf 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -1134,6 +1134,18 @@ void *msi_desc_to_pci_sysdata(struct msi_desc *desc)
+ }
+ EXPORT_SYMBOL_GPL(msi_desc_to_pci_sysdata);
+ 
++void pci_bus_check_msi_remapping(struct pci_bus *bus,
++				 struct irq_domain *domain)
++{
++#ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
++	struct msi_domain_info *info;
++
++	info = msi_get_domain_info(domain);
++	if (info->flags & MSI_FLAG_IRQ_REMAPPING)
++		bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
++#endif
++}
++
+ #ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
+ /**
+  * pci_msi_domain_write_msg - Helper to write MSI message to PCI config space
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 6d7ab9b..25cf1b1 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -696,6 +696,9 @@ static void pci_set_bus_msi_domain(struct pci_bus *bus)
+ 	if (!d)
+ 		d = pci_host_bridge_msi_domain(b);
+ 
++	if (d && b == bus)
++		pci_bus_check_msi_remapping(bus, d);
++
+ 	dev_set_msi_domain(&bus->dev, d);
+ }
+ 
+diff --git a/include/linux/msi.h b/include/linux/msi.h
+index 03eda72..b4c649e 100644
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -15,6 +15,8 @@ extern int pci_msi_ignore_mask;
+ struct irq_data;
+ struct msi_desc;
+ struct pci_dev;
++struct pci_bus;
++struct irq_domain;
+ struct platform_msi_priv_data;
+ void __get_cached_msi_msg(struct msi_desc *entry, struct msi_msg *msg);
+ void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg);
+@@ -155,6 +157,9 @@ void arch_restore_msi_irqs(struct pci_dev *dev);
+ void default_teardown_msi_irqs(struct pci_dev *dev);
+ void default_restore_msi_irqs(struct pci_dev *dev);
+ 
++void pci_bus_check_msi_remapping(struct pci_bus *bus,
++				 struct irq_domain *domain);
++
+ struct msi_controller {
+ 	struct module *owner;
+ 	struct device *dev;
+@@ -173,7 +178,6 @@ struct msi_controller {
+ #include <linux/irqhandler.h>
+ #include <asm/msi.h>
+ 
+-struct irq_domain;
+ struct irq_domain_ops;
+ struct irq_chip;
+ struct device_node;
+-- 
+1.7.9.5
