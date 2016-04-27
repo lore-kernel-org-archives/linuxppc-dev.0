@@ -1,40 +1,36 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvntm1qykzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 15:04:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvrTH3tvzzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 17:00:51 +1000 (AEST)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 27 Apr 2016 01:04:13 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A71C7C90043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 01:04:03 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3R549IO36765742
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 05:04:09 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3R4vTYF016198
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 00:57:30 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, arnd@arndb.de
-Cc: devicetree@vger.kernel.org,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linux-kernel@vger.kernel.org, paulus@samba.org,
- andrew.donnellan@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 1/2] devicetree/bindings: Add binding for operator
- panel on FSP machines
-In-Reply-To: <1460423107-7270-1-git-send-email-sjitindarsingh@gmail.com>
-References: <1460423107-7270-1-git-send-email-sjitindarsingh@gmail.com>
-Date: Wed, 27 Apr 2016 15:03:28 +1000
-Message-ID: <87mvofiqxr.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 27 Apr 2016 12:30:46 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3R70hf610027064
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 12:30:43 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3R70dBr030832
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 12:30:42 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Balbir Singh <bsingharora@gmail.com>, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
+In-Reply-To: <1461721589.3586.0.camel@kernel.crashing.org>
+References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
+ <1461711943.3135.72.camel@kernel.crashing.org> <57200F4A.4070104@gmail.com>
+ <1461721589.3586.0.camel@kernel.crashing.org>
+Date: Wed, 27 Apr 2016 12:30:30 +0530
+Message-ID: <87mvofedtd.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,18 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
-> Add a binding to Documentation/devicetree/bindings/powerpc/opal
-> (oppanel-opal.txt) for the operator panel which is present on IBM
-> pseries machines with FSPs.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-It's not pseries (as that implies PowerVM / PAPR) - while here we're all
-about OPAL.
+> On Wed, 2016-04-27 at 11:00 +1000, Balbir Singh wrote:
+>> Just basic testing across CPUs with various mm features=C2=A0
+>> enabled/disabled. Just for sanity
+>
+> I still don't think it's worth scattering the change. Either the jump
+> label works or it doesn't ... The only problem is make sure we identify
+> all the pre-boot ones but that's about it.
+>
 
-With a slight change to the commit message,
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+There are two ways to do this. One is to follow the approach listed
+below done by Kevin, which is to do the jump_label_init early during boot a=
+nd
+switch both cpu and mmu feature check to plain jump label.
+
+http://mid.gmane.org/1440415228-8006-1-git-send-email-haokexin@gmail.com
+
+I already found one use case of cpu_has_feature before that
+jump_label_init. In this approach we need to carefully audit all the
+cpu/mmu_has_feature calls to make sure they don't get called before
+jump_label_init. A missed conversion mean we miss a cpu/mmu feature
+check.
 
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+Other option is to follow the patch I posted above, with the simple
+change of renaming mmu_feature_enabled to mmu_has_feature. So we can
+use it in early boot without really worrying about when we init jump
+label.
+
+What do you suggest we follow ?
+
+-aneesh
