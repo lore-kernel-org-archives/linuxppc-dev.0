@@ -1,27 +1,27 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
+Received: from mail-io0-x233.google.com (mail-io0-x233.google.com
+ [IPv6:2607:f8b0:4001:c06::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qw24307wmzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 00:13:07 +1000 (AEST)
-Received: by mail-ig0-x22b.google.com with SMTP id g8so45885701igr.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 07:13:06 -0700 (PDT)
-Date: Wed, 27 Apr 2016 22:16:07 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qw2qk3VQDzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 00:47:30 +1000 (AEST)
+Received: by mail-io0-x233.google.com with SMTP id u185so56020470iod.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 07:47:30 -0700 (PDT)
+Date: Wed, 27 Apr 2016 22:50:34 +0800
 From: Boqun Feng <boqun.feng@gmail.com>
 To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  peterz@infradead.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de
 Subject: Re: [PATCH V4] powerpc: Implement {cmp}xchg for u8 and u16
-Message-ID: <20160427141607.GK3369@insomnia>
+Message-ID: <20160427145034.GL3369@insomnia>
 References: <5715D04E.9050009@linux.vnet.ibm.com>
  <571782F0.2020201@linux.vnet.ibm.com>
  <5720837D.6050807@linux.vnet.ibm.com>
  <20160427135817.GJ3369@insomnia>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="M0YLxmUXciMpOLPE"
+ protocol="application/pgp-signature"; boundary="5VuzLDXibKSJvVYD"
 In-Reply-To: <20160427135817.GJ3369@insomnia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,7 +33,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---M0YLxmUXciMpOLPE
+--5VuzLDXibKSJvVYD
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -171,41 +171,39 @@ YTE)
 > 	: "r" (p), "r" (old), "r" (new), "r" (prev_mask)	\
 > 	: "cc", cl);						\
 >=20
+> right?
+>=20
 
-Oops, this should be:
+Sorry, my bad, we can't implement cmpxchg like this.. please ignore
+this, I should really go to bed soon...
 
-"1:	lwarx   %0,0,%3\n"					\
-"	xor	%2,%0,%2\n"					\
-"	and.	%2,%2,%5\n"					\
-"	bne-	2f\n"						\
-"	andc	%0,%0,%5\n"					\
-"	or	%0,%0,%4\n"					\
-	PPC405_ERR77(0,%3)					\
-"	stwcx.  %0,0,%3\n"					\
-"	bne-    1b\n"						\
-	br2							\
-	"\n"							\
-"2:"								\
-	: "=3D&r" (prev), "+m" (*(u32*)p), "+&r" (old)		\
-	: "r" (p), "r" (new), "r" (prev_mask)			\
-	: "cc", cl);						\
+But still, we can save the "tmp" for xchg() I think.
 
 Regards,
 Boqun
 
---M0YLxmUXciMpOLPE
+> IIUC, saving the local variable "tmp" will result in saving a general
+> register for the compilers to use for other variables.
+>=20
+> So thoughts?
+>=20
+> Regards,
+> Boqun
+>=20
+
+--5VuzLDXibKSJvVYD
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXIMmjAAoJEEl56MO1B/q4BgUH/iTMj8E21BQilJr+/58C5vZB
-iL5IgjSQ8aCxUl/axPj7J4cqhxY5onXUY2LX64epLxbdRBTCa0AnjuKj0joEGzEu
-gFlwIUvvvka5sAta0yTraEri0PC1t6BAFCCutRhbLFqfE7CCQeu6YK3CjYDpCdXo
-o7r5PmAzZszvYkDf8dIsvSpa/4vinid4G2da2IZMprFBv/LpH4449be5KaePt2hq
-57MginkZlLQ1+TBV20Nhs1VzEoVUTsnKJ7y8BtIeRxT6NmDEllmKm8VlmFRDjgJ9
-PJjAOhnFpZN9bW6ZAVxEDRwSHDy1doXeoVPAxKmLvYF+2fVDt1IN0PVN1gJMNqk=
-=DAIL
+iQEcBAABCAAGBQJXING2AAoJEEl56MO1B/q4b0oIAKu769O+bgzi3deE8VTZba5v
+K4HQzCcG+7tqBiCzfwyC/RbE8MjeILjYf+SCgYJlJ4aPVJ9p8de1BfwFHo+Pa9sd
+WPjPoRvrX1SXlrCYQSWolBKWtX8dJKdfovjz3kkrnZRrL+Ft/ojJdhXkwkbjmFd6
+fTmDr5F85Gd352tdwGk+hzzBem2CYVCpHUOk0B+iXtZoVff/5IQab42fArg1Vt6P
+TK8HCI981gsmuX7oLx4Ecy7tZiZhnFlx4z/osoQmgxPfWoovKi8sFWBzWcITwsl4
+XWtX0oEgSsQ6j/oStyEx9N78cGq8bq+ceWKEIvdwXDFLdgibcZMmUAAJlT9veuU=
+=Pea6
 -----END PGP SIGNATURE-----
 
---M0YLxmUXciMpOLPE--
+--5VuzLDXibKSJvVYD--
