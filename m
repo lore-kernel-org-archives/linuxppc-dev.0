@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFL217sgzDqHY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:40:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFL82d3nzDqdm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:41:03 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
@@ -13,9 +13,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v3 13/16] char/genrtc: remove powerpc support
-Date: Thu, 28 Apr 2016 00:34:27 +0200
-Message-Id: <1461796470-1291527-14-git-send-email-arnd@arndb.de>
+Subject: [PATCH v3 06/16] char/genrtc: remove mn10300 support
+Date: Thu, 28 Apr 2016 00:34:20 +0200
+Message-Id: <1461796470-1291527-7-git-send-email-arnd@arndb.de>
 In-Reply-To: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,175 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PowerPC is the last architecture using the GEN_RTC driver on some
-machines, but we can migrate them all to using the RTC_DRV_GENERIC
-driver instead now.
+The genrtc driver serves no purpose on mn10300 because it drives the
+same hardware as the original rtc.c driver, and the newer rtc-generic.c
+or rtc-cmos.c drivers on architectures that use the asm-generic/rtc.h
+header.
 
-This moves over the CONFIG_GEN_RTC option from drivers/char into
-arch/powerpc/platforms/Kconfig and makes it just select the
-replacement driver instead, for the only reason of not breaking
-existing defconfig and .config files that users may have.
+I assume it was initially only added for completeness when the
+mn10300 port was done, but the older rtc.c driver was always used
+instead.
+
+We can also stop include asm-generic/rtc.h now, because we
+just call mc146818_set_time() directly.
+
+It would be nice to change the architecture to use the rtc-cmos driver
+next, and remove support for the old rtc driver as well.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/include/asm/rtc.h    | 78 ---------------------------------------
- arch/powerpc/platforms/Kconfig    | 11 ++++++
- arch/powerpc/platforms/ps3/time.c |  2 +-
- drivers/char/Kconfig              |  4 +-
- drivers/char/Makefile             |  2 +-
- 5 files changed, 15 insertions(+), 82 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/rtc.h
+ arch/mn10300/include/asm/rtc.h | 2 --
+ arch/mn10300/kernel/rtc.c      | 2 +-
+ drivers/char/Kconfig           | 2 +-
+ 3 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/rtc.h b/arch/powerpc/include/asm/rtc.h
-deleted file mode 100644
-index f5802926b6c0..000000000000
---- a/arch/powerpc/include/asm/rtc.h
-+++ /dev/null
-@@ -1,78 +0,0 @@
--/*
-- * Real-time clock definitions and interfaces
-- *
-- * Author: Tom Rini <trini@mvista.com>
-- *
-- * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- *
-- * Based on:
-- * include/asm-m68k/rtc.h
-- *
-- * Copyright Richard Zidlicky
-- * implementation details for genrtc/q40rtc driver
-- *
-- * And the old drivers/macintosh/rtc.c which was heavily based on:
-- * Linux/SPARC Real Time Clock Driver
-- * Copyright (C) 1996 Thomas K. Dyas (tdyas@eden.rutgers.edu)
-- *
-- * With additional work by Paul Mackerras and Franz Sirl.
-- */
--
--#ifndef __ASM_POWERPC_RTC_H__
--#define __ASM_POWERPC_RTC_H__
--
--#ifdef __KERNEL__
--
--#include <linux/rtc.h>
--
--#include <asm/machdep.h>
--#include <asm/time.h>
--
--#define RTC_PIE 0x40		/* periodic interrupt enable */
--#define RTC_AIE 0x20		/* alarm interrupt enable */
--#define RTC_UIE 0x10		/* update-finished interrupt enable */
--
--/* some dummy definitions */
--#define RTC_BATT_BAD 0x100	/* battery bad */
--#define RTC_SQWE 0x08		/* enable square-wave output */
--#define RTC_DM_BINARY 0x04	/* all time/date values are BCD if clear */
--#define RTC_24H 0x02		/* 24 hour mode - else hours bit 7 means pm */
--#define RTC_DST_EN 0x01	        /* auto switch DST - works f. USA only */
--
--static inline unsigned int get_rtc_time(struct rtc_time *time)
--{
--	if (ppc_md.get_rtc_time)
--		ppc_md.get_rtc_time(time);
--	return RTC_24H;
--}
--
--/* Set the current date and time in the real time clock. */
--static inline int set_rtc_time(struct rtc_time *time)
--{
--	if (ppc_md.set_rtc_time)
--		return ppc_md.set_rtc_time(time);
--	return -EINVAL;
--}
--
--static inline unsigned int get_rtc_ss(void)
--{
--	struct rtc_time h;
--
--	get_rtc_time(&h);
--	return h.tm_sec;
--}
--
--static inline int get_rtc_pll(struct rtc_pll_info *pll)
--{
--	return -EINVAL;
--}
--static inline int set_rtc_pll(struct rtc_pll_info *pll)
--{
--	return -EINVAL;
--}
--
--#endif /* __KERNEL__ */
--#endif /* __ASM_POWERPC_RTC_H__ */
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 46a3533d3acb..657243ffb525 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -321,6 +321,17 @@ config OF_RTC
- 	  Uses information from the OF or flattened device tree to instantiate
- 	  platform devices for direct mapped RTC chips like the DS1742 or DS1743.
+diff --git a/arch/mn10300/include/asm/rtc.h b/arch/mn10300/include/asm/rtc.h
+index 6c14bb1d0d9b..07dc87656197 100644
+--- a/arch/mn10300/include/asm/rtc.h
++++ b/arch/mn10300/include/asm/rtc.h
+@@ -25,6 +25,4 @@ static inline void calibrate_clock(void)
  
-+config GEN_RTC
-+	bool "Use the platform RTC operations from user space"
-+	select RTC_CLASS
-+	select RTC_DRV_GENERIC
-+	help
-+	  This option provides backwards compatibility with the old gen_rtc.ko
-+	  module that was traditionally used for old PowerPC machines.
-+	  Platforms should migrate to enabling the RTC_DRV_GENERIC by hand
-+	  replacing changing their get_rtc_time/set_rtc_time callbacks with
-+	  a proper RTC device driver.
-+
- config SIMPLE_GPIO
- 	bool "Support for simple, memory-mapped GPIO controllers"
- 	depends on PPC
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index 791c6142c4a7..11b45b58c81b 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -20,9 +20,9 @@
+ #endif /* !CONFIG_MN10300_RTC */
  
- #include <linux/kernel.h>
- #include <linux/platform_device.h>
-+#include <linux/rtc.h>
+-#include <asm-generic/rtc.h>
+-
+ #endif /* _ASM_RTC_H */
+diff --git a/arch/mn10300/kernel/rtc.c b/arch/mn10300/kernel/rtc.c
+index 48d7058b3295..77e0be4d92ea 100644
+--- a/arch/mn10300/kernel/rtc.c
++++ b/arch/mn10300/kernel/rtc.c
+@@ -27,7 +27,7 @@ void read_persistent_clock(struct timespec *ts)
+ {
+ 	struct rtc_time tm;
  
- #include <asm/firmware.h>
--#include <asm/rtc.h>
- #include <asm/lv1call.h>
- #include <asm/ps3.h>
+-	get_rtc_time(&tm);
++	mc146818_set_time(&tm);
  
+ 	ts->tv_nsec = 0;
+ 	ts->tv_sec = mktime(tm.tm_year, tm.tm_mon, tm.tm_mday,
 diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 26089feae9b0..a81f0eb9f71e 100644
+index 697510325b1d..d17ed90ebc82 100644
 --- a/drivers/char/Kconfig
 +++ b/drivers/char/Kconfig
-@@ -325,10 +325,10 @@ config JS_RTC
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called js-rtc.
- 
--config GEN_RTC
-+config OLD_GEN_RTC
+@@ -328,7 +328,7 @@ config JS_RTC
+ config GEN_RTC
  	tristate "Generic /dev/rtc emulation"
  	depends on RTC!=y
--	depends on PPC
-+	depends on BROKEN
+-	depends on M68K || MN10300 || PARISC || PPC
++	depends on M68K || PARISC || PPC
  	---help---
  	  If you say Y here and create a character special file /dev/rtc with
  	  major number 10 and minor number 135 using mknod ("man mknod"), you
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index d8a7579300d2..fc0905aa7373 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -25,7 +25,7 @@ obj-$(CONFIG_APPLICOM)		+= applicom.o
- obj-$(CONFIG_SONYPI)		+= sonypi.o
- obj-$(CONFIG_RTC)		+= rtc.o
- obj-$(CONFIG_HPET)		+= hpet.o
--obj-$(CONFIG_GEN_RTC)		+= genrtc.o
-+obj-$(CONFIG_OLD_GEN_RTC)	+= genrtc.o
- obj-$(CONFIG_EFI_RTC)		+= efirtc.o
- obj-$(CONFIG_DS1302)		+= ds1302.o
- obj-$(CONFIG_XILINX_HWICAP)	+= xilinx_hwicap/
 -- 
 2.7.0
