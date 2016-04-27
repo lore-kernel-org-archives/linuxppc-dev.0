@@ -1,36 +1,36 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
+ [IPv6:2607:f8b0:4001:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvrTH3tvzzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 17:00:51 +1000 (AEST)
-Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 27 Apr 2016 12:30:46 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3R70hf610027064
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 12:30:43 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3R70dBr030832
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 12:30:42 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Balbir Singh <bsingharora@gmail.com>, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
-In-Reply-To: <1461721589.3586.0.camel@kernel.crashing.org>
-References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
- <1461711943.3135.72.camel@kernel.crashing.org> <57200F4A.4070104@gmail.com>
- <1461721589.3586.0.camel@kernel.crashing.org>
-Date: Wed, 27 Apr 2016 12:30:30 +0530
-Message-ID: <87mvofedtd.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvsWg2prFzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 17:47:59 +1000 (AEST)
+Received: by mail-ig0-x244.google.com with SMTP id qu10so5500093igc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 00:47:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1461707551-1337971-2-git-send-email-arnd@arndb.de>
+References: <1461707551-1337971-1-git-send-email-arnd@arndb.de>
+ <1461707551-1337971-2-git-send-email-arnd@arndb.de>
+Date: Wed, 27 Apr 2016 09:47:56 +0200
+Message-ID: <CAMuHMdXS0JL_weLvjV4+i0ZPj=N+G6Vs1WDE9jffGUWehq5Xzg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] rtc: m68k: provide rtc_class_ops directly
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Rich Felker <dalias@libc.org>, David Howells <dhowells@redhat.com>,
+ alpha <linux-alpha@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ RTCLINUX <rtc-linux@googlegroups.com>,
+ Linux-Arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,36 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hi Arnd,
 
-> On Wed, 2016-04-27 at 11:00 +1000, Balbir Singh wrote:
->> Just basic testing across CPUs with various mm features=C2=A0
->> enabled/disabled. Just for sanity
+On Tue, Apr 26, 2016 at 11:52 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> The rtc-generic driver provides an architecture specific
+> wrapper on top of the generic rtc_class_ops abstraction,
+> and m68k has another abstraction on top, which is a bit
+> silly.
 >
-> I still don't think it's worth scattering the change. Either the jump
-> label works or it doesn't ... The only problem is make sure we identify
-> all the pre-boot ones but that's about it.
+> This changes the m68k rtc-generic device to provide its
+> rtc_class_ops directly, to reduce the number of layers
+> by one.
 >
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/m68k/kernel/time.c | 24 ++++++++++++++++++++++--
+>  1 file changed, 22 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/m68k/kernel/time.c b/arch/m68k/kernel/time.c
+> index 3857737e3958..fe35890feede 100644
+> --- a/arch/m68k/kernel/time.c
+> +++ b/arch/m68k/kernel/time.c
+> @@ -86,7 +86,24 @@ void read_persistent_clock(struct timespec *ts)
+>         }
+>  }
+>
+> -#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
+> +#if defined(CONFIG_ARCH_USES_GETTIMEOFFSET) && defined(CONFIG_RTC_DRV_GENERIC)
 
-There are two ways to do this. One is to follow the approach listed
-below done by Kevin, which is to do the jump_label_init early during boot a=
-nd
-switch both cpu and mmu feature check to plain jump label.
+s/defined/IS_ENABLED/ for the modular case.
 
-http://mid.gmane.org/1440415228-8006-1-git-send-email-haokexin@gmail.com
+> @@ -95,7 +112,10 @@ static int __init rtc_init(void)
+>         if (!mach_hwclk)
+>                 return -ENODEV;
+>
+> -       pdev = platform_device_register_simple("rtc-generic", -1, NULL, 0);
+> +       /* or just call devm_rtc_device_register instead? */
 
-I already found one use case of cpu_has_feature before that
-jump_label_init. In this approach we need to carefully audit all the
-cpu/mmu_has_feature calls to make sure they don't get called before
-jump_label_init. A missed conversion mean we miss a cpu/mmu feature
-check.
+I guess this comment is a bogus leftover? There's no "dev" parameter to
+pass to devm_rtc_device_register() here.
 
+> +       pdev = platform_device_register_data(NULL, "rtc-generic", -1,
+> +                                            &generic_rtc_ops,
+> +                                            sizeof(generic_rtc_ops));
+>         return PTR_ERR_OR_ZERO(pdev);
+>  }
 
-Other option is to follow the patch I posted above, with the simple
-change of renaming mmu_feature_enabled to mmu_has_feature. So we can
-use it in early boot without really worrying about when we init jump
-label.
+Gr{oetje,eeting}s,
 
-What do you suggest we follow ?
+                        Geert
 
--aneesh
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
