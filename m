@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFD50rs4zDqBG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:35:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFDB0GY7zDqBQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:35:53 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
@@ -13,9 +13,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v3 11/16] char/genrtc: remove m68k support
-Date: Thu, 28 Apr 2016 00:34:25 +0200
-Message-Id: <1461796470-1291527-12-git-send-email-arnd@arndb.de>
+Subject: [PATCH v3 03/16] char/genrtc: x86: remove remnants of asm/rtc.h
+Date: Thu, 28 Apr 2016 00:34:17 +0200
+Message-Id: <1461796470-1291527-4-git-send-email-arnd@arndb.de>
 In-Reply-To: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,314 +27,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The asm/rtc.h header is only used for the old gen_rtc driver
-that has been replaced by rtc-generic. According to Geert
-Uytterhoeven, nobody has used the old driver on m68k for
-a long time, so we can now just remove the header file
-and disallow the driver in Kconfig.
+Commit 3195ef59cb42 ("x86: Do full rtc synchronization with ntp") had
+the side-effect of unconditionally enabling the RTC_LIB symbol on x86,
+which in turn disables the selection of the CONFIG_RTC and
+CONFIG_GEN_RTC drivers that contain a two older implementations of
+the CONFIG_RTC_DRV_CMOS driver.
 
-All files that used to include asm/rtc.h are now changed so
-they include the headers that were used implicitly through
-asm/rtc.h.
+This removes x86 from the list for genrtc, and changes all references
+to the asm/rtc.h header to instead point to the interfaces
+from linux/mc146818rtc.h.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/m68k/amiga/config.c    |  1 -
- arch/m68k/apollo/config.c   |  1 -
- arch/m68k/bvme6000/config.c |  1 -
- arch/m68k/hp300/config.c    |  2 +-
- arch/m68k/include/asm/rtc.h | 79 ---------------------------------------------
- arch/m68k/mac/config.c      |  3 +-
- arch/m68k/mac/misc.c        |  1 -
- arch/m68k/mvme147/config.c  |  1 -
- arch/m68k/mvme16x/config.c  |  1 -
- arch/m68k/q40/config.c      |  2 +-
- arch/m68k/sun3/config.c     |  1 -
- arch/m68k/sun3/intersil.c   |  2 +-
- arch/m68k/sun3x/time.c      |  2 +-
- drivers/char/Kconfig        |  2 +-
- 14 files changed, 7 insertions(+), 92 deletions(-)
- delete mode 100644 arch/m68k/include/asm/rtc.h
+ arch/x86/include/asm/rtc.h   | 1 -
+ arch/x86/kernel/hpet.c       | 3 +--
+ arch/x86/kernel/rtc.c        | 3 +--
+ arch/x86/platform/efi/efi.c  | 1 -
+ drivers/acpi/acpi_cmos_rtc.c | 2 +-
+ drivers/base/power/trace.c   | 6 +++---
+ drivers/char/Kconfig         | 2 +-
+ drivers/rtc/rtc-mrst.c       | 2 +-
+ 8 files changed, 8 insertions(+), 12 deletions(-)
+ delete mode 100644 arch/x86/include/asm/rtc.h
 
-diff --git a/arch/m68k/amiga/config.c b/arch/m68k/amiga/config.c
-index 01693df7f2f6..ec9cc1fdd237 100644
---- a/arch/m68k/amiga/config.c
-+++ b/arch/m68k/amiga/config.c
-@@ -35,7 +35,6 @@
- #include <asm/amigahw.h>
- #include <asm/amigaints.h>
- #include <asm/irq.h>
--#include <asm/rtc.h>
- #include <asm/machdep.h>
- #include <asm/io.h>
- 
-diff --git a/arch/m68k/apollo/config.c b/arch/m68k/apollo/config.c
-index 6e62d66c396e..432bc8bacfc2 100644
---- a/arch/m68k/apollo/config.c
-+++ b/arch/m68k/apollo/config.c
-@@ -15,7 +15,6 @@
- #include <asm/pgtable.h>
- #include <asm/apollohw.h>
- #include <asm/irq.h>
--#include <asm/rtc.h>
- #include <asm/machdep.h>
- 
- u_long sio01_physaddr;
-diff --git a/arch/m68k/bvme6000/config.c b/arch/m68k/bvme6000/config.c
-index 478623dbb209..611d4d9ea2bd 100644
---- a/arch/m68k/bvme6000/config.c
-+++ b/arch/m68k/bvme6000/config.c
-@@ -34,7 +34,6 @@
- #include <asm/setup.h>
- #include <asm/irq.h>
- #include <asm/traps.h>
--#include <asm/rtc.h>
- #include <asm/machdep.h>
- #include <asm/bvme6000hw.h>
- 
-diff --git a/arch/m68k/hp300/config.c b/arch/m68k/hp300/config.c
-index a9befe65adc4..7cfab158fb61 100644
---- a/arch/m68k/hp300/config.c
-+++ b/arch/m68k/hp300/config.c
-@@ -12,6 +12,7 @@
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/console.h>
-+#include <linux/rtc.h>
- 
- #include <asm/bootinfo.h>
- #include <asm/bootinfo-hp300.h>
-@@ -20,7 +21,6 @@
- #include <asm/blinken.h>
- #include <asm/io.h>                               /* readb() and writeb() */
- #include <asm/hp300hw.h>
--#include <asm/rtc.h>
- 
- #include "time.h"
- 
-diff --git a/arch/m68k/include/asm/rtc.h b/arch/m68k/include/asm/rtc.h
+diff --git a/arch/x86/include/asm/rtc.h b/arch/x86/include/asm/rtc.h
 deleted file mode 100644
-index a4d08ea122ee..000000000000
---- a/arch/m68k/include/asm/rtc.h
+index f71c3b0ed360..000000000000
+--- a/arch/x86/include/asm/rtc.h
 +++ /dev/null
-@@ -1,79 +0,0 @@
--/* include/asm-m68k/rtc.h
-- *
-- * Copyright Richard Zidlicky
-- * implementation details for genrtc/q40rtc driver
-- */
--/* permission is hereby granted to copy, modify and redistribute this code
-- * in terms of the GNU Library General Public License, Version 2 or later,
-- * at your option.
-- */
--
--#ifndef _ASM_RTC_H
--#define _ASM_RTC_H
--
--#ifdef __KERNEL__
--
--#include <linux/rtc.h>
--#include <asm/errno.h>
--#include <asm/machdep.h>
--
--#define RTC_PIE 0x40		/* periodic interrupt enable */
--#define RTC_AIE 0x20		/* alarm interrupt enable */
--#define RTC_UIE 0x10		/* update-finished interrupt enable */
--
--/* some dummy definitions */
--#define RTC_BATT_BAD 0x100	/* battery bad */
--#define RTC_SQWE 0x08		/* enable square-wave output */
--#define RTC_DM_BINARY 0x04	/* all time/date values are BCD if clear */
--#define RTC_24H 0x02		/* 24 hour mode - else hours bit 7 means pm */
--#define RTC_DST_EN 0x01	        /* auto switch DST - works f. USA only */
--
--static inline unsigned int get_rtc_time(struct rtc_time *time)
--{
--	/*
--	 * Only the values that we read from the RTC are set. We leave
--	 * tm_wday, tm_yday and tm_isdst untouched. Even though the
--	 * RTC has RTC_DAY_OF_WEEK, we ignore it, as it is only updated
--	 * by the RTC when initially set to a non-zero value.
--	 */
--	if (mach_hwclk)
--		mach_hwclk(0, time);
--	return RTC_24H;
--}
--
--static inline int set_rtc_time(struct rtc_time *time)
--{
--	if (mach_hwclk)
--		return mach_hwclk(1, time);
--	return -EINVAL;
--}
--
--static inline unsigned int get_rtc_ss(void)
--{
--	if (mach_get_ss)
--		return mach_get_ss();
--	else{
--		struct rtc_time h;
--
--		get_rtc_time(&h);
--		return h.tm_sec;
--	}
--}
--
--static inline int get_rtc_pll(struct rtc_pll_info *pll)
--{
--	if (mach_get_rtc_pll)
--		return mach_get_rtc_pll(pll);
--	else
--		return -EINVAL;
--}
--static inline int set_rtc_pll(struct rtc_pll_info *pll)
--{
--	if (mach_set_rtc_pll)
--		return mach_set_rtc_pll(pll);
--	else
--		return -EINVAL;
--}
--#endif /* __KERNEL__ */
--
--#endif /* _ASM__RTC_H */
-diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-index 689b47d292ac..2f33a33001e5 100644
---- a/arch/m68k/mac/config.c
-+++ b/arch/m68k/mac/config.c
-@@ -10,6 +10,7 @@
-  * Miscellaneous linux stuff
+@@ -1 +0,0 @@
+-#include <asm-generic/rtc.h>
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index f112af7aa62e..357900aad62c 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -1020,7 +1020,6 @@ void hpet_disable(void)
   */
- 
-+#include <linux/errno.h>
- #include <linux/module.h>
- #include <linux/types.h>
- #include <linux/mm.h>
-@@ -25,6 +26,7 @@
- #include <linux/platform_device.h>
- #include <linux/adb.h>
- #include <linux/cuda.h>
-+#include <linux/rtc.h>
- 
- #include <asm/setup.h>
- #include <asm/bootinfo.h>
-@@ -34,7 +36,6 @@
- #include <asm/io.h>
- #include <asm/irq.h>
- #include <asm/pgtable.h>
+ #include <linux/mc146818rtc.h>
+ #include <linux/rtc.h>
 -#include <asm/rtc.h>
- #include <asm/machdep.h>
  
- #include <asm/macintosh.h>
-diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
-index 707b61aea203..0fb54a90eac2 100644
---- a/arch/m68k/mac/misc.c
-+++ b/arch/m68k/mac/misc.c
-@@ -18,7 +18,6 @@
+ #define DEFAULT_RTC_INT_FREQ	64
+ #define DEFAULT_RTC_SHIFT	6
+@@ -1244,7 +1243,7 @@ irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
+ 	memset(&curr_time, 0, sizeof(struct rtc_time));
  
- #include <asm/uaccess.h>
- #include <asm/io.h>
+ 	if (hpet_rtc_flags & (RTC_UIE | RTC_AIE))
+-		get_rtc_time(&curr_time);
++		mc146818_set_time(&curr_time);
+ 
+ 	if (hpet_rtc_flags & RTC_UIE &&
+ 	    curr_time.tm_sec != hpet_prev_update_sec) {
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index eceaa082ec3f..79c6311cd912 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -13,7 +13,6 @@
+ #include <asm/x86_init.h>
+ #include <asm/time.h>
+ #include <asm/intel-mid.h>
 -#include <asm/rtc.h>
- #include <asm/segment.h>
  #include <asm/setup.h>
- #include <asm/macintosh.h>
-diff --git a/arch/m68k/mvme147/config.c b/arch/m68k/mvme147/config.c
-index e6a3b56c6481..c11d38dfad08 100644
---- a/arch/m68k/mvme147/config.c
-+++ b/arch/m68k/mvme147/config.c
-@@ -32,7 +32,6 @@
- #include <asm/setup.h>
- #include <asm/irq.h>
- #include <asm/traps.h>
+ 
+ #ifdef CONFIG_X86_32
+@@ -47,7 +46,7 @@ int mach_set_rtc_mmss(const struct timespec *now)
+ 
+ 	rtc_time_to_tm(nowtime, &tm);
+ 	if (!rtc_valid_tm(&tm)) {
+-		retval = set_rtc_time(&tm);
++		retval = mc146818_set_time(&tm);
+ 		if (retval)
+ 			printk(KERN_ERR "%s: RTC write failed with error %d\n",
+ 			       __func__, retval);
+diff --git a/arch/x86/platform/efi/efi.c b/arch/x86/platform/efi/efi.c
+index 994a7df84a7b..13b216f71191 100644
+--- a/arch/x86/platform/efi/efi.c
++++ b/arch/x86/platform/efi/efi.c
+@@ -51,7 +51,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ #include <asm/x86_init.h>
 -#include <asm/rtc.h>
- #include <asm/machdep.h>
- #include <asm/mvme147hw.h>
+ #include <asm/uv/uv.h>
  
-diff --git a/arch/m68k/mvme16x/config.c b/arch/m68k/mvme16x/config.c
-index a53803cc66cd..58e240939d26 100644
---- a/arch/m68k/mvme16x/config.c
-+++ b/arch/m68k/mvme16x/config.c
-@@ -35,7 +35,6 @@
- #include <asm/setup.h>
- #include <asm/irq.h>
- #include <asm/traps.h>
--#include <asm/rtc.h>
- #include <asm/machdep.h>
- #include <asm/mvme16xhw.h>
- 
-diff --git a/arch/m68k/q40/config.c b/arch/m68k/q40/config.c
-index e90fe903613e..fcb7f05b60b6 100644
---- a/arch/m68k/q40/config.c
-+++ b/arch/m68k/q40/config.c
-@@ -12,6 +12,7 @@
-  * for more details.
-  */
- 
-+#include <linux/errno.h>
- #include <linux/types.h>
+ #define EFI_DEBUG
+diff --git a/drivers/acpi/acpi_cmos_rtc.c b/drivers/acpi/acpi_cmos_rtc.c
+index 81dc75033f15..0980a133916f 100644
+--- a/drivers/acpi/acpi_cmos_rtc.c
++++ b/drivers/acpi/acpi_cmos_rtc.c
+@@ -14,7 +14,7 @@
+ #include <linux/err.h>
  #include <linux/kernel.h>
- #include <linux/mm.h>
-@@ -27,7 +28,6 @@
- #include <linux/platform_device.h>
+ #include <linux/module.h>
+-#include <asm-generic/rtc.h>
++#include <linux/mc146818rtc.h>
  
- #include <asm/io.h>
--#include <asm/rtc.h>
- #include <asm/bootinfo.h>
- #include <asm/pgtable.h>
- #include <asm/setup.h>
-diff --git a/arch/m68k/sun3/config.c b/arch/m68k/sun3/config.c
-index 71884bf01d72..3af34fa3a344 100644
---- a/arch/m68k/sun3/config.c
-+++ b/arch/m68k/sun3/config.c
-@@ -26,7 +26,6 @@
- #include <asm/pgalloc.h>
- #include <asm/sun3-head.h>
- #include <asm/sun3mmu.h>
--#include <asm/rtc.h>
- #include <asm/machdep.h>
- #include <asm/machines.h>
- #include <asm/idprom.h>
-diff --git a/arch/m68k/sun3/intersil.c b/arch/m68k/sun3/intersil.c
-index 889829e11f1d..2cd0bcbe6f30 100644
---- a/arch/m68k/sun3/intersil.c
-+++ b/arch/m68k/sun3/intersil.c
-@@ -14,8 +14,8 @@
+ #include "internal.h"
+ 
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index a6975795e7f3..efec10b49d59 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -11,7 +11,7 @@
+ #include <linux/export.h>
  #include <linux/rtc.h>
  
- #include <asm/errno.h>
 -#include <asm/rtc.h>
- #include <asm/intersil.h>
-+#include <asm/machdep.h>
++#include <linux/mc146818rtc.h>
  
+ #include "power.h"
  
- /* bits to set for start/run of the intersil */
-diff --git a/arch/m68k/sun3x/time.c b/arch/m68k/sun3x/time.c
-index c8eb08add6b0..431d3c4306dd 100644
---- a/arch/m68k/sun3x/time.c
-+++ b/arch/m68k/sun3x/time.c
-@@ -15,10 +15,10 @@
+@@ -103,7 +103,7 @@ static int set_magic_time(unsigned int user, unsigned int file, unsigned int dev
+ 	n /= 24;
+ 	time.tm_min = (n % 20) * 3;
+ 	n /= 20;
+-	set_rtc_time(&time);
++	mc146818_set_time(&time);
+ 	return n ? -1 : 0;
+ }
  
- #include <asm/irq.h>
- #include <asm/io.h>
-+#include <asm/machdep.h>
- #include <asm/traps.h>
- #include <asm/sun3x.h>
- #include <asm/sun3ints.h>
--#include <asm/rtc.h>
+@@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
+ 	struct rtc_time time;
+ 	unsigned int val;
  
- #include "time.h"
- 
+-	get_rtc_time(&time);
++	mc146818_get_time(&time);
+ 	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
+ 		time.tm_hour, time.tm_min, time.tm_sec,
+ 		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
 diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index abab6e565c60..26089feae9b0 100644
+index ca397384dc15..9bdb629fbaae 100644
 --- a/drivers/char/Kconfig
 +++ b/drivers/char/Kconfig
 @@ -328,7 +328,7 @@ config JS_RTC
  config GEN_RTC
  	tristate "Generic /dev/rtc emulation"
  	depends on RTC!=y
--	depends on M68K || PPC
-+	depends on PPC
+-	depends on ALPHA || M68K || MN10300 || PARISC || PPC || X86
++	depends on ALPHA || M68K || MN10300 || PARISC || PPC
  	---help---
  	  If you say Y here and create a character special file /dev/rtc with
  	  major number 10 and minor number 135 using mknod ("man mknod"), you
+diff --git a/drivers/rtc/rtc-mrst.c b/drivers/rtc/rtc-mrst.c
+index 548ea6f6f384..bb8ac7c5e217 100644
+--- a/drivers/rtc/rtc-mrst.c
++++ b/drivers/rtc/rtc-mrst.c
+@@ -32,11 +32,11 @@
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
+ #include <linux/kernel.h>
++#include <linux/mc146818rtc.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/sfi.h>
+ 
+-#include <asm-generic/rtc.h>
+ #include <asm/intel_scu_ipc.h>
+ #include <asm/intel-mid.h>
+ #include <asm/intel_mid_vrtc.h>
 -- 
 2.7.0
