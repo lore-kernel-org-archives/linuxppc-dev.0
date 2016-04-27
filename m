@@ -1,25 +1,28 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvspX190XzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:00:52 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id p185so4314393pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 01:00:52 -0700 (PDT)
-Subject: Re: [PATCH V2 1/2] devicetree/bindings: Add binding for operator
- panel on FSP machines
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-References: <1460423107-7270-1-git-send-email-sjitindarsingh@gmail.com>
- <87mvofiqxr.fsf@linux.vnet.ibm.com>
-Cc: arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- paulus@samba.org, andrew.donnellan@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Message-ID: <572071AB.1010307@gmail.com>
-Date: Wed, 27 Apr 2016 18:00:43 +1000
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (down.free-electrons.com
+ [37.187.137.238])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qvtV34zZwzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:31:39 +1000 (AEST)
+Date: Wed, 27 Apr 2016 10:31:24 +0200
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, tony.luck@intel.com,
+ geert@linux-m68k.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
+ dhowells@redhat.com, yasutake.koichi@jp.panasonic.com,
+ rth@twiddle.net, ink@jurassic.park.msu.ru,
+ linux-alpha@vger.kernel.org, x86@kernel.org, a.zummo@towertech.it,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/8] char/rtc: replace blacklist with whitelist
+Message-ID: <20160427083124.GF3264@piout.net>
+References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
+ <1461707052-1337718-2-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
-In-Reply-To: <87mvofiqxr.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461707052-1337718-2-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/04/16 15:03, Stewart Smith wrote:
-> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
->> Add a binding to Documentation/devicetree/bindings/powerpc/opal
->> (oppanel-opal.txt) for the operator panel which is present on IBM
->> pseries machines with FSPs.
-> It's not pseries (as that implies PowerVM / PAPR) - while here we're all
-> about OPAL.
+On 26/04/2016 at 23:44:05 +0200, Arnd Bergmann wrote :
+> Every new architecture has to add itself to the growing list of those
+> that do not support the legacy PC RTC driver.
+> 
+> This replaces the long list of architectures that don't support it
+> with a shorter list of those that do.
+> 
+> The list is taken from those architectures that have a non-empty
+> asm/mc146818rtc.h header file and were not explicitly blacklisted.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-Thanks, will fix that up.
+> ---
+>  drivers/char/Kconfig | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+> index 3ec0766ed5e9..66b5d48f409a 100644
+> --- a/drivers/char/Kconfig
+> +++ b/drivers/char/Kconfig
+> @@ -279,8 +279,7 @@ if RTC_LIB=n
+>  
+>  config RTC
+>  	tristate "Enhanced Real Time Clock Support (legacy PC RTC driver)"
+> -	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV \
+> -			&& !ARM && !SUPERH && !S390 && !AVR32 && !BLACKFIN && !UML
+> +	depends on ALPHA || (MIPS && MACH_LOONGSON64) || MN10300 || X86
+>  	---help---
+>  	  If you say Y here and create a character special file /dev/rtc with
+>  	  major number 10 and minor number 135 using mknod ("man mknod"), you
+> -- 
+> 2.7.0
+> 
 
-> With a slight change to the commit message,
-> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
->
->
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
