@@ -1,23 +1,21 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFL82d3nzDqdm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:41:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwFZZ2t25zDr2V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 08:51:50 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org, deller@gmx.de,
- benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
- dhowells@redhat.com, linux-alpha@vger.kernel.org, a.zummo@towertech.it,
+Cc: geert@linux-m68k.org, deller@gmx.de, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, dalias@libc.org, dhowells@redhat.com,
+ linux-alpha@vger.kernel.org, a.zummo@towertech.it,
  linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v3 06/16] char/genrtc: remove mn10300 support
-Date: Thu, 28 Apr 2016 00:34:20 +0200
-Message-Id: <1461796470-1291527-7-git-send-email-arnd@arndb.de>
-In-Reply-To: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
-References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
+Subject: [PATCH v3 00/16] genrtc removal
+Date: Thu, 28 Apr 2016 00:34:14 +0200
+Message-Id: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The genrtc driver serves no purpose on mn10300 because it drives the
-same hardware as the original rtc.c driver, and the newer rtc-generic.c
-or rtc-cmos.c drivers on architectures that use the asm-generic/rtc.h
-header.
+I ended up stuffing the two patch series into one, as they are now
+more dependent on one another. This now thoroughly removes the
+genrtc driver including the asm/rtc.h headers it uses. For all
+architectures that still have a meaningful asm/rtc.h, this goes
+through two stages:
 
-I assume it was initially only added for completeness when the
-mn10300 port was done, but the older rtc.c driver was always used
-instead.
+1) make the rtc-generic implementation independent of asm/rtc.h
+2) remove the asm/rtc.h header and disallow the gen_rtc driver
 
-We can also stop include asm-generic/rtc.h now, because we
-just call mc146818_set_time() directly.
+As the last step, the driver itself gets removed.
 
-It would be nice to change the architecture to use the rtc-cmos driver
-next, and remove support for the old rtc driver as well.
+	Arnd
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/mn10300/include/asm/rtc.h | 2 --
- arch/mn10300/kernel/rtc.c      | 2 +-
- drivers/char/Kconfig           | 2 +-
- 3 files changed, 2 insertions(+), 4 deletions(-)
+ arch/alpha/include/asm/rtc.h          |   1 -
+ arch/alpha/kernel/core_marvel.c       |   1 -
+ arch/alpha/kernel/rtc.c               |   6 +-
+ arch/frv/include/asm/mc146818rtc.h    |  16 -
+ arch/h8300/include/asm/mc146818rtc.h  |   9 -
+ arch/ia64/include/asm/mc146818rtc.h   |  10 -
+ arch/m68k/amiga/config.c              |   1 -
+ arch/m68k/apollo/config.c             |   1 -
+ arch/m68k/bvme6000/config.c           |   1 -
+ arch/m68k/hp300/config.c              |   2 +-
+ arch/m68k/include/asm/rtc.h           |  79 -----
+ arch/m68k/kernel/time.c               |  49 +++-
+ arch/m68k/mac/config.c                |   3 +-
+ arch/m68k/mac/misc.c                  |   1 -
+ arch/m68k/mvme147/config.c            |   1 -
+ arch/m68k/mvme16x/config.c            |   1 -
+ arch/m68k/q40/config.c                |   2 +-
+ arch/m68k/sun3/config.c               |   1 -
+ arch/m68k/sun3/intersil.c             |   2 +-
+ arch/m68k/sun3x/time.c                |   2 +-
+ arch/mips/sni/time.c                  |   1 -
+ arch/mn10300/include/asm/rtc.h        |   2 -
+ arch/mn10300/kernel/rtc.c             |   2 +-
+ arch/parisc/include/asm/mc146818rtc.h |   9 -
+ arch/parisc/include/asm/rtc.h         | 131 ---------
+ arch/parisc/kernel/time.c             |  36 ++-
+ arch/powerpc/include/asm/rtc.h        |  78 -----
+ arch/powerpc/kernel/time.c            |  29 +-
+ arch/powerpc/platforms/Kconfig        |  11 +
+ arch/powerpc/platforms/ps3/time.c     |   2 +-
+ arch/sh/include/asm/mc146818rtc.h     |   7 -
+ arch/sh/include/asm/rtc.h             |  11 -
+ arch/sh/kernel/time.c                 |  32 +-
+ arch/x86/include/asm/mc146818rtc.h    |   1 -
+ arch/x86/include/asm/rtc.h            |   1 -
+ arch/x86/kernel/hpet.c                |   3 +-
+ arch/x86/kernel/rtc.c                 |   3 +-
+ arch/x86/platform/efi/efi.c           |   1 -
+ drivers/acpi/acpi_cmos_rtc.c          |   2 +-
+ drivers/base/power/trace.c            |   6 +-
+ drivers/char/Kconfig                  |  26 --
+ drivers/char/Makefile                 |   1 -
+ drivers/char/genrtc.c                 | 539 ----------------------------------
+ drivers/rtc/rtc-cmos.c                |  12 +-
+ drivers/rtc/rtc-generic.c             |  36 +--
+ drivers/rtc/rtc-mrst.c                |   2 +-
+ include/asm-generic/rtc.h             | 247 ----------------
+ include/linux/mc146818rtc.h           | 194 ++++++++++++
+ 48 files changed, 358 insertions(+), 1256 deletions(-)
 
-diff --git a/arch/mn10300/include/asm/rtc.h b/arch/mn10300/include/asm/rtc.h
-index 6c14bb1d0d9b..07dc87656197 100644
---- a/arch/mn10300/include/asm/rtc.h
-+++ b/arch/mn10300/include/asm/rtc.h
-@@ -25,6 +25,4 @@ static inline void calibrate_clock(void)
- 
- #endif /* !CONFIG_MN10300_RTC */
- 
--#include <asm-generic/rtc.h>
--
- #endif /* _ASM_RTC_H */
-diff --git a/arch/mn10300/kernel/rtc.c b/arch/mn10300/kernel/rtc.c
-index 48d7058b3295..77e0be4d92ea 100644
---- a/arch/mn10300/kernel/rtc.c
-+++ b/arch/mn10300/kernel/rtc.c
-@@ -27,7 +27,7 @@ void read_persistent_clock(struct timespec *ts)
- {
- 	struct rtc_time tm;
- 
--	get_rtc_time(&tm);
-+	mc146818_set_time(&tm);
- 
- 	ts->tv_nsec = 0;
- 	ts->tv_sec = mktime(tm.tm_year, tm.tm_mon, tm.tm_mday,
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 697510325b1d..d17ed90ebc82 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -328,7 +328,7 @@ config JS_RTC
- config GEN_RTC
- 	tristate "Generic /dev/rtc emulation"
- 	depends on RTC!=y
--	depends on M68K || MN10300 || PARISC || PPC
-+	depends on M68K || PARISC || PPC
- 	---help---
- 	  If you say Y here and create a character special file /dev/rtc with
- 	  major number 10 and minor number 135 using mknod ("man mknod"), you
--- 
-2.7.0
+ [PATCH v3 01/16] rtc: cmos: remove empty asm/mc146818rtc.h files
+ [PATCH v3 02/16] rtc: cmos: move mc146818rtc code out of
+ [PATCH v3 03/16] char/genrtc: x86: remove remnants of asm/rtc.h
+ [PATCH v3 04/16] rtc: sh: provide rtc_class_ops directly
+ [PATCH v3 05/16] char/genrtc: remove alpha support
+ [PATCH v3 06/16] char/genrtc: remove mn10300 support
+ [PATCH v3 07/16] rtc: parisc: provide rtc_class_ops directly
+ [PATCH v3 08/16] char/genrtc: remove parisc support
+ [PATCH v3 09/16] rtc: m68k: provide rtc_class_ops directly
+ [PATCH v3 10/16] rtc: m68k: provide ioctl for q40
+ [PATCH v3 11/16] char/genrtc: remove m68k support
+ [PATCH v3 12/16] rtc: powerpc: provide rtc_class_ops directly
+ [PATCH v3 13/16] char/genrtc: remove powerpc support
+ [PATCH v3 14/16] rtc: generic: remove get_rtc_time/set_rtc_time
+ [PATCH v3 15/16] char/genrtc: remove asm-generic/rtc.h from mips
+ [PATCH v3 16/16] char/genrtc: remove the rest of the driver
