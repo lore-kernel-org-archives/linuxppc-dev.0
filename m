@@ -1,41 +1,30 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
- [IPv6:2607:f8b0:4001:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvwv50qfvzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 20:20:01 +1000 (AEST)
-Received: by mail-ig0-x244.google.com with SMTP id g8so5948661igr.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 03:20:01 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <4937900.aITlOE9vLo@wuerfel>
-References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
- <20160427094410.GJ3264@piout.net> <4937900.aITlOE9vLo@wuerfel>
-Date: Wed, 27 Apr 2016 12:19:59 +0200
-Message-ID: <CAMuHMdW6AODmVwB59uTvMydbTNiDDxQWB3p-Dp9Dka+GVyP_iw@mail.gmail.com>
-Subject: Re: char: legacy RTC cleanups
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvx0Z1DYXzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 20:24:46 +1000 (AEST)
+Date: Wed, 27 Apr 2016 12:05:23 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
 To: Arnd Bergmann <arnd@arndb.de>
-Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Tony Luck <tony.luck@intel.com>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Rich Felker <dalias@libc.org>, David Howells <dhowells@redhat.com>,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, alpha <linux-alpha@vger.kernel.org>,
- "the arch/x86 maintainers" <x86@kernel.org>,
- Alessandro Zummo <a.zummo@towertech.it>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- RTCLINUX <rtc-linux@googlegroups.com>, Linux-Arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, tony.luck@intel.com,
+ geert@linux-m68k.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
+ dhowells@redhat.com, yasutake.koichi@jp.panasonic.com, rth@twiddle.net,
+ ink@jurassic.park.msu.ru, linux-alpha@vger.kernel.org, x86@kernel.org,
+ a.zummo@towertech.it, alexandre.belloni@free-electrons.com,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH 2/8] char/rtc: legacy RTC is no longer supported on x86
+In-Reply-To: <1461707052-1337718-3-git-send-email-arnd@arndb.de>
+Message-ID: <alpine.DEB.2.11.1604271205100.3941@nanos>
+References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
+ <1461707052-1337718-3-git-send-email-arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,50 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On Tue, 26 Apr 2016, Arnd Bergmann wrote:
 
-On Wed, Apr 27, 2016 at 12:07 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 27 April 2016 11:44:10 Alexandre Belloni wrote:
->> On 26/04/2016 at 23:44:04 +0200, Arnd Bergmann wrote :
->> > I've had these patches in my tree for a while, after the first one
->> > had a few issues that are fixed in this new version. The old-style
->> > PC RTC driver is now also disabled on m68k (as pointed out by
->> > Geert), ppc (it was also blacklisted), and m32r (I showed that
->> > it did not build).
->> >
->> > For the genrtc driver, rearranging the headers makes it simpler
->> > to use and reduces duplication. In case of alpha and mn10300,
->> > I've shown that the genrtc and rtc drivers are doing the same
->> > thing, so we don't need them both. The remaining three
->> > architectures (m68k, parisc, powerpc) actually all support
->> > the newer rtc-generic driver, so we could remove genrtc completely
->> > if we want to.
->> >
->>
->> Personally, I'd go for the kill and remove genrtc instead of cleaning it up.
->
-> Right, so we could skip patches 5 and 6, and instead remove the two
-> headers as we remove the driver. Let's see what the architecture
-> maintainers think about it, at least powerpc actually enables gen_rtc
-> in its defconfig, so it might take a while to move it over.
+> Commit 3195ef59cb42 ("x86: Do full rtc synchronization with ntp") had
+> the side-effect of unconditionally enabling the RTC_LIB symbol on x86,
+> which in turn disables the selection of the CONFIG_RTC and
+> CONFIG_GEN_RTC drivers that contain a two older implementations of
+> the CONFIG_RTC_DRV_CMOS driver.
+> 
+> This removes x86 from the list.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-FWIW, all PPC defconfigs (except tqm8xx.dts, which is a more recent platform)
-enabling it did that long before my old commit to enable rtc-generic support
-on PPC:
-
-commit bcd68a70cb0eee556d86d93133aa150319bd9f53
-Author: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Date:   Thu Feb 19 16:50:46 2009 +0100
-
-    powerpc: Hook up rtc-generic, and kill rtc-ppc
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
