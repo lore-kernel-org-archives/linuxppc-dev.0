@@ -1,35 +1,39 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvzdx12tPzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:23:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qw07q52JbzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 22:46:15 +1000 (AEST)
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Wed, 27 Apr 2016 17:53:05 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3RCMxJ226148978
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 17:52:59 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3RCMuxl011122
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 17:52:58 +0530
+ Wed, 27 Apr 2016 18:16:13 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u3RCkBfO25952276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:16:11 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u3RCk0gA014665
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 18:16:10 +0530
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- linux-doc@vger.kernel.org
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org
 Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
+ joro@8bytes.org, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ alistair@popple.id.au, ruscur@russell.cc,
  Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Subject: [PATCH] vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio page
- is exclusive
-Date: Wed, 27 Apr 2016 20:22:20 +0800
-Message-Id: <1461759740-5072-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [PATCH 2/5] iommu: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have
+ capability of IRQ remapping
+Date: Wed, 27 Apr 2016 20:43:27 +0800
+Message-Id: <1461761010-5452-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,171 +43,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vfio-pci implementation disallows to mmap
-sub-page(size < PAGE_SIZE) MMIO BARs because these BARs' mmio
-page may be shared with other BARs. This will cause some
-performance issues when we passthrough a PCI device with
-this kind of BARs. Guest will be not able to handle the mmio
-accesses to the BARs which leads to mmio emulations in host.
+The capability of IRQ remapping is abstracted on IOMMU side on
+some archs. There is a existing flag IOMMU_CAP_INTR_REMAP for this.
 
-However, not all sub-page BARs will share page with other BARs.
-We should allow to mmap those sub-page MMIO BARs which we can
-make sure will not share page with other BARs.
-
-This patch adds support for this case. And we also try to use 
-shadow resource to reserve the remaind of the page which hot-add 
-device's BAR might be assigned into.
+To have a universal flag to test this capability for different
+archs on PCI side, we set PCI_BUS_FLAGS_MSI_REMAP for PCI buses
+when IOMMU_CAP_INTR_REMAP is set.
 
 Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 ---
- drivers/vfio/pci/vfio_pci.c         |   58 ++++++++++++++++++++++++++++++-----
- drivers/vfio/pci/vfio_pci_private.h |    8 +++++
- 2 files changed, 59 insertions(+), 7 deletions(-)
+ drivers/iommu/iommu.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-index 98059df..dc1779c 100644
---- a/drivers/vfio/pci/vfio_pci.c
-+++ b/drivers/vfio/pci/vfio_pci.c
-@@ -110,13 +110,47 @@ static inline bool vfio_pci_is_vga(struct pci_dev *pdev)
- 	return (pdev->class >> 8) == PCI_CLASS_DISPLAY_VGA;
+diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
+index 0e3b009..5d2b6f6 100644
+--- a/drivers/iommu/iommu.c
++++ b/drivers/iommu/iommu.c
+@@ -813,6 +813,16 @@ struct iommu_group *pci_device_group(struct device *dev)
+ 	return group;
  }
  
-+static bool vfio_pci_bar_mmap_supported(struct vfio_pci_device *vdev, int index)
++static void pci_check_msi_remapping(struct pci_dev *pdev,
++					const struct iommu_ops *ops)
 +{
-+	struct resource *res = vdev->pdev->resource + index;
-+	struct vfio_pci_shadow_resource *shadow_res;
++	struct pci_bus *bus = pdev->bus;
 +
-+	if (IS_ENABLED(CONFIG_VFIO_PCI_MMAP) && res->flags & IORESOURCE_MEM &&
-+		resource_size(res) > 0) {
-+		if (resource_size(res) >= PAGE_SIZE)
-+			return true;
-+
-+		if (!(res->start & ~PAGE_MASK)) {
-+			/*
-+			 * Add shadow resource for sub-page bar whose mmio
-+			 * page is exclusive in case that hot-add device's
-+			 * bar is assigned into the mem hole.
-+			 */
-+			shadow_res = kzalloc(sizeof(*shadow_res), GFP_KERNEL);
-+			shadow_res->resource.start = res->end + 1;
-+			shadow_res->resource.end = res->start + PAGE_SIZE - 1;
-+			shadow_res->resource.flags = res->flags;
-+			if (request_resource(res->parent,
-+					&shadow_res->resource)) {
-+				kfree(shadow_res);
-+				return false;
-+			}
-+			shadow_res->index = index;
-+			list_add(&shadow_res->res_next,
-+					&vdev->shadow_resources_list);
-+			return true;
-+		}
-+	}
-+	return false;
++	if (ops->capable(IOMMU_CAP_INTR_REMAP) &&
++		!(bus->bus_flags & PCI_BUS_FLAGS_MSI_REMAP))
++		bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
 +}
 +
- static void vfio_pci_try_bus_reset(struct vfio_pci_device *vdev);
- static void vfio_pci_disable(struct vfio_pci_device *vdev);
+ /**
+  * iommu_group_get_for_dev - Find or create the IOMMU group for a device
+  * @dev: target device
+@@ -871,6 +881,9 @@ static int add_iommu_group(struct device *dev, void *data)
+ 	const struct iommu_ops *ops = cb->ops;
+ 	int ret;
  
- static int vfio_pci_enable(struct vfio_pci_device *vdev)
- {
- 	struct pci_dev *pdev = vdev->pdev;
--	int ret;
-+	int ret, bar;
- 	u16 cmd;
- 	u8 msix_pos;
- 
-@@ -183,12 +217,17 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
- 		}
- 	}
- 
-+	for (bar = PCI_STD_RESOURCES; bar <= PCI_STD_RESOURCE_END; bar++) {
-+		vdev->bar_mmap_supported[bar] =
-+				vfio_pci_bar_mmap_supported(vdev, bar);
-+	}
- 	return 0;
- }
- 
- static void vfio_pci_disable(struct vfio_pci_device *vdev)
- {
- 	struct pci_dev *pdev = vdev->pdev;
-+	struct vfio_pci_shadow_resource *shadow_res, *tmp;
- 	int i, bar;
- 
- 	/* Stop the device from further DMA */
-@@ -217,6 +256,13 @@ static void vfio_pci_disable(struct vfio_pci_device *vdev)
- 		vdev->barmap[bar] = NULL;
- 	}
- 
-+	list_for_each_entry_safe(shadow_res, tmp,
-+				 &vdev->shadow_resources_list, res_next) {
-+		list_del(&shadow_res->res_next);
-+		release_resource(&shadow_res->resource);
-+		kfree(shadow_res);
-+	}
++	if (dev_is_pci(dev) && ops->capable)
++		pci_check_msi_remapping(to_pci_dev(dev), ops);
 +
- 	vdev->needs_reset = true;
+ 	if (!ops->add_device)
+ 		return 0;
  
- 	/*
-@@ -587,9 +633,7 @@ static long vfio_pci_ioctl(void *device_data,
- 
- 			info.flags = VFIO_REGION_INFO_FLAG_READ |
- 				     VFIO_REGION_INFO_FLAG_WRITE;
--			if (IS_ENABLED(CONFIG_VFIO_PCI_MMAP) &&
--			    pci_resource_flags(pdev, info.index) &
--			    IORESOURCE_MEM && info.size >= PAGE_SIZE) {
-+			if (vdev->bar_mmap_supported[info.index]) {
- 				info.flags |= VFIO_REGION_INFO_FLAG_MMAP;
- 				if (info.index == vdev->msix_bar) {
- 					ret = msix_sparse_mmap_cap(vdev, &caps);
-@@ -1011,16 +1055,16 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
- 		return -EINVAL;
- 	if (index >= VFIO_PCI_ROM_REGION_INDEX)
- 		return -EINVAL;
--	if (!(pci_resource_flags(pdev, index) & IORESOURCE_MEM))
-+	if (!vdev->bar_mmap_supported[index])
- 		return -EINVAL;
- 
--	phys_len = pci_resource_len(pdev, index);
-+	phys_len = PAGE_ALIGN(pci_resource_len(pdev, index));
- 	req_len = vma->vm_end - vma->vm_start;
- 	pgoff = vma->vm_pgoff &
- 		((1U << (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT)) - 1);
- 	req_start = pgoff << PAGE_SHIFT;
- 
--	if (phys_len < PAGE_SIZE || req_start + req_len > phys_len)
-+	if (req_start + req_len > phys_len)
- 		return -EINVAL;
- 
- 	if (index == vdev->msix_bar) {
-diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
-index 8a7d546..0ea4c62 100644
---- a/drivers/vfio/pci/vfio_pci_private.h
-+++ b/drivers/vfio/pci/vfio_pci_private.h
-@@ -57,9 +57,16 @@ struct vfio_pci_region {
- 	u32				flags;
- };
- 
-+struct vfio_pci_shadow_resource {
-+	struct resource		resource;
-+	int			index;
-+	struct list_head	res_next;
-+};
-+
- struct vfio_pci_device {
- 	struct pci_dev		*pdev;
- 	void __iomem		*barmap[PCI_STD_RESOURCE_END + 1];
-+	bool			bar_mmap_supported[PCI_STD_RESOURCE_END + 1];
- 	u8			*pci_config_map;
- 	u8			*vconfig;
- 	struct perm_bits	*msi_perm;
-@@ -87,6 +94,7 @@ struct vfio_pci_device {
- 	int			refcnt;
- 	struct eventfd_ctx	*err_trigger;
- 	struct eventfd_ctx	*req_trigger;
-+	struct list_head	shadow_resources_list;
- };
- 
- #define is_intx(vdev) (vdev->irq_type == VFIO_PCI_INTX_IRQ_INDEX)
+@@ -913,6 +926,8 @@ static int iommu_bus_notifier(struct notifier_block *nb,
+ 	 * result in ADD/DEL notifiers to group->notifier
+ 	 */
+ 	if (action == BUS_NOTIFY_ADD_DEVICE) {
++		if (dev_is_pci(dev) && ops->capable)
++			pci_check_msi_remapping(to_pci_dev(dev), ops);
+ 		if (ops->add_device)
+ 			return ops->add_device(dev);
+ 	} else if (action == BUS_NOTIFY_REMOVED_DEVICE) {
 -- 
 1.7.9.5
