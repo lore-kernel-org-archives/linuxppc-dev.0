@@ -1,41 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvvnd1FdmzDqZ9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 19:30:12 +1000 (AEST)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 27 Apr 2016 03:30:10 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3AADF1FF001F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 03:29:54 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u3R9U8X746072040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 02:30:08 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u3R9U8Bb027261
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 03:30:08 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Balbir Singh <bsingharora@gmail.com>, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
-In-Reply-To: <87mvofedtd.fsf@skywalker.in.ibm.com>
-References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
- <1461711943.3135.72.camel@kernel.crashing.org> <57200F4A.4070104@gmail.com>
- <1461721589.3586.0.camel@kernel.crashing.org>
- <87mvofedtd.fsf@skywalker.in.ibm.com>
-Date: Wed, 27 Apr 2016 15:00:03 +0530
-Message-ID: <87k2jje6w4.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvvt62lcXzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 19:34:04 +1000 (AEST)
+Date: Wed, 27 Apr 2016 10:31:45 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Daniel Thompson <daniel.thompson@linaro.org>,
+ Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v5 1/4] printk/nmi: generic solution for safe printk in NMI
+Message-ID: <20160427093145.GJ19428@n2100.arm.linux.org.uk>
+References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
+ <1461239325-22779-2-git-send-email-pmladek@suse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461239325-22779-2-git-send-email-pmladek@suse.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,87 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Thu, Apr 21, 2016 at 01:48:42PM +0200, Petr Mladek wrote:
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index cdfa6c2b7626..259543ec6dc9 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -66,6 +66,7 @@ config ARM
+>  	select HAVE_KRETPROBES if (HAVE_KPROBES)
+>  	select HAVE_MEMBLOCK
+>  	select HAVE_MOD_ARCH_SPECIFIC
+> +	select HAVE_NMI
+>  	select HAVE_OPROFILE if (HAVE_PERF_EVENTS)
+>  	select HAVE_OPTPROBES if !THUMB2_KERNEL
+>  	select HAVE_PERF_EVENTS
+> diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+> index baee70267f29..df90bc59bfce 100644
+> --- a/arch/arm/kernel/smp.c
+> +++ b/arch/arm/kernel/smp.c
+> @@ -644,9 +644,11 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
+>  		break;
+>  
+>  	case IPI_CPU_BACKTRACE:
+> +		printk_nmi_enter();
+>  		irq_enter();
+>  		nmi_cpu_backtrace(regs);
+>  		irq_exit();
+> +		printk_nmi_exit();
+>  		break;
+>  
+>  	default:
 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->
->> On Wed, 2016-04-27 at 11:00 +1000, Balbir Singh wrote:
->>> Just basic testing across CPUs with various mm features=C2=A0
->>> enabled/disabled. Just for sanity
->>
->> I still don't think it's worth scattering the change. Either the jump
->> label works or it doesn't ... The only problem is make sure we identify
->> all the pre-boot ones but that's about it.
->>
->
-> There are two ways to do this. One is to follow the approach listed
-> below done by Kevin, which is to do the jump_label_init early during boot=
- and
-> switch both cpu and mmu feature check to plain jump label.
->
-> http://mid.gmane.org/1440415228-8006-1-git-send-email-haokexin@gmail.com
->
-> I already found one use case of cpu_has_feature before that
-> jump_label_init. In this approach we need to carefully audit all the
-> cpu/mmu_has_feature calls to make sure they don't get called before
-> jump_label_init. A missed conversion mean we miss a cpu/mmu feature
-> check.
->
->
-> Other option is to follow the patch I posted above, with the simple
-> change of renaming mmu_feature_enabled to mmu_has_feature. So we can
-> use it in early boot without really worrying about when we init jump
-> label.
->
-> What do you suggest we follow ?
->
+For the above,
 
-Something simple as below ?
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/includ=
-e/asm/book3s/64/mmu.h
-index 696b7c5cc31f..0835a8f9904b 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -23,7 +23,7 @@ struct mmu_psize_def {
- };
- extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
-=20
--#define radix_enabled() mmu_feature_enabled(MMU_FTR_RADIX)
-+#define radix_enabled() mmu_has_feature(MMU_FTR_RADIX)
-=20
- #endif /* __ASSEMBLY__ */
-=20
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index fdb70dc218e5..d4b726f5bd4a 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -115,7 +115,7 @@
- DECLARE_PER_CPU(int, next_tlbcam_idx);
- #endif
-=20
--static inline int mmu_has_feature(unsigned long feature)
-+static inline int __mmu_has_feature(unsigned long feature)
- {
- 	return (cur_cpu_spec->mmu_features & feature);
- }
-@@ -145,7 +145,7 @@ static inline void assert_pte_locked(struct mm_struct *=
-mm, unsigned long addr)
- #endif /* !CONFIG_DEBUG_VM */
-=20
- #ifdef HAVE_JUMP_LABEL
--static __always_inline bool mmu_feature_enabled(unsigned long feature)
-+static __always_inline bool mmu_has_feature(unsigned long feature)
- {
- 	asm_volatile_goto("1:\n\t"
- 			  ".pushsection __mmu_ftr_fixup_c,  \"a\"\n\t"
-@@ -155,7 +155,7 @@ static __always_inline bool mmu_feature_enabled(unsigne=
-d long feature)
- 			  JUMP_ENTRY_TYPE "%l[l_false]\n\t"
- 			  ".popsection\n\t"
- 			  : : "i"(feature) : : l_true, l_false);
--	if (mmu_has_feature(feature))
-+	if (__mmu_has_feature(feature))
- l_true:
- 		return true;
- l_false:
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
