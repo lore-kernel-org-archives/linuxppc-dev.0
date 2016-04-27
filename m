@@ -1,39 +1,32 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvvvV6tMvzDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 19:35:18 +1000 (AEST)
-Date: Wed, 27 Apr 2016 10:34:38 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Daniel Thompson <daniel.thompson@linaro.org>,
- Jiri Kosina <jkosina@suse.com>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Chris Metcalf <cmetcalf@ezchip.com>, linux-kernel@vger.kernel.org,
- x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jan Kara <jack@suse.cz>, Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v5 2/4] printk/nmi: warn when some message has been lost
- in NMI context
-Message-ID: <20160427093438.GK19428@n2100.arm.linux.org.uk>
-References: <1461239325-22779-1-git-send-email-pmladek@suse.com>
- <1461239325-22779-3-git-send-email-pmladek@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvvxx5lC4zDqdG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 19:37:25 +1000 (AEST)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3qvvxx2Z5Mz9t50
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2016 19:37:25 +1000 (AEST)
+Date: Wed, 27 Apr 2016 11:37:20 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Balbir Singh <bsingharora@gmail.com>
+cc: Petr Mladek <pmladek@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Vojtech Pavlik <vojtech@suse.com>, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ linuxppc-dev@ozlabs.org, Torsten Duwe <duwe@suse.de>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nikolay Borisov <kernel@kyup.com>
+Subject: Re: [PATCH v2] livepatch: Add some basic LivePatch documentation
+In-Reply-To: <571F3A7C.5050701@gmail.com>
+Message-ID: <alpine.LNX.2.00.1604271120480.3836@pobox.suse.cz>
+References: <1461597275-32120-1-git-send-email-pmladek@suse.com>
+ <571F3A7C.5050701@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1461239325-22779-3-git-send-email-pmladek@suse.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,19 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 21, 2016 at 01:48:43PM +0200, Petr Mladek wrote:
-> @@ -64,8 +65,10 @@ static int vprintk_nmi(const char *fmt, va_list args)
->  again:
->  	len = atomic_read(&s->len);
->  
-> -	if (len >= sizeof(s->buffer))
-> +	if (len >= sizeof(s->buffer)) {
-> +		atomic_inc(&nmi_message_lost);
+On Tue, 26 Apr 2016, Balbir Singh wrote:
 
-This should be fine - I think its reasonable to expect that no one is
-using a spinlock implementation for their atomic ops for this...
+> > +  + Anything inlined into __schedule() can not be patched.
+> > +
+> > +    The switch_to macro is inlined into __schedule(). It switches the
+> > +    context between two processes in the middle of the macro. It does
+> > +    not save RIP in x86_64 version (contrary to 32-bit version). Instead,
+> > +    the currently used __schedule()/switch_to() handles both processes.
+> > +
+> > +    Now, let's have two different tasks. One calls the original
+> > +    __schedule(), its registers are stored in a defined order and it
+> > +    goes to sleep in the switch_to macro and some other task is restored
+> > +    using the original __schedule(). Then there is the second task which
+> > +    calls patched__schedule(), it goes to sleep there and the first task
+> > +    is picked by the patched__schedule(). Its RSP is restored and now
+> > +    the registers should be restored as well. But the order is different
+> > +    in the new patched__schedule(), so...
+> > +
+> > +    There is a work in progress to remove this limitation.
+> > +
+> 
+> I am afraid the example requires more clarification. I don't quite get the order is different
 
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Different order is not inevitable but perfectly possible (even probable). 
+GCC may simply generate different object code for patched__schedule() than 
+it did for __schedule(). The problem is when the prologue and epilogue are 
+different.
+
+Miroslav
