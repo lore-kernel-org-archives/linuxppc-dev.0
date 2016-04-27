@@ -1,28 +1,20 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
- [IPv6:2607:f8b0:4001:c05::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qw32C0lnhzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 00:56:34 +1000 (AEST)
-Received: by mail-ig0-x22c.google.com with SMTP id u10so75160330igr.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 07:56:34 -0700 (PDT)
-Date: Wed, 27 Apr 2016 22:59:37 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Pan Xinhui <xinhui@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- peterz@infradead.org, paulmck@linux.vnet.ibm.com, tglx@linutronix.de
-Subject: Re: [PATCH V4] powerpc: Implement {cmp}xchg for u8 and u16
-Message-ID: <20160427145937.GM3369@insomnia>
-References: <5715D04E.9050009@linux.vnet.ibm.com>
- <571782F0.2020201@linux.vnet.ibm.com>
- <5720837D.6050807@linux.vnet.ibm.com>
- <20160427135817.GJ3369@insomnia> <20160427145034.GL3369@insomnia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qw3k4285nzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 01:27:39 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Chris Smart' <chris@distroguy.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] powerpc: Add support for userspace P9 copy paste
+Date: Wed, 27 Apr 2016 15:25:59 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4AB9A0@AcuExch.aculab.com>
+References: <20160426002844.GA9198@x1.distroguy.com>
+In-Reply-To: <20160426002844.GA9198@x1.distroguy.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="oiL9LJXJsdjS5rzq"
-In-Reply-To: <20160427145034.GL3369@insomnia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---oiL9LJXJsdjS5rzq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Apr 27, 2016 at 10:50:34PM +0800, Boqun Feng wrote:
->=20
-> Sorry, my bad, we can't implement cmpxchg like this.. please ignore
-> this, I should really go to bed soon...
->=20
-> But still, we can save the "tmp" for xchg() I think.
->=20
-
-No.. we can't. Sorry for all the noise.
-
-This patch looks good to me.
-
-FWIW, you can add
-
-Acked-by: Boqun Feng <boqun.feng@gmail.com>
-
-Regards,
-Boqun
-
---oiL9LJXJsdjS5rzq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXINPVAAoJEEl56MO1B/q4PAsH/RTRO38BJInLKev/QqrL/dnO
-mPrTOZrX/CzzqfKqpIxDLOS8SJ9eOpc+QNgQJwfMaJF6b8RSKJHBfB3ePGMsi3tT
-WFjaoAfDu+LrswF6dgutSvndxD/Iy0GOcJpc+/CwYM1W7v5tTPiPIHyxAhueyeaQ
-O3nqtVEqpEOr3Rv3+pNAbxfwODaQKqOeY4x4QymHxePFRhZ9U+mXHnwm2dY/KyWV
-oHaLWGL1lXNc0PiKhvjolFpByZiYPD8M1RfVorlCL4/7JjnyhUVHtdMdhte4ScHd
-KLHrHSPyGYgEvy+xOY6sff6M1e5eGqBNaOwPPKq7x8F75KOeCnHh9TbtbGrvXzY=
-=LEN2
------END PGP SIGNATURE-----
-
---oiL9LJXJsdjS5rzq--
+RnJvbTogQ2hyaXMgU21hcnQNCj4gU2VudDogMjYgQXByaWwgMjAxNiAwMToyOQ0KPiBUaGUgY29w
+eSBwYXN0ZSBmYWNpbGl0eSBpbnRyb2R1Y2VkIGluIFBPV0VSOSBwcm92aWRlcyBhbiBvcHRpbWlz
+ZWQNCj4gbWVjaGFuaXNtIGZvciBhIHVzZXJzcGFjZSBhcHBsaWNhdGlvbiB0byBjb3B5IGEgY2Fj
+aGVsaW5lLiBUaGlzIGlzDQo+IHByb3ZpZGVkIGJ5IGEgcGFpciBvZiBpbnN0cnVjdGlvbnMsIGNv
+cHkgYW5kIHBhc3RlLCB3aGlsZSBhIHRoaXJkLA0KPiBjcF9hYm9ydCAoY29weSBwYXN0ZSBhYm9y
+dCksIHByb3ZpZGVzIGEgY2xlYW4gdXAgb2YgdGhlIHN0YXRlIGluIGNhc2Ugb2YNCj4gYSBmYWls
+dXJlLg0KPiANCj4gVGhlIGNvcHkgaW5zdHJ1Y3Rpb24gd2lsbCByZWFkIGEgMTI4IGJ5dGUgY2Fj
+aGVsaW5lIGFuZCBzdG9yZSBpdCBpbiBhbg0KPiBpbnRlcm5hbCBidWZmZXIuIFRoZSBzdWJzZXF1
+ZW50IHBhc3RlIGluc3RydWN0aW9uIHdpbGwgc3RvcmUgdGhpcw0KPiBpbnRlcm5hbCBidWZmZXIg
+dG8gbWVtb3J5IGFuZCBzZXQgYSBDUiBmaWVsZCBpZiB0aGUgcGFzdGUgc3VjY2VlZHMuDQo+IA0K
+PiBTaW5jZSB0aGUgc3RhdGUgb2YgdGhlIGNvcHkgcGFzdGUgYnVmZmVyIGlzIGludGVybmFsIChh
+bmQgbm90DQo+IGFyY2hpdGVjdHVyYWxseSB2aXNpYmxlKSwgaW4gdGhlIHVubGlrZWx5IGV2ZW50
+IG9mIGEgY29udGV4dCBzd2l0Y2gsIHRoZQ0KPiBzdGF0ZSBjYW5ub3QgYmUgc3RvcmVkIGFuZCB0
+aGUgcGFzdGUgc2hvdWxkIHRoZXJlZm9yZSBmYWlsLg0KPiANCj4gVGhlIGNwX2Fib3J0IGluc3Ry
+dWN0aW9uIGV4aXN0cyB0byBmYWlsIGFuZCBjbGVhbiB1cCBhbnkgc3VjaA0KPiBpbnRlcnJ1cHRl
+ZCBjb3B5IHBhc3RlIHNlcXVlbmNlIGFuZCBpcyB0byBiZSBjYWxsZWQgYnkgdGhlIGtlcm5lbCBh
+cw0KPiBwYXJ0IG9mIHRoZSBjb250ZXh0IHN3aXRjaC4gRG9pbmcgc28gcHJldmVudHMgZGF0YSBm
+cm9tIGEgcHJlY2VkaW5nIGNvcHkNCj4gaW4gb25lIHByb2Nlc3MgbGVha2luZyBpbnRvIHRoZSBw
+YXN0ZSBvZiBhbm90aGVyLg0KPiANCj4gVGhpcyBjb2RlIGVuYWJsZXMgdXNlIG9mIHRoZSBjcF9h
+Ym9ydCBpbnN0cnVjdGlvbiBpZiBhIHN1cHBvcnRlZA0KPiBwcm9jZXNzb3IgaXMgZGV0ZWN0ZWQu
+DQoNCkluIHRoYXQgY2FzZSB3aGF0IGFjdHVhbGx5IGNvbXBsZXRlcyB0aGUgY29weT8NCkkgdGhp
+bmsgeW91J2QgbmVlZCB0byBiZSBpbnNpZGUgYSAncmVzdGFydGFibGUgYXRvbWljIHNlcXVlbmNl
+Jw0KaW4gd2hpY2ggY2FzZSB0aGUgY3BfYWJvcnQgbmVlZCBvbmx5IGJlIGRvbmUgd2hlbiB0aGUv
+YSBSQVMNCmJsb2NrIGlzIGRldGVjdGVkLg0KDQpPciBoYXZlIEkgbWlzc2VkIHNvbWV0aGluZz8/
+DQoNCglEYXZpZA0KDQo=
