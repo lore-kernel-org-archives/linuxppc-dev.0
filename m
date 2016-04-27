@@ -1,30 +1,32 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qvx0Z1DYXzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 20:24:46 +1000 (AEST)
-Date: Wed, 27 Apr 2016 12:05:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, tony.luck@intel.com,
- geert@linux-m68k.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, mpe@ellerman.id.au, dalias@libc.org,
- dhowells@redhat.com, yasutake.koichi@jp.panasonic.com, rth@twiddle.net,
- ink@jurassic.park.msu.ru, linux-alpha@vger.kernel.org, x86@kernel.org,
- a.zummo@towertech.it, alexandre.belloni@free-electrons.com,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, rtc-linux@googlegroups.com,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH 2/8] char/rtc: legacy RTC is no longer supported on x86
-In-Reply-To: <1461707052-1337718-3-git-send-email-arnd@arndb.de>
-Message-ID: <alpine.DEB.2.11.1604271205100.3941@nanos>
-References: <1461707052-1337718-1-git-send-email-arnd@arndb.de>
- <1461707052-1337718-3-git-send-email-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qvxDY1h21zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Apr 2016 20:35:08 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Rich Felker <dalias@libc.org>,
+ David Howells <dhowells@redhat.com>, alpha <linux-alpha@vger.kernel.org>,
+ Alessandro Zummo <a.zummo@towertech.it>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ RTCLINUX <rtc-linux@googlegroups.com>, Linux-Arch <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH v2 1/6] rtc: m68k: provide rtc_class_ops directly
+Date: Wed, 27 Apr 2016 12:34:19 +0200
+Message-ID: <4888267.R0sXv0tuDQ@wuerfel>
+In-Reply-To: <CAMuHMdXS0JL_weLvjV4+i0ZPj=N+G6Vs1WDE9jffGUWehq5Xzg@mail.gmail.com>
+References: <1461707551-1337971-1-git-send-email-arnd@arndb.de>
+ <1461707551-1337971-2-git-send-email-arnd@arndb.de>
+ <CAMuHMdXS0JL_weLvjV4+i0ZPj=N+G6Vs1WDE9jffGUWehq5Xzg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,16 +36,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 26 Apr 2016, Arnd Bergmann wrote:
-
-> Commit 3195ef59cb42 ("x86: Do full rtc synchronization with ntp") had
-> the side-effect of unconditionally enabling the RTC_LIB symbol on x86,
-> which in turn disables the selection of the CONFIG_RTC and
-> CONFIG_GEN_RTC drivers that contain a two older implementations of
-> the CONFIG_RTC_DRV_CMOS driver.
+On Wednesday 27 April 2016 09:47:56 Geert Uytterhoeven wrote:
+> > --- a/arch/m68k/kernel/time.c
+> > +++ b/arch/m68k/kernel/time.c
+> > @@ -86,7 +86,24 @@ void read_persistent_clock(struct timespec *ts)
+> >         }
+> >  }
+> >
+> > -#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
+> > +#if defined(CONFIG_ARCH_USES_GETTIMEOFFSET) && defined(CONFIG_RTC_DRV_GENERIC)
 > 
-> This removes x86 from the list.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> s/defined/IS_ENABLED/ for the modular case.
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Thanks, fixed in all three architectures/
+
+> > @@ -95,7 +112,10 @@ static int __init rtc_init(void)
+> >         if (!mach_hwclk)
+> >                 return -ENODEV;
+> >
+> > -       pdev = platform_device_register_simple("rtc-generic", -1, NULL, 0);
+> > +       /* or just call devm_rtc_device_register instead? */
+> 
+> I guess this comment is a bogus leftover? There's no "dev" parameter to
+> pass to devm_rtc_device_register() here.
+
+Sort of. When I wrote it, I thought that a NULL argument would work,
+and I later found out myself that it doesn't.
+
+I'll drop the comment there, but there are still a few ways we (probably
+not me, but whoever is interested) could take this further:
+
+- register both the device and the driver here, and call
+  devm_rtc_device_register from the probe function so we can move away
+  from drivers/rtc/rtc-generic.c
+
+- do this separately for mac, mvme147, mvme16x, sun3, q40 and sun3x
+
+- move the six implementations into drivers/rtc as standalone drivers.
+
+One (AFAIK) unsolved problem here is the question of how to handle
+read_boot_clock/read_persistent_clock/update_persistent_clock in this
+case. This is a really odd API that is implemented in various ways
+on a few major architectures, and not at all on others, so it's all
+highly inconsistent.
+
+	Arnd
