@@ -1,35 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwKS73j6NzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 11:46:31 +1000 (AEST)
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qwKS65hgZz9t6M
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Apr 2016 11:46:30 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id 206so27413082pfu.0
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Apr 2016 18:46:30 -0700 (PDT)
-Subject: Re: [PATCH v2] livepatch: Add some basic LivePatch documentation
-To: Jiri Kosina <jikos@kernel.org>, Petr Mladek <pmladek@suse.com>
-References: <1461597275-32120-1-git-send-email-pmladek@suse.com>
- <alpine.LNX.2.00.1604272203220.27368@cbobk.fhfr.pm>
- <alpine.LNX.2.00.1604272208130.27368@cbobk.fhfr.pm>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>, linuxppc-dev@ozlabs.org,
- Torsten Duwe <duwe@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Nikolay Borisov <kernel@kyup.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <57216B6A.20302@gmail.com>
-Date: Thu, 28 Apr 2016 11:46:18 +1000
-MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.1604272208130.27368@cbobk.fhfr.pm>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwKZd73frzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 11:52:09 +1000 (AEST)
+In-Reply-To: <1461301069-12331-1-git-send-email-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org, Joerg-Stephan Vogt <JSVOGT@de.ibm.com>,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Wolfgang Bolz1 <Wolfgang.Bolz@de.ibm.com>, imunsie@au1.ibm.com,
+ andrew.donnellan@au1.ibm.com, Frank Haverkamp <HAVERKAM@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] cxl: Keep IRQ mappings on context teardown
+Message-Id: <3qwKZd5Y59z9t6M@ozlabs.org>
+Date: Thu, 28 Apr 2016 11:52:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,22 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 28/04/16 06:08, Jiri Kosina wrote:
-> On Wed, 27 Apr 2016, Jiri Kosina wrote:
+On Fri, 2016-22-04 at 04:57:48 UTC, Michael Neuling wrote:
+> Keep IRQ mappings on context teardown.  This won't leak IRQs as if we
+> allocate the mapping again, the generic code will give the same
+> mapping used last time.
 > 
->> I've incorporated most of the feedback (*) and pushed out to 
->> livepatching.git#for-4.7/livepatching-doc so everybody please send any 
->> followup documentation patches on top of that branch.
+> Doing this works around a race in the generic code. Masking the
+> interrupt introduces a race which can crash the kernel or result in
+> IRQ that is never EOIed. The lost of EOI results in all subsequent
+> mappings to the same HW IRQ never receiving an interrupt.
 > 
-> (*) Balbir, some of your comments were a bit too vague; if you could turn 
-> them into actual patch on top of what's currently in git, that'd be 
-> helpful
+> We've seen this race with cxl test cases which are doing heavy context
+> startup and teardown at the same time as heavy interrupt load.
 > 
+> A fix to the generic code is being investigated also.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> cc: stable@vger.kernel.org # 3.8
+> Tested-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Tested-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 
-Hi, Jiri
+Applied to powerpc fixes, thanks.
 
-Thanks! I'll try to do that -- I'll add it on my TODO list.
+https://git.kernel.org/powerpc/c/d6776bba44d9752f6cdf640046
 
-Balbir Singh.
+cheers
