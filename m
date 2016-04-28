@@ -1,24 +1,36 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
+ [IPv6:2607:f8b0:4001:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwSqc6mMlzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 17:18:52 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id vv3so9073550pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 00:18:52 -0700 (PDT)
-Date: Thu, 28 Apr 2016 17:18:39 +1000
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
-Subject: Re: [PATCH] powerpc: Add out of bounds check to
- crash_shutdown_unregister()
-Message-ID: <20160428171839.24d75017@dyn253.ozlabs.ibm.com>
-In-Reply-To: <5721B3D1.2060007@gmail.com>
-References: <1461824265-30592-1-git-send-email-sjitindarsingh@gmail.com>
- <5721B3D1.2060007@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwStF3tcHzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 17:21:09 +1000 (AEST)
+Received: by mail-io0-x241.google.com with SMTP id d62so10295705iof.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 00:21:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20160427232122.GW21636@brightrain.aerifal.cx>
+References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
+ <1461796470-1291527-5-git-send-email-arnd@arndb.de>
+ <20160427232122.GW21636@brightrain.aerifal.cx>
+Date: Thu, 28 Apr 2016 09:21:05 +0200
+Message-ID: <CAMuHMdVP3QWvyY11sw-Y440MFpxtjcZRQ+pAP76p35qFvcye6g@mail.gmail.com>
+Subject: Re: [PATCH v3 04/16] rtc: sh: provide rtc_class_ops directly
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Rich Felker <dalias@libc.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Helge Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, David Howells <dhowells@redhat.com>,
+ alpha <linux-alpha@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ RTCLINUX <rtc-linux@googlegroups.com>,
+ Linux-Arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Apr 2016 16:55:13 +1000
-Balbir Singh <bsingharora@gmail.com> wrote:
+Hi Rich,
 
-> On 28/04/16 16:17, Suraj Jitindar Singh wrote:
-> > When unregistering a crash_shutdown_handle in the function
-> > crash_shutdown_unregister() the other handles are shifted down in
-> > the array to replace the unregistered handle. The for loop assumes
-> > that the last element in the array is null and uses this as the
-> > stop condition, however in the case that the last element is not
-> > null there is no check to ensure that an out of bounds access is
-> > not performed.
-> > 
-> > Add a check to terminate the shift operation when CRASH_HANDLER_MAX
-> > is reached in order to protect against out of bounds accesses.
-> > 
-> > Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> > ---
-> >  arch/powerpc/kernel/crash.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/crash.c
-> > b/arch/powerpc/kernel/crash.c index 2bb252c..6b267af 100644
-> > --- a/arch/powerpc/kernel/crash.c
-> > +++ b/arch/powerpc/kernel/crash.c
-> > @@ -288,7 +288,7 @@ int crash_shutdown_unregister(crash_shutdown_t
-> > handler) rc = 1;
-> >  	} else {
-> >  		/* Shift handles down */
-> > -		for (; crash_shutdown_handles[i]; i++)
-> > +		for (; crash_shutdown_handles[i] && i <
-> > CRASH_HANDLER_MAX; i++) crash_shutdown_handles[i] =
-> >  				crash_shutdown_handles[i+1];
-> >  		rc = 0;
-> >   
-> 
-> with i = CRASH_HANDLER_MAX-1 we could end up with
-> crash_shutdown_handles[i+1] already out of bounds I think you need to
-> check that i+1 does not overflow
-> 
-> Balbir
+On Thu, Apr 28, 2016 at 1:21 AM, Rich Felker <dalias@libc.org> wrote:
+> Not a complaint about your patch, but I'd like to get rid of this
+> platform device and abstraction layer completely since it doesn't seem
+> like something that can be modeled correctly in device tree. When
+> you're done cleaning this up, will it be possible to just have rtc
+> drivers that use whatever generic framework is left, where the right
+> driver is automatically attached to compatible DT nodes? I'm trying to
+> move all of arch/sh over to device tree and remove hard-coded platform
+> devices.
 
-Thanks for taking a look Balbir, the size of crash_shutdown_handles is
-actually CRASH_HANDLER_MAX+1.
+If you describe the RTC in DT, it can bound to a hardware-specific driver
+in drivers/rtc/rtc-*.c.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
