@@ -2,8 +2,8 @@ Return-Path: <cov@codeaurora.org>
 Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwgWb57l3zDqBB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 01:20:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwgWd5LsKzDqB5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 01:20:45 +1000 (AEST)
 From: Christopher Covington <cov@codeaurora.org>
 To: Catalin Marinas <catalin.marinas@arm.com>, criu@openvz.org,
  Laurent Dufour <ldufour@linux.vnet.ibm.com>,
@@ -14,9 +14,9 @@ To: Catalin Marinas <catalin.marinas@arm.com>, criu@openvz.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arch@vger.kernel.org, linux-mm@kvack.org
 Cc: Christopher Covington <cov@codeaurora.org>
-Subject: [RFC 4/5] arm64: Use unsigned long for vdso
-Date: Thu, 28 Apr 2016 11:18:56 -0400
-Message-Id: <1461856737-17071-5-git-send-email-cov@codeaurora.org>
+Subject: [RFC 5/5] arm64: Gain VDSO unmap and remap powers
+Date: Thu, 28 Apr 2016 11:18:57 -0400
+Message-Id: <1461856737-17071-6-git-send-email-cov@codeaurora.org>
 In-Reply-To: <1461856737-17071-1-git-send-email-cov@codeaurora.org>
 References: <20151202121918.GA4523@arm.com>
  <1461856737-17071-1-git-send-email-cov@codeaurora.org>
@@ -29,62 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to get AArch64 remap and unmap support for the VDSO, like PowerPC
-and x86 have, without duplicating the code, we need a common name and type
-for the address of the VDSO. An informal survey of the architectures
-indicates unsigned long vdso is popular. Change the type in arm64 to be
-unsigned long, which has the added benefit of dropping a few typecasts.
+Checkpoint/Restore In Userspace (CRIU) must be able to remap and unmap the
+Virtual Dynamic Shared Object (VDSO) to be able to handle the changing
+addresses that result from address space layout randomization. Now that the
+support for this originally written for PowerPC has been moved to a generic
+location and arm64 has adopted unsigned long for the type of mm->context.vdso,
+simply opt-in to VDSO unmap and remap support.
 
 Signed-off-by: Christopher Covington <cov@codeaurora.org>
 ---
- arch/arm64/include/asm/mmu.h | 2 +-
- arch/arm64/kernel/vdso.c     | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/arm64/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/include/asm/mmu.h b/arch/arm64/include/asm/mmu.h
-index 990124a..a67352f 100644
---- a/arch/arm64/include/asm/mmu.h
-+++ b/arch/arm64/include/asm/mmu.h
-@@ -18,7 +18,7 @@
- 
- typedef struct {
- 	atomic64_t	id;
--	void		*vdso;
-+	unsigned long	vdso;
- } mm_context_t;
- 
- /*
-diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
-index 97bc68f..e742b1d 100644
---- a/arch/arm64/kernel/vdso.c
-+++ b/arch/arm64/kernel/vdso.c
-@@ -96,7 +96,7 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
- 	void *ret;
- 
- 	down_write(&mm->mmap_sem);
--	current->mm->context.vdso = (void *)addr;
-+	current->mm->context.vdso = addr;
- 
- 	/* Map vectors page at the high address. */
- 	ret = _install_special_mapping(mm, addr, PAGE_SIZE,
-@@ -176,7 +176,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm,
- 		goto up_fail;
- 
- 	vdso_base += PAGE_SIZE;
--	mm->context.vdso = (void *)vdso_base;
-+	mm->context.vdso = vdso_base;
- 	ret = _install_special_mapping(mm, vdso_base, vdso_text_len,
- 				       VM_READ|VM_EXEC|
- 				       VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC,
-@@ -189,7 +189,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm,
- 	return 0;
- 
- up_fail:
--	mm->context.vdso = NULL;
-+	mm->context.vdso = 0;
- 	up_write(&mm->mmap_sem);
- 	return PTR_ERR(ret);
- }
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 4f43622..cbdce39 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -14,6 +14,7 @@ config ARM64
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ 	select ARCH_WANT_FRAME_POINTERS
++	select ARCH_WANT_VDSO_MAP
+ 	select ARCH_HAS_UBSAN_SANITIZE_ALL
+ 	select ARM_AMBA
+ 	select ARM_ARCH_TIMER
 -- 
 Qualcomm Innovation Center, Inc.
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
