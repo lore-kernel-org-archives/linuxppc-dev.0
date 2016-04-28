@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwKZf5QD6zDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 11:52:10 +1000 (AEST)
-In-Reply-To: <1461068616-16646-1-git-send-email-rsalvaterra@gmail.com>
-To: Rui Salvaterra <rsalvaterra@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwPgg27m5zDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 14:56:47 +1000 (AEST)
+In-Reply-To: <1460182444-2468-67-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rui Salvaterra <rsalvaterra@gmail.com>
-Subject: Re: powerpc: wire up preadv2 and pwritev2 syscalls
-Message-Id: <3qwKZf35WDz9t5s@ozlabs.org>
-Date: Thu, 28 Apr 2016 11:52:10 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [V2,
+ 66/68] powerpc/mm/radix: Add THP support for 4k linux page size
+Message-Id: <3qwPgg104tz9t50@ozlabs.org>
+Date: Thu, 28 Apr 2016 14:56:47 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,14 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-19-04 at 12:23:36 UTC, Rui Salvaterra wrote:
-> Wire up preadv2/pwritev2 in the same way as preadv/pwritev. Fixes two
-> build warnings on ppc64.
+On Sat, 2016-09-04 at 06:14:02 UTC, "Aneesh Kumar K.V" wrote:
+
+Missing change log.
+
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Rui Salvaterra <rsalvaterra@gmail.com>
+> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> index bb3d8539bb1b..d915788d5074 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+> @@ -50,6 +50,65 @@ static inline int hl_hugepd_ok(hugepd_t hpd)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +
+> +static inline char *get_hpte_slot_array(pmd_t *pmdp)
+> +{
+> +	BUG();
+> +	return NULL;
+> +}
 
-Applied to powerpc fixes, thanks.
+...
 
-https://git.kernel.org/powerpc/c/d701cca6744fe0d67c86346dcf
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 53299182dba9..ad9c77399aab 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -72,7 +72,7 @@ config PPC_BOOK3S_64
+>  	select PPC_FPU
+>  	select PPC_HAVE_PMU_SUPPORT
+>  	select SYS_SUPPORTS_HUGETLBFS
+> -	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
+> +	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
+
+
+How is this meant to work?
+
+It appears to allow me to build a 4K kernel with THP which will then BUG() as
+soon as I run it on hash?
+
+I assume you'll tell me there's some mechanism somewhere that prevents that from
+happening, but what is it?
 
 cheers
