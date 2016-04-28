@@ -1,19 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwPgg27m5zDq62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 14:56:47 +1000 (AEST)
-In-Reply-To: <1460182444-2468-67-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V2,
- 66/68] powerpc/mm/radix: Add THP support for 4k linux page size
-Message-Id: <3qwPgg104tz9t50@ozlabs.org>
-Date: Thu, 28 Apr 2016 14:56:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwQ2q6dvfzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Apr 2016 15:13:23 +1000 (AEST)
+Date: Thu, 28 Apr 2016 15:13:19 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
+ linux-mm@kvack.org
+Subject: Re: [PATCH] powerpc/mm: Always use STRICT_MM_TYPECHECKS
+Message-ID: <20160428051319.GA3591@oak.ozlabs.ibm.com>
+References: <1461209879-15044-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461209879-15044-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-09-04 at 06:14:02 UTC, "Aneesh Kumar K.V" wrote:
-
-Missing change log.
-
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Thu, Apr 21, 2016 at 01:37:59PM +1000, Michael Ellerman wrote:
+> Testing done by Paul Mackerras has shown that with a modern compiler
+> there is no negative effect on code generation from enabling
+> STRICT_MM_TYPECHECKS.
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> index bb3d8539bb1b..d915788d5074 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> @@ -50,6 +50,65 @@ static inline int hl_hugepd_ok(hugepd_t hpd)
->  }
->  #endif
->  
-> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> +
-> +static inline char *get_hpte_slot_array(pmd_t *pmdp)
-> +{
-> +	BUG();
-> +	return NULL;
-> +}
+> So remove the option, and always use the strict type definitions.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-...
-
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 53299182dba9..ad9c77399aab 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -72,7 +72,7 @@ config PPC_BOOK3S_64
->  	select PPC_FPU
->  	select PPC_HAVE_PMU_SUPPORT
->  	select SYS_SUPPORTS_HUGETLBFS
-> -	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
-> +	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
-
-
-How is this meant to work?
-
-It appears to allow me to build a 4K kernel with THP which will then BUG() as
-soon as I run it on hash?
-
-I assume you'll tell me there's some mechanism somewhere that prevents that from
-happening, but what is it?
-
-cheers
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
