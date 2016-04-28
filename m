@@ -2,8 +2,8 @@ Return-Path: <jpoimboe@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwpjw6dh1zDq62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 06:45:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwpjx61kczDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 06:45:09 +1000 (AEST)
 From: Josh Poimboeuf <jpoimboe@redhat.com>
 To: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
@@ -16,9 +16,11 @@ Cc: live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
  Jiri Slaby <jslaby@suse.cz>, Petr Mladek <pmladek@suse.com>,
  Chris J Arges <chris.j.arges@canonical.com>,
  Andy Lutomirski <luto@kernel.org>
-Subject: [RFC PATCH v2 00/18] livepatch: hybrid consistency model
-Date: Thu, 28 Apr 2016 15:44:31 -0500
-Message-Id: <cover.1461875890.git.jpoimboe@redhat.com>
+Subject: [RFC PATCH v2 01/18] x86/asm/head: clean up initial stack variable
+Date: Thu, 28 Apr 2016 15:44:32 -0500
+Message-Id: <0c0ab06535c7d742acf728abfb8fef15da2d3192.1461875890.git.jpoimboe@redhat.com>
+In-Reply-To: <cover.1461875890.git.jpoimboe@redhat.com>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,150 +30,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is v2 of the livepatch hybrid consistency model, based on
-linux-next/master.
+The stack_start variable is similar in usage to initial_code and
+initial_gs: they're all stored in head_64.S and they're all updated by
+SMP and suspend/resume before starting a CPU.
 
-v1 of this patch set was posted over a year ago:
+Rename stack_start to initial_stack to be more consistent with the
+others.
 
-  https://lkml.kernel.org/r/cover.1423499826.git.jpoimboe@redhat.com
+Also do a few other related cleanups:
 
-The biggest complaint at that time was that stack traces are unreliable.
-Since CONFIG_STACK_VALIDATION was merged, that issue has been addressed.
-I've also tried to address all other outstanding complaints and issues.
+- Remove the unused init_rsp variable declaration.
 
-Ingo and Peter, note that I'm using task_rq_lock() in patch 17/18 to
-make sure a task stays asleep while its stack gets checked.  I'm not
-sure if there's a better way to achieve that goal -- any suggestions
-there would be greatly appreciated.
+- Remove the ".word 0" statement after the initial_stack definition
+  because it has no apparent function.
 
-Patches 1-7 create a mechanism for detecting whether a given stack trace
-can be deemed reliable.
+Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+---
+ arch/x86/include/asm/realmode.h |  2 +-
+ arch/x86/include/asm/smp.h      |  3 ---
+ arch/x86/kernel/acpi/sleep.c    |  2 +-
+ arch/x86/kernel/head_32.S       |  8 ++++----
+ arch/x86/kernel/head_64.S       | 10 ++++------
+ arch/x86/kernel/smpboot.c       |  2 +-
+ 6 files changed, 11 insertions(+), 16 deletions(-)
 
-Patches 8-18 add the consistency model.  See patch 17/18 for more
-details about the consistency model itself.
-
-Remaining TODOs:
-- how to patch kthreads without RELIABLE_STACKTRACE?
-- safe patch module removal
-- fake signal facility
-- allow user to force a task to the patched state
-- enable the patching of kthreads which are sleeping on affected
-  functions, via the livepatch ftrace handler
-- WARN on certain stack error conditions
-
-v2:
-- "universe" -> "patch state"
-- rename klp_update_task_universe() -> klp_patch_task()
-- add preempt IRQ tracking (TF_PREEMPT_IRQ)
-- fix print_context_stack_reliable() bug
-- improve print_context_stack_reliable() comments
-- klp_ftrace_handler comment fixes
-- add "patch_state" proc file to tid_base_stuff
-- schedule work even for !RELIABLE_STACKTRACE
-- forked child inherits patch state from parent
-- add detailed comment to livepatch.h klp_func definition about the
-  klp_func patched/transition state transitions
-- update exit_to_usermode_loop() comment
-- clear all TIF_KLP_NEED_UPDATE flags in klp_complete_transition()
-- remove unnecessary function externs
-- add livepatch documentation, sysfs documentation, /proc documentation
-- /proc/pid/patch_state: -1 means no patch is currently being applied/reverted
-- "TIF_KLP_NEED_UPDATE" -> "TIF_PATCH_PENDING"
-- support for s390 and powerpc-le
-- don't assume stacks with dynamic ftrace trampolines are reliable
-- add _TIF_ALLWORK_MASK info to commit log
-
-v1.9:
-- revive from the dead and rebased
-- reliable stacks!
-- add support for immediate consistency model
-- add a ton of comments
-- fix up memory barriers
-- remove "allow patch modules to be removed" patch for now, it still 
-  needs more discussion and thought - it can be done with something
-- "proc/pid/universe" -> "proc/pid/patch_status"
-- remove WARN_ON_ONCE from !func condition in ftrace handler -- can
-  happen because of RCU
-- keep klp_mutex private by putting the work_fn in core.c
-- convert states from int to boolean
-- remove obsolete '@state' comments
-- several header file and include improvements suggested by Jiri S
-- change kallsyms_lookup_size_offset() errors from EINVAL -> ENOENT
-- change proc file permissions S_IRUGO -> USR
-- use klp_for_each_object/func helpers
-
-
-Jiri Slaby (1):
-  livepatch/s390: reorganize TIF thread flag bits
-
-Josh Poimboeuf (16):
-  x86/asm/head: clean up initial stack variable
-  x86/asm/head: use a common function for starting CPUs
-  x86/asm/head: standardize the bottom of the stack for idle tasks
-  x86: move _stext marker before head code
-  sched: add task flag for preempt IRQ tracking
-  x86: dump_trace() error handling
-  stacktrace/x86: function for detecting reliable stack traces
-  livepatch: temporary stubs for klp_patch_pending() and
-    klp_patch_task()
-  livepatch/x86: add TIF_PATCH_PENDING thread flag
-  livepatch/powerpc: add TIF_PATCH_PENDING thread flag
-  livepatch: separate enabled and patched states
-  livepatch: remove unnecessary object loaded check
-  livepatch: move patching functions into patch.c
-  livepatch: store function sizes
-  livepatch: change to a per-task consistency model
-  livepatch: add /proc/<pid>/patch_state
-
-Miroslav Benes (1):
-  livepatch/s390: add TIF_PATCH_PENDING thread flag
-
- Documentation/ABI/testing/sysfs-kernel-livepatch |   8 +
- Documentation/filesystems/proc.txt               |  18 +
- Documentation/livepatch/livepatch.txt            | 132 ++++++-
- arch/Kconfig                                     |   6 +
- arch/powerpc/include/asm/thread_info.h           |   4 +-
- arch/powerpc/kernel/signal.c                     |   4 +
- arch/s390/include/asm/thread_info.h              |  24 +-
- arch/s390/kernel/entry.S                         |  31 +-
- arch/x86/Kconfig                                 |   1 +
- arch/x86/entry/common.c                          |   9 +-
- arch/x86/include/asm/realmode.h                  |   2 +-
- arch/x86/include/asm/smp.h                       |   3 -
- arch/x86/include/asm/stacktrace.h                |  36 +-
- arch/x86/include/asm/thread_info.h               |   2 +
- arch/x86/kernel/acpi/sleep.c                     |   2 +-
- arch/x86/kernel/dumpstack.c                      | 108 +++++-
- arch/x86/kernel/dumpstack_32.c                   |  22 +-
- arch/x86/kernel/dumpstack_64.c                   |  53 ++-
- arch/x86/kernel/head_32.S                        |   8 +-
- arch/x86/kernel/head_64.S                        |  34 +-
- arch/x86/kernel/smpboot.c                        |   2 +-
- arch/x86/kernel/stacktrace.c                     |  24 ++
- arch/x86/kernel/vmlinux.lds.S                    |   2 +-
- fs/proc/base.c                                   |  15 +
- include/linux/init_task.h                        |   9 +
- include/linux/kernel.h                           |   1 +
- include/linux/livepatch.h                        |  57 ++-
- include/linux/sched.h                            |   4 +
- include/linux/stacktrace.h                       |  20 +-
- kernel/extable.c                                 |   2 +-
- kernel/fork.c                                    |   5 +-
- kernel/livepatch/Makefile                        |   2 +-
- kernel/livepatch/core.c                          | 342 +++++-----------
- kernel/livepatch/patch.c                         | 254 ++++++++++++
- kernel/livepatch/patch.h                         |  33 ++
- kernel/livepatch/transition.c                    | 474 +++++++++++++++++++++++
- kernel/livepatch/transition.h                    |  14 +
- kernel/sched/core.c                              |   4 +
- kernel/sched/idle.c                              |   4 +
- kernel/stacktrace.c                              |   4 +-
- lib/Kconfig.debug                                |   6 +
- 41 files changed, 1413 insertions(+), 372 deletions(-)
- create mode 100644 kernel/livepatch/patch.c
- create mode 100644 kernel/livepatch/patch.h
- create mode 100644 kernel/livepatch/transition.c
- create mode 100644 kernel/livepatch/transition.h
-
+diff --git a/arch/x86/include/asm/realmode.h b/arch/x86/include/asm/realmode.h
+index 9c6b890..677a671 100644
+--- a/arch/x86/include/asm/realmode.h
++++ b/arch/x86/include/asm/realmode.h
+@@ -44,9 +44,9 @@ struct trampoline_header {
+ extern struct real_mode_header *real_mode_header;
+ extern unsigned char real_mode_blob_end[];
+ 
+-extern unsigned long init_rsp;
+ extern unsigned long initial_code;
+ extern unsigned long initial_gs;
++extern unsigned long initial_stack;
+ 
+ extern unsigned char real_mode_blob[];
+ extern unsigned char real_mode_relocs[];
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 66b0573..a9ac31b 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -38,9 +38,6 @@ DECLARE_EARLY_PER_CPU_READ_MOSTLY(u16, x86_bios_cpu_apicid);
+ DECLARE_EARLY_PER_CPU_READ_MOSTLY(int, x86_cpu_to_logical_apicid);
+ #endif
+ 
+-/* Static state in head.S used to set up a CPU */
+-extern unsigned long stack_start; /* Initial stack pointer address */
+-
+ struct task_struct;
+ 
+ struct smp_ops {
+diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+index adb3eaf..4858733 100644
+--- a/arch/x86/kernel/acpi/sleep.c
++++ b/arch/x86/kernel/acpi/sleep.c
+@@ -99,7 +99,7 @@ int x86_acpi_suspend_lowlevel(void)
+ 	saved_magic = 0x12345678;
+ #else /* CONFIG_64BIT */
+ #ifdef CONFIG_SMP
+-	stack_start = (unsigned long)temp_stack + sizeof(temp_stack);
++	initial_stack = (unsigned long)temp_stack + sizeof(temp_stack);
+ 	early_gdt_descr.address =
+ 			(unsigned long)get_cpu_gdt_table(smp_processor_id());
+ 	initial_gs = per_cpu_offset(smp_processor_id());
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index 6770865..da840be 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -94,7 +94,7 @@ RESERVE_BRK(pagetables, INIT_MAP_SIZE)
+  */
+ __HEAD
+ ENTRY(startup_32)
+-	movl pa(stack_start),%ecx
++	movl pa(initial_stack),%ecx
+ 	
+ 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
+ 		us to not reload segments */
+@@ -286,7 +286,7 @@ num_subarch_entries = (. - subarch_entries) / 4
+  * start_secondary().
+  */
+ ENTRY(start_cpu0)
+-	movl stack_start, %ecx
++	movl initial_stack, %ecx
+ 	movl %ecx, %esp
+ 	jmp  *(initial_code)
+ ENDPROC(start_cpu0)
+@@ -307,7 +307,7 @@ ENTRY(startup_32_smp)
+ 	movl %eax,%es
+ 	movl %eax,%fs
+ 	movl %eax,%gs
+-	movl pa(stack_start),%ecx
++	movl pa(initial_stack),%ecx
+ 	movl %eax,%ss
+ 	leal -__PAGE_OFFSET(%ecx),%esp
+ 
+@@ -709,7 +709,7 @@ ENTRY(initial_page_table)
+ 
+ .data
+ .balign 4
+-ENTRY(stack_start)
++ENTRY(initial_stack)
+ 	.long init_thread_union+THREAD_SIZE
+ 
+ __INITRODATA
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 5df831e..792c3bb 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -226,7 +226,7 @@ ENTRY(secondary_startup_64)
+ 	movq	%rax, %cr0
+ 
+ 	/* Setup a boot time stack */
+-	movq stack_start(%rip), %rsp
++	movq initial_stack(%rip), %rsp
+ 
+ 	/* zero EFLAGS after setting rsp */
+ 	pushq $0
+@@ -309,7 +309,7 @@ ENTRY(secondary_startup_64)
+  * start_secondary().
+  */
+ ENTRY(start_cpu0)
+-	movq stack_start(%rip),%rsp
++	movq initial_stack(%rip),%rsp
+ 	movq	initial_code(%rip),%rax
+ 	pushq	$0		# fake return address to stop unwinder
+ 	pushq	$__KERNEL_CS	# set correct cs
+@@ -318,17 +318,15 @@ ENTRY(start_cpu0)
+ ENDPROC(start_cpu0)
+ #endif
+ 
+-	/* SMP bootup changes these two */
++	/* SMP bootup changes these variables */
+ 	__REFDATA
+ 	.balign	8
+ 	GLOBAL(initial_code)
+ 	.quad	x86_64_start_kernel
+ 	GLOBAL(initial_gs)
+ 	.quad	INIT_PER_CPU_VAR(irq_stack_union)
+-
+-	GLOBAL(stack_start)
++	GLOBAL(initial_stack)
+ 	.quad  init_thread_union+THREAD_SIZE-8
+-	.word  0
+ 	__FINITDATA
+ 
+ bad_address:
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 1fe4130..503682a 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -950,7 +950,7 @@ static int do_boot_cpu(int apicid, int cpu, struct task_struct *idle)
+ 
+ 	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
+ 	initial_code = (unsigned long)start_secondary;
+-	stack_start  = idle->thread.sp;
++	initial_stack  = idle->thread.sp;
+ 
+ 	/*
+ 	 * Enable the espfix hack for this CPU
 -- 
 2.4.11
