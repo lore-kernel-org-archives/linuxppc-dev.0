@@ -1,17 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qwfF10MwpzDqB4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qwfF16frxzDqBG
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 00:23:01 +1000 (AEST)
-In-Reply-To: <1461233794-30148-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+In-Reply-To: <1461139187-10553-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v2] powerpc/perf: Replace raw event hex values with #def
-Message-Id: <3qwfF06T6Wz9t79@ozlabs.org>
-Date: Fri, 29 Apr 2016 00:23:00 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Subject: Re: [V2] powerpc/cxl: Use REGION_ID instead of opencoding
+Message-Id: <3qwfF15Hdmz9t3r@ozlabs.org>
+Date: Fri, 29 Apr 2016 00:23:01 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,14 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-21-04 at 10:16:34 UTC, Madhavan Srinivasan wrote:
-> Minor cleanup patch to replace the raw event hex values in
-> power8-pmu.c with #def.
-> 
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+On Wed, 2016-20-04 at 07:59:47 UTC, "Aneesh Kumar K.V" wrote:
+> Also the wrong `~` operation resulted in wrong access check as explained
+> below.
+>
+...
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5bcca743cb6e3ab97ff400ef92
+https://git.kernel.org/powerpc/c/3b1dbfa14f97188ec33fdfc7ac
 
 cheers
