@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxb60TNzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxc65FqzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:44 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 01/70] IB/qib: Use cache inhibitted and guarded mapping on
- powerpc
-Date: Fri, 29 Apr 2016 23:25:24 +1000
-Message-Id: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 02/70] powerpc/mm: Always use STRICT_MM_TYPECHECKS
+Date: Fri, 29 Apr 2016 23:25:25 +1000
+Message-Id: <1461936393-10131-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
+References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,60 +22,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Testing done by Paul Mackerras has shown that with a modern compiler
+there is no negative effect on code generation from enabling
+STRICT_MM_TYPECHECKS.
 
-The driver was requesting for a writethrough mapping. But with those
-flags we will end up with an SAO mapping because we now have memory
-conherence always enabled. ie, the existing mapping will end up with a
-WIMG value 0b1110 which is Strong Access Order.
+So remove the option, and always use the strict type definitions.
 
-Update this to use cache inhibitted guarded mapping.
-
-Cc: Doug Ledford <dledford@redhat.com>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: linux-rdma@vger.kernel.org
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Acked-by: Mike Marciniszyn <mike.marciniszyn@intel.com>
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/infiniband/hw/qib/qib_file_ops.c | 5 +----
- drivers/infiniband/hw/qib/qib_pcie.c     | 6 ------
- 2 files changed, 1 insertion(+), 10 deletions(-)
+ arch/powerpc/Kconfig.debug               |  8 ------
+ arch/powerpc/include/asm/pgtable-types.h | 46 --------------------------------
+ 2 files changed, 54 deletions(-)
 
-diff --git a/drivers/infiniband/hw/qib/qib_file_ops.c b/drivers/infiniband/hw/qib/qib_file_ops.c
-index e449e394963f..a3d593f546ec 100644
---- a/drivers/infiniband/hw/qib/qib_file_ops.c
-+++ b/drivers/infiniband/hw/qib/qib_file_ops.c
-@@ -822,10 +822,7 @@ static int mmap_piobufs(struct vm_area_struct *vma,
- 	phys = dd->physaddr + piobufs;
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 638f9ce740f5..d3fcf7e64e3a 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -19,14 +19,6 @@ config PPC_WERROR
+ 	depends on !PPC_DISABLE_WERROR
+ 	default y
  
- #if defined(__powerpc__)
--	/* There isn't a generic way to specify writethrough mappings */
--	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
--	pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
--	pgprot_val(vma->vm_page_prot) &= ~_PAGE_GUARDED;
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- #endif
- 
- 	/*
-diff --git a/drivers/infiniband/hw/qib/qib_pcie.c b/drivers/infiniband/hw/qib/qib_pcie.c
-index 4758a3801ae8..6abe1c621aa4 100644
---- a/drivers/infiniband/hw/qib/qib_pcie.c
-+++ b/drivers/infiniband/hw/qib/qib_pcie.c
-@@ -144,13 +144,7 @@ int qib_pcie_ddinit(struct qib_devdata *dd, struct pci_dev *pdev,
- 	addr = pci_resource_start(pdev, 0);
- 	len = pci_resource_len(pdev, 0);
- 
--#if defined(__powerpc__)
--	/* There isn't a generic way to specify writethrough mappings */
--	dd->kregbase = __ioremap(addr, len, _PAGE_NO_CACHE | _PAGE_WRITETHRU);
--#else
- 	dd->kregbase = ioremap_nocache(addr, len);
--#endif
+-config STRICT_MM_TYPECHECKS
+-	bool "Do extra type checking on mm types"
+-	default n
+-	help
+-	  This option turns on extra type checking for some mm related types.
 -
- 	if (!dd->kregbase)
- 		return -ENOMEM;
+-	  If you don't know what this means, say N.
+-
+ config PRINT_STACK_DEPTH
+ 	int "Stack depth to print" if DEBUG_KERNEL
+ 	default 64
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+index 43140f8b0592..1464e74178d8 100644
+--- a/arch/powerpc/include/asm/pgtable-types.h
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -1,9 +1,6 @@
+ #ifndef _ASM_POWERPC_PGTABLE_TYPES_H
+ #define _ASM_POWERPC_PGTABLE_TYPES_H
  
+-#ifdef CONFIG_STRICT_MM_TYPECHECKS
+-/* These are used to make use of C type-checking. */
+-
+ /* PTE level */
+ typedef struct { pte_basic_t pte; } pte_t;
+ #define __pte(x)	((pte_t) { (x) })
+@@ -48,49 +45,6 @@ typedef struct { unsigned long pgprot; } pgprot_t;
+ #define pgprot_val(x)	((x).pgprot)
+ #define __pgprot(x)	((pgprot_t) { (x) })
+ 
+-#else
+-
+-/*
+- * .. while these make it easier on the compiler
+- */
+-
+-typedef pte_basic_t pte_t;
+-#define __pte(x)	(x)
+-static inline pte_basic_t pte_val(pte_t pte)
+-{
+-	return pte;
+-}
+-
+-#ifdef CONFIG_PPC64
+-typedef unsigned long pmd_t;
+-#define __pmd(x)	(x)
+-static inline unsigned long pmd_val(pmd_t pmd)
+-{
+-	return pmd;
+-}
+-
+-#if defined(CONFIG_PPC_BOOK3S_64) || !defined(CONFIG_PPC_64K_PAGES)
+-typedef unsigned long pud_t;
+-#define __pud(x)	(x)
+-static inline unsigned long pud_val(pud_t pud)
+-{
+-	return pud;
+-}
+-#endif /* CONFIG_PPC_BOOK3S_64 || !CONFIG_PPC_64K_PAGES */
+-#endif /* CONFIG_PPC64 */
+-
+-typedef unsigned long pgd_t;
+-#define __pgd(x)	(x)
+-static inline unsigned long pgd_val(pgd_t pgd)
+-{
+-	return pgd;
+-}
+-
+-typedef unsigned long pgprot_t;
+-#define pgprot_val(x)	(x)
+-#define __pgprot(x)	(x)
+-
+-#endif /* CONFIG_STRICT_MM_TYPECHECKS */
+ /*
+  * With hash config 64k pages additionally define a bigger "real PTE" type that
+  * gathers the "second half" part of the PTE for pseudo 64k pages
 -- 
 2.5.0
