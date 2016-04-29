@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxk727QzDqBK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxp60t2zDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:54 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 10/70] powerpc/mm: Use pte_user() instead of open coding
-Date: Fri, 29 Apr 2016 23:25:33 +1000
-Message-Id: <1461936393-10131-10-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 14/70] powerpc/mm: Use a helper for finding pte bits
+ mapping I/O area
+Date: Fri, 29 Apr 2016 23:25:37 +1000
+Message-Id: <1461936393-10131-14-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,45 +25,114 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We have a common declaration in pte-common.h Add a book3s specific one
-and switch to pte_user() in callchain.c. In a subsequent patch we will
-switch _PAGE_USER to _PAGE_PRIVILEGED in the book3s version only.
+Use a helper instead of open coding with constants. A later patch will
+drop the WIMG bits and use PowerISA 3.0 defines.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 5 +++++
- arch/powerpc/perf/callchain.c                | 2 +-
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/btext.c      | 2 +-
+ arch/powerpc/kernel/isa-bridge.c | 4 ++--
+ arch/powerpc/kernel/pci_64.c     | 2 +-
+ arch/powerpc/mm/pgtable_64.c     | 4 ++--
+ arch/powerpc/platforms/ps3/spu.c | 2 +-
+ drivers/pcmcia/electra_cf.c      | 2 +-
+ 6 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 77d3ce05798e..60e84260a07d 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -185,6 +185,11 @@ extern struct page *pgd_page(pgd_t pgd);
- #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
- #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
+diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
+index 41c011cb6070..8275858a434d 100644
+--- a/arch/powerpc/kernel/btext.c
++++ b/arch/powerpc/kernel/btext.c
+@@ -162,7 +162,7 @@ void btext_map(void)
+ 	offset = ((unsigned long) dispDeviceBase) - base;
+ 	size = dispDeviceRowBytes * dispDeviceRect[3] + offset
+ 		+ dispDeviceRect[0];
+-	vbase = __ioremap(base, size, _PAGE_NO_CACHE);
++	vbase = __ioremap(base, size, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
+ 	if (vbase == 0)
+ 		return;
+ 	logicalDisplayBase = vbase + offset;
+diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
+index 0f1997097960..ae1316106e2b 100644
+--- a/arch/powerpc/kernel/isa-bridge.c
++++ b/arch/powerpc/kernel/isa-bridge.c
+@@ -109,14 +109,14 @@ static void pci_process_ISA_OF_ranges(struct device_node *isa_node,
+ 		size = 0x10000;
  
-+static inline bool pte_user(pte_t pte)
-+{
-+	return !!(pte_val(pte) & _PAGE_USER);
-+}
-+
- #ifdef CONFIG_MEM_SOFT_DIRTY
- #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
- #else
-diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-index e04a6752b399..0071de76d776 100644
---- a/arch/powerpc/perf/callchain.c
-+++ b/arch/powerpc/perf/callchain.c
-@@ -137,7 +137,7 @@ static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
- 	offset = addr & ((1UL << shift) - 1);
+ 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+-		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
++		     size, pgprot_val(pgprot_noncached(__pgprot(0))));
+ 	return;
  
- 	pte = READ_ONCE(*ptep);
--	if (!pte_present(pte) || !(pte_val(pte) & _PAGE_USER))
-+	if (!pte_present(pte) || !pte_user(pte))
- 		goto err_out;
- 	pfn = pte_pfn(pte);
- 	if (!page_is_ram(pfn))
+ inval_range:
+ 	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
+ 	       "mapping 64k\n");
+ 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+-		     0x10000, _PAGE_NO_CACHE|_PAGE_GUARDED);
++		     0x10000, pgprot_val(pgprot_noncached(__pgprot(0))));
+ }
+ 
+ 
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 60bb187cb46a..41503d7d53a1 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -159,7 +159,7 @@ static int pcibios_map_phb_io_space(struct pci_controller *hose)
+ 
+ 	/* Establish the mapping */
+ 	if (__ioremap_at(phys_page, area->addr, size_page,
+-			 _PAGE_NO_CACHE | _PAGE_GUARDED) == NULL)
++			 pgprot_val(pgprot_noncached(__pgprot(0)))) == NULL)
+ 		return -ENOMEM;
+ 
+ 	/* Fixup hose IO resource */
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 9e0553eafcb7..ea60a24c17a6 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -253,7 +253,7 @@ void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
+ 
+ void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+ {
+-	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
++	unsigned long flags = pgprot_val(pgprot_noncached(__pgprot(0)));
+ 	void *caller = __builtin_return_address(0);
+ 
+ 	if (ppc_md.ioremap)
+@@ -263,7 +263,7 @@ void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+ 
+ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
+ {
+-	unsigned long flags = _PAGE_NO_CACHE;
++	unsigned long flags = pgprot_val(pgprot_noncached_wc(__pgprot(0)));
+ 	void *caller = __builtin_return_address(0);
+ 
+ 	if (ppc_md.ioremap)
+diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
+index 5e8a40f9739f..492b2575e0d2 100644
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -216,7 +216,7 @@ static int __init setup_areas(struct spu *spu)
+ 	}
+ 
+ 	spu->local_store = (__force void *)ioremap_prot(spu->local_store_phys,
+-		LS_SIZE, _PAGE_NO_CACHE);
++		LS_SIZE, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
+ 
+ 	if (!spu->local_store) {
+ 		pr_debug("%s:%d: ioremap local_store failed\n",
+diff --git a/drivers/pcmcia/electra_cf.c b/drivers/pcmcia/electra_cf.c
+index 61cf61ac621e..4d7bc3f4124a 100644
+--- a/drivers/pcmcia/electra_cf.c
++++ b/drivers/pcmcia/electra_cf.c
+@@ -228,7 +228,7 @@ static int electra_cf_probe(struct platform_device *ofdev)
+ 
+ 	if (!cf->mem_base || !cf->io_virt || !cf->gpio_base ||
+ 	    (__ioremap_at(io.start, cf->io_virt, cf->io_size,
+-		_PAGE_NO_CACHE | _PAGE_GUARDED) == NULL)) {
++		  pgprot_val(pgprot_noncached(__pgprot(0)))) == NULL)) {
+ 		dev_err(device, "can't ioremap ranges\n");
+ 		status = -ENOMEM;
+ 		goto fail1;
 -- 
 2.5.0
