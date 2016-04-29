@@ -1,38 +1,19 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-oi0-x22b.google.com (mail-oi0-x22b.google.com
- [IPv6:2607:f8b0:4003:c06::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail3-relais-sop.national.inria.fr
+ (mail3-relais-sop.national.inria.fr [192.134.164.104])
+ (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxQPl5pMkzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 06:33:15 +1000 (AEST)
-Received: by mail-oi0-x22b.google.com with SMTP id v145so98384644oie.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 13:33:15 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20160429202701.yijrohqdsurdxv2a@treble>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <f8816223098569a9b2f478caa5b4a7a0c27dda00.1461875890.git.jpoimboe@redhat.com>
- <CALCETrVjJdPCE92D6NY3B2+0STAdWL0pbNqCBfQUwn-sVWLD5w@mail.gmail.com>
- <20160429201139.pudoged2yathyo64@treble>
- <CALCETrW8G8qCHBkH7GFDTFuH82abJpbVq_-bDaRAdL7U0jLGNQ@mail.gmail.com>
- <20160429202701.yijrohqdsurdxv2a@treble>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 29 Apr 2016 13:32:53 -0700
-Message-ID: <CALCETrVKt8k11ewSOvGiCNsqgtD5cMaLix8Tf8JJakgodJeLyA@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>,
- Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- X86 ML <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Chris J Arges <chris.j.arges@canonical.com>, Andy Lutomirski <luto@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxQSj5MB9zDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 06:35:49 +1000 (AEST)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: linux-crypto@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>,
+ linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/5] Use dma_pool_zalloc
+Date: Fri, 29 Apr 2016 22:09:07 +0200
+Message-Id: <1461960552-7429-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,67 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 29, 2016 at 1:27 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> On Fri, Apr 29, 2016 at 01:19:23PM -0700, Andy Lutomirski wrote:
->> On Fri, Apr 29, 2016 at 1:11 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> > On Fri, Apr 29, 2016 at 11:06:53AM -0700, Andy Lutomirski wrote:
->> >> On Thu, Apr 28, 2016 at 1:44 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> >> > A preempted function might not have had a chance to save the frame
->> >> > pointer to the stack yet, which can result in its caller getting skipped
->> >> > on a stack trace.
->> >> >
->> >> > Add a flag to indicate when the task has been preempted so that stack
->> >> > dump code can determine whether the stack trace is reliable.
->> >>
->> >> I think I like this, but how do you handle the rather similar case in
->> >> which a task goes to sleep because it's waiting on IO that happened in
->> >> response to get_user, put_user, copy_from_user, etc?
->> >
->> > Hm, good question.  I was thinking that page faults had a dedicated
->> > stack, but now looking at the entry and traps code, that doesn't seem to
->> > be the case.
->> >
->> > Anyway I think it shouldn't be a problem if we make sure that any kernel
->> > function which might trigger a valid page fault (e.g.,
->> > copy_user_generic_string) do the proper frame pointer setup first.  Then
->> > the stack should still be reliable.
->> >
->> > In fact I might be able to teach objtool to enforce that: any function
->> > which uses an exception table should create a stack frame.
->> >
->> > Or alternatively, maybe set some kind of flag for page faults, similar
->> > to what I did with this patch.
->> >
->>
->> How about doing it the other way around: teach the unwinder to detect
->> when it hits a non-outermost entry (i.e. it lands in idtentry, etc)
->> and use some reasonable heuristic as to whether it's okay to keep
->> unwinding.  You should be able to handle preemption like that, too --
->> the unwind process will end up in an IRQ frame.
->
-> How exactly would the unwinder detect if a text address is in an
-> idtentry?  Maybe put all the idt entries in a special ELF section?
->
+Dma_pool_zalloc combines dma_pool_alloc and memset 0.  The semantic patch
+that makes this transformation is as follows: (http://coccinelle.lip6.fr/)
 
-Hmm.
+// <smpl>
+@@
+type T;
+T *d;
+expression e;
+statement S;
+@@
 
-What actually happens when you unwind all the way into the entry code?
- Don't you end up in something that isn't in an ELF function?  Can you
-detect that?  Ideally, the unwinder could actually detect that it's
-hit a pt_regs struct and report that.  If used for stack dumps, it
-could display some indication of this and then continue its unwinding
-by decoding the pt_regs.  If used for patching, it could take some
-other appropriate action.
+        d =
+-            dma_pool_alloc
++            dma_pool_zalloc
+             (...);
+        if (!d) S
+-       memset(d, 0, sizeof(T));
 
-I would have no objection to annotating all the pt_regs-style entry
-code, whether by putting it in a separate section or by making a table
-of addresses.
+@@
+expression d,e;
+statement S;
+@@
 
-There are a couple of nasty cases if NMI or MCE is involved but, as of
-4.6, outside of NMI, MCE, and vmalloc faults (ugh!), there should
-always be a complete pt_regs on the stack before interrupts get
-enabled for each entry.  Of course, finding the thing may be
-nontrivial in case other things were pushed.  I suppose we could try
-to rejigger the code so that rbp points to pt_regs or similar.
+        d =
+-            dma_pool_alloc
++            dma_pool_zalloc
+             (...);
+        if (!d) S
+-       memset(d, 0, sizeof(*d));
+// </smpl>
 
---Andy
+---
+
+ drivers/crypto/marvell/tdma.c    |    5 ++---
+ drivers/dma/fsldma.c             |    3 +--
+ drivers/dma/ioat/init.c          |    5 ++---
+ drivers/dma/mmp_pdma.c           |    3 +--
+ drivers/dma/xilinx/xilinx_vdma.c |    3 +--
+ 5 files changed, 7 insertions(+), 12 deletions(-)
