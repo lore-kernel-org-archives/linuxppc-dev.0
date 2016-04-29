@@ -1,21 +1,29 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-oi0-x229.google.com (mail-oi0-x229.google.com
- [IPv6:2607:f8b0:4003:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <luto@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxMBf5DsrzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 04:08:26 +1000 (AEST)
-Received: by mail-oi0-x229.google.com with SMTP id x19so127279466oix.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 11:08:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxPCz2ycQzDqB4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 05:39:43 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id E93E12026C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 19:39:37 +0000 (UTC)
+Received: from mail-oi0-f41.google.com (mail-oi0-f41.google.com
+ [209.85.218.41])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 30C6D2011E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 19:39:37 +0000 (UTC)
+Received: by mail-oi0-f41.google.com with SMTP id x201so130244323oif.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 12:39:37 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <6360fe5cab85aad424600518f645a9ac773cc72e.1461875890.git.jpoimboe@redhat.com>
+In-Reply-To: <9268772b31cc7bc4dc40c617e3baf45e07322145.1461875890.git.jpoimboe@redhat.com>
 References: <cover.1461875890.git.jpoimboe@redhat.com>
- <6360fe5cab85aad424600518f645a9ac773cc72e.1461875890.git.jpoimboe@redhat.com>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 29 Apr 2016 11:08:04 -0700
-Message-ID: <CALCETrWj8doini-xtONoRX0=OzQL=HFxnPKrEL_7kdoZZT-Uug@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 09/18] livepatch/x86: add TIF_PATCH_PENDING thread
- flag
+ <9268772b31cc7bc4dc40c617e3baf45e07322145.1461875890.git.jpoimboe@redhat.com>
+From: Andy Lutomirski <luto@kernel.org>
+Date: Fri, 29 Apr 2016 12:39:16 -0700
+Message-ID: <CALCETrVYzPFjJwZp_PbscGkQDx-K-p5sAt37oz+FoxGx8hSM=A@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 03/18] x86/asm/head: standardize the bottom of the
+ stack for idle tasks
 To: Josh Poimboeuf <jpoimboe@redhat.com>
 Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Miroslav Benes <mbenes@suse.cz>,
@@ -40,16 +48,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Apr 28, 2016 at 1:44 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
-> per-task consistency model for x86_64.  The bit getting set indicates
-> the thread has a pending patch which needs to be applied when the thread
-> exits the kernel.
+> Thanks to all the recent x86 entry code refactoring, most tasks' kernel
+> stacks start at the same offset right above their saved pt_regs,
+> regardless of which syscall was used to enter the kernel.  That creates
+> a nice convention which makes it straightforward to identify the
+> "bottom" of the stack, which can be useful for stack walking code which
+> needs to verify the stack is sane.
 >
-> The bit is placed in the least-significant word of the thread_info flags
+> However there are still a few types of tasks which don't yet follow that
+> convention:
+>
+> 1) CPU idle tasks, aka the "swapper" tasks
+>
+> 2) freshly forked TIF_FORK tasks which don't have a stack at all
+>
+> Make the idle tasks conform to the new stack bottom convention by
+> starting their stack at a sizeof(pt_regs) offset from the end of the
+> stack page.
+>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+>  arch/x86/kernel/head_64.S | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+> index 6dbd2c0..0b12311 100644
+> --- a/arch/x86/kernel/head_64.S
+> +++ b/arch/x86/kernel/head_64.S
+> @@ -296,8 +296,9 @@ ENTRY(start_cpu)
+>          *      REX.W + FF /5 JMP m16:64 Jump far, absolute indirect,
+>          *              address given in m16:64.
+>          */
+> -       movq    initial_code(%rip),%rax
+> -       pushq   $0              # fake return address to stop unwinder
+> +       call    1f              # put return address on stack for unwinder
+> +1:     xorq    %rbp, %rbp      # clear frame pointer
+> +       movq    initial_code(%rip), %rax
+>         pushq   $__KERNEL_CS    # set correct cs
+>         pushq   %rax            # target address in negative space
+>         lretq
+> @@ -325,7 +326,7 @@ ENDPROC(start_cpu0)
+>         GLOBAL(initial_gs)
+>         .quad   INIT_PER_CPU_VAR(irq_stack_union)
+>         GLOBAL(initial_stack)
+> -       .quad  init_thread_union+THREAD_SIZE-8
+> +       .quad  init_thread_union + THREAD_SIZE - SIZEOF_PTREGS
 
-NAK to that part.
-
-The least-significant word thing is a huge hack that has gotten out of
-control.  Please add the thing explicitly to all relevant masks.
+As long as you're doing this, could you also set orig_ax to -1?  I
+remember running into some oddities resulting from orig_ax containing
+garbage at some point.
 
 --Andy
