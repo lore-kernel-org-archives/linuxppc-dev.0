@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxw19PKzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxm00g3zDqBn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:52 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 20/70] powerpc/mm/hash: Add support for Power9 Hash
-Date: Fri, 29 Apr 2016 23:25:43 +1000
-Message-Id: <1461936393-10131-20-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 11/70] powerpc/mm: Replace _PAGE_USER with _PAGE_PRIVILEGED
+Date: Fri, 29 Apr 2016 23:25:34 +1000
+Message-Id: <1461936393-10131-11-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,243 +24,356 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-PowerISA 3.0 adds a parition table indexed by LPID. Parition table
-allows us to specify the MMU model that will be used for guest and host
-translation.
+_PAGE_PRIVILEGED means the page can be accessed only by the kernel. This
+is done to keep pte bits similar to PowerISA 3.0 Radix PTE format. User
+pages are now marked by clearing _PAGE_PRIVILEGED bit.
 
-This patch adds support with SLB based hash model (UPRT = 0). What is
-required with this model is to support the new hash page table entry
-format and also setup partition table such that we use hash table for
-address translation.
+Previously we allowed the kernel to have a privileged page in the lower
+address range (USER_REGION). With this patch such access is denied.
 
-We don't have segment table support yet.
+We also prevent a kernel access to a non-privileged page in higher
+address range (ie, REGION_ID != 0).
 
-In order to make sure we don't load KVM module on Power9 (since we don't
-have kvm support yet) this patch also disables KVM on Power9.
+Both the above access scenarios should never happen.
 
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Jeremy Kerr <jk@ozlabs.org>
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 13 +++++++--
- arch/powerpc/kvm/book3s_hv.c                  |  6 ++++
- arch/powerpc/kvm/book3s_pr.c                  |  6 +++-
- arch/powerpc/mm/hash_native_64.c              | 11 ++++++-
- arch/powerpc/mm/hash_utils_64.c               | 42 +++++++++++++++++++++++++--
- arch/powerpc/mm/pgtable_64.c                  |  7 +++++
- arch/powerpc/platforms/ps3/htab.c             |  2 +-
- arch/powerpc/platforms/pseries/lpar.c         |  2 +-
- 8 files changed, 81 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h    | 34 ++++++++++++++--------------
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 18 ++++++++++++++-
+ arch/powerpc/mm/hash64_4k.c                  |  2 +-
+ arch/powerpc/mm/hash64_64k.c                 |  4 ++--
+ arch/powerpc/mm/hash_utils_64.c              | 16 ++++++++-----
+ arch/powerpc/mm/hugepage-hash64.c            |  2 +-
+ arch/powerpc/mm/hugetlbpage-hash64.c         |  3 ++-
+ arch/powerpc/mm/hugetlbpage.c                |  2 +-
+ arch/powerpc/mm/pgtable.c                    | 15 ++++++++++--
+ arch/powerpc/mm/pgtable_64.c                 | 15 +++++++++---
+ arch/powerpc/platforms/cell/spufs/fault.c    |  2 +-
+ drivers/misc/cxl/fault.c                     |  4 +++-
+ 12 files changed, 80 insertions(+), 37 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index ce73736b42db..843b5d839904 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -78,6 +78,10 @@
- #define HPTE_V_SECONDARY	ASM_CONST(0x0000000000000002)
- #define HPTE_V_VALID		ASM_CONST(0x0000000000000001)
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index fb76f9cf49c9..5e7e74d30eb9 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -20,7 +20,7 @@
+ #define _PAGE_READ		0x00004	/* read access allowed */
+ #define _PAGE_RW		(_PAGE_READ | _PAGE_WRITE)
+ #define _PAGE_RWX		(_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
+-#define _PAGE_USER		0x00008 /* page may be accessed by userspace */
++#define _PAGE_PRIVILEGED	0x00008 /* kernel access only */
+ #define _PAGE_GUARDED		0x00010 /* G: guarded (side-effect) page */
+ /* M (memory coherence) is always set in the HPTE, so we don't need it here */
+ #define _PAGE_COHERENT		0x0
+@@ -114,10 +114,13 @@
+ #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+ #endif /* CONFIG_PPC_MM_SLICES */
  
+-/* No separate kernel read-only */
+-#define _PAGE_KERNEL_RW		(_PAGE_RW | _PAGE_DIRTY) /* user access blocked by key */
 +/*
-+ * ISA 3.0 have a different HPTE format.
++ * No separate kernel read-only, user access blocked by key
 + */
-+#define HPTE_R_3_0_SSIZE_SHIFT	58
- #define HPTE_R_PP0		ASM_CONST(0x8000000000000000)
- #define HPTE_R_TS		ASM_CONST(0x4000000000000000)
- #define HPTE_R_KEY_HI		ASM_CONST(0x3000000000000000)
-@@ -224,7 +228,8 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
- 	 */
- 	v = (vpn >> (23 - VPN_SHIFT)) & ~(mmu_psize_defs[psize].avpnm);
- 	v <<= HPTE_V_AVPN_SHIFT;
--	v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
-+	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+		v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
- 	return v;
- }
++#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_RW | _PAGE_DIRTY)
+ #define _PAGE_KERNEL_RO		 _PAGE_KERNEL_RW
+-#define _PAGE_KERNEL_RWX	(_PAGE_DIRTY | _PAGE_RW | _PAGE_EXEC)
++#define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | \
++				 _PAGE_RW | _PAGE_EXEC)
  
-@@ -248,8 +253,12 @@ static inline unsigned long hpte_encode_v(unsigned long vpn, int base_psize,
-  * aligned for the requested page size
+ /* Strong Access Ordering */
+ #define _PAGE_SAO		(_PAGE_WRITETHRU | _PAGE_NO_CACHE | _PAGE_COHERENT)
+@@ -147,7 +150,7 @@
   */
- static inline unsigned long hpte_encode_r(unsigned long pa, int base_psize,
--					  int actual_psize)
-+					  int actual_psize, int ssize)
+ #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_COHERENT | _PAGE_NO_CACHE | \
+ 			 _PAGE_WRITETHRU | _PAGE_4K_PFN | \
+-			 _PAGE_USER | _PAGE_ACCESSED |  _PAGE_READ |\
++			 _PAGE_PRIVILEGED | _PAGE_ACCESSED |  _PAGE_READ |\
+ 			 _PAGE_WRITE |  _PAGE_DIRTY | _PAGE_EXEC | \
+ 			 _PAGE_SOFT_DIRTY)
+ /*
+@@ -169,16 +172,13 @@
+  *
+  * Note due to the way vm flags are laid out, the bits are XWR
+  */
+-#define PAGE_NONE	__pgprot(_PAGE_BASE)
+-#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
+-				 _PAGE_EXEC)
+-#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
+-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
+-				 _PAGE_EXEC)
+-#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ)
+-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_READ| \
+-				 _PAGE_EXEC)
++#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
++#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
++#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_RW | _PAGE_EXEC)
++#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_READ)
++#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
++#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
++#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
+ 
+ #define __P000	PAGE_NONE
+ #define __P001	PAGE_READONLY
+@@ -419,8 +419,8 @@ static inline pte_t pte_clear_soft_dirty(pte_t pte)
+  */
+ static inline int pte_protnone(pte_t pte)
  {
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		pa |= ((unsigned long) ssize) << HPTE_R_3_0_SSIZE_SHIFT;
-+
- 	/* A 4K page needs no special encoding */
- 	if (actual_psize == MMU_PAGE_4K)
- 		return pa & HPTE_R_RPN;
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 84fb4fcfaa41..4cd37b498fbd 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -3271,6 +3271,12 @@ static int kvmppc_core_check_processor_compat_hv(void)
- 	if (!cpu_has_feature(CPU_FTR_HVMODE) ||
- 	    !cpu_has_feature(CPU_FTR_ARCH_206))
- 		return -EIO;
-+	/*
-+	 * Disable KVM for Power9, untill the required bits merged.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		return -EIO;
-+
- 	return 0;
+-	return (pte_val(pte) &
+-		(_PAGE_PRESENT | _PAGE_USER)) == _PAGE_PRESENT;
++	return (pte_val(pte) & (_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
++		(_PAGE_PRESENT | _PAGE_PRIVILEGED);
  }
+ #endif /* CONFIG_NUMA_BALANCING */
  
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 95bceca8f40e..ffbaf40b7f31 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1683,7 +1683,11 @@ static void kvmppc_core_destroy_vm_pr(struct kvm *kvm)
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 60e84260a07d..b609729e0d76 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -187,7 +187,7 @@ extern struct page *pgd_page(pgd_t pgd);
  
- static int kvmppc_core_check_processor_compat_pr(void)
+ static inline bool pte_user(pte_t pte)
  {
--	/* we are always compatible */
-+	/*
-+	 * Disable KVM for Power9 untill the required bits merged.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		return -EIO;
- 	return 0;
+-	return !!(pte_val(pte) & _PAGE_USER);
++	return !(pte_val(pte) & _PAGE_PRIVILEGED);
  }
  
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 8eaac81347fd..d873f6507f72 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -221,7 +221,7 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 		return -1;
- 
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
-+	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED)) {
- 		DBG_LOW(" i=%x hpte_v=%016lx, hpte_r=%016lx\n",
-@@ -719,6 +719,12 @@ static void native_flush_hash_range(unsigned long number, int local)
- 	local_irq_restore(flags);
+ #ifdef CONFIG_MEM_SOFT_DIRTY
+@@ -211,6 +211,22 @@ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
  }
+ #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
  
-+static int native_update_partition_table(u64 patb1)
++static inline bool check_pte_access(unsigned long access, unsigned long ptev)
 +{
-+	partition_tb->patb1 = cpu_to_be64(patb1);
-+	return 0;
++	/*
++	 * This check for _PAGE_RWX and _PAGE_PRESENT bits
++	 */
++	if (access & ~ptev)
++		return false;
++	/*
++	 * This check for access to privilege space
++	 */
++	if ((access & _PAGE_PRIVILEGED) != (ptev & _PAGE_PRIVILEGED))
++		return false;
++
++	return true;
 +}
 +
- void __init hpte_init_native(void)
- {
- 	ppc_md.hpte_invalidate	= native_hpte_invalidate;
-@@ -729,4 +735,7 @@ void __init hpte_init_native(void)
- 	ppc_md.hpte_clear_all	= native_hpte_clear;
- 	ppc_md.flush_hash_range = native_flush_hash_range;
- 	ppc_md.hugepage_invalidate   = native_hugepage_invalidate;
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		ppc_md.update_partition_table = native_update_partition_table;
- }
+ void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+ void pgtable_cache_init(void);
+ 
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+index 491b7d137cd8..529e49204f6b 100644
+--- a/arch/powerpc/mm/hash64_4k.c
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -37,7 +37,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
+ 		/*
+ 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
+diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+index 2d3472173d79..e7782862362b 100644
+--- a/arch/powerpc/mm/hash64_64k.c
++++ b/arch/powerpc/mm/hash64_64k.c
+@@ -69,7 +69,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
+ 		/*
+ 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
+@@ -237,7 +237,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
+ 		/*
+ 		 * Check if PTE has the cache-inhibit bit set
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index eb928d86ce01..f76a033d1e16 100644
+index 36e00371ba5a..dc0f6a00ccbd 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -676,6 +676,41 @@ int remove_section_mapping(unsigned long start, unsigned long end)
- }
- #endif /* CONFIG_MEMORY_HOTPLUG */
+@@ -174,7 +174,7 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	 * User area is mapped with PP=0x2 for read/write
+ 	 * or PP=0x3 for read-only (including writeable but clean pages).
+ 	 */
+-	if (pteflags & _PAGE_USER) {
++	if (!(pteflags & _PAGE_PRIVILEGED)) {
+ 		if (pteflags & _PAGE_RWX)
+ 			rflags |= 0x2;
+ 		if (!((pteflags & _PAGE_WRITE) && (pteflags & _PAGE_DIRTY)))
+@@ -1090,7 +1090,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
+ 	/* Pre-check access permissions (will be re-checked atomically
+ 	 * in __hash_page_XX but this pre-check is a fast path
+ 	 */
+-	if (access & ~pte_val(*ptep)) {
++	if (!check_pte_access(access, pte_val(*ptep))) {
+ 		DBG_LOW(" no access !\n");
+ 		rc = 1;
+ 		goto bail;
+@@ -1228,12 +1228,16 @@ int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
+ 	if (dsisr & DSISR_ISSTORE)
+ 		access |= _PAGE_WRITE;
+ 	/*
+-	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
+-	 * accessing a userspace segment (even from the kernel). We assume
+-	 * kernel addresses always have the high bit set.
++	 * We set _PAGE_PRIVILEGED only when
++	 * kernel mode access kernel space.
++	 *
++	 * _PAGE_PRIVILEGED is NOT set
++	 * 1) when kernel mode access user space
++	 * 2) user space access kernel space.
+ 	 */
++	access |= _PAGE_PRIVILEGED;
+ 	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
+-		access |= _PAGE_USER;
++		access &= ~_PAGE_PRIVILEGED;
  
-+static void __init hash_init_partition_table(phys_addr_t hash_table,
-+					     unsigned long pteg_count)
-+{
-+	unsigned long ps_field;
-+	unsigned long htab_size;
-+	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
+ 	if (trap == 0x400)
+ 		access |= _PAGE_EXEC;
+diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
+index b4b6668d1b24..6cb6bdd254bb 100644
+--- a/arch/powerpc/mm/hugepage-hash64.c
++++ b/arch/powerpc/mm/hugepage-hash64.c
+@@ -40,7 +40,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pmd & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PMD permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pmd))
++		if (unlikely(!check_pte_access(access, old_pmd)))
+ 			return 1;
+ 		/*
+ 		 * Try to lock the PTE, add ACCESSED and DIRTY if it was
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index cdca743cdaf1..bf9078440256 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -50,8 +50,9 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		if (unlikely(old_pte & _PAGE_BUSY))
+ 			return 0;
+ 		/* If PTE permissions don't match, take page fault */
+-		if (unlikely(access & ~old_pte))
++		if (unlikely(!check_pte_access(access, old_pte)))
+ 			return 1;
 +
-+	/*
-+	 * slb llp encoding for the page size used in VPM real mode.
-+	 * We can ignore that for lpid 0
-+	 */
-+	ps_field = 0;
-+	htab_size =  __ilog2(pteg_count) - 11;
-+
-+	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
-+	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
-+						MEMBLOCK_ALLOC_ANYWHERE));
-+
-+	/* Initialize the Partition Table with no entries */
-+	memset((void *)partition_tb, 0, patb_size);
-+	partition_tb->patb0 = cpu_to_be64(ps_field | hash_table | htab_size);
-+	/*
-+	 * FIXME!! This should be done via update_partition table
-+	 * For now UPRT is 0 for us.
-+	 */
-+	partition_tb->patb1 = 0;
-+	DBG("Partition table %p\n", partition_tb);
-+	/*
-+	 * update partition table control register,
-+	 * 64 K size.
-+	 */
-+	mtspr(SPRN_PTCR, __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+
-+}
-+
- static void __init htab_initialize(void)
+ 		/* Try to lock the PTE, add ACCESSED and DIRTY if it was
+ 		 * a write access */
+ 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 0bf269b00de9..6d910960217e 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -1003,7 +1003,7 @@ int gup_hugepte(pte_t *ptep, unsigned long sz, unsigned long addr,
+ 		end = pte_end;
+ 
+ 	pte = READ_ONCE(*ptep);
+-	mask = _PAGE_PRESENT | _PAGE_USER | _PAGE_READ;
++	mask = _PAGE_PRESENT | _PAGE_READ;
+ 	if (write)
+ 		mask |= _PAGE_WRITE;
+ 
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index ef7b922c655c..125fb4b54445 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -43,9 +43,20 @@ static inline int is_exec_fault(void)
+  */
+ static inline int pte_looks_normal(pte_t pte)
  {
- 	unsigned long table;
-@@ -744,8 +779,11 @@ static void __init htab_initialize(void)
- 		/* Initialize the HPT with no entries */
- 		memset((void *)table, 0, htab_size_bytes);
++
++#if defined(CONFIG_PPC_BOOK3S_64)
++	if ((pte_val(pte) &
++	     (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE)) ==
++	    _PAGE_PRESENT) {
++		if (pte_user(pte))
++			return 1;
++	}
++	return 0;
++#else
+ 	return (pte_val(pte) &
+-	    (_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
+-	    (_PAGE_PRESENT | _PAGE_USER);
++		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER)) ==
++		(_PAGE_PRESENT | _PAGE_USER);
++#endif
+ }
  
--		/* Set SDR1 */
--		mtspr(SPRN_SDR1, _SDR1);
-+		if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+			/* Set SDR1 */
-+			mtspr(SPRN_SDR1, _SDR1);
-+		else
-+			hash_init_partition_table(table, pteg_count);
- 	}
- 
- 	prot = pgprot_val(PAGE_KERNEL);
+ static struct page *maybe_pte_to_page(pte_t pte)
 diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 177e4893438c..8f3b2942fba8 100644
+index 16bc751f10df..603db71ff21d 100644
 --- a/arch/powerpc/mm/pgtable_64.c
 +++ b/arch/powerpc/mm/pgtable_64.c
-@@ -69,6 +69,13 @@
- #endif
- #endif
+@@ -280,8 +280,17 @@ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+ 	if (flags & _PAGE_WRITE)
+ 		flags |= _PAGE_DIRTY;
  
-+#ifdef CONFIG_PPC_BOOK3S_64
-+/*
-+ * partition table and process table for ISA 3.0
-+ */
-+struct prtb_entry *process_tb;
-+struct patb_entry *partition_tb;
+-	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+-	flags &= ~(_PAGE_USER | _PAGE_EXEC);
++	/* we don't want to let _PAGE_EXEC leak out */
++	flags &= ~_PAGE_EXEC;
++	/*
++	 * Force kernel mapping.
++	 */
++#if defined(CONFIG_PPC_BOOK3S_64)
++	flags |= _PAGE_PRIVILEGED;
++#else
++	flags &= ~_PAGE_USER;
 +#endif
- unsigned long ioremap_bot = IOREMAP_BASE;
++
  
- #ifdef CONFIG_PPC_MMU_NOHASH
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index 2f95d33cf34a..c9a3e677192a 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -63,7 +63,7 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 	vflags &= ~HPTE_V_SECONDARY;
+ #ifdef _PAGE_BAP_SR
+ 	/* _PAGE_USER contains _PAGE_BAP_SR on BookE using the new PTE format
+@@ -664,7 +673,7 @@ void pmdp_huge_split_prepare(struct vm_area_struct *vma,
+ 	 * the translation is still valid, because we will withdraw
+ 	 * pgtable_t after this.
+ 	 */
+-	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_USER, 0);
++	pmd_hugepage_update(vma->vm_mm, address, pmdp, 0, _PAGE_PRIVILEGED);
+ }
  
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize) | rflags;
-+	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize, apsize, ssize) | rflags;
  
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
+diff --git a/arch/powerpc/platforms/cell/spufs/fault.c b/arch/powerpc/platforms/cell/spufs/fault.c
+index c3a3bf1745b7..e29e4d5afa2d 100644
+--- a/arch/powerpc/platforms/cell/spufs/fault.c
++++ b/arch/powerpc/platforms/cell/spufs/fault.c
+@@ -141,7 +141,7 @@ int spufs_handle_class1(struct spu_context *ctx)
+ 	/* we must not hold the lock when entering copro_handle_mm_fault */
+ 	spu_release(ctx);
  
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 0d4608990702..e4ceba2b1551 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -139,7 +139,7 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 			 hpte_group, vpn,  pa, rflags, vflags, psize);
+-	access = (_PAGE_PRESENT | _PAGE_READ | _PAGE_USER);
++	access = (_PAGE_PRESENT | _PAGE_READ);
+ 	access |= (dsisr & MFC_DSISR_ACCESS_PUT) ? _PAGE_WRITE : 0UL;
+ 	local_irq_save(flags);
+ 	ret = hash_page(ea, access, 0x300, dsisr);
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index 0feeacedcef1..377e650a2a1d 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -152,8 +152,10 @@ static void cxl_handle_page_fault(struct cxl_context *ctx,
+ 	access = _PAGE_PRESENT | _PAGE_READ;
+ 	if (dsisr & CXL_PSL_DSISR_An_S)
+ 		access |= _PAGE_WRITE;
++
++	access |= _PAGE_PRIVILEGED;
+ 	if ((!ctx->kernel) || (REGION_ID(dar) == USER_REGION_ID))
+-		access |= _PAGE_USER;
++		access &= ~_PAGE_PRIVILEGED;
  
- 	hpte_v = hpte_encode_v(vpn, psize, apsize, ssize) | vflags | HPTE_V_VALID;
--	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
-+	hpte_r = hpte_encode_r(pa, psize, apsize, ssize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
- 		pr_devel(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
+ 	if (dsisr & DSISR_NOHPTE)
+ 		inv_flags |= HPTE_NOHPTE_UPDATE;
 -- 
 2.5.0
