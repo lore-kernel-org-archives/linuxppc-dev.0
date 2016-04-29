@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyF5YBZzDqBS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyH1LPPzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:19 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 39/70] powerpc/mm/radix: Add mmu context handling callback
- for radix
-Date: Fri, 29 Apr 2016 23:26:02 +1000
-Message-Id: <1461936393-10131-39-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 41/70] powerpc/mm: Hash abstraction for tlbflush routines
+Date: Fri, 29 Apr 2016 23:26:04 +1000
+Message-Id: <1461936393-10131-41-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,97 +27,160 @@ From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/mmu_context.h |  4 ++++
- arch/powerpc/mm/mmu_context_hash64.c   | 43 +++++++++++++++++++++++++++-------
- 2 files changed, 39 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/book3s/64/tlbflush-hash.h | 28 ++++++-----
+ arch/powerpc/include/asm/book3s/64/tlbflush.h      | 56 ++++++++++++++++++++++
+ arch/powerpc/include/asm/tlbflush.h                |  2 +-
+ arch/powerpc/mm/tlb_hash64.c                       |  2 +-
+ 4 files changed, 73 insertions(+), 15 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/tlbflush.h
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 4e2a29443384..9d2cd0c36ec2 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -37,10 +37,14 @@ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
- extern void set_context(unsigned long id, pgd_t *pgd);
- 
- #ifdef CONFIG_PPC_BOOK3S_64
-+extern void radix__switch_mmu_context(struct mm_struct *prev,
-+				     struct mm_struct *next);
- static inline void switch_mmu_context(struct mm_struct *prev,
- 				      struct mm_struct *next,
- 				      struct task_struct *tsk)
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+index 1b753f96b374..cc092ea0387c 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+@@ -52,40 +52,42 @@ extern void flush_hash_range(unsigned long number, int local);
+ extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+ 				pmd_t *pmdp, unsigned int psize, int ssize,
+ 				unsigned long flags);
+-
+-static inline void local_flush_tlb_mm(struct mm_struct *mm)
++static inline void hash__local_flush_tlb_mm(struct mm_struct *mm)
  {
-+	if (radix_enabled())
-+		return radix__switch_mmu_context(prev, next);
- 	return switch_slb(tsk, next);
  }
  
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 9ca6fe16cb29..b5288b460bef 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -58,6 +58,17 @@ again:
- 	return index;
- }
- EXPORT_SYMBOL_GPL(__init_new_context);
-+static int radix__init_new_context(struct mm_struct *mm, int index)
-+{
-+	unsigned long rts_field;
-+
-+	/*
-+	 * set the process table entry,
-+	 */
-+	rts_field = 3ull << PPC_BITLSHIFT(2);
-+	process_tb[index].prtb0 = cpu_to_be64(rts_field | __pa(mm->pgd) | RADIX_PGD_INDEX_SIZE);
-+	return 0;
-+}
- 
- int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+-static inline void flush_tlb_mm(struct mm_struct *mm)
++static inline void hash__flush_tlb_mm(struct mm_struct *mm)
  {
-@@ -67,13 +78,18 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- 	if (index < 0)
- 		return index;
- 
--	/* The old code would re-promote on fork, we don't do that
--	 * when using slices as it could cause problem promoting slices
--	 * that have been forced down to 4K
--	 */
--	if (slice_mm_new_context(mm))
--		slice_set_user_psize(mm, mmu_virtual_psize);
--	subpage_prot_init_new_context(mm);
-+	if (radix_enabled()) {
-+		radix__init_new_context(mm, index);
-+	} else {
-+
-+		/* The old code would re-promote on fork, we don't do that
-+		 * when using slices as it could cause problem promoting slices
-+		 * that have been forced down to 4K
-+		 */
-+		if (slice_mm_new_context(mm))
-+			slice_set_user_psize(mm, mmu_virtual_psize);
-+		subpage_prot_init_new_context(mm);
-+	}
- 	mm->context.id = index;
- #ifdef CONFIG_PPC_ICSWX
- 	mm->context.cop_lockp = kmalloc(sizeof(spinlock_t), GFP_KERNEL);
-@@ -144,8 +160,19 @@ void destroy_context(struct mm_struct *mm)
- 	mm->context.cop_lockp = NULL;
- #endif /* CONFIG_PPC_ICSWX */
- 
-+	if (radix_enabled())
-+		process_tb[mm->context.id].prtb1 = 0;
-+	else
-+		subpage_prot_free(mm);
- 	destroy_pagetable_page(mm);
- 	__destroy_context(mm->context.id);
--	subpage_prot_free(mm);
- 	mm->context.id = MMU_NO_CONTEXT;
  }
+ 
+-static inline void local_flush_tlb_page(struct vm_area_struct *vma,
+-					unsigned long vmaddr)
++static inline void hash__local_flush_tlb_page(struct vm_area_struct *vma,
++					  unsigned long vmaddr)
+ {
+ }
+ 
+-static inline void flush_tlb_page(struct vm_area_struct *vma,
+-				  unsigned long vmaddr)
++static inline void hash__flush_tlb_page(struct vm_area_struct *vma,
++				    unsigned long vmaddr)
+ {
+ }
+ 
+-static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
+-					 unsigned long vmaddr)
++static inline void hash__flush_tlb_page_nohash(struct vm_area_struct *vma,
++					   unsigned long vmaddr)
+ {
+ }
+ 
+-static inline void flush_tlb_range(struct vm_area_struct *vma,
+-				   unsigned long start, unsigned long end)
++static inline void hash__flush_tlb_range(struct vm_area_struct *vma,
++				     unsigned long start, unsigned long end)
+ {
+ }
+ 
+-static inline void flush_tlb_kernel_range(unsigned long start,
+-					  unsigned long end)
++static inline void hash__flush_tlb_kernel_range(unsigned long start,
++					    unsigned long end)
+ {
+ }
+ 
 +
-+#ifdef CONFIG_PPC_RADIX_MMU
-+void radix__switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
++struct mmu_gather;
++extern void hash__tlb_flush(struct mmu_gather *tlb);
+ /* Private function for use by PCI IO mapping code */
+ extern void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 				     unsigned long end);
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+new file mode 100644
+index 000000000000..476ea24b0313
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -0,0 +1,56 @@
++#ifndef _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H
++#define _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H
++
++#include <asm/book3s/64/tlbflush-hash.h>
++
++static inline void flush_tlb_range(struct vm_area_struct *vma,
++				   unsigned long start, unsigned long end)
 +{
-+	mtspr(SPRN_PID, next->context.id);
-+	asm volatile("isync": : :"memory");
++	return hash__flush_tlb_range(vma, start, end);
 +}
-+#endif
++
++static inline void flush_tlb_kernel_range(unsigned long start,
++					  unsigned long end)
++{
++	return hash__flush_tlb_kernel_range(start, end);
++}
++
++static inline void local_flush_tlb_mm(struct mm_struct *mm)
++{
++	return hash__local_flush_tlb_mm(mm);
++}
++
++static inline void local_flush_tlb_page(struct vm_area_struct *vma,
++					unsigned long vmaddr)
++{
++	return hash__local_flush_tlb_page(vma, vmaddr);
++}
++
++static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
++					 unsigned long vmaddr)
++{
++	return hash__flush_tlb_page_nohash(vma, vmaddr);
++}
++
++static inline void tlb_flush(struct mmu_gather *tlb)
++{
++	return hash__tlb_flush(tlb);
++}
++
++#ifdef CONFIG_SMP
++static inline void flush_tlb_mm(struct mm_struct *mm)
++{
++	return hash__flush_tlb_mm(mm);
++}
++
++static inline void flush_tlb_page(struct vm_area_struct *vma,
++				  unsigned long vmaddr)
++{
++	return hash__flush_tlb_page(vma, vmaddr);
++}
++#else
++#define flush_tlb_mm(mm)		local_flush_tlb_mm(mm)
++#define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
++#endif /* CONFIG_SMP */
++
++#endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H */
+diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
+index 9f77f85e3e99..2fc4331c5bc5 100644
+--- a/arch/powerpc/include/asm/tlbflush.h
++++ b/arch/powerpc/include/asm/tlbflush.h
+@@ -78,7 +78,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
+ }
+ 
+ #elif defined(CONFIG_PPC_STD_MMU_64)
+-#include <asm/book3s/64/tlbflush-hash.h>
++#include <asm/book3s/64/tlbflush.h>
+ #else
+ #error Unsupported MMU type
+ #endif
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index 38497cf5e31b..4517aa43a8b1 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -155,7 +155,7 @@ void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
+ 	batch->index = 0;
+ }
+ 
+-void tlb_flush(struct mmu_gather *tlb)
++void hash__tlb_flush(struct mmu_gather *tlb)
+ {
+ 	struct ppc64_tlb_batch *tlbbatch = &get_cpu_var(ppc64_tlb_batch);
+ 
 -- 
 2.5.0
