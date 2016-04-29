@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxs1BpTzDqBV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxt03byzDqBV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:58 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 17/70] powerpc/mm: Use generic version of
- ptep_clear_flush_young()
-Date: Fri, 29 Apr 2016 23:25:40 +1000
-Message-Id: <1461936393-10131-17-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 18/70] powerpc/mm: Move radix/hash common data structures
+ to book3s64 headers
+Date: Fri, 29 Apr 2016 23:25:41 +1000
+Message-Id: <1461936393-10131-18-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,56 +25,230 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-The radix variant is going to require a flush_tlb_range(). With
-flush_tlb_range() added, ptep_clear_flush_young() is the same as the
-generic version. So drop the powerpc specific variant.
+Start moving code that is generic between radix and hash to book3s64
+specific headers from the book3s64 hash specific one.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h | 23 +++++++----------------
- 1 file changed, 7 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |  6 +--
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h | 61 ++---------------------
+ arch/powerpc/include/asm/book3s/64/mmu.h      | 72 +++++++++++++++++++++++++++
+ arch/powerpc/include/asm/mmu.h                | 11 ++--
+ 4 files changed, 85 insertions(+), 65 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/mmu.h
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index eee951fd6a33..4fffc963ac14 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -275,6 +275,13 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 	return old;
- }
+diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+index 16f513e5cbd7..b82e063494dd 100644
+--- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_MMU_HASH32_H_
+-#define _ASM_POWERPC_MMU_HASH32_H_
++#ifndef _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_
++#define _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_
+ /*
+  * 32-bit hash table MMU support
+  */
+@@ -90,4 +90,4 @@ typedef struct {
+ #define mmu_virtual_psize	MMU_PAGE_4K
+ #define mmu_linear_psize	MMU_PAGE_256M
  
-+/*
-+ * We currently remove entries from the hashtable regardless of whether
-+ * the entry was young or dirty.
-+ *
-+ * We should be more intelligent about this but for the moment we override
-+ * these functions and force a tlb flush unconditionally
-+ */
- static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- 					      unsigned long addr, pte_t *ptep)
- {
-@@ -313,22 +320,6 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
- }
+-#endif /* _ASM_POWERPC_MMU_HASH32_H_ */
++#endif /* _ASM_POWERPC_BOOK3S_32_MMU_HASH_H_ */
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index 0cea4807e26f..ce73736b42db 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_MMU_HASH64_H_
+-#define _ASM_POWERPC_MMU_HASH64_H_
++#ifndef _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_
++#define _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_
+ /*
+  * PowerPC64 memory management structures
+  *
+@@ -127,24 +127,6 @@ extern struct hash_pte *htab_address;
+ extern unsigned long htab_size_bytes;
+ extern unsigned long htab_hash_mask;
  
 -/*
-- * We currently remove entries from the hashtable regardless of whether
-- * the entry was young or dirty. The generic routines only flush if the
-- * entry was young or dirty which is not good enough.
+- * Page size definition
 - *
-- * We should be more intelligent about this but for the moment we override
-- * these functions and force a tlb flush unconditionally
+- *    shift : is the "PAGE_SHIFT" value for that page size
+- *    sllp  : is a bit mask with the value of SLB L || LP to be or'ed
+- *            directly to a slbmte "vsid" value
+- *    penc  : is the HPTE encoding mask for the "LP" field:
+- *
 - */
--#define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
--#define ptep_clear_flush_young(__vma, __address, __ptep)		\
--({									\
--	int __young = __ptep_test_and_clear_young((__vma)->vm_mm, __address, \
--						  __ptep);		\
--	__young;							\
--})
+-struct mmu_psize_def
+-{
+-	unsigned int	shift;	/* number of bits */
+-	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
+-	unsigned int	tlbiel;	/* tlbiel supported for that page size */
+-	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
+-	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
+-};
+-extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+ 
+ static inline int shift_to_mmu_psize(unsigned int shift)
+ {
+@@ -210,11 +192,6 @@ static inline int segment_shift(int ssize)
+ /*
+  * The current system page and segment sizes
+  */
+-extern int mmu_linear_psize;
+-extern int mmu_virtual_psize;
+-extern int mmu_vmalloc_psize;
+-extern int mmu_vmemmap_psize;
+-extern int mmu_io_psize;
+ extern int mmu_kernel_ssize;
+ extern int mmu_highuser_ssize;
+ extern u16 mmu_slb_size;
+@@ -512,38 +489,6 @@ static inline void subpage_prot_free(struct mm_struct *mm) {}
+ static inline void subpage_prot_init_new_context(struct mm_struct *mm) { }
+ #endif /* CONFIG_PPC_SUBPAGE_PROT */
+ 
+-typedef unsigned long mm_context_id_t;
+-struct spinlock;
 -
- #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
- static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
- 				       unsigned long addr, pte_t *ptep)
+-typedef struct {
+-	mm_context_id_t id;
+-	u16 user_psize;		/* page size index */
+-
+-#ifdef CONFIG_PPC_MM_SLICES
+-	u64 low_slices_psize;	/* SLB page size encodings */
+-	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
+-#else
+-	u16 sllp;		/* SLB page size encoding */
+-#endif
+-	unsigned long vdso_base;
+-#ifdef CONFIG_PPC_SUBPAGE_PROT
+-	struct subpage_prot_table spt;
+-#endif /* CONFIG_PPC_SUBPAGE_PROT */
+-#ifdef CONFIG_PPC_ICSWX
+-	struct spinlock *cop_lockp; /* guard acop and cop_pid */
+-	unsigned long acop;	/* mask of enabled coprocessor types */
+-	unsigned int cop_pid;	/* pid value used with coprocessors */
+-#endif /* CONFIG_PPC_ICSWX */
+-#ifdef CONFIG_PPC_64K_PAGES
+-	/* for 4K PTE fragment support */
+-	void *pte_frag;
+-#endif
+-#ifdef CONFIG_SPAPR_TCE_IOMMU
+-	struct list_head iommu_group_mem_list;
+-#endif
+-} mm_context_t;
+-
+-
+ #if 0
+ /*
+  * The code below is equivalent to this function for arguments
+@@ -613,4 +558,4 @@ unsigned htab_shift_for_mem_size(unsigned long mem_size);
+ 
+ #endif /* __ASSEMBLY__ */
+ 
+-#endif /* _ASM_POWERPC_MMU_HASH64_H_ */
++#endif /* _ASM_POWERPC_BOOK3S_64_MMU_HASH_H_ */
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+new file mode 100644
+index 000000000000..aadb0bbc5c71
+--- /dev/null
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -0,0 +1,72 @@
++#ifndef _ASM_POWERPC_BOOK3S_64_MMU_H_
++#define _ASM_POWERPC_BOOK3S_64_MMU_H_
++
++#ifndef __ASSEMBLY__
++/*
++ * Page size definition
++ *
++ *    shift : is the "PAGE_SHIFT" value for that page size
++ *    sllp  : is a bit mask with the value of SLB L || LP to be or'ed
++ *            directly to a slbmte "vsid" value
++ *    penc  : is the HPTE encoding mask for the "LP" field:
++ *
++ */
++struct mmu_psize_def {
++	unsigned int	shift;	/* number of bits */
++	int		penc[MMU_PAGE_COUNT];	/* HPTE encoding */
++	unsigned int	tlbiel;	/* tlbiel supported for that page size */
++	unsigned long	avpnm;	/* bits to mask out in AVPN in the HPTE */
++	unsigned long	sllp;	/* SLB L||LP (exact mask to use in slbmte) */
++};
++extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
++#endif /* __ASSEMBLY__ */
++
++#ifdef CONFIG_PPC_STD_MMU_64
++/* 64-bit classic hash table MMU */
++#include <asm/book3s/64/mmu-hash.h>
++#endif
++
++#ifndef __ASSEMBLY__
++
++typedef unsigned long mm_context_id_t;
++struct spinlock;
++
++typedef struct {
++	mm_context_id_t id;
++	u16 user_psize;		/* page size index */
++
++#ifdef CONFIG_PPC_MM_SLICES
++	u64 low_slices_psize;	/* SLB page size encodings */
++	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
++#else
++	u16 sllp;		/* SLB page size encoding */
++#endif
++	unsigned long vdso_base;
++#ifdef CONFIG_PPC_SUBPAGE_PROT
++	struct subpage_prot_table spt;
++#endif /* CONFIG_PPC_SUBPAGE_PROT */
++#ifdef CONFIG_PPC_ICSWX
++	struct spinlock *cop_lockp; /* guard acop and cop_pid */
++	unsigned long acop;	/* mask of enabled coprocessor types */
++	unsigned int cop_pid;	/* pid value used with coprocessors */
++#endif /* CONFIG_PPC_ICSWX */
++#ifdef CONFIG_PPC_64K_PAGES
++	/* for 4K PTE fragment support */
++	void *pte_frag;
++#endif
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++	struct list_head iommu_group_mem_list;
++#endif
++} mm_context_t;
++
++/*
++ * The current system page and segment sizes
++ */
++extern int mmu_linear_psize;
++extern int mmu_virtual_psize;
++extern int mmu_vmalloc_psize;
++extern int mmu_vmemmap_psize;
++extern int mmu_io_psize;
++
++#endif /* __ASSEMBLY__ */
++#endif /* _ASM_POWERPC_BOOK3S_64_MMU_H_ */
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 8ca1c983bf6c..5f55024f9522 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -181,10 +181,13 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ 
+ #define MMU_PAGE_COUNT	15
+ 
+-#if defined(CONFIG_PPC_STD_MMU_64)
+-/* 64-bit classic hash table MMU */
+-#include <asm/book3s/64/mmu-hash.h>
+-#elif defined(CONFIG_PPC_STD_MMU_32)
++#ifdef CONFIG_PPC_BOOK3S_64
++#include <asm/book3s/64/mmu.h>
++#else /* CONFIG_PPC_BOOK3S_64 */
++
++#endif
++
++#if defined(CONFIG_PPC_STD_MMU_32)
+ /* 32-bit classic hash table MMU */
+ #include <asm/book3s/32/mmu-hash.h>
+ #elif defined(CONFIG_40x)
 -- 
 2.5.0
