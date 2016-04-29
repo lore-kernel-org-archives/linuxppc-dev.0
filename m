@@ -1,27 +1,17 @@
-Return-Path: <cov@codeaurora.org>
-Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDrS6P4rzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:22:16 +1000 (AEST)
-Subject: Re: VDSO unmap and remap support for additional architectures
-To: Andy Lutomirski <luto@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, criu@openvz.org,
- Dmitry Safonov <dsafonov@virtuozzo.com>, Will Deacon <Will.Deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org, dsafonov@virtuozzo.com
-References: <20151202121918.GA4523@arm.com>
- <1461856737-17071-1-git-send-email-cov@codeaurora.org>
- <2ce7203f-305c-6edf-0ef9-448c141cb103@kernel.org>
-From: Christopher Covington <cov@codeaurora.org>
-Message-ID: <57236003.5060804@codeaurora.org>
-Date: Fri, 29 Apr 2016 09:22:11 -0400
-MIME-Version: 1.0
-In-Reply-To: <2ce7203f-305c-6edf-0ef9-448c141cb103@kernel.org>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxb60TNzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v3 01/70] IB/qib: Use cache inhibitted and guarded mapping on
+ powerpc
+Date: Fri, 29 Apr 2016 23:25:24 +1000
+Message-Id: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andy,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-On 04/28/2016 02:53 PM, Andy Lutomirski wrote:
-> On 04/28/2016 08:18 AM, Christopher Covington wrote:
->> Please take a look at the following prototype of sharing the PowerPC
->> VDSO unmap and remap code with other architectures. I've only hooked
->> up arm64 to begin with. If folks think this is a reasonable approach I
->> can work on 32 bit ARM as well. Not hearing back from an earlier
->> request for guidance [1], I simply dove in and started hacking.
->> Laurent's test case [2][3] is a compelling illustration of whether VDSO
->> remap works or not on a given architecture.
-> 
-> I think there's a much nicer way:
-> 
-> https://lkml.kernel.org/r/1461584223-9418-1-git-send-email-dsafonov@virtuozzo.com
-> 
-> Could arm64 and ppc use this approach?  These arch_xyz hooks are gross.
+The driver was requesting for a writethrough mapping. But with those
+flags we will end up with an SAO mapping because we now have memory
+conherence always enabled. ie, the existing mapping will end up with a
+WIMG value 0b1110 which is Strong Access Order.
 
-Thanks for the pointer. Any thoughts on how to keep essentially
-identical definitions of vdso_mremap from proliferating into every
-architecture and variant?
+Update this to use cache inhibitted guarded mapping.
 
-> Also, at some point, possibly quite soon, x86 will want a way for
-> user code to ask the kernel to map a specific vdso variant at a specific
-> address. Could we perhaps add a new pair of syscalls:
-> 
-> struct vdso_info {
->     unsigned long space_needed_before;
->     unsigned long space_needed_after;
->     unsigned long alignment;
-> };
-> 
-> long vdso_get_info(unsigned int vdso_type, struct vdso_info *info);
-> 
-> long vdso_remap(unsigned int vdso_type, unsigned long addr, unsigned int flags);
-> 
-> #define VDSO_X86_I386 0
-> #define VDSO_X86_64 1
-> #define VDSO_X86_X32 2
-> // etc.
-> 
-> vdso_remap will map the vdso of the chosen type such at
-> AT_SYSINFO_EHDR lines up with addr. It will use up to
-> space_needed_before bytes before that address and space_needed_after
-> after than address. It will also unmap the old vdso (or maybe only do
-> that if some flag is set).
-> 
-> On x86, mremap is *not* sufficient for everything that's needed,
-> because some programs will need to change the vdso type.
+Cc: Doug Ledford <dledford@redhat.com>
+Cc: Sean Hefty <sean.hefty@intel.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: linux-rdma@vger.kernel.org
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Acked-by: Mike Marciniszyn <mike.marciniszyn@intel.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ drivers/infiniband/hw/qib/qib_file_ops.c | 5 +----
+ drivers/infiniband/hw/qib/qib_pcie.c     | 6 ------
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
-I don't I understand. Why can't people just exec() the ELF type that
-corresponds to the VDSO they want?
-
-Thanks,
-Cov
-
+diff --git a/drivers/infiniband/hw/qib/qib_file_ops.c b/drivers/infiniband/hw/qib/qib_file_ops.c
+index e449e394963f..a3d593f546ec 100644
+--- a/drivers/infiniband/hw/qib/qib_file_ops.c
++++ b/drivers/infiniband/hw/qib/qib_file_ops.c
+@@ -822,10 +822,7 @@ static int mmap_piobufs(struct vm_area_struct *vma,
+ 	phys = dd->physaddr + piobufs;
+ 
+ #if defined(__powerpc__)
+-	/* There isn't a generic way to specify writethrough mappings */
+-	pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
+-	pgprot_val(vma->vm_page_prot) |= _PAGE_WRITETHRU;
+-	pgprot_val(vma->vm_page_prot) &= ~_PAGE_GUARDED;
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ #endif
+ 
+ 	/*
+diff --git a/drivers/infiniband/hw/qib/qib_pcie.c b/drivers/infiniband/hw/qib/qib_pcie.c
+index 4758a3801ae8..6abe1c621aa4 100644
+--- a/drivers/infiniband/hw/qib/qib_pcie.c
++++ b/drivers/infiniband/hw/qib/qib_pcie.c
+@@ -144,13 +144,7 @@ int qib_pcie_ddinit(struct qib_devdata *dd, struct pci_dev *pdev,
+ 	addr = pci_resource_start(pdev, 0);
+ 	len = pci_resource_len(pdev, 0);
+ 
+-#if defined(__powerpc__)
+-	/* There isn't a generic way to specify writethrough mappings */
+-	dd->kregbase = __ioremap(addr, len, _PAGE_NO_CACHE | _PAGE_WRITETHRU);
+-#else
+ 	dd->kregbase = ioremap_nocache(addr, len);
+-#endif
+-
+ 	if (!dd->kregbase)
+ 		return -ENOMEM;
+ 
 -- 
-Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.5.0
