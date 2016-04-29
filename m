@@ -1,31 +1,26 @@
-Return-Path: <jpoimboe@redhat.com>
+Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxFhr4Y5SzDvdQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 00:00:44 +1000 (AEST)
-Date: Fri, 29 Apr 2016 09:00:39 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Minfei Huang <mnghuan@gmail.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Petr Mladek <pmladek@suse.com>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: [RFC PATCH v2 06/18] x86: dump_trace() error handling
-Message-ID: <20160429140039.w7nykasabm5kzhns@treble>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <c2891af88397538e7e3bba34172924d783f37c53.1461875890.git.jpoimboe@redhat.com>
- <20160429134558.GA17476@dhcp-128-44.nay.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxHxZ3wJBzDqB5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 01:41:54 +1000 (AEST)
+Date: Fri, 29 Apr 2016 09:41:46 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dan Carpenter
+ <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>, David Gibson
+ <david@gibson.dropbear.id.au>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Russell Currey <ruscur@russell.cc>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v4 02/11] vfio/spapr: Relax the IOMMU
+ compatibility check
+Message-ID: <20160429094146.4ed23f4b@t450s.home>
+In-Reply-To: <1461920124-21719-3-git-send-email-aik@ozlabs.ru>
+References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
+ <1461920124-21719-3-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160429134558.GA17476@dhcp-128-44.nay.redhat.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,24 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 29, 2016 at 09:45:58PM +0800, Minfei Huang wrote:
-> On 04/28/16 at 03:44P, Josh Poimboeuf wrote:
-> > In preparation for being able to determine whether a given stack trace
-> > is reliable, allow the stacktrace_ops functions to propagate errors to
-> > dump_trace().
+On Fri, 29 Apr 2016 18:55:15 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+
+> We are going to have multiple different types of PHB on the same system
+> with POWER8 + NVLink and PHBs will have different IOMMU ops. However
+> we only really care about one callback - create_table - so we can
+> relax the compatibility check here.
 > 
-> Hi, Josh.
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> Have you considered to make walk_stack function as non-return function,
-> since there is no obvious error during detecting the frame points?
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 0582b72..3054e3f 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -1188,7 +1188,8 @@ static int tce_iommu_attach_group(void *iommu_data,
+>  			goto unlock_exit;
+>  		}
+>  		table_group_tmp = iommu_group_get_iommudata(tcegrp->grp);
+> -		if (table_group_tmp->ops != table_group->ops) {
+> +		if (table_group_tmp->ops->create_table !=
+> +				table_group->ops->create_table) {
+>  			pr_warn("tce_vfio: Group %d is incompatible with group %d\n",
+>  					iommu_group_id(iommu_group),
+>  					iommu_group_id(tcegrp->grp));
 
-If you look at the next patch 07/18, there are several cases where
-walk_stack (print_context_stack_reliable) returns an error.
-
-For example, if a function gets preempted before it gets a chance to
-save the frame pointer, the function's caller would get skipped on the
-stack trace.  So for preempted tasks, we always have to consider their
-stacks unreliable.
-
--- 
-Josh
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
