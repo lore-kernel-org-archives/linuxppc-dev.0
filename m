@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyL3MFlzDqBY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyM6bx5zDqBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 45/70] powerpc/mm/radix: Isolate hash table function from
- pseries guest code
-Date: Fri, 29 Apr 2016 23:26:08 +1000
-Message-Id: <1461936393-10131-45-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 47/70] powerpc/mm/radix: Limit paca allocation in radix
+Date: Fri, 29 Apr 2016 23:26:10 +1000
+Message-Id: <1461936393-10131-47-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,83 +24,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+On return from RTAS we access the paca variables and we have 64 bit
+disabled. This requires us to limit paca in 32 bit range.
+
+Fix this by setting ppc64_rma_size to first_memblock_size/1G range.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/lpar.c    | 14 +++++++++++---
- arch/powerpc/platforms/pseries/lparcfg.c |  3 ++-
- 2 files changed, 13 insertions(+), 4 deletions(-)
+ arch/powerpc/mm/pgtable-radix.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index e4ceba2b1551..7f6100d91b4b 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -89,18 +89,21 @@ void vpa_init(int cpu)
- 		       "%lx failed with %ld\n", cpu, hwcpu, addr, ret);
- 		return;
- 	}
-+
-+#ifdef CONFIG_PPC_STD_MMU_64
- 	/*
- 	 * PAPR says this feature is SLB-Buffer but firmware never
- 	 * reports that.  All SPLPAR support SLB shadow buffer.
- 	 */
--	addr = __pa(paca[cpu].slb_shadow_ptr);
--	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+	if (!radix_enabled() && firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+		addr = __pa(paca[cpu].slb_shadow_ptr);
- 		ret = register_slb_shadow(hwcpu, addr);
- 		if (ret)
- 			pr_err("WARNING: SLB shadow buffer registration for "
- 			       "cpu %d (hw %d) of area %lx failed with %ld\n",
- 			       cpu, hwcpu, addr, ret);
- 	}
-+#endif /* CONFIG_PPC_STD_MMU_64 */
- 
- 	/*
- 	 * Register dispatch trace log, if one has been allocated.
-@@ -123,6 +126,8 @@ void vpa_init(int cpu)
- 	}
- }
- 
-+#ifdef CONFIG_PPC_STD_MMU_64
-+
- static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 				     unsigned long vpn, unsigned long pa,
- 				     unsigned long rflags, unsigned long vflags,
-@@ -655,6 +660,8 @@ static void pSeries_set_page_state(struct page *page, int order,
- 
- void arch_free_page(struct page *page, int order)
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 0472f8aa40e1..04ec9760380d 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -351,7 +351,25 @@ void radix__early_init_mmu_secondary(void)
+ void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 				phys_addr_t first_memblock_size)
  {
-+	if (radix_enabled())
-+		return;
- 	if (!cmo_free_hint_flag || !firmware_has_feature(FW_FEATURE_CMO))
- 		return;
- 
-@@ -662,7 +669,8 @@ void arch_free_page(struct page *page, int order)
+-	/* Finally limit subsequent allocations */
++	/* We don't currently support the first MEMBLOCK not mapping 0
++	 * physical on those processors
++	 */
++	BUG_ON(first_memblock_base != 0);
++	/*
++	 * We limit the allocation that depend on ppc64_rma_size
++	 * to first_memblock_size. We also clamp it to 1GB to
++	 * avoid some funky things such as RTAS bugs.
++	 *
++	 * On radix config we really don't have a limitation
++	 * on real mode access. But keeping it as above works
++	 * well enough.
++	 */
++	ppc64_rma_size = min_t(u64, first_memblock_size, 0x40000000);
++	/*
++	 * Finally limit subsequent allocations. We really don't want
++	 * to limit the memblock allocations to rma_size. FIXME!! should
++	 * we even limit at all ?
++	 */
+ 	memblock_set_current_limit(first_memblock_base + first_memblock_size);
  }
- EXPORT_SYMBOL(arch_free_page);
  
--#endif
-+#endif /* CONFIG_PPC_SMLPAR */
-+#endif /* CONFIG_PPC_STD_MMU_64 */
- 
- #ifdef CONFIG_TRACEPOINTS
- #ifdef HAVE_JUMP_LABEL
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index c9fecf09b8fa..afa05a2cb702 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -484,8 +484,9 @@ static int pseries_lparcfg_data(struct seq_file *m, void *v)
- 	seq_printf(m, "shared_processor_mode=%d\n",
- 		   lppaca_shared_proc(get_lppaca()));
- 
-+#ifdef CONFIG_PPC_STD_MMU_64
- 	seq_printf(m, "slb_size=%d\n", mmu_slb_size);
--
-+#endif
- 	parse_em_data(m);
- 
- 	return 0;
 -- 
 2.5.0
