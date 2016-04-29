@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyR3CwTzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyS20GLzDqBY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:28 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 51/70] powerpc/mm: Copy pgalloc (part 2)
-Date: Fri, 29 Apr 2016 23:26:14 +1000
-Message-Id: <1461936393-10131-51-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 52/70] powerpc/mm: Revert changes made to nohash
+ pgalloc-64.h
+Date: Fri, 29 Apr 2016 23:26:15 +1000
+Message-Id: <1461936393-10131-52-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,179 +25,133 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This moves the nohash variant of pgalloc headers to nohash/ directory
+This reverts pgalloc related changes WRT implementing 4-level page
+table for 64K Linux page size and storing of physical address in higher
+level page tables since they are only applicable to book3s64 variant
+and we now have a separate copy for book3s64. This helps to keep these
+headers simpler.
 
+Cc: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/32/pgalloc.h       |  6 +++---
- arch/powerpc/include/asm/book3s/64/pgalloc.h       | 17 ++++++++++------
- arch/powerpc/include/asm/book3s/pgalloc.h          | 19 ++++++++++++++++++
- .../asm/{pgalloc-32.h => nohash/32/pgalloc.h}      |  0
- .../asm/{pgalloc-64.h => nohash/64/pgalloc.h}      |  0
- arch/powerpc/include/asm/nohash/pgalloc.h          | 23 ++++++++++++++++++++++
- arch/powerpc/include/asm/pgalloc.h                 | 19 +++---------------
- 7 files changed, 59 insertions(+), 25 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/pgalloc.h
- rename arch/powerpc/include/asm/{pgalloc-32.h => nohash/32/pgalloc.h} (100%)
- rename arch/powerpc/include/asm/{pgalloc-64.h => nohash/64/pgalloc.h} (100%)
- create mode 100644 arch/powerpc/include/asm/nohash/pgalloc.h
+ arch/powerpc/include/asm/nohash/64/pgalloc.h | 42 +++++++---------------------
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  3 --
+ 2 files changed, 10 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-index 76d6b9e0c8a9..a2350194fc76 100644
---- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_PGALLOC_32_H
--#define _ASM_POWERPC_PGALLOC_32_H
-+#ifndef _ASM_POWERPC_BOOK3S_32_PGALLOC_H
-+#define _ASM_POWERPC_BOOK3S_32_PGALLOC_H
- 
- #include <linux/threads.h>
- 
-@@ -106,4 +106,4 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 	pgtable_page_dtor(table);
- 	pgtable_free_tlb(tlb, page_address(table), 0);
- }
--#endif /* _ASM_POWERPC_PGALLOC_32_H */
-+#endif /* _ASM_POWERPC_BOOK3S_32_PGALLOC_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 8d5fc3ac43da..54017260c8bf 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_POWERPC_PGALLOC_64_H
--#define _ASM_POWERPC_PGALLOC_64_H
-+#ifndef _ASM_POWERPC_BOOK3S_64_PGALLOC_H
-+#define _ASM_POWERPC_BOOK3S_64_PGALLOC_H
- /*
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-@@ -52,8 +52,10 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- }
+diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+index 8d5fc3ac43da..69ef28a81733 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+@@ -53,7 +53,7 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
  
  #ifndef CONFIG_PPC_64K_PAGES
--
+ 
 -#define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, __pgtable_ptr_val(PUD))
-+static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
-+{
-+	pgd_set(pgd, __pgtable_ptr_val(pud));
-+}
++#define pgd_populate(MM, PGD, PUD)	pgd_set(PGD, (unsigned long)PUD)
  
  static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
  {
-@@ -83,7 +85,10 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 	pmd_set(pmd, __pgtable_ptr_val(page_address(pte_page)));
+@@ -68,19 +68,19 @@ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
+ 
+ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ {
+-	pud_set(pud, __pgtable_ptr_val(pmd));
++	pud_set(pud, (unsigned long)pmd);
  }
  
--#define pmd_pgtable(pmd) pmd_page(pmd)
-+static inline pgtable_t pmd_pgtable(pmd_t pmd)
-+{
-+	return pmd_page(pmd);
-+}
+ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ 				       pte_t *pte)
+ {
+-	pmd_set(pmd, __pgtable_ptr_val(pte));
++	pmd_set(pmd, (unsigned long)pte);
+ }
+ 
+ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+ 				pgtable_t pte_page)
+ {
+-	pmd_set(pmd, __pgtable_ptr_val(page_address(pte_page)));
++	pmd_set(pmd, (unsigned long)page_address(pte_page));
+ }
+ 
+ #define pmd_pgtable(pmd) pmd_page(pmd)
+@@ -171,45 +171,23 @@ extern void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift);
+ extern void __tlb_remove_table(void *_table);
+ #endif
+ 
+-#ifndef __PAGETABLE_PUD_FOLDED
+-/* book3s 64 is 4 level page table */
+-static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
+-{
+-	pgd_set(pgd, __pgtable_ptr_val(pud));
+-}
+-
+-static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+-{
+-	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
+-				GFP_KERNEL|__GFP_REPEAT);
+-}
+-
+-static inline void pud_free(struct mm_struct *mm, pud_t *pud)
+-{
+-	kmem_cache_free(PGT_CACHE(PUD_INDEX_SIZE), pud);
+-}
+-#endif
+-
+-static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+-{
+-	pud_set(pud, __pgtable_ptr_val(pmd));
+-}
++#define pud_populate(mm, pud, pmd)	pud_set(pud, (unsigned long)pmd)
+ 
+ static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
+ 				       pte_t *pte)
+ {
+-	pmd_set(pmd, __pgtable_ptr_val(pte));
++	pmd_set(pmd, (unsigned long)pte);
+ }
+ 
+ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+ 				pgtable_t pte_page)
+ {
+-	pmd_set(pmd, __pgtable_ptr_val(pte_page));
++	pmd_set(pmd, (unsigned long)pte_page);
+ }
+ 
+ static inline pgtable_t pmd_pgtable(pmd_t pmd)
+ {
+-	return (pgtable_t)pmd_page_vaddr(pmd);
++	return (pgtable_t)(pmd_val(pmd) & ~PMD_MASKED_BITS);
+ }
  
  static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
- 					  unsigned long address)
-@@ -263,4 +268,4 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+@@ -255,11 +233,11 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ 
+ #define __pmd_free_tlb(tlb, pmd, addr)		      \
+ 	pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX)
+-#ifndef __PAGETABLE_PUD_FOLDED
++#ifndef CONFIG_PPC_64K_PAGES
+ #define __pud_free_tlb(tlb, pud, addr)		      \
+ 	pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE)
+ 
+-#endif /* __PAGETABLE_PUD_FOLDED */
++#endif /* CONFIG_PPC_64K_PAGES */
  
  #define check_pgt_cache()	do { } while (0)
  
--#endif /* _ASM_POWERPC_PGALLOC_64_H */
-+#endif /* _ASM_POWERPC_BOOK3S_64_PGALLOC_H */
-diff --git a/arch/powerpc/include/asm/book3s/pgalloc.h b/arch/powerpc/include/asm/book3s/pgalloc.h
-new file mode 100644
-index 000000000000..54f591e9572e
---- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/pgalloc.h
-@@ -0,0 +1,19 @@
-+#ifndef _ASM_POWERPC_BOOK3S_PGALLOC_H
-+#define _ASM_POWERPC_BOOK3S_PGALLOC_H
-+
-+#include <linux/mm.h>
-+
-+extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
-+static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
-+				     unsigned long address)
-+{
-+
-+}
-+
-+#ifdef CONFIG_PPC64
-+#include <asm/book3s/64/pgalloc.h>
-+#else
-+#include <asm/book3s/32/pgalloc.h>
-+#endif
-+
-+#endif /* _ASM_POWERPC_BOOK3S_PGALLOC_H */
-diff --git a/arch/powerpc/include/asm/pgalloc-32.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-similarity index 100%
-rename from arch/powerpc/include/asm/pgalloc-32.h
-rename to arch/powerpc/include/asm/nohash/32/pgalloc.h
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-similarity index 100%
-rename from arch/powerpc/include/asm/pgalloc-64.h
-rename to arch/powerpc/include/asm/nohash/64/pgalloc.h
-diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
-new file mode 100644
-index 000000000000..b39ec956d71e
---- /dev/null
-+++ b/arch/powerpc/include/asm/nohash/pgalloc.h
-@@ -0,0 +1,23 @@
-+#ifndef _ASM_POWERPC_NOHASH_PGALLOC_H
-+#define _ASM_POWERPC_NOHASH_PGALLOC_H
-+
-+#include <linux/mm.h>
-+
-+extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
-+#ifdef CONFIG_PPC64
-+extern void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address);
-+#else
-+/* 44x etc which is BOOKE not BOOK3E */
-+static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
-+				     unsigned long address)
-+{
-+
-+}
-+#endif /* !CONFIG_PPC_BOOK3E */
-+
-+#ifdef CONFIG_PPC64
-+#include <asm/nohash/64/pgalloc.h>
-+#else
-+#include <asm/nohash/32/pgalloc.h>
-+#endif
-+#endif /* _ASM_POWERPC_NOHASH_PGALLOC_H */
-diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
-index fc3ee06eab87..0413457ba11d 100644
---- a/arch/powerpc/include/asm/pgalloc.h
-+++ b/arch/powerpc/include/asm/pgalloc.h
-@@ -1,25 +1,12 @@
- #ifndef _ASM_POWERPC_PGALLOC_H
- #define _ASM_POWERPC_PGALLOC_H
--#ifdef __KERNEL__
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index f143d6fb3576..d4d808cf905e 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -108,9 +108,6 @@
+ #ifndef __ASSEMBLY__
+ /* pte_clear moved to later in this file */
  
- #include <linux/mm.h>
- 
--#ifdef CONFIG_PPC_BOOK3E
--extern void tlb_flush_pgtable(struct mmu_gather *tlb, unsigned long address);
--#else /* CONFIG_PPC_BOOK3E */
--static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
--				     unsigned long address)
--{
--}
--#endif /* !CONFIG_PPC_BOOK3E */
+-/* Pointers in the page table tree are virtual addresses */
+-#define __pgtable_ptr_val(ptr)	((unsigned long)(ptr))
 -
--extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
--
--#ifdef CONFIG_PPC64
--#include <asm/pgalloc-64.h>
-+#ifdef CONFIG_PPC_BOOK3S
-+#include <asm/book3s/pgalloc.h>
- #else
--#include <asm/pgalloc-32.h>
-+#include <asm/nohash/pgalloc.h>
- #endif
+ #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
+ #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
  
--#endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_PGALLOC_H */
 -- 
 2.5.0
