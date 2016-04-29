@@ -1,23 +1,27 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <cov@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qx9Nf4p3rzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 20:46:26 +1000 (AEST)
-From: Mark Brown <broonie@kernel.org>
-To: Caleb Crome <caleb@crome.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1461606624-130216-1-git-send-email-caleb@crome.org>
-Message-Id: <E1aw5vv-0001Iy-KV@debutante>
-Date: Fri, 29 Apr 2016 11:46:03 +0100
-Subject: Applied "ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register list"
- to the asoc tree
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDrS6P4rzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:22:16 +1000 (AEST)
+Subject: Re: VDSO unmap and remap support for additional architectures
+To: Andy Lutomirski <luto@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, criu@openvz.org,
+ Dmitry Safonov <dsafonov@virtuozzo.com>, Will Deacon <Will.Deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org, dsafonov@virtuozzo.com
+References: <20151202121918.GA4523@arm.com>
+ <1461856737-17071-1-git-send-email-cov@codeaurora.org>
+ <2ce7203f-305c-6edf-0ef9-448c141cb103@kernel.org>
+From: Christopher Covington <cov@codeaurora.org>
+Message-ID: <57236003.5060804@codeaurora.org>
+Date: Fri, 29 Apr 2016 09:22:11 -0400
+MIME-Version: 1.0
+In-Reply-To: <2ce7203f-305c-6edf-0ef9-448c141cb103@kernel.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,74 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+Hi Andy,
 
-   ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register list
+On 04/28/2016 02:53 PM, Andy Lutomirski wrote:
+> On 04/28/2016 08:18 AM, Christopher Covington wrote:
+>> Please take a look at the following prototype of sharing the PowerPC
+>> VDSO unmap and remap code with other architectures. I've only hooked
+>> up arm64 to begin with. If folks think this is a reasonable approach I
+>> can work on 32 bit ARM as well. Not hearing back from an earlier
+>> request for guidance [1], I simply dove in and started hacking.
+>> Laurent's test case [2][3] is a compelling illustration of whether VDSO
+>> remap works or not on a given architecture.
+> 
+> I think there's a much nicer way:
+> 
+> https://lkml.kernel.org/r/1461584223-9418-1-git-send-email-dsafonov@virtuozzo.com
+> 
+> Could arm64 and ppc use this approach?  These arch_xyz hooks are gross.
 
-has been applied to the asoc tree at
+Thanks for the pointer. Any thoughts on how to keep essentially
+identical definitions of vdso_mremap from proliferating into every
+architecture and variant?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+> Also, at some point, possibly quite soon, x86 will want a way for
+> user code to ask the kernel to map a specific vdso variant at a specific
+> address. Could we perhaps add a new pair of syscalls:
+> 
+> struct vdso_info {
+>     unsigned long space_needed_before;
+>     unsigned long space_needed_after;
+>     unsigned long alignment;
+> };
+> 
+> long vdso_get_info(unsigned int vdso_type, struct vdso_info *info);
+> 
+> long vdso_remap(unsigned int vdso_type, unsigned long addr, unsigned int flags);
+> 
+> #define VDSO_X86_I386 0
+> #define VDSO_X86_64 1
+> #define VDSO_X86_X32 2
+> // etc.
+> 
+> vdso_remap will map the vdso of the chosen type such at
+> AT_SYSINFO_EHDR lines up with addr. It will use up to
+> space_needed_before bytes before that address and space_needed_after
+> after than address. It will also unmap the old vdso (or maybe only do
+> that if some flag is set).
+> 
+> On x86, mremap is *not* sufficient for everything that's needed,
+> because some programs will need to change the vdso type.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+I don't I understand. Why can't people just exec() the ELF type that
+corresponds to the VDSO they want?
 
 Thanks,
-Mark
+Cov
 
->From 3cc6185bcccff32df41faa97d592a99d258db185 Mon Sep 17 00:00:00 2001
-From: Caleb Crome <caleb@crome.org>
-Date: Mon, 25 Apr 2016 11:36:18 -0700
-Subject: [PATCH] ASoC: fsl_ssi: add CCSR_SSI_SOR to volatile register list
-
-The CCSR_SSI_SOR is a register that clears the TX and/or the RX fifo
-on the i.MX SSI port.  The fsl_ssi_trigger writes this register in
-order to clear the fifo at trigger time.
-
-However, since the CCSR_SSI_SOR register is not in the volatile list,
-the caching mechanism prevented the register write in the trigger
-function.  This caused the fifo to not be cleared (because the value
-was unchanged from the last time the register was written), and thus
-causes the channels in both TDM or simple I2S mode to slip and be in
-the wrong time slots on SSI restart.
-
-This has gone unnoticed for so long because with simple stereo mode,
-the consequence is that left and right are swapped, which isn't that
-noticeable.  However, it's catestrophic in some systems that
-require the channels to be in the right slots.
-
-Signed-off-by: Caleb Crome <caleb@crome.org>
-Suggested-by: Arnaud Mouiche <arnaud.mouiche@invoxia.com>
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_ssi.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index ed8de1035cda..08dcbbf60adb 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -137,6 +137,7 @@ static bool fsl_ssi_volatile_reg(struct device *dev, unsigned int reg)
- 	case CCSR_SSI_SACDAT:
- 	case CCSR_SSI_SATAG:
- 	case CCSR_SSI_SACCST:
-+	case CCSR_SSI_SOR:
- 		return true;
- 	default:
- 		return false;
 -- 
-2.8.0.rc3
+Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
