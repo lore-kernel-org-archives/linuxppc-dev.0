@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyC41GSzDqBM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyD3JJZzDqBM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 37/70] powerpc/mm/radix: Add radix callbacks for vmemmap
- and map_kernel page()
-Date: Fri, 29 Apr 2016 23:26:00 +1000
-Message-Id: <1461936393-10131-37-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 38/70] powerpc/mm: Abstraction for switch_mmu_context()
+Date: Fri, 29 Apr 2016 23:26:01 +1000
+Message-Id: <1461936393-10131-38-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,95 +24,132 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
+How we switch MMU context differs between hash and radix. For hash we
+need to switch the SLB details and for radix we need to switch the PID
+SPR.
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 12 ++++++++++++
- arch/powerpc/include/asm/book3s/64/radix.h   |  6 ++++++
- arch/powerpc/mm/pgtable-radix.c              | 20 ++++++++++++++++++++
- 3 files changed, 38 insertions(+)
+ arch/powerpc/include/asm/mmu_context.h | 25 +++++++++++++------------
+ arch/powerpc/kernel/swsusp.c           |  2 +-
+ arch/powerpc/mm/mmu_context_nohash.c   |  3 ++-
+ drivers/cpufreq/pmac32-cpufreq.c       |  2 +-
+ drivers/macintosh/via-pmu.c            |  4 ++--
+ 5 files changed, 19 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index c1b787dcfbb6..9bc2471a8207 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -725,6 +725,13 @@ void pgtable_cache_init(void);
- static inline int map_kernel_page(unsigned long ea, unsigned long pa,
- 				  unsigned long flags)
- {
-+	if (radix_enabled()) {
-+#if defined(CONFIG_PPC_RADIX_MMU) && defined(DEBUG_VM)
-+		unsigned long page_size = 1 << mmu_psize_defs[mmu_io_psize].shift;
-+		WARN((page_size != PAGE_SIZE), "I/O page size != PAGE_SIZE");
-+#endif
-+		return radix__map_kernel_page(ea, pa, __pgprot(flags), PAGE_SIZE);
-+	}
- 	return hash__map_kernel_page(ea, pa, flags);
- }
- 
-@@ -732,6 +739,8 @@ static inline int __meminit vmemmap_create_mapping(unsigned long start,
- 						   unsigned long page_size,
- 						   unsigned long phys)
- {
-+	if (radix_enabled())
-+		return radix__vmemmap_create_mapping(start, page_size, phys);
- 	return hash__vmemmap_create_mapping(start, page_size, phys);
- }
- 
-@@ -739,6 +748,9 @@ static inline int __meminit vmemmap_create_mapping(unsigned long start,
- static inline void vmemmap_remove_mapping(unsigned long start,
- 					  unsigned long page_size)
- {
-+
-+	if (radix_enabled())
-+		return radix__vmemmap_remove_mapping(start, page_size);
- 	return hash__vmemmap_remove_mapping(start, page_size);
- }
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 4eaab40e3ade..4e2a29443384 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -33,16 +33,23 @@ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
  #endif
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index a26259fcffd6..63eb629a8b64 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -130,6 +130,12 @@ static inline int radix__pmd_trans_huge(pmd_t pmd)
+-
+-extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+ extern void set_context(unsigned long id, pgd_t *pgd);
  
- #endif
- 
-+extern int __meminit radix__vmemmap_create_mapping(unsigned long start,
-+					     unsigned long page_size,
-+					     unsigned long phys);
-+extern void radix__vmemmap_remove_mapping(unsigned long start,
-+				    unsigned long page_size);
-+
- extern int radix__map_kernel_page(unsigned long ea, unsigned long pa,
- 				 pgprot_t flags, unsigned int psz);
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 4918850e1061..0472f8aa40e1 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -354,3 +354,23 @@ void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	/* Finally limit subsequent allocations */
- 	memblock_set_current_limit(first_memblock_base + first_memblock_size);
- }
-+
-+#ifdef CONFIG_SPARSEMEM_VMEMMAP
-+int __meminit radix__vmemmap_create_mapping(unsigned long start,
-+				      unsigned long page_size,
-+				      unsigned long phys)
+ #ifdef CONFIG_PPC_BOOK3S_64
++static inline void switch_mmu_context(struct mm_struct *prev,
++				      struct mm_struct *next,
++				      struct task_struct *tsk)
 +{
-+	/* Create a PTE encoding */
-+	unsigned long flags = _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_KERNEL_RW;
-+
-+	BUG_ON(radix__map_kernel_page(start, phys, __pgprot(flags), page_size));
-+	return 0;
++	return switch_slb(tsk, next);
 +}
 +
-+#ifdef CONFIG_MEMORY_HOTPLUG
-+void radix__vmemmap_remove_mapping(unsigned long start, unsigned long page_size)
-+{
-+	/* FIXME!! intel does more. We should free page tables mapping vmemmap ? */
-+}
-+#endif
-+#endif
+ extern int __init_new_context(void);
+ extern void __destroy_context(int context_id);
+ static inline void mmu_context_init(void) { }
+ #else
++extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
++			       struct task_struct *tsk);
+ extern unsigned long __init_new_context(void);
+ extern void __destroy_context(unsigned long context_id);
+ extern void mmu_context_init(void);
+@@ -88,17 +95,11 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		asm volatile ("dssall");
+ #endif /* CONFIG_ALTIVEC */
+-
+-	/* The actual HW switching method differs between the various
+-	 * sub architectures.
++	/*
++	 * The actual HW switching method differs between the various
++	 * sub architectures. Out of line for now
+ 	 */
+-#ifdef CONFIG_PPC_STD_MMU_64
+-	switch_slb(tsk, next);
+-#else
+-	/* Out of line for now */
+-	switch_mmu_context(prev, next);
+-#endif
+-
++	switch_mmu_context(prev, next, tsk);
+ }
+ 
+ #define deactivate_mm(tsk,mm)	do { } while (0)
+diff --git a/arch/powerpc/kernel/swsusp.c b/arch/powerpc/kernel/swsusp.c
+index 6669b1752512..6ae9bd5086a4 100644
+--- a/arch/powerpc/kernel/swsusp.c
++++ b/arch/powerpc/kernel/swsusp.c
+@@ -31,6 +31,6 @@ void save_processor_state(void)
+ void restore_processor_state(void)
+ {
+ #ifdef CONFIG_PPC32
+-	switch_mmu_context(current->active_mm, current->active_mm);
++	switch_mmu_context(current->active_mm, current->active_mm, NULL);
+ #endif
+ }
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index 986afbc22c76..a36c43a27893 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -226,7 +226,8 @@ static void context_check_map(void)
+ static void context_check_map(void) { }
+ #endif
+ 
+-void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
++void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
++			struct task_struct *tsk)
+ {
+ 	unsigned int i, id, cpu = smp_processor_id();
+ 	unsigned long *map;
+diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
+index 1f49d97a70ea..bde503c66945 100644
+--- a/drivers/cpufreq/pmac32-cpufreq.c
++++ b/drivers/cpufreq/pmac32-cpufreq.c
+@@ -298,7 +298,7 @@ static int pmu_set_cpu_speed(int low_speed)
+  		_set_L3CR(save_l3cr);
+ 
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ #ifdef DEBUG_FREQ
+ 	printk(KERN_DEBUG "HID1, after: %x\n", mfspr(SPRN_HID1));
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index 01ee736fe0ef..f8b6d1403c16 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -1851,7 +1851,7 @@ static int powerbook_sleep_grackle(void)
+  		_set_L2CR(save_l2cr);
+ 	
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ 	/* Power things up */
+ 	pmu_unlock();
+@@ -1940,7 +1940,7 @@ powerbook_sleep_Core99(void)
+  		_set_L3CR(save_l3cr);
+ 	
+ 	/* Restore userland MMU context */
+-	switch_mmu_context(NULL, current->active_mm);
++	switch_mmu_context(NULL, current->active_mm, NULL);
+ 
+ 	/* Tell PMU we are ready */
+ 	pmu_unlock();
 -- 
 2.5.0
