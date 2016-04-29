@@ -1,20 +1,38 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxT0821BRzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 08:29:43 +1000 (AEST)
-Date: Sat, 30 Apr 2016 08:29:27 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, felix@linux.vnet.ibm.com, Bill
- Schmidt <wschmidt@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: create_zero_mask() has bad inline assembly constraint
-Message-ID: <20160430082927.2111f5ae@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxTFW0Xn1zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 08:41:18 +1000 (AEST)
+Date: Fri, 29 Apr 2016 17:41:12 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Petr Mladek <pmladek@suse.com>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
+Message-ID: <20160429224112.kl3jlk7ccvfceg2r@treble>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <f8816223098569a9b2f478caa5b4a7a0c27dda00.1461875890.git.jpoimboe@redhat.com>
+ <CALCETrVjJdPCE92D6NY3B2+0STAdWL0pbNqCBfQUwn-sVWLD5w@mail.gmail.com>
+ <20160429201139.pudoged2yathyo64@treble>
+ <CALCETrW8G8qCHBkH7GFDTFuH82abJpbVq_-bDaRAdL7U0jLGNQ@mail.gmail.com>
+ <20160429202701.yijrohqdsurdxv2a@treble>
+ <CALCETrVKt8k11ewSOvGiCNsqgtD5cMaLix8Tf8JJakgodJeLyA@mail.gmail.com>
+ <20160429212546.t26mvthtvh7543ff@treble>
+ <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In create_zero_mask() we have:
+On Fri, Apr 29, 2016 at 02:37:41PM -0700, Andy Lutomirski wrote:
+> On Fri, Apr 29, 2016 at 2:25 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> > I think the easiest way to make it work would be to modify the idtentry
+> > macro to put all the idt entries in a dedicated section.  Then the
+> > unwinder could easily detect any calls from that code.
+> 
+> That would work.  Would it make sense to do the same for the irq entries?
 
-	addi	%1,%2,-1
-	andc	%1,%1,%2
-	popcntd	%0,%1
+Yes, I think so.
 
-using the "r" constraint for %2. r0 is a valid register in the "r" set,
-but addi X,r0,X turns it into an li:
+> >> I suppose we could try to rejigger the code so that rbp points to
+> >> pt_regs or similar.
+> >
+> > I think we should avoid doing something like that because it would break
+> > gdb and all the other unwinders who don't know about it.
+> 
+> How so?
+> 
+> Currently, rbp in the entry code is meaningless.  I'm suggesting that,
+> when we do, for example, 'call \do_sym' in idtentry, we point rbp to
+> the pt_regs.  Currently it points to something stale (which the
+> dump_stack code might be relying on.  Hmm.)  But it's probably also
+> safe to assume that if you unwind to the 'call \do_sym', then pt_regs
+> is the next thing on the stack, so just doing the section thing would
+> work.
 
-	li	r7,-1
-	andc	r7,r7,r0
-	popcntd	r4,r7
+Yes, rbp is meaningless on the entry from user space.  But if an
+in-kernel interrupt occurs (e.g. page fault, preemption) and you have
+nested entry, rbp keeps its old value, right?  So the unwinder can walk
+past the nested entry frame and keep going until it gets to the original
+entry.
 
-Fix this by using the "b" constraint, for which r0 is not a valid
-register.
+> We should really re-add DWARF some day.
 
-This was found with a kernel build using gcc trunk, narrowed down to
-when -frename-registers was enabled at -O2. It is just luck however
-that we aren't seeing this on older toolchains.
+Working on it :-)
 
-Thanks to Segher for working with me to find this issue.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: <stable@vger.kernel.org>
-Fixes: d0cebfa650a0 ("powerpc: word-at-a-time optimization for 64-bit Little Endian")
----
-
-diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
-index e4396a7..4afe66a 100644
---- a/arch/powerpc/include/asm/word-at-a-time.h
-+++ b/arch/powerpc/include/asm/word-at-a-time.h
-@@ -82,7 +82,7 @@ static inline unsigned long create_zero_mask(unsigned long bits)
- 	    "andc	%1,%1,%2\n\t"
- 	    "popcntd	%0,%1"
- 		: "=r" (leading_zero_bits), "=&r" (trailing_zero_bit_mask)
--		: "r" (bits));
-+		: "b" (bits));
- 
- 	return leading_zero_bits;
- }
+-- 
+Josh
