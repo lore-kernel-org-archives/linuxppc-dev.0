@@ -1,26 +1,31 @@
-Return-Path: <leoyang.li@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0095.outbound.protection.outlook.com [157.56.112.95])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxQlC6kBBzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 06:48:22 +1000 (AEST)
-From: Yang-Leo Li <leoyang.li@nxp.com>
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Li Yang <leoli@freescale.com>
-CC: "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
- "Zhang Wei" <zw@zh-kernel.org>, Vinod Koul <vinod.koul@intel.com>, Dan
- Williams <dan.j.williams@intel.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "dmaengine@vger.kernel.org"
- <dmaengine@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 5/5] dmaengine: fsldma: Use dma_pool_zalloc
-Date: Fri, 29 Apr 2016 20:48:14 +0000
-Message-ID: <AM2PR04MB07705B52D8136609F47A18E58F660@AM2PR04MB0770.eurprd04.prod.outlook.com>
-References: <1461960552-7429-1-git-send-email-Julia.Lawall@lip6.fr>
- <1461960552-7429-6-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1461960552-7429-6-git-send-email-Julia.Lawall@lip6.fr>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxQp44sF6zDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 06:50:52 +1000 (AEST)
+Date: Fri, 29 Apr 2016 15:50:47 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Petr Mladek <pmladek@suse.com>, Chris J Arges <chris.j.arges@canonical.com>
+Subject: Re: [RFC PATCH v2 03/18] x86/asm/head: standardize the bottom of the
+ stack for idle tasks
+Message-ID: <20160429205047.t6k7rsskx7mhvwxg@treble>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <9268772b31cc7bc4dc40c617e3baf45e07322145.1461875890.git.jpoimboe@redhat.com>
+ <CALCETrVYzPFjJwZp_PbscGkQDx-K-p5sAt37oz+FoxGx8hSM=A@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CALCETrVYzPFjJwZp_PbscGkQDx-K-p5sAt37oz+FoxGx8hSM=A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,62 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Apr 29, 2016 at 12:39:16PM -0700, Andy Lutomirski wrote:
+> On Thu, Apr 28, 2016 at 1:44 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> > Thanks to all the recent x86 entry code refactoring, most tasks' kernel
+> > stacks start at the same offset right above their saved pt_regs,
+> > regardless of which syscall was used to enter the kernel.  That creates
+> > a nice convention which makes it straightforward to identify the
+> > "bottom" of the stack, which can be useful for stack walking code which
+> > needs to verify the stack is sane.
+> >
+> > However there are still a few types of tasks which don't yet follow that
+> > convention:
+> >
+> > 1) CPU idle tasks, aka the "swapper" tasks
+> >
+> > 2) freshly forked TIF_FORK tasks which don't have a stack at all
+> >
+> > Make the idle tasks conform to the new stack bottom convention by
+> > starting their stack at a sizeof(pt_regs) offset from the end of the
+> > stack page.
+> >
+> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > ---
+> >  arch/x86/kernel/head_64.S | 7 ++++---
+> >  1 file changed, 4 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+> > index 6dbd2c0..0b12311 100644
+> > --- a/arch/x86/kernel/head_64.S
+> > +++ b/arch/x86/kernel/head_64.S
+> > @@ -296,8 +296,9 @@ ENTRY(start_cpu)
+> >          *      REX.W + FF /5 JMP m16:64 Jump far, absolute indirect,
+> >          *              address given in m16:64.
+> >          */
+> > -       movq    initial_code(%rip),%rax
+> > -       pushq   $0              # fake return address to stop unwinder
+> > +       call    1f              # put return address on stack for unwinder
+> > +1:     xorq    %rbp, %rbp      # clear frame pointer
+> > +       movq    initial_code(%rip), %rax
+> >         pushq   $__KERNEL_CS    # set correct cs
+> >         pushq   %rax            # target address in negative space
+> >         lretq
+> > @@ -325,7 +326,7 @@ ENDPROC(start_cpu0)
+> >         GLOBAL(initial_gs)
+> >         .quad   INIT_PER_CPU_VAR(irq_stack_union)
+> >         GLOBAL(initial_stack)
+> > -       .quad  init_thread_union+THREAD_SIZE-8
+> > +       .quad  init_thread_union + THREAD_SIZE - SIZEOF_PTREGS
+> 
+> As long as you're doing this, could you also set orig_ax to -1?  I
+> remember running into some oddities resulting from orig_ax containing
+> garbage at some point.
 
+I assume you mean to initialize the orig_rax value in the pt_regs at the
+bottom of the stack of the idle task?
 
-> -----Original Message-----
-> From: Julia Lawall [mailto:Julia.Lawall@lip6.fr]
-> Sent: Friday, April 29, 2016 3:09 PM
-> To: Li Yang <leoli@freescale.com>
-> Cc: kernel-janitors@vger.kernel.org; Zhang Wei <zw@zh-kernel.org>; Vinod
-> Koul <vinod.koul@intel.com>; Dan Williams <dan.j.williams@intel.com>;
-> linuxppc-dev@lists.ozlabs.org; dmaengine@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Subject: [PATCH 5/5] dmaengine: fsldma: Use dma_pool_zalloc
->=20
-> Dma_pool_zalloc combines dma_pool_alloc and memset 0.  The semantic patch
-> that makes this transformation is as follows: (http://coccinelle.lip6.fr/=
-)
->=20
-> // <smpl>
-> @@
-> expression d,e;
-> statement S;
-> @@
->=20
->         d =3D
-> -            dma_pool_alloc
-> +            dma_pool_zalloc
->              (...);
->         if (!d) S
-> -       memset(d, 0, sizeof(*d));
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+How could that cause a problem?  Since the idle task never returns from
+a system call, I'd assume that memory never gets accessed?
 
-Acked-by: Li Yang <leoyang.li@nxp.com>
-
->=20
-> ---
->  drivers/dma/fsldma.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->=20
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index
-> aac85c3..a8828ed 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -462,13 +462,12 @@ static struct fsl_desc_sw
-> *fsl_dma_alloc_descriptor(struct fsldma_chan *chan)
->  	struct fsl_desc_sw *desc;
->  	dma_addr_t pdesc;
->=20
-> -	desc =3D dma_pool_alloc(chan->desc_pool, GFP_ATOMIC, &pdesc);
-> +	desc =3D dma_pool_zalloc(chan->desc_pool, GFP_ATOMIC, &pdesc);
->  	if (!desc) {
->  		chan_dbg(chan, "out of memory for link descriptor\n");
->  		return NULL;
->  	}
->=20
-> -	memset(desc, 0, sizeof(*desc));
->  	INIT_LIST_HEAD(&desc->tx_list);
->  	dma_async_tx_descriptor_init(&desc->async_tx, &chan->common);
->  	desc->async_tx.tx_submit =3D fsl_dma_tx_submit;
+-- 
+Josh
