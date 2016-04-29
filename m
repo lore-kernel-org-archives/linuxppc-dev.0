@@ -1,38 +1,20 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxSbb0NmzzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 08:11:54 +1000 (AEST)
-Date: Sat, 30 Apr 2016 00:11:45 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: Andy Lutomirski <luto@amacapital.net>
-cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- X86 ML <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Petr Mladek <pmladek@suse.com>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-In-Reply-To: <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1604300007070.27368@cbobk.fhfr.pm>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <f8816223098569a9b2f478caa5b4a7a0c27dda00.1461875890.git.jpoimboe@redhat.com>
- <CALCETrVjJdPCE92D6NY3B2+0STAdWL0pbNqCBfQUwn-sVWLD5w@mail.gmail.com>
- <20160429201139.pudoged2yathyo64@treble>
- <CALCETrW8G8qCHBkH7GFDTFuH82abJpbVq_-bDaRAdL7U0jLGNQ@mail.gmail.com>
- <20160429202701.yijrohqdsurdxv2a@treble>
- <CALCETrVKt8k11ewSOvGiCNsqgtD5cMaLix8Tf8JJakgodJeLyA@mail.gmail.com>
- <20160429212546.t26mvthtvh7543ff@treble>
- <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxT0821BRzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 08:29:43 +1000 (AEST)
+Date: Sat, 30 Apr 2016 08:29:27 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, felix@linux.vnet.ibm.com, Bill
+ Schmidt <wschmidt@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: create_zero_mask() has bad inline assembly constraint
+Message-ID: <20160430082927.2111f5ae@kryten>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,23 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 29 Apr 2016, Andy Lutomirski wrote:
+In create_zero_mask() we have:
 
-> > NMI, MCE and interrupts aren't a problem because they have dedicated
-> > stacks, which are easy to detect.  If the tasks' stack is on an
-> > exception stack or an irq stack, we consider it unreliable.
-> 
-> Only on x86_64.
+	addi	%1,%2,-1
+	andc	%1,%1,%2
+	popcntd	%0,%1
 
-Well, MCEs are more or less x86-specific as well. But otherwise good 
-point, thanks Andy.
+using the "r" constraint for %2. r0 is a valid register in the "r" set,
+but addi X,r0,X turns it into an li:
 
-So, how does stack layout generally look like in case when NMI is actually 
-running on proper kernel stack? I thought it's guaranteed to contain 
-pt_regs anyway in all cases. Is that not guaranteed to be the case?
+	li	r7,-1
+	andc	r7,r7,r0
+	popcntd	r4,r7
 
-Thanks,
+Fix this by using the "b" constraint, for which r0 is not a valid
+register.
 
--- 
-Jiri Kosina
-SUSE Labs
+This was found with a kernel build using gcc trunk, narrowed down to
+when -frename-registers was enabled at -O2. It is just luck however
+that we aren't seeing this on older toolchains.
+
+Thanks to Segher for working with me to find this issue.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: <stable@vger.kernel.org>
+Fixes: d0cebfa650a0 ("powerpc: word-at-a-time optimization for 64-bit Little Endian")
+---
+
+diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
+index e4396a7..4afe66a 100644
+--- a/arch/powerpc/include/asm/word-at-a-time.h
++++ b/arch/powerpc/include/asm/word-at-a-time.h
+@@ -82,7 +82,7 @@ static inline unsigned long create_zero_mask(unsigned long bits)
+ 	    "andc	%1,%1,%2\n\t"
+ 	    "popcntd	%0,%1"
+ 		: "=r" (leading_zero_bits), "=&r" (trailing_zero_bit_mask)
+-		: "r" (bits));
++		: "b" (bits));
+ 
+ 	return leading_zero_bits;
+ }
