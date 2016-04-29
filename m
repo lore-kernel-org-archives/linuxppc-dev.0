@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyK1xGTzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDyM3KmdzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:27:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 43/70] powerpc/mm/radix: Add MMU_FTR_RADIX
-Date: Fri, 29 Apr 2016 23:26:06 +1000
-Message-Id: <1461936393-10131-43-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 46/70] powerpc/mm/radix: Add checks in slice code to catch
+ radix usage
+Date: Fri, 29 Apr 2016 23:26:09 +1000
+Message-Id: <1461936393-10131-46-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,54 +25,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-We are going to add asm changes in the follow up patches. Add the
-feature bit now so that we can get it all build.
-
-mpe: Note that if CONFIG_PPC_RADIX_MMU=n we define MMU_FTR_RADIX to
-zero. This has the effect of turning all the radix_enabled() checks into
-if (0), which the compiler is smart enough to elide completely.
+Radix doesn't need slice support. Catch incorrect usage of slice code
+when radix is enabled.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h | 3 ++-
- arch/powerpc/include/asm/mmu.h           | 9 +++++++++
- 2 files changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/slice.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 94d52ff49bbe..5854263d4d6e 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -23,7 +23,8 @@ struct mmu_psize_def {
- };
- extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index ee21b8699cee..2b27458902ee 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -395,6 +395,7 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
  
--#define radix_enabled() (0)
-+#define radix_enabled() mmu_has_feature(MMU_FTR_RADIX)
-+
- #endif /* __ASSEMBLY__ */
+ 	/* Sanity checks */
+ 	BUG_ON(mm->task_size == 0);
++	VM_BUG_ON(radix_enabled());
  
- /* 64-bit classic hash table MMU */
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 34070e982f1d..d91dc886c90f 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -88,6 +88,15 @@
-  */
- #define MMU_FTR_1T_SEGMENT		ASM_CONST(0x40000000)
+ 	slice_dbg("slice_get_unmapped_area(mm=%p, psize=%d...\n", mm, psize);
+ 	slice_dbg(" addr=%lx, len=%lx, flags=%lx, topdown=%d\n",
+@@ -568,6 +569,16 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ 	unsigned char *hpsizes;
+ 	int index, mask_index;
  
-+/*
-+ * Radix page table available
-+ */
-+#ifdef CONFIG_PPC_RADIX_MMU
-+#define MMU_FTR_RADIX                  ASM_CONST(0x80000000)
++	/*
++	 * Radix doesn't use slice, but can get enabled along with MMU_SLICE
++	 */
++	if (radix_enabled()) {
++#ifdef CONFIG_PPC_64K_PAGES
++		return MMU_PAGE_64K;
 +#else
-+#define MMU_FTR_RADIX                  ASM_CONST(0)
++		return MMU_PAGE_4K;
 +#endif
++	}
+ 	if (addr < SLICE_LOW_TOP) {
+ 		u64 lpsizes;
+ 		lpsizes = mm->context.low_slices_psize;
+@@ -605,6 +616,7 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ 
+ 	slice_dbg("slice_set_user_psize(mm=%p, psize=%d)\n", mm, psize);
+ 
++	VM_BUG_ON(radix_enabled());
+ 	spin_lock_irqsave(&slice_convert_lock, flags);
+ 
+ 	old_psize = mm->context.user_psize;
+@@ -649,6 +661,7 @@ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ {
+ 	struct slice_mask mask = slice_range_to_mask(start, len);
+ 
++	VM_BUG_ON(radix_enabled());
+ 	slice_convert(mm, mask, psize);
+ }
+ 
+@@ -678,6 +691,9 @@ int is_hugepage_only_range(struct mm_struct *mm, unsigned long addr,
+ 	struct slice_mask mask, available;
+ 	unsigned int psize = mm->context.user_psize;
+ 
++	if (radix_enabled())
++		return 0;
 +
- /* MMU feature bit sets for various CPUs */
- #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
- 	MMU_FTR_HPTE_TABLE | MMU_FTR_PPCAS_ARCH_V2
+ 	mask = slice_range_to_mask(addr, len);
+ 	available = slice_mask_for_size(mm, psize);
+ #ifdef CONFIG_PPC_64K_PAGES
 -- 
 2.5.0
