@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxc65FqzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxd2P24zDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 02/70] powerpc/mm: Always use STRICT_MM_TYPECHECKS
-Date: Fri, 29 Apr 2016 23:25:25 +1000
-Message-Id: <1461936393-10131-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 03/70] powerpc/mm: Drop PTE_ATOMIC_UPDATES from
+ pmd_hugepage_update()
+Date: Fri, 29 Apr 2016 23:25:26 +1000
+Message-Id: <1461936393-10131-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,101 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Testing done by Paul Mackerras has shown that with a modern compiler
-there is no negative effect on code generation from enabling
-STRICT_MM_TYPECHECKS.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-So remove the option, and always use the strict type definitions.
+pmd_hugepage_update() is inside #ifdef CONFIG_TRANSPARENT_HUGEPAGE. THP
+can only be enabled if PPC_BOOK3S_64=y && PPC_64K_PAGES=y, aka. hash64.
 
-Acked-by: Paul Mackerras <paulus@ozlabs.org>
+On hash64 we always define PTE_ATOMIC_UPDATES to 1, meaning the #ifdef
+in pmd_hugepage_update() is unnecessary, so drop it.
+
+That is also the only use of PTE_ATOMIC_UPDATES in any of the hash code,
+meaning we no longer need to #define it at all in the hash headers.
+
+Note it's still #defined and used in the nohash code.
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig.debug               |  8 ------
- arch/powerpc/include/asm/pgtable-types.h | 46 --------------------------------
- 2 files changed, 54 deletions(-)
+ arch/powerpc/include/asm/book3s/32/hash.h | 3 ---
+ arch/powerpc/include/asm/book3s/64/hash.h | 2 --
+ arch/powerpc/mm/pgtable_64.c              | 6 +-----
+ 3 files changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 638f9ce740f5..d3fcf7e64e3a 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -19,14 +19,6 @@ config PPC_WERROR
- 	depends on !PPC_DISABLE_WERROR
- 	default y
+diff --git a/arch/powerpc/include/asm/book3s/32/hash.h b/arch/powerpc/include/asm/book3s/32/hash.h
+index 264b754d65b0..880db13a2e9f 100644
+--- a/arch/powerpc/include/asm/book3s/32/hash.h
++++ b/arch/powerpc/include/asm/book3s/32/hash.h
+@@ -39,8 +39,5 @@
+ #define _PMD_PRESENT_MASK (PAGE_MASK)
+ #define _PMD_BAD	(~PAGE_MASK)
  
--config STRICT_MM_TYPECHECKS
--	bool "Do extra type checking on mm types"
--	default n
--	help
--	  This option turns on extra type checking for some mm related types.
+-/* Hash table based platforms need atomic updates of the linux PTE */
+-#define PTE_ATOMIC_UPDATES	1
 -
--	  If you don't know what this means, say N.
--
- config PRINT_STACK_DEPTH
- 	int "Stack depth to print" if DEBUG_KERNEL
- 	default 64
-diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
-index 43140f8b0592..1464e74178d8 100644
---- a/arch/powerpc/include/asm/pgtable-types.h
-+++ b/arch/powerpc/include/asm/pgtable-types.h
-@@ -1,9 +1,6 @@
- #ifndef _ASM_POWERPC_PGTABLE_TYPES_H
- #define _ASM_POWERPC_PGTABLE_TYPES_H
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_BOOK3S_32_HASH_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
+index d0ee6fcef823..8f2ae0674be9 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash.h
++++ b/arch/powerpc/include/asm/book3s/64/hash.h
+@@ -127,8 +127,6 @@
+ #define _PTEIDX_SECONDARY	0x8
+ #define _PTEIDX_GROUP_IX	0x7
  
--#ifdef CONFIG_STRICT_MM_TYPECHECKS
--/* These are used to make use of C type-checking. */
--
- /* PTE level */
- typedef struct { pte_basic_t pte; } pte_t;
- #define __pte(x)	((pte_t) { (x) })
-@@ -48,49 +45,6 @@ typedef struct { unsigned long pgprot; } pgprot_t;
- #define pgprot_val(x)	((x).pgprot)
- #define __pgprot(x)	((pgprot_t) { (x) })
- 
--#else
--
--/*
-- * .. while these make it easier on the compiler
-- */
--
--typedef pte_basic_t pte_t;
--#define __pte(x)	(x)
--static inline pte_basic_t pte_val(pte_t pte)
--{
--	return pte;
--}
--
--#ifdef CONFIG_PPC64
--typedef unsigned long pmd_t;
--#define __pmd(x)	(x)
--static inline unsigned long pmd_val(pmd_t pmd)
--{
--	return pmd;
--}
--
--#if defined(CONFIG_PPC_BOOK3S_64) || !defined(CONFIG_PPC_64K_PAGES)
--typedef unsigned long pud_t;
--#define __pud(x)	(x)
--static inline unsigned long pud_val(pud_t pud)
--{
--	return pud;
--}
--#endif /* CONFIG_PPC_BOOK3S_64 || !CONFIG_PPC_64K_PAGES */
--#endif /* CONFIG_PPC64 */
--
--typedef unsigned long pgd_t;
--#define __pgd(x)	(x)
--static inline unsigned long pgd_val(pgd_t pgd)
--{
--	return pgd;
--}
--
--typedef unsigned long pgprot_t;
--#define pgprot_val(x)	(x)
--#define __pgprot(x)	(x)
--
--#endif /* CONFIG_STRICT_MM_TYPECHECKS */
+-/* Hash table based platforms need atomic updates of the linux PTE */
+-#define PTE_ATOMIC_UPDATES	1
+ #define _PTE_NONE_MASK	_PAGE_HPTEFLAGS
  /*
-  * With hash config 64k pages additionally define a bigger "real PTE" type that
-  * gathers the "second half" part of the PTE for pseudo 64k pages
+  * The mask convered by the RPN must be a ULL on 32-bit platforms with
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 347106080bb1..cda88b804d21 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -522,7 +522,6 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+ 	assert_spin_locked(&mm->page_table_lock);
+ #endif
+ 
+-#ifdef PTE_ATOMIC_UPDATES
+ 	__asm__ __volatile__(
+ 	"1:	ldarx	%0,0,%3\n\
+ 		andi.	%1,%0,%6\n\
+@@ -534,10 +533,7 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*pmdp)
+ 	: "r" (pmdp), "r" (clr), "m" (*pmdp), "i" (_PAGE_BUSY), "r" (set)
+ 	: "cc" );
+-#else
+-	old = pmd_val(*pmdp);
+-	*pmdp = __pmd((old & ~clr) | set);
+-#endif
++
+ 	trace_hugepage_update(addr, old, clr, set);
+ 	if (old & _PAGE_HASHPTE)
+ 		hpte_do_hugepage_flush(mm, addr, pmdp, old);
 -- 
 2.5.0
