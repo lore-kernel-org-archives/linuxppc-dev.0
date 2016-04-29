@@ -2,9 +2,9 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxHxZ3wJBzDqB5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 01:41:54 +1000 (AEST)
-Date: Fri, 29 Apr 2016 09:41:46 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxHy61j7SzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 01:42:22 +1000 (AEST)
+Date: Fri, 29 Apr 2016 09:42:20 -0600
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
@@ -13,12 +13,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
  <david@gibson.dropbear.id.au>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Russell Currey <ruscur@russell.cc>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v4 02/11] vfio/spapr: Relax the IOMMU
- compatibility check
-Message-ID: <20160429094146.4ed23f4b@t450s.home>
-In-Reply-To: <1461920124-21719-3-git-send-email-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v4 01/11] vfio_pci: Test for extended
+ capabilities if config space > 256 bytes
+Message-ID: <20160429094220.6c7413ae@t450s.home>
+In-Reply-To: <1461920124-21719-2-git-send-email-aik@ozlabs.ru>
 References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
- <1461920124-21719-3-git-send-email-aik@ozlabs.ru>
+ <1461920124-21719-2-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,33 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 29 Apr 2016 18:55:15 +1000
+On Fri, 29 Apr 2016 18:55:14 +1000
 Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> We are going to have multiple different types of PHB on the same system
-> with POWER8 + NVLink and PHBs will have different IOMMU ops. However
-> we only really care about one callback - create_table - so we can
-> relax the compatibility check here.
+> PCI-Express spec says that reading 4 bytes at offset 100h should return
+> zero if there is no extended capability so VFIO reads this dword to
+> know if there are extended capabilities.
+> 
+> However it is not always possible to access the extended space so
+> generic PCI code in pci_cfg_space_size_ext() checks if
+> pci_read_config_dword() can read beyond 100h and if the check fails,
+> it sets the config space size to 100h.
+> 
+> VFIO does its own extended capabilities check by reading at offset 100h
+> which may produce 0xffffffff which VFIO treats as the extended config
+> space presense and calls vfio_ecap_init() which fails to parse
+> capabilities (which is expected) but right before the exit, it writes
+> zero at offset 100h which is beyond the buffer allocated for
+> vdev->vconfig (which is 256 bytes) which leads to random memory
+> corruption.
+> 
+> This makes VFIO only check for the extended capabilities if
+> the discovered config size is more than 256 bytes.
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 > ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 0582b72..3054e3f 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1188,7 +1188,8 @@ static int tce_iommu_attach_group(void *iommu_data,
->  			goto unlock_exit;
->  		}
->  		table_group_tmp = iommu_group_get_iommudata(tcegrp->grp);
-> -		if (table_group_tmp->ops != table_group->ops) {
-> +		if (table_group_tmp->ops->create_table !=
-> +				table_group->ops->create_table) {
->  			pr_warn("tce_vfio: Group %d is incompatible with group %d\n",
->  					iommu_group_id(iommu_group),
->  					iommu_group_id(tcegrp->grp));
+> Changes:
+> v2:
+> * instead of checking for 0xffffffff, this only does the check if
+> device's config size is big enough
+> ---
 
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
+I'll take this patch separately, please drop from this series.  Thanks,
+
+Alex
+
+>  drivers/vfio/pci/vfio_pci_config.c | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci_config.c b/drivers/vfio/pci/vfio_pci_config.c
+> index 142c533..d0c4358 100644
+> --- a/drivers/vfio/pci/vfio_pci_config.c
+> +++ b/drivers/vfio/pci/vfio_pci_config.c
+> @@ -1124,9 +1124,12 @@ static int vfio_cap_len(struct vfio_pci_device *vdev, u8 cap, u8 pos)
+>  			return pcibios_err_to_errno(ret);
+>  
+>  		if (PCI_X_CMD_VERSION(word)) {
+> -			/* Test for extended capabilities */
+> -			pci_read_config_dword(pdev, PCI_CFG_SPACE_SIZE, &dword);
+> -			vdev->extended_caps = (dword != 0);
+> +			if (pdev->cfg_size > PCI_CFG_SPACE_SIZE) {
+> +				/* Test for extended capabilities */
+> +				pci_read_config_dword(pdev, PCI_CFG_SPACE_SIZE,
+> +						&dword);
+> +				vdev->extended_caps = (dword != 0);
+> +			}
+>  			return PCI_CAP_PCIX_SIZEOF_V2;
+>  		} else
+>  			return PCI_CAP_PCIX_SIZEOF_V0;
+> @@ -1138,9 +1141,11 @@ static int vfio_cap_len(struct vfio_pci_device *vdev, u8 cap, u8 pos)
+>  
+>  		return byte;
+>  	case PCI_CAP_ID_EXP:
+> -		/* Test for extended capabilities */
+> -		pci_read_config_dword(pdev, PCI_CFG_SPACE_SIZE, &dword);
+> -		vdev->extended_caps = (dword != 0);
+> +		if (pdev->cfg_size > PCI_CFG_SPACE_SIZE) {
+> +			/* Test for extended capabilities */
+> +			pci_read_config_dword(pdev, PCI_CFG_SPACE_SIZE, &dword);
+> +			vdev->extended_caps = dword != 0;
+> +		}
+>  
+>  		/* length based on version */
+>  		if ((pcie_caps_reg(pdev) & PCI_EXP_FLAGS_VERS) == 1)
