@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxd2P24zDqB2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxDxd6pHdzDqB2
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 23:26:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v3 03/70] powerpc/mm: Drop PTE_ATOMIC_UPDATES from
- pmd_hugepage_update()
-Date: Fri, 29 Apr 2016 23:25:26 +1000
-Message-Id: <1461936393-10131-3-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 04/70] powerpc/mm: Add pte_xchg() helper
+Date: Fri, 29 Apr 2016 23:25:27 +1000
+Message-Id: <1461936393-10131-4-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 References: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,76 +22,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+We have five locations in 64-bit hash MMU code that do a cmpxchg() of a
+PTE. Currently doing it inline OK, but in a future patch we will be
+converting the PTEs to __be64 in some configs. In that case we will need
+casts at every cmpxchg() site in order to keep sparse happy.
 
-pmd_hugepage_update() is inside #ifdef CONFIG_TRANSPARENT_HUGEPAGE. THP
-can only be enabled if PPC_BOOK3S_64=y && PPC_64K_PAGES=y, aka. hash64.
+So move the logic into a helper, this is a reasonably nice cleanup on
+its own.
 
-On hash64 we always define PTE_ATOMIC_UPDATES to 1, meaning the #ifdef
-in pmd_hugepage_update() is unnecessary, so drop it.
-
-That is also the only use of PTE_ATOMIC_UPDATES in any of the hash code,
-meaning we no longer need to #define it at all in the hash headers.
-
-Note it's still #defined and used in the nohash code.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/32/hash.h | 3 ---
- arch/powerpc/include/asm/book3s/64/hash.h | 2 --
- arch/powerpc/mm/pgtable_64.c              | 6 +-----
- 3 files changed, 1 insertion(+), 10 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h |  5 +----
+ arch/powerpc/include/asm/pgtable-types.h | 12 ++++++++++++
+ arch/powerpc/mm/hash64_4k.c              |  4 ++--
+ arch/powerpc/mm/hash64_64k.c             |  7 +++----
+ arch/powerpc/mm/hugetlbpage-hash64.c     |  4 ++--
+ 5 files changed, 20 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/hash.h b/arch/powerpc/include/asm/book3s/32/hash.h
-index 264b754d65b0..880db13a2e9f 100644
---- a/arch/powerpc/include/asm/book3s/32/hash.h
-+++ b/arch/powerpc/include/asm/book3s/32/hash.h
-@@ -39,8 +39,5 @@
- #define _PMD_PRESENT_MASK (PAGE_MASK)
- #define _PMD_BAD	(~PAGE_MASK)
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 7529aab068f5..42da513fec2d 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -319,11 +319,8 @@ static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing)
+ 		if (writing && pte_write(old_pte))
+ 			new_pte = pte_mkdirty(new_pte);
  
--/* Hash table based platforms need atomic updates of the linux PTE */
--#define PTE_ATOMIC_UPDATES	1
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_BOOK3S_32_HASH_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index d0ee6fcef823..8f2ae0674be9 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -127,8 +127,6 @@
- #define _PTEIDX_SECONDARY	0x8
- #define _PTEIDX_GROUP_IX	0x7
- 
--/* Hash table based platforms need atomic updates of the linux PTE */
--#define PTE_ATOMIC_UPDATES	1
- #define _PTE_NONE_MASK	_PAGE_HPTEFLAGS
- /*
-  * The mask convered by the RPN must be a ULL on 32-bit platforms with
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 347106080bb1..cda88b804d21 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -522,7 +522,6 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
- 	assert_spin_locked(&mm->page_table_lock);
+-		if (pte_val(old_pte) == __cmpxchg_u64((unsigned long *)ptep,
+-						      pte_val(old_pte),
+-						      pte_val(new_pte))) {
++		if (pte_xchg(ptep, old_pte, new_pte))
+ 			break;
+-		}
+ 	}
+ 	return new_pte;
+ }
+diff --git a/arch/powerpc/include/asm/pgtable-types.h b/arch/powerpc/include/asm/pgtable-types.h
+index 1464e74178d8..e7f4f3e0fcde 100644
+--- a/arch/powerpc/include/asm/pgtable-types.h
++++ b/arch/powerpc/include/asm/pgtable-types.h
+@@ -54,4 +54,16 @@ typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+ #else
+ typedef struct { pte_t pte; } real_pte_t;
  #endif
- 
--#ifdef PTE_ATOMIC_UPDATES
- 	__asm__ __volatile__(
- 	"1:	ldarx	%0,0,%3\n\
- 		andi.	%1,%0,%6\n\
-@@ -534,10 +533,7 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*pmdp)
- 	: "r" (pmdp), "r" (clr), "m" (*pmdp), "i" (_PAGE_BUSY), "r" (set)
- 	: "cc" );
--#else
--	old = pmd_val(*pmdp);
--	*pmdp = __pmd((old & ~clr) | set);
--#endif
 +
- 	trace_hugepage_update(addr, old, clr, set);
- 	if (old & _PAGE_HASHPTE)
- 		hpte_do_hugepage_flush(mm, addr, pmdp, old);
++#ifdef CONFIG_PPC_STD_MMU_64
++#include <asm/cmpxchg.h>
++
++static inline bool pte_xchg(pte_t *ptep, pte_t old, pte_t new)
++{
++	unsigned long *p = (unsigned long *)ptep;
++
++	return pte_val(old) == __cmpxchg_u64(p, pte_val(old), pte_val(new));
++}
++#endif
++
+ #endif /* _ASM_POWERPC_PGTABLE_TYPES_H */
+diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
+index 47d1b26effc6..dbd3133a8562 100644
+--- a/arch/powerpc/mm/hash64_4k.c
++++ b/arch/powerpc/mm/hash64_4k.c
+@@ -47,8 +47,8 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+ 		if (access & _PAGE_RW)
+ 			new_pte |= _PAGE_DIRTY;
+-	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
+-					  old_pte, new_pte));
++	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
++
+ 	/*
+ 	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
+ 	 * need to add in 0x1 if it's a read-only user page
+diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
+index b2d659cf51c6..6fbf983b3ae5 100644
+--- a/arch/powerpc/mm/hash64_64k.c
++++ b/arch/powerpc/mm/hash64_64k.c
+@@ -79,8 +79,8 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED | _PAGE_COMBO;
+ 		if (access & _PAGE_RW)
+ 			new_pte |= _PAGE_DIRTY;
+-	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
+-					  old_pte, new_pte));
++	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
++
+ 	/*
+ 	 * Handle the subpage protection bits
+ 	 */
+@@ -254,8 +254,7 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
+ 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+ 		if (access & _PAGE_RW)
+ 			new_pte |= _PAGE_DIRTY;
+-	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
+-					  old_pte, new_pte));
++	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
+ 
+ 	rflags = htab_convert_pte_flags(new_pte);
+ 
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index 8555fce902fe..9c0518761279 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -57,8 +57,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		new_pte = old_pte | _PAGE_BUSY | _PAGE_ACCESSED;
+ 		if (access & _PAGE_RW)
+ 			new_pte |= _PAGE_DIRTY;
+-	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
+-					 old_pte, new_pte));
++	} while(!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
++
+ 	rflags = htab_convert_pte_flags(new_pte);
+ 
+ 	sz = ((1UL) << shift);
 -- 
 2.5.0
