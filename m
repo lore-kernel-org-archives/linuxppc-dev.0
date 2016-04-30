@@ -1,21 +1,24 @@
-Return-Path: <intermediadc@hotmail.com>
-Received: from DUB004-OMC3S1.hotmail.com (dub004-omc3s1.hotmail.com
- [157.55.2.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ig0-x244.google.com (mail-ig0-x244.google.com
+ [IPv6:2607:f8b0:4001:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxj4R0yFwzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 17:34:14 +1000 (AEST)
-Message-ID: <DUB406-EAS427CAFEB8EC6C583774D5BBC8670@phx.gbl>
-Content-Type: text/plain; charset="utf-8"
-Subject: Re: radeonhd and xorg issues on powerpc p5020 and G5
-References: <DUB117-W972E5DAF4FC0B745E9B1F7C86F0@phx.gbl>
- <57245A5D.6030101@daenzer.net>
-From: luigi burdo <intermediadc@hotmail.com>
-MIME-Version: 1.0 (1.0)
-In-Reply-To: <57245A5D.6030101@daenzer.net>
-Date: Sat, 30 Apr 2016 09:34:08 +0200
-To: =?utf-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxnds67hczDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 20:59:59 +1000 (AEST)
+Received: by mail-ig0-x244.google.com with SMTP id rc4so5287627igc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 03:59:59 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <CACxGe6uY-b49YfgBEkJmhjrZ5Pv3+_GPGj+eZOWOkJ43Qc2e4A@mail.gmail.com>
+References: <CACxGe6uY-b49YfgBEkJmhjrZ5Pv3+_GPGj+eZOWOkJ43Qc2e4A@mail.gmail.com>
+From: Grant Likely <grant.likely@linaro.org>
+Date: Sat, 30 Apr 2016 11:59:37 +0100
+Message-ID: <CACxGe6vx4c7pYe7Z+joz1uWyZd2yzG68dc3Oyd4y9HXNBTqTLA@mail.gmail.com>
+Subject: Fwd: Devicetree specification process
+To: "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-aGkgbWljaGVsLCANCnNvcnJ5IGZvciBleHRyYSBlbWFpbC4NCg0KYWJvdXQga2VybmVscyBpIGJl
-ZW4gdGVzdCBmcm9tIDMuMyB0byA0LiB0byBsYXN0ZXN0IHJjIG5vdGhpbmcgY2hhbmdlIHRoZSBz
-aXR1YXRpb24gc3RpbGwgdGhlIHNhbWUuDQphbm90aGVyIHRoaW5nLCBjYW4gYmUgdGhpcyBpc3N1
-ZSBnZW5lcmF0ZWQgYmVjYXVzZSBvdXIga2VybmVsIGFyZSBwcGM2NCBhbmQgdGhlIGRpc3Ryb3Mg
-YXJlIHBwYzMyPw0KDQp0aGFua3MgDQpsdWlnaQ0KDQpJbnZpYXRvIGRhIGlQYWQNCg0KPiBJbCBn
-aW9ybm8gMzAgYXByIDIwMTYsIGFsbGUgb3JlIDA5OjIwLCBNaWNoZWwgRMOkbnplciA8bWljaGVs
-QGRhZW56ZXIubmV0PiBoYSBzY3JpdHRvOg0KPiANCj4+IE9uIDIzLjA0LjIwMTYgMDI6MDYsIGx1
-aWdpIGJ1cmRvIHdyb3RlOg0KPj4gDQo+PiBPbiBRdWFkIEc1IHdpdGggMiB2aWRlbyBib2FyZHMN
-Cj4+IGlmIGkgc2V0IHJhZGVvbi5tb2Rlc2V0PTEgIG5vdXZlYXUubW9kZXNldD0xIFhvcmcgLWNv
-bmZpZ3VyZSBkb250IGZvdW5kDQo+PiBhdCBhbGwgdGhlIHZpZGVvIGJvYXJkcw0KPj4gaWYgaSBz
-ZXQgcmFkZW9uLm1vZGVzZXQ9MCAgbm91dmVhdS5tb2Rlc2V0PTEgWG9yZyAtY29uZmlndXJlIGRv
-bnQgZm91bmQNCj4+IHRoZSBub3V2ZWF1IGJvYXJkDQo+PiBpZiBpIHNldCByYWRlb24ubW9kZXNl
-dD0xICBub3V2ZWF1Lm1vZGVzZXQ9MCBYb3JnIC1jb25maWd1cmUgZG9udCBmb3VuZA0KPj4gdGhl
-IHJhZGVvbiBib2FyZA0KPiANCj4gWG9yZyAtY29uZmlndXJlIGhhcyB2YXJpb3VzIGtub3duIGlz
-c3VlcyBhbmQgc2hvdWxkbid0IGJlIHVzZWQgYW55bW9yZS4NCj4gWG9yZyBpcyBub3JtYWxseSBh
-YmxlIHRvIGF1dG9tYXRpY2FsbHkgZGV0ZWN0IGFuZCB1c2UgYWxsIEdQVXMgaW4gYQ0KPiBzeXN0
-ZW0gd2l0aG91dCBhbnkgeG9yZy5jb25mIGZpbGUuDQo+IA0KPiANCj4+IGlmIGkgc2V0IHJhZGVv
-bi5tb2Rlc2V0PTAgIG5vdXZlYXUubW9kZXNldD0wIG5vIHZpZGVvIHdvcmtpbmcgLi4uIG5vIHR0
-eQ0KPj4gdG9vIDstKQ0KPiANCj4gVGhhdCBkaXNhYmxlcyBib3RoIGtlcm5lbCBkcml2ZXJzLCB3
-aGljaCBhcmUgcmVxdWlyZWQgZm9yIGZiY29uIGFuZCBYb3JnLg0KPiANCj4gDQo+PiBPbiBQNTAy
-MA0KPj4gbGFzdCBvZiBteSB0ZXN0IGlzIHRoaXMgbWFjaGluZSB3aXRoIGEgIHJhZGVvbiBoZCA3
-NzcwIGNvcmUgZWRpdGlvbg0KPj4gaWYgcmFkZW9uIGRydiBpcyBydW5uaW5nIHRoZSBzeXN0ZW0g
-cnVuIGluIHNvZnRwaXBlIG1vZGUgYW5kIGkgZmFjZSBtYW55DQo+PiBkcm0gZXJyb3JzIGFuZCBm
-ZW5jZSBpc3N1ZS4NCj4+IGkgYXR0ZWNoZWQgdGhlIGRtZXNnIGZpbGVzLg0KPiANCj4gV2hpY2gg
-a2VybmVsIHZlcnNpb24gYXJlIHlvdSB0ZXN0aW5nPyBUaGVyZSB3ZXJlIHNvbWUgZml4ZXMgaW4g
-NC40LzQuNQ0KPiB3aGljaCBtYXkgaGVscCBmb3IgdGhlIGtlcm5lbCBkcml2ZXIgaXNzdWVzLCBi
-dXQgbm90ZSB0aGF0IHRoZSBNZXNhDQo+IHJhZGVvbnNpIGRyaXZlciBmb3IgPj0gN3h4eCBSYWRl
-b25zIHN0aWxsIG5lZWRzIGEgbG90IG9mIHdvcmsgdG8gYmUNCj4gdXNhYmxlIG9uIGJpZyBlbmRp
-YW4gc3lzdGVtcy4NCj4gDQo+IA0KPiAtLSANCj4gRWFydGhsaW5nIE1pY2hlbCBEw6RuemVyICAg
-ICAgICAgICAgICAgfCAgICAgICAgICAgICAgIGh0dHA6Ly93d3cuYW1kLmNvbQ0KPiBMaWJyZSBz
-b2Z0d2FyZSBlbnRodXNpYXN0ICAgICAgICAgICAgIHwgICAgICAgICAgICAgTWVzYSBhbmQgWCBk
-ZXZlbG9wZXINCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18NCj4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdA0KPiBMaW51eHBwYy1kZXZAbGlzdHMub3ps
-YWJzLm9yZw0KPiBodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
-DQo=
+I'm pleased to announce the first *very early draft* of the new
+devicetree specification that I and several others have been working
+on since January. This document picks up where ePAPR left off in 2012.
+I'm announcing it now along with the new devicetree.org organization
+which will handle governance for the spec.
+
+We're still in the process of getting all the details sorted out (not
+everything on the website is accurate at the moment), but in the mean
+time you can look at the current state of the document. At the moment,
+it is little more than repackaging the ePAPR text. The next step will
+be pulling in the new core bindings that were never covered by ePAPR.
+You can look at a draft copy of the document here:
+
+https://github.com/kvekaria/devicetree-specification-released/blob/master/prerelease/DevicetreeSpecification-20160429-pre1.pdf
+
+If you want to help out, the document source markup can be cloned from
+GitHub. You can find the project page here:
+
+https://github.com/devicetree-org/devicetree-specification
+
+Feedback is greatly appreciate. Please send any comments and/or
+changes to the devicetree specification mailing list:
+
+devicetree-spec@vger.kernel.org
+
+For more information, you can refer to the slides presented at BKK16 and ELC[1].
+
+[1] http://elinux.org/images/b/b7/Devicetree_specification_linaro_connect_bangkok_2016.pdf
+
+Thanks,
+g.
