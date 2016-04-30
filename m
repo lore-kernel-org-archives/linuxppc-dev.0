@@ -1,25 +1,17 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxX471cc9zDq9s
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 10:48:23 +1000 (AEST)
-Date: Sat, 30 Apr 2016 10:48:00 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
- <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Michael Neuling
- <mikey@neuling.org>, David Gibson <david@gibson.dropbear.id.au>,
- linuxppc-dev@lists.ozlabs.org, qemu-devel@nongnu.org, qemu-ppc@nongnu.org
-Subject: [PATCH v2] spapr: Don't set the TM ibm,pa-features bit in PR KVM mode
-Message-ID: <20160430104800.0a7c1d11@kryten>
-In-Reply-To: <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
-References: <20160404164457.539a55f0@kryten> <57021123.6050506@ozlabs.ru>
- <20160404204346.1cf44df8@kryten> <20160404210928.0d9ae644@kryten>
- <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qxhlH3QkbzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 17:19:23 +1000 (AEST)
+Subject: Re: radeonhd and xorg issues on powerpc p5020 and G5
+To: luigi burdo <intermediadc@hotmail.com>
+References: <DUB117-W972E5DAF4FC0B745E9B1F7C86F0@phx.gbl>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
+Message-ID: <57245A5D.6030101@daenzer.net>
+Date: Sat, 30 Apr 2016 16:10:21 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <DUB117-W972E5DAF4FC0B745E9B1F7C86F0@phx.gbl>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We don't support transactional memory in PR KVM, so don't tell
-the OS that we do.
+On 23.04.2016 02:06, luigi burdo wrote:
+> 
+> On Quad G5 with 2 video boards
+> if i set radeon.modeset=1  nouveau.modeset=1 Xorg -configure dont found
+> at all the video boards
+> if i set radeon.modeset=0  nouveau.modeset=1 Xorg -configure dont found
+> the nouveau board
+> if i set radeon.modeset=1  nouveau.modeset=0 Xorg -configure dont found
+> the radeon board
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Xorg -configure has various known issues and shouldn't be used anymore.
+Xorg is normally able to automatically detect and use all GPUs in a
+system without any xorg.conf file.
 
-v2: Fix build with CONFIG_KVM disabled, noticed by Alex.
 
-diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-index b69995e..dc3e3c9 100644
---- a/hw/ppc/spapr.c
-+++ b/hw/ppc/spapr.c
-@@ -696,6 +696,14 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
-     } else /* env->mmu_model == POWERPC_MMU_2_07 */ {
-         pa_features = pa_features_207;
-         pa_size = sizeof(pa_features_207);
-+
-+#ifdef CONFIG_KVM
-+        /* Don't enable TM in PR KVM mode */
-+        if (kvm_enabled() &&
-+            kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINFO)) {
-+            pa_features[24] &= ~0x80;
-+        }
-+#endif
-     }
-     if (env->ci_large_pages) {
-         pa_features[3] |= 0x20;
+> if i set radeon.modeset=0  nouveau.modeset=0 no video working ... no tty
+> too ;-)
+
+That disables both kernel drivers, which are required for fbcon and Xorg.
+
+
+> On P5020
+> last of my test is this machine with a  radeon hd 7770 core edition
+> if radeon drv is running the system run in softpipe mode and i face many
+> drm errors and fence issue.
+> i atteched the dmesg files.
+
+Which kernel version are you testing? There were some fixes in 4.4/4.5
+which may help for the kernel driver issues, but note that the Mesa
+radeonsi driver for >= 7xxx Radeons still needs a lot of work to be
+usable on big endian systems.
+
+
+-- 
+Earthling Michel Dänzer               |               http://www.amd.com
+Libre software enthusiast             |             Mesa and X developer
