@@ -1,17 +1,21 @@
-Return-Path: <michel@daenzer.net>
-Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qxhlH3QkbzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 17:19:23 +1000 (AEST)
+Return-Path: <intermediadc@hotmail.com>
+Received: from DUB004-OMC3S29.hotmail.com (dub004-omc3s29.hotmail.com
+ [157.55.2.38])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxhyb6Sj7zDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 17:29:11 +1000 (AEST)
+Message-ID: <DUB406-EAS3861973DA5AAFF7AF30D06DC8670@phx.gbl>
+Content-Type: text/plain; charset="utf-8"
 Subject: Re: radeonhd and xorg issues on powerpc p5020 and G5
-To: luigi burdo <intermediadc@hotmail.com>
 References: <DUB117-W972E5DAF4FC0B745E9B1F7C86F0@phx.gbl>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
-Message-ID: <57245A5D.6030101@daenzer.net>
-Date: Sat, 30 Apr 2016 16:10:21 +0900
-MIME-Version: 1.0
-In-Reply-To: <DUB117-W972E5DAF4FC0B745E9B1F7C86F0@phx.gbl>
-Content-Type: text/plain; charset=utf-8
+ <57245A5D.6030101@daenzer.net>
+From: luigi burdo <intermediadc@hotmail.com>
+MIME-Version: 1.0 (1.0)
+In-Reply-To: <57245A5D.6030101@daenzer.net>
+Date: Sat, 30 Apr 2016 09:29:05 +0200
+To: =?utf-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,39 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23.04.2016 02:06, luigi burdo wrote:
-> 
-> On Quad G5 with 2 video boards
-> if i set radeon.modeset=1  nouveau.modeset=1 Xorg -configure dont found
-> at all the video boards
-> if i set radeon.modeset=0  nouveau.modeset=1 Xorg -configure dont found
-> the nouveau board
-> if i set radeon.modeset=1  nouveau.modeset=0 Xorg -configure dont found
-> the radeon board
-
-Xorg -configure has various known issues and shouldn't be used anymore.
-Xorg is normally able to automatically detect and use all GPUs in a
-system without any xorg.conf file.
-
-
-> if i set radeon.modeset=0  nouveau.modeset=0 no video working ... no tty
-> too ;-)
-
-That disables both kernel drivers, which are required for fbcon and Xorg.
-
-
-> On P5020
-> last of my test is this machine with a  radeon hd 7770 core edition
-> if radeon drv is running the system run in softpipe mode and i face many
-> drm errors and fence issue.
-> i atteched the dmesg files.
-
-Which kernel version are you testing? There were some fixes in 4.4/4.5
-which may help for the kernel driver issues, but note that the Mesa
-radeonsi driver for >= 7xxx Radeons still needs a lot of work to be
-usable on big endian systems.
-
-
--- 
-Earthling Michel Dänzer               |               http://www.amd.com
-Libre software enthusiast             |             Mesa and X developer
+aGkgbWljaGVsLA0Kd2l0aG91dCB4b3JnIGNvbmYgb24gY3lydXMrIHA1MDIwLCBhbmQgZzUgcXVh
+ZCBpIGhhdmUgb25seSB0aGUgYmxhY2sgc2NyZWVuIHdpdGggcHVsc2UgY3Vyc29yLiBpIG5lZWQg
+dG8gbWFkZSBpdCBhbmQgcHV0IGluIGV0Yy9YMTEvIG9yIG5vdCBkZXNrdG9wIGF0IGFsbC4NCg0K
+YWJvdXQgbW9kZXNldD0wIG9uIGJvdGggY2FyZHM6DQp5ZXMgaSBrbm93IGlzIG5vcm1hbCBkb250
+IGhhdmUgdmlkZW8gYnV0IGkgdGhpbmsgdGhlIG1vcmUgc3RyYW5nZSBpcyBoYXZlIHRoZSBvcHBv
+c2l0ZSBjb21wYXJlZCB0aGUga2VybmVsIG9wdGlvbnMgLiB3aXRoIGtlcm5lbCByYWRlb24uIG1v
+ZGVzZXQ9MCBhbmQgbm91dmVhdS5tb2Rlc2V0PTEgbG9vayBsaWtlIHhvcmcgdW5kZXJzdGFuZCB0
+byBhY3RpdmF0ZSB0aGUgcmFkZW9uIGFuZCBkZWFjdGl2YXRlIHRoZSBub3V2ZWF1IC4NCmFuZCB0
+aGlzIG1ha2UgdGhlIHN5c3RlbSBzdGFsbGluZyB3aXRob3V0IGFueSB3YXkgdG8gcmVjb3Zlci4N
+Cg0KYWJvdXQgcmFkZW9uc2ksIHdpbGwgY2hlY2sgIG9uIDc3NTAgdG9vIGFuZCByZXBvcnQuDQpm
+b3Igbm93IDR4eHgsNXh4eCw2eHh4IGNhbiBzYXkgYXJlIHJ1bm5pbmcgb24gcHBjIHN5c3RlbSB3
+aXRoIDNkIHRvbyAsIHllcyBtYW55IGVuZGlhbmVzcyBvbiBlZ2wgYW5kIGVnbDIgY29sb3JzIG5v
+dCByaWdodCBhbmQgc29tZSBjcmVhenkgdGV4dHVyZSBvbiBzb21lIGdhbWVzIGJ1dCAuLi4gcnVu
+bmluZyA7LSkNCg0KY2lhbw0KbHVpZ2kNCg0KDQoNCg0KSW52aWF0byBkYSBpUGFkDQoNCj4gSWwg
+Z2lvcm5vIDMwIGFwciAyMDE2LCBhbGxlIG9yZSAwOToxMCwgTWljaGVsIETDpG56ZXIgPG1pY2hl
+bEBkYWVuemVyLm5ldD4gaGEgc2NyaXR0bzoNCj4gDQo+PiBPbiAyMy4wNC4yMDE2IDAyOjA2LCBs
+dWlnaSBidXJkbyB3cm90ZToNCj4+IA0KPj4gT24gUXVhZCBHNSB3aXRoIDIgdmlkZW8gYm9hcmRz
+DQo+PiBpZiBpIHNldCByYWRlb24ubW9kZXNldD0xICBub3V2ZWF1Lm1vZGVzZXQ9MSBYb3JnIC1j
+b25maWd1cmUgZG9udCBmb3VuZA0KPj4gYXQgYWxsIHRoZSB2aWRlbyBib2FyZHMNCj4+IGlmIGkg
+c2V0IHJhZGVvbi5tb2Rlc2V0PTAgIG5vdXZlYXUubW9kZXNldD0xIFhvcmcgLWNvbmZpZ3VyZSBk
+b250IGZvdW5kDQo+PiB0aGUgbm91dmVhdSBib2FyZA0KPj4gaWYgaSBzZXQgcmFkZW9uLm1vZGVz
+ZXQ9MSAgbm91dmVhdS5tb2Rlc2V0PTAgWG9yZyAtY29uZmlndXJlIGRvbnQgZm91bmQNCj4+IHRo
+ZSByYWRlb24gYm9hcmQNCj4gDQo+IFhvcmcgLWNvbmZpZ3VyZSBoYXMgdmFyaW91cyBrbm93biBp
+c3N1ZXMgYW5kIHNob3VsZG4ndCBiZSB1c2VkIGFueW1vcmUuDQo+IFhvcmcgaXMgbm9ybWFsbHkg
+YWJsZSB0byBhdXRvbWF0aWNhbGx5IGRldGVjdCBhbmQgdXNlIGFsbCBHUFVzIGluIGENCj4gc3lz
+dGVtIHdpdGhvdXQgYW55IHhvcmcuY29uZiBmaWxlLg0KPiANCj4gDQo+PiBpZiBpIHNldCByYWRl
+b24ubW9kZXNldD0wICBub3V2ZWF1Lm1vZGVzZXQ9MCBubyB2aWRlbyB3b3JraW5nIC4uLiBubyB0
+dHkNCj4+IHRvbyA7LSkNCj4gDQo+IFRoYXQgZGlzYWJsZXMgYm90aCBrZXJuZWwgZHJpdmVycywg
+d2hpY2ggYXJlIHJlcXVpcmVkIGZvciBmYmNvbiBhbmQgWG9yZy4NCj4gDQo+IA0KPj4gT24gUDUw
+MjANCj4+IGxhc3Qgb2YgbXkgdGVzdCBpcyB0aGlzIG1hY2hpbmUgd2l0aCBhICByYWRlb24gaGQg
+Nzc3MCBjb3JlIGVkaXRpb24NCj4+IGlmIHJhZGVvbiBkcnYgaXMgcnVubmluZyB0aGUgc3lzdGVt
+IHJ1biBpbiBzb2Z0cGlwZSBtb2RlIGFuZCBpIGZhY2UgbWFueQ0KPj4gZHJtIGVycm9ycyBhbmQg
+ZmVuY2UgaXNzdWUuDQo+PiBpIGF0dGVjaGVkIHRoZSBkbWVzZyBmaWxlcy4NCj4gDQo+IFdoaWNo
+IGtlcm5lbCB2ZXJzaW9uIGFyZSB5b3UgdGVzdGluZz8gVGhlcmUgd2VyZSBzb21lIGZpeGVzIGlu
+IDQuNC80LjUNCj4gd2hpY2ggbWF5IGhlbHAgZm9yIHRoZSBrZXJuZWwgZHJpdmVyIGlzc3Vlcywg
+YnV0IG5vdGUgdGhhdCB0aGUgTWVzYQ0KPiByYWRlb25zaSBkcml2ZXIgZm9yID49IDd4eHggUmFk
+ZW9ucyBzdGlsbCBuZWVkcyBhIGxvdCBvZiB3b3JrIHRvIGJlDQo+IHVzYWJsZSBvbiBiaWcgZW5k
+aWFuIHN5c3RlbXMuDQo+IA0KPiANCj4gLS0gDQo+IEVhcnRobGluZyBNaWNoZWwgRMOkbnplciAg
+ICAgICAgICAgICAgIHwgICAgICAgICAgICAgICBodHRwOi8vd3d3LmFtZC5jb20NCj4gTGlicmUg
+c29mdHdhcmUgZW50aHVzaWFzdCAgICAgICAgICAgICB8ICAgICAgICAgICAgIE1lc2EgYW5kIFgg
+ZGV2ZWxvcGVyDQo=
