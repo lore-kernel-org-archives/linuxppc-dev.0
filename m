@@ -1,37 +1,25 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
- [IPv6:2607:f8b0:4003:c01::22f])
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxWDL6XpbzDqCB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 10:10:26 +1000 (AEST)
-Received: by mail-ob0-x22f.google.com with SMTP id x1so39964361obt.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Apr 2016 17:10:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qxX471cc9zDq9s
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 10:48:23 +1000 (AEST)
+Date: Sat, 30 Apr 2016 10:48:00 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Michael Neuling
+ <mikey@neuling.org>, David Gibson <david@gibson.dropbear.id.au>,
+ linuxppc-dev@lists.ozlabs.org, qemu-devel@nongnu.org, qemu-ppc@nongnu.org
+Subject: [PATCH v2] spapr: Don't set the TM ibm,pa-features bit in PR KVM mode
+Message-ID: <20160430104800.0a7c1d11@kryten>
+In-Reply-To: <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
+References: <20160404164457.539a55f0@kryten> <57021123.6050506@ozlabs.ru>
+ <20160404204346.1cf44df8@kryten> <20160404210928.0d9ae644@kryten>
+ <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20160429232746.3lp6qlwojdmm52fb@treble>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <9268772b31cc7bc4dc40c617e3baf45e07322145.1461875890.git.jpoimboe@redhat.com>
- <CALCETrVYzPFjJwZp_PbscGkQDx-K-p5sAt37oz+FoxGx8hSM=A@mail.gmail.com>
- <20160429205047.t6k7rsskx7mhvwxg@treble>
- <CALCETrUokdo=WR7SHMz3pbjxryWDTg7vsErDGGMrieL8RcaRKw@mail.gmail.com>
- <20160429232746.3lp6qlwojdmm52fb@treble>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Fri, 29 Apr 2016 17:10:05 -0700
-Message-ID: <CALCETrUTbmpSg515o3CsvA_dhODYehAbS4zw=qg49KmJtRi3gQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 03/18] x86/asm/head: standardize the bottom of the
- stack for idle tasks
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Chris J Arges <chris.j.arges@canonical.com>,
- linuxppc-dev@lists.ozlabs.org, Jessica Yu <jeyu@redhat.com>,
- Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Vojtech Pavlik <vojtech@suse.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,79 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Apr 29, 2016 4:27 PM, "Josh Poimboeuf" <jpoimboe@redhat.com> wrote:
->
-> On Fri, Apr 29, 2016 at 02:38:02PM -0700, Andy Lutomirski wrote:
-> > On Fri, Apr 29, 2016 at 1:50 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> > > On Fri, Apr 29, 2016 at 12:39:16PM -0700, Andy Lutomirski wrote:
-> > >> On Thu, Apr 28, 2016 at 1:44 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> > >> > Thanks to all the recent x86 entry code refactoring, most tasks' kernel
-> > >> > stacks start at the same offset right above their saved pt_regs,
-> > >> > regardless of which syscall was used to enter the kernel.  That creates
-> > >> > a nice convention which makes it straightforward to identify the
-> > >> > "bottom" of the stack, which can be useful for stack walking code which
-> > >> > needs to verify the stack is sane.
-> > >> >
-> > >> > However there are still a few types of tasks which don't yet follow that
-> > >> > convention:
-> > >> >
-> > >> > 1) CPU idle tasks, aka the "swapper" tasks
-> > >> >
-> > >> > 2) freshly forked TIF_FORK tasks which don't have a stack at all
-> > >> >
-> > >> > Make the idle tasks conform to the new stack bottom convention by
-> > >> > starting their stack at a sizeof(pt_regs) offset from the end of the
-> > >> > stack page.
-> > >> >
-> > >> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > >> > ---
-> > >> >  arch/x86/kernel/head_64.S | 7 ++++---
-> > >> >  1 file changed, 4 insertions(+), 3 deletions(-)
-> > >> >
-> > >> > diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-> > >> > index 6dbd2c0..0b12311 100644
-> > >> > --- a/arch/x86/kernel/head_64.S
-> > >> > +++ b/arch/x86/kernel/head_64.S
-> > >> > @@ -296,8 +296,9 @@ ENTRY(start_cpu)
-> > >> >          *      REX.W + FF /5 JMP m16:64 Jump far, absolute indirect,
-> > >> >          *              address given in m16:64.
-> > >> >          */
-> > >> > -       movq    initial_code(%rip),%rax
-> > >> > -       pushq   $0              # fake return address to stop unwinder
-> > >> > +       call    1f              # put return address on stack for unwinder
-> > >> > +1:     xorq    %rbp, %rbp      # clear frame pointer
-> > >> > +       movq    initial_code(%rip), %rax
-> > >> >         pushq   $__KERNEL_CS    # set correct cs
-> > >> >         pushq   %rax            # target address in negative space
-> > >> >         lretq
-> > >> > @@ -325,7 +326,7 @@ ENDPROC(start_cpu0)
-> > >> >         GLOBAL(initial_gs)
-> > >> >         .quad   INIT_PER_CPU_VAR(irq_stack_union)
-> > >> >         GLOBAL(initial_stack)
-> > >> > -       .quad  init_thread_union+THREAD_SIZE-8
-> > >> > +       .quad  init_thread_union + THREAD_SIZE - SIZEOF_PTREGS
-> > >>
-> > >> As long as you're doing this, could you also set orig_ax to -1?  I
-> > >> remember running into some oddities resulting from orig_ax containing
-> > >> garbage at some point.
-> > >
-> > > I assume you mean to initialize the orig_rax value in the pt_regs at the
-> > > bottom of the stack of the idle task?
-> > >
-> > > How could that cause a problem?  Since the idle task never returns from
-> > > a system call, I'd assume that memory never gets accessed?
-> > >
-> >
-> > Look at collect_syscall in lib/syscall.c
->
-> I don't see how collect_syscall() can be called for the per-cpu idle
-> "swapper" tasks (which is what the above code affects).  They don't have
-> pids or /proc entries so you can't do /proc/<pid>/syscall on them.
+We don't support transactional memory in PR KVM, so don't tell
+the OS that we do.
 
-If so, then never mind.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
---Andy
+v2: Fix build with CONFIG_KVM disabled, noticed by Alex.
 
->
-> --
-> Josh
+diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
+index b69995e..dc3e3c9 100644
+--- a/hw/ppc/spapr.c
++++ b/hw/ppc/spapr.c
+@@ -696,6 +696,14 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
+     } else /* env->mmu_model == POWERPC_MMU_2_07 */ {
+         pa_features = pa_features_207;
+         pa_size = sizeof(pa_features_207);
++
++#ifdef CONFIG_KVM
++        /* Don't enable TM in PR KVM mode */
++        if (kvm_enabled() &&
++            kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINFO)) {
++            pa_features[24] &= ~0x80;
++        }
++#endif
+     }
+     if (env->ci_large_pages) {
+         pa_features[3] |= 0x20;
