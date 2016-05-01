@@ -1,25 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-io0-x22f.google.com (mail-io0-x22f.google.com
- [IPv6:2607:f8b0:4001:c06::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qxnhs4QLhzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 21:02:37 +1000 (AEST)
-Received: by mail-io0-x22f.google.com with SMTP id 190so124887701iow.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Apr 2016 04:02:37 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <CACxGe6uY-b49YfgBEkJmhjrZ5Pv3+_GPGj+eZOWOkJ43Qc2e4A@mail.gmail.com>
-References: <CACxGe6uY-b49YfgBEkJmhjrZ5Pv3+_GPGj+eZOWOkJ43Qc2e4A@mail.gmail.com>
-From: Grant Likely <grant.likely@linaro.org>
-Date: Sat, 30 Apr 2016 12:02:15 +0100
-Message-ID: <CACxGe6u==fS-0s6swtfXOzi0t3RvNQtCS9MSr147G-uf_+fUZw@mail.gmail.com>
-Subject: Re: Devicetree specification process
-To: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- devicetree-spec@vger.kernel.org, U-Boot <u-boot@lists.denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qySJf21VLzDqB3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 May 2016 23:02:26 +1000 (AEST)
+In-Reply-To: <1461936393-10131-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com,
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org,
+ Mike Marciniszyn <mike.marciniszyn@intel.com>
+Subject: Re: [v3,
+ 01/70] IB/qib: Use cache inhibitted and guarded mapping on powerpc
+Message-Id: <3qySJd6HqVz9t3w@ozlabs.org>
+Date: Sun,  1 May 2016 23:02:25 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 30, 2016 at 12:23 AM, Grant Likely <grant.likely@linaro.org> wrote:
-> I'm pleased to announce the first *very early draft* of the new
-> devicetree specification that I and several others have been working
-> on since January. This document picks up where ePAPR left off in 2012.
-> I'm announcing it now along with the new devicetree.org organization
-> which will handle governance for the spec.
->
-> We're still in the process of getting all the details sorted out (not
-> everything on the website is accurate at the moment), but in the mean
-> time you can look at the current state of the document. At the moment,
-> it is little more than repackaging the ePAPR text. The next step will
-> be pulling in the new core bindings that were never covered by ePAPR.
-> You can look at a draft copy of the document here:
->
-> https://github.com/kvekaria/devicetree-specification-released/blob/master/prerelease/DevicetreeSpecification-20160429-pre1.pdf
+On Fri, 2016-29-04 at 13:25:24 UTC, Michael Ellerman wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> The driver was requesting for a writethrough mapping. But with those
+> flags we will end up with an SAO mapping because we now have memory
+> conherence always enabled. ie, the existing mapping will end up with a
+> WIMG value 0b1110 which is Strong Access Order.
+> 
+> Update this to use cache inhibitted guarded mapping.
+> 
+> Cc: Doug Ledford <dledford@redhat.com>
+> Cc: Sean Hefty <sean.hefty@intel.com>
+> Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+> Cc: linux-rdma@vger.kernel.org
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Acked-by: Mike Marciniszyn <mike.marciniszyn@intel.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Oops, wrong link. This should be:
+Applied to powerpc next.
 
-https://github.com/devicetree-org/devicetree-specification-released/blob/master/prerelease/devicetree-specification-v0.1-pre1-20160429.pdf
+https://git.kernel.org/powerpc/c/8ffb4103f5e28d7e7890ed4774
 
-g.
+cheers
