@@ -1,31 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qywNP0jrjzDqCQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 17:07:16 +1000 (AEST)
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Mon, 2 May 2016 17:07:14 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 347013578058
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 17:07:11 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u42773Rg7209252
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 17:07:11 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4276dir003193
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 17:06:39 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: [PATCH kernel v2] powerpc/powernv: Fix debug macro
-Date: Mon,  2 May 2016 17:06:12 +1000
-Message-Id: <1462172772-38161-1-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qyyGq445WzDqCT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 18:32:35 +1000 (AEST)
+Date: Mon, 2 May 2016 18:32:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Ebru Akagunduz
+ <ebru.akagunduz@gmail.com>, Rik van Riel <riel@redhat.com>, "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: linux-next: build failure after merge of the akpm-current tree
+Message-ID: <20160502183234.1dad8115@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When cfg_dbg() is enabled (i.e. mapped to printk()), gcc produces
-errors as the __func__ parameter is missing (pnv_pci_cfg_read() has one);
-this adds the missing parameter. Since cfg_dbg() is used not just for
-config space access, this replaces it with well-known pr_devel().
+Hi Andrew,
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+After merging the akpm-current tree, today's linux-next build (powerpc
+allyesconfig and pseries_le_defconfig) failed like this:
+
+In file included from include/linux/mm.h:394:0,
+                 from mm/huge_memory.c:10:
+include/linux/huge_mm.h:53:22: error: initializer element is not constant
+ #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
+                      ^
+mm/huge_memory.c:104:62: note: in expansion of macro 'HPAGE_PMD_NR'
+ static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
+                                                              ^
+
+Caused by commit
+
+  6d34b9749be2 ("mm: make optimistic check for swapin readahead")
+
+interacting with commit
+
+  dd1842a2a448 ("powerpc/mm: Make page table size a variable")
+
+from the powerpc tree.
+
+I applied this fix patch for today (hopefully this is still initialised
+early enough):
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 2 May 2016 18:25:42 +1000
+Subject: [PATCH] mm: make optimistic check for swapin readahead fix
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-Changes:
-v2:
-* s/cfg_dbg/pr_devel/
+ mm/huge_memory.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
----
- arch/powerpc/platforms/powernv/pci.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 73c8dc2..0db20ae 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -39,9 +39,6 @@
- /* Delay in usec */
- #define PCI_RESET_DELAY_US	3000000
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index f0cd9dbc1157..6aabfa166b6d 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -101,7 +101,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
+  * fault.
+  */
+ static unsigned int khugepaged_max_ptes_none __read_mostly;
+-static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
++static unsigned int khugepaged_max_ptes_swap __read_mostly;
+ static unsigned long allocstall;
  
--#define cfg_dbg(fmt...)	do { } while(0)
--//#define cfg_dbg(fmt...)	printk(fmt)
--
- #ifdef CONFIG_PCI_MSI
- int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- {
-@@ -402,8 +399,8 @@ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
- 		}
- 	}
+ static int khugepaged(void *none);
+@@ -703,6 +703,7 @@ static int __init hugepage_init(void)
  
--	cfg_dbg(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
--		(pdn->busno << 8) | (pdn->devfn), pe_no, fstate);
-+	pr_devel(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
-+		 (pdn->busno << 8) | (pdn->devfn), pe_no, fstate);
- 
- 	/* Clear the frozen state if applicable */
- 	if (fstate == OPAL_EEH_STOPPED_MMIO_FREEZE ||
-@@ -451,8 +448,8 @@ int pnv_pci_cfg_read(struct pci_dn *pdn,
- 		return PCIBIOS_FUNC_NOT_SUPPORTED;
- 	}
- 
--	cfg_dbg("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
--		__func__, pdn->busno, pdn->devfn, where, size, *val);
-+	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
-+		 __func__, pdn->busno, pdn->devfn, where, size, *val);
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-@@ -462,8 +459,8 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
- 	struct pnv_phb *phb = pdn->phb->private_data;
- 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
- 
--	cfg_dbg("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
--		pdn->busno, pdn->devfn, where, size, val);
-+	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
-+		 __func__, pdn->busno, pdn->devfn, where, size, val);
- 	switch (size) {
- 	case 1:
- 		opal_pci_config_write_byte(phb->opal_id, bdfn, where, val);
+ 	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
+ 	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
++	khugepaged_max_ptes_swap = HPAGE_PMD_NR / 8;
+ 	/*
+ 	 * hugepages can't be allocated by the buddy allocator
+ 	 */
 -- 
-2.5.0.rc3
+2.7.0
+
+
+
+
+-- 
+Cheers,
+Stephen Rothwell
