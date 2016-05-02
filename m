@@ -2,9 +2,9 @@ Return-Path: <jikos@kernel.org>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzFPY1ZwszDqCF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 05:54:24 +1000 (AEST)
-Date: Mon, 2 May 2016 21:54:20 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzFXs0jYgzDqCH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 06:00:45 +1000 (AEST)
+Date: Mon, 2 May 2016 22:00:42 +0200 (CEST)
 From: Jiri Kosina <jikos@kernel.org>
 To: Andy Lutomirski <luto@amacapital.net>
 cc: Josh Poimboeuf <jpoimboe@redhat.com>, Ingo Molnar <mingo@redhat.com>,
@@ -17,8 +17,8 @@ cc: Josh Poimboeuf <jpoimboe@redhat.com>, Ingo Molnar <mingo@redhat.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-In-Reply-To: <CALCETrUwHc5G37hoNKou3nBO+5RjenOJqXYR4yGaj9yCZwXbZA@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1605022153290.27942@cbobk.fhfr.pm>
+In-Reply-To: <alpine.LNX.2.00.1605022153290.27942@cbobk.fhfr.pm>
+Message-ID: <alpine.LNX.2.00.1605022159230.27942@cbobk.fhfr.pm>
 References: <20160429201139.pudoged2yathyo64@treble>
  <CALCETrW8G8qCHBkH7GFDTFuH82abJpbVq_-bDaRAdL7U0jLGNQ@mail.gmail.com>
  <20160429202701.yijrohqdsurdxv2a@treble>
@@ -31,6 +31,7 @@ References: <20160429201139.pudoged2yathyo64@treble>
  <CALCETrWc5VFyo9tE5fQGKfijqCjguSSci71HSe58Z1_AL1ZHmQ@mail.gmail.com>
  <20160502173148.zsg6alhknczzozb5@treble>
  <CALCETrUwHc5G37hoNKou3nBO+5RjenOJqXYR4yGaj9yCZwXbZA@mail.gmail.com>
+ <alpine.LNX.2.00.1605022153290.27942@cbobk.fhfr.pm>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,30 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2 May 2016, Andy Lutomirski wrote:
+On Mon, 2 May 2016, Jiri Kosina wrote:
 
-> FWIW, I just tried this:
+> > FWIW, I just tried this:
+> > 
+> > static bool is_entry_text(unsigned long addr)
+> > {
+> >     return addr >= (unsigned long)__entry_text_start &&
+> >         addr < (unsigned long)__entry_text_end;
+> > }
+> > 
+> > it works.  So the entry code is already annotated reasonably well :)
+> > 
+> > I just hacked it up here:
+> > 
+> > https://git.kernel.org/cgit/linux/kernel/git/luto/linux.git/commit/?h=stack&id=085eacfe0edfc18768e48340084415dba9a6bd21
+> > 
+> > and it seems to work, at least for page faults.  A better
+> > implementation would print out the entire contents of pt_regs so that
+> > people reading the stack trace will know the registers at the time of
+> > the exception, which might be helpful.
 > 
-> static bool is_entry_text(unsigned long addr)
-> {
->     return addr >= (unsigned long)__entry_text_start &&
->         addr < (unsigned long)__entry_text_end;
-> }
-> 
-> it works.  So the entry code is already annotated reasonably well :)
-> 
-> I just hacked it up here:
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/luto/linux.git/commit/?h=stack&id=085eacfe0edfc18768e48340084415dba9a6bd21
-> 
-> and it seems to work, at least for page faults.  A better
-> implementation would print out the entire contents of pt_regs so that
-> people reading the stack trace will know the registers at the time of
-> the exception, which might be helpful.
+> Sorry for being dense, but how do you distinguish here between a "real" 
+> kernel entry, that pushes pt_regs, and any "non-entry" function call that 
+> passes pt_regs around?
 
-Sorry for being dense, but how do you distinguish here between a "real" 
-kernel entry, that pushes pt_regs, and any "non-entry" function call that 
-passes pt_regs around?
+Umm, actually, the more tricky part is the other way around -- how do you 
+make sure that whenever you are calling out from a code between 
+__entry_text_start and __entry_text_end, pt_regs will be at the place 
+you're looking for it? How's that guaranteed?
+
+Thanks,
 
 -- 
 Jiri Kosina
