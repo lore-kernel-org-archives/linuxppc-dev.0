@@ -1,40 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <haris.phnx@gmail.com>
+Received: from mail-yw0-x241.google.com (mail-yw0-x241.google.com
+ [IPv6:2607:f8b0:4002:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qz1xx6KhQzDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 21:18:13 +1000 (AEST)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 2 May 2016 21:18:12 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 12C3D2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 21:18:10 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u42BI2M755902324
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 21:18:10 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u42BHbud030854
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 21:17:37 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ebru Akagunduz <ebru.akagunduz@gmail.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: linux-next: build failure after merge of the akpm-current tree
-In-Reply-To: <20160502183234.1dad8115@canb.auug.org.au>
-References: <20160502183234.1dad8115@canb.auug.org.au>
-Date: Mon, 02 May 2016 16:47:10 +0530
-Message-ID: <87h9egzp3d.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qyzjJ2XYmzDqCm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 19:37:08 +1000 (AEST)
+Received: by mail-yw0-x241.google.com with SMTP id i22so18623227ywc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 May 2016 02:37:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20160430104800.0a7c1d11@kryten>
+References: <20160404164457.539a55f0@kryten> <57021123.6050506@ozlabs.ru>
+ <20160404204346.1cf44df8@kryten> <20160404210928.0d9ae644@kryten>
+ <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
+ <20160430104800.0a7c1d11@kryten>
+From: haris iqbal <haris.phnx@gmail.com>
+Date: Mon, 2 May 2016 15:06:46 +0530
+Message-ID: <CAE_WKMzvsRzqiEXV4HsmLZ5D7jLtB+tWVo7UzhtJ9_GMC9Yicg@mail.gmail.com>
+Subject: Re: [Qemu-devel] [PATCH v2] spapr: Don't set the TM ibm, pa-features
+ bit in PR KVM mode
+To: Anton Blanchard <anton@samba.org>
+Cc: Alexander Graf <agraf@suse.de>, Michael Neuling <mikey@neuling.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman <mpe@ellerman.id.au>,
+ QEMU Developers <qemu-devel@nongnu.org>, Paul Mackerras <paulus@samba.org>,
+ qemu-ppc@nongnu.org,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,75 +34,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-
-> Hi Andrew,
+On Sat, Apr 30, 2016 at 6:18 AM, Anton Blanchard <anton@samba.org> wrote:
+> We don't support transactional memory in PR KVM, so don't tell
+> the OS that we do.
 >
-> After merging the akpm-current tree, today's linux-next build (powerpc
-> allyesconfig and pseries_le_defconfig) failed like this:
->
-> In file included from include/linux/mm.h:394:0,
->                  from mm/huge_memory.c:10:
-> include/linux/huge_mm.h:53:22: error: initializer element is not constant
->  #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
->                       ^
-> mm/huge_memory.c:104:62: note: in expansion of macro 'HPAGE_PMD_NR'
->  static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
->                                                               ^
->
-> Caused by commit
->
->   6d34b9749be2 ("mm: make optimistic check for swapin readahead")
->
-> interacting with commit
->
->   dd1842a2a448 ("powerpc/mm: Make page table size a variable")
->
-> from the powerpc tree.
->
-> I applied this fix patch for today (hopefully this is still initialised
-> early enough):
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Mon, 2 May 2016 18:25:42 +1000
-> Subject: [PATCH] mm: make optimistic check for swapin readahead fix
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 > ---
->  mm/huge_memory.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
 >
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index f0cd9dbc1157..6aabfa166b6d 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -101,7 +101,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
->   * fault.
->   */
->  static unsigned int khugepaged_max_ptes_none __read_mostly;
-> -static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
-> +static unsigned int khugepaged_max_ptes_swap __read_mostly;
->  static unsigned long allocstall;
+> v2: Fix build with CONFIG_KVM disabled, noticed by Alex.
 >
->  static int khugepaged(void *none);
-> @@ -703,6 +703,7 @@ static int __init hugepage_init(void)
+> diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
+> index b69995e..dc3e3c9 100644
+> --- a/hw/ppc/spapr.c
+> +++ b/hw/ppc/spapr.c
+> @@ -696,6 +696,14 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
+>      } else /* env->mmu_model == POWERPC_MMU_2_07 */ {
+>          pa_features = pa_features_207;
+>          pa_size = sizeof(pa_features_207);
+> +
+> +#ifdef CONFIG_KVM
+> +        /* Don't enable TM in PR KVM mode */
+> +        if (kvm_enabled() &&
+> +            kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINFO)) {
+> +            pa_features[24] &= ~0x80;
+> +        }
+> +#endif
+>      }
+>      if (env->ci_large_pages) {
+>          pa_features[3] |= 0x20;
 >
->  	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
->  	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
-> +	khugepaged_max_ptes_swap = HPAGE_PMD_NR / 8;
->  	/*
->  	 * hugepages can't be allocated by the buddy allocator
->  	 */
-> -- 
-> 2.7.0
->
->
->
->
-> -- 
-> Cheers,
-> Stephen Rothwell
+
+This email was put in the spam folder by gmail. The message said "It
+has a from address in samba.org but has failed samba.org's required
+tests for authentication". Just bringing this to peoples attention. I
+thought a patch might go unnoticed else.
+
+-- 
+
+With regards,
+
+Md Haris Iqbal,
+Placement Coordinator, MTech IT
+NITK Surathkal,
+Contact: +91 8861996962
