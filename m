@@ -1,20 +1,43 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzCBq6xH7zDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 04:14:58 +1000 (AEST)
-Subject: Re: [PATCH kernel] KVM: PPC: Fix debug macros
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-References: <1461905843-22673-1-git-send-email-aik@ozlabs.ru>
-Cc: Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <5727991A.6000309@redhat.com>
-Date: Mon, 2 May 2016 20:14:50 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzCdS1qvLzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 04:34:36 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id n129so29262wmn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 May 2016 11:34:36 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 2 May 2016 20:34:29 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, X86 ML <x86@kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ linuxppc-dev@lists.ozlabs.org, Jessica Yu <jeyu@redhat.com>,
+ Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Vojtech Pavlik <vojtech@suse.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
+ =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
+Message-ID: <20160502183429.GB16100@gmail.com>
+References: <20160429202701.yijrohqdsurdxv2a@treble>
+ <CALCETrVKt8k11ewSOvGiCNsqgtD5cMaLix8Tf8JJakgodJeLyA@mail.gmail.com>
+ <20160429212546.t26mvthtvh7543ff@treble>
+ <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
+ <20160429224112.kl3jlk7ccvfceg2r@treble>
+ <CALCETrUvRKYpF5MuhYuHSxd1QFnzSNKdXUQp+3to6rzKzQjQSw@mail.gmail.com>
+ <20160502135243.jkbnonaesv7zfios@treble>
+ <CALCETrWc5VFyo9tE5fQGKfijqCjguSSci71HSe58Z1_AL1ZHmQ@mail.gmail.com>
+ <20160502173148.zsg6alhknczzozb5@treble>
+ <CALCETrUwHc5G37hoNKou3nBO+5RjenOJqXYR4yGaj9yCZwXbZA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1461905843-22673-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALCETrUwHc5G37hoNKou3nBO+5RjenOJqXYR4yGaj9yCZwXbZA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +47,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29.04.2016 06:57, Alexey Kardashevskiy wrote:
-> When XICS_DBG is enabled, gcc produces format errors. This fixes
-> formats to match passed values types.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/kvm/book3s_xics.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-> index 46871d5..95896d7 100644
-> --- a/arch/powerpc/kvm/book3s_xics.c
-> +++ b/arch/powerpc/kvm/book3s_xics.c
-> @@ -280,7 +280,7 @@ static inline bool icp_try_update(struct kvmppc_icp *icp,
->  	if (!success)
->  		goto bail;
->  
-> -	XICS_DBG("UPD [%04x] - C:%02x M:%02x PP: %02x PI:%06x R:%d O:%d\n",
-> +	XICS_DBG("UPD [%04lx] - C:%02x M:%02x PP: %02x PI:%06x R:%d O:%d\n",
->  		 icp->server_num,
->  		 old.cppr, old.mfrr, old.pending_pri, old.xisr,
->  		 old.need_resend, old.out_ee);
-> @@ -336,7 +336,7 @@ static bool icp_try_to_deliver(struct kvmppc_icp *icp, u32 irq, u8 priority,
->  	union kvmppc_icp_state old_state, new_state;
->  	bool success;
->  
-> -	XICS_DBG("try deliver %#x(P:%#x) to server %#x\n", irq, priority,
-> +	XICS_DBG("try deliver %#x(P:%#x) to server %#lx\n", irq, priority,
->  		 icp->server_num);
->  
->  	do {
 
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+* Andy Lutomirski <luto@amacapital.net> wrote:
+
+> > Another idea to detect missing frames: for each return address on the stack, 
+> > ensure there's a corresponding "call <func>" instruction immediately preceding 
+> > the return location, where <func> matches what's on the stack.
+> 
+> Hmm, interesting.
+> 
+> I hope your plans include rewriting the current stack unwinder completely.  The 
+> thing in print_context_stack is (a) hard-to-understand and hard-to-modify crap 
+> and (b) is called in a loop from another file using totally ridiculous 
+> conventions.
+
+So we had several attempts at making it better, any further improvements 
+(including radical rewrites) are more than welcome!
+
+The generalization between the various stack walking methods certainly didn't make 
+things easier to read - we might want to eliminate that by using better primitives 
+to iterate over the stack frame.
+
+Thanks,
+
+	Ingo
