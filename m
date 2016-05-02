@@ -1,41 +1,24 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-ob0-x231.google.com (mail-ob0-x231.google.com
- [IPv6:2607:f8b0:4003:c01::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qz83362j6zDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 01:53:03 +1000 (AEST)
-Received: by mail-ob0-x231.google.com with SMTP id x1so62430999obt.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 May 2016 08:53:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qz9Tj4SZpzDq9s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 02:57:45 +1000 (AEST)
+Date: Mon, 2 May 2016 11:57:39 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, imunsie@au1.ibm.com,
+ gwshan@linux.vnet.ibm.com, linux-pci@vger.kernel.org,
+ paulus@samba.org, mikey@neuling.org, andrew.donnellan@au1.ibm.com,
+ bhelgaas@google.com, frederic.barrat@fr.ibm.com, mrochs@linux.vnet.ibm.com
+Subject: Re: [PATCH v5] powerpc/pci: Assign fixed PHB number based on
+ device-tree properties
+Message-ID: <20160502165739.GD24851@localhost>
+References: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20160502135243.jkbnonaesv7zfios@treble>
-References: <f8816223098569a9b2f478caa5b4a7a0c27dda00.1461875890.git.jpoimboe@redhat.com>
- <CALCETrVjJdPCE92D6NY3B2+0STAdWL0pbNqCBfQUwn-sVWLD5w@mail.gmail.com>
- <20160429201139.pudoged2yathyo64@treble>
- <CALCETrW8G8qCHBkH7GFDTFuH82abJpbVq_-bDaRAdL7U0jLGNQ@mail.gmail.com>
- <20160429202701.yijrohqdsurdxv2a@treble>
- <CALCETrVKt8k11ewSOvGiCNsqgtD5cMaLix8Tf8JJakgodJeLyA@mail.gmail.com>
- <20160429212546.t26mvthtvh7543ff@treble>
- <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
- <20160429224112.kl3jlk7ccvfceg2r@treble>
- <CALCETrUvRKYpF5MuhYuHSxd1QFnzSNKdXUQp+3to6rzKzQjQSw@mail.gmail.com>
- <20160502135243.jkbnonaesv7zfios@treble>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Mon, 2 May 2016 08:52:41 -0700
-Message-ID: <CALCETrWc5VFyo9tE5fQGKfijqCjguSSci71HSe58Z1_AL1ZHmQ@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Chris J Arges <chris.j.arges@canonical.com>,
- linuxppc-dev@lists.ozlabs.org, Jessica Yu <jeyu@redhat.com>,
- Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Vojtech Pavlik <vojtech@suse.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1460670924-16845-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,104 +28,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 2, 2016 at 6:52 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> On Fri, Apr 29, 2016 at 05:08:50PM -0700, Andy Lutomirski wrote:
->> On Apr 29, 2016 3:41 PM, "Josh Poimboeuf" <jpoimboe@redhat.com> wrote:
->> >
->> > On Fri, Apr 29, 2016 at 02:37:41PM -0700, Andy Lutomirski wrote:
->> > > On Fri, Apr 29, 2016 at 2:25 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> > > >> I suppose we could try to rejigger the code so that rbp points to
->> > > >> pt_regs or similar.
->> > > >
->> > > > I think we should avoid doing something like that because it would break
->> > > > gdb and all the other unwinders who don't know about it.
->> > >
->> > > How so?
->> > >
->> > > Currently, rbp in the entry code is meaningless.  I'm suggesting that,
->> > > when we do, for example, 'call \do_sym' in idtentry, we point rbp to
->> > > the pt_regs.  Currently it points to something stale (which the
->> > > dump_stack code might be relying on.  Hmm.)  But it's probably also
->> > > safe to assume that if you unwind to the 'call \do_sym', then pt_regs
->> > > is the next thing on the stack, so just doing the section thing would
->> > > work.
->> >
->> > Yes, rbp is meaningless on the entry from user space.  But if an
->> > in-kernel interrupt occurs (e.g. page fault, preemption) and you have
->> > nested entry, rbp keeps its old value, right?  So the unwinder can walk
->> > past the nested entry frame and keep going until it gets to the original
->> > entry.
->>
->> Yes.
->>
->> It would be nice if we could do better, though, and actually notice
->> the pt_regs and identify the entry.  For example, I'd love to see
->> "page fault, RIP=xyz" printed in the middle of a stack dump on a
->> crash.
->>
->> Also, I think that just following rbp links will lose the
->> actual function that took the page fault (or whatever function
->> pt_regs->ip actually points to).
->
-> Hm.  I think we could fix all that in a more standard way.  Whenever a
-> new pt_regs frame gets saved on entry, we could also create a new stack
-> frame which points to a fake kernel_entry() function.  That would tell
-> the unwinder there's a pt_regs frame without otherwise breaking frame
-> pointers across the frame.
->
-> Then I guess we wouldn't need my other solution of putting the idt
-> entries in a special section.
->
-> How does that sound?
+On Thu, Apr 14, 2016 at 06:55:24PM -0300, Guilherme G. Piccoli wrote:
+> The domain/PHB field of PCI addresses has its value obtained from a
+> global variable, incremented each time a new domain (represented by
+> struct pci_controller) is added on the system. The domain addition
+> process happens during boot or due to PCI device hotplug.
+> 
+> As recent kernels are using predictable naming for network interfaces,
+> the network stack is more tied to PCI naming. This can be a problem in
+> hotplug scenarios, because PCI addresses will change if devices are
+> removed and then re-added. This situation seems unusual, but it can
+> happen if a user wants to replace a NIC without rebooting the machine,
+> for example.
+> 
+> This patch changes the way PCI domain values are generated: now, we use
+> device-tree properties to assign fixed PHB numbers to PCI addresses
+> when available (meaning pSeries and PowerNV cases). We also use a bitmap
+> to allow dynamic PHB numbering when device-tree properties are not
+> used. This bitmap keeps track of used PHB numbers and if a PHB is
+> released (by hotplug operations for example), it allows the reuse of
+> this PHB number, avoiding PCI address to change in case of device remove
+> and re-add soon after. No functional changes were introduced.
+> 
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 
-Let me try to understand.
+I assume the powerpc guys will take care of this.  Let me know if you
+need me to do anything.
 
-The normal call sequence is call; push %rbp; mov %rsp, %rbp.  So rbp
-points to (prev rbp, prev rip) on the stack, and you can follow the
-chain back.  Right now, on a user access page fault or similar, we
-have rbp (probably) pointing to the interrupted frame, and the
-interrupted rip isn't saved anywhere that a naive unwinder can find
-it.  (It's in pt_regs, but the rbp chain skips right over that.)
-
-We could change the entry code so that an interrupt / idtentry does:
-
-push pt_regs
-push kernel_entry
-push %rbp
-mov %rsp, %rbp
-call handler
-pop %rbp
-addq $8, %rsp
-
-or similar.  That would make it appear that the actual C handler was
-caused by a dummy function "kernel_entry".  Now the unwinder would get
-to kernel_entry, but it *still* wouldn't find its way to the calling
-frame, which only solves part of the problem.  We could at least teach
-the unwinder how kernel_entry works and let it decode pt_regs to
-continue unwinding.  This would be nice, and I think it could work.
-
-I think I like this, except that, if it used a separate section, it
-could potentially be faster, as, for each actual entry type, the
-offset from the C handler frame to pt_regs is a foregone conclusion.
-But this is pretty simple and performance is already abysmal in most
-handlers.
-
-There's an added benefit to using a separate section, though: we could
-also annotate the calls with what type of entry they were so the
-unwinder could print it out nicely.
-
-I could be convinced either way.
-
-
->
->> Have you looked at my vdso unwinding test at all?  If we could do
->> something similar for the kernel, IMO it would make testing much more
->> pleasant.
->
-> I found it, but I'm not sure what it would mean to do something similar
-> for the kernel.  Do you mean doing something like an NMI sampling-based
-> approach where we periodically do a random stack sanity check?
-
-I was imagining something a little more strict: single-step
-interesting parts of the kernel and make sure that each step unwinds
-correctly.  That could detect missing frames and similar.
+> ---
+>  arch/powerpc/kernel/pci-common.c | 66 ++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 63 insertions(+), 3 deletions(-)
+> 
+> v5:
+>   * Improved comments.
+> 
+>   * Changed the the Fixed PHB Numbering to set the PHB number bit
+>   on the bitmap anyway, avoiding issues when system has virtual PHBs.
+> 
+>   * Changed the device-tree check order - now, firstly we check for
+>   "ibm,opal-phbid" and if it's not available, we try the pSeries case.
+> 
+> v4:
+>   * Minor change (if/else nesting rearranged).
+> 
+> v3:
+>   * Made the bitmap static.
+> 
+>   * Rearranged if/else statements of Fixed PHB checking.
+> 
+>   * Improved bitmap checkings, by removing loop and using instead the
+>   find_first_zero_bit() function.
+> 
+>   * Removed the single-statement function release_phb_number() by
+>   adding its logic directly into pcibios_free_controller().
+> 
+>   *Added check for bitmap size before clearing bit, avoiding memory
+>   corruption.
+> 
+> v2:
+>   * Added the Fixed PHB Numbering mechanism based on device-tree
+>   properties.
+> 
+>   * Changed list approach to bitmap on the Dynamic PHB Numbering
+>   mechanism.
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 0f7a60f..ad423c1 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -41,11 +41,17 @@
+>  #include <asm/ppc-pci.h>
+>  #include <asm/eeh.h>
+>  
+> +/* hose_spinlock protects accesses to the the phb_bitmap. */
+>  static DEFINE_SPINLOCK(hose_spinlock);
+>  LIST_HEAD(hose_list);
+>  
+> -/* XXX kill that some day ... */
+> -static int global_phb_number;		/* Global phb counter */
+> +/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
+> +#define	MAX_PHBS	8192
+> +
+> +/* For dynamic PHB numbering: used/free PHBs tracking bitmap.
+> + * Accesses to this bitmap should be protected by hose_spinlock.
+> + */
+> +static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+>  
+>  /* ISA Memory physical address */
+>  resource_size_t isa_mem_base;
+> @@ -64,6 +70,55 @@ struct dma_map_ops *get_pci_dma_ops(void)
+>  }
+>  EXPORT_SYMBOL(get_pci_dma_ops);
+>  
+> +/* get_phb_number() function should run under locking
+> + * protection, specifically hose_spinlock.
+> + */
+> +static int get_phb_number(struct device_node *dn)
+> +{
+> +	const __be64 *prop64;
+> +	const __be32 *regs;
+> +	int phb_id = 0;
+> +
+> +	/* Try fixed PHB numbering first, by checking archs and reading
+> +	 * the respective device-tree properties. Firstly, try PowerNV by
+> +	 * reading "ibm,opal-phbid", only present in OPAL environment.
+> +	 */
+> +	prop64 = of_get_property(dn, "ibm,opal-phbid", NULL);
+> +	if (prop64) {
+> +		phb_id = (int)(be64_to_cpup(prop64) & 0xFFFF);
+> +
+> +	} else if (machine_is(pseries)) {
+> +		regs = of_get_property(dn, "reg", NULL);
+> +		if (regs)
+> +			phb_id = (int)(be32_to_cpu(regs[1]) & 0xFFFF);
+> +	} else {
+> +		goto dynamic_phb_numbering;
+> +	}
+> +
+> +	/* If we have a huge PHB number obtained from device-tree, no need
+> +	 * to worry with the bitmap. Otherwise, we need to be sure we're
+> +	 * not trying to use the same PHB number twice.
+> +	 */
+> +	if (phb_id < MAX_PHBS) {
+> +		if (test_bit(phb_id, phb_bitmap))
+> +			goto dynamic_phb_numbering;
+> +		set_bit(phb_id, phb_bitmap);
+> +	}
+> +
+> +	return phb_id;
+> +
+> +	/* If not pSeries nor PowerNV, or if fixed PHB numbering tried to add
+> +	 * the same PHB number twice, then fallback to dynamic PHB numbering.
+> +	 */
+> +dynamic_phb_numbering:
+> +
+> +	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
+> +	BUG_ON(phb_id >= MAX_PHBS); /* Reached maximum number of PHBs. */
+> +	set_bit(phb_id, phb_bitmap);
+> +
+> +	return phb_id;
+> +}
+> +
+>  struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+>  {
+>  	struct pci_controller *phb;
+> @@ -72,7 +127,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+>  	if (phb == NULL)
+>  		return NULL;
+>  	spin_lock(&hose_spinlock);
+> -	phb->global_number = global_phb_number++;
+> +	phb->global_number = get_phb_number(dev);
+>  	list_add_tail(&phb->list_node, &hose_list);
+>  	spin_unlock(&hose_spinlock);
+>  	phb->dn = dev;
+> @@ -94,6 +149,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+>  void pcibios_free_controller(struct pci_controller *phb)
+>  {
+>  	spin_lock(&hose_spinlock);
+> +
+> +	/* Clear bit of phb_bitmap to allow reuse of this PHB number. */
+> +	if (phb->global_number < MAX_PHBS)
+> +		clear_bit(phb->global_number, phb_bitmap);
+> +
+>  	list_del(&phb->list_node);
+>  	spin_unlock(&hose_spinlock);
+>  
+> -- 
+> 2.1.0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
