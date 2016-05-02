@@ -1,38 +1,38 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qz1xw66W7zDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 21:18:12 +1000 (AEST)
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qz1xw14R7z9sBm
- for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2016 21:18:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qz1xx6KhQzDqDq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 21:18:13 +1000 (AEST)
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 2 May 2016 16:48:09 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id AD53AE005E
- for <linuxppc-dev@ozlabs.org>; Mon,  2 May 2016 16:51:02 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u42BI8KW2490660
- for <linuxppc-dev@ozlabs.org>; Mon, 2 May 2016 16:48:08 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u42BI3CK019712
- for <linuxppc-dev@ozlabs.org>; Mon, 2 May 2016 16:48:03 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 2 May 2016 21:18:12 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 12C3D2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 21:18:10 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u42BI2M755902324
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 21:18:10 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u42BHbud030854
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 21:17:37 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] selftests/powerpc: Fix subpage_prot test to return !0 on
- failure
-In-Reply-To: <1462164869-16406-1-git-send-email-mpe@ellerman.id.au>
-References: <1462164869-16406-1-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 02 May 2016 16:47:41 +0530
-Message-ID: <87bn4ozp2i.fsf@skywalker.in.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ebru Akagunduz <ebru.akagunduz@gmail.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: linux-next: build failure after merge of the akpm-current tree
+In-Reply-To: <20160502183234.1dad8115@canb.auug.org.au>
+References: <20160502183234.1dad8115@canb.auug.org.au>
+Date: Mon, 02 May 2016 16:47:10 +0530
+Message-ID: <87h9egzp3d.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,44 +44,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-> It's helpful for automated testing if the test returns error codes back
-> to the calling program.
+> Hi Andrew,
 >
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> After merging the akpm-current tree, today's linux-next build (powerpc
+> allyesconfig and pseries_le_defconfig) failed like this:
+>
+> In file included from include/linux/mm.h:394:0,
+>                  from mm/huge_memory.c:10:
+> include/linux/huge_mm.h:53:22: error: initializer element is not constant
+>  #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
+>                       ^
+> mm/huge_memory.c:104:62: note: in expansion of macro 'HPAGE_PMD_NR'
+>  static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
+>                                                               ^
+>
+> Caused by commit
+>
+>   6d34b9749be2 ("mm: make optimistic check for swapin readahead")
+>
+> interacting with commit
+>
+>   dd1842a2a448 ("powerpc/mm: Make page table size a variable")
+>
+> from the powerpc tree.
+>
+> I applied this fix patch for today (hopefully this is still initialised
+> early enough):
+>
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Mon, 2 May 2016 18:25:42 +1000
+> Subject: [PATCH] mm: make optimistic check for swapin readahead fix
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 > ---
->  tools/testing/selftests/powerpc/mm/subpage_prot.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+>  mm/huge_memory.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >
-> diff --git a/tools/testing/selftests/powerpc/mm/subpage_prot.c b/tools/testing/selftests/powerpc/mm/subpage_prot.c
-> index 440180ff8089..7ccdc96b977d 100644
-> --- a/tools/testing/selftests/powerpc/mm/subpage_prot.c
-> +++ b/tools/testing/selftests/powerpc/mm/subpage_prot.c
-> @@ -207,14 +207,16 @@ int test_file(void)
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index f0cd9dbc1157..6aabfa166b6d 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -101,7 +101,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
+>   * fault.
+>   */
+>  static unsigned int khugepaged_max_ptes_none __read_mostly;
+> -static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
+> +static unsigned int khugepaged_max_ptes_swap __read_mostly;
+>  static unsigned long allocstall;
 >
->  int main(int argc, char *argv[])
->  {
-> -	test_harness(test_anon, "subpage_prot_anon");
-> +	int rc;
-> +
-> +	rc = test_harness(test_anon, "subpage_prot_anon");
-> +	if (rc)
-> +		return rc;
+>  static int khugepaged(void *none);
+> @@ -703,6 +703,7 @@ static int __init hugepage_init(void)
 >
->  	if (argc > 1)
->  		file_name = argv[1];
->  	else
->  		file_name = "tempfile";
->
-> -	test_harness(test_file, "subpage_prot_file");
-> -
-> -	return 0;
-> +	return test_harness(test_file, "subpage_prot_file");
->  }
+>  	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
+>  	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
+> +	khugepaged_max_ptes_swap = HPAGE_PMD_NR / 8;
+>  	/*
+>  	 * hugepages can't be allocated by the buddy allocator
+>  	 */
 > -- 
-> 2.5.0
+> 2.7.0
+>
+>
+>
+>
+> -- 
+> Cheers,
+> Stephen Rothwell
