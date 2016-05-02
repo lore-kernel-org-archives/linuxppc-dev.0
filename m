@@ -1,21 +1,36 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qyyGq445WzDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 18:32:35 +1000 (AEST)
-Date: Mon, 2 May 2016 18:32:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Ebru Akagunduz
- <ebru.akagunduz@gmail.com>, Rik van Riel <riel@redhat.com>, "Aneesh Kumar
- K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: linux-next: build failure after merge of the akpm-current tree
-Message-ID: <20160502183234.1dad8115@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qyyZC74jkzDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 18:45:55 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id d62so22149856iof.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 May 2016 01:45:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <CAMuHMdUcrB38jL1_estfq5aK55UFUeF=4JciVGFqcE17pY9X7g@mail.gmail.com>
+References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
+ <CAMuHMdUcrB38jL1_estfq5aK55UFUeF=4JciVGFqcE17pY9X7g@mail.gmail.com>
+Date: Mon, 2 May 2016 10:45:52 +0200
+Message-ID: <CAMuHMdV3ZHEKgv-LPPQdZzP8KBY-yiSoeJ-cAXy54qD04--LgA@mail.gmail.com>
+Subject: Re: [PATCH v3 00/16] genrtc removal
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Rich Felker <dalias@libc.org>, David Howells <dhowells@redhat.com>,
+ alpha <linux-alpha@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ RTCLINUX <rtc-linux@googlegroups.com>,
+ Linux-Arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +40,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+Hi Arnd,
 
-After merging the akpm-current tree, today's linux-next build (powerpc
-allyesconfig and pseries_le_defconfig) failed like this:
+On Thu, Apr 28, 2016 at 9:48 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Thu, Apr 28, 2016 at 12:34 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>> I ended up stuffing the two patch series into one, as they are now
+>> more dependent on one another. This now thoroughly removes the
+>> genrtc driver including the asm/rtc.h headers it uses. For all
+>> architectures that still have a meaningful asm/rtc.h, this goes
+>> through two stages:
+>>
+>> 1) make the rtc-generic implementation independent of asm/rtc.h
+>> 2) remove the asm/rtc.h header and disallow the gen_rtc driver
+>>
+>> As the last step, the driver itself gets removed.
+>
+> In general, after fixing the minor nit:
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>
+> For the m68k bits:
+> Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-In file included from include/linux/mm.h:394:0,
-                 from mm/huge_memory.c:10:
-include/linux/huge_mm.h:53:22: error: initializer element is not constant
- #define HPAGE_PMD_NR (1<<HPAGE_PMD_ORDER)
-                      ^
-mm/huge_memory.c:104:62: note: in expansion of macro 'HPAGE_PMD_NR'
- static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
-                                                              ^
+More build coverage uncovered two build failures on m68k due to "[PATCH v3
+02/16] rtc: cmos: move mc146818rtc code out of asm-generic/rtc.h":
 
-Caused by commit
+bvme6000_defconfig:
 
-  6d34b9749be2 ("mm: make optimistic check for swapin readahead")
+    In file included from arch/m68k/bvme6000/rtc.c:19:
+    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_is_updating=
+=E2=80=99:
+    include/linux/mc146818rtc.h:138: error: implicit declaration of
+function =E2=80=98CMOS_READ=E2=80=99
+    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_get_time=E2=
+=80=99:
+    include/linux/mc146818rtc.h:189: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
+=99
+undeclared (first use in this function)
+    include/linux/mc146818rtc.h:189: error: (Each undeclared
+identifier is reported only once
+    include/linux/mc146818rtc.h:189: error: for each function it appears in=
+.)
+    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_set_time=E2=
+=80=99:
+    include/linux/mc146818rtc.h:279: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
+=99
+undeclared (first use in this function)
+    include/linux/mc146818rtc.h:290: error: implicit declaration of
+function =E2=80=98CMOS_WRITE=E2=80=99
 
-interacting with commit
+mvme16x_defconfig:
 
-  dd1842a2a448 ("powerpc/mm: Make page table size a variable")
+    In file included from arch/m68k/mvme16x/rtc.c:18:
+    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_is_updating=
+=E2=80=99:
+    include/linux/mc146818rtc.h:138: error: implicit declaration of
+function =E2=80=98CMOS_READ=E2=80=99
+    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_get_time=E2=
+=80=99:
+    include/linux/mc146818rtc.h:189: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
+=99
+undeclared (first use in this function)
+    include/linux/mc146818rtc.h:189: error: (Each undeclared
+identifier is reported only once
+    include/linux/mc146818rtc.h:189: error: for each function it appears in=
+.)
+    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_set_time=E2=
+=80=99:
+    include/linux/mc146818rtc.h:279: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
+=99
+undeclared (first use in this function)
+    include/linux/mc146818rtc.h:290: error: implicit declaration of
+function =E2=80=98CMOS_WRITE=E2=80=99
 
-from the powerpc tree.
+These do not show up with a multi-platform config including Atari
+support, as arch/m68k/include/asm/mc146818rtc.h provides a definition of
+CMOS_READ() if CONFIG_ATARI=3Dy.
 
-I applied this fix patch for today (hopefully this is still initialised
-early enough):
+Fortunately the fixes are simple: replace <linux/mc146818rtc.h> by
+<linux/rtc.h>. Will send patches to fix...
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 2 May 2016 18:25:42 +1000
-Subject: [PATCH] mm: make optimistic check for swapin readahead fix
+Gr{oetje,eeting}s,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- mm/huge_memory.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+                        Geert
 
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index f0cd9dbc1157..6aabfa166b6d 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -101,7 +101,7 @@ static DECLARE_WAIT_QUEUE_HEAD(khugepaged_wait);
-  * fault.
-  */
- static unsigned int khugepaged_max_ptes_none __read_mostly;
--static unsigned int khugepaged_max_ptes_swap __read_mostly = HPAGE_PMD_NR/8;
-+static unsigned int khugepaged_max_ptes_swap __read_mostly;
- static unsigned long allocstall;
- 
- static int khugepaged(void *none);
-@@ -703,6 +703,7 @@ static int __init hugepage_init(void)
- 
- 	khugepaged_pages_to_scan = HPAGE_PMD_NR * 8;
- 	khugepaged_max_ptes_none = HPAGE_PMD_NR - 1;
-+	khugepaged_max_ptes_swap = HPAGE_PMD_NR / 8;
- 	/*
- 	 * hugepages can't be allocated by the buddy allocator
- 	 */
--- 
-2.7.0
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
-
-
-
--- 
-Cheers,
-Stephen Rothwell
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
