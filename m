@@ -1,44 +1,22 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chris@distroguy.com>
+Received: from mx-out03.mykolab.com (mx01.mykolab.com [95.128.36.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qynfL3bw9zDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 12:03:54 +1000 (AEST)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 2 May 2016 12:03:52 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 478CA3578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 12:03:49 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4223fxi31195382
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 12:03:49 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4223FQ6018039
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 12:03:17 +1000
-Date: Mon, 2 May 2016 12:02:21 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aik@ozlabs.ru, dja@axtens.net,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>
-Subject: Re: [PATCH v8 40/45] drivers/of: Split unflatten_dt_node()
-Message-ID: <20160502020221.GA16612@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1455680668-23298-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1455680668-23298-41-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_Jsq++L-D=RD6ZYK=CPnhqcZbhEbxsKk3xT-vK2R=Qe9Z_pg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qypDm5TdNzDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 12:30:15 +1000 (AEST)
+Received: from mx03.mykolab.com (mx03.mykolab.com [10.20.7.101])
+ by mx-out03.mykolab.com (Postfix) with ESMTPS id 0FF7D2020D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 04:30:08 +0200 (CEST)
+Date: Mon, 2 May 2016 12:30:01 +1000
+From: Chris Smart <chris@distroguy.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries: Add null property check to
+ pseries_discover_pic()
+Message-ID: <20160502023000.GB31022@distroguy.com>
+References: <1461822825-21542-1-git-send-email-sjitindarsingh@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAL_Jsq++L-D=RD6ZYK=CPnhqcZbhEbxsKk3xT-vK2R=Qe9Z_pg@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <1461822825-21542-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,56 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 17, 2016 at 08:30:42AM -0600, Rob Herring wrote:
->On Tue, Feb 16, 2016 at 9:44 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> The function unflatten_dt_node() is called recursively to unflatten
->> device nodes and properties in the FDT blob. It looks complicated
->> and hard to be understood.
->>
->> This splits the function into 3 functions: populate_properties(),
->> populate_node() and unflatten_dt_node(). populate_properties(),
->> which is called by populate_node(), creates properties for the
->> indicated device node. The later one creates the device nodes
->> from FDT blob. populate_node() gets the offset in FDT blob for
->> next device nodes and then calls populate_node(). No logical
->> changes introduced.
->>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  drivers/of/fdt.c | 249 ++++++++++++++++++++++++++++++++-----------------------
->>  1 file changed, 147 insertions(+), 102 deletions(-)
+On Thu, Apr 28, 2016 at 03:53:45PM +1000, Suraj Jitindar Singh wrote:
+>The return value of of_get_property() isn't checked before it is passed
+>to the strstr() function, if it happens that the return value is null
+>then this will result in a null pointer being dereferenced.
 >
->One nit, otherwise:
->
->Acked-by: Rob Herring <robh@kernel.org>
->
->[...]
->
->> +               /* And we process the "ibm,phandle" property
->> +                * used in pSeries dynamic device tree
->> +                * stuff
->> +                */
->> +               if (!strcmp(pname, "ibm,phandle"))
->> +                       np->phandle = be32_to_cpup(val);
->> +
->> +               pp->name   = (char *)pname;
->> +               pp->length = sz;
->> +               pp->value  = (__be32 *)val;
->
->This cast should not be needed.
+>Add a check to see if the return value of of_get_property() is null and
+>if it is continue straight on to the next node.
 >
 
-It's needed. Otherwise, we will have warning. So I will keep it. I just
-went through this one for next revision and sorry for late response.
+Hi Suraj,
 
-drivers/of/fdt.c:225:14: warning: assignment discards ‘const’ qualifier from pointer target type
-   pp->value  = val;
-              ^
+Presumably machines have been shipping with a device tree that contains
+"compatible" in the interrupt controller section and so we just happen
+to have never hit this. Good thing to check.
 
-Thanks,
-Gavin
+Confirming that strstr calls strlen on the first argument, which would
+dereference a null pointer.
 
->> +               *pprev     = pp;
->> +               pprev      = &pp->next;
->> +       }
+Reviewed-by: Chris Smart <chris@distroguy.com>
+
+>Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+>---
+> arch/powerpc/platforms/pseries/setup.c | 2 ++
+> 1 file changed, 2 insertions(+)
 >
+>diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+>index 6e944fc..fa73494 100644
+>--- a/arch/powerpc/platforms/pseries/setup.c
+>+++ b/arch/powerpc/platforms/pseries/setup.c
+>@@ -235,6 +235,8 @@ static void __init pseries_discover_pic(void)
+>
+> 	for_each_node_by_name(np, "interrupt-controller") {
+> 		typep = of_get_property(np, "compatible", NULL);
+>+		if (!typep)
+>+			continue;
+> 		if (strstr(typep, "open-pic")) {
+> 			pSeries_mpic_node = of_node_get(np);
+> 			ppc_md.init_IRQ       = pseries_mpic_init_IRQ;
+>-- 
+>2.5.0
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
