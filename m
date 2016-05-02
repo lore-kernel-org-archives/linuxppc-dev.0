@@ -1,32 +1,37 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qz47D5sm4zDqDv
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 22:56:24 +1000 (AEST)
-Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 2 May 2016 18:26:22 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1141E394006B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 18:26:19 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u42CuIFo23789792
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 18:26:18 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u42CuF3G007792
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 May 2016 18:26:17 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm/slice: Remove slice_mm_new_context
-Date: Mon,  2 May 2016 18:26:07 +0530
-Message-Id: <1462193767-6429-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qz5NH3NRjzDqBh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 23:52:47 +1000 (AEST)
+Date: Mon, 2 May 2016 08:52:43 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ linuxppc-dev@lists.ozlabs.org, Jessica Yu <jeyu@redhat.com>,
+ Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Vojtech Pavlik <vojtech@suse.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
+Message-ID: <20160502135243.jkbnonaesv7zfios@treble>
+References: <f8816223098569a9b2f478caa5b4a7a0c27dda00.1461875890.git.jpoimboe@redhat.com>
+ <CALCETrVjJdPCE92D6NY3B2+0STAdWL0pbNqCBfQUwn-sVWLD5w@mail.gmail.com>
+ <20160429201139.pudoged2yathyo64@treble>
+ <CALCETrW8G8qCHBkH7GFDTFuH82abJpbVq_-bDaRAdL7U0jLGNQ@mail.gmail.com>
+ <20160429202701.yijrohqdsurdxv2a@treble>
+ <CALCETrVKt8k11ewSOvGiCNsqgtD5cMaLix8Tf8JJakgodJeLyA@mail.gmail.com>
+ <20160429212546.t26mvthtvh7543ff@treble>
+ <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
+ <20160429224112.kl3jlk7ccvfceg2r@treble>
+ <CALCETrUvRKYpF5MuhYuHSxd1QFnzSNKdXUQp+3to6rzKzQjQSw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CALCETrUvRKYpF5MuhYuHSxd1QFnzSNKdXUQp+3to6rzKzQjQSw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The existing usage is bogus, because we set the context.id value
-in the same function. The book3s 64 got removed in the old patch.
-Hence remove the redundant definition.
+On Fri, Apr 29, 2016 at 05:08:50PM -0700, Andy Lutomirski wrote:
+> On Apr 29, 2016 3:41 PM, "Josh Poimboeuf" <jpoimboe@redhat.com> wrote:
+> >
+> > On Fri, Apr 29, 2016 at 02:37:41PM -0700, Andy Lutomirski wrote:
+> > > On Fri, Apr 29, 2016 at 2:25 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> > > >> I suppose we could try to rejigger the code so that rbp points to
+> > > >> pt_regs or similar.
+> > > >
+> > > > I think we should avoid doing something like that because it would break
+> > > > gdb and all the other unwinders who don't know about it.
+> > >
+> > > How so?
+> > >
+> > > Currently, rbp in the entry code is meaningless.  I'm suggesting that,
+> > > when we do, for example, 'call \do_sym' in idtentry, we point rbp to
+> > > the pt_regs.  Currently it points to something stale (which the
+> > > dump_stack code might be relying on.  Hmm.)  But it's probably also
+> > > safe to assume that if you unwind to the 'call \do_sym', then pt_regs
+> > > is the next thing on the stack, so just doing the section thing would
+> > > work.
+> >
+> > Yes, rbp is meaningless on the entry from user space.  But if an
+> > in-kernel interrupt occurs (e.g. page fault, preemption) and you have
+> > nested entry, rbp keeps its old value, right?  So the unwinder can walk
+> > past the nested entry frame and keep going until it gets to the original
+> > entry.
+> 
+> Yes.
+> 
+> It would be nice if we could do better, though, and actually notice
+> the pt_regs and identify the entry.  For example, I'd love to see
+> "page fault, RIP=xyz" printed in the middle of a stack dump on a
+> crash.
+>
+> Also, I think that just following rbp links will lose the
+> actual function that took the page fault (or whatever function
+> pt_regs->ip actually points to).
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/page_64.h   | 3 ---
- arch/powerpc/mm/mmu_context_nohash.c | 3 +--
- 2 files changed, 1 insertion(+), 5 deletions(-)
+Hm.  I think we could fix all that in a more standard way.  Whenever a
+new pt_regs frame gets saved on entry, we could also create a new stack
+frame which points to a fake kernel_entry() function.  That would tell
+the unwinder there's a pt_regs frame without otherwise breaking frame
+pointers across the frame.
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 77488857c26d..dd5f0712afa2 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -128,8 +128,6 @@ extern void slice_set_user_psize(struct mm_struct *mm, unsigned int psize);
- extern void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- 				  unsigned long len, unsigned int psize);
- 
--#define slice_mm_new_context(mm)	((mm)->context.id == MMU_NO_CONTEXT)
--
- #endif /* __ASSEMBLY__ */
- #else
- #define slice_init()
-@@ -151,7 +149,6 @@ do {						\
- 
- #define slice_set_range_psize(mm, start, len, psize)	\
- 	slice_set_user_psize((mm), (psize))
--#define slice_mm_new_context(mm)	1
- #endif /* CONFIG_PPC_MM_SLICES */
- 
- #ifdef CONFIG_HUGETLB_PAGE
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index a36c43a27893..7d95bc402dba 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -335,8 +335,7 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- 	mm->context.active = 0;
- 
- #ifdef CONFIG_PPC_MM_SLICES
--	if (slice_mm_new_context(mm))
--		slice_set_user_psize(mm, mmu_virtual_psize);
-+	slice_set_user_psize(mm, mmu_virtual_psize);
- #endif
- 
- 	return 0;
+Then I guess we wouldn't need my other solution of putting the idt
+entries in a special section.
+
+How does that sound?
+
+> Have you looked at my vdso unwinding test at all?  If we could do
+> something similar for the kernel, IMO it would make testing much more
+> pleasant.
+
+I found it, but I'm not sure what it would mean to do something similar
+for the kernel.  Do you mean doing something like an NMI sampling-based
+approach where we periodically do a random stack sanity check?
+
+(If so, I do have something like that planned.)
+
 -- 
-2.7.4
+Josh
