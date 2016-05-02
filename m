@@ -1,36 +1,22 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qyyZC74jkzDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 18:45:55 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id d62so22149856iof.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 May 2016 01:45:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qyzBX1wj1zDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 May 2016 19:13:56 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id zy2so20682406pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 May 2016 02:13:56 -0700 (PDT)
+Date: Mon, 2 May 2016 19:13:44 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Chris Smart <chris@distroguy.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] selftests/powerpc: Test cp_abort during context switch
+Message-ID: <20160502191344.5f082a95@camb691>
+In-Reply-To: <20160502035133.GA28672@distroguy.com>
+References: <20160502035133.GA28672@distroguy.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <CAMuHMdUcrB38jL1_estfq5aK55UFUeF=4JciVGFqcE17pY9X7g@mail.gmail.com>
-References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
- <CAMuHMdUcrB38jL1_estfq5aK55UFUeF=4JciVGFqcE17pY9X7g@mail.gmail.com>
-Date: Mon, 2 May 2016 10:45:52 +0200
-Message-ID: <CAMuHMdV3ZHEKgv-LPPQdZzP8KBY-yiSoeJ-cAXy54qD04--LgA@mail.gmail.com>
-Subject: Re: [PATCH v3 00/16] genrtc removal
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Helge Deller <deller@gmx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Rich Felker <dalias@libc.org>, David Howells <dhowells@redhat.com>,
- alpha <linux-alpha@vger.kernel.org>, Alessandro Zummo <a.zummo@towertech.it>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- RTCLINUX <rtc-linux@googlegroups.com>,
- Linux-Arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,96 +26,217 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On Mon, 2 May 2016 13:51:38 +1000
+Chris Smart <chris@distroguy.com> wrote:
 
-On Thu, Apr 28, 2016 at 9:48 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Thu, Apr 28, 2016 at 12:34 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->> I ended up stuffing the two patch series into one, as they are now
->> more dependent on one another. This now thoroughly removes the
->> genrtc driver including the asm/rtc.h headers it uses. For all
->> architectures that still have a meaningful asm/rtc.h, this goes
->> through two stages:
->>
->> 1) make the rtc-generic implementation independent of asm/rtc.h
->> 2) remove the asm/rtc.h header and disallow the gen_rtc driver
->>
->> As the last step, the driver itself gets removed.
->
-> In general, after fixing the minor nit:
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
->
-> For the m68k bits:
-> Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Test that performing a copy paste sequence in userspace on P9 does not
+> result in a leak of the copy into the paste of another process.
+> 
+> This is based on Anton Blanchard's context_switch benchmarking code. It
+> sets up two processes tied to the same CPU, one which copies and one
+> which pastes.
+> 
+> The paste should never succeed and the test fails if it does.
+> 
+> This is a test for commit, "8a64904 powerpc: Add support for userspace
+> P9 copy paste."
+> 
 
-More build coverage uncovered two build failures on m68k due to "[PATCH v3
-02/16] rtc: cmos: move mc146818rtc code out of asm-generic/rtc.h":
+Hi Chris,
 
-bvme6000_defconfig:
+I must admit I didn't run on it on real hardware ;).
 
-    In file included from arch/m68k/bvme6000/rtc.c:19:
-    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_is_updating=
-=E2=80=99:
-    include/linux/mc146818rtc.h:138: error: implicit declaration of
-function =E2=80=98CMOS_READ=E2=80=99
-    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_get_time=E2=
-=80=99:
-    include/linux/mc146818rtc.h:189: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
-=99
-undeclared (first use in this function)
-    include/linux/mc146818rtc.h:189: error: (Each undeclared
-identifier is reported only once
-    include/linux/mc146818rtc.h:189: error: for each function it appears in=
-.)
-    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_set_time=E2=
-=80=99:
-    include/linux/mc146818rtc.h:279: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
-=99
-undeclared (first use in this function)
-    include/linux/mc146818rtc.h:290: error: implicit declaration of
-function =E2=80=98CMOS_WRITE=E2=80=99
+Looks good.
 
-mvme16x_defconfig:
+> Patch created with much assistance from Michael Neuling
+> <mikey@neuling.org>
+> 
+> Signed-off-by: Chris Smart <chris@distroguy.com>
 
-    In file included from arch/m68k/mvme16x/rtc.c:18:
-    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_is_updating=
-=E2=80=99:
-    include/linux/mc146818rtc.h:138: error: implicit declaration of
-function =E2=80=98CMOS_READ=E2=80=99
-    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_get_time=E2=
-=80=99:
-    include/linux/mc146818rtc.h:189: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
-=99
-undeclared (first use in this function)
-    include/linux/mc146818rtc.h:189: error: (Each undeclared
-identifier is reported only once
-    include/linux/mc146818rtc.h:189: error: for each function it appears in=
-.)
-    include/linux/mc146818rtc.h: In function =E2=80=98mc146818_set_time=E2=
-=80=99:
-    include/linux/mc146818rtc.h:279: error: =E2=80=98RTC_ALWAYS_BCD=E2=80=
-=99
-undeclared (first use in this function)
-    include/linux/mc146818rtc.h:290: error: implicit declaration of
-function =E2=80=98CMOS_WRITE=E2=80=99
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
-These do not show up with a multi-platform config including Atari
-support, as arch/m68k/include/asm/mc146818rtc.h provides a definition of
-CMOS_READ() if CONFIG_ATARI=3Dy.
-
-Fortunately the fixes are simple: replace <linux/mc146818rtc.h> by
-<linux/rtc.h>. Will send patches to fix...
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+> ---
+>  tools/testing/selftests/powerpc/Makefile           |   1 +
+>  .../selftests/powerpc/context_switch/.gitignore    |   1 +
+>  .../selftests/powerpc/context_switch/Makefile      |  10 ++
+>  .../selftests/powerpc/context_switch/cp_abort.c    | 110 +++++++++++++++++++++
+>  tools/testing/selftests/powerpc/utils.h            |   7 ++
+>  5 files changed, 129 insertions(+)
+>  create mode 100644 tools/testing/selftests/powerpc/context_switch/.gitignore
+>  create mode 100644 tools/testing/selftests/powerpc/context_switch/Makefile
+>  create mode 100644 tools/testing/selftests/powerpc/context_switch/cp_abort.c
+> 
+> diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+> index b08f77cbe31b..4ca83fe80654 100644
+> --- a/tools/testing/selftests/powerpc/Makefile
+> +++ b/tools/testing/selftests/powerpc/Makefile
+> @@ -14,6 +14,7 @@ export CFLAGS
+>  
+>  SUB_DIRS = benchmarks 		\
+>  	   copyloops		\
+> +	   context_switch	\
+>  	   dscr			\
+>  	   mm			\
+>  	   pmu			\
+> diff --git a/tools/testing/selftests/powerpc/context_switch/.gitignore b/tools/testing/selftests/powerpc/context_switch/.gitignore
+> new file mode 100644
+> index 000000000000..c1431af7b51c
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/context_switch/.gitignore
+> @@ -0,0 +1 @@
+> +cp_abort
+> diff --git a/tools/testing/selftests/powerpc/context_switch/Makefile b/tools/testing/selftests/powerpc/context_switch/Makefile
+> new file mode 100644
+> index 000000000000..e164d1466466
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/context_switch/Makefile
+> @@ -0,0 +1,10 @@
+> +TEST_PROGS := cp_abort
+> +
+> +all: $(TEST_PROGS)
+> +
+> +$(TEST_PROGS): ../harness.c ../utils.c
+> +
+> +include ../../lib.mk
+> +
+> +clean:
+> +	rm -f $(TEST_PROGS)
+> diff --git a/tools/testing/selftests/powerpc/context_switch/cp_abort.c b/tools/testing/selftests/powerpc/context_switch/cp_abort.c
+> new file mode 100644
+> index 000000000000..5a5b55afda0e
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/context_switch/cp_abort.c
+> @@ -0,0 +1,110 @@
+> +/*
+> + * Adapted from Anton Blanchard's context switch microbenchmark.
+> + *
+> + * Copyright 2009, Anton Blanchard, IBM Corporation.
+> + * Copyright 2016, Mikey Neuling, Chris Smart, IBM Corporation.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + *
+> + * This program tests the copy paste abort functionality of a P9
+> + * (or later) by setting up two processes on the same CPU, one
+> + * which executes the copy instruction and the other which
+> + * executes paste.
+> + *
+> + * The paste instruction should never succeed, as the cp_abort
+> + * instruction is called by the kernel during a context switch.
+> + *
+> + */
+> +
+> +#define _GNU_SOURCE
+> +
+> +#include <stdio.h>
+> +#include <unistd.h>
+> +#include <stdlib.h>
+> +#include "utils.h"
+> +#include <sched.h>
+> +
+> +#define READ_FD 0
+> +#define WRITE_FD 1
+> +
+> +#define NUM_LOOPS 1000
+> +
+> +/* This defines the "paste" instruction from Power ISA 3.0 Book II, section 4.4. */
+> +#define PASTE(RA, RB, L, RC) \
+> +	.long (0x7c00070c | (RA) << (31-15) | (RB) << (31-20) | (L) << (31-10) | (RC) << (31-31))
+> +
+> +int paste(void *i)
+> +{
+> +	int cr;
+> +
+> +	asm volatile(str(PASTE(0, %1, 1, 1))";"
+> +			"mfcr %0;"
+> +			: "=r" (cr)
+> +			: "b" (i)
+> +			: "memory"
+> +		    );
+> +	return cr;
+> +}
+> +
+> +/* This defines the "copy" instruction from Power ISA 3.0 Book II, section 4.4. */
+> +#define COPY(RA, RB, L) \
+> +	.long (0x7c00060c | (RA) << (31-15) | (RB) << (31-20) | (L) << (31-10))
+> +
+> +void copy(void *i)
+> +{
+> +	asm volatile(str(COPY(0, %0, 1))";"
+> +			:
+> +			: "b" (i)
+> +			: "memory"
+> +		    );
+> +}
+> +
+> +int test_cp_abort(void)
+> +{
+> +	/* 128 bytes for a full cache line */
+> +	char buf[128] __cacheline_aligned;
+> +	cpu_set_t cpuset;
+> +	int fd1[2], fd2[2], pid;
+> +	char c;
+> +
+> +	/* only run this test on a P9 or later */
+> +	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
+> +
+> +	/*
+> +	 * Run both processes on the same CPU, so that copy is more likely
+> +	 * to leak into a paste.
+> +	 */
+> +	CPU_ZERO(&cpuset);
+> +	CPU_SET(pick_online_cpu(), &cpuset);
+> +	FAIL_IF(sched_setaffinity(0, sizeof(cpuset), &cpuset));
+> +
+> +	FAIL_IF(pipe(fd1) || pipe(fd2));
+> +
+> +	pid = fork();
+> +	FAIL_IF(pid < 0);
+> +
+> +	if (!pid) {
+> +		for (int i = 0; i < NUM_LOOPS; i++) {
+> +			FAIL_IF((write(fd1[WRITE_FD], &c, 1)) != 1);
+> +			FAIL_IF((read(fd2[READ_FD], &c, 1)) != 1);
+> +			/* A paste succeeds if CR0 EQ bit is set */
+> +			FAIL_IF(paste(buf) & 0x20000000);
+> +		}
+> +	} else {
+> +		for (int i = 0; i < NUM_LOOPS; i++) {
+> +			FAIL_IF((read(fd1[READ_FD], &c, 1)) != 1);
+> +			copy(buf);
+> +			FAIL_IF((write(fd2[WRITE_FD], &c, 1) != 1));
+> +		}
+> +	}
+> +	return 0;
+> +
+> +}
+> +
+> +int main(int argc, char *argv[])
+> +{
+> +	return test_harness(test_cp_abort, "cp_abort");
+> +}
+> diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+> index 175ac6ad10dd..3b370deafb62 100644
+> --- a/tools/testing/selftests/powerpc/utils.h
+> +++ b/tools/testing/selftests/powerpc/utils.h
+> @@ -6,6 +6,8 @@
+>  #ifndef _SELFTESTS_POWERPC_UTILS_H
+>  #define _SELFTESTS_POWERPC_UTILS_H
+>  
+> +#define __cacheline_aligned __attribute__((aligned(128)))
+> +
+>  #include <stdint.h>
+>  #include <stdbool.h>
+>  #include <linux/auxvec.h>
+> @@ -54,4 +56,9 @@ do {								\
+>  #define _str(s) #s
+>  #define str(s) _str(s)
+>  
+> +/* POWER9 feature */
+> +#ifndef PPC_FEATURE2_ARCH_3_00
+> +#define PPC_FEATURE2_ARCH_3_00 0x00800000
+> +#endif
+> +
+>  #endif /* _SELFTESTS_POWERPC_UTILS_H */
