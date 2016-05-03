@@ -1,41 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzVnb5wpLzDrf4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:57:39 +1000 (AEST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3qzVnb4c34z9t44
- for <linuxppc-dev@ozlabs.org>; Tue,  3 May 2016 15:57:39 +1000 (AEST)
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 3 May 2016 15:57:38 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2923B2CE8046
- for <linuxppc-dev@ozlabs.org>; Tue,  3 May 2016 15:57:35 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u435vRa44981172
- for <linuxppc-dev@ozlabs.org>; Tue, 3 May 2016 15:57:35 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u435v2sP009613
- for <linuxppc-dev@ozlabs.org>; Tue, 3 May 2016 15:57:02 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] selftests/powerpc: Fix subpage_prot test to return !0 on
- failure
-In-Reply-To: <87bn4ozp2i.fsf@skywalker.in.ibm.com>
-References: <1462164869-16406-1-git-send-email-mpe@ellerman.id.au>
- <87bn4ozp2i.fsf@skywalker.in.ibm.com>
-Date: Tue, 03 May 2016 11:26:37 +0530
-Message-ID: <8760uvznu2.fsf@skywalker.in.ibm.com>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qzVqD1fJ3zDr3r
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:59:04 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v4 08/11] powerpc/powernv/ioda2: Export debug
+ helper pe_level_printk()
+Date: Tue, 03 May 2016 15:58:59 +1000
+Message-ID: <69636501.hBkSflmio0@new-mexico>
+In-Reply-To: <4159435.eIvAFi7xxQ@new-mexico>
+References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
+ <1461920124-21719-9-git-send-email-aik@ozlabs.ru>
+ <4159435.eIvAFi7xxQ@new-mexico>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,64 +30,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Tue, 3 May 2016 15:46:33 Alistair Popple wrote:
+> There's one call to pr_warn() in pnv_npu_disable_bypass() that could 
+arguably 
+> be converted to pe_warn(), but we can clean that up later as the patch looks 
+> fine and I'm assuming subsequent patches make use of these.
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->
->> It's helpful for automated testing if the test returns error codes back
->> to the calling program.
->>
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
->
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
->> ---
->>  tools/testing/selftests/powerpc/mm/subpage_prot.c | 10 ++++++----
->>  1 file changed, 6 insertions(+), 4 deletions(-)
->>
->> diff --git a/tools/testing/selftests/powerpc/mm/subpage_prot.c b/tools/testing/selftests/powerpc/mm/subpage_prot.c
->> index 440180ff8089..7ccdc96b977d 100644
->> --- a/tools/testing/selftests/powerpc/mm/subpage_prot.c
->> +++ b/tools/testing/selftests/powerpc/mm/subpage_prot.c
->> @@ -207,14 +207,16 @@ int test_file(void)
->>
->>  int main(int argc, char *argv[])
->>  {
->> -	test_harness(test_anon, "subpage_prot_anon");
->> +	int rc;
->> +
->> +	rc = test_harness(test_anon, "subpage_prot_anon");
->> +	if (rc)
->> +		return rc;
->>
->>  	if (argc > 1)
->>  		file_name = argv[1];
->>  	else
->>  		file_name = "tempfile";
->>
->> -	test_harness(test_file, "subpage_prot_file");
->> -
->> -	return 0;
->> +	return test_harness(test_file, "subpage_prot_file");
->>  }
->> -- 
->> 2.5.0
+And inevitably the next patch in the series cleans that up anyway. Feel free 
+to ignore the noise above :-)
 
-While doing this fix the error print ?
-
-520175565: (4520111850): Failed at 0x0x3fffad4b0000 (p=13,sp=0,w=0), want=fault, got=pass !
-
-diff --git a/tools/testing/selftests/powerpc/mm/subpage_prot.c b/tools/testing/selftests/powerpc/mm/subpage_prot.c
-index 440180ff8089..5929866aa444 100644
---- a/tools/testing/selftests/powerpc/mm/subpage_prot.c
-+++ b/tools/testing/selftests/powerpc/mm/subpage_prot.c
-@@ -73,7 +73,7 @@ static inline void check_faulted(void *addr, long page, long subpage, int write)
- 		want_fault |= (subpage == ((page + 1) % 16));
- 
- 	if (faulted != want_fault) {
--		printf("Failed at 0x%p (p=%ld,sp=%ld,w=%d), want=%s, got=%s !\n",
-+		printf("Failed at %p (p=%ld,sp=%ld,w=%d), want=%s, got=%s !\n",
- 		       addr, page, subpage, write,
- 		       want_fault ? "fault" : "pass",
- 		       faulted ? "fault" : "pass");
+> Reviewed-By: Alistair Popple <alistair@popple.id.au>
+> 
+> On Fri, 29 Apr 2016 18:55:21 Alexey Kardashevskiy wrote:
+> > This exports debugging helper pe_level_printk() and corresponding macroses
+> > so they can be used in npu-dma.c.
+> > 
+> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > ---
+> >  arch/powerpc/platforms/powernv/pci-ioda.c | 9 +--------
+> >  arch/powerpc/platforms/powernv/pci.h      | 9 +++++++++
+> >  2 files changed, 10 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
+> b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 272521e..db7695f 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -56,7 +56,7 @@
+> >  
+> >  static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
+> >  
+> > -static void pe_level_printk(const struct pnv_ioda_pe *pe, const char 
+> *level,
+> > +void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+> >  			    const char *fmt, ...)
+> >  {
+> >  	struct va_format vaf;
+> > @@ -87,13 +87,6 @@ static void pe_level_printk(const struct pnv_ioda_pe 
+*pe, 
+> const char *level,
+> >  	va_end(args);
+> >  }
+> >  
+> > -#define pe_err(pe, fmt, ...)					\
+> > -	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
+> > -#define pe_warn(pe, fmt, ...)					\
+> > -	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+> > -#define pe_info(pe, fmt, ...)					\
+> > -	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+> > -
+> >  static bool pnv_iommu_bypass_disabled __read_mostly;
+> >  
+> >  static int __init iommu_setup(char *str)
+> > diff --git a/arch/powerpc/platforms/powernv/pci.h 
+> b/arch/powerpc/platforms/powernv/pci.h
+> > index d574a9d..485e5b1 100644
+> > --- a/arch/powerpc/platforms/powernv/pci.h
+> > +++ b/arch/powerpc/platforms/powernv/pci.h
+> > @@ -236,6 +236,15 @@ extern void pnv_pci_dma_bus_setup(struct pci_bus 
+*bus);
+> >  extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+> >  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+> >  
+> > +extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char 
+> *level,
+> > +			    const char *fmt, ...);
+> > +#define pe_err(pe, fmt, ...)					\
+> > +	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
+> > +#define pe_warn(pe, fmt, ...)					\
+> > +	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+> > +#define pe_info(pe, fmt, ...)					\
+> > +	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+> > +
+> >  /* Nvlink functions */
+> >  extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
+> >  extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
+> > 
