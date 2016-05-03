@@ -1,25 +1,31 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzfbm25n7zDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 21:49:38 +1000 (AEST)
-Received: by mail-pa0-x232.google.com with SMTP id r5so9011441pag.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 May 2016 04:49:38 -0700 (PDT)
-Date: Tue, 3 May 2016 17:19:31 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH -next 1/2] cpufreq: powernv: Move smp_call_function_any()
- out of irq safe block
-Message-ID: <20160503114931.GA3083@vireshk-i7>
-References: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzfzW4WhlzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 22:06:47 +1000 (AEST)
+Date: Tue, 3 May 2016 14:06:42 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Petr Mladek <pmladek@suse.com>
+cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 10/18] livepatch/powerpc: add TIF_PATCH_PENDING
+ thread flag
+In-Reply-To: <20160503090716.GN2749@pathway.suse.cz>
+Message-ID: <alpine.LNX.2.00.1605031401290.3317@pobox.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <948131afc5d1e0fab00e78287a665d7b383cf884.1461875890.git.jpoimboe@redhat.com>
+ <20160503090716.GN2749@pathway.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,75 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03-05-16, 15:10, Akshay Adiga wrote:
-> Fixing a WARN_ON caused by smp_call_function_any() when irq is disabled,
-> because of changes made in the patch
-> ('cpufreq: powernv: Ramp-down global pstate slower than local-pstate')
-> https://patchwork.ozlabs.org/patch/612058/
-> 
->  WARNING: CPU: 0 PID: 4 at kernel/smp.c:291
-> smp_call_function_single+0x170/0x180
-> 
->  Call Trace:
->  [c0000007f648f9f0] [c0000007f648fa90] 0xc0000007f648fa90 (unreliable)
->  [c0000007f648fa30] [c0000000001430e0] smp_call_function_any+0x170/0x1c0
->  [c0000007f648fa90] [c0000000007b4b00]
-> powernv_cpufreq_target_index+0xe0/0x250
->  [c0000007f648fb00] [c0000000007ac9dc]
-> __cpufreq_driver_target+0x20c/0x3d0
->  [c0000007f648fbc0] [c0000000007b1b4c] od_dbs_timer+0xcc/0x260
->  [c0000007f648fc10] [c0000000007b3024] dbs_work_handler+0x54/0xa0
->  [c0000007f648fc50] [c0000000000c49a8] process_one_work+0x1d8/0x590
->  [c0000007f648fce0] [c0000000000c4e08] worker_thread+0xa8/0x660
->  [c0000007f648fd80] [c0000000000cca88] kthread+0x108/0x130
->  [c0000007f648fe30] [c0000000000095e8] ret_from_kernel_thread+0x5c/0x74
-> 
-> Moving smp_call_function_any() out of the critical section and changing
-> irq safe spinlocks to normal spinlocks.
-> 
-> Reported-by: Abdul Haleem <abdhalee@linux.vnet.linux.com>
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
-> Patch is based on Rafael's linux-next
->  drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 144c732..1f0e20c 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -581,9 +581,10 @@ void gpstate_timer_handler(unsigned long data)
->  	gpstates->last_gpstate = freq_data.gpstate_id;
->  	gpstates->last_lpstate = freq_data.pstate_id;
->  
-> +	spin_unlock(&gpstates->gpstate_lock);
-> +
->  	/* Timer may get migrated to a different cpu on cpu hot unplug */
->  	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-> -	spin_unlock(&gpstates->gpstate_lock);
->  }
->  
->  /*
-> @@ -596,7 +597,6 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  {
->  	struct powernv_smp_call_data freq_data;
->  	unsigned int cur_msec, gpstate_id;
-> -	unsigned long flags;
->  	struct global_pstate_info *gpstates = policy->driver_data;
->  
->  	if (unlikely(rebooting) && new_index != get_nominal_index())
-> @@ -607,7 +607,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  
->  	cur_msec = jiffies_to_msecs(get_jiffies_64());
->  
-> -	spin_lock_irqsave(&gpstates->gpstate_lock, flags);
-> +	spin_lock(&gpstates->gpstate_lock);
+On Tue, 3 May 2016, Petr Mladek wrote:
 
-You don't necessarily have to write 'what you are doing' in the commit log, but
-tell us why you are doing that.
+> On Thu 2016-04-28 15:44:41, Josh Poimboeuf wrote:
+> > Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
+> > per-task consistency model for powerpc.  The bit getting set indicates
+> > the thread has a pending patch which needs to be applied when the thread
+> > exits the kernel.
+> > 
+> > The bit is included in the _TIF_USER_WORK_MASK macro so that
+> > do_notify_resume() and klp_patch_task() get called when the bit is set.
+> > 
+> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > ---
+> >  arch/powerpc/include/asm/thread_info.h | 4 +++-
+> >  arch/powerpc/kernel/signal.c           | 4 ++++
+> >  2 files changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> > index 8febc3f..df262ca 100644
+> > --- a/arch/powerpc/include/asm/thread_info.h
+> > +++ b/arch/powerpc/include/asm/thread_info.h
+> > @@ -88,6 +88,7 @@ static inline struct thread_info *current_thread_info(void)
+> >  					   TIF_NEED_RESCHED */
+> >  #define TIF_32BIT		4	/* 32 bit binary */
+> >  #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
+> > +#define TIF_PATCH_PENDING	6	/* pending live patching update */
+> >  #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+> >  #define TIF_SINGLESTEP		8	/* singlestepping active */
+> >  #define TIF_NOHZ		9	/* in adaptive nohz mode */
+> > @@ -111,6 +112,7 @@ static inline struct thread_info *current_thread_info(void)
+> >  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+> >  #define _TIF_32BIT		(1<<TIF_32BIT)
+> >  #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
+> > +#define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
+> >  #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+> >  #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+> >  #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+> > @@ -127,7 +129,7 @@ static inline struct thread_info *current_thread_info(void)
+> >  
+> >  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+> >  				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
+> > -				 _TIF_RESTORE_TM)
+> > +				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
+> >  #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+> >  
+> >  /* Bits in local_flags */
+> > diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+> > index cb64d6f..844497b 100644
+> > --- a/arch/powerpc/kernel/signal.c
+> > +++ b/arch/powerpc/kernel/signal.c
+> > @@ -14,6 +14,7 @@
+> >  #include <linux/uprobes.h>
+> >  #include <linux/key.h>
+> >  #include <linux/context_tracking.h>
+> > +#include <linux/livepatch.h>
+> >  #include <asm/hw_breakpoint.h>
+> >  #include <asm/uaccess.h>
+> >  #include <asm/unistd.h>
+> > @@ -159,6 +160,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+> >  		tracehook_notify_resume(regs);
+> >  	}
+> >  
+> > +	if (thread_info_flags & _TIF_PATCH_PENDING)
+> > +		klp_patch_task(current);
+> > +
+> 
+> JFYI, if we later add the fake signal to speed up migration of
+> sleeping task, we would need to move this up before calling
+> do_signal(). It would help to avoid cycling here twice.
+> Mirek surely knows more details about it.
 
-Please explain, why is this changed and why will things continue to work
-without this.
+Yes, that is true if we go with a fake signal implementation we have in 
+kGraft. Nevertheless it is the issue of that patch so let's discuss that 
+there (when I send it).
 
--- 
-viresh
+Miroslav
