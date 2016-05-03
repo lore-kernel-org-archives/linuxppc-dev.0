@@ -2,33 +2,33 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhvw3hh0zDrPq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhvw3hg4zDr4l
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:33:48 +1000 (AEST)
 Received: from localhost
  by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 3 May 2016 18:53:29 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 96057125806E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:55:22 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u43DNJKE54722748
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:19 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u43DNGC2023801
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:19 +0530
+ Tue, 3 May 2016 18:53:30 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3916D3940069
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:53:24 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u43DNNwZ59900122
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:23 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u43DNI6D009002
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:23 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  bhelgaas@google.com, robherring2@gmail.com, dja@axtens.net,
  alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 16/22] drivers/of: Split unflatten_dt_node()
-Date: Tue,  3 May 2016 23:22:47 +1000
-Message-Id: <1462281773-26438-17-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v9 22/22] PCI/hotplug: PowerPC PowerNV PCI hotplug driver
+Date: Tue,  3 May 2016 23:22:53 +1000
+Message-Id: <1462281773-26438-23-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,319 +40,952 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function unflatten_dt_node() is called recursively to unflatten
-device nodes and properties in the FDT blob. It looks complicated
-and hard to be understood.
+This adds standalone driver to support PCI hotplug for PowerPC PowerNV
+platform that runs on top of skiboot firmware. The firmware identifies
+hotpluggable slots and marked their device tree node with proper
+"ibm,slot-pluggable" and "ibm,reset-by-firmware". The driver scans
+device tree nodes to create/register PCI hotplug slot accordingly.
 
-This splits the function into 3 functions: populate_properties(),
-populate_node() and unflatten_dt_node(). populate_properties(),
-which is called by populate_node(), creates properties for the
-indicated device node. The later one creates the device nodes
-from FDT blob. populate_node() gets the offset in FDT blob for
-next device nodes and then calls populate_node(). No logical
-changes introduced.
+The PCI slots are organized in fashion of tree, which means one
+PCI slot might have parent PCI slot and parent PCI slot possibly
+contains multiple child PCI slots. At the plugging time, the parent
+PCI slot is populated before its children. The child PCI slots are
+removed before their parent PCI slot can be removed from the system.
+
+If the skiboot firmware doesn't support slot status retrieval, the PCI
+slot device node shouldn't have property "ibm,reset-by-firmware". In
+that case, none of valid PCI slots will be detected from device tree.
+The skiboot firmware doesn't export the capability to access attention
+LEDs yet and it's something for TBD.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/of/fdt.c | 249 ++++++++++++++++++++++++++++++++-----------------------
- 1 file changed, 147 insertions(+), 102 deletions(-)
+ drivers/pci/hotplug/Kconfig   |  13 +
+ drivers/pci/hotplug/Makefile  |   3 +
+ drivers/pci/hotplug/pnv_php.c | 869 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 885 insertions(+)
+ create mode 100644 drivers/pci/hotplug/pnv_php.c
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 3349d2a..d031c78 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -161,39 +161,127 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
- 	return res;
- }
+diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
+index df8caec..aadce45 100644
+--- a/drivers/pci/hotplug/Kconfig
++++ b/drivers/pci/hotplug/Kconfig
+@@ -113,6 +113,19 @@ config HOTPLUG_PCI_SHPC
  
--/**
-- * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-- * @blob: The parent device tree blob
-- * @mem: Memory chunk to use for allocating device nodes and properties
-- * @poffset: pointer to node in flat tree
-- * @dad: Parent struct device_node
-- * @nodepp: The device_node tree created by the call
-- * @fpsize: Size of the node path up at the current depth.
-- * @dryrun: If true, do not allocate device nodes but still calculate needed
-- * memory size
-- */
--static void * unflatten_dt_node(const void *blob,
--				void *mem,
--				int *poffset,
--				struct device_node *dad,
--				struct device_node **nodepp,
--				unsigned long fpsize,
-+static void populate_properties(const void *blob,
-+				int offset,
-+				void **mem,
-+				struct device_node *np,
-+				const char *nodename,
- 				bool dryrun)
- {
--	const __be32 *p;
-+	struct property *pp, **pprev = NULL;
-+	int cur;
-+	bool has_name = false;
+ 	  When in doubt, say N.
+ 
++config HOTPLUG_PCI_POWERNV
++	tristate "PowerPC PowerNV PCI Hotplug driver"
++	depends on PPC_POWERNV && EEH
++	select OF_DYNAMIC
++	help
++	  Say Y here if you run PowerPC PowerNV platform that supports
++	  PCI Hotplug
 +
-+	pprev = &np->properties;
-+	for (cur = fdt_first_property_offset(blob, offset);
-+	     cur >= 0;
-+	     cur = fdt_next_property_offset(blob, cur)) {
-+		const __be32 *val;
-+		const char *pname;
-+		u32 sz;
++	  To compile this driver as a module, choose M here: the
++	  module will be called pnv-php.
 +
-+		val = fdt_getprop_by_offset(blob, cur, &pname, &sz);
-+		if (!val) {
-+			pr_warn("%s: Cannot locate property at 0x%x\n",
-+				__func__, cur);
-+			continue;
-+		}
++	  When in doubt, say N.
 +
-+		if (!pname) {
-+			pr_warn("%s: Cannot find property name at 0x%x\n",
-+				__func__, cur);
-+			continue;
-+		}
+ config HOTPLUG_PCI_RPA
+ 	tristate "RPA PCI Hotplug driver"
+ 	depends on PPC_PSERIES && EEH
+diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
+index b616e75..e33cdda 100644
+--- a/drivers/pci/hotplug/Makefile
++++ b/drivers/pci/hotplug/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
+ obj-$(CONFIG_HOTPLUG_PCI_CPCI_ZT5550)	+= cpcihp_zt5550.o
+ obj-$(CONFIG_HOTPLUG_PCI_CPCI_GENERIC)	+= cpcihp_generic.o
+ obj-$(CONFIG_HOTPLUG_PCI_SHPC)		+= shpchp.o
++obj-$(CONFIG_HOTPLUG_PCI_POWERNV)	+= pnv-php.o
+ obj-$(CONFIG_HOTPLUG_PCI_RPA)		+= rpaphp.o
+ obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
+ obj-$(CONFIG_HOTPLUG_PCI_SGI)		+= sgi_hotplug.o
+@@ -50,6 +51,8 @@ ibmphp-objs		:=	ibmphp_core.o	\
+ acpiphp-objs		:=	acpiphp_core.o	\
+ 				acpiphp_glue.o
+ 
++pnv-php-objs		:=	pnv_php.o
 +
-+		if (!strcmp(pname, "name"))
-+			has_name = true;
+ rpaphp-objs		:=	rpaphp_core.o	\
+ 				rpaphp_pci.o	\
+ 				rpaphp_slot.o
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+new file mode 100644
+index 0000000..8bb2159
+--- /dev/null
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -0,0 +1,869 @@
++/*
++ * PCI Hotplug Driver for PowerPC PowerNV platform.
++ *
++ * Copyright Gavin Shan, IBM Corporation 2016.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
 +
-+		pp = unflatten_dt_alloc(mem, sizeof(struct property),
-+					__alignof__(struct property));
-+		if (dryrun)
-+			continue;
++#include <linux/libfdt.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/pci_hotplug.h>
 +
-+		/* We accept flattened tree phandles either in
-+		 * ePAPR-style "phandle" properties, or the
-+		 * legacy "linux,phandle" properties.  If both
-+		 * appear and have different values, things
-+		 * will get weird. Don't do that.
-+		 */
-+		if (!strcmp(pname, "phandle") ||
-+		    !strcmp(pname, "linux,phandle")) {
-+			if (!np->phandle)
-+				np->phandle = be32_to_cpup(val);
-+		}
++#include <asm/opal.h>
++#include <asm/pnv-pci.h>
++#include <asm/ppc-pci.h>
 +
-+		/* And we process the "ibm,phandle" property
-+		 * used in pSeries dynamic device tree
-+		 * stuff
-+		 */
-+		if (!strcmp(pname, "ibm,phandle"))
-+			np->phandle = be32_to_cpup(val);
++#define DRIVER_VERSION	"0.1"
++#define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
++#define DRIVER_DESC	"PowerPC PowerNV PCI Hotplug Driver"
 +
-+		pp->name   = (char *)pname;
-+		pp->length = sz;
-+		pp->value  = (__be32 *)val;
-+		*pprev     = pp;
-+		pprev      = &pp->next;
-+	}
++struct pnv_php_slot {
++	struct hotplug_slot		slot;
++	struct hotplug_slot_info	slot_info;
++	uint64_t			id;
++	char				*name;
++	int				slot_no;
++	struct kref			kref;
++#define PNV_PHP_STATE_INITIALIZED	0
++#define PNV_PHP_STATE_REGISTERED	1
++#define PNV_PHP_STATE_POPULATED		2
++#define PNV_PHP_STATE_OFFLINE		3
++	int				state;
++	struct device_node		*dn;
++	struct pci_dev			*pdev;
++	struct pci_bus			*bus;
++	bool				power_state_check;
++	int				power_state_confirmed;
++#define PNV_PHP_POWER_CONFIRMED_INVALID	0
++#define PNV_PHP_POWER_CONFIRMED_SUCCESS	1
++#define PNV_PHP_POWER_CONFIRMED_FAIL	2
++	struct opal_msg			*msg;
++	void				*fdt;
++	void				*dt;
++	struct of_changeset		ocs;
++	struct work_struct		work;
++	wait_queue_head_t		queue;
++	struct pnv_php_slot		*parent;
++	struct list_head		children;
++	struct list_head		link;
++};
 +
-+	/* With version 0x10 we may not have the name property,
-+	 * recreate it here from the unit name if absent
-+	 */
-+	if (!has_name) {
-+		const char *p = nodename, *ps = p, *pa = NULL;
-+		int len;
++static LIST_HEAD(pnv_php_slot_list);
++static DEFINE_SPINLOCK(pnv_php_lock);
 +
-+		while (*p) {
-+			if ((*p) == '@')
-+				pa = p;
-+			else if ((*p) == '/')
-+				ps = p + 1;
-+			p++;
-+		}
++static void pnv_php_register(struct device_node *dn);
++static void pnv_php_unregister_one(struct device_node *dn);
++static void pnv_php_unregister(struct device_node *dn);
 +
-+		if (pa < ps)
-+			pa = p;
-+		len = (pa - ps) + 1;
-+		pp = unflatten_dt_alloc(mem, sizeof(struct property) + len,
-+					__alignof__(struct property));
-+		if (!dryrun) {
-+			pp->name   = "name";
-+			pp->length = len;
-+			pp->value  = pp + 1;
-+			*pprev     = pp;
-+			pprev      = &pp->next;
-+			memcpy(pp->value, ps, len - 1);
-+			((char *)pp->value)[len - 1] = 0;
-+			pr_debug("fixed up name for %s -> %s\n",
-+				 nodename, (char *)pp->value);
-+		}
-+	}
++static void pnv_php_free_slot(struct kref *kref)
++{
++	struct pnv_php_slot *php_slot = container_of(kref,
++						     struct pnv_php_slot,
++						     kref);
 +
-+	if (!dryrun)
-+		*pprev = NULL;
++	WARN_ON(!list_empty(&php_slot->children));
++	kfree(php_slot->name);
++	kfree(php_slot);
 +}
 +
-+static unsigned long populate_node(const void *blob,
-+				   int offset,
-+				   void **mem,
-+				   struct device_node *dad,
-+				   unsigned long fpsize,
-+				   struct device_node **pnp,
-+				   bool dryrun)
++static inline void pnv_php_put_slot(struct pnv_php_slot *php_slot)
 +{
- 	struct device_node *np;
--	struct property *pp, **prev_pp = NULL;
- 	const char *pathp;
- 	unsigned int l, allocl;
--	static int depth;
--	int old_depth;
--	int offset;
--	int has_name = 0;
- 	int new_format = 0;
- 
--	pathp = fdt_get_name(blob, *poffset, &l);
--	if (!pathp)
--		return mem;
-+	pathp = fdt_get_name(blob, offset, &l);
-+	if (!pathp) {
-+		*pnp = NULL;
++
++	if (WARN_ON(!php_slot))
++		return;
++
++	kref_put(&php_slot->kref, pnv_php_free_slot);
++}
++
++static struct pnv_php_slot *pnv_php_match(struct device_node *dn,
++					  struct pnv_php_slot *php_slot)
++{
++	struct pnv_php_slot *target, *tmp;
++
++	if (php_slot->dn == dn) {
++		kref_get(&php_slot->kref);
++		return php_slot;
++	}
++
++	list_for_each_entry(tmp, &php_slot->children, link) {
++		target = pnv_php_match(dn, tmp);
++		if (target)
++			return target;
++	}
++
++	return NULL;
++}
++
++static struct pnv_php_slot *pnv_php_find_slot(struct device_node *dn)
++{
++	struct pnv_php_slot *php_slot, *tmp;
++	unsigned long flags;
++
++	spin_lock_irqsave(&pnv_php_lock, flags);
++	list_for_each_entry(tmp, &pnv_php_slot_list, link) {
++		php_slot = pnv_php_match(dn, tmp);
++		if (php_slot) {
++			spin_unlock_irqrestore(&pnv_php_lock, flags);
++			return php_slot;
++		}
++	}
++	spin_unlock_irqrestore(&pnv_php_lock, flags);
++
++	return NULL;
++}
++
++/*
++ * Remove pdn for all children of the indicated device node.
++ * The function should remove pdn in a depth-first manner.
++ */
++static void pnv_php_rmv_pdns(struct device_node *dn)
++{
++	struct device_node *child;
++
++	for_each_child_of_node(dn, child) {
++		pnv_php_rmv_pdns(child);
++
++		pci_remove_device_node_info(child);
++	}
++}
++
++/*
++ * Remove all child nodes of the indicated device nodes. The
++ * function should remove device nodes in depth-first manner.
++ */
++static int pnv_php_rmv_device_nodes(struct device_node *parent)
++{
++	struct device_node *dn, *child;
++	int ret = 0;
++
++	for_each_child_of_node(parent, dn) {
++		ret = pnv_php_rmv_device_nodes(dn);
++		if (ret)
++			return ret;
++
++		child = of_get_next_child(dn, NULL);
++		if (child) {
++			of_node_put(child);
++			of_node_put(dn);
++			pr_err("%s: Alive children of node <%s>\n",
++			       __func__, of_node_full_name(dn));
++			return -EBUSY;
++		}
++
++		of_detach_node(dn);
++		of_node_put(dn);
++	}
++
++	return 0;
++}
++
++/*
++ * The function processes the message sent by firmware
++ * to remove all device tree nodes beneath the slot's
++ * nodes and the associated auxiliary data.
++ */
++static void pnv_php_handle_poweroff(struct pnv_php_slot *php_slot)
++{
++	int ret;
++
++	pnv_php_rmv_pdns(php_slot->dn);
++
++	/*
++	 * If the device sub-tree was created from OF changeset, simply
++	 * to revert that. Otherwise, the device nodes in the sub-tree
++	 * need to be iterated and detached.
++	 */
++	if (php_slot->fdt) {
++		of_changeset_destroy(&php_slot->ocs);
++		kfree(php_slot->dt);
++		kfree(php_slot->fdt);
++		php_slot->dt        = NULL;
++		php_slot->dn->child = NULL;
++		php_slot->fdt       = NULL;
++		php_slot->power_state_confirmed =
++			PNV_PHP_POWER_CONFIRMED_SUCCESS;
++	} else {
++		ret = pnv_php_rmv_device_nodes(php_slot->dn);
++		if (!ret) {
++			php_slot->power_state_confirmed =
++				PNV_PHP_POWER_CONFIRMED_SUCCESS;
++		} else {
++			php_slot->power_state_confirmed =
++				PNV_PHP_POWER_CONFIRMED_FAIL;
++			dev_warn(&php_slot->pdev->dev, "Error %d freeing nodes\n",
++				 ret);
++		}
++	}
++
++	wake_up_interruptible(&php_slot->queue);
++}
++
++static int pnv_php_populate_changeset(struct of_changeset *ocs,
++				      struct device_node *dn)
++{
++	struct device_node *child;
++	int ret = 0;
++
++	for_each_child_of_node(dn, child) {
++		ret = of_changeset_attach_node(ocs, child);
++		if (ret)
++			break;
++
++		ret = pnv_php_populate_changeset(ocs, child);
++		if (ret)
++			break;
++	}
++
++	return ret;
++}
++
++static void *pnv_php_add_one_pdn(struct device_node *dn, void *data)
++{
++	struct pci_controller *hose = (struct pci_controller *)data;
++	struct pci_dn *pdn;
++
++	pdn = pci_add_device_node_info(hose, dn);
++	if (!pdn)
++		return ERR_PTR(-ENOMEM);
++
++	return NULL;
++}
++
++static void pnv_php_add_pdns(struct pnv_php_slot *slot)
++{
++	struct pci_controller *hose = pci_bus_to_host(slot->bus);
++
++	pci_traverse_device_nodes(slot->dn, pnv_php_add_one_pdn, hose);
++}
++
++static void pnv_php_handle_poweron(struct pnv_php_slot *php_slot)
++{
++	void *fdt, *fdt1, *dt;
++	int confirm = PNV_PHP_POWER_CONFIRMED_SUCCESS;
++	int ret;
++
++	/* We don't know the FDT blob size. We try to get it through
++	 * maximal memory chunk and then copy it to another chunk that
++	 * fits the real size.
++	 */
++	fdt1 = kzalloc(0x10000, GFP_KERNEL);
++	if (!fdt1)
++		goto error;
++
++	ret = pnv_pci_get_device_tree(php_slot->dn->phandle, fdt1, 0x10000);
++	if (ret)
++		goto free_fdt1;
++
++	fdt = kzalloc(fdt_totalsize(fdt1), GFP_KERNEL);
++	if (!fdt)
++		goto free_fdt1;
++
++	/* Unflatten device tree blob */
++	memcpy(fdt, fdt1, fdt_totalsize(fdt1));
++	dt = of_fdt_unflatten_tree(fdt, php_slot->dn, NULL);
++	if (!dt) {
++		dev_warn(&php_slot->pdev->dev, "Cannot unflatten FDT\n");
++		goto free_fdt;
++	}
++
++	/* Initialize and apply the changeset */
++	of_changeset_init(&php_slot->ocs);
++	ret = pnv_php_populate_changeset(&php_slot->ocs, php_slot->dn);
++	if (ret) {
++		dev_warn(&php_slot->pdev->dev, "Error %d populating changeset\n",
++			 ret);
++		goto free_dt;
++	}
++
++	php_slot->dn->child = NULL;
++	ret = of_changeset_apply(&php_slot->ocs);
++	if (ret) {
++		dev_warn(&php_slot->pdev->dev, "Error %d applying changeset\n",
++			 ret);
++		goto destroy_changeset;
++	}
++
++	/* Add device node firmware data */
++	pnv_php_add_pdns(php_slot);
++	php_slot->fdt = fdt;
++	php_slot->dt  = dt;
++	kfree(fdt1);
++	goto out;
++
++destroy_changeset:
++	of_changeset_destroy(&php_slot->ocs);
++free_dt:
++	kfree(dt);
++	php_slot->dn->child = NULL;
++free_fdt:
++	kfree(fdt);
++free_fdt1:
++	kfree(fdt1);
++error:
++	confirm = PNV_PHP_POWER_CONFIRMED_FAIL;
++out:
++	/* Confirm status change */
++	php_slot->power_state_confirmed = confirm;
++	wake_up_interruptible(&php_slot->queue);
++}
++
++static void pnv_php_work(struct work_struct *data)
++{
++	struct pnv_php_slot *php_slot = container_of(data,
++						     struct pnv_php_slot,
++						     work);
++	uint64_t event = be64_to_cpu(php_slot->msg->params[0]);
++
++	if (event == OPAL_PCI_SLOT_POWER_OFF)
++		pnv_php_handle_poweroff(php_slot);
++	else
++		pnv_php_handle_poweron(php_slot);
++
++	pnv_php_put_slot(php_slot);
++}
++
++static int pnv_php_handle_msg(struct notifier_block *nb,
++			      unsigned long type,
++			      void *message)
++{
++	phandle h;
++	struct device_node *dn;
++	struct pnv_php_slot *php_slot;
++	struct opal_msg *msg = message;
++
++	if (type != OPAL_MSG_PCI_HOTPLUG) {
++		pr_warn("%s: Invalid message %ld received!\n",
++			__func__, type);
++		return NOTIFY_DONE;
++	}
++
++	h = (phandle)be64_to_cpu(msg->params[1]);
++	dn = of_find_node_by_phandle(h);
++	if (!dn) {
++		pr_warn("%s: No device node for phandle 0x%x\n",
++			__func__, h);
++		return NOTIFY_DONE;
++	}
++
++	php_slot = pnv_php_find_slot(dn);
++	if (!php_slot || php_slot->state == PNV_PHP_STATE_OFFLINE) {
++		pr_warn("%s: No slot or offlined slot for node <%s>\n",
++			__func__, of_node_full_name(dn));
++		of_node_put(dn);
++		return NOTIFY_DONE;
++	}
++
++	of_node_put(dn);
++	php_slot->msg = msg;
++	schedule_work(&php_slot->work);
++	return NOTIFY_OK;
++}
++
++static int pnv_php_set_power_state(struct hotplug_slot *slot, u8 state)
++{
++	struct pnv_php_slot *php_slot = slot->private;
++	int ret;
++
++	php_slot->power_state_confirmed = PNV_PHP_POWER_CONFIRMED_INVALID;
++	ret = pnv_pci_set_power_state(php_slot->id, state);
++	if (ret) {
++		dev_warn(&php_slot->pdev->dev, "Error %d powering %s slot\n",
++			 ret, state ? "on" : "off");
++		return ret;
++	}
++
++	/* Continue to PCI probing after finalized device-tree. The
++	 * device-tree might have been updated completely at this
++	 * point. Thus we don't have to wait forever.
++	 */
++	if (php_slot->power_state_confirmed == PNV_PHP_POWER_CONFIRMED_SUCCESS)
++		return 0;
++
++	if (php_slot->power_state_confirmed == PNV_PHP_POWER_CONFIRMED_FAIL)
++		return -EBUSY;
++
++	/* Wait for firmware to add or remove device sub-tree. When it's done,
++	 * one signal is received from firmware.
++	 */
++	ret = wait_event_timeout(php_slot->queue,
++				 php_slot->power_state_confirmed, 10 * HZ);
++	if (!ret) {
++		dev_warn(&php_slot->pdev->dev, "Error %d waiting for power-%s\n",
++			 ret, state ? "on" : "off");
++		return -EBUSY;
++	}
++
++	if (php_slot->power_state_confirmed == PNV_PHP_POWER_CONFIRMED_SUCCESS)
++		return 0;
++
++	dev_warn(&php_slot->pdev->dev, "Error status %d for power-%s\n",
++		 php_slot->power_state_confirmed, state ? "on" : "off");
++	return -EBUSY;
++}
++
++static int pnv_php_get_power_state(struct hotplug_slot *slot, u8 *state)
++{
++	struct pnv_php_slot *php_slot = slot->private;
++	uint8_t power_state = OPAL_PCI_SLOT_POWER_ON;
++	int ret;
++
++	/*
++	 * Retrieve power status from firmware. If we fail
++	 * getting that, the power status fails back to
++	 * be on.
++	 */
++	ret = pnv_pci_get_power_state(php_slot->id, &power_state);
++	if (ret) {
++		dev_warn(&php_slot->pdev->dev, "Error %d getting power status\n",
++			 ret);
++	} else {
++		*state = power_state;
++		slot->info->power_status = power_state;
++	}
++
++	return 0;
++}
++
++static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
++{
++	struct pnv_php_slot *php_slot = slot->private;
++	uint8_t presence = OPAL_PCI_SLOT_EMPTY;
++	int ret;
++
++	/*
++	 * Retrieve presence status from firmware. If we can't
++	 * get that, it will fail back to be empty.
++	 */
++	ret = pnv_pci_get_presence_state(php_slot->id, &presence);
++	if (ret >= 0) {
++		*state = presence;
++		slot->info->adapter_status = presence;
++		ret = 0;
++	} else {
++		dev_warn(&php_slot->pdev->dev, "Error %d getting presence\n",
++			 ret);
++	}
++
++	return ret;
++}
++
++static int pnv_php_set_attention_state(struct hotplug_slot *slot, u8 state)
++{
++	/* FIXME: Make it real once firmware supports it */
++	slot->info->attention_status = state;
++
++	return 0;
++}
++
++static int pnv_php_enable(struct pnv_php_slot *php_slot, bool rescan)
++{
++	struct hotplug_slot *slot = &php_slot->slot;
++	uint8_t presence = OPAL_PCI_SLOT_EMPTY;
++	uint8_t power_status = OPAL_PCI_SLOT_POWER_ON;
++	int ret;
++
++	/* Check if the slot has been configured */
++	if (php_slot->state != PNV_PHP_STATE_REGISTERED)
++		return 0;
++
++	/* Retrieve slot presence status */
++	ret = pnv_php_get_adapter_state(slot, &presence);
++	if (ret)
++		return ret;
++
++	/* Proceed if there have nothing behind the slot */
++	if (presence == OPAL_PCI_SLOT_EMPTY)
++		goto scan;
++
++	/*
++	 * If the power supply to the slot is off, we can't detect
++	 * adapter presence state. That means we have to turn the
++	 * slot on before going to probe slot's presence state.
++	 *
++	 * On the first time, we don't change the power status to
++	 * boost system boot with assumption that the firmware
++	 * supplies consistent slot power status: empty slot always
++	 * has its power off and non-empty slot has its power on.
++	 */
++	if (!php_slot->power_state_check) {
++		php_slot->power_state_check = true;
++
++		ret = pnv_php_get_power_state(slot, &power_status);
++		if (ret)
++			return ret;
++
++		if (power_status != OPAL_PCI_SLOT_POWER_ON)
++			return 0;
++	}
++
++	/* Check the power status. Scan the slot if it is already on */
++	ret = pnv_php_get_power_state(slot, &power_status);
++	if (ret)
++		return ret;
++
++	if (power_status == OPAL_PCI_SLOT_POWER_ON)
++		goto scan;
++
++	/* Power is off, turn it on and then scan the slot */
++	ret = pnv_php_set_power_state(slot, OPAL_PCI_SLOT_POWER_ON);
++	if (ret)
++		return ret;
++
++scan:
++	if (presence == OPAL_PCI_SLOT_PRESENT) {
++		if (rescan) {
++			pci_lock_rescan_remove();
++			pci_hp_add_devices(php_slot->bus);
++			pci_unlock_rescan_remove();
++		}
++
++		/* Rescan for child hotpluggable slots */
++		php_slot->state = PNV_PHP_STATE_POPULATED;
++		if (rescan)
++			pnv_php_register(php_slot->dn);
++	} else {
++		php_slot->state = PNV_PHP_STATE_POPULATED;
++	}
++
++	return 0;
++}
++
++static int pnv_php_enable_slot(struct hotplug_slot *slot)
++{
++	struct pnv_php_slot *php_slot = container_of(slot,
++						     struct pnv_php_slot, slot);
++
++	return pnv_php_enable(php_slot, true);
++}
++
++static int pnv_php_disable_slot(struct hotplug_slot *slot)
++{
++	struct pnv_php_slot *php_slot = slot->private;
++	uint8_t power_state;
++	int ret;
++
++	if (php_slot->state != PNV_PHP_STATE_POPULATED)
++		return 0;
++
++	/* Remove all devices behind the slot */
++	pci_lock_rescan_remove();
++	pci_hp_remove_devices(php_slot->bus);
++	pci_unlock_rescan_remove();
++
++	/* Detach the child hotpluggable slots */
++	pnv_php_unregister(php_slot->dn);
++
++	/*
++	 * Check the power status and turn it off if necessary. If we
++	 * fail to get the power status, the power will be forced to
++	 * be off.
++	 */
++	ret = pnv_php_get_power_state(slot, &power_state);
++	if (ret || power_state == OPAL_PCI_SLOT_POWER_ON) {
++		ret = pnv_php_set_power_state(slot, OPAL_PCI_SLOT_POWER_OFF);
++		if (ret)
++			dev_warn(&php_slot->pdev->dev, "Error %d powering off\n",
++				 ret);
++	}
++
++	/* Update slot state */
++	php_slot->state = PNV_PHP_STATE_REGISTERED;
++	return 0;
++}
++
++static struct hotplug_slot_ops php_slot_ops = {
++	.get_power_status	= pnv_php_get_power_state,
++	.get_adapter_status	= pnv_php_get_adapter_state,
++	.set_attention_status	= pnv_php_set_attention_state,
++	.enable_slot		= pnv_php_enable_slot,
++	.disable_slot		= pnv_php_disable_slot,
++};
++
++static void pnv_php_release(struct hotplug_slot *slot)
++{
++	struct pnv_php_slot *php_slot = slot->private;
++	unsigned long flags;
++
++	/* Remove from global or child list */
++	spin_lock_irqsave(&pnv_php_lock, flags);
++	list_del(&php_slot->link);
++	spin_unlock_irqrestore(&pnv_php_lock, flags);
++
++	/* Detach from parent */
++	pnv_php_put_slot(php_slot);
++	pnv_php_put_slot(php_slot->parent);
++}
++
++static int pnv_php_get_slot_id(struct device_node *dn, uint64_t *id)
++{
++	struct device_node *parent = dn;
++	const __be64 *prop64;
++	const __be32 *prop32;
++	uint64_t phb_id;
++	int bdfn;
++
++	/* Bus/Slot/Function number */
++	prop32 = of_get_property(dn, "reg", NULL);
++	if (!prop32)
++		return -ENXIO;
++	bdfn = (of_read_number(prop32, 1) & 0x00ffff00) >> 8;
++
++	/* PHB Id */
++	while ((parent = of_get_parent(parent))) {
++		if (!PCI_DN(parent)) {
++			of_node_put(parent);
++			break;
++		}
++
++		if (!of_device_is_compatible(parent, "ibm,ioda2-phb")) {
++			of_node_put(parent);
++			continue;
++		}
++
++		prop64 = of_get_property(parent, "ibm,opal-phbid", NULL);
++		if (!prop64) {
++			of_node_put(parent);
++			return -ENXIO;
++		}
++
++		phb_id = be64_to_cpup(prop64);
++		of_node_put(parent);
++
++		*id = PCI_SLOT_ID(phb_id, bdfn);
 +		return 0;
 +	}
- 
- 	allocl = ++l;
- 
-@@ -223,7 +311,7 @@ static void * unflatten_dt_node(const void *blob,
- 		}
- 	}
- 
--	np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
-+	np = unflatten_dt_alloc(mem, sizeof(struct device_node) + allocl,
- 				__alignof__(struct device_node));
- 	if (!dryrun) {
- 		char *fn;
-@@ -246,89 +334,15 @@ static void * unflatten_dt_node(const void *blob,
- 		}
- 		memcpy(fn, pathp, l);
- 
--		prev_pp = &np->properties;
- 		if (dad != NULL) {
- 			np->parent = dad;
- 			np->sibling = dad->child;
- 			dad->child = np;
- 		}
- 	}
--	/* process properties */
--	for (offset = fdt_first_property_offset(blob, *poffset);
--	     (offset >= 0);
--	     (offset = fdt_next_property_offset(blob, offset))) {
--		const char *pname;
--		u32 sz;
- 
--		if (!(p = fdt_getprop_by_offset(blob, offset, &pname, &sz))) {
--			offset = -FDT_ERR_INTERNAL;
--			break;
--		}
--
--		if (pname == NULL) {
--			pr_info("Can't find property name in list !\n");
--			break;
--		}
--		if (strcmp(pname, "name") == 0)
--			has_name = 1;
--		pp = unflatten_dt_alloc(&mem, sizeof(struct property),
--					__alignof__(struct property));
--		if (!dryrun) {
--			/* We accept flattened tree phandles either in
--			 * ePAPR-style "phandle" properties, or the
--			 * legacy "linux,phandle" properties.  If both
--			 * appear and have different values, things
--			 * will get weird.  Don't do that. */
--			if ((strcmp(pname, "phandle") == 0) ||
--			    (strcmp(pname, "linux,phandle") == 0)) {
--				if (np->phandle == 0)
--					np->phandle = be32_to_cpup(p);
--			}
--			/* And we process the "ibm,phandle" property
--			 * used in pSeries dynamic device tree
--			 * stuff */
--			if (strcmp(pname, "ibm,phandle") == 0)
--				np->phandle = be32_to_cpup(p);
--			pp->name = (char *)pname;
--			pp->length = sz;
--			pp->value = (__be32 *)p;
--			*prev_pp = pp;
--			prev_pp = &pp->next;
--		}
--	}
--	/* with version 0x10 we may not have the name property, recreate
--	 * it here from the unit name if absent
--	 */
--	if (!has_name) {
--		const char *p1 = pathp, *ps = pathp, *pa = NULL;
--		int sz;
--
--		while (*p1) {
--			if ((*p1) == '@')
--				pa = p1;
--			if ((*p1) == '/')
--				ps = p1 + 1;
--			p1++;
--		}
--		if (pa < ps)
--			pa = p1;
--		sz = (pa - ps) + 1;
--		pp = unflatten_dt_alloc(&mem, sizeof(struct property) + sz,
--					__alignof__(struct property));
--		if (!dryrun) {
--			pp->name = "name";
--			pp->length = sz;
--			pp->value = pp + 1;
--			*prev_pp = pp;
--			prev_pp = &pp->next;
--			memcpy(pp->value, ps, sz - 1);
--			((char *)pp->value)[sz - 1] = 0;
--			pr_debug("fixed up name for %s -> %s\n", pathp,
--				(char *)pp->value);
--		}
--	}
-+	populate_properties(blob, offset, mem, np, pathp, dryrun);
- 	if (!dryrun) {
--		*prev_pp = NULL;
- 		np->name = of_get_property(np, "name", NULL);
- 		np->type = of_get_property(np, "device_type", NULL);
- 
-@@ -338,6 +352,37 @@ static void * unflatten_dt_node(const void *blob,
- 			np->type = "<NULL>";
- 	}
- 
-+	*pnp = np;
-+	return fpsize;
++
++	return -ENODEV;
 +}
 +
-+/**
-+ * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-+ * @blob: The parent device tree blob
-+ * @mem: Memory chunk to use for allocating device nodes and properties
-+ * @poffset: pointer to node in flat tree
-+ * @dad: Parent struct device_node
-+ * @nodepp: The device_node tree created by the call
-+ * @fpsize: Size of the node path up at the current depth.
-+ * @dryrun: If true, do not allocate device nodes but still calculate needed
-+ * memory size
-+ */
-+static void *unflatten_dt_node(const void *blob,
-+			       void *mem,
-+			       int *poffset,
-+			       struct device_node *dad,
-+			       struct device_node **nodepp,
-+			       unsigned long fpsize,
-+			       bool dryrun)
++static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
 +{
-+	struct device_node *np;
-+	static int depth;
-+	int old_depth;
++	struct pnv_php_slot *php_slot;
++	struct pci_bus *bus;
++	const char *label;
++	uint64_t id;
 +
-+	fpsize = populate_node(blob, *poffset, &mem, dad, fpsize, &np, dryrun);
-+	if (!fpsize)
-+		return mem;
++	label = of_get_property(dn, "ibm,slot-label", NULL);
++	if (!label)
++		return NULL;
 +
- 	old_depth = depth;
- 	*poffset = fdt_next_node(blob, *poffset, &depth);
- 	if (depth < 0)
++	if (pnv_php_get_slot_id(dn, &id))
++		return NULL;
++
++	bus = pci_find_bus_by_node(dn);
++	if (!bus)
++		return NULL;
++
++	php_slot = kzalloc(sizeof(*php_slot), GFP_KERNEL);
++	if (!php_slot)
++		return NULL;
++
++	php_slot->name = kstrdup(label, GFP_KERNEL);
++	if (!php_slot->name) {
++		kfree(php_slot);
++		return NULL;
++	}
++
++	if (dn->child && PCI_DN(dn->child))
++		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
++	else
++		php_slot->slot_no = -1;   /* Placeholder slot */
++
++	kref_init(&php_slot->kref);
++	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
++	php_slot->dn	                = dn;
++	php_slot->pdev	                = bus->self;
++	php_slot->bus	                = bus;
++	php_slot->id	                = id;
++	php_slot->power_state_check     = false;
++	php_slot->power_state_confirmed = PNV_PHP_POWER_CONFIRMED_INVALID;
++	php_slot->slot.ops              = &php_slot_ops;
++	php_slot->slot.info             = &php_slot->slot_info;
++	php_slot->slot.release          = pnv_php_release;
++	php_slot->slot.private          = php_slot;
++
++	INIT_WORK(&php_slot->work, pnv_php_work);
++	init_waitqueue_head(&php_slot->queue);
++	INIT_LIST_HEAD(&php_slot->children);
++	INIT_LIST_HEAD(&php_slot->link);
++
++	return php_slot;
++}
++
++static int pnv_php_register_slot(struct pnv_php_slot *php_slot)
++{
++	struct pnv_php_slot *parent;
++	struct device_node *dn = php_slot->dn;
++	unsigned long flags;
++	int ret;
++
++	/* Check if the slot is registered or not */
++	parent = pnv_php_find_slot(php_slot->dn);
++	if (parent) {
++		pnv_php_put_slot(parent);
++		return -EEXIST;
++	}
++
++	/* Register PCI slot */
++	ret = pci_hp_register(&php_slot->slot, php_slot->bus,
++			      php_slot->slot_no, php_slot->name);
++	if (ret) {
++		dev_warn(&php_slot->pdev->dev, "Error %d registering slot\n",
++			 ret);
++		return ret;
++	}
++
++	/* Attach to the parent's child list or global list */
++	while ((dn = of_get_parent(dn))) {
++		if (!PCI_DN(dn)) {
++			of_node_put(dn);
++			break;
++		}
++
++		parent = pnv_php_find_slot(dn);
++		if (parent) {
++			of_node_put(dn);
++			break;
++		}
++
++		of_node_put(dn);
++	}
++
++	spin_lock_irqsave(&pnv_php_lock, flags);
++	php_slot->parent = parent;
++	if (parent)
++		list_add_tail(&php_slot->link, &parent->children);
++	else
++		list_add_tail(&php_slot->link, &pnv_php_slot_list);
++	spin_unlock_irqrestore(&pnv_php_lock, flags);
++
++	php_slot->state = PNV_PHP_STATE_REGISTERED;
++	return 0;
++}
++
++static int pnv_php_register_one(struct device_node *dn)
++{
++	struct pnv_php_slot *php_slot;
++	const __be32 *prop32;
++	int ret;
++
++	/* Check if it's hotpluggable slot */
++	prop32 = of_get_property(dn, "ibm,slot-pluggable", NULL);
++	if (!prop32 || !of_read_number(prop32, 1))
++		return -ENXIO;
++
++	prop32 = of_get_property(dn, "ibm,reset-by-firmware", NULL);
++	if (!prop32 || !of_read_number(prop32, 1))
++		return -ENXIO;
++
++	php_slot = pnv_php_alloc_slot(dn);
++	if (!php_slot)
++		return -ENODEV;
++
++	ret = pnv_php_register_slot(php_slot);
++	if (ret)
++		goto free_slot;
++
++	ret = pnv_php_enable(php_slot, false);
++	if (ret)
++		goto unregister_slot;
++
++	return 0;
++
++unregister_slot:
++	pnv_php_unregister_one(php_slot->dn);
++free_slot:
++	pnv_php_put_slot(php_slot);
++	return ret;
++}
++
++static void pnv_php_register(struct device_node *dn)
++{
++	struct device_node *child;
++
++	/*
++	 * The parent slots should be registered before their
++	 * child slots.
++	 */
++	for_each_child_of_node(dn, child) {
++		pnv_php_register_one(child);
++		pnv_php_register(child);
++	}
++}
++
++static void pnv_php_unregister_one(struct device_node *dn)
++{
++	struct pnv_php_slot *php_slot;
++
++	php_slot = pnv_php_find_slot(dn);
++	if (!php_slot)
++		return;
++
++	php_slot->state = PNV_PHP_STATE_OFFLINE;
++	flush_work(&php_slot->work);
++
++	pnv_php_put_slot(php_slot);
++	pci_hp_deregister(&php_slot->slot);
++}
++
++static void pnv_php_unregister(struct device_node *dn)
++{
++	struct device_node *child;
++
++	/* The child slots should go before their parent slots */
++	for_each_child_of_node(dn, child) {
++		pnv_php_unregister(child);
++		pnv_php_unregister_one(child);
++	}
++}
++
++static struct notifier_block php_msg_nb = {
++	.notifier_call	= pnv_php_handle_msg,
++	.next		= NULL,
++	.priority	= 0,
++};
++
++static int __init pnv_php_init(void)
++{
++	struct device_node *dn;
++	int ret;
++
++	pr_info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
++
++	/* Register hotplug message handler */
++	ret = pnv_pci_hotplug_notifier_register(&php_msg_nb);
++	if (ret) {
++		pr_warn("%s: Error %d registering hotplug notifier\n",
++			__func__, ret);
++		return ret;
++	}
++
++	/* Scan PHB nodes and their children */
++	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
++		pnv_php_register(dn);
++
++	return 0;
++}
++
++static void __exit pnv_php_exit(void)
++{
++	struct device_node *dn;
++
++	pnv_pci_hotplug_notifier_unregister(&php_msg_nb);
++
++	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
++		pnv_php_unregister(dn);
++}
++
++module_init(pnv_php_init);
++module_exit(pnv_php_exit);
++
++MODULE_VERSION(DRIVER_VERSION);
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR(DRIVER_AUTHOR);
++MODULE_DESCRIPTION(DRIVER_DESC);
 -- 
 2.1.0
