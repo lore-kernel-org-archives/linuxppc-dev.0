@@ -1,17 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <intermediadc@hotmail.com>
+Received: from DUB004-OMC3S21.hotmail.com (dub004-omc3s21.hotmail.com
+ [157.55.2.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzTWq6g1xzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:00:39 +1000 (AEST)
-In-Reply-To: <1461824265-30592-1-git-send-email-sjitindarsingh@gmail.com>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: paulus@samba.org, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: Re: powerpc: Add out of bounds check to crash_shutdown_unregister()
-Message-Id: <3qzTWq5vWxz9t4k@ozlabs.org>
-Date: Tue,  3 May 2016 15:00:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzTrS1bVdzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:15:03 +1000 (AEST)
+Message-ID: <DUB406-EAS27408B1C4720D2C9605D3E3C87A0@phx.gbl>
+Content-Type: text/plain; charset="utf-8"
+Subject: Re: radeonhd and xorg issues on powerpc p5020 and G5
+References: <DUB117-W972E5DAF4FC0B745E9B1F7C86F0@phx.gbl>
+ <57245A5D.6030101@daenzer.net>
+ <DUB406-EAS3861973DA5AAFF7AF30D06DC8670@phx.gbl>
+From: luigi burdo <intermediadc@hotmail.com>
+MIME-Version: 1.0 (1.0)
+In-Reply-To: <DUB406-EAS3861973DA5AAFF7AF30D06DC8670@phx.gbl>
+Date: Tue, 3 May 2016 07:14:56 +0200
+To: =?utf-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,42 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-28-04 at 06:17:45 UTC, Suraj Jitindar Singh wrote:
-> When unregistering a crash_shutdown_handle in the function
-> crash_shutdown_unregister() the other handles are shifted down in the
-> array to replace the unregistered handle. The for loop assumes that the
-> last element in the array is null and uses this as the stop condition,
-> however in the case that the last element is not null there is no check
-> to ensure that an out of bounds access is not performed.
-
-But AFAICS the code ensures that entry will always be NULL. So there's no bug at
-the moment.
-
-> Add a check to terminate the shift operation when CRASH_HANDLER_MAX is
-> reached in order to protect against out of bounds accesses.
-
-Doing it this way is more robust though. The chance of the NULL terminator being
-corrupted is definitely higher than the code being corrupted, and if the latter
-happens we're probably toast anyway.
-
-> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-> index 2bb252c..6b267af 100644
-> --- a/arch/powerpc/kernel/crash.c
-> +++ b/arch/powerpc/kernel/crash.c
-> @@ -288,7 +288,7 @@ int crash_shutdown_unregister(crash_shutdown_t handler)
->  		rc = 1;
->  	} else {
->  		/* Shift handles down */
-> -		for (; crash_shutdown_handles[i]; i++)
-> +		for (; crash_shutdown_handles[i] && i < CRASH_HANDLER_MAX; i++)
->  			crash_shutdown_handles[i] =
->  				crash_shutdown_handles[i+1];
->  		rc = 0;
-
-So if I'm reading it right, with this change we have removed all the code that
-uses the NULL-terminated property of the list.
-
-If so we should also shrink the array to be only CRASH_HANDLER_MAX in size, and
-remove any references to it being NULL terminated.
-
-cheers
+aGkgbWljaGVsLA0KdGVzdGVkIHdpdGggIHNhcHBoaXJlIDc3NTBIZCAyZ2IgZGRyMyBvbiBDeXJ1
+cysgQW1pZ2FvbmUgWDUwMDAgUDUwMjAsDQp3aXRoIHJhZGVvbiAgc2VsZWN0ZWQgaSBoYXZlIGEg
+c3RhbGxpbmcgb2YgZmVuY2UgMCBhbmQgdmlkZW8gYmlua2luZyB3aXRoIGFsbCBnbGl0Y2hlZCBs
+aWtlIG9uIDc3NzBoZCwgb25seSBmYmRldiB2aWRlbyBnYXZlIHRoZSBkZXNrdG9wIG9rLg0KZGlz
+dHJvIGlzIHRoZSB1YnVudHUgbWF0ZSAxNi4wNCANCmtlcm5lbHMgdXNlZCBmb3IgdGVzdGluZyBh
+cmUgdGhlIDQuNiByYyA1IGFuZCA0LjUgDQp3aWxsIGJ1aWxkIHRvZGF5IHRoZSA0LjQgYW5kIHRl
+c3QgdGhlcmUgdG9vLg0KDQppZiBzb21ldGhpbmcgbmVlZGVkIChsb2dzKWFuZCBzb21lIHNwZWNp
+ZmljIHRlc3QgYXJlIHJlcXVpZWQgZm9yIGhlbHAgdGhlIGRldnMNCmkgd2lsbCBnbGFkIHRvIHNl
+bmQuDQoNCg0KdGhhbmtzDQphbmQgc29ycnkgZm9yIG15IGVuZ2xpc2gNCmx1aWdpDQoNCkludmlh
+dG8gZGEgaVBhZA0KDQo+IElsIGdpb3JubyAzMCBhcHIgMjAxNiwgYWxsZSBvcmUgMDk6MjksIGx1
+aWdpIGJ1cmRvIDxpbnRlcm1lZGlhZGNAaG90bWFpbC5jb20+IGhhIHNjcml0dG86DQo+IA0KPiBo
+aSBtaWNoZWwsDQo+IHdpdGhvdXQgeG9yZyBjb25mIG9uIGN5cnVzKyBwNTAyMCwgYW5kIGc1IHF1
+YWQgaSBoYXZlIG9ubHkgdGhlIGJsYWNrIHNjcmVlbiB3aXRoIHB1bHNlIGN1cnNvci4gaSBuZWVk
+IHRvIG1hZGUgaXQgYW5kIHB1dCBpbiBldGMvWDExLyBvciBub3QgZGVza3RvcCBhdCBhbGwuDQo+
+IA0KPiBhYm91dCBtb2Rlc2V0PTAgb24gYm90aCBjYXJkczoNCj4geWVzIGkga25vdyBpcyBub3Jt
+YWwgZG9udCBoYXZlIHZpZGVvIGJ1dCBpIHRoaW5rIHRoZSBtb3JlIHN0cmFuZ2UgaXMgaGF2ZSB0
+aGUgb3Bwb3NpdGUgY29tcGFyZWQgdGhlIGtlcm5lbCBvcHRpb25zIC4gd2l0aCBrZXJuZWwgcmFk
+ZW9uLiBtb2Rlc2V0PTAgYW5kIG5vdXZlYXUubW9kZXNldD0xIGxvb2sgbGlrZSB4b3JnIHVuZGVy
+c3RhbmQgdG8gYWN0aXZhdGUgdGhlIHJhZGVvbiBhbmQgZGVhY3RpdmF0ZSB0aGUgbm91dmVhdSAu
+DQo+IGFuZCB0aGlzIG1ha2UgdGhlIHN5c3RlbSBzdGFsbGluZyB3aXRob3V0IGFueSB3YXkgdG8g
+cmVjb3Zlci4NCj4gDQo+IGFib3V0IHJhZGVvbnNpLCB3aWxsIGNoZWNrICBvbiA3NzUwIHRvbyBh
+bmQgcmVwb3J0Lg0KPiBmb3Igbm93IDR4eHgsNXh4eCw2eHh4IGNhbiBzYXkgYXJlIHJ1bm5pbmcg
+b24gcHBjIHN5c3RlbSB3aXRoIDNkIHRvbyAsIHllcyBtYW55IGVuZGlhbmVzcyBvbiBlZ2wgYW5k
+IGVnbDIgY29sb3JzIG5vdCByaWdodCBhbmQgc29tZSBjcmVhenkgdGV4dHVyZSBvbiBzb21lIGdh
+bWVzIGJ1dCAuLi4gcnVubmluZyA7LSkNCj4gDQo+IGNpYW8NCj4gbHVpZ2kNCj4gDQo+IA0KPiAN
+Cj4gDQo+IEludmlhdG8gZGEgaVBhZA0KPiANCj4+PiBJbCBnaW9ybm8gMzAgYXByIDIwMTYsIGFs
+bGUgb3JlIDA5OjEwLCBNaWNoZWwgRMOkbnplciA8bWljaGVsQGRhZW56ZXIubmV0PiBoYSBzY3Jp
+dHRvOg0KPj4+IA0KPj4+IE9uIDIzLjA0LjIwMTYgMDI6MDYsIGx1aWdpIGJ1cmRvIHdyb3RlOg0K
+Pj4+IA0KPj4+IE9uIFF1YWQgRzUgd2l0aCAyIHZpZGVvIGJvYXJkcw0KPj4+IGlmIGkgc2V0IHJh
+ZGVvbi5tb2Rlc2V0PTEgIG5vdXZlYXUubW9kZXNldD0xIFhvcmcgLWNvbmZpZ3VyZSBkb250IGZv
+dW5kDQo+Pj4gYXQgYWxsIHRoZSB2aWRlbyBib2FyZHMNCj4+PiBpZiBpIHNldCByYWRlb24ubW9k
+ZXNldD0wICBub3V2ZWF1Lm1vZGVzZXQ9MSBYb3JnIC1jb25maWd1cmUgZG9udCBmb3VuZA0KPj4+
+IHRoZSBub3V2ZWF1IGJvYXJkDQo+Pj4gaWYgaSBzZXQgcmFkZW9uLm1vZGVzZXQ9MSAgbm91dmVh
+dS5tb2Rlc2V0PTAgWG9yZyAtY29uZmlndXJlIGRvbnQgZm91bmQNCj4+PiB0aGUgcmFkZW9uIGJv
+YXJkDQo+PiANCj4+IFhvcmcgLWNvbmZpZ3VyZSBoYXMgdmFyaW91cyBrbm93biBpc3N1ZXMgYW5k
+IHNob3VsZG4ndCBiZSB1c2VkIGFueW1vcmUuDQo+PiBYb3JnIGlzIG5vcm1hbGx5IGFibGUgdG8g
+YXV0b21hdGljYWxseSBkZXRlY3QgYW5kIHVzZSBhbGwgR1BVcyBpbiBhDQo+PiBzeXN0ZW0gd2l0
+aG91dCBhbnkgeG9yZy5jb25mIGZpbGUuDQo+PiANCj4+IA0KPj4+IGlmIGkgc2V0IHJhZGVvbi5t
+b2Rlc2V0PTAgIG5vdXZlYXUubW9kZXNldD0wIG5vIHZpZGVvIHdvcmtpbmcgLi4uIG5vIHR0eQ0K
+Pj4+IHRvbyA7LSkNCj4+IA0KPj4gVGhhdCBkaXNhYmxlcyBib3RoIGtlcm5lbCBkcml2ZXJzLCB3
+aGljaCBhcmUgcmVxdWlyZWQgZm9yIGZiY29uIGFuZCBYb3JnLg0KPj4gDQo+PiANCj4+PiBPbiBQ
+NTAyMA0KPj4+IGxhc3Qgb2YgbXkgdGVzdCBpcyB0aGlzIG1hY2hpbmUgd2l0aCBhICByYWRlb24g
+aGQgNzc3MCBjb3JlIGVkaXRpb24NCj4+PiBpZiByYWRlb24gZHJ2IGlzIHJ1bm5pbmcgdGhlIHN5
+c3RlbSBydW4gaW4gc29mdHBpcGUgbW9kZSBhbmQgaSBmYWNlIG1hbnkNCj4+PiBkcm0gZXJyb3Jz
+IGFuZCBmZW5jZSBpc3N1ZS4NCj4+PiBpIGF0dGVjaGVkIHRoZSBkbWVzZyBmaWxlcy4NCj4+IA0K
+Pj4gV2hpY2gga2VybmVsIHZlcnNpb24gYXJlIHlvdSB0ZXN0aW5nPyBUaGVyZSB3ZXJlIHNvbWUg
+Zml4ZXMgaW4gNC40LzQuNQ0KPj4gd2hpY2ggbWF5IGhlbHAgZm9yIHRoZSBrZXJuZWwgZHJpdmVy
+IGlzc3VlcywgYnV0IG5vdGUgdGhhdCB0aGUgTWVzYQ0KPj4gcmFkZW9uc2kgZHJpdmVyIGZvciA+
+PSA3eHh4IFJhZGVvbnMgc3RpbGwgbmVlZHMgYSBsb3Qgb2Ygd29yayB0byBiZQ0KPj4gdXNhYmxl
+IG9uIGJpZyBlbmRpYW4gc3lzdGVtcy4NCj4+IA0KPj4gDQo+PiAtLSANCj4+IEVhcnRobGluZyBN
+aWNoZWwgRMOkbnplciAgICAgICAgICAgICAgIHwgICAgICAgICAgICAgICBodHRwOi8vd3d3LmFt
+ZC5jb20NCj4+IExpYnJlIHNvZnR3YXJlIGVudGh1c2lhc3QgICAgICAgICAgICAgfCAgICAgICAg
+ICAgICBNZXNhIGFuZCBYIGRldmVsb3Blcg0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXw0KPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+IExpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IGh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0
+aW5mby9saW51eHBwYy1kZXYNCg==
