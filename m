@@ -1,53 +1,25 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzXz611NczDq62
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 17:36:01 +1000 (AEST)
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Tue, 3 May 2016 13:05:59 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 33349125805C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 13:08:00 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u437Zvxm25690178
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 13:05:57 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u437Ztx1003509
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 13:05:56 +0530
-Subject: Re: [PATCH] vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio
- page is exclusive
-To: "Tian, Kevin" <kevin.tian@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
-References: <1461759740-5072-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F84131D@SHSMSX101.ccr.corp.intel.com>
- <00243350-1ccc-75e5-8cd8-a58dfe14637f@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F8425FE@SHSMSX101.ccr.corp.intel.com>
-Cc: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru"
- <aik@ozlabs.ru>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "corbet@lwn.net"
- <corbet@lwn.net>,
- "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>,
- "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>,
- "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
- "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <ade934de-0335-d2fb-11c1-5ecf05c800b2@linux.vnet.ibm.com>
-Date: Tue, 3 May 2016 15:36:05 +0800
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qzY1q134wzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 17:38:23 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v4 10/11] powerpc/powernv/npu: Rework TCE Kill
+ handling
+Date: Tue, 03 May 2016 17:37:43 +1000
+Message-ID: <4101273.U4ABDoEKOe@new-mexico>
+In-Reply-To: <1461920124-21719-11-git-send-email-aik@ozlabs.ru>
+References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
+ <1461920124-21719-11-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <AADFC41AFE54684AB9EE6CBC0274A5D15F8425FE@SHSMSX101.ccr.corp.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,38 +29,309 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/5/3 14:11, Tian, Kevin wrote:
+On Fri, 29 Apr 2016 18:55:23 Alexey Kardashevskiy wrote:
+> The pnv_ioda_pe struct keeps an array of peers. At the moment it is only
+> used to link GPU and NPU for 2 purposes:
+> 
+> 1. Access NPU quickly when configuring DMA for GPU - this was addressed
+> in the previos patch by removing use of it as DMA setup is not what
+> the kernel would constantly do.
 
->> From: Yongji Xie [mailto:xyjxie@linux.vnet.ibm.com]
->> Sent: Tuesday, May 03, 2016 1:52 PM
->>
->>>> +
->>>> +		if (!(res->start & ~PAGE_MASK)) {
->>>> +			/*
->>>> +			 * Add shadow resource for sub-page bar whose mmio
->>>> +			 * page is exclusive in case that hot-add device's
->>>> +			 * bar is assigned into the mem hole.
->>>> +			 */
->>>> +			shadow_res = kzalloc(sizeof(*shadow_res), GFP_KERNEL);
->>>> +			shadow_res->resource.start = res->end + 1;
->>>> +			shadow_res->resource.end = res->start + PAGE_SIZE - 1;
->>> What about res->start not page aligned so you end up still having
->>> a portion before res->start not exclusively reserved?
->> Do you mean add a 'dummy' resource to reserve the portion
->> before res->start if res->start not page aligned?
->>
->> But would it happen that there is a mem hole in the portion
->> before res->start? The resource should have been assigned
->> into the hole at the beginning.
->>
-> Just a quick thought. Another device might occupy that range
-> before initializing this device, and then 'another device' is hot
-> removed later...
->
-> Thanks
-> Kevin
+Agreed. It was used here because the peer array was added to deal with (2) 
+below ...
 
-That's a good point! I will add support for this case in v2.
+> 2. Invalidate TCE cache for NPU when it is invalidated for GPU.
+> GPU and NPU are in different PE. There is already a mechanism to
+> attach multiple iommu_table_group to the same iommu_table (used for VFIO),
+> we can reuse it here so does this patch.
 
-Thanks,
-Yongji
+... because we weren't aware iommu_table_group could be used to do this 
+instead.
+
+> This gets rid of peers[] array and PNV_IODA_PE_PEER flag as they are
+> not needed anymore.
+
+Happy to see it go. I'm not too familiar with iommu groups but based on the 
+code and what you have described to me both here and offline everything looks 
+good to me. One pretty minor style comment below.
+
+Reviewed-By: Alistair Popple <alistair@popple.id.au>
+
+> While we are here, add TCE cache invalidation after enabling bypass.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v4:
+> * reworked as "powerpc/powernv/npu: Add set/unset window helpers" has been
+> added
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c  | 69 
++++++++++----------------------
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 57 ++++---------------------
+>  arch/powerpc/platforms/powernv/pci.h      |  6 ---
+>  3 files changed, 26 insertions(+), 106 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c 
+b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 800d70f..cb2d1da 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -136,22 +136,17 @@ static struct pnv_ioda_pe 
+*get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+>  	struct pnv_ioda_pe *pe;
+>  	struct pci_dn *pdn;
+>  
+> -	if (npe->flags & PNV_IODA_PE_PEER) {
+> -		pe = npe->peers[0];
+> -		pdev = pe->pdev;
+> -	} else {
+> -		pdev = pnv_pci_get_gpu_dev(npe->pdev);
+> -		if (!pdev)
+> -			return NULL;
+> +	pdev = pnv_pci_get_gpu_dev(npe->pdev);
+> +	if (!pdev)
+> +		return NULL;
+>  
+> -		pdn = pci_get_pdn(pdev);
+> -		if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+> -			return NULL;
+> +	pdn = pci_get_pdn(pdev);
+> +	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+> +		return NULL;
+>  
+> -		hose = pci_bus_to_host(pdev->bus);
+> -		phb = hose->private_data;
+> -		pe = &phb->ioda.pe_array[pdn->pe_number];
+> -	}
+> +	hose = pci_bus_to_host(pdev->bus);
+> +	phb = hose->private_data;
+> +	pe = &phb->ioda.pe_array[pdn->pe_number];
+>  
+>  	if (gpdev)
+>  		*gpdev = pdev;
+> @@ -186,6 +181,10 @@ static long pnv_npu_set_window(struct pnv_ioda_pe *npe,
+>  	}
+>  	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+>  
+> +	/* Add the table to the list so its TCE cache will get invalidated */
+> +	pnv_pci_link_table_and_group(phb->hose->node, 0,
+> +			tbl, &npe->table_group);
+
+Where tbl is associated with the GPU and is what links the NPU and GPU PEs.
+
+>  	return 0;
+>  }
+>  
+> @@ -206,45 +205,12 @@ static long pnv_npu_unset_window(struct pnv_ioda_pe 
+*npe)
+>  	}
+>  	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+>  
+> +	pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
+> +			&npe->table_group);
+> +
+>  	return 0;
+>  }
+>  
+> -void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
+> -{
+> -	struct pnv_ioda_pe *gpe;
+> -	struct pci_dev *gpdev;
+> -	int i, avail = -1;
+> -
+> -	if (!npe->pdev || !(npe->flags & PNV_IODA_PE_DEV))
+> -		return;
+> -
+> -	gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+> -	if (!gpe)
+> -		return;
+> -
+> -	for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+> -		/* Nothing to do if the PE is already connected. */
+> -		if (gpe->peers[i] == npe)
+> -			return;
+> -
+> -		if (!gpe->peers[i])
+> -			avail = i;
+> -	}
+> -
+> -	if (WARN_ON(avail < 0))
+> -		return;
+> -
+> -	gpe->peers[avail] = npe;
+> -	gpe->flags |= PNV_IODA_PE_PEER;
+> -
+> -	/*
+> -	 * We assume that the NPU devices only have a single peer PE
+> -	 * (the GPU PCIe device PE).
+> -	 */
+> -	npe->peers[0] = gpe;
+> -	npe->flags |= PNV_IODA_PE_PEER;
+> -}
+> -
+>  /*
+>   * Enables 32 bit DMA on NPU.
+>   */
+> @@ -302,6 +268,9 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe 
+*npe)
+>  			npe->pe_number, npe->pe_number,
+>  			0 /* bypass base */, top);
+>  
+> +	if (rc == OPAL_SUCCESS)
+> +		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> +
+>  	return rc;
+>  }
+>  
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
+b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index db7695f..922c74c 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1816,23 +1816,12 @@ static inline void 
+pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+>  	/* 01xb - invalidate TCEs that match the specified PE# */
+>  	unsigned long val = TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
+>  	struct pnv_phb *phb = pe->phb;
+> -	struct pnv_ioda_pe *npe;
+> -	int i;
+>  
+>  	if (!phb->ioda.tce_inval_reg)
+>  		return;
+>  
+>  	mb(); /* Ensure above stores are visible */
+>  	__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
+> -
+> -	if (pe->flags & PNV_IODA_PE_PEER)
+> -		for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+> -			npe = pe->peers[i];
+> -			if (!npe || npe->phb->type != PNV_PHB_NPU)
+> -				continue;
+> -
+> -			pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+> -		}
+>  }
+>  
+>  static void pnv_pci_ioda2_do_tce_invalidate(unsigned pe_number, bool rm,
+> @@ -1867,33 +1856,24 @@ static void pnv_pci_ioda2_tce_invalidate(struct 
+iommu_table *tbl,
+>  	struct iommu_table_group_link *tgl;
+>  
+>  	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
+> -		struct pnv_ioda_pe *npe;
+>  		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
+>  				struct pnv_ioda_pe, table_group);
+>  		__be64 __iomem *invalidate = rm ?
+>  			(__be64 __iomem *)pe->phb->ioda.tce_inval_reg_phys :
+>  			pe->phb->ioda.tce_inval_reg;
+> -		int i;
+>  
+> -		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
+> -			invalidate, tbl->it_page_shift,
+> -			index, npages);
+> -
+> -		if (pe->flags & PNV_IODA_PE_PEER)
+> +		if (pe->phb->type == PNV_PHB_NPU) {
+>  			/*
+>  			 * The NVLink hardware does not support TCE kill
+>  			 * per TCE entry so we have to invalidate
+>  			 * the entire cache for it.
+>  			 */
+> -			for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
+> -				npe = pe->peers[i];
+> -				if (!npe || npe->phb->type != PNV_PHB_NPU ||
+> -						!npe->phb->ioda.tce_inval_reg)
+> -					continue;
+> -
+> -				pnv_pci_ioda2_tce_invalidate_entire(npe->phb,
+> -						rm);
+> -			}
+> +			pnv_pci_ioda2_tce_invalidate_entire(pe->phb, rm);
+> +			continue;
+> +		}
+
+Personally I think an if/else instead of the continue would be cleaner here.
+
+> +		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
+> +			invalidate, tbl->it_page_shift,
+> +			index, npages);
+>  	}
+>  }
+>  
+> @@ -3061,26 +3041,6 @@ static void pnv_pci_ioda_create_dbgfs(void)
+>  #endif /* CONFIG_DEBUG_FS */
+>  }
+>  
+> -static void pnv_npu_ioda_fixup(void)
+> -{
+> -	bool enable_bypass;
+> -	struct pci_controller *hose, *tmp;
+> -	struct pnv_phb *phb;
+> -	struct pnv_ioda_pe *pe;
+> -
+> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> -		phb = hose->private_data;
+> -		if (phb->type != PNV_PHB_NPU)
+> -			continue;
+> -
+> -		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+> -			enable_bypass = dma_get_mask(&pe->pdev->dev) ==
+> -				DMA_BIT_MASK(64);
+> -			pnv_npu_init_dma_pe(pe);
+> -		}
+> -	}
+> -}
+> -
+>  static void pnv_pci_ioda_fixup(void)
+>  {
+>  	pnv_pci_ioda_setup_PEs();
+> @@ -3093,9 +3053,6 @@ static void pnv_pci_ioda_fixup(void)
+>  	eeh_init();
+>  	eeh_addr_cache_build();
+>  #endif
+> -
+> -	/* Link NPU IODA tables to their PCI devices. */
+> -	pnv_npu_ioda_fixup();
+>  }
+>  
+>  /*
+> diff --git a/arch/powerpc/platforms/powernv/pci.h 
+b/arch/powerpc/platforms/powernv/pci.h
+> index 485e5b1..e117bd8 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -24,7 +24,6 @@ enum pnv_phb_model {
+>  #define PNV_IODA_PE_MASTER	(1 << 3)	/* Master PE in compound case	
+*/
+>  #define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	
+*/
+>  #define PNV_IODA_PE_VF		(1 << 5)	/* PE for one VF 	
+	*/
+> -#define PNV_IODA_PE_PEER	(1 << 6)	/* PE has peers			
+*/
+>  
+>  /* Data associated with a PE, including IOMMU tracking etc.. */
+>  struct pnv_phb;
+> @@ -32,9 +31,6 @@ struct pnv_ioda_pe {
+>  	unsigned long		flags;
+>  	struct pnv_phb		*phb;
+>  
+> -#define PNV_IODA_MAX_PEER_PES	8
+> -	struct pnv_ioda_pe	*peers[PNV_IODA_MAX_PEER_PES];
+> -
+>  	/* A PE can be associated with a single device or an
+>  	 * entire bus (& children). In the former case, pdev
+>  	 * is populated, in the later case, pbus is.
+> @@ -246,8 +242,6 @@ extern void pe_level_printk(const struct pnv_ioda_pe 
+*pe, const char *level,
+>  	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+>  
+>  /* Nvlink functions */
+> -extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
+> -extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
+>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool 
+rm);
+>  
+> 
