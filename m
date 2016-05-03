@@ -1,25 +1,51 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [150.101.137.129])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qzVYt42ddzDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:47:30 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>,
- David Gibson <david@gibson.dropbear.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v4 08/11] powerpc/powernv/ioda2: Export debug
- helper pe_level_printk()
-Date: Tue, 03 May 2016 15:46:33 +1000
-Message-ID: <4159435.eIvAFi7xxQ@new-mexico>
-In-Reply-To: <1461920124-21719-9-git-send-email-aik@ozlabs.ru>
-References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
- <1461920124-21719-9-git-send-email-aik@ozlabs.ru>
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzVh308T4zDrNL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:52:51 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Tue, 3 May 2016 15:52:50 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1FF0C2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:52:48 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u435qeKB8388866
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:52:48 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u435qEwe012372
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:52:15 +1000
+Subject: Re: [PATCH] vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio
+ page is exclusive
+To: "Tian, Kevin" <kevin.tian@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+References: <1461759740-5072-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F84131D@SHSMSX101.ccr.corp.intel.com>
+Cc: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru"
+ <aik@ozlabs.ru>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "corbet@lwn.net"
+ <corbet@lwn.net>,
+ "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>,
+ "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>,
+ "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
+ "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <00243350-1ccc-75e5-8cd8-a58dfe14637f@linux.vnet.ibm.com>
+Date: Tue, 3 May 2016 13:52:08 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <AADFC41AFE54684AB9EE6CBC0274A5D15F84131D@SHSMSX101.ccr.corp.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +55,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's one call to pr_warn() in pnv_npu_disable_bypass() that could arguably 
-be converted to pe_warn(), but we can clean that up later as the patch looks 
-fine and I'm assuming subsequent patches make use of these.
+On 2016/5/3 10:59, Tian, Kevin wrote:
 
-Reviewed-By: Alistair Popple <alistair@popple.id.au>
+>> From: Yongji Xie
+>> Sent: Wednesday, April 27, 2016 8:22 PM
+>>
+>> Current vfio-pci implementation disallows to mmap
+>> sub-page(size < PAGE_SIZE) MMIO BARs because these BARs' mmio
+>> page may be shared with other BARs. This will cause some
+>> performance issues when we passthrough a PCI device with
+>> this kind of BARs. Guest will be not able to handle the mmio
+>> accesses to the BARs which leads to mmio emulations in host.
+>>
+>> However, not all sub-page BARs will share page with other BARs.
+>> We should allow to mmap those sub-page MMIO BARs which we can
+>> make sure will not share page with other BARs.
+>>
+>> This patch adds support for this case. And we also try to use
+>> shadow resource to reserve the remaind of the page which hot-add
+>> device's BAR might be assigned into.
+> 'shadow' usually means you have a corresponding part being
+> shadowed, while here looks you mostly want some 'dummy'
+> resource for reservation purpose?
 
-On Fri, 29 Apr 2016 18:55:21 Alexey Kardashevskiy wrote:
-> This exports debugging helper pe_level_printk() and corresponding macroses
-> so they can be used in npu-dma.c.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 9 +--------
->  arch/powerpc/platforms/powernv/pci.h      | 9 +++++++++
->  2 files changed, 10 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
-b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 272521e..db7695f 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -56,7 +56,7 @@
->  
->  static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
->  
-> -static void pe_level_printk(const struct pnv_ioda_pe *pe, const char 
-*level,
-> +void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
->  			    const char *fmt, ...)
->  {
->  	struct va_format vaf;
-> @@ -87,13 +87,6 @@ static void pe_level_printk(const struct pnv_ioda_pe *pe, 
-const char *level,
->  	va_end(args);
->  }
->  
-> -#define pe_err(pe, fmt, ...)					\
-> -	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
-> -#define pe_warn(pe, fmt, ...)					\
-> -	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
-> -#define pe_info(pe, fmt, ...)					\
-> -	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-> -
->  static bool pnv_iommu_bypass_disabled __read_mostly;
->  
->  static int __init iommu_setup(char *str)
-> diff --git a/arch/powerpc/platforms/powernv/pci.h 
-b/arch/powerpc/platforms/powernv/pci.h
-> index d574a9d..485e5b1 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -236,6 +236,15 @@ extern void pnv_pci_dma_bus_setup(struct pci_bus *bus);
->  extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
->  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
->  
-> +extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char 
-*level,
-> +			    const char *fmt, ...);
-> +#define pe_err(pe, fmt, ...)					\
-> +	pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
-> +#define pe_warn(pe, fmt, ...)					\
-> +	pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
-> +#define pe_info(pe, fmt, ...)					\
-> +	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-> +
->  /* Nvlink functions */
->  extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
->  extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
-> 
+Yes., 'dummy' may be better here. And I would also replace
+shadow_res/shadow_resources_list with reserved_res/reserved_resources_list.
+
+>> +
+>> +		if (!(res->start & ~PAGE_MASK)) {
+>> +			/*
+>> +			 * Add shadow resource for sub-page bar whose mmio
+>> +			 * page is exclusive in case that hot-add device's
+>> +			 * bar is assigned into the mem hole.
+>> +			 */
+>> +			shadow_res = kzalloc(sizeof(*shadow_res), GFP_KERNEL);
+>> +			shadow_res->resource.start = res->end + 1;
+>> +			shadow_res->resource.end = res->start + PAGE_SIZE - 1;
+> What about res->start not page aligned so you end up still having
+> a portion before res->start not exclusively reserved?
+
+Do you mean add a 'dummy' resource to reserve the portion
+before res->start if res->start not page aligned?
+
+But would it happen that there is a mem hole in the portion
+before res->start? The resource should have been assigned
+into the hole at the beginning.
+
+Thanks,
+Yongji
+
+>> +			shadow_res->resource.flags = res->flags;
+>> +			if (request_resource(res->parent,
+>> +					&shadow_res->resource)) {
+>> +				kfree(shadow_res);
+>> +				return false;
+>> +			}
+>> +			shadow_res->index = index;
+>> +			list_add(&shadow_res->res_next,
+>> +					&vdev->shadow_resources_list);
+>> +			return true;
+> Thanks
+> Kevin
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
