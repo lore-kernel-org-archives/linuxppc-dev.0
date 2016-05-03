@@ -1,34 +1,37 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzW860myfzDsQ0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 16:13:42 +1000 (AEST)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 3 May 2016 15:43:13 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5FF6F2BB0063
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:43:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u435h1XW45219872
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:43:09 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u435gaJP019425
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:42:37 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
- alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 16/26] powerpc/powernv/ioda1: Improve DMA32 segment track
-Date: Tue,  3 May 2016 15:41:35 +1000
-Message-Id: <1462254105-24128-17-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Return-Path: <kevin.tian@intel.com>
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qzWL415tZzDvpG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 16:22:19 +1000 (AEST)
+From: "Tian, Kevin" <kevin.tian@intel.com>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, "kvm@vger.kernel.org"
+ <kvm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>
+CC: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "joro@8bytes.org" <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
+ <warrier@linux.vnet.ibm.com>, "zhong@linux.vnet.ibm.com"
+ <zhong@linux.vnet.ibm.com>, "nikunj@linux.vnet.ibm.com"
+ <nikunj@linux.vnet.ibm.com>, "eric.auger@linaro.org" <eric.auger@linaro.org>,
+ "will.deacon@arm.com" <will.deacon@arm.com>, "gwshan@linux.vnet.ibm.com"
+ <gwshan@linux.vnet.ibm.com>, "David.Laight@ACULAB.COM"
+ <David.Laight@ACULAB.COM>, "alistair@popple.id.au" <alistair@popple.id.au>,
+ "ruscur@russell.cc" <ruscur@russell.cc>
+Subject: RE: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
+ remapping is supported
+Date: Tue, 3 May 2016 06:22:15 +0000
+Message-ID: <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1461761010-5452-6-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F842512@SHSMSX101.ccr.corp.intel.com>
+ <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
+In-Reply-To: <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,267 +41,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In current implementation, the DMA32 segments required by one specific
-PE isn't calculated with the information hold in the PE independently.
-It conflicts with the PCI hotplug design: PE centralized, meaning the
-PE's DMA32 segments should be calculated from the information hold in
-the PE independently.
-
-This introduces an array (@dma32_segmap) for every PHB to track the
-DMA32 segmeng usage. Besides, this moves the logic calculating PE's
-consumed DMA32 segments to pnv_pci_ioda1_setup_dma_pe() so that PE's
-DMA32 segments are calculated/allocated from the information hold in
-the PE (DMA32 weight). Also the logic is improved: we try to allocate
-as much DMA32 segments as we can. It's acceptable that number of DMA32
-segments less than the expected number are allocated.
-
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 110 ++++++++++++++++--------------
- arch/powerpc/platforms/powernv/pci.h      |   7 +-
- 2 files changed, 61 insertions(+), 56 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f70a4e0..cfd2906 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2011,27 +2011,57 @@ static unsigned int pnv_pci_ioda_pe_dma_weight(struct pnv_ioda_pe *pe)
- }
- 
- static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
--				       struct pnv_ioda_pe *pe,
--				       unsigned int base,
--				       unsigned int segs)
-+				       struct pnv_ioda_pe *pe)
- {
- 
- 	struct page *tce_mem = NULL;
- 	struct iommu_table *tbl;
--	unsigned int tce32_segsz, i;
-+	unsigned int weight, total_weight = 0;
-+	unsigned int tce32_segsz, base, segs, i;
- 	int64_t rc;
- 	void *addr;
- 
- 	/* XXX FIXME: Handle 64-bit only DMA devices */
- 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
- 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
-+	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
-+		     &total_weight);
-+	weight = pnv_pci_ioda_pe_dma_weight(pe);
-+
-+	segs = (weight * phb->ioda.dma32_count) / total_weight;
-+	if (!segs)
-+		segs = 1;
-+
-+	/*
-+	 * Allocate contiguous DMA32 segments. We begin with the expected
-+	 * number of segments. With one more attempt, the number of DMA32
-+	 * segments to be allocated is decreased by one until one segment
-+	 * is allocated successfully.
-+	 */
-+	do {
-+		for (base = 0; base <= phb->ioda.dma32_count - segs; base++) {
-+			for (i = base; i < base + segs; i++) {
-+				if (phb->ioda.dma32_segmap[i] !=
-+				    IODA_INVALID_PE)
-+					goto found;
-+			}
-+		}
-+	} while (segs--);
-+
-+	if (!segs) {
-+		pe_warn(pe, "No available DMA32 segments\n");
-+		return;
-+	}
- 
-+found:
- 	tbl = pnv_pci_table_alloc(phb->hose->node);
- 	iommu_register_group(&pe->table_group, phb->hose->global_number,
- 			pe->pe_number);
- 	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
- 
- 	/* Grab a 32-bit TCE table */
-+	pe_info(pe, "DMA weight %d (%d), assigned (%d) %d DMA32 segments\n",
-+		weight, total_weight, base, segs);
- 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
- 		base * PNV_IODA1_DMA32_SEGSIZE,
- 		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
-@@ -2068,6 +2098,10 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
- 		}
- 	}
- 
-+	/* Setup DMA32 segment mapping */
-+	for (i = base; i < base + segs; i++)
-+		phb->ioda.dma32_segmap[i] = pe->pe_number;
-+
- 	/* Setup linux iommu table */
- 	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
- 				  base * PNV_IODA1_DMA32_SEGSIZE,
-@@ -2542,73 +2576,34 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- {
- 	struct pci_controller *hose = phb->hose;
--	unsigned int weight, total_weight, dma_pe_count;
--	unsigned int residual, remaining, segs, base;
- 	struct pnv_ioda_pe *pe;
--
--	total_weight = 0;
--	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
--		     &total_weight);
--
--	dma_pe_count = 0;
--	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
--		weight = pnv_pci_ioda_pe_dma_weight(pe);
--		if (weight > 0)
--			dma_pe_count++;
--	}
-+	unsigned int weight;
- 
- 	/* If we have more PE# than segments available, hand out one
- 	 * per PE until we run out and let the rest fail. If not,
- 	 * then we assign at least one segment per PE, plus more based
- 	 * on the amount of devices under that PE
- 	 */
--	if (dma_pe_count > phb->ioda.tce32_count)
--		residual = 0;
--	else
--		residual = phb->ioda.tce32_count - dma_pe_count;
--
--	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
--		hose->global_number, phb->ioda.tce32_count);
--	pr_info("PCI: %d PE# for a total weight of %d\n",
--		dma_pe_count, total_weight);
-+	pr_info("PCI: Domain %04x has %d available 32-bit DMA segments\n",
-+		hose->global_number, phb->ioda.dma32_count);
- 
- 	pnv_pci_ioda_setup_opal_tce_kill(phb);
- 
--	/* Walk our PE list and configure their DMA segments, hand them
--	 * out one base segment plus any residual segments based on
--	 * weight
--	 */
--	remaining = phb->ioda.tce32_count;
--	base = 0;
-+	/* Walk our PE list and configure their DMA segments */
- 	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
- 		weight = pnv_pci_ioda_pe_dma_weight(pe);
- 		if (!weight)
- 			continue;
- 
--		if (!remaining) {
--			pe_warn(pe, "No DMA32 resources available\n");
--			continue;
--		}
--		segs = 1;
--		if (residual) {
--			segs += ((weight * residual) + (total_weight / 2)) /
--				total_weight;
--			if (segs > remaining)
--				segs = remaining;
--		}
--
- 		/*
- 		 * For IODA2 compliant PHB3, we needn't care about the weight.
- 		 * The all available 32-bits DMA space will be assigned to
- 		 * the specific PE.
- 		 */
- 		if (phb->type == PNV_PHB_IODA1) {
--			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
--				weight, segs);
--			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
-+			pnv_pci_ioda1_setup_dma_pe(phb, pe);
- 		} else if (phb->type == PNV_PHB_IODA2) {
- 			pe_info(pe, "Assign DMA32 space\n");
--			segs = 0;
- 			pnv_pci_ioda2_setup_dma_pe(phb, pe);
- 		} else if (phb->type == PNV_PHB_NPU) {
- 			/*
-@@ -2618,9 +2613,6 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 			 * as the PHB3 TVT.
- 			 */
- 		}
--
--		remaining -= segs;
--		base += segs;
- 	}
- }
- 
-@@ -3327,7 +3319,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- {
- 	struct pci_controller *hose;
- 	struct pnv_phb *phb;
--	unsigned long size, m64map_off, m32map_off, pemap_off, iomap_off = 0;
-+	unsigned long size, m64map_off, m32map_off, pemap_off;
-+	unsigned long iomap_off = 0, dma32map_off = 0;
- 	const __be64 *prop64;
- 	const __be32 *prop32;
- 	int len;
-@@ -3413,6 +3406,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	phb->ioda.io_segsize = phb->ioda.io_size / phb->ioda.total_pe_num;
- 	phb->ioda.io_pci_base = 0; /* XXX calculate this ? */
- 
-+	/* Calculate how many 32-bit TCE segments we have */
-+	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
-+				PNV_IODA1_DMA32_SEGSIZE;
-+
- 	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
- 	size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
- 	m64map_off = size;
-@@ -3422,6 +3419,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	if (phb->type == PNV_PHB_IODA1) {
- 		iomap_off = size;
- 		size += phb->ioda.total_pe_num * sizeof(phb->ioda.io_segmap[0]);
-+		dma32map_off = size;
-+		size += phb->ioda.dma32_count *
-+			sizeof(phb->ioda.dma32_segmap[0]);
- 	}
- 	pemap_off = size;
- 	size += phb->ioda.total_pe_num * sizeof(struct pnv_ioda_pe);
-@@ -3437,6 +3437,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 		phb->ioda.io_segmap = aux + iomap_off;
- 		for (segno = 0; segno < phb->ioda.total_pe_num; segno++)
- 			phb->ioda.io_segmap[segno] = IODA_INVALID_PE;
-+
-+		phb->ioda.dma32_segmap = aux + dma32map_off;
-+		for (segno = 0; segno < phb->ioda.dma32_count; segno++)
-+			phb->ioda.dma32_segmap[segno] = IODA_INVALID_PE;
- 	}
- 	phb->ioda.pe_array = aux + pemap_off;
- 	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
-@@ -3445,7 +3449,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	mutex_init(&phb->ioda.pe_list_mutex);
- 
- 	/* Calculate how many 32-bit TCE segments we have */
--	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
-+	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
- 				PNV_IODA1_DMA32_SEGSIZE;
- 
- #if 0 /* We should really do that ... */
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 117cfcd..14d9391 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -142,6 +142,10 @@ struct pnv_phb {
- 		unsigned int		*m32_segmap;
- 		unsigned int		*io_segmap;
- 
-+		/* DMA32 segment maps - IODA1 only */
-+		unsigned int		dma32_count;
-+		unsigned int		*dma32_segmap;
-+
- 		/* IRQ chip */
- 		int			irq_chip_init;
- 		struct irq_chip		irq_chip;
-@@ -158,9 +162,6 @@ struct pnv_phb {
- 		 */
- 		unsigned char		pe_rmap[0x10000];
- 
--		/* 32-bit TCE tables allocation */
--		unsigned long		tce32_count;
--
- 		/* TCE cache invalidate registers (physical and
- 		 * remapped)
- 		 */
--- 
-2.1.0
+PiBGcm9tOiBZb25namkgWGllIFttYWlsdG86eHlqeGllQGxpbnV4LnZuZXQuaWJtLmNvbV0NCj4g
+U2VudDogVHVlc2RheSwgTWF5IDAzLCAyMDE2IDI6MDggUE0NCj4gDQo+IE9uIDIwMTYvNS8zIDEz
+OjM0LCBUaWFuLCBLZXZpbiB3cm90ZToNCj4gDQo+ID4+IEZyb206IFlvbmdqaSBYaWUNCj4gPj4g
+U2VudDogV2VkbmVzZGF5LCBBcHJpbCAyNywgMjAxNiA4OjQzIFBNDQo+ID4+DQo+ID4+IFRoaXMg
+cGF0Y2ggZW5hYmxlcyBtbWFwcGluZyBNU0ktWCB0YWJsZXMgaWYgaGFyZHdhcmUgc3VwcG9ydHMN
+Cj4gPj4gaW50ZXJydXB0IHJlbWFwcGluZyB3aGljaCBjYW4gZW5zdXJlIHRoYXQgYSBnaXZlbiBw
+Y2kgZGV2aWNlDQo+ID4+IGNhbiBvbmx5IHNob290IHRoZSBNU0lzIGFzc2lnbmVkIGZvciBpdC4N
+Cj4gPj4NCj4gPj4gV2l0aCBNU0ktWCB0YWJsZSBtbWFwcGVkLCB3ZSBhbHNvIG5lZWQgdG8gZXhw
+b3NlIHRoZQ0KPiA+PiByZWFkL3dyaXRlIGludGVyZmFjZSB3aGljaCB3aWxsIGJlIHVzZWQgdG8g
+YWNjZXNzIE1TSS1YIHRhYmxlLg0KPiA+Pg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBZb25namkgWGll
+IDx4eWp4aWVAbGludXgudm5ldC5pYm0uY29tPg0KPiA+IEEgY3VyaW91cyBxdWVzdGlvbiBoZXJl
+LiBEb2VzICJhbGxvdyB0byBtbWFwIE1TSS1YIiBlc3NlbnRpYWxseQ0KPiA+IG1lYW4gdGhhdCBL
+Vk0gZ3Vlc3QgY2FuIGRpcmVjdGx5IHJlYWQvd3JpdGUgcGh5c2ljYWwgTVNJLVgNCj4gPiBzdHJ1
+Y3R1cmUgdGhlbj8NCj4gPg0KPiA+IFRoYW5rcw0KPiA+IEtldmluDQo+ID4NCj4gDQo+IEhlcmUg
+d2UganVzdCBhbGxvdyB0byBtbWFwIE1TSS1YIHRhYmxlIGluIGtlcm5lbC4gSXQgZG9lc24ndA0K
+PiBtZWFuIGFsbCBLVk0gZ3Vlc3QgY2FuIGRpcmVjdGx5IHJlYWQvd3JpdGUgcGh5c2ljYWwgTVNJ
+LVgNCj4gc3RydWN0dXJlLiBUaGlzIHNob3VsZCBiZSBkZWNpZGVkIGJ5IFFFTVUuIEZvciBQUEM2
+NA0KPiBwbGF0Zm9ybSwgd2Ugd291bGQgYWxsb3cgdG8gcGFzc3Rocm91Z2ggdGhlIE1TSS1YIHRh
+YmxlDQo+IGJlY2F1c2Ugd2Uga25vdyBndWVzdCBrZXJuZWwgd291bGQgbm90IHdyaXRlIHBoeXNp
+Y2FsDQo+IE1TSS1YIHN0cnVjdHVyZSB3aGVuIGVuYWJsaW5nIE1TSS4NCj4gDQoNCkEgYml0IGNv
+bmZ1c2VkIGhlcmUuIElmIGd1ZXN0IGtlcm5lbCBkb2Vzbid0IG5lZWQgdG8gd3JpdGUNCnBoeXNp
+Y2FsIE1TSS1YIHN0cnVjdHVyZSwgd2hhdCdzIHRoZSBwb2ludCBvZiBwYXNzaW5nIHRocm91Z2gN
+CnRoZSB0YWJsZSB0aGVuPw0KDQpJIHRoaW5rIHRoZSBrZXkgd2hldGhlciBNU0ktWCB0YWJsZSBj
+YW4gYmUgcGFzc2VkIHRocm91Z2gNCmlzIHJlbGF0ZWQgdG8gd2hlcmUgaHlwZXJ2aXNvciBjb250
+cm9sIGlzIGRlcGxveWVkLiBBdCBsZWFzdA0KZm9yIHg4NjoNCg0KLSBXaGVuIGlycSByZW1hcHBp
+bmcgaXMgbm90IGVuYWJsZWQsIGhvc3QvaHlwZXJ2aXNvciBuZWVkcw0KdG8gY29udHJvbCBwaHlz
+aWNhbCBpbnRlcnJ1cHQgbWVzc2FnZSBpbmNsdWRpbmcgdmVjdG9yL2Rlc3QvZXRjLg0KZGlyZWN0
+bHkgaW4gTVNJLVggc3RydWN0dXJlLCBzbyB3ZSBjYW5ub3QgYWxsb3cgYSBndWVzdCB0byANCmFj
+Y2VzcyBpdDsNCg0KLSB3aGVuIGlycSByZW1hcHBpbmcgaXMgZW5hYmxlZCwgaG9zdC9oeXBlcnZp
+c29yIGNhbiBjb250cm9sDQppbnRlcnJ1cHQgcm91dGluZyBpbiBpcnEgcmVtYXBwaW5nIHRhYmxl
+LiBIb3dldmVyIE1TSS1YDQphbHNvIG5lZWRzIHRvIGJlIGNvbmZpZ3VyZWQgYXMgcmVtYXBwYWJs
+ZSBmb3JtYXQuIEluIHRoaXMNCm1hbm5lciB3ZSBhbHNvIGNhbm5vdCBhbGxvdyBkaXJlY3QgYWNj
+ZXNzIGZyb20gZ3Vlc3QuDQoNClRoZSBvbmx5IHNhbmUgY2FzZSB0byBwYXNzIHRocm91Z2ggTVNJ
+LVggc3RydWN0dXJlLCBpcyBhDQptZWNoYW5pc20gc2ltaWxhciB0byBpcnEgcmVtYXBwaW5nIGJ1
+dCB3L28gbmVlZCB0byBjaGFuZ2UNCm9yaWdpbmFsIE1TSS1YIGZvcm1hdCBzbyBkaXJlY3QgYWNj
+ZXNzIGZyb20gZ3Vlc3Qgc2lkZSBpcw0Kc2FmZS4gSXMgaXQgdGhlIGNhc2UgaW4gUFBDNjQ/DQoN
+ClRoYW5rcw0KS2V2aW4NCg==
