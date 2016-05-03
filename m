@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzksB27DLzDqGn
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzksB5cYwzDqCB
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 01:01:34 +1000 (AEST)
-Message-Id: <7a03fdb8854cf6c26fa83a324862c6f17449728b.1462052178.git.christophe.leroy@c-s.fr>
+Message-Id: <865bc7a0aab24fac591d903960a6e1aa2f7f623f.1462052178.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1462052178.git.christophe.leroy@c-s.fr>
 References: <cover.1462052178.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 6/7] powerpc/8xx: Rework CONFIG_PIN_TLB handling
+Subject: [PATCH 7/7] powerpc/8xx: add CONFIG_PIN_TLB_IMMR
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  3 May 2016 17:01:28 +0200 (CEST)
+Date: Tue,  3 May 2016 17:01:30 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,181 +23,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On recent kernels, with some debug options like for instance
-CONFIG_LOCKDEP, the BSS requires more than 8M memory, allthough
-the kernel code fits in the first 8M.
-Today, it is necessary to activate CONFIG_PIN_TLB to get more than 8M
-at startup, allthough pinning TLB is not necessary for that.
+CONFIG_PIN_TLB maps IMMR area and the first 24 Mbytes of memory.
+In some circunstances it might be more interesting to not map
+IMMR and to map 32 Mbytes of memory instead.
 
-We could have inconditionaly mapped 16 or 24M bytes at startup
-but some old hardware only have 8M and mapping non-existing RAM
-would be an issue due to speculative accesses.
-
-With the preceeding patch however, the TLB entries are populated on
-demand. By setting up the TLB miss handler to handle up to 24M until
-the handler is patched for the entire memory space, it is possible
-to allow access up to more memory without mapping non-existing RAM.
-
-It is therefore not needed anymore to map memory data at all
-at startup. It will be handled by the TLB miss handler.
-
-One might still want to PIN the IMMR and the first 24M of RAM.
-It is now possible to do it in the C memory initialisation
-functions. In addition, we now know how much memory we have
-when we do it, so we are able to adapt the pining to the
-real amount of memory available. So boards with less than 24M
-can now also benefit from PIN_TLB.
+Therefore we add config option CONFIG_PIN_TLB_IMMR to select if
+IMMR shall be pinned or not, hence whether we pin 24 or 32 Mbytes of RAM
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 44 ++++--------------------------------------
- arch/powerpc/mm/8xx_mmu.c      | 27 ++++++++++++++++++--------
- 2 files changed, 23 insertions(+), 48 deletions(-)
+ arch/powerpc/Kconfig           |  5 +++++
+ arch/powerpc/kernel/head_8xx.S | 10 ++++++----
+ arch/powerpc/mm/8xx_mmu.c      | 12 ++++++++----
+ 3 files changed, 19 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8bff540..3bd6dd9 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1054,6 +1054,11 @@ config CONSISTENT_SIZE
+ config PIN_TLB
+ 	bool "Pinned Kernel TLBs (860 ONLY)"
+ 	depends on ADVANCED_OPTIONS && 8xx
++
++config PIN_TLB_IMMR
++	bool "Pinned TLB for IMMR"
++	depends on PIN_TLB
++	default y
+ endmenu
+ 
+ if PPC64
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3de7d02..b8602e5 100644
+index b8602e5..a157632 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -491,7 +491,7 @@ _ENTRY(DTLBMiss_jmp)
+@@ -414,11 +414,11 @@ DataStoreTLBMiss:
+ 	 */
+ 	mfspr	r11, SPRN_MD_EPN
+ 	rlwinm	r11, r11, 16, 0xfff8
+-#ifndef CONFIG_PIN_TLB
++#ifndef CONFIG_PIN_TLB_IMMR
+ 	cmpli	cr0, r11, VIRT_IMMR_BASE@h
+ #endif
+ 	cmpli	cr7, r11, PAGE_OFFSET@h
+-#ifndef CONFIG_PIN_TLB
++#ifndef CONFIG_PIN_TLB_IMMR
+ _ENTRY(DTLBMiss_jmp)
+ 	beq-	DTLBMissIMMR
+ #endif
+@@ -819,7 +819,6 @@ initial_mmu:
  
- 4:
- _ENTRY(DTLBMiss_cmp)
--	cmpli	cr0, r11, PAGE_OFFSET@h
-+	cmpli	cr0, r11, (PAGE_OFFSET + 0x1800000)@h
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 	bge-	3b
- 
-@@ -586,7 +586,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	BRANCH_UNLESS_KERNEL(3f)
- 	rlwinm	r11, r10, 16, 0xfff8
- _ENTRY(FixupDAR_cmp)
--	cmpli	cr7, r11, PAGE_OFFSET@h
-+	cmpli	cr0, r11, (PAGE_OFFSET + 0x1800000)@h
- 	blt-	cr7, 200f
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 	/* Insert level 1 index */
-@@ -823,23 +823,16 @@ initial_mmu:
+ #ifdef CONFIG_PIN_TLB
+ 	oris	r10, r10, MD_RSV4I@h
+-	ori	r10, r10, 0x1c00
  	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
  #endif
  
--	/* Now map the lower 8 Meg into the TLBs.  For this quick hack,
--	 * we can load the instruction and data TLB registers with the
--	 * same values.
--	 */
-+	/* Now map the lower 8 Meg into the ITLB. */
- 	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
- 	ori	r8, r8, MI_EVALID	/* Mark it valid */
- 	mtspr	SPRN_MI_EPN, r8
--	mtspr	SPRN_MD_EPN, r8
- 	li	r8, MI_PS8MEG | (2 << 5)	/* Set 8M byte page, APG 2 */
- 	ori	r8, r8, MI_SVALID	/* Make it valid */
- 	mtspr	SPRN_MI_TWC, r8
--	li	r8, MI_PS8MEG		/* Set 8M byte page, APG 0 */
--	ori	r8, r8, MI_SVALID	/* Make it valid */
--	mtspr	SPRN_MD_TWC, r8
- 	li	r8, MI_BOOTINIT		/* Create RPN for address 0 */
- 	mtspr	SPRN_MI_RPN, r8		/* Store TLB entry */
--	mtspr	SPRN_MD_RPN, r8
-+
- 	lis	r8, MI_APG_INIT@h	/* Set protection modes */
- 	ori	r8, r8, MI_APG_INIT@l
- 	mtspr	SPRN_MI_AP, r8
-@@ -851,9 +844,6 @@ initial_mmu:
+@@ -843,7 +842,10 @@ initial_mmu:
+ 	/* Map a 512k page for the IMMR to get the processor
  	 * internal registers (among other things).
  	 */
- #ifdef CONFIG_PIN_TLB
--	addi	r10, r10, 0x0100
--	mtspr	SPRN_MD_CTR, r10
--#endif
+-#ifdef CONFIG_PIN_TLB
++#ifdef CONFIG_PIN_TLB_IMMR
++	ori	r10, r10, 0x1c00
++	mtspr	SPRN_MD_CTR, r10
++
  	mfspr	r9, 638			/* Get current IMMR */
  	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
  
-@@ -866,32 +856,6 @@ initial_mmu:
- 	mr	r8, r9			/* Create paddr for TLB */
- 	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
- 	mtspr	SPRN_MD_RPN, r8
--
--#ifdef CONFIG_PIN_TLB
--	/* Map two more 8M kernel data pages.
--	*/
--	addi	r10, r10, 0x0100
--	mtspr	SPRN_MD_CTR, r10
--
--	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
--	addis	r8, r8, 0x0080		/* Add 8M */
--	ori	r8, r8, MI_EVALID	/* Mark it valid */
--	mtspr	SPRN_MD_EPN, r8
--	li	r9, MI_PS8MEG		/* Set 8M byte page */
--	ori	r9, r9, MI_SVALID	/* Make it valid */
--	mtspr	SPRN_MD_TWC, r9
--	li	r11, MI_BOOTINIT	/* Create RPN for address 0 */
--	addis	r11, r11, 0x0080	/* Add 8M */
--	mtspr	SPRN_MD_RPN, r11
--
--	addi	r10, r10, 0x0100
--	mtspr	SPRN_MD_CTR, r10
--
--	addis	r8, r8, 0x0080		/* Add 8M */
--	mtspr	SPRN_MD_EPN, r8
--	mtspr	SPRN_MD_TWC, r9
--	addis	r11, r11, 0x0080	/* Add 8M */
--	mtspr	SPRN_MD_RPN, r11
- #endif
- 
- 	/* Since the cache is enabled according to the information we
 diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 996dfaa..0f0a83e 100644
+index 0f0a83e..6c5025e 100644
 --- a/arch/powerpc/mm/8xx_mmu.c
 +++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -50,16 +50,32 @@ unsigned long p_block_mapped(phys_addr_t pa)
- 	return 0;
- }
- 
-+#define LARGE_PAGE_SIZE_8M	(1<<23)
-+
- /*
-  * MMU_init_hw does the chip-specific initialization of the MMU hardware.
-  */
- void __init MMU_init_hw(void)
- {
--	/* Nothing to do for the time being but keep it similar to other PPC */
-+	/* PIN up to the 3 first 8Mb after IMMR in DTLB table */
-+#ifdef CONFIG_PIN_TLB
-+	unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
-+	unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY;
-+	int i;
-+	unsigned long addr = 0;
-+	unsigned long mem = total_lowmem;
-+
-+	for (i = 29; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
-+		mtspr(SPRN_MD_CTR, ctr | (i << 8));
-+		mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
-+		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
-+		mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
-+		addr += LARGE_PAGE_SIZE_8M;
-+		mem -= LARGE_PAGE_SIZE_8M;
-+	}
+@@ -61,11 +61,15 @@ void __init MMU_init_hw(void)
+ #ifdef CONFIG_PIN_TLB
+ 	unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
+ 	unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY;
+-	int i;
++#ifdef CONFIG_PIN_TLB_IMMR
++	int i = 29;
++#else
++	int i = 28;
 +#endif
+ 	unsigned long addr = 0;
+ 	unsigned long mem = total_lowmem;
+ 
+-	for (i = 29; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
++	for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
+ 		mtspr(SPRN_MD_CTR, ctr | (i << 8));
+ 		mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
+ 		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
+@@ -88,7 +92,7 @@ static void mmu_mapin_immr(void)
  }
  
--#define LARGE_PAGE_SIZE_8M	(1<<23)
--
- static void mmu_mapin_immr(void)
- {
- 	unsigned long p = PHYS_IMMR_BASE;
-@@ -124,13 +140,8 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	 */
- 	BUG_ON(first_memblock_base != 0);
- 
--#ifdef CONFIG_PIN_TLB
- 	/* 8xx can only access 24MB at the moment */
- 	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
--#else
--	/* 8xx can only access 8MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
--#endif
- }
- 
- /*
+ /* Address of instructions to patch */
+-#ifndef CONFIG_PIN_TLB
++#ifndef CONFIG_PIN_TLB_IMMR
+ extern unsigned int DTLBMiss_jmp;
+ #endif
+ extern unsigned int DTLBMiss_cmp, FixupDAR_cmp;
+@@ -109,7 +113,7 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+ 	if (__map_without_ltlbs) {
+ 		mapped = 0;
+ 		mmu_mapin_immr();
+-#ifndef CONFIG_PIN_TLB
++#ifndef CONFIG_PIN_TLB_IMMR
+ 		patch_instruction(&DTLBMiss_jmp, PPC_INST_NOP);
+ #endif
+ 	} else {
 -- 
 2.1.0
