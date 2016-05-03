@@ -1,30 +1,26 @@
-Return-Path: <kevin.tian@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qzQr91mJvzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 12:59:36 +1000 (AEST)
-From: "Tian, Kevin" <kevin.tian@intel.com>
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
-CC: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "corbet@lwn.net" <corbet@lwn.net>, "warrier@linux.vnet.ibm.com"
- <warrier@linux.vnet.ibm.com>, "zhong@linux.vnet.ibm.com"
- <zhong@linux.vnet.ibm.com>, "nikunj@linux.vnet.ibm.com"
- <nikunj@linux.vnet.ibm.com>, "gwshan@linux.vnet.ibm.com"
- <gwshan@linux.vnet.ibm.com>
-Subject: RE: [PATCH] vfio-pci: Allow to mmap sub-page MMIO BARs if the mmio
- page is exclusive
-Date: Tue, 3 May 2016 02:59:30 +0000
-Message-ID: <AADFC41AFE54684AB9EE6CBC0274A5D15F84131D@SHSMSX101.ccr.corp.intel.com>
-References: <1461759740-5072-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-In-Reply-To: <1461759740-5072-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzSHn3NC3zDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 14:05:09 +1000 (AEST)
+Message-ID: <1462248309.12788.4.camel@ellerman.id.au>
+Subject: Re: [PATCH v3 12/16] rtc: powerpc: provide rtc_class_ops directly
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>, Alexandre Belloni
+ <alexandre.belloni@free-electrons.com>
+Cc: geert@linux-m68k.org, deller@gmx.de, benh@kernel.crashing.org,
+ dalias@libc.org, dhowells@redhat.com, linux-alpha@vger.kernel.org,
+ a.zummo@towertech.it, linux-kernel@vger.kernel.org,
+ linux-parisc@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org,  linux-m68k@lists.linux-m68k.org,
+ rtc-linux@googlegroups.com,  linux-arch@vger.kernel.org
+Date: Tue, 03 May 2016 14:05:09 +1000
+In-Reply-To: <1461796470-1291527-13-git-send-email-arnd@arndb.de>
+References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
+ <1461796470-1291527-13-git-send-email-arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,52 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> From: Yongji Xie
-> Sent: Wednesday, April 27, 2016 8:22 PM
->=20
-> Current vfio-pci implementation disallows to mmap
-> sub-page(size < PAGE_SIZE) MMIO BARs because these BARs' mmio
-> page may be shared with other BARs. This will cause some
-> performance issues when we passthrough a PCI device with
-> this kind of BARs. Guest will be not able to handle the mmio
-> accesses to the BARs which leads to mmio emulations in host.
->=20
-> However, not all sub-page BARs will share page with other BARs.
-> We should allow to mmap those sub-page MMIO BARs which we can
-> make sure will not share page with other BARs.
->=20
-> This patch adds support for this case. And we also try to use
-> shadow resource to reserve the remaind of the page which hot-add
-> device's BAR might be assigned into.
+On Thu, 2016-04-28 at 00:34 +0200, Arnd Bergmann wrote:
 
-'shadow' usually means you have a corresponding part being
-shadowed, while here looks you mostly want some 'dummy'
-resource for reservation purpose?
+> The rtc-generic driver provides an architecture specific
+> wrapper on top of the generic rtc_class_ops abstraction,
+> and powerpc has another abstraction on top, which is a bit
+> silly.
+> 
+> This changes the powerpc rtc-generic device to provide its
+> rtc_class_ops directly, to reduce the number of layers
+> by one.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/powerpc/kernel/time.c | 29 ++++++++++++++++++++++++++++-
+>  drivers/rtc/rtc-generic.c  |  2 +-
+>  2 files changed, 29 insertions(+), 2 deletions(-)
 
-> +
-> +		if (!(res->start & ~PAGE_MASK)) {
-> +			/*
-> +			 * Add shadow resource for sub-page bar whose mmio
-> +			 * page is exclusive in case that hot-add device's
-> +			 * bar is assigned into the mem hole.
-> +			 */
-> +			shadow_res =3D kzalloc(sizeof(*shadow_res), GFP_KERNEL);
-> +			shadow_res->resource.start =3D res->end + 1;
-> +			shadow_res->resource.end =3D res->start + PAGE_SIZE - 1;
+If this hits linux-next it will go through my automated boot testing, which
+hopefully would be sufficient to catch any bugs in this patch, cross fingers.
 
-What about res->start not page aligned so you end up still having=20
-a portion before res->start not exclusively reserved?
+I don't know jack about all the layers of RTC mess, so my ack is basically
+worthless here. But if you like you can have one anyway :)
 
-> +			shadow_res->resource.flags =3D res->flags;
-> +			if (request_resource(res->parent,
-> +					&shadow_res->resource)) {
-> +				kfree(shadow_res);
-> +				return false;
-> +			}
-> +			shadow_res->index =3D index;
-> +			list_add(&shadow_res->res_next,
-> +					&vdev->shadow_resources_list);
-> +			return true;
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Thanks
-Kevin
+cheers
