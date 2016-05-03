@@ -1,36 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzb991MWwzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:14:53 +1000 (AEST)
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 3 May 2016 19:14:51 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1C4572BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:14:49 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u439Eft132112862
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 19:14:49 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u439EFFc020330
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 19:14:16 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Valentin Rothberg <valentinrothberg@gmail.com>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Valentin Rothberg <valentinrothberg@gmail.com>
-Subject: Re: [PATCH] powerpc/mm/radix: fix STD_MMU_64 typo
-In-Reply-To: <1462258767-83025-1-git-send-email-valentinrothberg@gmail.com>
-References: <1462258767-83025-1-git-send-email-valentinrothberg@gmail.com>
-Date: Tue, 03 May 2016 14:43:48 +0530
-Message-ID: <87zis7y04z.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzbVw6bDqzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:30:16 +1000 (AEST)
+Date: Tue, 3 May 2016 11:30:12 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 13/18] livepatch: separate enabled and patched
+ states
+Message-ID: <20160503093012.GO2749@pathway.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <ae7e5e9a36abf70aedb6de131fcba5383aba3275.1461875890.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ae7e5e9a36abf70aedb6de131fcba5383aba3275.1461875890.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,72 +34,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Valentin Rothberg <valentinrothberg@gmail.com> writes:
-
-> s/MMU_STD_64/STD_MMU_64/
->
-> Fixes: 11ffc1cfa4c2 ("powerpc/mm/radix: Use STD_MMU_64 to properly
->                       isolate hash related code")
-> Signed-off-by: Valentin Rothberg <valentinrothberg@gmail.com>
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
+On Thu 2016-04-28 15:44:44, Josh Poimboeuf wrote:
+> Once we have a consistency model, patches and their objects will be
+> enabled and disabled at different times.  For example, when a patch is
+> disabled, its loaded objects' funcs can remain registered with ftrace
+> indefinitely until the unpatching operation is complete and they're no
+> longer in use.
+> 
+> It's less confusing if we give them different names: patches can be
+> enabled or disabled; objects (and their funcs) can be patched or
+> unpatched:
+> 
+> - Enabled means that a patch is logically enabled (but not necessarily
+>   fully applied).
+> 
+> - Patched means that an object's funcs are registered with ftrace and
+>   added to the klp_ops func stack.
+> 
+> Also, since these states are binary, represent them with booleans
+> instead of ints.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 > ---
->
-> I only compile tested this change.  The issue has been detected with
-> scripts/checkkconfigsymbols.py
->
->  arch/powerpc/kernel/mce_power.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index bec70338672e..7353991c4ece 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -80,7 +80,7 @@ void __flush_tlb_power9(unsigned int action)
->
->
->  /* flush SLBs and reload */
-> -#ifdef CONFIG_PPC_MMU_STD_64
-> +#ifdef CONFIG_PPC_STD_MMU_64
->  static void flush_and_reload_slb(void)
->  {
->  	struct slb_shadow *slb;
-> @@ -125,7 +125,7 @@ static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
->  	 * reset the error bits whenever we handle them so that at the end
->  	 * we can check whether we handled all of them or not.
->  	 * */
-> -#ifdef CONFIG_PPC_MMU_STD_64
-> +#ifdef CONFIG_PPC_STD_MMU_64
->  	if (dsisr & slb_error_bits) {
->  		flush_and_reload_slb();
->  		/* reset error bits */
-> @@ -157,7 +157,7 @@ static long mce_handle_common_ierror(uint64_t srr1)
->  	switch (P7_SRR1_MC_IFETCH(srr1)) {
->  	case 0:
->  		break;
-> -#ifdef CONFIG_PPC_MMU_STD_64
-> +#ifdef CONFIG_PPC_STD_MMU_64
->  	case P7_SRR1_MC_IFETCH_SLB_PARITY:
->  	case P7_SRR1_MC_IFETCH_SLB_MULTIHIT:
->  		/* flush and reload SLBs for SLB errors. */
-> @@ -184,7 +184,7 @@ static long mce_handle_ierror_p7(uint64_t srr1)
->
->  	handled = mce_handle_common_ierror(srr1);
->
-> -#ifdef CONFIG_PPC_MMU_STD_64
-> +#ifdef CONFIG_PPC_STD_MMU_64
->  	if (P7_SRR1_MC_IFETCH(srr1) == P7_SRR1_MC_IFETCH_SLB_BOTH) {
->  		flush_and_reload_slb();
->  		handled = 1;
-> @@ -332,7 +332,7 @@ static long mce_handle_ierror_p8(uint64_t srr1)
->
->  	handled = mce_handle_common_ierror(srr1);
->
-> -#ifdef CONFIG_PPC_MMU_STD_64
-> +#ifdef CONFIG_PPC_STD_MMU_64
->  	if (P7_SRR1_MC_IFETCH(srr1) == P8_SRR1_MC_IFETCH_ERAT_MULTIHIT) {
->  		flush_and_reload_slb();
->  		handled = 1;
-> -- 
-> 2.7.4
+>  include/linux/livepatch.h | 17 ++++-------
+>  kernel/livepatch/core.c   | 72 +++++++++++++++++++++++------------------------
+>  2 files changed, 42 insertions(+), 47 deletions(-)
+> 
+> diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+> index 6ea6880..2b59230 100644
+> --- a/kernel/livepatch/core.c
+> +++ b/kernel/livepatch/core.c
+> @@ -622,20 +622,20 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
+>  	if (ret)
+>  		return -EINVAL;
+>  
+> -	if (val != KLP_DISABLED && val != KLP_ENABLED)
+> +	if (val > 1)
+>  		return -EINVAL;
+
+It would be cleaner to get "val" via kstrtobool(). It guarantees that
+the value is true or false. Another nice win is that it accepts
+Y/y/1/N/n/0 as the input.
+
+>  	patch = container_of(kobj, struct klp_patch, kobj);
+>  
+>  	mutex_lock(&klp_mutex);
+>  
+> -	if (val == patch->state) {
+> +	if (patch->enabled == val) {
+
+Also this check will be cleaner if "val" is a boolean.
+
+Best Regards,
+Petr
