@@ -1,36 +1,31 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhvz0XS8zDrQ0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:33:50 +1000 (AEST)
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 3 May 2016 18:53:29 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5885D1258063
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:55:26 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u43DNMAb52560010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:23 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u43DNGRM003990
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:21 +0530
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
- bhelgaas@google.com, robherring2@gmail.com, dja@axtens.net,
- alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 11/22] powerpc/pci: Update bridge windows on PCI plug
-Date: Tue,  3 May 2016 23:22:42 +1000
-Message-Id: <1462281773-26438-12-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzjFT6mXHzDt4k
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:49:01 +1000 (AEST)
+Date: Tue, 3 May 2016 08:48:58 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 13/18] livepatch: separate enabled and patched
+ states
+Message-ID: <20160503134858.n6fto6tasih2rzmi@treble>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <ae7e5e9a36abf70aedb6de131fcba5383aba3275.1461875890.git.jpoimboe@redhat.com>
+ <20160503093012.GO2749@pathway.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160503093012.GO2749@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +35,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the PCI plugging event, PCI slot's subordinate devices are
-scanned and their (IO and MMIO) resources are assigned. Platform
-dependent resources (PE#, IO/MMIO/DMA windows) are allocated or
-created on updating windows of the slot's upstream bridge.
+On Tue, May 03, 2016 at 11:30:12AM +0200, Petr Mladek wrote:
+> On Thu 2016-04-28 15:44:44, Josh Poimboeuf wrote:
+> > Once we have a consistency model, patches and their objects will be
+> > enabled and disabled at different times.  For example, when a patch is
+> > disabled, its loaded objects' funcs can remain registered with ftrace
+> > indefinitely until the unpatching operation is complete and they're no
+> > longer in use.
+> > 
+> > It's less confusing if we give them different names: patches can be
+> > enabled or disabled; objects (and their funcs) can be patched or
+> > unpatched:
+> > 
+> > - Enabled means that a patch is logically enabled (but not necessarily
+> >   fully applied).
+> > 
+> > - Patched means that an object's funcs are registered with ftrace and
+> >   added to the klp_ops func stack.
+> > 
+> > Also, since these states are binary, represent them with booleans
+> > instead of ints.
+> > 
+> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > ---
+> >  include/linux/livepatch.h | 17 ++++-------
+> >  kernel/livepatch/core.c   | 72 +++++++++++++++++++++++------------------------
+> >  2 files changed, 42 insertions(+), 47 deletions(-)
+> > 
+> > diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
+> > index 6ea6880..2b59230 100644
+> > --- a/kernel/livepatch/core.c
+> > +++ b/kernel/livepatch/core.c
+> > @@ -622,20 +622,20 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
+> >  	if (ret)
+> >  		return -EINVAL;
+> >  
+> > -	if (val != KLP_DISABLED && val != KLP_ENABLED)
+> > +	if (val > 1)
+> >  		return -EINVAL;
+> 
+> It would be cleaner to get "val" via kstrtobool(). It guarantees that
+> the value is true or false. Another nice win is that it accepts
+> Y/y/1/N/n/0 as the input.
+> 
+> >  	patch = container_of(kobj, struct klp_patch, kobj);
+> >  
+> >  	mutex_lock(&klp_mutex);
+> >  
+> > -	if (val == patch->state) {
+> > +	if (patch->enabled == val) {
+> 
+> Also this check will be cleaner if "val" is a boolean.
 
-This updates the windows of the hot plugged slot's upstream bridge
-in pcibios_finish_adding_to_bus() so that the platform resources
-(PE#, IO/MMIO/DMA segments) are allocated or created accordingly.
+Good idea, thanks.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/kernel/pci-common.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 40df3a5..be9e515 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1444,8 +1444,12 @@ void pcibios_finish_adding_to_bus(struct pci_bus *bus)
- 	/* Allocate bus and devices resources */
- 	pcibios_allocate_bus_resources(bus);
- 	pcibios_claim_one_bus(bus);
--	if (!pci_has_flag(PCI_PROBE_ONLY))
--		pci_assign_unassigned_bus_resources(bus);
-+	if (!pci_has_flag(PCI_PROBE_ONLY)) {
-+		if (bus->self)
-+			pci_assign_unassigned_bridge_resources(bus->self);
-+		else
-+			pci_assign_unassigned_bus_resources(bus);
-+	}
- 
- 	/* Fixup EEH */
- 	eeh_add_device_tree_late(bus);
 -- 
-2.1.0
+Josh
