@@ -1,31 +1,25 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzjFT6mXHzDt4k
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:49:01 +1000 (AEST)
-Date: Tue, 3 May 2016 08:48:58 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: [RFC PATCH v2 13/18] livepatch: separate enabled and patched
- states
-Message-ID: <20160503134858.n6fto6tasih2rzmi@treble>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <ae7e5e9a36abf70aedb6de131fcba5383aba3275.1461875890.git.jpoimboe@redhat.com>
- <20160503093012.GO2749@pathway.suse.cz>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [150.101.137.141])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qzjhc2CsdzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 00:09:04 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v4 11/11] powerpc/powernv/npu: Enable NVLink pass
+ through
+Date: Wed, 04 May 2016 00:08:37 +1000
+Message-ID: <4423081.kICSik6V6M@new-mexico>
+In-Reply-To: <1461920124-21719-12-git-send-email-aik@ozlabs.ru>
+References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
+ <1461920124-21719-12-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160503093012.GO2749@pathway.suse.cz>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,59 +29,366 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 03, 2016 at 11:30:12AM +0200, Petr Mladek wrote:
-> On Thu 2016-04-28 15:44:44, Josh Poimboeuf wrote:
-> > Once we have a consistency model, patches and their objects will be
-> > enabled and disabled at different times.  For example, when a patch is
-> > disabled, its loaded objects' funcs can remain registered with ftrace
-> > indefinitely until the unpatching operation is complete and they're no
-> > longer in use.
-> > 
-> > It's less confusing if we give them different names: patches can be
-> > enabled or disabled; objects (and their funcs) can be patched or
-> > unpatched:
-> > 
-> > - Enabled means that a patch is logically enabled (but not necessarily
-> >   fully applied).
-> > 
-> > - Patched means that an object's funcs are registered with ftrace and
-> >   added to the klp_ops func stack.
-> > 
-> > Also, since these states are binary, represent them with booleans
-> > instead of ints.
-> > 
-> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> > ---
-> >  include/linux/livepatch.h | 17 ++++-------
-> >  kernel/livepatch/core.c   | 72 +++++++++++++++++++++++------------------------
-> >  2 files changed, 42 insertions(+), 47 deletions(-)
-> > 
-> > diff --git a/kernel/livepatch/core.c b/kernel/livepatch/core.c
-> > index 6ea6880..2b59230 100644
-> > --- a/kernel/livepatch/core.c
-> > +++ b/kernel/livepatch/core.c
-> > @@ -622,20 +622,20 @@ static ssize_t enabled_store(struct kobject *kobj, struct kobj_attribute *attr,
-> >  	if (ret)
-> >  		return -EINVAL;
-> >  
-> > -	if (val != KLP_DISABLED && val != KLP_ENABLED)
-> > +	if (val > 1)
-> >  		return -EINVAL;
-> 
-> It would be cleaner to get "val" via kstrtobool(). It guarantees that
-> the value is true or false. Another nice win is that it accepts
-> Y/y/1/N/n/0 as the input.
-> 
-> >  	patch = container_of(kobj, struct klp_patch, kobj);
-> >  
-> >  	mutex_lock(&klp_mutex);
-> >  
-> > -	if (val == patch->state) {
-> > +	if (patch->enabled == val) {
-> 
-> Also this check will be cleaner if "val" is a boolean.
+Hi Alexey,
 
-Good idea, thanks.
+On Fri, 29 Apr 2016 18:55:24 Alexey Kardashevskiy wrote:
+> IBM POWER8 NVlink systems come with Tesla K40-ish GPUs each of which
+> also has a couple of fast speed links (NVLink). The interface to links
+> is exposed as an emulated PCI bridge which is included into the same
+> IOMMU group as the corresponding GPU.
+> 
+> In the kernel, NPUs get a separate PHB of the PNV_PHB_NPU type and a PE
+> which behave pretty much as the standard IODA2 PHB except NPU PHB has
+> just a single TVE in the hardware which means it can have either
+> 32bit window or 64bit window or DMA bypass but never two of these.
+> 
+> In order to make these links work when GPU is passed to the guest,
+> these bridges need to be passed as well; otherwise performance will
+> degrade.
+> 
+> This implements and exports API to manage NPU state in regard to VFIO;
+> it replicates iommu_table_group_ops.
+> 
+> This defines a new pnv_pci_ioda2_npu_ops which is assigned to
+> the IODA2 bridge if there are NPUs for a GPU on the bridge.
+> The new callbacks call the default IODA2 callbacks plus new NPU API.
+> This adds a gpe_table_group_to_npe() helper to find NPU PE for the IODA2
+> table_group, it is not expected to fail as the helper is only called
+> from the pnv_pci_ioda2_npu_ops.
+> 
+> This does not define NPU-specific .release_ownership() so after
+> VFIO is finished, DMA on NPU is disabled which is ok as the nvidia
+> driver sets DMA mask when probing which enable 32 or 64bit DMA on NPU.
+> 
+> This adds a pnv_pci_npu_setup_iommu() helper which adds NPUs to
+> the GPU group if any found. The helper uses helpers to look for
+> the "ibm,gpu" property in the device tree which is a phandle of
+> the corresponding GPU.
+> 
+> This adds an additional loop over PEs in pnv_ioda_setup_dma() as the main
+> loop skips NPU PEs as they do not have 32bit DMA segments.
+> 
+> As pnv_npu_set_window() and pnv_npu_unset_window() are started being used
+> by the new IODA2-NPU IOMMU group, this makes the helpers public and
+> adds the DMA window number parameter.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v4:
+> * reused pnv_npu_set_window/pnv_npu_unset_window where possible
+> * added comments, changed commit log
+> 
+> v3:
+> * moved NPU-to-GPU IOMMU grouping later after all PHBs are discovered
+> * removed hack to make iommu_add_device() work, iommu_group_add_device()
+> is used instead
+> * cleanup in gpe_table_group_to_npe_cb()
+> 
+> v2:
+> * reimplemented to support NPU + GPU in the same group
+> * merged "powerpc/powernv/npu: Add NPU devices to IOMMU group" and
+> "powerpc/powernv/npu: Enable passing through via VFIO" into this patch
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c  |  64 +++++++++++++++++--
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 102 
+++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/pci.h      |   6 ++
+>  3 files changed, 166 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c 
+b/arch/powerpc/platforms/powernv/npu-dma.c
+> index cb2d1da..0459e10 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/export.h>
+>  #include <linux/pci.h>
+>  #include <linux/memblock.h>
+> +#include <linux/iommu.h>
+>  
+>  #include <asm/iommu.h>
+>  #include <asm/pnv-pci.h>
+> @@ -154,7 +155,7 @@ static struct pnv_ioda_pe *get_gpu_pci_dev_and_pe(struct 
+pnv_ioda_pe *npe,
+>  	return pe;
+>  }
+>  
+> -static long pnv_npu_set_window(struct pnv_ioda_pe *npe,
+> +long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+>  		struct iommu_table *tbl)
+>  {
+>  	struct pnv_phb *phb = npe->phb;
+> @@ -182,13 +183,13 @@ static long pnv_npu_set_window(struct pnv_ioda_pe 
+*npe,
+>  	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+>  
+>  	/* Add the table to the list so its TCE cache will get invalidated */
+> -	pnv_pci_link_table_and_group(phb->hose->node, 0,
+> +	pnv_pci_link_table_and_group(phb->hose->node, num,
+>  			tbl, &npe->table_group);
+>  
+>  	return 0;
+>  }
+>  
+> -static long pnv_npu_unset_window(struct pnv_ioda_pe *npe)
+> +long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
+>  {
+>  	struct pnv_phb *phb = npe->phb;
+>  	int64_t rc;
+> @@ -205,7 +206,7 @@ static long pnv_npu_unset_window(struct pnv_ioda_pe 
+*npe)
+>  	}
+>  	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+>  
+> -	pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
+> +	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
+>  			&npe->table_group);
+>  
+>  	return 0;
+> @@ -231,7 +232,7 @@ static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+>  	if (!gpe)
+>  		return;
+>  
+> -	rc = pnv_npu_set_window(npe, gpe->table_group.tables[0]);
+> +	rc = pnv_npu_set_window(npe, 0, gpe->table_group.tables[0]);
+>  
+>  	/*
+>  	 * We don't initialise npu_pe->tce32_table as we always use
+> @@ -255,7 +256,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe 
+*npe)
+>  	if (phb->type != PNV_PHB_NPU || !npe->pdev)
+>  		return -EINVAL;
+>  
+> -	rc = pnv_npu_unset_window(npe);
+> +	rc = pnv_npu_unset_window(npe, 0);
+>  	if (rc != OPAL_SUCCESS)
+>  		return rc;
+>  
+> @@ -307,3 +308,54 @@ void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, 
+bool bypass)
+>  		}
+>  	}
+>  }
+> +
+> +/* Switch ownership from platform code to external user (e.g. VFIO) */
+> +void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+> +{
+> +	struct pnv_phb *phb = npe->phb;
+> +	int64_t rc;
+> +
+> +	/*
+> +	 * Note: NPU has just a single TVE in the hardware which means that
+> +	 * while used by the kernel, it can have either 32bit window or
+> +	 * DMA bypass but never both. So we deconfigure 32bit window only
+> +	 * if it was enabled at the moment of ownership change.
+> +	 */
+> +	if (npe->table_group.tables[0]) {
+> +		pnv_npu_unset_window(npe, 0);
+> +		return;
+> +	}
+> +
+> +	/* Disable bypass */
+> +	rc = opal_pci_map_pe_dma_window_real(phb->opal_id,
+> +			npe->pe_number, npe->pe_number,
+> +			0 /* bypass base */, 0);
+> +	if (rc) {
+> +		pe_err(npe, "Failed to disable bypass, err %lld\n", rc);
+> +		return;
+> +	}
+> +	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
+> +}
+> +
+> +struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+> +{
+> +	struct pnv_phb *phb = npe->phb;
+> +	struct pci_bus *pbus = phb->hose->bus;
+> +	struct pci_dev *npdev, *gpdev = NULL, *gptmp;
+> +	struct pnv_ioda_pe *gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
+> +
+> +	if (!gpe || !gpdev)
+> +		return NULL;
+> +
+> +	list_for_each_entry(npdev, &pbus->devices, bus_list) {
+> +		gptmp = pnv_pci_get_gpu_dev(npdev);
+> +
+> +		if (gptmp != gpdev)
+> +			continue;
 
--- 
-Josh
+If I'm not mistaken it looks like you are trying to find all the NPU PEs also 
+attached to the same GPU on the same (firmware emulated) NPU PHB? I'm just 
+curious - does this work if the GPU has say 2 NPU PE#s (ie. links) on 
+different NPU PHB's?
+
+> +		pe_info(gpe, "Attached NPU %s\n", dev_name(&npdev->dev));
+> +		iommu_group_add_device(gpe->table_group.group, &npdev->dev);
+> +	}
+> +
+> +	return gpe;
+> +}
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
+b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 922c74c..feabe50 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2273,6 +2273,90 @@ static struct iommu_table_group_ops pnv_pci_ioda2_ops 
+= {
+>  	.take_ownership = pnv_ioda2_take_ownership,
+>  	.release_ownership = pnv_ioda2_release_ownership,
+>  };
+> +
+> +static int gpe_table_group_to_npe_cb(struct device *dev, void *opaque)
+> +{
+> +	struct pci_controller *hose;
+> +	struct pnv_phb *phb;
+> +	struct pnv_ioda_pe **ptmppe = opaque;
+> +	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
+> +	struct pci_dn *pdn = pci_get_pdn(pdev);
+> +
+> +	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
+> +		return 0;
+> +
+> +	hose = pci_bus_to_host(pdev->bus);
+> +	phb = hose->private_data;
+> +	if (phb->type != PNV_PHB_NPU)
+> +		return 0;
+> +
+> +	*ptmppe = &phb->ioda.pe_array[pdn->pe_number];
+> +
+> +	return 1;
+> +}
+> +
+> +/*
+> + * This returns PE of associated NPU.
+> + * This assumes that NPU is in the same IOMMU group with GPU and there is
+> + * no other PEs.
+> + */
+
+Which answers my above question as this doesn't look like it supports GPUs 
+with multiple NPU PE#s attached. I don't think this is actually a problem 
+though as no hardware I know of will ever do this, even though theoretically 
+it's possible.
+
+It might be nice if we could warn if this configuration is detected but not 
+really a big issue. Everything else looks reasonable as far as I can tell 
+(although again I'm no vfio iommu groups expert) so happy for you to add my 
+reviewed-by:
+
+Reviewed-By: Alistair Popple <alistair@popple.id.au>
+
+> +static struct pnv_ioda_pe *gpe_table_group_to_npe(
+> +		struct iommu_table_group *table_group)
+> +{
+> +	struct pnv_ioda_pe *npe = NULL;
+> +	int ret = iommu_group_for_each_dev(table_group->group, &npe,
+> +			gpe_table_group_to_npe_cb);
+> +
+> +	BUG_ON(!ret || !npe);
+> +
+> +	return npe;
+> +}
+> +
+> +static long pnv_pci_ioda2_npu_set_window(struct iommu_table_group 
+*table_group,
+> +		int num, struct iommu_table *tbl)
+> +{
+> +	long ret = pnv_pci_ioda2_set_window(table_group, num, tbl);
+> +
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = pnv_npu_set_window(gpe_table_group_to_npe(table_group), num, 
+tbl);
+> +	if (ret)
+> +		pnv_pci_ioda2_unset_window(table_group, num);
+> +
+> +	return ret;
+> +}
+> +
+> +static long pnv_pci_ioda2_npu_unset_window(
+> +		struct iommu_table_group *table_group,
+> +		int num)
+> +{
+> +	long ret = pnv_pci_ioda2_unset_window(table_group, num);
+> +
+> +	if (ret)
+> +		return ret;
+> +
+> +	return pnv_npu_unset_window(gpe_table_group_to_npe(table_group), num);
+> +}
+> +
+> +static void pnv_ioda2_npu_take_ownership(struct iommu_table_group 
+*table_group)
+> +{
+> +	/*
+> +	 * Detach NPU first as pnv_ioda2_take_ownership() will destroy
+> +	 * the iommu_table if 32bit DMA is enabled.
+> +	 */
+> +	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
+> +	pnv_ioda2_take_ownership(table_group);
+> +}
+> +
+> +static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
+> +	.get_table_size = pnv_pci_ioda2_get_table_size,
+> +	.create_table = pnv_pci_ioda2_create_table,
+> +	.set_window = pnv_pci_ioda2_npu_set_window,
+> +	.unset_window = pnv_pci_ioda2_npu_unset_window,
+> +	.take_ownership = pnv_ioda2_npu_take_ownership,
+> +	.release_ownership = pnv_ioda2_release_ownership,
+> +};
+>  #endif
+>  
+>  static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb)
+> @@ -3012,6 +3096,7 @@ static void pnv_pci_ioda_setup_DMA(void)
+>  {
+>  	struct pci_controller *hose, *tmp;
+>  	struct pnv_phb *phb;
+> +	struct pnv_ioda_pe *pe, *gpe;
+>  
+>  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+>  		pnv_ioda_setup_dma(hose->private_data);
+> @@ -3020,6 +3105,23 @@ static void pnv_pci_ioda_setup_DMA(void)
+>  		phb = hose->private_data;
+>  		phb->initialized = 1;
+>  	}
+> +
+> +	/*
+> +	 * Now we have all PHBs discovered, time to add NPU devices to
+> +	 * the corresponding IOMMU groups.
+> +	 */
+> +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> +		phb = hose->private_data;
+> +
+> +		if (phb->type != PNV_PHB_NPU)
+> +			continue;
+> +
+> +		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+> +			gpe = pnv_pci_npu_setup_iommu(pe);
+> +			if (gpe)
+> +				gpe->table_group.ops = &pnv_pci_ioda2_npu_ops;
+> +		}
+> +	}
+>  }
+>  
+>  static void pnv_pci_ioda_create_dbgfs(void)
+> diff --git a/arch/powerpc/platforms/powernv/pci.h 
+b/arch/powerpc/platforms/powernv/pci.h
+> index e117bd8..ebc6ee4 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -244,5 +244,11 @@ extern void pe_level_printk(const struct pnv_ioda_pe 
+*pe, const char *level,
+>  /* Nvlink functions */
+>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool 
+rm);
+> +extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe 
+*npe);
+> +extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+> +		struct iommu_table *tbl);
+> +extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+> +extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+> +extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
+>  
+>  #endif /* __POWERNV_PCI_H */
+> 
