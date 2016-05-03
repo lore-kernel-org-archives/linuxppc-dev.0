@@ -1,21 +1,21 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzTsp5CD7zDqZG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:16:14 +1000 (AEST)
-Message-ID: <1462252569.16584.36.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Chenhui Zhao <chenhui.zhao@nxp.com>, Yang-Leo Li <leoyang.li@nxp.com>
-Cc: Zhengxiong Jin <jason.jin@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 03 May 2016 00:16:09 -0500
-In-Reply-To: <HE1PR04MB11643986E8F0D4DC9861353F95630@HE1PR04MB1164.eurprd04.prod.outlook.com>
-References: <1460718797-21744-1-git-send-email-chenhui.zhao@nxp.com>
- <HE1PR04MB11643986E8F0D4DC9861353F95630@HE1PR04MB1164.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzV4t3yjnzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:25:50 +1000 (AEST)
+Message-ID: <1462253150.4115.11.camel@neuling.org>
+Subject: Re: [PATCH 7/9] powerpc/powernv: Add platform support for stop
+ instruction
+From: Michael Neuling <mikey@neuling.org>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Tue, 03 May 2016 15:25:50 +1000
+In-Reply-To: <1461246599-6098-8-git-send-email-shreyas@linux.vnet.ibm.com>
+References: <1461246599-6098-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1461246599-6098-8-git-send-email-shreyas@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Subject: Re: [PATCH v2 0/5] powerpc/pm: QorIQ deep sleep
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,13 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-04-26 at 10:27 +0000, Chenhui Zhao wrote:
-> Any comment?
-> 
-> Thanks,
-> Chenhui
 
-Leo already commented on the "add a compatible string" patch (though the
-threading got broken thanks to Microsoft) and you said you'd fix it.
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/a=
+sm/cputable.h
+> index df4fb5f..a4739a1 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -205,6 +205,7 @@ enum {
+> =C2=A0#define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
+> =C2=A0#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
+> =C2=A0#define CPU_FTR_SUBCORE			LONG_ASM_CONST(0x2000000000000000)
+> +#define CPU_FTR_STOP_INST		LONG_ASM_CONST(0x4000000000000000)
 
--Scott
+In general, we are putting all the POWER9 features under=C2=A0CPU_FTR_ARCH_=
+300.
+Is there a reason you need this separate bit?
+
+CPU_FTR bits are fairly scarce these days.
+
+Mikey
