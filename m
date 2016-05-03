@@ -1,34 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhhF3WV0zDqFS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:23:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhhW12YPzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:23:55 +1000 (AEST)
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 3 May 2016 18:53:39 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id CD6B01258066
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:55:37 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u43DNYmq20185170
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:34 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u43DNOWn004426
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:33 +0530
+ Tue, 3 May 2016 23:23:54 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 61034357805B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:23:52 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u43DNiPr7995742
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 23:23:52 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u43DNJPZ028575
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 23:23:20 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  bhelgaas@google.com, robherring2@gmail.com, dja@axtens.net,
  alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 18/22] drivers/of: Rename unflatten_dt_node()
-Date: Tue,  3 May 2016 23:22:49 +1000
-Message-Id: <1462281773-26438-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v9 03/22] powerpc/powernv: Move
+ pnv_pci_ioda_setup_opal_tce_kill() around
+Date: Tue,  3 May 2016 23:22:34 +1000
+Message-Id: <1462281773-26438-4-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,61 +41,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This renames unflatten_dt_node() to unflatten_dt_nodes() as it
-populates multiple device nodes from FDT blob. No logical changes
-introduced.
+pnv_pci_ioda_setup_opal_tce_kill() called by pnv_ioda_setup_dma()
+to remap the TCE kill regiter. What's done in pnv_ioda_setup_dma()
+will be covered in pcibios_setup_bridge() which is invoked on each
+PCI bridge. It means we will possibly remap the TCE kill register
+for multiple times and it's unnecessary.
+
+This moves pnv_pci_ioda_setup_opal_tce_kill() to where the PHB is
+initialized (pnv_pci_init_ioda_phb()) to avoid above issue.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/of/fdt.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index d1d5309..7850150 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -381,7 +381,7 @@ static void reverse_nodes(struct device_node *parent)
- }
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 5ee8a57..cbd4c0b 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2599,8 +2599,6 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+ 	pr_info("PCI: Domain %04x has %d available 32-bit DMA segments\n",
+ 		hose->global_number, phb->ioda.dma32_count);
  
- /**
-- * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-+ * unflatten_dt_nodes - Alloc and populate a device_node from the flat tree
-  * @blob: The parent device tree blob
-  * @mem: Memory chunk to use for allocating device nodes and properties
-  * @dad: Parent struct device_node
-@@ -389,10 +389,10 @@ static void reverse_nodes(struct device_node *parent)
-  *
-  * It returns the size of unflattened device tree or error code
-  */
--static int unflatten_dt_node(const void *blob,
--			     void *mem,
--			     struct device_node *dad,
--			     struct device_node **nodepp)
-+static int unflatten_dt_nodes(const void *blob,
-+			      void *mem,
-+			      struct device_node *dad,
-+			      struct device_node **nodepp)
- {
- 	struct device_node *root;
- 	int offset = 0, depth = 0;
-@@ -479,7 +479,7 @@ static void __unflatten_device_tree(const void *blob,
- 	}
+-	pnv_pci_ioda_setup_opal_tce_kill(phb);
+-
+ 	/* Walk our PE list and configure their DMA segments */
+ 	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+ 		weight = pnv_pci_ioda_pe_dma_weight(pe);
+@@ -3396,6 +3394,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	if (phb->regs == NULL)
+ 		pr_err("  Failed to map registers !\n");
  
- 	/* First pass, scan for size */
--	size = unflatten_dt_node(blob, NULL, NULL, NULL);
-+	size = unflatten_dt_nodes(blob, NULL, NULL, NULL);
- 	if (size < 0)
- 		return;
- 
-@@ -495,7 +495,7 @@ static void __unflatten_device_tree(const void *blob,
- 	pr_debug("  unflattening %p...\n", mem);
- 
- 	/* Second pass, do actual unflattening */
--	unflatten_dt_node(blob, mem, NULL, mynodes);
-+	unflatten_dt_nodes(blob, mem, NULL, mynodes);
- 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
- 		pr_warning("End of tree marker overwritten: %08x\n",
- 			   be32_to_cpup(mem + size));
++	/* Initialize TCE kill register */
++	pnv_pci_ioda_setup_opal_tce_kill(phb);
++
+ 	/* Initialize more IODA stuff */
+ 	phb->ioda.total_pe_num = 1;
+ 	prop32 = of_get_property(np, "ibm,opal-num-pes", NULL);
 -- 
 2.1.0
