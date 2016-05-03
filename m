@@ -1,27 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzcrF6NMDzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 20:30:21 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- geert@linux-m68k.org, deller@gmx.de, benh@kernel.crashing.org, dalias@libc.org,
- dhowells@redhat.com, linux-alpha@vger.kernel.org, a.zummo@towertech.it,
- linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH v3 12/16] rtc: powerpc: provide rtc_class_ops directly
-Date: Tue, 03 May 2016 12:29:21 +0200
-Message-ID: <3723014.RkUgaFBZte@wuerfel>
-In-Reply-To: <1462248309.12788.4.camel@ellerman.id.au>
-References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
- <1461796470-1291527-13-git-send-email-arnd@arndb.de>
- <1462248309.12788.4.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzfbm25n7zDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 21:49:38 +1000 (AEST)
+Received: by mail-pa0-x232.google.com with SMTP id r5so9011441pag.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 May 2016 04:49:38 -0700 (PDT)
+Date: Tue, 3 May 2016 17:19:31 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH -next 1/2] cpufreq: powernv: Move smp_call_function_any()
+ out of irq safe block
+Message-ID: <20160503114931.GA3083@vireshk-i7>
+References: <1462268448-19954-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1462268448-19954-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 03 May 2016 14:05:09 Michael Ellerman wrote:
-> On Thu, 2016-04-28 at 00:34 +0200, Arnd Bergmann wrote:
+On 03-05-16, 15:10, Akshay Adiga wrote:
+> Fixing a WARN_ON caused by smp_call_function_any() when irq is disabled,
+> because of changes made in the patch
+> ('cpufreq: powernv: Ramp-down global pstate slower than local-pstate')
+> https://patchwork.ozlabs.org/patch/612058/
 > 
-> > The rtc-generic driver provides an architecture specific
-> > wrapper on top of the generic rtc_class_ops abstraction,
-> > and powerpc has another abstraction on top, which is a bit
-> > silly.
-> > 
-> > This changes the powerpc rtc-generic device to provide its
-> > rtc_class_ops directly, to reduce the number of layers
-> > by one.
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  arch/powerpc/kernel/time.c | 29 ++++++++++++++++++++++++++++-
-> >  drivers/rtc/rtc-generic.c  |  2 +-
-> >  2 files changed, 29 insertions(+), 2 deletions(-)
+>  WARNING: CPU: 0 PID: 4 at kernel/smp.c:291
+> smp_call_function_single+0x170/0x180
 > 
-> If this hits linux-next it will go through my automated boot testing, which
-> hopefully would be sufficient to catch any bugs in this patch, cross fingers.
+>  Call Trace:
+>  [c0000007f648f9f0] [c0000007f648fa90] 0xc0000007f648fa90 (unreliable)
+>  [c0000007f648fa30] [c0000000001430e0] smp_call_function_any+0x170/0x1c0
+>  [c0000007f648fa90] [c0000000007b4b00]
+> powernv_cpufreq_target_index+0xe0/0x250
+>  [c0000007f648fb00] [c0000000007ac9dc]
+> __cpufreq_driver_target+0x20c/0x3d0
+>  [c0000007f648fbc0] [c0000000007b1b4c] od_dbs_timer+0xcc/0x260
+>  [c0000007f648fc10] [c0000000007b3024] dbs_work_handler+0x54/0xa0
+>  [c0000007f648fc50] [c0000000000c49a8] process_one_work+0x1d8/0x590
+>  [c0000007f648fce0] [c0000000000c4e08] worker_thread+0xa8/0x660
+>  [c0000007f648fd80] [c0000000000cca88] kthread+0x108/0x130
+>  [c0000007f648fe30] [c0000000000095e8] ret_from_kernel_thread+0x5c/0x74
 > 
-> I don't know jack about all the layers of RTC mess, so my ack is basically
-> worthless here. But if you like you can have one anyway 
+> Moving smp_call_function_any() out of the critical section and changing
+> irq safe spinlocks to normal spinlocks.
 > 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.linux.com>
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> ---
+> Patch is based on Rafael's linux-next
+>  drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 144c732..1f0e20c 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -581,9 +581,10 @@ void gpstate_timer_handler(unsigned long data)
+>  	gpstates->last_gpstate = freq_data.gpstate_id;
+>  	gpstates->last_lpstate = freq_data.pstate_id;
+>  
+> +	spin_unlock(&gpstates->gpstate_lock);
+> +
+>  	/* Timer may get migrated to a different cpu on cpu hot unplug */
+>  	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+> -	spin_unlock(&gpstates->gpstate_lock);
+>  }
+>  
+>  /*
+> @@ -596,7 +597,6 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  {
+>  	struct powernv_smp_call_data freq_data;
+>  	unsigned int cur_msec, gpstate_id;
+> -	unsigned long flags;
+>  	struct global_pstate_info *gpstates = policy->driver_data;
+>  
+>  	if (unlikely(rebooting) && new_index != get_nominal_index())
+> @@ -607,7 +607,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  
+>  	cur_msec = jiffies_to_msecs(get_jiffies_64());
+>  
+> -	spin_lock_irqsave(&gpstates->gpstate_lock, flags);
+> +	spin_lock(&gpstates->gpstate_lock);
 
-Thanks!
+You don't necessarily have to write 'what you are doing' in the commit log, but
+tell us why you are doing that.
 
-The main thing that could use testing here is for patch 12/16 to see if
-/sbin/hwclock can still read and write the time on a machine that
-uses one of the genrtc backends on powerpc, this includes
-rtas_get_rtc_time, mpc8xx_get_rtc_time, maple_get_rtc_time,
-ps3_get_rtc_time and pmac_get_rtc_time. Testing on a pSeries with rtas
-should be sufficient, and if I made a mistake, it probably fails
-spectacularly.
+Please explain, why is this changed and why will things continue to work
+without this.
 
-Just for reference, if anyone ever wants to clean this up further on
-powerpc to remove all of the rtc handling from architecture code,
-it has gotten easier after my series:
-
-- The update_persistent_clock() and read_persistent_clock() callbacks
-  are now unnecessary: as long as the RTC driver is built into the
-  kernel, drivers/rtc/hctosys.c takes care of setting the initial
-  time (otherwise user space has to do it), and the other users
-  (ntp and suspend/resume) will work fine whenever an rtc driver
-  is loaded. Obviously you will want to test the kernel better after
-  removing the two functions.
-
-- Once they are gone, the only users of the ppc_md.{get,set}_rtc_time
-  callbacks are in the "const struct rtc_class_ops rtc_generic_ops".
-  You can move them into the five files implementing those callbacks
-  and call the functions directly to get rid of the function pointers.
-
-- Lastly, after that is done, you basically have five independent
-  rtc device drivers that can get moved to drivers/rtc and converted
-  into regular platform drivers. Instead of registering the fake
-  "rtc-generic" device, you then register the one that is actually
-  there like arch/powerpc/sysdev/rtc_cmos_setup.c already does, or
-  use the one that gets created from DT.
-
-	Arnd
+-- 
+viresh
