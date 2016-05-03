@@ -1,33 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzVSy1n2gzDqGD
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzVSy1nwgzDqHF
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:43:14 +1000 (AEST)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Tue, 3 May 2016 15:43:13 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 89C4A2BB0065
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D6813578060
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:43:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u435h1EM34996252
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u435h1bY19529956
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:43:09 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u435gakn019435
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u435gamE007486
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:42:37 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 18/26] powerpc/pci: Rename pcibios_{add,
- remove}_pci_devices()
-Date: Tue,  3 May 2016 15:41:37 +1000
-Message-Id: <1462254105-24128-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v9 08/26] powerpc/powernv: Simplify pnv_ioda_setup_pe_seg()
+Date: Tue,  3 May 2016 15:41:27 +1000
+Message-Id: <1462254105-24128-9-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,199 +38,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This renames pcibios_{add,remove}_pci_devices() to avoid conflicts
-with names of the weak functions in PCI subsystem, which have the
-prefix "pcibios". No logical changes introduced.
+pnv_ioda_setup_pe_seg() associates the IO and M32 segments with the
+owner PE. The code mapping segments should be fixed and immune from
+logic changes introduced to pnv_ioda_setup_pe_seg().
+
+This moves the code mapping segments to helper pnv_ioda_setup_pe_res().
+The data type for @rc is changed to "int64_t". Also, argument @hose is
+removed from pnv_ioda_setup_pe() as it can be got from @pe. No functional
+changes introduced.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h |  4 ++--
- arch/powerpc/kernel/eeh_driver.c      | 12 ++++++------
- arch/powerpc/kernel/pci-hotplug.c     | 15 +++++++--------
- drivers/pci/hotplug/rpadlpar_core.c   |  2 +-
- drivers/pci/hotplug/rpaphp_core.c     |  4 ++--
- drivers/pci/hotplug/rpaphp_pci.c      |  2 +-
- 6 files changed, 19 insertions(+), 20 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 121 +++++++++++++++---------------
+ 1 file changed, 62 insertions(+), 59 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 220129f..99027b8 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -260,10 +260,10 @@ static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
- extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 59b20e5..b954fbc 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2929,19 +2929,72 @@ truncate_iov:
+ }
+ #endif /* CONFIG_PCI_IOV */
  
- /** Remove all of the PCI devices under this bus */
--extern void pcibios_remove_pci_devices(struct pci_bus *bus);
-+extern void pci_hp_remove_devices(struct pci_bus *bus);
++static void pnv_ioda_setup_pe_res(struct pnv_ioda_pe *pe,
++				  struct resource *res)
++{
++	struct pnv_phb *phb = pe->phb;
++	struct pci_bus_region region;
++	int index;
++	int64_t rc;
++
++	if (!res || !res->flags || res->start > res->end)
++		return;
++
++	if (res->flags & IORESOURCE_IO) {
++		region.start = res->start - phb->ioda.io_pci_base;
++		region.end   = res->end - phb->ioda.io_pci_base;
++		index = region.start / phb->ioda.io_segsize;
++
++		while (index < phb->ioda.total_pe_num &&
++		       region.start <= region.end) {
++			phb->ioda.io_segmap[index] = pe->pe_number;
++			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++				pe->pe_number, OPAL_IO_WINDOW_TYPE, 0, index);
++			if (rc != OPAL_SUCCESS) {
++				pr_err("%s: Error %lld mapping IO segment#%d to PE#%d\n",
++				       __func__, rc, index, pe->pe_number);
++				break;
++			}
++
++			region.start += phb->ioda.io_segsize;
++			index++;
++		}
++	} else if ((res->flags & IORESOURCE_MEM) &&
++		   !pnv_pci_is_mem_pref_64(res->flags)) {
++		region.start = res->start -
++			       phb->hose->mem_offset[0] -
++			       phb->ioda.m32_pci_base;
++		region.end   = res->end -
++			       phb->hose->mem_offset[0] -
++			       phb->ioda.m32_pci_base;
++		index = region.start / phb->ioda.m32_segsize;
++
++		while (index < phb->ioda.total_pe_num &&
++		       region.start <= region.end) {
++			phb->ioda.m32_segmap[index] = pe->pe_number;
++			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++				pe->pe_number, OPAL_M32_WINDOW_TYPE, 0, index);
++			if (rc != OPAL_SUCCESS) {
++				pr_err("%s: Error %lld mapping M32 segment#%d to PE#%d",
++				       __func__, rc, index, pe->pe_number);
++				break;
++			}
++
++			region.start += phb->ioda.m32_segsize;
++			index++;
++		}
++	}
++}
++
+ /*
+  * This function is supposed to be called on basis of PE from top
+  * to bottom style. So the the I/O or MMIO segment assigned to
+  * parent PE could be overrided by its child PEs if necessary.
+  */
+-static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+-				  struct pnv_ioda_pe *pe)
++static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
+ {
+-	struct pnv_phb *phb = hose->private_data;
+-	struct pci_bus_region region;
+ 	struct resource *res;
+-	int i, index;
+-	int rc;
++	int i;
  
- /** Discover new pci devices under this bus, and add them */
--extern void pcibios_add_pci_devices(struct pci_bus *bus);
-+extern void pci_hp_add_devices(struct pci_bus *bus);
- 
- 
- extern void isa_bridge_find_early(struct pci_controller *hose);
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index fb6207d..618d13c 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -621,7 +621,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 	 * We don't remove the corresponding PE instances because
- 	 * we need the information afterwords. The attached EEH
- 	 * devices are expected to be attached soon when calling
--	 * into pcibios_add_pci_devices().
-+	 * into pci_hp_add_devices().
+ 	/*
+ 	 * NOTE: We only care PCI bus based PE for now. For PCI
+@@ -2950,58 +3003,8 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
  	 */
- 	eeh_pe_state_mark(pe, EEH_PE_KEEP);
- 	if (bus) {
-@@ -630,7 +630,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		} else {
- 			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 			pci_lock_rescan_remove();
--			pcibios_remove_pci_devices(bus);
-+			pci_hp_remove_devices(bus);
- 			pci_unlock_rescan_remove();
- 		}
- 	} else if (frozen_bus) {
-@@ -681,7 +681,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		if (pe->type & EEH_PE_VF)
- 			eeh_add_virt_device(edev, NULL);
- 		else
--			pcibios_add_pci_devices(bus);
-+			pci_hp_add_devices(bus);
- 	} else if (frozen_bus && rmv_data->removed) {
- 		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
- 		ssleep(5);
-@@ -691,7 +691,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		if (pe->type & EEH_PE_VF)
- 			eeh_add_virt_device(edev, NULL);
- 		else
--			pcibios_add_pci_devices(frozen_bus);
-+			pci_hp_add_devices(frozen_bus);
- 	}
- 	eeh_pe_state_clear(pe, EEH_PE_KEEP);
+ 	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
  
-@@ -896,7 +896,7 @@ perm_error:
- 			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
- 
- 			pci_lock_rescan_remove();
--			pcibios_remove_pci_devices(frozen_bus);
-+			pci_hp_remove_devices(frozen_bus);
- 			pci_unlock_rescan_remove();
- 		}
- 	}
-@@ -981,7 +981,7 @@ static void eeh_handle_special_event(void)
- 				bus = eeh_pe_bus_get(phb_pe);
- 				eeh_pe_dev_traverse(pe,
- 					eeh_report_failure, NULL);
--				pcibios_remove_pci_devices(bus);
-+				pci_hp_remove_devices(bus);
- 			}
- 			pci_unlock_rescan_remove();
- 		}
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 59c4361..2d108e5 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -38,20 +38,20 @@ void pcibios_release_device(struct pci_dev *dev)
- }
- 
- /**
-- * pcibios_remove_pci_devices - remove all devices under this bus
-+ * pci_hp_remove_devices - remove all devices under this bus
-  * @bus: the indicated PCI bus
-  *
-  * Remove all of the PCI devices under this bus both from the
-  * linux pci device tree, and from the powerpc EEH address cache.
-  */
--void pcibios_remove_pci_devices(struct pci_bus *bus)
-+void pci_hp_remove_devices(struct pci_bus *bus)
- {
- 	struct pci_dev *dev, *tmp;
- 	struct pci_bus *child_bus;
- 
- 	/* First go down child busses */
- 	list_for_each_entry(child_bus, &bus->children, node)
--		pcibios_remove_pci_devices(child_bus);
-+		pci_hp_remove_devices(child_bus);
- 
- 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
- 		 pci_domain_nr(bus),  bus->number);
-@@ -60,11 +60,10 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
- 		pci_stop_and_remove_bus_device(dev);
- 	}
- }
+-	pci_bus_for_each_resource(pe->pbus, res, i) {
+-		if (!res || !res->flags ||
+-		    res->start > res->end)
+-			continue;
 -
--EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
-+EXPORT_SYMBOL_GPL(pci_hp_remove_devices);
- 
- /**
-- * pcibios_add_pci_devices - adds new pci devices to bus
-+ * pci_hp_add_devices - adds new pci devices to bus
-  * @bus: the indicated PCI bus
-  *
-  * This routine will find and fixup new pci devices under
-@@ -74,7 +73,7 @@ EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
-  * is how this routine differs from other, similar pcibios
-  * routines.)
-  */
--void pcibios_add_pci_devices(struct pci_bus * bus)
-+void pci_hp_add_devices(struct pci_bus *bus)
- {
- 	int slotno, mode, pass, max;
- 	struct pci_dev *dev;
-@@ -114,4 +113,4 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
- 	}
- 	pcibios_finish_adding_to_bus(bus);
+-		if (res->flags & IORESOURCE_IO) {
+-			region.start = res->start - phb->ioda.io_pci_base;
+-			region.end   = res->end - phb->ioda.io_pci_base;
+-			index = region.start / phb->ioda.io_segsize;
+-
+-			while (index < phb->ioda.total_pe_num &&
+-			       region.start <= region.end) {
+-				phb->ioda.io_segmap[index] = pe->pe_number;
+-				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+-					pe->pe_number, OPAL_IO_WINDOW_TYPE, 0, index);
+-				if (rc != OPAL_SUCCESS) {
+-					pr_err("%s: OPAL error %d when mapping IO "
+-					       "segment #%d to PE#%d\n",
+-					       __func__, rc, index, pe->pe_number);
+-					break;
+-				}
+-
+-				region.start += phb->ioda.io_segsize;
+-				index++;
+-			}
+-		} else if ((res->flags & IORESOURCE_MEM) &&
+-			   !pnv_pci_is_mem_pref_64(res->flags)) {
+-			region.start = res->start -
+-				       hose->mem_offset[0] -
+-				       phb->ioda.m32_pci_base;
+-			region.end   = res->end -
+-				       hose->mem_offset[0] -
+-				       phb->ioda.m32_pci_base;
+-			index = region.start / phb->ioda.m32_segsize;
+-
+-			while (index < phb->ioda.total_pe_num &&
+-			       region.start <= region.end) {
+-				phb->ioda.m32_segmap[index] = pe->pe_number;
+-				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+-					pe->pe_number, OPAL_M32_WINDOW_TYPE, 0, index);
+-				if (rc != OPAL_SUCCESS) {
+-					pr_err("%s: OPAL error %d when mapping M32 "
+-					       "segment#%d to PE#%d",
+-					       __func__, rc, index, pe->pe_number);
+-					break;
+-				}
+-
+-				region.start += phb->ioda.m32_segsize;
+-				index++;
+-			}
+-		}
+-	}
++	pci_bus_for_each_resource(pe->pbus, res, i)
++		pnv_ioda_setup_pe_res(pe, res);
  }
--EXPORT_SYMBOL_GPL(pcibios_add_pci_devices);
-+EXPORT_SYMBOL_GPL(pci_hp_add_devices);
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index b46b57d..b770d6d 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -380,7 +380,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
- 	}
  
- 	/* Remove all devices below slot */
--	pcibios_remove_pci_devices(bus);
-+	pci_hp_remove_devices(bus);
+ static void pnv_pci_ioda_setup_seg(void)
+@@ -3018,7 +3021,7 @@ static void pnv_pci_ioda_setup_seg(void)
+ 			continue;
  
- 	/* Unmap PCI IO space */
- 	if (pcibios_unmap_io_space(bus)) {
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 611f605..8d13202 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -404,7 +404,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
- 
- 	if (state == PRESENT) {
- 		pci_lock_rescan_remove();
--		pcibios_add_pci_devices(slot->bus);
-+		pci_hp_add_devices(slot->bus);
- 		pci_unlock_rescan_remove();
- 		slot->state = CONFIGURED;
- 	} else if (state == EMPTY) {
-@@ -426,7 +426,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
- 		return -EINVAL;
- 
- 	pci_lock_rescan_remove();
--	pcibios_remove_pci_devices(slot->bus);
-+	pci_hp_remove_devices(slot->bus);
- 	pci_unlock_rescan_remove();
- 	vm_unmap_aliases();
- 
-diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
-index 7836d69..137a892 100644
---- a/drivers/pci/hotplug/rpaphp_pci.c
-+++ b/drivers/pci/hotplug/rpaphp_pci.c
-@@ -116,7 +116,7 @@ int rpaphp_enable_slot(struct slot *slot)
+ 		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+-			pnv_ioda_setup_pe_seg(hose, pe);
++			pnv_ioda_setup_pe_seg(pe);
  		}
- 
- 		if (list_empty(&bus->devices))
--			pcibios_add_pci_devices(bus);
-+			pci_hp_add_devices(bus);
- 
- 		if (!list_empty(&bus->devices)) {
- 			info->adapter_status = CONFIGURED;
+ 	}
+ }
 -- 
 2.1.0
