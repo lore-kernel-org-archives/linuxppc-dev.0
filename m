@@ -1,21 +1,21 @@
 Return-Path: <davem@davemloft.net>
 Received: from shards.monkeyblade.net (shards.monkeyblade.net
  [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qznZn5vm6zDqCK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 03:04:17 +1000 (AEST)
-Date: Tue, 03 May 2016 13:04:14 -0400 (EDT)
-Message-Id: <20160503.130414.1125965011383665263.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qznZv2B12zDqCC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 03:04:23 +1000 (AEST)
+Date: Tue, 03 May 2016 13:04:20 -0400 (EDT)
+Message-Id: <20160503.130420.603797791097846992.davem@davemloft.net>
 To: tremyfr@gmail.com
 Cc: pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
  claudiu.manoil@freescale.com, leoli@freescale.com, treding@nvidia.com,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/4] net: ethernet: fs-enet: move to new ethtool api
- {get|set}_link_ksettings
+Subject: Re: [PATCH 4/4] net: ethernet: fec_mpc52xx: move to new ethtool
+ api {get|set}_link_ksettings
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1462115291-11372-3-git-send-email-tremyfr@gmail.com>
+In-Reply-To: <1462115291-11372-4-git-send-email-tremyfr@gmail.com>
 References: <1462115291-11372-1-git-send-email-tremyfr@gmail.com>
- <1462115291-11372-3-git-send-email-tremyfr@gmail.com>
+ <1462115291-11372-4-git-send-email-tremyfr@gmail.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,10 +28,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Philippe Reynes <tremyfr@gmail.com>
-Date: Sun,  1 May 2016 17:08:10 +0200
+Date: Sun,  1 May 2016 17:08:11 +0200
 
 > The ethtool api {get|set}_settings is deprecated.
-> We move the fs-enet driver to new api {get|set}_link_ksettings.
+> We move the fec_mpc52xx driver to new api {get|set}_link_ksettings.
 > 
 > Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
 
