@@ -1,37 +1,25 @@
-Return-Path: <kevin.tian@intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qzWL415tZzDvpG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 16:22:19 +1000 (AEST)
-From: "Tian, Kevin" <kevin.tian@intel.com>
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, "kvm@vger.kernel.org"
- <kvm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>
-CC: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "joro@8bytes.org" <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
- <warrier@linux.vnet.ibm.com>, "zhong@linux.vnet.ibm.com"
- <zhong@linux.vnet.ibm.com>, "nikunj@linux.vnet.ibm.com"
- <nikunj@linux.vnet.ibm.com>, "eric.auger@linaro.org" <eric.auger@linaro.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>, "gwshan@linux.vnet.ibm.com"
- <gwshan@linux.vnet.ibm.com>, "David.Laight@ACULAB.COM"
- <David.Laight@ACULAB.COM>, "alistair@popple.id.au" <alistair@popple.id.au>,
- "ruscur@russell.cc" <ruscur@russell.cc>
-Subject: RE: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
- remapping is supported
-Date: Tue, 3 May 2016 06:22:15 +0000
-Message-ID: <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
-References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1461761010-5452-6-git-send-email-xyjxie@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F842512@SHSMSX101.ccr.corp.intel.com>
- <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
-In-Reply-To: <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3qzWPP1mPfzDvw9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 16:25:13 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>,
+ kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v4 09/11] powerpc/powernv/npu: Add set/unset window
+ helpers
+Date: Tue, 03 May 2016 16:25 +1000
+Message-ID: <1541287.tQu2vNHrMy@new-mexico>
+In-Reply-To: <1461920124-21719-10-git-send-email-aik@ozlabs.ru>
+References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
+ <1461920124-21719-10-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +29,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBGcm9tOiBZb25namkgWGllIFttYWlsdG86eHlqeGllQGxpbnV4LnZuZXQuaWJtLmNvbV0NCj4g
-U2VudDogVHVlc2RheSwgTWF5IDAzLCAyMDE2IDI6MDggUE0NCj4gDQo+IE9uIDIwMTYvNS8zIDEz
-OjM0LCBUaWFuLCBLZXZpbiB3cm90ZToNCj4gDQo+ID4+IEZyb206IFlvbmdqaSBYaWUNCj4gPj4g
-U2VudDogV2VkbmVzZGF5LCBBcHJpbCAyNywgMjAxNiA4OjQzIFBNDQo+ID4+DQo+ID4+IFRoaXMg
-cGF0Y2ggZW5hYmxlcyBtbWFwcGluZyBNU0ktWCB0YWJsZXMgaWYgaGFyZHdhcmUgc3VwcG9ydHMN
-Cj4gPj4gaW50ZXJydXB0IHJlbWFwcGluZyB3aGljaCBjYW4gZW5zdXJlIHRoYXQgYSBnaXZlbiBw
-Y2kgZGV2aWNlDQo+ID4+IGNhbiBvbmx5IHNob290IHRoZSBNU0lzIGFzc2lnbmVkIGZvciBpdC4N
-Cj4gPj4NCj4gPj4gV2l0aCBNU0ktWCB0YWJsZSBtbWFwcGVkLCB3ZSBhbHNvIG5lZWQgdG8gZXhw
-b3NlIHRoZQ0KPiA+PiByZWFkL3dyaXRlIGludGVyZmFjZSB3aGljaCB3aWxsIGJlIHVzZWQgdG8g
-YWNjZXNzIE1TSS1YIHRhYmxlLg0KPiA+Pg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBZb25namkgWGll
-IDx4eWp4aWVAbGludXgudm5ldC5pYm0uY29tPg0KPiA+IEEgY3VyaW91cyBxdWVzdGlvbiBoZXJl
-LiBEb2VzICJhbGxvdyB0byBtbWFwIE1TSS1YIiBlc3NlbnRpYWxseQ0KPiA+IG1lYW4gdGhhdCBL
-Vk0gZ3Vlc3QgY2FuIGRpcmVjdGx5IHJlYWQvd3JpdGUgcGh5c2ljYWwgTVNJLVgNCj4gPiBzdHJ1
-Y3R1cmUgdGhlbj8NCj4gPg0KPiA+IFRoYW5rcw0KPiA+IEtldmluDQo+ID4NCj4gDQo+IEhlcmUg
-d2UganVzdCBhbGxvdyB0byBtbWFwIE1TSS1YIHRhYmxlIGluIGtlcm5lbC4gSXQgZG9lc24ndA0K
-PiBtZWFuIGFsbCBLVk0gZ3Vlc3QgY2FuIGRpcmVjdGx5IHJlYWQvd3JpdGUgcGh5c2ljYWwgTVNJ
-LVgNCj4gc3RydWN0dXJlLiBUaGlzIHNob3VsZCBiZSBkZWNpZGVkIGJ5IFFFTVUuIEZvciBQUEM2
-NA0KPiBwbGF0Zm9ybSwgd2Ugd291bGQgYWxsb3cgdG8gcGFzc3Rocm91Z2ggdGhlIE1TSS1YIHRh
-YmxlDQo+IGJlY2F1c2Ugd2Uga25vdyBndWVzdCBrZXJuZWwgd291bGQgbm90IHdyaXRlIHBoeXNp
-Y2FsDQo+IE1TSS1YIHN0cnVjdHVyZSB3aGVuIGVuYWJsaW5nIE1TSS4NCj4gDQoNCkEgYml0IGNv
-bmZ1c2VkIGhlcmUuIElmIGd1ZXN0IGtlcm5lbCBkb2Vzbid0IG5lZWQgdG8gd3JpdGUNCnBoeXNp
-Y2FsIE1TSS1YIHN0cnVjdHVyZSwgd2hhdCdzIHRoZSBwb2ludCBvZiBwYXNzaW5nIHRocm91Z2gN
-CnRoZSB0YWJsZSB0aGVuPw0KDQpJIHRoaW5rIHRoZSBrZXkgd2hldGhlciBNU0ktWCB0YWJsZSBj
-YW4gYmUgcGFzc2VkIHRocm91Z2gNCmlzIHJlbGF0ZWQgdG8gd2hlcmUgaHlwZXJ2aXNvciBjb250
-cm9sIGlzIGRlcGxveWVkLiBBdCBsZWFzdA0KZm9yIHg4NjoNCg0KLSBXaGVuIGlycSByZW1hcHBp
-bmcgaXMgbm90IGVuYWJsZWQsIGhvc3QvaHlwZXJ2aXNvciBuZWVkcw0KdG8gY29udHJvbCBwaHlz
-aWNhbCBpbnRlcnJ1cHQgbWVzc2FnZSBpbmNsdWRpbmcgdmVjdG9yL2Rlc3QvZXRjLg0KZGlyZWN0
-bHkgaW4gTVNJLVggc3RydWN0dXJlLCBzbyB3ZSBjYW5ub3QgYWxsb3cgYSBndWVzdCB0byANCmFj
-Y2VzcyBpdDsNCg0KLSB3aGVuIGlycSByZW1hcHBpbmcgaXMgZW5hYmxlZCwgaG9zdC9oeXBlcnZp
-c29yIGNhbiBjb250cm9sDQppbnRlcnJ1cHQgcm91dGluZyBpbiBpcnEgcmVtYXBwaW5nIHRhYmxl
-LiBIb3dldmVyIE1TSS1YDQphbHNvIG5lZWRzIHRvIGJlIGNvbmZpZ3VyZWQgYXMgcmVtYXBwYWJs
-ZSBmb3JtYXQuIEluIHRoaXMNCm1hbm5lciB3ZSBhbHNvIGNhbm5vdCBhbGxvdyBkaXJlY3QgYWNj
-ZXNzIGZyb20gZ3Vlc3QuDQoNClRoZSBvbmx5IHNhbmUgY2FzZSB0byBwYXNzIHRocm91Z2ggTVNJ
-LVggc3RydWN0dXJlLCBpcyBhDQptZWNoYW5pc20gc2ltaWxhciB0byBpcnEgcmVtYXBwaW5nIGJ1
-dCB3L28gbmVlZCB0byBjaGFuZ2UNCm9yaWdpbmFsIE1TSS1YIGZvcm1hdCBzbyBkaXJlY3QgYWNj
-ZXNzIGZyb20gZ3Vlc3Qgc2lkZSBpcw0Kc2FmZS4gSXMgaXQgdGhlIGNhc2UgaW4gUFBDNjQ/DQoN
-ClRoYW5rcw0KS2V2aW4NCg==
+
+On Fri, 29 Apr 2016 18:55:22 Alexey Kardashevskiy wrote:
+> The upcoming NVLink passthrough support will require NPU code to cope
+> with two DMA windows.
+> 
+> This adds a pnv_npu_set_window() helper which programs 32bit window to
+> the hardware. This also adds multilevel TCE support.
+> 
+> This adds a pnv_npu_unset_window() helper which removes the DMA window
+> from the hardware. This does not make difference now as the caller -
+> pnv_npu_dma_set_bypass() - enables bypass in the hardware but the next
+> patch will use it to manage TCE table lists for TCE Kill handling.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c | 65 
++++++++++++++++++++++++++++-----
+>  1 file changed, 55 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c 
+b/arch/powerpc/platforms/powernv/npu-dma.c
+> index bec9267..800d70f 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -159,6 +159,56 @@ static struct pnv_ioda_pe 
+*get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
+>  	return pe;
+>  }
+>  
+> +static long pnv_npu_set_window(struct pnv_ioda_pe *npe,
+> +		struct iommu_table *tbl)
+> +{
+> +	struct pnv_phb *phb = npe->phb;
+> +	int64_t rc;
+> +	const unsigned long size = tbl->it_indirect_levels ?
+> +		tbl->it_level_size : tbl->it_size;
+> +	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
+> +	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
+> +
+> +	pe_info(npe, "Setting up window %llx..%llx pg=%lx\n",
+> +			start_addr, start_addr + win_size - 1,
+> +			IOMMU_PAGE_SIZE(tbl));
+> +
+> +	rc = opal_pci_map_pe_dma_window(phb->opal_id,
+> +			npe->pe_number,
+> +			npe->pe_number,
+> +			tbl->it_indirect_levels + 1,
+> +			__pa(tbl->it_base),
+> +			size << 3,
+> +			IOMMU_PAGE_SIZE(tbl));
+> +	if (rc) {
+> +		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
+> +		return rc;
+> +	}
+> +	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> +
+> +	return 0;
+> +}
+> +
+> +static long pnv_npu_unset_window(struct pnv_ioda_pe *npe)
+> +{
+> +	struct pnv_phb *phb = npe->phb;
+> +	int64_t rc;
+> +
+> +	pe_info(npe, "Removing DMA window\n");
+> +
+> +	rc = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+> +			npe->pe_number,
+> +			0/* levels */, 0/* table address */,
+> +			0/* table size */, 0/* page size */);
+> +	if (rc) {
+> +		pe_err(npe, "Unmapping failed, ret = %lld\n", rc);
+> +		return rc;
+> +	}
+> +	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
+> +
+> +	return 0;
+> +}
+> +
+>  void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
+>  {
+>  	struct pnv_ioda_pe *gpe;
+> @@ -200,10 +250,8 @@ void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
+>   */
+>  static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+>  {
+> -	struct pnv_phb *phb = npe->phb;
+>  	struct pci_dev *gpdev;
+>  	struct pnv_ioda_pe *gpe;
+> -	struct iommu_table *tbl;
+>  	int64_t rc;
+>  
+>  	/*
+> @@ -217,14 +265,7 @@ static void pnv_npu_dma_set_32(struct pnv_ioda_pe *npe)
+>  	if (!gpe)
+>  		return;
+>  
+> -	tbl = gpe->table_group.tables[0];
+> -	rc = opal_pci_map_pe_dma_window(phb->opal_id, npe->pe_number,
+> -					npe->pe_number, 1, __pa(tbl->it_base),
+> -					tbl->it_size << 3,
+> -					IOMMU_PAGE_SIZE(tbl));
+> -	if (rc != OPAL_SUCCESS)
+> -		pr_warn("%s: Error %lld setting DMA window on PHB#%d-PE#%d\n",
+> -			__func__, rc, phb->hose->global_number, npe-
+>pe_number);
+> +	rc = pnv_npu_set_window(npe, gpe->table_group.tables[0]);
+>  
+>  	/*
+>  	 * We don't initialise npu_pe->tce32_table as we always use
+> @@ -248,6 +289,10 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe 
+*npe)
+>  	if (phb->type != PNV_PHB_NPU || !npe->pdev)
+>  		return -EINVAL;
+>  
+> +	rc = pnv_npu_unset_window(npe);
+
+As noted in the commit message you technically don't need to do this as the 
+subsequent OPAL call to enable the bypass window below will just overwrite the 
+same TVE. However I like the logic of clearing the existing TVE before writing 
+a new one anyway as it also ensures the TCE cache gets properly invalidated.
+
+Other than that this patch looks like it doesn't change any existing 
+behaviour.
+
+Reviewed-By: Alistair Popple <alistair@popple.id.au>
+
+> +	if (rc != OPAL_SUCCESS)
+> +		return rc;
+> +
+>  	/* Enable the bypass window */
+>  
+>  	top = roundup_pow_of_two(top);
+> 
