@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzks70tjDzDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 01:01:31 +1000 (AEST)
-Message-Id: <e4c99d13abe69060d01069ae74d439bf9adff3f9.1462052178.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzksB27DLzDqGn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 01:01:34 +1000 (AEST)
+Message-Id: <7a03fdb8854cf6c26fa83a324862c6f17449728b.1462052178.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1462052178.git.christophe.leroy@c-s.fr>
 References: <cover.1462052178.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 5/7] powerpc/8xx: Don't use page table for linear memory space
+Subject: [PATCH 6/7] powerpc/8xx: Rework CONFIG_PIN_TLB handling
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  3 May 2016 17:01:26 +0200 (CEST)
+Date: Tue,  3 May 2016 17:01:28 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,263 +23,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of using the first level page table to define mappings for
-the linear memory space, we can use direct mapping from the TLB
-handling routines. This has several advantages:
-* No need to read the tables at each TLB miss
-* No issue in 16k pages mode where the 1st level table maps 64 Mbytes
+On recent kernels, with some debug options like for instance
+CONFIG_LOCKDEP, the BSS requires more than 8M memory, allthough
+the kernel code fits in the first 8M.
+Today, it is necessary to activate CONFIG_PIN_TLB to get more than 8M
+at startup, allthough pinning TLB is not necessary for that.
 
-The size of the available linear space is known at system startup.
-In order to avoid data access at each TLB miss to know the memory
-size, the TLB routine is patched at startup with the proper size
+We could have inconditionaly mapped 16 or 24M bytes at startup
+but some old hardware only have 8M and mapping non-existing RAM
+would be an issue due to speculative accesses.
 
-This patch provides a 10%-15% improvment of TLB miss handling for
-kernel addresses
+With the preceeding patch however, the TLB entries are populated on
+demand. By setting up the TLB miss handler to handle up to 24M until
+the handler is patched for the entire memory space, it is possible
+to allow access up to more memory without mapping non-existing RAM.
+
+It is therefore not needed anymore to map memory data at all
+at startup. It will be handled by the TLB miss handler.
+
+One might still want to PIN the IMMR and the first 24M of RAM.
+It is now possible to do it in the C memory initialisation
+functions. In addition, we now know how much memory we have
+when we do it, so we are able to adapt the pining to the
+real amount of memory available. So boards with less than 24M
+can now also benefit from PIN_TLB.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 71 ++++++++++++++++++++++--------------------
- arch/powerpc/mm/8xx_mmu.c      | 56 +++++++++++----------------------
- 2 files changed, 55 insertions(+), 72 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 44 ++++--------------------------------------
+ arch/powerpc/mm/8xx_mmu.c      | 27 ++++++++++++++++++--------
+ 2 files changed, 23 insertions(+), 48 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index d9a1656..3de7d02 100644
+index 3de7d02..b8602e5 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -389,52 +389,52 @@ InstructionTLBMiss:
-  * not enough space in the DataStoreTLBMiss area
-  */
- DTLBMissIMMR:
--	mtcr	r3
-+	mtcr	r10
- 	/* Set 512k byte guarded page and mark it valid */
- 	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
--	MTSPR_CPU6(SPRN_MD_TWC, r10, r3)
-+	MTSPR_CPU6(SPRN_MD_TWC, r10, r11)
- 	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
- 	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
- 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY	| \
- 			  _PAGE_PRESENT | _PAGE_NO_CACHE
--	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
-+	MTSPR_CPU6(SPRN_MD_RPN, r10, r11)	/* Update TLB entry */
+@@ -491,7 +491,7 @@ _ENTRY(DTLBMiss_jmp)
  
- 	li	r11, RPN_PATTERN
--	mfspr	r3, SPRN_SPRG_SCRATCH2
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
- 	rfi
+ 4:
+ _ENTRY(DTLBMiss_cmp)
+-	cmpli	cr0, r11, PAGE_OFFSET@h
++	cmpli	cr0, r11, (PAGE_OFFSET + 0x1800000)@h
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 	bge-	3b
  
- 	. = 0x1200
- DataStoreTLBMiss:
--	mtspr	SPRN_SPRG_SCRATCH2, r3
- 	EXCEPTION_PROLOG_0
--	mfcr	r3
-+	mfcr	r10
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	mfspr	r10, SPRN_MD_EPN
--	IS_KERNEL(r11, r10)
--	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	BRANCH_UNLESS_KERNEL(3f)
--
--	rlwinm	r11, r10, 16, 0xfff8
-+	mfspr	r11, SPRN_MD_EPN
-+	rlwinm	r11, r11, 16, 0xfff8
- #ifndef CONFIG_PIN_TLB
- 	cmpli	cr0, r11, VIRT_IMMR_BASE@h
-+#endif
-+	cmpli	cr7, r11, PAGE_OFFSET@h
-+#ifndef CONFIG_PIN_TLB
- _ENTRY(DTLBMiss_jmp)
- 	beq-	DTLBMissIMMR
- #endif
-+	bge-	cr7, 4f
- 
--	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
-+	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
- 3:
-+	mtcr	r10
-+#ifdef CONFIG_8xx_CPU6
-+	mtspr	SPRN_SPRG_SCRATCH2, r3
-+#endif
-+	mfspr	r10, SPRN_MD_EPN
- 
- 	/* Insert level 1 index */
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
--	mtcr	r11
--	bt-	28,DTLBMiss8M		/* bit 28 = Large page (8M) */
--	mtcr	r3
- 
- 	/* We have a pte table, so load fetch the pte from the table.
- 	 */
-@@ -482,29 +482,30 @@ _ENTRY(DTLBMiss_jmp)
- 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
-+#ifdef CONFIG_8xx_CPU6
- 	mfspr	r3, SPRN_SPRG_SCRATCH2
-+#endif
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
- 	rfi
- 
--DTLBMiss8M:
--	mtcr	r3
--	ori	r11, r11, MD_SVALID
--	MTSPR_CPU6(SPRN_MD_TWC, r11, r3)
--#ifdef CONFIG_PPC_16K_PAGES
--	/*
--	 * In 16k pages mode, each PGD entry defines a 64M block.
--	 * Here we select the 8M page within the block.
--	 */
--	rlwimi	r11, r10, 0, 0x03800000
--#endif
--	rlwinm	r10, r11, 0, 0xff800000
-+4:
-+_ENTRY(DTLBMiss_cmp)
-+	cmpli	cr0, r11, PAGE_OFFSET@h
-+	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
-+	bge-	3b
-+
-+	mtcr	r10
-+	/* Set 8M byte page and mark it valid */
-+	li	r10, MD_PS8MEG | MD_SVALID
-+	MTSPR_CPU6(SPRN_MD_TWC, r10, r11)
-+	mfspr	r10, SPRN_MD_EPN
-+	rlwinm	r10, r10, 0, 0x0f800000		/* 8xx supports max 256Mb RAM */
- 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY	| \
- 			  _PAGE_PRESENT
--	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
-+	MTSPR_CPU6(SPRN_MD_RPN, r10, r11)	/* Update TLB entry */
- 
- 	li	r11, RPN_PATTERN
--	mfspr	r3, SPRN_SPRG_SCRATCH2
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
- 	rfi
-@@ -583,12 +584,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	IS_KERNEL(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+@@ -586,7 +586,7 @@ FixupDAR:/* Entry point for dcbx workaround. */
  	BRANCH_UNLESS_KERNEL(3f)
-+	rlwinm	r11, r10, 16, 0xfff8
-+_ENTRY(FixupDAR_cmp)
-+	cmpli	cr7, r11, PAGE_OFFSET@h
-+	blt-	cr7, 200f
+ 	rlwinm	r11, r10, 16, 0xfff8
+ _ENTRY(FixupDAR_cmp)
+-	cmpli	cr7, r11, PAGE_OFFSET@h
++	cmpli	cr0, r11, (PAGE_OFFSET + 0x1800000)@h
+ 	blt-	cr7, 200f
  	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
  	/* Insert level 1 index */
- 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
--	mtcr	r11
--	bt	28,200f		/* bit 28 = Large page (8M) */
- 	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
- 	/* Insert level 2 index */
- 	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-@@ -614,8 +617,8 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 141:	mfspr	r10,SPRN_SPRG_SCRATCH2
- 	b	DARFixed	/* Nope, go back to normal TLB processing */
+@@ -823,23 +823,16 @@ initial_mmu:
+ 	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
+ #endif
  
--	/* concat physical page address(r11) and page offset(r10) */
--200:	rlwimi	r11, r10, 0, 32 - (PAGE_SHIFT << 1), 31
-+	/* create physical page address from effective address */
-+200:	tophys(r11, r10)
- 	b	201b
+-	/* Now map the lower 8 Meg into the TLBs.  For this quick hack,
+-	 * we can load the instruction and data TLB registers with the
+-	 * same values.
+-	 */
++	/* Now map the lower 8 Meg into the ITLB. */
+ 	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
+ 	ori	r8, r8, MI_EVALID	/* Mark it valid */
+ 	mtspr	SPRN_MI_EPN, r8
+-	mtspr	SPRN_MD_EPN, r8
+ 	li	r8, MI_PS8MEG | (2 << 5)	/* Set 8M byte page, APG 2 */
+ 	ori	r8, r8, MI_SVALID	/* Make it valid */
+ 	mtspr	SPRN_MI_TWC, r8
+-	li	r8, MI_PS8MEG		/* Set 8M byte page, APG 0 */
+-	ori	r8, r8, MI_SVALID	/* Make it valid */
+-	mtspr	SPRN_MD_TWC, r8
+ 	li	r8, MI_BOOTINIT		/* Create RPN for address 0 */
+ 	mtspr	SPRN_MI_RPN, r8		/* Store TLB entry */
+-	mtspr	SPRN_MD_RPN, r8
++
+ 	lis	r8, MI_APG_INIT@h	/* Set protection modes */
+ 	ori	r8, r8, MI_APG_INIT@l
+ 	mtspr	SPRN_MI_AP, r8
+@@ -851,9 +844,6 @@ initial_mmu:
+ 	 * internal registers (among other things).
+ 	 */
+ #ifdef CONFIG_PIN_TLB
+-	addi	r10, r10, 0x0100
+-	mtspr	SPRN_MD_CTR, r10
+-#endif
+ 	mfspr	r9, 638			/* Get current IMMR */
+ 	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
  
- 144:	mfspr	r10, SPRN_DSISR
+@@ -866,32 +856,6 @@ initial_mmu:
+ 	mr	r8, r9			/* Create paddr for TLB */
+ 	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
+ 	mtspr	SPRN_MD_RPN, r8
+-
+-#ifdef CONFIG_PIN_TLB
+-	/* Map two more 8M kernel data pages.
+-	*/
+-	addi	r10, r10, 0x0100
+-	mtspr	SPRN_MD_CTR, r10
+-
+-	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
+-	addis	r8, r8, 0x0080		/* Add 8M */
+-	ori	r8, r8, MI_EVALID	/* Mark it valid */
+-	mtspr	SPRN_MD_EPN, r8
+-	li	r9, MI_PS8MEG		/* Set 8M byte page */
+-	ori	r9, r9, MI_SVALID	/* Make it valid */
+-	mtspr	SPRN_MD_TWC, r9
+-	li	r11, MI_BOOTINIT	/* Create RPN for address 0 */
+-	addis	r11, r11, 0x0080	/* Add 8M */
+-	mtspr	SPRN_MD_RPN, r11
+-
+-	addi	r10, r10, 0x0100
+-	mtspr	SPRN_MD_CTR, r10
+-
+-	addis	r8, r8, 0x0080		/* Add 8M */
+-	mtspr	SPRN_MD_EPN, r8
+-	mtspr	SPRN_MD_TWC, r9
+-	addis	r11, r11, 0x0080	/* Add 8M */
+-	mtspr	SPRN_MD_RPN, r11
+ #endif
+ 
+ 	/* Since the cache is enabled according to the information we
 diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 2207725..996dfaa 100644
+index 996dfaa..0f0a83e 100644
 --- a/arch/powerpc/mm/8xx_mmu.c
 +++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -58,9 +58,7 @@ void __init MMU_init_hw(void)
- 	/* Nothing to do for the time being but keep it similar to other PPC */
+@@ -50,16 +50,32 @@ unsigned long p_block_mapped(phys_addr_t pa)
+ 	return 0;
  }
  
--#define LARGE_PAGE_SIZE_4M	(1<<22)
- #define LARGE_PAGE_SIZE_8M	(1<<23)
--#define LARGE_PAGE_SIZE_64M	(1<<26)
++#define LARGE_PAGE_SIZE_8M	(1<<23)
++
+ /*
+  * MMU_init_hw does the chip-specific initialization of the MMU hardware.
+  */
+ void __init MMU_init_hw(void)
+ {
+-	/* Nothing to do for the time being but keep it similar to other PPC */
++	/* PIN up to the 3 first 8Mb after IMMR in DTLB table */
++#ifdef CONFIG_PIN_TLB
++	unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
++	unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SHARED | _PAGE_DIRTY;
++	int i;
++	unsigned long addr = 0;
++	unsigned long mem = total_lowmem;
++
++	for (i = 29; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
++		mtspr(SPRN_MD_CTR, ctr | (i << 8));
++		mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
++		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
++		mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
++		addr += LARGE_PAGE_SIZE_8M;
++		mem -= LARGE_PAGE_SIZE_8M;
++	}
++#endif
+ }
  
+-#define LARGE_PAGE_SIZE_8M	(1<<23)
+-
  static void mmu_mapin_immr(void)
  {
-@@ -77,52 +75,33 @@ static void mmu_mapin_immr(void)
- #ifndef CONFIG_PIN_TLB
- extern unsigned int DTLBMiss_jmp;
- #endif
-+extern unsigned int DTLBMiss_cmp, FixupDAR_cmp;
- 
--unsigned long __init mmu_mapin_ram(unsigned long top)
-+void mmu_patch_cmp_limit(unsigned int *addr, unsigned long mapped)
- {
--	unsigned long v, s, mapped;
--	phys_addr_t p;
-+	unsigned int instr = *addr;
- 
--	v = KERNELBASE;
--	p = 0;
--	s = top;
-+	instr &= 0xffff0000;
-+	instr |= (unsigned long)__va(mapped) >> 16;
-+	patch_instruction(addr, instr);
-+}
-+
-+unsigned long __init mmu_mapin_ram(unsigned long top)
-+{
-+	unsigned long mapped;
- 
- 	if (__map_without_ltlbs) {
-+		mapped = 0;
- 		mmu_mapin_immr();
- #ifndef CONFIG_PIN_TLB
- 		patch_instruction(&DTLBMiss_jmp, PPC_INST_NOP);
- #endif
--		return 0;
--	}
--
--#ifdef CONFIG_PPC_4K_PAGES
--	while (s >= LARGE_PAGE_SIZE_8M) {
--		pmd_t *pmdp;
--		unsigned long val = p | MD_PS8MEG;
--
--		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
--		*pmdp++ = __pmd(val);
--		*pmdp++ = __pmd(val + LARGE_PAGE_SIZE_4M);
--
--		v += LARGE_PAGE_SIZE_8M;
--		p += LARGE_PAGE_SIZE_8M;
--		s -= LARGE_PAGE_SIZE_8M;
-+	} else {
-+		mapped = top & ~(LARGE_PAGE_SIZE_8M - 1);
- 	}
--#else /* CONFIG_PPC_16K_PAGES */
--	while (s >= LARGE_PAGE_SIZE_64M) {
--		pmd_t *pmdp;
--		unsigned long val = p | MD_PS8MEG;
--
--		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
--		*pmdp++ = __pmd(val);
--
--		v += LARGE_PAGE_SIZE_64M;
--		p += LARGE_PAGE_SIZE_64M;
--		s -= LARGE_PAGE_SIZE_64M;
--	}
--#endif
- 
--	mapped = top - s;
-+	mmu_patch_cmp_limit(&DTLBMiss_cmp, mapped);
-+	mmu_patch_cmp_limit(&FixupDAR_cmp, mapped);
- 
- 	/* If the size of RAM is not an exact power of two, we may not
- 	 * have covered RAM in its entirety with 8 MiB
-@@ -131,7 +110,8 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- 	 * coverage with normal-sized pages (or other reasons) do not
- 	 * attempt to allocate outside the allowed range.
+ 	unsigned long p = PHYS_IMMR_BASE;
+@@ -124,13 +140,8 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
  	 */
--	memblock_set_current_limit(mapped);
-+	if (mapped)
-+		memblock_set_current_limit(mapped);
+ 	BUG_ON(first_memblock_base != 0);
  
- 	return mapped;
+-#ifdef CONFIG_PIN_TLB
+ 	/* 8xx can only access 24MB at the moment */
+ 	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
+-#else
+-	/* 8xx can only access 8MB at the moment */
+-	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
+-#endif
  }
+ 
+ /*
 -- 
 2.1.0
