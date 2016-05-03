@@ -1,24 +1,59 @@
-Return-Path: <alexandre.belloni@free-electrons.com>
-Received: from mail.free-electrons.com (down.free-electrons.com
- [37.187.137.238])
- by lists.ozlabs.org (Postfix) with ESMTP id 3qzXjs5ggTzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 17:24:33 +1000 (AEST)
-Date: Tue, 3 May 2016 09:24:18 +0200
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: geert@linux-m68k.org, deller@gmx.de, benh@kernel.crashing.org,
- mpe@ellerman.id.au, dalias@libc.org, dhowells@redhat.com,
- linux-alpha@vger.kernel.org, a.zummo@towertech.it,
- linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
- linux-arch@vger.kernel.org
-Subject: Re: [PATCH v3 00/16] genrtc removal
-Message-ID: <20160503072418.GA2335@piout.net>
-References: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzXx74M6RzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 17:34:19 +1000 (AEST)
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Tue, 3 May 2016 13:04:13 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 493E0E0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 13:07:08 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u437Y9Z758916994
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 13:04:09 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u437Y4gg030583
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 13:04:08 +0530
+Subject: Re: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
+ remapping is supported
+To: "Tian, Kevin" <kevin.tian@intel.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1461761010-5452-6-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F842512@SHSMSX101.ccr.corp.intel.com>
+ <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
+Cc: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru"
+ <aik@ozlabs.ru>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "joro@8bytes.org"
+ <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
+ <warrier@linux.vnet.ibm.com>,
+ "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>,
+ "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
+ "eric.auger@linaro.org" <eric.auger@linaro.org>,
+ "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>,
+ "David.Laight@ACULAB.COM" <David.Laight@ACULAB.COM>,
+ "alistair@popple.id.au" <alistair@popple.id.au>,
+ "ruscur@russell.cc" <ruscur@russell.cc>
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Message-ID: <e064a6a7-a8dc-f71f-1725-f31e03581b8d@linux.vnet.ibm.com>
+Date: Tue, 3 May 2016 15:34:11 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1461796470-1291527-1-git-send-email-arnd@arndb.de>
+In-Reply-To: <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,94 +63,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On 2016/5/3 14:22, Tian, Kevin wrote:
 
-I see you didn't copy Greg on that series (that may explain his
-confusion on the previous patch), do you expect me to take it
-through the RTC tree? That is fine but I'd like some acks from him.
+>> From: Yongji Xie [mailto:xyjxie@linux.vnet.ibm.com]
+>> Sent: Tuesday, May 03, 2016 2:08 PM
+>>
+>> On 2016/5/3 13:34, Tian, Kevin wrote:
+>>
+>>>> From: Yongji Xie
+>>>> Sent: Wednesday, April 27, 2016 8:43 PM
+>>>>
+>>>> This patch enables mmapping MSI-X tables if hardware supports
+>>>> interrupt remapping which can ensure that a given pci device
+>>>> can only shoot the MSIs assigned for it.
+>>>>
+>>>> With MSI-X table mmapped, we also need to expose the
+>>>> read/write interface which will be used to access MSI-X table.
+>>>>
+>>>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+>>> A curious question here. Does "allow to mmap MSI-X" essentially
+>>> mean that KVM guest can directly read/write physical MSI-X
+>>> structure then?
+>>>
+>>> Thanks
+>>> Kevin
+>>>
+>> Here we just allow to mmap MSI-X table in kernel. It doesn't
+>> mean all KVM guest can directly read/write physical MSI-X
+>> structure. This should be decided by QEMU. For PPC64
+>> platform, we would allow to passthrough the MSI-X table
+>> because we know guest kernel would not write physical
+>> MSI-X structure when enabling MSI.
+>>
+> A bit confused here. If guest kernel doesn't need to write
+> physical MSI-X structure, what's the point of passing through
+> the table then?
 
-On 28/04/2016 at 00:34:14 +0200, Arnd Bergmann wrote :
-> I ended up stuffing the two patch series into one, as they are now
-> more dependent on one another. This now thoroughly removes the
-> genrtc driver including the asm/rtc.h headers it uses. For all
-> architectures that still have a meaningful asm/rtc.h, this goes
-> through two stages:
-> 
-> 1) make the rtc-generic implementation independent of asm/rtc.h
-> 2) remove the asm/rtc.h header and disallow the gen_rtc driver
-> 
-> As the last step, the driver itself gets removed.
-> 
-> 	Arnd
-> 
->  arch/alpha/include/asm/rtc.h          |   1 -
->  arch/alpha/kernel/core_marvel.c       |   1 -
->  arch/alpha/kernel/rtc.c               |   6 +-
->  arch/frv/include/asm/mc146818rtc.h    |  16 -
->  arch/h8300/include/asm/mc146818rtc.h  |   9 -
->  arch/ia64/include/asm/mc146818rtc.h   |  10 -
->  arch/m68k/amiga/config.c              |   1 -
->  arch/m68k/apollo/config.c             |   1 -
->  arch/m68k/bvme6000/config.c           |   1 -
->  arch/m68k/hp300/config.c              |   2 +-
->  arch/m68k/include/asm/rtc.h           |  79 -----
->  arch/m68k/kernel/time.c               |  49 +++-
->  arch/m68k/mac/config.c                |   3 +-
->  arch/m68k/mac/misc.c                  |   1 -
->  arch/m68k/mvme147/config.c            |   1 -
->  arch/m68k/mvme16x/config.c            |   1 -
->  arch/m68k/q40/config.c                |   2 +-
->  arch/m68k/sun3/config.c               |   1 -
->  arch/m68k/sun3/intersil.c             |   2 +-
->  arch/m68k/sun3x/time.c                |   2 +-
->  arch/mips/sni/time.c                  |   1 -
->  arch/mn10300/include/asm/rtc.h        |   2 -
->  arch/mn10300/kernel/rtc.c             |   2 +-
->  arch/parisc/include/asm/mc146818rtc.h |   9 -
->  arch/parisc/include/asm/rtc.h         | 131 ---------
->  arch/parisc/kernel/time.c             |  36 ++-
->  arch/powerpc/include/asm/rtc.h        |  78 -----
->  arch/powerpc/kernel/time.c            |  29 +-
->  arch/powerpc/platforms/Kconfig        |  11 +
->  arch/powerpc/platforms/ps3/time.c     |   2 +-
->  arch/sh/include/asm/mc146818rtc.h     |   7 -
->  arch/sh/include/asm/rtc.h             |  11 -
->  arch/sh/kernel/time.c                 |  32 +-
->  arch/x86/include/asm/mc146818rtc.h    |   1 -
->  arch/x86/include/asm/rtc.h            |   1 -
->  arch/x86/kernel/hpet.c                |   3 +-
->  arch/x86/kernel/rtc.c                 |   3 +-
->  arch/x86/platform/efi/efi.c           |   1 -
->  drivers/acpi/acpi_cmos_rtc.c          |   2 +-
->  drivers/base/power/trace.c            |   6 +-
->  drivers/char/Kconfig                  |  26 --
->  drivers/char/Makefile                 |   1 -
->  drivers/char/genrtc.c                 | 539 ----------------------------------
->  drivers/rtc/rtc-cmos.c                |  12 +-
->  drivers/rtc/rtc-generic.c             |  36 +--
->  drivers/rtc/rtc-mrst.c                |   2 +-
->  include/asm-generic/rtc.h             | 247 ----------------
->  include/linux/mc146818rtc.h           | 194 ++++++++++++
->  48 files changed, 358 insertions(+), 1256 deletions(-)
-> 
->  [PATCH v3 01/16] rtc: cmos: remove empty asm/mc146818rtc.h files
->  [PATCH v3 02/16] rtc: cmos: move mc146818rtc code out of
->  [PATCH v3 03/16] char/genrtc: x86: remove remnants of asm/rtc.h
->  [PATCH v3 04/16] rtc: sh: provide rtc_class_ops directly
->  [PATCH v3 05/16] char/genrtc: remove alpha support
->  [PATCH v3 06/16] char/genrtc: remove mn10300 support
->  [PATCH v3 07/16] rtc: parisc: provide rtc_class_ops directly
->  [PATCH v3 08/16] char/genrtc: remove parisc support
->  [PATCH v3 09/16] rtc: m68k: provide rtc_class_ops directly
->  [PATCH v3 10/16] rtc: m68k: provide ioctl for q40
->  [PATCH v3 11/16] char/genrtc: remove m68k support
->  [PATCH v3 12/16] rtc: powerpc: provide rtc_class_ops directly
->  [PATCH v3 13/16] char/genrtc: remove powerpc support
->  [PATCH v3 14/16] rtc: generic: remove get_rtc_time/set_rtc_time
->  [PATCH v3 15/16] char/genrtc: remove asm-generic/rtc.h from mips
->  [PATCH v3 16/16] char/genrtc: remove the rest of the driver
+We want to allow the MSI-X table because there may be
+some critical registers in the same page as the MSI-X table.
+We have to handle the mmio access to these register in QEMU
+rather than in guest if mmapping MSI-X table is disallowed.
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+> I think the key whether MSI-X table can be passed through
+> is related to where hypervisor control is deployed. At least
+> for x86:
+>
+> - When irq remapping is not enabled, host/hypervisor needs
+> to control physical interrupt message including vector/dest/etc.
+> directly in MSI-X structure, so we cannot allow a guest to
+> access it;
+>
+> - when irq remapping is enabled, host/hypervisor can control
+> interrupt routing in irq remapping table. However MSI-X
+> also needs to be configured as remappable format. In this
+> manner we also cannot allow direct access from guest.
+>
+> The only sane case to pass through MSI-X structure, is a
+> mechanism similar to irq remapping but w/o need to change
+> original MSI-X format so direct access from guest side is
+> safe. Is it the case in PPC64?
+>
+> Thanks
+> Kevin
+
+Acutually, we are not aimed at accessing MSI-X table from
+guest. So I think it's safe to passthrough MSI-X table if we
+can make sure guest kernel would not touch MSI-X table in
+normal code path such as para-virtualized guest kernel on PPC64.
+
+Thanks,
+Yongji
