@@ -1,30 +1,36 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzb0T2ysVzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:07:20 +1000 (AEST)
-Date: Tue, 3 May 2016 11:07:16 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: [RFC PATCH v2 10/18] livepatch/powerpc: add TIF_PATCH_PENDING
- thread flag
-Message-ID: <20160503090716.GN2749@pathway.suse.cz>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <948131afc5d1e0fab00e78287a665d7b383cf884.1461875890.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzb991MWwzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:14:53 +1000 (AEST)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 3 May 2016 19:14:51 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1C4572BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:14:49 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u439Eft132112862
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 19:14:49 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u439EFFc020330
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 19:14:16 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Valentin Rothberg <valentinrothberg@gmail.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Valentin Rothberg <valentinrothberg@gmail.com>
+Subject: Re: [PATCH] powerpc/mm/radix: fix STD_MMU_64 typo
+In-Reply-To: <1462258767-83025-1-git-send-email-valentinrothberg@gmail.com>
+References: <1462258767-83025-1-git-send-email-valentinrothberg@gmail.com>
+Date: Tue, 03 May 2016 14:43:48 +0530
+Message-ID: <87zis7y04z.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <948131afc5d1e0fab00e78287a665d7b383cf884.1461875890.git.jpoimboe@redhat.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,81 +40,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-04-28 15:44:41, Josh Poimboeuf wrote:
-> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
-> per-task consistency model for powerpc.  The bit getting set indicates
-> the thread has a pending patch which needs to be applied when the thread
-> exits the kernel.
-> 
-> The bit is included in the _TIF_USER_WORK_MASK macro so that
-> do_notify_resume() and klp_patch_task() get called when the bit is set.
-> 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+Valentin Rothberg <valentinrothberg@gmail.com> writes:
+
+> s/MMU_STD_64/STD_MMU_64/
+>
+> Fixes: 11ffc1cfa4c2 ("powerpc/mm/radix: Use STD_MMU_64 to properly
+>                       isolate hash related code")
+> Signed-off-by: Valentin Rothberg <valentinrothberg@gmail.com>
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
 > ---
->  arch/powerpc/include/asm/thread_info.h | 4 +++-
->  arch/powerpc/kernel/signal.c           | 4 ++++
->  2 files changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-> index 8febc3f..df262ca 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -88,6 +88,7 @@ static inline struct thread_info *current_thread_info(void)
->  					   TIF_NEED_RESCHED */
->  #define TIF_32BIT		4	/* 32 bit binary */
->  #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
-> +#define TIF_PATCH_PENDING	6	/* pending live patching update */
->  #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
->  #define TIF_SINGLESTEP		8	/* singlestepping active */
->  #define TIF_NOHZ		9	/* in adaptive nohz mode */
-> @@ -111,6 +112,7 @@ static inline struct thread_info *current_thread_info(void)
->  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
->  #define _TIF_32BIT		(1<<TIF_32BIT)
->  #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
-> +#define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
->  #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
->  #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
->  #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
-> @@ -127,7 +129,7 @@ static inline struct thread_info *current_thread_info(void)
->  
->  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->  				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
-> -				 _TIF_RESTORE_TM)
-> +				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
->  #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
->  
->  /* Bits in local_flags */
-> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-> index cb64d6f..844497b 100644
-> --- a/arch/powerpc/kernel/signal.c
-> +++ b/arch/powerpc/kernel/signal.c
-> @@ -14,6 +14,7 @@
->  #include <linux/uprobes.h>
->  #include <linux/key.h>
->  #include <linux/context_tracking.h>
-> +#include <linux/livepatch.h>
->  #include <asm/hw_breakpoint.h>
->  #include <asm/uaccess.h>
->  #include <asm/unistd.h>
-> @@ -159,6 +160,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
->  		tracehook_notify_resume(regs);
->  	}
->  
-> +	if (thread_info_flags & _TIF_PATCH_PENDING)
-> +		klp_patch_task(current);
-> +
-
-JFYI, if we later add the fake signal to speed up migration of
-sleeping task, we would need to move this up before calling
-do_signal(). It would help to avoid cycling here twice.
-Mirek surely knows more details about it.
-
-Best Regards,
-Petr
-
->  	user_enter();
->  }
->  
+>
+> I only compile tested this change.  The issue has been detected with
+> scripts/checkkconfigsymbols.py
+>
+>  arch/powerpc/kernel/mce_power.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+> index bec70338672e..7353991c4ece 100644
+> --- a/arch/powerpc/kernel/mce_power.c
+> +++ b/arch/powerpc/kernel/mce_power.c
+> @@ -80,7 +80,7 @@ void __flush_tlb_power9(unsigned int action)
+>
+>
+>  /* flush SLBs and reload */
+> -#ifdef CONFIG_PPC_MMU_STD_64
+> +#ifdef CONFIG_PPC_STD_MMU_64
+>  static void flush_and_reload_slb(void)
+>  {
+>  	struct slb_shadow *slb;
+> @@ -125,7 +125,7 @@ static long mce_handle_derror(uint64_t dsisr, uint64_t slb_error_bits)
+>  	 * reset the error bits whenever we handle them so that at the end
+>  	 * we can check whether we handled all of them or not.
+>  	 * */
+> -#ifdef CONFIG_PPC_MMU_STD_64
+> +#ifdef CONFIG_PPC_STD_MMU_64
+>  	if (dsisr & slb_error_bits) {
+>  		flush_and_reload_slb();
+>  		/* reset error bits */
+> @@ -157,7 +157,7 @@ static long mce_handle_common_ierror(uint64_t srr1)
+>  	switch (P7_SRR1_MC_IFETCH(srr1)) {
+>  	case 0:
+>  		break;
+> -#ifdef CONFIG_PPC_MMU_STD_64
+> +#ifdef CONFIG_PPC_STD_MMU_64
+>  	case P7_SRR1_MC_IFETCH_SLB_PARITY:
+>  	case P7_SRR1_MC_IFETCH_SLB_MULTIHIT:
+>  		/* flush and reload SLBs for SLB errors. */
+> @@ -184,7 +184,7 @@ static long mce_handle_ierror_p7(uint64_t srr1)
+>
+>  	handled = mce_handle_common_ierror(srr1);
+>
+> -#ifdef CONFIG_PPC_MMU_STD_64
+> +#ifdef CONFIG_PPC_STD_MMU_64
+>  	if (P7_SRR1_MC_IFETCH(srr1) == P7_SRR1_MC_IFETCH_SLB_BOTH) {
+>  		flush_and_reload_slb();
+>  		handled = 1;
+> @@ -332,7 +332,7 @@ static long mce_handle_ierror_p8(uint64_t srr1)
+>
+>  	handled = mce_handle_common_ierror(srr1);
+>
+> -#ifdef CONFIG_PPC_MMU_STD_64
+> +#ifdef CONFIG_PPC_STD_MMU_64
+>  	if (P7_SRR1_MC_IFETCH(srr1) == P8_SRR1_MC_IFETCH_ERAT_MULTIHIT) {
+>  		flush_and_reload_slb();
+>  		handled = 1;
 > -- 
-> 2.4.11
-> 
+> 2.7.4
