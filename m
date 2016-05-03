@@ -1,38 +1,30 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzZ5459M6zDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:26:16 +1000 (AEST)
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 3 May 2016 18:26:15 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 185742CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:26:13 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u438Q5c164684170
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:26:13 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u438Pexi030587
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:25:40 +1000
-Message-ID: <57286072.90209@linux.vnet.ibm.com>
-Date: Tue, 03 May 2016 13:55:22 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzb0T2ysVzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 19:07:20 +1000 (AEST)
+Date: Tue, 3 May 2016 11:07:16 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 10/18] livepatch/powerpc: add TIF_PATCH_PENDING
+ thread flag
+Message-ID: <20160503090716.GN2749@pathway.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <948131afc5d1e0fab00e78287a665d7b383cf884.1461875890.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-CC: mikey@neuling.org, oohall@gmail.com, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [RFC 1/7] powerpc/mm: Make vmemmap_populate accommodate
- ZONE_DEVICE memory
-References: <1462256966-19321-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1462256966-19321-2-git-send-email-khandual@linux.vnet.ibm.com>
- <57285B70.3040905@gmail.com>
-In-Reply-To: <57285B70.3040905@gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <948131afc5d1e0fab00e78287a665d7b383cf884.1461875890.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +34,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/03/2016 01:34 PM, Balbir Singh wrote:
+On Thu 2016-04-28 15:44:41, Josh Poimboeuf wrote:
+> Add the TIF_PATCH_PENDING thread flag to enable the new livepatch
+> per-task consistency model for powerpc.  The bit getting set indicates
+> the thread has a pending patch which needs to be applied when the thread
+> exits the kernel.
 > 
+> The bit is included in the _TIF_USER_WORK_MASK macro so that
+> do_notify_resume() and klp_patch_task() get called when the bit is set.
 > 
-> On 03/05/16 16:29, Anshuman Khandual wrote:
->> Change the vmemmap_populate function to detect device memory through
->> to_vmemmap_altmap and then call generic the __vmmemap_alloc_block_buf
->> function instead of vmemmap_alloc_block as the earlier can allocate
->> physical memory from the device range instead of the system RAM.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/init_64.c | 6 +++++-
->>  1 file changed, 5 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
->> index ba65566..db73708 100644
->> --- a/arch/powerpc/mm/init_64.c
->> +++ b/arch/powerpc/mm/init_64.c
->> @@ -42,6 +42,7 @@
->>  #include <linux/memblock.h>
->>  #include <linux/hugetlb.h>
->>  #include <linux/slab.h>
->> +#include <linux/memremap.h>
->>  
->>  #include <asm/pgalloc.h>
->>  #include <asm/page.h>
->> @@ -312,6 +313,7 @@ static __meminit void vmemmap_list_populate(unsigned long phys,
->>  int __meminit vmemmap_populate(unsigned long start, unsigned long end, int node)
->>  {
->>  	unsigned long page_size = 1 << mmu_psize_defs[mmu_vmemmap_psize].shift;
->> +	unsigned long orig = start;
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+>  arch/powerpc/include/asm/thread_info.h | 4 +++-
+>  arch/powerpc/kernel/signal.c           | 4 ++++
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 > 
-> I would much rather do struct vmem_altmap *altmap = to_vmem_altmap(start);
+> diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+> index 8febc3f..df262ca 100644
+> --- a/arch/powerpc/include/asm/thread_info.h
+> +++ b/arch/powerpc/include/asm/thread_info.h
+> @@ -88,6 +88,7 @@ static inline struct thread_info *current_thread_info(void)
+>  					   TIF_NEED_RESCHED */
+>  #define TIF_32BIT		4	/* 32 bit binary */
+>  #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
+> +#define TIF_PATCH_PENDING	6	/* pending live patching update */
+>  #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+>  #define TIF_SINGLESTEP		8	/* singlestepping active */
+>  #define TIF_NOHZ		9	/* in adaptive nohz mode */
+> @@ -111,6 +112,7 @@ static inline struct thread_info *current_thread_info(void)
+>  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+>  #define _TIF_32BIT		(1<<TIF_32BIT)
+>  #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
+> +#define _TIF_PATCH_PENDING	(1<<TIF_PATCH_PENDING)
+>  #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+>  #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+>  #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+> @@ -127,7 +129,7 @@ static inline struct thread_info *current_thread_info(void)
+>  
+>  #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+>  				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
+> -				 _TIF_RESTORE_TM)
+> +				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
+>  #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
+>  
+>  /* Bits in local_flags */
+> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+> index cb64d6f..844497b 100644
+> --- a/arch/powerpc/kernel/signal.c
+> +++ b/arch/powerpc/kernel/signal.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/uprobes.h>
+>  #include <linux/key.h>
+>  #include <linux/context_tracking.h>
+> +#include <linux/livepatch.h>
+>  #include <asm/hw_breakpoint.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+> @@ -159,6 +160,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+>  		tracehook_notify_resume(regs);
+>  	}
+>  
+> +	if (thread_info_flags & _TIF_PATCH_PENDING)
+> +		klp_patch_task(current);
+> +
 
-Sure, makes sense.
+JFYI, if we later add the fake signal to speed up migration of
+sleeping task, we would need to move this up before calling
+do_signal(). It would help to avoid cycling here twice.
+Mirek surely knows more details about it.
+
+Best Regards,
+Petr
+
+>  	user_enter();
+>  }
+>  
+> -- 
+> 2.4.11
+> 
