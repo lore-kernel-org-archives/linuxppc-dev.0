@@ -1,34 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhgm65f3zDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:23:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzhgn612RzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 23:23:17 +1000 (AEST)
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 3 May 2016 18:53:14 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 89359125805C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:55:15 +0530 (IST)
-Received: from d28av08.in.ibm.com (d28av08.in.ibm.com [9.184.220.148])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u43DNCVq24313886
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:12 +0530
-Received: from d28av08.in.ibm.com (localhost [127.0.0.1])
- by d28av08.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u43DNDAF031665
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:16 +0530
+ Tue, 3 May 2016 18:53:15 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 041C8E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 18:56:10 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u43DNFgE48103542
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:15 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u43DN82j023438
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 18:53:10 +0530
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  bhelgaas@google.com, robherring2@gmail.com, dja@axtens.net,
  alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 08/22] powerpc/powernv: Extend PCI bridge resources
-Date: Tue,  3 May 2016 23:22:39 +1000
-Message-Id: <1462281773-26438-9-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v9 05/22] powerpc/powernv: Allocate PE# in reverse order
+Date: Tue,  3 May 2016 23:22:36 +1000
+Message-Id: <1462281773-26438-6-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,88 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PCI slots are associated with root port or downstream ports
-of the PCIe switch connected to root port. When adapter is hot
-added to the PCI slot, it usually requests more IO or memory
-resource from the directly connected parent bridge (port) and
-update the bridge's windows accordingly. The resource windows
-of upstream bridges can't be updated automatically. It possibly
-leads to unbalanced resource across the bridges: The window of
-downstream bridge is overruning that of upstream bridge. The
-IO or MMIO path won't work.
+PE number for one particular PE can be allocated dynamically or
+reserved according to the consumed M64 (64-bits prefetchable)
+segments of the PE. The M64 segment can't be remapped to arbitrary
+PE, meaning the PE number is determined according to the index
+of the consumed M64 segment. As below figure shows, M64 resource
+grows from low to high end, meaning the PE (number) reserved
+according to M64 segment grows from low to high end as well,
+so does the dynamically allocated PE number. It will lead to
+conflict: PE number (M64 segment) reserved by dynamic allocation
+is required by hot added PCI adapter at later point. It fails
+the PCI hotplug because of the PE number can't be reserved
+based on the index of the consumed M64 segment.
 
-This resolves the above issue by extending bridge windows of
-root port and upstream port of the PCIe switch connected to
-the root port to PHB's windows.
+  +---+---+---+---+---+--------------------------------+-----+
+  | 0 | 1 | 2 | 3 | 4 |      .......                   | 255 |
+  +---+---+---+---+---+--------------------------------+-----+
+
+  PE number for dynamic allocation          ----------------->
+  PE number reserved for M64 segment        ----------------->
+
+To resolve above conflicts, this forces the PE number to be
+allocated dynamically in reverse order. With this patch applied,
+the PE numbers are reserved in ascending order, but allocated
+dynamically in reverse order.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 46 +++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index de3f292..b518364 100644
+index cf96cb5..679e279 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3146,6 +3146,49 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
- 	return phb->ioda.io_segsize;
+@@ -148,16 +148,14 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
+ 
+ static struct pnv_ioda_pe *pnv_ioda_alloc_pe(struct pnv_phb *phb)
+ {
+-	unsigned long pe;
++	unsigned long pe = phb->ioda.total_pe_num - 1;
+ 
+-	do {
+-		pe = find_next_zero_bit(phb->ioda.pe_alloc,
+-					phb->ioda.total_pe_num, 0);
+-		if (pe >= phb->ioda.total_pe_num)
+-			return NULL;
+-	} while(test_and_set_bit(pe, phb->ioda.pe_alloc));
++	for (pe = phb->ioda.total_pe_num - 1; pe >= 0; pe--) {
++		if (!test_and_set_bit(pe, phb->ioda.pe_alloc))
++			return pnv_ioda_init_pe(phb, pe);
++	}
+ 
+-	return pnv_ioda_init_pe(phb, pe);
++	return NULL;
  }
  
-+/*
-+ * We are updating root port or the upstream port of the
-+ * bridge behind the root port with PHB's windows in order
-+ * to accommodate the changes on required resources during
-+ * PCI (slot) hotplug, which is connected to either root
-+ * port or the downstream ports of PCIe switch behind the
-+ * root port.
-+ */
-+static void pnv_pci_fixup_bridge_resources(struct pci_bus *bus,
-+					   unsigned long type)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct pci_dev *bridge = bus->self;
-+	struct resource *r, *w;
-+	int i;
-+
-+	/* Check if we need apply fixup to the bridge's windows */
-+	if (!pci_is_root_bus(bridge->bus) &&
-+	    !pci_is_root_bus(bridge->bus->self->bus))
-+		return;
-+
-+	/* Fixup the resources */
-+	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
-+		r = &bridge->resource[PCI_BRIDGE_RESOURCES + i];
-+		if (!r->flags || !r->parent)
-+			continue;
-+
-+		w = NULL;
-+		if (r->flags & type & IORESOURCE_IO)
-+			w = &hose->io_resource;
-+		else if (pnv_pci_is_mem_pref_64(r->flags) &&
-+			 (type & IORESOURCE_PREFETCH) &&
-+			 phb->ioda.m64_segsize)
-+			w = &hose->mem_resources[1];
-+		else if (r->flags & type & IORESOURCE_MEM)
-+			w = &hose->mem_resources[0];
-+
-+		r->start = w->start;
-+		r->end = w->end;
-+	}
-+}
-+
- static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
- {
- 	struct pci_controller *hose = pci_bus_to_host(bus);
-@@ -3154,6 +3197,9 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
- 	struct pnv_ioda_pe *pe;
- 	bool all = (pci_pcie_type(bridge) == PCI_EXP_TYPE_PCI_BRIDGE);
- 
-+	/* Extend bridge's windows if necessary */
-+	pnv_pci_fixup_bridge_resources(bus, type);
-+
- 	/* The PE for root bus should be realized before any one else */
- 	if (!phb->ioda.root_pe_populated) {
- 		pe = pnv_ioda_setup_bus_PE(phb->hose->bus, false);
+ static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe)
 -- 
 2.1.0
