@@ -1,33 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzVTM6pKZzDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:43:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzVTN2xHdzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:43:36 +1000 (AEST)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 3 May 2016 15:43:35 +1000
+ Tue, 3 May 2016 15:43:36 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 69AA62CE8056
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 36FA23578053
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 May 2016 15:43:33 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u435hP9v6488360
+ u435hPDa328044
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:43:33 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u435h046007911
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:43:01 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u435h0gj028330
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 May 2016 15:43:00 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
  alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v9 26/26] powerpc/powernv: Exclude root bus in
- pnv_pci_reset_secondary_bus()
-Date: Tue,  3 May 2016 15:41:45 +1000
-Message-Id: <1462254105-24128-27-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v9 20/26] powerpc/pci: Move pci_find_bus_by_node() around
+Date: Tue,  3 May 2016 15:41:39 +1000
+Message-Id: <1462254105-24128-21-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,45 +38,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function pnv_pci_reset_secondary_bus() is called like below.
-It's impossible for call the function on root bus. So it's safe
-to remove the root bus case in the function. No functional changes
+This moves pci_find_bus_by_node() from arch/powerpc/platforms/
+pseries/pci_dlpar.c to arch/powerpc/kernel/pci-hotplug.c so that
+the function can be used by pSeries and PowerNV platform at the
+same time. Also, below cleanup applied. No functional changes
 introduced.
 
-   pci_parent_bus_reset() / pci_bus_reset() / pci_try_reset_bus()
-   pci_reset_bridge_secondary_bus()
-   pcibios_reset_secondary_bus()
-   pnv_pci_reset_secondary_bus()
+   * Remove variable "busdn" in find_bus_among_children()
+   * Use PCI_DN() to convert device node to pci_dn
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/pci-hotplug.c          | 29 ++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/pci_dlpar.c | 31 ------------------------------
+ 2 files changed, 29 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 9226df1..593b8dc 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -868,16 +868,8 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index 2d108e5..46587a1 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -21,6 +21,35 @@
+ #include <asm/firmware.h>
+ #include <asm/eeh.h>
  
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- {
--	struct pci_controller *hose;
++static struct pci_bus *find_bus_among_children(struct pci_bus *bus,
++					       struct device_node *dn)
++{
++	struct pci_bus *child = NULL;
++	struct pci_bus *tmp;
++
++	if (pci_bus_to_OF_node(bus) == dn)
++		return bus;
++
++	list_for_each_entry(tmp, &bus->children, node) {
++		child = find_bus_among_children(tmp, dn);
++		if (child)
++			break;
++	}
++
++	return child;
++}
++
++struct pci_bus *pci_find_bus_by_node(struct device_node *dn)
++{
++	struct pci_dn *pdn = PCI_DN(dn);
++
++	if (!pdn  || !pdn->phb || !pdn->phb->bus)
++		return NULL;
++
++	return find_bus_among_children(pdn->phb->bus, dn);
++}
++EXPORT_SYMBOL_GPL(pci_find_bus_by_node);
++
+ /**
+  * pcibios_release_device - release PCI device
+  * @dev: PCI device
+diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+index aee22b4..906dbaa 100644
+--- a/arch/powerpc/platforms/pseries/pci_dlpar.c
++++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+@@ -34,37 +34,6 @@
+ 
+ #include "pseries.h"
+ 
+-static struct pci_bus *
+-find_bus_among_children(struct pci_bus *bus,
+-                        struct device_node *dn)
+-{
+-	struct pci_bus *child = NULL;
+-	struct pci_bus *tmp;
+-	struct device_node *busdn;
 -
--	if (pci_is_root_bus(dev->bus)) {
--		hose = pci_bus_to_host(dev->bus);
--		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
--		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
--	} else {
--		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
--		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
--	}
-+	pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
-+	pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
- }
- 
- static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
+-	busdn = pci_bus_to_OF_node(bus);
+-	if (busdn == dn)
+-		return bus;
+-
+-	list_for_each_entry(tmp, &bus->children, node) {
+-		child = find_bus_among_children(tmp, dn);
+-		if (child)
+-			break;
+-	};
+-	return child;
+-}
+-
+-struct pci_bus *pci_find_bus_by_node(struct device_node *dn)
+-{
+-	struct pci_dn *pdn = dn->data;
+-
+-	if (!pdn  || !pdn->phb || !pdn->phb->bus)
+-		return NULL;
+-
+-	return find_bus_among_children(pdn->phb->bus, dn);
+-}
+-EXPORT_SYMBOL_GPL(pci_find_bus_by_node);
+-
+ struct pci_controller *init_phb_dynamic(struct device_node *dn)
+ {
+ 	struct pci_controller *phb;
 -- 
 2.1.0
