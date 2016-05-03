@@ -2,19 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3qzks24JGHzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 01:01:26 +1000 (AEST)
-Message-Id: <46730adc1edc846225c8314dce12b7c2ea8e4328.1462052178.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3qzks44D9GzDqCM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 01:01:28 +1000 (AEST)
+Message-Id: <0e58b5148028c0eeef7a76fdb8338d7d5e30f06a.1462052178.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1462052178.git.christophe.leroy@c-s.fr>
 References: <cover.1462052178.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/7] powerpc/8xx: CONFIG_PIN_TLB unneeded for
- CONFIG_PPC_EARLY_DEBUG_CPM
+Subject: [PATCH 4/7] powerpc/8xx: unpin all TLBs before flushing
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue,  3 May 2016 17:01:22 +0200 (CEST)
+Date: Tue,  3 May 2016 17:01:24 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IMMR is now mapped by a fixed 512k page managed by the TLB miss
-handler so it is not anymore necessary to PIN TLBs
+Bootloader may have pinned some TLB entries so the kernel must
+unpin them before flushing TLBs with tlbia otherwise pinned TLB
+entries won't get flushed
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig.debug | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/kernel/head_8xx.S | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index d3fcf7e..5eccbb5 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -212,7 +212,6 @@ config PPC_EARLY_DEBUG_40x
- config PPC_EARLY_DEBUG_CPM
- 	bool "Early serial debugging for Freescale CPM-based serial ports"
- 	depends on SERIAL_CPM
--	select PIN_TLB if PPC_8xx
- 	help
- 	  Select this to enable early debugging for Freescale chips
- 	  using a CPM-based serial port.  This assumes that the bootwrapper
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 44f4edb..d9a1656 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -797,6 +797,14 @@ start_here:
+  * these mappings is mapped by page tables.
+  */
+ initial_mmu:
++	li	r8, 0
++	mtspr	SPRN_MI_CTR, r8		/* remove PINNED ITLB entries */
++	lis	r10, MD_RESETVAL@h
++#ifndef CONFIG_8xx_COPYBACK
++	oris	r10, r10, MD_WTDEF@h
++#endif
++	mtspr	SPRN_MD_CTR, r10	/* remove PINNED DTLB entries */
++
+ 	tlbia			/* Invalidate all TLB entries */
+ /* Always pin the first 8 MB ITLB to prevent ITLB
+    misses while mucking around with SRR0/SRR1 in asm
+@@ -807,16 +815,10 @@ initial_mmu:
+ 	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
+ 
+ #ifdef CONFIG_PIN_TLB
+-	lis	r10, (MD_RSV4I | MD_RESETVAL)@h
++	oris	r10, r10, MD_RSV4I@h
+ 	ori	r10, r10, 0x1c00
+-	mr	r8, r10
+-#else
+-	lis	r10, MD_RESETVAL@h
+-#endif
+-#ifndef CONFIG_8xx_COPYBACK
+-	oris	r10, r10, MD_WTDEF@h
+-#endif
+ 	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
++#endif
+ 
+ 	/* Now map the lower 8 Meg into the TLBs.  For this quick hack,
+ 	 * we can load the instruction and data TLB registers with the
 -- 
 2.1.0
