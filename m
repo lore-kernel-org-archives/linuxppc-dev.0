@@ -1,30 +1,39 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0Hg63hPfzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 22:39:46 +1000 (AEST)
-Date: Wed, 4 May 2016 14:39:40 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a per-task
- consistency model
-Message-ID: <20160504123940.GR2749@pathway.suse.cz>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0JZv4XYnzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 23:21:11 +1000 (AEST)
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 4 May 2016 23:21:10 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 54AF62CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 23:21:05 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u44DKvQ464815302
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 23:21:05 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u44DKWqD021929
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 23:20:32 +1000
+Date: Wed, 4 May 2016 23:20:01 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, aik@ozlabs.ru, alistair@popple.id.au
+Subject: Re: [PATCH v9 16/26] powerpc/powernv/ioda1: Improve DMA32 segment
+ track
+Message-ID: <20160504132001.GA29136@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1462254105-24128-17-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+In-Reply-To: <1462254105-24128-17-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,346 +43,277 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
-> Change livepatch to use a basic per-task consistency model.  This is the
-> foundation which will eventually enable us to patch those ~10% of
-> security patches which change function or data semantics.  This is the
-> biggest remaining piece needed to make livepatch more generally useful.
+On Tue, May 03, 2016 at 03:41:35PM +1000, Gavin Shan wrote:
+>In current implementation, the DMA32 segments required by one specific
+>PE isn't calculated with the information hold in the PE independently.
+>It conflicts with the PCI hotplug design: PE centralized, meaning the
+>PE's DMA32 segments should be calculated from the information hold in
+>the PE independently.
+>
+>This introduces an array (@dma32_segmap) for every PHB to track the
+>DMA32 segmeng usage. Besides, this moves the logic calculating PE's
+>consumed DMA32 segments to pnv_pci_ioda1_setup_dma_pe() so that PE's
+>DMA32 segments are calculated/allocated from the information hold in
+>the PE (DMA32 weight). Also the logic is improved: we try to allocate
+>as much DMA32 segments as we can. It's acceptable that number of DMA32
+>segments less than the expected number are allocated.
+>
+>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-I spent a lot of time with checking the memory barriers. It seems that
-they are basically correct.  Let me use my own words to show how
-I understand it. I hope that it will help others with review.
+This can cause overlapped DMA32 segments to different PEs in some cases.
+I already had the fix and hold for posting after discussion with Michael
+on how to handle the series tomorrow.
 
-> diff --git a/kernel/livepatch/patch.c b/kernel/livepatch/patch.c
-> index 782fbb5..b3b8639 100644
-> --- a/kernel/livepatch/patch.c
-> +++ b/kernel/livepatch/patch.c
-> @@ -29,6 +29,7 @@
->  #include <linux/bug.h>
->  #include <linux/printk.h>
->  #include "patch.h"
-> +#include "transition.h"
->  
->  static LIST_HEAD(klp_ops);
->  
-> @@ -58,11 +59,42 @@ static void notrace klp_ftrace_handler(unsigned long ip,
->  	ops = container_of(fops, struct klp_ops, fops);
->  
->  	rcu_read_lock();
-> +
->  	func = list_first_or_null_rcu(&ops->func_stack, struct klp_func,
->  				      stack_node);
-> -	if (WARN_ON_ONCE(!func))
-> +
-> +	if (!func)
->  		goto unlock;
->  
-> +	/*
-> +	 * See the comment for the 2nd smp_wmb() in klp_init_transition() for
-> +	 * an explanation of why this read barrier is needed.
-> +	 */
-> +	smp_rmb();
+Thanks,
+Gavin
 
-I would prefer to be more explicit, e.g.
-
-	/*
-	 * Read the right func->transition when the struct appeared on top of
-	 * func_stack.  See klp_init_transition and klp_patch_func().
-	 */
-
-Note that this barrier is not really needed when the patch is being
-disabled, see below.
-
-> +
-> +	if (unlikely(func->transition)) {
-> +
-> +		/*
-> +		 * See the comment for the 1st smp_wmb() in
-> +		 * klp_init_transition() for an explanation of why this read
-> +		 * barrier is needed.
-> +		 */
-> +		smp_rmb();
-
-Similar here:
-
-		/*
-		 * Read the right initial state when func->transition was
-		 * enabled, see klp_init_transition().
-		 *
-		 * Note that the task must never be migrated to the target
-		 * state when being inside this ftrace handler.
-		 */
-
-We might want to move the second paragraph on top of the function.
-It is a basic and important fact. It actually explains why the first
-read barrier is not needed when the patch is being disabled.
-
-There are some more details below. I started to check and comment the
-barriers from klp_init_transition().
-
-
-> +		if (current->patch_state == KLP_UNPATCHED) {
-> +			/*
-> +			 * Use the previously patched version of the function.
-> +			 * If no previous patches exist, use the original
-> +			 * function.
-> +			 */
-> +			func = list_entry_rcu(func->stack_node.next,
-> +					      struct klp_func, stack_node);
-> +
-> +			if (&func->stack_node == &ops->func_stack)
-> +				goto unlock;
-> +		}
-> +	}
-> +
->  	klp_arch_set_pc(regs, (unsigned long)func->new_func);
->  unlock:
->  	rcu_read_unlock();
-> diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
-> new file mode 100644
-> index 0000000..92819bb
-> --- /dev/null
-> +++ b/kernel/livepatch/transition.c
-> +/*
-> + * klp_patch_task() - change the patched state of a task
-> + * @task:	The task to change
-> + *
-> + * Switches the patched state of the task to the set of functions in the target
-> + * patch state.
-> + */
-> +void klp_patch_task(struct task_struct *task)
-> +{
-> +	clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
-> +
-> +	/*
-> +	 * The corresponding write barriers are in klp_init_transition() and
-> +	 * klp_reverse_transition().  See the comments there for an explanation.
-> +	 */
-> +	smp_rmb();
-
-I would prefer to be more explicit, e.g.
-
-	/*
-	 * Read the correct klp_target_state when TIF_PATCH_PENDING was set
-	 * and this function was called.  See klp_init_transition() and
-	 * klp_reverse_transition().
-	 */
-> +
-> +	task->patch_state = klp_target_state;
-> +}
-
-The function name confused me few times when klp_target_state
-was KLP_UNPATCHED. I suggest to rename it to klp_update_task()
-or klp_transit_task().
-
-> +/*
-> + * Initialize the global target patch state and all tasks to the initial patch
-> + * state, and initialize all function transition states to true in preparation
-> + * for patching or unpatching.
-> + */
-> +void klp_init_transition(struct klp_patch *patch, int state)
-> +{
-> +	struct task_struct *g, *task;
-> +	unsigned int cpu;
-> +	struct klp_object *obj;
-> +	struct klp_func *func;
-> +	int initial_state = !state;
-> +
-> +	klp_transition_patch = patch;
-> +
-> +	/*
-> +	 * If the patch can be applied or reverted immediately, skip the
-> +	 * per-task transitions.
-> +	 */
-> +	if (patch->immediate)
-> +		return;
-> +
-> +	/*
-> +	 * Initialize all tasks to the initial patch state to prepare them for
-> +	 * switching to the target state.
-> +	 */
-> +	read_lock(&tasklist_lock);
-> +	for_each_process_thread(g, task)
-> +		task->patch_state = initial_state;
-> +	read_unlock(&tasklist_lock);
-> +
-> +	/*
-> +	 * Ditto for the idle "swapper" tasks.
-> +	 */
-> +	get_online_cpus();
-> +	for_each_online_cpu(cpu)
-> +		idle_task(cpu)->patch_state = initial_state;
-> +	put_online_cpus();
-> +
-> +	/*
-> +	 * Ensure klp_ftrace_handler() sees the task->patch_state updates
-> +	 * before the func->transition updates.  Otherwise it could read an
-> +	 * out-of-date task state and pick the wrong function.
-> +	 */
-> +	smp_wmb();
-
-This barrier is needed when the patch is being disabled. In this case,
-the ftrace handler is already in use and the related struct klp_func
-are on top of func_stack. The purpose is well described above.
-
-It is not needed when the patch is being enabled because it is
-not visible to the ftrace handler at the moment. The barrier below
-is enough.
-
-
-> +	/*
-> +	 * Set the func transition states so klp_ftrace_handler() will know to
-> +	 * switch to the transition logic.
-> +	 *
-> +	 * When patching, the funcs aren't yet in the func_stack and will be
-> +	 * made visible to the ftrace handler shortly by the calls to
-> +	 * klp_patch_object().
-> +	 *
-> +	 * When unpatching, the funcs are already in the func_stack and so are
-> +	 * already visible to the ftrace handler.
-> +	 */
-> +	klp_for_each_object(patch, obj)
-> +		klp_for_each_func(obj, func)
-> +			func->transition = true;
-> +
-> +	/*
-> +	 * Set the global target patch state which tasks will switch to.  This
-> +	 * has no effect until the TIF_PATCH_PENDING flags get set later.
-> +	 */
-> +	klp_target_state = state;
-> +
-> +	/*
-> +	 * For the enable path, ensure klp_ftrace_handler() will see the
-> +	 * func->transition updates before the funcs become visible to the
-> +	 * handler.  Otherwise the handler may wrongly pick the new func before
-> +	 * the task switches to the patched state.
-
-By other words, it makes sure that the ftrace handler will see
-the updated func->transition before the ftrace handler is registered
-and/or before the struct klp_func is listed in func_stack.
-
-
-> +	 * For the disable path, the funcs are already visible to the handler.
-> +	 * But we still need to ensure the ftrace handler will see the
-> +	 * func->transition updates before the tasks start switching to the
-> +	 * unpatched state.  Otherwise the handler can miss a task patch state
-> +	 * change which would result in it wrongly picking the new function.
-
-If this is true, it would mean that the task might be switched when it
-is in the middle of klp_ftrace_handler. It would mean that reading
-task->patch_state would be racy against the modification by
-klp_patch_task().
-
-Note that before we call klp_patch_task(), the task will stay in the
-previous state. We are disabling the patch, so the previous state
-is that the patch is enabled. It means that it should always use
-the new function before klp_patch_task() is called. It means
-that it does not matter if it sees func->transition updated or not.
-In both cases, it will use the new function.
-
-Fortunately, task->patch_state might be set to KLP_UNPATCHED
-only when it is sleeping or on some other safe location, e.g.
-when leaving to userspace. In both cases, the barrier is not needed
-here.
-
-By other words, this barrier is not needed to synchronize func_stack
-and patch->transition when it is being disabled.
-
-
-> +	 * This barrier also ensures that if another CPU goes through the
-> +	 * syscall barrier, sees the TIF_PATCH_PENDING writes in
-> +	 * klp_start_transition(), and calls klp_patch_task(), it also sees the
-> +	 * above write to the target state.  Otherwise it can put the task in
-> +	 * the wrong universe.
-> +	 */
-
-By other words, it makes sure that klp_patch_task() will assign the
-right patch_state. Where klp_patch_task() could not be called
-before we set TIF_PATCH_PENDING in klp_start_transition().
-
-> +	smp_wmb();
-> +}
-> +
-> +/*
-> + * Start the transition to the specified target patch state so tasks can begin
-> + * switching to it.
-> + */
-> +void klp_start_transition(void)
-> +{
-> +	struct task_struct *g, *task;
-> +	unsigned int cpu;
-> +
-> +	pr_notice("'%s': %s...\n", klp_transition_patch->mod->name,
-> +		  klp_target_state == KLP_PATCHED ? "patching" : "unpatching");
-> +
-> +	/*
-> +	 * If the patch can be applied or reverted immediately, skip the
-> +	 * per-task transitions.
-> +	 */
-> +	if (klp_transition_patch->immediate)
-> +		return;
-> +
-> +	/*
-> +	 * Mark all normal tasks as needing a patch state update.  As they pass
-> +	 * through the syscall barrier they'll switch over to the target state
-> +	 * (unless we switch them in klp_try_complete_transition() first).
-> +	 */
-> +	read_lock(&tasklist_lock);
-> +	for_each_process_thread(g, task)
-> +		set_tsk_thread_flag(task, TIF_PATCH_PENDING);
-
-A bad intuition might suggest that we do not need to set this flag
-when klp_start_transition() is called from klp_reverse_transition()
-and the task already is in the right state.
-
-But I think that we actually must set TIF_PATCH_PENDING even in this
-case to avoid a possible race. We do not know if klp_patch_task()
-is not running at the moment with the previous klp_target_state().
-
-
-> +	read_unlock(&tasklist_lock);
-> +
-> +	/*
-> +	 * Ditto for the idle "swapper" tasks, though they never cross the
-> +	 * syscall barrier.  Instead they switch over in cpu_idle_loop().
-> +	 */
-> +	get_online_cpus();
-> +	for_each_online_cpu(cpu)
-> +		set_tsk_thread_flag(idle_task(cpu), TIF_PATCH_PENDING);
-> +	put_online_cpus();
-> +}
-> +
-> +/*
-> + * This function can be called in the middle of an existing transition to
-> + * reverse the direction of the target patch state.  This can be done to
-> + * effectively cancel an existing enable or disable operation if there are any
-> + * tasks which are stuck in the initial patch state.
-> + */
-> +void klp_reverse_transition(void)
-> +{
-> +	struct klp_patch *patch = klp_transition_patch;
-> +
-> +	klp_target_state = !klp_target_state;
-> +
-> +	/*
-> +	 * Ensure that if another CPU goes through the syscall barrier, sees
-> +	 * the TIF_PATCH_PENDING writes in klp_start_transition(), and calls
-> +	 * klp_patch_task(), it also sees the above write to the target state.
-> +	 * Otherwise it can put the task in the wrong universe.
-> +	 */
-> +	smp_wmb();
-
-Yup, it is the same reason as for the 2nd barrier in klp_init_transition()
-regarding klp_target_state and klp_patch_task() that is triggered by
-TIF_PATCH_PENDING.
-
-> +
-> +	klp_start_transition();
-> +	klp_try_complete_transition();
-> +
-> +	patch->enabled = !patch->enabled;
-> +}
-> +
-
-Best Regards,
-Petr
+>---
+> arch/powerpc/platforms/powernv/pci-ioda.c | 110 ++++++++++++++++--------------
+> arch/powerpc/platforms/powernv/pci.h      |   7 +-
+> 2 files changed, 61 insertions(+), 56 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index f70a4e0..cfd2906 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -2011,27 +2011,57 @@ static unsigned int pnv_pci_ioda_pe_dma_weight(struct pnv_ioda_pe *pe)
+> }
+>
+> static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>-				       struct pnv_ioda_pe *pe,
+>-				       unsigned int base,
+>-				       unsigned int segs)
+>+				       struct pnv_ioda_pe *pe)
+> {
+>
+> 	struct page *tce_mem = NULL;
+> 	struct iommu_table *tbl;
+>-	unsigned int tce32_segsz, i;
+>+	unsigned int weight, total_weight = 0;
+>+	unsigned int tce32_segsz, base, segs, i;
+> 	int64_t rc;
+> 	void *addr;
+>
+> 	/* XXX FIXME: Handle 64-bit only DMA devices */
+> 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
+> 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
+>+	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
+>+		     &total_weight);
+>+	weight = pnv_pci_ioda_pe_dma_weight(pe);
+>+
+>+	segs = (weight * phb->ioda.dma32_count) / total_weight;
+>+	if (!segs)
+>+		segs = 1;
+>+
+>+	/*
+>+	 * Allocate contiguous DMA32 segments. We begin with the expected
+>+	 * number of segments. With one more attempt, the number of DMA32
+>+	 * segments to be allocated is decreased by one until one segment
+>+	 * is allocated successfully.
+>+	 */
+>+	do {
+>+		for (base = 0; base <= phb->ioda.dma32_count - segs; base++) {
+>+			for (i = base; i < base + segs; i++) {
+>+				if (phb->ioda.dma32_segmap[i] !=
+>+				    IODA_INVALID_PE)
+>+					goto found;
+>+			}
+>+		}
+>+	} while (segs--);
+>+
+>+	if (!segs) {
+>+		pe_warn(pe, "No available DMA32 segments\n");
+>+		return;
+>+	}
+>
+>+found:
+> 	tbl = pnv_pci_table_alloc(phb->hose->node);
+> 	iommu_register_group(&pe->table_group, phb->hose->global_number,
+> 			pe->pe_number);
+> 	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+>
+> 	/* Grab a 32-bit TCE table */
+>+	pe_info(pe, "DMA weight %d (%d), assigned (%d) %d DMA32 segments\n",
+>+		weight, total_weight, base, segs);
+> 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+> 		base * PNV_IODA1_DMA32_SEGSIZE,
+> 		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
+>@@ -2068,6 +2098,10 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+> 		}
+> 	}
+>
+>+	/* Setup DMA32 segment mapping */
+>+	for (i = base; i < base + segs; i++)
+>+		phb->ioda.dma32_segmap[i] = pe->pe_number;
+>+
+> 	/* Setup linux iommu table */
+> 	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
+> 				  base * PNV_IODA1_DMA32_SEGSIZE,
+>@@ -2542,73 +2576,34 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+> {
+> 	struct pci_controller *hose = phb->hose;
+>-	unsigned int weight, total_weight, dma_pe_count;
+>-	unsigned int residual, remaining, segs, base;
+> 	struct pnv_ioda_pe *pe;
+>-
+>-	total_weight = 0;
+>-	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
+>-		     &total_weight);
+>-
+>-	dma_pe_count = 0;
+>-	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+>-		weight = pnv_pci_ioda_pe_dma_weight(pe);
+>-		if (weight > 0)
+>-			dma_pe_count++;
+>-	}
+>+	unsigned int weight;
+>
+> 	/* If we have more PE# than segments available, hand out one
+> 	 * per PE until we run out and let the rest fail. If not,
+> 	 * then we assign at least one segment per PE, plus more based
+> 	 * on the amount of devices under that PE
+> 	 */
+>-	if (dma_pe_count > phb->ioda.tce32_count)
+>-		residual = 0;
+>-	else
+>-		residual = phb->ioda.tce32_count - dma_pe_count;
+>-
+>-	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
+>-		hose->global_number, phb->ioda.tce32_count);
+>-	pr_info("PCI: %d PE# for a total weight of %d\n",
+>-		dma_pe_count, total_weight);
+>+	pr_info("PCI: Domain %04x has %d available 32-bit DMA segments\n",
+>+		hose->global_number, phb->ioda.dma32_count);
+>
+> 	pnv_pci_ioda_setup_opal_tce_kill(phb);
+>
+>-	/* Walk our PE list and configure their DMA segments, hand them
+>-	 * out one base segment plus any residual segments based on
+>-	 * weight
+>-	 */
+>-	remaining = phb->ioda.tce32_count;
+>-	base = 0;
+>+	/* Walk our PE list and configure their DMA segments */
+> 	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+> 		weight = pnv_pci_ioda_pe_dma_weight(pe);
+> 		if (!weight)
+> 			continue;
+>
+>-		if (!remaining) {
+>-			pe_warn(pe, "No DMA32 resources available\n");
+>-			continue;
+>-		}
+>-		segs = 1;
+>-		if (residual) {
+>-			segs += ((weight * residual) + (total_weight / 2)) /
+>-				total_weight;
+>-			if (segs > remaining)
+>-				segs = remaining;
+>-		}
+>-
+> 		/*
+> 		 * For IODA2 compliant PHB3, we needn't care about the weight.
+> 		 * The all available 32-bits DMA space will be assigned to
+> 		 * the specific PE.
+> 		 */
+> 		if (phb->type == PNV_PHB_IODA1) {
+>-			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+>-				weight, segs);
+>-			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+>+			pnv_pci_ioda1_setup_dma_pe(phb, pe);
+> 		} else if (phb->type == PNV_PHB_IODA2) {
+> 			pe_info(pe, "Assign DMA32 space\n");
+>-			segs = 0;
+> 			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+> 		} else if (phb->type == PNV_PHB_NPU) {
+> 			/*
+>@@ -2618,9 +2613,6 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+> 			 * as the PHB3 TVT.
+> 			 */
+> 		}
+>-
+>-		remaining -= segs;
+>-		base += segs;
+> 	}
+> }
+>
+>@@ -3327,7 +3319,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> {
+> 	struct pci_controller *hose;
+> 	struct pnv_phb *phb;
+>-	unsigned long size, m64map_off, m32map_off, pemap_off, iomap_off = 0;
+>+	unsigned long size, m64map_off, m32map_off, pemap_off;
+>+	unsigned long iomap_off = 0, dma32map_off = 0;
+> 	const __be64 *prop64;
+> 	const __be32 *prop32;
+> 	int len;
+>@@ -3413,6 +3406,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 	phb->ioda.io_segsize = phb->ioda.io_size / phb->ioda.total_pe_num;
+> 	phb->ioda.io_pci_base = 0; /* XXX calculate this ? */
+>
+>+	/* Calculate how many 32-bit TCE segments we have */
+>+	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
+>+				PNV_IODA1_DMA32_SEGSIZE;
+>+
+> 	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
+> 	size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
+> 	m64map_off = size;
+>@@ -3422,6 +3419,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 	if (phb->type == PNV_PHB_IODA1) {
+> 		iomap_off = size;
+> 		size += phb->ioda.total_pe_num * sizeof(phb->ioda.io_segmap[0]);
+>+		dma32map_off = size;
+>+		size += phb->ioda.dma32_count *
+>+			sizeof(phb->ioda.dma32_segmap[0]);
+> 	}
+> 	pemap_off = size;
+> 	size += phb->ioda.total_pe_num * sizeof(struct pnv_ioda_pe);
+>@@ -3437,6 +3437,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 		phb->ioda.io_segmap = aux + iomap_off;
+> 		for (segno = 0; segno < phb->ioda.total_pe_num; segno++)
+> 			phb->ioda.io_segmap[segno] = IODA_INVALID_PE;
+>+
+>+		phb->ioda.dma32_segmap = aux + dma32map_off;
+>+		for (segno = 0; segno < phb->ioda.dma32_count; segno++)
+>+			phb->ioda.dma32_segmap[segno] = IODA_INVALID_PE;
+> 	}
+> 	phb->ioda.pe_array = aux + pemap_off;
+> 	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
+>@@ -3445,7 +3449,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> 	mutex_init(&phb->ioda.pe_list_mutex);
+>
+> 	/* Calculate how many 32-bit TCE segments we have */
+>-	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
+>+	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
+> 				PNV_IODA1_DMA32_SEGSIZE;
+>
+> #if 0 /* We should really do that ... */
+>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>index 117cfcd..14d9391 100644
+>--- a/arch/powerpc/platforms/powernv/pci.h
+>+++ b/arch/powerpc/platforms/powernv/pci.h
+>@@ -142,6 +142,10 @@ struct pnv_phb {
+> 		unsigned int		*m32_segmap;
+> 		unsigned int		*io_segmap;
+>
+>+		/* DMA32 segment maps - IODA1 only */
+>+		unsigned int		dma32_count;
+>+		unsigned int		*dma32_segmap;
+>+
+> 		/* IRQ chip */
+> 		int			irq_chip_init;
+> 		struct irq_chip		irq_chip;
+>@@ -158,9 +162,6 @@ struct pnv_phb {
+> 		 */
+> 		unsigned char		pe_rmap[0x10000];
+>
+>-		/* 32-bit TCE tables allocation */
+>-		unsigned long		tce32_count;
+>-
+> 		/* TCE cache invalidate registers (physical and
+> 		 * remapped)
+> 		 */
+>-- 
+>2.1.0
+>
