@@ -2,9 +2,9 @@ Return-Path: <jpoimboe@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0PVR5M4xzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:02:39 +1000 (AEST)
-Date: Wed, 4 May 2016 12:02:36 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0Q0c6ZW2zDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:25:20 +1000 (AEST)
+Date: Wed, 4 May 2016 12:25:17 -0500
 From: Josh Poimboeuf <jpoimboe@redhat.com>
 To: Petr Mladek <pmladek@suse.com>
 Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
@@ -19,13 +19,14 @@ Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
  Andy Lutomirski <luto@kernel.org>
 Subject: Re: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a
  per-task consistency model
-Message-ID: <20160504170236.mpncog3iudr3cvem@treble>
+Message-ID: <20160504172517.tdatoj2nlkqwyd4g@treble>
 References: <cover.1461875890.git.jpoimboe@redhat.com>
  <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
  <20160504123940.GR2749@pathway.suse.cz>
+ <20160504141205.GS2749@pathway.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160504123940.GR2749@pathway.suse.cz>
+In-Reply-To: <20160504141205.GS2749@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +36,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2016 at 02:39:40PM +0200, Petr Mladek wrote:
-> On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
-> > Change livepatch to use a basic per-task consistency model.  This is the
-> > foundation which will eventually enable us to patch those ~10% of
-> > security patches which change function or data semantics.  This is the
-> > biggest remaining piece needed to make livepatch more generally useful.
+On Wed, May 04, 2016 at 04:12:05PM +0200, Petr Mladek wrote:
+> On Wed 2016-05-04 14:39:40, Petr Mladek wrote:
+> > 		 *
+> > 		 * Note that the task must never be migrated to the target
+> > 		 * state when being inside this ftrace handler.
+> > 		 */
+> > 
+> > We might want to move the second paragraph on top of the function.
+> > It is a basic and important fact. It actually explains why the first
+> > read barrier is not needed when the patch is being disabled.
 > 
-> I spent a lot of time with checking the memory barriers. It seems that
-> they are basically correct.  Let me use my own words to show how
-> I understand it. I hope that it will help others with review.
+> I wrote the statement partly intuitively. I think that it is really
+> somehow important. And I am slightly in doubts if we are on the safe side.
+> 
+> First, why is it important that the task->patch_state is not switched
+> when being inside the ftrace handler?
+> 
+> If we are inside the handler, we are kind-of inside the called
+> function. And the basic idea of this consistency model is that
+> we must not switch a task when it is inside a patched function.
+> This is normally decided by the stack.
+> 
+> The handler is a bit special because it is called right before the
+> function. If it was the only patched function on the stack, it would
+> not matter if we choose the new or old code. Both decisions would
+> be safe for the moment.
+> 
+> The fun starts when the function calls another patched function.
+> The other patched function must be called consistently with
+> the first one. If the first function was from the patch,
+> the other must be from the patch as well and vice versa.
+> 
+> This is why we must not switch task->patch_state dangerously
+> when being inside the ftrace handler.
+> 
+> Now I am not sure if this condition is fulfilled. The ftrace handler
+> is called as the very first instruction of the function. Does not
+> it break the stack validity? Could we sleep inside the ftrace
+> handler? Will the patched function be detected on the stack?
+> 
+> Or is my brain already too far in the fantasy world?
 
-[...snip a ton of useful comments...]
+I think this isn't a possibility.
 
-Thanks, this will help a lot!  I'll try to incorporate your barrier
-comments into the code.
+In today's code base, this can't happen because task patch states are
+only switched when sleeping or when exiting the kernel.  The ftrace
+handler doesn't sleep directly.
 
-I also agree that kpatch_patch_task() is poorly named.  I was trying to
-make it clear to external callers that "hey, the task is getting patched
-now!", but it's internally inconsistent with livepatch code because we
-make a distinction between patching and unpatching.
+If it were preempted, it couldn't be switched there either because we
+consider preempted stacks to be unreliable.
 
-Maybe I'll do:
+In theory, a DWARF stack trace of a preempted task *could* be reliable.
+But then the DWARF unwinder should be smart enough to see that the
+original function called the ftrace handler.  Right?  So the stack would
+be reliable, but then livepatch would see the original function on the
+stack and wouldn't switch the task.
 
-  klp_update_task_patch_state()
+Does that make sense?
 
 -- 
 Josh
