@@ -1,30 +1,31 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0QD94GQdzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:35:21 +1000 (AEST)
-Message-ID: <1462383308.16584.43.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
- iommu@lists.linux-foundation.org, netdev@vger.kernel.org
-Cc: ulf.hansson@linaro.org, Mark Rutland <mark.rutland@arm.com>, Rob Herring
- <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Jochen
- Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
- <claudiu.manoil@freescale.com>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>, Kumar
- Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- leoyang.li@nxp.com, xiaobo.xie@nxp.com
-Date: Wed, 04 May 2016 12:35:08 -0500
-In-Reply-To: <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
-References: <1462332274-13744-1-git-send-email-yangbo.lu@nxp.com>
- <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [v9, 6/7] MAINTAINERS: add entry for Freescale SoC driver
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0QjF61jfzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:57:05 +1000 (AEST)
+Date: Wed, 4 May 2016 12:57:00 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: klp_task_patch: was: [RFC PATCH v2 17/18] livepatch: change to a
+ per-task consistency model
+Message-ID: <20160504175700.nizuvflyisfd3lks@treble>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160504144854.GT2749@pathway.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160504144854.GT2749@pathway.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,54 +35,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-05-04 at 11:24 +0800, Yangbo Lu wrote:
-> Add maintainer entry for Freescale SoC driver including
-> the QE library and the GUTS driver now. Also add maintainer
-> for QE library.
+On Wed, May 04, 2016 at 04:48:54PM +0200, Petr Mladek wrote:
+> On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
+> > Change livepatch to use a basic per-task consistency model.  This is the
+> > foundation which will eventually enable us to patch those ~10% of
+> > security patches which change function or data semantics.  This is the
+> > biggest remaining piece needed to make livepatch more generally useful.
+> > 
+> > diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
+> > new file mode 100644
+> > index 0000000..92819bb
+> > --- /dev/null
+> > +++ b/kernel/livepatch/transition.c
+> > +/*
+> > + * klp_patch_task() - change the patched state of a task
+> > + * @task:	The task to change
+> > + *
+> > + * Switches the patched state of the task to the set of functions in the target
+> > + * patch state.
+> > + */
+> > +void klp_patch_task(struct task_struct *task)
+> > +{
+> > +	clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
+> > +
+> > +	/*
+> > +	 * The corresponding write barriers are in klp_init_transition() and
+> > +	 * klp_reverse_transition().  See the comments there for an explanation.
+> > +	 */
+> > +	smp_rmb();
+> > +
+> > +	task->patch_state = klp_target_state;
+> > +}
+> > +
+> > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> > index bd12c6c..60d633f 100644
+> > --- a/kernel/sched/idle.c
+> > +++ b/kernel/sched/idle.c
+> > @@ -9,6 +9,7 @@
+> >  #include <linux/mm.h>
+> >  #include <linux/stackprotector.h>
+> >  #include <linux/suspend.h>
+> > +#include <linux/livepatch.h>
+> >  
+> >  #include <asm/tlb.h>
+> >  
+> > @@ -266,6 +267,9 @@ static void cpu_idle_loop(void)
+> >  
+> >  		sched_ttwu_pending();
+> >  		schedule_preempt_disabled();
+> > +
+> > +		if (unlikely(klp_patch_pending(current)))
+> > +			klp_patch_task(current);
+> >  	}
 > 
-> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-> ---
-> Changes for v8:
-> 	- Added this patch
-> Changes for v9:
-> 	- Added linux-arm mail list
-> 	- Removed GUTS driver entry
-> ---
->  MAINTAINERS | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
+> Some more ideas from the world of crazy races. I was shaking my head
+> if this was safe or not.
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 42e65d1..ce91db7 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4622,9 +4622,18 @@ F:	drivers/net/ethernet/freescale/fec_ptp.c
->  F:	drivers/net/ethernet/freescale/fec.h
->  F:	Documentation/devicetree/bindings/net/fsl-fec.txt
->  
-> +FREESCALE SOC DRIVER
-> +M:	Scott Wood <oss@buserror.net>
-> +L:	linuxppc-dev@lists.ozlabs.org
-> +L:	linux-arm-kernel@lists.infradead.org
-> +S:	Maintained
-> +F:	drivers/soc/fsl/
-> +F:	include/linux/fsl/
-> +
->  FREESCALE QUICC ENGINE LIBRARY
-> +M:	Qiang Zhao <qiang.zhao@nxp.com>
->  L:	linuxppc-dev@lists.ozlabs.org
-> -S:	Orphan
-> +S:	Maintained
->  F:	drivers/soc/fsl/qe/
->  F:	include/soc/fsl/*qe*.h
->  F:	include/soc/fsl/*ucc*.h
-
-s/DRIVER/DRIVERS/
-
-There's more than one.
-
-Otherwise:
-Acked-by: Scott Wood <oss@buserror.net>
-
--Scott
-
+> The problem might be if the task get rescheduled between the check
+> for the pending stuff or inside the klp_patch_task() function.
+> This will get even more important when we use this construct
+> on some more locations, e.g. in some kthreads.
 > 
+> If the task is sleeping on this strange locations, it might assign
+> strange values on strange times.
+> 
+> I think that it is safe only because it is called with the
+> 'current' parameter and on a safe locations. It means that
+> the result is always safe and consistent. Also we could assign
+> an outdated value only when sleeping between reading klp_target_state
+> and storing task->patch_state. But if anyone modified
+> klp_target_state at this point, he also set TIF_PENDING_PATCH,
+> so the change will not get lost.
+> 
+> I think that we should document that klp_patch_func() must be
+> called only from a safe location from within the affected task.
+> 
+> I even suggest to avoid misuse by removing the struct *task_struct
+> parameter. It should always be called with current.
+
+Would the race involve two tasks trying to call klp_patch_task() for the
+same task at the same time?  If so I don't think that would be a problem
+since they would both write the same value for task->patch_state.
+
+(Sorry if I'm being slow, I think I've managed to reach my quota of hard
+thinking for the day and I don't exactly follow what the race would be.)
+
+-- 
+Josh
