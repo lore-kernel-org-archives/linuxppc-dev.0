@@ -1,19 +1,19 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
  [150.101.137.141])
- by lists.ozlabs.org (Postfix) with ESMTP id 3r04QL0q28zDqCK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 14:12:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3r04QM4GSHzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 14:12:59 +1000 (AEST)
 From: Alistair Popple <alistair@popple.id.au>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  aik@ozlabs.ru
-Subject: Re: [PATCH v9 18/26] powerpc/pci: Rename pcibios_{add,
- remove}_pci_devices()
-Date: Wed, 04 May 2016 14:10:47 +1000
-Message-ID: <3359283.T9UEaccSoe@new-mexico>
-In-Reply-To: <1462254105-24128-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v9 14/26] powerpc/powernv/ioda1: Introduce
+ PNV_IODA1_DMA32_SEGSIZE
+Date: Wed, 04 May 2016 14:02:40 +1000
+Message-ID: <1797380.HSsKM2BNng@new-mexico>
+In-Reply-To: <1462254105-24128-15-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462254105-24128-19-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1462254105-24128-15-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,222 +25,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 May 2016 15:41:37 Gavin Shan wrote:
-> This renames pcibios_{add,remove}_pci_devices() to avoid conflicts
-> with names of the weak functions in PCI subsystem, which have the
-> prefix "pcibios". No logical changes introduced.
+On Tue, 3 May 2016 15:41:33 Gavin Shan wrote:
+> Currently, there is one macro (TCE32_TABLE_SIZE) representing the
+> TCE table size for one DMA32 segment. The constant representing
+> the DMA32 segment size (1 << 28) is still used in the code.
+> 
+> This defines PNV_IODA1_DMA32_SEGSIZE representing one DMA32
+> segment size. the TCE table size can be calcualted when the page
+> has fixed 4KB size. So all the related calculation depends on one
+> macro (PNV_IODA1_DMA32_SEGSIZE). No logical changes introduced.
 
-I'm guessing this is just protecting against future weak PCI subsystem 
-functions that may get these names? In other words none of these functions 
-currently exist as weak PCI subsystem functions and hence aren't called from 
-the PCI subsystem?
-
-If so this just looks like a simple rename.
+Looks ok to me.
 
 Reviewed-By: Alistair Popple <alistair@popple.id.au>
 
 > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/pci-bridge.h |  4 ++--
->  arch/powerpc/kernel/eeh_driver.c      | 12 ++++++------
->  arch/powerpc/kernel/pci-hotplug.c     | 15 +++++++--------
->  drivers/pci/hotplug/rpadlpar_core.c   |  2 +-
->  drivers/pci/hotplug/rpaphp_core.c     |  4 ++--
->  drivers/pci/hotplug/rpaphp_pci.c      |  2 +-
->  6 files changed, 19 insertions(+), 20 deletions(-)
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 31 ++++++++++++++++++-------------
+>  1 file changed, 18 insertions(+), 13 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h 
-b/arch/powerpc/include/asm/pci-bridge.h
-> index 220129f..99027b8 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -260,10 +260,10 @@ static inline struct eeh_dev *pdn_to_eeh_dev(struct 
-pci_dn *pdn)
->  extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index f27a62d..ca034b8 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -50,9 +50,7 @@
 >  
->  /** Remove all of the PCI devices under this bus */
-> -extern void pcibios_remove_pci_devices(struct pci_bus *bus);
-> +extern void pci_hp_remove_devices(struct pci_bus *bus);
->  
->  /** Discover new pci devices under this bus, and add them */
-> -extern void pcibios_add_pci_devices(struct pci_bus *bus);
-> +extern void pci_hp_add_devices(struct pci_bus *bus);
->  
->  
->  extern void isa_bridge_find_early(struct pci_controller *hose);
-> diff --git a/arch/powerpc/kernel/eeh_driver.c 
-b/arch/powerpc/kernel/eeh_driver.c
-> index fb6207d..618d13c 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -621,7 +621,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct 
-pci_bus *bus,
->  	 * We don't remove the corresponding PE instances because
->  	 * we need the information afterwords. The attached EEH
->  	 * devices are expected to be attached soon when calling
-> -	 * into pcibios_add_pci_devices().
-> +	 * into pci_hp_add_devices().
->  	 */
->  	eeh_pe_state_mark(pe, EEH_PE_KEEP);
->  	if (bus) {
-> @@ -630,7 +630,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct 
-pci_bus *bus,
->  		} else {
->  			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
->  			pci_lock_rescan_remove();
-> -			pcibios_remove_pci_devices(bus);
-> +			pci_hp_remove_devices(bus);
->  			pci_unlock_rescan_remove();
->  		}
->  	} else if (frozen_bus) {
-> @@ -681,7 +681,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct 
-pci_bus *bus,
->  		if (pe->type & EEH_PE_VF)
->  			eeh_add_virt_device(edev, NULL);
->  		else
-> -			pcibios_add_pci_devices(bus);
-> +			pci_hp_add_devices(bus);
->  	} else if (frozen_bus && rmv_data->removed) {
->  		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
->  		ssleep(5);
-> @@ -691,7 +691,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct 
-pci_bus *bus,
->  		if (pe->type & EEH_PE_VF)
->  			eeh_add_virt_device(edev, NULL);
->  		else
-> -			pcibios_add_pci_devices(frozen_bus);
-> +			pci_hp_add_devices(frozen_bus);
->  	}
->  	eeh_pe_state_clear(pe, EEH_PE_KEEP);
->  
-> @@ -896,7 +896,7 @@ perm_error:
->  			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->  
->  			pci_lock_rescan_remove();
-> -			pcibios_remove_pci_devices(frozen_bus);
-> +			pci_hp_remove_devices(frozen_bus);
->  			pci_unlock_rescan_remove();
->  		}
->  	}
-> @@ -981,7 +981,7 @@ static void eeh_handle_special_event(void)
->  				bus = eeh_pe_bus_get(phb_pe);
->  				eeh_pe_dev_traverse(pe,
->  					eeh_report_failure, NULL);
-> -				pcibios_remove_pci_devices(bus);
-> +				pci_hp_remove_devices(bus);
->  			}
->  			pci_unlock_rescan_remove();
->  		}
-> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-
-hotplug.c
-> index 59c4361..2d108e5 100644
-> --- a/arch/powerpc/kernel/pci-hotplug.c
-> +++ b/arch/powerpc/kernel/pci-hotplug.c
-> @@ -38,20 +38,20 @@ void pcibios_release_device(struct pci_dev *dev)
->  }
->  
->  /**
-> - * pcibios_remove_pci_devices - remove all devices under this bus
-> + * pci_hp_remove_devices - remove all devices under this bus
->   * @bus: the indicated PCI bus
->   *
->   * Remove all of the PCI devices under this bus both from the
->   * linux pci device tree, and from the powerpc EEH address cache.
->   */
-> -void pcibios_remove_pci_devices(struct pci_bus *bus)
-> +void pci_hp_remove_devices(struct pci_bus *bus)
->  {
->  	struct pci_dev *dev, *tmp;
->  	struct pci_bus *child_bus;
->  
->  	/* First go down child busses */
->  	list_for_each_entry(child_bus, &bus->children, node)
-> -		pcibios_remove_pci_devices(child_bus);
-> +		pci_hp_remove_devices(child_bus);
->  
->  	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
->  		 pci_domain_nr(bus),  bus->number);
-> @@ -60,11 +60,10 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
->  		pci_stop_and_remove_bus_device(dev);
->  	}
->  }
+>  #define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs	*/
+>  #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR	*/
 > -
-> -EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
-> +EXPORT_SYMBOL_GPL(pci_hp_remove_devices);
+> -/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
+> -#define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
+> +#define PNV_IODA1_DMA32_SEGSIZE	0x10000000
 >  
->  /**
-> - * pcibios_add_pci_devices - adds new pci devices to bus
-> + * pci_hp_add_devices - adds new pci devices to bus
->   * @bus: the indicated PCI bus
->   *
->   * This routine will find and fixup new pci devices under
-> @@ -74,7 +73,7 @@ EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
->   * is how this routine differs from other, similar pcibios
->   * routines.)
->   */
-> -void pcibios_add_pci_devices(struct pci_bus * bus)
-> +void pci_hp_add_devices(struct pci_bus *bus)
->  {
->  	int slotno, mode, pass, max;
->  	struct pci_dev *dev;
-> @@ -114,4 +113,4 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+>  #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+>  #define POWERNV_IOMMU_MAX_LEVELS	5
+> @@ -2037,7 +2035,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>  
+>  	struct page *tce_mem = NULL;
+>  	struct iommu_table *tbl;
+> -	unsigned int i;
+> +	unsigned int tce32_segsz, i;
+>  	int64_t rc;
+>  	void *addr;
+>  
+> @@ -2057,29 +2055,34 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>  	/* Grab a 32-bit TCE table */
+>  	pe->tce32_seg = base;
+>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+> -		(base << 28), ((base + segs) << 28) - 1);
+> +		base * PNV_IODA1_DMA32_SEGSIZE,
+> +		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
+>  
+>  	/* XXX Currently, we allocate one big contiguous table for the
+>  	 * TCEs. We only really need one chunk per 256M of TCE space
+>  	 * (ie per segment) but that's an optimization for later, it
+>  	 * requires some added smarts with our get/put_tce implementation
+> +	 *
+> +	 * Each TCE page is 4KB in size and each TCE entry occupies 8
+> +	 * bytes
+>  	 */
+> +	tce32_segsz = PNV_IODA1_DMA32_SEGSIZE >> (IOMMU_PAGE_SHIFT_4K - 3);
+>  	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
+> -				   get_order(TCE32_TABLE_SIZE * segs));
+> +				   get_order(tce32_segsz * segs));
+>  	if (!tce_mem) {
+>  		pe_err(pe, " Failed to allocate a 32-bit TCE memory\n");
+>  		goto fail;
 >  	}
->  	pcibios_finish_adding_to_bus(bus);
->  }
-> -EXPORT_SYMBOL_GPL(pcibios_add_pci_devices);
-> +EXPORT_SYMBOL_GPL(pci_hp_add_devices);
-> diff --git a/drivers/pci/hotplug/rpadlpar_core.c 
-b/drivers/pci/hotplug/rpadlpar_core.c
-> index b46b57d..b770d6d 100644
-> --- a/drivers/pci/hotplug/rpadlpar_core.c
-> +++ b/drivers/pci/hotplug/rpadlpar_core.c
-> @@ -380,7 +380,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct 
-device_node *dn)
+>  	addr = page_address(tce_mem);
+> -	memset(addr, 0, TCE32_TABLE_SIZE * segs);
+> +	memset(addr, 0, tce32_segsz * segs);
+>  
+>  	/* Configure HW */
+>  	for (i = 0; i < segs; i++) {
+>  		rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>  					      pe->pe_number,
+>  					      base + i, 1,
+> -					      __pa(addr) + TCE32_TABLE_SIZE * i,
+> -					      TCE32_TABLE_SIZE, 0x1000);
+> +					      __pa(addr) + tce32_segsz * i,
+> +					      tce32_segsz, IOMMU_PAGE_SIZE_4K);
+>  		if (rc) {
+>  			pe_err(pe, " Failed to configure 32-bit TCE table,"
+>  			       " err %ld\n", rc);
+> @@ -2088,8 +2091,9 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
 >  	}
 >  
->  	/* Remove all devices below slot */
-> -	pcibios_remove_pci_devices(bus);
-> +	pci_hp_remove_devices(bus);
+>  	/* Setup linux iommu table */
+> -	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+> -				  base << 28, IOMMU_PAGE_SHIFT_4K);
+> +	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
+> +				  base * PNV_IODA1_DMA32_SEGSIZE,
+> +				  IOMMU_PAGE_SHIFT_4K);
 >  
->  	/* Unmap PCI IO space */
->  	if (pcibios_unmap_io_space(bus)) {
-> diff --git a/drivers/pci/hotplug/rpaphp_core.c 
-b/drivers/pci/hotplug/rpaphp_core.c
-> index 611f605..8d13202 100644
-> --- a/drivers/pci/hotplug/rpaphp_core.c
-> +++ b/drivers/pci/hotplug/rpaphp_core.c
-> @@ -404,7 +404,7 @@ static int enable_slot(struct hotplug_slot 
-*hotplug_slot)
+>  	/* OPAL variant of P7IOC SW invalidated TCEs */
+>  	if (phb->ioda.tce_inval_reg)
+> @@ -2119,7 +2123,7 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>  	if (pe->tce32_seg >= 0)
+>  		pe->tce32_seg = -1;
+>  	if (tce_mem)
+> -		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+> +		__free_pages(tce_mem, get_order(tce32_segsz * segs));
+>  	if (tbl) {
+>  		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
+>  		iommu_free_table(tbl, "pnv");
+> @@ -3456,7 +3460,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	mutex_init(&phb->ioda.pe_list_mutex);
 >  
->  	if (state == PRESENT) {
->  		pci_lock_rescan_remove();
-> -		pcibios_add_pci_devices(slot->bus);
-> +		pci_hp_add_devices(slot->bus);
->  		pci_unlock_rescan_remove();
->  		slot->state = CONFIGURED;
->  	} else if (state == EMPTY) {
-> @@ -426,7 +426,7 @@ static int disable_slot(struct hotplug_slot 
-*hotplug_slot)
->  		return -EINVAL;
+>  	/* Calculate how many 32-bit TCE segments we have */
+> -	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
+> +	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
+> +				PNV_IODA1_DMA32_SEGSIZE;
 >  
->  	pci_lock_rescan_remove();
-> -	pcibios_remove_pci_devices(slot->bus);
-> +	pci_hp_remove_devices(slot->bus);
->  	pci_unlock_rescan_remove();
->  	vm_unmap_aliases();
->  
-> diff --git a/drivers/pci/hotplug/rpaphp_pci.c 
-b/drivers/pci/hotplug/rpaphp_pci.c
-> index 7836d69..137a892 100644
-> --- a/drivers/pci/hotplug/rpaphp_pci.c
-> +++ b/drivers/pci/hotplug/rpaphp_pci.c
-> @@ -116,7 +116,7 @@ int rpaphp_enable_slot(struct slot *slot)
->  		}
->  
->  		if (list_empty(&bus->devices))
-> -			pcibios_add_pci_devices(bus);
-> +			pci_hp_add_devices(bus);
->  
->  		if (!list_empty(&bus->devices)) {
->  			info->adapter_status = CONFIGURED;
+>  #if 0 /* We should really do that ... */
+>  	rc = opal_pci_set_phb_mem_window(opal->phb_id,
 > 
