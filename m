@@ -1,24 +1,21 @@
-Return-Path: <horia.geanta@nxp.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0089.outbound.protection.outlook.com [65.55.169.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0TD366wxzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 05:50:26 +1000 (AEST)
-From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>
-CC: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Scott Wood <scott.wood@nxp.com>, Alexandru Porosanu
- <alexandru.porosanu@nxp.com>, Tudor Ambarus <tudor-dan.ambarus@nxp.com>,
- Cristian Stoica <cristian.stoica@nxp.com>
-Subject: [PATCH 3/7] powerpc: add io{read,write}64 accessors
-Date: Wed, 4 May 2016 20:16:38 +0300
-Message-ID: <1462382198-11985-1-git-send-email-horia.geanta@nxp.com>
+Return-Path: <rjw@rjwysocki.net>
+Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
+ [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 3r0W4c0cfNzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 07:14:07 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ego@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 0/2] cpufreq: powernv: Ramp-down global pstate slower
+ than local-pstate
+Date: Wed, 04 May 2016 23:17:14 +0200
+Message-ID: <2253617.134ktIcBZI@vostro.rjw.lan>
+In-Reply-To: <1461059881-14434-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1461059881-14434-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will allow device drivers to consistently use io{read,write}XX
-also for 64-bit accesses.
+On Tuesday, April 19, 2016 03:27:59 PM Akshay Adiga wrote:
+> The frequency transition latency from pmin to pmax is observed to be in few
+> millisecond granurality. And it usually happens to take a performance penalty
+> during sudden frequency rampup requests.
+> 
+> This patch set solves this problem by using a chip-level entity called "global
+> pstates". Global pstate manages elements across other dependent core chiplets.
+> Typically, the element that needs to be managed is the voltage setting.
+> So by holding global pstates higher than local pstate for some amount of time
+> ( ~5 seconds) the subsequent rampups could be made faster.
+> 
+> (1/2) patch removes the flag from cpufreq_policy->driver_data, so that it can
+> be used for tracking global pstates.
+> 
+> (2/2) patch adds code for global pstate management.
+> - The iozone results with this patchset, shows improvements in almost all cases.
+> - YCSB workload on redis with various  target operations per second shows 
+> better MaxLatency with this patch.
+> 
+> Changes from v1:
+> - Fixed coding style
+> - Added a routine to reset global_pstate_info instead of hacky memset
+> - Handled case where cpufreq_table_validate_and_show() fails
+> - changed int queue_gpstate_timer() to void queue_gpstate_timer()
+> 
+> Changes from v2:
+> - dropped the unreated change. 
+> 
+> Akshay Adiga (1):
+>   cpufreq: powernv: Ramp-down global pstate slower than local-pstate
+> 
+> Shilpasri G Bhat (1):
+>   cpufreq: powernv: Remove flag use-case of policy->driver_data
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 269 ++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 256 insertions(+), 13 deletions(-)
 
-Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
----
- arch/powerpc/kernel/iomap.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
-
-diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-index 12e48d56f771..3963f0b68d52 100644
---- a/arch/powerpc/kernel/iomap.c
-+++ b/arch/powerpc/kernel/iomap.c
-@@ -38,6 +38,18 @@ EXPORT_SYMBOL(ioread16);
- EXPORT_SYMBOL(ioread16be);
- EXPORT_SYMBOL(ioread32);
- EXPORT_SYMBOL(ioread32be);
-+#ifdef __powerpc64__
-+u64 ioread64(void __iomem *addr)
-+{
-+	return readq(addr);
-+}
-+u64 ioread64be(void __iomem *addr)
-+{
-+	return readq_be(addr);
-+}
-+EXPORT_SYMBOL(ioread64);
-+EXPORT_SYMBOL(ioread64be);
-+#endif /* __powerpc64__ */
- 
- void iowrite8(u8 val, void __iomem *addr)
- {
-@@ -64,6 +76,18 @@ EXPORT_SYMBOL(iowrite16);
- EXPORT_SYMBOL(iowrite16be);
- EXPORT_SYMBOL(iowrite32);
- EXPORT_SYMBOL(iowrite32be);
-+#ifdef __powerpc64__
-+void iowrite64(u64 val, void __iomem *addr)
-+{
-+	writeq(val, addr);
-+}
-+void iowrite64be(u64 val, void __iomem *addr)
-+{
-+	writeq_be(val, addr);
-+}
-+EXPORT_SYMBOL(iowrite64);
-+EXPORT_SYMBOL(iowrite64be);
-+#endif /* __powerpc64__ */
- 
- /*
-  * These are the "repeat read/write" functions. Note the
--- 
-2.4.4
+Both [1-2/2] applied, thanks!
