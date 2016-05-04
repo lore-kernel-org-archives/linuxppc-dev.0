@@ -1,33 +1,19 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r08Bl4V61zDqCK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 17:03:11 +1000 (AEST)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 4 May 2016 17:03:10 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 48A5D2CE8072
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 17:02:12 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4471swf32243932
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 17:02:02 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u44705T7006222
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 17:00:05 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, mikey <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org, Frederic Barrat <frederic.barrat@fr.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH] cxl: Add kernel API to allow a context to operate with
- relocate disabled
-Date: Wed,  4 May 2016 16:54:42 +1000
-Message-Id: <1462344882-1638-1-git-send-email-imunsie@au.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r08yP3cVLzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 17:37:33 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id y7so4225447pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 00:37:33 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>, Jack Miller <jack@codezen.org>,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH v2 1/2] powerpc/timer - large decrementer support
+Date: Wed,  4 May 2016 17:37:12 +1000
+Message-Id: <1462347433-26150-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,227 +23,224 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+POWER ISA v3 adds large decrementer (LD) mode of operation which increases
+the size of the decrementer register from 32 bits to an implementation
+defined with of up to 64 bits.
 
-cxl devices typically access memory using an MMU in much the same way as
-the CPU, and each context includes a state register much like the MSR in
-the CPU. Like the CPU, the state register includes a bit to enable
-relocation, which we currently always enable.
+This patch adds support for the LD on processors with the CPU_FTR_ARCH_300
+cpu feature flag set. Even for CPUs with this feature LD mode is only
+enabled when the property ibm,dec-bits devicetree property is supplied
+for the boot CPU. The decrementer value is a signed quantity (with
+negative values indicating a pending exception) and this property is
+required to find the maximum positive decrementer value. If this property
+is not supplied then the traditional decrementer width of 32 bits is
+assumed and LD mode is disabled.
 
-In some cases, it may be desirable to allow a device to access memory
-using real addresses instead of effective addresses, so this adds a new
-version of the start context kernel API, cxl_start_context2, to allow
-contexts to be created with relocation disabled. This can allow for the
-creation of a special privileged context that the device can use if it
-needs relocation disabled, and can use regular contexts at times when it
-needs relocation enabled.
+This patch was based on initial work by Jack Miller.
 
-This interface is only available to users of the kernel API for obvious
-reasons, and will never be supported in a virtualised environment.
-
-This will be used by the upcoming cxl support in the mlx5 driver.
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Cc: Jack Miller <jack@codezen.org>
+Cc: Balbir Singh <bsingharora@gmail.com>
 ---
- drivers/misc/cxl/api.c    | 14 +++++++++++---
- drivers/misc/cxl/cxl.h    |  2 +-
- drivers/misc/cxl/file.c   |  4 ++--
- drivers/misc/cxl/guest.c  |  6 +++++-
- drivers/misc/cxl/native.c | 20 +++++++++++---------
- include/misc/cxl.h        |  8 ++++++++
- 6 files changed, 38 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/reg.h  |  1 +
+ arch/powerpc/include/asm/time.h |  6 +--
+ arch/powerpc/kernel/time.c      | 89 +++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 86 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 8075823..675952a 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -167,8 +167,8 @@ EXPORT_SYMBOL_GPL(cxl_unmap_afu_irq);
-  * Start a context
-  * Code here similar to afu_ioctl_start_work().
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index f5f4c66bbbc9..ff581ed1ab9d 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -332,6 +332,7 @@
+ #define   LPCR_AIL_0	0x00000000	/* MMU off exception offset 0x0 */
+ #define   LPCR_AIL_3	0x01800000	/* MMU on exception offset 0xc00...4xxx */
+ #define   LPCR_ONL	0x00040000	/* online - PURR/SPURR count */
++#define   LPCR_LD	0x00020000	/* large decremeter */
+ #define   LPCR_PECE	0x0001f000	/* powersave exit cause enable */
+ #define     LPCR_PECEDP	0x00010000	/* directed priv dbells cause exit */
+ #define     LPCR_PECEDH	0x00008000	/* directed hyp dbells cause exit */
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 1092fdd7e737..09211640a0e0 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -146,7 +146,7 @@ static inline void set_tb(unsigned int upper, unsigned int lower)
+  * in auto-reload mode.  The problem is PIT stops counting when it
+  * hits zero.  If it would wrap, we could use it just like a decrementer.
   */
--int cxl_start_context(struct cxl_context *ctx, u64 wed,
--		      struct task_struct *task)
-+int cxl_start_context2(struct cxl_context *ctx, u64 wed,
-+		      struct task_struct *task, bool real_mode)
+-static inline unsigned int get_dec(void)
++static inline u64 get_dec(void)
  {
- 	int rc = 0;
- 	bool kernel = true;
-@@ -183,11 +183,12 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
- 		ctx->glpid = get_task_pid(task->group_leader, PIDTYPE_PID);
- 		kernel = false;
-+		real_mode = false;
- 	}
- 
- 	cxl_ctx_get();
- 
--	if ((rc = cxl_ops->attach_process(ctx, kernel, wed, 0))) {
-+	if ((rc = cxl_ops->attach_process(ctx, kernel, real_mode, wed, 0))) {
- 		put_pid(ctx->pid);
- 		cxl_ctx_put();
- 		goto out;
-@@ -198,6 +199,13 @@ out:
- 	mutex_unlock(&ctx->status_mutex);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(cxl_start_context2);
-+
-+int cxl_start_context(struct cxl_context *ctx, u64 wed,
-+		      struct task_struct *task)
-+{
-+	return cxl_start_context2(ctx, wed, task, false);
-+}
- EXPORT_SYMBOL_GPL(cxl_start_context);
- 
- int cxl_process_element(struct cxl_context *ctx)
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index dfdbfb0..cffded1 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -857,7 +857,7 @@ struct cxl_backend_ops {
- 	irqreturn_t (*psl_interrupt)(int irq, void *data);
- 	int (*ack_irq)(struct cxl_context *ctx, u64 tfc, u64 psl_reset_mask);
- 	int (*attach_process)(struct cxl_context *ctx, bool kernel,
--			u64 wed, u64 amr);
-+			bool real_mode, u64 wed, u64 amr);
- 	int (*detach_process)(struct cxl_context *ctx);
- 	bool (*support_attributes)(const char *attr_name, enum cxl_attrs type);
- 	bool (*link_ok)(struct cxl *cxl, struct cxl_afu *afu);
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index eec468f..0f7a418 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -207,8 +207,8 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 
- 	trace_cxl_attach(ctx, work.work_element_descriptor, work.num_interrupts, amr);
- 
--	if ((rc = cxl_ops->attach_process(ctx, false, work.work_element_descriptor,
--							amr))) {
-+	if ((rc = cxl_ops->attach_process(ctx, false, false,
-+					  work.work_element_descriptor, amr))) {
- 		afu_release_irqs(ctx, ctx);
- 		goto out;
- 	}
-diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-index 769971c..9a53d45 100644
---- a/drivers/misc/cxl/guest.c
-+++ b/drivers/misc/cxl/guest.c
-@@ -613,10 +613,14 @@ out_free:
- 	return rc;
- }
- 
--static int guest_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
-+static int guest_attach_process(struct cxl_context *ctx, bool kernel,
-+				bool real_mode, u64 wed, u64 amr)
+ #if defined(CONFIG_40x)
+ 	return (mfspr(SPRN_PIT));
+@@ -160,10 +160,10 @@ static inline unsigned int get_dec(void)
+  * in when the decrementer generates its interrupt: on the 1 to 0
+  * transition for Book E/4xx, but on the 0 to -1 transition for others.
+  */
+-static inline void set_dec(int val)
++static inline void set_dec(u64 val)
  {
- 	pr_devel("in %s\n", __func__);
+ #if defined(CONFIG_40x)
+-	mtspr(SPRN_PIT, val);
++	mtspr(SPRN_PIT, (u32) val);
+ #else
+ #ifndef CONFIG_BOOKE
+ 	--val;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 81b0900a39ee..fab34abfb4cd 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -95,7 +95,8 @@ static struct clocksource clocksource_timebase = {
+ 	.read         = timebase_read,
+ };
  
-+	if (real_mode)
-+		return -EINVAL;
-+
- 	ctx->kernel = kernel;
- 	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
- 		return attach_afu_directed(ctx, wed, amr);
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index ef494ba..c00a275 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -475,7 +475,7 @@ err:
- #define set_endian(sr) ((sr) &= ~(CXL_PSL_SR_An_LE))
- #endif
+-#define DECREMENTER_MAX	0x7fffffff
++#define DECREMENTER_DEFAULT_MAX 0x7FFFFFFF
++u64 decrementer_max = DECREMENTER_DEFAULT_MAX;
  
--static u64 calculate_sr(struct cxl_context *ctx)
-+static u64 calculate_sr(struct cxl_context *ctx, bool real_mode)
- {
- 	u64 sr = 0;
- 
-@@ -485,7 +485,9 @@ static u64 calculate_sr(struct cxl_context *ctx)
- 	if (mfspr(SPRN_LPCR) & LPCR_TC)
- 		sr |= CXL_PSL_SR_An_TC;
- 	if (ctx->kernel) {
--		sr |= CXL_PSL_SR_An_R | (mfmsr() & MSR_SF);
-+		if (!real_mode)
-+			sr |= CXL_PSL_SR_An_R;
-+		sr |= (mfmsr() & MSR_SF);
- 		sr |= CXL_PSL_SR_An_HV;
+ static int decrementer_set_next_event(unsigned long evt,
+ 				      struct clock_event_device *dev);
+@@ -503,7 +504,7 @@ static void __timer_interrupt(void)
+ 		__this_cpu_inc(irq_stat.timer_irqs_event);
  	} else {
- 		sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
-@@ -496,7 +498,7 @@ static u64 calculate_sr(struct cxl_context *ctx)
- 	return sr;
+ 		now = *next_tb - now;
+-		if (now <= DECREMENTER_MAX)
++		if (now <= decrementer_max)
+ 			set_dec((int)now);
+ 		/* We may have raced with new irq work */
+ 		if (test_irq_work_pending())
+@@ -534,7 +535,7 @@ void timer_interrupt(struct pt_regs * regs)
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continue to take decrementer exceptions.
+ 	 */
+-	set_dec(DECREMENTER_MAX);
++	set_dec(decrementer_max);
+ 
+ 	/* Some implementations of hotplug will get timer interrupts while
+ 	 * offline, just ignore these and we also need to set
+@@ -582,9 +583,9 @@ static void generic_suspend_disable_irqs(void)
+ 	 * with suspending.
+ 	 */
+ 
+-	set_dec(DECREMENTER_MAX);
++	set_dec(decrementer_max);
+ 	local_irq_disable();
+-	set_dec(DECREMENTER_MAX);
++	set_dec(decrementer_max);
  }
  
--static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
-+static int attach_afu_directed(struct cxl_context *ctx, bool real_mode, u64 wed, u64 amr)
+ static void generic_suspend_enable_irqs(void)
+@@ -865,7 +866,7 @@ static int decrementer_set_next_event(unsigned long evt,
+ 
+ static int decrementer_shutdown(struct clock_event_device *dev)
  {
- 	u32 pid;
- 	int r, result;
-@@ -514,7 +516,7 @@ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
- 	ctx->elem->common.tid = 0;
- 	ctx->elem->common.pid = cpu_to_be32(pid);
- 
--	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx));
-+	ctx->elem->sr = cpu_to_be64(calculate_sr(ctx, real_mode));
- 
- 	ctx->elem->common.csrp = 0; /* disable */
- 	ctx->elem->common.aurp0 = 0; /* disable */
-@@ -589,7 +591,7 @@ static int activate_dedicated_process(struct cxl_afu *afu)
- 	return cxl_chardev_d_afu_add(afu);
+-	decrementer_set_next_event(DECREMENTER_MAX, dev);
++	decrementer_set_next_event(decrementer_max, dev);
+ 	return 0;
  }
  
--static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
-+static int attach_dedicated(struct cxl_context *ctx, bool real_mode, u64 wed, u64 amr)
- {
- 	struct cxl_afu *afu = ctx->afu;
- 	u64 pid;
-@@ -600,7 +602,7 @@ static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
- 		pid = 0;
- 	cxl_p2n_write(afu, CXL_PSL_PID_TID_An, pid);
- 
--	cxl_p1n_write(afu, CXL_PSL_SR_An, calculate_sr(ctx));
-+	cxl_p1n_write(afu, CXL_PSL_SR_An, calculate_sr(ctx, real_mode));
- 
- 	if ((rc = cxl_write_sstp(afu, ctx->sstp0, ctx->sstp1)))
- 		return rc;
-@@ -673,7 +675,7 @@ static int native_afu_activate_mode(struct cxl_afu *afu, int mode)
+@@ -891,6 +892,73 @@ static void register_decrementer_clockevent(int cpu)
+ 	clockevents_register_device(dec);
  }
  
- static int native_attach_process(struct cxl_context *ctx, bool kernel,
--				u64 wed, u64 amr)
-+				bool real_mode, u64 wed, u64 amr)
- {
- 	if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu)) {
- 		WARN(1, "Device link is down, refusing to attach process!\n");
-@@ -682,10 +684,10 @@ static int native_attach_process(struct cxl_context *ctx, bool kernel,
- 
- 	ctx->kernel = kernel;
- 	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
--		return attach_afu_directed(ctx, wed, amr);
-+		return attach_afu_directed(ctx, real_mode, wed, amr);
- 
- 	if (ctx->afu->current_mode == CXL_MODE_DEDICATED)
--		return attach_dedicated(ctx, wed, amr);
-+		return attach_dedicated(ctx, real_mode, wed, amr);
- 
- 	return -EINVAL;
- }
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index 7d5e261..ec0e3ed 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -111,6 +111,14 @@ void cxl_unmap_afu_irq(struct cxl_context *cxl, int num, void *cookie);
-  */
- int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 		      struct task_struct *task);
++static inline bool large_dec_supp(void)
++{
++	return cpu_has_feature(CPU_FTR_ARCH_300);
++}
 +
-+/*
-+ * Variant of cxl_start_context that allows the context to operate with
-+ * translation disabled. Note that this only makes sense for kernel contexts
-+ * under bare metal, and will not work with virtualisation.
-+ */
-+int cxl_start_context2(struct cxl_context *ctx, u64 wed,
-+		      struct task_struct *task, bool real_mode);
- /*
-  * Stop a context and remove it from the PSL
-  */
++static inline bool large_dec_on(void)
++{
++	return (mfspr(SPRN_LPCR) & LPCR_LD) == LPCR_LD;
++}
++/* enables the large decrementer for the current CPU */
++static void enable_large_decrementer(void)
++{
++	/* do we have a large decrementer? */
++	if (!large_dec_supp())
++		return;
++
++	/* do we need a large decrementer? */
++	if (decrementer_max <= DECREMENTER_DEFAULT_MAX)
++		return;
++
++	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
++
++	if (!large_dec_on()) {
++		decrementer_max = DECREMENTER_DEFAULT_MAX;
++
++		pr_warn("time_init: Failed to enable LD mode on CPU %d\n",
++			smp_processor_id());
++	}
++}
++
++static void __init set_decrementer_max(void)
++{
++	struct device_node *cpu;
++	const __be32 *fp;
++	u64 bits = 32;
++
++	/* dt node exists? */
++	cpu = of_find_node_by_type(NULL, "cpu");
++	if (cpu)
++		fp = of_get_property(cpu, "ibm,dec-bits", NULL);
++
++	if (cpu && fp) {
++		bits = of_read_number(fp, 1);
++
++		/* clamp to sane values */
++		if (bits > 64)
++			bits = 64;
++		if (bits < 32)
++			bits = 32;
++
++		/*
++		 * Firmware says we support large dec but this cpu doesn't we
++		 * should warn about it. We can still limp along with default
++		 * 32 bit dec, but something is broken.
++		 */
++		if (!large_dec_supp()) {
++			WARN_ON(bits > 32);
++			bits = 32;
++		}
++
++		decrementer_max = (1ul << (bits - 1)) - 1;
++	}
++
++	pr_info("time_init: %llu bit decrementer (max: %llx)\n",
++		bits, decrementer_max);
++}
++
+ static void __init init_decrementer_clockevent(void)
+ {
+ 	int cpu = smp_processor_id();
+@@ -898,7 +966,7 @@ static void __init init_decrementer_clockevent(void)
+ 	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
+ 
+ 	decrementer_clockevent.max_delta_ns =
+-		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
++		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
+ 	decrementer_clockevent.min_delta_ns =
+ 		clockevent_delta2ns(2, &decrementer_clockevent);
+ 
+@@ -907,6 +975,9 @@ static void __init init_decrementer_clockevent(void)
+ 
+ void secondary_cpu_time_init(void)
+ {
++	/* Enable the large decrementer (if we need to) */
++	enable_large_decrementer();
++
+ 	/* Start the decrementer on CPUs that have manual control
+ 	 * such as BookE
+ 	 */
+@@ -972,6 +1043,10 @@ void __init time_init(void)
+ 	vdso_data->tb_update_count = 0;
+ 	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+ 
++	/* initialise and enable the large decrementer (if we have one) */
++	set_decrementer_max();
++	enable_large_decrementer();
++
+ 	/* Start the decrementer on CPUs that have manual control
+ 	 * such as BookE
+ 	 */
 -- 
-2.8.1
+2.5.5
