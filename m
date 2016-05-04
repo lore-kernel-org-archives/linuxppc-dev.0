@@ -1,16 +1,16 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0KJK03z6zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 23:53:37 +1000 (AEST)
-Date: Wed, 4 May 2016 15:53:29 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Miroslav Benes <mbenes@suse.cz>,
- Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0Kjl59H2zDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 00:12:10 +1000 (AEST)
+Date: Wed, 4 May 2016 16:12:05 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
  live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
  x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -19,7 +19,7 @@ Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jessica Yu <jeyu@redhat.com>,
  Andy Lutomirski <luto@kernel.org>
 Subject: Re: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a
  per-task consistency model
-Message-ID: <20160504135329.GQ3430@twins.programming.kicks-ass.net>
+Message-ID: <20160504141205.GS2749@pathway.suse.cz>
 References: <cover.1461875890.git.jpoimboe@redhat.com>
  <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
  <20160504123940.GR2749@pathway.suse.cz>
@@ -35,23 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2016 at 02:39:40PM +0200, Petr Mladek wrote:
-> > +	 * This barrier also ensures that if another CPU goes through the
-> > +	 * syscall barrier, sees the TIF_PATCH_PENDING writes in
-> > +	 * klp_start_transition(), and calls klp_patch_task(), it also sees the
-> > +	 * above write to the target state.  Otherwise it can put the task in
-> > +	 * the wrong universe.
-> > +	 */
+On Wed 2016-05-04 14:39:40, Petr Mladek wrote:
+> 		 *
+> 		 * Note that the task must never be migrated to the target
+> 		 * state when being inside this ftrace handler.
+> 		 */
 > 
-> By other words, it makes sure that klp_patch_task() will assign the
-> right patch_state. Where klp_patch_task() could not be called
-> before we set TIF_PATCH_PENDING in klp_start_transition().
-> 
-> > +	smp_wmb();
-> > +}
+> We might want to move the second paragraph on top of the function.
+> It is a basic and important fact. It actually explains why the first
+> read barrier is not needed when the patch is being disabled.
 
-So I've not read the patch; but ending a function with an smp_wmb()
-feels wrong.
+I wrote the statement partly intuitively. I think that it is really
+somehow important. And I am slightly in doubts if we are on the safe side.
 
-A wmb orders two stores, and I feel both stores should be well visible
-in the same function.
+First, why is it important that the task->patch_state is not switched
+when being inside the ftrace handler?
+
+If we are inside the handler, we are kind-of inside the called
+function. And the basic idea of this consistency model is that
+we must not switch a task when it is inside a patched function.
+This is normally decided by the stack.
+
+The handler is a bit special because it is called right before the
+function. If it was the only patched function on the stack, it would
+not matter if we choose the new or old code. Both decisions would
+be safe for the moment.
+
+The fun starts when the function calls another patched function.
+The other patched function must be called consistently with
+the first one. If the first function was from the patch,
+the other must be from the patch as well and vice versa.
+
+This is why we must not switch task->patch_state dangerously
+when being inside the ftrace handler.
+
+Now I am not sure if this condition is fulfilled. The ftrace handler
+is called as the very first instruction of the function. Does not
+it break the stack validity? Could we sleep inside the ftrace
+handler? Will the patched function be detected on the stack?
+
+Or is my brain already too far in the fantasy world?
+
+
+Best regards,
+Petr
