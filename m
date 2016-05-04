@@ -1,21 +1,29 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
- [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 3r0W4c0cfNzDq5k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 07:14:07 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+Return-Path: <cov@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0WF00kxlzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 07:21:23 +1000 (AEST)
+Subject: Re: [RFC 1/5] powerpc: Rename context.vdso_base to context.vdso
+To: Balbir Singh <bsingharora@gmail.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, criu@openvz.org,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Will Deacon <Will.Deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com
-Subject: Re: [PATCH v3 0/2] cpufreq: powernv: Ramp-down global pstate slower
- than local-pstate
-Date: Wed, 04 May 2016 23:17:14 +0200
-Message-ID: <2253617.134ktIcBZI@vostro.rjw.lan>
-In-Reply-To: <1461059881-14434-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-References: <1461059881-14434-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ linux-arch@vger.kernel.org, linux-mm@kvack.org
+References: <20151202121918.GA4523@arm.com>
+ <1461856737-17071-1-git-send-email-cov@codeaurora.org>
+ <1461856737-17071-2-git-send-email-cov@codeaurora.org>
+ <5726A7D5.7030305@gmail.com>
+From: Christopher Covington <cov@codeaurora.org>
+Message-ID: <572A67CE.4010109@codeaurora.org>
+Date: Wed, 4 May 2016 17:21:18 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <5726A7D5.7030305@gmail.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, April 19, 2016 03:27:59 PM Akshay Adiga wrote:
-> The frequency transition latency from pmin to pmax is observed to be in few
-> millisecond granurality. And it usually happens to take a performance penalty
-> during sudden frequency rampup requests.
-> 
-> This patch set solves this problem by using a chip-level entity called "global
-> pstates". Global pstate manages elements across other dependent core chiplets.
-> Typically, the element that needs to be managed is the voltage setting.
-> So by holding global pstates higher than local pstate for some amount of time
-> ( ~5 seconds) the subsequent rampups could be made faster.
-> 
-> (1/2) patch removes the flag from cpufreq_policy->driver_data, so that it can
-> be used for tracking global pstates.
-> 
-> (2/2) patch adds code for global pstate management.
-> - The iozone results with this patchset, shows improvements in almost all cases.
-> - YCSB workload on redis with various  target operations per second shows 
-> better MaxLatency with this patch.
-> 
-> Changes from v1:
-> - Fixed coding style
-> - Added a routine to reset global_pstate_info instead of hacky memset
-> - Handled case where cpufreq_table_validate_and_show() fails
-> - changed int queue_gpstate_timer() to void queue_gpstate_timer()
-> 
-> Changes from v2:
-> - dropped the unreated change. 
-> 
-> Akshay Adiga (1):
->   cpufreq: powernv: Ramp-down global pstate slower than local-pstate
-> 
-> Shilpasri G Bhat (1):
->   cpufreq: powernv: Remove flag use-case of policy->driver_data
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 269 ++++++++++++++++++++++++++++++++++++--
->  1 file changed, 256 insertions(+), 13 deletions(-)
+Hi Balbir,
 
-Both [1-2/2] applied, thanks!
+On 05/01/2016 09:05 PM, Balbir Singh wrote:
+> On 29/04/16 01:18, Christopher Covington wrote:
+>> In order to share remap and unmap support for the VDSO with other
+>> architectures without duplicating the code, we need a common name and type
+>> for the address of the VDSO. An informal survey of the architectures
+>> indicates unsigned long vdso is popular. Change the variable name in
+>> powerpc from mm->context.vdso_base to simply mm->context.vdso.
+> 
+> Could you please provide additional details on why the remap/unmap operations are required?
+
+The goal is to make checkpointing and restoring processes work on
+several different architectures and ABIs, in the face of Address Space
+Layout Randomization (ASLR) and other factors that might change the VDSO
+virtual address from one exec() to the next.
+
+Here's the patch adding PowerPC support:
+
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=83d3f0e90c6c8f833e3da91917c243a916fda69e
+
+> This patch does rename, but should it abstract via a function acesss
+> to vmap field using arch_* operations? Not sure
+
+I'm sorry, but I don't understand this question. Are you saying ARM,
+Power etc. need VDSO unmap and remap log that behave differently? So far
+I've found the differences to be stylistic rather than really affecting
+generated code behavior.
+
+Thanks,
+Christopher Covington
+
+-- 
+Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
