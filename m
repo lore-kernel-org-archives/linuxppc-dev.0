@@ -1,39 +1,24 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
- [IPv6:2a00:1450:400c:c09::230])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
+ [IPv6:2607:f8b0:400e:c00::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r095X1QgdzDq62
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 17:43:43 +1000 (AEST)
-Received: by mail-wm0-x230.google.com with SMTP id e201so175565999wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 00:43:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0BLH1rPlzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 18:39:51 +1000 (AEST)
+Received: by mail-pf0-x231.google.com with SMTP id c189so23573584pfb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 01:39:51 -0700 (PDT)
+Subject: Re: [PATCH v9 06/26] powerpc/powernv: Data type unsigned int for PE
+ number
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1462254105-24128-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, alistair@popple.id.au
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <8777235b-b557-f01b-cffa-cfcbaba245eb@ozlabs.ru>
+Date: Wed, 4 May 2016 18:39:43 +1000
 MIME-Version: 1.0
-In-Reply-To: <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
-References: <1462332274-13744-1-git-send-email-yangbo.lu@nxp.com>
- <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
-Date: Wed, 4 May 2016 09:43:38 +0200
-Message-ID: <CAPDyKFoh7mfmMYxVxjG6jrRr6CuGKkuxdeON4yxX3yXFEamikg@mail.gmail.com>
-Subject: Re: [v9, 6/7] MAINTAINERS: add entry for Freescale SoC driver
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Yangbo Lu <yangbo.lu@nxp.com>, Scott Wood <oss@buserror.net>,
- Qiang Zhao <qiang.zhao@nxp.com>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-clk <linux-clk@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- iommu@lists.linux-foundation.org,
- netdev@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
- Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>,
- Jochen Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- Kumar Gala <galak@codeaurora.org>,
- Santosh Shilimkar <ssantosh@kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>,
- Xiaobo Xie <xiaobo.xie@nxp.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1462254105-24128-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,53 +28,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 4 May 2016 at 05:24, Yangbo Lu <yangbo.lu@nxp.com> wrote:
-> Add maintainer entry for Freescale SoC driver including
-> the QE library and the GUTS driver now. Also add maintainer
-> for QE library.
+On 05/03/2016 03:41 PM, Gavin Shan wrote:
+> This changes the data type of PE number from "int" to "unsigned int"
+> in order to match the fact PE number is never negative:
 >
-> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+>    * The number of PE to which the specified PCI device is attached.
+>    * The PE number map for SRIOV VFs.
+>    * The returned PE number from pnv_ioda_alloc_pe().
+>    * The returned PE number from pnv_ioda2_pick_m64_pe().
+>
+> Suggested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-So I need an ack from Scott and Qiang for this one, then I intend to
-queue up the series.
-
-Kind regards
-Uffe
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 > ---
-> Changes for v8:
->         - Added this patch
-> Changes for v9:
->         - Added linux-arm mail list
->         - Removed GUTS driver entry
-> ---
->  MAINTAINERS | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
+>  arch/powerpc/include/asm/pci-bridge.h     | 6 +++---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++----
+>  arch/powerpc/platforms/powernv/pci.c      | 2 +-
+>  arch/powerpc/platforms/powernv/pci.h      | 2 +-
+>  4 files changed, 9 insertions(+), 9 deletions(-)
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 42e65d1..ce91db7 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -4622,9 +4622,18 @@ F:       drivers/net/ethernet/freescale/fec_ptp.c
->  F:     drivers/net/ethernet/freescale/fec.h
->  F:     Documentation/devicetree/bindings/net/fsl-fec.txt
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 023c8c8..220129f 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -209,14 +209,14 @@ struct pci_dn {
+>  #ifdef CONFIG_EEH
+>  	struct eeh_dev *edev;		/* eeh device */
+>  #endif
+> -#define IODA_INVALID_PE		(-1)
+> +#define IODA_INVALID_PE		0xFFFFFFFF
+>  #ifdef CONFIG_PPC_POWERNV
+> -	int	pe_number;
+> +	unsigned int pe_number;
+>  	int     vf_index;		/* VF index in the PF */
+>  #ifdef CONFIG_PCI_IOV
+>  	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>  	u16     num_vfs;		/* number of VFs enabled*/
+> -	int     *pe_num_map;		/* PE# for the first VF PE or array */
+> +	unsigned int *pe_num_map;	/* PE# for the first VF PE or array */
+>  	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>  #define IODA_INVALID_M64        (-1)
+>  	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 1d2514f..4aa6cdf 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -138,7 +138,7 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
+>  	phb->ioda.pe_array[pe_no].pe_number = pe_no;
+>  }
 >
-> +FREESCALE SOC DRIVER
-> +M:     Scott Wood <oss@buserror.net>
-> +L:     linuxppc-dev@lists.ozlabs.org
-> +L:     linux-arm-kernel@lists.infradead.org
-> +S:     Maintained
-> +F:     drivers/soc/fsl/
-> +F:     include/linux/fsl/
-> +
->  FREESCALE QUICC ENGINE LIBRARY
-> +M:     Qiang Zhao <qiang.zhao@nxp.com>
->  L:     linuxppc-dev@lists.ozlabs.org
-> -S:     Orphan
-> +S:     Maintained
->  F:     drivers/soc/fsl/qe/
->  F:     include/soc/fsl/*qe*.h
->  F:     include/soc/fsl/*ucc*.h
-> --
-> 2.1.0.27.g96db324
+> -static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
+> +static unsigned int pnv_ioda_alloc_pe(struct pnv_phb *phb)
+>  {
+>  	unsigned long pe;
 >
+> @@ -261,7 +261,7 @@ static void pnv_ioda2_reserve_m64_pe(struct pci_bus *bus,
+>  	}
+>  }
+>
+> -static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
+> +static unsigned int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
+>  {
+>  	struct pci_controller *hose = pci_bus_to_host(bus);
+>  	struct pnv_phb *phb = hose->private_data;
+> @@ -919,7 +919,7 @@ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
+>  	struct pnv_phb *phb = hose->private_data;
+>  	struct pci_dn *pdn = pci_get_pdn(dev);
+>  	struct pnv_ioda_pe *pe;
+> -	int pe_num;
+> +	unsigned int pe_num;
+>
+>  	if (!pdn) {
+>  		pr_err("%s: Device tree node not associated properly\n",
+> @@ -1010,7 +1010,7 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+>  	struct pci_controller *hose = pci_bus_to_host(bus);
+>  	struct pnv_phb *phb = hose->private_data;
+>  	struct pnv_ioda_pe *pe;
+> -	int pe_num = IODA_INVALID_PE;
+> +	unsigned int pe_num = IODA_INVALID_PE;
+>
+>  	/* Check if PE is determined by M64 */
+>  	if (phb->pick_m64_pe)
+> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+> index afbaa1c..8827461 100644
+> --- a/arch/powerpc/platforms/powernv/pci.c
+> +++ b/arch/powerpc/platforms/powernv/pci.c
+> @@ -370,7 +370,7 @@ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
+>  	struct pnv_phb *phb = pdn->phb->private_data;
+>  	u8	fstate;
+>  	__be16	pcierr;
+> -	int	pe_no;
+> +	unsigned int pe_no;
+>  	s64	rc;
+>
+>  	/*
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 784882a..66f2569 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -113,7 +113,7 @@ struct pnv_phb {
+>  	int (*init_m64)(struct pnv_phb *phb);
+>  	void (*reserve_m64_pe)(struct pci_bus *bus,
+>  			       unsigned long *pe_bitmap, bool all);
+> -	int (*pick_m64_pe)(struct pci_bus *bus, bool all);
+> +	unsigned int (*pick_m64_pe)(struct pci_bus *bus, bool all);
+>  	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
+>  	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
+>  	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
+>
+
+
+-- 
+Alexey
