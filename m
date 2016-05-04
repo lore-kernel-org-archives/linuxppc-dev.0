@@ -1,32 +1,30 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0Q0c6ZW2zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:25:20 +1000 (AEST)
-Date: Wed, 4 May 2016 12:25:17 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a
- per-task consistency model
-Message-ID: <20160504172517.tdatoj2nlkqwyd4g@treble>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160504123940.GR2749@pathway.suse.cz>
- <20160504141205.GS2749@pathway.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160504141205.GS2749@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0QD94GQdzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:35:21 +1000 (AEST)
+Message-ID: <1462383308.16584.43.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev@vger.kernel.org
+Cc: ulf.hansson@linaro.org, Mark Rutland <mark.rutland@arm.com>, Rob Herring
+ <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Jochen
+ Friedrich <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>, Kumar
+ Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ leoyang.li@nxp.com, xiaobo.xie@nxp.com
+Date: Wed, 04 May 2016 12:35:08 -0500
+In-Reply-To: <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
+References: <1462332274-13744-1-git-send-email-yangbo.lu@nxp.com>
+ <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [v9, 6/7] MAINTAINERS: add entry for Freescale SoC driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,64 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2016 at 04:12:05PM +0200, Petr Mladek wrote:
-> On Wed 2016-05-04 14:39:40, Petr Mladek wrote:
-> > 		 *
-> > 		 * Note that the task must never be migrated to the target
-> > 		 * state when being inside this ftrace handler.
-> > 		 */
-> > 
-> > We might want to move the second paragraph on top of the function.
-> > It is a basic and important fact. It actually explains why the first
-> > read barrier is not needed when the patch is being disabled.
+On Wed, 2016-05-04 at 11:24 +0800, Yangbo Lu wrote:
+> Add maintainer entry for Freescale SoC driver including
+> the QE library and the GUTS driver now. Also add maintainer
+> for QE library.
 > 
-> I wrote the statement partly intuitively. I think that it is really
-> somehow important. And I am slightly in doubts if we are on the safe side.
+> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+> ---
+> Changes for v8:
+> 	- Added this patch
+> Changes for v9:
+> 	- Added linux-arm mail list
+> 	- Removed GUTS driver entry
+> ---
+>  MAINTAINERS | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
 > 
-> First, why is it important that the task->patch_state is not switched
-> when being inside the ftrace handler?
-> 
-> If we are inside the handler, we are kind-of inside the called
-> function. And the basic idea of this consistency model is that
-> we must not switch a task when it is inside a patched function.
-> This is normally decided by the stack.
-> 
-> The handler is a bit special because it is called right before the
-> function. If it was the only patched function on the stack, it would
-> not matter if we choose the new or old code. Both decisions would
-> be safe for the moment.
-> 
-> The fun starts when the function calls another patched function.
-> The other patched function must be called consistently with
-> the first one. If the first function was from the patch,
-> the other must be from the patch as well and vice versa.
-> 
-> This is why we must not switch task->patch_state dangerously
-> when being inside the ftrace handler.
-> 
-> Now I am not sure if this condition is fulfilled. The ftrace handler
-> is called as the very first instruction of the function. Does not
-> it break the stack validity? Could we sleep inside the ftrace
-> handler? Will the patched function be detected on the stack?
-> 
-> Or is my brain already too far in the fantasy world?
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 42e65d1..ce91db7 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4622,9 +4622,18 @@ F:	drivers/net/ethernet/freescale/fec_ptp.c
+>  F:	drivers/net/ethernet/freescale/fec.h
+>  F:	Documentation/devicetree/bindings/net/fsl-fec.txt
+>  
+> +FREESCALE SOC DRIVER
+> +M:	Scott Wood <oss@buserror.net>
+> +L:	linuxppc-dev@lists.ozlabs.org
+> +L:	linux-arm-kernel@lists.infradead.org
+> +S:	Maintained
+> +F:	drivers/soc/fsl/
+> +F:	include/linux/fsl/
+> +
+>  FREESCALE QUICC ENGINE LIBRARY
+> +M:	Qiang Zhao <qiang.zhao@nxp.com>
+>  L:	linuxppc-dev@lists.ozlabs.org
+> -S:	Orphan
+> +S:	Maintained
+>  F:	drivers/soc/fsl/qe/
+>  F:	include/soc/fsl/*qe*.h
+>  F:	include/soc/fsl/*ucc*.h
 
-I think this isn't a possibility.
+s/DRIVER/DRIVERS/
 
-In today's code base, this can't happen because task patch states are
-only switched when sleeping or when exiting the kernel.  The ftrace
-handler doesn't sleep directly.
+There's more than one.
 
-If it were preempted, it couldn't be switched there either because we
-consider preempted stacks to be unreliable.
+Otherwise:
+Acked-by: Scott Wood <oss@buserror.net>
 
-In theory, a DWARF stack trace of a preempted task *could* be reliable.
-But then the DWARF unwinder should be smart enough to see that the
-original function called the ftrace handler.  Right?  So the stack would
-be reliable, but then livepatch would see the original function on the
-stack and wouldn't switch the task.
+-Scott
 
-Does that make sense?
-
--- 
-Josh
+> 
