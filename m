@@ -1,31 +1,24 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0089.outbound.protection.outlook.com [65.55.169.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0QjF61jfzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 03:57:05 +1000 (AEST)
-Date: Wed, 4 May 2016 12:57:00 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Petr Mladek <pmladek@suse.com>
-Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
- Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
- Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: klp_task_patch: was: [RFC PATCH v2 17/18] livepatch: change to a
- per-task consistency model
-Message-ID: <20160504175700.nizuvflyisfd3lks@treble>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160504144854.GT2749@pathway.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0TD366wxzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 05:50:26 +1000 (AEST)
+From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>
+CC: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ Scott Wood <scott.wood@nxp.com>, Alexandru Porosanu
+ <alexandru.porosanu@nxp.com>, Tudor Ambarus <tudor-dan.ambarus@nxp.com>,
+ Cristian Stoica <cristian.stoica@nxp.com>
+Subject: [PATCH 3/7] powerpc: add io{read,write}64 accessors
+Date: Wed, 4 May 2016 20:16:38 +0300
+Message-ID: <1462382198-11985-1-git-send-email-horia.geanta@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20160504144854.GT2749@pathway.suse.cz>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,90 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2016 at 04:48:54PM +0200, Petr Mladek wrote:
-> On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
-> > Change livepatch to use a basic per-task consistency model.  This is the
-> > foundation which will eventually enable us to patch those ~10% of
-> > security patches which change function or data semantics.  This is the
-> > biggest remaining piece needed to make livepatch more generally useful.
-> > 
-> > diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
-> > new file mode 100644
-> > index 0000000..92819bb
-> > --- /dev/null
-> > +++ b/kernel/livepatch/transition.c
-> > +/*
-> > + * klp_patch_task() - change the patched state of a task
-> > + * @task:	The task to change
-> > + *
-> > + * Switches the patched state of the task to the set of functions in the target
-> > + * patch state.
-> > + */
-> > +void klp_patch_task(struct task_struct *task)
-> > +{
-> > +	clear_tsk_thread_flag(task, TIF_PATCH_PENDING);
-> > +
-> > +	/*
-> > +	 * The corresponding write barriers are in klp_init_transition() and
-> > +	 * klp_reverse_transition().  See the comments there for an explanation.
-> > +	 */
-> > +	smp_rmb();
-> > +
-> > +	task->patch_state = klp_target_state;
-> > +}
-> > +
-> > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> > index bd12c6c..60d633f 100644
-> > --- a/kernel/sched/idle.c
-> > +++ b/kernel/sched/idle.c
-> > @@ -9,6 +9,7 @@
-> >  #include <linux/mm.h>
-> >  #include <linux/stackprotector.h>
-> >  #include <linux/suspend.h>
-> > +#include <linux/livepatch.h>
-> >  
-> >  #include <asm/tlb.h>
-> >  
-> > @@ -266,6 +267,9 @@ static void cpu_idle_loop(void)
-> >  
-> >  		sched_ttwu_pending();
-> >  		schedule_preempt_disabled();
-> > +
-> > +		if (unlikely(klp_patch_pending(current)))
-> > +			klp_patch_task(current);
-> >  	}
-> 
-> Some more ideas from the world of crazy races. I was shaking my head
-> if this was safe or not.
-> 
-> The problem might be if the task get rescheduled between the check
-> for the pending stuff or inside the klp_patch_task() function.
-> This will get even more important when we use this construct
-> on some more locations, e.g. in some kthreads.
-> 
-> If the task is sleeping on this strange locations, it might assign
-> strange values on strange times.
-> 
-> I think that it is safe only because it is called with the
-> 'current' parameter and on a safe locations. It means that
-> the result is always safe and consistent. Also we could assign
-> an outdated value only when sleeping between reading klp_target_state
-> and storing task->patch_state. But if anyone modified
-> klp_target_state at this point, he also set TIF_PENDING_PATCH,
-> so the change will not get lost.
-> 
-> I think that we should document that klp_patch_func() must be
-> called only from a safe location from within the affected task.
-> 
-> I even suggest to avoid misuse by removing the struct *task_struct
-> parameter. It should always be called with current.
+This will allow device drivers to consistently use io{read,write}XX
+also for 64-bit accesses.
 
-Would the race involve two tasks trying to call klp_patch_task() for the
-same task at the same time?  If so I don't think that would be a problem
-since they would both write the same value for task->patch_state.
+Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
+---
+ arch/powerpc/kernel/iomap.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-(Sorry if I'm being slow, I think I've managed to reach my quota of hard
-thinking for the day and I don't exactly follow what the race would be.)
-
+diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
+index 12e48d56f771..3963f0b68d52 100644
+--- a/arch/powerpc/kernel/iomap.c
++++ b/arch/powerpc/kernel/iomap.c
+@@ -38,6 +38,18 @@ EXPORT_SYMBOL(ioread16);
+ EXPORT_SYMBOL(ioread16be);
+ EXPORT_SYMBOL(ioread32);
+ EXPORT_SYMBOL(ioread32be);
++#ifdef __powerpc64__
++u64 ioread64(void __iomem *addr)
++{
++	return readq(addr);
++}
++u64 ioread64be(void __iomem *addr)
++{
++	return readq_be(addr);
++}
++EXPORT_SYMBOL(ioread64);
++EXPORT_SYMBOL(ioread64be);
++#endif /* __powerpc64__ */
+ 
+ void iowrite8(u8 val, void __iomem *addr)
+ {
+@@ -64,6 +76,18 @@ EXPORT_SYMBOL(iowrite16);
+ EXPORT_SYMBOL(iowrite16be);
+ EXPORT_SYMBOL(iowrite32);
+ EXPORT_SYMBOL(iowrite32be);
++#ifdef __powerpc64__
++void iowrite64(u64 val, void __iomem *addr)
++{
++	writeq(val, addr);
++}
++void iowrite64be(u64 val, void __iomem *addr)
++{
++	writeq_be(val, addr);
++}
++EXPORT_SYMBOL(iowrite64);
++EXPORT_SYMBOL(iowrite64be);
++#endif /* __powerpc64__ */
+ 
+ /*
+  * These are the "repeat read/write" functions. Note the
 -- 
-Josh
+2.4.4
