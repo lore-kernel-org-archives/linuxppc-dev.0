@@ -1,39 +1,37 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r051b1SJTzDqCj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 14:40:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r056M1vznzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 14:44:11 +1000 (AEST)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 4 May 2016 14:40:02 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0EC262CE8046
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 14:39:58 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u444dnaG11534662
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 14:39:57 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u444dOc7025415
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 14:39:25 +1000
-Date: Wed, 4 May 2016 14:38:30 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alistair Popple <alistair@popple.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru
-Subject: Re: [PATCH v9 07/26] powerpc/powernv: Fix initial IO and M32 segmap
-Message-ID: <20160504043829.GA11660@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 4 May 2016 14:44:10 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0CE292BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 14:44:07 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u444hvmC12124528
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 14:44:06 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u444hWMs014994
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 14:43:32 +1000
+Subject: Re: [PATCH v9 18/26] powerpc/pci: Rename pcibios_{add,
+ remove}_pci_devices()
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462254105-24128-8-git-send-email-gwshan@linux.vnet.ibm.com>
- <2708321.yBECSdbB51@new-mexico>
+ <1462254105-24128-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, alistair@popple.id.au
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <57297DDB.3030301@au1.ibm.com>
+Date: Wed, 4 May 2016 14:43:07 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2708321.yBECSdbB51@new-mexico>
+In-Reply-To: <1462254105-24128-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,67 +41,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2016 at 01:31:04PM +1000, Alistair Popple wrote:
->On Tue, 3 May 2016 15:41:26 Gavin Shan wrote:
->> There are two arrays for IO and M32 segment maps on every PHB.
->> The index of the arrays are segment number and the value stored
->> in the corresponding element is PE number, indicating the segment
->> is assigned to the PE. Initially, all elements in those two arrays
->> are zeroes, meaning all segments are assigned to PE#0. It's wrong.
->> 
->> This fixes the initial values in the elements of those two arrays
->> to IODA_INVALID_PE, meaning all segments aren't assigned to any
->> PE.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/powernv/pci-ioda.c | 8 +++++++-
->>  1 file changed, 7 insertions(+), 1 deletion(-)
->> 
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
->b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 4aa6cdf..59b20e5 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -3240,6 +3240,7 @@ static void __init pnv_pci_init_ioda_phb(struct 
->device_node *np,
->>  	const __be64 *prop64;
->>  	const __be32 *prop32;
->>  	int len;
->> +	unsigned int segno;
->>  	u64 phb_id;
->>  	void *aux;
->>  	long rc;
->> @@ -3334,8 +3335,13 @@ static void __init pnv_pci_init_ioda_phb(struct 
->device_node *np,
->>  	aux = memblock_virt_alloc(size, 0);
->>  	phb->ioda.pe_alloc = aux;
->>  	phb->ioda.m32_segmap = aux + m32map_off;
->> -	if (phb->type == PNV_PHB_IODA1)
->> +	for (segno = 0; segno < phb->ioda.total_pe_num; segno++)
+On 03/05/16 15:41, Gavin Shan wrote:
+> This renames pcibios_{add,remove}_pci_devices() to avoid conflicts
+> with names of the weak functions in PCI subsystem, which have the
+> prefix "pcibios". No logical changes introduced.
 >
->These arrays are indexed by segment number but the upper bound is the total 
->number of PEs. Does IODA1 & IODA2 hardware always have the same number of PE#s 
->and segments? Is there any chance there could be more or less PE#s 
->(total_pe_num) than segments?
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+Looks fine to me.
+
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+> ---
+>   arch/powerpc/include/asm/pci-bridge.h |  4 ++--
+>   arch/powerpc/kernel/eeh_driver.c      | 12 ++++++------
+>   arch/powerpc/kernel/pci-hotplug.c     | 15 +++++++--------
+>   drivers/pci/hotplug/rpadlpar_core.c   |  2 +-
+>   drivers/pci/hotplug/rpaphp_core.c     |  4 ++--
+>   drivers/pci/hotplug/rpaphp_pci.c      |  2 +-
+>   6 files changed, 19 insertions(+), 20 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> index 220129f..99027b8 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -260,10 +260,10 @@ static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
+>   extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
+>
+>   /** Remove all of the PCI devices under this bus */
+> -extern void pcibios_remove_pci_devices(struct pci_bus *bus);
+> +extern void pci_hp_remove_devices(struct pci_bus *bus);
+>
+>   /** Discover new pci devices under this bus, and add them */
+> -extern void pcibios_add_pci_devices(struct pci_bus *bus);
+> +extern void pci_hp_add_devices(struct pci_bus *bus);
+>
+>
+>   extern void isa_bridge_find_early(struct pci_controller *hose);
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index fb6207d..618d13c 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -621,7 +621,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>   	 * We don't remove the corresponding PE instances because
+>   	 * we need the information afterwords. The attached EEH
+>   	 * devices are expected to be attached soon when calling
+> -	 * into pcibios_add_pci_devices().
+> +	 * into pci_hp_add_devices().
+>   	 */
+>   	eeh_pe_state_mark(pe, EEH_PE_KEEP);
+>   	if (bus) {
+> @@ -630,7 +630,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>   		} else {
+>   			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
+>   			pci_lock_rescan_remove();
+> -			pcibios_remove_pci_devices(bus);
+> +			pci_hp_remove_devices(bus);
+>   			pci_unlock_rescan_remove();
+>   		}
+>   	} else if (frozen_bus) {
+> @@ -681,7 +681,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>   		if (pe->type & EEH_PE_VF)
+>   			eeh_add_virt_device(edev, NULL);
+>   		else
+> -			pcibios_add_pci_devices(bus);
+> +			pci_hp_add_devices(bus);
+>   	} else if (frozen_bus && rmv_data->removed) {
+>   		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
+>   		ssleep(5);
+> @@ -691,7 +691,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
+>   		if (pe->type & EEH_PE_VF)
+>   			eeh_add_virt_device(edev, NULL);
+>   		else
+> -			pcibios_add_pci_devices(frozen_bus);
+> +			pci_hp_add_devices(frozen_bus);
+>   	}
+>   	eeh_pe_state_clear(pe, EEH_PE_KEEP);
+>
+> @@ -896,7 +896,7 @@ perm_error:
+>   			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
+>
+>   			pci_lock_rescan_remove();
+> -			pcibios_remove_pci_devices(frozen_bus);
+> +			pci_hp_remove_devices(frozen_bus);
+>   			pci_unlock_rescan_remove();
+>   		}
+>   	}
+> @@ -981,7 +981,7 @@ static void eeh_handle_special_event(void)
+>   				bus = eeh_pe_bus_get(phb_pe);
+>   				eeh_pe_dev_traverse(pe,
+>   					eeh_report_failure, NULL);
+> -				pcibios_remove_pci_devices(bus);
+> +				pci_hp_remove_devices(bus);
+>   			}
+>   			pci_unlock_rescan_remove();
+>   		}
+> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+> index 59c4361..2d108e5 100644
+> --- a/arch/powerpc/kernel/pci-hotplug.c
+> +++ b/arch/powerpc/kernel/pci-hotplug.c
+> @@ -38,20 +38,20 @@ void pcibios_release_device(struct pci_dev *dev)
+>   }
+>
+>   /**
+> - * pcibios_remove_pci_devices - remove all devices under this bus
+> + * pci_hp_remove_devices - remove all devices under this bus
+>    * @bus: the indicated PCI bus
+>    *
+>    * Remove all of the PCI devices under this bus both from the
+>    * linux pci device tree, and from the powerpc EEH address cache.
+>    */
+> -void pcibios_remove_pci_devices(struct pci_bus *bus)
+> +void pci_hp_remove_devices(struct pci_bus *bus)
+>   {
+>   	struct pci_dev *dev, *tmp;
+>   	struct pci_bus *child_bus;
+>
+>   	/* First go down child busses */
+>   	list_for_each_entry(child_bus, &bus->children, node)
+> -		pcibios_remove_pci_devices(child_bus);
+> +		pci_hp_remove_devices(child_bus);
+>
+>   	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
+>   		 pci_domain_nr(bus),  bus->number);
+> @@ -60,11 +60,10 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
+>   		pci_stop_and_remove_bus_device(dev);
+>   	}
+>   }
+> -
+> -EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
+> +EXPORT_SYMBOL_GPL(pci_hp_remove_devices);
+>
+>   /**
+> - * pcibios_add_pci_devices - adds new pci devices to bus
+> + * pci_hp_add_devices - adds new pci devices to bus
+>    * @bus: the indicated PCI bus
+>    *
+>    * This routine will find and fixup new pci devices under
+> @@ -74,7 +73,7 @@ EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
+>    * is how this routine differs from other, similar pcibios
+>    * routines.)
+>    */
+> -void pcibios_add_pci_devices(struct pci_bus * bus)
+> +void pci_hp_add_devices(struct pci_bus *bus)
+>   {
+>   	int slotno, mode, pass, max;
+>   	struct pci_dev *dev;
+> @@ -114,4 +113,4 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+>   	}
+>   	pcibios_finish_adding_to_bus(bus);
+>   }
+> -EXPORT_SYMBOL_GPL(pcibios_add_pci_devices);
+> +EXPORT_SYMBOL_GPL(pci_hp_add_devices);
+> diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+> index b46b57d..b770d6d 100644
+> --- a/drivers/pci/hotplug/rpadlpar_core.c
+> +++ b/drivers/pci/hotplug/rpadlpar_core.c
+> @@ -380,7 +380,7 @@ int dlpar_remove_pci_slot(char *drc_name, struct device_node *dn)
+>   	}
+>
+>   	/* Remove all devices below slot */
+> -	pcibios_remove_pci_devices(bus);
+> +	pci_hp_remove_devices(bus);
+>
+>   	/* Unmap PCI IO space */
+>   	if (pcibios_unmap_io_space(bus)) {
+> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+> index 611f605..8d13202 100644
+> --- a/drivers/pci/hotplug/rpaphp_core.c
+> +++ b/drivers/pci/hotplug/rpaphp_core.c
+> @@ -404,7 +404,7 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+>
+>   	if (state == PRESENT) {
+>   		pci_lock_rescan_remove();
+> -		pcibios_add_pci_devices(slot->bus);
+> +		pci_hp_add_devices(slot->bus);
+>   		pci_unlock_rescan_remove();
+>   		slot->state = CONFIGURED;
+>   	} else if (state == EMPTY) {
+> @@ -426,7 +426,7 @@ static int disable_slot(struct hotplug_slot *hotplug_slot)
+>   		return -EINVAL;
+>
+>   	pci_lock_rescan_remove();
+> -	pcibios_remove_pci_devices(slot->bus);
+> +	pci_hp_remove_devices(slot->bus);
+>   	pci_unlock_rescan_remove();
+>   	vm_unmap_aliases();
+>
+> diff --git a/drivers/pci/hotplug/rpaphp_pci.c b/drivers/pci/hotplug/rpaphp_pci.c
+> index 7836d69..137a892 100644
+> --- a/drivers/pci/hotplug/rpaphp_pci.c
+> +++ b/drivers/pci/hotplug/rpaphp_pci.c
+> @@ -116,7 +116,7 @@ int rpaphp_enable_slot(struct slot *slot)
+>   		}
+>
+>   		if (list_empty(&bus->devices))
+> -			pcibios_add_pci_devices(bus);
+> +			pci_hp_add_devices(bus);
+>
+>   		if (!list_empty(&bus->devices)) {
+>   			info->adapter_status = CONFIGURED;
 >
 
-Alistair, thanks for review the code in time. The total number of M32 segments
-and PEs are always equal on IODA1/IODA2.
-
-Thanks,
-Gavin
-
->- Alistair
->
->> +		phb->ioda.m32_segmap[segno] = IODA_INVALID_PE;
->> +	if (phb->type == PNV_PHB_IODA1) {
->>  		phb->ioda.io_segmap = aux + iomap_off;
->> +		for (segno = 0; segno < phb->ioda.total_pe_num; segno++)
->> +			phb->ioda.io_segmap[segno] = IODA_INVALID_PE;
->> +	}
->>  	phb->ioda.pe_array = aux + pemap_off;
->>  	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
->>  
->> 
->
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
