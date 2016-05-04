@@ -1,24 +1,30 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0BLH1rPlzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 18:39:51 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id c189so23573584pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 01:39:51 -0700 (PDT)
-Subject: Re: [PATCH v9 06/26] powerpc/powernv: Data type unsigned int for PE
- number
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462254105-24128-7-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, alistair@popple.id.au
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <8777235b-b557-f01b-cffa-cfcbaba245eb@ozlabs.ru>
-Date: Wed, 4 May 2016 18:39:43 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0BPM0yHbzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 May 2016 18:42:30 +1000 (AEST)
+Date: Wed, 4 May 2016 10:42:23 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 17/18] livepatch: change to a per-task consistency
+ model
+Message-ID: <20160504084223.GQ2749@pathway.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <1462254105-24128-7-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,117 +34,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/03/2016 03:41 PM, Gavin Shan wrote:
-> This changes the data type of PE number from "int" to "unsigned int"
-> in order to match the fact PE number is never negative:
->
->    * The number of PE to which the specified PCI device is attached.
->    * The PE number map for SRIOV VFs.
->    * The returned PE number from pnv_ioda_alloc_pe().
->    * The returned PE number from pnv_ioda2_pick_m64_pe().
->
-> Suggested-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
+> Change livepatch to use a basic per-task consistency model.  This is the
+> foundation which will eventually enable us to patch those ~10% of
+> security patches which change function or data semantics.  This is the
+> biggest remaining piece needed to make livepatch more generally useful.
 
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-> ---
->  arch/powerpc/include/asm/pci-bridge.h     | 6 +++---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++----
->  arch/powerpc/platforms/powernv/pci.c      | 2 +-
->  arch/powerpc/platforms/powernv/pci.h      | 2 +-
->  4 files changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 023c8c8..220129f 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -209,14 +209,14 @@ struct pci_dn {
->  #ifdef CONFIG_EEH
->  	struct eeh_dev *edev;		/* eeh device */
->  #endif
-> -#define IODA_INVALID_PE		(-1)
-> +#define IODA_INVALID_PE		0xFFFFFFFF
->  #ifdef CONFIG_PPC_POWERNV
-> -	int	pe_number;
-> +	unsigned int pe_number;
->  	int     vf_index;		/* VF index in the PF */
->  #ifdef CONFIG_PCI_IOV
->  	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->  	u16     num_vfs;		/* number of VFs enabled*/
-> -	int     *pe_num_map;		/* PE# for the first VF PE or array */
-> +	unsigned int *pe_num_map;	/* PE# for the first VF PE or array */
->  	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
->  #define IODA_INVALID_M64        (-1)
->  	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 1d2514f..4aa6cdf 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -138,7 +138,7 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
->  	phb->ioda.pe_array[pe_no].pe_number = pe_no;
->  }
->
-> -static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
-> +static unsigned int pnv_ioda_alloc_pe(struct pnv_phb *phb)
->  {
->  	unsigned long pe;
->
-> @@ -261,7 +261,7 @@ static void pnv_ioda2_reserve_m64_pe(struct pci_bus *bus,
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -76,6 +76,7 @@
+>  #include <linux/compiler.h>
+>  #include <linux/sysctl.h>
+>  #include <linux/kcov.h>
+> +#include <linux/livepatch.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/pgalloc.h>
+> @@ -1586,6 +1587,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  		p->parent_exec_id = current->self_exec_id;
 >  	}
->  }
->
-> -static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
-> +static unsigned int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
->  {
->  	struct pci_controller *hose = pci_bus_to_host(bus);
->  	struct pnv_phb *phb = hose->private_data;
-> @@ -919,7 +919,7 @@ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
->  	struct pnv_phb *phb = hose->private_data;
->  	struct pci_dn *pdn = pci_get_pdn(dev);
->  	struct pnv_ioda_pe *pe;
-> -	int pe_num;
-> +	unsigned int pe_num;
->
->  	if (!pdn) {
->  		pr_err("%s: Device tree node not associated properly\n",
-> @@ -1010,7 +1010,7 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->  	struct pci_controller *hose = pci_bus_to_host(bus);
->  	struct pnv_phb *phb = hose->private_data;
->  	struct pnv_ioda_pe *pe;
-> -	int pe_num = IODA_INVALID_PE;
-> +	unsigned int pe_num = IODA_INVALID_PE;
->
->  	/* Check if PE is determined by M64 */
->  	if (phb->pick_m64_pe)
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index afbaa1c..8827461 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -370,7 +370,7 @@ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
->  	struct pnv_phb *phb = pdn->phb->private_data;
->  	u8	fstate;
->  	__be16	pcierr;
-> -	int	pe_no;
-> +	unsigned int pe_no;
->  	s64	rc;
->
+>  
+> +	klp_copy_process(p);
+
+I am in doubts here. We copy the state from the parent here. It means
+that the new process might still need to be converted. But at the same
+point print_context_stack_reliable() returns zero without printing
+any stack trace when TIF_FORK flag is set. It means that a freshly
+forked task might get be converted immediately. I seems that boot
+operations are always done when copy_process() is called. But
+they are contradicting each other.
+
+I guess that print_context_stack_reliable() should either return
+-EINVAL when TIF_FORK is set. Or it should try to print the
+stack of the newly forked task.
+
+Or do I miss something, please?
+
+> +
+>  	spin_lock(&current->sighand->siglock);
+>  
 >  	/*
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 784882a..66f2569 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -113,7 +113,7 @@ struct pnv_phb {
->  	int (*init_m64)(struct pnv_phb *phb);
->  	void (*reserve_m64_pe)(struct pci_bus *bus,
->  			       unsigned long *pe_bitmap, bool all);
-> -	int (*pick_m64_pe)(struct pci_bus *bus, bool all);
-> +	unsigned int (*pick_m64_pe)(struct pci_bus *bus, bool all);
->  	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
->  	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
->  	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
->
+
+[...]
+
+> diff --git a/kernel/livepatch/transition.c b/kernel/livepatch/transition.c
+> new file mode 100644
+> index 0000000..92819bb
+> --- /dev/null
+> +++ b/kernel/livepatch/transition.c
+> +/*
+> + * This function can be called in the middle of an existing transition to
+> + * reverse the direction of the target patch state.  This can be done to
+> + * effectively cancel an existing enable or disable operation if there are any
+> + * tasks which are stuck in the initial patch state.
+> + */
+> +void klp_reverse_transition(void)
+> +{
+> +	struct klp_patch *patch = klp_transition_patch;
+> +
+> +	klp_target_state = !klp_target_state;
+> +
+> +	/*
+> +	 * Ensure that if another CPU goes through the syscall barrier, sees
+> +	 * the TIF_PATCH_PENDING writes in klp_start_transition(), and calls
+> +	 * klp_patch_task(), it also sees the above write to the target state.
+> +	 * Otherwise it can put the task in the wrong universe.
+> +	 */
+> +	smp_wmb();
+> +
+> +	klp_start_transition();
+> +	klp_try_complete_transition();
+
+It is a bit strange that we keep the work scheduled. It might be
+better to use
+
+       mod_delayed_work(system_wq, &klp_work, 0);
+
+Which triggers more ideas from the nitpicking deparment:
+
+I would move the work definition from core.c to transition.c because
+it is closely related to klp_try_complete_transition();
+
+When on it. I would make it more clear that the work is related
+to transition. Also I would call queue_delayed_work() directly
+instead of adding the klp_schedule_work() wrapper. The delay
+might be defined using a constant, e.g.
+
+#define KLP_TRANSITION_DELAY round_jiffies_relative(HZ)
+
+queue_delayed_work(system_wq, &klp_transition_work, KLP_TRANSITION_DELAY);
+
+Finally, the following is always called right after
+klp_start_transition(), so I would call it from there.
+
+	if (!klp_try_complete_transition())
+		klp_schedule_work();
 
 
--- 
-Alexey
+> +
+> +	patch->enabled = !patch->enabled;
+> +}
+> +
+
+It is really great work! I am checking this patch from left, right, top,
+and even bottom and all seems to work well together.
+
+Best Regards,
+Petr
