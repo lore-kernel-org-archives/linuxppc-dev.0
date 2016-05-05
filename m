@@ -1,20 +1,40 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail05.adl6.internode.on.net (ipmail05.adl6.internode.on.net
- [150.101.137.143])
- by lists.ozlabs.org (Postfix) with ESMTP id 3r0c9q1x7gzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 11:03:59 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0dLz73mHzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 11:56:59 +1000 (AEST)
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 5 May 2016 11:56:59 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id EB1622CE8062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 11:56:44 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u451uMPj5636402
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 May 2016 11:56:33 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u451twc1029765
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 May 2016 11:55:58 +1000
+Date: Thu, 5 May 2016 11:55:28 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- aik@ozlabs.ru
-Subject: Re: [PATCH v9 12/26] powerpc/powernv/ioda1: M64 support on P7IOC
-Date: Thu, 05 May 2016 11:03:28 +1000
-Message-ID: <1763008.6yEqpfAAz1@new-mexico>
-In-Reply-To: <20160505004032.GA12563@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, aik@ozlabs.ru, alistair@popple.id.au
+Subject: Re: [PATCH v9 16/26] powerpc/powernv/ioda1: Improve DMA32 segment
+ track
+Message-ID: <20160505015528.GA6199@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <2553049.lQAGOjRB9a@new-mexico> <20160505004032.GA12563@gwshan>
+ <1462254105-24128-17-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20160504132001.GA29136@gwshan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160504132001.GA29136@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,234 +44,281 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for the clarifications Gavin. Aside from the WARN_ON() (which is not a
-major thing) everything looks good.
+On Wed, May 04, 2016 at 11:20:01PM +1000, Gavin Shan wrote:
+>On Tue, May 03, 2016 at 03:41:35PM +1000, Gavin Shan wrote:
+>>In current implementation, the DMA32 segments required by one specific
+>>PE isn't calculated with the information hold in the PE independently.
+>>It conflicts with the PCI hotplug design: PE centralized, meaning the
+>>PE's DMA32 segments should be calculated from the information hold in
+>>the PE independently.
+>>
+>>This introduces an array (@dma32_segmap) for every PHB to track the
+>>DMA32 segmeng usage. Besides, this moves the logic calculating PE's
+>>consumed DMA32 segments to pnv_pci_ioda1_setup_dma_pe() so that PE's
+>>DMA32 segments are calculated/allocated from the information hold in
+>>the PE (DMA32 weight). Also the logic is improved: we try to allocate
+>>as much DMA32 segments as we can. It's acceptable that number of DMA32
+>>segments less than the expected number are allocated.
+>>
+>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+>This can cause overlapped DMA32 segments to different PEs in some cases.
+>I already had the fix and hold for posting after discussion with Michael
+>on how to handle the series tomorrow.
+>
 
-Reviewed-By: Alistair Popple <alistair@popple.id.au>
+I'm going to send v10 as a reply to this thread.
 
-On Thu, 5 May 2016 10:40:33 Gavin Shan wrote:
-> On Thu, May 05, 2016 at 09:53:51AM +1000, Alistair Popple wrote:
-> >On Wed, 4 May 2016 16:48:53 Gavin Shan wrote:
-> >> On Wed, May 04, 2016 at 03:17:51PM +1000, Alistair Popple wrote:
-> >> >On Tue, 3 May 2016 15:41:31 Gavin Shan wrote:
-> >> >> This enables M64 window on P7IOC, which has been enabled on PHB3.
-> >> >
-> >> >Have we tested that this works with an adaptor? This looks to be enabling 
-> >> >support for something that didn't previously work (64-bit BARs on P7IOC)?
-> >> >
-> >> 
-> >> The M64 isn't supported on P7IOC before, meaning the PCI device's M64
-> >> BAR is covered by PHB's M32 window. With the patch applied, the PCI
-> >> device's M64 BAR is covered by PHB's M64 window as below log I got
-> >> from vpl4. The kernel including the series of patches boots successfully
-> >> on vpl4 and all looks normal.
-> >
-> >So you're changing the way 64-bit BARs work on P7IOC to use a different bit of
-> >the hardware/firmware? This means it could break older systems if there is
-> >an issue with the M64 support. Other than the comments below the code looks
-> >reasonable. However I am assuming you've tested that cards with 64-bit BARs
-> >still function on P7 after this change as I'm not familiar enough to comment on
-> >the specific hardware details, although your comments make sense and match the
-> >code.
-> >
-> 
-> Nope, it doesn't rely on changes in firmware. The old firmware enables and
-> exposes PHB M64 window. The kernel doesn't use it on P7IOC until this patch.
-> On VPL4, there is a IPR adapter (0000:60:00.0) as below kernel log indicates.
-> Its BAR#2 is M64 (64-bits prefetchable) BAR. The BAR#2 is covered by PHB's M64
-> window with this patch. The PHB's M64 window is [0x00003da800000000..0x00003dafffffffff].
-> After it's applied, the IPR and root filesystem resident in the disk drive out
-> of it work fine.
-> 
-> >> [    0.246110] pci 0000:60:00.0: BAR 2: assigned [mem 0x3da810000000-0x3da810ffffff 64bit pref]
-> >> [    0.246218] pci 0000:60:00.0: BAR 0: assigned [mem 0x3da081000000-0x3da08103ffff 64bit]
-> >> [    0.246306] pci 0000:60:00.0: BAR 6: assigned [mem 0x3da081040000-0x3da08105ffff pref]
-> >> [    0.246392] pci 0000:60     : [PE# 001] Secondary bus 96 associated with PE#1
-> >> [    0.246484] pci 0000:60     : [PE# 001] DMA weight 15 (64), assigned (0) 1 DMA32 segments
-> >> [    0.246552] pci 0000:60     : [PE# 001]  Setting up 32-bit TCE table at 00000000..0fffffff
-> >> 
-> >> >> Different from PHB3 where 16 M64 BARs are supported and each of
-> >> >> them can be owned by one particular PE# exclusively or divided
-> >> >> evenly to 256 segments, every P7IOC PHB has 16 M64 BARs and each
-> >> >> of them are divided to 8 segments. So every P7IOC PHB supports
-> >> >> 128 M64 segments in total. P7IOC has M64DT, which helps mapping
-> >> >> one particular M64 segment# to arbitrary PE#. PHB3 doesn't have
-> >> >> M64DT, indicating that one M64 segment can only be pinned to the
-> >> >> fixed PE#.
-> >> >> 
-> >> >> In order to unified M64 support M64 on P7IOC and PHB3, we just
-> >> >> provide 128 M64 segments on every P7IOC PHB and each of them is
-> >> >> pinned to the fixed PE# by bypassing the function of M64DT. In
-> >> >> turn, we just need different phb->init_m64() for P7IOC and PHB3
-> >> >> and maps M64 segment in pnv_ioda_reserve_m64_pe() for P7IOC, most
-> >> >> of the code are shared by them.
-> >> >> 
-> >> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> >> >> ---
-> >> >>  arch/powerpc/platforms/powernv/pci-ioda.c | 89 
-> >> >+++++++++++++++++++++++++++++--
-> >> >>  1 file changed, 86 insertions(+), 3 deletions(-)
-> >> >> 
-> >> >> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c 
-> >> >b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >> >> index 37f22b0..a1b74ec 100644
-> >> >> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >> >> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >> >> @@ -48,6 +48,9 @@
-> >> >>  #include "powernv.h"
-> >> >>  #include "pci.h"
-> >> >>  
-> >> >> +#define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs	*/
-> >> >> +#define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR	*/
-> >> >> +
-> >> >>  /* 256M DMA window, 4K TCE pages, 8 bytes TCE */
-> >> >>  #define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
-> >> >>  
-> >> >> @@ -246,6 +249,64 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev 
-> >> >*pdev,
-> >> >>  	}
-> >> >>  }
-> >> >>  
-> >> >> +static int pnv_ioda1_init_m64(struct pnv_phb *phb)
-> >> >> +{
-> >> >> +	struct resource *r;
-> >> >> +	int index;
-> >> >> +
-> >> >> +	/*
-> >> >> +	 * There are 16 M64 BARs, each of which has 8 segments. So
-> >> >> +	 * there are as many M64 segments as the maximum number of
-> >> >> +	 * PEs, which is 128.
-> >> >> +	 */
-> >> >> +	for (index = 0; index < PNV_IODA1_M64_NUM; index++) {
-> >> >> +		unsigned long base, segsz = phb->ioda.m64_segsize;
-> >> >> +		int64_t rc;
-> >> >> +
-> >> >> +		base = phb->ioda.m64_base +
-> >> >> +		       index * PNV_IODA1_M64_SEGS * segsz;
-> >> >> +		rc = opal_pci_set_phb_mem_window(phb->opal_id,
-> >> >> +				OPAL_M64_WINDOW_TYPE, index, base, 0,
-> >> >> +				PNV_IODA1_M64_SEGS * segsz);
-> >
-> >Has firmware always supported OPAL_M64_WINDOW_TYPE for P7IOC? If older versions
-> >don't support it what happens? Do we gracefully fall back to the old mode of
-> >allocating all BARs from the M32 window or does it break?
-> >
-> 
-> Old firmware enables and exposes M64 window (OPAL_M64_WINDOW_TYPE), but kernel
-> doesn't use it until this patch. If the OPAL call fails, errcode is returned.
-> The caller, pnv_pci_init_ioda_phb(), disables the window. It means the PCI
-> device M64 BARs will fail back to be covered by M32 window. The path is same
-> on PHB3 and P7IOC.
-> 
-> >> >> +		if (rc != OPAL_SUCCESS) {
-> >> >> +			pr_warn("  Error %lld setting M64 PHB#%d-BAR#%d\n",
-> >> >> +				rc, phb->hose->global_number, index);
-> >> >> +			goto fail;
-> >> >> +		}
-> >> >> +
-> >> >> +		rc = opal_pci_phb_mmio_enable(phb->opal_id,
-> >> >> +				OPAL_M64_WINDOW_TYPE, index,
-> >> >> +				OPAL_ENABLE_M64_SPLIT);
-> >> >> +		if (rc != OPAL_SUCCESS) {
-> >> >> +			pr_warn("  Error %lld enabling M64 PHB#%d-BAR#%d\n",
-> >> >> +				rc, phb->hose->global_number, index);
-> >> >> +			goto fail;
-> >> >> +		}
-> >> >> +	}
-> >> >> +
-> >> >> +	/*
-> >> >> +	 * Exclude the segment used by the reserved PE, which
-> >> >> +	 * is expected to be 0 or last supported PE#.
-> >> >> +	 */
-> >> >> +	r = &phb->hose->mem_resources[1];
-> >> >> +	if (phb->ioda.reserved_pe_idx == 0)
-> >> >> +		r->start += phb->ioda.m64_segsize;
-> >> >> +	else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1))
-> >> >> +		r->end -= phb->ioda.m64_segsize;
-> >> >> +	else
-> >> >> +		pr_warn("  Cannot cut M64 segment for reserved PE#%d\n",
-> >> >> +			phb->ioda.reserved_pe_idx);
-> >
-> >Should this be a WARN_ON()? If this condition can only exist because a future
-> >programmer changes the reserved_pe_idx then I think it should be a WARN_ON()
-> >as the above message would be too easy to miss.
-> >
-> 
-> Yeah, a WARN_ON() should be better.
-> 
-> Thanks,
-> Gavin
-> 
-> >> >> +
-> >> >> +	return 0;
-> >> >> +
-> >> >> +fail:
-> >> >> +	for ( ; index >= 0; index--)
-> >> >> +		opal_pci_phb_mmio_enable(phb->opal_id,
-> >> >> +			OPAL_M64_WINDOW_TYPE, index, OPAL_DISABLE_M64);
-> >> >> +
-> >> >> +	return -EIO;
-> >> >> +}
-> >> >> +
-> >> >>  static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
-> >> >>  				    unsigned long *pe_bitmap,
-> >> >>  				    bool all)
-> >> >> @@ -315,6 +376,26 @@ static unsigned int pnv_ioda_pick_m64_pe(struct pci_bus 
-> >> >*bus, bool all)
-> >> >>  			pe->master = master_pe;
-> >> >>  			list_add_tail(&pe->list, &master_pe->slaves);
-> >> >>  		}
-> >> >> +
-> >> >> +		/*
-> >> >> +		 * P7IOC supports M64DT, which helps mapping M64 segment
-> >> >> +		 * to one particular PE#. However, PHB3 has fixed mapping
-> >> >> +		 * between M64 segment and PE#. In order to have same logic
-> >> >> +		 * for P7IOC and PHB3, we enforce fixed mapping between M64
-> >> >> +		 * segment and PE# on P7IOC.
-> >> >> +		 */
-> >> >> +		if (phb->type == PNV_PHB_IODA1) {
-> >> >> +			int64_t rc;
-> >> >> +
-> >> >> +			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-> >> >> +					pe->pe_number, OPAL_M64_WINDOW_TYPE,
-> >> >> +					pe->pe_number / PNV_IODA1_M64_SEGS,
-> >> >> +					pe->pe_number % PNV_IODA1_M64_SEGS);
-> >> >> +			if (rc != OPAL_SUCCESS)
-> >> >> +				pr_warn("%s: Error %lld mapping M64 for 
-> >> >PHB#%d-PE#%d\n",
-> >> >> +					__func__, rc, phb->hose-
-> >> >>global_number,
-> >> >> +					pe->pe_number);
-> >> >> +		}
-> >> >>  	}
-> >> >>  
-> >> >>  	kfree(pe_alloc);
-> >> >> @@ -329,8 +410,7 @@ static void __init pnv_ioda_parse_m64_window(struct 
-> >> >pnv_phb *phb)
-> >> >>  	const u32 *r;
-> >> >>  	u64 pci_addr;
-> >> >>  
-> >> >> -	/* FIXME: Support M64 for P7IOC */
-> >> >> -	if (phb->type != PNV_PHB_IODA2) {
-> >> >> +	if (phb->type != PNV_PHB_IODA1 && phb->type != PNV_PHB_IODA2) {
-> >> >>  		pr_info("  Not support M64 window\n");
-> >> >>  		return;
-> >> >>  	}
-> >> >> @@ -364,7 +444,10 @@ static void __init pnv_ioda_parse_m64_window(struct 
-> >> >pnv_phb *phb)
-> >> >>  
-> >> >>  	/* Use last M64 BAR to cover M64 window */
-> >> >>  	phb->ioda.m64_bar_idx = 15;
-> >> >> -	phb->init_m64 = pnv_ioda2_init_m64;
-> >> >> +	if (phb->type == PNV_PHB_IODA1)
-> >> >> +		phb->init_m64 = pnv_ioda1_init_m64;
-> >> >> +	else
-> >> >> +		phb->init_m64 = pnv_ioda2_init_m64;
-> >> >>  	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
-> >> >>  	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
-> >> >>  }
-> >> >> 
-> >> >
-> >> 
-> >
-> 
+Thanks,
+Gavin
+
+>>---
+>> arch/powerpc/platforms/powernv/pci-ioda.c | 110 ++++++++++++++++--------------
+>> arch/powerpc/platforms/powernv/pci.h      |   7 +-
+>> 2 files changed, 61 insertions(+), 56 deletions(-)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index f70a4e0..cfd2906 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -2011,27 +2011,57 @@ static unsigned int pnv_pci_ioda_pe_dma_weight(struct pnv_ioda_pe *pe)
+>> }
+>>
+>> static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>>-				       struct pnv_ioda_pe *pe,
+>>-				       unsigned int base,
+>>-				       unsigned int segs)
+>>+				       struct pnv_ioda_pe *pe)
+>> {
+>>
+>> 	struct page *tce_mem = NULL;
+>> 	struct iommu_table *tbl;
+>>-	unsigned int tce32_segsz, i;
+>>+	unsigned int weight, total_weight = 0;
+>>+	unsigned int tce32_segsz, base, segs, i;
+>> 	int64_t rc;
+>> 	void *addr;
+>>
+>> 	/* XXX FIXME: Handle 64-bit only DMA devices */
+>> 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
+>> 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
+>>+	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
+>>+		     &total_weight);
+>>+	weight = pnv_pci_ioda_pe_dma_weight(pe);
+>>+
+>>+	segs = (weight * phb->ioda.dma32_count) / total_weight;
+>>+	if (!segs)
+>>+		segs = 1;
+>>+
+>>+	/*
+>>+	 * Allocate contiguous DMA32 segments. We begin with the expected
+>>+	 * number of segments. With one more attempt, the number of DMA32
+>>+	 * segments to be allocated is decreased by one until one segment
+>>+	 * is allocated successfully.
+>>+	 */
+>>+	do {
+>>+		for (base = 0; base <= phb->ioda.dma32_count - segs; base++) {
+>>+			for (i = base; i < base + segs; i++) {
+>>+				if (phb->ioda.dma32_segmap[i] !=
+>>+				    IODA_INVALID_PE)
+>>+					goto found;
+>>+			}
+>>+		}
+>>+	} while (segs--);
+>>+
+>>+	if (!segs) {
+>>+		pe_warn(pe, "No available DMA32 segments\n");
+>>+		return;
+>>+	}
+>>
+>>+found:
+>> 	tbl = pnv_pci_table_alloc(phb->hose->node);
+>> 	iommu_register_group(&pe->table_group, phb->hose->global_number,
+>> 			pe->pe_number);
+>> 	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+>>
+>> 	/* Grab a 32-bit TCE table */
+>>+	pe_info(pe, "DMA weight %d (%d), assigned (%d) %d DMA32 segments\n",
+>>+		weight, total_weight, base, segs);
+>> 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+>> 		base * PNV_IODA1_DMA32_SEGSIZE,
+>> 		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
+>>@@ -2068,6 +2098,10 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>> 		}
+>> 	}
+>>
+>>+	/* Setup DMA32 segment mapping */
+>>+	for (i = base; i < base + segs; i++)
+>>+		phb->ioda.dma32_segmap[i] = pe->pe_number;
+>>+
+>> 	/* Setup linux iommu table */
+>> 	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
+>> 				  base * PNV_IODA1_DMA32_SEGSIZE,
+>>@@ -2542,73 +2576,34 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>> static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>> {
+>> 	struct pci_controller *hose = phb->hose;
+>>-	unsigned int weight, total_weight, dma_pe_count;
+>>-	unsigned int residual, remaining, segs, base;
+>> 	struct pnv_ioda_pe *pe;
+>>-
+>>-	total_weight = 0;
+>>-	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
+>>-		     &total_weight);
+>>-
+>>-	dma_pe_count = 0;
+>>-	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+>>-		weight = pnv_pci_ioda_pe_dma_weight(pe);
+>>-		if (weight > 0)
+>>-			dma_pe_count++;
+>>-	}
+>>+	unsigned int weight;
+>>
+>> 	/* If we have more PE# than segments available, hand out one
+>> 	 * per PE until we run out and let the rest fail. If not,
+>> 	 * then we assign at least one segment per PE, plus more based
+>> 	 * on the amount of devices under that PE
+>> 	 */
+>>-	if (dma_pe_count > phb->ioda.tce32_count)
+>>-		residual = 0;
+>>-	else
+>>-		residual = phb->ioda.tce32_count - dma_pe_count;
+>>-
+>>-	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
+>>-		hose->global_number, phb->ioda.tce32_count);
+>>-	pr_info("PCI: %d PE# for a total weight of %d\n",
+>>-		dma_pe_count, total_weight);
+>>+	pr_info("PCI: Domain %04x has %d available 32-bit DMA segments\n",
+>>+		hose->global_number, phb->ioda.dma32_count);
+>>
+>> 	pnv_pci_ioda_setup_opal_tce_kill(phb);
+>>
+>>-	/* Walk our PE list and configure their DMA segments, hand them
+>>-	 * out one base segment plus any residual segments based on
+>>-	 * weight
+>>-	 */
+>>-	remaining = phb->ioda.tce32_count;
+>>-	base = 0;
+>>+	/* Walk our PE list and configure their DMA segments */
+>> 	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+>> 		weight = pnv_pci_ioda_pe_dma_weight(pe);
+>> 		if (!weight)
+>> 			continue;
+>>
+>>-		if (!remaining) {
+>>-			pe_warn(pe, "No DMA32 resources available\n");
+>>-			continue;
+>>-		}
+>>-		segs = 1;
+>>-		if (residual) {
+>>-			segs += ((weight * residual) + (total_weight / 2)) /
+>>-				total_weight;
+>>-			if (segs > remaining)
+>>-				segs = remaining;
+>>-		}
+>>-
+>> 		/*
+>> 		 * For IODA2 compliant PHB3, we needn't care about the weight.
+>> 		 * The all available 32-bits DMA space will be assigned to
+>> 		 * the specific PE.
+>> 		 */
+>> 		if (phb->type == PNV_PHB_IODA1) {
+>>-			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+>>-				weight, segs);
+>>-			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+>>+			pnv_pci_ioda1_setup_dma_pe(phb, pe);
+>> 		} else if (phb->type == PNV_PHB_IODA2) {
+>> 			pe_info(pe, "Assign DMA32 space\n");
+>>-			segs = 0;
+>> 			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+>> 		} else if (phb->type == PNV_PHB_NPU) {
+>> 			/*
+>>@@ -2618,9 +2613,6 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>> 			 * as the PHB3 TVT.
+>> 			 */
+>> 		}
+>>-
+>>-		remaining -= segs;
+>>-		base += segs;
+>> 	}
+>> }
+>>
+>>@@ -3327,7 +3319,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> {
+>> 	struct pci_controller *hose;
+>> 	struct pnv_phb *phb;
+>>-	unsigned long size, m64map_off, m32map_off, pemap_off, iomap_off = 0;
+>>+	unsigned long size, m64map_off, m32map_off, pemap_off;
+>>+	unsigned long iomap_off = 0, dma32map_off = 0;
+>> 	const __be64 *prop64;
+>> 	const __be32 *prop32;
+>> 	int len;
+>>@@ -3413,6 +3406,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> 	phb->ioda.io_segsize = phb->ioda.io_size / phb->ioda.total_pe_num;
+>> 	phb->ioda.io_pci_base = 0; /* XXX calculate this ? */
+>>
+>>+	/* Calculate how many 32-bit TCE segments we have */
+>>+	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
+>>+				PNV_IODA1_DMA32_SEGSIZE;
+>>+
+>> 	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
+>> 	size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
+>> 	m64map_off = size;
+>>@@ -3422,6 +3419,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> 	if (phb->type == PNV_PHB_IODA1) {
+>> 		iomap_off = size;
+>> 		size += phb->ioda.total_pe_num * sizeof(phb->ioda.io_segmap[0]);
+>>+		dma32map_off = size;
+>>+		size += phb->ioda.dma32_count *
+>>+			sizeof(phb->ioda.dma32_segmap[0]);
+>> 	}
+>> 	pemap_off = size;
+>> 	size += phb->ioda.total_pe_num * sizeof(struct pnv_ioda_pe);
+>>@@ -3437,6 +3437,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> 		phb->ioda.io_segmap = aux + iomap_off;
+>> 		for (segno = 0; segno < phb->ioda.total_pe_num; segno++)
+>> 			phb->ioda.io_segmap[segno] = IODA_INVALID_PE;
+>>+
+>>+		phb->ioda.dma32_segmap = aux + dma32map_off;
+>>+		for (segno = 0; segno < phb->ioda.dma32_count; segno++)
+>>+			phb->ioda.dma32_segmap[segno] = IODA_INVALID_PE;
+>> 	}
+>> 	phb->ioda.pe_array = aux + pemap_off;
+>> 	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
+>>@@ -3445,7 +3449,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> 	mutex_init(&phb->ioda.pe_list_mutex);
+>>
+>> 	/* Calculate how many 32-bit TCE segments we have */
+>>-	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
+>>+	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
+>> 				PNV_IODA1_DMA32_SEGSIZE;
+>>
+>> #if 0 /* We should really do that ... */
+>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>index 117cfcd..14d9391 100644
+>>--- a/arch/powerpc/platforms/powernv/pci.h
+>>+++ b/arch/powerpc/platforms/powernv/pci.h
+>>@@ -142,6 +142,10 @@ struct pnv_phb {
+>> 		unsigned int		*m32_segmap;
+>> 		unsigned int		*io_segmap;
+>>
+>>+		/* DMA32 segment maps - IODA1 only */
+>>+		unsigned int		dma32_count;
+>>+		unsigned int		*dma32_segmap;
+>>+
+>> 		/* IRQ chip */
+>> 		int			irq_chip_init;
+>> 		struct irq_chip		irq_chip;
+>>@@ -158,9 +162,6 @@ struct pnv_phb {
+>> 		 */
+>> 		unsigned char		pe_rmap[0x10000];
+>>
+>>-		/* 32-bit TCE tables allocation */
+>>-		unsigned long		tce32_count;
+>>-
+>> 		/* TCE cache invalidate registers (physical and
+>> 		 * remapped)
+>> 		 */
+>>-- 
+>>2.1.0
+>>
