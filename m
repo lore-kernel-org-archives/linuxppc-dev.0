@@ -1,41 +1,18 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0kkC046lzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 15:58:58 +1000 (AEST)
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 5 May 2016 06:58:54 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 551DD219004D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 06:58:29 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u455wqsV6488510
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 May 2016 05:58:52 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u455wqkl022594
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 May 2016 23:58:52 -0600
-Subject: Re: [PATCH] cxl: Ensure PSL interrupt is configured for contexts with
- no AFU IRQs
-To: Ian Munsie <imunsie@au1.ibm.com>
-References: <1462337578-15883-1-git-send-email-imunsie@au.ibm.com>
- <572A0681.4080703@linux.vnet.ibm.com>
- <1462406618-sup-6140@x230.ozlabs.ibm.com>
-Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Frederic Barrat <frederic.barrat@fr.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <572AE11B.7010509@linux.vnet.ibm.com>
-Date: Thu, 5 May 2016 07:58:51 +0200
-MIME-Version: 1.0
-In-Reply-To: <1462406618-sup-6140@x230.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0lJF2hvyzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 16:25:01 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id r187so8445678pfr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 23:25:01 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH 1/2] powerpc/mm: define TOP_ZONE as a constant
+Date: Thu,  5 May 2016 16:24:41 +1000
+Message-Id: <1462429482-1801-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,26 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The zone that contains the top of memory will be either ZONE_NORMAL
+or ZONE_HIGHMEM depending on the kernel config. There are two functions
+in that require this information and both of them use an #ifdef to set
+a local variable (top_zone). This is a little silly so lets just make it
+a constant.
 
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/mm/mem.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-Le 05/05/2016 02:14, Ian Munsie a écrit :
-> Excerpts from Frederic Barrat's message of 2016-05-05 00:26:09 +1000:
->> I believe there's a potential problem there for powerVM guest.
->> In afu_allocate_irqs(), the allocation of the bitmap for the AFU
->> interrupts should return NULL (since count = 0). Therefore we'll skip
->> the allocation for the irq names. Yet we need one for the PSL interrupt.
->> I'm not too sure of what the effect of calling cxl_map_irq with a NULL
->> name is (later, in afu_register_hwirqs), but it's likely not very good.
->> That is admittedly a latent pb introduced by the powerVM patch, only
->> revealed here.
->
-> Actually I believe it should be fine - kcalloc should return
-> ZERO_SIZE_POINTER, not NULL and the names should still be allocated.
-> I'm pretty sure we already rely on this for AFUs that don't use any
-> interrupts per context, otherwise they would fail with -ENOMEM.
-
-You're right, all is fine.
-
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-   Fred
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index ac79dbde1015..8f4c19789a38 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -68,12 +68,15 @@ pte_t *kmap_pte;
+ EXPORT_SYMBOL(kmap_pte);
+ pgprot_t kmap_prot;
+ EXPORT_SYMBOL(kmap_prot);
++#define TOP_ZONE ZONE_HIGHMEM
+ 
+ static inline pte_t *virt_to_kpte(unsigned long vaddr)
+ {
+ 	return pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr),
+ 			vaddr), vaddr), vaddr);
+ }
++#else
++#define TOP_ZONE ZONE_NORMAL
+ #endif
+ 
+ int page_is_ram(unsigned long pfn)
+@@ -267,14 +270,9 @@ void __init limit_zone_pfn(enum zone_type zone, unsigned long pfn_limit)
+  */
+ int dma_pfn_limit_to_zone(u64 pfn_limit)
+ {
+-	enum zone_type top_zone = ZONE_NORMAL;
+ 	int i;
+ 
+-#ifdef CONFIG_HIGHMEM
+-	top_zone = ZONE_HIGHMEM;
+-#endif
+-
+-	for (i = top_zone; i >= 0; i--) {
++	for (i = TOP_ZONE; i >= 0; i--) {
+ 		if (max_zone_pfns[i] <= pfn_limit)
+ 			return i;
+ 	}
+@@ -289,7 +287,6 @@ void __init paging_init(void)
+ {
+ 	unsigned long long total_ram = memblock_phys_mem_size();
+ 	phys_addr_t top_of_ram = memblock_end_of_DRAM();
+-	enum zone_type top_zone;
+ 
+ #ifdef CONFIG_PPC32
+ 	unsigned long v = __fix_to_virt(__end_of_fixed_addresses - 1);
+@@ -313,13 +310,9 @@ void __init paging_init(void)
+ 	       (long int)((top_of_ram - total_ram) >> 20));
+ 
+ #ifdef CONFIG_HIGHMEM
+-	top_zone = ZONE_HIGHMEM;
+ 	limit_zone_pfn(ZONE_NORMAL, lowmem_end_addr >> PAGE_SHIFT);
+-#else
+-	top_zone = ZONE_NORMAL;
+ #endif
+-
+-	limit_zone_pfn(top_zone, top_of_ram >> PAGE_SHIFT);
++	limit_zone_pfn(TOP_ZONE, top_of_ram >> PAGE_SHIFT);
+ 	zone_limits_final = true;
+ 	free_area_init_nodes(max_zone_pfns);
+ 
+-- 
+2.5.5
