@@ -1,10 +1,10 @@
 Return-Path: <yangbo.lu@nxp.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0073.outbound.protection.outlook.com [157.56.110.73])
+ (mail-bn1on0074.outbound.protection.outlook.com [157.56.110.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0gFX3G6NzDqFL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 13:22:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0gFg4XT7zDqCF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 13:22:31 +1000 (AEST)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
@@ -18,9 +18,11 @@ CC: <ulf.hansson@linaro.org>, Scott Wood <oss@buserror.net>, Mark Rutland
  Sharma" <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
  "Kumar Gala" <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
  <leoyang.li@nxp.com>, <xiaobo.xie@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v10, 0/7] Fix eSDHC host version register bug
-Date: Thu, 5 May 2016 11:12:23 +0800
-Message-ID: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+Subject: [v10, 1/7] Documentation: DT: update Freescale DCFG compatible
+Date: Thu, 5 May 2016 11:12:24 +0800
+Message-ID: <1462417950-46796-2-git-send-email-yangbo.lu@nxp.com>
+In-Reply-To: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,45 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset is used to fix a host version register bug in the T4240-R1.0-R2.0
-eSDHC controller. To get the SoC version and revision, it's needed to add the
-GUTS driver to access the global utilities registers.
+Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead
+of 'fsl,ls1021a-dcfg' to include more chips such as ls1021a,
+ls1043a, and ls2080a.
 
-So, the first four patches are to add the GUTS driver.
-The following patches except the updating MAINTAINERS patch are to enable
-GUTS driver support to get SVR in eSDHC driver and fix host version for T4240.
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+---
+Changes for v8:
+	- Added this patch
+Changes for v9:
+	- Added a list for the possible compatibles
+Changes for v10:
+	- None
+---
+ Documentation/devicetree/bindings/arm/fsl.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Yangbo Lu (7):
-  Documentation: DT: update Freescale DCFG compatible
-  ARM64: dts: ls2080a: add device configuration node
-  soc: fsl: add GUTS driver for QorIQ platforms
-  dt: move guts devicetree doc out of powerpc directory
-  powerpc/fsl: move mpc85xx.h to include/linux/fsl
-  MAINTAINERS: add entry for Freescale SoC drivers
-  mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
-
- Documentation/devicetree/bindings/arm/fsl.txt      |   6 +-
- .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
- MAINTAINERS                                        |  11 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     |   6 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
- drivers/clk/clk-qoriq.c                            |   3 +-
- drivers/i2c/busses/i2c-mpc.c                       |   2 +-
- drivers/iommu/fsl_pamu.c                           |   3 +-
- drivers/mmc/host/Kconfig                           |   1 +
- drivers/mmc/host/sdhci-of-esdhc.c                  |  23 ++++
- drivers/net/ethernet/freescale/gianfar.c           |   2 +-
- drivers/soc/Kconfig                                |   2 +-
- drivers/soc/fsl/Kconfig                            |   8 ++
- drivers/soc/fsl/Makefile                           |   1 +
- drivers/soc/fsl/guts.c                             | 119 +++++++++++++++++++
- include/linux/fsl/guts.h                           | 126 +++++++++++++--------
- .../asm/mpc85xx.h => include/linux/fsl/svr.h       |   4 +-
- 17 files changed, 262 insertions(+), 60 deletions(-)
- rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
- create mode 100644 drivers/soc/fsl/Kconfig
- create mode 100644 drivers/soc/fsl/guts.c
- rename arch/powerpc/include/asm/mpc85xx.h => include/linux/fsl/svr.h (97%)
-
+diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
+index 752a685..465cba1 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.txt
++++ b/Documentation/devicetree/bindings/arm/fsl.txt
+@@ -119,7 +119,11 @@ Freescale DCFG
+ configuration and status for the device. Such as setting the secondary
+ core start address and release the secondary core from holdoff and startup.
+   Required properties:
+-  - compatible: should be "fsl,ls1021a-dcfg"
++  - compatible: should be "fsl,<chip>-dcfg"
++    Possible compatibles:
++	"fsl,ls1021a-dcfg"
++	"fsl,ls1043a-dcfg"
++	"fsl,ls2080a-dcfg"
+   - reg : should contain base address and length of DCFG memory-mapped registers
+ 
+ Example:
 -- 
 2.1.0.27.g96db324
