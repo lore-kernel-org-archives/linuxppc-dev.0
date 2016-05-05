@@ -3,16 +3,18 @@ Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
  [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0lJF2hvyzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 16:25:01 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id r187so8445678pfr.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 23:25:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0lJL1J5nzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 16:25:06 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id 145so7234134pfz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 23:25:06 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Oliver O'Halloran <oohall@gmail.com>
-Subject: [PATCH 1/2] powerpc/mm: define TOP_ZONE as a constant
-Date: Thu,  5 May 2016 16:24:41 +1000
-Message-Id: <1462429482-1801-1-git-send-email-oohall@gmail.com>
+Subject: [PATCH 2/2] powerpc/mm: Ensure "special" zones are empty
+Date: Thu,  5 May 2016 16:24:42 +1000
+Message-Id: <1462429482-1801-2-git-send-email-oohall@gmail.com>
+In-Reply-To: <1462429482-1801-1-git-send-email-oohall@gmail.com>
+References: <1462429482-1801-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,75 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The zone that contains the top of memory will be either ZONE_NORMAL
-or ZONE_HIGHMEM depending on the kernel config. There are two functions
-in that require this information and both of them use an #ifdef to set
-a local variable (top_zone). This is a little silly so lets just make it
-a constant.
+The mm zone mechanism was traditionally used by arch specific code to
+partition memory into allocation zones. However there are several zones
+that are managed by the mm subsystem rather than the architecture. Most
+architectures set the max PFN of these special zones to zero, however on
+powerpc we set them to ~0ul. This, in conjunction with a bug in
+free_area_init_nodes() results in all of system memory being placed
+being placed in ZONE_DEVICE when enabled. Device memory cannot be used
+for regular kernel memory allocations so this will cause a kernel panic at
+boot.
+
+Given the planned addition of more mm managed zones (ZONE_CMA) we should
+aim to be consistent with every other architecture and set the max PFN
+for these zones to zero
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- arch/powerpc/mm/mem.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ arch/powerpc/mm/mem.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index ac79dbde1015..8f4c19789a38 100644
+index 8f4c19789a38..f0a058ebb6d7 100644
 --- a/arch/powerpc/mm/mem.c
 +++ b/arch/powerpc/mm/mem.c
-@@ -68,12 +68,15 @@ pte_t *kmap_pte;
- EXPORT_SYMBOL(kmap_pte);
- pgprot_t kmap_prot;
- EXPORT_SYMBOL(kmap_prot);
-+#define TOP_ZONE ZONE_HIGHMEM
+@@ -239,8 +239,14 @@ static int __init mark_nonram_nosave(void)
  
- static inline pte_t *virt_to_kpte(unsigned long vaddr)
- {
- 	return pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr),
- 			vaddr), vaddr), vaddr);
- }
-+#else
-+#define TOP_ZONE ZONE_NORMAL
- #endif
+ static bool zone_limits_final;
  
- int page_is_ram(unsigned long pfn)
-@@ -267,14 +270,9 @@ void __init limit_zone_pfn(enum zone_type zone, unsigned long pfn_limit)
-  */
- int dma_pfn_limit_to_zone(u64 pfn_limit)
- {
--	enum zone_type top_zone = ZONE_NORMAL;
- 	int i;
++/*
++ * The memory zones past TOP_ZONE are managed by the generic
++ * mm subsystem which expects the max PFN for these zones
++ * to be set to zero.
++ */
+ static unsigned long max_zone_pfns[MAX_NR_ZONES] = {
+-	[0 ... MAX_NR_ZONES - 1] = ~0UL
++	[0        ... TOP_ZONE     - 1] = ~0UL,
++	[TOP_ZONE ... MAX_NR_ZONES - 1] = 0
+ };
  
--#ifdef CONFIG_HIGHMEM
--	top_zone = ZONE_HIGHMEM;
--#endif
--
--	for (i = top_zone; i >= 0; i--) {
-+	for (i = TOP_ZONE; i >= 0; i--) {
- 		if (max_zone_pfns[i] <= pfn_limit)
- 			return i;
- 	}
-@@ -289,7 +287,6 @@ void __init paging_init(void)
- {
- 	unsigned long long total_ram = memblock_phys_mem_size();
- 	phys_addr_t top_of_ram = memblock_end_of_DRAM();
--	enum zone_type top_zone;
- 
- #ifdef CONFIG_PPC32
- 	unsigned long v = __fix_to_virt(__end_of_fixed_addresses - 1);
-@@ -313,13 +310,9 @@ void __init paging_init(void)
- 	       (long int)((top_of_ram - total_ram) >> 20));
- 
- #ifdef CONFIG_HIGHMEM
--	top_zone = ZONE_HIGHMEM;
- 	limit_zone_pfn(ZONE_NORMAL, lowmem_end_addr >> PAGE_SHIFT);
--#else
--	top_zone = ZONE_NORMAL;
- #endif
--
--	limit_zone_pfn(top_zone, top_of_ram >> PAGE_SHIFT);
-+	limit_zone_pfn(TOP_ZONE, top_of_ram >> PAGE_SHIFT);
- 	zone_limits_final = true;
- 	free_area_init_nodes(max_zone_pfns);
- 
+ /*
 -- 
 2.5.5
