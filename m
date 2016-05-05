@@ -1,24 +1,21 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <lsorense@csclub.uwaterloo.ca>
+Received: from mail.csclub.uwaterloo.ca (mail.csclub.uwaterloo.ca
+ [IPv6:2620:101:f000:4901:c5c::5e2d])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r150m1D2jzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 05:42:46 +1000 (AEST)
-Date: Thu, 5 May 2016 14:42:35 -0500
-From: Rob Herring <robh@kernel.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, benh@kernel.crashing.org,
- mpe@ellerman.id.au, aik@ozlabs.ru, bhelgaas@google.com,
- robherring2@gmail.com, dja@axtens.net, alistair@popple.id.au
-Subject: Re: [PATCH v9 21/22] drivers/of: Export of_detach_node()
-Message-ID: <20160505194235.GA13790@rob-hp-laptop>
-References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462281773-26438-22-git-send-email-gwshan@linux.vnet.ibm.com>
- <20160504133603.GA30081@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r16Wm62f5zDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 06:51:16 +1000 (AEST)
+From: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Date: Thu, 5 May 2016 16:44:44 -0400
+To: linux-kernel@vger.kernel.org
+Cc: Len Sorensen <lsorense@csclub.uwaterloo.ca>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix sstep compile on powerpcspe
+Message-ID: <20160505204444.GE3264@csclub.uwaterloo.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160504133603.GA30081@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 04, 2016 at 11:36:03PM +1000, Gavin Shan wrote:
-> On Tue, May 03, 2016 at 11:22:52PM +1000, Gavin Shan wrote:
-> >This exports of_detach_node() for PowerPC PowerNV PCI hotplug
-> >driver. No functional changes introduced.
-> >
-> >Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> 
-> Rob, I'm not sure it's late to cache the 4.7 merge window.
-> Also, I was told this series is needed by new CAPI driver which
-> is being developed. The developers hope to push the new CAPI driver
-> in 4.8 merge window (perhaps) or linux-next before 4.8 merge window
-> is opened. It means the new CAPI driver depends on this series which
-> has to be pushed to linux-next before 4.8 merge window.
-> 
-> If it's fine, could you please merge 16 to 21? With them merged to
-> 4.7, the left patches won't depend on FDT changes. Thanks in advance
-> for your help.
+powerpc: Fix sstep compile on powerpcspe
 
-I've applied the 6 patches.
+Commit be96f63375a14ee8e690856ac77e579c75bd0bae introduced ldarx and stdcx
+into the instructions in sstep.c, which are not accepted by the assembler
+on powerpcspe, but does seem to be accepted by the normal powerpc assembler
+even in 32 bit mode.
 
-Rob
+Wrap these two instructions in a __powerpc64__ check like it is everywhere
+else in the file.
+
+Fixes: be96f63375a1 ("powerpc: Split out instruction analysis part of emulate_step()")
+Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
+---
+ arch/powerpc/lib/sstep.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index dc885b3..6d34310 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1818,9 +1818,11 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		case 4:
+ 			__get_user_asmx(val, op.ea, err, "lwarx");
+ 			break;
++#ifdef __powerpc64__
+ 		case 8:
+ 			__get_user_asmx(val, op.ea, err, "ldarx");
+ 			break;
++#endif
+ 		default:
+ 			return 0;
+ 		}
+@@ -1841,9 +1843,11 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		case 4:
+ 			__put_user_asmx(op.val, op.ea, err, "stwcx.", cr);
+ 			break;
++#ifdef __powerpc64__
+ 		case 8:
+ 			__put_user_asmx(op.val, op.ea, err, "stdcx.", cr);
+ 			break;
++#endif
+ 		default:
+ 			return 0;
+ 		}
+-- 
+1.7.10.4
