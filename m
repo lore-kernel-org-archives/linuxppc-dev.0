@@ -1,23 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0077.outbound.protection.outlook.com [157.56.112.77])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0fwX6dFVzDqHk
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 13:07:40 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id 77so32169593pfv.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 20:07:40 -0700 (PDT)
-Subject: Re: [PATCH v9 20/26] powerpc/pci: Move pci_find_bus_by_node() around
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1462254105-24128-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462254105-24128-21-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, alistair@popple.id.au
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <6cfcdcc9-ae76-a195-001a-9d85c03c389e@ozlabs.ru>
-Date: Thu, 5 May 2016 13:07:17 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0gD92qqBzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 13:21:12 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Scott Wood <oss@buserror.net>, Qiang Zhao <qiang.zhao@nxp.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+CC: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Mark Rutland
+ <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
+ <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
+ <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, "Bhupesh
+ Sharma" <bhupesh.sharma@freescale.com>, Kumar Gala <galak@codeaurora.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>
+Subject: RE: [v9, 6/7] MAINTAINERS: add entry for Freescale SoC driver
+Date: Thu, 5 May 2016 03:21:04 +0000
+Message-ID: <HE1PR04MB0889AA66ABC718111D7EF41FF87C0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1462332274-13744-1-git-send-email-yangbo.lu@nxp.com>
+ <1462332274-13744-7-git-send-email-yangbo.lu@nxp.com>
+ <1462383308.16584.43.camel@buserror.net>
+In-Reply-To: <1462383308.16584.43.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1462254105-24128-21-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,110 +42,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/03/2016 03:41 PM, Gavin Shan wrote:
-> This moves pci_find_bus_by_node() from arch/powerpc/platforms/
-> pseries/pci_dlpar.c to arch/powerpc/kernel/pci-hotplug.c so that
-> the function can be used by pSeries and PowerNV platform at the
-> same time. Also, below cleanup applied. No functional changes
-> introduced.
->
->    * Remove variable "busdn" in find_bus_among_children()
->    * Use PCI_DN() to convert device node to pci_dn
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-> ---
->  arch/powerpc/kernel/pci-hotplug.c          | 29 ++++++++++++++++++++++++++++
->  arch/powerpc/platforms/pseries/pci_dlpar.c | 31 ------------------------------
->  2 files changed, 29 insertions(+), 31 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-> index 2d108e5..46587a1 100644
-> --- a/arch/powerpc/kernel/pci-hotplug.c
-> +++ b/arch/powerpc/kernel/pci-hotplug.c
-> @@ -21,6 +21,35 @@
->  #include <asm/firmware.h>
->  #include <asm/eeh.h>
->
-> +static struct pci_bus *find_bus_among_children(struct pci_bus *bus,
-> +					       struct device_node *dn)
-> +{
-> +	struct pci_bus *child = NULL;
-> +	struct pci_bus *tmp;
-> +
-> +	if (pci_bus_to_OF_node(bus) == dn)
-> +		return bus;
-> +
-> +	list_for_each_entry(tmp, &bus->children, node) {
-> +		child = find_bus_among_children(tmp, dn);
-> +		if (child)
-> +			break;
-> +	}
-> +
-> +	return child;
-> +}
-> +
-> +struct pci_bus *pci_find_bus_by_node(struct device_node *dn)
-> +{
-> +	struct pci_dn *pdn = PCI_DN(dn);
-> +
-> +	if (!pdn  || !pdn->phb || !pdn->phb->bus)
-> +		return NULL;
-> +
-> +	return find_bus_among_children(pdn->phb->bus, dn);
-> +}
-> +EXPORT_SYMBOL_GPL(pci_find_bus_by_node);
-> +
->  /**
->   * pcibios_release_device - release PCI device
->   * @dev: PCI device
-> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> index aee22b4..906dbaa 100644
-> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> @@ -34,37 +34,6 @@
->
->  #include "pseries.h"
->
-> -static struct pci_bus *
-> -find_bus_among_children(struct pci_bus *bus,
-> -                        struct device_node *dn)
-> -{
-> -	struct pci_bus *child = NULL;
-> -	struct pci_bus *tmp;
-> -	struct device_node *busdn;
-> -
-> -	busdn = pci_bus_to_OF_node(bus);
-> -	if (busdn == dn)
-> -		return bus;
-> -
-> -	list_for_each_entry(tmp, &bus->children, node) {
-> -		child = find_bus_among_children(tmp, dn);
-> -		if (child)
-> -			break;
-> -	};
-> -	return child;
-> -}
-> -
-> -struct pci_bus *pci_find_bus_by_node(struct device_node *dn)
-> -{
-> -	struct pci_dn *pdn = dn->data;
-> -
-> -	if (!pdn  || !pdn->phb || !pdn->phb->bus)
-> -		return NULL;
-> -
-> -	return find_bus_among_children(pdn->phb->bus, dn);
-> -}
-> -EXPORT_SYMBOL_GPL(pci_find_bus_by_node);
-> -
->  struct pci_controller *init_phb_dynamic(struct device_node *dn)
->  {
->  	struct pci_controller *phb;
->
-
-
--- 
-Alexey
+VGhhbmtzIGEgbG90LCBTY290dCBhbmQgUWlhbmcuDQpXaWxsIGNoYW5nZSAnRFJJVkVSJyB0byAn
+RFJJVkVSUycgYW5kIHVwZGF0ZSB0aGUgcGF0Y2hzZXQgd2l0aCB5b3VyIGFjdHMuDQoNCg0KQmVz
+dCByZWdhcmRzLA0KWWFuZ2JvIEx1DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
+RnJvbTogbGludXgtbW1jLW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LW1tYy0N
+Cj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgU2NvdHQgV29vZA0KPiBTZW50
+OiBUaHVyc2RheSwgTWF5IDA1LCAyMDE2IDE6MzUgQU0NCj4gVG86IFlhbmdibyBMdTsgbGludXgt
+bW1jQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGRl
+dmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1jbGtAdmdlci5r
+ZXJuZWwub3JnOyBsaW51eC0NCj4gaTJjQHZnZXIua2VybmVsLm9yZzsgaW9tbXVAbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmc7DQo+IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IHVsZi5o
+YW5zc29uQGxpbmFyby5vcmc7IE1hcmsgUnV0bGFuZDsgUm9iIEhlcnJpbmc7IFJ1c3NlbGwgS2lu
+ZzsNCj4gSm9jaGVuIEZyaWVkcmljaDsgSm9lcmcgUm9lZGVsOyBDbGF1ZGl1IE1hbm9pbDsgQmh1
+cGVzaCBTaGFybWE7IFFpYW5nDQo+IFpoYW87IEt1bWFyIEdhbGE7IFNhbnRvc2ggU2hpbGlta2Fy
+OyBZYW5nLUxlbyBMaTsgWGlhb2JvIFhpZQ0KPiBTdWJqZWN0OiBSZTogW3Y5LCA2LzddIE1BSU5U
+QUlORVJTOiBhZGQgZW50cnkgZm9yIEZyZWVzY2FsZSBTb0MgZHJpdmVyDQo+IA0KPiBPbiBXZWQs
+IDIwMTYtMDUtMDQgYXQgMTE6MjQgKzA4MDAsIFlhbmdibyBMdSB3cm90ZToNCj4gPiBBZGQgbWFp
+bnRhaW5lciBlbnRyeSBmb3IgRnJlZXNjYWxlIFNvQyBkcml2ZXIgaW5jbHVkaW5nIHRoZSBRRSBs
+aWJyYXJ5DQo+ID4gYW5kIHRoZSBHVVRTIGRyaXZlciBub3cuIEFsc28gYWRkIG1haW50YWluZXIg
+Zm9yIFFFIGxpYnJhcnkuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBZYW5nYm8gTHUgPHlhbmdi
+by5sdUBueHAuY29tPg0KPiA+IC0tLQ0KPiA+IENoYW5nZXMgZm9yIHY4Og0KPiA+IAktIEFkZGVk
+IHRoaXMgcGF0Y2gNCj4gPiBDaGFuZ2VzIGZvciB2OToNCj4gPiAJLSBBZGRlZCBsaW51eC1hcm0g
+bWFpbCBsaXN0DQo+ID4gCS0gUmVtb3ZlZCBHVVRTIGRyaXZlciBlbnRyeQ0KPiA+IC0tLQ0KPiA+
+ICBNQUlOVEFJTkVSUyB8IDExICsrKysrKysrKystDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBp
+bnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvTUFJTlRB
+SU5FUlMgYi9NQUlOVEFJTkVSUyBpbmRleCA0MmU2NWQxLi5jZTkxZGI3IDEwMDY0NA0KPiA+IC0t
+LSBhL01BSU5UQUlORVJTDQo+ID4gKysrIGIvTUFJTlRBSU5FUlMNCj4gPiBAQCAtNDYyMiw5ICs0
+NjIyLDE4IEBAIEY6CWRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9mZWNfcHRwLmMNCj4g
+PiAgRjoJZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2ZlYy5oDQo+ID4gIEY6CURvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9uZXQvZnNsLWZlYy50eHQNCj4gPg0KPiA+ICtG
+UkVFU0NBTEUgU09DIERSSVZFUg0KPiA+ICtNOglTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0
+Pg0KPiA+ICtMOglsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ICtMOglsaW51eC1h
+cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gPiArUzoJTWFpbnRhaW5lZA0KPiA+ICtG
+Oglkcml2ZXJzL3NvYy9mc2wvDQo+ID4gK0Y6CWluY2x1ZGUvbGludXgvZnNsLw0KPiA+ICsNCj4g
+PiAgRlJFRVNDQUxFIFFVSUNDIEVOR0lORSBMSUJSQVJZDQo+ID4gK006CVFpYW5nIFpoYW8gPHFp
+YW5nLnpoYW9AbnhwLmNvbT4NCj4gPiAgTDoJbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcN
+Cj4gPiAtUzoJT3JwaGFuDQo+ID4gK1M6CU1haW50YWluZWQNCj4gPiAgRjoJZHJpdmVycy9zb2Mv
+ZnNsL3FlLw0KPiA+ICBGOglpbmNsdWRlL3NvYy9mc2wvKnFlKi5oDQo+ID4gIEY6CWluY2x1ZGUv
+c29jL2ZzbC8qdWNjKi5oDQo+IA0KPiBzL0RSSVZFUi9EUklWRVJTLw0KPiANCj4gVGhlcmUncyBt
+b3JlIHRoYW4gb25lLg0KPiANCj4gT3RoZXJ3aXNlOg0KPiBBY2tlZC1ieTogU2NvdHQgV29vZCA8
+b3NzQGJ1c2Vycm9yLm5ldD4NCj4gDQo+IC1TY290dA0KPiANCj4gPg0KPiAtLQ0KPiBUbyB1bnN1
+YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgt
+bW1jIiBpbg0KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVs
+Lm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFq
+b3Jkb21vLWluZm8uaHRtbA0K
