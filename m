@@ -1,19 +1,32 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0nM92MvXzDqJ9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 17:57:41 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id yl2so7341688pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 May 2016 00:57:41 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linux-mm@kvack.org
-Cc: Oliver O'Halloran <oohall@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH] mm/init: fix zone boundary creation
-Date: Thu,  5 May 2016 17:57:13 +1000
-Message-Id: <1462435033-15601-1-git-send-email-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0p7p1RJDzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 18:32:53 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-i2c@vger.kernel.org, iommu@lists.linux-foundation.org,
+ netdev@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
+ ulf.hansson@linaro.org, Russell King <linux@arm.linux.org.uk>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>, leoyang.li@nxp.com,
+ Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Kumar Gala <galak@codeaurora.org>, xiaobo.xie@nxp.com,
+ Qiang Zhao <qiang.zhao@nxp.com>
+Subject: Re: [v10,
+ 7/7] mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
+Date: Thu, 05 May 2016 10:31:36 +0200
+Message-ID: <4448030.Zs8fVnr3nm@wuerfel>
+In-Reply-To: <1462417950-46796-8-git-send-email-yangbo.lu@nxp.com>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ <1462417950-46796-8-git-send-email-yangbo.lu@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,60 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As a part of memory initialisation the architecture passes an array to
-free_area_init_nodes() which specifies the max PFN of each memory zone.
-This array is not necessarily monotonic (due to unused zones) so this
-array is parsed to build monotonic lists of the min and max PFN for
-each zone. ZONE_MOVABLE is special cased here as its limits are managed by
-the mm subsystem rather than the architecture. Unfortunately, this special
-casing is broken when ZONE_MOVABLE is the not the last zone in the zone
-list. The core of the issue is:
+On Thursday 05 May 2016 11:12:30 Yangbo Lu wrote:
+> 
+> +       fsl_guts_init();
+> +       svr = fsl_guts_get_svr();
+> +       if (svr) {
+> +               esdhc->soc_ver = SVR_SOC_VER(svr);
+> +               esdhc->soc_rev = SVR_REV(svr);
+> +       } else {
+> +               dev_err(&pdev->dev, "Failed to get SVR value!\n");
+> +       }
+> +
+> 
 
-	if (i == ZONE_MOVABLE)
-		continue;
-	arch_zone_lowest_possible_pfn[i] =
-		arch_zone_highest_possible_pfn[i-1];
 
-As ZONE_MOVABLE is skipped the lowest_possible_pfn of the next zone
-will be set to zero. This patch fixes this bug by adding explicitly
-tracking where the next zone should start rather than relying on the
-contents arch_zone_highest_possible_pfn[].
+Sorry for jumping in again after not participating in the discussion for the
+past few versions.
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- mm/page_alloc.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+What happened to my suggestion of making this a platform-independent interface
+to avoid the link time dependency?
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 59de90d5d3a3..fc78306ce087 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -5980,15 +5980,18 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
- 				sizeof(arch_zone_lowest_possible_pfn));
- 	memset(arch_zone_highest_possible_pfn, 0,
- 				sizeof(arch_zone_highest_possible_pfn));
--	arch_zone_lowest_possible_pfn[0] = find_min_pfn_with_active_regions();
--	arch_zone_highest_possible_pfn[0] = max_zone_pfn[0];
--	for (i = 1; i < MAX_NR_ZONES; i++) {
-+
-+	start_pfn = find_min_pfn_with_active_regions();
-+
-+	for (i = 0; i < MAX_NR_ZONES; i++) {
- 		if (i == ZONE_MOVABLE)
- 			continue;
--		arch_zone_lowest_possible_pfn[i] =
--			arch_zone_highest_possible_pfn[i-1];
--		arch_zone_highest_possible_pfn[i] =
--			max(max_zone_pfn[i], arch_zone_lowest_possible_pfn[i]);
-+
-+		end_pfn = max(max_zone_pfn[i], start_pfn);
-+		arch_zone_lowest_possible_pfn[i] = start_pfn;
-+		arch_zone_highest_possible_pfn[i] = end_pfn;
-+
-+		start_pfn = end_pfn;
- 	}
- 	arch_zone_lowest_possible_pfn[ZONE_MOVABLE] = 0;
- 	arch_zone_highest_possible_pfn[ZONE_MOVABLE] = 0;
--- 
-2.5.5
+Specifically, why not add an exported function to drivers/base/soc.c that
+uses glob_match() for comparing a string in the device driver to the ID
+of the SoC that is set by whatever SoC identifying driver the platform
+has?
+
+	Arnd
