@@ -1,33 +1,26 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0099.outbound.protection.outlook.com [207.46.100.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0zHD2DqyzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 01:24:56 +1000 (AEST)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 6 May 2016 01:24:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8C3612BB005D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 01:24:51 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u45FOhof786744
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 01:24:51 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u45FOI0x019798
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 01:24:19 +1000
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Wang Nan <wangnan0@huawei.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Ian Munsie <imunsie@au1.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] perf tools: add support for generating bpf prologue on powerpc
-Date: Thu,  5 May 2016 20:53:19 +0530
-Message-Id: <1462461799-17518-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0zXW1rpQzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 01:36:27 +1000 (AEST)
+From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>
+CC: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ Scott Wood <scott.wood@nxp.com>, Alexandru Porosanu
+ <alexandru.porosanu@nxp.com>, Tudor Ambarus <tudor-dan.ambarus@nxp.com>,
+ Cristian Stoica <cristian.stoica@nxp.com>
+Subject: [PATCH v2 4/8] powerpc: add io{read,write}64 accessors
+Date: Thu, 5 May 2016 18:36:13 +0300
+Message-ID: <1462462573-27779-1-git-send-email-horia.geanta@nxp.com>
+In-Reply-To: <1462462435-27403-1-git-send-email-horia.geanta@nxp.com>
+References: <1462462435-27403-1-git-send-email-horia.geanta@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,104 +30,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Generalize existing macros to serve the purpose.
+This will allow device drivers to consistently use io{read,write}XX
+also for 64-bit accesses.
 
-Cc: Wang Nan <wangnan0@huawei.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
 ---
-With this patch:
-    # ./perf test 37
-    37: Test BPF filter                                          :
-    37.1: Test basic BPF filtering                               : Ok
-    37.2: Test BPF prologue generation                           : Ok
-    37.3: Test BPF relocation checker                            : Ok
+ arch/powerpc/kernel/iomap.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
- tools/perf/arch/powerpc/Makefile          |  1 +
- tools/perf/arch/powerpc/util/dwarf-regs.c | 40 +++++++++++++++++++++----------
- 2 files changed, 29 insertions(+), 12 deletions(-)
-
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-index 56e05f1..cc39309 100644
---- a/tools/perf/arch/powerpc/Makefile
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -3,4 +3,5 @@ PERF_HAVE_DWARF_REGS := 1
- endif
+diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
+index 12e48d56f771..3963f0b68d52 100644
+--- a/arch/powerpc/kernel/iomap.c
++++ b/arch/powerpc/kernel/iomap.c
+@@ -38,6 +38,18 @@ EXPORT_SYMBOL(ioread16);
+ EXPORT_SYMBOL(ioread16be);
+ EXPORT_SYMBOL(ioread32);
+ EXPORT_SYMBOL(ioread32be);
++#ifdef __powerpc64__
++u64 ioread64(void __iomem *addr)
++{
++	return readq(addr);
++}
++u64 ioread64be(void __iomem *addr)
++{
++	return readq_be(addr);
++}
++EXPORT_SYMBOL(ioread64);
++EXPORT_SYMBOL(ioread64be);
++#endif /* __powerpc64__ */
  
- HAVE_KVM_STAT_SUPPORT := 1
-+PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
- PERF_HAVE_JITDUMP := 1
-diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
-index 733151c..41bdf95 100644
---- a/tools/perf/arch/powerpc/util/dwarf-regs.c
-+++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
-@@ -10,19 +10,26 @@
-  */
- 
- #include <stddef.h>
-+#include <errno.h>
-+#include <string.h>
- #include <dwarf-regs.h>
--
-+#include <linux/ptrace.h>
-+#include <linux/kernel.h>
-+#include "util.h"
- 
- struct pt_regs_dwarfnum {
- 	const char *name;
- 	unsigned int dwarfnum;
-+	unsigned int ptregs_offset;
- };
- 
--#define STR(s) #s
--#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
--#define GPR_DWARFNUM_NAME(num)	\
--	{.name = STR(%gpr##num), .dwarfnum = num}
--#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
-+#define REG_DWARFNUM_NAME(r, num)					\
-+		{.name = STR(%)STR(r), .dwarfnum = num,			\
-+		.ptregs_offset = offsetof(struct pt_regs, r)}
-+#define GPR_DWARFNUM_NAME(num)						\
-+		{.name = STR(%gpr##num), .dwarfnum = num,		\
-+		.ptregs_offset = offsetof(struct pt_regs, gpr[num])}
-+#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0, .ptregs_offset = 0}
+ void iowrite8(u8 val, void __iomem *addr)
+ {
+@@ -64,6 +76,18 @@ EXPORT_SYMBOL(iowrite16);
+ EXPORT_SYMBOL(iowrite16be);
+ EXPORT_SYMBOL(iowrite32);
+ EXPORT_SYMBOL(iowrite32be);
++#ifdef __powerpc64__
++void iowrite64(u64 val, void __iomem *addr)
++{
++	writeq(val, addr);
++}
++void iowrite64be(u64 val, void __iomem *addr)
++{
++	writeq_be(val, addr);
++}
++EXPORT_SYMBOL(iowrite64);
++EXPORT_SYMBOL(iowrite64be);
++#endif /* __powerpc64__ */
  
  /*
-  * Reference:
-@@ -61,12 +68,12 @@ static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
- 	GPR_DWARFNUM_NAME(29),
- 	GPR_DWARFNUM_NAME(30),
- 	GPR_DWARFNUM_NAME(31),
--	REG_DWARFNUM_NAME("%msr",   66),
--	REG_DWARFNUM_NAME("%ctr",   109),
--	REG_DWARFNUM_NAME("%link",  108),
--	REG_DWARFNUM_NAME("%xer",   101),
--	REG_DWARFNUM_NAME("%dar",   119),
--	REG_DWARFNUM_NAME("%dsisr", 118),
-+	REG_DWARFNUM_NAME(msr,   66),
-+	REG_DWARFNUM_NAME(ctr,   109),
-+	REG_DWARFNUM_NAME(link,  108),
-+	REG_DWARFNUM_NAME(xer,   101),
-+	REG_DWARFNUM_NAME(dar,   119),
-+	REG_DWARFNUM_NAME(dsisr, 118),
- 	REG_DWARFNUM_END,
- };
- 
-@@ -86,3 +93,12 @@ const char *get_arch_regstr(unsigned int n)
- 			return roff->name;
- 	return NULL;
- }
-+
-+int regs_query_register_offset(const char *name)
-+{
-+	const struct pt_regs_dwarfnum *roff;
-+	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
-+		if (!strcmp(roff->name, name))
-+			return roff->ptregs_offset;
-+	return -EINVAL;
-+}
+  * These are the "repeat read/write" functions. Note the
 -- 
-2.7.4
+2.4.4
