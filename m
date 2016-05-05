@@ -1,38 +1,32 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0055.outbound.protection.outlook.com [157.56.112.55])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0qg96lNNzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 19:41:41 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: Arnd Bergmann <arnd@arndb.de>, Scott Wood <oss@buserror.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-i2c@vger.kernel.org"
- <linux-i2c@vger.kernel.org>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Russell King
- <linux@arm.linux.org.uk>, Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- Joerg Roedel <joro@8bytes.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- Yang-Leo Li <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, "Claudiu
- Manoil" <claudiu.manoil@freescale.com>, Kumar Gala <galak@codeaurora.org>,
- Xiaobo Xie <xiaobo.xie@nxp.com>, Qiang Zhao <qiang.zhao@nxp.com>
-Subject: RE: [v10, 7/7] mmc: sdhci-of-esdhc: fix host version for
- T4240-R1.0-R2.0
-Date: Thu, 5 May 2016 09:41:32 +0000
-Message-ID: <HE1PR04MB0889B52134A43C0E7A452B7BF87C0@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <1462417950-46796-8-git-send-email-yangbo.lu@nxp.com>
- <4448030.Zs8fVnr3nm@wuerfel>
-In-Reply-To: <4448030.Zs8fVnr3nm@wuerfel>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0qgH2JmWzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 19:41:47 +1000 (AEST)
+Date: Thu, 5 May 2016 11:41:44 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 17/18] livepatch: change to a per-task consistency
+ model
+In-Reply-To: <20160504155121.twuvstygaeag7yjq@treble>
+Message-ID: <alpine.LNX.2.00.1605051136000.19692@pobox.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160504084223.GQ2749@pathway.suse.cz>
+ <20160504155121.twuvstygaeag7yjq@treble>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,52 +36,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+On Wed, 4 May 2016, Josh Poimboeuf wrote:
 
+> On Wed, May 04, 2016 at 10:42:23AM +0200, Petr Mladek wrote:
+> > On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
+> > > Change livepatch to use a basic per-task consistency model.  This is the
+> > > foundation which will eventually enable us to patch those ~10% of
+> > > security patches which change function or data semantics.  This is the
+> > > biggest remaining piece needed to make livepatch more generally useful.
+> > 
+> > > --- a/kernel/fork.c
+> > > +++ b/kernel/fork.c
+> > > @@ -76,6 +76,7 @@
+> > >  #include <linux/compiler.h>
+> > >  #include <linux/sysctl.h>
+> > >  #include <linux/kcov.h>
+> > > +#include <linux/livepatch.h>
+> > >  
+> > >  #include <asm/pgtable.h>
+> > >  #include <asm/pgalloc.h>
+> > > @@ -1586,6 +1587,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+> > >  		p->parent_exec_id = current->self_exec_id;
+> > >  	}
+> > >  
+> > > +	klp_copy_process(p);
+> > 
+> > I am in doubts here. We copy the state from the parent here. It means
+> > that the new process might still need to be converted. But at the same
+> > point print_context_stack_reliable() returns zero without printing
+> > any stack trace when TIF_FORK flag is set. It means that a freshly
+> > forked task might get be converted immediately. I seems that boot
+> > operations are always done when copy_process() is called. But
+> > they are contradicting each other.
+> > 
+> > I guess that print_context_stack_reliable() should either return
+> > -EINVAL when TIF_FORK is set. Or it should try to print the
+> > stack of the newly forked task.
+> > 
+> > Or do I miss something, please?
+> 
+> Ok, I admit it's confusing.
+> 
+> A newly forked task doesn't *have* a stack (other than the pt_regs frame
+> it needs for the return to user space), which is why
+> print_context_stack_reliable() returns success with an empty array of
+> addresses.
+> 
+> For a little background, see the second switch_to() macro in
+> arch/x86/include/asm/switch_to.h.  When a newly forked task runs for the
+> first time, it returns from __switch_to() with no stack.  It then jumps
+> straight to ret_from_fork in entry_64.S, calls a few C functions, and
+> eventually returns to user space.  So, assuming we aren't patching entry
+> code or the switch_to() macro in __schedule(), it should be safe to
+> patch the task before it does all that.
+> 
+> With the current code, if an unpatched task gets forked, the child will
+> also be unpatched.  In theory, we could go ahead and patch the child
+> then.  In fact, that's what I did in v1.9.
+> 
+> But in v1.9 discussions it was pointed out that someday maybe the
+> ret_from_fork stuff will get cleaned up and instead the child stack will
+> be copied from the parent.  In that case the child should inherit its
+> parent's patched state.  So we decided to make it more future-proof by
+> having the child inherit the parent's patched state.
+> 
+> So, having said all that, I'm really not sure what the best approach is
+> for print_context_stack_reliable().  Right now I'm thinking I'll change
+> it back to return -EINVAL for a newly forked task, so it'll be more
+> future-proof: better to have a false positive than a false negative.
+> Either way it will probably need to be changed again if the
+> ret_from_fork code gets cleaned up.
 
-> -----Original Message-----
-> From: Arnd Bergmann [mailto:arnd@arndb.de]
-> Sent: Thursday, May 05, 2016 4:32 PM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: Yangbo Lu; linux-mmc@vger.kernel.org; devicetree@vger.kernel.org;
-> linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org;
-> linux-clk@vger.kernel.org; linux-i2c@vger.kernel.org; iommu@lists.linux-
-> foundation.org; netdev@vger.kernel.org; Mark Rutland;
-> ulf.hansson@linaro.org; Russell King; Bhupesh Sharma; Joerg Roedel;
-> Santosh Shilimkar; Yang-Leo Li; Scott Wood; Rob Herring; Claudiu Manoil;
-> Kumar Gala; Xiaobo Xie; Qiang Zhao
-> Subject: Re: [v10, 7/7] mmc: sdhci-of-esdhc: fix host version for T4240-
-> R1.0-R2.0
->=20
-> On Thursday 05 May 2016 11:12:30 Yangbo Lu wrote:
-> >
-> > +       fsl_guts_init();
-> > +       svr =3D fsl_guts_get_svr();
-> > +       if (svr) {
-> > +               esdhc->soc_ver =3D SVR_SOC_VER(svr);
-> > +               esdhc->soc_rev =3D SVR_REV(svr);
-> > +       } else {
-> > +               dev_err(&pdev->dev, "Failed to get SVR value!\n");
-> > +       }
-> > +
-> >
->=20
->=20
-> Sorry for jumping in again after not participating in the discussion for
-> the past few versions.
->=20
-> What happened to my suggestion of making this a platform-independent
-> interface to avoid the link time dependency?
->=20
-> Specifically, why not add an exported function to drivers/base/soc.c that
-> uses glob_match() for comparing a string in the device driver to the ID
-> of the SoC that is set by whatever SoC identifying driver the platform
-> has?
->=20
-> 	Arnd
+I'd be for returning -EINVAL. It is a safe play for now.
 
-[Lu Yangbo-B47093] I think this has been discussed in v6.
-You can find Scott's comments about this in below link.
-https://patchwork.kernel.org/patch/8544501/
+[...]
+ 
+> > Finally, the following is always called right after
+> > klp_start_transition(), so I would call it from there.
+> > 
+> > 	if (!klp_try_complete_transition())
+> > 		klp_schedule_work();
 
-Thanks.
+On the other hand it is quite nice to see the sequence
+
+init
+start
+try_complete
+
+there. Just my 2 cents.
+
+> Except for when it's called by klp_reverse_transition().  And it really
+> depends on whether we want to allow transition.c to use the mutex.  I
+> don't have a strong opinion either way, I may need to think about it
+> some more.
+
+Miroslav
