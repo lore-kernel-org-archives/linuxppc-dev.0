@@ -1,64 +1,36 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0wjS3nr0zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 23:29:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0yVf5144zDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 00:49:46 +1000 (AEST)
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 5 May 2016 18:58:56 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E4D903940067
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 18:58:54 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u45DSs5819660862
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 May 2016 18:58:54 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u45DSkFD003628
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 May 2016 18:58:53 +0530
-Subject: Re: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
- remapping is supported
-To: "Tian, Kevin" <kevin.tian@intel.com>,
- David Laight <David.Laight@ACULAB.COM>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
-References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1461761010-5452-6-git-send-email-xyjxie@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F842512@SHSMSX101.ccr.corp.intel.com>
- <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
- <e064a6a7-a8dc-f71f-1725-f31e03581b8d@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F847150@SHSMSX101.ccr.corp.intel.com>
- <063D6719AE5E284EB5DD2968C1650D6D5F4B52B5@AcuExch.aculab.com>
- <4be013bc-e81b-84c5-06d3-e1b3f46b3227@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F8474A4@SHSMSX101.ccr.corp.intel.com>
-Cc: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru"
- <aik@ozlabs.ru>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "joro@8bytes.org"
- <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
- <warrier@linux.vnet.ibm.com>,
- "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>,
- "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
- "eric.auger@linaro.org" <eric.auger@linaro.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>,
- "alistair@popple.id.au" <alistair@popple.id.au>,
- "ruscur@russell.cc" <ruscur@russell.cc>
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Message-ID: <90cc2e8c-be18-45de-ffff-fad313d49f81@linux.vnet.ibm.com>
-Date: Thu, 5 May 2016 21:28:55 +0800
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 6 May 2016 00:49:45 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9188B2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 00:49:42 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u45EnYNO38142104
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 00:49:42 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u45En8lx004433
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 00:49:09 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, mikey@neuling.org, oohall@gmail.com
+Subject: Re: [PATCH 0/2] Enable ZONE_DEVICE on POWER
+In-Reply-To: <1462450304-19173-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1462450304-19173-1-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Thu, 05 May 2016 20:18:50 +0530
+Message-ID: <87r3dgk1bh.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <AADFC41AFE54684AB9EE6CBC0274A5D15F8474A4@SHSMSX101.ccr.corp.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -68,72 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/5/5 20:15, Tian, Kevin wrote:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
->> From: Yongji Xie [mailto:xyjxie@linux.vnet.ibm.com]
->> Sent: Thursday, May 05, 2016 7:43 PM
->>
->> Hi David and Kevin,
->>
->> On 2016/5/5 17:54, David Laight wrote:
->>
->>> From: Tian, Kevin
->>>> Sent: 05 May 2016 10:37
->>> ...
->>>>> Acutually, we are not aimed at accessing MSI-X table from
->>>>> guest. So I think it's safe to passthrough MSI-X table if we
->>>>> can make sure guest kernel would not touch MSI-X table in
->>>>> normal code path such as para-virtualized guest kernel on PPC64.
->>>>>
->>>> Then how do you prevent malicious guest kernel accessing it?
->>> Or a malicious guest driver for an ethernet card setting up
->>> the receive buffer ring to contain a single word entry that
->>> contains the address associated with an MSI-X interrupt and
->>> then using a loopback mode to cause a specific packet be
->>> received that writes the required word through that address.
->>>
->>> Remember the PCIe cycle for an interrupt is a normal memory write
->>> cycle.
->>>
->>> 	David
->>>
->> If we have enough permission to load a malicious driver or
->> kernel, we can easily break the guest without exposed
->> MSI-X table.
->>
->> I think it should be safe to expose MSI-X table if we can
->> make sure that malicious guest driver/kernel can't use
->> the MSI-X table to break other guest or host. The
->> capability of IRQ remapping could provide this
->> kind of protection.
->>
-> With IRQ remapping it doesn't mean you can pass through MSI-X
-> structure to guest. I know actual IRQ remapping might be platform
-> specific, but at least for Intel VT-d specification, MSI-X entry must
-> be configured with a remappable format by host kernel which
-> contains an index into IRQ remapping table. The index will find a
-> IRQ remapping entry which controls interrupt routing for a specific
-> device. If you allow a malicious program random index into MSI-X
-> entry of assigned device, the hole is obvious...
-
-Do you mean we can trigger MSIs that correspond to interrupt
-IDs of other devices by writing to MSI-X table although IRQ
-remapping is enabled?
-
-On PPC64, there is a mapping between MSIs and PE num
-which can be used to identify a PCI device on PHB. So the
-hardware can ensure a given pci device can only shoot the
-MSIs assigned for it.  Isn't there a similar mapping in IRQ
-remapping table on Intel.
-
-Thanks,
-Yongji
-
-> Above might make sense only for a IRQ remapping implementation
-> which doesn't rely on extended MSI-X format (e.g. simply based on
-> BDF). If that's the case for PPC, then you should build MSI-X
-> passthrough based on this fact instead of general IRQ remapping
-> enabled or not.
+> This enables base ZONE_DEVICE support on POWER. This series depends on
+> the following patches posted by Oliver.
 >
-> Thanks
-> Kevin
+> https://patchwork.ozlabs.org/patch/618867/
+> https://patchwork.ozlabs.org/patch/618868/
+>
+> Anshuman Khandual (2):
+>   powerpc/mm: Make vmemmap_populate accommodate ZONE_DEVICE memory
+>   powerpc/mm: Enable support for ZONE_DEVICE on PPC_BOOK3S_64 platforms
+>
+>  arch/powerpc/mm/init_64.c | 4 +++-
+>  mm/Kconfig                | 2 +-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
+>
+
+What is the use case ? Who will use ZONE_DEVICE on ppc64. This should be
+be merged along with the patch series that use this. 
+
+-aneesh
