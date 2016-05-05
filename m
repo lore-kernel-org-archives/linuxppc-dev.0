@@ -1,42 +1,32 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <pmladek@suse.com>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0qz22vNmzDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 19:55:26 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'Tian, Kevin'" <kevin.tian@intel.com>, Yongji Xie
- <xyjxie@linux.vnet.ibm.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
-CC: "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "joro@8bytes.org" <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
- <warrier@linux.vnet.ibm.com>, "zhong@linux.vnet.ibm.com"
- <zhong@linux.vnet.ibm.com>, "nikunj@linux.vnet.ibm.com"
- <nikunj@linux.vnet.ibm.com>, "eric.auger@linaro.org" <eric.auger@linaro.org>,
- "will.deacon@arm.com" <will.deacon@arm.com>, "gwshan@linux.vnet.ibm.com"
- <gwshan@linux.vnet.ibm.com>, "alistair@popple.id.au" <alistair@popple.id.au>,
- "ruscur@russell.cc" <ruscur@russell.cc>
-Subject: RE: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
- remapping is supported
-Date: Thu, 5 May 2016 09:54:07 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4B52B5@AcuExch.aculab.com>
-References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1461761010-5452-6-git-send-email-xyjxie@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F842512@SHSMSX101.ccr.corp.intel.com>
- <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
- <e064a6a7-a8dc-f71f-1725-f31e03581b8d@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F847150@SHSMSX101.ccr.corp.intel.com>
-In-Reply-To: <AADFC41AFE54684AB9EE6CBC0274A5D15F847150@SHSMSX101.ccr.corp.intel.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0rYl5nRXzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 20:22:03 +1000 (AEST)
+Date: Thu, 5 May 2016 12:21:59 +0200
+From: Petr Mladek <pmladek@suse.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Miroslav Benes <mbenes@suse.cz>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a
+ per-task consistency model
+Message-ID: <20160505102159.GW2749@pathway.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160504123940.GR2749@pathway.suse.cz>
+ <20160504170236.mpncog3iudr3cvem@treble>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160504170236.mpncog3iudr3cvem@treble>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,17 +36,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogVGlhbiwgS2V2aW4NCj4gU2VudDogMDUgTWF5IDIwMTYgMTA6MzcNCi4uLg0KPiA+IEFj
-dXR1YWxseSwgd2UgYXJlIG5vdCBhaW1lZCBhdCBhY2Nlc3NpbmcgTVNJLVggdGFibGUgZnJvbQ0K
-PiA+IGd1ZXN0LiBTbyBJIHRoaW5rIGl0J3Mgc2FmZSB0byBwYXNzdGhyb3VnaCBNU0ktWCB0YWJs
-ZSBpZiB3ZQ0KPiA+IGNhbiBtYWtlIHN1cmUgZ3Vlc3Qga2VybmVsIHdvdWxkIG5vdCB0b3VjaCBN
-U0ktWCB0YWJsZSBpbg0KPiA+IG5vcm1hbCBjb2RlIHBhdGggc3VjaCBhcyBwYXJhLXZpcnR1YWxp
-emVkIGd1ZXN0IGtlcm5lbCBvbiBQUEM2NC4NCj4gPg0KPiANCj4gVGhlbiBob3cgZG8geW91IHBy
-ZXZlbnQgbWFsaWNpb3VzIGd1ZXN0IGtlcm5lbCBhY2Nlc3NpbmcgaXQ/DQoNCk9yIGEgbWFsaWNp
-b3VzIGd1ZXN0IGRyaXZlciBmb3IgYW4gZXRoZXJuZXQgY2FyZCBzZXR0aW5nIHVwDQp0aGUgcmVj
-ZWl2ZSBidWZmZXIgcmluZyB0byBjb250YWluIGEgc2luZ2xlIHdvcmQgZW50cnkgdGhhdA0KY29u
-dGFpbnMgdGhlIGFkZHJlc3MgYXNzb2NpYXRlZCB3aXRoIGFuIE1TSS1YIGludGVycnVwdCBhbmQN
-CnRoZW4gdXNpbmcgYSBsb29wYmFjayBtb2RlIHRvIGNhdXNlIGEgc3BlY2lmaWMgcGFja2V0IGJl
-DQpyZWNlaXZlZCB0aGF0IHdyaXRlcyB0aGUgcmVxdWlyZWQgd29yZCB0aHJvdWdoIHRoYXQgYWRk
-cmVzcy4NCg0KUmVtZW1iZXIgdGhlIFBDSWUgY3ljbGUgZm9yIGFuIGludGVycnVwdCBpcyBhIG5v
-cm1hbCBtZW1vcnkgd3JpdGUNCmN5Y2xlLg0KDQoJRGF2aWQNCg0K
+On Wed 2016-05-04 12:02:36, Josh Poimboeuf wrote:
+> On Wed, May 04, 2016 at 02:39:40PM +0200, Petr Mladek wrote:
+> > On Thu 2016-04-28 15:44:48, Josh Poimboeuf wrote:
+> > > Change livepatch to use a basic per-task consistency model.  This is the
+> > > foundation which will eventually enable us to patch those ~10% of
+> > > security patches which change function or data semantics.  This is the
+> > > biggest remaining piece needed to make livepatch more generally useful.
+> > 
+> > I spent a lot of time with checking the memory barriers. It seems that
+> > they are basically correct.  Let me use my own words to show how
+> > I understand it. I hope that it will help others with review.
+> 
+> [...snip a ton of useful comments...]
+> 
+> Thanks, this will help a lot!  I'll try to incorporate your barrier
+> comments into the code.
+
+Thanks a lot.
+
+> I also agree that kpatch_patch_task() is poorly named.  I was trying to
+> make it clear to external callers that "hey, the task is getting patched
+> now!", but it's internally inconsistent with livepatch code because we
+> make a distinction between patching and unpatching.
+> 
+> Maybe I'll do:
+> 
+>   klp_update_task_patch_state()
+
+I like it. It is long but it well describes the purpose.
+
+Livepatch is using many state variables:
+
+  + global:                klp_transition_patch, klp_target_state
+  + per task specific:     TIF_PENDING_PATCH, patch_state
+  + per each new function: transition, patched
+  + per old function:      func_stack
+  + per object:            patched, loaded
+  + per patch:             enabled
+
+The dependency between them and the workflow is important to
+create a mental picture about the Livepatching. Good names
+help with it.
+
+Best Regards,
+Petr
