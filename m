@@ -1,30 +1,24 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0097.outbound.protection.outlook.com [207.46.100.97])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r0gGP0kppzDqGR
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 13:23:08 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: <linux-mmc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
- <linux-i2c@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
- <netdev@vger.kernel.org>
-CC: <ulf.hansson@linaro.org>, Scott Wood <oss@buserror.net>, Mark Rutland
- <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
- <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
- <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, "Bhupesh
- Sharma" <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
- "Kumar Gala" <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- <leoyang.li@nxp.com>, <xiaobo.xie@nxp.com>, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v10, 7/7] mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
-Date: Thu, 5 May 2016 11:12:30 +0800
-Message-ID: <1462417950-46796-8-git-send-email-yangbo.lu@nxp.com>
-In-Reply-To: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r0h983HSDzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 May 2016 14:03:40 +1000 (AEST)
+Received: by mail-pa0-x232.google.com with SMTP id iv1so31268584pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 May 2016 21:03:40 -0700 (PDT)
+Subject: Re: [PATCH v10 16/26] powerpc/powernv/ioda1: Improve DMA32 segment
+ track
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1462254105-24128-17-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1462413856-7739-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, alistair@popple.id.au
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <9e835209-c628-30f5-a352-ab699b376889@ozlabs.ru>
+Date: Thu, 5 May 2016 14:03:31 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1462413856-7739-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,117 +28,281 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The eSDHC of T4240-R1.0-R2.0 has incorrect vender version and spec version.
-Acturally the right version numbers should be VVN=0x13 and SVN = 0x1.
-This patch adds the GUTS driver support for eSDHC driver to get SVR(System
-version register). And fix host version to avoid that incorrect version
-numbers break down the ADMA data transfer.
+On 05/05/2016 12:04 PM, Gavin Shan wrote:
+> In current implementation, the DMA32 segments required by one specific
+> PE isn't calculated with the information hold in the PE independently.
+> It conflicts with the PCI hotplug design: PE centralized, meaning the
+> PE's DMA32 segments should be calculated from the information hold in
+> the PE independently.
+>
+> This introduces an array (@dma32_segmap) for every PHB to track the
+> DMA32 segmeng usage. Besides, this moves the logic calculating PE's
+> consumed DMA32 segments to pnv_pci_ioda1_setup_dma_pe() so that PE's
+> DMA32 segments are calculated/allocated from the information hold in
+> the PE (DMA32 weight). Also the logic is improved: we try to allocate
+> as much DMA32 segments as we can. It's acceptable that number of DMA32
+> segments less than the expected number are allocated.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Scott Wood <oss@buserror.net>
----
-Changes for v2:
-	- Got SVR through iomap instead of dts
-Changes for v3:
-	- Managed GUTS through syscon instead of iomap in eSDHC driver
-Changes for v4:
-	- Got SVR by GUTS driver instead of SYSCON
-Changes for v5:
-	- Changed to get SVR through API fsl_guts_get_svr()
-	- Combined patch 4, patch 5 and patch 6 into one
-Changes for v6:
-	- Added 'Acked-by: Ulf Hansson'
-Changes for v7:
-	- None
-Changes for v8:
-	- Added 'Acked-by: Scott Wood'
-Changes for v9:
-	- None
-Changes for v10:
-	- None
----
- drivers/mmc/host/Kconfig          |  1 +
- drivers/mmc/host/sdhci-of-esdhc.c | 23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+)
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 0aa484c..e15e836 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -143,6 +143,7 @@ config MMC_SDHCI_OF_ESDHC
- 	depends on MMC_SDHCI_PLTFM
- 	depends on PPC || ARCH_MXC || ARCH_LAYERSCAPE
- 	select MMC_SDHCI_IO_ACCESSORS
-+	select FSL_GUTS
- 	help
- 	  This selects the Freescale eSDHC controller support.
- 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 3f34d35..68cc020 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -18,6 +18,8 @@
- #include <linux/of.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-+#include <linux/fsl/svr.h>
-+#include <linux/fsl/guts.h>
- #include <linux/mmc/host.h>
- #include "sdhci-pltfm.h"
- #include "sdhci-esdhc.h"
-@@ -28,6 +30,8 @@
- struct sdhci_esdhc {
- 	u8 vendor_ver;
- 	u8 spec_ver;
-+	u32 soc_ver;
-+	u8 soc_rev;
- };
- 
- /**
-@@ -73,6 +77,8 @@ static u32 esdhc_readl_fixup(struct sdhci_host *host,
- static u16 esdhc_readw_fixup(struct sdhci_host *host,
- 				     int spec_reg, u32 value)
- {
-+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-+	struct sdhci_esdhc *esdhc = sdhci_pltfm_priv(pltfm_host);
- 	u16 ret;
- 	int shift = (spec_reg & 0x2) * 8;
- 
-@@ -80,6 +86,13 @@ static u16 esdhc_readw_fixup(struct sdhci_host *host,
- 		ret = value & 0xffff;
- 	else
- 		ret = (value >> shift) & 0xffff;
-+
-+	/* Workaround for T4240-R1.0-R2.0 eSDHC which has incorrect
-+	 * vendor version and spec version information.
-+	 */
-+	if ((spec_reg == SDHCI_HOST_VERSION) &&
-+	    (esdhc->soc_ver == SVR_T4240) && (esdhc->soc_rev <= 0x20))
-+		ret = (VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | SDHCI_SPEC_200;
- 	return ret;
- }
- 
-@@ -567,10 +580,20 @@ static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
- 	struct sdhci_pltfm_host *pltfm_host;
- 	struct sdhci_esdhc *esdhc;
- 	u16 host_ver;
-+	u32 svr;
- 
- 	pltfm_host = sdhci_priv(host);
- 	esdhc = sdhci_pltfm_priv(pltfm_host);
- 
-+	fsl_guts_init();
-+	svr = fsl_guts_get_svr();
-+	if (svr) {
-+		esdhc->soc_ver = SVR_SOC_VER(svr);
-+		esdhc->soc_rev = SVR_REV(svr);
-+	} else {
-+		dev_err(&pdev->dev, "Failed to get SVR value!\n");
-+	}
-+
- 	host_ver = sdhci_readw(host, SDHCI_HOST_VERSION);
- 	esdhc->vendor_ver = (host_ver & SDHCI_VENDOR_VER_MASK) >>
- 			     SDHCI_VENDOR_VER_SHIFT;
+> ---
+> v10: Fixed picking same DMA32 segment by different PEs in some cases
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 115 ++++++++++++++++--------------
+>  arch/powerpc/platforms/powernv/pci.h      |   7 +-
+>  2 files changed, 66 insertions(+), 56 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 30c825a..98879a0 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2011,27 +2011,62 @@ static unsigned int pnv_pci_ioda_pe_dma_weight(struct pnv_ioda_pe *pe)
+>  }
+>
+>  static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+> -				       struct pnv_ioda_pe *pe,
+> -				       unsigned int base,
+> -				       unsigned int segs)
+> +				       struct pnv_ioda_pe *pe)
+>  {
+>
+>  	struct page *tce_mem = NULL;
+>  	struct iommu_table *tbl;
+> -	unsigned int tce32_segsz, i;
+> +	unsigned int weight, total_weight = 0;
+> +	unsigned int tce32_segsz, base, segs, avail, i;
+>  	int64_t rc;
+>  	void *addr;
+>
+>  	/* XXX FIXME: Handle 64-bit only DMA devices */
+>  	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
+>  	/* XXX FIXME: Allocate multi-level tables on PHB3 */
+> +	weight = pnv_pci_ioda_pe_dma_weight(pe);
+> +	if (!weight)
+> +		return;
+> +
+> +	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
+> +		     &total_weight);
+> +	segs = (weight * phb->ioda.dma32_count) / total_weight;
+> +	if (!segs)
+> +		segs = 1;
+>
+> +	/*
+> +	 * Allocate contiguous DMA32 segments. We begin with the expected
+> +	 * number of segments. With one more attempt, the number of DMA32
+> +	 * segments to be allocated is decreased by one until one segment
+> +	 * is allocated successfully.
+> +	 */
+> +	do {
+> +		for (base = 0; base <= phb->ioda.dma32_count - segs; base++) {
+> +			for (avail = 0, i = base; i < base + segs; i++) {
+> +				if (phb->ioda.dma32_segmap[i] ==
+> +				    IODA_INVALID_PE)
+> +					avail++;
+> +			}
+> +
+> +			if (avail == segs)
+> +				goto found;
+> +		}
+> +	} while (--segs);
+> +
+> +	if (!segs) {
+> +		pe_warn(pe, "No available DMA32 segments\n");
+> +		return;
+> +	}
+> +
+> +found:
+>  	tbl = pnv_pci_table_alloc(phb->hose->node);
+>  	iommu_register_group(&pe->table_group, phb->hose->global_number,
+>  			pe->pe_number);
+>  	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+>
+>  	/* Grab a 32-bit TCE table */
+> +	pe_info(pe, "DMA weight %d (%d), assigned (%d) %d DMA32 segments\n",
+> +		weight, total_weight, base, segs);
+>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+>  		base * PNV_IODA1_DMA32_SEGSIZE,
+>  		(base + segs) * PNV_IODA1_DMA32_SEGSIZE - 1);
+> @@ -2068,6 +2103,10 @@ static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
+>  		}
+>  	}
+>
+> +	/* Setup DMA32 segment mapping */
+> +	for (i = base; i < base + segs; i++)
+> +		phb->ioda.dma32_segmap[i] = pe->pe_number;
+> +
+>  	/* Setup linux iommu table */
+>  	pnv_pci_setup_iommu_table(tbl, addr, tce32_segsz * segs,
+>  				  base * PNV_IODA1_DMA32_SEGSIZE,
+> @@ -2542,73 +2581,34 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>  static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>  {
+>  	struct pci_controller *hose = phb->hose;
+> -	unsigned int weight, total_weight, dma_pe_count;
+> -	unsigned int residual, remaining, segs, base;
+>  	struct pnv_ioda_pe *pe;
+> -
+> -	total_weight = 0;
+> -	pci_walk_bus(phb->hose->bus, pnv_pci_ioda_dev_dma_weight,
+> -		     &total_weight);
+> -
+> -	dma_pe_count = 0;
+> -	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+> -		weight = pnv_pci_ioda_pe_dma_weight(pe);
+> -		if (weight > 0)
+> -			dma_pe_count++;
+> -	}
+> +	unsigned int weight;
+>
+>  	/* If we have more PE# than segments available, hand out one
+>  	 * per PE until we run out and let the rest fail. If not,
+>  	 * then we assign at least one segment per PE, plus more based
+>  	 * on the amount of devices under that PE
+>  	 */
+> -	if (dma_pe_count > phb->ioda.tce32_count)
+> -		residual = 0;
+> -	else
+> -		residual = phb->ioda.tce32_count - dma_pe_count;
+> -
+> -	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
+> -		hose->global_number, phb->ioda.tce32_count);
+> -	pr_info("PCI: %d PE# for a total weight of %d\n",
+> -		dma_pe_count, total_weight);
+> +	pr_info("PCI: Domain %04x has %d available 32-bit DMA segments\n",
+> +		hose->global_number, phb->ioda.dma32_count);
+>
+>  	pnv_pci_ioda_setup_opal_tce_kill(phb);
+>
+> -	/* Walk our PE list and configure their DMA segments, hand them
+> -	 * out one base segment plus any residual segments based on
+> -	 * weight
+> -	 */
+> -	remaining = phb->ioda.tce32_count;
+> -	base = 0;
+> +	/* Walk our PE list and configure their DMA segments */
+>  	list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+>  		weight = pnv_pci_ioda_pe_dma_weight(pe);
+>  		if (!weight)
+>  			continue;
+>
+> -		if (!remaining) {
+> -			pe_warn(pe, "No DMA32 resources available\n");
+> -			continue;
+> -		}
+> -		segs = 1;
+> -		if (residual) {
+> -			segs += ((weight * residual) + (total_weight / 2)) /
+> -				total_weight;
+> -			if (segs > remaining)
+> -				segs = remaining;
+> -		}
+> -
+>  		/*
+>  		 * For IODA2 compliant PHB3, we needn't care about the weight.
+>  		 * The all available 32-bits DMA space will be assigned to
+>  		 * the specific PE.
+>  		 */
+>  		if (phb->type == PNV_PHB_IODA1) {
+> -			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+> -				weight, segs);
+> -			pnv_pci_ioda1_setup_dma_pe(phb, pe, base, segs);
+> +			pnv_pci_ioda1_setup_dma_pe(phb, pe);
+>  		} else if (phb->type == PNV_PHB_IODA2) {
+>  			pe_info(pe, "Assign DMA32 space\n");
+> -			segs = 0;
+>  			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+>  		} else if (phb->type == PNV_PHB_NPU) {
+>  			/*
+> @@ -2618,9 +2618,6 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+>  			 * as the PHB3 TVT.
+>  			 */
+>  		}
+> -
+> -		remaining -= segs;
+> -		base += segs;
+>  	}
+>  }
+>
+> @@ -3327,7 +3324,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  {
+>  	struct pci_controller *hose;
+>  	struct pnv_phb *phb;
+> -	unsigned long size, m64map_off, m32map_off, pemap_off, iomap_off = 0;
+> +	unsigned long size, m64map_off, m32map_off, pemap_off;
+> +	unsigned long iomap_off = 0, dma32map_off = 0;
+>  	const __be64 *prop64;
+>  	const __be32 *prop32;
+>  	int len;
+> @@ -3413,6 +3411,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	phb->ioda.io_segsize = phb->ioda.io_size / phb->ioda.total_pe_num;
+>  	phb->ioda.io_pci_base = 0; /* XXX calculate this ? */
+>
+> +	/* Calculate how many 32-bit TCE segments we have */
+> +	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
+> +				PNV_IODA1_DMA32_SEGSIZE;
+> +
+>  	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
+>  	size = _ALIGN_UP(phb->ioda.total_pe_num / 8, sizeof(unsigned long));
+>  	m64map_off = size;
+> @@ -3422,6 +3424,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	if (phb->type == PNV_PHB_IODA1) {
+>  		iomap_off = size;
+>  		size += phb->ioda.total_pe_num * sizeof(phb->ioda.io_segmap[0]);
+> +		dma32map_off = size;
+> +		size += phb->ioda.dma32_count *
+> +			sizeof(phb->ioda.dma32_segmap[0]);
+>  	}
+>  	pemap_off = size;
+>  	size += phb->ioda.total_pe_num * sizeof(struct pnv_ioda_pe);
+> @@ -3437,6 +3442,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  		phb->ioda.io_segmap = aux + iomap_off;
+>  		for (segno = 0; segno < phb->ioda.total_pe_num; segno++)
+>  			phb->ioda.io_segmap[segno] = IODA_INVALID_PE;
+> +
+> +		phb->ioda.dma32_segmap = aux + dma32map_off;
+> +		for (segno = 0; segno < phb->ioda.dma32_count; segno++)
+> +			phb->ioda.dma32_segmap[segno] = IODA_INVALID_PE;
+>  	}
+>  	phb->ioda.pe_array = aux + pemap_off;
+>  	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
+> @@ -3445,7 +3454,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	mutex_init(&phb->ioda.pe_list_mutex);
+>
+>  	/* Calculate how many 32-bit TCE segments we have */
+> -	phb->ioda.tce32_count = phb->ioda.m32_pci_base /
+> +	phb->ioda.dma32_count = phb->ioda.m32_pci_base /
+>  				PNV_IODA1_DMA32_SEGSIZE;
+>
+>  #if 0 /* We should really do that ... */
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 117cfcd..14d9391 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -142,6 +142,10 @@ struct pnv_phb {
+>  		unsigned int		*m32_segmap;
+>  		unsigned int		*io_segmap;
+>
+> +		/* DMA32 segment maps - IODA1 only */
+> +		unsigned int		dma32_count;
+> +		unsigned int		*dma32_segmap;
+> +
+>  		/* IRQ chip */
+>  		int			irq_chip_init;
+>  		struct irq_chip		irq_chip;
+> @@ -158,9 +162,6 @@ struct pnv_phb {
+>  		 */
+>  		unsigned char		pe_rmap[0x10000];
+>
+> -		/* 32-bit TCE tables allocation */
+> -		unsigned long		tce32_count;
+> -
+>  		/* TCE cache invalidate registers (physical and
+>  		 * remapped)
+>  		 */
+>
+
+
 -- 
-2.1.0.27.g96db324
+Alexey
