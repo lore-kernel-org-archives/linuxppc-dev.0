@@ -1,26 +1,30 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [150.101.137.141])
- by lists.ozlabs.org (Postfix) with ESMTP id 3r1DMd30bTzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 11:14:36 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>,
- David Gibson <david@gibson.dropbear.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>,
- kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v4 10/11] powerpc/powernv/npu: Rework TCE Kill
- handling
-Date: Fri, 06 May 2016 11:11:36 +1000
-Message-ID: <2152876.k9gKxoRjRa@new-mexico>
-In-Reply-To: <c4476ec5-6a7c-2ab4-c656-fe3c51a8ad19@ozlabs.ru>
-References: <1461920124-21719-1-git-send-email-aik@ozlabs.ru>
- <4101273.U4ABDoEKOe@new-mexico>
- <c4476ec5-6a7c-2ab4-c656-fe3c51a8ad19@ozlabs.ru>
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1D4Z1wRYzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 11:01:34 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id zy2so10952764pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 May 2016 18:01:34 -0700 (PDT)
+Subject: Re: [PATCH 2/2] powerpc: Update of_remove_property() call sites to
+ remove null checking
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <1461821695-19204-1-git-send-email-sjitindarsingh@gmail.com>
+ <1461821695-19204-2-git-send-email-sjitindarsingh@gmail.com>
+ <57292702.5070507@linux.vnet.ibm.com>
+ <1462431031.12473.3.camel@ellerman.id.au>
+Cc: grant.likely@linaro.org, frowand.list@gmail.com, robh+dt@kernel.org,
+ paulus@samba.org
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Message-ID: <572BECE6.1080303@gmail.com>
+Date: Fri, 6 May 2016 11:01:26 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1462431031.12473.3.camel@ellerman.id.au>
+Content-Type: multipart/alternative;
+ boundary="------------050905060000030904040301"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,334 +34,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 5 May 2016 14:23:20 Alexey Kardashevskiy wrote:
-> On 05/03/2016 05:37 PM, Alistair Popple wrote:
-> > On Fri, 29 Apr 2016 18:55:23 Alexey Kardashevskiy wrote:
-> >> The pnv_ioda_pe struct keeps an array of peers. At the moment it is only
-> >> used to link GPU and NPU for 2 purposes:
-> >>
-> >> 1. Access NPU quickly when configuring DMA for GPU - this was addressed
-> >> in the previos patch by removing use of it as DMA setup is not what
-> >> the kernel would constantly do.
-> >
-> > Agreed. It was used here because the peer array was added to deal with (2)
-> > below ...
-> >
-> >> 2. Invalidate TCE cache for NPU when it is invalidated for GPU.
-> >> GPU and NPU are in different PE. There is already a mechanism to
-> >> attach multiple iommu_table_group to the same iommu_table (used for VFIO),
-> >> we can reuse it here so does this patch.
-> >
-> > ... because we weren't aware iommu_table_group could be used to do this
-> > instead.
-> >
-> >> This gets rid of peers[] array and PNV_IODA_PE_PEER flag as they are
-> >> not needed anymore.
-> >
-> > Happy to see it go. I'm not too familiar with iommu groups but based on the
-> > code and what you have described to me both here and offline everything looks
-> > good to me. One pretty minor style comment below.
-> >
-> > Reviewed-By: Alistair Popple <alistair@popple.id.au>
-> >
-> >> While we are here, add TCE cache invalidation after enabling bypass.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >> Changes:
-> >> v4:
-> >> * reworked as "powerpc/powernv/npu: Add set/unset window helpers" has been
-> >> added
-> >> ---
-> >>  arch/powerpc/platforms/powernv/npu-dma.c  | 69
-> > +++++++++----------------------
-> >>  arch/powerpc/platforms/powernv/pci-ioda.c | 57 ++++---------------------
-> >>  arch/powerpc/platforms/powernv/pci.h      |  6 ---
-> >>  3 files changed, 26 insertions(+), 106 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c
-> > b/arch/powerpc/platforms/powernv/npu-dma.c
-> >> index 800d70f..cb2d1da 100644
-> >> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> >> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> >> @@ -136,22 +136,17 @@ static struct pnv_ioda_pe
-> > *get_gpu_pci_dev_and_pe(struct pnv_ioda_pe *npe,
-> >>  	struct pnv_ioda_pe *pe;
-> >>  	struct pci_dn *pdn;
-> >>
-> >> -	if (npe->flags & PNV_IODA_PE_PEER) {
-> >> -		pe = npe->peers[0];
-> >> -		pdev = pe->pdev;
-> >> -	} else {
-> >> -		pdev = pnv_pci_get_gpu_dev(npe->pdev);
-> >> -		if (!pdev)
-> >> -			return NULL;
-> >> +	pdev = pnv_pci_get_gpu_dev(npe->pdev);
-> >> +	if (!pdev)
-> >> +		return NULL;
-> >>
-> >> -		pdn = pci_get_pdn(pdev);
-> >> -		if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
-> >> -			return NULL;
-> >> +	pdn = pci_get_pdn(pdev);
-> >> +	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
-> >> +		return NULL;
-> >>
-> >> -		hose = pci_bus_to_host(pdev->bus);
-> >> -		phb = hose->private_data;
-> >> -		pe = &phb->ioda.pe_array[pdn->pe_number];
-> >> -	}
-> >> +	hose = pci_bus_to_host(pdev->bus);
-> >> +	phb = hose->private_data;
-> >> +	pe = &phb->ioda.pe_array[pdn->pe_number];
-> >>
-> >>  	if (gpdev)
-> >>  		*gpdev = pdev;
-> >> @@ -186,6 +181,10 @@ static long pnv_npu_set_window(struct pnv_ioda_pe *npe,
-> >>  	}
-> >>  	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
-> >>
-> >> +	/* Add the table to the list so its TCE cache will get invalidated */
-> >> +	pnv_pci_link_table_and_group(phb->hose->node, 0,
-> >> +			tbl, &npe->table_group);
-> >
-> > Where tbl is associated with the GPU and is what links the NPU and GPU PEs.
-> >
-> >>  	return 0;
-> >>  }
-> >>
-> >> @@ -206,45 +205,12 @@ static long pnv_npu_unset_window(struct pnv_ioda_pe
-> > *npe)
-> >>  	}
-> >>  	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
-> >>
-> >> +	pnv_pci_unlink_table_and_group(npe->table_group.tables[0],
-> >> +			&npe->table_group);
-> >> +
-> >>  	return 0;
-> >>  }
-> >>
-> >> -void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe)
-> >> -{
-> >> -	struct pnv_ioda_pe *gpe;
-> >> -	struct pci_dev *gpdev;
-> >> -	int i, avail = -1;
-> >> -
-> >> -	if (!npe->pdev || !(npe->flags & PNV_IODA_PE_DEV))
-> >> -		return;
-> >> -
-> >> -	gpe = get_gpu_pci_dev_and_pe(npe, &gpdev);
-> >> -	if (!gpe)
-> >> -		return;
-> >> -
-> >> -	for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
-> >> -		/* Nothing to do if the PE is already connected. */
-> >> -		if (gpe->peers[i] == npe)
-> >> -			return;
-> >> -
-> >> -		if (!gpe->peers[i])
-> >> -			avail = i;
-> >> -	}
-> >> -
-> >> -	if (WARN_ON(avail < 0))
-> >> -		return;
-> >> -
-> >> -	gpe->peers[avail] = npe;
-> >> -	gpe->flags |= PNV_IODA_PE_PEER;
-> >> -
-> >> -	/*
-> >> -	 * We assume that the NPU devices only have a single peer PE
-> >> -	 * (the GPU PCIe device PE).
-> >> -	 */
-> >> -	npe->peers[0] = gpe;
-> >> -	npe->flags |= PNV_IODA_PE_PEER;
-> >> -}
-> >> -
-> >>  /*
-> >>   * Enables 32 bit DMA on NPU.
-> >>   */
-> >> @@ -302,6 +268,9 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe
-> > *npe)
-> >>  			npe->pe_number, npe->pe_number,
-> >>  			0 /* bypass base */, top);
-> >>
-> >> +	if (rc == OPAL_SUCCESS)
-> >> +		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
-> >> +
-> >>  	return rc;
-> >>  }
-> >>
-> >> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >> index db7695f..922c74c 100644
-> >> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >> @@ -1816,23 +1816,12 @@ static inline void
-> > pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
-> >>  	/* 01xb - invalidate TCEs that match the specified PE# */
-> >>  	unsigned long val = TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
-> >>  	struct pnv_phb *phb = pe->phb;
-> >> -	struct pnv_ioda_pe *npe;
-> >> -	int i;
-> >>
-> >>  	if (!phb->ioda.tce_inval_reg)
-> >>  		return;
-> >>
-> >>  	mb(); /* Ensure above stores are visible */
-> >>  	__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
-> >> -
-> >> -	if (pe->flags & PNV_IODA_PE_PEER)
-> >> -		for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
-> >> -			npe = pe->peers[i];
-> >> -			if (!npe || npe->phb->type != PNV_PHB_NPU)
-> >> -				continue;
-> >> -
-> >> -			pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-> >> -		}
-> >>  }
-> >>
-> >>  static void pnv_pci_ioda2_do_tce_invalidate(unsigned pe_number, bool rm,
-> >> @@ -1867,33 +1856,24 @@ static void pnv_pci_ioda2_tce_invalidate(struct
-> > iommu_table *tbl,
-> >>  	struct iommu_table_group_link *tgl;
-> >>
-> >>  	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
-> >> -		struct pnv_ioda_pe *npe;
-> >>  		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
-> >>  				struct pnv_ioda_pe, table_group);
-> >>  		__be64 __iomem *invalidate = rm ?
-> >>  			(__be64 __iomem *)pe->phb->ioda.tce_inval_reg_phys :
-> >>  			pe->phb->ioda.tce_inval_reg;
-> >> -		int i;
-> >>
-> >> -		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
-> >> -			invalidate, tbl->it_page_shift,
-> >> -			index, npages);
-> >> -
-> >> -		if (pe->flags & PNV_IODA_PE_PEER)
-> >> +		if (pe->phb->type == PNV_PHB_NPU) {
-> >>  			/*
-> >>  			 * The NVLink hardware does not support TCE kill
-> >>  			 * per TCE entry so we have to invalidate
-> >>  			 * the entire cache for it.
-> >>  			 */
-> >> -			for (i = 0; i < PNV_IODA_MAX_PEER_PES; i++) {
-> >> -				npe = pe->peers[i];
-> >> -				if (!npe || npe->phb->type != PNV_PHB_NPU ||
-> >> -						!npe->phb->ioda.tce_inval_reg)
-> >> -					continue;
-> >> -
-> >> -				pnv_pci_ioda2_tce_invalidate_entire(npe->phb,
-> >> -						rm);
-> >> -			}
-> >> +			pnv_pci_ioda2_tce_invalidate_entire(pe->phb, rm);
-> >> +			continue;
-> >> +		}
-> >
-> > Personally I think an if/else instead of the continue would be cleaner here.
-> 
-> 
-> I see it as a hack which is nice to have in a way that it does not touch 
-> the correct code (in this case - by enclosing it into "else{}").
-> 
-> Also, that would increase the indentation of the 
-> pnv_pci_ioda2_do_tce_invalidate() below for no good reason.
+This is a multi-part message in MIME format.
+--------------050905060000030904040301
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-As I said it really is just a matter of personal preference. My only reason
-for preferring if/else is that it reduces the chance of someone (read me)
-adding something common that needs to happen after either invalidate missing
-the continue and then having it not work on NPU.
 
-On the other hand it's still obvious enough and if someone's modifying the code
-they probably should read the existing code first anyway. It doesn't actually
-need to be changed.
 
-- Alistair
+On 05/05/16 16:50, Michael Ellerman wrote:
+> On Tue, 2016-05-03 at 15:32 -0700, Tyrel Datwyler wrote: >> On 04/27/20=
+16 10:34 PM, Suraj Jitindar Singh wrote: >>> diff --git a/arch/powerpc/pl=
+atforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c >>=
+> index ceb18d3..a560a98 100644 >>> --- a/arch/powerpc/platforms/pseries/=
+mobility.c >>> +++ b/arch/powerpc/platforms/pseries/mobility.c >>> @@ -19=
+1,8 +191,8 @@ static int update_dt_node(__be32 phandle, s32 scope) >>>   =
+               break; >>>  >>>              case 0x80000000: >>> -       =
+         prop =3D of_find_property(dn, prop_name, NULL); >>> -           =
+     of_remove_property(dn, prop); >>> +                of_remove_propert=
+y(dn, of_find_property(dn, >>> +                            prop_name, NU=
+LL)); >>>                  prop =3D NULL; >>>                  break; >>>=
+ >> >> You haven't removed a NULL check here, as suggested by the changel=
+og, >> but instead made a cosmetic change to the code that still leaves b=
+ehind >> a now unnecessary "prop =3D NULL;" to bit rot. > > Yeah I think =
+you're right. Though it's not
+very clear how prop is used in that > function. > > Please one of you sen=
+d me an incremental to remove the prop =3D NULL; > > cheers >
 
-> >
-> >> +		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
-> >> +			invalidate, tbl->it_page_shift,
-> >> +			index, npages);
-> >>  	}
-> >>  }
-> >>
-> >> @@ -3061,26 +3041,6 @@ static void pnv_pci_ioda_create_dbgfs(void)
-> >>  #endif /* CONFIG_DEBUG_FS */
-> >>  }
-> >>
-> >> -static void pnv_npu_ioda_fixup(void)
-> >> -{
-> >> -	bool enable_bypass;
-> >> -	struct pci_controller *hose, *tmp;
-> >> -	struct pnv_phb *phb;
-> >> -	struct pnv_ioda_pe *pe;
-> >> -
-> >> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-> >> -		phb = hose->private_data;
-> >> -		if (phb->type != PNV_PHB_NPU)
-> >> -			continue;
-> >> -
-> >> -		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
-> >> -			enable_bypass = dma_get_mask(&pe->pdev->dev) ==
-> >> -				DMA_BIT_MASK(64);
-> >> -			pnv_npu_init_dma_pe(pe);
-> >> -		}
-> >> -	}
-> >> -}
-> >> -
-> >>  static void pnv_pci_ioda_fixup(void)
-> >>  {
-> >>  	pnv_pci_ioda_setup_PEs();
-> >> @@ -3093,9 +3053,6 @@ static void pnv_pci_ioda_fixup(void)
-> >>  	eeh_init();
-> >>  	eeh_addr_cache_build();
-> >>  #endif
-> >> -
-> >> -	/* Link NPU IODA tables to their PCI devices. */
-> >> -	pnv_npu_ioda_fixup();
-> >>  }
-> >>
-> >>  /*
-> >> diff --git a/arch/powerpc/platforms/powernv/pci.h
-> > b/arch/powerpc/platforms/powernv/pci.h
-> >> index 485e5b1..e117bd8 100644
-> >> --- a/arch/powerpc/platforms/powernv/pci.h
-> >> +++ b/arch/powerpc/platforms/powernv/pci.h
-> >> @@ -24,7 +24,6 @@ enum pnv_phb_model {
-> >>  #define PNV_IODA_PE_MASTER	(1 << 3)	/* Master PE in compound case	
-> > */
-> >>  #define PNV_IODA_PE_SLAVE	(1 << 4)	/* Slave PE in compound case	
-> > */
-> >>  #define PNV_IODA_PE_VF		(1 << 5)	/* PE for one VF 	
-> > 	*/
-> >> -#define PNV_IODA_PE_PEER	(1 << 6)	/* PE has peers			
-> > */
-> >>
-> >>  /* Data associated with a PE, including IOMMU tracking etc.. */
-> >>  struct pnv_phb;
-> >> @@ -32,9 +31,6 @@ struct pnv_ioda_pe {
-> >>  	unsigned long		flags;
-> >>  	struct pnv_phb		*phb;
-> >>
-> >> -#define PNV_IODA_MAX_PEER_PES	8
-> >> -	struct pnv_ioda_pe	*peers[PNV_IODA_MAX_PEER_PES];
-> >> -
-> >>  	/* A PE can be associated with a single device or an
-> >>  	 * entire bus (& children). In the former case, pdev
-> >>  	 * is populated, in the later case, pbus is.
-> >> @@ -246,8 +242,6 @@ extern void pe_level_printk(const struct pnv_ioda_pe
-> > *pe, const char *level,
-> >>  	pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-> >>
-> >>  /* Nvlink functions */
-> >> -extern void pnv_npu_init_dma_pe(struct pnv_ioda_pe *npe);
-> >> -extern void pnv_npu_setup_dma_pe(struct pnv_ioda_pe *npe);
-> >>  extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
-> >>  extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool
-> > rm);
-> >>
-> >>
-> >
-> 
-> 
-> 
+I didn't delete the prop =3D NULL; initially as I didn't fully understand=
+
+how it was used in the rest of the function and the effect of deleting
+it.
+
+
+--------------050905060000030904040301
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <br>
+    <br>
+    On 05/05/16 16:50, Michael Ellerman wrote:<br>
+    <span style="white-space: pre;">&gt; On Tue, 2016-05-03 at 15:32 -0700, Tyrel Datwyler wrote:
+&gt;&gt; On 04/27/2016 10:34 PM, Suraj Jitindar Singh wrote:
+&gt;&gt;&gt; diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+&gt;&gt;&gt; index ceb18d3..a560a98 100644
+&gt;&gt;&gt; --- a/arch/powerpc/platforms/pseries/mobility.c
+&gt;&gt;&gt; +++ b/arch/powerpc/platforms/pseries/mobility.c
+&gt;&gt;&gt; @@ -191,8 +191,8 @@ static int update_dt_node(__be32 phandle, s32 scope)
+&gt;&gt;&gt;                  break;
+&gt;&gt;&gt;  
+&gt;&gt;&gt;              case 0x80000000:
+&gt;&gt;&gt; -                prop = of_find_property(dn, prop_name, NULL);
+&gt;&gt;&gt; -                of_remove_property(dn, prop);
+&gt;&gt;&gt; +                of_remove_property(dn, of_find_property(dn,
+&gt;&gt;&gt; +                            prop_name, NULL));
+&gt;&gt;&gt;                  prop = NULL;
+&gt;&gt;&gt;                  break;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; You haven't removed a NULL check here, as suggested by the changelog,
+&gt;&gt; but instead made a cosmetic change to the code that still leaves behind
+&gt;&gt; a now unnecessary "prop = NULL;" to bit rot.
+&gt;
+&gt; Yeah I think you're right. Though it's not very clear how prop is used in that
+&gt; function.
+&gt;
+&gt; Please one of you send me an incremental to remove the prop = NULL;
+&gt;
+&gt; cheers
+&gt;</span><br>
+    <br>
+    I didn't delete the prop = NULL; initially as I didn't fully
+    understand<br>
+    how it was used in the rest of the function and the effect of
+    deleting<br>
+    it.<br>
+    <br>
+  </body>
+</html>
+
+--------------050905060000030904040301--
