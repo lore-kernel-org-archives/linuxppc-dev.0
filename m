@@ -1,21 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1VSD5vVyzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 21:49:32 +1000 (AEST)
-Message-ID: <1462535365.13173.1.camel@ellerman.id.au>
-Subject: Re: [PATCH V10 00/28] Add new powerpc specific ELF core notes
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org, benh@kernel.crashing.org, sukadev@linux.vnet.ibm.com,
- sam.bobroff@au1.ibm.com, emachado@linux.vnet.ibm.com
-Date: Fri, 06 May 2016 21:49:25 +1000
-In-Reply-To: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1VV61TNBzDqcf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 21:51:10 +1000 (AEST)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3r1VV60DT9z9snm
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 May 2016 21:51:10 +1000 (AEST)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 6 May 2016 21:51:08 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id BE49E2CE8054
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 May 2016 21:51:04 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u46BouFf6554072
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 May 2016 21:51:04 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u46BoWOl014692
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 May 2016 21:50:32 +1000
+Received: from hbathini.in.ibm.com (hbathini.in.ibm.com [9.184.79.239] (may be
+ forged))
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ u46BoVVG014210
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 May 2016 21:50:32 +1000
+Subject: [PATCH 1/3] powerpc/fadump: set an upper limit for the default
+ memory reserved for fadump
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Fri, 06 May 2016 17:20:07 +0530
+Message-ID: <20160506115007.26330.89135.stgit@hbathini.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,317 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-16 at 14:29 +0530, Anshuman Khandual wrote:
+When boot memory size for fadump is not specified, memory is reserved
+for fadump based on system RAM size. As the system RAM size increases,
+the memory reserved for fadump increases as well. This patch sets an
+upper limit on the memory reserved for fadump, to avoid reserving
+excess memory.
 
-> 	This patch series adds twelve new ELF core note sections which can
-> be used with existing ptrace request PTRACE_GETREGSET-SETREGSET for accessing
-> various transactional memory and other miscellaneous debug register sets on
-> powerpc platform.
-> 
-> Test Result (All tests pass on both BE and LE)
-> ----------------------------------------------
-> ptrace-ebb		PASS
-> ptrace-gpr		PASS
-> ptrace-tm-gpr		PASS
-> ptrace-tm-spd-gpr	PASS
-> ptrace-tar		PASS
-> ptrace-tm-tar		PASS
-> ptrace-tm-spd-tar	PASS
-> ptrace-vsx		PASS
-> ptrace-tm-vsx		PASS
-> ptrace-tm-spd-vsx	PASS
-> ptrace-tm-spr		PASS
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/fadump.h |    6 ++++++
+ arch/powerpc/kernel/fadump.c      |    4 ++++
+ 2 files changed, 10 insertions(+)
 
-How are you building the tests? On BE I get:
-
-
-  In file included from ptrace-tm-gpr.c:12:0:
-  ptrace-tm-gpr.c: In function ‘trace_tm_gpr’:
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-vsx.c:11:
-  ptrace-tm-vsx.c: In function ‘ptrace_tm_vsx’:
-  ptrace-gpr.h:20:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_2_REP 0x3f60624de0000000
-                     ^
-  ptrace-tm-gpr.c:209:26: note: in expansion of macro ‘FPR_2_REP’
-    ret = validate_fpr(fpr, FPR_2_REP);
-                            ^
-  ptrace-tm-vsx.c:150:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-gpr.h:19:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_1_REP 0x3f50624de0000000
-                     ^
-  ptrace-tm-gpr.c:217:26: note: in expansion of macro ‘FPR_1_REP’
-    ret = validate_fpr(fpr, FPR_1_REP);
-                            ^
-  ptrace-tm-vsx.c:150:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-gpr.h:21:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_3_REP 0x3f689374c0000000
-                     ^
-  ptrace-tm-gpr.c:233:30: note: in expansion of macro ‘FPR_3_REP’
-    ret = write_ckpt_fpr(child, FPR_3_REP);
-                                ^
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-gpr.c:11:
-  ptrace-tm-gpr.c: In function ‘ptrace_tm_gpr’:
-  ptrace-tm-gpr.c:249:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-gpr.c:249:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  cc1: all warnings being treated as errors
-  In file included from ../pmu/ebb/ebb.h:12:0,
-                   from ptrace-ebb.c:11:
-  ptrace-ebb.h: In function ‘reset_ebb_with_clear_mask’:
-  ../pmu/ebb/../../reg.h:49:31: error: left shift count >= width of type [-Werror=shift-count-overflow]
-   #define BESCR_PME      (0x1ul << 32) /* PMU Event-based exception Enable */
-                                 ^
-  ../pmu/ebb/../../reg.h:16:60: note: in definition of macro ‘mtspr’
-                                       : "r" ((unsigned long)(v)) \
-                                                              ^
-  ptrace-ebb.h:73:28: note: in expansion of macro ‘BESCR_PME’
-           mtspr(SPRN_BESCRS, BESCR_PME);
-                              ^
-  In file included from ptrace-tm-tar.c:12:0:
-  ptrace-tm-tar.c: In function ‘tm_tar’:
-  ptrace-tar.h:24:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_4   0x10000000000000        /* or 2,2,2 */
-                   ^
-  ptrace-tm-tar.c:78:45: note: in expansion of macro ‘PPR_4’
-     ret = validate_tar_registers(regs, TAR_4, PPR_4, DSCR_4);
-                                               ^
-  In file included from ptrace-tm-spd-tar.c:12:0:
-  ptrace-tm-spd-tar.c: In function ‘tm_spd_tar’:
-  ptrace-tm-tar.c: In function ‘trace_tm_tar’:
-  ptrace-tar.h:22:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_2   0x8000000000000         /* or 1,1,1 */
-                   ^
-  ptrace-tm-tar.c:103:44: note: in expansion of macro ‘PPR_2’
-    ret = validate_tar_registers(regs, TAR_2, PPR_2, DSCR_2);
-                                              ^
-  In file included from ptrace-gpr.c:12:0:
-  ptrace-gpr.c: In function ‘trace_gpr’:
-  ptrace-tar.h:21:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_1   0x4000000000000         /* or 31,31,31*/
-                   ^
-  ptrace-tm-tar.c:113:44: note: in expansion of macro ‘PPR_1’
-    ret = validate_tar_registers(regs, TAR_1, PPR_1, DSCR_1);
-                                              ^
-  ptrace-tar.h:24:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_4   0x10000000000000        /* or 2,2,2 */
-                   ^
-  ptrace-tm-spd-tar.c:89:45: note: in expansion of macro ‘PPR_4’
-     ret = validate_tar_registers(regs, TAR_4, PPR_4, DSCR_4);
-                                               ^
-  ptrace-tar.h:24:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_4   0x10000000000000        /* or 2,2,2 */
-                   ^
-  ptrace-tm-tar.c:117:47: note: in expansion of macro ‘PPR_4’
-    ret = write_ckpt_tar_registers(child, TAR_4, PPR_4, DSCR_4);
-                                                 ^
-  ptrace-tm-tar.c:121:9: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘long long int’ [-Werror=format=]
-    printf("%-30s TAR: %u PPR: %lx DSCR: %u\n", ptrace_write_ckpt, TAR_4, PPR_4, DSCR_4);
-           ^
-  ptrace-gpr.h:19:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_1_REP 0x3f50624de0000000
-                     ^
-  ptrace-gpr.c:129:26: note: in expansion of macro ‘FPR_1_REP’
-    ret = validate_fpr(fpr, FPR_1_REP);
-                            ^
-  ptrace-tm-spd-tar.c: In function ‘trace_tm_spd_tar’:
-  ptrace-tar.h:23:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_3   0xc000000000000         /* or 6,6,6 */
-                   ^
-  ptrace-tm-spd-tar.c:114:44: note: in expansion of macro ‘PPR_3’
-    ret = validate_tar_registers(regs, TAR_3, PPR_3, DSCR_3);
-                                              ^
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-tar.c:11:
-  ptrace-tm-tar.c: In function ‘ptrace_tm_tar’:
-  ptrace-gpr.h:21:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_3_REP 0x3f689374c0000000
-                     ^
-  ptrace-gpr.c:137:25: note: in expansion of macro ‘FPR_3_REP’
-    ret = write_fpr(child, FPR_3_REP);
-                           ^
-  ptrace-tm-tar.c:134:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-tar.c:134:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tar.h:21:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_1   0x4000000000000         /* or 31,31,31*/
-                   ^
-  ptrace-tm-spd-tar.c:124:44: note: in expansion of macro ‘PPR_1’
-    ret = validate_tar_registers(regs, TAR_1, PPR_1, DSCR_1);
-                                              ^
-  In file included from ptrace-tm-spd-gpr.c:12:0:
-  ptrace-tm-spd-gpr.c: In function ‘trace_tm_spd_gpr’:
-  ptrace-tar.h:24:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_4   0x10000000000000        /* or 2,2,2 */
-                   ^
-  ptrace-tm-spd-tar.c:128:47: note: in expansion of macro ‘PPR_4’
-    ret = write_ckpt_tar_registers(child, TAR_4, PPR_4, DSCR_4);
-                                                 ^
-  ptrace-tm-spd-tar.c:132:9: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘long long int’ [-Werror=format=]
-    printf("%-30s TAR: %u PPR: %lx DSCR: %u\n", ptrace_write_ckpt, TAR_4, PPR_4, DSCR_4);
-           ^
-  ptrace-gpr.h:22:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_4_REP 0x3f70624de0000000
-                     ^
-  ptrace-tm-spd-gpr.c:235:26: note: in expansion of macro ‘FPR_4_REP’
-    ret = validate_fpr(fpr, FPR_4_REP);
-                            ^
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-spd-tar.c:11:
-  ptrace-tm-spd-tar.c: In function ‘ptrace_tm_spd_tar’:
-  ptrace-gpr.h:19:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_1_REP 0x3f50624de0000000
-                     ^
-  ptrace-tm-spd-gpr.c:243:26: note: in expansion of macro ‘FPR_1_REP’
-    ret = validate_fpr(fpr, FPR_1_REP);
-                            ^
-  ptrace-tm-spd-tar.c:145:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-spd-tar.c:145:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-gpr.h:21:19: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define FPR_3_REP 0x3f689374c0000000
-                     ^
-  ptrace-tm-spd-gpr.c:259:30: note: in expansion of macro ‘FPR_3_REP’
-    ret = write_ckpt_fpr(child, FPR_3_REP);
-                                ^
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-spd-vsx.c:11:
-  ptrace-tm-spd-vsx.c: In function ‘ptrace_tm_spd_vsx’:
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-spd-gpr.c:11:
-  ptrace-tm-spd-gpr.c: In function ‘ptrace_tm_spd_gpr’:
-  ptrace-tm-spd-gpr.c:275:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-spd-gpr.c:275:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-spd-vsx.c:164:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-spd-vsx.c:164:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  cc1: all warnings being treated as errors
-  cc1: all warnings being treated as errors
-  cc1: all warnings being treated as errors
-  In file included from ptrace.h:31:0,
-                   from ptrace-tm-spr.c:11:
-  ptrace-tm-spr.c: In function ‘ptrace_tm_spr’:
-  ptrace-tm-spr.c:118:46: error: ‘PPC_FEATURE2_HTM’ undeclared (first use in this function)
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tm-spr.c:118:46: note: each undeclared identifier is reported only once for each function it appears in
-    SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-                                                ^
-  /home/kerkins/workspace/kernel-build-selftests/arch/powerpc/compiler/gcc_ubuntu_be/linux/tools/testing/selftests/powerpc/utils.h:49:7: note: in definition of macro ‘SKIP_IF’
-    if ((x)) {      \
-         ^
-  ptrace-tar.c: In function ‘tar’:
-  ptrace-tar.c:25:9: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘long long int’ [-Werror=format=]
-    printf("%-30s TAR: %u PPR: %lx DSCR: %u\n", user_write, TAR_1, PPR_1, DSCR_1);
-           ^
-  In file included from ptrace-tar.c:12:0:
-  ptrace-tar.h:22:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_2   0x8000000000000         /* or 1,1,1 */
-                   ^
-  ptrace-tar.c:44:43: note: in expansion of macro ‘PPR_2’
-    ret = validate_tar_registers(reg, TAR_2, PPR_2, DSCR_2);
-                                             ^
-  ptrace-tar.c: In function ‘trace_tar’:
-  ptrace-tar.h:21:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_1   0x4000000000000         /* or 31,31,31*/
-                   ^
-  ptrace-tar.c:66:43: note: in expansion of macro ‘PPR_1’
-    ret = validate_tar_registers(reg, TAR_1, PPR_1, DSCR_1);
-                                             ^
-  ptrace-tar.c: In function ‘trace_tar_write’:
-  ptrace-tar.h:22:17: error: large integer implicitly truncated to unsigned type [-Werror=overflow]
-   #define PPR_2   0x8000000000000         /* or 1,1,1 */
-                   ^
-  ptrace-tar.c:85:42: note: in expansion of macro ‘PPR_2’
-    ret = write_tar_registers(child, TAR_2, PPR_2, DSCR_2);
-                                            ^
-  ptrace-tar.c:89:9: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘long long int’ [-Werror=format=]
-    printf("%-30s TAR: %u PPR: %lx DSCR: %u\n", ptrace_write_running, TAR_2, PPR_2, DSCR_2);
-           ^
-  cc1: all warnings being treated as errors
-  cc1: all warnings being treated as errors
-  cc1: all warnings being treated as errors
-  <builtin>: recipe for target 'ptrace-tm-spd-tar' failed
-  make[1]: *** [ptrace-tm-spd-tar] Error 1
-  <builtin>: recipe for target 'ptrace-tm-tar' failed
-  make[1]: *** [ptrace-tm-tar] Error 1
-  <builtin>: recipe for target 'ptrace-tm-vsx' failed
-  make[1]: *** [ptrace-tm-vsx] Error 1
-  <builtin>: recipe for target 'ptrace-tm-spd-gpr' failed
-  make[1]: *** [ptrace-tm-spd-gpr] Error 1
-  <builtin>: recipe for target 'ptrace-tm-spr' failed
-  make[1]: *** [ptrace-tm-spr] Error 1
-  <builtin>: recipe for target 'ptrace-tm-gpr' failed
-  make[1]: *** [ptrace-tm-gpr] Error 1
-  <builtin>: recipe for target 'ptrace-tm-spd-vsx' failed
-  make[1]: *** [ptrace-tm-spd-vsx] Error 1
-  <builtin>: recipe for target 'ptrace-tar' failed
-  make[1]: *** [ptrace-tar] Error 1
-  <builtin>: recipe for target 'ptrace-gpr' failed
-  make[1]: *** [ptrace-gpr] Error 1
-  ../pmu/ebb/ebb_handler.S: Assembler messages:
-  ../pmu/ebb/ebb_handler.S:242: Error: syntax error; found `@', expected `,'
-  ../pmu/ebb/ebb_handler.S:242: Error: junk at end of line: `@highest'
-  ../pmu/ebb/ebb_handler.S:242: Error: syntax error; found `@', expected `,'
-  ../pmu/ebb/ebb_handler.S:242: Error: junk at end of line: `@higher'
-  <builtin>: recipe for target 'ptrace-ebb' failed
+diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+index b4407d0..2c3cb32 100644
+--- a/arch/powerpc/include/asm/fadump.h
++++ b/arch/powerpc/include/asm/fadump.h
+@@ -43,6 +43,12 @@
+ #define MIN_BOOT_MEM	(((RMA_END < (0x1UL << 28)) ? (0x1UL << 28) : RMA_END) \
+ 			+ (0x1UL << 26))
+ 
++/*
++ * Maximum memory needed for fadump to boot up successfully. Use this as
++ * an upper limit for fadump so we don't endup reserving excess memory.
++ */
++#define MAX_BOOT_MEM	(0x1UL << 32)
++
+ #define memblock_num_regions(memblock_type)	(memblock.memblock_type.cnt)
+ 
+ #ifndef ELF_CORE_EFLAGS
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 3cb3b02a..d0af58b 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -225,6 +225,10 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 	/* round it down in multiples of 256 */
+ 	size = size & ~0x0FFFFFFFUL;
+ 
++	/* Set an upper limit on the memory to be reserved */
++	if (size > MAX_BOOT_MEM)
++		size = MAX_BOOT_MEM;
++
+ 	/* Truncate to memory_limit. We don't want to over reserve the memory.*/
+ 	if (memory_limit && size > memory_limit)
+ 		size = memory_limit;
