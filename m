@@ -1,22 +1,21 @@
-Return-Path: <BATV+855daf51ec5a7c0bcd54+4639+infradead.org+acme@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <BATV+d77fcd8de74931f46600+4639+infradead.org+acme@merlin.srs.infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1CN34rx2zDq7j
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:29:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1CN96JylzDqHw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:30:01 +1000 (AEST)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org,
  "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Mark Wielaard <mjw@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Wang Nan <wangnan0@huawei.com>,
  linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 14/17] perf powerpc: Fix kprobe and kretprobe handling with
- kallsyms on ppc64le
-Date: Thu,  5 May 2016 21:29:37 -0300
-Message-Id: <1462494580-27164-15-git-send-email-acme@kernel.org>
+Subject: [PATCH 06/17] perf tools powerpc: Add support for generating bpf
+ prologue
+Date: Thu,  5 May 2016 21:29:29 -0300
+Message-Id: <1462494580-27164-7-git-send-email-acme@kernel.org>
 In-Reply-To: <1462494580-27164-1-git-send-email-acme@kernel.org>
 References: <1462494580-27164-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,66 +29,99 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-So far, we used to treat probe point offsets as being offset from the
-LEP. However, userspace applications (objdump/readelf) always show
-disassembly and offsets from the function GEP. This is confusing to the
-user as we will end up probing at an address different from what the
-user expects when looking at the function disassembly with
-readelf/objdump. Fix this by changing how we modify probe address with
-perf.
+Generalize existing macros to serve the purpose.
 
-If only the function name is provided, we assume the user needs the LEP.
-Otherwise, if an offset is specified, we assume that the user knows the
-exact address to probe based on function disassembly, and so we just
-place the probe from the GEP offset.
-
-Finally, kretprobe was also broken with kallsyms as we were trying to
-specify an offset. This patch also fixes that issue.
-
-Reported-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <bsingharora@gmail.com>
-Cc: Mark Wielaard <mjw@redhat.com>
+Cc: Ian Munsie <imunsie@au1.ibm.com>
 Cc: Masami Hiramatsu <mhiramat@kernel.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Wang Nan <wangnan0@huawei.com>
 Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/75df860aad8216bf4b9bcd10c6351ecc0e3dee54.1460451721.git.naveen.n.rao@linux.vnet.ibm.com
+Link: http://lkml.kernel.org/r/1462461799-17518-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/arch/powerpc/util/sym-handling.c | 19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
+ tools/perf/arch/powerpc/Makefile          |  1 +
+ tools/perf/arch/powerpc/util/dwarf-regs.c | 40 +++++++++++++++++++++----------
+ 2 files changed, 29 insertions(+), 12 deletions(-)
 
-diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-index bbc1a50768dd..6974ba0fa065 100644
---- a/tools/perf/arch/powerpc/util/sym-handling.c
-+++ b/tools/perf/arch/powerpc/util/sym-handling.c
-@@ -71,12 +71,21 @@ void arch__fix_tev_from_maps(struct perf_probe_event *pev,
- 			     struct probe_trace_event *tev, struct map *map)
- {
- 	/*
--	 * ppc64 ABIv2 local entry point is currently always 2 instructions
--	 * (8 bytes) after the global entry point.
-+	 * When probing at a function entry point, we normally always want the
-+	 * LEP since that catches calls to the function through both the GEP and
-+	 * the LEP. Hence, we would like to probe at an offset of 8 bytes if
-+	 * the user only specified the function entry.
-+	 *
-+	 * However, if the user specifies an offset, we fall back to using the
-+	 * GEP since all userspace applications (objdump/readelf) show function
-+	 * disassembly with offsets from the GEP.
-+	 *
-+	 * In addition, we shouldn't specify an offset for kretprobes.
- 	 */
--	if (!pev->uprobes && map->dso->symtab_type == DSO_BINARY_TYPE__KALLSYMS) {
--		tev->point.address += PPC64LE_LEP_OFFSET;
-+	if (pev->point.offset || pev->point.retprobe || !map)
-+		return;
-+
-+	if (map->dso->symtab_type == DSO_BINARY_TYPE__KALLSYMS)
- 		tev->point.offset += PPC64LE_LEP_OFFSET;
--	}
+diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+index 56e05f126ad8..cc3930904d68 100644
+--- a/tools/perf/arch/powerpc/Makefile
++++ b/tools/perf/arch/powerpc/Makefile
+@@ -3,4 +3,5 @@ PERF_HAVE_DWARF_REGS := 1
+ endif
+ 
+ HAVE_KVM_STAT_SUPPORT := 1
++PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
+ PERF_HAVE_JITDUMP := 1
+diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
+index 733151cdf46e..41bdf9530d82 100644
+--- a/tools/perf/arch/powerpc/util/dwarf-regs.c
++++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
+@@ -10,19 +10,26 @@
+  */
+ 
+ #include <stddef.h>
++#include <errno.h>
++#include <string.h>
+ #include <dwarf-regs.h>
+-
++#include <linux/ptrace.h>
++#include <linux/kernel.h>
++#include "util.h"
+ 
+ struct pt_regs_dwarfnum {
+ 	const char *name;
+ 	unsigned int dwarfnum;
++	unsigned int ptregs_offset;
+ };
+ 
+-#define STR(s) #s
+-#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
+-#define GPR_DWARFNUM_NAME(num)	\
+-	{.name = STR(%gpr##num), .dwarfnum = num}
+-#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
++#define REG_DWARFNUM_NAME(r, num)					\
++		{.name = STR(%)STR(r), .dwarfnum = num,			\
++		.ptregs_offset = offsetof(struct pt_regs, r)}
++#define GPR_DWARFNUM_NAME(num)						\
++		{.name = STR(%gpr##num), .dwarfnum = num,		\
++		.ptregs_offset = offsetof(struct pt_regs, gpr[num])}
++#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0, .ptregs_offset = 0}
+ 
+ /*
+  * Reference:
+@@ -61,12 +68,12 @@ static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
+ 	GPR_DWARFNUM_NAME(29),
+ 	GPR_DWARFNUM_NAME(30),
+ 	GPR_DWARFNUM_NAME(31),
+-	REG_DWARFNUM_NAME("%msr",   66),
+-	REG_DWARFNUM_NAME("%ctr",   109),
+-	REG_DWARFNUM_NAME("%link",  108),
+-	REG_DWARFNUM_NAME("%xer",   101),
+-	REG_DWARFNUM_NAME("%dar",   119),
+-	REG_DWARFNUM_NAME("%dsisr", 118),
++	REG_DWARFNUM_NAME(msr,   66),
++	REG_DWARFNUM_NAME(ctr,   109),
++	REG_DWARFNUM_NAME(link,  108),
++	REG_DWARFNUM_NAME(xer,   101),
++	REG_DWARFNUM_NAME(dar,   119),
++	REG_DWARFNUM_NAME(dsisr, 118),
+ 	REG_DWARFNUM_END,
+ };
+ 
+@@ -86,3 +93,12 @@ const char *get_arch_regstr(unsigned int n)
+ 			return roff->name;
+ 	return NULL;
  }
- #endif
++
++int regs_query_register_offset(const char *name)
++{
++	const struct pt_regs_dwarfnum *roff;
++	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return roff->ptregs_offset;
++	return -EINVAL;
++}
 -- 
 2.5.5
