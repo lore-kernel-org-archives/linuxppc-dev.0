@@ -1,35 +1,25 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x22c.google.com (mail-wm0-x22c.google.com
- [IPv6:2a00:1450:400c:c09::22c])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1MWT6xtjzDqGn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 16:36:53 +1000 (AEST)
-Received: by mail-wm0-x22c.google.com with SMTP id g17so61231192wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 May 2016 23:36:53 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 6 May 2016 08:36:43 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- David Ahern <dsahern@gmail.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Jiri Olsa <jolsa@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Mark Wielaard <mjw@redhat.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Milian Wolff <milian.wolff@kdab.com>, Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, pi3orama@163.com,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Wang Nan <wangnan0@huawei.com>, Zefan Li <lizefan@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [GIT PULL 00/17] perf/core improvements and fixes
-Message-ID: <20160506063643.GA11792@gmail.com>
-References: <1462494580-27164-1-git-send-email-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1NQR2gSczDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 17:17:33 +1000 (AEST)
+Received: by mail-pa0-x22c.google.com with SMTP id r5so45899142pag.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 May 2016 00:17:33 -0700 (PDT)
+Subject: Re: [PATCH v9 04/22] powerpc/powernv: Increase PE# capacity
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1462281773-26438-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
+ robherring2@gmail.com, dja@axtens.net, alistair@popple.id.au
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <2f2282ae-c1dc-1870-4beb-d5e4e8233496@ozlabs.ru>
+Date: Fri, 6 May 2016 17:17:25 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1462494580-27164-1-git-send-email-acme@kernel.org>
+In-Reply-To: <1462281773-26438-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,115 +29,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/03/2016 11:22 PM, Gavin Shan wrote:
+> Each PHB maintains an array helping to translate 2-bytes Request
+> ID (RID) to PE# with the assumption that PE# takes one byte, meaning
+> that we can't have more than 256 PEs. However, pci_dn->pe_number
+> already had 4-bytes for the PE#.
 
-* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+Can you possibly have more than 256 PEs? Or exactly 256? What patch in this 
+series makes use of it?
 
-> Hi Ingo,
-> 
-> 	Please consider pulling,
-> 
-> - Arnaldo
-> 
-> 
-> The following changes since commit 1b6de5917172967acd8db4d222df4225d23a8a60:
-> 
->   perf/x86/intel/pt: Convert ACCESS_ONCE()s (2016-05-05 10:16:29 +0200)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20160505
-> 
-> for you to fetch changes up to b6b85dad30ad7e7394990e2317a780577974a4e6:
-> 
->   perf evlist: Rename variable in perf_mmap__read() (2016-05-05 21:04:04 -0300)
-> 
-> ----------------------------------------------------------------
-> perf/core improvements and fixes:
-> 
-> User visible:
-> 
-> - Order output of 'perf trace --summary' better, now the threads will
->   appear ascending order of number of events, and then, for each, in
->   descending order of syscalls by the time spent in the syscalls, so
->   that the last page produced can be the one about the most interesting
->   thread straced, suggested by Milian Wolff (Arnaldo Carvalho de Melo)
-> 
-> - Do not show the runtime_ms for a thread when not collecting it, that
->   is done so far only with 'perf trace --sched' (Arnaldo Carvalho de Melo)
-> 
-> - Fix kallsyms perf test on ppc64le (Naveen N. Rao)
-> 
-> Infrastructure:
-> 
-> - Move global variables related to presence of some keys in the sort order to a
->   per hist struct, to allow code like the hists browser to work with multiple
->   hists with different lists of columns (Jiri Olsa)
-> 
-> - Add support for generating bpf prologue in powerpc (Naveen N. Rao)
-> 
-> - Fix kprobe and kretprobe handling with kallsyms on ppc64le (Naveen N. Rao)
-> 
-> - evlist mmap changes, prep work for supporting reading backwards (Wang Nan)
-> 
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> ----------------------------------------------------------------
-> Arnaldo Carvalho de Melo (5):
->       perf machine: Introduce number of threads member
->       perf tools: Add template for generating rbtree resort class
->       perf trace: Sort summary output by number of events
->       perf trace: Sort syscalls stats by msecs in --summary
->       perf trace: Do not show the runtime_ms for a thread when not collecting it
-> 
-> Jiri Olsa (7):
->       perf hists: Move sort__need_collapse into struct perf_hpp_list
->       perf hists: Move sort__has_parent into struct perf_hpp_list
->       perf hists: Move sort__has_sym into struct perf_hpp_list
->       perf hists: Move sort__has_dso into struct perf_hpp_list
->       perf hists: Move sort__has_socket into struct perf_hpp_list
->       perf hists: Move sort__has_thread into struct perf_hpp_list
->       perf hists: Move sort__has_comm into struct perf_hpp_list
-> 
-> Naveen N. Rao (3):
->       perf tools powerpc: Add support for generating bpf prologue
->       perf powerpc: Fix kprobe and kretprobe handling with kallsyms on ppc64le
->       perf symbols: Fix kallsyms perf test on ppc64le
-> 
-> Wang Nan (2):
->       perf evlist: Extract perf_mmap__read()
->       perf evlist: Rename variable in perf_mmap__read()
-> 
->  tools/perf/arch/powerpc/Makefile            |   1 +
->  tools/perf/arch/powerpc/util/dwarf-regs.c   |  40 +++++---
->  tools/perf/arch/powerpc/util/sym-handling.c |  43 ++++++--
->  tools/perf/builtin-diff.c                   |   4 +-
->  tools/perf/builtin-report.c                 |   4 +-
->  tools/perf/builtin-top.c                    |   8 +-
->  tools/perf/builtin-trace.c                  |  87 ++++++++++------
->  tools/perf/tests/hists_common.c             |   2 +-
->  tools/perf/tests/hists_cumulate.c           |   2 +-
->  tools/perf/tests/hists_link.c               |   4 +-
->  tools/perf/tests/hists_output.c             |   2 +-
->  tools/perf/ui/browsers/hists.c              |  32 +++---
->  tools/perf/ui/gtk/hists.c                   |   2 +-
->  tools/perf/ui/hist.c                        |   2 +-
->  tools/perf/util/annotate.c                  |   2 +-
->  tools/perf/util/callchain.c                 |   2 +-
->  tools/perf/util/evlist.c                    |  56 ++++++-----
->  tools/perf/util/hist.c                      |  14 +--
->  tools/perf/util/hist.h                      |  10 ++
->  tools/perf/util/machine.c                   |   9 +-
->  tools/perf/util/machine.h                   |   1 +
->  tools/perf/util/probe-event.c               |   5 +-
->  tools/perf/util/probe-event.h               |   3 +-
->  tools/perf/util/rb_resort.h                 | 149 ++++++++++++++++++++++++++++
->  tools/perf/util/sort.c                      |  35 +++----
->  tools/perf/util/sort.h                      |   7 --
->  tools/perf/util/symbol-elf.c                |   7 +-
->  tools/perf/util/symbol.h                    |   3 +-
->  28 files changed, 382 insertions(+), 154 deletions(-)
->  create mode 100644 tools/perf/util/rb_resort.h
+I probably asked but do not remember the answer :)
 
-Pulled, thanks a lot Arnaldo!
+Looks like waste of memory - you only used a small fraction of 
+pe_rmap[0x10000] and now the waste is quadrupled.
 
-	Ingo
+
+>
+> This extends the PE# capacity for every PHB. After that, the PE number
+> is represented by 4-bytes value. Then we can reuse IODA_INVALID_PE to
+> check the PE# in phb->pe_rmap[] is valid or not.
+
+Looks like using IODA_INVALID_PE is the only reason for this patch.
+
+
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 6 +++++-
+>  arch/powerpc/platforms/powernv/pci.h      | 7 ++-----
+>  2 files changed, 7 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index cbd4c0b..cf96cb5 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -768,7 +768,7 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+>
+>  	/* Clear the reverse map */
+>  	for (rid = pe->rid; rid < rid_end; rid++)
+> -		phb->ioda.pe_rmap[rid] = 0;
+> +		phb->ioda.pe_rmap[rid] = IODA_INVALID_PE;
+>
+>  	/* Release from all parents PELT-V */
+>  	while (parent) {
+> @@ -3406,6 +3406,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	if (prop32)
+>  		phb->ioda.reserved_pe_idx = be32_to_cpup(prop32);
+>
+> +	/* Invalidate RID to PE# mapping */
+> +	for (segno = 0; segno < ARRAY_SIZE(phb->ioda.pe_rmap); segno++)
+> +		phb->ioda.pe_rmap[segno] = IODA_INVALID_PE;
+> +
+>  	/* Parse 64-bit MMIO range */
+>  	pnv_ioda_parse_m64_window(phb);
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 904f60b..80f5326 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -156,11 +156,8 @@ struct pnv_phb {
+>  		struct list_head	pe_list;
+>  		struct mutex            pe_list_mutex;
+>
+> -		/* Reverse map of PEs, will have to extend if
+> -		 * we are to support more than 256 PEs, indexed
+> -		 * bus { bus, devfn }
+> -		 */
+> -		unsigned char		pe_rmap[0x10000];
+> +		/* Reverse map of PEs, indexed by {bus, devfn} */
+> +		unsigned int		pe_rmap[0x10000];
+>
+>  		/* TCE cache invalidate registers (physical and
+>  		 * remapped)
+>
+
+
+-- 
+Alexey
