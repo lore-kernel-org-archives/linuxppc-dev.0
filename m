@@ -3,21 +3,27 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1CN96JylzDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:30:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1CNJ0Vz0zDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:30:08 +1000 (AEST)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Wang Nan <wangnan0@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 06/17] perf tools powerpc: Add support for generating bpf
- prologue
-Date: Thu,  5 May 2016 21:29:29 -0300
-Message-Id: <1462494580-27164-7-git-send-email-acme@kernel.org>
-In-Reply-To: <1462494580-27164-1-git-send-email-acme@kernel.org>
-References: <1462494580-27164-1-git-send-email-acme@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Adrian Hunter <adrian.hunter@intel.com>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, David Ahern <dsahern@gmail.com>,
+ Ian Munsie <imunsie@au1.ibm.com>, Jiri Olsa <jolsa@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Mark Wielaard <mjw@redhat.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Milian Wolff <milian.wolff@kdab.com>, Namhyung Kim <namhyung@kernel.org>,
+ "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, pi3orama@163.com,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ Wang Nan <wangnan0@huawei.com>, Zefan Li <lizefan@huawei.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [GIT PULL 00/17] perf/core improvements and fixes
+Date: Thu,  5 May 2016 21:29:23 -0300
+Message-Id: <1462494580-27164-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,101 +33,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Hi Ingo,
 
-Generalize existing macros to serve the purpose.
+	Please consider pulling,
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Wang Nan <wangnan0@huawei.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/1462461799-17518-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com
+- Arnaldo
+
+
+The following changes since commit 1b6de5917172967acd8db4d222df4225d23a8a60:
+
+  perf/x86/intel/pt: Convert ACCESS_ONCE()s (2016-05-05 10:16:29 +0200)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20160505
+
+for you to fetch changes up to b6b85dad30ad7e7394990e2317a780577974a4e6:
+
+  perf evlist: Rename variable in perf_mmap__read() (2016-05-05 21:04:04 -0300)
+
+----------------------------------------------------------------
+perf/core improvements and fixes:
+
+User visible:
+
+- Order output of 'perf trace --summary' better, now the threads will
+  appear ascending order of number of events, and then, for each, in
+  descending order of syscalls by the time spent in the syscalls, so
+  that the last page produced can be the one about the most interesting
+  thread straced, suggested by Milian Wolff (Arnaldo Carvalho de Melo)
+
+- Do not show the runtime_ms for a thread when not collecting it, that
+  is done so far only with 'perf trace --sched' (Arnaldo Carvalho de Melo)
+
+- Fix kallsyms perf test on ppc64le (Naveen N. Rao)
+
+Infrastructure:
+
+- Move global variables related to presence of some keys in the sort order to a
+  per hist struct, to allow code like the hists browser to work with multiple
+  hists with different lists of columns (Jiri Olsa)
+
+- Add support for generating bpf prologue in powerpc (Naveen N. Rao)
+
+- Fix kprobe and kretprobe handling with kallsyms on ppc64le (Naveen N. Rao)
+
+- evlist mmap changes, prep work for supporting reading backwards (Wang Nan)
+
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/arch/powerpc/Makefile          |  1 +
- tools/perf/arch/powerpc/util/dwarf-regs.c | 40 +++++++++++++++++++++----------
- 2 files changed, 29 insertions(+), 12 deletions(-)
 
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-index 56e05f126ad8..cc3930904d68 100644
---- a/tools/perf/arch/powerpc/Makefile
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -3,4 +3,5 @@ PERF_HAVE_DWARF_REGS := 1
- endif
- 
- HAVE_KVM_STAT_SUPPORT := 1
-+PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
- PERF_HAVE_JITDUMP := 1
-diff --git a/tools/perf/arch/powerpc/util/dwarf-regs.c b/tools/perf/arch/powerpc/util/dwarf-regs.c
-index 733151cdf46e..41bdf9530d82 100644
---- a/tools/perf/arch/powerpc/util/dwarf-regs.c
-+++ b/tools/perf/arch/powerpc/util/dwarf-regs.c
-@@ -10,19 +10,26 @@
-  */
- 
- #include <stddef.h>
-+#include <errno.h>
-+#include <string.h>
- #include <dwarf-regs.h>
--
-+#include <linux/ptrace.h>
-+#include <linux/kernel.h>
-+#include "util.h"
- 
- struct pt_regs_dwarfnum {
- 	const char *name;
- 	unsigned int dwarfnum;
-+	unsigned int ptregs_offset;
- };
- 
--#define STR(s) #s
--#define REG_DWARFNUM_NAME(r, num) {.name = r, .dwarfnum = num}
--#define GPR_DWARFNUM_NAME(num)	\
--	{.name = STR(%gpr##num), .dwarfnum = num}
--#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0}
-+#define REG_DWARFNUM_NAME(r, num)					\
-+		{.name = STR(%)STR(r), .dwarfnum = num,			\
-+		.ptregs_offset = offsetof(struct pt_regs, r)}
-+#define GPR_DWARFNUM_NAME(num)						\
-+		{.name = STR(%gpr##num), .dwarfnum = num,		\
-+		.ptregs_offset = offsetof(struct pt_regs, gpr[num])}
-+#define REG_DWARFNUM_END {.name = NULL, .dwarfnum = 0, .ptregs_offset = 0}
- 
- /*
-  * Reference:
-@@ -61,12 +68,12 @@ static const struct pt_regs_dwarfnum regdwarfnum_table[] = {
- 	GPR_DWARFNUM_NAME(29),
- 	GPR_DWARFNUM_NAME(30),
- 	GPR_DWARFNUM_NAME(31),
--	REG_DWARFNUM_NAME("%msr",   66),
--	REG_DWARFNUM_NAME("%ctr",   109),
--	REG_DWARFNUM_NAME("%link",  108),
--	REG_DWARFNUM_NAME("%xer",   101),
--	REG_DWARFNUM_NAME("%dar",   119),
--	REG_DWARFNUM_NAME("%dsisr", 118),
-+	REG_DWARFNUM_NAME(msr,   66),
-+	REG_DWARFNUM_NAME(ctr,   109),
-+	REG_DWARFNUM_NAME(link,  108),
-+	REG_DWARFNUM_NAME(xer,   101),
-+	REG_DWARFNUM_NAME(dar,   119),
-+	REG_DWARFNUM_NAME(dsisr, 118),
- 	REG_DWARFNUM_END,
- };
- 
-@@ -86,3 +93,12 @@ const char *get_arch_regstr(unsigned int n)
- 			return roff->name;
- 	return NULL;
- }
-+
-+int regs_query_register_offset(const char *name)
-+{
-+	const struct pt_regs_dwarfnum *roff;
-+	for (roff = regdwarfnum_table; roff->name != NULL; roff++)
-+		if (!strcmp(roff->name, name))
-+			return roff->ptregs_offset;
-+	return -EINVAL;
-+}
--- 
-2.5.5
+----------------------------------------------------------------
+Arnaldo Carvalho de Melo (5):
+      perf machine: Introduce number of threads member
+      perf tools: Add template for generating rbtree resort class
+      perf trace: Sort summary output by number of events
+      perf trace: Sort syscalls stats by msecs in --summary
+      perf trace: Do not show the runtime_ms for a thread when not collecting it
+
+Jiri Olsa (7):
+      perf hists: Move sort__need_collapse into struct perf_hpp_list
+      perf hists: Move sort__has_parent into struct perf_hpp_list
+      perf hists: Move sort__has_sym into struct perf_hpp_list
+      perf hists: Move sort__has_dso into struct perf_hpp_list
+      perf hists: Move sort__has_socket into struct perf_hpp_list
+      perf hists: Move sort__has_thread into struct perf_hpp_list
+      perf hists: Move sort__has_comm into struct perf_hpp_list
+
+Naveen N. Rao (3):
+      perf tools powerpc: Add support for generating bpf prologue
+      perf powerpc: Fix kprobe and kretprobe handling with kallsyms on ppc64le
+      perf symbols: Fix kallsyms perf test on ppc64le
+
+Wang Nan (2):
+      perf evlist: Extract perf_mmap__read()
+      perf evlist: Rename variable in perf_mmap__read()
+
+ tools/perf/arch/powerpc/Makefile            |   1 +
+ tools/perf/arch/powerpc/util/dwarf-regs.c   |  40 +++++---
+ tools/perf/arch/powerpc/util/sym-handling.c |  43 ++++++--
+ tools/perf/builtin-diff.c                   |   4 +-
+ tools/perf/builtin-report.c                 |   4 +-
+ tools/perf/builtin-top.c                    |   8 +-
+ tools/perf/builtin-trace.c                  |  87 ++++++++++------
+ tools/perf/tests/hists_common.c             |   2 +-
+ tools/perf/tests/hists_cumulate.c           |   2 +-
+ tools/perf/tests/hists_link.c               |   4 +-
+ tools/perf/tests/hists_output.c             |   2 +-
+ tools/perf/ui/browsers/hists.c              |  32 +++---
+ tools/perf/ui/gtk/hists.c                   |   2 +-
+ tools/perf/ui/hist.c                        |   2 +-
+ tools/perf/util/annotate.c                  |   2 +-
+ tools/perf/util/callchain.c                 |   2 +-
+ tools/perf/util/evlist.c                    |  56 ++++++-----
+ tools/perf/util/hist.c                      |  14 +--
+ tools/perf/util/hist.h                      |  10 ++
+ tools/perf/util/machine.c                   |   9 +-
+ tools/perf/util/machine.h                   |   1 +
+ tools/perf/util/probe-event.c               |   5 +-
+ tools/perf/util/probe-event.h               |   3 +-
+ tools/perf/util/rb_resort.h                 | 149 ++++++++++++++++++++++++++++
+ tools/perf/util/sort.c                      |  35 +++----
+ tools/perf/util/sort.h                      |   7 --
+ tools/perf/util/symbol-elf.c                |   7 +-
+ tools/perf/util/symbol.h                    |   3 +-
+ 28 files changed, 382 insertions(+), 154 deletions(-)
+ create mode 100644 tools/perf/util/rb_resort.h
