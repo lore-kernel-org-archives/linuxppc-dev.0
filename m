@@ -1,31 +1,48 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yw0-x234.google.com (mail-yw0-x234.google.com
- [IPv6:2607:f8b0:4002:c05::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1XJc49FJzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 23:13:04 +1000 (AEST)
-Received: by mail-yw0-x234.google.com with SMTP id o66so205415566ywc.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 May 2016 06:13:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1dF62MpxzDq6B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2016 02:55:22 +1000 (AEST)
+Date: Fri, 6 May 2016 10:54:58 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: "Tian, Kevin" <kevin.tian@intel.com>, Yongji Xie
+ <xyjxie@linux.vnet.ibm.com>, David Laight <David.Laight@ACULAB.COM>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "joro@8bytes.org"
+ <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
+ <warrier@linux.vnet.ibm.com>, "zhong@linux.vnet.ibm.com"
+ <zhong@linux.vnet.ibm.com>, "nikunj@linux.vnet.ibm.com"
+ <nikunj@linux.vnet.ibm.com>, "eric.auger@linaro.org"
+ <eric.auger@linaro.org>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>,
+ "alistair@popple.id.au" <alistair@popple.id.au>, "ruscur@russell.cc"
+ <ruscur@russell.cc>
+Subject: Re: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
+ remapping is supported
+Message-ID: <20160506105458.1c1efc7a@t450s.home>
+In-Reply-To: <fa5555df-b8d2-70ea-e9af-81336c431a67@ozlabs.ru>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1461761010-5452-6-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F842512@SHSMSX101.ccr.corp.intel.com>
+ <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
+ <e064a6a7-a8dc-f71f-1725-f31e03581b8d@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F847150@SHSMSX101.ccr.corp.intel.com>
+ <063D6719AE5E284EB5DD2968C1650D6D5F4B52B5@AcuExch.aculab.com>
+ <4be013bc-e81b-84c5-06d3-e1b3f46b3227@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F8474A4@SHSMSX101.ccr.corp.intel.com>
+ <20160505090513.56886c12@t450s.home>
+ <fa5555df-b8d2-70ea-e9af-81336c431a67@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20160506002834.GA5509@gwshan>
-References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462281773-26438-23-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqLAYk2S80LNvF2z2ZzPfCWAbpz2LNKK-04OgSkabjWbxQ@mail.gmail.com>
- <20160506002834.GA5509@gwshan>
-From: Rob Herring <robherring2@gmail.com>
-Date: Fri, 6 May 2016 08:12:42 -0500
-Message-ID: <CAL_JsqKQNyL7g71PL9unwqS9834A=D41X9mx5Zr0iX=NapWLJw@mail.gmail.com>
-Subject: Re: [PATCH v9 22/22] PCI/hotplug: PowerPC PowerNV PCI hotplug driver
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Bjorn Helgaas <bhelgaas@google.com>,
- dja@axtens.net, Alistair Popple <alistair@popple.id.au>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,100 +52,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 5, 2016 at 7:28 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> On Thu, May 05, 2016 at 12:04:49PM -0500, Rob Herring wrote:
->>On Tue, May 3, 2016 at 8:22 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->>> This adds standalone driver to support PCI hotplug for PowerPC PowerNV
->>> platform that runs on top of skiboot firmware. The firmware identifies
->>> hotpluggable slots and marked their device tree node with proper
->>> "ibm,slot-pluggable" and "ibm,reset-by-firmware". The driver scans
->>> device tree nodes to create/register PCI hotplug slot accordingly.
->>>
->>> The PCI slots are organized in fashion of tree, which means one
->>> PCI slot might have parent PCI slot and parent PCI slot possibly
->>> contains multiple child PCI slots. At the plugging time, the parent
->>> PCI slot is populated before its children. The child PCI slots are
->>> removed before their parent PCI slot can be removed from the system.
->>>
->>> If the skiboot firmware doesn't support slot status retrieval, the PCI
->>> slot device node shouldn't have property "ibm,reset-by-firmware". In
->>> that case, none of valid PCI slots will be detected from device tree.
->>> The skiboot firmware doesn't export the capability to access attention
->>> LEDs yet and it's something for TBD.
->>>
->>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->>
->>[...]
->>
->>> +static void pnv_php_handle_poweron(struct pnv_php_slot *php_slot)
->>> +{
->>> +       void *fdt, *fdt1, *dt;
->>> +       int confirm = PNV_PHP_POWER_CONFIRMED_SUCCESS;
->>> +       int ret;
->>> +
->>> +       /* We don't know the FDT blob size. We try to get it through
->>> +        * maximal memory chunk and then copy it to another chunk that
->>> +        * fits the real size.
->>> +        */
->>> +       fdt1 = kzalloc(0x10000, GFP_KERNEL);
->>> +       if (!fdt1)
->>> +               goto error;
->>> +
->>> +       ret = pnv_pci_get_device_tree(php_slot->dn->phandle, fdt1, 0x10000);
->>> +       if (ret)
->>> +               goto free_fdt1;
->>> +
->>> +       fdt = kzalloc(fdt_totalsize(fdt1), GFP_KERNEL);
->>> +       if (!fdt)
->>> +               goto free_fdt1;
->>> +
->>> +       /* Unflatten device tree blob */
->>> +       memcpy(fdt, fdt1, fdt_totalsize(fdt1));
->>
->>This is wrong. If the size is greater than 64K, then you will be
->>overrunning the fdt1 buffer. You need to fetch the FDT again if it is
->>bigger than 64KB.
->>
->
-> Thanks for review, Rob. Sorry that I don't see how it's a problem. An
-> errcode is returned from pnv_pci_get_device_tree() if the FDT blob
-> size is greater than 64K. In this case, memcpy() won't be triggered.
-> pnv_pci_get_device_tree() relies on firmware implementation which
-> avoids overrunning the buffer.
+On Fri, 6 May 2016 16:35:38 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-Okay, I missed that pnv_pci_get_device_tree would error out.
+> On 05/06/2016 01:05 AM, Alex Williamson wrote:
+> > On Thu, 5 May 2016 12:15:46 +0000
+> > "Tian, Kevin" <kevin.tian@intel.com> wrote:
+> >  
+> >>> From: Yongji Xie [mailto:xyjxie@linux.vnet.ibm.com]
+> >>> Sent: Thursday, May 05, 2016 7:43 PM
+> >>>
+> >>> Hi David and Kevin,
+> >>>
+> >>> On 2016/5/5 17:54, David Laight wrote:
+> >>>  
+> >>>> From: Tian, Kevin  
+> >>>>> Sent: 05 May 2016 10:37  
+> >>>> ...  
+> >>>>>> Acutually, we are not aimed at accessing MSI-X table from
+> >>>>>> guest. So I think it's safe to passthrough MSI-X table if we
+> >>>>>> can make sure guest kernel would not touch MSI-X table in
+> >>>>>> normal code path such as para-virtualized guest kernel on PPC64.
+> >>>>>>  
+> >>>>> Then how do you prevent malicious guest kernel accessing it?  
+> >>>> Or a malicious guest driver for an ethernet card setting up
+> >>>> the receive buffer ring to contain a single word entry that
+> >>>> contains the address associated with an MSI-X interrupt and
+> >>>> then using a loopback mode to cause a specific packet be
+> >>>> received that writes the required word through that address.
+> >>>>
+> >>>> Remember the PCIe cycle for an interrupt is a normal memory write
+> >>>> cycle.
+> >>>>
+> >>>> 	David
+> >>>>  
+> >>>
+> >>> If we have enough permission to load a malicious driver or
+> >>> kernel, we can easily break the guest without exposed
+> >>> MSI-X table.
+> >>>
+> >>> I think it should be safe to expose MSI-X table if we can
+> >>> make sure that malicious guest driver/kernel can't use
+> >>> the MSI-X table to break other guest or host. The
+> >>> capability of IRQ remapping could provide this
+> >>> kind of protection.
+> >>>  
+> >>
+> >> With IRQ remapping it doesn't mean you can pass through MSI-X
+> >> structure to guest. I know actual IRQ remapping might be platform
+> >> specific, but at least for Intel VT-d specification, MSI-X entry must
+> >> be configured with a remappable format by host kernel which
+> >> contains an index into IRQ remapping table. The index will find a
+> >> IRQ remapping entry which controls interrupt routing for a specific
+> >> device. If you allow a malicious program random index into MSI-X
+> >> entry of assigned device, the hole is obvious...
+> >>
+> >> Above might make sense only for a IRQ remapping implementation
+> >> which doesn't rely on extended MSI-X format (e.g. simply based on
+> >> BDF). If that's the case for PPC, then you should build MSI-X
+> >> passthrough based on this fact instead of general IRQ remapping
+> >> enabled or not.  
+> >
+> > I don't think anyone is expecting that we can expose the MSI-X vector
+> > table to the guest and the guest can make direct use of it.  The end
+> > goal here is that the guest on a power system is already
+> > paravirtualized to not program the device MSI-X by directly writing to
+> > the MSI-X vector table.  They have hypercalls for this since they
+> > always run virtualized.  Therefore a) they never intend to touch the
+> > MSI-X vector table and b) they have sufficient isolation that a guest
+> > can only hurt itself by doing so.
+> >
+> > On x86 we don't have a), our method of programming the MSI-X vector
+> > table is to directly write to it. Therefore we will always require QEMU
+> > to place a MemoryRegion over the vector table to intercept those
+> > accesses.  However with interrupt remapping, we do have b) on x86, which
+> > means that we don't need to be so strict in disallowing user accesses
+> > to the MSI-X vector table.  It's not useful for configuring MSI-X on
+> > the device, but the user should only be able to hurt themselves by
+> > writing it directly.  x86 doesn't really get anything out of this
+> > change, but it helps this special case on power pretty significantly
+> > aiui.  Thanks,  
+> 
+> Excellent short overview, saved :)
+> 
+> How do we proceed with these patches? Nobody seems objecting them but also 
+> nobody seems taking them either...
 
-> On the other hand, it would be reasonable to retry retriving the
-> FDT blob if 64K buffer isn't enough. Also, kzalloc() can be replaced
-> with alloc_pages() as 64K is the default page size on PPC64. I will
-> have something like below until some one has more concerns. As the
-> size of the allocated buffer will be greater than the real FDT blob
-> size, some memory (not too much) is wasted. I guess it should be ok.
->
->         struct page *page;
->         void *fdt;
->         unsigned int order;
->         int ret;
->
->         for (order = 0; order < MAX_ORDER; order++) {
->                 page = alloc_pages(GFP_KERNEL, order);
->                 if (page) {
->                         fdt = page_address(page);
->                         ret = pnv_pci_get_device_tree(php_slot->dn->phandle,
->                                                       fdt, (1 << order) * PAGE_SIZE);
->                         if (ret) {
->                                 dev_dbg(&php_slot->pdev.dev, "Error %d getting device tree (%d)\n",
->                                         ret, order);
->                                 free_pages(fdt, order);
->                                 continue;
->                         }
->                 }
->         }
-
-I would allocate a minimal buffer to read the header, get the actual
-size, then allocate a new buffer. There's no point in looping. If you
-know 64KB is the biggest size you should ever see, then how you had it
-is reasonable, too.
-
-Rob
+Well, this series is still based on some non-upstream patches, so...
+Once that dependency is resolved this series should probably be split
+into functional areas for acceptance by the appropriate subsystem
+maintainers.
