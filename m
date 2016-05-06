@@ -1,28 +1,36 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1GkC48CYzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 13:00:51 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id gh9so9522959pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 May 2016 20:00:51 -0700 (PDT)
-Subject: Re: [PATCH 2/2] powerpc: Update of_remove_property() call sites to
- remove null checking
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <1461821695-19204-1-git-send-email-sjitindarsingh@gmail.com>
- <1461821695-19204-2-git-send-email-sjitindarsingh@gmail.com>
- <57292702.5070507@linux.vnet.ibm.com>
- <1462431031.12473.3.camel@ellerman.id.au>
-Cc: grant.likely@linaro.org, frowand.list@gmail.com, robh+dt@kernel.org,
- paulus@samba.org
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Message-ID: <572C08DB.9000109@gmail.com>
-Date: Fri, 6 May 2016 13:00:43 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1KgY45tqzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 15:13:44 +1000 (AEST)
+Received: from localhost
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 6 May 2016 10:43:41 +0530
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 76EE6125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:45:43 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u465Dcb012517606
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 10:43:38 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u465DbZt004258
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 10:43:38 +0530
+Message-ID: <572C2801.7050605@linux.vnet.ibm.com>
+Date: Fri, 06 May 2016 10:43:37 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1462431031.12473.3.camel@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+CC: mikey@neuling.org, oohall@gmail.com
+Subject: Re: [PATCH 0/2] Enable ZONE_DEVICE on POWER
+References: <1462450304-19173-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <87r3dgk1bh.fsf@skywalker.in.ibm.com>
+In-Reply-To: <87r3dgk1bh.fsf@skywalker.in.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,39 +41,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/05/2016 08:18 PM, Aneesh Kumar K.V wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+> 
+>> This enables base ZONE_DEVICE support on POWER. This series depends on
+>> the following patches posted by Oliver.
+>>
+>> https://patchwork.ozlabs.org/patch/618867/
+>> https://patchwork.ozlabs.org/patch/618868/
+>>
+>> Anshuman Khandual (2):
+>>   powerpc/mm: Make vmemmap_populate accommodate ZONE_DEVICE memory
+>>   powerpc/mm: Enable support for ZONE_DEVICE on PPC_BOOK3S_64 platforms
+>>
+>>  arch/powerpc/mm/init_64.c | 4 +++-
+>>  mm/Kconfig                | 2 +-
+>>  2 files changed, 4 insertions(+), 2 deletions(-)
+>>
+> 
+> What is the use case ? Who will use ZONE_DEVICE on ppc64. This should be
+> be merged along with the patch series that use this. 
 
-
-On 05/05/16 16:50, Michael Ellerman wrote:
-> On Tue, 2016-05-03 at 15:32 -0700, Tyrel Datwyler wrote:
->> On 04/27/2016 10:34 PM, Suraj Jitindar Singh wrote:
->>> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
->>> index ceb18d3..a560a98 100644
->>> --- a/arch/powerpc/platforms/pseries/mobility.c
->>> +++ b/arch/powerpc/platforms/pseries/mobility.c
->>> @@ -191,8 +191,8 @@ static int update_dt_node(__be32 phandle, s32 scope)
->>>  				break;
->>>  
->>>  			case 0x80000000:
->>> -				prop = of_find_property(dn, prop_name, NULL);
->>> -				of_remove_property(dn, prop);
->>> +				of_remove_property(dn, of_find_property(dn,
->>> +							prop_name, NULL));
->>>  				prop = NULL;
->>>  				break;
->>>
->> You haven't removed a NULL check here, as suggested by the changelog,
->> but instead made a cosmetic change to the code that still leaves behind
->> a now unnecessary "prop = NULL;" to bit rot.
-> Yeah I think you're right. Though it's not very clear how prop is used in that
-> function.
->
-> Please one of you send me an incremental to remove the prop = NULL;
->
-> cheers
->
-
-Resend of previous message due to formatting issues:
-
-I didn't delete the prop = NULL; initially as I didn't fully understand
-how it was used in the rest of the function and the effect of deleting
-it.
+IIUC, Oliver has been looking at using ZONE_DEVICE for the NVDIMM (or
+some other persistent memory) drivers. I have been following Dan William's
+work on this front and want to explore more details about it's functioning
+on ppc64. This enablement will just help us little bit in that direction.
