@@ -1,29 +1,43 @@
-Return-Path: <BATV+d77fcd8de74931f46600+4639+infradead.org+acme@merlin.srs.infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r1CNJ0Vz0zDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:30:08 +1000 (AEST)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Adrian Hunter <adrian.hunter@intel.com>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, David Ahern <dsahern@gmail.com>,
- Ian Munsie <imunsie@au1.ibm.com>, Jiri Olsa <jolsa@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Mark Wielaard <mjw@redhat.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Milian Wolff <milian.wolff@kdab.com>, Namhyung Kim <namhyung@kernel.org>,
- "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, pi3orama@163.com,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Wang Nan <wangnan0@huawei.com>, Zefan Li <lizefan@huawei.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [GIT PULL 00/17] perf/core improvements and fixes
-Date: Thu,  5 May 2016 21:29:23 -0300
-Message-Id: <1462494580-27164-1-git-send-email-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r1CdH1vQqzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:41:23 +1000 (AEST)
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 6 May 2016 10:41:22 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9693E3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 May 2016 10:41:18 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u460fAPv8782324
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 10:41:18 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u460ejDj022547
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 May 2016 10:40:46 +1000
+Date: Fri, 6 May 2016 10:40:20 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, aik@ozlabs.ru,
+ bhelgaas@google.com, robherring2@gmail.com, dja@axtens.net,
+ alistair@popple.id.au
+Subject: Re: [PATCH v9 21/22] drivers/of: Export of_detach_node()
+Message-ID: <20160506004020.GA14869@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1462281773-26438-22-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20160504133603.GA30081@gwshan>
+ <20160505194235.GA13790@rob-hp-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160505194235.GA13790@rob-hp-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,108 +47,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+On Thu, May 05, 2016 at 02:42:35PM -0500, Rob Herring wrote:
+>On Wed, May 04, 2016 at 11:36:03PM +1000, Gavin Shan wrote:
+>> On Tue, May 03, 2016 at 11:22:52PM +1000, Gavin Shan wrote:
+>> >This exports of_detach_node() for PowerPC PowerNV PCI hotplug
+>> >driver. No functional changes introduced.
+>> >
+>> >Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> 
+>> Rob, I'm not sure it's late to cache the 4.7 merge window.
+>> Also, I was told this series is needed by new CAPI driver which
+>> is being developed. The developers hope to push the new CAPI driver
+>> in 4.8 merge window (perhaps) or linux-next before 4.8 merge window
+>> is opened. It means the new CAPI driver depends on this series which
+>> has to be pushed to linux-next before 4.8 merge window.
+>> 
+>> If it's fine, could you please merge 16 to 21? With them merged to
+>> 4.7, the left patches won't depend on FDT changes. Thanks in advance
+>> for your help.
+>
+>I've applied the 6 patches.
+>
 
-	Please consider pulling,
+Rob, thank you very much for your helps!
 
-- Arnaldo
+Thanks,
+Gavin
 
-
-The following changes since commit 1b6de5917172967acd8db4d222df4225d23a8a60:
-
-  perf/x86/intel/pt: Convert ACCESS_ONCE()s (2016-05-05 10:16:29 +0200)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-core-for-mingo-20160505
-
-for you to fetch changes up to b6b85dad30ad7e7394990e2317a780577974a4e6:
-
-  perf evlist: Rename variable in perf_mmap__read() (2016-05-05 21:04:04 -0300)
-
-----------------------------------------------------------------
-perf/core improvements and fixes:
-
-User visible:
-
-- Order output of 'perf trace --summary' better, now the threads will
-  appear ascending order of number of events, and then, for each, in
-  descending order of syscalls by the time spent in the syscalls, so
-  that the last page produced can be the one about the most interesting
-  thread straced, suggested by Milian Wolff (Arnaldo Carvalho de Melo)
-
-- Do not show the runtime_ms for a thread when not collecting it, that
-  is done so far only with 'perf trace --sched' (Arnaldo Carvalho de Melo)
-
-- Fix kallsyms perf test on ppc64le (Naveen N. Rao)
-
-Infrastructure:
-
-- Move global variables related to presence of some keys in the sort order to a
-  per hist struct, to allow code like the hists browser to work with multiple
-  hists with different lists of columns (Jiri Olsa)
-
-- Add support for generating bpf prologue in powerpc (Naveen N. Rao)
-
-- Fix kprobe and kretprobe handling with kallsyms on ppc64le (Naveen N. Rao)
-
-- evlist mmap changes, prep work for supporting reading backwards (Wang Nan)
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-----------------------------------------------------------------
-Arnaldo Carvalho de Melo (5):
-      perf machine: Introduce number of threads member
-      perf tools: Add template for generating rbtree resort class
-      perf trace: Sort summary output by number of events
-      perf trace: Sort syscalls stats by msecs in --summary
-      perf trace: Do not show the runtime_ms for a thread when not collecting it
-
-Jiri Olsa (7):
-      perf hists: Move sort__need_collapse into struct perf_hpp_list
-      perf hists: Move sort__has_parent into struct perf_hpp_list
-      perf hists: Move sort__has_sym into struct perf_hpp_list
-      perf hists: Move sort__has_dso into struct perf_hpp_list
-      perf hists: Move sort__has_socket into struct perf_hpp_list
-      perf hists: Move sort__has_thread into struct perf_hpp_list
-      perf hists: Move sort__has_comm into struct perf_hpp_list
-
-Naveen N. Rao (3):
-      perf tools powerpc: Add support for generating bpf prologue
-      perf powerpc: Fix kprobe and kretprobe handling with kallsyms on ppc64le
-      perf symbols: Fix kallsyms perf test on ppc64le
-
-Wang Nan (2):
-      perf evlist: Extract perf_mmap__read()
-      perf evlist: Rename variable in perf_mmap__read()
-
- tools/perf/arch/powerpc/Makefile            |   1 +
- tools/perf/arch/powerpc/util/dwarf-regs.c   |  40 +++++---
- tools/perf/arch/powerpc/util/sym-handling.c |  43 ++++++--
- tools/perf/builtin-diff.c                   |   4 +-
- tools/perf/builtin-report.c                 |   4 +-
- tools/perf/builtin-top.c                    |   8 +-
- tools/perf/builtin-trace.c                  |  87 ++++++++++------
- tools/perf/tests/hists_common.c             |   2 +-
- tools/perf/tests/hists_cumulate.c           |   2 +-
- tools/perf/tests/hists_link.c               |   4 +-
- tools/perf/tests/hists_output.c             |   2 +-
- tools/perf/ui/browsers/hists.c              |  32 +++---
- tools/perf/ui/gtk/hists.c                   |   2 +-
- tools/perf/ui/hist.c                        |   2 +-
- tools/perf/util/annotate.c                  |   2 +-
- tools/perf/util/callchain.c                 |   2 +-
- tools/perf/util/evlist.c                    |  56 ++++++-----
- tools/perf/util/hist.c                      |  14 +--
- tools/perf/util/hist.h                      |  10 ++
- tools/perf/util/machine.c                   |   9 +-
- tools/perf/util/machine.h                   |   1 +
- tools/perf/util/probe-event.c               |   5 +-
- tools/perf/util/probe-event.h               |   3 +-
- tools/perf/util/rb_resort.h                 | 149 ++++++++++++++++++++++++++++
- tools/perf/util/sort.c                      |  35 +++----
- tools/perf/util/sort.h                      |   7 --
- tools/perf/util/symbol-elf.c                |   7 +-
- tools/perf/util/symbol.h                    |   3 +-
- 28 files changed, 382 insertions(+), 154 deletions(-)
- create mode 100644 tools/perf/util/rb_resort.h
+>Rob
+>
