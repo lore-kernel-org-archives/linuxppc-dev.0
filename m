@@ -1,25 +1,19 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from smtp486.redcondor.net (smtp486.redcondor.net [208.80.204.86])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chunkeey@googlemail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r28Bk1Ks3zDqBn
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2016 23:10:04 +1000 (AEST)
-Received: from astoria.ccjclearline.com ([64.235.106.9])
- by smtp486.redcondor.net ({6695537a-536a-45f9-a249-877c85428649})
- via TCP (outbound) with ESMTPS id 20160507130957502_0486
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 May 2016 13:09:57 +0000
-Received: from [216.191.234.70] (port=60000 helo=crashcourse.ca)
- by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
- (Exim 4.80) (envelope-from <rpjday@crashcourse.ca>)
- id 1az213-0005SN-8v
- for linuxppc-dev@lists.ozlabs.org; Sat, 07 May 2016 09:11:29 -0400
-Date: Sat, 7 May 2016 09:09:31 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
-Subject: followup: kernel manipulation of {bus,brg}-frequency for MPC8360?
-Message-ID: <alpine.LFD.2.20.1605070850530.5054@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r2P9S0St7zDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2016 08:54:51 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id e201so14515631wme.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 May 2016 15:54:51 -0700 (PDT)
+From: Christian Lamparter <chunkeey@googlemail.com>
+To: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: usb: dwc2: regression on MyBook Live Duo / Canyonlands since 4.3.0-rc4
+Date: Sun, 08 May 2016 00:54:44 +0200
+Message-ID: <4231696.iL6nGs74X8@debian64>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +23,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-  followup to earlier post and WARNING -- my ppc dev box is suddenly
-off the net so i'm doing all this from memory. le *sigh*.
+I've been looking in getting the MyBook Live Duo's USB OTG port
+to function. The SoC is a APM82181. Which has a PowerPC 464 core
+and related to the supported canyonlands architecture in arch/powerpc/.=
 
-  again in context of porting linux (4.1 kernel, using v2015.10 uboot)
-to MPC8360 target, a couple of questions.
 
-  first, while in this case u-boot might be modifying some of the
-values in the DTB before passing it to the kernel, is it true that the
-contents of the /proc/devicetree directory on the running linux system
-represent the DTB as it was passed from u-boot, or after it was
-possibly modified by the PPC kernel boot code? (clearly, this isn't
-exclusively a PPC issue -- it's a more general device tree issue.)
+Currently in -next the dwc2 module doesn't load:=20
 
-  second (and more involved) question, i noticed pretty quickly that
-the two frequency values i was interested in were visible under /sys
-... from memory, /sys/firmware(?).../ and so on. i also noticed they
-were stored in internal format so i needed to run them through
-"hexdump" to get their values, no problem.
+dwc2 4bff80000.usbotg: dwc2_core_reset() HANG! AHB Idle GRSTCTL=3D80
+dwc2 4bff80000.usbotg: Bad value for GSNPSID: 0x0a29544f
 
-  i'm assuming *those* values for {bus,brg}-frequency visible under
-/sys *are* the final values, after possible processing by the kernel
-boot code. in my case (MPC8360), which ppc boot files are responsible
-for checking the values passed in the DTB and possibly adjusting them
-early in the boot process?
+Looking at the Bad GSNPSID value: 0x0a29544f. It is obvious that
+this is an endian problem. git finds this patch:
 
-  not looking for extensive explanation, i already see what look like
-potentially relevant files under arch/powerpc:
+commit 95c8bc3609440af5e4a4f760b8680caea7424396
+Author: Antti Sepp=E4l=E4 <a.seppala@gmail.com>
+Date:   Thu Aug 20 21:41:07 2015 +0300
 
-  * sysdev/fsl_soc.c
-  * sysdev/qe_lib/qe.c
-  * boot/devtree.c
+    usb: dwc2: Use platform endianness when accessing registers
 
-am i at least looking in the right place? thanks.
+    This patch is necessary to access dwc2 registers correctly on big-e=
+ndian
+    systems such as the mips based SoCs made by Lantiq. Then dwc2 can b=
+e
+    used to replace ifx-hcd driver for Lantiq platforms found e.g. in
+    OpenWrt.
+   =20
+    The patch was autogenerated with the following commands:
+    $EDITOR core.h
+    sed -i "s/\<readl\>/dwc2_readl/g" *.c hcd.h hw.h
+    sed -i "s/\<writel\>/dwc2_writel/g" *.c hcd.h hw.h
+   =20
+    Some files were then hand-edited to fix checkpatch.pl warnings abou=
+t
+    too long lines.
 
-rday
+which unfortunately, broke the USB-OTG port on the MyBook Live Duo.
+Reverting to the readl / writel:
 
-p.s. if there is something online that addresses the values of
-bus-frequency and brg-frequency that's relevant, by all means, let me
-know. i'm just perusing the kernel doc file
-Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+---=20
+diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
+index 3c58d63..c021c1f 100644
+--- a/drivers/usb/dwc2/core.h
++++ b/drivers/usb/dwc2/core.h
+@@ -66,7 +66,7 @@
+=20
+ static inline u32 dwc2_readl(const void __iomem *addr)
+ {
+-=09u32 value =3D __raw_readl(addr);
++=09u32 value =3D readl(addr);
+=20
+ =09/* In order to preserve endianness __raw_* operation is used. There=
+fore
+ =09 * a barrier is needed to ensure IO access is not re-ordered across=
 
--- 
+@@ -78,7 +78,7 @@ static inline u32 dwc2_readl(const void __iomem *addr=
+)
+=20
+ static inline void dwc2_writel(u32 value, void __iomem *addr)
+ {
+-=09__raw_writel(value, addr);
++=09writel(value, addr);
+=20
+ =09/*
+ =09 * In order to preserve endianness __raw_* operation is used. There=
+fore
 
-========================================================================
-Robert P. J. Day                                 Ottawa, Ontario, CANADA
-                        http://crashcourse.ca
+---
 
-Twitter:                                       http://twitter.com/rpjday
-LinkedIn:                               http://ca.linkedin.com/in/rpjday
-========================================================================
+restores the dwc-otg port to full working order:
+dwc2 4bff80000.usbotg: Specified GNPTXFDEP=3D1024 > 256
+dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
+dwc2 4bff80000.usbotg: DWC OTG Controller
+dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number 1
+dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+root@mbl:~# usb 1-1: new high-speed USB device number 2 using dwc2
+
+So, what to do?
+
+Regards,
+Christian
