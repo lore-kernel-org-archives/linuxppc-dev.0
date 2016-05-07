@@ -1,23 +1,23 @@
 Return-Path: <rpjday@crashcourse.ca>
-Received: from smtp485.redcondor.net (smtp485.redcondor.net [208.80.204.85])
+Received: from smtp486.redcondor.net (smtp486.redcondor.net [208.80.204.86])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r27m64NSszDqBh
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2016 22:50:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r28Bk1Ks3zDqBn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 May 2016 23:10:04 +1000 (AEST)
 Received: from astoria.ccjclearline.com ([64.235.106.9])
- by smtp485.redcondor.net ({3be039ea-4351-44b0-a8af-642c38b25916})
- via TCP (outbound) with ESMTPS id 20160507124000148_0485
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 May 2016 12:40:00 +0000
-Received: from [216.191.234.70] (port=26251 helo=crashcourse.ca)
+ by smtp486.redcondor.net ({6695537a-536a-45f9-a249-877c85428649})
+ via TCP (outbound) with ESMTPS id 20160507130957502_0486
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 May 2016 13:09:57 +0000
+Received: from [216.191.234.70] (port=60000 helo=crashcourse.ca)
  by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
  (Exim 4.80) (envelope-from <rpjday@crashcourse.ca>)
- id 1az1Y3-0002jN-E3
- for linuxppc-dev@lists.ozlabs.org; Sat, 07 May 2016 08:41:31 -0400
-Date: Sat, 7 May 2016 08:39:33 -0400 (EDT)
+ id 1az213-0005SN-8v
+ for linuxppc-dev@lists.ozlabs.org; Sat, 07 May 2016 09:11:29 -0400
+Date: Sat, 7 May 2016 09:09:31 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@crashcourse.ca>
 To: Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
-Subject: MPC8360, quicc engine, bus-frequency and brg-frequency
-Message-ID: <alpine.LFD.2.20.1605070824370.4477@localhost.localdomain>
+Subject: followup: kernel manipulation of {bus,brg}-frequency for MPC8360?
+Message-ID: <alpine.LFD.2.20.1605070850530.5054@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,118 +30,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-  currently working on a project porting linux (4.1 kernel right now)
-to MPC8360-based target board and, recently, was handed the following
-patch to apply to that board's DTS file:
+  followup to earlier post and WARNING -- my ppc dev box is suddenly
+off the net so i'm doing all this from memory. le *sigh*.
 
-@@ -168,8 +168,8 @@
-                compatible = "fsl,qe", "simple-bus";
-                ranges = <0 0xf0100000 0x00100000>;
-                reg = <0xf0100000 0x480>;
--               brg-frequency = <0>;
--               bus-frequency = <0xFBC5200>; // 264Mhz
-+               brg-frequency = <198000000>;
-+               bus-frequency = <396000000>;
-                fsl,qe-num-riscs = <2>;
-                fsl,qe-num-snums = <28>;
+  again in context of porting linux (4.1 kernel, using v2015.10 uboot)
+to MPC8360 target, a couple of questions.
 
+  first, while in this case u-boot might be modifying some of the
+values in the DTB before passing it to the kernel, is it true that the
+contents of the /proc/devicetree directory on the running linux system
+represent the DTB as it was passed from u-boot, or after it was
+possibly modified by the PPC kernel boot code? (clearly, this isn't
+exclusively a PPC issue -- it's a more general device tree issue.)
 
-to get the result:
+  second (and more involved) question, i noticed pretty quickly that
+the two frequency values i was interested in were visible under /sys
+... from memory, /sys/firmware(?).../ and so on. i also noticed they
+were stored in internal format so i needed to run them through
+"hexdump" to get their values, no problem.
 
-        qe@f0100000 {
-                #address-cells = <1>;
-                #size-cells = <1>;
-                device_type = "qe";
-                compatible = "fsl,qe", "simple-bus";
-                ranges = <0 0xf0100000 0x00100000>;
-                reg = <0xf0100000 0x480>;
-                brg-frequency = <198000000>;              <-----
-                bus-frequency = <396000000>;              <-----
-                fsl,qe-num-riscs = <2>;
-                fsl,qe-num-snums = <28>;
+  i'm assuming *those* values for {bus,brg}-frequency visible under
+/sys *are* the final values, after possible processing by the kernel
+boot code. in my case (MPC8360), which ppc boot files are responsible
+for checking the values passed in the DTB and possibly adjusting them
+early in the boot process?
 
+  not looking for extensive explanation, i already see what look like
+potentially relevant files under arch/powerpc:
 
-but there was no explanation that came with the patch and i'm trying
-to guess the rationale.
+  * sysdev/fsl_soc.c
+  * sysdev/qe_lib/qe.c
+  * boot/devtree.c
 
-  first, regarding brg-frequency, if i examine the collection of PPC
-.dts files in the kernel source right now, i see this:
-
-$ grep -r brg-frequency *
-fsl/mpc8568si-post.dtsi:	brg-frequency = <0>;
-fsl/mpc8569si-post.dtsi:	brg-frequency = <0>;
-kmeter1.dts:			brg-frequency = <0>;	/* Filled in by U-Boot */
-mpc832x_mds.dts:		brg-frequency = <0>;
-mpc832x_rdb.dts:		brg-frequency = <0>;
-mpc836x_mds.dts:		brg-frequency = <0>;
-mpc836x_rdk.dts:			brg-frequency = <0>;
-mpc866ads.dts:			brg-frequency = <0>;
-p1021mds.dts:		brg-frequency = <0>;
-p1021rdb-pc_32b.dts:                brg-frequency = <0>;
-p1021rdb-pc_36b.dts:                brg-frequency = <0>;
-p1025rdb_32b.dts:		brg-frequency = <0>;
-p1025twr.dts:		brg-frequency = <0>;
-tqm8xx.dts:			brg-frequency = <0>;
-$
-
-  so, based on the above, no one else is setting brg-frequency, and
-kmeter1.dts even makes it clear that that value is filled in by
-u-boot, so what is even a *possible* rationale for setting it
-explicitly rather than letting u-boot look after it?
-
-  as for bus-frequency, another sweeping grep exposes this in
-mpc836x.dts:
-
-... snip ...
-
-        cpus {
-                #address-cells = <1>;
-                #size-cells = <0>;
-
-                PowerPC,8360@0 {
-                        device_type = "cpu";
-                        reg = <0x0>;
-                        d-cache-line-size = <32>;       // 32 bytes
-                        i-cache-line-size = <32>;       // 32 bytes
-                        d-cache-size = <32768>;         // L1, 32K
-                        i-cache-size = <32768>;         // L1, 32K
-                        timebase-frequency = <66000000>;
-                        bus-frequency = <264000000>;
-
-... snip ...
-
-        qe@e0100000 {
-                #address-cells = <1>;
-                #size-cells = <1>;
-                device_type = "qe";
-                compatible = "fsl,qe";
-                ranges = <0x0 0xe0100000 0x00100000>;
-                reg = <0xe0100000 0x480>;
-                brg-frequency = <0>;
-                bus-frequency = <396000000>;
-                fsl,qe-num-riscs = <2>;
-                fsl,qe-num-snums = <28>;
-
-... snip ...
-
-
-where i can see that the system (?) bus is set to 264MHz, but the QE
-bus is set to 396MHz. i'm in no way an authority on PowerPC -- this
-looks like someone accidentally set the QE bus speed originally to a
-valid value for the system bus, and just realized that, oops, it
-should have been 396MHz all along.
-
-  anyway, to recap, just trying to understand what this patch under
-"qe@f0100000" might mean:
-
--               brg-frequency = <0>;
--               bus-frequency = <0xFBC5200>; // 264Mhz
-+               brg-frequency = <198000000>;
-+               bus-frequency = <396000000>;
-
-thank you kindly.
+am i at least looking in the right place? thanks.
 
 rday
+
+p.s. if there is something online that addresses the values of
+bus-frequency and brg-frequency that's relevant, by all means, let me
+know. i'm just perusing the kernel doc file
+Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
 
 -- 
 
