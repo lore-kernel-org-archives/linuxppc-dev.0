@@ -1,37 +1,26 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chunkeey@googlemail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r2hsN4FGVzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2016 20:42:00 +1000 (AEST)
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Sun, 8 May 2016 20:41:57 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 924B02CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2016 20:41:54 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u48AfkWM8913256
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 May 2016 20:41:54 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u48AfMl9002131
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 May 2016 20:41:22 +1000
-Message-ID: <1462704055.20290.93.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r2kFN4y0HzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2016 21:44:24 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id e201so16143608wme.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 May 2016 04:44:24 -0700 (PDT)
+From: Christian Lamparter <chunkeey@googlemail.com>
+To: benh@au1.ibm.com
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, a.seppala@gmail.com, johnyoun@synopsys.com,
+ gregkh@linuxfoundation.org
 Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
  4.3.0-rc4
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Christian Lamparter <chunkeey@googlemail.com>, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Sun, 08 May 2016 20:40:55 +1000
-In-Reply-To: <4231696.iL6nGs74X8@debian64>
+Date: Sun, 08 May 2016 13:44:18 +0200
+Message-ID: <1908894.Nkk1LXQkFm@debian64>
+In-Reply-To: <1462704055.20290.93.camel@au1.ibm.com>
 References: <4231696.iL6nGs74X8@debian64>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1462704055.20290.93.camel@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,97 +30,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-05-08 at 00:54 +0200, Christian Lamparter via Linuxppc-dev 
-wrote:
-> Hello,
-> 
-> I've been looking in getting the MyBook Live Duo's USB OTG port
-> to function. The SoC is a APM82181. Which has a PowerPC 464 core
-> and related to the supported canyonlands architecture in
-> arch/powerpc/.
-> 
-> Currently in -next the dwc2 module doesn't load: 
+On Sunday, May 08, 2016 08:40:55 PM Benjamin Herrenschmidt wrote:
+> On Sun, 2016-05-08 at 00:54 +0200, Christian Lamparter via Linuxppc-d=
+ev=20
+> wrote:
+> > I've been looking in getting the MyBook Live Duo's USB OTG port
+> > to function. The SoC is a APM82181. Which has a PowerPC 464 core
+> > and related to the supported canyonlands architecture in
+> > arch/powerpc/.
+> >=20
+> > Currently in -next the dwc2 module doesn't load:=20
+>=20
+> Smells like the APM implementation is little endian. You might need t=
+o
+> use a flag to indicate what endian to use instead and set it
+> appropriately based on some DT properties.
+I tried. As per common-properties[0], I added little-endian; but it has=
+ no
+effect. I looked in dwc2_driver_probe and found no way of specifying th=
+e
+endian of the device. It all comes down to the dwc2_readl & dwc2_writel=
 
-Smells like the APM implementation is little endian. You might need to
-use a flag to indicate what endian to use instead and set it
-appropriately based on some DT properties.
+accessors. These - sadly - have been hardwired to use __raw_readl and
+__raw_writel. So, it's always "native-endian". While common-properties
+says little-endian should be preferred.
 
-> dwc2 4bff80000.usbotg: dwc2_core_reset() HANG! AHB Idle GRSTCTL=80
-> dwc2 4bff80000.usbotg: Bad value for GSNPSID: 0x0a29544f
-> 
-> Looking at the Bad GSNPSID value: 0x0a29544f. It is obvious that
-> this is an endian problem. git finds this patch:
-> 
-> commit 95c8bc3609440af5e4a4f760b8680caea7424396
-> Author: Antti Seppälä <a.seppala@gmail.com>
-> Date:   Thu Aug 20 21:41:07 2015 +0300
-> 
->     usb: dwc2: Use platform endianness when accessing registers
-> 
->     This patch is necessary to access dwc2 registers correctly on
-> big-endian
->     systems such as the mips based SoCs made by Lantiq. Then dwc2 can
-> be
->     used to replace ifx-hcd driver for Lantiq platforms found e.g. in
->     OpenWrt.
->     
->     The patch was autogenerated with the following commands:
->     $EDITOR core.h
->     sed -i "s/\<readl\>/dwc2_readl/g" *.c hcd.h hw.h
->     sed -i "s/\<writel\>/dwc2_writel/g" *.c hcd.h hw.h
->     
->     Some files were then hand-edited to fix checkpatch.pl warnings
-> about
->     too long lines.
-> 
-> which unfortunately, broke the USB-OTG port on the MyBook Live Duo.
-> Reverting to the readl / writel:
-> 
-> --- 
-> diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
-> index 3c58d63..c021c1f 100644
-> --- a/drivers/usb/dwc2/core.h
-> +++ b/drivers/usb/dwc2/core.h
-> @@ -66,7 +66,7 @@
->  
->  static inline u32 dwc2_readl(const void __iomem *addr)
->  {
-> -	u32 value = __raw_readl(addr);
-> +	u32 value = readl(addr);
->  
->  	/* In order to preserve endianness __raw_* operation is
-> used. Therefore
->  	 * a barrier is needed to ensure IO access is not re-ordered 
-> across
-> @@ -78,7 +78,7 @@ static inline u32 dwc2_readl(const void __iomem
-> *addr)
->  
->  static inline void dwc2_writel(u32 value, void __iomem *addr)
->  {
-> -	__raw_writel(value, addr);
-> +	writel(value, addr);
->  
->  	/*
->  	 * In order to preserve endianness __raw_* operation is
-> used. Therefore
-> 
-> ---
-> 
-> restores the dwc-otg port to full working order:
-> dwc2 4bff80000.usbotg: Specified GNPTXFDEP=1024 > 256
-> dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
-> dwc2 4bff80000.usbotg: DWC OTG Controller
-> dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number 1
-> dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 1 port detected
-> root@mbl:~# usb 1-1: new high-speed USB device number 2 using dwc2
-> 
-> So, what to do?
-> 
-> Regards,
-> Christian
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > dwc2 4bff80000.usbotg: dwc2_core_reset() HANG! AHB Idle GRSTCTL=3D8=
+0
+> > dwc2 4bff80000.usbotg: Bad value for GSNPSID: 0x0a29544f
+> >=20
+> > Looking at the Bad GSNPSID value: 0x0a29544f. It is obvious that
+> > this is an endian problem. git finds this patch:
+> >=20
+> > commit 95c8bc3609440af5e4a4f760b8680caea7424396
+> > Author: Antti Sepp=E4l=E4 <a.seppala@gmail.com>
+> > Date:   Thu Aug 20 21:41:07 2015 +0300
+> >=20
+> >     usb: dwc2: Use platform endianness when accessing registers
+> >=20
+> >     This patch is necessary to access dwc2 registers correctly on
+> > big-endian
+> >     systems such as the mips based SoCs made by Lantiq. Then dwc2 c=
+an
+> > be
+> >     used to replace ifx-hcd driver for Lantiq platforms found e.g. =
+in
+> >     OpenWrt.
+> >    =20
+> >     The patch was autogenerated with the following commands:
+> >     $EDITOR core.h
+> >     sed -i "s/\<readl\>/dwc2_readl/g" *.c hcd.h hw.h
+> >     sed -i "s/\<writel\>/dwc2_writel/g" *.c hcd.h hw.h
+> >    =20
+> >     Some files were then hand-edited to fix checkpatch.pl warnings
+> > about
+> >     too long lines.
+> >=20
+> > which unfortunately, broke the USB-OTG port on the MyBook Live Duo.=
+
+> > Reverting to the readl / writel:
+> >=20
+> > ---=20
+> > diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
+> > index 3c58d63..c021c1f 100644
+> > --- a/drivers/usb/dwc2/core.h
+> > +++ b/drivers/usb/dwc2/core.h
+> > @@ -66,7 +66,7 @@
+> > =20
+> >  static inline u32 dwc2_readl(const void __iomem *addr)
+> >  {
+> > -=09u32 value =3D __raw_readl(addr);
+> > +=09u32 value =3D readl(addr);
+> > =20
+> >  =09/* In order to preserve endianness __raw_* operation is
+> > used. Therefore
+> >  =09 * a barrier is needed to ensure IO access is not re-ordered=20=
+
+> > across
+> > @@ -78,7 +78,7 @@ static inline u32 dwc2_readl(const void __iomem
+> > *addr)
+> > =20
+> >  static inline void dwc2_writel(u32 value, void __iomem *addr)
+> >  {
+> > -=09__raw_writel(value, addr);
+> > +=09writel(value, addr);
+> > =20
+> >  =09/*
+> >  =09 * In order to preserve endianness __raw_* operation is
+> > used. Therefore
+> >=20
+> > ---
+> >=20
+> > restores the dwc-otg port to full working order:
+> > dwc2 4bff80000.usbotg: Specified GNPTXFDEP=3D1024 > 256
+> > dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
+> > dwc2 4bff80000.usbotg: DWC OTG Controller
+> > dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number =
+1
+> > dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
+> > hub 1-0:1.0: USB hub found
+> > hub 1-0:1.0: 1 port detected
+> > root@mbl:~# usb 1-1: new high-speed USB device number 2 using dwc2
+> >=20
+> > So, what to do?
+     ^^^
+
+Regards,
+Christian
+
+[0] <http://lxr.free-electrons.com/source/Documentation/devicetree/bind=
+ings/common-properties.txt>
