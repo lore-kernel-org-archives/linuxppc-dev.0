@@ -1,26 +1,37 @@
-Return-Path: <chunkeey@googlemail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r2kFN4y0HzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2016 21:44:24 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id e201so16143608wme.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 May 2016 04:44:24 -0700 (PDT)
-From: Christian Lamparter <chunkeey@googlemail.com>
-To: benh@au1.ibm.com
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, a.seppala@gmail.com, johnyoun@synopsys.com,
- gregkh@linuxfoundation.org
-Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
- 4.3.0-rc4
-Date: Sun, 08 May 2016 13:44:18 +0200
-Message-ID: <1908894.Nkk1LXQkFm@debian64>
-In-Reply-To: <1462704055.20290.93.camel@au1.ibm.com>
-References: <4231696.iL6nGs74X8@debian64>
- <1462704055.20290.93.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r2t4k5CqLzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 03:37:26 +1000 (AEST)
+Received: from localhost
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 8 May 2016 23:07:23 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5FBDA125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 May 2016 23:09:26 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u48HbJkd48890050
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 May 2016 23:07:19 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u48HbJdC001256
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 8 May 2016 23:07:19 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: oliver <oohall@gmail.com>, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 0/2] Enable ZONE_DEVICE on POWER
+In-Reply-To: <CAOSf1CH=gGARN+-D8uE=wAp0NUZTkp=9Xc273K_7GTEJqhuWXQ@mail.gmail.com>
+References: <1462450304-19173-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <87r3dgk1bh.fsf@skywalker.in.ibm.com> <572C2801.7050605@linux.vnet.ibm.com>
+ <CAOSf1CH=gGARN+-D8uE=wAp0NUZTkp=9Xc273K_7GTEJqhuWXQ@mail.gmail.com>
+Date: Sun, 08 May 2016 23:07:18 +0530
+Message-ID: <877ff4jvsh.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,113 +41,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday, May 08, 2016 08:40:55 PM Benjamin Herrenschmidt wrote:
-> On Sun, 2016-05-08 at 00:54 +0200, Christian Lamparter via Linuxppc-d=
-ev=20
-> wrote:
-> > I've been looking in getting the MyBook Live Duo's USB OTG port
-> > to function. The SoC is a APM82181. Which has a PowerPC 464 core
-> > and related to the supported canyonlands architecture in
-> > arch/powerpc/.
-> >=20
-> > Currently in -next the dwc2 module doesn't load:=20
->=20
-> Smells like the APM implementation is little endian. You might need t=
-o
-> use a flag to indicate what endian to use instead and set it
-> appropriately based on some DT properties.
-I tried. As per common-properties[0], I added little-endian; but it has=
- no
-effect. I looked in dwc2_driver_probe and found no way of specifying th=
-e
-endian of the device. It all comes down to the dwc2_readl & dwc2_writel=
+oliver <oohall@gmail.com> writes:
 
-accessors. These - sadly - have been hardwired to use __raw_readl and
-__raw_writel. So, it's always "native-endian". While common-properties
-says little-endian should be preferred.
+> Hi,
+>
+> I've been working on kernel support for a persistent memory (nvdimm)
+> device and the kernel driver infrastructure requires ZONE_DEVICE for
+> DAX support.. I've had it enabled in my tree for some time (without
+> altmap support) without any real issues.
 
-> > dwc2 4bff80000.usbotg: dwc2_core_reset() HANG! AHB Idle GRSTCTL=3D8=
-0
-> > dwc2 4bff80000.usbotg: Bad value for GSNPSID: 0x0a29544f
-> >=20
-> > Looking at the Bad GSNPSID value: 0x0a29544f. It is obvious that
-> > this is an endian problem. git finds this patch:
-> >=20
-> > commit 95c8bc3609440af5e4a4f760b8680caea7424396
-> > Author: Antti Sepp=E4l=E4 <a.seppala@gmail.com>
-> > Date:   Thu Aug 20 21:41:07 2015 +0300
-> >=20
-> >     usb: dwc2: Use platform endianness when accessing registers
-> >=20
-> >     This patch is necessary to access dwc2 registers correctly on
-> > big-endian
-> >     systems such as the mips based SoCs made by Lantiq. Then dwc2 c=
-an
-> > be
-> >     used to replace ifx-hcd driver for Lantiq platforms found e.g. =
-in
-> >     OpenWrt.
-> >    =20
-> >     The patch was autogenerated with the following commands:
-> >     $EDITOR core.h
-> >     sed -i "s/\<readl\>/dwc2_readl/g" *.c hcd.h hw.h
-> >     sed -i "s/\<writel\>/dwc2_writel/g" *.c hcd.h hw.h
-> >    =20
-> >     Some files were then hand-edited to fix checkpatch.pl warnings
-> > about
-> >     too long lines.
-> >=20
-> > which unfortunately, broke the USB-OTG port on the MyBook Live Duo.=
 
-> > Reverting to the readl / writel:
-> >=20
-> > ---=20
-> > diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
-> > index 3c58d63..c021c1f 100644
-> > --- a/drivers/usb/dwc2/core.h
-> > +++ b/drivers/usb/dwc2/core.h
-> > @@ -66,7 +66,7 @@
-> > =20
-> >  static inline u32 dwc2_readl(const void __iomem *addr)
-> >  {
-> > -=09u32 value =3D __raw_readl(addr);
-> > +=09u32 value =3D readl(addr);
-> > =20
-> >  =09/* In order to preserve endianness __raw_* operation is
-> > used. Therefore
-> >  =09 * a barrier is needed to ensure IO access is not re-ordered=20=
+IIUC a DAX usage of pmem doesn't really need ZONE_DEVICE. It is only
+for struct page backing to those pmem area we need ZONE_DEVICE.
 
-> > across
-> > @@ -78,7 +78,7 @@ static inline u32 dwc2_readl(const void __iomem
-> > *addr)
-> > =20
-> >  static inline void dwc2_writel(u32 value, void __iomem *addr)
-> >  {
-> > -=09__raw_writel(value, addr);
-> > +=09writel(value, addr);
-> > =20
-> >  =09/*
-> >  =09 * In order to preserve endianness __raw_* operation is
-> > used. Therefore
-> >=20
-> > ---
-> >=20
-> > restores the dwc-otg port to full working order:
-> > dwc2 4bff80000.usbotg: Specified GNPTXFDEP=3D1024 > 256
-> > dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
-> > dwc2 4bff80000.usbotg: DWC OTG Controller
-> > dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number =
-1
-> > dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
-> > hub 1-0:1.0: USB hub found
-> > hub 1-0:1.0: 1 port detected
-> > root@mbl:~# usb 1-1: new high-speed USB device number 2 using dwc2
-> >=20
-> > So, what to do?
-     ^^^
+>
+> I wasn't planning on upstreaming any of my changes until 4.8 at the
+> earliest so I am ok with carrying these patches myself. However, there
+> has been some interest in using ZONE_DEVICE for other things on ppc
+> (wasn't that you?) and given that ZONE_DEVICE is gated behind
+> CONFIG_EXPERT I can't see there being any kind of negative impact on
+> end users by merging it now. At the very least it lets the rest of the
+> kernel development community know that changes affecting zones should
+> also be tested on powerpc.
+>
+>
 
-Regards,
-Christian
+A partially done patch like that will miss quiet a lot details. For
+example if I look at the x86 changes related to altmap
+(4b94ffdc4163bae1e ("x86, mm: introduce vmem_altmap to augment
+vmemmap_populate")) i see them handling pagetable free and memory
+hotplug. This patch doesn't do any of those. From the commit message it is
+also not clear how we intent to use those zone device memory on ppc64.
+If we say they will not get hotplugged out or they will never be part
+of page table then those changes I mentioned above are really not
+needed. But the patch is missing a lot of those details.
 
-[0] <http://lxr.free-electrons.com/source/Documentation/devicetree/bind=
-ings/common-properties.txt>
+-aneesh
