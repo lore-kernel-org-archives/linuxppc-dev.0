@@ -1,40 +1,22 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r336H4cGmzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 10:24:23 +1000 (AEST)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 9 May 2016 10:24:22 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 279EB2CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 10:24:20 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u490OCKi20905986
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2016 10:24:20 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u490Nlhb013887
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2016 10:23:47 +1000
-Message-ID: <1462753402.20290.95.camel@au1.ibm.com>
-Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
- 4.3.0-rc4
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Christian Lamparter <chunkeey@googlemail.com>
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, a.seppala@gmail.com,
- johnyoun@synopsys.com, gregkh@linuxfoundation.org
-Date: Mon, 09 May 2016 10:23:22 +1000
-In-Reply-To: <1908894.Nkk1LXQkFm@debian64>
-References: <4231696.iL6nGs74X8@debian64>
- <1462704055.20290.93.camel@au1.ibm.com> <1908894.Nkk1LXQkFm@debian64>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r33K00VqwzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 10:33:39 +1000 (AEST)
+Received: by mail-pa0-x236.google.com with SMTP id iv1so65927788pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 May 2016 17:33:39 -0700 (PDT)
+Subject: Re: powerpc: Add out of bounds check to crash_shutdown_unregister()
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <3qzTWq5vWxz9t4k@ozlabs.org>
+Cc: paulus@samba.org
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Message-ID: <572FDADC.2070605@gmail.com>
+Date: Mon, 9 May 2016 10:33:32 +1000
+MIME-Version: 1.0
+In-Reply-To: <3qzTWq5vWxz9t4k@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,117 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-05-08 at 13:44 +0200, Christian Lamparter wrote:
-> On Sunday, May 08, 2016 08:40:55 PM Benjamin Herrenschmidt wrote:
-> > 
-> > On Sun, 2016-05-08 at 00:54 +0200, Christian Lamparter via Linuxppc-dev 
-> > wrote:
-> > > 
-> > > I've been looking in getting the MyBook Live Duo's USB OTG port
-> > > to function. The SoC is a APM82181. Which has a PowerPC 464 core
-> > > and related to the supported canyonlands architecture in
-> > > arch/powerpc/.
-> > > 
-> > > Currently in -next the dwc2 module doesn't load: 
-> > Smells like the APM implementation is little endian. You might need to
-> > use a flag to indicate what endian to use instead and set it
-> > appropriately based on some DT properties.
-> I tried. As per common-properties[0], I added little-endian; but it has no
-> effect. I looked in dwc2_driver_probe and found no way of specifying the
-> endian of the device. It all comes down to the dwc2_readl & dwc2_writel
-> accessors. These - sadly - have been hardwired to use __raw_readl and
-> __raw_writel. So, it's always "native-endian". While common-properties
-> says little-endian should be preferred.
 
-Right, I meant, you should produce a patch adding a runtime test inside
-those functions based on a device-tree property, a bit like we do for
-some of the HCDs like OHCI, EHCI etc...
 
-Cheers,
-Ben.
+On 03/05/16 15:00, Michael Ellerman wrote:
+> On Thu, 2016-28-04 at 06:17:45 UTC, Suraj Jitindar Singh wrote:
+>> When unregistering a crash_shutdown_handle in the function
+>> crash_shutdown_unregister() the other handles are shifted down in the
+>> array to replace the unregistered handle. The for loop assumes that the
+>> last element in the array is null and uses this as the stop condition,
+>> however in the case that the last element is not null there is no check
+>> to ensure that an out of bounds access is not performed.
+> But AFAICS the code ensures that entry will always be NULL. So there's no bug at
+> the moment.
+>
+>> Add a check to terminate the shift operation when CRASH_HANDLER_MAX is
+>> reached in order to protect against out of bounds accesses.
+> Doing it this way is more robust though. The chance of the NULL terminator being
+> corrupted is definitely higher than the code being corrupted, and if the latter
+> happens we're probably toast anyway.
+>
+>> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+>> index 2bb252c..6b267af 100644
+>> --- a/arch/powerpc/kernel/crash.c
+>> +++ b/arch/powerpc/kernel/crash.c
+>> @@ -288,7 +288,7 @@ int crash_shutdown_unregister(crash_shutdown_t handler)
+>>  		rc = 1;
+>>  	} else {
+>>  		/* Shift handles down */
+>> -		for (; crash_shutdown_handles[i]; i++)
+>> +		for (; crash_shutdown_handles[i] && i < CRASH_HANDLER_MAX; i++)
+>>  			crash_shutdown_handles[i] =
+>>  				crash_shutdown_handles[i+1];
+>>  		rc = 0;
+> So if I'm reading it right, with this change we have removed all the code that
+> uses the NULL-terminated property of the list.
+>
+> If so we should also shrink the array to be only CRASH_HANDLER_MAX in size, and
+> remove any references to it being NULL terminated.
+>
+> cheers
 
-> > 
-> > > 
-> > > dwc2 4bff80000.usbotg: dwc2_core_reset() HANG! AHB Idle GRSTCTL=80
-> > > dwc2 4bff80000.usbotg: Bad value for GSNPSID: 0x0a29544f
-> > > 
-> > > Looking at the Bad GSNPSID value: 0x0a29544f. It is obvious that
-> > > this is an endian problem. git finds this patch:
-> > > 
-> > > commit 95c8bc3609440af5e4a4f760b8680caea7424396
-> > > Author: Antti Seppälä <a.seppala@gmail.com>
-> > > Date:   Thu Aug 20 21:41:07 2015 +0300
-> > > 
-> > >     usb: dwc2: Use platform endianness when accessing registers
-> > > 
-> > >     This patch is necessary to access dwc2 registers correctly on
-> > > big-endian
-> > >     systems such as the mips based SoCs made by Lantiq. Then dwc2 can
-> > > be
-> > >     used to replace ifx-hcd driver for Lantiq platforms found e.g. in
-> > >     OpenWrt.
-> > >     
-> > >     The patch was autogenerated with the following commands:
-> > >     $EDITOR core.h
-> > >     sed -i "s/\/dwc2_readl/g" *.c hcd.h hw.h
-> > >     sed -i "s/\/dwc2_writel/g" *.c hcd.h hw.h
-> > >     
-> > >     Some files were then hand-edited to fix checkpatch.pl warnings
-> > > about
-> > >     too long lines.
-> > > 
-> > > which unfortunately, broke the USB-OTG port on the MyBook Live Duo.
-> > > Reverting to the readl / writel:
-> > > 
-> > > --- 
-> > > diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
-> > > index 3c58d63..c021c1f 100644
-> > > --- a/drivers/usb/dwc2/core.h
-> > > +++ b/drivers/usb/dwc2/core.h
-> > > @@ -66,7 +66,7 @@
-> > >  
-> > >  static inline u32 dwc2_readl(const void __iomem *addr)
-> > >  {
-> > > -	u32 value = __raw_readl(addr);
-> > > +	u32 value = readl(addr);
-> > >  
-> > >  	/* In order to preserve endianness __raw_* operation is
-> > > used. Therefore
-> > >  	 * a barrier is needed to ensure IO access is not re-ordered 
-> > > across
-> > > @@ -78,7 +78,7 @@ static inline u32 dwc2_readl(const void __iomem
-> > > *addr)
-> > >  
-> > >  static inline void dwc2_writel(u32 value, void __iomem *addr)
-> > >  {
-> > > -	__raw_writel(value, addr);
-> > > +	writel(value, addr);
-> > >  
-> > >  	/*
-> > >  	 * In order to preserve endianness __raw_* operation is
-> > > used. Therefore
-> > > 
-> > > ---
-> > > 
-> > > restores the dwc-otg port to full working order:
-> > > dwc2 4bff80000.usbotg: Specified GNPTXFDEP=1024 > 256
-> > > dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
-> > > dwc2 4bff80000.usbotg: DWC OTG Controller
-> > > dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number 1
-> > > dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
-> > > hub 1-0:1.0: USB hub found
-> > > hub 1-0:1.0: 1 port detected
-> > > root@mbl:~# usb 1-1: new high-speed USB device number 2 using dwc2
-> > > 
-> > > So, what to do?
->      ^^^
-> 
-> Regards,
-> Christian
-> 
-> [0] 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks Michael, will change this to reflect that the list is no longer assumed to be null terminated.
