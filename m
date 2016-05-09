@@ -1,23 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3F4f1Q7pzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 17:53:38 +1000 (AEST)
-Message-ID: <1462780410.32643.1.camel@ellerman.id.au>
-Subject: Re: perf tools: add support for generating bpf prologue on powerpc
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Arnaldo
- Carvalho de Melo
- <acme@redhat.com>, Wang Nan <wangnan0@huawei.com>, Masami Hiramatsu
- <mhiramat@kernel.org>, Ian Munsie <imunsie@au1.ibm.com>
-Date: Mon, 09 May 2016 17:53:30 +1000
-In-Reply-To: <20160507111347.GP7880@naverao1-tp.in.ibm.com>
-References: <1462461799-17518-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
- <3r1wL02fWFz9t3k@ozlabs.org> <20160507111347.GP7880@naverao1-tp.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3FY45Zr1zDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 18:14:48 +1000 (AEST)
+Subject: Re: [PATCH] kvm-pr: manage illegal instructions
+To: Laurent Vivier <lvivier@redhat.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Alexander Graf <agraf@suse.com>,
+ Paul Mackerras <paulus@samba.org>
+References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
+ <57189C75.2060701@redhat.com>
+Cc: Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <573046F1.7070704@redhat.com>
+Date: Mon, 9 May 2016 10:14:41 +0200
+MIME-Version: 1.0
+In-Reply-To: <57189C75.2060701@redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-05-07 at 16:43 +0530, Naveen N. Rao wrote:
-> On 2016/05/07 02:15PM, Michael Ellerman wrote:
-> > On Thu, 2016-05-05 at 15:23:19 UTC, "Naveen N. Rao" wrote:
-> > > Generalize existing macros to serve the purpose.
-> > > 
-> > > Cc: Wang Nan <wangnan0@huawei.com>
-> > > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > > Cc: Masami Hiramatsu <mhiramat@kernel.org>
-> > > Cc: Ian Munsie <imunsie@au1.ibm.com>
-> > > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > > ---
-> > > With this patch:
-> > >     # ./perf test 37
-> > >     37: Test BPF filter                                          :
-> > >     37.1: Test basic BPF filtering                               : Ok
-> > >     37.2: Test BPF prologue generation                           : Ok
-> > >     37.3: Test BPF relocation checker                            : Ok
-> > > 
-> > >  tools/perf/arch/powerpc/Makefile          |  1 +
-> > >  tools/perf/arch/powerpc/util/dwarf-regs.c | 40 +++++++++++++++++++++----------
-> > >  2 files changed, 29 insertions(+), 12 deletions(-)
-> > 
-> > Looks feasible, and is in powerpc only code, should I take this or acme?
+On 21.04.2016 11:25, Thomas Huth wrote:
+> On 15.03.2016 21:18, Laurent Vivier wrote:
+>> While writing some instruction tests for kvm-unit-tests for powerpc,
+>> I've found that illegal instructions are not managed correctly with kvm-pr,
+>> while it is fine with kvm-hv.
+>>
+>> When an illegal instruction (like ".long 0") is processed by kvm-pr,
+>> the kernel logs are filled with:
+>>
+>>      Couldn't emulate instruction 0x00000000 (op 0 xop 0)
+>>      kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
+>>
+>> While the exception handler receives an interrupt for each instruction
+>> executed after the illegal instruction.
+>>
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>> ---
+>>  arch/powerpc/kvm/book3s_emulate.c | 4 +++-
+>>  1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+>> index 2afdb9c..4ee969d 100644
+>> --- a/arch/powerpc/kvm/book3s_emulate.c
+>> +++ b/arch/powerpc/kvm/book3s_emulate.c
+>> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  
+>>  	switch (get_op(inst)) {
+>>  	case 0:
+>> -		emulated = EMULATE_FAIL;
+>>  		if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
+>>  		    (inst == swab32(inst_sc))) {
+>>  			/*
+>> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  			kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
+>>  			kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
+>>  			emulated = EMULATE_DONE;
+>> +		} else {
+>> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+>> +			emulated = EMULATE_AGAIN;
+>>  		}
+>>  		break;
+>>  	case 19:
+>>
 > 
-> Hi Michael,
-> Arnaldo has already pulled this in:
-> http://article.gmane.org/gmane.linux.kernel/2216051
+> Tested-by: Thomas Huth <thuth@redhat.com>
 
-Ah sorry.
+Ping!
 
-> It would be good if you can consider user stackdump as that depends on 
-> perf regs support which you have added to powerpc-next:
-> http://thread.gmane.org/gmane.linux.kernel/2210299/focus=2210749
+Alex, Paul, could you please pick up this patch? This patch is required
+to get the kvm-unit-tests working properly with kvm-pr, so I'd be glad
+if we could get this included finally...
 
-Yep I did, it's in next.
-
-https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=next&id=826dccfd238c3eeac379f5f637e5a3ddc7a4bc22
-
-cheers
+Thanks,
+ Thomas
