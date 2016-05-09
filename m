@@ -1,22 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jslaby@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3CBY6g1dzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 16:28:37 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id g132so474947pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 May 2016 23:28:37 -0700 (PDT)
-Subject: Re: [PATCH v2 1/2] powerpc/timer - large decrementer support
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <1462347433-26150-1-git-send-email-oohall@gmail.com>
-Cc: Jack Miller <jack@codezen.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <ccffddae-6e91-d8ad-5d33-f926b021b76b@gmail.com>
-Date: Mon, 9 May 2016 16:28:15 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3DQ649s6zDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 17:23:42 +1000 (AEST)
+From: Jiri Slaby <jslaby@suse.cz>
+To: gregkh@linuxfoundation.org
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Jiri Slaby <jslaby@suse.cz>, Russell King <linux@arm.linux.org.uk>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,
+ Russell King <linux@armlinux.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Alexandre Courbot <gnurou@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-tegra@vger.kernel.org
+Subject: [PATCH v2] TTY: serial, handle platform_get_irq retval properly
+Date: Mon,  9 May 2016 09:23:35 +0200
+Message-Id: <1462778615-14718-1-git-send-email-jslaby@suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1462347433-26150-1-git-send-email-oohall@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,241 +31,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+platform_get_irq can fail, so we should handle negative value when
+returned.
 
+[v2]
 
-On 04/05/16 17:37, Oliver O'Halloran wrote:
-> POWER ISA v3 adds large decrementer (LD) mode of operation which increases
-> the size of the decrementer register from 32 bits to an implementation
-> defined with of up to 64 bits.
-> 
-> This patch adds support for the LD on processors with the CPU_FTR_ARCH_300
-> cpu feature flag set. Even for CPUs with this feature LD mode is only
-> enabled when the property ibm,dec-bits devicetree property is supplied
-> for the boot CPU. The decrementer value is a signed quantity (with
-> negative values indicating a pending exception) and this property is
-> required to find the maximum positive decrementer value. If this property
-> is not supplied then the traditional decrementer width of 32 bits is
-> assumed and LD mode is disabled.
-> 
-> This patch was based on initial work by Jack Miller.
-> 
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> Cc: Jack Miller <jack@codezen.org>
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> ---
->  arch/powerpc/include/asm/reg.h  |  1 +
->  arch/powerpc/include/asm/time.h |  6 +--
->  arch/powerpc/kernel/time.c      | 89 +++++++++++++++++++++++++++++++++++++----
->  3 files changed, 86 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index f5f4c66bbbc9..ff581ed1ab9d 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -332,6 +332,7 @@
->  #define   LPCR_AIL_0	0x00000000	/* MMU off exception offset 0x0 */
->  #define   LPCR_AIL_3	0x01800000	/* MMU on exception offset 0xc00...4xxx */
->  #define   LPCR_ONL	0x00040000	/* online - PURR/SPURR count */
-> +#define   LPCR_LD	0x00020000	/* large decremeter */
->  #define   LPCR_PECE	0x0001f000	/* powersave exit cause enable */
->  #define     LPCR_PECEDP	0x00010000	/* directed priv dbells cause exit */
->  #define     LPCR_PECEDH	0x00008000	/* directed hyp dbells cause exit */
-> diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-> index 1092fdd7e737..09211640a0e0 100644
-> --- a/arch/powerpc/include/asm/time.h
-> +++ b/arch/powerpc/include/asm/time.h
-> @@ -146,7 +146,7 @@ static inline void set_tb(unsigned int upper, unsigned int lower)
->   * in auto-reload mode.  The problem is PIT stops counting when it
->   * hits zero.  If it would wrap, we could use it just like a decrementer.
->   */
-> -static inline unsigned int get_dec(void)
-> +static inline u64 get_dec(void)
->  {
->  #if defined(CONFIG_40x)
->  	return (mfspr(SPRN_PIT));
-> @@ -160,10 +160,10 @@ static inline unsigned int get_dec(void)
->   * in when the decrementer generates its interrupt: on the 1 to 0
->   * transition for Book E/4xx, but on the 0 to -1 transition for others.
->   */
-> -static inline void set_dec(int val)
-> +static inline void set_dec(u64 val)
->  {
->  #if defined(CONFIG_40x)
-> -	mtspr(SPRN_PIT, val);
-> +	mtspr(SPRN_PIT, (u32) val);
->  #else
->  #ifndef CONFIG_BOOKE
->  	--val;
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 81b0900a39ee..fab34abfb4cd 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -95,7 +95,8 @@ static struct clocksource clocksource_timebase = {
->  	.read         = timebase_read,
->  };
->  
-> -#define DECREMENTER_MAX	0x7fffffff
-> +#define DECREMENTER_DEFAULT_MAX 0x7FFFFFFF
-> +u64 decrementer_max = DECREMENTER_DEFAULT_MAX;
+platform_get_irq can actually return zero on some platforms. So do not
+remove checks for irq == 0 there.
 
-Should this be signed, given that the decrementer is signed?
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: "Uwe Kleine-König" <kernel@pengutronix.de>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>
+Cc: linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-tegra@vger.kernel.org
+---
+ drivers/tty/serial/amba-pl011.c   | 8 +++++++-
+ drivers/tty/serial/fsl_lpuart.c   | 8 +++++++-
+ drivers/tty/serial/pmac_zilog.c   | 2 +-
+ drivers/tty/serial/serial-tegra.c | 7 ++++++-
+ 4 files changed, 21 insertions(+), 4 deletions(-)
 
->  
->  static int decrementer_set_next_event(unsigned long evt,
->  				      struct clock_event_device *dev);
-> @@ -503,7 +504,7 @@ static void __timer_interrupt(void)
->  		__this_cpu_inc(irq_stat.timer_irqs_event);
->  	} else {
->  		now = *next_tb - now;
-> -		if (now <= DECREMENTER_MAX)
-> +		if (now <= decrementer_max)
->  			set_dec((int)now);
->  		/* We may have raced with new irq work */
->  		if (test_irq_work_pending())
-> @@ -534,7 +535,7 @@ void timer_interrupt(struct pt_regs * regs)
->  	/* Ensure a positive value is written to the decrementer, or else
->  	 * some CPUs will continue to take decrementer exceptions.
->  	 */
-> -	set_dec(DECREMENTER_MAX);
-> +	set_dec(decrementer_max);
->  
->  	/* Some implementations of hotplug will get timer interrupts while
->  	 * offline, just ignore these and we also need to set
-> @@ -582,9 +583,9 @@ static void generic_suspend_disable_irqs(void)
->  	 * with suspending.
->  	 */
->  
-> -	set_dec(DECREMENTER_MAX);
-> +	set_dec(decrementer_max);
->  	local_irq_disable();
-> -	set_dec(DECREMENTER_MAX);
-> +	set_dec(decrementer_max);
->  }
->  
->  static void generic_suspend_enable_irqs(void)
-> @@ -865,7 +866,7 @@ static int decrementer_set_next_event(unsigned long evt,
->  
->  static int decrementer_shutdown(struct clock_event_device *dev)
->  {
-> -	decrementer_set_next_event(DECREMENTER_MAX, dev);
-> +	decrementer_set_next_event(decrementer_max, dev);
->  	return 0;
->  }
->  
-> @@ -891,6 +892,73 @@ static void register_decrementer_clockevent(int cpu)
->  	clockevents_register_device(dec);
->  }
->  
-> +static inline bool large_dec_supp(void)
-> +{
-> +	return cpu_has_feature(CPU_FTR_ARCH_300);
-> +}
-> +
-
-Can we rename this to is_large_dec()?
-
-> +static inline bool large_dec_on(void)
-> +{
-> +	return (mfspr(SPRN_LPCR) & LPCR_LD) == LPCR_LD;
-> +}
-
-Need a newline here
-
-> +/* enables the large decrementer for the current CPU */
-> +static void enable_large_decrementer(void)
-> +{
-> +	/* do we have a large decrementer? */
-> +	if (!large_dec_supp())
-> +		return;
-> +
-> +	/* do we need a large decrementer? */
-> +	if (decrementer_max <= DECREMENTER_DEFAULT_MAX)
-> +		return;
-> +
-> +	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
-> +
-> +	if (!large_dec_on()) {
-> +		decrementer_max = DECREMENTER_DEFAULT_MAX;
-> +
-> +		pr_warn("time_init: Failed to enable LD mode on CPU %d\n",
-
-I think stating "Failed to enable Large Decrementer" might be easier to understand in the logs
-
-> +			smp_processor_id());
-> +	}
-> +}
-> +
-> +static void __init set_decrementer_max(void)
-> +{
-> +	struct device_node *cpu;
-> +	const __be32 *fp;
-> +	u64 bits = 32;
-> +
-> +	/* dt node exists? */
-> +	cpu = of_find_node_by_type(NULL, "cpu");
-> +	if (cpu)
-> +		fp = of_get_property(cpu, "ibm,dec-bits", NULL);
-> +
-> +	if (cpu && fp) {
-> +		bits = of_read_number(fp, 1);
-> +
-> +		/* clamp to sane values */
-> +		if (bits > 64)
-> +			bits = 64;
-> +		if (bits < 32)
-> +			bits = 32;
-> +
-
-Shouldn't we warn about a firmware bug if we wrap the bits for > 64 or < 32?
-
-> +		/*
-> +		 * Firmware says we support large dec but this cpu doesn't we
-> +		 * should warn about it. We can still limp along with default
-> +		 * 32 bit dec, but something is broken.
-> +		 */
-> +		if (!large_dec_supp()) {
-> +			WARN_ON(bits > 32);
-> +			bits = 32;
-> +		}
-> +
-> +		decrementer_max = (1ul << (bits - 1)) - 1;
-> +	}
-> +
-> +	pr_info("time_init: %llu bit decrementer (max: %llx)\n",
-> +		bits, decrementer_max);
-> +}
-> +
->  static void __init init_decrementer_clockevent(void)
->  {
->  	int cpu = smp_processor_id();
-> @@ -898,7 +966,7 @@ static void __init init_decrementer_clockevent(void)
->  	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
->  
->  	decrementer_clockevent.max_delta_ns =
-> -		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
-> +		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
->  	decrementer_clockevent.min_delta_ns =
->  		clockevent_delta2ns(2, &decrementer_clockevent);
->  
-> @@ -907,6 +975,9 @@ static void __init init_decrementer_clockevent(void)
->  
->  void secondary_cpu_time_init(void)
->  {
-> +	/* Enable the large decrementer (if we need to) */
-> +	enable_large_decrementer();
-> +
->  	/* Start the decrementer on CPUs that have manual control
->  	 * such as BookE
->  	 */
-> @@ -972,6 +1043,10 @@ void __init time_init(void)
->  	vdso_data->tb_update_count = 0;
->  	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
->  
-> +	/* initialise and enable the large decrementer (if we have one) */
-> +	set_decrementer_max();
-> +	enable_large_decrementer();
-> +
->  	/* Start the decrementer on CPUs that have manual control
->  	 * such as BookE
->  	 */
-> 
+diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
+index a2aa655f56c4..c70bb41800f1 100644
+--- a/drivers/tty/serial/amba-pl011.c
++++ b/drivers/tty/serial/amba-pl011.c
+@@ -2553,11 +2553,17 @@ static int sbsa_uart_probe(struct platform_device *pdev)
+ 	if (!uap)
+ 		return -ENOMEM;
+ 
++	ret = platform_get_irq(pdev, 0);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "cannot obtain irq\n");
++		return ret;
++	}
++	uap->port.irq	= ret;
++
+ 	uap->reg_offset	= vendor_sbsa.reg_offset;
+ 	uap->vendor	= &vendor_sbsa;
+ 	uap->fifosize	= 32;
+ 	uap->port.iotype = vendor_sbsa.access_32b ? UPIO_MEM32 : UPIO_MEM;
+-	uap->port.irq	= platform_get_irq(pdev, 0);
+ 	uap->port.ops	= &sbsa_uart_pops;
+ 	uap->fixed_baud = baudrate;
+ 
+diff --git a/drivers/tty/serial/fsl_lpuart.c b/drivers/tty/serial/fsl_lpuart.c
+index 3d790033744e..7f95f782a485 100644
+--- a/drivers/tty/serial/fsl_lpuart.c
++++ b/drivers/tty/serial/fsl_lpuart.c
+@@ -1830,7 +1830,13 @@ static int lpuart_probe(struct platform_device *pdev)
+ 	sport->port.dev = &pdev->dev;
+ 	sport->port.type = PORT_LPUART;
+ 	sport->port.iotype = UPIO_MEM;
+-	sport->port.irq = platform_get_irq(pdev, 0);
++	ret = platform_get_irq(pdev, 0);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "cannot obtain irq\n");
++		return ret;
++	}
++	sport->port.irq = ret;
++
+ 	if (sport->lpuart32)
+ 		sport->port.ops = &lpuart32_pops;
+ 	else
+diff --git a/drivers/tty/serial/pmac_zilog.c b/drivers/tty/serial/pmac_zilog.c
+index e156e39d620c..b24b0556f5a8 100644
+--- a/drivers/tty/serial/pmac_zilog.c
++++ b/drivers/tty/serial/pmac_zilog.c
+@@ -1720,7 +1720,7 @@ static int __init pmz_init_port(struct uart_pmac_port *uap)
+ 
+ 	r_ports = platform_get_resource(uap->pdev, IORESOURCE_MEM, 0);
+ 	irq = platform_get_irq(uap->pdev, 0);
+-	if (!r_ports || !irq)
++	if (!r_ports || irq <= 0)
+ 		return -ENODEV;
+ 
+ 	uap->port.mapbase  = r_ports->start;
+diff --git a/drivers/tty/serial/serial-tegra.c b/drivers/tty/serial/serial-tegra.c
+index bee1e5867426..4c4674b51db9 100644
+--- a/drivers/tty/serial/serial-tegra.c
++++ b/drivers/tty/serial/serial-tegra.c
+@@ -1310,7 +1310,12 @@ static int tegra_uart_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	u->iotype = UPIO_MEM32;
+-	u->irq = platform_get_irq(pdev, 0);
++	ret = platform_get_irq(pdev, 0);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Couldn't get IRQ\n");
++		return ret;
++	}
++	u->irq = ret;
+ 	u->regshift = 2;
+ 	ret = uart_add_one_port(&tegra_uart_driver, u);
+ 	if (ret < 0) {
+-- 
+2.8.2
