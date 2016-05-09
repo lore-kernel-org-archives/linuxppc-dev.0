@@ -1,26 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3HTc2bX8zDq9s
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 19:41:56 +1000 (AEST)
-Message-ID: <1462786915.5531.3.camel@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc: Update of_remove_property() call sites to
- remove null checking
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3Hyv08MZzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 20:03:51 +1000 (AEST)
+In-Reply-To: <1456446386-28619-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>, Tyrel Datwyler
- <tyreld@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: grant.likely@linaro.org, frowand.list@gmail.com, robh+dt@kernel.org,
- paulus@samba.org
-Date: Mon, 09 May 2016 19:41:55 +1000
-In-Reply-To: <572C08DB.9000109@gmail.com>
-References: <1461821695-19204-1-git-send-email-sjitindarsingh@gmail.com>
- <1461821695-19204-2-git-send-email-sjitindarsingh@gmail.com>
- <57292702.5070507@linux.vnet.ibm.com>
- <1462431031.12473.3.camel@ellerman.id.au> <572C08DB.9000109@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [1/2] powerpc/mm: Remove duplicated check in do_page_fault()
+Message-Id: <3r3Hyt6KL9z9t0r@ozlabs.org>
+Date: Mon,  9 May 2016 20:03:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-05-06 at 13:00 +1000, Suraj Jitindar Singh wrote:
-> On 05/05/16 16:50, Michael Ellerman wrote:
-> > On Tue, 2016-05-03 at 15:32 -0700, Tyrel Datwyler wrote:
-> > > On 04/27/2016 10:34 PM, Suraj Jitindar Singh wrote:
-> > > > diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> > > > index ceb18d3..a560a98 100644
-> > > > --- a/arch/powerpc/platforms/pseries/mobility.c
-> > > > +++ b/arch/powerpc/platforms/pseries/mobility.c
-> > > > @@ -191,8 +191,8 @@ static int update_dt_node(__be32 phandle, s32 scope)
-> > > >  				break;
-> > > >  
-> > > >  			case 0x80000000:
-> > > > -				prop = of_find_property(dn, prop_name, NULL);
-> > > > -				of_remove_property(dn, prop);
-> > > > +				of_remove_property(dn, of_find_property(dn,
-> > > > +							prop_name, NULL));
-> > > >  				prop = NULL;
-> > > >  				break;
-> > > > 
-> > > You haven't removed a NULL check here, as suggested by the changelog,
-> > > but instead made a cosmetic change to the code that still leaves behind
-> > > a now unnecessary "prop = NULL;" to bit rot.
+On Fri, 2016-26-02 at 00:26:25 UTC, Gavin Shan wrote:
+> When the page fault happened in user space, we need check it's
+> caused by stack frame pointer update instruction and update
+> local variable @flag with FAULT_FLAG_USER. Currently, the code
+> has two separate check for the same condition. That's unnecessary.
+> 
+> This removes one of the duplicated check. No functinal changes
+> introduced.
 
-> > Yeah I think you're right. Though it's not very clear how prop is used in that
-> > function.
->
-> I didn't delete the prop = NULL; initially as I didn't fully understand
-> how it was used in the rest of the function and the effect of deleting
-> it.
+It's possible though that store_updates_sp() changes regs, and causes
+user_mode(regs) to change, which would mean the second check is necessary.
+That's not true with the current code, but you should mention that you confirmed
+that in the change log.
 
-Yeah, it's pretty convoluted. I don't think you can actually prove it's safe to
-remove the prop = NULL for arbitrary inputs.
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index a67c6d7..935f386 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -294,11 +294,10 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+>  	 * can result in fault, which will cause a deadlock when called with
+>  	 * mmap_sem held
+>  	 */
+> -	if (user_mode(regs))
+> -		store_update_sp = store_updates_sp(regs);
+> -
+> -	if (user_mode(regs))
+> +	if (user_mode(regs)) {
+>  		flags |= FAULT_FLAG_USER;
+> +		store_update_sp = store_updates_sp(regs);
+> +	}
+
+It doesn't really matter in this case, but it would be better to keep the
+ordering of the two statements the same as before.
 
 cheers
