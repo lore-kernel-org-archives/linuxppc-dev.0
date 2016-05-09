@@ -1,22 +1,32 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
+Return-Path: <htejun@gmail.com>
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r33K00VqwzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 10:33:39 +1000 (AEST)
-Received: by mail-pa0-x236.google.com with SMTP id iv1so65927788pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 May 2016 17:33:39 -0700 (PDT)
-Subject: Re: powerpc: Add out of bounds check to crash_shutdown_unregister()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <3qzTWq5vWxz9t4k@ozlabs.org>
-Cc: paulus@samba.org
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Message-ID: <572FDADC.2070605@gmail.com>
-Date: Mon, 9 May 2016 10:33:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r346w05hlzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 11:10:00 +1000 (AEST)
+Received: by mail-yw0-x242.google.com with SMTP id u62so22192606ywe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 May 2016 18:09:59 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Sun, 8 May 2016 21:09:52 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linux-ide@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+ Julian Margetson <runaway@candw.ms>, Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v2 00/23] ata: sata_dwc_460ex: make it working again
+Message-ID: <20160509010952.GN4775@htj.duckdns.org>
+References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <CAHp75VeeosHAxhXnWY7rc5o969TDyHPRWGdV7kh1_uR+TBa=aA@mail.gmail.com>
+ <20160508200008.GM4775@htj.duckdns.org>
 MIME-Version: 1.0
-In-Reply-To: <3qzTWq5vWxz9t4k@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160508200008.GM4775@htj.duckdns.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sun, May 08, 2016 at 04:00:08PM -0400, Tejun Heo wrote:
+> Hello, Andy.
+> 
+> On Wed, May 04, 2016 at 03:22:51PM +0300, Andy Shevchenko wrote:
+> > Tejun, since Vinod applied all necessary patches into his tree, the
+> > series now has just a dependency to whatever branch / tag he marks for
+> > it.
+> > Do we have a chance to see the SATA series be applied in your tree?
+> 
+> Applied 1-22 to libata/for-4.7.  There was a couple trivial conflicts
+> which I resolved while applying but it'd be great if you can check
+> whether everything looks okay.
+> 
+>  https://git.kernel.org/cgit/linux/kernel/git/tj/libata.git/log/?h=for-4.7
 
+Oops, build failure.  Reverted for now.
 
-On 03/05/16 15:00, Michael Ellerman wrote:
-> On Thu, 2016-28-04 at 06:17:45 UTC, Suraj Jitindar Singh wrote:
->> When unregistering a crash_shutdown_handle in the function
->> crash_shutdown_unregister() the other handles are shifted down in the
->> array to replace the unregistered handle. The for loop assumes that the
->> last element in the array is null and uses this as the stop condition,
->> however in the case that the last element is not null there is no check
->> to ensure that an out of bounds access is not performed.
-> But AFAICS the code ensures that entry will always be NULL. So there's no bug at
-> the moment.
->
->> Add a check to terminate the shift operation when CRASH_HANDLER_MAX is
->> reached in order to protect against out of bounds accesses.
-> Doing it this way is more robust though. The chance of the NULL terminator being
-> corrupted is definitely higher than the code being corrupted, and if the latter
-> happens we're probably toast anyway.
->
->> diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
->> index 2bb252c..6b267af 100644
->> --- a/arch/powerpc/kernel/crash.c
->> +++ b/arch/powerpc/kernel/crash.c
->> @@ -288,7 +288,7 @@ int crash_shutdown_unregister(crash_shutdown_t handler)
->>  		rc = 1;
->>  	} else {
->>  		/* Shift handles down */
->> -		for (; crash_shutdown_handles[i]; i++)
->> +		for (; crash_shutdown_handles[i] && i < CRASH_HANDLER_MAX; i++)
->>  			crash_shutdown_handles[i] =
->>  				crash_shutdown_handles[i+1];
->>  		rc = 0;
-> So if I'm reading it right, with this change we have removed all the code that
-> uses the NULL-terminated property of the list.
->
-> If so we should also shrink the array to be only CRASH_HANDLER_MAX in size, and
-> remove any references to it being NULL terminated.
->
-> cheers
+Thanks.
 
-Thanks Michael, will change this to reflect that the list is no longer assumed to be null terminated.
+-- 
+tejun
