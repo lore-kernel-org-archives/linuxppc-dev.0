@@ -1,48 +1,40 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r32Q21ZxjzDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 09:52:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r336H4cGmzDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 10:24:23 +1000 (AEST)
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 9 May 2016 09:52:56 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Mon, 9 May 2016 10:24:22 +1000
 Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D78A32CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 09:52:53 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 279EB2CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 10:24:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u48NqjUw4915596
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2016 09:52:53 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u48NqKT5022395
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2016 09:52:21 +1000
-Date: Mon, 9 May 2016 09:51:25 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Bjorn Helgaas <bhelgaas@google.com>, dja@axtens.net,
- Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH v9 22/22] PCI/hotplug: PowerPC PowerNV PCI hotplug driver
-Message-ID: <20160508235125.GA7692@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1462281773-26438-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1462281773-26438-23-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqLAYk2S80LNvF2z2ZzPfCWAbpz2LNKK-04OgSkabjWbxQ@mail.gmail.com>
- <20160506002834.GA5509@gwshan>
- <CAL_JsqKQNyL7g71PL9unwqS9834A=D41X9mx5Zr0iX=NapWLJw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_JsqKQNyL7g71PL9unwqS9834A=D41X9mx5Zr0iX=NapWLJw@mail.gmail.com>
+ u490OCKi20905986
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2016 10:24:20 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u490Nlhb013887
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 May 2016 10:23:47 +1000
+Message-ID: <1462753402.20290.95.camel@au1.ibm.com>
+Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
+ 4.3.0-rc4
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Christian Lamparter <chunkeey@googlemail.com>
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, a.seppala@gmail.com,
+ johnyoun@synopsys.com, gregkh@linuxfoundation.org
+Date: Mon, 09 May 2016 10:23:22 +1000
+In-Reply-To: <1908894.Nkk1LXQkFm@debian64>
+References: <4231696.iL6nGs74X8@debian64>
+ <1462704055.20290.93.camel@au1.ibm.com> <1908894.Nkk1LXQkFm@debian64>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,108 +44,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 06, 2016 at 08:12:42AM -0500, Rob Herring wrote:
->On Thu, May 5, 2016 at 7:28 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->> On Thu, May 05, 2016 at 12:04:49PM -0500, Rob Herring wrote:
->>>On Tue, May 3, 2016 at 8:22 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
->>>> This adds standalone driver to support PCI hotplug for PowerPC PowerNV
->>>> platform that runs on top of skiboot firmware. The firmware identifies
->>>> hotpluggable slots and marked their device tree node with proper
->>>> "ibm,slot-pluggable" and "ibm,reset-by-firmware". The driver scans
->>>> device tree nodes to create/register PCI hotplug slot accordingly.
->>>>
->>>> The PCI slots are organized in fashion of tree, which means one
->>>> PCI slot might have parent PCI slot and parent PCI slot possibly
->>>> contains multiple child PCI slots. At the plugging time, the parent
->>>> PCI slot is populated before its children. The child PCI slots are
->>>> removed before their parent PCI slot can be removed from the system.
->>>>
->>>> If the skiboot firmware doesn't support slot status retrieval, the PCI
->>>> slot device node shouldn't have property "ibm,reset-by-firmware". In
->>>> that case, none of valid PCI slots will be detected from device tree.
->>>> The skiboot firmware doesn't export the capability to access attention
->>>> LEDs yet and it's something for TBD.
->>>>
->>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->>>
->>>[...]
->>>
->>>> +static void pnv_php_handle_poweron(struct pnv_php_slot *php_slot)
->>>> +{
->>>> +       void *fdt, *fdt1, *dt;
->>>> +       int confirm = PNV_PHP_POWER_CONFIRMED_SUCCESS;
->>>> +       int ret;
->>>> +
->>>> +       /* We don't know the FDT blob size. We try to get it through
->>>> +        * maximal memory chunk and then copy it to another chunk that
->>>> +        * fits the real size.
->>>> +        */
->>>> +       fdt1 = kzalloc(0x10000, GFP_KERNEL);
->>>> +       if (!fdt1)
->>>> +               goto error;
->>>> +
->>>> +       ret = pnv_pci_get_device_tree(php_slot->dn->phandle, fdt1, 0x10000);
->>>> +       if (ret)
->>>> +               goto free_fdt1;
->>>> +
->>>> +       fdt = kzalloc(fdt_totalsize(fdt1), GFP_KERNEL);
->>>> +       if (!fdt)
->>>> +               goto free_fdt1;
->>>> +
->>>> +       /* Unflatten device tree blob */
->>>> +       memcpy(fdt, fdt1, fdt_totalsize(fdt1));
->>>
->>>This is wrong. If the size is greater than 64K, then you will be
->>>overrunning the fdt1 buffer. You need to fetch the FDT again if it is
->>>bigger than 64KB.
->>>
->>
->> Thanks for review, Rob. Sorry that I don't see how it's a problem. An
->> errcode is returned from pnv_pci_get_device_tree() if the FDT blob
->> size is greater than 64K. In this case, memcpy() won't be triggered.
->> pnv_pci_get_device_tree() relies on firmware implementation which
->> avoids overrunning the buffer.
->
->Okay, I missed that pnv_pci_get_device_tree would error out.
->
->> On the other hand, it would be reasonable to retry retriving the
->> FDT blob if 64K buffer isn't enough. Also, kzalloc() can be replaced
->> with alloc_pages() as 64K is the default page size on PPC64. I will
->> have something like below until some one has more concerns. As the
->> size of the allocated buffer will be greater than the real FDT blob
->> size, some memory (not too much) is wasted. I guess it should be ok.
->>
->>         struct page *page;
->>         void *fdt;
->>         unsigned int order;
->>         int ret;
->>
->>         for (order = 0; order < MAX_ORDER; order++) {
->>                 page = alloc_pages(GFP_KERNEL, order);
->>                 if (page) {
->>                         fdt = page_address(page);
->>                         ret = pnv_pci_get_device_tree(php_slot->dn->phandle,
->>                                                       fdt, (1 << order) * PAGE_SIZE);
->>                         if (ret) {
->>                                 dev_dbg(&php_slot->pdev.dev, "Error %d getting device tree (%d)\n",
->>                                         ret, order);
->>                                 free_pages(fdt, order);
->>                                 continue;
->>                         }
->>                 }
->>         }
->
->I would allocate a minimal buffer to read the header, get the actual
->size, then allocate a new buffer. There's no point in looping. If you
->know 64KB is the biggest size you should ever see, then how you had it
->is reasonable, too.
->
+On Sun, 2016-05-08 at 13:44 +0200, Christian Lamparter wrote:
+> On Sunday, May 08, 2016 08:40:55 PM Benjamin Herrenschmidt wrote:
+> > 
+> > On Sun, 2016-05-08 at 00:54 +0200, Christian Lamparter via Linuxppc-dev 
+> > wrote:
+> > > 
+> > > I've been looking in getting the MyBook Live Duo's USB OTG port
+> > > to function. The SoC is a APM82181. Which has a PowerPC 464 core
+> > > and related to the supported canyonlands architecture in
+> > > arch/powerpc/.
+> > > 
+> > > Currently in -next the dwc2 module doesn't load: 
+> > Smells like the APM implementation is little endian. You might need to
+> > use a flag to indicate what endian to use instead and set it
+> > appropriately based on some DT properties.
+> I tried. As per common-properties[0], I added little-endian; but it has no
+> effect. I looked in dwc2_driver_probe and found no way of specifying the
+> endian of the device. It all comes down to the dwc2_readl & dwc2_writel
+> accessors. These - sadly - have been hardwired to use __raw_readl and
+> __raw_writel. So, it's always "native-endian". While common-properties
+> says little-endian should be preferred.
 
-The interface pnv_pci_get_device_tree() returns header and meta-data
-in one shoot as it was designed. Also, 64KB here is good enough as I
-can see. I will keep the code as-is. Thanks a lot for looking into
-details, Rob.
+Right, I meant, you should produce a patch adding a runtime test inside
+those functions based on a device-tree property, a bit like we do for
+some of the HCDs like OHCI, EHCI etc...
 
-Thanks,
-Gavin
+Cheers,
+Ben.
+
+> > 
+> > > 
+> > > dwc2 4bff80000.usbotg: dwc2_core_reset() HANG! AHB Idle GRSTCTL=80
+> > > dwc2 4bff80000.usbotg: Bad value for GSNPSID: 0x0a29544f
+> > > 
+> > > Looking at the Bad GSNPSID value: 0x0a29544f. It is obvious that
+> > > this is an endian problem. git finds this patch:
+> > > 
+> > > commit 95c8bc3609440af5e4a4f760b8680caea7424396
+> > > Author: Antti Seppälä <a.seppala@gmail.com>
+> > > Date:   Thu Aug 20 21:41:07 2015 +0300
+> > > 
+> > >     usb: dwc2: Use platform endianness when accessing registers
+> > > 
+> > >     This patch is necessary to access dwc2 registers correctly on
+> > > big-endian
+> > >     systems such as the mips based SoCs made by Lantiq. Then dwc2 can
+> > > be
+> > >     used to replace ifx-hcd driver for Lantiq platforms found e.g. in
+> > >     OpenWrt.
+> > >     
+> > >     The patch was autogenerated with the following commands:
+> > >     $EDITOR core.h
+> > >     sed -i "s/\/dwc2_readl/g" *.c hcd.h hw.h
+> > >     sed -i "s/\/dwc2_writel/g" *.c hcd.h hw.h
+> > >     
+> > >     Some files were then hand-edited to fix checkpatch.pl warnings
+> > > about
+> > >     too long lines.
+> > > 
+> > > which unfortunately, broke the USB-OTG port on the MyBook Live Duo.
+> > > Reverting to the readl / writel:
+> > > 
+> > > --- 
+> > > diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
+> > > index 3c58d63..c021c1f 100644
+> > > --- a/drivers/usb/dwc2/core.h
+> > > +++ b/drivers/usb/dwc2/core.h
+> > > @@ -66,7 +66,7 @@
+> > >  
+> > >  static inline u32 dwc2_readl(const void __iomem *addr)
+> > >  {
+> > > -	u32 value = __raw_readl(addr);
+> > > +	u32 value = readl(addr);
+> > >  
+> > >  	/* In order to preserve endianness __raw_* operation is
+> > > used. Therefore
+> > >  	 * a barrier is needed to ensure IO access is not re-ordered 
+> > > across
+> > > @@ -78,7 +78,7 @@ static inline u32 dwc2_readl(const void __iomem
+> > > *addr)
+> > >  
+> > >  static inline void dwc2_writel(u32 value, void __iomem *addr)
+> > >  {
+> > > -	__raw_writel(value, addr);
+> > > +	writel(value, addr);
+> > >  
+> > >  	/*
+> > >  	 * In order to preserve endianness __raw_* operation is
+> > > used. Therefore
+> > > 
+> > > ---
+> > > 
+> > > restores the dwc-otg port to full working order:
+> > > dwc2 4bff80000.usbotg: Specified GNPTXFDEP=1024 > 256
+> > > dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
+> > > dwc2 4bff80000.usbotg: DWC OTG Controller
+> > > dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number 1
+> > > dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
+> > > hub 1-0:1.0: USB hub found
+> > > hub 1-0:1.0: 1 port detected
+> > > root@mbl:~# usb 1-1: new high-speed USB device number 2 using dwc2
+> > > 
+> > > So, what to do?
+>      ^^^
+> 
+> Regards,
+> Christian
+> 
+> [0] 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
