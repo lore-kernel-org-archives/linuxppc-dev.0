@@ -1,29 +1,40 @@
-Return-Path: <mans@mansr.com>
-Received: from unicorn.mansr.com (unicorn.mansr.com [81.2.72.234])
- by lists.ozlabs.org (Postfix) with ESMTP id 3r3GsT2RPhzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 19:14:04 +1000 (AEST)
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-ide@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>,
- "open list\:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christian Lamparter <chunkeey@googlemail.com>,
- Julian Margetson <runaway@candw.ms>, Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v2 00/23] ata: sata_dwc_460ex: make it working again
-References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <CAHp75VeeosHAxhXnWY7rc5o969TDyHPRWGdV7kh1_uR+TBa=aA@mail.gmail.com>
- <20160508200008.GM4775@htj.duckdns.org>
- <20160509010952.GN4775@htj.duckdns.org>
- <CAHp75VeMkZOZgGj2b3tHw7h7V42qM9dCz1qWs8nQENBMGWuZHQ@mail.gmail.com>
-Date: Mon, 09 May 2016 10:13:59 +0100
-In-Reply-To: <CAHp75VeMkZOZgGj2b3tHw7h7V42qM9dCz1qWs8nQENBMGWuZHQ@mail.gmail.com>
- (Andy Shevchenko's message of "Mon, 9 May 2016 12:07:39 +0300")
-Message-ID: <yw1xmvnziofc.fsf@unicorn.mansr.com>
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3HMw06n4zDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 May 2016 19:37:00 +1000 (AEST)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3r3HMv5CKKz9s9W
+ for <linuxppc-dev@ozlabs.org>; Mon,  9 May 2016 19:36:59 +1000 (AEST)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Mon, 9 May 2016 19:36:58 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7DCBE3578052
+ for <linuxppc-dev@ozlabs.org>; Mon,  9 May 2016 19:36:56 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u499amjU11731226
+ for <linuxppc-dev@ozlabs.org>; Mon, 9 May 2016 19:36:56 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u499aOJ4019010
+ for <linuxppc-dev@ozlabs.org>; Mon, 9 May 2016 19:36:24 +1000
+Subject: Re: [3/3] powerpc/fadump: add support for fadump_nr_cpus= parameter
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <3r1wGk6H7Yz9t3k@ozlabs.org>
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Message-ID: <573059FE.7080706@linux.vnet.ibm.com>
+Date: Mon, 9 May 2016 15:05:58 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3r1wGk6H7Yz9t3k@ozlabs.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +44,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andy Shevchenko <andy.shevchenko@gmail.com> writes:
 
-> On Mon, May 9, 2016 at 4:09 AM, Tejun Heo <tj@kernel.org> wrote:
->> On Sun, May 08, 2016 at 04:00:08PM -0400, Tejun Heo wrote:
->>> Hello, Andy.
->>>
->>> On Wed, May 04, 2016 at 03:22:51PM +0300, Andy Shevchenko wrote:
->>> > Tejun, since Vinod applied all necessary patches into his tree, the
->>> > series now has just a dependency to whatever branch / tag he marks for
->>> > it.
->>> > Do we have a chance to see the SATA series be applied in your tree?
->>>
->>> Applied 1-22 to libata/for-4.7.  There was a couple trivial conflicts
->>> which I resolved while applying but it'd be great if you can check
->>> whether everything looks okay.
->>>
->>>  https://git.kernel.org/cgit/linux/kernel/git/tj/libata.git/log/?h=3Dfo=
-r-4.7
->>
->> Oops, build failure.  Reverted for now.
->
-> I suppose you have to pull material from Vinod.
 
-The failure the build bot reported is due to the DMA patches not being
-in the tree.
+On 05/07/2016 09:42 AM, Michael Ellerman wrote:
+> On Fri, 2016-06-05 at 11:51:08 UTC, Hari Bathini wrote:
+>> Kernel parameter 'nr_cpus' can be used to limit the maximum number
+>> of processors that an SMP kernel could support. This patch extends
+>> this to fadump by introducing 'fadump_nr_cpus' parameter that can
+>> help in booting fadump kernel on a lower memory footprint.
+> Is there really no other way to do this? I really hate adding new, single use
+> only command line parameters.
 
---=20
-M=E5ns Rullg=E5rd
+Hmmm.. only alternative I can think about is enforcing a certain nr_cpu_ids
+value whenever fadump is active, but that doesn't sound right..
+Any suggestions?
+
+Thanks
+Hari
+
+> cheers
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
