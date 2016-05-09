@@ -1,24 +1,33 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3RFk3VNwzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 01:32:10 +1000 (AEST)
-Received: by mail-pa0-x22a.google.com with SMTP id xk12so74295938pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 May 2016 08:32:10 -0700 (PDT)
-Date: Mon, 9 May 2016 21:02:04 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH-next v2 0/2] cpufreq: powernv: Fixes for Global pstate
- management
-Message-ID: <20160509153204.GA21661@vireshk-i7>
-References: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3RTw5HcgzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 01:42:43 +1000 (AEST)
+Date: Mon, 9 May 2016 17:42:41 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a
+ per-task consistency model
+In-Reply-To: <20160504172517.tdatoj2nlkqwyd4g@treble>
+Message-ID: <alpine.LNX.2.00.1605091729450.22758@pobox.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160504123940.GR2749@pathway.suse.cz>
+ <20160504141205.GS2749@pathway.suse.cz>
+ <20160504172517.tdatoj2nlkqwyd4g@treble>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03-05-16, 20:49, Akshay Adiga wrote:
-> Fixes are based on patch https://patchwork.ozlabs.org/patch/612058/ which
-> is in Rafael's linux-next.
-> 
-> - Patch [1] fixes WARN_ON in powernv_target_index()
-> - Patch [2] Deleting any pending timer to saves an unnecessary irq call
->  in powernv_target_index()
-> 
-> Akshay Adiga (2):
->   cpufreq: powernv: Move smp_call_function_any() out of irq safe block
->   cpufreq: powernv: del_timer_sync when global and local pstate are
->     equal
+On Wed, 4 May 2016, Josh Poimboeuf wrote:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> On Wed, May 04, 2016 at 04:12:05PM +0200, Petr Mladek wrote:
+> > On Wed 2016-05-04 14:39:40, Petr Mladek wrote:
+> > > 		 *
+> > > 		 * Note that the task must never be migrated to the target
+> > > 		 * state when being inside this ftrace handler.
+> > > 		 */
+> > > 
+> > > We might want to move the second paragraph on top of the function.
+> > > It is a basic and important fact. It actually explains why the first
+> > > read barrier is not needed when the patch is being disabled.
+> > 
+> > I wrote the statement partly intuitively. I think that it is really
+> > somehow important. And I am slightly in doubts if we are on the safe side.
+> > 
+> > First, why is it important that the task->patch_state is not switched
+> > when being inside the ftrace handler?
+> > 
+> > If we are inside the handler, we are kind-of inside the called
+> > function. And the basic idea of this consistency model is that
+> > we must not switch a task when it is inside a patched function.
+> > This is normally decided by the stack.
+> > 
+> > The handler is a bit special because it is called right before the
+> > function. If it was the only patched function on the stack, it would
+> > not matter if we choose the new or old code. Both decisions would
+> > be safe for the moment.
+> > 
+> > The fun starts when the function calls another patched function.
+> > The other patched function must be called consistently with
+> > the first one. If the first function was from the patch,
+> > the other must be from the patch as well and vice versa.
+> > 
+> > This is why we must not switch task->patch_state dangerously
+> > when being inside the ftrace handler.
+> > 
+> > Now I am not sure if this condition is fulfilled. The ftrace handler
+> > is called as the very first instruction of the function. Does not
+> > it break the stack validity? Could we sleep inside the ftrace
+> > handler? Will the patched function be detected on the stack?
+> > 
+> > Or is my brain already too far in the fantasy world?
+> 
+> I think this isn't a possibility.
+> 
+> In today's code base, this can't happen because task patch states are
+> only switched when sleeping or when exiting the kernel.  The ftrace
+> handler doesn't sleep directly.
+> 
+> If it were preempted, it couldn't be switched there either because we
+> consider preempted stacks to be unreliable.
 
--- 
-viresh
+And IIRC ftrace handlers cannot sleep and are called with preemption 
+disabled as of now. The code is a bit obscure, but see 
+__ftrace_ops_list_func for example. This is "main" ftrace handler that 
+calls all the registered ones in case FTRACE_OPS_FL_DYNAMIC is set (which 
+is always true for handlers coming from modules) and CONFIG_PREEMPT is 
+on. If it is off and there is only one handler registered for a function 
+dynamic trampoline is used. See commit 12cce594fa8f ("ftrace/x86: Allow 
+!CONFIG_PREEMPT dynamic ops to use allocated trampolines"). I think 
+Steven had a plan to implement dynamic trampolines even for 
+CONFIG_PREEMPT case but he still hasn't done it. It should use RCU_TASKS 
+infrastructure.
+
+The reason for all the mess is that ftrace needs to be sure that no task 
+is in the handler when the handler/trampoline is freed.
+
+So we should be safe for now even from this side.
+
+Miroslav
