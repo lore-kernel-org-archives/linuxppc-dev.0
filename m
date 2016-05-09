@@ -1,41 +1,24 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3PHc5xZVzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 00:03:40 +1000 (AEST)
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 10 May 2016 00:03:38 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 629F62BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 00:03:36 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u49E3SDH50856176
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 00:03:36 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u49E33Wq018388
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 00:03:04 +1000
-Message-ID: <1462802528.20290.104.camel@au1.ibm.com>
-Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
- 4.3.0-rc4
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- linux-mips@linux-mips.org
-Cc: Christian Lamparter <chunkeey@googlemail.com>, linux-usb@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3QlV30t7zDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 01:09:24 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Felipe Balbi <felipe.balbi@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@au1.ibm.com, linux-mips@linux-mips.org,
+ Christian Lamparter <chunkeey@googlemail.com>, linux-usb@vger.kernel.org,
  johnyoun@synopsys.com, gregkh@linuxfoundation.org, a.seppala@gmail.com,
  linux-kernel@vger.kernel.org
-Date: Tue, 10 May 2016 00:02:08 +1000
-In-Reply-To: <4162108.qmr2GZCaDN@wuerfel>
-References: <4231696.iL6nGs74X8@debian64> <1908894.Nkk1LXQkFm@debian64>
- <1462753402.20290.95.camel@au1.ibm.com> <4162108.qmr2GZCaDN@wuerfel>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
+ 4.3.0-rc4
+Date: Mon, 09 May 2016 17:08:48 +0200
+Message-ID: <4908563.V9YuKsSrTJ@wuerfel>
+In-Reply-To: <8737prikg9.fsf@intel.com>
+References: <4231696.iL6nGs74X8@debian64> <4162108.qmr2GZCaDN@wuerfel>
+ <8737prikg9.fsf@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,110 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-05-09 at 12:36 +0200, Arnd Bergmann wrote:
-> 
-> I think we can simply make this set of accessors architecture-
-> dependent
-> (MIPS vs. the rest of the world) to revert ARM and PowerPC back to
-> the working version.
-
-Or use writel_be which mips seems to support...
-
-Really, make it a BE vs. LE device test is a much better solution.
-
-For now, since dwc2_readl() and writel don't take the device as an
-argument, you can make it a function of a compile time #define, or
-maybe a driver global, but the right way is really something like
-
-	if (device_is_be())
-		return readl_be(...)
-	else
-		return readl(...)
-
-With the device_is_be() being temporarily set to true for MIPS for
-example, and later, a second pass, add the device argument and make it
-a device-flag initialized from the probe routine, possibly from the DT.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Monday 09 May 2016 13:39:50 Felipe Balbi wrote:
+> Arnd Bergmann <arnd@arndb.de> writes:
+> > On Monday 09 May 2016 10:23:22 Benjamin Herrenschmidt wrote:
+> >> On Sun, 2016-05-08 at 13:44 +0200, Christian Lamparter wrote:
+> >
+> > The patch that caused the problem had multiple issues:
+> >
+> > - it broke big-endian ARM kernels: any machine that was working
+> >   correctly with a little-endian kernel is no longer using byteswaps
+> >   on big-endian kernels, which clearly breaks them.
+> > - On PowerPC the same thing must be true: if it was working before,
+> >   using big-endian kernels is now broken. Unlike ARM, 32-bit PowerPC
+> >   usually uses big-endian kernels, so they are likely all broken.
+> > - The barrier for dwc2_writel is on the wrong side of the __raw_writel(),
+> >   so the MMIO no longer synchronizes with DMA operations.
+> > - On architectures that require specific CPU instructions for MMIO
+> >   access, using the __raw_ variant may turn this into a pointer
+> >   dereference that does not have the same effect as the readl/writel.
+> >
+> > I think we can simply make this set of accessors architecture-dependent
+> > (MIPS vs. the rest of the world) to revert ARM and PowerPC back to
+> > the working version.
 > 
-> diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
-> index 3c58d633ce80..1f8ed149a40f 100644
-> --- a/drivers/usb/dwc2/core.h
-> +++ b/drivers/usb/dwc2/core.h
-> @@ -64,12 +64,24 @@
->  	DWC2_TRACE_SCHEDULER_VB(pr_fmt("%s: SCH: " fmt),		
-> \
->  				dev_name(hsotg->dev), ##__VA_ARGS__)
->  
-> +
-> +#ifdef CONFIG_MIPS
-> +/*
-> + * There are some MIPS machines that can run in either big-endian
-> + * or little-endian mode and that use the dwc2 register without
-> + * a byteswap in both ways.
-> + * Unlike other architectures, MIPS does not require a barrier
-> + * before the __raw_writel() to synchronize with DMA but does
-> + * require the barrier after the writel() to serialize a series
-> + * of writes. This set of operations was added specifically for
-> + * MIPS and should only be used there.
-> + */
->  static inline u32 dwc2_readl(const void __iomem *addr)
->  {
->  	u32 value = __raw_readl(addr);
->  
-> -	/* In order to preserve endianness __raw_* operation is
-> used. Therefore
-> -	 * a barrier is needed to ensure IO access is not re-ordered 
-> across
-> +	/* in order to preserve endianness __raw_* operation is
-> used. therefore
-> +	 * a barrier is needed to ensure io access is not re-ordered 
-> across
->  	 * reads or writes
->  	 */
->  	mb();
-> @@ -81,15 +93,32 @@ static inline void dwc2_writel(u32 value, void
-> __iomem *addr)
->  	__raw_writel(value, addr);
->  
->  	/*
-> -	 * In order to preserve endianness __raw_* operation is
-> used. Therefore
-> -	 * a barrier is needed to ensure IO access is not re-ordered 
-> across
-> +	 * in order to preserve endianness __raw_* operation is
-> used. therefore
-> +	 * a barrier is needed to ensure io access is not re-ordered 
-> across
->  	 * reads or writes
->  	 */
->  	mb();
-> -#ifdef DWC2_LOG_WRITES
-> -	pr_info("INFO:: wrote %08x to %p\n", value, addr);
-> +#ifdef dwc2_log_writes
-> +	pr_info("info:: wrote %08x to %p\n", value, addr);
->  #endif
->  }
-> +#else
-> +/* Normal architectures just use readl/write */
-> +static inline u32 dwc2_readl(const void __iomem *addr)
-> +{
-> +	u32 value = readl(addr);
-> +	return value;
-> +}
-> +
-> +static inline void dwc2_writel(u32 value, void __iomem *addr)
-> +{
-> +	writel(value, addr);
-> +
-> +#ifdef dwc2_log_writes
-> +	pr_info("info:: wrote %08x to %p\n", value, addr);
-> +#endif
-> +}
-> +#endif
->  
->  /* Maximum number of Endpoints/HostChannels */
->  #define MAX_EPS_CHANNELS	16
+> and patch all drivers similarly? Shouldn't arch/mips itself deal with it
+> and hide it from drivers ?
+> 
+
+Unfortunately, I don't see any way this could be done in MIPS specific
+code: There is typically a byteswap between the internal bus and the PCI
+bus on big-endian MIPS systems, so the PCI MMIO ends up being little-endian,
+which matches the expected behavior of readl/writel. However, drivers
+for non-PCI devices often use the same readl/writel accessors because
+that is how it's done on ARMv6/ARMv7.
+
+Doing it hardcoded by architecture is just the simplest way to deal
+with it, working on the assumption that nothing actually needs the
+runtime detection that Ben suggested. Detecting the endianess of the
+device is probably the best future-proof solution, but it's also
+considerably more work to do in the driver, and comes with a
+tiny runtime overhead.
+
+	Arnd
