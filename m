@@ -1,33 +1,35 @@
-Return-Path: <mbenes@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-yw0-x231.google.com (mail-yw0-x231.google.com
+ [IPv6:2607:f8b0:4002:c05::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3RTw5HcgzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 01:42:43 +1000 (AEST)
-Date: Mon, 9 May 2016 17:42:41 +0200 (CEST)
-From: Miroslav Benes <mbenes@suse.cz>
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-cc: Petr Mladek <pmladek@suse.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: barriers: was: [RFC PATCH v2 17/18] livepatch: change to a
- per-task consistency model
-In-Reply-To: <20160504172517.tdatoj2nlkqwyd4g@treble>
-Message-ID: <alpine.LNX.2.00.1605091729450.22758@pobox.suse.cz>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160504123940.GR2749@pathway.suse.cz>
- <20160504141205.GS2749@pathway.suse.cz>
- <20160504172517.tdatoj2nlkqwyd4g@treble>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3X043BkpzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 05:05:40 +1000 (AEST)
+Received: by mail-yw0-x231.google.com with SMTP id o66so296011970ywc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 May 2016 12:05:40 -0700 (PDT)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Mon, 9 May 2016 15:05:36 -0400
+From: Tejun Heo <tj@kernel.org>
+To: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linux-ide@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Julian Margetson <runaway@candw.ms>, Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v2 00/23] ata: sata_dwc_460ex: make it working again
+Message-ID: <20160509190536.GK7110@mtj.duckdns.org>
+References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <CAHp75VeeosHAxhXnWY7rc5o969TDyHPRWGdV7kh1_uR+TBa=aA@mail.gmail.com>
+ <20160508200008.GM4775@htj.duckdns.org>
+ <20160509010952.GN4775@htj.duckdns.org>
+ <CAHp75VeMkZOZgGj2b3tHw7h7V42qM9dCz1qWs8nQENBMGWuZHQ@mail.gmail.com>
+ <yw1xmvnziofc.fsf@unicorn.mansr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <yw1xmvnziofc.fsf@unicorn.mansr.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,74 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 4 May 2016, Josh Poimboeuf wrote:
-
-> On Wed, May 04, 2016 at 04:12:05PM +0200, Petr Mladek wrote:
-> > On Wed 2016-05-04 14:39:40, Petr Mladek wrote:
-> > > 		 *
-> > > 		 * Note that the task must never be migrated to the target
-> > > 		 * state when being inside this ftrace handler.
-> > > 		 */
-> > > 
-> > > We might want to move the second paragraph on top of the function.
-> > > It is a basic and important fact. It actually explains why the first
-> > > read barrier is not needed when the patch is being disabled.
-> > 
-> > I wrote the statement partly intuitively. I think that it is really
-> > somehow important. And I am slightly in doubts if we are on the safe side.
-> > 
-> > First, why is it important that the task->patch_state is not switched
-> > when being inside the ftrace handler?
-> > 
-> > If we are inside the handler, we are kind-of inside the called
-> > function. And the basic idea of this consistency model is that
-> > we must not switch a task when it is inside a patched function.
-> > This is normally decided by the stack.
-> > 
-> > The handler is a bit special because it is called right before the
-> > function. If it was the only patched function on the stack, it would
-> > not matter if we choose the new or old code. Both decisions would
-> > be safe for the moment.
-> > 
-> > The fun starts when the function calls another patched function.
-> > The other patched function must be called consistently with
-> > the first one. If the first function was from the patch,
-> > the other must be from the patch as well and vice versa.
-> > 
-> > This is why we must not switch task->patch_state dangerously
-> > when being inside the ftrace handler.
-> > 
-> > Now I am not sure if this condition is fulfilled. The ftrace handler
-> > is called as the very first instruction of the function. Does not
-> > it break the stack validity? Could we sleep inside the ftrace
-> > handler? Will the patched function be detected on the stack?
-> > 
-> > Or is my brain already too far in the fantasy world?
+On Mon, May 09, 2016 at 10:13:59AM +0100, Måns Rullgård wrote:
+> Andy Shevchenko <andy.shevchenko@gmail.com> writes:
 > 
-> I think this isn't a possibility.
+> > On Mon, May 9, 2016 at 4:09 AM, Tejun Heo <tj@kernel.org> wrote:
+> >> On Sun, May 08, 2016 at 04:00:08PM -0400, Tejun Heo wrote:
+> >>> Hello, Andy.
+> >>>
+> >>> On Wed, May 04, 2016 at 03:22:51PM +0300, Andy Shevchenko wrote:
+> >>> > Tejun, since Vinod applied all necessary patches into his tree, the
+> >>> > series now has just a dependency to whatever branch / tag he marks for
+> >>> > it.
+> >>> > Do we have a chance to see the SATA series be applied in your tree?
+> >>>
+> >>> Applied 1-22 to libata/for-4.7.  There was a couple trivial conflicts
+> >>> which I resolved while applying but it'd be great if you can check
+> >>> whether everything looks okay.
+> >>>
+> >>>  https://git.kernel.org/cgit/linux/kernel/git/tj/libata.git/log/?h=for-4.7
+> >>
+> >> Oops, build failure.  Reverted for now.
+> >
+> > I suppose you have to pull material from Vinod.
 > 
-> In today's code base, this can't happen because task patch states are
-> only switched when sleeping or when exiting the kernel.  The ftrace
-> handler doesn't sleep directly.
-> 
-> If it were preempted, it couldn't be switched there either because we
-> consider preempted stacks to be unreliable.
+> The failure the build bot reported is due to the DMA patches not being
+> in the tree.
 
-And IIRC ftrace handlers cannot sleep and are called with preemption 
-disabled as of now. The code is a bit obscure, but see 
-__ftrace_ops_list_func for example. This is "main" ftrace handler that 
-calls all the registered ones in case FTRACE_OPS_FL_DYNAMIC is set (which 
-is always true for handlers coming from modules) and CONFIG_PREEMPT is 
-on. If it is off and there is only one handler registered for a function 
-dynamic trampoline is used. See commit 12cce594fa8f ("ftrace/x86: Allow 
-!CONFIG_PREEMPT dynamic ops to use allocated trampolines"). I think 
-Steven had a plan to implement dynamic trampolines even for 
-CONFIG_PREEMPT case but he still hasn't done it. It should use RCU_TASKS 
-infrastructure.
+Which tree should I pull?
 
-The reason for all the mess is that ftrace needs to be sure that no task 
-is in the handler when the handler/trampoline is freed.
+Thanks.
 
-So we should be safe for now even from this side.
-
-Miroslav
+-- 
+tejun
