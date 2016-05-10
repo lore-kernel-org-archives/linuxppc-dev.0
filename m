@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4CYj48h1zDqBV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4CYj6jsnzDqBY
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 07:48:41 +1000 (AEST)
-In-Reply-To: <1461332362-5309-1-git-send-email-clombard@linux.vnet.ibm.com>
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
- andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com
+In-Reply-To: <1462337578-15883-1-git-send-email-imunsie@au.ibm.com>
+To: Ian Munsie <imunsie@au1.ibm.com>, mikey <mikey@neuling.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Frederic Barrat <frederic.barrat@fr.ibm.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [V2] cxl: Check periodically the coherent platform function's
- state
-Message-Id: <3r4CYj1N4Rz9t5R@ozlabs.org>
-Date: Wed, 11 May 2016 07:48:40 +1000 (AEST)
+Cc: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: cxl: Ensure PSL interrupt is configured for contexts with no AFU
+ IRQs
+Message-Id: <3r4CYj5yD6z9t6W@ozlabs.org>
+Date: Wed, 11 May 2016 07:48:41 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-22-04 at 13:39:22 UTC, Christophe Lombard wrote:
-> In the PowerVM environment, the PHYP CoherentAccel component manages
-> the state of the Coherent Accelerator Processor Interface adapter and
-> virtualizes CAPI resources, handles CAPP, PSL, PSL Slice errors - and
-> interrupts - and provides a new set of hcalls for the OS APIs to utilize
-> Accelerator Function Unit (AFU).
+On Wed, 2016-04-05 at 04:52:58 UTC, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
 > 
-> During the course of operation, a coherent platform function can
-> encounter errors. Some possible reason for errors are:
-> • Hardware recoverable and unrecoverable errors
-> • Transient and over-threshold correctable errors
+> In the cxl kernel API, it is possible to create a context and start it
+> without allocating any interrupts. Since we assign or allocate the PSL
+> interrupt when allocating AFU interrupts this will lead to a situation
+> where we start the context with no means to take any faults.
 > 
-> PHYP implements its own state model for the coherent platform function.
-> The state of the AFU is available through a hcall.
+> The user API is not affected as it always goes through the cxl interrupt
+> allocation code paths and will have the PSL interrupt allocated or
+> assigned, even if no AFU interrupts were requested.
 > 
-> The current implementation of the cxl driver, for the PowerVM
-> environment, checks this state of the AFU only when an action is
-> requested - open a device, ioctl command, memory map, attach/detach a
-> process - from an external driver - cxlflash, libcxl. If an error is
-> detected the cxl driver handles the error according the content of the
-> Power Architecture Platform Requirements document.
+> This checks that at least one interrupt is configured at the time of
+> attach, and if not it will assign the multiplexed PSL interrupt for
+> powernv, or allocate a single interrupt for PowerVM.
 > 
-> But in case of low-level troubles (or error injection), the PHYP
-> component may reset the card and change the AFU state. The PHYP
-> interface doesn't provide any way to be notified when that happens thus
-> implies that the cxl driver:
-> • cannot handle immediatly the state change of the AFU.
-> • cannot notify other drivers (cxlflash, ...)
-> 
-> The purpose of this patch is to wake up the cpu periodically to check
-> the current state of each AFU and to see if we need to enter an error
-> recovery path.
-> 
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6afa221da4fc9bdf6ba2cf7fa8
+https://git.kernel.org/powerpc/c/b75d94509921cb6d9f475d7a85
 
 cheers
