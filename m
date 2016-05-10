@@ -1,24 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mbenes@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3rNZ56Y7zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 17:24:29 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Felipe Balbi <felipe.balbi@linux.intel.com>, linux-mips@linux-mips.org,
- johnyoun@synopsys.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Christian Lamparter <chunkeey@googlemail.com>,
- a.seppala@gmail.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
- 4.3.0-rc4
-Date: Tue, 10 May 2016 09:23:59 +0200
-Message-ID: <5347627.S9K7mIusOJ@wuerfel>
-In-Reply-To: <1462833472.20290.129.camel@kernel.crashing.org>
-References: <4231696.iL6nGs74X8@debian64> <4908563.V9YuKsSrTJ@wuerfel>
- <1462833472.20290.129.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3y2g5gJPzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 21:39:23 +1000 (AEST)
+Date: Tue, 10 May 2016 13:39:17 +0200 (CEST)
+From: Miroslav Benes <mbenes@suse.cz>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Petr Mladek <pmladek@suse.com>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 17/18] livepatch: change to a per-task consistency
+ model
+In-Reply-To: <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+Message-ID: <alpine.LNX.2.00.1605101332330.22758@pobox.suse.cz>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,95 +34,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 10 May 2016 08:37:52 Benjamin Herrenschmidt wrote:
-> On Mon, 2016-05-09 at 17:08 +0200, Arnd Bergmann wrote:
-> > 
-> > Unfortunately, I don't see any way this could be done in MIPS specific
-> > code: There is typically a byteswap between the internal bus and the PCI
-> > bus on big-endian MIPS systems, so the PCI MMIO ends up being little-endian,
+On Thu, 28 Apr 2016, Josh Poimboeuf wrote:
+
+> Change livepatch to use a basic per-task consistency model.  This is the
+> foundation which will eventually enable us to patch those ~10% of
+> security patches which change function or data semantics.  This is the
+> biggest remaining piece needed to make livepatch more generally useful.
 > 
-> Ugh ... not exactly, re-watch my talk on the matter :-) While there is
-> a specific lane wiring to preserve byte addresss, in the end it's the
-> end device itself that is either BE or LE. Regardless of any "bus
-> endianness".
-
-I found your slides on
-
-http://www.linuxplumbersconf.org/2012/wp-content/uploads/2012/09/2012-lpc-ref-big-little-endian-herrenschmidt.odp
-
-but there are at least two more twists that you completely missed here:
-
-- Some architectures (e.g. ARMv5 "BE32" mode in IXP4xx, surely some others)
-  do not implement big-endian mode by wiring up the data lines between the
-  bus and the CPU differently between big- and little-endian mode like
-  powerpc and armv7 "BE8" do, but instead they swizzle the *address* lines
-  on 8-bit and 16-bit addresses. The effect of that is that normal RAM
-  accesses work as expected both ways, and devices that are accessed using
-  32-bit MMIO ops never need any byteswap (you actually get "native
-  endian") while MMIO with 8 and 16 bit width does something completely
-  unexpected and touches the wrong register. Having an explicit byteswap
-  on the PCI host bridge gets you the expected addresses again for 8-bit
-  cycles but it also means that readl()/writel() again need to swap the
-  data.
-
-- Some other architectures (e.g. Broadcom MIPS) apparently are even fancier
-  and use a strapping pin on the SoC flips the endianess of the CPU core
-  at the same time as all the peripheral MMIO registers, with the intention
-  of never requiring any byte swaps. I believe they are implemented careful
-  enough to actually get this right, but it confuses the heck out of
-  Linux drivers that don't expect this.
-
-> > which matches the expected behavior of readl/writel. However, drivers
-> > for non-PCI devices often use the same readl/writel accessors because
-> > that is how it's done on ARMv6/ARMv7.
+> This code stems from the design proposal made by Vojtech [1] in November
+> 2014.  It's a hybrid of kGraft and kpatch: it uses kGraft's per-task
+> consistency and syscall barrier switching combined with kpatch's stack
+> trace switching.  There are also a number of fallback options which make
+> it quite flexible.
 > 
-> Even then, you can have on-SoC (non-PCI) devices that also have a
-> different endianness from the main CPU. How does it work on ARM for
-> example ? The device endianness should be fixed, regardless of the
-> endianness of the core, no ?
-
-ARMv6/v7 is uses BE8 mode like powerpc: each peripheral is fixed-endian
-and you have to know what it is. Only Freescale managed to put identical
-IP blocks on various (powerpc-derived) SoCs and have a subset of them
-treat the access as little-endian while others remain big-endian, so all
-those drivers now require runtime detection.
-
-> > Doing it hardcoded by architecture is just the simplest way to deal
-> > with it, working on the assumption that nothing actually needs the
-> > runtime detection that Ben suggested. 
+> Patches are applied on a per-task basis, when the task is deemed safe to
+> switch over.  When a patch is enabled, livepatch enters into a
+> transition state where tasks are converging to the patched state.
+> Usually this transition state can complete in a few seconds.  The same
+> sequence occurs when a patch is disabled, except the tasks converge from
+> the patched state to the unpatched state.
 > 
-> No, it's not an archicture problem. It's a problem specific to that one
-> SoC that the device was synthetized to be a certain endian while it was
-> synthetized differently on another SoC... that also happens to be a
-> different architecture. But doesn't have to.
+> An interrupt handler inherits the patched state of the task it
+> interrupts.  The same is true for forked tasks: the child inherits the
+> patched state of the parent.
 > 
-> For example, we had in the past cases of both LE and BE EHCI
-> implementations on the same architecture (PowerPC).
-
-I understand this, but from what I see in this history of this particular
-driver, all ARM and PowerPC implementations chose to use LE registers for
-DWC2 because the normal approach for these is to not mess with endianess,
-while presumably all MIPS users of the same block wired up the endian-select
-line of the IP block to match that of the CPU core, again because it's
-what you are expected to do on a MIPS based SoC.
-
-So hardcoding it per architecture would make an assumption based on
-the mindset of the SoC designers rather than strict technical differences,
-and that can fail as soon as someone does things differently on any of
-them (see the Freescale example), but I still think it's the easiest
-workaround for backporting to stable kernels. A revert of the original
-patch would be even easier, but that would break the one big-endian
-MIPS machine we know about.
-
-> > Detecting the endianess of the
-> > device is probably the best future-proof solution, but it's also
-> > considerably more work to do in the driver, and comes with a
-> > tiny runtime overhead.
+> Livepatch uses several complementary approaches to determine when it's
+> safe to patch tasks:
 > 
-> The runtime overhead is probably non-measurable compared with the cost
-> of the actual MMIOs.
+> 1. The first and most effective approach is stack checking of sleeping
+>    tasks.  If no affected functions are on the stack of a given task,
+>    the task is patched.  In most cases this will patch most or all of
+>    the tasks on the first try.  Otherwise it'll keep trying
+>    periodically.  This option is only available if the architecture has
+>    reliable stacks (CONFIG_RELIABLE_STACKTRACE and
+>    CONFIG_STACK_VALIDATION).
+> 
+> 2. The second approach, if needed, is kernel exit switching.  A
+>    task is switched when it returns to user space from a system call, a
+>    user space IRQ, or a signal.  It's useful in the following cases:
+> 
+>    a) Patching I/O-bound user tasks which are sleeping on an affected
+>       function.  In this case you have to send SIGSTOP and SIGCONT to
+>       force it to exit the kernel and be patched.
+>    b) Patching CPU-bound user tasks.  If the task is highly CPU-bound
+>       then it will get patched the next time it gets interrupted by an
+>       IRQ.
+>    c) Applying patches for architectures which don't yet have
+>       CONFIG_RELIABLE_STACKTRACE.  In this case you'll have to signal
+>       most of the tasks on the system.  However this isn't a complete
+>       solution, because there's currently no way to patch kthreads
+>       without CONFIG_RELIABLE_STACKTRACE.
+> 
+>    Note: since idle "swapper" tasks don't ever exit the kernel, they
+>    instead have a kpatch_patch_task() call in the idle loop which allows
 
-Right. The code size increase is probably measurable (but still small),
-the runtime overhead is not.
+s/kpatch_patch_task()/klp_patch_task()/
 
-	Arnd
+[...]
+
+> --- a/Documentation/livepatch/livepatch.txt
+> +++ b/Documentation/livepatch/livepatch.txt
+> @@ -72,7 +72,8 @@ example, they add a NULL pointer or a boundary check, fix a race by adding
+>  a missing memory barrier, or add some locking around a critical section.
+>  Most of these changes are self contained and the function presents itself
+>  the same way to the rest of the system. In this case, the functions might
+> -be updated independently one by one.
+> +be updated independently one by one.  (This can be done by setting the
+> +'immediate' flag in the klp_patch struct.)
+>  
+>  But there are more complex fixes. For example, a patch might change
+>  ordering of locking in multiple functions at the same time. Or a patch
+> @@ -86,20 +87,103 @@ or no data are stored in the modified structures at the moment.
+>  The theory about how to apply functions a safe way is rather complex.
+>  The aim is to define a so-called consistency model. It attempts to define
+>  conditions when the new implementation could be used so that the system
+> -stays consistent. The theory is not yet finished. See the discussion at
+> -http://thread.gmane.org/gmane.linux.kernel/1823033/focus=1828189
+> -
+> -The current consistency model is very simple. It guarantees that either
+> -the old or the new function is called. But various functions get redirected
+> -one by one without any synchronization.
+> -
+> -In other words, the current implementation _never_ modifies the behavior
+> -in the middle of the call. It is because it does _not_ rewrite the entire
+> -function in the memory. Instead, the function gets redirected at the
+> -very beginning. But this redirection is used immediately even when
+> -some other functions from the same patch have not been redirected yet.
+> -
+> -See also the section "Limitations" below.
+> +stays consistent.
+> +
+> +Livepatch has a consistency model which is a hybrid of kGraft and
+> +kpatch:  it uses kGraft's per-task consistency and syscall barrier
+> +switching combined with kpatch's stack trace switching.  There are also
+> +a number of fallback options which make it quite flexible.
+> +
+> +Patches are applied on a per-task basis, when the task is deemed safe to
+> +switch over.  When a patch is enabled, livepatch enters into a
+> +transition state where tasks are converging to the patched state.
+> +Usually this transition state can complete in a few seconds.  The same
+> +sequence occurs when a patch is disabled, except the tasks converge from
+> +the patched state to the unpatched state.
+> +
+> +An interrupt handler inherits the patched state of the task it
+> +interrupts.  The same is true for forked tasks: the child inherits the
+> +patched state of the parent.
+> +
+> +Livepatch uses several complementary approaches to determine when it's
+> +safe to patch tasks:
+> +
+> +1. The first and most effective approach is stack checking of sleeping
+> +   tasks.  If no affected functions are on the stack of a given task,
+> +   the task is patched.  In most cases this will patch most or all of
+> +   the tasks on the first try.  Otherwise it'll keep trying
+> +   periodically.  This option is only available if the architecture has
+> +   reliable stacks (CONFIG_RELIABLE_STACKTRACE and
+> +   CONFIG_STACK_VALIDATION).
+> +
+> +2. The second approach, if needed, is kernel exit switching.  A
+> +   task is switched when it returns to user space from a system call, a
+> +   user space IRQ, or a signal.  It's useful in the following cases:
+> +
+> +   a) Patching I/O-bound user tasks which are sleeping on an affected
+> +      function.  In this case you have to send SIGSTOP and SIGCONT to
+> +      force it to exit the kernel and be patched.
+> +   b) Patching CPU-bound user tasks.  If the task is highly CPU-bound
+> +      then it will get patched the next time it gets interrupted by an
+> +      IRQ.
+> +   c) Applying patches for architectures which don't yet have
+> +      CONFIG_RELIABLE_STACKTRACE.  In this case you'll have to signal
+> +      most of the tasks on the system.  However this isn't a complete
+> +      solution, because there's currently no way to patch kthreads
+> +      without CONFIG_RELIABLE_STACKTRACE.
+> +
+> +   Note: since idle "swapper" tasks don't ever exit the kernel, they
+> +   instead have a kpatch_patch_task() call in the idle loop which allows
+
+s/kpatch_patch_task()/klp_patch_task()/
+
+Otherwise all the code that touches livepatch looks good to me. Apart from 
+the things mentioned in another emails.
+
+Miroslav
