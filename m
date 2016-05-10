@@ -1,22 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4CYm5k45zDq64
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 07:48:44 +1000 (AEST)
-In-Reply-To: <1461920124-21719-3-git-send-email-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4CYn4ffLzDqBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 07:48:45 +1000 (AEST)
+In-Reply-To: <20160505204444.GE3264@csclub.uwaterloo.ca>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- David Gibson <david@gibson.dropbear.id.au>,
- Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>
-Subject: Re: [kernel, v4,
- 02/11] vfio/spapr: Relax the IOMMU compatibility check
-Message-Id: <3r4CYm3zcRz9t4k@ozlabs.org>
-Date: Wed, 11 May 2016 07:48:44 +1000 (AEST)
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Len Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: powerpc: Fix sstep compile on powerpcspe
+Message-Id: <3r4CYn2j81z9t4h@ozlabs.org>
+Date: Wed, 11 May 2016 07:48:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-29-04 at 08:55:15 UTC, Alexey Kardashevskiy wrote:
-> We are going to have multiple different types of PHB on the same system
-> with POWER8 + NVLink and PHBs will have different IOMMU ops. However
-> we only really care about one callback - create_table - so we can
-> relax the compatibility check here.
+On Thu, 2016-05-05 at 20:44:44 UTC, Lennart Sorensen wrote:
+> powerpc: Fix sstep compile on powerpcspe
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> Acked-by: Alex Williamson <alex.williamson@redhat.com>
+> Commit be96f63375a14ee8e690856ac77e579c75bd0bae introduced ldarx and stdcx
+> into the instructions in sstep.c, which are not accepted by the assembler
+> on powerpcspe, but does seem to be accepted by the normal powerpc assembler
+> even in 32 bit mode.
+> 
+> Wrap these two instructions in a __powerpc64__ check like it is everywhere
+> else in the file.
+> 
+> Fixes: be96f63375a1 ("powerpc: Split out instruction analysis part of emulate_step()")
+> Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/45295687a90a31135ab575803e
+https://git.kernel.org/powerpc/c/03be7e53dee606c189a66a7389
 
 cheers
