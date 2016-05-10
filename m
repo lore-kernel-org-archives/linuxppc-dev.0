@@ -1,37 +1,22 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3gQJ00clzDq68
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 10:40:23 +1000 (AEST)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 10 May 2016 10:40:22 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 483BD2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 10:40:19 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4A0eBFv10092810
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 10:40:19 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4A0dkRT031785
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 10:39:47 +1000
-Date: Tue, 10 May 2016 10:38:51 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [1/2] powerpc/mm: Remove duplicated check in do_page_fault()
-Message-ID: <20160510003851.GA17823@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1456446386-28619-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <3r3Hyt6KL9z9t0r@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3r3Hyt6KL9z9t0r@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3hjR4kcxzDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 11:38:35 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id yl2so16767877pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 May 2016 18:38:35 -0700 (PDT)
+Received: from circle.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id vg9sm43471733pab.35.2016.05.09.18.38.31
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Mon, 09 May 2016 18:38:32 -0700 (PDT)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V2] lib/test-hexdump: Changed to work on BE
+Date: Tue, 10 May 2016 11:37:54 +1000
+Message-Id: <1462844274-27887-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,53 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 09, 2016 at 08:03:50PM +1000, Michael Ellerman wrote:
->On Fri, 2016-26-02 at 00:26:25 UTC, Gavin Shan wrote:
->> When the page fault happened in user space, we need check it's
->> caused by stack frame pointer update instruction and update
->> local variable @flag with FAULT_FLAG_USER. Currently, the code
->> has two separate check for the same condition. That's unnecessary.
->> 
->> This removes one of the duplicated check. No functinal changes
->> introduced.
->
->It's possible though that store_updates_sp() changes regs, and causes
->user_mode(regs) to change, which would mean the second check is necessary.
->That's not true with the current code, but you should mention that you confirmed
->that in the change log.
->
+test-hexdump.c doesn't work on BE because the test data is in LE format.
+So add in data for BE.
 
-Thanks for review. Yeah, store_updates_sp() checks the failing instruction
-is the one updating stack frame pointer (stdu and the variable). The info
-is used to expand the stack later. All of it should have been documented
-in the commit log.
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
+---
 
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index a67c6d7..935f386 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -294,11 +294,10 @@ int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
->>  	 * can result in fault, which will cause a deadlock when called with
->>  	 * mmap_sem held
->>  	 */
->> -	if (user_mode(regs))
->> -		store_update_sp = store_updates_sp(regs);
->> -
->> -	if (user_mode(regs))
->> +	if (user_mode(regs)) {
->>  		flags |= FAULT_FLAG_USER;
->> +		store_update_sp = store_updates_sp(regs);
->> +	}
->
->It doesn't really matter in this case, but it would be better to keep the
->ordering of the two statements the same as before.
->
+V2: Checking __BYTE_ORDER__. 
 
-Yep, It should have two checks in order as before here if store_updates_sp()
-can alter MSR[PR] bit in future as you explained above :-)
+ lib/test_hexdump.c | 35 +++++++++++++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 8 deletions(-)
 
-Thanks,
-Gavin
-
->cheers
->
+diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+index 3f415d8101f3..9de91a1b98bf 100644
+--- a/lib/test_hexdump.c
++++ b/lib/test_hexdump.c
+@@ -18,29 +18,48 @@ static const unsigned char data_b[] = {
+ 
+ static const unsigned char data_a[] = ".2.{....p..$}.4...1.....L...C...";
+ 
+-static const char * const test_data_1_le[] __initconst = {
++static const char * const test_data_1[] __initconst = {
+ 	"be", "32", "db", "7b", "0a", "18", "93", "b2",
+ 	"70", "ba", "c4", "24", "7d", "83", "34", "9b",
+ 	"a6", "9c", "31", "ad", "9c", "0f", "ac", "e9",
+ 	"4c", "d1", "19", "99", "43", "b1", "af", "0c",
+ };
+ 
+-static const char * const test_data_2_le[] __initconst = {
++#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
++static const char * const test_data_2[] __initconst = {
+ 	"32be", "7bdb", "180a", "b293",
+ 	"ba70", "24c4", "837d", "9b34",
+ 	"9ca6", "ad31", "0f9c", "e9ac",
+ 	"d14c", "9919", "b143", "0caf",
+ };
+ 
+-static const char * const test_data_4_le[] __initconst = {
++static const char * const test_data_4[] __initconst = {
+ 	"7bdb32be", "b293180a", "24c4ba70", "9b34837d",
+ 	"ad319ca6", "e9ac0f9c", "9919d14c", "0cafb143",
+ };
+ 
+-static const char * const test_data_8_le[] __initconst = {
++static const char * const test_data_8[] __initconst = {
+ 	"b293180a7bdb32be", "9b34837d24c4ba70",
+ 	"e9ac0f9cad319ca6", "0cafb1439919d14c",
+ };
++#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++static const char * const test_data_2[] __initconst = {
++	"be32", "db7b", "0a18", "93b2",
++	"70ba", "c424", "7d83", "349b",
++	"a69c", "31ad", "9c0f", "ace9",
++	"4cd1", "1999", "43b1", "af0c",
++};
++
++static const char * const test_data_4[] __initconst = {
++	"be32db7b", "0a1893b2", "70bac424", "7d83349b",
++	"a69c31ad", "9c0face9",	"4cd11999", "43b1af0c",
++};
++
++static const char * const test_data_8[] __initconst = {
++	"be32db7b0a1893b2", "70bac4247d83349b",
++	"a69c31ad9c0face9",	"4cd1199943b1af0c",
++};
++#endif
+ 
+ #define FILL_CHAR	'#'
+ 
+@@ -67,13 +86,13 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 		gs = 1;
+ 
+ 	if (gs == 8)
+-		result = test_data_8_le;
++		result = test_data_8;
+ 	else if (gs == 4)
+-		result = test_data_4_le;
++		result = test_data_4;
+ 	else if (gs == 2)
+-		result = test_data_2_le;
++		result = test_data_2;
+ 	else
+-		result = test_data_1_le;
++		result = test_data_1;
+ 
+ 	/* hex dump */
+ 	p = test;
+-- 
+2.5.0
