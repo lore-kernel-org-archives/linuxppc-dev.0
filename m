@@ -1,39 +1,24 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r3r6Z2kJczDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 17:12:22 +1000 (AEST)
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 10 May 2016 12:42:18 +0530
-Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2B782125805E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 12:44:21 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4A7CDol35455206
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 12:42:13 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4A7CBGh031796
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 12:42:12 +0530
-Message-ID: <573189CA.8090205@linux.vnet.ibm.com>
-Date: Tue, 10 May 2016 12:42:10 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3rNZ56Y7zDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 17:24:29 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Felipe Balbi <felipe.balbi@linux.intel.com>, linux-mips@linux-mips.org,
+ johnyoun@synopsys.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Christian Lamparter <chunkeey@googlemail.com>,
+ a.seppala@gmail.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
+ 4.3.0-rc4
+Date: Tue, 10 May 2016 09:23:59 +0200
+Message-ID: <5347627.S9K7mIusOJ@wuerfel>
+In-Reply-To: <1462833472.20290.129.camel@kernel.crashing.org>
+References: <4231696.iL6nGs74X8@debian64> <4908563.V9YuKsSrTJ@wuerfel>
+ <1462833472.20290.129.camel@kernel.crashing.org>
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- oliver <oohall@gmail.com>
-CC: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] Enable ZONE_DEVICE on POWER
-References: <1462450304-19173-1-git-send-email-khandual@linux.vnet.ibm.com>
- <87r3dgk1bh.fsf@skywalker.in.ibm.com> <572C2801.7050605@linux.vnet.ibm.com>
- <CAOSf1CH=gGARN+-D8uE=wAp0NUZTkp=9Xc273K_7GTEJqhuWXQ@mail.gmail.com>
- <877ff4jvsh.fsf@skywalker.in.ibm.com>
-In-Reply-To: <877ff4jvsh.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,42 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/08/2016 11:07 PM, Aneesh Kumar K.V wrote:
-> oliver <oohall@gmail.com> writes:
+On Tuesday 10 May 2016 08:37:52 Benjamin Herrenschmidt wrote:
+> On Mon, 2016-05-09 at 17:08 +0200, Arnd Bergmann wrote:
+> > 
+> > Unfortunately, I don't see any way this could be done in MIPS specific
+> > code: There is typically a byteswap between the internal bus and the PCI
+> > bus on big-endian MIPS systems, so the PCI MMIO ends up being little-endian,
 > 
->> > Hi,
->> >
->> > I've been working on kernel support for a persistent memory (nvdimm)
->> > device and the kernel driver infrastructure requires ZONE_DEVICE for
->> > DAX support.. I've had it enabled in my tree for some time (without
->> > altmap support) without any real issues.
-> 
-> IIUC a DAX usage of pmem doesn't really need ZONE_DEVICE. It is only
-> for struct page backing to those pmem area we need ZONE_DEVICE.
-> 
->> >
->> > I wasn't planning on upstreaming any of my changes until 4.8 at the
->> > earliest so I am ok with carrying these patches myself. However, there
->> > has been some interest in using ZONE_DEVICE for other things on ppc
->> > (wasn't that you?) and given that ZONE_DEVICE is gated behind
->> > CONFIG_EXPERT I can't see there being any kind of negative impact on
->> > end users by merging it now. At the very least it lets the rest of the
->> > kernel development community know that changes affecting zones should
->> > also be tested on powerpc.
->> >
->> >
-> A partially done patch like that will miss quiet a lot details. For
-> example if I look at the x86 changes related to altmap
-> (4b94ffdc4163bae1e ("x86, mm: introduce vmem_altmap to augment
-> vmemmap_populate")) i see them handling pagetable free and memory
-> hotplug. This patch doesn't do any of those. From the commit message it is
-> also not clear how we intent to use those zone device memory on ppc64.
-> If we say they will not get hotplugged out or they will never be part
-> of page table then those changes I mentioned above are really not
-> needed. But the patch is missing a lot of those details.
+> Ugh ... not exactly, re-watch my talk on the matter :-) While there is
+> a specific lane wiring to preserve byte addresss, in the end it's the
+> end device itself that is either BE or LE. Regardless of any "bus
+> endianness".
 
-Right. The current patch just enables ZONE_DEVICE with vmem_altmap support
-(so that struct pages can be allocated in the device range instead of system
-RAM) where any driver can own the rest of the PFNs for its use. Right now
-these PFNs will not make into process page table. I can update the commit
-message with these details if you like.
+I found your slides on
+
+http://www.linuxplumbersconf.org/2012/wp-content/uploads/2012/09/2012-lpc-ref-big-little-endian-herrenschmidt.odp
+
+but there are at least two more twists that you completely missed here:
+
+- Some architectures (e.g. ARMv5 "BE32" mode in IXP4xx, surely some others)
+  do not implement big-endian mode by wiring up the data lines between the
+  bus and the CPU differently between big- and little-endian mode like
+  powerpc and armv7 "BE8" do, but instead they swizzle the *address* lines
+  on 8-bit and 16-bit addresses. The effect of that is that normal RAM
+  accesses work as expected both ways, and devices that are accessed using
+  32-bit MMIO ops never need any byteswap (you actually get "native
+  endian") while MMIO with 8 and 16 bit width does something completely
+  unexpected and touches the wrong register. Having an explicit byteswap
+  on the PCI host bridge gets you the expected addresses again for 8-bit
+  cycles but it also means that readl()/writel() again need to swap the
+  data.
+
+- Some other architectures (e.g. Broadcom MIPS) apparently are even fancier
+  and use a strapping pin on the SoC flips the endianess of the CPU core
+  at the same time as all the peripheral MMIO registers, with the intention
+  of never requiring any byte swaps. I believe they are implemented careful
+  enough to actually get this right, but it confuses the heck out of
+  Linux drivers that don't expect this.
+
+> > which matches the expected behavior of readl/writel. However, drivers
+> > for non-PCI devices often use the same readl/writel accessors because
+> > that is how it's done on ARMv6/ARMv7.
+> 
+> Even then, you can have on-SoC (non-PCI) devices that also have a
+> different endianness from the main CPU. How does it work on ARM for
+> example ? The device endianness should be fixed, regardless of the
+> endianness of the core, no ?
+
+ARMv6/v7 is uses BE8 mode like powerpc: each peripheral is fixed-endian
+and you have to know what it is. Only Freescale managed to put identical
+IP blocks on various (powerpc-derived) SoCs and have a subset of them
+treat the access as little-endian while others remain big-endian, so all
+those drivers now require runtime detection.
+
+> > Doing it hardcoded by architecture is just the simplest way to deal
+> > with it, working on the assumption that nothing actually needs the
+> > runtime detection that Ben suggested. 
+> 
+> No, it's not an archicture problem. It's a problem specific to that one
+> SoC that the device was synthetized to be a certain endian while it was
+> synthetized differently on another SoC... that also happens to be a
+> different architecture. But doesn't have to.
+> 
+> For example, we had in the past cases of both LE and BE EHCI
+> implementations on the same architecture (PowerPC).
+
+I understand this, but from what I see in this history of this particular
+driver, all ARM and PowerPC implementations chose to use LE registers for
+DWC2 because the normal approach for these is to not mess with endianess,
+while presumably all MIPS users of the same block wired up the endian-select
+line of the IP block to match that of the CPU core, again because it's
+what you are expected to do on a MIPS based SoC.
+
+So hardcoding it per architecture would make an assumption based on
+the mindset of the SoC designers rather than strict technical differences,
+and that can fail as soon as someone does things differently on any of
+them (see the Freescale example), but I still think it's the easiest
+workaround for backporting to stable kernels. A revert of the original
+patch would be even easier, but that would break the one big-endian
+MIPS machine we know about.
+
+> > Detecting the endianess of the
+> > device is probably the best future-proof solution, but it's also
+> > considerably more work to do in the driver, and comes with a
+> > tiny runtime overhead.
+> 
+> The runtime overhead is probably non-measurable compared with the cost
+> of the actual MMIOs.
+
+Right. The code size increase is probably measurable (but still small),
+the runtime overhead is not.
+
+	Arnd
