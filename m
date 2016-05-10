@@ -1,29 +1,25 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0091.outbound.protection.outlook.com [157.56.112.91])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <rpjday@crashcourse.ca>
+Received: from smtp486.redcondor.net (smtp486.redcondor.net [208.80.204.86])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r47yP4VgpzDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 05:06:20 +1000 (AEST)
-From: Scott Wood <scott.wood@nxp.com>
-To: Horia Ioan Geanta Neag <horia.geanta@nxp.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Cristian
- Stoica" <cristian.stoica@nxp.com>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>, Tudor-Dan Ambarus
- <tudor-dan.ambarus@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>,
- Alexandru Porosanu <alexandru.porosanu@nxp.com>
-Subject: Re: [PATCH v2 4/8] powerpc: add io{read,write}64 accessors
-Date: Tue, 10 May 2016 18:50:38 +0000
-Message-ID: <DB5PR0401MB1928B01F60FF3137118F237891710@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <1462462435-27403-1-git-send-email-horia.geanta@nxp.com>
- <1462462573-27779-1-git-send-email-horia.geanta@nxp.com>
- <AM2PR04MB0673A09EBC13818E0C2D764E98700@AM2PR04MB0673.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="iso-8859-2"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4Blg3blRzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 07:12:12 +1000 (AEST)
+Received: from astoria.ccjclearline.com ([64.235.106.9])
+ by smtp486.redcondor.net ({6695537a-536a-45f9-a249-877c85428649})
+ via TCP (outbound) with ESMTPS id 20160510211209414_0486
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 21:12:09 +0000
+Received: from [99.240.204.5] (port=45852 helo=crashcourse.ca)
+ by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
+ (Exim 4.80) (envelope-from <rpjday@crashcourse.ca>)
+ id 1b0EyL-0005Cz-C7
+ for linuxppc-dev@lists.ozlabs.org; Tue, 10 May 2016 17:13:41 -0400
+Date: Tue, 10 May 2016 17:11:37 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
+Subject: on a MPC8360 system, how can i read the *actual* bus frequencies?
+Message-ID: <alpine.LFD.2.20.1605101703320.6285@localhost.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,75 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/09/2016 03:20 AM, Horia Ioan Geanta Neag wrote:=0A=
-> On 5/5/2016 6:37 PM, Horia Geant=E3 wrote:=0A=
->> This will allow device drivers to consistently use io{read,write}XX=0A=
->> also for 64-bit accesses.=0A=
->>=0A=
->> Signed-off-by: Horia Geant=E3 <horia.geanta@nxp.com>=0A=
-> =0A=
-> It would be great if PPC maintainers could Ack this patch.=0A=
-> =0A=
-> As stated in the cover letter: https://lkml.org/lkml/2016/5/5/340=0A=
-> I'd like to go with the whole patch set via cryptodev-2.6 tree.=0A=
-=0A=
-It looks good to me.  Michael?=0A=
-=0A=
--Scott=0A=
-=0A=
-=0A=
-> =0A=
-> Thanks,=0A=
-> Horia=0A=
-> =0A=
->> ---=0A=
->>  arch/powerpc/kernel/iomap.c | 24 ++++++++++++++++++++++++=0A=
->>  1 file changed, 24 insertions(+)=0A=
->>=0A=
->> diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c=
-=0A=
->> index 12e48d56f771..3963f0b68d52 100644=0A=
->> --- a/arch/powerpc/kernel/iomap.c=0A=
->> +++ b/arch/powerpc/kernel/iomap.c=0A=
->> @@ -38,6 +38,18 @@ EXPORT_SYMBOL(ioread16);=0A=
->>  EXPORT_SYMBOL(ioread16be);=0A=
->>  EXPORT_SYMBOL(ioread32);=0A=
->>  EXPORT_SYMBOL(ioread32be);=0A=
->> +#ifdef __powerpc64__=0A=
->> +u64 ioread64(void __iomem *addr)=0A=
->> +{=0A=
->> +	return readq(addr);=0A=
->> +}=0A=
->> +u64 ioread64be(void __iomem *addr)=0A=
->> +{=0A=
->> +	return readq_be(addr);=0A=
->> +}=0A=
->> +EXPORT_SYMBOL(ioread64);=0A=
->> +EXPORT_SYMBOL(ioread64be);=0A=
->> +#endif /* __powerpc64__ */=0A=
->>  =0A=
->>  void iowrite8(u8 val, void __iomem *addr)=0A=
->>  {=0A=
->> @@ -64,6 +76,18 @@ EXPORT_SYMBOL(iowrite16);=0A=
->>  EXPORT_SYMBOL(iowrite16be);=0A=
->>  EXPORT_SYMBOL(iowrite32);=0A=
->>  EXPORT_SYMBOL(iowrite32be);=0A=
->> +#ifdef __powerpc64__=0A=
->> +void iowrite64(u64 val, void __iomem *addr)=0A=
->> +{=0A=
->> +	writeq(val, addr);=0A=
->> +}=0A=
->> +void iowrite64be(u64 val, void __iomem *addr)=0A=
->> +{=0A=
->> +	writeq_be(val, addr);=0A=
->> +}=0A=
->> +EXPORT_SYMBOL(iowrite64);=0A=
->> +EXPORT_SYMBOL(iowrite64be);=0A=
->> +#endif /* __powerpc64__ */=0A=
->>  =0A=
->>  /*=0A=
->>   * These are the "repeat read/write" functions. Note the=0A=
->>=0A=
-> =0A=
-> =0A=
-=0A=
+
+  bit of a conundrum here ... we have a legacy MPC8360 system here, on
+which we installed linux built with wind river linux 8. we obviously
+want to push the various bus frequencies to their max for best
+performance, and the device tree that was being used for this system
+assigned rather slow speeds (266MHz) for the various buses.
+
+  i wasn't sure how to view the bus frequencies that were *actually*
+being used. first, i thought that anything you found under
+/proc/devicetree simply showed the device tree values as they were
+passed to the kernel, so i wasn't going to trust those.
+
+  also, i thought that anything under /sys would show the genuine
+frequency values and, after searching, i found various PPC bus
+frequencies under /sys/firmware/..., but they *also* showed fairly
+slow speeds.
+
+  finally, someone wrote a program that read directly from the
+system registers:
+
+    tempVal = *M83XX_SPMR(vxCCSBARGet());
+    lbcm   = M83XX_SPMR_LBCM_VAL(tempVal);
+    ddrcm = M83XX_SPMR_DDRCM_VAL(tempVal);
+    spmf   = M83XX_SPMR_SPMF_VAL(tempVal);
+    clkDiv      = M83XX_SPMR_CLKID_VAL(tempVal);
+    corePll = M83XX_SPMR_COREPLL_VAL(tempVal);
+    cepdf  = M83XX_SPMR_CEPDF_VAL(tempVal);
+    cepmf  = M83XX_SPMR_CEPMF_VAL(tempVal);
+
+which, surprisingly, showed what appears to be the maximum allowable
+bus frequencies; for example
+
+  Enter mcd command -> sysGetCoreSpeed
+  value = 533332800 = 0x1fca0340
+
+so i'm willing to believe that the system really is running at max
+speed, but is there no easier way to see the bus frequencies that are
+actually in use, rather than having to dig into the system registers?
+
+  why would the values under /sys not reflect the actual bus
+frequencies, and not (as it appears) just the ones passed to the
+kernel which were obviously not used?
+
+rday
+
+-- 
+
+========================================================================
+Robert P. J. Day                                 Ottawa, Ontario, CANADA
+                        http://crashcourse.ca
+
+Twitter:                                       http://twitter.com/rpjday
+LinkedIn:                               http://ca.linkedin.com/in/rpjday
+========================================================================
