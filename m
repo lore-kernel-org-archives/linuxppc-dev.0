@@ -1,32 +1,39 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 3r3pTS1n3NzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 15:58:34 +1000 (AEST)
-Date: Tue, 10 May 2016 11:34:40 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>,
- =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- linux-ide@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Christian Lamparter <chunkeey@googlemail.com>,
- Julian Margetson <runaway@candw.ms>
-Subject: Re: [PATCH v2 00/23] ata: sata_dwc_460ex: make it working again
-Message-ID: <20160510060440.GF2274@localhost>
-References: <1461661404-1952-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <CAHp75VeeosHAxhXnWY7rc5o969TDyHPRWGdV7kh1_uR+TBa=aA@mail.gmail.com>
- <20160508200008.GM4775@htj.duckdns.org>
- <20160509010952.GN4775@htj.duckdns.org>
- <CAHp75VeMkZOZgGj2b3tHw7h7V42qM9dCz1qWs8nQENBMGWuZHQ@mail.gmail.com>
- <yw1xmvnziofc.fsf@unicorn.mansr.com>
- <20160509190536.GK7110@mtj.duckdns.org>
- <CAHp75Vf6kivRBd+9nMUU-sLPrA3ctiwvXnqrAFHX3XJWPeNO1Q@mail.gmail.com>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r3r6Z2kJczDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 17:12:22 +1000 (AEST)
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 10 May 2016 12:42:18 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2B782125805E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 12:44:21 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4A7CDol35455206
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 12:42:13 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4A7CBGh031796
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 12:42:12 +0530
+Message-ID: <573189CA.8090205@linux.vnet.ibm.com>
+Date: Tue, 10 May 2016 12:42:10 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <CAHp75Vf6kivRBd+9nMUU-sLPrA3ctiwvXnqrAFHX3XJWPeNO1Q@mail.gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ oliver <oohall@gmail.com>
+CC: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] Enable ZONE_DEVICE on POWER
+References: <1462450304-19173-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <87r3dgk1bh.fsf@skywalker.in.ibm.com> <572C2801.7050605@linux.vnet.ibm.com>
+ <CAOSf1CH=gGARN+-D8uE=wAp0NUZTkp=9Xc273K_7GTEJqhuWXQ@mail.gmail.com>
+ <877ff4jvsh.fsf@skywalker.in.ibm.com>
+In-Reply-To: <877ff4jvsh.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,46 +43,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 09, 2016 at 10:59:32PM +0300, Andy Shevchenko wrote:
-> On Mon, May 9, 2016 at 10:05 PM, Tejun Heo <tj@kernel.org> wrote:
-> > On Mon, May 09, 2016 at 10:13:59AM +0100, Måns Rullgård wrote:
-> >> Andy Shevchenko <andy.shevchenko@gmail.com> writes:
-> >>
-> >> > On Mon, May 9, 2016 at 4:09 AM, Tejun Heo <tj@kernel.org> wrote:
-> >> >> On Sun, May 08, 2016 at 04:00:08PM -0400, Tejun Heo wrote:
-> >> >>> Hello, Andy.
-> >> >>>
-> >> >>> On Wed, May 04, 2016 at 03:22:51PM +0300, Andy Shevchenko wrote:
-> >> >>> > Tejun, since Vinod applied all necessary patches into his tree, the
-> >> >>> > series now has just a dependency to whatever branch / tag he marks for
-> >> >>> > it.
-> >> >>> > Do we have a chance to see the SATA series be applied in your tree?
-> >> >>>
-> >> >>> Applied 1-22 to libata/for-4.7.  There was a couple trivial conflicts
-> >> >>> which I resolved while applying but it'd be great if you can check
-> >> >>> whether everything looks okay.
-> >> >>>
-> >> >>>  https://git.kernel.org/cgit/linux/kernel/git/tj/libata.git/log/?h=for-4.7
-> >> >>
-> >> >> Oops, build failure.  Reverted for now.
-> >> >
-> >> > I suppose you have to pull material from Vinod.
-> >>
-> >> The failure the build bot reported is due to the DMA patches not being
-> >> in the tree.
-> >
-> > Which tree should I pull?
+On 05/08/2016 11:07 PM, Aneesh Kumar K.V wrote:
+> oliver <oohall@gmail.com> writes:
 > 
-> slave-dma [1], branch topic/dw. But I think Vinod can tell us which
-> tag/branch will be immutable. Vinod?
-
-Please use branch topic/dw. I will not rebase this before sending to Linus.
-
-Also if you prefer a signed tag, then please use dmaengine-topic-dw-4.7-rc1
-
+>> > Hi,
+>> >
+>> > I've been working on kernel support for a persistent memory (nvdimm)
+>> > device and the kernel driver infrastructure requires ZONE_DEVICE for
+>> > DAX support.. I've had it enabled in my tree for some time (without
+>> > altmap support) without any real issues.
 > 
-> [1] http://git.infradead.org/users/vkoul/slave-dma.git
+> IIUC a DAX usage of pmem doesn't really need ZONE_DEVICE. It is only
+> for struct page backing to those pmem area we need ZONE_DEVICE.
+> 
+>> >
+>> > I wasn't planning on upstreaming any of my changes until 4.8 at the
+>> > earliest so I am ok with carrying these patches myself. However, there
+>> > has been some interest in using ZONE_DEVICE for other things on ppc
+>> > (wasn't that you?) and given that ZONE_DEVICE is gated behind
+>> > CONFIG_EXPERT I can't see there being any kind of negative impact on
+>> > end users by merging it now. At the very least it lets the rest of the
+>> > kernel development community know that changes affecting zones should
+>> > also be tested on powerpc.
+>> >
+>> >
+> A partially done patch like that will miss quiet a lot details. For
+> example if I look at the x86 changes related to altmap
+> (4b94ffdc4163bae1e ("x86, mm: introduce vmem_altmap to augment
+> vmemmap_populate")) i see them handling pagetable free and memory
+> hotplug. This patch doesn't do any of those. From the commit message it is
+> also not clear how we intent to use those zone device memory on ppc64.
+> If we say they will not get hotplugged out or they will never be part
+> of page table then those changes I mentioned above are really not
+> needed. But the patch is missing a lot of those details.
 
-Thanks
--- 
-~Vinod
+Right. The current patch just enables ZONE_DEVICE with vmem_altmap support
+(so that struct pages can be allocated in the device range instead of system
+RAM) where any driver can own the rest of the PFNs for its use. Right now
+these PFNs will not make into process page table. I can update the commit
+message with these details if you like.
