@@ -2,16 +2,21 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4CYm083BzDqBM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4CYm5k45zDq64
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 07:48:44 +1000 (AEST)
-In-Reply-To: <1462337312-14010-1-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>, mikey <mikey@neuling.org>,
- <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1461920124-21719-3-git-send-email-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: cxl: Remove duplicate #defines
-Message-Id: <3r4CYl4vJTz9sdm@ozlabs.org>
-Date: Wed, 11 May 2016 07:48:43 +1000 (AEST)
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alistair Popple <alistair@popple.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Dan Carpenter <dan.carpenter@oracle.com>, Daniel Axtens <dja@axtens.net>
+Subject: Re: [kernel, v4,
+ 02/11] vfio/spapr: Relax the IOMMU compatibility check
+Message-Id: <3r4CYm3zcRz9t4k@ozlabs.org>
+Date: Wed, 11 May 2016 07:48:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,17 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-05 at 04:48:32 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Fri, 2016-29-04 at 08:55:15 UTC, Alexey Kardashevskiy wrote:
+> We are going to have multiple different types of PHB on the same system
+> with POWER8 + NVLink and PHBs will have different IOMMU ops. However
+> we only really care about one callback - create_table - so we can
+> relax the compatibility check here.
 > 
-> These defines are not used, but other equivalent definitions
-> (CXL_SPA_SW_CMD_*) are used. Remove the unused defines.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/29659b682c47986d7d4e6206d9
+https://git.kernel.org/powerpc/c/45295687a90a31135ab575803e
 
 cheers
