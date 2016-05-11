@@ -1,25 +1,20 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4YRc1yTjzDqD8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 21:14:35 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
-To: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
- <57330AFE.1050209@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gleb Natapov <gleb@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <a2700de4-623a-cae4-028b-8fe0aa82f75c@redhat.com>
-Date: Wed, 11 May 2016 13:14:29 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4Yz41Mv6zDqDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 21:38:24 +1000 (AEST)
+Date: Wed, 11 May 2016 21:38:20 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ warrier@linux.vnet.ibm.com, mpe@ellerman.id.au
+Subject: Re: [PATCH] powerpc/kvm: Fix build error on book3s_hv.c
+Message-ID: <20160511113820.GD10249@fergus.ozlabs.ibm.com>
+References: <1462929355-30681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <57330AFE.1050209@suse.de>
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1462929355-30681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 11/05/2016 12:35, Alexander Graf wrote:
-> On 03/15/2016 09:18 PM, Laurent Vivier wrote:
->> While writing some instruction tests for kvm-unit-tests for powerpc,
->> I've found that illegal instructions are not managed correctly with
->> kvm-pr,
->> while it is fine with kvm-hv.
->>
->> When an illegal instruction (like ".long 0") is processed by kvm-pr,
->> the kernel logs are filled with:
->>
->>       Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->>       kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
->>
->> While the exception handler receives an interrupt for each instruction
->> executed after the illegal instruction.
->>
->> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->> ---
->>   arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->>   1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s_emulate.c
->> b/arch/powerpc/kvm/book3s_emulate.c
->> index 2afdb9c..4ee969d 100644
->> --- a/arch/powerpc/kvm/book3s_emulate.c
->> +++ b/arch/powerpc/kvm/book3s_emulate.c
->> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run,
->> struct kvm_vcpu *vcpu,
->>         switch (get_op(inst)) {
->>       case 0:
->> -        emulated = EMULATE_FAIL;
->>           if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->>               (inst == swab32(inst_sc))) {
->>               /*
->> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run,
->> struct kvm_vcpu *vcpu,
->>               kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->>               kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->>               emulated = EMULATE_DONE;
->> +        } else {
->> +            kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+On Wed, May 11, 2016 at 11:15:55AM +1000, Gavin Shan wrote:
+> When CONFIG_KVM_XICS is enabled, CPU_UP_PREPARE and other macros for
+> CPU states in linux/cpu.h are needed by arch/powerpc/kvm/book3s_hv.c.
+> Otherwise, build error as below is seen:
 > 
-> But isn't that exactly what the semantic of EMULATE_FAIL is? Fixing it
-> up in book3s_emulate.c is definitely the wrong spot.
+>    gwshan@gwshan:~/sandbox/l$ make arch/powerpc/kvm/book3s_hv.o
+>     :
+>    CC      arch/powerpc/kvm/book3s_hv.o
+>    arch/powerpc/kvm/book3s_hv.c: In function ‘kvmppc_cpu_notify’:
+>    arch/powerpc/kvm/book3s_hv.c:3072:7: error: ‘CPU_UP_PREPARE’ \
+>    undeclared (first use in this function)
 > 
-> So what is the problem you're trying to solve? Is the SRR0 at the wrong
-> spot or are the log messages the problem?
+> This fixes the issue introduced by commit <6f3bb80944> ("KVM: PPC:
+> Book3S HV: kvmppc_host_rm_ops - handle offlining CPUs").
+> 
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-No, the problem is the host kernel logs are filled by the message and
-the execution hangs. And the host becomes unresponsiveness, even after
-the end of the tests.
+Thanks, applied to my kvm-ppc-next branch (with cc:
+stable@vger.kernel.org).
 
-Please, try to run kvm-unit-tests (the emulator test) on a KVM-PR host,
-and check the kernel logs (dmesg), then try to ssh to the host...
-
-Laurent
+Paul.
