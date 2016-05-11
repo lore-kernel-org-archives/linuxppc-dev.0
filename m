@@ -1,21 +1,22 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4PCL2kNpzDqZV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 15:03:26 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id gh9so2733081pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 22:03:26 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/tm: Clean up duplication of code
-To: linuxppc-dev@lists.ozlabs.org, Rashmica Gupta <rashmicy@gmail.com>
-References: <1462942500-30188-1-git-send-email-rashmicy@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4PGD3nQpzDqCQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 15:05:56 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id yl2so2731647pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 22:05:56 -0700 (PDT)
+Subject: Re: [PATCH v3 1/2] powerpc/timer - large decrementer support
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1462856240-20648-1-git-send-email-oohall@gmail.com>
+Cc: Michael Neuling <mikey@neuling.org>, Jack Miller <jack@codezen.org>
 From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <a3fd1cda-2462-1424-1ec0-bd4da23eb4f6@gmail.com>
-Date: Wed, 11 May 2016 15:03:19 +1000
+Message-ID: <8cf18635-b9ac-1b6a-ac8b-3a2bf748cb47@gmail.com>
+Date: Wed, 11 May 2016 15:05:49 +1000
 MIME-Version: 1.0
-In-Reply-To: <1462942500-30188-1-git-send-email-rashmicy@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1462856240-20648-1-git-send-email-oohall@gmail.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,97 +28,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 11/05/16 14:55, Rashmica Gupta wrote:
-> The same logic for tm_abort appears twice, so pull it out into a
-> function.
+On 10/05/16 14:57, Oliver O'Halloran wrote:
+> POWER ISA v3 adds large decrementer (LD) mode of operation which increases
+> the size of the decrementer register from 32 bits to an implementation
+> defined with of up to 64 bits.
 > 
-> Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
-> ---
->  arch/powerpc/mm/hash_utils_64.c | 47 ++++++++++++++++++-----------------------
->  1 file changed, 21 insertions(+), 26 deletions(-)
+> This patch adds support for the LD on processors with the CPU_FTR_ARCH_300
+> cpu feature flag set. For CPUs with this feature LD mode is enabled when
+> when the ibm,dec-bits devicetree property is supplied for the boot CPU. The
+> decrementer value is a signed quantity (with negative values indicating a
+> pending exception) and this property is required to find the maximum
+> positive decrementer value. If this property is not supplied then the
+> traditional decrementer width of 32 bits is assumed and LD mode is disabled.
 > 
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 7635b1c6b5da..1cef8f5aee9b 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -1318,6 +1318,25 @@ out_exit:
->  	local_irq_restore(flags);
->  }
->  
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	/* Transactions are not aborted by tlbiel, only tlbie.
-> +	 * Without, syncing a page back to a block device w/ PIO could pick up
-> +	 * transactional data (bad!) so we force an abort here.  Before the
-> +	 * sync the page will be made read-only, which will flush_hash_page.
-> +	 * BIG ISSUE here: if the kernel uses a page from userspace without
-> +	 * unmapping it first, it may see the speculated version.
-> +	 */
-> +static inline void abort_tm(int local)
-> +{
-> +	if (local && cpu_has_feature(CPU_FTR_TM) &&
-> +	    current->thread.regs &&
-> +	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
-> +		tm_enable();
-> +		tm_abort(TM_CAUSE_TLBI);
-> +	}
-> +}
-
-While your at this do
-
-#else
-
-static inline void abort_tm(int local)
-{
-}
-
-> +#endif
-> +
->  /* WARNING: This is called from hash_low_64.S, if you change this prototype,
->   *          do not forget to update the assembly call site !
->   */
-> @@ -1344,19 +1363,7 @@ void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
->  	} pte_iterate_hashed_end();
->  
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-Then remove these extra #ifdef
-> -	/* Transactions are not aborted by tlbiel, only tlbie.
-> -	 * Without, syncing a page back to a block device w/ PIO could pick up
-> -	 * transactional data (bad!) so we force an abort here.  Before the
-> -	 * sync the page will be made read-only, which will flush_hash_page.
-> -	 * BIG ISSUE here: if the kernel uses a page from userspace without
-> -	 * unmapping it first, it may see the speculated version.
-> -	 */
-> -	if (local && cpu_has_feature(CPU_FTR_TM) &&
-> -	    current->thread.regs &&
-> -	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
-> -		tm_enable();
-> -		tm_abort(TM_CAUSE_TLBI);
-> -	}
-> +	abort_tm(local);
->  #endif
->  }
->  
-> @@ -1415,19 +1422,7 @@ void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
->  	}
->  tm_abort:
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-
-Then remove these extra #ifdef
-> -	/* Transactions are not aborted by tlbiel, only tlbie.
-> -	 * Without, syncing a page back to a block device w/ PIO could pick up
-> -	 * transactional data (bad!) so we force an abort here.  Before the
-> -	 * sync the page will be made read-only, which will flush_hash_page.
-> -	 * BIG ISSUE here: if the kernel uses a page from userspace without
-> -	 * unmapping it first, it may see the speculated version.
-> -	 */
-> -	if (local && cpu_has_feature(CPU_FTR_TM) &&
-> -	    current->thread.regs &&
-> -	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
-> -		tm_enable();
-> -		tm_abort(TM_CAUSE_TLBI);
-> -	}
-> +	abort_tm(local);
->  #endif
->  	return;
->  }
+> This patch was based on initial work by Jack Miller.
 > 
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Jack Miller <jack@codezen.org>
+
+These bits look good mostly
+
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
