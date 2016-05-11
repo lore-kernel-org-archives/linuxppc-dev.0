@@ -1,24 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4XZv1x5HzDqD8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 20:35:50 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
-To: Laurent Vivier <lvivier@redhat.com>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gleb Natapov <gleb@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
-From: Alexander Graf <agraf@suse.de>
-Message-ID: <57330AFE.1050209@suse.de>
-Date: Wed, 11 May 2016 12:35:42 +0200
-MIME-Version: 1.0
-In-Reply-To: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4YNt5xCvzDqD8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 21:12:14 +1000 (AEST)
+Message-ID: <1462965128.31037.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/tm: Clean up duplication of code
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rashmica <rashmicy@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 11 May 2016 21:12:08 +1000
+In-Reply-To: <5732E2EC.5080403@gmail.com>
+References: <1462942500-30188-1-git-send-email-rashmicy@gmail.com>
+ <a3fd1cda-2462-1424-1ec0-bd4da23eb4f6@gmail.com>
+ <5732E2EC.5080403@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +25,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/15/2016 09:18 PM, Laurent Vivier wrote:
-> While writing some instruction tests for kvm-unit-tests for powerpc,
-> I've found that illegal instructions are not managed correctly with kvm-pr,
-> while it is fine with kvm-hv.
->
-> When an illegal instruction (like ".long 0") is processed by kvm-pr,
-> the kernel logs are filled with:
->
->       Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->       kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
->
-> While the exception handler receives an interrupt for each instruction
-> executed after the illegal instruction.
->
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> ---
->   arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-> index 2afdb9c..4ee969d 100644
-> --- a/arch/powerpc/kvm/book3s_emulate.c
-> +++ b/arch/powerpc/kvm/book3s_emulate.c
-> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   
->   	switch (get_op(inst)) {
->   	case 0:
-> -		emulated = EMULATE_FAIL;
->   		if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->   		    (inst == swab32(inst_sc))) {
->   			/*
-> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   			kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->   			kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->   			emulated = EMULATE_DONE;
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+On Wed, 2016-05-11 at 17:44 +1000, Rashmica wrote:
+> On 11/05/16 15:03, Balbir Singh wrote:
+> > On 11/05/16 14:55, Rashmica Gupta wrote:
+> > > The same logic for tm_abort appears twice, so pull it out into a
+> > > function.
+> > > 
+> > > diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> > > index 7635b1c6b5da..1cef8f5aee9b 100644
+> > > --- a/arch/powerpc/mm/hash_utils_64.c
+> > > +++ b/arch/powerpc/mm/hash_utils_64.c
+> > > @@ -1318,6 +1318,25 @@ out_exit:
+> > >   	local_irq_restore(flags);
+> > >   }
+> > >   
+> > > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > > +	/* Transactions are not aborted by tlbiel, only tlbie.
 
-But isn't that exactly what the semantic of EMULATE_FAIL is? Fixing it 
-up in book3s_emulate.c is definitely the wrong spot.
+Can you fix up the comment formatting while you're there, should be:
 
-So what is the problem you're trying to solve? Is the SRR0 at the wrong 
-spot or are the log messages the problem?
+/*
+ * Transactions are not aborted by tlbiel, only tlbie.
+
+> > > +	 * Without, syncing a page back to a block device w/ PIO could pick up
+> > > +	 * transactional data (bad!) so we force an abort here.  Before the
+> > > +	 * sync the page will be made read-only, which will flush_hash_page.
+> > > +	 * BIG ISSUE here: if the kernel uses a page from userspace without
+> > > +	 * unmapping it first, it may see the speculated version.
+> > > +	 */
+> > > +static inline void abort_tm(int local)
+> > > +{
+> > > +	if (local && cpu_has_feature(CPU_FTR_TM) &&
+> > > +	    current->thread.regs &&
+> > > +	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
+> > > +		tm_enable();
+> > > +		tm_abort(TM_CAUSE_TLBI);
+> > > +	}
+> > > +}
+> > While your at this do
+> > 
+> > #else
+> > 
+> > static inline void abort_tm(int local)
+> > {
+> > }
+> If I'm doing that, wouldn't it make more sense to write:
+> 
+> +static inline void abort_tm(int local)
+
+It needs a better name. Perhaps tlb_flush_abort_tm() ?
+
+> +{
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	if (local && cpu_has_feature(CPU_FTR_TM) &&
+> +	    current->thread.regs &&
+> +	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
+> +		tm_enable();
+> +		tm_abort(TM_CAUSE_TLBI);
+> +	}
+> +#endif
+> +}
+
+In this case it would make some sense.
+
+But the goal is "no #ifdef's in C code", which that would violate.
+
+And if you have two functions that need to be inside the #ifdef then the above
+doesn't work anymore.
+
+So the preferred style is:
+
+  #ifdef CONFIG_FOO
+  static void foo(int bar)
+  {
+  	...
+  }
+  #else /* !CONFIG_FOO */
+  static inline foo(int bar) { }
+  #endif
 
 
-Alex
+And when it expands you end up with:
+
+  #ifdef CONFIG_FOO
+  static void foo(int bar)
+  {
+  	...
+  }
+
+  static void foo_new(int bar)
+  {
+  	...
+  }
+  #else /* !CONFIG_FOO */
+  static inline foo(int bar) { }
+  static inline foo_new(int bar) { }
+  #endif
+
+
+cheers
