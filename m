@@ -1,24 +1,34 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4JD4663xzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 11:18:44 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id zy2so2762813pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 May 2016 18:18:44 -0700 (PDT)
-Subject: Re: [PATCH 2/2] Deduplicate the actual base page size code
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, mpe@ellerman.id.au
-References: <1462892262-18066-1-git-send-email-bsingharora@gmail.com>
- <1462892262-18066-3-git-send-email-bsingharora@gmail.com>
- <871t59kcnh.fsf@skywalker.in.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <8def36ee-f94f-8d31-da87-dfe896df4df4@gmail.com>
-Date: Wed, 11 May 2016 11:18:33 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4JDD3Xf5zDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 11:18:52 +1000 (AEST)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 11 May 2016 11:18:51 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 18B092CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 11:18:38 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4B1I5aQ11600024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 11:18:27 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4B1GuEW019479
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 11:16:56 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, warrier@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/kvm: Fix build error on book3s_hv.c
+Date: Wed, 11 May 2016 11:15:55 +1000
+Message-Id: <1462929355-30681-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <871t59kcnh.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When CONFIG_KVM_XICS is enabled, CPU_UP_PREPARE and other macros for
+CPU states in linux/cpu.h are needed by arch/powerpc/kvm/book3s_hv.c.
+Otherwise, build error as below is seen:
 
+   gwshan@gwshan:~/sandbox/l$ make arch/powerpc/kvm/book3s_hv.o
+    :
+   CC      arch/powerpc/kvm/book3s_hv.o
+   arch/powerpc/kvm/book3s_hv.c: In function ‘kvmppc_cpu_notify’:
+   arch/powerpc/kvm/book3s_hv.c:3072:7: error: ‘CPU_UP_PREPARE’ \
+   undeclared (first use in this function)
 
-On 11/05/16 04:09, Aneesh Kumar K.V wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
-> 
->> Deduplicate to one function to compute the actual page size.
->> Some additional warnings added for AP size as well.
-> 
-> 
-> This is getting chaned in a cleanup series I am testing before posting. 
-> The change from ap to psize need more update in commit message. 
-> 
-> commit 701e0d3dc33c93a97b825f403d58f6be99b89203
-> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Date:   Tue May 10 11:33:15 2016 +0530
-> 
->     powerpc/mm/radix/hugetlb: Add helper for finding page size from hstate
->     
->     Use the helper instead of open coding the same at multiple place
->     
->     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+This fixes the issue introduced by commit <6f3bb80944> ("KVM: PPC:
+Book3S HV: kvmppc_host_rm_ops - handle offlining CPUs").
 
-This version makes more sense. While we are at it, mind replacing psize with base_psize and asserting
-that base_psize is always 0 or 5.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/kvm/book3s_hv.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Balbir Singh.
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 4cd37b4..e20beae 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -27,6 +27,7 @@
+ #include <linux/export.h>
+ #include <linux/fs.h>
+ #include <linux/anon_inodes.h>
++#include <linux/cpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/spinlock.h>
+ #include <linux/page-flags.h>
+-- 
+2.1.0
