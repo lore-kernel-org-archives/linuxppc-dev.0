@@ -1,26 +1,37 @@
-Return-Path: <chunkeey@googlemail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r4qxY1ktQzDqDJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 08:08:01 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id n129so12161772wmn.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 15:08:01 -0700 (PDT)
-From: Christian Lamparter <chunkeey@googlemail.com>
-To: linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org
-Cc: Christian Lamparter <chunkeey@googlemail.com>,
- Kumar Gala <galak@codeaurora.org>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>,
- Rob Herring <robh+dt@kernel.org>, Alexandre Courbot <gnurou@gmail.com>,
- Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH] gpio: dt-bindings: add ibm,ppc4xx-gpio binding
-Date: Thu, 12 May 2016 00:07:48 +0200
-Message-Id: <c7b118c342c161954126e2e82cf1a0a6a127b4c2.1463002267.git.chunkeey@googlemail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r4qYw1qdwzDqDJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 07:50:59 +1000 (AEST)
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Wed, 11 May 2016 15:50:57 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3B2F53E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 15:50:54 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4BLosv545219944
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 14:50:54 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4BLor7D028181
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 May 2016 15:50:54 -0600
+Date: Wed, 11 May 2016 16:50:51 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Bharata B Rao <bharata.rao@gmail.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc,numa: Memory hotplug to memory-less nodes ?
+Message-ID: <20160511215051.GF22115@arbab-laptop.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <CAGZKiBrmkSa1yyhbf5hwGxubcjsE5SmkSMY4tpANERMe2UG4bg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,78 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds binding information for IBM/AMCC/APM GPIO
-Controllers of the PowerPC 4XX series and compatible SoCs.
+On Mon, Jun 22, 2015 at 10:18:43AM +0530, Bharata B Rao wrote:
+>While developing memory hotplug support in QEMU for PoweKVM, I
+>realized that guest kernel has specific checks to prevent hot addition
+>of memory to a memory-less node.
+>
+>I am referring to arch/powerpc/mm/numa.c:hot_add_scn_to_nid() which
+>has explicit checks to ensure that it returns a nid that has some some
+>memory (NODE_DATA(nid)->node_spanned_pages) even when user wants to
+>hotplug to a node that currently has zero memory.
+>
+>Is this limitation by design ?
 
-The "PowerPC 405EP Embedded Processor Data Sheet" has the
-following to say about the GPIO controllers: "
+Sorry to resurrect such an old thread, but did anything come of this?
 
- - Controller functions and GPIO registers are programmed
-   and accessed via memory-mapped OPB bus master accesses
+I've recently bumped into the same limitation. Could we consider 
+removing it?
 
- - All GPIOs are pin-shared with other functions. DCRs control
-   whether a particular pin that has GPIO capabilities acts
-   as a GPIO or is used for another purpose.
+(I couldn't find the original distribution list for this thread. Please 
+add whomever is appropriate to the Cc:)
 
- - Each GPIO outputs is separately programmable to emulate
-   an open-drain driver (i.e. drives to zero, threestated if
-   output bit is 1)
-
-"
-The ppc4xx_gpio.c driver is part of the platform/sysdev drivers
-in arch/powerpc/sysdev.
-
-Signed-off-by: Christian Lamparter <chunkeey@googlemail.com>
----
-I looked into arch/powerpc/sysdev/ppc4xx_gpio.c driver and
-it doesn't have support for the tri-state logic (open drain
-is disabled), but the hardware would support it.
-(the #gpio-cells description suffers because of this, since
-the high-z option isn't there).
-
-Also there's another problem: There's no DCR pinmux driver?!
-So sadly, there's not much information on how to use the DCRs
-to control the which pin is muxed to the GPIO or to a SoC
-function like the i2c.
-
-This was all the valuable information I could find about the
-hardware, so it is included it in the binding text, even
-though there's no support for it... Is there anything else
-to add?
----
- .../devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt   | 24 ++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt
-
-diff --git a/Documentation/devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt b/Documentation/devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt
-new file mode 100644
-index 0000000..22aabb7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt
-@@ -0,0 +1,24 @@
-+* IBM/AMCC/APM GPIO Controller for PowerPC 4XX series and compatible SoCs
-+
-+All GPIOs are pin-shared with other functions. DCRs control whether a
-+particular pin that has GPIO capabilities acts as a GPIO or is used for
-+another purpose. GPIO outputs are separately programmable to emulate
-+an open-drain driver.
-+
-+Required properties:
-+	- compatible: must be "ibm,ppc4xx-gpio"
-+	- reg: address and length of the register set for the device
-+	- #gpio-cells: must be set to 2. The first cell is the pin number
-+		and the second cell is used to specify the gpio polarity:
-+		0 = active high
-+		1 = active low
-+	- gpio-controller: marks the device node as a gpio controller.
-+
-+Example:
-+
-+GPIO0: gpio@ef600b00 {
-+	compatible = "ibm,ppc4xx-gpio";
-+	reg = <0xef600b00 0x00000048>;
-+	#gpio-cells = <2>;
-+	gpio-controller;
-+};
 -- 
-2.8.1
+Reza Arbab
