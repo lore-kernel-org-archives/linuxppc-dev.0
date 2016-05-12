@@ -1,23 +1,19 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rfs613@gmail.com>
+Received: from mail-vk0-x22e.google.com (mail-vk0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c05::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r7ZQz36YRzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2016 19:09:31 +1000 (AEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Florian Weimer <fweimer@redhat.com>
-Cc: Alan Modra <amodra@gmail.com>,  linuxppc-dev@lists.ozlabs.org
-Subject: Re: ppc64 sbrk returns executable heap in 32-bit emulation mode
-References: <5590cf46-aaa2-451e-f21d-acf5f2eb4928@redhat.com>
- <20160516062425.GA24091__32035.8907142237$1463379977$gmane$org@bubble.grove.modra.org>
- <m21t52xu92.fsf@linux-m68k.org>
- <adca8a90-b4ce-f386-5706-0a17b1e91441@redhat.com>
-Date: Mon, 16 May 2016 11:09:14 +0200
-In-Reply-To: <adca8a90-b4ce-f386-5706-0a17b1e91441@redhat.com> (Florian
- Weimer's message of "Mon, 16 May 2016 10:59:00 +0200")
-Message-ID: <m2shxiwerp.fsf@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r5MGH4gTCzDqCm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2016 04:39:19 +1000 (AEST)
+Received: by mail-vk0-x22e.google.com with SMTP id m188so109074319vka.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 11:39:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Date: Thu, 12 May 2016 14:39:17 -0400
+Message-ID: <CA+4AqjL0q1h4mkuESjpc-zsXcGxDH0ZT7rkckwzF-egxApKFqQ@mail.gmail.com>
+Subject: Freescale PowerQUICC II dev board available
+From: R S <rfs613@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001a114e280ac4dab30532a979bb
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Florian Weimer <fweimer@redhat.com> writes:
+--001a114e280ac4dab30532a979bb
+Content-Type: text/plain; charset=UTF-8
 
-> But my test says that at least part of .bss in the main executable is
-> *not* executable.
+I have an older Freescale MPC8315E-RDB development board:
 
-Build with -mbss-plt -Wl,--bss-plt.
+http://www.nxp.com/files/32bit/doc/fact_sheet/MPC8315ERDBFS.pdf
+http://www.nxp.com/files/32bit/doc/data_sheet/MPC8315EEC.pdf
 
-Andreas.
+It comes in a nice Mini-ITX enclosure with a half-height 3.3V PCI riser
+adapter, and a SATA hard disk.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+If anyone is interested in this, it's yours for the cost of shipping from
+Ottawa, Ontario, Canada.
+
+Please contact me off-list if you want more information, or to make
+arrangements.
+
+Thanks,
+Ralph
+
+--001a114e280ac4dab30532a979bb
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div>I have an older Freescale MPC8315E-RDB development bo=
+ard:<br><br></div><div><a href=3D"http://www.nxp.com/files/32bit/doc/fact_s=
+heet/MPC8315ERDBFS.pdf">http://www.nxp.com/files/32bit/doc/fact_sheet/MPC83=
+15ERDBFS.pdf</a><br><a href=3D"http://www.nxp.com/files/32bit/doc/data_shee=
+t/MPC8315EEC.pdf">http://www.nxp.com/files/32bit/doc/data_sheet/MPC8315EEC.=
+pdf</a><br><br></div><div>It comes in a nice Mini-ITX enclosure with a half=
+-height 3.3V PCI riser adapter, and a SATA hard disk.<br></div><div><br>If =
+anyone is interested in this, it&#39;s yours for the cost of shipping from =
+Ottawa, Ontario, Canada.<br><br></div><div>Please contact me off-list if yo=
+u want more information, or to make arrangements.<br><br></div><div>Thanks,=
+<br></div><div>Ralph<br></div><div><br><br></div></div>
+
+--001a114e280ac4dab30532a979bb--
