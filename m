@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r59p05Q3SzDqDV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r59p049vHzDqCm
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 21:32:40 +1000 (AEST)
-In-Reply-To: <1461719696-28044-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1460402243-24346-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: alistair@popple.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [v3,
- 1/4] powerpc/eeh: Don't report error in eeh_pe_reset_and_recover()
-Message-Id: <3r59p01Mj8z9s5J@ozlabs.org>
+Cc: paulus@samba.org, gwshan@linux.vnet.ibm.com, nfont@linux.vnet.ibm.com
+Subject: Re: [1/2,
+ v3] Revert "powerpc/eeh: Fix crash in eeh_add_device_early() on Cell"
+Message-Id: <3r59nz2L05z9s8d@ozlabs.org>
 Date: Thu, 12 May 2016 21:32:39 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,26 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-27-04 at 01:14:50 UTC, Gavin Shan wrote:
-> The function eeh_pe_reset_and_recover() is used to recover EEH
-> error when the passthrough device are transferred to guest and
-> backwards, meaning the device's driver is vfio-pci or none.
-> When the driver is vfio-pci that provides error_detected() error
-> handler only, the handler simply stops the guest and it's not
-> expected behaviour. On the other hand, no error handlers will
-> be called if we don't have a bound driver.
+On Mon, 2016-11-04 at 19:17:22 UTC, "Guilherme G. Piccoli" wrote:
+> This reverts commit 89a51df5ab1d38b257300b8ac940bbac3bb0eb9b.
 > 
-> This ignores the error handler in eeh_pe_reset_and_recover()
-> that reports the error to device driver to avoid the exceptional
-> behaviour.
+> The function eeh_add_device_early() is used to perform EEH initialization in
+> devices added later on the system, like in hotplug/DLPAR scenarios. Since the
+> commit 89a51df5ab1d ("powerpc/eeh: Fix crash in eeh_add_device_early() on Cell")
+> a new check was introduced in this function - Cell has no EEH capabilities
+> which led to kernel oops if hotplug was performed, so checking for
+> eeh_enabled() was introduced to avoid the issue.
 > 
-> Fixes: 5cfb20b9 ("powerpc/eeh: Emulate EEH recovery for VFIO devices")
-> Cc: stable@vger.kernel.org #v3.18+
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Reviewed-by: Russell Currey <ruscur@russell.cc>
+> However, in architectures that EEH is present like pSeries or PowerNV, we might
+> reach a case in which no PCI devices are present on boot time and so EEH is not
+> initialized. Then, if a device is added via DLPAR for example,
+> eeh_add_device_early() fails because eeh_enabled() is false, and EEH end up
+> not being enabled at all.
+> 
+> This reverts the aforementioned patch since a new verification was introduced by
+> the commit d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
+> and so the original Cell issue does not happen anymore.
+> 
+> Cc: stable@vger.kernel.org
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/affeb0f2d3a9af419ad7ef4ac7
+https://git.kernel.org/powerpc/c/c2078d9ef600bdbe568c89e5dd
 
 cheers
