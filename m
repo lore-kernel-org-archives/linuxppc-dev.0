@@ -1,32 +1,26 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r55gd0Z2CzDqCm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 18:26:52 +1000 (AEST)
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Thu, 12 May 2016 13:56:50 +0530
-Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 620331258065
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 13:58:55 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4C8QjR327000984
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 13:56:45 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4C8QfSv008106
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 13:56:44 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: david@gibson.dropbear.id.au, nfont@linux.vnet.ibm.com, aik@au1.ibm.com,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [FIX PATCH v1] powerpc,numa: Fix memory_hotplug_max()
-Date: Thu, 12 May 2016 13:56:36 +0530
-Message-Id: <1463041596-1845-1-git-send-email-bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r56fh3PfszDqCm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 19:11:06 +1000 (AEST)
+Subject: Re: [PATCH] kvm-pr: manage illegal instructions
+To: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
+References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
+ <57330AFE.1050209@suse.de> <a2700de4-623a-cae4-028b-8fe0aa82f75c@redhat.com>
+ <57331C3F.2000708@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gleb Natapov <gleb@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <e370a7ad-8306-20a9-09e9-99e6a9b0573c@redhat.com>
+Date: Thu, 12 May 2016 11:10:27 +0200
+MIME-Version: 1.0
+In-Reply-To: <57331C3F.2000708@suse.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,92 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-memory_hotplug_max() uses hot_add_drconf_memory_max() to get maxmimum
-addressable memory by referring to ibm,dyanamic-memory property. There
-are three problems with the current approach:
 
-1 hot_add_drconf_memory_max() assumes that ibm,dynamic-memory includes
-  all the LMBs of the guest, but that is not true for PowerKVM which
-  populates only DR LMBs (LMBs that can be hotplugged/removed) in that
-  property.
-2 hot_add_drconf_memory_max() multiplies lmb-size with lmb-count to arrive
-  at the max possible address. Since ibm,dynamic-memory doesn't include
-  RMA LMBs, the address thus obtained will be less than the actual max
-  address. For example, if max possible memory size is 32G, with lmb-size
-  of 256MB there can be 127 LMBs in ibm,dynamic-memory (1 LMB for RMA
-  which won't be present here).  hot_add_drconf_memory_max() would then
-  return the max addressable memory as 127 * 256MB = 31.75GB, the max
-  address should have been 32G which is what ibm,lrdr-capacity shows.
-3 In PowerKVM, there can be a gap between the end of boot time RAM and
-  beginning of hotplug RAM area. So just multiplying lmb-count with
-  lmb-size will not provide the correct max possible address for PowerKVM.
 
-This patch fixes 1 by using ibm,lrdr-capacity property to return the max
-addressable memory whenever the property is present. Then it fixes 2 & 3
-by fetching the address of the last LMB in ibm,dynamic-memory property.
+On 11/05/2016 13:49, Alexander Graf wrote:
+> On 05/11/2016 01:14 PM, Laurent Vivier wrote:
+>>
+>> On 11/05/2016 12:35, Alexander Graf wrote:
+>>> On 03/15/2016 09:18 PM, Laurent Vivier wrote:
+>>>> While writing some instruction tests for kvm-unit-tests for powerpc,
+>>>> I've found that illegal instructions are not managed correctly with
+>>>> kvm-pr,
+>>>> while it is fine with kvm-hv.
+>>>>
+>>>> When an illegal instruction (like ".long 0") is processed by kvm-pr,
+>>>> the kernel logs are filled with:
+>>>>
+>>>>        Couldn't emulate instruction 0x00000000 (op 0 xop 0)
+>>>>        kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
+>>>>
+>>>> While the exception handler receives an interrupt for each instruction
+>>>> executed after the illegal instruction.
+>>>>
+>>>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>>>> ---
+>>>>    arch/powerpc/kvm/book3s_emulate.c | 4 +++-
+>>>>    1 file changed, 3 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/kvm/book3s_emulate.c
+>>>> b/arch/powerpc/kvm/book3s_emulate.c
+>>>> index 2afdb9c..4ee969d 100644
+>>>> --- a/arch/powerpc/kvm/book3s_emulate.c
+>>>> +++ b/arch/powerpc/kvm/book3s_emulate.c
+>>>> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run,
+>>>> struct kvm_vcpu *vcpu,
+>>>>          switch (get_op(inst)) {
+>>>>        case 0:
+>>>> -        emulated = EMULATE_FAIL;
+>>>>            if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
+>>>>                (inst == swab32(inst_sc))) {
+>>>>                /*
+>>>> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run,
+>>>> struct kvm_vcpu *vcpu,
+>>>>                kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
+>>>>                kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
+>>>>                emulated = EMULATE_DONE;
+>>>> +        } else {
+>>>> +            kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
+>>> But isn't that exactly what the semantic of EMULATE_FAIL is? Fixing it
+>>> up in book3s_emulate.c is definitely the wrong spot.
+>>>
+>>> So what is the problem you're trying to solve? Is the SRR0 at the wrong
+>>> spot or are the log messages the problem?
+>> No, the problem is the host kernel logs are filled by the message and
+>> the execution hangs. And the host becomes unresponsiveness, even after
+>> the end of the tests.
+>>
+>> Please, try to run kvm-unit-tests (the emulator test) on a KVM-PR host,
+>> and check the kernel logs (dmesg), then try to ssh to the host...
+> 
+> Ok, so the log messages are the problem. Please fix the message output
+> then - or remove it altogether. Or if you like, create a module
+> parameter that allows you to emit them.
+> 
+> I personally think the best solution would be to just convert the
+> message into a trace point.
+> 
+> While at it, please see whether the guest can trigger similar host log
+> output excess in other code paths.
 
-NOTE: There are some unnecessary changes in the patch because of converting
-spaces to tabs w/o which checkpatch.pl complains.
+The problem is not really with the log messages: they are consequence of
+the bug I try to fix.
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
-Changes in v1
--------------
-- Return 0 from hot_add_drconf_memory_max() when
-  ibm,dynamic-reconfiguration-memory node isn't available. This restores
-  the existing behaviour.
-- Rebase against next branch of
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+What happens is once kvm_pr decodes an invalid instruction all the valid
+following instructions trigger a Program exception to the guest (but are
+executed correctly). It has no real consequence on big machine like
+POWER8, except that the guest become very slow and the log files of the
+host are filled with messages (and qemu uses 100% of the CPU). On a
+smaller machine like a  PowerMac G5, the machine becomes simply unusable.
 
- arch/powerpc/mm/numa.c | 34 +++++++++++++++++++++++++---------
- 1 file changed, 25 insertions(+), 9 deletions(-)
+Please try kvm-unit-tests to see what happens:
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 669a15e..6a26ce8 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1164,17 +1164,33 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
- static u64 hot_add_drconf_memory_max(void)
- {
-         struct device_node *memory = NULL;
--        unsigned int drconf_cell_cnt = 0;
--        u64 lmb_size = 0;
-+	struct device_node *dn = NULL;
-+	unsigned int drconf_cell_cnt = 0;
-+	u64 lmb_size = 0;
- 	const __be32 *dm = NULL;
-+	const __be64 *lrdr = NULL;
-+	struct of_drconf_cell drmem;
-+
-+	dn = of_find_node_by_path("/rtas");
-+	if (dn) {
-+		lrdr = of_get_property(dn, "ibm,lrdr-capacity", NULL);
-+		of_node_put(dn);
-+		if (lrdr)
-+			return be64_to_cpup(lrdr);
-+	}
-+
-+	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (memory) {
-+		drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
-+		lmb_size = of_get_lmb_size(memory);
- 
--        memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
--        if (memory) {
--                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
--                lmb_size = of_get_lmb_size(memory);
--                of_node_put(memory);
--        }
--        return lmb_size * drconf_cell_cnt;
-+		/* Advance to the last cell, each cell has 6 32 bit integers */
-+		dm += (drconf_cell_cnt - 1) * 6;
-+		read_drconf_cell(&drmem, &dm);
-+		of_node_put(memory);
-+		return drmem.base_addr + lmb_size;
-+	}
-+	return 0;
- }
- 
- /*
--- 
-2.1.0
+qemu-system-ppc64 -machine pseries,accel=kvm,kvm-type=PR -bios
+powerpc/boot_rom.bin -display none -serial stdio -kernel
+powerpc/emulator.elf -smp 1 --append "-v"
+
+
+Thanks,
+Laurent
