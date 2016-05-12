@@ -1,41 +1,28 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chunkeey@googlemail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r5CHT42sZzDqCm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 22:39:49 +1000 (AEST)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3r5CHT2qWHz9s2G
- for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2016 22:39:49 +1000 (AEST)
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 12 May 2016 22:39:47 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B54B62BB005A
- for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2016 22:39:44 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4CCdaTY5702048
- for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2016 22:39:44 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4CCctbq015203
- for <linuxppc-dev@ozlabs.org>; Thu, 12 May 2016 22:38:55 +1000
-Subject: [PATCH v2 2/2] powerpc/fadump: add support to parse size based on
- memory range
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
-Date: Thu, 12 May 2016 18:08:15 +0530
-Message-ID: <20160512123633.12838.29515.stgit@hbathini.in.ibm.com>
-In-Reply-To: <20160512123422.12838.85753.stgit@hbathini.in.ibm.com>
-References: <20160512123422.12838.85753.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r5DPp0HpTzDqCm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 23:30:21 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id w143so16068504wmw.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 06:30:21 -0700 (PDT)
+From: Christian Lamparter <chunkeey@googlemail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Felipe Balbi <felipe.balbi@linux.intel.com>, linux-mips@linux-mips.org,
+ johnyoun@synopsys.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, a.seppala@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
+ 4.3.0-rc4
+Date: Thu, 12 May 2016 15:30:15 +0200
+Message-ID: <2856271.3aAGK3LarU@debian64>
+In-Reply-To: <2924514.Pic5Z1NUsc@wuerfel>
+References: <4231696.iL6nGs74X8@debian64> <7745292.ZB3149zIk7@debian64>
+ <2924514.Pic5Z1NUsc@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,116 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, memory for fadump can be specified with fadump_reserve_mem=size,
-where only a fixed size can be specified. Add the below syntax as well, to
-support conditional reservation based on system memory size:
-
-	fadump_reserve_mem=<range1>:<size1>[,<range2>:<size2>,...]
-
-This syntax helps using the same commandline parameter for different system
-memory sizes.
-
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
-Changes from v1:
-1. Changed subject from "powerpc/fadump: add support to specify memory range based size"
-2. Reused crashkernel parsing code that was moved to kernel/params.c (see patch 1/2)
-
- arch/powerpc/kernel/fadump.c |   64 ++++++++++++++++++++++++++++++++++++------
- 1 file changed, 55 insertions(+), 9 deletions(-)
-
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index d0af58b..a868281 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -193,6 +193,56 @@ static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
- 	return addr;
- }
+On Thursday, May 12, 2016 01:55:44 PM Arnd Bergmann wrote:
+> On Thursday 12 May 2016 11:58:18 Christian Lamparter wrote:
+> > > > > Detecting the endianess of the
+> > > > > device is probably the best future-proof solution, but it's also
+> > > > > considerably more work to do in the driver, and comes with a
+> > > > > tiny runtime overhead.
+> > > > 
+> > > > The runtime overhead is probably non-measurable compared with the cost
+> > > > of the actual MMIOs.
+> > > 
+> > > Right. The code size increase is probably measurable (but still small),
+> > > the runtime overhead is not.
+> > 
+> > Ok, so no rebuts or complains have been posted.
+> > 
+> > I've tested the patch you made in: https://lkml.org/lkml/2016/5/9/354
+> > and it works: 
+> > 
+> > Tested-by: Christian Lamparter <chunkeey@googlemail.com>
+> > 
+> > So, how do we go from here? There is are two small issues with the
+> > original patch (#ifdef DWC2_LOG_WRITES got converted to lower case:
+> > #ifdef dwc2_log_writes) and I guess a proper subject would be nice.  
+> > 
+> > Arnd, can you please respin and post it (cc'd stable as well)?
+> > So this is can be picked up? Or what's your plan?
+> 
+> (I just realized my reply was stuck in my outbox, so the patch
+> went out first)
+> 
+> If I recall correctly, the rough consensus was to go with your longer
+> patch in the future (fixed up for the comments that BenH and
+> I sent), and I'd suggest basing it on top of a fixed version of
+> my patch.
+Well, but it comes with the "overhead"! So this was just as I said:
+"Let's look at it and see if it's any good"... And I think it isn't
+since the usb/host/ehci people also opted for #ifdef CONFIG_BIG_ENDIAN
+archs etc...
  
-+/*
-+ * This function parses command line for fadump_reserve_mem=
-+ *
-+ * Supports the below two syntaxes:
-+ *    1. fadump_reserve_mem=size
-+ *    2. fadump_reserve_mem=ramsize-range:size[,...]
-+ *
-+ * Sets fw_dump.reserve_bootvar with the memory size
-+ * provided, 0 otherwise
-+ *
-+ * The function returns -EINVAL on failure, 0 otherwise.
-+ */
-+static int __init parse_fadump_reserve_mem(void)
-+{
-+	char *name = "fadump_reserve_mem=";
-+	char *fadump_cmdline = NULL, *cur;
-+
-+	fw_dump.reserve_bootvar = 0;
-+
-+	/* find fadump_reserve_mem and use the last one if there are many */
-+	cur = strstr(boot_command_line, name);
-+	while (cur) {
-+		fadump_cmdline = cur;
-+		cur = strstr(cur+1, name);
-+	}
-+
-+	/* when no fadump_reserve_mem= cmdline option is provided */
-+	if (!fadump_cmdline)
-+		return 0;
-+
-+	fadump_cmdline += strlen(name);
-+
-+	/* for fadump_reserve_mem=size cmdline syntax */
-+	if (!is_param_range_based(fadump_cmdline)) {
-+		fw_dump.reserve_bootvar = memparse(fadump_cmdline, NULL);
-+		return 0;
-+	}
-+
-+	/* for fadump_reserve_mem=ramsize-range:size[,...] cmdline syntax */
-+	cur = fadump_cmdline;
-+	fw_dump.reserve_bootvar = parse_mem_range_size("fadump_reserve_mem",
-+					&cur, memblock_phys_mem_size());
-+	if (cur == fadump_cmdline) {
-+		printk(KERN_INFO "fadump_reserve_mem: Invaild syntax!\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * fadump_calculate_reserve_size(): reserve variable boot area 5% of System RAM
-  *
-@@ -212,12 +262,17 @@ static inline unsigned long fadump_calculate_reserve_size(void)
- {
- 	unsigned long size;
- 
-+	/* sets fw_dump.reserve_bootvar */
-+	parse_fadump_reserve_mem();
-+
- 	/*
- 	 * Check if the size is specified through fadump_reserve_mem= cmdline
- 	 * option. If yes, then use that.
- 	 */
- 	if (fw_dump.reserve_bootvar)
- 		return fw_dump.reserve_bootvar;
-+	else
-+		printk(KERN_INFO "fadump: calculating default boot size\n");
- 
- 	/* divide by 20 to get 5% of value */
- 	size = memblock_end_of_DRAM() / 20;
-@@ -352,15 +407,6 @@ static int __init early_fadump_param(char *p)
- }
- early_param("fadump", early_fadump_param);
- 
--/* Look for fadump_reserve_mem= cmdline option */
--static int __init early_fadump_reserve_mem(char *p)
--{
--	if (p)
--		fw_dump.reserve_bootvar = memparse(p, &p);
--	return 0;
--}
--early_param("fadump_reserve_mem", early_fadump_reserve_mem);
--
- static void register_fw_dump(struct fadump_mem_struct *fdm)
- {
- 	int rc;
+> Felipe just had another idea, to change the endianess of the dwc2
+> block by setting a registers (if that exists). That would indeed
+> be preferable, then we can just revert the broken change that
+> went into 4.4 and backport that fix instead.
+Just a quick reply. I have the docs for the thing. There's something
+like that in GAHBCFG at Bit 24... BUT it only switches the endiannes
+for the DMA descriptors (which is not always used, there are devices
+with PIO only)! It doesn't deal with the MMIO access at all. 
+
+The pin that would select which endian the device uses is probably
+connected to a DCR or GPIO but I don't know which or where so this
+is more or less useless. (Or the selectable endianness was dropped
+during synth).
+
+Regards,
+Christian
