@@ -1,25 +1,23 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r5BFJ2cKnzDqDV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 21:52:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r5BK55TvszDqCm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 21:56:09 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Felipe Balbi <felipe.balbi@linux.intel.com>,
- John Youn <johnyoun@synopsys.com>, Gregory Herrero <gregory.herrero@intel.com>,
- linux-mips@linux-mips.org, a.seppala@gmail.com, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Douglas Anderson <dianders@chromium.org>,
- Mian Yousaf Kaukab <yousaf.kaukab@intel.com>, gregkh@linuxfoundation.org,
- Christian Lamparter <chunkeey@googlemail.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH] usb: dwc2: fix regression on big-endian PowerPC/ARM
- systems
-Date: Thu, 12 May 2016 13:52:17 +0200
-Message-ID: <2597884.52Dcpckj86@wuerfel>
-In-Reply-To: <87y47fcxhs.fsf@linux.intel.com>
-References: <1463050104-2788693-1-git-send-email-arnd@arndb.de>
- <2809110.sWekaCNVxS@wuerfel> <87y47fcxhs.fsf@linux.intel.com>
+To: Christian Lamparter <chunkeey@googlemail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Felipe Balbi <felipe.balbi@linux.intel.com>, linux-mips@linux-mips.org,
+ johnyoun@synopsys.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, a.seppala@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
+ 4.3.0-rc4
+Date: Thu, 12 May 2016 13:55:44 +0200
+Message-ID: <2924514.Pic5Z1NUsc@wuerfel>
+In-Reply-To: <7745292.ZB3149zIk7@debian64>
+References: <4231696.iL6nGs74X8@debian64> <5347627.S9K7mIusOJ@wuerfel>
+ <7745292.ZB3149zIk7@debian64>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,32 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 12 May 2016 14:43:43 Felipe Balbi wrote:
-> >> How many more drivers will we have to 'fix' like this ?
-> >
-> > Endianess problems will keep coming up, and we have hundreds or thousands
-> > of drivers that are written with a particular design in mind that could
-> > be wrong as soon as someone chooses to build an SoC that does things
-> > differently. Once that happens, we'll fix them.
-> >
-> > Also, Christian has already posted a better version of the patch
-> > that fixes this driver in an architecture independent way, but we still
-> > need a workaround for the stable backports.
+On Thursday 12 May 2016 11:58:18 Christian Lamparter wrote:
+> > > > Detecting the endianess of the
+> > > > device is probably the best future-proof solution, but it's also
+> > > > considerably more work to do in the driver, and comes with a
+> > > > tiny runtime overhead.
+> > > 
+> > > The runtime overhead is probably non-measurable compared with the cost
+> > > of the actual MMIOs.
+> > 
+> > Right. The code size increase is probably measurable (but still small),
+> > the runtime overhead is not.
 > 
-> hmmm, at least dwc3 (also from SNPS) has a couple bits where we can
-> choose endianess for registers and DMA descriptors. John, do we have the
-> same for dwc2 ? Wouldn't that be a better way to solve the problem ?
+> Ok, so no rebuts or complains have been posted.
+> 
+> I've tested the patch you made in: https://lkml.org/lkml/2016/5/9/354
+> and it works: 
+> 
+> Tested-by: Christian Lamparter <chunkeey@googlemail.com>
+> 
+> So, how do we go from here? There is are two small issues with the
+> original patch (#ifdef DWC2_LOG_WRITES got converted to lower case:
+> #ifdef dwc2_log_writes) and I guess a proper subject would be nice.  
+> 
+> Arnd, can you please respin and post it (cc'd stable as well)?
+> So this is can be picked up? Or what's your plan?
 
-Yes, I think that would be the best solution (provided it works correctly).
+(I just realized my reply was stuck in my outbox, so the patch
+went out first)
 
-My understanding is that the descriptors don't need to change
-for the particular MIPS machine, only the registers do. If we have
-another machine that requires the descriptor endianess to be flipped
-from the default, we probably need a DT property or platform_data
-flag to encode that.
+If I recall correctly, the rough consensus was to go with your longer
+patch in the future (fixed up for the comments that BenH and
+I sent), and I'd suggest basing it on top of a fixed version of
+my patch.
 
-We can do the register endianess detection from Christian's patch to
-flip it around if necessary, and then revert back to the previous
-state of always using readl/writel.
+Felipe just had another idea, to change the endianess of the dwc2
+block by setting a registers (if that exists). That would indeed
+be preferable, then we can just revert the broken change that
+went into 4.4 and backport that fix instead.
 
 	Arnd
