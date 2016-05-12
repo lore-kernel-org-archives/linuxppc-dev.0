@@ -1,17 +1,26 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r57nd42JLzDqCm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 20:02:13 +1000 (AEST)
-In-Reply-To: <1463041596-1845-1-git-send-email-bharata@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: nfont@linux.vnet.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>,
- aik@au1.ibm.com, david@gibson.dropbear.id.au
-Subject: Re: [FIX,v1] powerpc,numa: Fix memory_hotplug_max()
-Message-Id: <3r57nd2V60z9t7G@ozlabs.org>
-Date: Thu, 12 May 2016 20:02:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r58dj72PtzDqCm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 20:40:25 +1000 (AEST)
+Date: Thu, 12 May 2016 20:40:17 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Thomas Huth <thuth@redhat.com>
+Cc: Alexander Graf <agraf@suse.de>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH] powerpc: Fix definition of SIAR register
+Message-ID: <20160512104017.GA10721@fergus.ozlabs.ibm.com>
+References: <1460130851-29021-1-git-send-email-thuth@redhat.com>
+ <571DD072.6040305@linux.vnet.ibm.com>
+ <182287E9-40B9-4774-A932-08A0AA499AE3@suse.de>
+ <20160512045756.GB1421@oak.ozlabs.ibm.com>
+ <5734306C.7070407@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5734306C.7070407@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,18 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-12-05 at 08:26:36 UTC, Bharata B Rao wrote:
-> memory_hotplug_max() uses hot_add_drconf_memory_max() to get maxmimum
-> addressable memory by referring to ibm,dyanamic-memory property. There
-> are three problems with the current approach:
-...
+On Thu, May 12, 2016 at 09:27:40AM +0200, Thomas Huth wrote:
+> On 12.05.2016 06:57, Paul Mackerras wrote:
+> > On Mon, Apr 25, 2016 at 10:15:47AM +0200, Alexander Graf wrote:
+> >>
+> >>>> +#define SPRN_SIAR    796
+> >>
+> >> I'm sure there's a reason (iSeries?) we used the r/o version before. Better introduce a new constant that gives us rw access and use that in the kvm entry/exit code.
+> > 
+> > I don't think we ever did any performance monitoring on iSeries, and
+> > in any case, we have removed the iSeries code.  I think we should just
+> > use the privileged, read/write number (i.e. 796).
 > 
-> NOTE: There are some unnecessary changes in the patch because of converting
-> spaces to tabs w/o which checkpatch.pl complains.
+> Ok, then I'll simply add the fix for SDAR to my patch as well, test it
+> and submit it again.
 
-OK. You don't always have to listen to checkpatch :)
+Great!  Could you switch MMCR2 to the privileged number as well while
+you're at it?
 
-Please split this into two patches, one that fixes the whitespace problems in
-the function, and then a second one which makes your changes.
-
-cheers
+Thanks,
+Paul.
