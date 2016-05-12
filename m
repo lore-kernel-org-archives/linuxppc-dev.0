@@ -1,35 +1,28 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r5DXM11mQzDqZL
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 23:36:03 +1000 (AEST)
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Thu, 12 May 2016 23:36:02 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0FB532CE805C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 23:35:54 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4CDZmG111076054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 23:35:48 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4CDYrfS014362
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 23:34:53 +1000
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r5DfK1NfSzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 23:41:13 +1000 (AEST)
+Received: from int-mx11.intmail.prod.int.phx2.redhat.com
+ (int-mx11.intmail.prod.int.phx2.redhat.com [10.5.11.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 635B215559
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 13:41:11 +0000 (UTC)
+Received: from oldenburg.str.redhat.com (ovpn-204-33.brq.redhat.com
+ [10.40.204.33])
+ by int-mx11.intmail.prod.int.phx2.redhat.com (8.14.4/8.14.4) with ESMTP id
+ u4CDf9Nx001109
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 May 2016 09:41:10 -0400
 To: linuxppc-dev@lists.ozlabs.org
-Cc: david@gibson.dropbear.id.au, nfont@linux.vnet.ibm.com, aik@au1.ibm.com,
- mpe@ellerman.id.au, Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [FIX PATCH v2 1/2] powerpc,
- numa: Fix whitespace in hot_add_drconf_memory_max()
-Date: Thu, 12 May 2016 19:04:14 +0530
-Message-Id: <1463060055-24158-2-git-send-email-bharata@linux.vnet.ibm.com>
-In-Reply-To: <1463060055-24158-1-git-send-email-bharata@linux.vnet.ibm.com>
-References: <1463060055-24158-1-git-send-email-bharata@linux.vnet.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Subject: ppc64 sbrk returns executable heap in 32-bit emulation mode
+Message-ID: <5590cf46-aaa2-451e-f21d-acf5f2eb4928@redhat.com>
+Date: Thu, 12 May 2016 15:41:09 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,43 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+We noticed that on ppc64, the sbrk system call in the 32-bit subsystem 
+returns executable memory.  I assume it is related to this, in 
+arch/powerpc/include/asm/page.h:
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 669a15e..4a87ccb 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1163,18 +1163,18 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
- 
- static u64 hot_add_drconf_memory_max(void)
- {
--        struct device_node *memory = NULL;
--        unsigned int drconf_cell_cnt = 0;
--        u64 lmb_size = 0;
-+	struct device_node *memory = NULL;
-+	unsigned int drconf_cell_cnt = 0;
-+	u64 lmb_size = 0;
- 	const __be32 *dm = NULL;
- 
--        memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
--        if (memory) {
--                drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
--                lmb_size = of_get_lmb_size(memory);
--                of_node_put(memory);
--        }
--        return lmb_size * drconf_cell_cnt;
-+	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (memory) {
-+		drconf_cell_cnt = of_get_drconf_memory(memory, &dm);
-+		lmb_size = of_get_lmb_size(memory);
-+		of_node_put(memory);
-+	}
-+	return lmb_size * drconf_cell_cnt;
- }
- 
- /*
--- 
-2.1.0
+/*
+  * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+  * and needs to be executable.  This means the whole heap ends
+  * up being executable.
+  */
+#define VM_DATA_DEFAULT_FLAGS32 (VM_READ | VM_WRITE | VM_EXEC | \
+                                  VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+
+
+What is the rationale for this?  This comment must be *really* old, 
+because ld.so in glibc should make sure that the PLT is executable.  And 
+for current binaries, .bss is *not* executable, contrary to what the 
+comment suggests.
+
+Is this comment about pre-ELF binaries?  If yes, would it possible to 
+change the default for ELF binaries?
+
+Thanks,
+Florian
