@@ -1,51 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r5wdL15GRzDq7w
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 02:42:46 +1000 (AEST)
-Date: Fri, 13 May 2016 10:42:36 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: "Tian, Kevin" <kevin.tian@intel.com>
-Cc: Yongji Xie <xyjxie@linux.vnet.ibm.com>, David Laight
- <David.Laight@ACULAB.COM>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru"
- <aik@ozlabs.ru>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>, "mpe@ellerman.id.au"
- <mpe@ellerman.id.au>, "joro@8bytes.org" <joro@8bytes.org>,
- "warrier@linux.vnet.ibm.com" <warrier@linux.vnet.ibm.com>,
- "zhong@linux.vnet.ibm.com" <zhong@linux.vnet.ibm.com>,
- "nikunj@linux.vnet.ibm.com" <nikunj@linux.vnet.ibm.com>,
- "eric.auger@linaro.org" <eric.auger@linaro.org>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "gwshan@linux.vnet.ibm.com"
- <gwshan@linux.vnet.ibm.com>, "alistair@popple.id.au"
- <alistair@popple.id.au>, "ruscur@russell.cc" <ruscur@russell.cc>
-Subject: Re: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
- remapping is supported
-Message-ID: <20160513104236.438a800a@t450s.home>
-In-Reply-To: <AADFC41AFE54684AB9EE6CBC0274A5D15F854287@SHSMSX101.ccr.corp.intel.com>
-References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <e064a6a7-a8dc-f71f-1725-f31e03581b8d@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F847150@SHSMSX101.ccr.corp.intel.com>
- <063D6719AE5E284EB5DD2968C1650D6D5F4B52B5@AcuExch.aculab.com>
- <4be013bc-e81b-84c5-06d3-e1b3f46b3227@linux.vnet.ibm.com>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F8474A4@SHSMSX101.ccr.corp.intel.com>
- <20160505090513.56886c12@t450s.home>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F84EEBA@SHSMSX101.ccr.corp.intel.com>
- <20160511095331.18436241@t450s.home>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F850046@SHSMSX101.ccr.corp.intel.com>
- <20160511202042.77593861@t450s.home>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F8507E8@SHSMSX101.ccr.corp.intel.com>
- <20160512114735.7ec61bd3@t450s.home>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F853FA4@SHSMSX101.ccr.corp.intel.com>
- <20160512233246.347b8b3c@t450s.home>
- <AADFC41AFE54684AB9EE6CBC0274A5D15F854287@SHSMSX101.ccr.corp.intel.com>
+Return-Path: <rjw@rjwysocki.net>
+Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
+ [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 3r63np2pzCzDq7w
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 08:05:33 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH-next v2 0/2] cpufreq: powernv: Fixes for Global pstate
+ management
+Date: Sat, 14 May 2016 00:08:53 +0200
+Message-ID: <2343292.GUrEpiMUq0@vostro.rjw.lan>
+In-Reply-To: <20160509153204.GA21661@vireshk-i7>
+References: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <20160509153204.GA21661@vireshk-i7>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,101 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 13 May 2016 06:50:25 +0000
-"Tian, Kevin" <kevin.tian@intel.com> wrote:
-
-> > From: Alex Williamson [mailto:alex.williamson@redhat.com]
-> > Sent: Friday, May 13, 2016 1:33 PM  
-> > > >
-> > > > As argued previously in this thread, there's nothing special about a
-> > > > DMA write to memory versus a DMA write to a special address that
-> > > > triggers an MSI vector.  If the device is DMA capable, which we assume
-> > > > all are, it can be fooled into generating those DMA writes regardless
-> > > > of whether we actively block access to the MSI-X vector table itself.  
-> > >
-> > > But with DMA remapping above can be blocked.  
+On Monday, May 09, 2016 09:02:04 PM Viresh Kumar wrote:
+> On 03-05-16, 20:49, Akshay Adiga wrote:
+> > Fixes are based on patch https://patchwork.ozlabs.org/patch/612058/ which
+> > is in Rafael's linux-next.
 > > 
-> > How?  VT-d explicitly ignores DMA writes to 0xFEEx_xxxx, section 3.13:
+> > - Patch [1] fixes WARN_ON in powernv_target_index()
+> > - Patch [2] Deleting any pending timer to saves an unnecessary irq call
+> >  in powernv_target_index()
 > > 
-> >   Write requests without PASID of DWORD length are treated as interrupt
-> >   requests. Interrupt requests are not subjected to DMA remapping[...]
-> >   Instead, remapping hardware can be enabled to subject such interrupt
-> >   requests to interrupt remapping.  
+> > Akshay Adiga (2):
+> >   cpufreq: powernv: Move smp_call_function_any() out of irq safe block
+> >   cpufreq: powernv: del_timer_sync when global and local pstate are
+> >     equal
 > 
-> Thanks for catching this!
-> 
-> >   
-> > > > MSI-X vector table access w/o interrupt remapping is to avoid obvious
-> > > > collisions if it were to be programmed directly, it doesn't actually
-> > > > prevent an identical DMA transaction from being generated by other  
-> > >
-> > > Kernel can enable DMA remapping but disable IRQ remapping. In such
-> > > case identical DMA transaction can be prevented.  
-> > 
-> > Not according to the VT-d spec as quoted above.  If so, how?  
-> 
-> So my argument on this is wrong. sorry.
-> 
-> >   
-> > > Anyway my point is simple. Let's ignore how Linux kernel implements
-> > > IRQ remapping on x86 (which may change time to time), and just
-> > > focus on architectural possibility. Non-x86 platform may implement
-> > > IRQ remapping completely separate from device side, then checking
-> > > availability of IRQ remapping is enough to decide whether mmap
-> > > MSI-X table is safe. x86 with VT-d can be configured to a mode
-> > > requiring host control of both MSI-X entry and IRQ remapping hardware
-> > > (without source id check). In such case it's insufficient to make
-> > > decision simply based on IRQ remapping availability. We need a way
-> > > to query from IRQ remapping module whether it's actually safe to
-> > > mmap MSI-X.  
-> > 
-> > We're going in circles here.  This patch is attempting to remove
-> > protection from the MSI-X vector table that is really nothing more than
-> > security theater already.  That "protection" only actually prevents
-> > casual misuse of the API which is really only a problem when the
-> > platform offers no form of interrupt isolation, such as VT-d with DMA
-> > remapping but not interrupt remapping.  Disabling source-id checking in
-> > VT-d should be handled as the equivalent of disabling interrupt
-> > remapping altogether as far as the IOMMU API is concerned.  That's
-> > a trivial gap that should be fixed.  There is no such thing as a secure  
-> 
-> That is the main change I'm asking against original patch, which has:
-> 
-> +static void pci_check_msi_remapping(struct pci_dev *pdev,
-> +					const struct iommu_ops *ops)
-> +{
-> +	struct pci_bus *bus = pdev->bus;
-> +
-> +	if (ops->capable(IOMMU_CAP_INTR_REMAP) &&
-> +		!(bus->bus_flags & PCI_BUS_FLAGS_MSI_REMAP))
-> +		bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
-> +}
-> +
-> 
-> Above flag should be cleared when source-id checking is disabled on x86. 
-> Yes, VFIO is part of OS but any assumption we made about other parts
-> needs to be reflected accurately in the code.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I would say this is an independent bug which should be fixed simply as:
-
-diff --git a/drivers/iommu/intel-iommu.c b/drivers/iommu/intel-iommu.c
-index e1852e8..60d55c0 100644
---- a/drivers/iommu/intel-iommu.c
-+++ b/drivers/iommu/intel-iommu.c
-@@ -4948,7 +4948,7 @@ static bool intel_iommu_capable(enum iommu_cap cap)
-        if (cap == IOMMU_CAP_CACHE_COHERENCY)
-                return domain_update_iommu_snooping(NULL) == 1;
-        if (cap == IOMMU_CAP_INTR_REMAP)
--               return irq_remapping_enabled == 1;
-+               return irq_remapping_enabled == 1 && !disable_sourceid_checking;
- 
-        return false;
- }
-
-I believe the intent of the IOMMU_CAP_INTR_REMAP flag is simply to
-indicate interrupt isolation is provided through the IOMMU.  Nobody
-cares about the interrupt remapping support beyond that.  If source-id
-checking is disabled, the remainder of interrupt remapping is
-irrelevant as far as this capability is concerned imho.  Thanks,
-
-Alex
+Both [1-2/2] applied, thanks!
