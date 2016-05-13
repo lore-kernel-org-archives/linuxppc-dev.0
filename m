@@ -1,32 +1,49 @@
-Return-Path: <John.Youn@synopsys.com>
-Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
- [198.182.60.111])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r5g5C0DV9zDq7s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2016 16:32:30 +1000 (AEST)
-Subject: Re: [PATCH v3] usb: dwc2: fix regression on big-endian PowerPC/ARM
- systems
-To: Arnd Bergmann <arnd@arndb.de>, Christian Lamparter
- <chunkeey@googlemail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Felipe Balbi <felipe.balbi@linux.intel.com>
-References: <1463086588-2393828-1-git-send-email-arnd@arndb.de>
-From: John Youn <John.Youn@synopsys.com>
-CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "John.Youn@synopsys.com" <John.Youn@synopsys.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+Return-Path: <kevin.tian@intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3r5gV02H6ZzDq7s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 May 2016 16:50:30 +1000 (AEST)
+From: "Tian, Kevin" <kevin.tian@intel.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+CC: Yongji Xie <xyjxie@linux.vnet.ibm.com>, David Laight
+ <David.Laight@ACULAB.COM>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "a.seppala@gmail.com" <a.seppala@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Felipe Balbi <balbi@ti.com>, "Douglas
- Anderson" <dianders@chromium.org>, Gregory Herrero
- <gregory.herrero@intel.com>, Mian Yousaf Kaukab <yousaf.kaukab@intel.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-Message-ID: <573574F2.8010901@synopsys.com>
-Date: Thu, 12 May 2016 23:32:18 -0700
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>, "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "joro@8bytes.org" <joro@8bytes.org>, "warrier@linux.vnet.ibm.com"
+ <warrier@linux.vnet.ibm.com>, "zhong@linux.vnet.ibm.com"
+ <zhong@linux.vnet.ibm.com>, "nikunj@linux.vnet.ibm.com"
+ <nikunj@linux.vnet.ibm.com>, "eric.auger@linaro.org" <eric.auger@linaro.org>,
+ "will.deacon@arm.com" <will.deacon@arm.com>, "gwshan@linux.vnet.ibm.com"
+ <gwshan@linux.vnet.ibm.com>, "alistair@popple.id.au" <alistair@popple.id.au>,
+ "ruscur@russell.cc" <ruscur@russell.cc>
+Subject: RE: [PATCH 5/5] vfio-pci: Allow to mmap MSI-X table if interrupt
+ remapping is supported
+Date: Fri, 13 May 2016 06:50:25 +0000
+Message-ID: <AADFC41AFE54684AB9EE6CBC0274A5D15F854287@SHSMSX101.ccr.corp.intel.com>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <f7d73ac3-470d-a0d2-0a97-05be630480dd@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F842653@SHSMSX101.ccr.corp.intel.com>
+ <e064a6a7-a8dc-f71f-1725-f31e03581b8d@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F847150@SHSMSX101.ccr.corp.intel.com>
+ <063D6719AE5E284EB5DD2968C1650D6D5F4B52B5@AcuExch.aculab.com>
+ <4be013bc-e81b-84c5-06d3-e1b3f46b3227@linux.vnet.ibm.com>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F8474A4@SHSMSX101.ccr.corp.intel.com>
+ <20160505090513.56886c12@t450s.home>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F84EEBA@SHSMSX101.ccr.corp.intel.com>
+ <20160511095331.18436241@t450s.home>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F850046@SHSMSX101.ccr.corp.intel.com>
+ <20160511202042.77593861@t450s.home>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F8507E8@SHSMSX101.ccr.corp.intel.com>
+ <20160512114735.7ec61bd3@t450s.home>
+ <AADFC41AFE54684AB9EE6CBC0274A5D15F853FA4@SHSMSX101.ccr.corp.intel.com>
+ <20160512233246.347b8b3c@t450s.home>
+In-Reply-To: <20160512233246.347b8b3c@t450s.home>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1463086588-2393828-1-git-send-email-arnd@arndb.de>
-Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,101 +53,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5/12/2016 1:56 PM, Arnd Bergmann wrote:
-> A patch that went into Linux-4.4 to fix big-endian mode on a Lantiq
-> MIPS system unfortunately broke big-endian operation on PowerPC
-> APM82181 as reported by Christian Lamparter, and likely other
-> systems.
-> 
-> It actually introduced multiple issues:
-> 
-> - it broke big-endian ARM kernels: any machine that was working
->   correctly with a little-endian kernel is no longer using byteswaps
->   on big-endian kernels, which clearly breaks them.
-> - On PowerPC the same thing must be true: if it was working before,
->   using big-endian kernels is now broken. Unlike ARM, 32-bit PowerPC
->   usually uses big-endian kernels, so they are likely all broken.
-> - The barrier for dwc2_writel is on the wrong side of the __raw_writel(),
->   so the MMIO no longer synchronizes with DMA operations.
-> - On architectures that require specific CPU instructions for MMIO
->   access, using the __raw_ variant may turn this into a pointer
->   dereference that does not have the same effect as the readl/writel.
-> 
-> This patch is a simple revert for all architectures other than MIPS,
-> in the hope that we can more easily backport it to fix the regression
-> on PowerPC and ARM systems without breaking the Lantiq system again.
-> 
-> We should follow this up with a more elaborate change to add runtime
-> detection of endianess, to make sure it also works on all other
-> combinations of architectures and implementations of the usb-dwc2
-> device. That patch however will be fairly large and not appropriate
-> for backports to stable kernels.
-> 
-> Felipe suggested a different approach, using an endianess switching
-> register to always put the device into LE mode, but unfortunately
-> the dwc2 hardware does not provide a generic way to do that. Also,
-> I see no practical way of addressing the problem more generally by
-> patching architecture specific code on MIPS.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 95c8bc360944 ("usb: dwc2: Use platform endianness when accessing registers")
-> ---
-> v3: reverted the accidental changes that slipped into the patch,
->     resending as requested by Christian.
-> 
->  drivers/usb/dwc2/core.h | 29 +++++++++++++++++++++++++++++
->  1 file changed, 29 insertions(+)
-> 
-> diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
-> index 3c58d633ce80..74ed2ee881cd 100644
-> --- a/drivers/usb/dwc2/core.h
-> +++ b/drivers/usb/dwc2/core.h
-> @@ -64,6 +64,18 @@
->  	DWC2_TRACE_SCHEDULER_VB(pr_fmt("%s: SCH: " fmt),		\
->  				dev_name(hsotg->dev), ##__VA_ARGS__)
->  
-> +
-> +#ifdef CONFIG_MIPS
-> +/*
-> + * There are some MIPS machines that can run in either big-endian
-> + * or little-endian mode and that use the dwc2 register without
-> + * a byteswap in both ways.
-> + * Unlike other architectures, MIPS does not require a barrier
-> + * before the __raw_writel() to synchronize with DMA but does
-> + * require the barrier after the writel() to serialize a series
-> + * of writes. This set of operations was added specifically for
-> + * MIPS and should only be used there.
-> + */
->  static inline u32 dwc2_readl(const void __iomem *addr)
->  {
->  	u32 value = __raw_readl(addr);
-> @@ -90,6 +102,23 @@ static inline void dwc2_writel(u32 value, void __iomem *addr)
->  	pr_info("INFO:: wrote %08x to %p\n", value, addr);
->  #endif
->  }
-> +#else
-> +/* Normal architectures just use readl/write */
-> +static inline u32 dwc2_readl(const void __iomem *addr)
-> +{
-> +	u32 value = readl(addr);
-> +	return value;
-> +}
-> +
-> +static inline void dwc2_writel(u32 value, void __iomem *addr)
-> +{
-> +	writel(value, addr);
-> +
-> +#ifdef dwc2_log_writes
+> From: Alex Williamson [mailto:alex.williamson@redhat.com]
+> Sent: Friday, May 13, 2016 1:33 PM
+> > >
+> > > As argued previously in this thread, there's nothing special about a
+> > > DMA write to memory versus a DMA write to a special address that
+> > > triggers an MSI vector.  If the device is DMA capable, which we assum=
+e
+> > > all are, it can be fooled into generating those DMA writes regardless
+> > > of whether we actively block access to the MSI-X vector table itself.
+> >
+> > But with DMA remapping above can be blocked.
+>=20
+> How?  VT-d explicitly ignores DMA writes to 0xFEEx_xxxx, section 3.13:
+>=20
+>   Write requests without PASID of DWORD length are treated as interrupt
+>   requests. Interrupt requests are not subjected to DMA remapping[...]
+>   Instead, remapping hardware can be enabled to subject such interrupt
+>   requests to interrupt remapping.
 
-Hi Arnd,
+Thanks for catching this!
 
-The capitalization issue is still there in this patch.
+>=20
+> > > MSI-X vector table access w/o interrupt remapping is to avoid obvious
+> > > collisions if it were to be programmed directly, it doesn't actually
+> > > prevent an identical DMA transaction from being generated by other
+> >
+> > Kernel can enable DMA remapping but disable IRQ remapping. In such
+> > case identical DMA transaction can be prevented.
+>=20
+> Not according to the VT-d spec as quoted above.  If so, how?
 
-There's also a few checkpatch issues.
+So my argument on this is wrong. sorry.
 
-And should the barrier be moved after the write like it says in the
-comment? That seems to have been removed since earlier versions of
-the patch.
+>=20
+> > Anyway my point is simple. Let's ignore how Linux kernel implements
+> > IRQ remapping on x86 (which may change time to time), and just
+> > focus on architectural possibility. Non-x86 platform may implement
+> > IRQ remapping completely separate from device side, then checking
+> > availability of IRQ remapping is enough to decide whether mmap
+> > MSI-X table is safe. x86 with VT-d can be configured to a mode
+> > requiring host control of both MSI-X entry and IRQ remapping hardware
+> > (without source id check). In such case it's insufficient to make
+> > decision simply based on IRQ remapping availability. We need a way
+> > to query from IRQ remapping module whether it's actually safe to
+> > mmap MSI-X.
+>=20
+> We're going in circles here.  This patch is attempting to remove
+> protection from the MSI-X vector table that is really nothing more than
+> security theater already.  That "protection" only actually prevents
+> casual misuse of the API which is really only a problem when the
+> platform offers no form of interrupt isolation, such as VT-d with DMA
+> remapping but not interrupt remapping.  Disabling source-id checking in
+> VT-d should be handled as the equivalent of disabling interrupt
+> remapping altogether as far as the IOMMU API is concerned.  That's
+> a trivial gap that should be fixed.  There is no such thing as a secure
 
-Regards,
-John
+That is the main change I'm asking against original patch, which has:
+
++static void pci_check_msi_remapping(struct pci_dev *pdev,
++					const struct iommu_ops *ops)
++{
++	struct pci_bus *bus =3D pdev->bus;
++
++	if (ops->capable(IOMMU_CAP_INTR_REMAP) &&
++		!(bus->bus_flags & PCI_BUS_FLAGS_MSI_REMAP))
++		bus->bus_flags |=3D PCI_BUS_FLAGS_MSI_REMAP;
++}
++
+
+Above flag should be cleared when source-id checking is disabled on x86.=20
+Yes, VFIO is part of OS but any assumption we made about other parts
+needs to be reflected accurately in the code.
+
+> MSI-X vector table when untrusted userspace drivers are involved, we
+> must always assume that a device can generate DMA writes that are
+> indistinguishable from actual interrupt requests and if the platform
+> does not provide interrupt isolation we should require the user to
+> opt-in to an unsafe mode.
+>=20
+> Simply denying direct writes to the vector table or preventing mapping
+> of the vector table into the user address space does not provide any
+> tangible form of protection.  Many devices make use of window registers
+> that allow backdoors to arbitrary device registers.  Some drivers even
+> use this as the primary means for configuring MSI-X, which makes them
+> incompatible with device assignment without device specific quirks to
+> enable virtualization of these paths.
+>=20
+> If you have an objection to this patch, please show me how preventing
+> direct CPU access to the MSI-X vector table provides any kind of
+> security guarantee of the contents of the vector table and also prove
+> to me that a device cannot spoof a DMA write that is indistinguishable
+> from one associated with an actual interrupt, regardless of the
+> contents of the MSI-X vector table.  Thanks,
+>=20
+
+I'm not object to the whole patch series. As replied above, my point
+is just that current condition of allowing mmap MSI-X in this patch is not=
+=20
+accurate, but my argument on security manner is not correct. Thanks
+for your elaboration to make it clear.
+
+Thanks
+Kevin
