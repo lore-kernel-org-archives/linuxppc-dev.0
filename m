@@ -1,22 +1,23 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
- [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 3r63np2pzCzDq7w
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 08:05:33 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Viresh Kumar <viresh.kumar@linaro.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH-next v2 0/2] cpufreq: powernv: Fixes for Global pstate
- management
-Date: Sat, 14 May 2016 00:08:53 +0200
-Message-ID: <2343292.GUrEpiMUq0@vostro.rjw.lan>
-In-Reply-To: <20160509153204.GA21661@vireshk-i7>
-References: <1462288776-26721-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20160509153204.GA21661@vireshk-i7>
+Return-Path: <danielwa@cisco.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r67V70Mw0zDq8G
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 10:52:15 +1000 (AEST)
+Received: from alln-iport-2.cisco.com (alln-iport-2.cisco.com [173.37.142.89])
+ (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3r67V6251Wz9t5s
+ for <linuxppc-dev@ozlabs.org>; Sat, 14 May 2016 10:52:14 +1000 (AEST)
+To: linuxppc-dev@ozlabs.org,
+ "xe-kernel@external.cisco.com" <xe-kernel@external.cisco.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+From: Daniel Walker <danielwa@cisco.com>
+Subject: udgb on fsl booke?
+Message-ID: <57367455.5060306@cisco.com>
+Date: Fri, 13 May 2016 17:41:57 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, May 09, 2016 09:02:04 PM Viresh Kumar wrote:
-> On 03-05-16, 20:49, Akshay Adiga wrote:
-> > Fixes are based on patch https://patchwork.ozlabs.org/patch/612058/ which
-> > is in Rafael's linux-next.
-> > 
-> > - Patch [1] fixes WARN_ON in powernv_target_index()
-> > - Patch [2] Deleting any pending timer to saves an unnecessary irq call
-> >  in powernv_target_index()
-> > 
-> > Akshay Adiga (2):
-> >   cpufreq: powernv: Move smp_call_function_any() out of irq safe block
-> >   cpufreq: powernv: del_timer_sync when global and local pstate are
-> >     equal
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Both [1-2/2] applied, thanks!
+Hi,
+
+I noticed that udbg is missing for fsl booke , or at least it doesn't 
+appear to be implemented. I don't know a great deal about fsl book. I'm 
+working on an MCP85XX at the moment , and I was looking into the udbg 
+system to get prints. It looks like fsl booke might be similar enough to 
+44x to use the already implemented udbg routines for that.
+
+Does anyone have suggestion on this ? Is fsl booke missing because it's 
+not possible to have this, or no one ever needed it ?
+
+Thanks,
+
+Daniel
