@@ -1,30 +1,30 @@
-Return-Path: <John.Youn@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chunkeey@googlemail.com>
+Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
+ [IPv6:2a00:1450:400c:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r6B6R5sHRzDq8b
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 12:50:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r6Lpk5R0QzDq8b
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 19:22:22 +1000 (AEST)
+Received: by mail-wm0-x243.google.com with SMTP id n129so8039154wmn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 May 2016 02:22:22 -0700 (PDT)
+From: Christian Lamparter <chunkeey@googlemail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Felipe Balbi <felipe.balbi@linux.intel.com>, linux-mips@linux-mips.org,
+ johnyoun@synopsys.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, a.seppala@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, Douglas Anderson <dianders@chromium.org>,
+ Gregory Herrero <gregory.herrero@intel.com>,
+ Mian Yousaf Kaukab <yousaf.kaukab@intel.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 Subject: Re: [PATCH v4] usb: dwc2: fix regression on big-endian PowerPC/ARM
  systems
-To: Arnd Bergmann <arnd@arndb.de>, Christian Lamparter
- <chunkeey@googlemail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Felipe Balbi <felipe.balbi@linux.intel.com>
-References: <1463147559-544140-1-git-send-email-arnd@arndb.de>
-CC: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "John.Youn@synopsys.com" <John.Youn@synopsys.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "a.seppala@gmail.com" <a.seppala@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Douglas Anderson <dianders@chromium.org>,
- Gregory Herrero <gregory.herrero@intel.com>, Mian Yousaf Kaukab
- <yousaf.kaukab@intel.com>, Marek Szyprowski <m.szyprowski@samsung.com>
-From: John Youn <John.Youn@synopsys.com>
-Message-ID: <57369267.6060308@synopsys.com>
-Date: Fri, 13 May 2016 19:50:15 -0700
-MIME-Version: 1.0
+Date: Sat, 14 May 2016 11:22:12 +0200
+Message-ID: <6179749.eyWcSy75sL@debian64>
 In-Reply-To: <1463147559-544140-1-git-send-email-arnd@arndb.de>
-Content-Type: text/plain; charset="utf-8"
+References: <1463147559-544140-1-git-send-email-arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,7 +34,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5/13/2016 6:53 AM, Arnd Bergmann wrote:
+On Friday, May 13, 2016 03:52:27 PM Arnd Bergmann wrote:
 > A patch that went into Linux-4.4 to fix big-endian mode on a Lantiq
 > MIPS system unfortunately broke big-endian operation on PowerPC
 > APM82181 as reported by Christian Lamparter, and likely other
@@ -72,59 +72,17 @@ On 5/13/2016 6:53 AM, Arnd Bergmann wrote:
 > 
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > Fixes: 95c8bc360944 ("usb: dwc2: Use platform endianness when accessing registers")
-> ---
->  drivers/usb/dwc2/core.h | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
-> 
-> diff --git a/drivers/usb/dwc2/core.h b/drivers/usb/dwc2/core.h
-> index 3c58d633ce80..dec0b21fc626 100644
-> --- a/drivers/usb/dwc2/core.h
-> +++ b/drivers/usb/dwc2/core.h
-> @@ -64,6 +64,17 @@
->  	DWC2_TRACE_SCHEDULER_VB(pr_fmt("%s: SCH: " fmt),		\
->  				dev_name(hsotg->dev), ##__VA_ARGS__)
->  
-> +#ifdef CONFIG_MIPS
-> +/*
-> + * There are some MIPS machines that can run in either big-endian
-> + * or little-endian mode and that use the dwc2 register without
-> + * a byteswap in both ways.
-> + * Unlike other architectures, MIPS apparently does not require a
-> + * barrier before the __raw_writel() to synchronize with DMA but does
-> + * require the barrier after the __raw_writel() to serialize a set of
-> + * writes. This set of operations was added specifically for MIPS and
-> + * should only be used there.
-> + */
->  static inline u32 dwc2_readl(const void __iomem *addr)
->  {
->  	u32 value = __raw_readl(addr);
-> @@ -90,6 +101,22 @@ static inline void dwc2_writel(u32 value, void __iomem *addr)
->  	pr_info("INFO:: wrote %08x to %p\n", value, addr);
->  #endif
->  }
-> +#else
-> +/* Normal architectures just use readl/write */
-> +static inline u32 dwc2_readl(const void __iomem *addr)
-> +{
-> +	return readl(addr);
-> +}
-> +
-> +static inline void dwc2_writel(u32 value, void __iomem *addr)
-> +{
-> +	writel(value, addr);
-> +
-> +#ifdef DWC2_LOG_WRITES
-> +	pr_info("info:: wrote %08x to %p\n", value, addr);
-> +#endif
-> +}
-> +#endif
->  
->  /* Maximum number of Endpoints/HostChannels */
->  #define MAX_EPS_CHANNELS	16
-> 
+Thanks Arnd,
 
-Thanks Arnd.
+Tested-by: Christian Lamparter <chunkeey@googlemail.com>
 
-Acked-by: John Youn <johnyoun@synopsys.com>
+dwc2 4bff80000.usbotg: Specified GNPTXFDEP=1024 > 256
+dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
+dwc2 4bff80000.usbotg: DWC OTG Controller
+dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number 1
+dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
 
-John
+Regards,
+Christian
