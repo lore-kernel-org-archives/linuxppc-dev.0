@@ -1,27 +1,31 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r7mnj0lT7zDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 02:56:24 +1000 (AEST)
-Date: Mon, 16 May 2016 11:56:18 -0500
-From: Rob Herring <robh@kernel.org>
-To: Christian Lamparter <chunkeey@googlemail.com>
-Cc: linux-gpio@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devicetree@vger.kernel.org, Kumar Gala <galak@codeaurora.org>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>,
- Alexandre Courbot <gnurou@gmail.com>,
- Alistair Popple <alistair@popple.id.au>,
- Matt Porter <mporter@kernel.crashing.org>,
- Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] gpio: dt-bindings: add ibm,ppc4xx-gpio binding
-Message-ID: <20160516165618.GA29776@rob-hp-laptop>
-References: <c7b118c342c161954126e2e82cf1a0a6a127b4c2.1463002267.git.chunkeey@googlemail.com>
- <20160516152746.GA13649@rob-hp-laptop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r7nV90FWjzDq5r
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 03:28:00 +1000 (AEST)
+Date: Mon, 16 May 2016 12:27:55 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Miroslav Benes <mbenes@suse.cz>
+Cc: Jessica Yu <jeyu@redhat.com>, Jiri Kosina <jikos@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: [RFC PATCH v2 17/18] livepatch: change to a per-task consistency
+ model
+Message-ID: <20160516172755.gro5enwei2gth3ko@treble>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <alpine.LNX.2.00.1605091131050.22758@pobox.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160516152746.GA13649@rob-hp-laptop>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <alpine.LNX.2.00.1605091131050.22758@pobox.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +35,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 16, 2016 at 10:27:46AM -0500, Rob Herring wrote:
-> On Thu, May 12, 2016 at 12:07:48AM +0200, Christian Lamparter wrote:
-> > This patch adds binding information for IBM/AMCC/APM GPIO
-> > Controllers of the PowerPC 4XX series and compatible SoCs.
-> > 
-> > The "PowerPC 405EP Embedded Processor Data Sheet" has the
-> > following to say about the GPIO controllers: "
-> > 
-> >  - Controller functions and GPIO registers are programmed
-> >    and accessed via memory-mapped OPB bus master accesses
-> > 
-> >  - All GPIOs are pin-shared with other functions. DCRs control
-> >    whether a particular pin that has GPIO capabilities acts
-> >    as a GPIO or is used for another purpose.
-> > 
-> >  - Each GPIO outputs is separately programmable to emulate
-> >    an open-drain driver (i.e. drives to zero, threestated if
-> >    output bit is 1)
-> > 
-> > "
-> > The ppc4xx_gpio.c driver is part of the platform/sysdev drivers
-> > in arch/powerpc/sysdev.
-> > 
-> > Signed-off-by: Christian Lamparter <chunkeey@googlemail.com>
-> > ---
-> > I looked into arch/powerpc/sysdev/ppc4xx_gpio.c driver and
-> > it doesn't have support for the tri-state logic (open drain
-> > is disabled), but the hardware would support it.
-> > (the #gpio-cells description suffers because of this, since
-> > the high-z option isn't there).
-> > 
-> > Also there's another problem: There's no DCR pinmux driver?!
-> > So sadly, there's not much information on how to use the DCRs
-> > to control the which pin is muxed to the GPIO or to a SoC
-> > function like the i2c.
-> > 
-> > This was all the valuable information I could find about the
-> > hardware, so it is included it in the binding text, even
-> > though there's no support for it... Is there anything else
-> > to add?
-> > ---
-> >  .../devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt   | 24 ++++++++++++++++++++++
-> >  1 file changed, 24 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/gpio/ibm,ppc4xx-gpio.txt
+On Mon, May 09, 2016 at 11:41:37AM +0200, Miroslav Benes wrote:
+> > +void klp_init_transition(struct klp_patch *patch, int state)
+> > +{
+> > +	struct task_struct *g, *task;
+> > +	unsigned int cpu;
+> > +	struct klp_object *obj;
+> > +	struct klp_func *func;
+> > +	int initial_state = !state;
+> > +
+> > +	klp_transition_patch = patch;
+> > +
+> > +	/*
+> > +	 * If the patch can be applied or reverted immediately, skip the
+> > +	 * per-task transitions.
+> > +	 */
+> > +	if (patch->immediate)
+> > +		return;
+> > +
+> > +	/*
+> > +	 * Initialize all tasks to the initial patch state to prepare them for
+> > +	 * switching to the target state.
+> > +	 */
+> > +	read_lock(&tasklist_lock);
+> > +	for_each_process_thread(g, task)
+> > +		task->patch_state = initial_state;
+> > +	read_unlock(&tasklist_lock);
+> > +
+> > +	/*
+> > +	 * Ditto for the idle "swapper" tasks.
+> > +	 */
+> > +	get_online_cpus();
+> > +	for_each_online_cpu(cpu)
+> > +		idle_task(cpu)->patch_state = initial_state;
+> > +	put_online_cpus();
+> > +
+> > +	/*
+> > +	 * Ensure klp_ftrace_handler() sees the task->patch_state updates
+> > +	 * before the func->transition updates.  Otherwise it could read an
+> > +	 * out-of-date task state and pick the wrong function.
+> > +	 */
+> > +	smp_wmb();
+> > +
+> > +	/*
+> > +	 * Set the func transition states so klp_ftrace_handler() will know to
+> > +	 * switch to the transition logic.
+> > +	 *
+> > +	 * When patching, the funcs aren't yet in the func_stack and will be
+> > +	 * made visible to the ftrace handler shortly by the calls to
+> > +	 * klp_patch_object().
+> > +	 *
+> > +	 * When unpatching, the funcs are already in the func_stack and so are
+> > +	 * already visible to the ftrace handler.
+> > +	 */
+> > +	klp_for_each_object(patch, obj)
+> > +		klp_for_each_func(obj, func)
+> > +			func->transition = true;
+> > +
+> > +	/*
+> > +	 * Set the global target patch state which tasks will switch to.  This
+> > +	 * has no effect until the TIF_PATCH_PENDING flags get set later.
+> > +	 */
+> > +	klp_target_state = state;
 > 
-> Normally, we don't allow wildcards for compatible strings, but given 
-> this is an established binding it is okay.
-> 
-> Acked-by: Rob Herring <robh@kernel.org>
+> I am afraid there is a problem for (patch->immediate == true) patches. 
+> klp_target_state is not set for those and the comment is not entirely 
+> true, because klp_target_state has an effect in several places.
 
-As this is just a binding doc, I've applied it.
+Ah, you're right.  I moved this assignment here for v2.  It was
+originally done before the patch->immediate check.  If I remember
+correctly, I moved it closer to the barrier for better readability (but
+I created a bug in the process).
 
-Rob
+> I guess we need to set klp_target_state even for immediate patches. Should 
+> we also initialize it with KLP_UNDEFINED and set it to KLP_UNDEFINED in 
+> klp_complete_transition()?
+
+Yes, to both.
+
+-- 
+Josh
