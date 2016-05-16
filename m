@@ -1,19 +1,21 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r7LjJ5hS8zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2016 10:21:08 +1000 (AEST)
-Date: Sun, 15 May 2016 19:21:01 -0500
-From: Scott Wood <oss@buserror.net>
-To: Raghav Dogra <raghav@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, prabhakar.kushwaha@nxp.com
-Message-ID: <20160516002101.GA2887@home.buserror.net>
-References: <1454323598-5149-2-git-send-email-raghav@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1454323598-5149-2-git-send-email-raghav@freescale.com>
-Subject: Re: [2/3] driver/memory: Update dependency of IFC for Layerscape
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r7NSh32YvzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 May 2016 11:40:20 +1000 (AEST)
+Message-ID: <1463362819.5704.8.camel@ellerman.id.au>
+Subject: Re: udgb on fsl booke?
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Walker <danielwa@cisco.com>, linuxppc-dev@ozlabs.org,
+ "xe-kernel@external.cisco.com"
+ <xe-kernel@external.cisco.com>, Kumar Gala <galak@kernel.crashing.org>,
+ oss@buserror.net
+Date: Mon, 16 May 2016 11:40:19 +1000
+In-Reply-To: <57367455.5060306@cisco.com>
+References: <57367455.5060306@cisco.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,18 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 01, 2016 at 04:16:37PM +0530, Raghav Dogra wrote:
-> IFC NAND is not working on ARM layescape platform due to
-> undefined macro FSL_SOC.
-> This patch fixes the dependency to enable NAND.
+On Fri, 2016-05-13 at 17:41 -0700, Daniel Walker wrote:
+
+> Hi,
 > 
-> Signed-off-by: Raghav Dogra <raghav@freescale.com>
-> ---
->  drivers/memory/Kconfig   | 2 +-
->  drivers/memory/fsl_ifc.c | 4 +++-
->  drivers/mtd/nand/Kconfig | 2 +-
->  3 files changed, 5 insertions(+), 3 deletions(-)
+> I noticed that udbg is missing for fsl booke , or at least it doesn't 
+> appear to be implemented. I don't know a great deal about fsl book. I'm 
+> working on an MCP85XX at the moment , and I was looking into the udbg 
+> system to get prints. It looks like fsl booke might be similar enough to 
+> 44x to use the already implemented udbg routines for that.
+> 
+> Does anyone have suggestion on this ? Is fsl booke missing because it's 
+> not possible to have this, or no one ever needed it ?
 
-Patches touching drivers/mtd need to CC the MTD list and maintainer.
+Yeah I noticed this recently too.
 
--Scott
+I don't know the history of why there isn't one, I suspect probably it just was
+never merged upstream. Hopefully someone from Freescale can chime in.
+
+On my machine (p5020ds) there is a real UART, so it should just be a matter of
+creating a mapping for it and then using the existing udbg_16550 code.
+
+cheers
