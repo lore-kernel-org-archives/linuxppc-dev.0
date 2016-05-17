@@ -1,17 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rpjday@crashcourse.ca>
+Received: from smtp486.redcondor.net (smtp486.redcondor.net [208.80.204.86])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8GCG0cZGzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 22:01:46 +1000 (AEST)
-Message-Id: <3257f244fea7785aa1791d3ac68922692bffc3c3.1463486314.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 2/2] powerpc32: fix check_io_access()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 May 2016 14:01:41 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8H8W3RX0zDq8G
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 22:44:25 +1000 (AEST)
+Received: from astoria.ccjclearline.com ([64.235.106.9])
+ by smtp486.redcondor.net ({6695537a-536a-45f9-a249-877c85428649})
+ via TCP (outbound) with ESMTPS id 20160517124422334_0486
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 12:44:22 +0000
+Received: from [216.191.234.70] (port=54256 helo=crashcourse.ca)
+ by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
+ (Exim 4.80) (envelope-from <rpjday@crashcourse.ca>)
+ id 1b2eNo-0000v8-Ez
+ for linuxppc-dev@lists.ozlabs.org; Tue, 17 May 2016 08:45:56 -0400
+Date: Tue, 17 May 2016 08:43:46 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
+Subject: for muram in DTS file, why change #address-cells from <1> to <2>?
+Message-ID: <alpine.LFD.2.20.1605170839440.3461@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,60 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On processors like the 8xx, the machine check exception can also
-happen directly on the load/store instruction itself, so that case
-needs to be handled as well
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/ppc-opcode.h |  1 +
- arch/powerpc/kernel/traps.c           | 13 +++++++++++--
- 2 files changed, 12 insertions(+), 2 deletions(-)
+  currently working on a project involving MPC8360 board, and was
+handed a patch to the system .dts file that contained the following
+snippet for the muram node:
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 37e7b9d..5e613b8 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -84,6 +84,7 @@
- /* opcode and xopcode for instructions */
- #define OP_TRAP 3
- #define OP_TRAP_64 2
-+#define OP_31		31
- 
- #define OP_31_XOP_TRAP      4
- #define OP_31_XOP_LWZX      23
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 255f5cc..27f1a36 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -334,6 +334,7 @@ static inline int check_io_access(struct pt_regs *regs)
- 
- 	if (((msr & 0xffff0000) == 0 || (msr & (0x80000 | 0x40000)))
- 	    && (entry = search_exception_tables(regs->nip)) != NULL) {
-+		int op, xop;
- 		/*
- 		 * Check that it's a sync instruction, or somewhere
- 		 * in the twi; isync; nop sequence that inb/inw/inl uses.
-@@ -346,10 +347,18 @@ static inline int check_io_access(struct pt_regs *regs)
- 			nip -= 2;
- 		else if (*nip == PPC_INST_ISYNC)
- 			--nip;
--		if (*nip == PPC_INST_SYNC || (*nip >> 26) == OP_TRAP) {
-+		if (*nip == PPC_INST_SYNC || (*nip >> 26) == OP_TRAP)
-+			--nip;
-+		op = *nip >> 26;
-+		xop = (*nip >> 1) & 0x3ff;
-+		if (op == OP_LWZ || op == OP_LBZ || op == OP_STW ||
-+		    op == OP_STB || op == OP_LHZ || op == OP_STH ||
-+		    (op == OP_31 &&
-+		     (xop == OP_31_XOP_LBZX || xop == OP_31_XOP_LHBRX ||
-+		      xop == OP_31_XOP_LWBRX || xop == OP_31_XOP_STBX ||
-+		      xop == OP_31_XOP_STHBRX || xop == OP_31_XOP_STWBRX))) {
- 			unsigned int rb;
- 
--			--nip;
- 			rb = (*nip >> 11) & 0x1f;
- 			printk(KERN_DEBUG "%s bad port %lx at %p\n",
- 			       (*nip & 0x100)? "OUT to": "IN from",
+                muram@10000 {
+-                       #address-cells = <1>;
++                       #address-cells = <2>;
+                        #size-cells = <1>;
+                        compatible = "fsl,qe-muram", "fsl,cpm-muram";
+-                       ranges = <0 0x10000 0xc000>;
++                       ranges = <0 0 0x10000 0xc000>;
+
+                        data-only@0 {
+                                compatible = "fsl,qe-muram-data","fsl,cpm-muram-data";
+-                               reg = <0 0xc000>;
++                               reg = <0 0x4000 0x4000>, <0 0x9400 0x1c00>;
+                        };
+
+                };
+
+  i'm not a .dts file expert, but i'm baffled by the change in the
+value of #address-cells. how does that make any sense? it seems to me
+that that kind of change is a *really* fundamental change in the
+specification of the underlying architecture.
+
+  can someone explain what that might mean? thanks.
+
+rday
+
 -- 
-2.1.0
+
+========================================================================
+Robert P. J. Day                                 Ottawa, Ontario, CANADA
+                        http://crashcourse.ca
+
+Twitter:                                       http://twitter.com/rpjday
+LinkedIn:                               http://ca.linkedin.com/in/rpjday
+========================================================================
