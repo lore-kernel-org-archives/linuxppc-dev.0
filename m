@@ -1,26 +1,22 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0060.outbound.protection.outlook.com [157.56.111.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r80Rw6qwQzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 11:41:48 +1000 (AEST)
-Message-ID: <1463449293.16584.127.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Qiang Zhao <qiang.zhao@nxp.com>
-Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo
- Li <leoyang.li@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 16 May 2016 20:41:33 -0500
-In-Reply-To: <AM3PR04MB118504BB6430CBEC8AA4886491480@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
- <20160516232210.GA21087@home.buserror.net>
- <AM3PR04MB118504BB6430CBEC8AA4886491480@AM3PR04MB1185.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [v5,1/7] QE: Add IC, SI and SIRAM document to device tree
- bindings.
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r82HC0xYJzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:04:22 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <oss@buserror.net>
+CC: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH v6 4/7] bindings: move cpm_qe binding from powerpc/fsl to
+ soc/fsl
+Date: Tue, 17 May 2016 10:39:00 +0800
+Message-ID: <1463452743-21462-4-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1463452743-21462-1-git-send-email-qiang.zhao@nxp.com>
+References: <1463452743-21462-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +26,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-05-17 at 01:18 +0000, Qiang Zhao wrote:
-> On Tue, May 17, 2016 at 07:22AM, Scott Wood wrote:
-> > -----Original Message-----
-> > From: Scott Wood [mailto:oss@buserror.net]
-> > Sent: Tuesday, May 17, 2016 7:22 AM
-> > To: Qiang Zhao <qiang.zhao@nxp.com>
-> > Cc: robh+dt@kernel.org; devicetree@vger.kernel.org; linux-
-> > kernel@vger.kernel.org; Xiaobo Xie <xiaobo.xie@nxp.com>; Yang-Leo Li
-> > <leoyang.li@nxp.com>; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [v5,1/7] QE: Add IC, SI and SIRAM document to device tree
-> > bindings.
-> > 
-> > On Wed, Mar 09, 2016 at 09:21:28AM +0800, Zhao Qiang wrote:
-> > > Add IC, SI and SIRAM document of QE to
-> > > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
-> > > 
-> > > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > > Acked-by: Rob Herring <robh@kernel.org>
-> > > ---
-> > > changes for v2
-> > > 	- Add interrupt-controller in Required properties
-> > > 	- delete address-cells and size-cells for qe-si and qe-siram Changes
-> > > for v3
-> > > 	- Add SoC specific caompatible strings to qe-si and qe-siram Changes
-> > > for v4
-> > > 	- NA
-> > > Changes for v5
-> > > 	- NA
-> > > 
-> > >  .../devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt  | 50
-> > > ++++++++++++++++++++++
-> > >  1 file changed, 50 insertions(+)
-> > > +* Serial Interface Block (SI)
-> > > +
-> > > +The SI manages the routing of eight TDM lines to the QE block serial
-> > > +drivers , the MCC and the UCCs, for receive and transmit.
-> > > +
-> > > +Required properties:
-> > > +- compatible : should be "fsl,t1040-qe-si".
-> > > +- reg : Address range of SI register set.
-> > 
-> > Is t1040 the only chip that has or will ever have this?
-> 
-> There also be t1024 and ls1043 supporting si.
-> I thought to add them when adding their device node.
-> If you think it is better to add them now, I will modify.
+cpm_qe is supported on both powerpc and arm.
+and the QE code has been moved from arch/powerpc into
+drivers/soc/fsl, so move cpm_qe binding from powerpc/fsl
+to soc/fsl
 
-The binding is saying that the compatible "should" be "fsl,t1040-qe-si"
-regardless of whether it's actually a t1040.  Instead say that compatible must
-include "fsl,<chip>-qe-si" and give t1040 as an example.  If you intend
-"fsl,t1040-qe-si" to be something that other compatible chips list, in
-addition to their own <chip> compatibles, then also say that explicitly.
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+Acked-by: Rob Herring<robh@kernel.org>
+---
+Changes for v3
+	- NA
+Changes for v4
+	- NA
+Changes for v5
+	- NA
+Changes for v6
+	- NA
 
--Scott
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm.txt     | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/brg.txt | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/i2c.txt | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/pic.txt | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/usb.txt | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/gpio.txt    | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/network.txt | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe.txt      | 0
+ .../devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/firmware.txt       | 0
+ .../devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/par_io.txt         | 0
+ .../devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/pincfg.txt         | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/ucc.txt  | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/usb.txt  | 0
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/serial.txt  | 0
+ .../devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/uqe_serial.txt        | 0
+ 15 files changed, 0 insertions(+), 0 deletions(-)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/brg.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/i2c.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/pic.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/cpm/usb.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/gpio.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/network.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/firmware.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/par_io.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/pincfg.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/ucc.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/qe/usb.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/serial.txt (100%)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/cpm_qe/uqe_serial.txt (100%)
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/brg.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/brg.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/brg.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/brg.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/i2c.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/i2c.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/i2c.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/i2c.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/pic.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/pic.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/pic.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/pic.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/usb.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/usb.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/cpm/usb.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/cpm/usb.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/gpio.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/gpio.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/gpio.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/gpio.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/network.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/network.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/network.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/firmware.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/firmware.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/firmware.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/firmware.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/par_io.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/par_io.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/pincfg.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/pincfg.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/pincfg.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/pincfg.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/ucc.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/ucc.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/ucc.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/ucc.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/usb.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/usb.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe/usb.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/usb.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/serial.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/serial.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/serial.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/serial.txt
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/uqe_serial.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+rename to Documentation/devicetree/bindings/soc/fsl/cpm_qe/uqe_serial.txt
+-- 
+2.1.0.27.g96db324
