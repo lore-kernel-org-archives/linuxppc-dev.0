@@ -1,25 +1,25 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r88dd5400zDqCW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 17:50:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r88dt3wQpzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 17:50:58 +1000 (AEST)
 Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Tue, 17 May 2016 13:20:42 +0530
-Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6FC5EE005E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:23:51 +0530 (IST)
+ Tue, 17 May 2016 13:20:55 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 35D271258061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:23:04 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4H7od3G31326298
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:20:40 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4H7op3o60817586
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:20:51 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4H7oWnx016651
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:20:39 +0530
+ u4H7oibb017379
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:20:51 +0530
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
@@ -27,9 +27,11 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
  waiman.long@hpe.com, mnipxh@163.com, boqun.feng@gmail.com,
  Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/6] powerpc use pv-qpsinlock instead of spinlock
-Date: Tue, 17 May 2016 15:49:41 +0800
-Message-Id: <1463471387-5115-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/6] qspinlock: powerpc support qspinlock
+Date: Tue, 17 May 2016 15:49:42 +0800
+Message-Id: <1463471387-5115-2-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+In-Reply-To: <1463471387-5115-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+References: <1463471387-5115-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,101 +41,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-change fome v1:
-	separate into 6 pathes from one patch
-	some minor code changes.
+Base code to enable qspinlock on powerpc. this patch add some #ifdef
+here and there. Although there is no paravirt related code, we can
+successfully build a qspinlock kernel after apply this patch.
 
-benchmark test results are below.
-run 3 tests on pseries IBM,8408-E8E with 32cpus, 64GB memory
-perf bench futex hash
-perf bench futex lock-pi
-perf record -advRT || perf bench sched messaging -g 1000 || perf report
-
-summary:
-_____test________________spinlcok______________pv-qspinlcok_____
-|futex hash	|	556370 ops	|	629634 ops	|
-|futex lock-pi	|	362 ops		|	367 ops		|
-|workloads	|	23%		|	13%		|
-
-details:
-
-spinlock:
-test 1)
-# Running futex/hash benchmark...
-Run summary [PID 9962]: 32 threads, each operating on 1024 [private] futexes for 10 secs.
-Averaged 556370 operations/sec (+- 0.61%), total secs = 10
-
-test 2)
-# Running futex/lock-pi benchmark...
-Run summary [PID 9962]: 32 threads doing pi lock/unlock pairing for 10 secs.
-Averaged 362 operations/sec (+- 0.00%), total secs = 10
-
-test 3)
-perf bench sched messaging -g 1000
-perf record -avdRT and perf report
-# Samples: 2M of event 'cycles:ppp'
-# Event count (approx.): 2045582241213
-#
-# Overhead  Command          Shared Object        Symbol
-# ........  ...............  ...................  ........................................................
-#
-    22.96%  sched-messaging  [kernel.kallsyms]    [k] _raw_spin_lock_irqsave
-    19.76%  sched-messaging  [kernel.kallsyms]    [k] __spin_yield
-     2.09%  sched-messaging  [kernel.kallsyms]    [k] __slab_free
-     2.07%  sched-messaging  [kernel.kallsyms]    [k] unix_stream_read_generic
-
-
-pv-qspinlock:
-
-test 1)
-# Running futex/hash benchmark...
-Run summary [PID 3219]: 32 threads, each operating on 1024 [private] futexes for 10 secs.
-Averaged 629634 operations/sec (+- 0.38%), total secs = 10
-
-test 2)
-# Running futex/lock-pi benchmark...
-Run summary [PID 3219]: 32 threads doing pi lock/unlock pairing for 10 secs.
-Averaged 367 operations/sec (+- 0.00%), total secs = 10
-
-test 3)
-perf bench sched messaging -g 1000
-perf record -avdRT and perf report
-# Samples: 1M of event 'cycles:ppp'
-# Event count (approx.): 1250040606393
-#
-# Overhead  Command          Shared Object                   Symbol
-# ........  ...............  ..............................  ........................................................
-#
-     9.87%  sched-messaging  [kernel.vmlinux]                [k] __pv_queued_spin_lock_slowpath
-     3.66%  sched-messaging  [kernel.vmlinux]                [k] __pv_queued_spin_unlock
-     3.37%  sched-messaging  [kernel.vmlinux]                [k] __slab_free
-     3.06%  sched-messaging  [kernel.vmlinux]                [k] unix_stream_read_generic
-
-
-Pan Xinhui (6):
-  qspinlock: powerpc support qspinlock
-  powerpc: pseries/Kconfig: qspinlock build config
-  powerpc: lib/locks.c: cpu yield/wake helper function
-  pv-qspinlock: powerpc support pv-qspinlock
-  pv-qspinlock: use cmpxchg_release in __pv_queued_spin_unlock
-  powerpc: pseries: pv-qspinlock build config/make
-
- arch/powerpc/include/asm/qspinlock.h               | 39 +++++++++++++++++++
- arch/powerpc/include/asm/qspinlock_paravirt.h      | 38 +++++++++++++++++++
- .../powerpc/include/asm/qspinlock_paravirt_types.h | 13 +++++++
- arch/powerpc/include/asm/spinlock.h                | 31 +++++++++------
- arch/powerpc/include/asm/spinlock_types.h          |  4 ++
- arch/powerpc/kernel/Makefile                       |  1 +
- arch/powerpc/kernel/paravirt.c                     | 44 ++++++++++++++++++++++
- arch/powerpc/lib/locks.c                           | 36 ++++++++++++++++++
- arch/powerpc/platforms/pseries/Kconfig             |  9 +++++
- arch/powerpc/platforms/pseries/setup.c             |  5 +++
- kernel/locking/qspinlock_paravirt.h                |  2 +-
- 11 files changed, 209 insertions(+), 13 deletions(-)
+Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/qspinlock.h      | 22 ++++++++++++++++++++++
+ arch/powerpc/include/asm/spinlock.h       | 27 +++++++++++++++------------
+ arch/powerpc/include/asm/spinlock_types.h |  4 ++++
+ arch/powerpc/lib/locks.c                  |  4 ++++
+ 4 files changed, 45 insertions(+), 12 deletions(-)
  create mode 100644 arch/powerpc/include/asm/qspinlock.h
- create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt.h
- create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt_types.h
- create mode 100644 arch/powerpc/kernel/paravirt.c
 
+diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include/asm/qspinlock.h
+new file mode 100644
+index 0000000..5883954
+--- /dev/null
++++ b/arch/powerpc/include/asm/qspinlock.h
+@@ -0,0 +1,22 @@
++#ifndef _ASM_POWERPC_QSPINLOCK_H
++#define _ASM_POWERPC_QSPINLOCK_H
++
++#include <asm-generic/qspinlock_types.h>
++
++#define SPIN_THRESHOLD (1 << 15)
++#define queued_spin_unlock queued_spin_unlock
++
++static inline void native_queued_spin_unlock(struct qspinlock *lock)
++{
++	/* no load/store can be across the unlock()*/
++	smp_store_release((u8 *)lock, 0);
++}
++
++static inline void queued_spin_unlock(struct qspinlock *lock)
++{
++	native_queued_spin_unlock(lock);
++}
++
++#include <asm-generic/qspinlock.h>
++
++#endif /* _ASM_POWERPC_QSPINLOCK_H */
+diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+index 523673d..4359ee6 100644
+--- a/arch/powerpc/include/asm/spinlock.h
++++ b/arch/powerpc/include/asm/spinlock.h
+@@ -52,6 +52,20 @@
+ #define SYNC_IO
+ #endif
+ 
++#if defined(CONFIG_PPC_SPLPAR)
++/* We only yield to the hypervisor if we are in shared processor mode */
++#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
++extern void __spin_yield(arch_spinlock_t *lock);
++extern void __rw_yield(arch_rwlock_t *lock);
++#else /* SPLPAR */
++#define __spin_yield(x)	barrier()
++#define __rw_yield(x)	barrier()
++#define SHARED_PROCESSOR	0
++#endif
++
++#ifdef CONFIG_QUEUED_SPINLOCKS
++#include <asm/qspinlock.h>
++#else
+ static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
+ {
+ 	return lock.slock == 0;
+@@ -106,18 +120,6 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
+  * held.  Conveniently, we have a word in the paca that holds this
+  * value.
+  */
+-
+-#if defined(CONFIG_PPC_SPLPAR)
+-/* We only yield to the hypervisor if we are in shared processor mode */
+-#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
+-extern void __spin_yield(arch_spinlock_t *lock);
+-extern void __rw_yield(arch_rwlock_t *lock);
+-#else /* SPLPAR */
+-#define __spin_yield(x)	barrier()
+-#define __rw_yield(x)	barrier()
+-#define SHARED_PROCESSOR	0
+-#endif
+-
+ static inline void arch_spin_lock(arch_spinlock_t *lock)
+ {
+ 	CLEAR_IO_SYNC;
+@@ -169,6 +171,7 @@ extern void arch_spin_unlock_wait(arch_spinlock_t *lock);
+ 	do { while (arch_spin_is_locked(lock)) cpu_relax(); } while (0)
+ #endif
+ 
++#endif /* !CONFIG_QUEUED_SPINLOCKS */
+ /*
+  * Read-write spinlocks, allowing multiple readers
+  * but only one writer.
+diff --git a/arch/powerpc/include/asm/spinlock_types.h b/arch/powerpc/include/asm/spinlock_types.h
+index 2351adc..bd7144e 100644
+--- a/arch/powerpc/include/asm/spinlock_types.h
++++ b/arch/powerpc/include/asm/spinlock_types.h
+@@ -5,11 +5,15 @@
+ # error "please don't include this file directly"
+ #endif
+ 
++#ifdef CONFIG_QUEUED_SPINLOCKS
++#include <asm-generic/qspinlock_types.h>
++#else
+ typedef struct {
+ 	volatile unsigned int slock;
+ } arch_spinlock_t;
+ 
+ #define __ARCH_SPIN_LOCK_UNLOCKED	{ 0 }
++#endif
+ 
+ typedef struct {
+ 	volatile signed int lock;
+diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+index f7deebd..a9ebd71 100644
+--- a/arch/powerpc/lib/locks.c
++++ b/arch/powerpc/lib/locks.c
+@@ -23,6 +23,7 @@
+ #include <asm/hvcall.h>
+ #include <asm/smp.h>
+ 
++#ifndef CONFIG_QUEUED_SPINLOCKS
+ void __spin_yield(arch_spinlock_t *lock)
+ {
+ 	unsigned int lock_value, holder_cpu, yield_count;
+@@ -42,6 +43,7 @@ void __spin_yield(arch_spinlock_t *lock)
+ 		get_hard_smp_processor_id(holder_cpu), yield_count);
+ }
+ EXPORT_SYMBOL_GPL(__spin_yield);
++#endif
+ 
+ /*
+  * Waiting for a read lock or a write lock on a rwlock...
+@@ -69,6 +71,7 @@ void __rw_yield(arch_rwlock_t *rw)
+ }
+ #endif
+ 
++#ifndef CONFIG_QUEUED_SPINLOCKS
+ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ {
+ 	smp_mb();
+@@ -84,3 +87,4 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ }
+ 
+ EXPORT_SYMBOL(arch_spin_unlock_wait);
++#endif
 -- 
 1.9.1
