@@ -1,28 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r89gJ3hq5zDqLR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 18:37:16 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
-To: Laurent Vivier <lvivier@redhat.com>
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
- <57330AFE.1050209@suse.de> <a2700de4-623a-cae4-028b-8fe0aa82f75c@redhat.com>
- <57331C3F.2000708@suse.de> <e370a7ad-8306-20a9-09e9-99e6a9b0573c@redhat.com>
- <57344C7E.5010202@suse.de> <374d3217-cf6c-fa2e-d24a-e9ee8b1f4534@redhat.com>
- <3f99bce1-6fb7-b81d-26ca-24f1ca426c3e@redhat.com>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gleb Natapov <gleb@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
-From: Alexander Graf <agraf@suse.de>
-Message-ID: <573AD836.4090006@suse.de>
-Date: Tue, 17 May 2016 10:37:10 +0200
-MIME-Version: 1.0
-In-Reply-To: <3f99bce1-6fb7-b81d-26ca-24f1ca426c3e@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8GCF122zzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 22:01:44 +1000 (AEST)
+Message-Id: <fb8a0e9fa5af537857fb3ee25caf0c634894cca4.1463486314.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 1/2] powerpc32: Use instruction symbolic names in
+ check_io_access()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 17 May 2016 14:01:39 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,118 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/17/2016 10:35 AM, Laurent Vivier wrote:
->
-> On 12/05/2016 16:23, Laurent Vivier wrote:
->>
->> On 12/05/2016 11:27, Alexander Graf wrote:
->>> On 05/12/2016 11:10 AM, Laurent Vivier wrote:
->>>> On 11/05/2016 13:49, Alexander Graf wrote:
->>>>> On 05/11/2016 01:14 PM, Laurent Vivier wrote:
->>>>>> On 11/05/2016 12:35, Alexander Graf wrote:
->>>>>>> On 03/15/2016 09:18 PM, Laurent Vivier wrote:
->>>>>>>> While writing some instruction tests for kvm-unit-tests for powerpc,
->>>>>>>> I've found that illegal instructions are not managed correctly with
->>>>>>>> kvm-pr,
->>>>>>>> while it is fine with kvm-hv.
->>>>>>>>
->>>>>>>> When an illegal instruction (like ".long 0") is processed by kvm-pr,
->>>>>>>> the kernel logs are filled with:
->>>>>>>>
->>>>>>>>          Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->>>>>>>>          kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
->>>>>>>>
->>>>>>>> While the exception handler receives an interrupt for each
->>>>>>>> instruction
->>>>>>>> executed after the illegal instruction.
->>>>>>>>
->>>>>>>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->>>>>>>> ---
->>>>>>>>      arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->>>>>>>>      1 file changed, 3 insertions(+), 1 deletion(-)
->>>>>>>>
->>>>>>>> diff --git a/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>> b/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>> index 2afdb9c..4ee969d 100644
->>>>>>>> --- a/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>> +++ b/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run,
->>>>>>>> struct kvm_vcpu *vcpu,
->>>>>>>>            switch (get_op(inst)) {
->>>>>>>>          case 0:
->>>>>>>> -        emulated = EMULATE_FAIL;
->>>>>>>>              if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->>>>>>>>                  (inst == swab32(inst_sc))) {
->>>>>>>>                  /*
->>>>>>>> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run
->>>>>>>> *run,
->>>>>>>> struct kvm_vcpu *vcpu,
->>>>>>>>                  kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->>>>>>>>                  kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->>>>>>>>                  emulated = EMULATE_DONE;
->>>>>>>> +        } else {
->>>>>>>> +            kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
->>>>>>> But isn't that exactly what the semantic of EMULATE_FAIL is? Fixing it
->>>>>>> up in book3s_emulate.c is definitely the wrong spot.
->>>>>>>
->>>>>>> So what is the problem you're trying to solve? Is the SRR0 at the
->>>>>>> wrong
->>>>>>> spot or are the log messages the problem?
->>>>>> No, the problem is the host kernel logs are filled by the message and
->>>>>> the execution hangs. And the host becomes unresponsiveness, even after
->>>>>> the end of the tests.
->>>>>>
->>>>>> Please, try to run kvm-unit-tests (the emulator test) on a KVM-PR host,
->>>>>> and check the kernel logs (dmesg), then try to ssh to the host...
->>>>> Ok, so the log messages are the problem. Please fix the message output
->>>>> then - or remove it altogether. Or if you like, create a module
->>>>> parameter that allows you to emit them.
->>>>>
->>>>> I personally think the best solution would be to just convert the
->>>>> message into a trace point.
->>>>>
->>>>> While at it, please see whether the guest can trigger similar host log
->>>>> output excess in other code paths.
->>>> The problem is not really with the log messages: they are consequence of
->>>> the bug I try to fix.
->>>>
->>>> What happens is once kvm_pr decodes an invalid instruction all the valid
->>>> following instructions trigger a Program exception to the guest (but are
->>>> executed correctly). It has no real consequence on big machine like
->>>> POWER8, except that the guest become very slow and the log files of the
->>>> host are filled with messages (and qemu uses 100% of the CPU). On a
->>>> smaller machine like a  PowerMac G5, the machine becomes simply unusable.
->>> It's probably more related to your verbosity level of kernel messages.
->>> If you pass loglevel=0 (or quiet) to you kernel cmdline you won't get
->>> the messages printed to serial which is what's slowing you down.
->>>
->>> The other problem sounds pretty severe, but the only thing your patch
->>> does any different from the current code flow would be the patch below.
->>> Or did I miss anything?
->>>
->>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
->>> index 5cc2e7a..4672bc2 100644
->>> --- a/arch/powerpc/kvm/emulate.c
->>> +++ b/arch/powerpc/kvm/emulate.c
->>> @@ -302,7 +302,11 @@ int kvmppc_emulate_instruction(struct kvm_run *run,
->>> struct kvm_vcpu *vcpu)
->>>                          advance = 0;
->>>                          printk(KERN_ERR "Couldn't emulate instruction
->>> 0x%08x "
->>>                                 "(op %d xop %d)\n", inst, get_op(inst),
->>> get_xop(inst));
->>> +#ifdef CONFIG_PPC_BOOK3S
->>> +                       kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
->>> +#else
->>>                          kvmppc_core_queue_program(vcpu, 0);
->>> +#endif
->>>                  }
->>>          }
->>>
-> Do you want I send an updated patch with your changes?
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/ppc-opcode.h | 1 +
+ arch/powerpc/kernel/traps.c           | 7 +++----
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Well, you reported the issue and narrowed it down, so feel free to send 
-it under your name :). I merely simplified your patch a bit.
-
-
-Alex
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 1d035c1..37e7b9d 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -148,6 +148,7 @@
+ #define PPC_INST_LWSYNC			0x7c2004ac
+ #define PPC_INST_SYNC			0x7c0004ac
+ #define PPC_INST_SYNC_MASK		0xfc0007fe
++#define PPC_INST_ISYNC			0x4c00012c
+ #define PPC_INST_LXVD2X			0x7c000698
+ #define PPC_INST_MCRXR			0x7c000400
+ #define PPC_INST_MCRXR_MASK		0xfc0007fe
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 9229ba6..255f5cc 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -342,12 +342,11 @@ static inline int check_io_access(struct pt_regs *regs)
+ 		 * For the debug message, we look at the preceding
+ 		 * load or store.
+ 		 */
+-		if (*nip == 0x60000000)		/* nop */
++		if (*nip == PPC_INST_NOP)
+ 			nip -= 2;
+-		else if (*nip == 0x4c00012c)	/* isync */
++		else if (*nip == PPC_INST_ISYNC)
+ 			--nip;
+-		if (*nip == 0x7c0004ac || (*nip >> 26) == 3) {
+-			/* sync or twi */
++		if (*nip == PPC_INST_SYNC || (*nip >> 26) == OP_TRAP) {
+ 			unsigned int rb;
+ 
+ 			--nip;
+-- 
+2.1.0
