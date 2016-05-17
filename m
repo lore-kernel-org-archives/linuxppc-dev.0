@@ -1,28 +1,25 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8Px70T2jzDqCC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 03:50:02 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
-To: Alexander Graf <agraf@suse.de>, Thomas Huth <thuth@redhat.com>
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
- <57330AFE.1050209@suse.de> <a2700de4-623a-cae4-028b-8fe0aa82f75c@redhat.com>
- <57331C3F.2000708@suse.de> <e370a7ad-8306-20a9-09e9-99e6a9b0573c@redhat.com>
- <57344C7E.5010202@suse.de> <374d3217-cf6c-fa2e-d24a-e9ee8b1f4534@redhat.com>
- <3f99bce1-6fb7-b81d-26ca-24f1ca426c3e@redhat.com> <573AD836.4090006@suse.de>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8RWY56BdzDq9p
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 05:01:29 +1000 (AEST)
+Subject: Re: [PATCH v2 1/7] powerpc/8xx: Fix vaddr for IMMR early remap
+To: Scott Wood <oss@buserror.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gleb Natapov <gleb@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <ab2e59a1-fb2d-287a-e974-864a44ffe652@redhat.com>
-Date: Tue, 17 May 2016 19:49:51 +0200
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <cover.1462052179.git.christophe.leroy@c-s.fr>
+ <79e1d41f9e91bc3450dac1e8a90c4fb07f031f84.1462052179.git.christophe.leroy@c-s.fr>
+ <1462999096.16584.95.camel@buserror.net>
+ <7c0b4b7d-e0fe-0d04-6ada-eb49d460e784@c-s.fr>
+ <1463440274.16584.123.camel@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <792fb28c-f1fd-9242-a128-f6cfae8281e5@c-s.fr>
+Date: Tue, 17 May 2016 21:01:23 +0200
 MIME-Version: 1.0
-In-Reply-To: <573AD836.4090006@suse.de>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1463440274.16584.123.camel@buserror.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,142 +31,86 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 17/05/2016 10:37, Alexander Graf wrote:
-> On 05/17/2016 10:35 AM, Laurent Vivier wrote:
->>
->> On 12/05/2016 16:23, Laurent Vivier wrote:
->>>
->>> On 12/05/2016 11:27, Alexander Graf wrote:
->>>> On 05/12/2016 11:10 AM, Laurent Vivier wrote:
->>>>> On 11/05/2016 13:49, Alexander Graf wrote:
->>>>>> On 05/11/2016 01:14 PM, Laurent Vivier wrote:
->>>>>>> On 11/05/2016 12:35, Alexander Graf wrote:
->>>>>>>> On 03/15/2016 09:18 PM, Laurent Vivier wrote:
->>>>>>>>> While writing some instruction tests for kvm-unit-tests for
->>>>>>>>> powerpc,
->>>>>>>>> I've found that illegal instructions are not managed correctly
->>>>>>>>> with
->>>>>>>>> kvm-pr,
->>>>>>>>> while it is fine with kvm-hv.
->>>>>>>>>
->>>>>>>>> When an illegal instruction (like ".long 0") is processed by
->>>>>>>>> kvm-pr,
->>>>>>>>> the kernel logs are filled with:
->>>>>>>>>
->>>>>>>>>          Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->>>>>>>>>          kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
->>>>>>>>>
->>>>>>>>> While the exception handler receives an interrupt for each
->>>>>>>>> instruction
->>>>>>>>> executed after the illegal instruction.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->>>>>>>>> ---
->>>>>>>>>      arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->>>>>>>>>      1 file changed, 3 insertions(+), 1 deletion(-)
->>>>>>>>>
->>>>>>>>> diff --git a/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>> b/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>> index 2afdb9c..4ee969d 100644
->>>>>>>>> --- a/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>> +++ b/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run
->>>>>>>>> *run,
->>>>>>>>> struct kvm_vcpu *vcpu,
->>>>>>>>>            switch (get_op(inst)) {
->>>>>>>>>          case 0:
->>>>>>>>> -        emulated = EMULATE_FAIL;
->>>>>>>>>              if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->>>>>>>>>                  (inst == swab32(inst_sc))) {
->>>>>>>>>                  /*
->>>>>>>>> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run
->>>>>>>>> *run,
->>>>>>>>> struct kvm_vcpu *vcpu,
->>>>>>>>>                  kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->>>>>>>>>                  kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->>>>>>>>>                  emulated = EMULATE_DONE;
->>>>>>>>> +        } else {
->>>>>>>>> +            kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
->>>>>>>> But isn't that exactly what the semantic of EMULATE_FAIL is?
->>>>>>>> Fixing it
->>>>>>>> up in book3s_emulate.c is definitely the wrong spot.
->>>>>>>>
->>>>>>>> So what is the problem you're trying to solve? Is the SRR0 at the
->>>>>>>> wrong
->>>>>>>> spot or are the log messages the problem?
->>>>>>> No, the problem is the host kernel logs are filled by the message
->>>>>>> and
->>>>>>> the execution hangs. And the host becomes unresponsiveness, even
->>>>>>> after
->>>>>>> the end of the tests.
->>>>>>>
->>>>>>> Please, try to run kvm-unit-tests (the emulator test) on a KVM-PR
->>>>>>> host,
->>>>>>> and check the kernel logs (dmesg), then try to ssh to the host...
->>>>>> Ok, so the log messages are the problem. Please fix the message
->>>>>> output
->>>>>> then - or remove it altogether. Or if you like, create a module
->>>>>> parameter that allows you to emit them.
->>>>>>
->>>>>> I personally think the best solution would be to just convert the
->>>>>> message into a trace point.
->>>>>>
->>>>>> While at it, please see whether the guest can trigger similar host
->>>>>> log
->>>>>> output excess in other code paths.
->>>>> The problem is not really with the log messages: they are
->>>>> consequence of
->>>>> the bug I try to fix.
->>>>>
->>>>> What happens is once kvm_pr decodes an invalid instruction all the
->>>>> valid
->>>>> following instructions trigger a Program exception to the guest
->>>>> (but are
->>>>> executed correctly). It has no real consequence on big machine like
->>>>> POWER8, except that the guest become very slow and the log files of
->>>>> the
->>>>> host are filled with messages (and qemu uses 100% of the CPU). On a
->>>>> smaller machine like a  PowerMac G5, the machine becomes simply
->>>>> unusable.
->>>> It's probably more related to your verbosity level of kernel messages.
->>>> If you pass loglevel=0 (or quiet) to you kernel cmdline you won't get
->>>> the messages printed to serial which is what's slowing you down.
+Le 17/05/2016 à 01:11, Scott Wood a écrit :
+> On Fri, 2016-05-13 at 11:25 +0200, Christophe Leroy wrote:
+>> Le 11/05/2016 à 22:38, Scott Wood a écrit :
+>>> On Wed, 2016-05-11 at 17:03 +0200, Christophe Leroy wrote:
+>>>> Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
+>>>> 648K rodata, 508K init, 290K bss, 6644K reserved)
+>>>> Kernel virtual memory layout:
+>>>>     * 0xfffdf000..0xfffff000  : fixmap
+>>>>     * 0xfde00000..0xfe000000  : consistent mem
+>>>>     * 0xfddf6000..0xfde00000  : early ioremap
+>>>>     * 0xc9000000..0xfddf6000  : vmalloc & ioremap
+>>>> SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
 >>>>
->>>> The other problem sounds pretty severe, but the only thing your patch
->>>> does any different from the current code flow would be the patch below.
->>>> Or did I miss anything?
+>>>> Today, IMMR is mapped 1:1 at startup
 >>>>
->>>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
->>>> index 5cc2e7a..4672bc2 100644
->>>> --- a/arch/powerpc/kvm/emulate.c
->>>> +++ b/arch/powerpc/kvm/emulate.c
->>>> @@ -302,7 +302,11 @@ int kvmppc_emulate_instruction(struct kvm_run
->>>> *run,
->>>> struct kvm_vcpu *vcpu)
->>>>                          advance = 0;
->>>>                          printk(KERN_ERR "Couldn't emulate instruction
->>>> 0x%08x "
->>>>                                 "(op %d xop %d)\n", inst, get_op(inst),
->>>> get_xop(inst));
->>>> +#ifdef CONFIG_PPC_BOOK3S
->>>> +                       kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
->>>> +#else
->>>>                          kvmppc_core_queue_program(vcpu, 0);
+>>>> Mapping IMMR 1:1 is just wrong because it may overlap with another
+>>>> area. On most mpc8xx boards it is OK as IMMR is set to 0xff000000
+>>>> but for instance on EP88xC board, IMMR is at 0xfa200000 which
+>>>> overlaps with VM ioremap area
+>>>>
+>>>> This patch fixes the virtual address for remapping IMMR with the fixmap
+>>>> regardless of the value of IMMR.
+>>>>
+>>>> The size of IMMR area is 256kbytes (CPM at offset 0, security engine
+>>>> at offset 128k) so a 512k page is enough
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> ---
+>>>> v2: No change
+>>>>
+>>>>    arch/powerpc/include/asm/fixmap.h |  7 +++++++
+>>>>    arch/powerpc/kernel/asm-offsets.c |  8 ++++++++
+>>>>    arch/powerpc/kernel/head_8xx.S    | 11 ++++++-----
+>>>>    arch/powerpc/mm/mmu_decl.h        |  7 +++++++
+>>>>    arch/powerpc/sysdev/cpm_common.c  | 15 ++++++++++++---
+>>>>    5 files changed, 40 insertions(+), 8 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/fixmap.h
+>>>> b/arch/powerpc/include/asm/fixmap.h
+>>>> index 90f604b..4508b32 100644
+>>>> --- a/arch/powerpc/include/asm/fixmap.h
+>>>> +++ b/arch/powerpc/include/asm/fixmap.h
+>>>> @@ -51,6 +51,13 @@ enum fixed_addresses {
+>>>>    	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel
+>>>> mappings */
+>>>>    	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
+>>>>    #endif
+>>>> +#ifdef CONFIG_PPC_8xx
+>>>> +	/* For IMMR we need an aligned 512K area */
+>>>> +#define FIX_IMMR_SIZE	(512 * 1024 / PAGE_SIZE)
+>>>> +	FIX_IMMR_START,
+>>>> +	FIX_IMMR_BASE = __ALIGN_MASK(FIX_IMMR_START, FIX_IMMR_SIZE - 1)
+>>>> - 1 +
+>>>> +
+>>>> +		       FIX_IMMR_SIZE,
 >>>> +#endif
->>>>                  }
->>>>          }
->>>>
->> Do you want I send an updated patch with your changes?
-> 
-> Well, you reported the issue and narrowed it down, so feel free to send
-> it under your name :). I merely simplified your patch a bit.
+>>> What happens if FIX_IMMR_START is, for example, 0x100?  Then
+>>> "__ALIGN_MASK(FIX_IMMR_START, FIX_IMMR_SIZE - 1) - 1" would be 0xff --
+>>> you've
+>>> gone backwards.  FIX_IMMR_BASE would be 0x17f, translating to an address
+>>> of
+>>> 0xffe80000.  IMMR would end at 0xfff00000.  The kmap range would begin at
+>>> 0xffeff000 and you'd have an overlap.
+>>>
+>>> I think what you want is:
+>>> 	FIX_IMMR_BASE = (FIX_IMMR_START & ~(FIX_IMMR_SIZE - 1)) +
+>>> 			FIX_IMMR_SIZE - 1,
+>>>
+>> Why would the kmap range begin at 0xffeff000 ?
+>> If FIX_IMMR_START is 0x100, this means FIX_KMAP_END is 0x0ff, so the
+>> kmap range should begin at 0xfff00000, shouldn't it ?
+> Yeah, I'm not sure what I was thinking in that reply in general.
+>
+>
+I double checked with all possible values between 0 and FIX_IMMR_SIZE 
+and didn't get any overlap. So I left it.
+I submitted v3 of the patchset taking into account your other comments.
 
-Well, while I was trying to update the patch, I've re-tested this... and
-it fails. I don't know what I'm doing bad now or what I did bad before
-but it seems it doesn't work. :(
+Christophe
 
-Thomas, could try the patch from Alex?
-
-I'm trying to understand what happens...
-
-Laurent
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
