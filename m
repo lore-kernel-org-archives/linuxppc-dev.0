@@ -1,17 +1,17 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0068.outbound.protection.outlook.com [207.46.100.68])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0058.outbound.protection.outlook.com [157.56.111.58])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r82Hy2cfszDqFS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:05:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r82JL5QDxzDqCd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 13:05:22 +1000 (AEST)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <oss@buserror.net>
 CC: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH v6 6/7] T104xRDB: Add qe node to t104xrdb
-Date: Tue, 17 May 2016 10:39:02 +0800
-Message-ID: <1463452743-21462-6-git-send-email-qiang.zhao@nxp.com>
+Subject: [PATCH v6 3/7] QE: Add uqe_serial document to bindings
+Date: Tue, 17 May 2016 10:38:59 +0800
+Message-ID: <1463452743-21462-3-git-send-email-qiang.zhao@nxp.com>
 In-Reply-To: <1463452743-21462-1-git-send-email-qiang.zhao@nxp.com>
 References: <1463452743-21462-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
@@ -25,70 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add qe node to t104xrdb.dtsi
+Add uqe_serial document to
+Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
 Changes for v2
-	- rebase
+	- modify tx/rx-clock-name specification
 Changes for v3
-	- rebase
+	- NA 
 Changes for v4
-	- rebase
+	- drop device_type
+	- modify to SoC specific compatible 
 Changes for v5
-	- rebase
+	- add fsl to compatible as prefix 
 Changes for v6
-	- NA
+	- modify property to "fsl,<chip>-ucc-uart"
 
- arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 38 +++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ .../bindings/powerpc/fsl/cpm_qe/uqe_serial.txt          | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
 
-diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-index 830ea48..69d5057 100644
---- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
-@@ -186,4 +186,42 @@
- 				  0 0x00010000>;
- 		};
- 	};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+new file mode 100644
+index 0000000..8823c86
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+@@ -0,0 +1,17 @@
++* Serial
 +
-+	qe: qe@ffe140000 {
-+		ranges = <0x0 0xf 0xfe140000 0x40000>;
-+		reg = <0xf 0xfe140000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
++Required Properties:
++compatible : must be "fsl,<chip>-ucc-uart". For t1040, must be
++"fsl,t1040-ucc-uart".
++port-number : port number of UCC-UART
++tx/rx-clock-name : should be "brg1"-"brg16" for internal clock source,
++		   should be "clk1"-"clk28" for external clock source.
 +
-+		si1: si@700 {
-+			compatible = "fsl,t1040-qe-si";
-+			reg = <0x700 0x80>;
-+		};
++Example:
 +
-+		siram1: siram@1000 {
-+			compatible = "fsl,t1040-qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
-+
-+		ucc_hdlc: ucc@2000 {
-+			compatible = "fsl,ucc-hdlc";
-+			rx-clock-name = "clk8";
-+			tx-clock-name = "clk9";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot-mask = <0xfffffffe>;
-+			fsl,rx-timeslot-mask = <0xfffffffe>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-id = <0>;
-+			fsl,siram-entry-id = <0>;
-+			fsl,tdm-interface;
-+		};
-+
-+		ucc_serial: ucc@2200 {
-+			compatible = "fsl,t1040-ucc-uart";
-+			port-number = <0>;
-+			rx-clock-name = "brg2";
-+			tx-clock-name = "brg2";
-+		};
++	ucc_serial: ucc@2200 {
++		compatible = "fsl,t1040-ucc-uart";
++		port-number = <0>;
++		rx-clock-name = "brg2";
++		tx-clock-name = "brg2";
 +	};
- };
 -- 
 2.1.0.27.g96db324
