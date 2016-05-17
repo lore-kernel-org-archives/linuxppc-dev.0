@@ -1,25 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8RWY56BdzDq9p
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 05:01:29 +1000 (AEST)
-Subject: Re: [PATCH v2 1/7] powerpc/8xx: Fix vaddr for IMMR early remap
-To: Scott Wood <oss@buserror.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <cover.1462052179.git.christophe.leroy@c-s.fr>
- <79e1d41f9e91bc3450dac1e8a90c4fb07f031f84.1462052179.git.christophe.leroy@c-s.fr>
- <1462999096.16584.95.camel@buserror.net>
- <7c0b4b7d-e0fe-0d04-6ada-eb49d460e784@c-s.fr>
- <1463440274.16584.123.camel@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <792fb28c-f1fd-9242-a128-f6cfae8281e5@c-s.fr>
-Date: Tue, 17 May 2016 21:01:23 +0200
-MIME-Version: 1.0
-In-Reply-To: <1463440274.16584.123.camel@buserror.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8Tj61MYHzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 06:39:53 +1000 (AEST)
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Tue, 17 May 2016 14:39:51 -0600
+From: Anju T <anju@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: anju@linux.vnet.ibm.com, ananth@in.ibm.com,
+ naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ masami.hiramatsu.pt@hitachi.com, jkenisto@us.ibm.com,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
+Subject: [RFC PATCH 0/3] OPTPROBES for powerpc
+Date: Wed, 18 May 2016 02:09:35 +0530
+Message-Id: <1463517578-27760-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +28,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Here are the RFC patchset of the kprobes jump optimization
+(a.k.a OPTPROBES)for powerpc. Kprobe being an inevitable tool
+for kernel developers,enhancing the performance of kprobe has
+got much importance.
+
+Currently kprobes inserts a trap instruction to probe a running kernel.
+Jump optimization allows kprobes to replace the trap with a branch,reducing
+the probe overhead drastically.
+
+Performance:
+=============
+An optimized kprobe in powerpc is 1.05 to 4.7 times faster than a kprobe.
+
+Example:
+
+Placed a probe at an offset 0x50 in _do_fork().
+*Time Diff here is, difference in time before hitting the probe and after the probed instruction.
+mftb() is employed in kernel/fork.c for this purpose.
 
 
-Le 17/05/2016 à 01:11, Scott Wood a écrit :
-> On Fri, 2016-05-13 at 11:25 +0200, Christophe Leroy wrote:
->> Le 11/05/2016 à 22:38, Scott Wood a écrit :
->>> On Wed, 2016-05-11 at 17:03 +0200, Christophe Leroy wrote:
->>>> Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
->>>> 648K rodata, 508K init, 290K bss, 6644K reserved)
->>>> Kernel virtual memory layout:
->>>>     * 0xfffdf000..0xfffff000  : fixmap
->>>>     * 0xfde00000..0xfe000000  : consistent mem
->>>>     * 0xfddf6000..0xfde00000  : early ioremap
->>>>     * 0xc9000000..0xfddf6000  : vmalloc & ioremap
->>>> SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
->>>>
->>>> Today, IMMR is mapped 1:1 at startup
->>>>
->>>> Mapping IMMR 1:1 is just wrong because it may overlap with another
->>>> area. On most mpc8xx boards it is OK as IMMR is set to 0xff000000
->>>> but for instance on EP88xC board, IMMR is at 0xfa200000 which
->>>> overlaps with VM ioremap area
->>>>
->>>> This patch fixes the virtual address for remapping IMMR with the fixmap
->>>> regardless of the value of IMMR.
->>>>
->>>> The size of IMMR area is 256kbytes (CPM at offset 0, security engine
->>>> at offset 128k) so a 512k page is enough
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> ---
->>>> v2: No change
->>>>
->>>>    arch/powerpc/include/asm/fixmap.h |  7 +++++++
->>>>    arch/powerpc/kernel/asm-offsets.c |  8 ++++++++
->>>>    arch/powerpc/kernel/head_8xx.S    | 11 ++++++-----
->>>>    arch/powerpc/mm/mmu_decl.h        |  7 +++++++
->>>>    arch/powerpc/sysdev/cpm_common.c  | 15 ++++++++++++---
->>>>    5 files changed, 40 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/fixmap.h
->>>> b/arch/powerpc/include/asm/fixmap.h
->>>> index 90f604b..4508b32 100644
->>>> --- a/arch/powerpc/include/asm/fixmap.h
->>>> +++ b/arch/powerpc/include/asm/fixmap.h
->>>> @@ -51,6 +51,13 @@ enum fixed_addresses {
->>>>    	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel
->>>> mappings */
->>>>    	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
->>>>    #endif
->>>> +#ifdef CONFIG_PPC_8xx
->>>> +	/* For IMMR we need an aligned 512K area */
->>>> +#define FIX_IMMR_SIZE	(512 * 1024 / PAGE_SIZE)
->>>> +	FIX_IMMR_START,
->>>> +	FIX_IMMR_BASE = __ALIGN_MASK(FIX_IMMR_START, FIX_IMMR_SIZE - 1)
->>>> - 1 +
->>>> +
->>>> +		       FIX_IMMR_SIZE,
->>>> +#endif
->>> What happens if FIX_IMMR_START is, for example, 0x100?  Then
->>> "__ALIGN_MASK(FIX_IMMR_START, FIX_IMMR_SIZE - 1) - 1" would be 0xff --
->>> you've
->>> gone backwards.  FIX_IMMR_BASE would be 0x17f, translating to an address
->>> of
->>> 0xffe80000.  IMMR would end at 0xfff00000.  The kmap range would begin at
->>> 0xffeff000 and you'd have an overlap.
->>>
->>> I think what you want is:
->>> 	FIX_IMMR_BASE = (FIX_IMMR_START & ~(FIX_IMMR_SIZE - 1)) +
->>> 			FIX_IMMR_SIZE - 1,
->>>
->> Why would the kmap range begin at 0xffeff000 ?
->> If FIX_IMMR_START is 0x100, this means FIX_KMAP_END is 0x0ff, so the
->> kmap range should begin at 0xfff00000, shouldn't it ?
-> Yeah, I'm not sure what I was thinking in that reply in general.
->
->
-I double checked with all possible values between 0 and FIX_IMMR_SIZE 
-and didn't get any overlap. So I left it.
-I submitted v3 of the patchset taking into account your other comments.
+# echo 0 > /proc/sys/debug/kprobes-optimization 
+Kprobes globally unoptimized
 
-Christophe
+[  233.607120] Time Diff = 0x1f0
+[  233.608273] Time Diff = 0x1ee
+[  233.609228] Time Diff = 0x203
+[  233.610400] Time Diff = 0x1ec
+[  233.611335] Time Diff = 0x200
+[  233.612552] Time Diff = 0x1f0
+[  233.613386] Time Diff = 0x1ee
+[  233.614547] Time Diff = 0x212
+[  233.615570] Time Diff = 0x206
+[  233.616819] Time Diff = 0x1f3
+[  233.617773] Time Diff = 0x1ec
+[  233.618944] Time Diff = 0x1fb
+[  233.619879] Time Diff = 0x1f0
+[  233.621066] Time Diff = 0x1f9
+[  233.621999] Time Diff = 0x283
+[  233.623281] Time Diff = 0x24d
+[  233.624172] Time Diff = 0x1ea
+[  233.625381] Time Diff = 0x1f0
+[  233.626358] Time Diff = 0x200
+[  233.627572] Time Diff = 0x1ed
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+# echo 1 > /proc/sys/debug/kprobes-optimization 
+Kprobes globally optimized
+
+[   70.797075] Time Diff = 0x103
+[   70.799102] Time Diff = 0x181
+[   70.801861] Time Diff = 0x15e
+[   70.803466] Time Diff = 0xf0
+[   70.804348] Time Diff = 0xd0
+[   70.805653] Time Diff = 0xad
+[   70.806477] Time Diff = 0xe0
+[   70.807725] Time Diff = 0xbe
+[   70.808541] Time Diff = 0xc3
+[   70.810191] Time Diff = 0xc7
+[   70.811007] Time Diff = 0xc0
+[   70.812629] Time Diff = 0xc0
+[   70.813640] Time Diff = 0xda
+[   70.814915] Time Diff = 0xbb
+[   70.815726] Time Diff = 0xc4
+[   70.816955] Time Diff = 0xc0
+[   70.817778] Time Diff = 0xcd
+[   70.818999] Time Diff = 0xcd
+[   70.820099] Time Diff = 0xcb
+[   70.821333] Time Diff = 0xf0
+
+Implementation:
+===================
+
+The trap instruction is replaced by a branch to a detour buffer.
+To address the limitation of branch instruction in power architecture
+detour buffer slot is allocated from a reserved area . This will ensure
+that the branch is within +/- 32 MB range. Patch 2/3 furnishes this.
+The current kprobes insn caches  allocate memory area for insn slots
+with module_alloc(). This will always be beyond +/- 32MB range.
+Hence for allocating and freeing  slots from this reserved area
+ppc_get_optinsn_slot() and ppc_free_optinsns_slot() are introduced.
+
+The detour buffer contains a call to optimized_callback() which in turn
+call the pre_handler(). Once the pre-handler is run, the original instruction
+is emulated from the detour buffer itself. Also the detour buffer is equipped
+with a branch back to the normal work flow after the probed instruction is emulated.
+Before preparing optimization, Kprobes inserts original(user-defined) kprobe on the
+specified address. So, even if the kprobe is not possible to be optimized, it just uses
+a normal kprobe.
+
+Limitations:
+==============
+
+- Number of probes which can be optimized is limited by the size of the area reserved.
+	
+	* TODO: Have a template based implementation that will alleviate the probe count by
+	  using a lesser space from the reserved area for optimization.
+
+- Currently instructions which can be emulated are the only candidates for optimization.
+
+
+
+
+Kindly let me know your suggestions and comments.
+
+Thanks
+-Anju
+
+
+Anju T (3):
+  arch/powerpc : Add detour buffer support for optprobes
+  arch/powerpc : optprobes for powerpc core
+  arch/powerpc : Enable optprobes support in powerpc
+
+ .../features/debug/optprobes/arch-support.txt      |   2 +-
+ arch/powerpc/Kconfig                               |   1 +
+ arch/powerpc/include/asm/kprobes.h                 |  25 ++
+ arch/powerpc/kernel/Makefile                       |   1 +
+ arch/powerpc/kernel/optprobes.c                    | 463 +++++++++++++++++++++
+ arch/powerpc/kernel/optprobes_head.S               | 104 +++++
+ 6 files changed, 595 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/kernel/optprobes.c
+ create mode 100644 arch/powerpc/kernel/optprobes_head.S
+
+-- 
+2.1.0
