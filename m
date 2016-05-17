@@ -1,26 +1,17 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0074.outbound.protection.outlook.com [157.56.112.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r7zxc5QqWzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 11:19:00 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Scott Wood <oss@buserror.net>
-CC: "robh+dt@kernel.org" <robh+dt@kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li
- <leoyang.li@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [v5,1/7] QE: Add IC, SI and SIRAM document to device tree
- bindings.
-Date: Tue, 17 May 2016 01:18:52 +0000
-Message-ID: <AM3PR04MB118504BB6430CBEC8AA4886491480@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
- <20160516232210.GA21087@home.buserror.net>
-In-Reply-To: <20160516232210.GA21087@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r80MG31L5zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 11:37:46 +1000 (AEST)
+Date: Mon, 16 May 2016 20:37:40 -0500
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
+Message-ID: <20160517013740.GA18846@home.buserror.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Subject: Pull request: scottwood/linux.git next
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 17, 2016 at 07:22AM, Scott Wood wrote:
-> -----Original Message-----
-> From: Scott Wood [mailto:oss@buserror.net]
-> Sent: Tuesday, May 17, 2016 7:22 AM
-> To: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: robh+dt@kernel.org; devicetree@vger.kernel.org; linux-
-> kernel@vger.kernel.org; Xiaobo Xie <xiaobo.xie@nxp.com>; Yang-Leo Li
-> <leoyang.li@nxp.com>; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [v5,1/7] QE: Add IC, SI and SIRAM document to device tree
-> bindings.
->=20
-> On Wed, Mar 09, 2016 at 09:21:28AM +0800, Zhao Qiang wrote:
-> > Add IC, SI and SIRAM document of QE to
-> > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
-> >
-> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > Acked-by: Rob Herring <robh@kernel.org>
-> > ---
-> > changes for v2
-> > 	- Add interrupt-controller in Required properties
-> > 	- delete address-cells and size-cells for qe-si and qe-siram Changes
-> > for v3
-> > 	- Add SoC specific caompatible strings to qe-si and qe-siram Changes
-> > for v4
-> > 	- NA
-> > Changes for v5
-> > 	- NA
-> >
-> >  .../devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt  | 50
-> > ++++++++++++++++++++++
-> >  1 file changed, 50 insertions(+)
-> > +* Serial Interface Block (SI)
-> > +
-> > +The SI manages the routing of eight TDM lines to the QE block serial
-> > +drivers , the MCC and the UCCs, for receive and transmit.
-> > +
-> > +Required properties:
-> > +- compatible : should be "fsl,t1040-qe-si".
-> > +- reg : Address range of SI register set.
->=20
-> Is t1040 the only chip that has or will ever have this?
+Sorry for the lateness...
 
-There also be t1024 and ls1043 supporting si.
-I thought to add them when adding their device node.
-If you think it is better to add them now, I will modify.
+Contains include 86xx fixes, minor device tree fixes, an erratum
+workaround, and a kconfig dependency fix.
 
--Zhao Qiang
+The following changes since commit 1d4e89cf0a4e819fbde428e9e5286e7141a02e06:
+
+  powerpc/powernv/npu: Add PE to PHB's list (2016-05-12 19:56:25 +1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+
+for you to fetch changes up to 1eef33bec12d7e46a58f12b3604556a80c362a0d:
+
+  powerpc/86xx: Fix PCI interrupt map definition (2016-05-16 18:45:39 -0500)
+
+----------------------------------------------------------------
+Alessio Igor Bogani (3):
+      powerpc/fsl: Fix build of the dtb embedded kernel images
+      powerpc/86xx: Move pci1 definition to the include file
+      powerpc/86xx: Fix PCI interrupt map definition
+
+Chenhui Zhao (1):
+      powerpc/fsl: Fix rcpm compatible string
+
+Hou Zhiqiang (1):
+      powerpc/fsl: Fix SPI compatible on t208xrdb and t1040rdb
+
+Scott Wood (1):
+      powerpc/fsl: Remove FSL_SOC dependency from FSL_LBC
+
+chenhui zhao (1):
+      powerpc/fsl-pci: Add a workaround for PCI 5 errata
+
+ arch/powerpc/Kconfig                           |  1 -
+ arch/powerpc/boot/Makefile                     |  6 ++--
+ arch/powerpc/boot/dts/fsl/gef_ppc9a.dts        |  4 +++
+ arch/powerpc/boot/dts/fsl/gef_sbc310.dts       | 22 --------------
+ arch/powerpc/boot/dts/fsl/gef_sbc610.dts       |  4 +++
+ arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts     | 24 +--------------
+ arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts | 24 +--------------
+ arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi  | 41 +++++++++++++++++++++-----
+ arch/powerpc/boot/dts/fsl/mpc8641si-pre.dtsi   |  1 +
+ arch/powerpc/boot/dts/fsl/sbc8641d.dts         | 23 ---------------
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi    |  2 +-
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi    |  2 +-
+ arch/powerpc/boot/dts/fsl/t104xrdb.dtsi        |  2 +-
+ arch/powerpc/boot/dts/fsl/t208xrdb.dtsi        |  2 +-
+ arch/powerpc/sysdev/fsl_pci.c                  | 24 +++++++++++++++
+ 15 files changed, 76 insertions(+), 106 deletions(-)
