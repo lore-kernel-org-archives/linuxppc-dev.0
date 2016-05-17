@@ -1,20 +1,26 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0074.outbound.protection.outlook.com [157.56.112.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r7xnZ2Z6mzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 09:41:54 +1000 (AEST)
-Date: Mon, 16 May 2016 18:41:47 -0500
-From: Scott Wood <oss@buserror.net>
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Cc: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Message-ID: <20160516234147.GA22832@home.buserror.net>
-References: <1461746125-8055-1-git-send-email-alessio.bogani@elettra.eu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r7zxc5QqWzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 11:19:00 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Scott Wood <oss@buserror.net>
+CC: "robh+dt@kernel.org" <robh+dt@kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li
+ <leoyang.li@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [v5,1/7] QE: Add IC, SI and SIRAM document to device tree
+ bindings.
+Date: Tue, 17 May 2016 01:18:52 +0000
+Message-ID: <AM3PR04MB118504BB6430CBEC8AA4886491480@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1457486494-11377-1-git-send-email-qiang.zhao@nxp.com>
+ <20160516232210.GA21087@home.buserror.net>
+In-Reply-To: <20160516232210.GA21087@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1461746125-8055-1-git-send-email-alessio.bogani@elettra.eu>
-Subject: Re: [v4,1/1] powerpc/86xx: Add support for Emerson/Artesyn MVME7100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 27, 2016 at 10:35:25AM +0200, Alessio Igor Bogani wrote:
-> +		bcsr@4,0 {
-> +			compatible = "artesyn,mvme7100-bcsr";
-> +			reg = <4 0 0x10000>;
-> +		};
-> +
-> +	       serial@5,1000 {
-> +			cell-index = <2>;
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <5 0x1000 0x100>;
-> +			clock-frequency = <1843200>;
-> +			interrupts = <11 1 0 0>;
-> +		};
+On Tue, May 17, 2016 at 07:22AM, Scott Wood wrote:
+> -----Original Message-----
+> From: Scott Wood [mailto:oss@buserror.net]
+> Sent: Tuesday, May 17, 2016 7:22 AM
+> To: Qiang Zhao <qiang.zhao@nxp.com>
+> Cc: robh+dt@kernel.org; devicetree@vger.kernel.org; linux-
+> kernel@vger.kernel.org; Xiaobo Xie <xiaobo.xie@nxp.com>; Yang-Leo Li
+> <leoyang.li@nxp.com>; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [v5,1/7] QE: Add IC, SI and SIRAM document to device tree
+> bindings.
+>=20
+> On Wed, Mar 09, 2016 at 09:21:28AM +0800, Zhao Qiang wrote:
+> > Add IC, SI and SIRAM document of QE to
+> > Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt
+> >
+> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > Acked-by: Rob Herring <robh@kernel.org>
+> > ---
+> > changes for v2
+> > 	- Add interrupt-controller in Required properties
+> > 	- delete address-cells and size-cells for qe-si and qe-siram Changes
+> > for v3
+> > 	- Add SoC specific caompatible strings to qe-si and qe-siram Changes
+> > for v4
+> > 	- NA
+> > Changes for v5
+> > 	- NA
+> >
+> >  .../devicetree/bindings/powerpc/fsl/cpm_qe/qe.txt  | 50
+> > ++++++++++++++++++++++
+> >  1 file changed, 50 insertions(+)
+> > +* Serial Interface Block (SI)
+> > +
+> > +The SI manages the routing of eight TDM lines to the QE block serial
+> > +drivers , the MCC and the UCCs, for receive and transmit.
+> > +
+> > +Required properties:
+> > +- compatible : should be "fsl,t1040-qe-si".
+> > +- reg : Address range of SI register set.
+>=20
+> Is t1040 the only chip that has or will ever have this?
 
-The "serial@5,1000" line has spaces where there should be tabs.  There
-are several other instances of this in the patch.
+There also be t1024 and ls1043 supporting si.
+I thought to add them when adding their device node.
+If you think it is better to add them now, I will modify.
 
-Where did these cell-index values come from?  Why are they needed?
-
-> +	};
-> +
-> +};
-
-No blank line here.
-
-> +	platform_ops.fixups = mvme7100_fixups;
-> +
-> +}
-
-No blank line here.
-
-> diff --git a/arch/powerpc/boot/ppcboot.h b/arch/powerpc/boot/ppcboot.h
-> index 6ae6f90..7b758be 100644
-> --- a/arch/powerpc/boot/ppcboot.h
-> +++ b/arch/powerpc/boot/ppcboot.h
-> @@ -43,7 +43,7 @@ typedef struct bd_info {
->  	unsigned long	bi_sramstart;	/* start of SRAM memory */
->  	unsigned long	bi_sramsize;	/* size	 of SRAM memory */
->  #if defined(TARGET_8xx) || defined(TARGET_CPM2) || defined(TARGET_85xx) ||\
-> -	defined(TARGET_83xx)
-> +	defined(TARGET_83xx) || defined(TARGET_MVME7100)
->  	unsigned long	bi_immr_base;	/* base of IMMR register */
->  #endif
-
-Again, please use TARGET_86xx here rather than TARGET_MVME7100.
-
-> @@ -69,7 +74,7 @@ config MPC8641
->  	select FSL_PCI if PCI
->  	select PPC_UDBG_16550
->  	select MPIC
-> -	default y if MPC8641_HPCN || SBC8641D || GEF_SBC610 || GEF_SBC310 || GEF_PPC9A
-> +	default y if MPC8641_HPCN || SBC8641D || GEF_SBC610 || GEF_SBC310 || GEF_PPC9A || MVME7100
-
-Please wrap this long line.
-
--Scott
+-Zhao Qiang
