@@ -2,17 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8GCF122zzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 22:01:44 +1000 (AEST)
-Message-Id: <fb8a0e9fa5af537857fb3ee25caf0c634894cca4.1463486314.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8GCG0cZGzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 May 2016 22:01:46 +1000 (AEST)
+Message-Id: <3257f244fea7785aa1791d3ac68922692bffc3c3.1463486314.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 1/2] powerpc32: Use instruction symbolic names in
- check_io_access()
+Subject: [PATCH v3 2/2] powerpc32: fix check_io_access()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Scott Wood <oss@buserror.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 May 2016 14:01:39 +0200 (CEST)
+Date: Tue, 17 May 2016 14:01:41 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,43 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On processors like the 8xx, the machine check exception can also
+happen directly on the load/store instruction itself, so that case
+needs to be handled as well
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 1 +
- arch/powerpc/kernel/traps.c           | 7 +++----
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |  1 +
+ arch/powerpc/kernel/traps.c           | 13 +++++++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 1d035c1..37e7b9d 100644
+index 37e7b9d..5e613b8 100644
 --- a/arch/powerpc/include/asm/ppc-opcode.h
 +++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -148,6 +148,7 @@
- #define PPC_INST_LWSYNC			0x7c2004ac
- #define PPC_INST_SYNC			0x7c0004ac
- #define PPC_INST_SYNC_MASK		0xfc0007fe
-+#define PPC_INST_ISYNC			0x4c00012c
- #define PPC_INST_LXVD2X			0x7c000698
- #define PPC_INST_MCRXR			0x7c000400
- #define PPC_INST_MCRXR_MASK		0xfc0007fe
+@@ -84,6 +84,7 @@
+ /* opcode and xopcode for instructions */
+ #define OP_TRAP 3
+ #define OP_TRAP_64 2
++#define OP_31		31
+ 
+ #define OP_31_XOP_TRAP      4
+ #define OP_31_XOP_LWZX      23
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 9229ba6..255f5cc 100644
+index 255f5cc..27f1a36 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -342,12 +342,11 @@ static inline int check_io_access(struct pt_regs *regs)
- 		 * For the debug message, we look at the preceding
- 		 * load or store.
- 		 */
--		if (*nip == 0x60000000)		/* nop */
-+		if (*nip == PPC_INST_NOP)
+@@ -334,6 +334,7 @@ static inline int check_io_access(struct pt_regs *regs)
+ 
+ 	if (((msr & 0xffff0000) == 0 || (msr & (0x80000 | 0x40000)))
+ 	    && (entry = search_exception_tables(regs->nip)) != NULL) {
++		int op, xop;
+ 		/*
+ 		 * Check that it's a sync instruction, or somewhere
+ 		 * in the twi; isync; nop sequence that inb/inw/inl uses.
+@@ -346,10 +347,18 @@ static inline int check_io_access(struct pt_regs *regs)
  			nip -= 2;
--		else if (*nip == 0x4c00012c)	/* isync */
-+		else if (*nip == PPC_INST_ISYNC)
+ 		else if (*nip == PPC_INST_ISYNC)
  			--nip;
--		if (*nip == 0x7c0004ac || (*nip >> 26) == 3) {
--			/* sync or twi */
-+		if (*nip == PPC_INST_SYNC || (*nip >> 26) == OP_TRAP) {
+-		if (*nip == PPC_INST_SYNC || (*nip >> 26) == OP_TRAP) {
++		if (*nip == PPC_INST_SYNC || (*nip >> 26) == OP_TRAP)
++			--nip;
++		op = *nip >> 26;
++		xop = (*nip >> 1) & 0x3ff;
++		if (op == OP_LWZ || op == OP_LBZ || op == OP_STW ||
++		    op == OP_STB || op == OP_LHZ || op == OP_STH ||
++		    (op == OP_31 &&
++		     (xop == OP_31_XOP_LBZX || xop == OP_31_XOP_LHBRX ||
++		      xop == OP_31_XOP_LWBRX || xop == OP_31_XOP_STBX ||
++		      xop == OP_31_XOP_STHBRX || xop == OP_31_XOP_STWBRX))) {
  			unsigned int rb;
  
- 			--nip;
+-			--nip;
+ 			rb = (*nip >> 11) & 0x1f;
+ 			printk(KERN_DEBUG "%s bad port %lx at %p\n",
+ 			       (*nip & 0x100)? "OUT to": "IN from",
 -- 
 2.1.0
