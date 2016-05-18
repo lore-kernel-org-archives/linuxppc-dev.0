@@ -1,39 +1,30 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jikos@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8lys2rJhzDqBR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:45 +1000 (AEST)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 18 May 2016 17:22:42 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9AF322CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:41 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4I7MYPB62455838
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:41 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4I7M6FB005562
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:07 +1000
-Message-ID: <573C180B.8050201@linux.vnet.ibm.com>
-Date: Wed, 18 May 2016 12:51:47 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8n8l6pvBzDqCJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 18:16:23 +1000 (AEST)
+Date: Wed, 18 May 2016 10:16:22 +0200 (CEST)
+From: Jiri Kosina <jikos@kernel.org>
+To: Jessica Yu <jeyu@redhat.com>
+cc: Josh Poimboeuf <jpoimboe@redhat.com>, Miroslav Benes <mbenes@suse.cz>,
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
+ linux-kernel@vger.kernel.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ Petr Mladek <pmladek@suse.com>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: livepatch: change to a per-task consistency model
+In-Reply-To: <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
+Message-ID: <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
 MIME-Version: 1.0
-To: ego@linux.vnet.ibm.com
-CC: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org
-Subject: Re: [PATCH v2 1/9] powerpc/powernv: Move CHECK_HMI_INTERRUPT to
- exception-64s header
-References: <1462263878-25237-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1462263878-25237-2-git-send-email-shreyas@linux.vnet.ibm.com>
- <20160518043551.GA3939@in.ibm.com>
-In-Reply-To: <20160518043551.GA3939@in.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,96 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 17 May 2016, Jessica Yu wrote:
 
+> What about tasks sleeping on affected functions in uninterruptible sleep 
+> (possibly indefinitely)? Since all signals are ignored, we wouldn't be 
+> able to patch those tasks in this way, right? Would that be an 
+> unsupported case?
 
-On 05/18/2016 10:05 AM, Gautham R Shenoy wrote:
-> On Tue, May 03, 2016 at 01:54:30PM +0530, Shreyas B. Prabhu wrote:
->> CHECK_HMI_INTERRUPT is used to check for HMI's in reset vector. Move
->> the macro to a common location (exception-64s.h)
->> This patch does not change any functionality.
->>
-> 
-> I suppose this code movement is to facilitate the invocation of
-> CHECK_HMI_INTERRUPT in some later patch ? In this case you could
-> add this to the commit message.
-> 
+I don't think there is any better way out of this situation than 
+documenting that the convergence of patching could in such cases could 
+take quite a lot of time (well, we can pro-actively try to detect this 
+situation before the patching actually start, and warn about the possible 
+consequences).
 
-Ok. I'll do that.
+But let's face it, this should be pretty uncommon, because (a) it's not 
+realistic for the wait times to be really indefinite (b) the task is 
+likely to be in TASK_KILLABLE rather than just plain TASK_UNINTERRUPTIBLE.
 
-> Otherwise,
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-Thanks for the review.
->> ---
->>  arch/powerpc/include/asm/exception-64s.h | 18 ++++++++++++++++++
->>  arch/powerpc/kernel/idle_power7.S        | 20 +-------------------
->>  2 files changed, 19 insertions(+), 19 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
->> index 93ae809..6a625af 100644
->> --- a/arch/powerpc/include/asm/exception-64s.h
->> +++ b/arch/powerpc/include/asm/exception-64s.h
->> @@ -545,4 +545,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
->>  #define FINISH_NAP
->>  #endif
->>
->> +#define CHECK_HMI_INTERRUPT						\
->> +	mfspr	r0,SPRN_SRR1;						\
->> +BEGIN_FTR_SECTION_NESTED(66);						\
->> +	rlwinm	r0,r0,45-31,0xf;  /* extract wake reason field (P8) */	\
->> +FTR_SECTION_ELSE_NESTED(66);						\
->> +	rlwinm	r0,r0,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
->> +ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->> +	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
->> +	bne	20f;							\
->> +	/* Invoke opal call to handle hmi */				\
->> +	ld	r2,PACATOC(r13);					\
->> +	ld	r1,PACAR1(r13);						\
->> +	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
->> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->> +	bl	opal_call_realmode;					\
->> +	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->> +20:	nop;
->> +
->>  #endif	/* _ASM_POWERPC_EXCEPTION_H */
->> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
->> index 470ceeb..6b3404b 100644
->> --- a/arch/powerpc/kernel/idle_power7.S
->> +++ b/arch/powerpc/kernel/idle_power7.S
->> @@ -19,6 +19,7 @@
->>  #include <asm/kvm_book3s_asm.h>
->>  #include <asm/opal.h>
->>  #include <asm/cpuidle.h>
->> +#include <asm/exception-64s.h>
->>  #include <asm/book3s/64/mmu-hash.h>
->>
->>  #undef DEBUG
->> @@ -257,25 +258,6 @@ _GLOBAL(power7_winkle)
->>  	b	power7_powersave_common
->>  	/* No return */
->>
->> -#define CHECK_HMI_INTERRUPT						\
->> -	mfspr	r0,SPRN_SRR1;						\
->> -BEGIN_FTR_SECTION_NESTED(66);						\
->> -	rlwinm	r0,r0,45-31,0xf;  /* extract wake reason field (P8) */	\
->> -FTR_SECTION_ELSE_NESTED(66);						\
->> -	rlwinm	r0,r0,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
->> -ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->> -	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
->> -	bne	20f;							\
->> -	/* Invoke opal call to handle hmi */				\
->> -	ld	r2,PACATOC(r13);					\
->> -	ld	r1,PACAR1(r13);						\
->> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
->> -	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
->> -	bl	opal_call_realmode;					\
->> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
->> -20:	nop;
->> -
->> -
->>  _GLOBAL(power7_wakeup_tb_loss)
->>  	ld	r2,PACATOC(r13);
->>  	ld	r1,PACAR1(r13)
->> -- 
->> 2.4.11
->>
+-- 
+Jiri Kosina
+SUSE Labs
