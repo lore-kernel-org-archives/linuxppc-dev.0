@@ -1,21 +1,31 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r90VN0PVrzDqB5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 02:47:22 +1000 (AEST)
-Date: Wed, 18 May 2016 11:47:16 -0500
-From: Rob Herring <robh@kernel.org>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: oss@buserror.net, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, xiaobo.xie@nxp.com
-Subject: Re: [PATCH v6 3/7] QE: Add uqe_serial document to bindings
-Message-ID: <20160518164716.GA32436@rob-hp-laptop>
-References: <1463452743-21462-1-git-send-email-qiang.zhao@nxp.com>
- <1463452743-21462-3-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r90bX0KQ1zDqB5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 02:51:51 +1000 (AEST)
+Date: Wed, 18 May 2016 11:51:47 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: Jessica Yu <jeyu@redhat.com>, Miroslav Benes <mbenes@suse.cz>,
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ live-patching@vger.kernel.org, linux-kernel@vger.kernel.org,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, Vojtech Pavlik <vojtech@suse.com>,
+ Jiri Slaby <jslaby@suse.cz>, Petr Mladek <pmladek@suse.com>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Andy Lutomirski <luto@kernel.org>
+Subject: Re: livepatch: change to a per-task consistency model
+Message-ID: <20160518165147.vyuamqfnm5kfwiqf@treble>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
+ <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1463452743-21462-3-git-send-email-qiang.zhao@nxp.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 17, 2016 at 10:38:59AM +0800, Zhao Qiang wrote:
-> Add uqe_serial document to
-> Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+On Wed, May 18, 2016 at 10:16:22AM +0200, Jiri Kosina wrote:
+> On Tue, 17 May 2016, Jessica Yu wrote:
 > 
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> ---
-> Changes for v2
-> 	- modify tx/rx-clock-name specification
-> Changes for v3
-> 	- NA 
-> Changes for v4
-> 	- drop device_type
-> 	- modify to SoC specific compatible 
-> Changes for v5
-> 	- add fsl to compatible as prefix 
-> Changes for v6
-> 	- modify property to "fsl,<chip>-ucc-uart"
+> > What about tasks sleeping on affected functions in uninterruptible sleep 
+> > (possibly indefinitely)? Since all signals are ignored, we wouldn't be 
+> > able to patch those tasks in this way, right? Would that be an 
+> > unsupported case?
 > 
->  .../bindings/powerpc/fsl/cpm_qe/uqe_serial.txt          | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/cpm_qe/uqe_serial.txt
+> I don't think there is any better way out of this situation than 
+> documenting that the convergence of patching could in such cases could 
+> take quite a lot of time (well, we can pro-actively try to detect this 
+> situation before the patching actually start, and warn about the possible 
+> consequences).
+> 
+> But let's face it, this should be pretty uncommon, because (a) it's not 
+> realistic for the wait times to be really indefinite (b) the task is 
+> likely to be in TASK_KILLABLE rather than just plain TASK_UNINTERRUPTIBLE.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Yeah, I think this situation -- a task sleeping on an affected function
+in uninterruptible state for a long period of time -- would be
+exceedingly rare and not something we need to worry about for now.
+
+-- 
+Josh
