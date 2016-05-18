@@ -1,35 +1,35 @@
 Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8vVw2kJYzDqCJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 23:02:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8vbc4sZ0zDqCJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 23:06:36 +1000 (AEST)
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Wed, 18 May 2016 14:02:28 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id BEE4C1B0808A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 14:03:16 +0100 (BST)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4ID2KYf17760710
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 13:02:20 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4ID2HEt024293
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 07:02:19 -0600
+ Wed, 18 May 2016 14:06:33 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 62014219006D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 14:06:04 +0100 (BST)
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+ [9.149.37.249])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4ID6Tk958392660
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 13:06:29 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4ID6Sqx005329
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 07:06:29 -0600
 From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
  imunsie@au1.ibm.com, mikey@neuling.org,
  Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [v3, 1/2] cxl: Add mechanism for delivering AFU driver specific events
-Date: Wed, 18 May 2016 15:01:27 +0200
-Message-Id: <1463576488-18944-1-git-send-email-felix@linux.vnet.ibm.com>
+Subject: [RESEND v4,1/2] cxl: Add mechanism for delivering AFU driver
+Date: Wed, 18 May 2016 15:06:21 +0200
+Message-Id: <1463576781-19569-1-git-send-email-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
