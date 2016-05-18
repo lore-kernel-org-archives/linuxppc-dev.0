@@ -1,30 +1,42 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8n8l6pvBzDqCJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 18:16:23 +1000 (AEST)
-Date: Wed, 18 May 2016 10:16:22 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: Jessica Yu <jeyu@redhat.com>
-cc: Josh Poimboeuf <jpoimboe@redhat.com>, Miroslav Benes <mbenes@suse.cz>,
- Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, live-patching@vger.kernel.org,
- linux-kernel@vger.kernel.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- Vojtech Pavlik <vojtech@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- Petr Mladek <pmladek@suse.com>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Andy Lutomirski <luto@kernel.org>
-Subject: Re: livepatch: change to a per-task consistency model
-In-Reply-To: <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
-Message-ID: <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8nzx4MPHzDqCJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 18:53:48 +1000 (AEST)
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 18 May 2016 18:53:45 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 14ECB2BB0097
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 18:53:18 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4I8r4eE4588008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 18:53:12 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4I8qPnK025021
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 18:52:26 +1000
+Subject: Re: [kernel-hardening] [PATCH v8 2/4] GCC plugin infrastructure
+To: kernel-hardening@lists.openwall.com, linux-kbuild@vger.kernel.org
+References: <20160513015456.01415979f20a68eb7d2d9290@gmail.com>
+ <20160513015725.30223ee16a2a3860b4392b90@gmail.com>
+Cc: pageexec@freemail.hu, spender@grsecurity.net, mmarek@suse.com,
+ keescook@chromium.org, linux@rasmusvillemoes.dk,
+ fengguang.wu@intel.com, dvyukov@google.com,
+ linux-kernel@vger.kernel.org, david.brown@linaro.org,
+ yamada.masahiro@socionext.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Daniel Axtens <dja@axtens.net>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-ID: <573C2CFE.8060305@au1.ibm.com>
+Date: Wed, 18 May 2016 18:51:10 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20160513015725.30223ee16a2a3860b4392b90@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,23 +46,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 17 May 2016, Jessica Yu wrote:
+On 13/05/16 09:57, Emese Revfy wrote:
+> This patch allows to build the whole kernel with GCC plugins. It was ported from
+> grsecurity/PaX. The infrastructure supports building out-of-tree modules and
+> building in a separate directory. Cross-compilation is supported too.
+> Currently the x86, arm, arm64 and uml architectures enable plugins.
+>
+> The directory of the gcc plugins is scripts/gcc-plugins. You can use a file or a directory
+> there. The plugins compile with these options:
+>   * -fno-rtti: gcc is compiled with this option so the plugins must use it too
+>   * -fno-exceptions: this is inherited from gcc too
+>   * -fasynchronous-unwind-tables: this is inherited from gcc too
+>   * -ggdb: it is useful for debugging a plugin (better backtrace on internal
+>      errors)
+>   * -Wno-narrowing: to suppress warnings from gcc headers (ipa-utils.h)
+>   * -Wno-unused-variable: to suppress warnings from gcc headers (gcc_version
+>      variable, plugin-version.h)
+>
+> The infrastructure introduces a new Makefile target called gcc-plugins. It
+> supports all gcc versions from 4.5 to 6.0. The scripts/gcc-plugin.sh script
+> chooses the proper host compiler (gcc-4.7 can be built by either gcc or g++).
+> This script also checks the availability of the included headers in
+> scripts/gcc-plugins/gcc-common.h.
+>
+> The gcc-common.h header contains frequently included headers for GCC plugins
+> and it has a compatibility layer for the supported gcc versions.
+>
+> The gcc-generate-*-pass.h headers automatically generate the registration
+> structures for GIMPLE, SIMPLE_IPA, IPA and RTL passes.
+>
+> Note that 'make clean' keeps the *.so files (only the distclean or mrproper
+> targets clean all) because they are needed for out-of-tree modules.
+>
+> The arm and arm64 architectures were tested by David Brown <david.brown@linaro.org>.
+>
+> Signed-off-by: Emese Revfy <re.emese@gmail.com>
 
-> What about tasks sleeping on affected functions in uninterruptible sleep 
-> (possibly indefinitely)? Since all signals are ignored, we wouldn't be 
-> able to patch those tasks in this way, right? Would that be an 
-> unsupported case?
+I've done some basic sanity testing on powerpc with the cyclomatic 
+complexity plugin (with LE native + cross-compilers) and it seems to 
+work with the patch below.
 
-I don't think there is any better way out of this situation than 
-documenting that the convergence of patching could in such cases could 
-take quite a lot of time (well, we can pro-actively try to detect this 
-situation before the patching actually start, and warn about the possible 
-consequences).
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-But let's face it, this should be pretty uncommon, because (a) it's not 
-realistic for the wait times to be really indefinite (b) the task is 
-likely to be in TASK_KILLABLE rather than just plain TASK_UNINTERRUPTIBLE.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a18a0dc..0cfed5b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -97,6 +97,7 @@ config PPC
+         select HAVE_DYNAMIC_FTRACE_WITH_REGS if MPROFILE_KERNEL
+         select HAVE_FUNCTION_TRACER
+         select HAVE_FUNCTION_GRAPH_TRACER
++       select HAVE_GCC_PLUGINS
+         select SYSCTL_EXCEPTION_TRACE
+         select ARCH_WANT_OPTIONAL_GPIOLIB
+         select VIRT_TO_BUS if !PPC64
 
 -- 
-Jiri Kosina
-SUSE Labs
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
