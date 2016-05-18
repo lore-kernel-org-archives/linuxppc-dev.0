@@ -1,38 +1,38 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8lf61P31zDq9n
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:08:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8lys2rJhzDqBR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:45 +1000 (AEST)
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 18 May 2016 12:38:11 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 612CAE0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 12:41:20 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4I788jS14942292
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 12:38:08 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4I784Ww011890
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 12:38:07 +0530
-Message-ID: <573C14CC.20307@linux.vnet.ibm.com>
-Date: Wed, 18 May 2016 12:37:56 +0530
+ Wed, 18 May 2016 17:22:42 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9AF322CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:41 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4I7MYPB62455838
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:41 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4I7M6FB005562
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 17:22:07 +1000
+Message-ID: <573C180B.8050201@linux.vnet.ibm.com>
+Date: Wed, 18 May 2016 12:51:47 +0530
 From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: ego@linux.vnet.ibm.com
 CC: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
  linux-kernel@vger.kernel.org, mikey@neuling.org
-Subject: Re: [PATCH v2 2/9] powerpc/kvm: make hypervisor state restore a
- function
+Subject: Re: [PATCH v2 1/9] powerpc/powernv: Move CHECK_HMI_INTERRUPT to
+ exception-64s header
 References: <1462263878-25237-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1462263878-25237-3-git-send-email-shreyas@linux.vnet.ibm.com>
- <20160518062542.GB3939@in.ibm.com>
-In-Reply-To: <20160518062542.GB3939@in.ibm.com>
+ <1462263878-25237-2-git-send-email-shreyas@linux.vnet.ibm.com>
+ <20160518043551.GA3939@in.ibm.com>
+In-Reply-To: <20160518043551.GA3939@in.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,122 +43,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Gautham,
 
-On 05/18/2016 11:55 AM, Gautham R Shenoy wrote:
-> Hi Shreyas,
-> 
-> On Tue, May 03, 2016 at 01:54:31PM +0530, Shreyas B. Prabhu wrote:
->> In the current code, when the thread wakes up in reset vector, some
->> of the state restore code and check for whether a thread needs to
->> branch to kvm is duplicated. Reorder the code such that this
->> duplication is avoided.
->>
->> At a higher level this is what the change looks like-
-> 
-> I have manually verified that the code flow in the new patch is has
-> the same effect as whatever we were doing earlier. There a couple of
-> comments inline.
-> 
-Thanks for the review!
 
->> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->> index 7716ceb..7ebfbb0 100644
->> --- a/arch/powerpc/kernel/exceptions-64s.S
->> +++ b/arch/powerpc/kernel/exceptions-64s.S
->> @@ -107,25 +107,8 @@ BEGIN_FTR_SECTION
->>  	beq	9f
+On 05/18/2016 10:05 AM, Gautham R Shenoy wrote:
+> On Tue, May 03, 2016 at 01:54:30PM +0530, Shreyas B. Prabhu wrote:
+>> CHECK_HMI_INTERRUPT is used to check for HMI's in reset vector. Move
+>> the macro to a common location (exception-64s.h)
+>> This patch does not change any functionality.
 >>
->>  	cmpwi	cr3,r13,2
->> +	bl	power7_restore_hyp_resource
->>
->> -	/*
->> -	 * Check if last bit of HSPGR0 is set. This indicates whether we are
->> -	 * waking up from winkle.
->> -	 */
->> -	GET_PACA(r13)
->> -	clrldi	r5,r13,63
->> -	clrrdi	r13,r13,1
->> -	cmpwi	cr4,r5,1
->> -	mtspr	SPRN_HSPRG0,r13
->> -
->> -	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
->> -	cmpwi   cr2,r0,PNV_THREAD_NAP
->> -	bgt     cr2,8f				/* Either sleep or Winkle */
->> -
->> -	/* Waking up from nap should not cause hypervisor state loss */
->> -	bgt	cr3,.
->> -
->> -	/* Waking up from nap */
->>  	li	r0,PNV_THREAD_RUNNING
->>  	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
->>
->> @@ -143,13 +126,9 @@ BEGIN_FTR_SECTION
->>
->>  	/* Return SRR1 from power7_nap() */
->>  	mfspr	r3,SPRN_SRR1
->> -	beq	cr3,2f
->> -	b	power7_wakeup_noloss
->> -2:	b	power7_wakeup_loss
->> -
->> -	/* Fast Sleep wakeup on PowerNV */
->> -8:	GET_PACA(r13)
 > 
-> In the old code, we do a GET_PACA(r13) before invoking the
-> power7_wakeup_tb_loss. In the new code we don't. Can you explain
-> this omission ?
-
-GET_PACA(13) is the called in the beginning of
-power7_restore_hyp_resource. So r13 contains pointer to PACA when
-power7_wakeup_tb_loss invoked later in the same function.
+> I suppose this code movement is to facilitate the invocation of
+> CHECK_HMI_INTERRUPT in some later patch ? In this case you could
+> add this to the commit message.
 > 
-> 
-> [..snip..]
-> 
->> @@ -420,33 +451,9 @@ common_exit:
->>
->>  hypervisor_state_restored:
->>
->> -	li	r5,PNV_THREAD_RUNNING
->> -	stb     r5,PACA_THREAD_IDLE_STATE(r13)
->> -
->>  	mtspr	SPRN_SRR1,r16
->> -#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> -	li      r0,KVM_HWTHREAD_IN_KERNEL
->> -	stb     r0,HSTATE_HWTHREAD_STATE(r13)
->> -	/* Order setting hwthread_state vs. testing hwthread_req */
->> -	sync
->> -	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
->> -	cmpwi   r0,0
->> -	beq     6f
->> -	b       kvm_start_guest
->> -6:
->> -#endif
->> -
->> -	REST_NVGPRS(r1)
->> -	REST_GPR(2, r1)
->> -	ld	r3,_CCR(r1)
->> -	ld	r4,_MSR(r1)
->> -	ld	r5,_NIP(r1)
->> -	addi	r1,r1,INT_FRAME_SIZE
->> -	mtcr	r3
->> -	mfspr	r3,SPRN_SRR1		/* Return SRR1 */
->> -	mtspr	SPRN_SRR1,r4
->> -	mtspr	SPRN_SRR0,r5
->> -	rfid
->> +	mtlr	r17
->> +	blr
-> 
-> 
-> Perhaps you could add a comment against this blr to indicate that we
-> go back to the reset vector right after the call to
-> power7_restore_hyp_resource. 
 
 Ok. I'll do that.
-> 
+
+> Otherwise,
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+Thanks for the review.
+>> ---
+>>  arch/powerpc/include/asm/exception-64s.h | 18 ++++++++++++++++++
+>>  arch/powerpc/kernel/idle_power7.S        | 20 +-------------------
+>>  2 files changed, 19 insertions(+), 19 deletions(-)
 >>
->>  fastsleep_workaround_at_exit:
->>  	li	r3,1
+>> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+>> index 93ae809..6a625af 100644
+>> --- a/arch/powerpc/include/asm/exception-64s.h
+>> +++ b/arch/powerpc/include/asm/exception-64s.h
+>> @@ -545,4 +545,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
+>>  #define FINISH_NAP
+>>  #endif
+>>
+>> +#define CHECK_HMI_INTERRUPT						\
+>> +	mfspr	r0,SPRN_SRR1;						\
+>> +BEGIN_FTR_SECTION_NESTED(66);						\
+>> +	rlwinm	r0,r0,45-31,0xf;  /* extract wake reason field (P8) */	\
+>> +FTR_SECTION_ELSE_NESTED(66);						\
+>> +	rlwinm	r0,r0,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
+>> +ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>> +	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
+>> +	bne	20f;							\
+>> +	/* Invoke opal call to handle hmi */				\
+>> +	ld	r2,PACATOC(r13);					\
+>> +	ld	r1,PACAR1(r13);						\
+>> +	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
+>> +	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
+>> +	bl	opal_call_realmode;					\
+>> +	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
+>> +20:	nop;
+>> +
+>>  #endif	/* _ASM_POWERPC_EXCEPTION_H */
+>> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+>> index 470ceeb..6b3404b 100644
+>> --- a/arch/powerpc/kernel/idle_power7.S
+>> +++ b/arch/powerpc/kernel/idle_power7.S
+>> @@ -19,6 +19,7 @@
+>>  #include <asm/kvm_book3s_asm.h>
+>>  #include <asm/opal.h>
+>>  #include <asm/cpuidle.h>
+>> +#include <asm/exception-64s.h>
+>>  #include <asm/book3s/64/mmu-hash.h>
+>>
+>>  #undef DEBUG
+>> @@ -257,25 +258,6 @@ _GLOBAL(power7_winkle)
+>>  	b	power7_powersave_common
+>>  	/* No return */
+>>
+>> -#define CHECK_HMI_INTERRUPT						\
+>> -	mfspr	r0,SPRN_SRR1;						\
+>> -BEGIN_FTR_SECTION_NESTED(66);						\
+>> -	rlwinm	r0,r0,45-31,0xf;  /* extract wake reason field (P8) */	\
+>> -FTR_SECTION_ELSE_NESTED(66);						\
+>> -	rlwinm	r0,r0,45-31,0xe;  /* P7 wake reason field is 3 bits */	\
+>> -ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
+>> -	cmpwi	r0,0xa;			/* Hypervisor maintenance ? */	\
+>> -	bne	20f;							\
+>> -	/* Invoke opal call to handle hmi */				\
+>> -	ld	r2,PACATOC(r13);					\
+>> -	ld	r1,PACAR1(r13);						\
+>> -	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
+>> -	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
+>> -	bl	opal_call_realmode;					\
+>> -	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
+>> -20:	nop;
+>> -
+>> -
+>>  _GLOBAL(power7_wakeup_tb_loss)
+>>  	ld	r2,PACATOC(r13);
+>>  	ld	r1,PACAR1(r13)
 >> -- 
 >> 2.4.11
 >>
