@@ -1,35 +1,24 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r96bg3VGVzDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 07:22:23 +1000 (AEST)
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3r96bf3SXzz9t6j
- for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2016 07:22:21 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id n129so16147885wmn.1
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 14:22:21 -0700 (PDT)
-MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <1463576020-18597-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1463576020-18597-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Wed, 18 May 2016 23:22:16 +0200
-Message-ID: <CAJZ5v0iaGCi8X7Ko0aZL6CBgZ3i4=59cqFhzi1nBFumHL=huQw@mail.gmail.com>
-Subject: Re: [RFC PATCH] cpufreq: powernv: Add fast_switch callback
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
- linuxppc-dev@ozlabs.org, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8yPp5xgBzDqCJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 01:13:18 +1000 (AEST)
+Date: Thu, 19 May 2016 00:13:04 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: Anju T <anju@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ masami.hiramatsu.pt@hitachi.com, jkenisto@us.ibm.com,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 2/3] arch/powerpc : optprobes for powerpc core
+Message-Id: <20160519001304.c7104e18062b324651c97260@kernel.org>
+In-Reply-To: <1463517578-27760-3-git-send-email-anju@linux.vnet.ibm.com>
+References: <1463517578-27760-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1463517578-27760-3-git-send-email-anju@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,76 +28,538 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 18, 2016 at 2:53 PM, Shilpasri G Bhat
-<shilpa.bhat@linux.vnet.ibm.com> wrote:
-> Add fast_switch driver callback to support frequency update in
-> interrupt context while using schedutil governor. Changing frequency
-> in interrupt context will remove the jitter on the workloads which can
-> be seen when a kworker thread is used for the changing the frequency.
->
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+On Wed, 18 May 2016 02:09:37 +0530
+Anju T <anju@linux.vnet.ibm.com> wrote:
 
-This looks simple enough. :-)
+> Instruction slot for detour buffer is allocated from
+> the reserved area. For the time being 64KB is reserved
+> in memory for this purpose. ppc_get_optinsn_slot() and
+> ppc_free_optinsn_slot() are geared towards the allocation and freeing
+> of memory from this area.
 
-A couple of comments, though.
+Thank you for porting optprobe on ppc!!
 
+I have some comments on this patch.
+
+> 
+> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 54c4536..4553eb6 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -678,6 +678,8 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
->         for (i = 0; i < threads_per_core; i++)
->                 cpumask_set_cpu(base + i, policy->cpus);
->
-> +       policy->fast_switch_possible = true;
+>  arch/powerpc/kernel/optprobes.c | 463 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 463 insertions(+)
+>  create mode 100644 arch/powerpc/kernel/optprobes.c
+> 
+> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+> new file mode 100644
+> index 0000000..50a60c1
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/optprobes.c
+> @@ -0,0 +1,463 @@
+> +/*
+> + * Code for Kernel probes Jump optimization.
+> + *
+> + * Copyright 2016, Anju T, IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
 > +
->         kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
->         if (!kn) {
->                 int ret;
-> @@ -854,6 +856,24 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
->         del_timer_sync(&gpstates->timer);
->  }
->
-> +static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
-> +                                       unsigned int target_freq)
+> +#include <linux/kprobes.h>
+> +#include <linux/jump_label.h>
+> +#include <linux/types.h>
+> +#include <linux/slab.h>
+> +#include <linux/list.h>
+> +#include <asm/kprobes.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/cacheflush.h>
+> +#include <asm/code-patching.h>
+> +#include <asm/sstep.h>
+> +
+> +/* Reserve an area to allocate slots for detour buffer */
+> +extern void  optprobe_trampoline_holder(void)
 > +{
-> +       int index;
-> +       struct powernv_smp_call_data freq_data;
+> +	asm volatile(".global optinsn_slot\n"
+> +			"optinsn_slot:\n"
+> +			".space 65536");
+> +}
+
+Would we better move this into optprobes_head.S?
+
 > +
-> +       cpufreq_frequency_table_target(policy, policy->freq_table,
-> +                                      target_freq,
-> +                                      CPUFREQ_RELATION_C, &index);
-
-According to the discussion I had with Peter some time ago, this
-should be RELATION_L or you may end up using a frequency that's not
-sufficient to meet a deadline somewhere.
-
-Also cpufreq_frequency_table_target() is somewhat heavy-weight
-especially if the table is known to be sorted (which I guess is the
-case).
-
-> +       if (index < 0 || index >= powernv_pstate_info.nr_pstates)
-> +               return CPUFREQ_ENTRY_INVALID;
-> +       freq_data.pstate_id = powernv_freqs[index].driver_data;
-> +       freq_data.gpstate_id = powernv_freqs[index].driver_data;
-> +       set_pstate(&freq_data);
+> +#define SLOT_SIZE 65536
+> +#define TMPL_CALL_HDLR_IDX	\
+> +	(optprobe_template_call_handler - optprobe_template_entry)
+> +#define TMPL_EMULATE_IDX	\
+> +	(optprobe_template_call_emulate - optprobe_template_entry)
+> +#define TMPL_RET_BRANCH_IDX	\
+> +	(optprobe_template_ret_branch - optprobe_template_entry)
+> +#define TMPL_RET_IDX	\
+> +	(optprobe_template_ret - optprobe_template_entry)
+> +#define TMPL_OP1_IDX	\
+> +	(optprobe_template_op_address1 - optprobe_template_entry)
+> +#define TMPL_OP2_IDX	\
+> +	(optprobe_template_op_address2 - optprobe_template_entry)
+> +#define TMPL_INSN_IDX	\
+> +	(optprobe_template_insn - optprobe_template_entry)
+> +#define TMPL_END_IDX	\
+> +	(optprobe_template_end - optprobe_template_entry)
 > +
-> +       return pstate_id_to_freq(-index);
+> +struct kprobe_ppc_insn_page {
+> +	struct list_head list;
+> +	kprobe_opcode_t *insns;	/* Page of instruction slots */
+> +	struct kprobe_insn_cache *cache;
+> +	int nused;
+> +	int ngarbage;
+> +	char slot_used[];
+> +};
+> +
+> +#define PPC_KPROBE_INSN_PAGE_SIZE(slots)	\
+> +	(offsetof(struct kprobe_ppc_insn_page, slot_used) +	\
+> +	(sizeof(char) * (slots)))
+> +
+> +enum ppc_kprobe_slot_state {
+> +	SLOT_CLEAN = 0,
+> +	SLOT_DIRTY = 1,
+> +	SLOT_USED = 2,
+> +};
+> +
+> +static struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
+> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
+> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
+> +	/* .insn_size is initialized later */
+> +	.nr_garbage = 0,
+> +};
+> +
+> +static int ppc_slots_per_page(struct kprobe_insn_cache *c)
+> +{
+> +	/*
+> +	 * Here the #slots per page differs from x86 as we have
+> +	 * only 64KB reserved.
+> +	 */
+> +	return SLOT_SIZE / (c->insn_size * sizeof(kprobe_opcode_t));
 > +}
 > +
->  static struct cpufreq_driver powernv_cpufreq_driver = {
->         .name           = "powernv-cpufreq",
->         .flags          = CPUFREQ_CONST_LOOPS,
-> @@ -861,6 +881,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
->         .exit           = powernv_cpufreq_cpu_exit,
->         .verify         = cpufreq_generic_frequency_table_verify,
->         .target_index   = powernv_cpufreq_target_index,
-> +       .fast_switch    = powernv_fast_switch,
->         .get            = powernv_cpufreq_get,
->         .stop_cpu       = powernv_cpufreq_stop_cpu,
->         .attr           = powernv_cpu_freq_attr,
-> --
+> +/* Return 1 if all garbages are collected, otherwise 0. */
+> +static int collect_one_slot(struct kprobe_ppc_insn_page *kip, int idx)
+> +{
+> +	kip->slot_used[idx] = SLOT_CLEAN;
+> +	kip->nused--;
+> +	return 0;
+> +}
+> +
+> +static int collect_garbage_slots(struct kprobe_insn_cache *c)
+> +{
+> +	struct kprobe_ppc_insn_page *kip, *next;
+> +
+> +	/* Ensure no-one is interrupted on the garbages */
+> +	synchronize_sched();
+> +
+> +	list_for_each_entry_safe(kip, next, &c->pages, list) {
+> +		int i;
+> +
+> +		if (kip->ngarbage == 0)
+> +			continue;
+> +		kip->ngarbage = 0;	/* we will collect all garbages */
+> +		for (i = 0; i < ppc_slots_per_page(c); i++) {
+> +			if (kip->slot_used[i] == SLOT_DIRTY &&
+> +			    collect_one_slot(kip, i))
+> +				break;
+> +		}
+> +	}
+> +	c->nr_garbage = 0;
+> +	return 0;
+> +}
+> +
+> +kprobe_opcode_t  *__ppc_get_optinsn_slot(struct kprobe_insn_cache *c)
+> +{
+> +	struct kprobe_ppc_insn_page *kip;
+> +	kprobe_opcode_t *slot = NULL;
+> +
+> +	mutex_lock(&c->mutex);
+> +	list_for_each_entry(kip, &c->pages, list) {
+> +		if (kip->nused < ppc_slots_per_page(c)) {
+> +			int i;
+> +
+> +			for (i = 0; i < ppc_slots_per_page(c); i++) {
+> +				if (kip->slot_used[i] == SLOT_CLEAN) {
+> +					kip->slot_used[i] = SLOT_USED;
+> +					kip->nused++;
+> +					slot = kip->insns + (i * c->insn_size);
+> +					goto out;
+> +				}
+> +			}
+> +			/* kip->nused reached max value. */
+> +			kip->nused = ppc_slots_per_page(c);
+> +			pr_info("No more slots to allocate\n");
+> +			WARN_ON(1);
+> +			goto out;
+> +		}
+> +	}
+
+Wait... this should have just one or zero kip on the list.
+And if !list_empty(c->pages) here, we have to return NULL.
+
+> +	kip = kmalloc(PPC_KPROBE_INSN_PAGE_SIZE(ppc_slots_per_page(c)),
+> +		      GFP_KERNEL);
+> +	if (!kip)
+> +		goto out;
+> +	/*
+> +	 * Allocate from the reserved area so as to
+> +	 * ensure the range will be within +/-32MB
+> +	 */
+> +	kip->insns = &optinsn_slot;
+> +	if (!kip->insns) {
+> +		kfree(kip);
+> +		goto out;
+> +	}
+> +	INIT_LIST_HEAD(&kip->list);
+> +	memset(kip->slot_used, SLOT_CLEAN, ppc_slots_per_page(c));
+> +	kip->slot_used[0] = SLOT_USED;
+> +	kip->nused = 1;
+> +	kip->ngarbage = 0;
+> +	kip->cache = c;
+> +	list_add(&kip->list, &c->pages);
+> +	slot = kip->insns;
+> +out:
+> +	mutex_unlock(&c->mutex);
+> +	return slot;
+> +}
+> +
+> +kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
+> +{
+> +	/*
+> +	 * The insn slot is allocated from the reserved
+> +	 * area(ie &optinsn_slot).We are not optimizing probes
+> +	 * at module_addr now.
+> +	 */
+> +	kprobe_opcode_t *slot = NULL;
+> +
+> +	if (is_kernel_addr(op->kp.addr))
+> +		slot = __ppc_get_optinsn_slot(&kprobe_ppc_optinsn_slots);
+> +	else
+> +		pr_info("Kprobe can not be optimized\n");
+> +	return slot;
+> +}
+> +NOKPROBE_SYMBOL(ppc_get_optinsn_slot);
+
+You don't need it, unless this is called in kprobe handler.
+
+> +
+> +void __ppc_free_optinsn_slot(struct kprobe_insn_cache *c,
+> +			     kprobe_opcode_t *slot, int dirty)
+> +{
+> +	struct kprobe_ppc_insn_page *kip;
+> +
+> +	mutex_lock(&c->mutex);
+> +
+> +	list_for_each_entry(kip, &c->pages, list) {
+> +		long idx = ((long)slot - (long)kip->insns) /
+> +				(c->insn_size * sizeof(kprobe_opcode_t));
+> +		if (idx >= 0 && idx < ppc_slots_per_page(c)) {
+> +			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+> +			if (dirty) {
+> +				kip->slot_used[idx] = SLOT_DIRTY;
+> +				kip->ngarbage++;
+> +				if (++c->nr_garbage > ppc_slots_per_page(c))
+> +					collect_garbage_slots(c);
+> +			} else
+> +				collect_one_slot(kip, idx);
+> +			goto out;
+> +		}
+> +	}
+> +	/* Could not free this slot. */
+> +	WARN_ON(1);
+> +out:
+> +	mutex_unlock(&c->mutex);
+> +}
+> +
+> +static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
+> +{
+> +	if (!op->optinsn.insn)
+> +		return;
+> +	if (is_kernel_addr((unsigned long)op->kp.addr))
+> +		__ppc_free_optinsn_slot(&kprobe_ppc_optinsn_slots,
+> +					op->optinsn.insn, 0);
+> +}
+> +NOKPROBE_SYMBOL(ppc_free_optinsn_slot);
+
+ditto.
+
+> +
+> +static void
+> +__arch_remove_optimized_kprobe(struct optimized_kprobe *op, int dirty)
+> +{
+> +	if (op->optinsn.insn) {
+> +		ppc_free_optinsn_slot(op);
+> +		op->optinsn.insn = NULL;
+> +	}
+> +}
+> +
+> +static int can_optimize(struct kprobe *p)
+> +{
+> +	/*
+> +	 * Not optimizing the kprobe placed by
+> +	 * kretprobe during boot time
+> +	 */
+> +	struct pt_regs *regs;
+> +	unsigned int instr;
+> +	int r;
+> +
+> +	if ((kprobe_opcode_t)p->addr == (kprobe_opcode_t)&kretprobe_trampoline)
+> +		return 0;
+> +
+> +	regs = current_pt_regs();
+> +	instr = *(p->ainsn.insn);
+> +
+> +	/* Ensure the instruction can be emulated*/
+> +	r = emulate_step(regs, instr);
+> +	if (r != 1)
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
+> +static void
+> +create_return_branch(struct optimized_kprobe *op, struct pt_regs *regs)
+> +{
+> +	/*
+> +	 * Create a branch back to the return address
+> +	 * after the probed instruction is emulated
+> +	 */
+> +
+> +	kprobe_opcode_t branch, *buff;
+> +	unsigned long ret;
+> +
+> +	ret = regs->nip;
+> +	buff = op->optinsn.insn;
+> +
+> +	branch = create_branch((unsigned int *)buff + TMPL_RET_IDX,
+> +			       (unsigned long)ret, 0);
+> +	buff[TMPL_RET_IDX] = branch;
+> +}
+> +NOKPROBE_SYMBOL(create_return_branch);
+
+ditto.
+
+> +
+> +static void
+> +optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
+> +{
+> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +
+> +	if (kprobe_running())
+> +		kprobes_inc_nmissed_count(&op->kp);
+> +	else {
+> +		__this_cpu_write(current_kprobe, &op->kp);
+> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+> +		opt_pre_handler(&op->kp, regs);
+> +		__this_cpu_write(current_kprobe, NULL);
+> +	}
+> +	local_irq_restore(flags);
+> +}
+
+This actually needs to be marked NOKPROBE_SYMBOL().
+
+> +
+> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
+> +{
+> +	 __arch_remove_optimized_kprobe(op, 1);
+> +}
+> +
+> +void  create_insn(unsigned int insn, kprobe_opcode_t *addr)
+> +{
+> +	unsigned int instr, instr2;
+> +
+> +	instr = 0x3c000000 | 0x800000 | ((insn >> 16) & 0xffff);
+> +	*addr++ = instr;
+> +	instr2 = 0x60000000 | 0x40000 | 0x800000;
+> +	instr2 = instr2 | (insn & 0xffff);
+> +	*addr = instr2;
+
+Please add macros and/or comments for each instruction to explain what
+instrcution would you make...
+
+> +}
+> +
+> +void create_load_address_insn(struct optimized_kprobe *op,
+> +			      kprobe_opcode_t *addr, kprobe_opcode_t *addr2)
+> +{
+> +	unsigned int instr1, instr2, instr3, instr4, instr5;
+
+Would it better use u32?
+
+> +	unsigned long val;
+> +
+> +	val = op;
+> +
+> +	instr1 = 0x3c000000 | 0x600000 | ((val >> 48) & 0xffff);
+> +	*addr++ = instr1;
+> +	*addr2++ = instr1;
+> +	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val >> 32) & 0xffff);
+> +	*addr++ = instr2;
+> +	*addr2++ = instr2;
+> +	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 & 0x1f) << 11);
+> +	instr3 = instr3 | ((31 & 0x1f) << 6) | ((32 & 0x20) >> 4);
+> +	*addr++ = instr3;
+> +	*addr2++ = instr3;
+> +	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val >> 16) & 0xffff);
+> +	*addr++ = instr4;
+> +	*addr2++ = instr4;
+> +	instr5 =  0x60000000 | 0x30000 | 0x600000 | (val & 0xffff);
+
+Ditto.
+
+> +	*addr = instr5;
+> +	*addr2 = instr5;
+> +}
+> +
+> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+> +{
+> +	kprobe_opcode_t *buff, branch, branch2, branch3;
+> +	long rel_chk, ret_chk;
+> +
+> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+> +	op->optinsn.insn = NULL;
+> +
+> +	if (!can_optimize(p))
+> +		return -EILSEQ;
+> +
+> +	/* Allocate instruction slot for detour buffer*/
+> +	buff = ppc_get_optinsn_slot(op);
+> +
+> +	/*
+> +	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
+> +	 *
+> +	 * The target address has to be relatively nearby, to permit use
+> +	 * of branch instruction in powerpc because the address is specified
+> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
+> +	 * in the opcode specify the address. Therefore the address gap should
+> +	 * be 32MB on either side of the current instruction.
+> +	 */
+> +	rel_chk = (long)buff -
+> +			(unsigned long)p->addr;
+
+Why would you add a new line?
+
+> +	if (rel_chk < -0x2000000 || rel_chk > 0x1fffffc || rel_chk & 0x3) {
+> +		ppc_free_optinsn_slot(op);
+> +		return -ERANGE;
+> +	}
+> +	/*
+> +	 * For the time being assume that the return address is NIP+4.
+> +	 * TODO : check the return address is also within 32MB range for
+> +	 * cases where NIP is not NIP+4.ie the NIP is decided after emulation.
+> +	 */
+> +	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)(p->addr) + 4;
+> +
+> +	if (ret_chk < -0x2000000 || ret_chk > 0x1fffffc || ret_chk & 0x3) {
+> +		ppc_free_optinsn_slot(op);
+> +		return -ERANGE;
+> +	}
+> +
+> +	/* Do Copy arch specific instance from template*/
+> +	memcpy(buff, optprobe_template_entry,
+> +	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
+> +	create_load_address_insn(op, buff + TMPL_OP1_IDX, buff + TMPL_OP2_IDX);
+> +
+> +	/* Create a branch to the optimized_callback function */
+> +	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
+> +			       (unsigned long)optimized_callback + 8,
+> +				BRANCH_SET_LINK);
+> +
+> +	/* Place the branch instr into the trampoline */
+> +	buff[TMPL_CALL_HDLR_IDX] = branch;
+> +	create_insn(*(p->ainsn.insn), buff + TMPL_INSN_IDX);
+> +
+> +	/*Create a branch instruction into the emulate_step*/
+> +	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
+> +				(unsigned long)emulate_step + 8,
+> +				BRANCH_SET_LINK);
+> +	buff[TMPL_EMULATE_IDX] = branch3;
+> +
+> +	/* Create a branch for jumping back*/
+> +	branch2 = create_branch((unsigned int *)buff + TMPL_RET_BRANCH_IDX,
+> +				(unsigned long)create_return_branch + 8,
+> +				BRANCH_SET_LINK);
+> +	buff[TMPL_RET_BRANCH_IDX] = branch2;
+> +
+> +	op->optinsn.insn = buff;
+> +	return 0;
+> +}
+> +
+> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
+> +{
+> +	return optinsn->insn;
+> +}
+> +
+> +/*
+> + * Here,kprobe opt always replace one instruction (4 bytes
+> + * aligned and 4 bytes long). It is impossible to encounter another
+> + * kprobe in the address range. So always return 0.
+> + */
+> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
+> +{
+> +	return 0;
+> +}
+> +
+> +void arch_optimize_kprobes(struct list_head *oplist)
+> +{
+> +	struct optimized_kprobe *op;
+> +	struct optimized_kprobe *tmp;
+> +
+> +	unsigned int branch;
+> +
+> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+> +	/*
+> +	* Backup instructions which will be replaced
+> +	* by jump address
+> +	*/
+> +	memcpy(op->optinsn.copied_insn, op->kp.addr,
+> +	       RELATIVEJUMP_SIZE);
+> +	branch = create_branch((unsigned int *)op->kp.addr,
+> +			       (unsigned long)op->optinsn.insn, 0);
+> +	*op->kp.addr = branch;
+> +	list_del_init(&op->list);
+
+Please add indent-tab for this block.
+
+> +	}
+> +}
+> +
+> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
+> +{
+> +	arch_arm_kprobe(&op->kp);
+> +}
+> +
+> +void arch_unoptimize_kprobes(struct list_head *oplist,
+> +			     struct list_head *done_list)
+> +{
+> +	struct optimized_kprobe *op;
+> +	struct optimized_kprobe *tmp;
+> +
+> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+> +		arch_unoptimize_kprobe(op);
+> +		list_move(&op->list, done_list);
+> +	}
+> +}
+> +
+> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+> +				 unsigned long addr)
+> +{
+
+Please make sure addr != op->kp.addr and addr is aligned.
+
+> +	return 0;
+> +}
+> -- 
+> 2.1.0
+> 
+
+Thanks!
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
