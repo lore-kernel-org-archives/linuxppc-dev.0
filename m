@@ -2,38 +2,40 @@ Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8vKB3Gd7zDqCJ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8vKB3KLwzDqCK
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 22:54:06 +1000 (AEST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3r8vK94NVQz9t6M
+ by ozlabs.org (Postfix) with ESMTPS id 3r8vK94NH5z9t6B
  for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 22:54:05 +1000 (AEST)
 Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
  Wed, 18 May 2016 18:24:02 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E6191E0040
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:27:06 +0530 (IST)
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C1365125805B
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:26:12 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4ICrp3I12779924
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:23:51 +0530
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4ICrxFQ25166066
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:23:59 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4ICrrOn011326
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:23:54 +0530
+ u4ICrwVl011479
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:23:59 +0530
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: rjw@rjwysocki.net
 Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
  linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
  shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
  linuxppc-dev@ozlabs.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH] Increase in idle power with schedutil
-Date: Wed, 18 May 2016 18:23:39 +0530
-Message-Id: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [RFC PATCH] cpufreq: powernv: Add fast_switch callback
+Date: Wed, 18 May 2016 18:23:40 +0530
+Message-Id: <1463576020-18597-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,55 +45,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds driver callback for fast_switch and below observations
-on schedutil governor are done with this patch.
+Add fast_switch driver callback to support frequency update in
+interrupt context while using schedutil governor. Changing frequency
+in interrupt context will remove the jitter on the workloads which can
+be seen when a kworker thread is used for the changing the frequency.
 
-In POWER8 there is a regression observed with schedutil compared to
-ondemand. With schedutil the frequency is not ramping down and is
-mostly stuck at max frequency during idle . This is because of the
-watchdog timer, an RT task which is fired every 4 seconds which
-results in requesting max frequency.
-
-In a completely idle system, when there are no processes running apart
-from few short running housekeeping tasks (like watchdog) the system is
-stuck at max frequency due to 'cpufreq_trigger_update()'
-
-static inline void cpufreq_trigger_update(u64 time)
-{
-        cpufreq_update_util(time, ULONG_MAX, 0);
-}
-
-If there is no noise apart from the watchdog timer the cpu is held at
-max frequency for no good reason. On a 16 core system I can see an
-increase in 20% idle power with schedutil compared to ondemand
-governor.
-
-Below is the trace with 'sched:sched_switch' and 'power:cpu_frequency'
-events. Here the watchdog timer that runs for a very small period is
-requesting Pmax and this gets triggered regularly.
-
-<idle>-0  19059.992912: sched_switch: prev_comm=swapper/16  prev_state=R
-				==> next_comm=watchdog/16 
-watchdog/16-107 19059.992914: cpu_frequency: state=4322000 cpu_id=16
-watchdog/16-107 19059.992915: sched_switch: prev_comm=watchdog/16 prev_state=S
-	 			==> next_comm=swapper/16 
-
-However adding a cpufreq hook in pick_next_task_idle() to decrease the
-frequency helped to reduce the problem.
-
-static inline void cpufreq_trigger_idle(u64 time)
-{
-       cpufreq_update_util(time, 0, 1);
-}
-
-This might not be the right fix for the problem, however this thread
-is reporting the other short-comings of cpufreq_trigger_update().
-
-Shilpasri G Bhat (1):
-  cpufreq: powernv: Add fast_switch callback
-
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
  drivers/cpufreq/powernv-cpufreq.c | 21 +++++++++++++++++++++
  1 file changed, 21 insertions(+)
 
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 54c4536..4553eb6 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -678,6 +678,8 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	for (i = 0; i < threads_per_core; i++)
+ 		cpumask_set_cpu(base + i, policy->cpus);
+ 
++	policy->fast_switch_possible = true;
++
+ 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+ 	if (!kn) {
+ 		int ret;
+@@ -854,6 +856,24 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ 	del_timer_sync(&gpstates->timer);
+ }
+ 
++static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
++					unsigned int target_freq)
++{
++	int index;
++	struct powernv_smp_call_data freq_data;
++
++	cpufreq_frequency_table_target(policy, policy->freq_table,
++				       target_freq,
++				       CPUFREQ_RELATION_C, &index);
++	if (index < 0 || index >= powernv_pstate_info.nr_pstates)
++		return CPUFREQ_ENTRY_INVALID;
++	freq_data.pstate_id = powernv_freqs[index].driver_data;
++	freq_data.gpstate_id = powernv_freqs[index].driver_data;
++	set_pstate(&freq_data);
++
++	return pstate_id_to_freq(-index);
++}
++
+ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.name		= "powernv-cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -861,6 +881,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.exit		= powernv_cpufreq_cpu_exit,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= powernv_cpufreq_target_index,
++	.fast_switch	= powernv_fast_switch,
+ 	.get		= powernv_cpufreq_get,
+ 	.stop_cpu	= powernv_cpufreq_stop_cpu,
+ 	.attr		= powernv_cpu_freq_attr,
 -- 
 1.9.3
