@@ -1,28 +1,28 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8kjJ6wd3zDqBh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 16:25:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8knM37fKzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 16:29:27 +1000 (AEST)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 18 May 2016 02:25:54 -0400
-Date: Wed, 18 May 2016 11:55:42 +0530
+ Wed, 18 May 2016 00:29:24 -0600
+Date: Wed, 18 May 2016 11:59:18 +0530
 From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org
-Subject: Re: [PATCH v2 2/9] powerpc/kvm: make hypervisor state restore a
- function
-Message-ID: <20160518062542.GB3939@in.ibm.com>
+Cc: mpe@ellerman.id.au, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/9] powerpc/powernv: Move idle code usable by
+ multiple hardware to common location
+Message-ID: <20160518062917.GC3939@in.ibm.com>
 Reply-To: ego@linux.vnet.ibm.com
 References: <1462263878-25237-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1462263878-25237-3-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1462263878-25237-4-git-send-email-shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1462263878-25237-3-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <1462263878-25237-4-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,109 +34,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Shreyas,
 
-On Tue, May 03, 2016 at 01:54:31PM +0530, Shreyas B. Prabhu wrote:
-> In the current code, when the thread wakes up in reset vector, some
-> of the state restore code and check for whether a thread needs to
-> branch to kvm is duplicated. Reorder the code such that this
-> duplication is avoided.
-> 
-> At a higher level this is what the change looks like-
-
-I have manually verified that the code flow in the new patch is has
-the same effect as whatever we were doing earlier. There a couple of
-comments inline.
-
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 7716ceb..7ebfbb0 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -107,25 +107,8 @@ BEGIN_FTR_SECTION
->  	beq	9f
-> 
->  	cmpwi	cr3,r13,2
-> +	bl	power7_restore_hyp_resource
-> 
-> -	/*
-> -	 * Check if last bit of HSPGR0 is set. This indicates whether we are
-> -	 * waking up from winkle.
-> -	 */
-> -	GET_PACA(r13)
-> -	clrldi	r5,r13,63
-> -	clrrdi	r13,r13,1
-> -	cmpwi	cr4,r5,1
-> -	mtspr	SPRN_HSPRG0,r13
-> -
-> -	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
-> -	cmpwi   cr2,r0,PNV_THREAD_NAP
-> -	bgt     cr2,8f				/* Either sleep or Winkle */
-> -
-> -	/* Waking up from nap should not cause hypervisor state loss */
-> -	bgt	cr3,.
-> -
-> -	/* Waking up from nap */
->  	li	r0,PNV_THREAD_RUNNING
->  	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
-> 
-> @@ -143,13 +126,9 @@ BEGIN_FTR_SECTION
-> 
->  	/* Return SRR1 from power7_nap() */
->  	mfspr	r3,SPRN_SRR1
-> -	beq	cr3,2f
-> -	b	power7_wakeup_noloss
-> -2:	b	power7_wakeup_loss
-> -
-> -	/* Fast Sleep wakeup on PowerNV */
-> -8:	GET_PACA(r13)
-
-In the old code, we do a GET_PACA(r13) before invoking the
-power7_wakeup_tb_loss. In the new code we don't. Can you explain
-this omission ?
-
+On Tue, May 03, 2016 at 01:54:32PM +0530, Shreyas B. Prabhu wrote:
+> CPU-idle related code like context save/restore functions idle_power7.S
+> can reused for adding stop instruction support. Move this
+> code to a new commonly accessible location.
 
 [..snip..]
 
-> @@ -420,33 +451,9 @@ common_exit:
-> 
->  hypervisor_state_restored:
-> 
-> -	li	r5,PNV_THREAD_RUNNING
-> -	stb     r5,PACA_THREAD_IDLE_STATE(r13)
-> -
->  	mtspr	SPRN_SRR1,r16
-> -#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-> -	li      r0,KVM_HWTHREAD_IN_KERNEL
-> -	stb     r0,HSTATE_HWTHREAD_STATE(r13)
-> -	/* Order setting hwthread_state vs. testing hwthread_req */
-> -	sync
-> -	lbz     r0,HSTATE_HWTHREAD_REQ(r13)
-> -	cmpwi   r0,0
-> -	beq     6f
-> -	b       kvm_start_guest
-> -6:
-> -#endif
-> -
-> -	REST_NVGPRS(r1)
-> -	REST_GPR(2, r1)
-> -	ld	r3,_CCR(r1)
-> -	ld	r4,_MSR(r1)
-> -	ld	r5,_NIP(r1)
-> -	addi	r1,r1,INT_FRAME_SIZE
-> -	mtcr	r3
-> -	mfspr	r3,SPRN_SRR1		/* Return SRR1 */
-> -	mtspr	SPRN_SRR1,r4
-> -	mtspr	SPRN_SRR0,r5
-> -	rfid
-> +	mtlr	r17
-> +	blr
+> diff --git a/arch/powerpc/kernel/idle_power_common.S b/arch/powerpc/kernel/idle_power_common.S
+> new file mode 100644
+> index 0000000..05954ae
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/idle_power_common.S
 
+Since the new file is derived from idle_power7.S, you should add a
+comment here to indicate that this shares the copyright history with
+the original file.
 
-Perhaps you could add a comment against this blr to indicate that we
-go back to the reset vector right after the call to
-power7_restore_hyp_resource. 
-
-> 
->  fastsleep_workaround_at_exit:
->  	li	r3,1
-> -- 
-> 2.4.11
-> 
+--
+Thanks and Regards
+gautham.
