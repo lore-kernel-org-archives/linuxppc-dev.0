@@ -1,41 +1,37 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8vKB3KLwzDqCK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 22:54:06 +1000 (AEST)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3r8vK94NH5z9t6B
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 22:54:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8vVq3JQSzDqCJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 23:02:27 +1000 (AEST)
 Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 18 May 2016 18:24:02 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C1365125805B
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:26:12 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4ICrxFQ25166066
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:23:59 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4ICrwVl011479
- for <linuxppc-dev@ozlabs.org>; Wed, 18 May 2016 18:23:59 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
- linuxppc-dev@ozlabs.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH] cpufreq: powernv: Add fast_switch callback
-Date: Wed, 18 May 2016 18:23:40 +0530
-Message-Id: <1463576020-18597-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-In-Reply-To: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Wed, 18 May 2016 14:02:23 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9222917D807F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 14:03:20 +0100 (BST)
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+ [9.149.37.213])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4ID2Jh362849096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 13:02:20 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4ID2INh024298
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 07:02:19 -0600
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ imunsie@au1.ibm.com, mikey@neuling.org,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: [v4,2/2] cxl: Add set and get private data to context struct
+Date: Wed, 18 May 2016 15:01:28 +0200
+Message-Id: <1463576488-18944-2-git-send-email-felix@linux.vnet.ibm.com>
+In-Reply-To: <1463576488-18944-1-git-send-email-felix@linux.vnet.ibm.com>
+References: <1463576488-18944-1-git-send-email-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,61 +41,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add fast_switch driver callback to support frequency update in
-interrupt context while using schedutil governor. Changing frequency
-in interrupt context will remove the jitter on the workloads which can
-be seen when a kworker thread is used for the changing the frequency.
+From: Michael Neuling <mikey@neuling.org>
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+This provides AFU drivers a means to associate private data with a cxl
+context. This is particularly intended for make the new callbacks for
+driver specific events easier for AFU drivers to use, as they can easily
+get back to any private data structures they may use.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com
+Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+No changes since v1, added Matt Ochs reviewed-by tag.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 54c4536..4553eb6 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -678,6 +678,8 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	for (i = 0; i < threads_per_core; i++)
- 		cpumask_set_cpu(base + i, policy->cpus);
- 
-+	policy->fast_switch_possible = true;
-+
- 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
- 	if (!kn) {
- 		int ret;
-@@ -854,6 +856,24 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- 	del_timer_sync(&gpstates->timer);
+ drivers/misc/cxl/api.c | 21 +++++++++++++++++++++
+ drivers/misc/cxl/cxl.h |  3 +++
+ include/misc/cxl.h     |  7 +++++++
+ 3 files changed, 31 insertions(+)
+
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index cd47f39..0eb4bbf 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -103,6 +103,27 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
+ 	return 0;
  }
  
-+static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
-+					unsigned int target_freq)
++
++int cxl_set_priv(struct cxl_context *ctx, void *priv)
 +{
-+	int index;
-+	struct powernv_smp_call_data freq_data;
++	if (!ctx)
++		return -EINVAL;
 +
-+	cpufreq_frequency_table_target(policy, policy->freq_table,
-+				       target_freq,
-+				       CPUFREQ_RELATION_C, &index);
-+	if (index < 0 || index >= powernv_pstate_info.nr_pstates)
-+		return CPUFREQ_ENTRY_INVALID;
-+	freq_data.pstate_id = powernv_freqs[index].driver_data;
-+	freq_data.gpstate_id = powernv_freqs[index].driver_data;
-+	set_pstate(&freq_data);
++	ctx->priv = priv;
 +
-+	return pstate_id_to_freq(-index);
++	return 0;
 +}
++EXPORT_SYMBOL_GPL(cxl_set_priv);
 +
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.name		= "powernv-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
-@@ -861,6 +881,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.exit		= powernv_cpufreq_cpu_exit,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= powernv_cpufreq_target_index,
-+	.fast_switch	= powernv_fast_switch,
- 	.get		= powernv_cpufreq_get,
- 	.stop_cpu	= powernv_cpufreq_stop_cpu,
- 	.attr		= powernv_cpu_freq_attr,
++void *cxl_get_priv(struct cxl_context *ctx)
++{
++	if (!ctx)
++		return ERR_PTR(-EINVAL);
++
++	return ctx->priv;
++}
++EXPORT_SYMBOL_GPL(cxl_get_priv);
++
+ int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
+ {
+ 	int res;
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index b48828c..b0e51a3 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -485,6 +485,9 @@ struct cxl_context {
+ 	/* Only used in PR mode */
+ 	u64 process_token;
+ 
++	/* driver private data */
++	void *priv;
++
+ 	unsigned long *irq_bitmap; /* Accessed from IRQ context */
+ 	struct cxl_irq_ranges irqs;
+ 	struct list_head irq_names;
+diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+index 8a7677e2..e91d849 100644
+--- a/include/misc/cxl.h
++++ b/include/misc/cxl.h
+@@ -86,6 +86,13 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev);
+ int cxl_release_context(struct cxl_context *ctx);
+ 
+ /*
++ * Set and get private data associated with a context. Allows drivers to have a
++ * back pointer to some useful structure.
++ */
++int cxl_set_priv(struct cxl_context *ctx, void *priv);
++void *cxl_get_priv(struct cxl_context *ctx);
++
++/*
+  * Allocate AFU interrupts for this context. num=0 will allocate the default
+  * for this AFU as given in the AFU descriptor. This number doesn't include the
+  * interrupt 0 (CAIA defines AFU IRQ 0 for page faults). Each interrupt to be
 -- 
-1.9.3
+2.1.0
