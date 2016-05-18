@@ -1,28 +1,28 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8kyh5PRfzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 16:37:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r8l7k06HhzDqCJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 May 2016 16:45:21 +1000 (AEST)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 18 May 2016 00:37:30 -0600
-Date: Wed, 18 May 2016 12:07:09 +0530
+ Wed, 18 May 2016 00:45:19 -0600
+Date: Wed, 18 May 2016 12:15:11 +0530
 From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
 To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
  linux-kernel@vger.kernel.org, mikey@neuling.org
-Subject: Re: [PATCH v2 4/9] powerpc/powernv: Make power7_powersave_common
- more generic
-Message-ID: <20160518063708.GD3939@in.ibm.com>
+Subject: Re: [PATCH v2 6/9] powerpc/powernv: set power_save func after the
+ idle states are initialized
+Message-ID: <20160518064511.GA11935@in.ibm.com>
 Reply-To: ego@linux.vnet.ibm.com
 References: <1462263878-25237-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1462263878-25237-5-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1462263878-25237-7-git-send-email-shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1462263878-25237-5-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <1462263878-25237-7-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,62 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shreyas,
-
-On Tue, May 03, 2016 at 01:54:33PM +0530, Shreyas B. Prabhu wrote:
-> power7_powersave_common does common steps needed before entering idle
-> state and eventually changes MSR to MSR_IDLE and does rfid to
-> power7_enter_nap_mode.
+On Tue, May 03, 2016 at 01:54:35PM +0530, Shreyas B. Prabhu wrote:
+> pnv_init_idle_states discovers supported idle states from the
+> device tree and does the required initialization. Set power_save
+> function pointer only after this initialization is done
 > 
-> Make it more generic by passing the rfid address as a function parameter.
-> Also make function name more generic.
+> Signed-off-by: Shreyas B. Prabhy <shreyas@linux.vnet.ibm.com>
 
-[..snip..]
-
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/idle.c  | 3 +++
+>  arch/powerpc/platforms/powernv/setup.c | 2 +-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
 > 
->  _GLOBAL(power7_winkle)
-> -	li	r3,3
-> +	li	r3,PNV_THREAD_WINKLE
-
-This particular change above can go as an independent patch.
-
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index fcc8b68..fbb09fb 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -285,6 +285,9 @@ static int __init pnv_init_idle_states(void)
+>  	}
 > 
->  _GLOBAL(power7_wakeup_tb_loss)
-> diff --git a/arch/powerpc/kernel/idle_power_common.S b/arch/powerpc/kernel/idle_power_common.S
-> index 05954ae..ff7a541 100644
-> --- a/arch/powerpc/kernel/idle_power_common.S
-> +++ b/arch/powerpc/kernel/idle_power_common.S
-> @@ -21,8 +21,10 @@
->   * To check IRQ_HAPPENED in r4
->   * 	0 - don't check
->   * 	1 - check
-> + *
-> + * Address to 'rfid' to in r5
->   */
-> -_GLOBAL(power7_powersave_common)
-> +_GLOBAL(power_powersave_common)
->  	/* Use r3 to pass state nap/sleep/winkle */
->  	/* NAP is a state loss, we create a regs frame on the
->  	 * stack, fill it up with the state we care about and
-> @@ -79,13 +81,12 @@ _GLOBAL(power7_powersave_common)
->  	 * because as soon as we do that, another thread can switch
->  	 * the MMU context to the guest.
->  	 */
-> -	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
-> +	LOAD_REG_IMMEDIATE(r7, MSR_IDLE)
->  	li	r6, MSR_RI
->  	andc	r6, r9, r6
-> -	LOAD_REG_ADDR(r7, power7_enter_nap_mode)
->  	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
-> -	mtspr	SPRN_SRR0, r7
-> -	mtspr	SPRN_SRR1, r5
-> +	mtspr	SPRN_SRR0, r5
-> +	mtspr	SPRN_SRR1, r7
->  	rfid
->  	/* No return */
-
-Any particular reason why you swapped the roles of r5 and r7 ?
-
---
-Thanks and Regards
-gautham.
+>  	pnv_alloc_idle_core_states();
+> +
+> +	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+> +		ppc_md.power_save = power7_idle;
+>  out_free:
+>  	kfree(flags);
+>  out:
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+> index 1acb0c7..c9685b6 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -312,7 +312,7 @@ define_machine(powernv) {
+>  	.get_proc_freq          = pnv_get_proc_freq,
+>  	.progress		= pnv_progress,
+>  	.machine_shutdown	= pnv_shutdown,
+> -	.power_save             = power7_idle,
+> +	.power_save             = NULL,
+>  	.calibrate_decr		= generic_calibrate_decr,
+>  #ifdef CONFIG_KEXEC
+>  	.kexec_cpu_down		= pnv_kexec_cpu_down,
+> -- 
+> 2.4.11
+> 
