@@ -1,26 +1,22 @@
-Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <horia.geanta@nxp.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0089.outbound.protection.outlook.com [207.46.100.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9ZJt0yYzzDqDW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 01:11:09 +1000 (AEST)
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Thu, 19 May 2016 09:11:06 -0600
-From: Anju T <anju@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: anju@linux.vnet.ibm.com, ananth@in.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, hemant@linux.vnet.ibm.com,
- mahesh@linux.vnet.ibm.com, mhiramat@kernel.org
-Subject: [RFC PATCH v2 3/3] arch/powerpc : Enable optprobes support in powerpc
-Date: Thu, 19 May 2016 20:40:40 +0530
-Message-Id: <1463670640-25701-4-git-send-email-anju@linux.vnet.ibm.com>
-In-Reply-To: <1463670640-25701-1-git-send-email-anju@linux.vnet.ibm.com>
-References: <1463670640-25701-1-git-send-email-anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9ZKB0676zDqHc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 01:11:25 +1000 (AEST)
+From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: <linux-crypto@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH v3 4/8] powerpc: add io{read,write}64 accessors
+Date: Thu, 19 May 2016 18:11:10 +0300
+Message-ID: <1463670670-2995-1-git-send-email-horia.geanta@nxp.com>
+In-Reply-To: <1463670405-1059-1-git-send-email-horia.geanta@nxp.com>
+References: <1463670405-1059-1-git-send-email-horia.geanta@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,49 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
----
- Documentation/features/debug/optprobes/arch-support.txt | 2 +-
- arch/powerpc/Kconfig                                    | 1 +
- arch/powerpc/kernel/Makefile                            | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+This will allow device drivers to consistently use io{read,write}XX
+also for 64-bit accesses.
 
-diff --git a/Documentation/features/debug/optprobes/arch-support.txt b/Documentation/features/debug/optprobes/arch-support.txt
-index b8999d8..45bc99d 100644
---- a/Documentation/features/debug/optprobes/arch-support.txt
-+++ b/Documentation/features/debug/optprobes/arch-support.txt
-@@ -27,7 +27,7 @@
-     |       nios2: | TODO |
-     |    openrisc: | TODO |
-     |      parisc: | TODO |
--    |     powerpc: | TODO |
-+    |     powerpc: |  ok  |
-     |        s390: | TODO |
-     |       score: | TODO |
-     |          sh: | TODO |
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 7cd32c0..a87c9b1 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -104,6 +104,7 @@ config PPC
- 	select HAVE_IOREMAP_PROT
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !CPU_LITTLE_ENDIAN
- 	select HAVE_KPROBES
-+	select HAVE_OPTPROBES
- 	select HAVE_ARCH_KGDB
- 	select HAVE_KRETPROBES
- 	select HAVE_ARCH_TRACEHOOK
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 2da380f..7994e22 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -99,6 +99,7 @@ endif
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
-+obj-$(CONFIG_OPTPROBES)		+= optprobes.o optprobes_head.o
- obj-$(CONFIG_UPROBES)		+= uprobes.o
- obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
- obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
+---
+ arch/powerpc/kernel/iomap.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
+index 12e48d56f771..3963f0b68d52 100644
+--- a/arch/powerpc/kernel/iomap.c
++++ b/arch/powerpc/kernel/iomap.c
+@@ -38,6 +38,18 @@ EXPORT_SYMBOL(ioread16);
+ EXPORT_SYMBOL(ioread16be);
+ EXPORT_SYMBOL(ioread32);
+ EXPORT_SYMBOL(ioread32be);
++#ifdef __powerpc64__
++u64 ioread64(void __iomem *addr)
++{
++	return readq(addr);
++}
++u64 ioread64be(void __iomem *addr)
++{
++	return readq_be(addr);
++}
++EXPORT_SYMBOL(ioread64);
++EXPORT_SYMBOL(ioread64be);
++#endif /* __powerpc64__ */
+ 
+ void iowrite8(u8 val, void __iomem *addr)
+ {
+@@ -64,6 +76,18 @@ EXPORT_SYMBOL(iowrite16);
+ EXPORT_SYMBOL(iowrite16be);
+ EXPORT_SYMBOL(iowrite32);
+ EXPORT_SYMBOL(iowrite32be);
++#ifdef __powerpc64__
++void iowrite64(u64 val, void __iomem *addr)
++{
++	writeq(val, addr);
++}
++void iowrite64be(u64 val, void __iomem *addr)
++{
++	writeq_be(val, addr);
++}
++EXPORT_SYMBOL(iowrite64);
++EXPORT_SYMBOL(iowrite64be);
++#endif /* __powerpc64__ */
+ 
+ /*
+  * These are the "repeat read/write" functions. Note the
 -- 
-2.1.0
+2.4.4
