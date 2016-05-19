@@ -1,32 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9NdW5MgkzDqJ9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 17:54:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9NdZ38tTzDqJ9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 17:54:58 +1000 (AEST)
 Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 19 May 2016 13:24:52 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 43D2FE005B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 13:28:01 +0530 (IST)
+ Thu, 19 May 2016 13:24:53 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 09166E005F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 13:28:02 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4J7sliW58261690
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 13:24:47 +0530
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4J7smrM49414344
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 13:24:49 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4J7sj9R031529
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 13:24:47 +0530
+ u4J7sk5U031599
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 13:24:48 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 1/6] powerpc/mm/radix: Update LPCR only if it is powernv
-Date: Thu, 19 May 2016 13:24:27 +0530
-Message-Id: <1463644472-10158-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 3/6] powerpc/mm/hash: Update SDR1 size encoding as documented
+ in ISA 3.0
+Date: Thu, 19 May 2016 13:24:29 +0530
+Message-Id: <1463644472-10158-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1463644472-10158-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1463644472-10158-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,64 +39,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LPCR cannot be updated when running in guest mode.
+ISA 3.0 document hash table size in bytes = 2^(HTABSIZE + 18)
+
+No functionality change by this patch.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/pgtable-radix.c | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 18b2c11604fa..c939e6e57a9e 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -296,11 +296,6 @@ found:
- void __init radix__early_init_mmu(void)
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 59268969a0bc..3849de15b65f 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -677,10 +677,9 @@ int remove_section_mapping(unsigned long start, unsigned long end)
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ static void __init hash_init_partition_table(phys_addr_t hash_table,
+-					     unsigned long pteg_count)
++					     unsigned long htab_size)
  {
- 	unsigned long lpcr;
--	/*
--	 * setup LPCR UPRT based on mmu_features
--	 */
--	lpcr = mfspr(SPRN_LPCR);
--	mtspr(SPRN_LPCR, lpcr | LPCR_UPRT);
+ 	unsigned long ps_field;
+-	unsigned long htab_size;
+ 	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
  
- #ifdef CONFIG_PPC_64K_PAGES
- 	/* PAGE_SIZE mappings */
-@@ -343,8 +338,11 @@ void __init radix__early_init_mmu(void)
- 	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
- 
- 	radix_init_page_sizes();
--	if (!firmware_has_feature(FW_FEATURE_LPAR))
-+	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
-+		lpcr = mfspr(SPRN_LPCR);
-+		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT);
- 		radix_init_partition_table();
-+	}
- 
- 	radix_init_pgtable();
- }
-@@ -353,16 +351,15 @@ void radix__early_init_mmu_secondary(void)
- {
- 	unsigned long lpcr;
  	/*
--	 * setup LPCR UPRT based on mmu_features
-+	 * update partition table control register and UPRT
+@@ -688,7 +687,7 @@ static void __init hash_init_partition_table(phys_addr_t hash_table,
+ 	 * We can ignore that for lpid 0
  	 */
--	lpcr = mfspr(SPRN_LPCR);
--	mtspr(SPRN_LPCR, lpcr | LPCR_UPRT);
--	/*
--	 * update partition table control register, 64 K size.
--	 */
--	if (!firmware_has_feature(FW_FEATURE_LPAR))
-+	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
-+		lpcr = mfspr(SPRN_LPCR);
-+		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT);
-+
- 		mtspr(SPRN_PTCR,
- 		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
-+	}
- }
+ 	ps_field = 0;
+-	htab_size =  __ilog2(pteg_count) - 11;
++	htab_size =  __ilog2(htab_size) - 18;
  
- void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
+ 	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
+@@ -774,7 +773,7 @@ static void __init htab_initialize(void)
+ 		htab_address = __va(table);
+ 
+ 		/* htab absolute addr + encoded htabsize */
+-		_SDR1 = table + __ilog2(pteg_count) - 11;
++		_SDR1 = table + __ilog2(htab_size_bytes) - 18;
+ 
+ 		/* Initialize the HPT with no entries */
+ 		memset((void *)table, 0, htab_size_bytes);
+@@ -783,7 +782,7 @@ static void __init htab_initialize(void)
+ 			/* Set SDR1 */
+ 			mtspr(SPRN_SDR1, _SDR1);
+ 		else
+-			hash_init_partition_table(table, pteg_count);
++			hash_init_partition_table(table, htab_size_bytes);
+ 	}
+ 
+ 	prot = pgprot_val(PAGE_KERNEL);
 -- 
 2.7.4
