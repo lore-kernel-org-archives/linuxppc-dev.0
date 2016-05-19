@@ -1,24 +1,29 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <John.Youn@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay.synopsys.com [198.182.60.111])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r8yPp5xgBzDqCJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 01:13:18 +1000 (AEST)
-Date: Thu, 19 May 2016 00:13:04 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Anju T <anju@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
- masami.hiramatsu.pt@hitachi.com, jkenisto@us.ibm.com,
- srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH 2/3] arch/powerpc : optprobes for powerpc core
-Message-Id: <20160519001304.c7104e18062b324651c97260@kernel.org>
-In-Reply-To: <1463517578-27760-3-git-send-email-anju@linux.vnet.ibm.com>
-References: <1463517578-27760-1-git-send-email-anju@linux.vnet.ibm.com>
- <1463517578-27760-3-git-send-email-anju@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9BvV0MdGzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 10:36:20 +1000 (AEST)
+Subject: Re: usb: dwc2: regression on MyBook Live Duo / Canyonlands since
+ 4.3.0-rc4
+To: Christian Lamparter <chunkeey@googlemail.com>, John Youn
+ <John.Youn@synopsys.com>
+References: <4231696.iL6nGs74X8@debian64> <2920638.peXreEnG6d@debian64>
+ <573BAE58.1010206@synopsys.com> <1569777.jHIobOl9fm@debian64>
+From: John Youn <John.Youn@synopsys.com>
+CC: Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Felipe Balbi <felipe.balbi@linux.intel.com>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "a.seppala@gmail.com" <a.seppala@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <573D0A7E.7020401@synopsys.com>
+Date: Wed, 18 May 2016 17:36:14 -0700
+MIME-Version: 1.0
+In-Reply-To: <1569777.jHIobOl9fm@debian64>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,538 +33,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 18 May 2016 02:09:37 +0530
-Anju T <anju@linux.vnet.ibm.com> wrote:
-
-> Instruction slot for detour buffer is allocated from
-> the reserved area. For the time being 64KB is reserved
-> in memory for this purpose. ppc_get_optinsn_slot() and
-> ppc_free_optinsn_slot() are geared towards the allocation and freeing
-> of memory from this area.
-
-Thank you for porting optprobe on ppc!!
-
-I have some comments on this patch.
-
-> 
-> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+On 5/18/2016 12:15 PM, Christian Lamparter wrote:
+> On Tuesday, May 17, 2016 04:50:48 PM John Youn wrote:
+>> On 5/14/2016 6:11 AM, Christian Lamparter wrote:
+>>> On Thursday, May 12, 2016 11:40:28 AM John Youn wrote:
+>>>> On 5/12/2016 6:30 AM, Christian Lamparter wrote:
+>>>>> On Thursday, May 12, 2016 01:55:44 PM Arnd Bergmann wrote:
+>>>>>> On Thursday 12 May 2016 11:58:18 Christian Lamparter wrote:
+>>>>>>>>>> Detecting the endianess of the
+>>>>>>>>>> device is probably the best future-proof solution, but it's also
+>>>>>>>>>> considerably more work to do in the driver, and comes with a
+>>>>>>>>>> tiny runtime overhead.
+>>>>>>>>>
+>>>>>>>>> The runtime overhead is probably non-measurable compared with the cost
+>>>>>>>>> of the actual MMIOs.
+>>>>>>>>
+>>>>>>>> Right. The code size increase is probably measurable (but still small),
+>>>>>>>> the runtime overhead is not.
+>>>>>>>
+>>>>>>> Ok, so no rebuts or complains have been posted.
+>>>>>>>
+>>>>>>> I've tested the patch you made in: https://lkml.org/lkml/2016/5/9/354
+>>>>>>> and it works: 
+>>>>>>>
+>>>>>>> Tested-by: Christian Lamparter <chunkeey@googlemail.com>
+>>>>>>>
+>>>>>>> So, how do we go from here? There is are two small issues with the
+>>>>>>> original patch (#ifdef DWC2_LOG_WRITES got converted to lower case:
+>>>>>>> #ifdef dwc2_log_writes) and I guess a proper subject would be nice.  
+>>>>>>>
+>>>>>>> Arnd, can you please respin and post it (cc'd stable as well)?
+>>>>>>> So this is can be picked up? Or what's your plan?
+>>>>>>
+>>>>>> (I just realized my reply was stuck in my outbox, so the patch
+>>>>>> went out first)
+>>>>>>
+>>>>>> If I recall correctly, the rough consensus was to go with your longer
+>>>>>> patch in the future (fixed up for the comments that BenH and
+>>>>>> I sent), and I'd suggest basing it on top of a fixed version of
+>>>>>> my patch.
+>>>>> Well, but it comes with the "overhead"! So this was just as I said:
+>>>>> "Let's look at it and see if it's any good"... And I think it isn't
+>>>>> since the usb/host/ehci people also opted for #ifdef CONFIG_BIG_ENDIAN
+>>>>> archs etc...
+>>>>
+>>>> I slightly prefer the more general patch for future kernel versions.
+>>>> The overhead will probably be negligible, but we can perform some
+>>>> testing to make sure.
+>>>>
+>>>> Can you resubmit with all gathered feedback?
+>>>
+>>> Yes, here are the changes.
+>>>
+>>> I've tested it on my MyBook Live Duo. The usbotg comes right up:
+>>> [12610.540004] dwc2 4bff80000.usbotg: USB bus 1 deregistered
+>>> [12612.513934] dwc2 4bff80000.usbotg: Specified GNPTXFDEP=1024 > 256
+>>> [12612.518756] dwc2 4bff80000.usbotg: EPs: 3, shared fifos, 2042 entries in SPRAM
+>>> [12612.530112] dwc2 4bff80000.usbotg: DWC OTG Controller
+>>> [12612.533948] dwc2 4bff80000.usbotg: new USB bus registered, assigned bus number 1
+>>> [12612.540083] dwc2 4bff80000.usbotg: irq 33, io mem 0x00000000
+>>>
+>>> John: Can you run some perf test with it?
+>>>
+>>> I've based this on:
+>>>
+>>> commit 6ea2fffc9057a67df1994d85a7c085d899eaa25a
+>>> Author: Arnd Bergmann <arnd@arndb.de>
+>>> Date:   Fri May 13 15:52:27 2016 +0200
+>>>
+>>>     usb: dwc2: fix regression on big-endian PowerPC/ARM systems
+>>>
+>>> so naturally, it needs to be applied first.
+>>> Most of the conversion work was done by the attached
+>>> coccinelle semantic patches. 
+>>>
+>>> I had to edit the __bic32 and __orr32 helpers by hand.
+>>> As well as some debugfs code and stuff in gadget.c.
+>>>
+>>
+>> Thanks Christian.
+>>
+>> I'll keep this in our internal tree and send it to Felipe later. This
+>> causes a bunch of conflicts that I have to fix up and I should do a
+>> bit of testing as well.
+>>
+>> And since there is a patch that fixes the regression this is can wait.
+>>
+>> Regards,
+>> John
 > ---
->  arch/powerpc/kernel/optprobes.c | 463 ++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 463 insertions(+)
->  create mode 100644 arch/powerpc/kernel/optprobes.c
+> Hey, that's really nice of you to do that :-D. Please keep me in the
+> loop (Cc) for those then. 
+
+Sure no problem.
+
 > 
-> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
-> new file mode 100644
-> index 0000000..50a60c1
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/optprobes.c
-> @@ -0,0 +1,463 @@
-> +/*
-> + * Code for Kernel probes Jump optimization.
-> + *
-> + * Copyright 2016, Anju T, IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <linux/kprobes.h>
-> +#include <linux/jump_label.h>
-> +#include <linux/types.h>
-> +#include <linux/slab.h>
-> +#include <linux/list.h>
-> +#include <asm/kprobes.h>
-> +#include <asm/ptrace.h>
-> +#include <asm/cacheflush.h>
-> +#include <asm/code-patching.h>
-> +#include <asm/sstep.h>
-> +
-> +/* Reserve an area to allocate slots for detour buffer */
-> +extern void  optprobe_trampoline_holder(void)
-> +{
-> +	asm volatile(".global optinsn_slot\n"
-> +			"optinsn_slot:\n"
-> +			".space 65536");
-> +}
-
-Would we better move this into optprobes_head.S?
-
-> +
-> +#define SLOT_SIZE 65536
-> +#define TMPL_CALL_HDLR_IDX	\
-> +	(optprobe_template_call_handler - optprobe_template_entry)
-> +#define TMPL_EMULATE_IDX	\
-> +	(optprobe_template_call_emulate - optprobe_template_entry)
-> +#define TMPL_RET_BRANCH_IDX	\
-> +	(optprobe_template_ret_branch - optprobe_template_entry)
-> +#define TMPL_RET_IDX	\
-> +	(optprobe_template_ret - optprobe_template_entry)
-> +#define TMPL_OP1_IDX	\
-> +	(optprobe_template_op_address1 - optprobe_template_entry)
-> +#define TMPL_OP2_IDX	\
-> +	(optprobe_template_op_address2 - optprobe_template_entry)
-> +#define TMPL_INSN_IDX	\
-> +	(optprobe_template_insn - optprobe_template_entry)
-> +#define TMPL_END_IDX	\
-> +	(optprobe_template_end - optprobe_template_entry)
-> +
-> +struct kprobe_ppc_insn_page {
-> +	struct list_head list;
-> +	kprobe_opcode_t *insns;	/* Page of instruction slots */
-> +	struct kprobe_insn_cache *cache;
-> +	int nused;
-> +	int ngarbage;
-> +	char slot_used[];
-> +};
-> +
-> +#define PPC_KPROBE_INSN_PAGE_SIZE(slots)	\
-> +	(offsetof(struct kprobe_ppc_insn_page, slot_used) +	\
-> +	(sizeof(char) * (slots)))
-> +
-> +enum ppc_kprobe_slot_state {
-> +	SLOT_CLEAN = 0,
-> +	SLOT_DIRTY = 1,
-> +	SLOT_USED = 2,
-> +};
-> +
-> +static struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
-> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
-> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
-> +	/* .insn_size is initialized later */
-> +	.nr_garbage = 0,
-> +};
-> +
-> +static int ppc_slots_per_page(struct kprobe_insn_cache *c)
-> +{
-> +	/*
-> +	 * Here the #slots per page differs from x86 as we have
-> +	 * only 64KB reserved.
-> +	 */
-> +	return SLOT_SIZE / (c->insn_size * sizeof(kprobe_opcode_t));
-> +}
-> +
-> +/* Return 1 if all garbages are collected, otherwise 0. */
-> +static int collect_one_slot(struct kprobe_ppc_insn_page *kip, int idx)
-> +{
-> +	kip->slot_used[idx] = SLOT_CLEAN;
-> +	kip->nused--;
-> +	return 0;
-> +}
-> +
-> +static int collect_garbage_slots(struct kprobe_insn_cache *c)
-> +{
-> +	struct kprobe_ppc_insn_page *kip, *next;
-> +
-> +	/* Ensure no-one is interrupted on the garbages */
-> +	synchronize_sched();
-> +
-> +	list_for_each_entry_safe(kip, next, &c->pages, list) {
-> +		int i;
-> +
-> +		if (kip->ngarbage == 0)
-> +			continue;
-> +		kip->ngarbage = 0;	/* we will collect all garbages */
-> +		for (i = 0; i < ppc_slots_per_page(c); i++) {
-> +			if (kip->slot_used[i] == SLOT_DIRTY &&
-> +			    collect_one_slot(kip, i))
-> +				break;
-> +		}
-> +	}
-> +	c->nr_garbage = 0;
-> +	return 0;
-> +}
-> +
-> +kprobe_opcode_t  *__ppc_get_optinsn_slot(struct kprobe_insn_cache *c)
-> +{
-> +	struct kprobe_ppc_insn_page *kip;
-> +	kprobe_opcode_t *slot = NULL;
-> +
-> +	mutex_lock(&c->mutex);
-> +	list_for_each_entry(kip, &c->pages, list) {
-> +		if (kip->nused < ppc_slots_per_page(c)) {
-> +			int i;
-> +
-> +			for (i = 0; i < ppc_slots_per_page(c); i++) {
-> +				if (kip->slot_used[i] == SLOT_CLEAN) {
-> +					kip->slot_used[i] = SLOT_USED;
-> +					kip->nused++;
-> +					slot = kip->insns + (i * c->insn_size);
-> +					goto out;
-> +				}
-> +			}
-> +			/* kip->nused reached max value. */
-> +			kip->nused = ppc_slots_per_page(c);
-> +			pr_info("No more slots to allocate\n");
-> +			WARN_ON(1);
-> +			goto out;
-> +		}
-> +	}
-
-Wait... this should have just one or zero kip on the list.
-And if !list_empty(c->pages) here, we have to return NULL.
-
-> +	kip = kmalloc(PPC_KPROBE_INSN_PAGE_SIZE(ppc_slots_per_page(c)),
-> +		      GFP_KERNEL);
-> +	if (!kip)
-> +		goto out;
-> +	/*
-> +	 * Allocate from the reserved area so as to
-> +	 * ensure the range will be within +/-32MB
-> +	 */
-> +	kip->insns = &optinsn_slot;
-> +	if (!kip->insns) {
-> +		kfree(kip);
-> +		goto out;
-> +	}
-> +	INIT_LIST_HEAD(&kip->list);
-> +	memset(kip->slot_used, SLOT_CLEAN, ppc_slots_per_page(c));
-> +	kip->slot_used[0] = SLOT_USED;
-> +	kip->nused = 1;
-> +	kip->ngarbage = 0;
-> +	kip->cache = c;
-> +	list_add(&kip->list, &c->pages);
-> +	slot = kip->insns;
-> +out:
-> +	mutex_unlock(&c->mutex);
-> +	return slot;
-> +}
-> +
-> +kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
-> +{
-> +	/*
-> +	 * The insn slot is allocated from the reserved
-> +	 * area(ie &optinsn_slot).We are not optimizing probes
-> +	 * at module_addr now.
-> +	 */
-> +	kprobe_opcode_t *slot = NULL;
-> +
-> +	if (is_kernel_addr(op->kp.addr))
-> +		slot = __ppc_get_optinsn_slot(&kprobe_ppc_optinsn_slots);
-> +	else
-> +		pr_info("Kprobe can not be optimized\n");
-> +	return slot;
-> +}
-> +NOKPROBE_SYMBOL(ppc_get_optinsn_slot);
-
-You don't need it, unless this is called in kprobe handler.
-
-> +
-> +void __ppc_free_optinsn_slot(struct kprobe_insn_cache *c,
-> +			     kprobe_opcode_t *slot, int dirty)
-> +{
-> +	struct kprobe_ppc_insn_page *kip;
-> +
-> +	mutex_lock(&c->mutex);
-> +
-> +	list_for_each_entry(kip, &c->pages, list) {
-> +		long idx = ((long)slot - (long)kip->insns) /
-> +				(c->insn_size * sizeof(kprobe_opcode_t));
-> +		if (idx >= 0 && idx < ppc_slots_per_page(c)) {
-> +			WARN_ON(kip->slot_used[idx] != SLOT_USED);
-> +			if (dirty) {
-> +				kip->slot_used[idx] = SLOT_DIRTY;
-> +				kip->ngarbage++;
-> +				if (++c->nr_garbage > ppc_slots_per_page(c))
-> +					collect_garbage_slots(c);
-> +			} else
-> +				collect_one_slot(kip, idx);
-> +			goto out;
-> +		}
-> +	}
-> +	/* Could not free this slot. */
-> +	WARN_ON(1);
-> +out:
-> +	mutex_unlock(&c->mutex);
-> +}
-> +
-> +static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
-> +{
-> +	if (!op->optinsn.insn)
-> +		return;
-> +	if (is_kernel_addr((unsigned long)op->kp.addr))
-> +		__ppc_free_optinsn_slot(&kprobe_ppc_optinsn_slots,
-> +					op->optinsn.insn, 0);
-> +}
-> +NOKPROBE_SYMBOL(ppc_free_optinsn_slot);
-
-ditto.
-
-> +
-> +static void
-> +__arch_remove_optimized_kprobe(struct optimized_kprobe *op, int dirty)
-> +{
-> +	if (op->optinsn.insn) {
-> +		ppc_free_optinsn_slot(op);
-> +		op->optinsn.insn = NULL;
-> +	}
-> +}
-> +
-> +static int can_optimize(struct kprobe *p)
-> +{
-> +	/*
-> +	 * Not optimizing the kprobe placed by
-> +	 * kretprobe during boot time
-> +	 */
-> +	struct pt_regs *regs;
-> +	unsigned int instr;
-> +	int r;
-> +
-> +	if ((kprobe_opcode_t)p->addr == (kprobe_opcode_t)&kretprobe_trampoline)
-> +		return 0;
-> +
-> +	regs = current_pt_regs();
-> +	instr = *(p->ainsn.insn);
-> +
-> +	/* Ensure the instruction can be emulated*/
-> +	r = emulate_step(regs, instr);
-> +	if (r != 1)
-> +		return 0;
-> +
-> +	return 1;
-> +}
-> +
-> +static void
-> +create_return_branch(struct optimized_kprobe *op, struct pt_regs *regs)
-> +{
-> +	/*
-> +	 * Create a branch back to the return address
-> +	 * after the probed instruction is emulated
-> +	 */
-> +
-> +	kprobe_opcode_t branch, *buff;
-> +	unsigned long ret;
-> +
-> +	ret = regs->nip;
-> +	buff = op->optinsn.insn;
-> +
-> +	branch = create_branch((unsigned int *)buff + TMPL_RET_IDX,
-> +			       (unsigned long)ret, 0);
-> +	buff[TMPL_RET_IDX] = branch;
-> +}
-> +NOKPROBE_SYMBOL(create_return_branch);
-
-ditto.
-
-> +
-> +static void
-> +optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
-> +{
-> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-> +
-> +	if (kprobe_running())
-> +		kprobes_inc_nmissed_count(&op->kp);
-> +	else {
-> +		__this_cpu_write(current_kprobe, &op->kp);
-> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
-> +		opt_pre_handler(&op->kp, regs);
-> +		__this_cpu_write(current_kprobe, NULL);
-> +	}
-> +	local_irq_restore(flags);
-> +}
-
-This actually needs to be marked NOKPROBE_SYMBOL().
-
-> +
-> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
-> +{
-> +	 __arch_remove_optimized_kprobe(op, 1);
-> +}
-> +
-> +void  create_insn(unsigned int insn, kprobe_opcode_t *addr)
-> +{
-> +	unsigned int instr, instr2;
-> +
-> +	instr = 0x3c000000 | 0x800000 | ((insn >> 16) & 0xffff);
-> +	*addr++ = instr;
-> +	instr2 = 0x60000000 | 0x40000 | 0x800000;
-> +	instr2 = instr2 | (insn & 0xffff);
-> +	*addr = instr2;
-
-Please add macros and/or comments for each instruction to explain what
-instrcution would you make...
-
-> +}
-> +
-> +void create_load_address_insn(struct optimized_kprobe *op,
-> +			      kprobe_opcode_t *addr, kprobe_opcode_t *addr2)
-> +{
-> +	unsigned int instr1, instr2, instr3, instr4, instr5;
-
-Would it better use u32?
-
-> +	unsigned long val;
-> +
-> +	val = op;
-> +
-> +	instr1 = 0x3c000000 | 0x600000 | ((val >> 48) & 0xffff);
-> +	*addr++ = instr1;
-> +	*addr2++ = instr1;
-> +	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val >> 32) & 0xffff);
-> +	*addr++ = instr2;
-> +	*addr2++ = instr2;
-> +	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 & 0x1f) << 11);
-> +	instr3 = instr3 | ((31 & 0x1f) << 6) | ((32 & 0x20) >> 4);
-> +	*addr++ = instr3;
-> +	*addr2++ = instr3;
-> +	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val >> 16) & 0xffff);
-> +	*addr++ = instr4;
-> +	*addr2++ = instr4;
-> +	instr5 =  0x60000000 | 0x30000 | 0x600000 | (val & 0xffff);
-
-Ditto.
-
-> +	*addr = instr5;
-> +	*addr2 = instr5;
-> +}
-> +
-> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
-> +{
-> +	kprobe_opcode_t *buff, branch, branch2, branch3;
-> +	long rel_chk, ret_chk;
-> +
-> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
-> +	op->optinsn.insn = NULL;
-> +
-> +	if (!can_optimize(p))
-> +		return -EILSEQ;
-> +
-> +	/* Allocate instruction slot for detour buffer*/
-> +	buff = ppc_get_optinsn_slot(op);
-> +
-> +	/*
-> +	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
-> +	 *
-> +	 * The target address has to be relatively nearby, to permit use
-> +	 * of branch instruction in powerpc because the address is specified
-> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
-> +	 * in the opcode specify the address. Therefore the address gap should
-> +	 * be 32MB on either side of the current instruction.
-> +	 */
-> +	rel_chk = (long)buff -
-> +			(unsigned long)p->addr;
-
-Why would you add a new line?
-
-> +	if (rel_chk < -0x2000000 || rel_chk > 0x1fffffc || rel_chk & 0x3) {
-> +		ppc_free_optinsn_slot(op);
-> +		return -ERANGE;
-> +	}
-> +	/*
-> +	 * For the time being assume that the return address is NIP+4.
-> +	 * TODO : check the return address is also within 32MB range for
-> +	 * cases where NIP is not NIP+4.ie the NIP is decided after emulation.
-> +	 */
-> +	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)(p->addr) + 4;
-> +
-> +	if (ret_chk < -0x2000000 || ret_chk > 0x1fffffc || ret_chk & 0x3) {
-> +		ppc_free_optinsn_slot(op);
-> +		return -ERANGE;
-> +	}
-> +
-> +	/* Do Copy arch specific instance from template*/
-> +	memcpy(buff, optprobe_template_entry,
-> +	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
-> +	create_load_address_insn(op, buff + TMPL_OP1_IDX, buff + TMPL_OP2_IDX);
-> +
-> +	/* Create a branch to the optimized_callback function */
-> +	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
-> +			       (unsigned long)optimized_callback + 8,
-> +				BRANCH_SET_LINK);
-> +
-> +	/* Place the branch instr into the trampoline */
-> +	buff[TMPL_CALL_HDLR_IDX] = branch;
-> +	create_insn(*(p->ainsn.insn), buff + TMPL_INSN_IDX);
-> +
-> +	/*Create a branch instruction into the emulate_step*/
-> +	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
-> +				(unsigned long)emulate_step + 8,
-> +				BRANCH_SET_LINK);
-> +	buff[TMPL_EMULATE_IDX] = branch3;
-> +
-> +	/* Create a branch for jumping back*/
-> +	branch2 = create_branch((unsigned int *)buff + TMPL_RET_BRANCH_IDX,
-> +				(unsigned long)create_return_branch + 8,
-> +				BRANCH_SET_LINK);
-> +	buff[TMPL_RET_BRANCH_IDX] = branch2;
-> +
-> +	op->optinsn.insn = buff;
-> +	return 0;
-> +}
-> +
-> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
-> +{
-> +	return optinsn->insn;
-> +}
-> +
-> +/*
-> + * Here,kprobe opt always replace one instruction (4 bytes
-> + * aligned and 4 bytes long). It is impossible to encounter another
-> + * kprobe in the address range. So always return 0.
-> + */
-> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
-> +{
-> +	return 0;
-> +}
-> +
-> +void arch_optimize_kprobes(struct list_head *oplist)
-> +{
-> +	struct optimized_kprobe *op;
-> +	struct optimized_kprobe *tmp;
-> +
-> +	unsigned int branch;
-> +
-> +	list_for_each_entry_safe(op, tmp, oplist, list) {
-> +	/*
-> +	* Backup instructions which will be replaced
-> +	* by jump address
-> +	*/
-> +	memcpy(op->optinsn.copied_insn, op->kp.addr,
-> +	       RELATIVEJUMP_SIZE);
-> +	branch = create_branch((unsigned int *)op->kp.addr,
-> +			       (unsigned long)op->optinsn.insn, 0);
-> +	*op->kp.addr = branch;
-> +	list_del_init(&op->list);
-
-Please add indent-tab for this block.
-
-> +	}
-> +}
-> +
-> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
-> +{
-> +	arch_arm_kprobe(&op->kp);
-> +}
-> +
-> +void arch_unoptimize_kprobes(struct list_head *oplist,
-> +			     struct list_head *done_list)
-> +{
-> +	struct optimized_kprobe *op;
-> +	struct optimized_kprobe *tmp;
-> +
-> +	list_for_each_entry_safe(op, tmp, oplist, list) {
-> +		arch_unoptimize_kprobe(op);
-> +		list_move(&op->list, done_list);
-> +	}
-> +}
-> +
-> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
-> +				 unsigned long addr)
-> +{
-
-Please make sure addr != op->kp.addr and addr is aligned.
-
-> +	return 0;
-> +}
-> -- 
-> 2.1.0
+> Yes, this needs definitely testing on all the affected ARCHs. 
+> I've attached a diff to a updated version of the patch. It
+> drops the special MIPS case (as requested by Arnd).
+> 
+> BTW, I looked into the ioread32_rep and iowrite32_rep again. I'm
+> not entirely convinced that the hardware FIFOs are actually endian
+> neutral. But I can't verify it since my Western Digital My Book Live
+> only supports the host configuration (forces host mode), so I don't
+> know what a device in dual-mode or peripheral do here.
+> 
+> The reason why I think it was broken is because there's a PIO copy
+> to and from the HCFIFO(x) in dwc2_hc_write_packet and
+> dwc2_hc_read_packet access in the hcd.c file as well... And there,
+> the code was using the dwc2_readl and dwc2_writel to access the data.
+> I added special accessors for the FIFOS now:
+> 	dwc2_readl_rep and dwc2_writel_rep.
 > 
 
-Thanks!
+Hmmm, you could be right in that case. I'll have to check with the IP
+engineers and maybe try to run some tests on our platforms. So native
+access to the host FIFO will fail then? This platform is a BE CPU with
+the IP connected as LE, right?
 
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+
+> I went all the way and implemented the helpers to do unaligned access
+> if necessary (not sure if adding likely branches is a good idea, as
+> this could be either always true or false for a specific driver the
+> whole time).
+> 
+> NB: it also fixes a "regs variable not used in dwc2_hsotg_dump" warning
+> if DEBUG isn't selected.
+> 
+> NB2: If it you need a patch against a specific tree, please
+> let me know.
+
+I can't provide you a tree to rebase on just yet. I'm hoping to get a
+few things queued for 4.8 and just apply this on top.
+
+It would help if you could resend these as proper patches with a
+commit message and signed-off-by line, and the CONFIG_MIPS removal and
+compile warning fix merged in. And the fifo accessors in a separate
+patch. That way I can do any simple fix-ups if needed.
+
+Regards,
+John
