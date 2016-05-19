@@ -1,22 +1,26 @@
-Return-Path: <horia.geanta@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0089.outbound.protection.outlook.com [207.46.100.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <josh@joshtriplett.org>
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net
+ [IPv6:2001:4b98:c:538::194])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9ZKB0676zDqHc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 01:11:25 +1000 (AEST)
-From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: <linux-crypto@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 4/8] powerpc: add io{read,write}64 accessors
-Date: Thu, 19 May 2016 18:11:10 +0300
-Message-ID: <1463670670-2995-1-git-send-email-horia.geanta@nxp.com>
-In-Reply-To: <1463670405-1059-1-git-send-email-horia.geanta@nxp.com>
-References: <1463670405-1059-1-git-send-email-horia.geanta@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9Zz914nqzDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 01:40:52 +1000 (AEST)
+Date: Thu, 19 May 2016 08:40:42 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>
+Subject: Re: [PATCH 3/4] rcutorture: Make -soundhw a x86 specific option
+Message-ID: <20160519154042.GA1049@jtriplet-mobl2.jf.intel.com>
+References: <1463629344-20471-1-git-send-email-boqun.feng@gmail.com>
+ <1463629344-20471-4-git-send-email-boqun.feng@gmail.com>
+ <20160519042309.GA18252@x>
+ <20160519141013.GN3528@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160519141013.GN3528@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will allow device drivers to consistently use io{read,write}XX
-also for 64-bit accesses.
+On Thu, May 19, 2016 at 07:10:13AM -0700, Paul E. McKenney wrote:
+> On Wed, May 18, 2016 at 09:23:10PM -0700, Josh Triplett wrote:
+> > On Thu, May 19, 2016 at 11:42:23AM +0800, Boqun Feng wrote:
+> > > The option "-soundhw pcspk" gives me a error on PPC as follow:
+> > > 
+> > > qemu-system-ppc64: ISA bus not available for pcspk
+> > > 
+> > > , which means this option doesn't work on ppc by default. So simply make
+> > > this an x86-specific option via identify_qemu_args().
+> > > 
+> > > Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> > 
+> > The emulated system for RCU testing does not need sound hardware at all.
+> > Paul added this option in commit
+> > 16c77ea7d0f4a74e49009aa2d26c275f7f93de7c to disable the default sound
+> > hardware, saying that '"-soundhw pcspk" makes the script a bit less
+> > dependent on odd audio libraries being installed'.  Unfortunately, it
+> > looks like there isn't a "-soundhw none".  As far as I can tell,
+> > currently the only way to completely eliminate sound hardware is to pass
+> > "-nodefaults" and then explicitly specify each desired device; while
+> > that would solve the issue, it would likely introduce *more*
+> > hardware-specific command-line options...
+> > 
+> > I've filed two feature requests on upstream qemu to make this simpler:
+> > https://bugs.launchpad.net/qemu/+bug/1583420 and
+> > https://bugs.launchpad.net/qemu/+bug/1583421 .
+> > 
+> > Paul, what did you mean by "dependent on odd audio libraries"?  Did you
+> > mean in the guest or the host?  And either way, is this something that
+> > could potentially be solved another way?
+> 
+> If I remember correctly, Ubuntu 14.04 qemu refused to run the guest
+> without this option, but I don't recall the exact error message.
+> I chalked it up to my ignorance of qemu, but I would very much welcome
+> some way to not have to specify irrelevant hardware.  So thank you very
+> much for filing the bugs!
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
----
- arch/powerpc/kernel/iomap.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+According to qemu upstream, qemu doesn't enable any sound hardware by
+default, so I can't think of any obvious reason why adding "-soundhw
+pcspkr" would make the rcutorture VM boot.  Did qemu refuse to run at
+all, or did the VM start but fail during the boot process?
 
-diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-index 12e48d56f771..3963f0b68d52 100644
---- a/arch/powerpc/kernel/iomap.c
-+++ b/arch/powerpc/kernel/iomap.c
-@@ -38,6 +38,18 @@ EXPORT_SYMBOL(ioread16);
- EXPORT_SYMBOL(ioread16be);
- EXPORT_SYMBOL(ioread32);
- EXPORT_SYMBOL(ioread32be);
-+#ifdef __powerpc64__
-+u64 ioread64(void __iomem *addr)
-+{
-+	return readq(addr);
-+}
-+u64 ioread64be(void __iomem *addr)
-+{
-+	return readq_be(addr);
-+}
-+EXPORT_SYMBOL(ioread64);
-+EXPORT_SYMBOL(ioread64be);
-+#endif /* __powerpc64__ */
- 
- void iowrite8(u8 val, void __iomem *addr)
- {
-@@ -64,6 +76,18 @@ EXPORT_SYMBOL(iowrite16);
- EXPORT_SYMBOL(iowrite16be);
- EXPORT_SYMBOL(iowrite32);
- EXPORT_SYMBOL(iowrite32be);
-+#ifdef __powerpc64__
-+void iowrite64(u64 val, void __iomem *addr)
-+{
-+	writeq(val, addr);
-+}
-+void iowrite64be(u64 val, void __iomem *addr)
-+{
-+	writeq_be(val, addr);
-+}
-+EXPORT_SYMBOL(iowrite64);
-+EXPORT_SYMBOL(iowrite64be);
-+#endif /* __powerpc64__ */
- 
- /*
-  * These are the "repeat read/write" functions. Note the
--- 
-2.4.4
+Could you check if you can currently run without this option?  If so,
+perhaps we should just drop it for now.
+
+- Josh Triplett
