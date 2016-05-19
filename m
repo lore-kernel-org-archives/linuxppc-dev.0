@@ -1,28 +1,37 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9YMH2s8WzDqKx
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 00:28:11 +1000 (AEST)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Thu, 19 May 2016 08:28:07 -0600
-Date: Thu, 19 May 2016 19:57:59 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org
-Subject: Re: [PATCH v2 5/9] powerpc/powernv: Move idle related macros to
- cpuidle.h
-Message-ID: <20160519142759.GC913@in.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
-References: <1462263878-25237-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1462263878-25237-6-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9YQ25bBYzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 00:30:34 +1000 (AEST)
+Received: from mail-wm0-x22c.google.com (mail-wm0-x22c.google.com
+ [IPv6:2a00:1450:400c:c09::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3r9YQ16l44z9t3h
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 May 2016 00:30:33 +1000 (AEST)
+Received: by mail-wm0-x22c.google.com with SMTP id n129so233555648wmn.1
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 May 2016 07:30:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1462263878-25237-6-git-send-email-shreyas@linux.vnet.ibm.com>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <20160519114029.GW3193@twins.programming.kicks-ass.net>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
+ <20160519114029.GW3193@twins.programming.kicks-ass.net>
+Date: Thu, 19 May 2016 16:30:31 +0200
+Message-ID: <CAJZ5v0h+vb1+9urzfOWsCKy8eziVGpVvSiB84i7nwbktOS+EaA@mail.gmail.com>
+Subject: Re: [RFC PATCH] Increase in idle power with schedutil
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,14 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 03, 2016 at 01:54:34PM +0530, Shreyas B. Prabhu wrote:
-> Move idle related macros to a common location asm/cpuidle.h so that
-> they can be used for stop instruction support.
-> 
-> Signed-off-by: Shreyas B. Prabhy <shreyas@linux.vnet.ibm.com>
+On Thu, May 19, 2016 at 1:40 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, May 18, 2016 at 11:11:51PM +0200, Rafael J. Wysocki wrote:
+>> On Wed, May 18, 2016 at 2:53 PM, Shilpasri G Bhat
+>> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+>> > This patch adds driver callback for fast_switch and below observations
+>> > on schedutil governor are done with this patch.
+>> >
+>> > In POWER8 there is a regression observed with schedutil compared to
+>> > ondemand. With schedutil the frequency is not ramping down and is
+>> > mostly stuck at max frequency during idle . This is because of the
+>> > watchdog timer, an RT task which is fired every 4 seconds which
+>> > results in requesting max frequency.
+>>
+>> Well, yes, that would be problematic.
+>>
+>
+> Right; we need to come up with something for RT tasks;
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+I think we need the hints thing for that to be able to distinguish
+between RT and the rest.
 
---
-Thanks and Regards
-gautham.
+Also in this particular case it looks like an RT task is the only task
+that wakes up often enough and we don't drop the frequency when going
+idle.  Do we need a hook somewhere in the idle path?
