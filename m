@@ -1,18 +1,45 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9fzz2dNrzDqBZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 04:41:51 +1000 (AEST)
-Date: Fri, 20 May 2016 04:41:34 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Improve comment explaining why we modify VRSAVE
-Message-ID: <20160520044134.62712b79@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9hFg3s7jzDqCM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 05:38:47 +1000 (AEST)
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Thu, 19 May 2016 15:38:45 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 50395C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 15:38:35 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4JJcgrm45285432
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 19:38:42 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4JJcf22019840
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 15:38:42 -0400
+Date: Thu, 19 May 2016 12:38:47 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josh@joshtriplett.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Lai Jiangshan <jiangshanlai@gmail.com>
+Subject: Re: [PATCH 3/4] rcutorture: Make -soundhw a x86 specific option
+Message-ID: <20160519193847.GA13746@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1463629344-20471-1-git-send-email-boqun.feng@gmail.com>
+ <1463629344-20471-4-git-send-email-boqun.feng@gmail.com>
+ <20160519042309.GA18252@x>
+ <20160519141013.GN3528@linux.vnet.ibm.com>
+ <20160519154042.GA1049@jtriplet-mobl2.jf.intel.com>
+ <20160519162339.GU3528@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160519162339.GU3528@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,29 +49,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The comment explaining why we modify VRSAVE is misleading, glibc
-does rely on the behaviour. Update the comment.
+On Thu, May 19, 2016 at 09:23:39AM -0700, Paul E. McKenney wrote:
+> On Thu, May 19, 2016 at 08:40:42AM -0700, Josh Triplett wrote:
+> > On Thu, May 19, 2016 at 07:10:13AM -0700, Paul E. McKenney wrote:
+> > > On Wed, May 18, 2016 at 09:23:10PM -0700, Josh Triplett wrote:
+> > > > On Thu, May 19, 2016 at 11:42:23AM +0800, Boqun Feng wrote:
+> > > > > The option "-soundhw pcspk" gives me a error on PPC as follow:
+> > > > > 
+> > > > > qemu-system-ppc64: ISA bus not available for pcspk
+> > > > > 
+> > > > > , which means this option doesn't work on ppc by default. So simply make
+> > > > > this an x86-specific option via identify_qemu_args().
+> > > > > 
+> > > > > Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> > > > 
+> > > > The emulated system for RCU testing does not need sound hardware at all.
+> > > > Paul added this option in commit
+> > > > 16c77ea7d0f4a74e49009aa2d26c275f7f93de7c to disable the default sound
+> > > > hardware, saying that '"-soundhw pcspk" makes the script a bit less
+> > > > dependent on odd audio libraries being installed'.  Unfortunately, it
+> > > > looks like there isn't a "-soundhw none".  As far as I can tell,
+> > > > currently the only way to completely eliminate sound hardware is to pass
+> > > > "-nodefaults" and then explicitly specify each desired device; while
+> > > > that would solve the issue, it would likely introduce *more*
+> > > > hardware-specific command-line options...
+> > > > 
+> > > > I've filed two feature requests on upstream qemu to make this simpler:
+> > > > https://bugs.launchpad.net/qemu/+bug/1583420 and
+> > > > https://bugs.launchpad.net/qemu/+bug/1583421 .
+> > > > 
+> > > > Paul, what did you mean by "dependent on odd audio libraries"?  Did you
+> > > > mean in the guest or the host?  And either way, is this something that
+> > > > could potentially be solved another way?
+> > > 
+> > > If I remember correctly, Ubuntu 14.04 qemu refused to run the guest
+> > > without this option, but I don't recall the exact error message.
+> > > I chalked it up to my ignorance of qemu, but I would very much welcome
+> > > some way to not have to specify irrelevant hardware.  So thank you very
+> > > much for filing the bugs!
+> > 
+> > According to qemu upstream, qemu doesn't enable any sound hardware by
+> > default, so I can't think of any obvious reason why adding "-soundhw
+> > pcspkr" would make the rcutorture VM boot.  Did qemu refuse to run at
+> > all, or did the VM start but fail during the boot process?
+> > 
+> > Could you check if you can currently run without this option?  If so,
+> > perhaps we should just drop it for now.
+> 
+> Will do!  As soon as the current test completes.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+And it now works just fine without the "-soundhw pcspkr".  Search me!
 
-diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-index 1c2e7a3..3907fcf 100644
---- a/arch/powerpc/kernel/vector.S
-+++ b/arch/powerpc/kernel/vector.S
-@@ -70,10 +70,11 @@ _GLOBAL(load_up_altivec)
- 	MTMSRD(r5)			/* enable use of AltiVec now */
- 	isync
- 
--	/* Hack: if we get an altivec unavailable trap with VRSAVE
--	 * set to all zeros, we assume this is a broken application
--	 * that fails to set it properly, and thus we switch it to
--	 * all 1's
-+	/*
-+	 * While userspace in general ignores VRSAVE, glibc uses it as a
-+	 * boolean to optimise userspace context save/restore. Whenever we
-+	 * take an altivec unavailable exception we must set VRSAVE to
-+	 * something non zero. Set it to all 1s.
- 	 */
- 	mfspr	r4,SPRN_VRSAVE
- 	cmpwi	0,r4,0
+> BTW, am I the only one getting "interesting" failures in the merge
+> window?
+
+I will be chasing these down, but am likely to be off the grid until
+Monday morning, Pacific time.  Looks like the same failure to awaken
+as before, but much higher probability.
+
+							Thanx, Paul
