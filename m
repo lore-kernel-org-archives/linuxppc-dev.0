@@ -1,14 +1,14 @@
 Return-Path: <anju@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9ZJb2KSRzDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 01:10:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9ZJc55H2zDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 01:10:56 +1000 (AEST)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Thu, 19 May 2016 11:10:53 -0400
+ Thu, 19 May 2016 11:10:54 -0400
 From: Anju T <anju@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: anju@linux.vnet.ibm.com, ananth@in.ibm.com,
@@ -16,9 +16,12 @@ Cc: anju@linux.vnet.ibm.com, ananth@in.ibm.com,
  srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
  mpe@ellerman.id.au, hemant@linux.vnet.ibm.com,
  mahesh@linux.vnet.ibm.com, mhiramat@kernel.org
-Subject: [RFC PATCH v2 0/3] OPTPROBES for powerpc
-Date: Thu, 19 May 2016 20:40:37 +0530
-Message-Id: <1463670640-25701-1-git-send-email-anju@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 1/3] arch/powerpc : Add detour buffer support for
+ optprobes
+Date: Thu, 19 May 2016 20:40:38 +0530
+Message-Id: <1463670640-25701-2-git-send-email-anju@linux.vnet.ibm.com>
+In-Reply-To: <1463670640-25701-1-git-send-email-anju@linux.vnet.ibm.com>
+References: <1463670640-25701-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,134 +31,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Here are the RFC patchset of the kprobes jump optimization
-(a.k.a OPTPROBES)for powerpc. Kprobe being an inevitable tool
-for kernel developers,enhancing the performance of kprobe has
-got much importance.
+Detour buffer contains instructions to create an in memory pt_regs.
+After the execution of prehandler a call is made for instruction emulation.
+The NIP is decided after the probed instruction is executed. Hence a branch
+instruction is created to the NIP returned by emulate_step().
 
-Currently kprobes inserts a trap instruction to probe a running kernel.
-Jump optimization allows kprobes to replace the trap with a branch,reducing
-the probe overhead drastically.
+Instruction slot for detour buffer is allocated from
+the reserved area. For the time being 64KB is reserved
+in memory for this purpose.
 
-Performance:
-=============
-An optimized kprobe in powerpc is 1.05 to 4.7 times faster than a kprobe.
-
-Example:
-
-Placed a probe at an offset 0x50 in _do_fork().
-*Time Diff here is, difference in time before hitting the probe and after the probed instruction.
-mftb() is employed in kernel/fork.c for this purpose.
-
-
-# echo 0 > /proc/sys/debug/kprobes-optimization 
-Kprobes globally unoptimized
-
-[  233.607120] Time Diff = 0x1f0
-[  233.608273] Time Diff = 0x1ee
-[  233.609228] Time Diff = 0x203
-[  233.610400] Time Diff = 0x1ec
-[  233.611335] Time Diff = 0x200
-[  233.612552] Time Diff = 0x1f0
-[  233.613386] Time Diff = 0x1ee
-[  233.614547] Time Diff = 0x212
-[  233.615570] Time Diff = 0x206
-[  233.616819] Time Diff = 0x1f3
-[  233.617773] Time Diff = 0x1ec
-[  233.618944] Time Diff = 0x1fb
-[  233.619879] Time Diff = 0x1f0
-[  233.621066] Time Diff = 0x1f9
-[  233.621999] Time Diff = 0x283
-[  233.623281] Time Diff = 0x24d
-[  233.624172] Time Diff = 0x1ea
-[  233.625381] Time Diff = 0x1f0
-[  233.626358] Time Diff = 0x200
-[  233.627572] Time Diff = 0x1ed
-
-# echo 1 > /proc/sys/debug/kprobes-optimization 
-Kprobes globally optimized
-
-[   70.797075] Time Diff = 0x103
-[   70.799102] Time Diff = 0x181
-[   70.801861] Time Diff = 0x15e
-[   70.803466] Time Diff = 0xf0
-[   70.804348] Time Diff = 0xd0
-[   70.805653] Time Diff = 0xad
-[   70.806477] Time Diff = 0xe0
-[   70.807725] Time Diff = 0xbe
-[   70.808541] Time Diff = 0xc3
-[   70.810191] Time Diff = 0xc7
-[   70.811007] Time Diff = 0xc0
-[   70.812629] Time Diff = 0xc0
-[   70.813640] Time Diff = 0xda
-[   70.814915] Time Diff = 0xbb
-[   70.815726] Time Diff = 0xc4
-[   70.816955] Time Diff = 0xc0
-[   70.817778] Time Diff = 0xcd
-[   70.818999] Time Diff = 0xcd
-[   70.820099] Time Diff = 0xcb
-[   70.821333] Time Diff = 0xf0
-
-Implementation:
-===================
-
-The trap instruction is replaced by a branch to a detour buffer.
-To address the limitation of branch instruction in power architecture
-detour buffer slot is allocated from a reserved area . This will ensure
-that the branch is within +/- 32 MB range. Patch 2/3 furnishes this.
-The current kprobes insn caches  allocate memory area for insn slots
-with module_alloc(). This will always be beyond +/- 32MB range.
-Hence for allocating and freeing  slots from this reserved area
-ppc_get_optinsn_slot() and ppc_free_optinsns_slot() are introduced.
-
-The detour buffer contains a call to optimized_callback() which in turn
-call the pre_handler(). Once the pre-handler is run, the original instruction
-is emulated from the detour buffer itself. Also the detour buffer is equipped
-with a branch back to the normal work flow after the probed instruction is emulated.
-Before preparing optimization, Kprobes inserts original(user-defined) kprobe on the
-specified address. So, even if the kprobe is not possible to be optimized, it just uses
-a normal kprobe.
-
-Limitations:
-==============
-
-- Number of probes which can be optimized is limited by the size of the area reserved.
-
-        * TODO: Have a template based implementation that will alleviate the probe count by
-          using a lesser space from the reserved area for optimization.
-
-- Currently instructions which can be emulated are the only candidates for optimization.
-
-
-
-Changes from RFC-v1:
------------------------
-- Detour buffer memory reservation code moved to optprobes.c
-- optimized_callback() is marked as NOKPROBE_SYMBOL.
-- Return NULL when there is no more slots to allocate from detour buffer.
-- Other comments by Masami are addressed.
-
-
-Kindly let me know your suggestions and comments.
-
-Thanks
--Anju
-
-
-Anju T (3):
-  arch/powerpc : Add detour buffer support for optprobes
-  arch/powerpc : optprobes for powerpc core
-  arch/powerpc : Enable optprobes support in powerpc
-
- .../features/debug/optprobes/arch-support.txt      |   2 +-
- arch/powerpc/Kconfig                               |   1 +
- arch/powerpc/include/asm/kprobes.h                 |  25 ++
- arch/powerpc/kernel/Makefile                       |   1 +
- arch/powerpc/kernel/optprobes.c                    | 474 +++++++++++++++++++++
- arch/powerpc/kernel/optprobes_head.S               | 108 +++++
- 6 files changed, 610 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/kernel/optprobes.c
+Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kprobes.h   |  25 ++++++++
+ arch/powerpc/kernel/optprobes_head.S | 108 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 133 insertions(+)
  create mode 100644 arch/powerpc/kernel/optprobes_head.S
 
+diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+index 039b583..3e4c998 100644
+--- a/arch/powerpc/include/asm/kprobes.h
++++ b/arch/powerpc/include/asm/kprobes.h
+@@ -38,7 +38,25 @@ struct pt_regs;
+ struct kprobe;
+ 
+ typedef ppc_opcode_t kprobe_opcode_t;
++
++extern kprobe_opcode_t optinsn_slot;
++/* Optinsn template address */
++extern kprobe_opcode_t optprobe_template_entry[];
++extern kprobe_opcode_t optprobe_template_call_handler[];
++extern kprobe_opcode_t optprobe_template_call_emulate[];
++extern kprobe_opcode_t optprobe_template_ret_branch[];
++extern kprobe_opcode_t optprobe_template_ret[];
++extern kprobe_opcode_t optprobe_template_insn[];
++extern kprobe_opcode_t optprobe_template_op_address1[];
++extern kprobe_opcode_t optprobe_template_op_address2[];
++extern kprobe_opcode_t optprobe_template_end[];
++
+ #define MAX_INSN_SIZE 1
++#define MAX_OPTIMIZED_LENGTH    4
++#define MAX_OPTINSN_SIZE				\
++	((unsigned long)&optprobe_template_end -	\
++	(unsigned long)&optprobe_template_entry)
++#define RELATIVEJUMP_SIZE       4
+ 
+ #ifdef CONFIG_PPC64
+ #if defined(_CALL_ELF) && _CALL_ELF == 2
+@@ -129,5 +147,12 @@ struct kprobe_ctlblk {
+ extern int kprobe_exceptions_notify(struct notifier_block *self,
+ 					unsigned long val, void *data);
+ extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
++
++struct arch_optimized_insn {
++	kprobe_opcode_t copied_insn[1];
++	/* detour buffer */
++	kprobe_opcode_t *insn;
++};
++
+ #endif /* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_KPROBES_H */
+diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
+new file mode 100644
+index 0000000..ce32aec
+--- /dev/null
++++ b/arch/powerpc/kernel/optprobes_head.S
+@@ -0,0 +1,108 @@
++/*
++ * Code to prepare detour buffer for optprobes in kernel.
++ *
++ * Copyright 2016, Anju T, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <asm/ppc_asm.h>
++#include <asm/ptrace.h>
++#include <asm/asm-offsets.h>
++
++.global optinsn_slot
++optinsn_slot:
++	/* Reserve an area to allocate slots for detour buffer */
++	.space	65536
++.global optprobe_template_entry
++optprobe_template_entry:
++	stdu	r1,-INT_FRAME_SIZE(r1)
++	SAVE_GPR(0,r1)
++	/* Save the previous SP into stack */
++	addi	r0,r1,INT_FRAME_SIZE
++	std	0,GPR1(r1)
++	SAVE_2GPRS(2,r1)
++	SAVE_8GPRS(4,r1)
++	SAVE_10GPRS(12,r1)
++	SAVE_10GPRS(22,r1)
++	/* Save SPRS */
++	mfcfar	r5
++	std	r5,_NIP(r1)
++	mfmsr	r5
++	std	r5,_MSR(r1)
++	mfctr	r5
++	std	r5,_CTR(r1)
++	mflr	r5
++	std	r5,_LINK(r1)
++	mfspr	r5,SPRN_XER
++	std	r5,_XER(r1)
++	li	r5,0
++	std	r5,_TRAP(r1)
++	mfdar	r5
++	std	r5,_DAR(r1)
++	mfdsisr	r5
++	std	r5,_DSISR(r1)
++	/* Pass parameters for optimized_callback */
++.global optprobe_template_op_address1
++optprobe_template_op_address1:
++	nop
++	nop
++	nop
++	nop
++	nop
++	addi	r4,r1,STACK_FRAME_OVERHEAD
++	/* Branch to the prehandler */
++.global optprobe_template_call_handler
++optprobe_template_call_handler:
++	nop
++	/* Pass parameters for instruction emulation */
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++.global optprobe_template_insn
++optprobe_template_insn:
++	nop
++	nop
++	/* Branch to instruction emulation  */
++.global optprobe_template_call_emulate
++optprobe_template_call_emulate:
++	nop
++.global optprobe_template_op_address2
++optprobe_template_op_address2:
++	nop
++	nop
++	nop
++	nop
++	nop
++	addi	r4,r1,STACK_FRAME_OVERHEAD
++	/* Branch to create_return_branch() function */
++.global optprobe_template_ret_branch
++optprobe_template_ret_branch:
++	nop
++	/* Restore the registers */
++	ld	r5,_MSR(r1)
++	mtmsr	r5
++	ld	r5,_CTR(r1)
++	mtctr	r5
++	ld	r5,_LINK(r1)
++	mtlr	r5
++	ld	r5,_XER(r1)
++	mtxer	r5
++	ld	r5,_DAR(r1)
++	mtdar	r5
++	ld	r5,_DSISR(r1)
++	mtdsisr	r5
++	REST_GPR(0,r1)
++	REST_2GPRS(2,r1)
++	REST_8GPRS(4,r1)
++	REST_10GPRS(12,r1)
++	REST_10GPRS(22,r1)
++	/* Restore the previous SP */
++	addi	r1,r1,INT_FRAME_SIZE
++	/* Jump back to the normal workflow from trampoline */
++.global optprobe_template_ret
++optprobe_template_ret:
++	nop
++.global optprobe_template_end
++optprobe_template_end:
 -- 
 2.1.0
