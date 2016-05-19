@@ -1,26 +1,27 @@
-Return-Path: <josh@joshtriplett.org>
-Received: from slow1-d.mail.gandi.net (slow1-d.mail.gandi.net [217.70.178.86])
- by lists.ozlabs.org (Postfix) with ESMTP id 3r9J4X3VDlzDqHc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 14:29:32 +1000 (AEST)
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net
- [217.70.183.196])
- by slow1-d.mail.gandi.net (Postfix) with ESMTP id 21BCF48601F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 06:25:32 +0200 (CEST)
-Date: Wed, 18 May 2016 21:25:17 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Lai Jiangshan <jiangshanlai@gmail.com>
-Subject: Re: [PATCH 0/4] rcutorture: Several fixes to run selftest scripts on
- PPC
-Message-ID: <20160519042516.GA19073@x>
-References: <1463629344-20471-1-git-send-email-boqun.feng@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1463629344-20471-1-git-send-email-boqun.feng@gmail.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9LZY65SszDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 16:22:13 +1000 (AEST)
+Message-ID: <1463638931.10451.10.camel@ellerman.id.au>
+Subject: Re: [kernel-hardening] [PATCH v8 2/4] GCC plugin infrastructure
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Emese Revfy <re.emese@gmail.com>, kernel-hardening@lists.openwall.com
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linux-kbuild@vger.kernel.org, pageexec@freemail.hu, spender@grsecurity.net,
+ mmarek@suse.com, keescook@chromium.org, linux@rasmusvillemoes.dk,
+ fengguang.wu@intel.com, dvyukov@google.com, linux-kernel@vger.kernel.org,
+ david.brown@linaro.org, yamada.masahiro@socionext.com, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Daniel Axtens <dja@axtens.net>
+Date: Thu, 19 May 2016 16:22:11 +1000
+In-Reply-To: <20160518123327.9018f73af78a47b4456b2027@gmail.com>
+References: <20160513015456.01415979f20a68eb7d2d9290@gmail.com>
+ <20160513015725.30223ee16a2a3860b4392b90@gmail.com>
+ <573C2CFE.8060305@au1.ibm.com>
+ <20160518123327.9018f73af78a47b4456b2027@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 19, 2016 at 11:42:20AM +0800, Boqun Feng wrote:
-> I spend some time to make tools/testing/selftest/rcutorture run on PPC,
-> here are some documention and fixes made while I was trying.
-> 
-> The scripts are able to run and get results on PPC, however please
-> note there are some stalls even build errors that could be found
-> by the tests currently.
-> 
-> As I'm certainly not an expert of qemu or bash programming, there
-> may be something I am missing in those patches. So tests and comments
-> are welcome ;-)
-> 
-> Regards,
-> Boqun
-> 
-> Boqun Feng (4):
->   rcutorture/doc: Add a new way to create initrd using dracut
->   rcutorture: Use vmlinux as the fallback kernel image
->   rcutorture: Make -soundhw a x86 specific option
->   rcutorture: Don't specify the cpu type of QEMU on PPC
+On Wed, 2016-05-18 at 12:33 +0200, Emese Revfy wrote:
 
-All four of these seem reasonable to me:
-Reviewed-by: Josh Triplett <josh@joshtriplett.org>
+> > I've done some basic sanity testing on powerpc with the cyclomatic 
+> > complexity plugin (with LE native + cross-compilers) and it seems to 
+> > work with the patch below.
+> > 
+> > Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> > 
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index a18a0dc..0cfed5b 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -97,6 +97,7 @@ config PPC
+> >          select HAVE_DYNAMIC_FTRACE_WITH_REGS if MPROFILE_KERNEL
+> >          select HAVE_FUNCTION_TRACER
+> >          select HAVE_FUNCTION_GRAPH_TRACER
+> > +       select HAVE_GCC_PLUGINS
+> >          select SYSCTL_EXCEPTION_TRACE
+> >          select ARCH_WANT_OPTIONAL_GPIOLIB
+> >          select VIRT_TO_BUS if !PPC64
+> 
+> Hi,
+> 
+> Did you test the plugins with all gcc versions (4.5-6)?
 
-I responded to the -soundhw patch, trying to track down why that option
-was needed in the first place, and seeking a solution that doesn't
-require adding to the set of target-specific options.  But I don't think
-that investigation should block your fix.
+What's the concern about gcc versions? Just not breaking the build on old
+compilers?
+
+I'm pretty sure powerpc big endian still builds with gcc 4.4.
+
+However if Andrew's only tested on little endian, then that select should be
+guarded with an "if CPU_LITTLE_ENDIAN". And to build LE you need gcc >= 4.9.
+
+cheers
