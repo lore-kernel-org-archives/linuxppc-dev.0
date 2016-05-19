@@ -1,29 +1,30 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9Mh0172kzDqGy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 17:12:00 +1000 (AEST)
-Subject: Re: [PATCH] kvm-pr: manage illegal instructions
-To: Laurent Vivier <lvivier@redhat.com>, Alexander Graf <agraf@suse.de>
-References: <1458073117-24652-1-git-send-email-lvivier@redhat.com>
- <57330AFE.1050209@suse.de> <a2700de4-623a-cae4-028b-8fe0aa82f75c@redhat.com>
- <57331C3F.2000708@suse.de> <e370a7ad-8306-20a9-09e9-99e6a9b0573c@redhat.com>
- <57344C7E.5010202@suse.de> <374d3217-cf6c-fa2e-d24a-e9ee8b1f4534@redhat.com>
- <3f99bce1-6fb7-b81d-26ca-24f1ca426c3e@redhat.com> <573AD836.4090006@suse.de>
- <ab2e59a1-fb2d-287a-e974-864a44ffe652@redhat.com>
- <573C4165.4080909@redhat.com> <573C49C7.1060804@redhat.com>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Paolo Bonzini <pbonzini@redhat.com>,
- Paul Mackerras <paulus@samba.org>
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <573D6739.50405@redhat.com>
-Date: Thu, 19 May 2016 09:11:53 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9NWr4KlkzDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 May 2016 17:50:00 +1000 (AEST)
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Thu, 19 May 2016 01:49:58 -0600
+Subject: Re: [RFC PATCH 2/3] arch/powerpc : optprobes for powerpc core
+To: Masami Hiramatsu <mhiramat@kernel.org>
+References: <1463517578-27760-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1463517578-27760-3-git-send-email-anju@linux.vnet.ibm.com>
+ <20160519001304.c7104e18062b324651c97260@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ masami.hiramatsu.pt@hitachi.com, jkenisto@us.ibm.com,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
+From: Anju T <anju@linux.vnet.ibm.com>
+Message-ID: <573D7016.2050900@linux.vnet.ibm.com>
+Date: Thu, 19 May 2016 13:19:42 +0530
 MIME-Version: 1.0
-In-Reply-To: <573C49C7.1060804@redhat.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160519001304.c7104e18062b324651c97260@kernel.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,168 +34,551 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18.05.2016 12:53, Thomas Huth wrote:
-> On 18.05.2016 12:18, Thomas Huth wrote:
->> On 17.05.2016 19:49, Laurent Vivier wrote:
->>>
->>>
->>> On 17/05/2016 10:37, Alexander Graf wrote:
->>>> On 05/17/2016 10:35 AM, Laurent Vivier wrote:
->>>>>
->>>>> On 12/05/2016 16:23, Laurent Vivier wrote:
->>>>>>
->>>>>> On 12/05/2016 11:27, Alexander Graf wrote:
->>>>>>> On 05/12/2016 11:10 AM, Laurent Vivier wrote:
->>>>>>>> On 11/05/2016 13:49, Alexander Graf wrote:
->>>>>>>>> On 05/11/2016 01:14 PM, Laurent Vivier wrote:
->>>>>>>>>> On 11/05/2016 12:35, Alexander Graf wrote:
->>>>>>>>>>> On 03/15/2016 09:18 PM, Laurent Vivier wrote:
->>>>>>>>>>>> While writing some instruction tests for kvm-unit-tests for
->>>>>>>>>>>> powerpc,
->>>>>>>>>>>> I've found that illegal instructions are not managed correctly
->>>>>>>>>>>> with
->>>>>>>>>>>> kvm-pr,
->>>>>>>>>>>> while it is fine with kvm-hv.
->>>>>>>>>>>>
->>>>>>>>>>>> When an illegal instruction (like ".long 0") is processed by
->>>>>>>>>>>> kvm-pr,
->>>>>>>>>>>> the kernel logs are filled with:
->>>>>>>>>>>>
->>>>>>>>>>>>          Couldn't emulate instruction 0x00000000 (op 0 xop 0)
->>>>>>>>>>>>          kvmppc_handle_exit_pr: emulation at 700 failed (00000000)
->>>>>>>>>>>>
->>>>>>>>>>>> While the exception handler receives an interrupt for each
->>>>>>>>>>>> instruction
->>>>>>>>>>>> executed after the illegal instruction.
->>>>>>>>>>>>
->>>>>>>>>>>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
->>>>>>>>>>>> ---
->>>>>>>>>>>>      arch/powerpc/kvm/book3s_emulate.c | 4 +++-
->>>>>>>>>>>>      1 file changed, 3 insertions(+), 1 deletion(-)
->>>>>>>>>>>>
->>>>>>>>>>>> diff --git a/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>>>>> b/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>>>>> index 2afdb9c..4ee969d 100644
->>>>>>>>>>>> --- a/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>>>>> +++ b/arch/powerpc/kvm/book3s_emulate.c
->>>>>>>>>>>> @@ -99,7 +99,6 @@ int kvmppc_core_emulate_op_pr(struct kvm_run
->>>>>>>>>>>> *run,
->>>>>>>>>>>> struct kvm_vcpu *vcpu,
->>>>>>>>>>>>            switch (get_op(inst)) {
->>>>>>>>>>>>          case 0:
->>>>>>>>>>>> -        emulated = EMULATE_FAIL;
->>>>>>>>>>>>              if ((kvmppc_get_msr(vcpu) & MSR_LE) &&
->>>>>>>>>>>>                  (inst == swab32(inst_sc))) {
->>>>>>>>>>>>                  /*
->>>>>>>>>>>> @@ -112,6 +111,9 @@ int kvmppc_core_emulate_op_pr(struct kvm_run
->>>>>>>>>>>> *run,
->>>>>>>>>>>> struct kvm_vcpu *vcpu,
->>>>>>>>>>>>                  kvmppc_set_gpr(vcpu, 3, EV_UNIMPLEMENTED);
->>>>>>>>>>>>                  kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
->>>>>>>>>>>>                  emulated = EMULATE_DONE;
->>>>>>>>>>>> +        } else {
->>>>>>>>>>>> +            kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
->>>>>>>>>>> But isn't that exactly what the semantic of EMULATE_FAIL is?
->>>>>>>>>>> Fixing it
->>>>>>>>>>> up in book3s_emulate.c is definitely the wrong spot.
->>>>>>>>>>>
->>>>>>>>>>> So what is the problem you're trying to solve? Is the SRR0 at the
->>>>>>>>>>> wrong
->>>>>>>>>>> spot or are the log messages the problem?
->>>>>>>>>> No, the problem is the host kernel logs are filled by the message
->>>>>>>>>> and
->>>>>>>>>> the execution hangs. And the host becomes unresponsiveness, even
->>>>>>>>>> after
->>>>>>>>>> the end of the tests.
->>>>>>>>>>
->>>>>>>>>> Please, try to run kvm-unit-tests (the emulator test) on a KVM-PR
->>>>>>>>>> host,
->>>>>>>>>> and check the kernel logs (dmesg), then try to ssh to the host...
->>>>>>>>> Ok, so the log messages are the problem. Please fix the message
->>>>>>>>> output
->>>>>>>>> then - or remove it altogether. Or if you like, create a module
->>>>>>>>> parameter that allows you to emit them.
->>>>>>>>>
->>>>>>>>> I personally think the best solution would be to just convert the
->>>>>>>>> message into a trace point.
->>>>>>>>>
->>>>>>>>> While at it, please see whether the guest can trigger similar host
->>>>>>>>> log
->>>>>>>>> output excess in other code paths.
->>>>>>>> The problem is not really with the log messages: they are
->>>>>>>> consequence of
->>>>>>>> the bug I try to fix.
->>>>>>>>
->>>>>>>> What happens is once kvm_pr decodes an invalid instruction all the
->>>>>>>> valid
->>>>>>>> following instructions trigger a Program exception to the guest
->>>>>>>> (but are
->>>>>>>> executed correctly). It has no real consequence on big machine like
->>>>>>>> POWER8, except that the guest become very slow and the log files of
->>>>>>>> the
->>>>>>>> host are filled with messages (and qemu uses 100% of the CPU). On a
->>>>>>>> smaller machine like a  PowerMac G5, the machine becomes simply
->>>>>>>> unusable.
->>>>>>> It's probably more related to your verbosity level of kernel messages.
->>>>>>> If you pass loglevel=0 (or quiet) to you kernel cmdline you won't get
->>>>>>> the messages printed to serial which is what's slowing you down.
->>>>>>>
->>>>>>> The other problem sounds pretty severe, but the only thing your patch
->>>>>>> does any different from the current code flow would be the patch below.
->>>>>>> Or did I miss anything?
->>>>>>>
->>>>>>> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
->>>>>>> index 5cc2e7a..4672bc2 100644
->>>>>>> --- a/arch/powerpc/kvm/emulate.c
->>>>>>> +++ b/arch/powerpc/kvm/emulate.c
->>>>>>> @@ -302,7 +302,11 @@ int kvmppc_emulate_instruction(struct kvm_run
->>>>>>> *run,
->>>>>>> struct kvm_vcpu *vcpu)
->>>>>>>                          advance = 0;
->>>>>>>                          printk(KERN_ERR "Couldn't emulate instruction
->>>>>>> 0x%08x "
->>>>>>>                                 "(op %d xop %d)\n", inst, get_op(inst),
->>>>>>> get_xop(inst));
->>>>>>> +#ifdef CONFIG_PPC_BOOK3S
->>>>>>> +                       kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
->>>>>>> +#else
->>>>>>>                          kvmppc_core_queue_program(vcpu, 0);
->>>>>>> +#endif
->>>>>>>                  }
->>>>>>>          }
->>>>>>>
->>>>> Do you want I send an updated patch with your changes?
->>>>
->>>> Well, you reported the issue and narrowed it down, so feel free to send
->>>> it under your name :). I merely simplified your patch a bit.
->>>
->>> Well, while I was trying to update the patch, I've re-tested this... and
->>> it fails. I don't know what I'm doing bad now or what I did bad before
->>> but it seems it doesn't work. :(
->>>
->>> Thomas, could try the patch from Alex?
+Hi Masami,
+
+  Thank you for reviewing the patch.
+
+On Wednesday 18 May 2016 08:43 PM, Masami Hiramatsu wrote:
+> On Wed, 18 May 2016 02:09:37 +0530
+> Anju T <anju@linux.vnet.ibm.com> wrote:
+>
+>> Instruction slot for detour buffer is allocated from
+>> the reserved area. For the time being 64KB is reserved
+>> in memory for this purpose. ppc_get_optinsn_slot() and
+>> ppc_free_optinsn_slot() are geared towards the allocation and freeing
+>> of memory from this area.
+> Thank you for porting optprobe on ppc!!
+>
+> I have some comments on this patch.
+>
+>> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/kernel/optprobes.c | 463 ++++++++++++++++++++++++++++++++++++++++
+>>   1 file changed, 463 insertions(+)
+>>   create mode 100644 arch/powerpc/kernel/optprobes.c
 >>
->> The patch from Alex also does not work for me.
-> 
-> I've now had a closer look at the code, and I think the endless loop is
-> caused by the fact that we try to inject a program interrupt twice here.
-[...]
-> Injecting the program interrupt twice of course destroys the
-> return address in SRR0, causing this strange behavior.
-> If I comment out the kvmppc_core_queue_program() in
-> kvmppc_emulate_instruction(), the endless loop is gone.
+>> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+>> new file mode 100644
+>> index 0000000..50a60c1
+>> --- /dev/null
+>> +++ b/arch/powerpc/kernel/optprobes.c
+>> @@ -0,0 +1,463 @@
+>> +/*
+>> + * Code for Kernel probes Jump optimization.
+>> + *
+>> + * Copyright 2016, Anju T, IBM Corp.
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +
+>> +#include <linux/kprobes.h>
+>> +#include <linux/jump_label.h>
+>> +#include <linux/types.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/list.h>
+>> +#include <asm/kprobes.h>
+>> +#include <asm/ptrace.h>
+>> +#include <asm/cacheflush.h>
+>> +#include <asm/code-patching.h>
+>> +#include <asm/sstep.h>
+>> +
+>> +/* Reserve an area to allocate slots for detour buffer */
+>> +extern void  optprobe_trampoline_holder(void)
+>> +{
+>> +	asm volatile(".global optinsn_slot\n"
+>> +			"optinsn_slot:\n"
+>> +			".space 65536");
+>> +}
+> Would we better move this into optprobes_head.S?
 
-Apart from this problem with injecting the program exception twice,
-there is now another problem left here: In kvmppc_handle_exit_pr(), the
-flags variable is 0, thus we're injecting the program exception without
-indication what it is all about.
-It works fine if I simply hard-code flags = SRR1_PROGILL, but I guess
-that's not the right solution to this problem.
+Yes. Will do.
+>> +
+>> +#define SLOT_SIZE 65536
+>> +#define TMPL_CALL_HDLR_IDX	\
+>> +	(optprobe_template_call_handler - optprobe_template_entry)
+>> +#define TMPL_EMULATE_IDX	\
+>> +	(optprobe_template_call_emulate - optprobe_template_entry)
+>> +#define TMPL_RET_BRANCH_IDX	\
+>> +	(optprobe_template_ret_branch - optprobe_template_entry)
+>> +#define TMPL_RET_IDX	\
+>> +	(optprobe_template_ret - optprobe_template_entry)
+>> +#define TMPL_OP1_IDX	\
+>> +	(optprobe_template_op_address1 - optprobe_template_entry)
+>> +#define TMPL_OP2_IDX	\
+>> +	(optprobe_template_op_address2 - optprobe_template_entry)
+>> +#define TMPL_INSN_IDX	\
+>> +	(optprobe_template_insn - optprobe_template_entry)
+>> +#define TMPL_END_IDX	\
+>> +	(optprobe_template_end - optprobe_template_entry)
+>> +
+>> +struct kprobe_ppc_insn_page {
+>> +	struct list_head list;
+>> +	kprobe_opcode_t *insns;	/* Page of instruction slots */
+>> +	struct kprobe_insn_cache *cache;
+>> +	int nused;
+>> +	int ngarbage;
+>> +	char slot_used[];
+>> +};
+>> +
+>> +#define PPC_KPROBE_INSN_PAGE_SIZE(slots)	\
+>> +	(offsetof(struct kprobe_ppc_insn_page, slot_used) +	\
+>> +	(sizeof(char) * (slots)))
+>> +
+>> +enum ppc_kprobe_slot_state {
+>> +	SLOT_CLEAN = 0,
+>> +	SLOT_DIRTY = 1,
+>> +	SLOT_USED = 2,
+>> +};
+>> +
+>> +static struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
+>> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
+>> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
+>> +	/* .insn_size is initialized later */
+>> +	.nr_garbage = 0,
+>> +};
+>> +
+>> +static int ppc_slots_per_page(struct kprobe_insn_cache *c)
+>> +{
+>> +	/*
+>> +	 * Here the #slots per page differs from x86 as we have
+>> +	 * only 64KB reserved.
+>> +	 */
+>> +	return SLOT_SIZE / (c->insn_size * sizeof(kprobe_opcode_t));
+>> +}
+>> +
+>> +/* Return 1 if all garbages are collected, otherwise 0. */
+>> +static int collect_one_slot(struct kprobe_ppc_insn_page *kip, int idx)
+>> +{
+>> +	kip->slot_used[idx] = SLOT_CLEAN;
+>> +	kip->nused--;
+>> +	return 0;
+>> +}
+>> +
+>> +static int collect_garbage_slots(struct kprobe_insn_cache *c)
+>> +{
+>> +	struct kprobe_ppc_insn_page *kip, *next;
+>> +
+>> +	/* Ensure no-one is interrupted on the garbages */
+>> +	synchronize_sched();
+>> +
+>> +	list_for_each_entry_safe(kip, next, &c->pages, list) {
+>> +		int i;
+>> +
+>> +		if (kip->ngarbage == 0)
+>> +			continue;
+>> +		kip->ngarbage = 0;	/* we will collect all garbages */
+>> +		for (i = 0; i < ppc_slots_per_page(c); i++) {
+>> +			if (kip->slot_used[i] == SLOT_DIRTY &&
+>> +			    collect_one_slot(kip, i))
+>> +				break;
+>> +		}
+>> +	}
+>> +	c->nr_garbage = 0;
+>> +	return 0;
+>> +}
+>> +
+>> +kprobe_opcode_t  *__ppc_get_optinsn_slot(struct kprobe_insn_cache *c)
+>> +{
+>> +	struct kprobe_ppc_insn_page *kip;
+>> +	kprobe_opcode_t *slot = NULL;
+>> +
+>> +	mutex_lock(&c->mutex);
+>> +	list_for_each_entry(kip, &c->pages, list) {
+>> +		if (kip->nused < ppc_slots_per_page(c)) {
+>> +			int i;
+>> +
+>> +			for (i = 0; i < ppc_slots_per_page(c); i++) {
+>> +				if (kip->slot_used[i] == SLOT_CLEAN) {
+>> +					kip->slot_used[i] = SLOT_USED;
+>> +					kip->nused++;
+>> +					slot = kip->insns + (i * c->insn_size);
+>> +					goto out;
+>> +				}
+>> +			}
+>> +			/* kip->nused reached max value. */
+>> +			kip->nused = ppc_slots_per_page(c);
+>> +			pr_info("No more slots to allocate\n");
+>> +			WARN_ON(1);
+>> +			goto out;
+>> +		}
+>> +	}
+> Wait... this should have just one or zero kip on the list.
+> And if !list_empty(c->pages) here, we have to return NULL.
+>
+>> +	kip = kmalloc(PPC_KPROBE_INSN_PAGE_SIZE(ppc_slots_per_page(c)),
+>> +		      GFP_KERNEL);
+>> +	if (!kip)
+>> +		goto out;
+>> +	/*
+>> +	 * Allocate from the reserved area so as to
+>> +	 * ensure the range will be within +/-32MB
+>> +	 */
+>> +	kip->insns = &optinsn_slot;
+>> +	if (!kip->insns) {
+>> +		kfree(kip);
+>> +		goto out;
+>> +	}
+>> +	INIT_LIST_HEAD(&kip->list);
+>> +	memset(kip->slot_used, SLOT_CLEAN, ppc_slots_per_page(c));
+>> +	kip->slot_used[0] = SLOT_USED;
+>> +	kip->nused = 1;
+>> +	kip->ngarbage = 0;
+>> +	kip->cache = c;
+>> +	list_add(&kip->list, &c->pages);
+>> +	slot = kip->insns;
+>> +out:
+>> +	mutex_unlock(&c->mutex);
+>> +	return slot;
+>> +}
+>> +
+>> +kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
+>> +{
+>> +	/*
+>> +	 * The insn slot is allocated from the reserved
+>> +	 * area(ie &optinsn_slot).We are not optimizing probes
+>> +	 * at module_addr now.
+>> +	 */
+>> +	kprobe_opcode_t *slot = NULL;
+>> +
+>> +	if (is_kernel_addr(op->kp.addr))
+>> +		slot = __ppc_get_optinsn_slot(&kprobe_ppc_optinsn_slots);
+>> +	else
+>> +		pr_info("Kprobe can not be optimized\n");
+>> +	return slot;
+>> +}
+>> +NOKPROBE_SYMBOL(ppc_get_optinsn_slot);
+> You don't need it, unless this is called in kprobe handler.
 
-I'm currently trying to understand the call chain of this function, but
-I have a hard time to understand why we don't get a proper value in this
-case...
-Alex (or somebody else who's more familiar with this code), do you have
-an idea why flags could be zero here?
+Ok.
+>
+>> +
+>> +void __ppc_free_optinsn_slot(struct kprobe_insn_cache *c,
+>> +			     kprobe_opcode_t *slot, int dirty)
+>> +{
+>> +	struct kprobe_ppc_insn_page *kip;
+>> +
+>> +	mutex_lock(&c->mutex);
+>> +
+>> +	list_for_each_entry(kip, &c->pages, list) {
+>> +		long idx = ((long)slot - (long)kip->insns) /
+>> +				(c->insn_size * sizeof(kprobe_opcode_t));
+>> +		if (idx >= 0 && idx < ppc_slots_per_page(c)) {
+>> +			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+>> +			if (dirty) {
+>> +				kip->slot_used[idx] = SLOT_DIRTY;
+>> +				kip->ngarbage++;
+>> +				if (++c->nr_garbage > ppc_slots_per_page(c))
+>> +					collect_garbage_slots(c);
+>> +			} else
+>> +				collect_one_slot(kip, idx);
+>> +			goto out;
+>> +		}
+>> +	}
+>> +	/* Could not free this slot. */
+>> +	WARN_ON(1);
+>> +out:
+>> +	mutex_unlock(&c->mutex);
+>> +}
+>> +
+>> +static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
+>> +{
+>> +	if (!op->optinsn.insn)
+>> +		return;
+>> +	if (is_kernel_addr((unsigned long)op->kp.addr))
+>> +		__ppc_free_optinsn_slot(&kprobe_ppc_optinsn_slots,
+>> +					op->optinsn.insn, 0);
+>> +}
+>> +NOKPROBE_SYMBOL(ppc_free_optinsn_slot);
+> ditto.
+>
+>> +
+>> +static void
+>> +__arch_remove_optimized_kprobe(struct optimized_kprobe *op, int dirty)
+>> +{
+>> +	if (op->optinsn.insn) {
+>> +		ppc_free_optinsn_slot(op);
+>> +		op->optinsn.insn = NULL;
+>> +	}
+>> +}
+>> +
+>> +static int can_optimize(struct kprobe *p)
+>> +{
+>> +	/*
+>> +	 * Not optimizing the kprobe placed by
+>> +	 * kretprobe during boot time
+>> +	 */
+>> +	struct pt_regs *regs;
+>> +	unsigned int instr;
+>> +	int r;
+>> +
+>> +	if ((kprobe_opcode_t)p->addr == (kprobe_opcode_t)&kretprobe_trampoline)
+>> +		return 0;
+>> +
+>> +	regs = current_pt_regs();
+>> +	instr = *(p->ainsn.insn);
+>> +
+>> +	/* Ensure the instruction can be emulated*/
+>> +	r = emulate_step(regs, instr);
+>> +	if (r != 1)
+>> +		return 0;
+>> +
+>> +	return 1;
+>> +}
+>> +
+>> +static void
+>> +create_return_branch(struct optimized_kprobe *op, struct pt_regs *regs)
+>> +{
+>> +	/*
+>> +	 * Create a branch back to the return address
+>> +	 * after the probed instruction is emulated
+>> +	 */
+>> +
+>> +	kprobe_opcode_t branch, *buff;
+>> +	unsigned long ret;
+>> +
+>> +	ret = regs->nip;
+>> +	buff = op->optinsn.insn;
+>> +
+>> +	branch = create_branch((unsigned int *)buff + TMPL_RET_IDX,
+>> +			       (unsigned long)ret, 0);
+>> +	buff[TMPL_RET_IDX] = branch;
+>> +}
+>> +NOKPROBE_SYMBOL(create_return_branch);
+> ditto.
+>
+>> +
+>> +static void
+>> +optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
+>> +{
+>> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+>> +	unsigned long flags;
+>> +
+>> +	local_irq_save(flags);
+>> +
+>> +	if (kprobe_running())
+>> +		kprobes_inc_nmissed_count(&op->kp);
+>> +	else {
+>> +		__this_cpu_write(current_kprobe, &op->kp);
+>> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+>> +		opt_pre_handler(&op->kp, regs);
+>> +		__this_cpu_write(current_kprobe, NULL);
+>> +	}
+>> +	local_irq_restore(flags);
+>> +}
+> This actually needs to be marked NOKPROBE_SYMBOL().
 
- Thomas
+OK. Will do.
+>
+>> +
+>> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	 __arch_remove_optimized_kprobe(op, 1);
+>> +}
+>> +
+>> +void  create_insn(unsigned int insn, kprobe_opcode_t *addr)
+>> +{
+>> +	unsigned int instr, instr2;
+>> +
+>> +	instr = 0x3c000000 | 0x800000 | ((insn >> 16) & 0xffff);
+>> +	*addr++ = instr;
+>> +	instr2 = 0x60000000 | 0x40000 | 0x800000;
+>> +	instr2 = instr2 | (insn & 0xffff);
+>> +	*addr = instr2;
+> Please add macros and/or comments for each instruction to explain what
+> instrcution would you make...
+
+Sure :-)
+
+>> +}
+>> +
+>> +void create_load_address_insn(struct optimized_kprobe *op,
+>> +			      kprobe_opcode_t *addr, kprobe_opcode_t *addr2)
+>> +{
+>> +	unsigned int instr1, instr2, instr3, instr4, instr5;
+> Would it better use u32?
+
+Yes. will declare it as u32.
+>> +	unsigned long val;
+>> +
+>> +	val = op;
+>> +
+>> +	instr1 = 0x3c000000 | 0x600000 | ((val >> 48) & 0xffff);
+>> +	*addr++ = instr1;
+>> +	*addr2++ = instr1;
+>> +	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val >> 32) & 0xffff);
+>> +	*addr++ = instr2;
+>> +	*addr2++ = instr2;
+>> +	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 & 0x1f) << 11);
+>> +	instr3 = instr3 | ((31 & 0x1f) << 6) | ((32 & 0x20) >> 4);
+>> +	*addr++ = instr3;
+>> +	*addr2++ = instr3;
+>> +	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val >> 16) & 0xffff);
+>> +	*addr++ = instr4;
+>> +	*addr2++ = instr4;
+>> +	instr5 =  0x60000000 | 0x30000 | 0x600000 | (val & 0xffff);
+> Ditto.
+>
+>> +	*addr = instr5;
+>> +	*addr2 = instr5;
+>> +}
+>> +
+>> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+>> +{
+>> +	kprobe_opcode_t *buff, branch, branch2, branch3;
+>> +	long rel_chk, ret_chk;
+>> +
+>> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+>> +	op->optinsn.insn = NULL;
+>> +
+>> +	if (!can_optimize(p))
+>> +		return -EILSEQ;
+>> +
+>> +	/* Allocate instruction slot for detour buffer*/
+>> +	buff = ppc_get_optinsn_slot(op);
+>> +
+>> +	/*
+>> +	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
+>> +	 *
+>> +	 * The target address has to be relatively nearby, to permit use
+>> +	 * of branch instruction in powerpc because the address is specified
+>> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
+>> +	 * in the opcode specify the address. Therefore the address gap should
+>> +	 * be 32MB on either side of the current instruction.
+>> +	 */
+>> +	rel_chk = (long)buff -
+>> +			(unsigned long)p->addr;
+> Why would you add a new line?
+
+Will remove this new line. :-)
+
+>
+>> +	if (rel_chk < -0x2000000 || rel_chk > 0x1fffffc || rel_chk & 0x3) {
+>> +		ppc_free_optinsn_slot(op);
+>> +		return -ERANGE;
+>> +	}
+>> +	/*
+>> +	 * For the time being assume that the return address is NIP+4.
+>> +	 * TODO : check the return address is also within 32MB range for
+>> +	 * cases where NIP is not NIP+4.ie the NIP is decided after emulation.
+>> +	 */
+>> +	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)(p->addr) + 4;
+>> +
+>> +	if (ret_chk < -0x2000000 || ret_chk > 0x1fffffc || ret_chk & 0x3) {
+>> +		ppc_free_optinsn_slot(op);
+>> +		return -ERANGE;
+>> +	}
+>> +
+>> +	/* Do Copy arch specific instance from template*/
+>> +	memcpy(buff, optprobe_template_entry,
+>> +	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
+>> +	create_load_address_insn(op, buff + TMPL_OP1_IDX, buff + TMPL_OP2_IDX);
+>> +
+>> +	/* Create a branch to the optimized_callback function */
+>> +	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
+>> +			       (unsigned long)optimized_callback + 8,
+>> +				BRANCH_SET_LINK);
+>> +
+>> +	/* Place the branch instr into the trampoline */
+>> +	buff[TMPL_CALL_HDLR_IDX] = branch;
+>> +	create_insn(*(p->ainsn.insn), buff + TMPL_INSN_IDX);
+>> +
+>> +	/*Create a branch instruction into the emulate_step*/
+>> +	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
+>> +				(unsigned long)emulate_step + 8,
+>> +				BRANCH_SET_LINK);
+>> +	buff[TMPL_EMULATE_IDX] = branch3;
+>> +
+>> +	/* Create a branch for jumping back*/
+>> +	branch2 = create_branch((unsigned int *)buff + TMPL_RET_BRANCH_IDX,
+>> +				(unsigned long)create_return_branch + 8,
+>> +				BRANCH_SET_LINK);
+>> +	buff[TMPL_RET_BRANCH_IDX] = branch2;
+>> +
+>> +	op->optinsn.insn = buff;
+>> +	return 0;
+>> +}
+>> +
+>> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
+>> +{
+>> +	return optinsn->insn;
+>> +}
+>> +
+>> +/*
+>> + * Here,kprobe opt always replace one instruction (4 bytes
+>> + * aligned and 4 bytes long). It is impossible to encounter another
+>> + * kprobe in the address range. So always return 0.
+>> + */
+>> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>> +void arch_optimize_kprobes(struct list_head *oplist)
+>> +{
+>> +	struct optimized_kprobe *op;
+>> +	struct optimized_kprobe *tmp;
+>> +
+>> +	unsigned int branch;
+>> +
+>> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+>> +	/*
+>> +	* Backup instructions which will be replaced
+>> +	* by jump address
+>> +	*/
+>> +	memcpy(op->optinsn.copied_insn, op->kp.addr,
+>> +	       RELATIVEJUMP_SIZE);
+>> +	branch = create_branch((unsigned int *)op->kp.addr,
+>> +			       (unsigned long)op->optinsn.insn, 0);
+>> +	*op->kp.addr = branch;
+>> +	list_del_init(&op->list);
+> Please add indent-tab for this block.
+
+Sure.
+>
+>> +	}
+>> +}
+>> +
+>> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
+>> +{
+>> +	arch_arm_kprobe(&op->kp);
+>> +}
+>> +
+>> +void arch_unoptimize_kprobes(struct list_head *oplist,
+>> +			     struct list_head *done_list)
+>> +{
+>> +	struct optimized_kprobe *op;
+>> +	struct optimized_kprobe *tmp;
+>> +
+>> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+>> +		arch_unoptimize_kprobe(op);
+>> +		list_move(&op->list, done_list);
+>> +	}
+>> +}
+>> +
+>> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+>> +				 unsigned long addr)
+>> +{
+> Please make sure addr != op->kp.addr and addr is aligned.
+
+The only case this check will succeed is if kp.addr is not a multiple of 4, which is not a valid address at all on
+Power.So should we again check here for that?
+
+
+
+
+Thanks and Regards
+
+-Anju
+
+
+
+>> +	return 0;
+>> +}
+>> -- 
+>> 2.1.0
+>>
+> Thanks!
+>
