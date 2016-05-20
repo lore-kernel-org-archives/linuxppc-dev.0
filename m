@@ -1,33 +1,33 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9z0D47C7zDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9z0F5dLRzDqDW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:09 +1000 (AEST)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 20 May 2016 16:43:08 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id A37072BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:05 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4K6gvp660227624
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:05 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4K6gWEs032123
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:33 +1000
+ Fri, 20 May 2016 16:43:09 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C75642CE805D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:07 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4K6gxZL57933948
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:07 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4K6gXU9031424
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:34 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  alistair@popple.id.au, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v10 06/18] powerpc/powernv: Allocate PE# in reverse order
-Date: Fri, 20 May 2016 16:41:30 +1000
-Message-Id: <1463726502-14679-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v10 08/18] powerpc/powernv: Setup PE for root bus
+Date: Fri, 20 May 2016 16:41:32 +1000
+Message-Id: <1463726502-14679-9-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,62 +39,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PE number for one particular PE can be allocated dynamically or
-reserved according to the consumed M64 (64-bits prefetchable)
-segments of the PE. The M64 segment can't be remapped to arbitrary
-PE, meaning the PE number is determined according to the index
-of the consumed M64 segment. As below figure shows, M64 resource
-grows from low to high end, meaning the PE (number) reserved
-according to M64 segment grows from low to high end as well,
-so does the dynamically allocated PE number. It will lead to
-conflict: PE number (M64 segment) reserved by dynamic allocation
-is required by hot added PCI adapter at later point. It fails
-the PCI hotplug because of the PE number can't be reserved
-based on the index of the consumed M64 segment.
+There is no parent bridge for root bus, meaning pcibios_setup_bridge()
+isn't invoked for root bus. The PE for root bus is the ancestor of
+other PEs in PELTV. It means we need PE for root bus populated before
+all others.
 
-  +---+---+---+---+---+--------------------------------+-----+
-  | 0 | 1 | 2 | 3 | 4 |      .......                   | 255 |
-  +---+---+---+---+---+--------------------------------+-----+
-
-  PE number for dynamic allocation          ----------------->
-  PE number reserved for M64 segment        ----------------->
-
-To resolve above conflicts, this forces the PE number to be
-allocated dynamically in reverse order. With this patch applied,
-the PE numbers are reserved in ascending order, but allocated
-dynamically in reverse order.
+This populates the PE for root bus in pcibios_setup_bridge() path
+if it's not populated yet. The PE number next to the reserved one
+is used as the PE# to avoid holes in continuous M64 space.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 49 ++++++++++++++++++++++++-------
+ arch/powerpc/platforms/powernv/pci.h      |  2 ++
+ 2 files changed, 41 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index dea2595..2dc64ca 100644
+index cc6a7c4..3186a29 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -141,16 +141,14 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
+@@ -194,14 +194,14 @@ static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+ 	set_bit(phb->ioda.m64_bar_idx, &phb->ioda.m64_bar_alloc);
  
- static struct pnv_ioda_pe *pnv_ioda_alloc_pe(struct pnv_phb *phb)
- {
--	unsigned long pe;
-+	unsigned long pe = phb->ioda.total_pe_num - 1;
+ 	/*
+-	 * Strip off the segment used by the reserved PE, which is
+-	 * expected to be 0 or last one of PE capabicity.
++	 * Exclude the segments for reserved and root bus PE, which
++	 * are first or last two PEs.
+ 	 */
+ 	r = &phb->hose->mem_resources[1];
+ 	if (phb->ioda.reserved_pe_idx == 0)
+-		r->start += phb->ioda.m64_segsize;
++		r->start += (2 * phb->ioda.m64_segsize);
+ 	else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1))
+-		r->end -= phb->ioda.m64_segsize;
++		r->end -= (2 * phb->ioda.m64_segsize);
+ 	else
+ 		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
+ 			phb->ioda.reserved_pe_idx);
+@@ -281,14 +281,14 @@ static int pnv_ioda1_init_m64(struct pnv_phb *phb)
+ 	}
  
--	do {
--		pe = find_next_zero_bit(phb->ioda.pe_alloc,
--					phb->ioda.total_pe_num, 0);
--		if (pe >= phb->ioda.total_pe_num)
--			return NULL;
--	} while(test_and_set_bit(pe, phb->ioda.pe_alloc));
-+	for (pe = phb->ioda.total_pe_num - 1; pe >= 0; pe--) {
-+		if (!test_and_set_bit(pe, phb->ioda.pe_alloc))
-+			return pnv_ioda_init_pe(phb, pe);
+ 	/*
+-	 * Exclude the segment used by the reserved PE, which
+-	 * is expected to be 0 or last supported PE#.
++	 * Exclude the segments for reserved and root bus PE, which
++	 * are first or last two PEs.
+ 	 */
+ 	r = &phb->hose->mem_resources[1];
+ 	if (phb->ioda.reserved_pe_idx == 0)
+-		r->start += phb->ioda.m64_segsize;
++		r->start += (2 * phb->ioda.m64_segsize);
+ 	else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1))
+-		r->end -= phb->ioda.m64_segsize;
++		r->end -= (2 * phb->ioda.m64_segsize);
+ 	else
+ 		WARN(1, "Wrong reserved PE#%d on PHB#%d\n",
+ 		     phb->ioda.reserved_pe_idx, phb->hose->global_number);
+@@ -1062,8 +1062,13 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+ 		return NULL;
+ 	}
+ 
++	/* PE number for root bus should have been reserved */
++	if (pci_is_root_bus(bus) &&
++	    phb->ioda.root_pe_idx != IODA_INVALID_PE)
++		pe = &phb->ioda.pe_array[phb->ioda.root_pe_idx];
++
+ 	/* Check if PE is determined by M64 */
+-	if (phb->pick_m64_pe)
++	if (!pe && phb->pick_m64_pe)
+ 		pe = phb->pick_m64_pe(bus, all);
+ 
+ 	/* The PE number isn't pinned by M64 */
+@@ -3224,6 +3229,15 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+ 	struct pnv_ioda_pe *pe;
+ 	bool all = (pci_pcie_type(bridge) == PCI_EXP_TYPE_PCI_BRIDGE);
+ 
++	/* The PE for root bus should be realized before any one else */
++	if (!phb->ioda.root_pe_populated) {
++		pe = pnv_ioda_setup_bus_PE(phb->hose->bus, false);
++		if (pe) {
++			phb->ioda.root_pe_idx = pe->pe_number;
++			phb->ioda.root_pe_populated = true;
++		}
++	}
++
+ 	/* Don't assign PE to PCI bus, which doesn't have subordinate devices */
+ 	if (list_empty(&bus->devices))
+ 		return;
+@@ -3497,7 +3511,22 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 			phb->ioda.dma32_segmap[segno] = IODA_INVALID_PE;
+ 	}
+ 	phb->ioda.pe_array = aux + pemap_off;
+-	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
++
++	/*
++	 * Choose PE number for root bus, which shouldn't have
++	 * M64 resources consumed by its child devices. To pick
++	 * the PE number adjacent to the reserved one if possible.
++	 */
++	pnv_ioda_reserve_pe(phb, phb->ioda.reserved_pe_idx);
++	if (phb->ioda.reserved_pe_idx == 0) {
++		phb->ioda.root_pe_idx = 1;
++		pnv_ioda_reserve_pe(phb, phb->ioda.root_pe_idx);
++	} else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1)) {
++		phb->ioda.root_pe_idx = phb->ioda.reserved_pe_idx - 1;
++		pnv_ioda_reserve_pe(phb, phb->ioda.root_pe_idx);
++	} else {
++		phb->ioda.root_pe_idx = IODA_INVALID_PE;
 +	}
  
--	return pnv_ioda_init_pe(phb, pe);
-+	return NULL;
- }
+ 	INIT_LIST_HEAD(&phb->ioda.pe_list);
+ 	mutex_init(&phb->ioda.pe_list_mutex);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index de56ed2..8927e5d 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -110,6 +110,8 @@ struct pnv_phb {
+ 		/* Global bridge info */
+ 		unsigned int		total_pe_num;
+ 		unsigned int		reserved_pe_idx;
++		unsigned int		root_pe_idx;
++		bool			root_pe_populated;
  
- static void pnv_ioda_free_pe(struct pnv_ioda_pe *pe)
+ 		/* 32-bit MMIO window */
+ 		unsigned int		m32_size;
 -- 
 2.1.0
