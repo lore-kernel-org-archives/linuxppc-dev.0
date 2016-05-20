@@ -1,45 +1,35 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9yY55KNZzDqBY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:23:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9yzm4wPWzDqB5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:44 +1000 (AEST)
 Received: from localhost
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 20 May 2016 16:23:04 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 92AE62BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:23:02 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4K6Msx19896322
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:23:02 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4K6MS6R029162
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:22:30 +1000
-Subject: Re: [kernel-hardening] [PATCH v8 2/4] GCC plugin infrastructure
-To: pageexec@freemail.hu, Emese Revfy <re.emese@gmail.com>,
- kernel-hardening@lists.openwall.com, Michael Ellerman <mpe@ellerman.id.au>
-References: <20160513015456.01415979f20a68eb7d2d9290@gmail.com>
- <20160518123327.9018f73af78a47b4456b2027@gmail.com>
- <1463638931.10451.10.camel@ellerman.id.au>
- <573D782D.10392.75A275C@pageexec.freemail.hu>
-Cc: linux-kbuild@vger.kernel.org, spender@grsecurity.net, mmarek@suse.com,
- keescook@chromium.org, linux@rasmusvillemoes.dk,
- fengguang.wu@intel.com, dvyukov@google.com,
- linux-kernel@vger.kernel.org, david.brown@linaro.org,
- yamada.masahiro@socionext.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Daniel Axtens <dja@axtens.net>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-ID: <573EAD0B.7090005@au1.ibm.com>
-Date: Fri, 20 May 2016 16:22:03 +1000
-MIME-Version: 1.0
-In-Reply-To: <573D782D.10392.75A275C@pageexec.freemail.hu>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 20 May 2016 16:42:44 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 29ACC2CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:42 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4K6gYv466191426
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:42 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4K6g9pw008971
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:09 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ alistair@popple.id.au, aik@ozlabs.ru,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v10 02/18] powerpc/pci: Override pcibios_setup_bridge()
+Date: Fri, 20 May 2016 16:41:26 +1000
+Message-Id: <1463726502-14679-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,19 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19/05/16 18:24, PaX Team wrote:
-> the earlier plugin capable gcc versions used to install gcc headers in a somewhat
-> ad-hoc manner resulting in compile time breakage for plugins and since some of
-> those potentially missing headers are target specific, each target arch should
-> be verified before enabling plugin support on them. things have much improved with
-> gcc 5 (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61176) though there's still
-> an occasional missing header but with wider use of plugins they will hopefully be
-> discovered earlier now. perhaps linux-arch should be cc'ed on the plugin infrastructure
-> so that arch maintainers are aware of this?
+This overrides pcibios_setup_bridge() that is called to update PCI
+bridge windows when PCI resource assignment is completed, to assign
+PE and setup various (resource) mapping for the PE in subsequent
+patches.
 
-Upon further testing it does seem we've got header issues as well as 
-hitting a segfault on 4.7.0. Looking into it further...
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/pci-bridge.h | 2 ++
+ arch/powerpc/kernel/pci-common.c      | 8 ++++++++
+ 2 files changed, 10 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 467c0b0..b5e88e4 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -33,6 +33,8 @@ struct pci_controller_ops {
+ 	/* Called during PCI resource reassignment */
+ 	resource_size_t (*window_alignment)(struct pci_bus *bus,
+ 					    unsigned long type);
++	void		(*setup_bridge)(struct pci_bus *bus,
++					unsigned long type);
+ 	void		(*reset_secondary_bus)(struct pci_dev *pdev);
+ 
+ #ifdef CONFIG_PCI_MSI
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0f7a60f..40df3a5 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -124,6 +124,14 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+ 	return 1;
+ }
+ 
++void pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++
++	if (hose->controller_ops.setup_bridge)
++		hose->controller_ops.setup_bridge(bus, type);
++}
++
+ void pcibios_reset_secondary_bus(struct pci_dev *dev)
+ {
+ 	struct pci_controller *phb = pci_bus_to_host(dev->bus);
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.1.0
