@@ -1,28 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rB3bY2j82zDqCg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 20:10:33 +1000 (AEST)
-Message-ID: <1463739032.23394.8.camel@ellerman.id.au>
-Subject: Re: [kernel-hardening] [PATCH v8 2/4] GCC plugin infrastructure
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: pageexec@freemail.hu, Emese Revfy <re.emese@gmail.com>,
- kernel-hardening@lists.openwall.com
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linux-kbuild@vger.kernel.org, spender@grsecurity.net, mmarek@suse.com,
- keescook@chromium.org, linux@rasmusvillemoes.dk, fengguang.wu@intel.com,
- dvyukov@google.com, linux-kernel@vger.kernel.org, david.brown@linaro.org,
- yamada.masahiro@socionext.com, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>,  Daniel Axtens <dja@axtens.net>
-Date: Fri, 20 May 2016 20:10:32 +1000
-In-Reply-To: <573D782D.10392.75A275C@pageexec.freemail.hu>
-References: <20160513015456.01415979f20a68eb7d2d9290@gmail.com>
- , <20160518123327.9018f73af78a47b4456b2027@gmail.com>
- , <1463638931.10451.10.camel@ellerman.id.au>
- <573D782D.10392.75A275C@pageexec.freemail.hu>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rB5TZ3yqwzDqCg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 21:35:30 +1000 (AEST)
+Date: Fri, 20 May 2016 20:35:15 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: Anju T <anju@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ masami.hiramatsu.pt@hitachi.com, jkenisto@us.ibm.com,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 2/3] arch/powerpc : optprobes for powerpc core
+Message-Id: <20160520203515.d1e2e752f59fcc3d3e72e69c@kernel.org>
+In-Reply-To: <573D7016.2050900@linux.vnet.ibm.com>
+References: <1463517578-27760-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1463517578-27760-3-git-send-email-anju@linux.vnet.ibm.com>
+ <20160519001304.c7104e18062b324651c97260@kernel.org>
+ <573D7016.2050900@linux.vnet.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-05-19 at 10:24 +0200, PaX Team wrote:
-> On 19 May 2016 at 16:22, Michael Ellerman wrote:
-> > On Wed, 2016-05-18 at 12:33 +0200, Emese Revfy wrote:
-> > > Did you test the plugins with all gcc versions (4.5-6)?
-> > 
-> > What's the concern about gcc versions? Just not breaking the build on old
-> > compilers?
+On Thu, 19 May 2016 13:19:42 +0530
+Anju T <anju@linux.vnet.ibm.com> wrote:
+
+> >> +void arch_unoptimize_kprobes(struct list_head *oplist,
+> >> +			     struct list_head *done_list)
+> >> +{
+> >> +	struct optimized_kprobe *op;
+> >> +	struct optimized_kprobe *tmp;
+> >> +
+> >> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+> >> +		arch_unoptimize_kprobe(op);
+> >> +		list_move(&op->list, done_list);
+> >> +	}
+> >> +}
+> >> +
+> >> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+> >> +				 unsigned long addr)
+> >> +{
+> > Please make sure addr != op->kp.addr and addr is aligned.
 > 
-> the earlier plugin capable gcc versions used to install gcc headers in a somewhat
-> ad-hoc manner resulting in compile time breakage for plugins and since some of
-> those potentially missing headers are target specific, each target arch should
-> be verified before enabling plugin support on them. things have much improved with
-> gcc 5 (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61176) though there's still
-> an occasional missing header but with wider use of plugins they will hopefully be
-> discovered earlier now. 
+> The only case this check will succeed is if kp.addr is not a multiple of 4, which is not a valid address at all on
+> Power.So should we again check here for that?
 
-OK thanks.
+Ah, right. OK, so we may not need that.
 
-> perhaps linux-arch should be cc'ed on the plugin infrastructure
-> so that arch maintainers are aware of this?
-
-linux-arch is still fairly high traffic, so it's no guarantee arch maintainers
-will see it, but it's probably worth a try.
-
-> > I'm pretty sure powerpc big endian still builds with gcc 4.4.
-> > 
-> > However if Andrew's only tested on little endian, then that select should be
-> > guarded with an "if CPU_LITTLE_ENDIAN". And to build LE you need gcc >= 4.9.
-> 
-> i guess that's part of the target tuple so in general arch maintainers should test
-> the target tuples used on their arch with all the supported gcc versions (speaking
-> of CC, not HOSTCC/HOSTCXX).
-
-Yeah. I think we'll probably enable it gradually as folks get time to test it.
-ie. ppc64le first, then ppc64 (BE), and then 32-bit if someone is interested.
-
-cheers
+Thank you,
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
