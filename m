@@ -1,33 +1,33 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3r9z0G3FxpzDqDH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3r9z0G3mBLzDqDW
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:10 +1000 (AEST)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 20 May 2016 16:43:09 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3474C357805A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:07 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4K6gxEn65208474
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:07 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4K6gY3X032189
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:35 +1000
+ Fri, 20 May 2016 16:43:10 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3499C2CE805B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:06 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4K6gwJr45809812
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:43:06 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4K6gXVf031394
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 16:42:33 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  alistair@popple.id.au, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v10 18/18] PCI/hotplug: PowerPC PowerNV PCI hotplug driver
-Date: Fri, 20 May 2016 16:41:42 +1000
-Message-Id: <1463726502-14679-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v10 13/18] powerpc/pci: Delay populating pdn
+Date: Fri, 20 May 2016 16:41:37 +1000
+Message-Id: <1463726502-14679-14-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,829 +39,347 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds standalone driver to support PCI hotplug for PowerPC PowerNV
-platform that runs on top of skiboot firmware. The firmware identifies
-hotpluggable slots and marked their device tree node with proper
-"ibm,slot-pluggable" and "ibm,reset-by-firmware". The driver scans
-device tree nodes to create/register PCI hotplug slot accordingly.
+The pdn (struct pci_dn) instances are allocated from memblock or
+bootmem when creating PCI controller (hoses) in setup_arch(). PCI
+hotplug, which will be supported by proceeding patches, releases
+PCI device nodes and their corresponding pdn on unplugging event.
+The memory chunks for pdn instances allocated from memblock or
+bootmem are hard to reused after being released.
 
-The PCI slots are organized in fashion of tree, which means one
-PCI slot might have parent PCI slot and parent PCI slot possibly
-contains multiple child PCI slots. At the plugging time, the parent
-PCI slot is populated before its children. The child PCI slots are
-removed before their parent PCI slot can be removed from the system.
+This delays creating pdn by pci_devs_phb_init() from setup_arch()
+to core_initcall() so that they are allocated from slab. The memory
+consumed by pdn can be released to system without problem during
+PCI unplugging time. It indicates that pci_dn is unavailable in
+setup_arch() and the the fixup on pdn (like AGP's) can't be carried
+out that time. We have to do that in pcibios_root_bridge_prepare()
+on maple/pasemi/powermac platforms where/when the pdn is available.
+pcibios_root_bridge_prepare is called from subsys_initcall() which
+is executed after core_initcall() so the code flow does not change.
 
-If the skiboot firmware doesn't support slot status retrieval, the PCI
-slot device node shouldn't have property "ibm,reset-by-firmware". In
-that case, none of valid PCI slots will be detected from device tree.
-The skiboot firmware doesn't export the capability to access attention
-LEDs yet and it's something for TBD.
+At the mean while, the EEH device is created when pdn is populated,
+meaning pdn and EEH device have same life cycle. In turn, we needn't
+call eeh_dev_init() to create EEH device explicitly.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- MAINTAINERS                   |   1 +
- drivers/pci/hotplug/Kconfig   |  13 +
- drivers/pci/hotplug/Makefile  |   3 +
- drivers/pci/hotplug/pnv_php.c | 733 ++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 750 insertions(+)
- create mode 100644 drivers/pci/hotplug/pnv_php.c
+ arch/powerpc/include/asm/eeh.h         |  2 +-
+ arch/powerpc/include/asm/ppc-pci.h     |  2 --
+ arch/powerpc/kernel/eeh_dev.c          | 17 +++------------
+ arch/powerpc/kernel/pci_dn.c           | 23 ++++++++++++++++----
+ arch/powerpc/platforms/maple/pci.c     | 34 ++++++++++++++++++------------
+ arch/powerpc/platforms/pasemi/pci.c    |  3 ---
+ arch/powerpc/platforms/powermac/pci.c  | 38 +++++++++++++++++++++-------------
+ arch/powerpc/platforms/powernv/pci.c   |  3 ---
+ arch/powerpc/platforms/pseries/setup.c |  6 +-----
+ 9 files changed, 69 insertions(+), 59 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 283f35b..92e2538 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6839,6 +6839,7 @@ F:	drivers/crypto/nx/
- F:	drivers/crypto/vmx/
- F:	drivers/net/ethernet/ibm/ibmveth.*
- F:	drivers/net/ethernet/ibm/ibmvnic.*
-+F:	drivers/pci/hotplug/pnv_php.c
- F:	drivers/pci/hotplug/rpa*
- F:	drivers/scsi/ibmvscsi/
- N:	opal
-diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
-index df8caec..aadce45 100644
---- a/drivers/pci/hotplug/Kconfig
-+++ b/drivers/pci/hotplug/Kconfig
-@@ -113,6 +113,19 @@ config HOTPLUG_PCI_SHPC
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index fb9f376..8721580 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -274,7 +274,7 @@ void eeh_pe_restore_bars(struct eeh_pe *pe);
+ const char *eeh_pe_loc_get(struct eeh_pe *pe);
+ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
  
- 	  When in doubt, say N.
+-void *eeh_dev_init(struct pci_dn *pdn, void *data);
++struct eeh_dev *eeh_dev_init(struct pci_dn *pdn);
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+ int eeh_init(void);
+ int __init eeh_ops_register(struct eeh_ops *ops);
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 8753e4e..0f73de0 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -39,8 +39,6 @@ void *pci_traverse_device_nodes(struct device_node *start,
+ void *traverse_pci_dn(struct pci_dn *root,
+ 		      void *(*fn)(struct pci_dn *, void *),
+ 		      void *data);
+-
+-extern void pci_devs_phb_init(void);
+ extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
  
-+config HOTPLUG_PCI_POWERNV
-+	tristate "PowerPC PowerNV PCI Hotplug driver"
-+	depends on PPC_POWERNV && EEH
-+	select OF_DYNAMIC
-+	help
-+	  Say Y here if you run PowerPC PowerNV platform that supports
-+	  PCI Hotplug
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called pnv-php.
-+
-+	  When in doubt, say N.
-+
- config HOTPLUG_PCI_RPA
- 	tristate "RPA PCI Hotplug driver"
- 	depends on PPC_PSERIES && EEH
-diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
-index b616e75..e33cdda 100644
---- a/drivers/pci/hotplug/Makefile
-+++ b/drivers/pci/hotplug/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
- obj-$(CONFIG_HOTPLUG_PCI_CPCI_ZT5550)	+= cpcihp_zt5550.o
- obj-$(CONFIG_HOTPLUG_PCI_CPCI_GENERIC)	+= cpcihp_generic.o
- obj-$(CONFIG_HOTPLUG_PCI_SHPC)		+= shpchp.o
-+obj-$(CONFIG_HOTPLUG_PCI_POWERNV)	+= pnv-php.o
- obj-$(CONFIG_HOTPLUG_PCI_RPA)		+= rpaphp.o
- obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
- obj-$(CONFIG_HOTPLUG_PCI_SGI)		+= sgi_hotplug.o
-@@ -50,6 +51,8 @@ ibmphp-objs		:=	ibmphp_core.o	\
- acpiphp-objs		:=	acpiphp_core.o	\
- 				acpiphp_glue.o
+ /* From rtas_pci.h */
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index 7815095..d6b2ca7 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -44,14 +44,13 @@
+ /**
+  * eeh_dev_init - Create EEH device according to OF node
+  * @pdn: PCI device node
+- * @data: PHB
+  *
+  * It will create EEH device according to the given OF node. The function
+  * might be called by PCI emunation, DR, PHB hotplug.
+  */
+-void *eeh_dev_init(struct pci_dn *pdn, void *data)
++struct eeh_dev *eeh_dev_init(struct pci_dn *pdn)
+ {
+-	struct pci_controller *phb = data;
++	struct pci_controller *phb = pdn->phb;
+ 	struct eeh_dev *edev;
  
-+pnv-php-objs		:=	pnv_php.o
-+
- rpaphp-objs		:=	rpaphp_core.o	\
- 				rpaphp_pci.o	\
- 				rpaphp_slot.o
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-new file mode 100644
-index 0000000..6086db6
---- /dev/null
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -0,0 +1,733 @@
-+/*
-+ * PCI Hotplug Driver for PowerPC PowerNV platform.
-+ *
-+ * Copyright Gavin Shan, IBM Corporation 2016.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/libfdt.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/pci_hotplug.h>
-+
-+#include <asm/opal.h>
-+#include <asm/pnv-pci.h>
-+#include <asm/ppc-pci.h>
-+
-+#define DRIVER_VERSION	"0.1"
-+#define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
-+#define DRIVER_DESC	"PowerPC PowerNV PCI Hotplug Driver"
-+
-+struct pnv_php_slot {
-+	struct hotplug_slot		slot;
-+	struct hotplug_slot_info	slot_info;
-+	uint64_t			id;
-+	char				*name;
-+	int				slot_no;
-+	struct kref			kref;
-+#define PNV_PHP_STATE_INITIALIZED	0
-+#define PNV_PHP_STATE_REGISTERED	1
-+#define PNV_PHP_STATE_POPULATED		2
-+#define PNV_PHP_STATE_OFFLINE		3
-+	int				state;
-+	struct device_node		*dn;
-+	struct pci_dev			*pdev;
-+	struct pci_bus			*bus;
-+	bool				power_state_check;
-+	void				*fdt;
-+	void				*dt;
-+	struct of_changeset		ocs;
-+	struct pnv_php_slot		*parent;
-+	struct list_head		children;
-+	struct list_head		link;
-+};
-+
-+static LIST_HEAD(pnv_php_slot_list);
-+static DEFINE_SPINLOCK(pnv_php_lock);
-+
-+static void pnv_php_register(struct device_node *dn);
-+static void pnv_php_unregister_one(struct device_node *dn);
-+static void pnv_php_unregister(struct device_node *dn);
-+
-+static void pnv_php_free_slot(struct kref *kref)
-+{
-+	struct pnv_php_slot *php_slot = container_of(kref,
-+					struct pnv_php_slot, kref);
-+
-+	WARN_ON(!list_empty(&php_slot->children));
-+	kfree(php_slot->name);
-+	kfree(php_slot);
-+}
-+
-+static inline void pnv_php_put_slot(struct pnv_php_slot *php_slot)
-+{
-+
-+	if (WARN_ON(!php_slot))
-+		return;
-+
-+	kref_put(&php_slot->kref, pnv_php_free_slot);
-+}
-+
-+static struct pnv_php_slot *pnv_php_match(struct device_node *dn,
-+					  struct pnv_php_slot *php_slot)
-+{
-+	struct pnv_php_slot *target, *tmp;
-+
-+	if (php_slot->dn == dn) {
-+		kref_get(&php_slot->kref);
-+		return php_slot;
+ 	/* Allocate EEH device */
+@@ -69,7 +68,7 @@ void *eeh_dev_init(struct pci_dn *pdn, void *data)
+ 	INIT_LIST_HEAD(&edev->list);
+ 	INIT_LIST_HEAD(&edev->rmv_list);
+ 
+-	return NULL;
++	return edev;
+ }
+ 
+ /**
+@@ -81,16 +80,8 @@ void *eeh_dev_init(struct pci_dn *pdn, void *data)
+  */
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ {
+-	struct pci_dn *root = phb->pci_data;
+-
+ 	/* EEH PE for PHB */
+ 	eeh_phb_pe_create(phb);
+-
+-	/* EEH device for PHB */
+-	eeh_dev_init(root, phb);
+-
+-	/* EEH devices for children OF nodes */
+-	traverse_pci_dn(root, eeh_dev_init, phb);
+ }
+ 
+ /**
+@@ -106,8 +97,6 @@ static int __init eeh_dev_phb_init(void)
+ 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+ 		eeh_dev_phb_init_dynamic(phb);
+ 
+-	pr_info("EEH: devices created\n");
+-
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index ecdccce..9cbf95a 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -209,8 +209,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ 		}
+ 
+ 		/* Create the EEH device for the VF */
+-		eeh_dev_init(pdn, pci_bus_to_host(pdev->bus));
+-		edev = pdn_to_eeh_dev(pdn);
++		edev = eeh_dev_init(pdn);
+ 		BUG_ON(!edev);
+ 		edev->physfn = pdev;
+ 	}
+@@ -289,8 +288,11 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
+ 	const __be32 *regs;
+ 	struct device_node *parent;
+ 	struct pci_dn *pdn;
++#ifdef CONFIG_EEH
++	struct eeh_dev *edev;
++#endif
+ 
+-	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
++	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
+ 	if (pdn == NULL)
+ 		return NULL;
+ 	dn->data = pdn;
+@@ -319,6 +321,15 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
+ 	/* Extended config space */
+ 	pdn->pci_ext_config_space = (type && of_read_number(type, 1) == 1);
+ 
++	/* Create EEH device */
++#ifdef CONFIG_EEH
++	edev = eeh_dev_init(pdn);
++	if (!edev) {
++		kfree(pdn);
++		return NULL;
 +	}
++#endif
 +
-+	list_for_each_entry(tmp, &php_slot->children, link) {
-+		target = pnv_php_match(dn, tmp);
-+		if (target)
-+			return target;
-+	}
-+
-+	return NULL;
-+}
-+
-+static struct pnv_php_slot *pnv_php_find_slot(struct device_node *dn)
-+{
-+	struct pnv_php_slot *php_slot, *tmp;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&pnv_php_lock, flags);
-+	list_for_each_entry(tmp, &pnv_php_slot_list, link) {
-+		php_slot = pnv_php_match(dn, tmp);
-+		if (php_slot) {
-+			spin_unlock_irqrestore(&pnv_php_lock, flags);
-+			return php_slot;
-+		}
-+	}
-+	spin_unlock_irqrestore(&pnv_php_lock, flags);
-+
-+	return NULL;
-+}
-+
-+/*
-+ * Remove pdn for all children of the indicated device node.
-+ * The function should remove pdn in a depth-first manner.
-+ */
-+static void pnv_php_rmv_pdns(struct device_node *dn)
-+{
-+	struct device_node *child;
-+
-+	for_each_child_of_node(dn, child) {
-+		pnv_php_rmv_pdns(child);
-+
-+		pci_remove_device_node_info(child);
-+	}
-+}
-+
-+/*
-+ * Detach all child nodes of the indicated device nodes. The
-+ * function should handle device nodes in depth-first manner.
-+ *
-+ * We should not invoke of_node_release() as the memory for
-+ * individual device node is part of large memory block. The
-+ * large block is allocated from memblock (system bootup) or
-+ * kmalloc() when unflattening the device tree by OF changeset.
-+ * We can not free the large block allocated from memblock. For
-+ * later case, it should be released at once.
-+ */
-+static void pnv_php_detach_device_nodes(struct device_node *parent)
-+{
-+	struct device_node *dn;
-+	int refcount;
-+
-+	for_each_child_of_node(parent, dn) {
-+		pnv_php_detach_device_nodes(dn);
-+
-+		of_node_put(dn);
-+		refcount = atomic_read(&dn->kobj.kref.refcount);
-+		if (unlikely(refcount != 1))
-+			pr_warn("Invalid refcount %d on <%s>\n",
-+				refcount, of_node_full_name(dn));
-+
-+		of_detach_node(dn);
-+	}
-+}
-+
-+static void pnv_php_rmv_devtree(struct pnv_php_slot *php_slot)
-+{
-+	pnv_php_rmv_pdns(php_slot->dn);
-+
-+	/*
-+	 * Decrease the refcount if the device nodes were created
-+	 * through OF changeset before detaching them.
-+	 */
-+	if (php_slot->fdt)
-+		of_changeset_destroy(&php_slot->ocs);
-+	pnv_php_detach_device_nodes(php_slot->dn);
-+
-+	if (php_slot->fdt) {
-+		kfree(php_slot->dt);
-+		kfree(php_slot->fdt);
-+		php_slot->dt        = NULL;
-+		php_slot->dn->child = NULL;
-+		php_slot->fdt       = NULL;
-+	}
-+}
-+
-+/*
-+ * As the nodes in OF changeset are applied in reverse order, we
-+ * need revert the nodes in advance so that we have correct node
-+ * order after the changeset is applied.
-+ */
-+static void pnv_php_reverse_nodes(struct device_node *parent)
-+{
-+	struct device_node *child, *next;
-+
-+	/* In-depth first */
-+	for_each_child_of_node(parent, child)
-+		pnv_php_reverse_nodes(child);
-+
-+	/* Reverse the nodes in the child list */
-+	child = parent->child;
-+	parent->child = NULL;
-+	while (child) {
-+		next = child->sibling;
-+
-+		child->sibling = parent->child;
-+		parent->child = child;
-+		child = next;
-+	}
-+}
-+
-+static int pnv_php_populate_changeset(struct of_changeset *ocs,
-+				      struct device_node *dn)
-+{
-+	struct device_node *child;
-+	int ret = 0;
-+
-+	for_each_child_of_node(dn, child) {
-+		ret = of_changeset_attach_node(ocs, child);
-+		if (unlikely(ret))
-+			break;
-+
-+		ret = pnv_php_populate_changeset(ocs, child);
-+		if (unlikely(ret))
-+			break;
-+	}
-+
-+	return ret;
-+}
-+
-+static void *pnv_php_add_one_pdn(struct device_node *dn, void *data)
-+{
-+	struct pci_controller *hose = (struct pci_controller *)data;
-+	struct pci_dn *pdn;
-+
-+	pdn = pci_add_device_node_info(hose, dn);
-+	if (unlikely(!pdn))
-+		return ERR_PTR(-ENOMEM);
-+
-+	return NULL;
-+}
-+
-+static void pnv_php_add_pdns(struct pnv_php_slot *slot)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(slot->bus);
-+
-+	pci_traverse_device_nodes(slot->dn, pnv_php_add_one_pdn, hose);
-+}
-+
-+static int pnv_php_add_devtree(struct pnv_php_slot *php_slot)
-+{
-+	void *fdt, *fdt1, *dt;
-+	int ret;
-+
-+	/* We don't know the FDT blob size. We try to get it through
-+	 * maximal memory chunk and then copy it to another chunk that
-+	 * fits the real size.
-+	 */
-+	fdt1 = kzalloc(0x10000, GFP_KERNEL);
-+	if (unlikely(!fdt1)) {
-+		ret = -ENOMEM;
-+		dev_warn(&php_slot->pdev->dev, "Cannot alloc FDT blob\n");
-+		goto out;
-+	}
-+
-+	ret = pnv_pci_get_device_tree(php_slot->dn->phandle, fdt1, 0x10000);
-+	if (unlikely(ret)) {
-+		dev_warn(&php_slot->pdev->dev, "Error %d getting FDT blob\n",
-+			 ret);
-+		goto free_fdt1;
-+	}
-+
-+	fdt = kzalloc(fdt_totalsize(fdt1), GFP_KERNEL);
-+	if (unlikely(!fdt)) {
-+		ret = -ENOMEM;
-+		dev_warn(&php_slot->pdev->dev, "Cannot %d bytes memory\n",
-+			 fdt_totalsize(fdt1));
-+		goto free_fdt1;
-+	}
-+
-+	/* Unflatten device tree blob */
-+	memcpy(fdt, fdt1, fdt_totalsize(fdt1));
-+	dt = of_fdt_unflatten_tree(fdt, php_slot->dn, NULL);
-+	if (unlikely(!dt)) {
-+		ret = -EINVAL;
-+		dev_warn(&php_slot->pdev->dev, "Cannot unflatten FDT\n");
-+		goto free_fdt;
-+	}
-+
-+	/* Initialize and apply the changeset */
-+	of_changeset_init(&php_slot->ocs);
-+	pnv_php_reverse_nodes(php_slot->dn);
-+	ret = pnv_php_populate_changeset(&php_slot->ocs, php_slot->dn);
-+	if (unlikely(ret)) {
-+		pnv_php_reverse_nodes(php_slot->dn);
-+		dev_warn(&php_slot->pdev->dev, "Error %d populating changeset\n",
-+			 ret);
-+		goto free_dt;
-+	}
-+
-+	php_slot->dn->child = NULL;
-+	ret = of_changeset_apply(&php_slot->ocs);
-+	if (unlikely(ret)) {
-+		dev_warn(&php_slot->pdev->dev, "Error %d applying changeset\n",
-+			 ret);
-+		goto destroy_changeset;
-+	}
-+
-+	/* Add device node firmware data */
-+	pnv_php_add_pdns(php_slot);
-+	php_slot->fdt = fdt;
-+	php_slot->dt  = dt;
-+	kfree(fdt1);
-+	goto out;
-+
-+destroy_changeset:
-+	of_changeset_destroy(&php_slot->ocs);
-+free_dt:
-+	kfree(dt);
-+	php_slot->dn->child = NULL;
-+free_fdt:
-+	kfree(fdt);
-+free_fdt1:
-+	kfree(fdt1);
-+out:
-+	return ret;
-+}
-+
-+static int pnv_php_set_slot_power_state(struct hotplug_slot *slot,
-+					uint8_t state)
-+{
-+	struct pnv_php_slot *php_slot = slot->private;
-+	struct opal_msg msg;
-+	int ret;
-+
-+	ret = pnv_pci_set_power_state(php_slot->id, state, &msg);
-+	if (likely(ret > 0)) {
-+		if (be64_to_cpu(msg.params[1]) != php_slot->dn->phandle	||
-+		    be64_to_cpu(msg.params[2]) != state			||
-+		    be64_to_cpu(msg.params[3]) != OPAL_SUCCESS) {
-+			dev_warn(&php_slot->pdev->dev, "Wrong msg (%lld, %lld, %lld)\n",
-+				 be64_to_cpu(msg.params[1]),
-+				 be64_to_cpu(msg.params[2]),
-+				 be64_to_cpu(msg.params[3]));
-+			return -ENOMSG;
-+		}
-+	} else if (unlikely(ret < 0)) {
-+		dev_warn(&php_slot->pdev->dev, "Error %d powering %s\n",
-+			 ret, (state == OPAL_PCI_SLOT_POWER_ON) ? "on" : "off");
-+		return ret;
-+	}
-+
-+	if (state == OPAL_PCI_SLOT_POWER_OFF)
-+		pnv_php_rmv_devtree(php_slot);
-+	else
-+		ret = pnv_php_add_devtree(php_slot);
-+
-+	return ret;
-+}
-+
-+static int pnv_php_get_power_state(struct hotplug_slot *slot, u8 *state)
-+{
-+	struct pnv_php_slot *php_slot = slot->private;
-+	uint8_t power_state = OPAL_PCI_SLOT_POWER_ON;
-+	int ret;
-+
-+	/*
-+	 * Retrieve power status from firmware. If we fail
-+	 * getting that, the power status fails back to
-+	 * be on.
-+	 */
-+	ret = pnv_pci_get_power_state(php_slot->id, &power_state);
-+	if (unlikely(ret)) {
-+		dev_warn(&php_slot->pdev->dev, "Error %d getting power status\n",
-+			 ret);
-+	} else {
-+		*state = power_state;
-+		slot->info->power_status = power_state;
-+	}
+ 	/* Attach to parent node */
+ 	INIT_LIST_HEAD(&pdn->child_list);
+ 	INIT_LIST_HEAD(&pdn->list);
+@@ -504,15 +515,19 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+  * pci device found underneath.  This routine runs once,
+  * early in the boot sequence.
+  */
+-void __init pci_devs_phb_init(void)
++static int __init pci_devs_phb_init(void)
+ {
+ 	struct pci_controller *phb, *tmp;
+ 
+ 	/* This must be done first so the device nodes have valid pci info! */
+ 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+ 		pci_devs_phb_init_dynamic(phb);
 +
 +	return 0;
-+}
+ }
+ 
++core_initcall(pci_devs_phb_init);
 +
-+static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
+ static void pci_dev_pdn_setup(struct pci_dev *pdev)
+ {
+ 	struct pci_dn *pdn;
+diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+index a923230..a2f89e6 100644
+--- a/arch/powerpc/platforms/maple/pci.c
++++ b/arch/powerpc/platforms/maple/pci.c
+@@ -568,6 +568,26 @@ void maple_pci_irq_fixup(struct pci_dev *dev)
+ 	DBG(" <- maple_pci_irq_fixup\n");
+ }
+ 
++static int maple_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
 +{
-+	struct pnv_php_slot *php_slot = slot->private;
-+	uint8_t presence = OPAL_PCI_SLOT_EMPTY;
-+	int ret;
++	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
++	struct device_node *np, *child;
 +
-+	/*
-+	 * Retrieve presence status from firmware. If we can't
-+	 * get that, it will fail back to be empty.
-+	 */
-+	ret = pnv_pci_get_presence_state(php_slot->id, &presence);
-+	if (likely(ret >= 0)) {
-+		*state = presence;
-+		slot->info->adapter_status = presence;
-+		ret = 0;
-+	} else {
-+		dev_warn(&php_slot->pdev->dev, "Error %d getting presence\n",
-+			 ret);
-+	}
-+
-+	return ret;
-+}
-+
-+static int pnv_php_set_attention_state(struct hotplug_slot *slot, u8 state)
-+{
-+	/* FIXME: Make it real once firmware supports it */
-+	slot->info->attention_status = state;
-+
-+	return 0;
-+}
-+
-+static int pnv_php_enable(struct pnv_php_slot *php_slot, bool rescan)
-+{
-+	struct hotplug_slot *slot = &php_slot->slot;
-+	uint8_t presence = OPAL_PCI_SLOT_EMPTY;
-+	uint8_t power_status = OPAL_PCI_SLOT_POWER_ON;
-+	int ret;
-+
-+	/* Check if the slot has been configured */
-+	if (php_slot->state != PNV_PHP_STATE_REGISTERED)
++	if (hose != u3_agp)
 +		return 0;
 +
-+	/* Retrieve slot presence status */
-+	ret = pnv_php_get_adapter_state(slot, &presence);
-+	if (unlikely(ret))
-+		return ret;
-+
-+	/* Proceed if there have nothing behind the slot */
-+	if (presence == OPAL_PCI_SLOT_EMPTY)
-+		goto scan;
-+
-+	/*
-+	 * If the power supply to the slot is off, we can't detect
-+	 * adapter presence state. That means we have to turn the
-+	 * slot on before going to probe slot's presence state.
-+	 *
-+	 * On the first time, we don't change the power status to
-+	 * boost system boot with assumption that the firmware
-+	 * supplies consistent slot power status: empty slot always
-+	 * has its power off and non-empty slot has its power on.
++	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
++	 * assume there is no P2P bridge on the AGP bus, which should be a
++	 * safe assumptions hopefully.
 +	 */
-+	if (!php_slot->power_state_check) {
-+		php_slot->power_state_check = true;
-+
-+		ret = pnv_php_get_power_state(slot, &power_status);
-+		if (unlikely(ret))
-+			return ret;
-+
-+		if (power_status != OPAL_PCI_SLOT_POWER_ON)
-+			return 0;
-+	}
-+
-+	/* Check the power status. Scan the slot if it is already on */
-+	ret = pnv_php_get_power_state(slot, &power_status);
-+	if (unlikely(ret))
-+		return ret;
-+
-+	if (power_status == OPAL_PCI_SLOT_POWER_ON)
-+		goto scan;
-+
-+	/* Power is off, turn it on and then scan the slot */
-+	ret = pnv_php_set_slot_power_state(slot, OPAL_PCI_SLOT_POWER_ON);
-+	if (unlikely(ret))
-+		return ret;
-+
-+scan:
-+	if (presence == OPAL_PCI_SLOT_PRESENT) {
-+		if (rescan) {
-+			pci_lock_rescan_remove();
-+			pci_hp_add_devices(php_slot->bus);
-+			pci_unlock_rescan_remove();
-+		}
-+
-+		/* Rescan for child hotpluggable slots */
-+		php_slot->state = PNV_PHP_STATE_POPULATED;
-+		if (rescan)
-+			pnv_php_register(php_slot->dn);
-+	} else {
-+		php_slot->state = PNV_PHP_STATE_POPULATED;
-+	}
++	np = hose->dn;
++	PCI_DN(np)->busno = 0xf0;
++	for_each_child_of_node(np, child)
++		PCI_DN(child)->busno = 0xf0;
 +
 +	return 0;
 +}
 +
-+static int pnv_php_enable_slot(struct hotplug_slot *slot)
+ void __init maple_pci_init(void)
+ {
+ 	struct device_node *np, *root;
+@@ -605,19 +625,7 @@ void __init maple_pci_init(void)
+ 	if (ht && maple_add_bridge(ht) != 0)
+ 		of_node_put(ht);
+ 
+-	/* Setup the linkage between OF nodes and PHBs */ 
+-	pci_devs_phb_init();
+-
+-	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
+-	 * assume there is no P2P bridge on the AGP bus, which should be a
+-	 * safe assumptions hopefully.
+-	 */
+-	if (u3_agp) {
+-		struct device_node *np = u3_agp->dn;
+-		PCI_DN(np)->busno = 0xf0;
+-		for (np = np->child; np; np = np->sibling)
+-			PCI_DN(np)->busno = 0xf0;
+-	}
++	ppc_md.pcibios_root_bridge_prepare = maple_pci_root_bridge_prepare;
+ 
+ 	/* Tell pci.c to not change any resource allocations.  */
+ 	pci_add_flags(PCI_PROBE_ONLY);
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index f3a68a0..10c4e8f 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -229,9 +229,6 @@ void __init pas_pci_init(void)
+ 			of_node_get(np);
+ 
+ 	of_node_put(root);
+-
+-	/* Setup the linkage between OF nodes and PHBs */
+-	pci_devs_phb_init();
+ }
+ 
+ void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset)
+diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+index 59ab16f..6e06c3b 100644
+--- a/arch/powerpc/platforms/powermac/pci.c
++++ b/arch/powerpc/platforms/powermac/pci.c
+@@ -878,6 +878,29 @@ void pmac_pci_irq_fixup(struct pci_dev *dev)
+ #endif /* CONFIG_PPC32 */
+ }
+ 
++#ifdef CONFIG_PPC64
++static int pmac_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
 +{
-+	struct pnv_php_slot *php_slot = container_of(slot,
-+						     struct pnv_php_slot, slot);
++	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
++	struct device_node *np, *child;
 +
-+	return pnv_php_enable(php_slot, true);
-+}
-+
-+static int pnv_php_disable_slot(struct hotplug_slot *slot)
-+{
-+	struct pnv_php_slot *php_slot = slot->private;
-+	int ret;
-+
-+	if (php_slot->state != PNV_PHP_STATE_POPULATED)
++	if (hose != u3_agp)
 +		return 0;
 +
-+	/* Remove all devices behind the slot */
-+	pci_lock_rescan_remove();
-+	pci_hp_remove_devices(php_slot->bus);
-+	pci_unlock_rescan_remove();
-+
-+	/* Detach the child hotpluggable slots */
-+	pnv_php_unregister(php_slot->dn);
-+
-+	/* Notify firmware and remove device nodes */
-+	ret = pnv_php_set_slot_power_state(slot, OPAL_PCI_SLOT_POWER_OFF);
-+
-+	php_slot->state = PNV_PHP_STATE_REGISTERED;
-+	return ret;
-+}
-+
-+static struct hotplug_slot_ops php_slot_ops = {
-+	.get_power_status	= pnv_php_get_power_state,
-+	.get_adapter_status	= pnv_php_get_adapter_state,
-+	.set_attention_status	= pnv_php_set_attention_state,
-+	.enable_slot		= pnv_php_enable_slot,
-+	.disable_slot		= pnv_php_disable_slot,
-+};
-+
-+static void pnv_php_release(struct hotplug_slot *slot)
-+{
-+	struct pnv_php_slot *php_slot = slot->private;
-+	unsigned long flags;
-+
-+	/* Remove from global or child list */
-+	spin_lock_irqsave(&pnv_php_lock, flags);
-+	list_del(&php_slot->link);
-+	spin_unlock_irqrestore(&pnv_php_lock, flags);
-+
-+	/* Detach from parent */
-+	pnv_php_put_slot(php_slot);
-+	pnv_php_put_slot(php_slot->parent);
-+}
-+
-+static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
-+{
-+	struct pnv_php_slot *php_slot;
-+	struct pci_bus *bus;
-+	const char *label;
-+	uint64_t id;
-+
-+	label = of_get_property(dn, "ibm,slot-label", NULL);
-+	if (unlikely(!label))
-+		return NULL;
-+
-+	if (pnv_pci_get_slot_id(dn, &id))
-+		return NULL;
-+
-+	bus = pci_find_bus_by_node(dn);
-+	if (unlikely(!bus))
-+		return NULL;
-+
-+	php_slot = kzalloc(sizeof(*php_slot), GFP_KERNEL);
-+	if (unlikely(!php_slot))
-+		return NULL;
-+
-+	php_slot->name = kstrdup(label, GFP_KERNEL);
-+	if (unlikely(!php_slot->name)) {
-+		kfree(php_slot);
-+		return NULL;
-+	}
-+
-+	if (likely(dn->child && PCI_DN(dn->child)))
-+		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
-+	else
-+		php_slot->slot_no = -1;   /* Placeholder slot */
-+
-+	kref_init(&php_slot->kref);
-+	php_slot->state	                = PNV_PHP_STATE_INITIALIZED;
-+	php_slot->dn	                = dn;
-+	php_slot->pdev	                = bus->self;
-+	php_slot->bus	                = bus;
-+	php_slot->id	                = id;
-+	php_slot->power_state_check     = false;
-+	php_slot->slot.ops              = &php_slot_ops;
-+	php_slot->slot.info             = &php_slot->slot_info;
-+	php_slot->slot.release          = pnv_php_release;
-+	php_slot->slot.private          = php_slot;
-+
-+	INIT_LIST_HEAD(&php_slot->children);
-+	INIT_LIST_HEAD(&php_slot->link);
-+
-+	return php_slot;
-+}
-+
-+static int pnv_php_register_slot(struct pnv_php_slot *php_slot)
-+{
-+	struct pnv_php_slot *parent;
-+	struct device_node *dn = php_slot->dn;
-+	unsigned long flags;
-+	int ret;
-+
-+	/* Check if the slot is registered or not */
-+	parent = pnv_php_find_slot(php_slot->dn);
-+	if (unlikely(parent)) {
-+		pnv_php_put_slot(parent);
-+		return -EEXIST;
-+	}
-+
-+	/* Register PCI slot */
-+	ret = pci_hp_register(&php_slot->slot, php_slot->bus,
-+			      php_slot->slot_no, php_slot->name);
-+	if (unlikely(ret)) {
-+		dev_warn(&php_slot->pdev->dev, "Error %d registering slot\n",
-+			 ret);
-+		return ret;
-+	}
-+
-+	/* Attach to the parent's child list or global list */
-+	while ((dn = of_get_parent(dn))) {
-+		if (!PCI_DN(dn)) {
-+			of_node_put(dn);
-+			break;
-+		}
-+
-+		parent = pnv_php_find_slot(dn);
-+		if (parent) {
-+			of_node_put(dn);
-+			break;
-+		}
-+
-+		of_node_put(dn);
-+	}
-+
-+	spin_lock_irqsave(&pnv_php_lock, flags);
-+	php_slot->parent = parent;
-+	if (parent)
-+		list_add_tail(&php_slot->link, &parent->children);
-+	else
-+		list_add_tail(&php_slot->link, &pnv_php_slot_list);
-+	spin_unlock_irqrestore(&pnv_php_lock, flags);
-+
-+	php_slot->state = PNV_PHP_STATE_REGISTERED;
-+	return 0;
-+}
-+
-+static int pnv_php_register_one(struct device_node *dn)
-+{
-+	struct pnv_php_slot *php_slot;
-+	const __be32 *prop32;
-+	int ret;
-+
-+	/* Check if it's hotpluggable slot */
-+	prop32 = of_get_property(dn, "ibm,slot-pluggable", NULL);
-+	if (!prop32 || !of_read_number(prop32, 1))
-+		return -ENXIO;
-+
-+	prop32 = of_get_property(dn, "ibm,reset-by-firmware", NULL);
-+	if (!prop32 || !of_read_number(prop32, 1))
-+		return -ENXIO;
-+
-+	php_slot = pnv_php_alloc_slot(dn);
-+	if (unlikely(!php_slot))
-+		return -ENODEV;
-+
-+	ret = pnv_php_register_slot(php_slot);
-+	if (unlikely(ret))
-+		goto free_slot;
-+
-+	ret = pnv_php_enable(php_slot, false);
-+	if (unlikely(ret))
-+		goto unregister_slot;
-+
-+	return 0;
-+
-+unregister_slot:
-+	pnv_php_unregister_one(php_slot->dn);
-+free_slot:
-+	pnv_php_put_slot(php_slot);
-+	return ret;
-+}
-+
-+static void pnv_php_register(struct device_node *dn)
-+{
-+	struct device_node *child;
-+
-+	/*
-+	 * The parent slots should be registered before their
-+	 * child slots.
++	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
++	 * assume there is no P2P bridge on the AGP bus, which should be a
++	 * safe assumptions for now. We should do something better in the
++	 * future though
 +	 */
-+	for_each_child_of_node(dn, child) {
-+		pnv_php_register_one(child);
-+		pnv_php_register(child);
-+	}
-+}
-+
-+static void pnv_php_unregister_one(struct device_node *dn)
-+{
-+	struct pnv_php_slot *php_slot;
-+
-+	php_slot = pnv_php_find_slot(dn);
-+	if (!php_slot)
-+		return;
-+
-+	php_slot->state = PNV_PHP_STATE_OFFLINE;
-+	pnv_php_put_slot(php_slot);
-+	pci_hp_deregister(&php_slot->slot);
-+}
-+
-+static void pnv_php_unregister(struct device_node *dn)
-+{
-+	struct device_node *child;
-+
-+	/* The child slots should go before their parent slots */
-+	for_each_child_of_node(dn, child) {
-+		pnv_php_unregister(child);
-+		pnv_php_unregister_one(child);
-+	}
-+}
-+
-+static int __init pnv_php_init(void)
-+{
-+	struct device_node *dn;
-+
-+	pr_info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
-+	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
-+		pnv_php_register(dn);
++	np = hose->dn;
++	PCI_DN(np)->busno = 0xf0;
++	for_each_child_of_node(np, child)
++		PCI_DN(child)->busno = 0xf0;
 +
 +	return 0;
 +}
++#endif /* CONFIG_PPC64 */
 +
-+static void __exit pnv_php_exit(void)
-+{
-+	struct device_node *dn;
-+
-+	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
-+		pnv_php_unregister(dn);
-+}
-+
-+module_init(pnv_php_init);
-+module_exit(pnv_php_exit);
-+
-+MODULE_VERSION(DRIVER_VERSION);
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
+ void __init pmac_pci_init(void)
+ {
+ 	struct device_node *np, *root;
+@@ -914,20 +937,7 @@ void __init pmac_pci_init(void)
+ 	if (ht && pmac_add_bridge(ht) != 0)
+ 		of_node_put(ht);
+ 
+-	/* Setup the linkage between OF nodes and PHBs */
+-	pci_devs_phb_init();
+-
+-	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
+-	 * assume there is no P2P bridge on the AGP bus, which should be a
+-	 * safe assumptions for now. We should do something better in the
+-	 * future though
+-	 */
+-	if (u3_agp) {
+-		struct device_node *np = u3_agp->dn;
+-		PCI_DN(np)->busno = 0xf0;
+-		for (np = np->child; np; np = np->sibling)
+-			PCI_DN(np)->busno = 0xf0;
+-	}
++	ppc_md.pcibios_root_bridge_prepare = pmac_pci_root_bridge_prepare;
+ 	/* pmac_check_ht_link(); */
+ 
+ #else /* CONFIG_PPC64 */
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index b1ee631..0f1b8bf 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -816,9 +816,6 @@ void __init pnv_pci_init(void)
+ 	for_each_compatible_node(np, NULL, "ibm,ioda2-npu-phb")
+ 		pnv_pci_init_npu_phb(np);
+ 
+-	/* Setup the linkage between OF nodes and PHBs */
+-	pci_devs_phb_init();
+-
+ 	/* Configure IOMMU DMA hooks */
+ 	set_pci_dma_ops(&dma_iommu_ops);
+ }
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 9883bc7..4eada28 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -265,11 +265,8 @@ static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long act
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 		parent = of_get_parent(np);
+ 		pdn = parent ? PCI_DN(parent) : NULL;
+-		if (pdn) {
+-			/* Create pdn and EEH device */
++		if (pdn)
+ 			pci_add_device_node_info(pdn->phb, np);
+-			eeh_dev_init(PCI_DN(np), pdn->phb);
+-		}
+ 
+ 		of_node_put(parent);
+ 		break;
+@@ -492,7 +489,6 @@ static void __init find_and_init_phbs(void)
+ 	}
+ 
+ 	of_node_put(root);
+-	pci_devs_phb_init();
+ 
+ 	/*
+ 	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
 -- 
 2.1.0
