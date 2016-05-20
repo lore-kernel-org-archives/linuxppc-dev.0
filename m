@@ -1,22 +1,20 @@
-Return-Path: <jbaron@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
- [23.79.238.175])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rBLYq3zFtzDqFS
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 07:25:02 +1000 (AEST)
-From: Jason Baron <jbaron@akamai.com>
-To: akpm@linux-foundation.org
-Cc: joe@perches.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/4] powerpc: add explicit #include <asm/asm-compat.h> for
- jump label
-Date: Fri, 20 May 2016 17:16:34 -0400
-Message-Id: <a71251966e052e4e494957c313af02f1d9fd6ce6.1463778029.git.jbaron@akamai.com>
-In-Reply-To: <cover.1463778029.git.jbaron@akamai.com>
-References: <cover.1463778029.git.jbaron@akamai.com>
-In-Reply-To: <cover.1463778029.git.jbaron@akamai.com>
-References: <cover.1463778029.git.jbaron@akamai.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rBPp81pyPzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 09:50:55 +1000 (AEST)
+Date: Fri, 20 May 2016 19:50:51 -0400 (EDT)
+Message-Id: <20160520.195051.1439037257929657896.davem@davemloft.net>
+To: falakreyaz@gmail.com
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ christophe.jaillet@wanadoo.fr, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ps3_gelic: use kmemdup
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1463666090-16540-1-git-send-email-falakreyaz@gmail.com>
+References: <1463666090-16540-1-git-send-email-falakreyaz@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The stringify_in_c() macro may not be included. Make the dependency
-explicit.
+From: Muhammad Falak R Wani <falakreyaz@gmail.com>
+Date: Thu, 19 May 2016 19:24:41 +0530
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Jason Baron <jbaron@akamai.com>
----
- arch/powerpc/include/asm/jump_label.h | 1 +
- 1 file changed, 1 insertion(+)
+> Use kmemdup when some other buffer is immediately copied into allocated
+> region. It replaces call to allocation followed by memcpy, by a single
+> call to kmemdup.
+> 
+> Signed-off-by: Muhammad Falak R Wani <falakreyaz@gmail.com>
 
-diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
-index 47e155f..9af103a 100644
---- a/arch/powerpc/include/asm/jump_label.h
-+++ b/arch/powerpc/include/asm/jump_label.h
-@@ -14,6 +14,7 @@
- #include <linux/types.h>
- 
- #include <asm/feature-fixups.h>
-+#include <asm/asm-compat.h>
- 
- #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
- #define JUMP_LABEL_NOP_SIZE	4
--- 
-2.6.1
+Applied.
