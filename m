@@ -1,20 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rBPp81pyPzDqDm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 09:50:55 +1000 (AEST)
-Date: Fri, 20 May 2016 19:50:51 -0400 (EDT)
-Message-Id: <20160520.195051.1439037257929657896.davem@davemloft.net>
-To: falakreyaz@gmail.com
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- christophe.jaillet@wanadoo.fr, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ps3_gelic: use kmemdup
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1463666090-16540-1-git-send-email-falakreyaz@gmail.com>
-References: <1463666090-16540-1-git-send-email-falakreyaz@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <andrea.gelmini@gmail.com>
+Received: from mail-lb0-x241.google.com (mail-lb0-x241.google.com
+ [IPv6:2a00:1450:4010:c04::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rBjX23Yg3zDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 21:39:46 +1000 (AEST)
+Received: by mail-lb0-x241.google.com with SMTP id t6so43896lbv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 04:39:45 -0700 (PDT)
+Sender: Andrea Gelmini <andrea.gelmini@gmail.com>
+From: Andrea Gelmini <andrea.gelmini@gelma.net>
+To: andrea.gelmini@gelma.net
+Cc: trivial@kernel.org, dt@kernel.org, pawel.moll@arm.com,
+ mark.rutland@arm.com, devicetree@hellion.org.uk, galak@codeaurora.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ sudeep.holla@arm.com, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0030/1529] Fix typo
+Date: Sat, 21 May 2016 13:39:34 +0200
+Message-Id: <20160521113934.453-1-andrea.gelmini@gelma.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,13 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Muhammad Falak R Wani <falakreyaz@gmail.com>
-Date: Thu, 19 May 2016 19:24:41 +0530
+Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+---
+ Documentation/devicetree/bindings/rtc/rtc-opal.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> Use kmemdup when some other buffer is immediately copied into allocated
-> region. It replaces call to allocation followed by memcpy, by a single
-> call to kmemdup.
-> 
-> Signed-off-by: Muhammad Falak R Wani <falakreyaz@gmail.com>
-
-Applied.
+diff --git a/Documentation/devicetree/bindings/rtc/rtc-opal.txt b/Documentation/devicetree/bindings/rtc/rtc-opal.txt
+index a1734e5..2340938c 100644
+--- a/Documentation/devicetree/bindings/rtc/rtc-opal.txt
++++ b/Documentation/devicetree/bindings/rtc/rtc-opal.txt
+@@ -2,7 +2,7 @@ IBM OPAL real-time clock
+ ------------------------
+ 
+ Required properties:
+-- comapatible: Should be "ibm,opal-rtc"
++- compatible: Should be "ibm,opal-rtc"
+ 
+ Optional properties:
+ - wakeup-source: Decides if the wakeup is supported or not
+-- 
+2.8.2.534.g1f66975
