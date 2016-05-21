@@ -1,21 +1,21 @@
 Return-Path: <andrea.gelmini@gmail.com>
-Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
- [IPv6:2a00:1450:4010:c07::241])
+Received: from mail-lb0-x241.google.com (mail-lb0-x241.google.com
+ [IPv6:2a00:1450:4010:c04::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rBk6J2cKqzDqV3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 22:06:00 +1000 (AEST)
-Received: by mail-lf0-x241.google.com with SMTP id 65so29017lfq.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 05:06:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rBk6T5xf0zDqTc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 22:06:09 +1000 (AEST)
+Received: by mail-lb0-x241.google.com with SMTP id r5so6880281lbj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 05:06:09 -0700 (PDT)
 Sender: Andrea Gelmini <andrea.gelmini@gmail.com>
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
 To: andrea.gelmini@gelma.net
 Cc: trivial@kernel.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0225/1529] Fix typo
-Date: Sat, 21 May 2016 14:05:50 +0200
-Message-Id: <20160521120550.11691-1-andrea.gelmini@gelma.net>
+ mpe@ellerman.id.au, anton@samba.org, cyrilbur@gmail.com, mikey@neuling.org,
+ khandual@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0226/1529] Fix typo
+Date: Sat, 21 May 2016 14:06:00 +0200
+Message-Id: <20160521120600.11742-1-andrea.gelmini@gelma.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +27,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- arch/powerpc/kernel/pci_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/process.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 3759df5..f71b79a 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -82,7 +82,7 @@ int pcibios_unmap_io_space(struct pci_bus *bus)
- 
- 	/* If this is not a PHB, we only flush the hash table over
- 	 * the area mapped by this bridge. We don't play with the PTE
--	 * mappings since we might have to deal with sub-page alignemnts
-+	 * mappings since we might have to deal with sub-page alignments
- 	 * so flushing the hash table is the only sane way to make sure
- 	 * that no hash entries are covering that removed bridge area
- 	 * while still allowing other busses overlapping those pages
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index e2f12cb..6d39786 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -709,7 +709,7 @@ static inline int set_dawr(struct arch_hw_breakpoint *brk)
+ 	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) \
+ 		                   >> 3; //* PRIM bits */
+ 	/* dawr length is stored in field MDR bits 48:53.  Matches range in
+-	   doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
++	   doublewords (64 bits) raised by -1 eg. 0b000000=1DW and
+ 	   0b111111=64DW.
+ 	   brk->len is in bytes.
+ 	   This aligns up to double word size, shifts and does the bias.
+@@ -794,7 +794,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
+ 	 * this state.
+ 	 * We do this using the current MSR, rather tracking it in
+ 	 * some specific thread_struct bit, as it has the additional
+-	 * benifit of checking for a potential TM bad thing exception.
++	 * benefit of checking for a potential TM bad thing exception.
+ 	 */
+ 	if (!MSR_TM_SUSPENDED(mfmsr()))
+ 		return;
 -- 
 2.8.2.534.g1f66975
