@@ -1,20 +1,21 @@
 Return-Path: <andrea.gelmini@gmail.com>
-Received: from mail-lb0-x244.google.com (mail-lb0-x244.google.com
- [IPv6:2a00:1450:4010:c04::244])
+Received: from mail-lb0-x243.google.com (mail-lb0-x243.google.com
+ [IPv6:2a00:1450:4010:c04::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rBjYV1S5nzDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 21:41:02 +1000 (AEST)
-Received: by mail-lb0-x244.google.com with SMTP id mx9so6860677lbb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 04:41:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rBk3l2RpWzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 22:03:47 +1000 (AEST)
+Received: by mail-lb0-x243.google.com with SMTP id r5so6878803lbj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 05:03:47 -0700 (PDT)
 Sender: Andrea Gelmini <andrea.gelmini@gmail.com>
 From: Andrea Gelmini <andrea.gelmini@gelma.net>
 To: andrea.gelmini@gelma.net
-Cc: trivial@kernel.org, jk@ozlabs.org, corbet@lwn.net,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
-Subject: [PATCH 0039/1529] Fix typo
-Date: Sat, 21 May 2016 13:40:54 +0200
-Message-Id: <20160521114054.927-1-andrea.gelmini@gelma.net>
+Cc: trivial@kernel.org, herbert@gondor.apana.org.au, davem@davemloft.net,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0211/1529] Fix typo
+Date: Sat, 21 May 2016 14:03:38 +0200
+Message-Id: <20160521120338.10915-1-andrea.gelmini@gelma.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +27,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 ---
- Documentation/filesystems/spufs.txt | 2 +-
+ arch/powerpc/crypto/aes-spe-regs.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/filesystems/spufs.txt b/Documentation/filesystems/spufs.txt
-index 1343d11..cbbe795 100644
---- a/Documentation/filesystems/spufs.txt
-+++ b/Documentation/filesystems/spufs.txt
-@@ -105,7 +105,7 @@ FILES
- 
- 
-    /wbox
--       The CPU to SPU communation mailbox. It is write-only and can be written
-+       The CPU to SPU communication mailbox. It is write-only and can be written
-        in  units  of  32  bits. If the mailbox is full, write() will block and
-        poll can be used to wait for it becoming  empty  again.   The  possible
-        operations  on  an open wbox file are: write(2) If a count smaller than
+diff --git a/arch/powerpc/crypto/aes-spe-regs.h b/arch/powerpc/crypto/aes-spe-regs.h
+index 30d217b..2cc3a2c 100644
+--- a/arch/powerpc/crypto/aes-spe-regs.h
++++ b/arch/powerpc/crypto/aes-spe-regs.h
+@@ -18,7 +18,7 @@
+ #define rLN r7	/* length of data to be processed			*/
+ #define rIP r8	/* potiner to IV (CBC/CTR/XTS modes)			*/
+ #define rKT r9	/* pointer to tweak key (XTS mode)			*/
+-#define rT0 r11	/* pointers to en-/decrpytion tables			*/
++#define rT0 r11	/* pointers to en-/decryption tables			*/
+ #define rT1 r10
+ #define rD0 r9	/* data 						*/
+ #define rD1 r14
 -- 
 2.8.2.534.g1f66975
