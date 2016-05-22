@@ -1,26 +1,34 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from newton.telenet-ops.be (newton.telenet-ops.be [195.130.132.45])
+Return-Path: <peterz@infradead.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCG5B6DJRzDq7w
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2016 19:06:54 +1000 (AEST)
-Received: from xavier.telenet-ops.be (xavier.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:14])
- by newton.telenet-ops.be (Postfix) with ESMTP id 3rCG5522MGzMrK3p
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2016 11:06:49 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 25/54] MAINTAINERS: Add file patterns for powerpc device tree
- bindings
-Date: Sun, 22 May 2016 11:06:02 +0200
-Message-Id: <1463907991-7916-26-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1463907991-7916-1-git-send-email-geert@linux-m68k.org>
-References: <1463907991-7916-1-git-send-email-geert@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCJ7q1TGgzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2016 20:39:19 +1000 (AEST)
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rCJ7p6CjMz9sp7
+ for <linuxppc-dev@ozlabs.org>; Sun, 22 May 2016 20:39:18 +1000 (AEST)
+Date: Sun, 22 May 2016 12:39:12 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC PATCH] Increase in idle power with schedutil
+Message-ID: <20160522103912.GN3193@twins.programming.kicks-ass.net>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
+ <20160519114029.GW3193@twins.programming.kicks-ass.net>
+ <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Submitters of device tree binding documentation may forget to CC
-the subsystem maintainer if this is missing.
+On Fri, May 20, 2016 at 05:53:41PM +0530, Shilpasri G Bhat wrote:
+> 
+> Below are the comparisons by disabling watchdog.
+> Both schedutil and ondemand have a similar ramp-down trend. And in both the
+> cases I can see that frequency of the cpu is not reduced in deterministic
+> fashion. In a observation window of 30 seconds after running a workload I can
+> see that the frequency is not ramped down on some cpus in the system and are
+> idling at max frequency.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
----
-Please apply this patch directly if you want to be involved in device
-tree binding documentation for your subsystem.
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+So does it actually matter what the frequency is when you idle? Isn't
+the whole thing clock gated anyway?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index cf54ff0c9c168e26..899abfeba25eedba 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6858,6 +6858,7 @@ L:	linuxppc-dev@lists.ozlabs.org
- Q:	http://patchwork.ozlabs.org/project/linuxppc-dev/list/
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
- S:	Supported
-+F:	Documentation/devicetree/bindings/powerpc/
- F:	Documentation/powerpc/
- F:	arch/powerpc/
- F:	drivers/char/tpm/tpm_ibmvtpm*
--- 
-1.9.1
+Because this seems to generate contradictory requirements, on the one
+hand we want to stay idle as long as possible while on the other hand
+you seem to want to clock down while idle, which requires not being
+idle.
+
+If it matters; should not your idle state muck explicitly set/restore
+frequency?
