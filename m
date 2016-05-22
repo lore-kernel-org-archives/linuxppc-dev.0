@@ -1,36 +1,26 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <geert@linux-m68k.org>
+Received: from newton.telenet-ops.be (newton.telenet-ops.be [195.130.132.45])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rB96K5bVLzDqBM
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 May 2016 00:19:05 +1000 (AEST)
-Received: from localhost
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Fri, 20 May 2016 15:19:01 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 872C3219005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 15:18:34 +0100 (BST)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4KEIxpB22938002
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 14:18:59 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4KEIwN0010926
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 May 2016 08:18:59 -0600
-Subject: [PATCH] powerpc/pseries: fix trivial typo in function name
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, trivial@kernel.org,
- linux-kernel@vger.kernel.org
-Date: Fri, 20 May 2016 16:18:57 +0200
-Message-ID: <146375393699.3856.7906809763866981800.stgit@bahia.huguette.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCG5B6DJRzDq7w
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2016 19:06:54 +1000 (AEST)
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:14])
+ by newton.telenet-ops.be (Postfix) with ESMTP id 3rCG5522MGzMrK3p
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2016 11:06:49 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 25/54] MAINTAINERS: Add file patterns for powerpc device tree
+ bindings
+Date: Sun, 22 May 2016 11:06:02 +0200
+Message-Id: <1463907991-7916-26-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1463907991-7916-1-git-send-email-geert@linux-m68k.org>
+References: <1463907991-7916-1-git-send-email-geert@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/rtasd.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Submitters of device tree binding documentation may forget to CC
+the subsystem maintainer if this is missing.
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 5a2c049c1c61..b6e7a935d8b0 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -483,7 +483,7 @@ static void rtas_event_scan(struct work_struct *w)
- }
- 
- #ifdef CONFIG_PPC64
--static void retreive_nvram_error_log(void)
-+static void retrieve_nvram_error_log(void)
- {
- 	unsigned int err_type ;
- 	int rc ;
-@@ -501,7 +501,7 @@ static void retreive_nvram_error_log(void)
- 	}
- }
- #else /* CONFIG_PPC64 */
--static void retreive_nvram_error_log(void)
-+static void retrieve_nvram_error_log(void)
- {
- }
- #endif /* CONFIG_PPC64 */
-@@ -513,7 +513,7 @@ static void start_event_scan(void)
- 		 (30000 / rtas_event_scan_rate));
- 
- 	/* Retrieve errors from nvram if any */
--	retreive_nvram_error_log();
-+	retrieve_nvram_error_log();
- 
- 	schedule_delayed_work_on(cpumask_first(cpu_online_mask),
- 				 &event_scan_work, event_scan_delay);
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+Please apply this patch directly if you want to be involved in device
+tree binding documentation for your subsystem.
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cf54ff0c9c168e26..899abfeba25eedba 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6858,6 +6858,7 @@ L:	linuxppc-dev@lists.ozlabs.org
+ Q:	http://patchwork.ozlabs.org/project/linuxppc-dev/list/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+ S:	Supported
++F:	Documentation/devicetree/bindings/powerpc/
+ F:	Documentation/powerpc/
+ F:	arch/powerpc/
+ F:	drivers/char/tpm/tpm_ibmvtpm*
+-- 
+1.9.1
