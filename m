@@ -1,20 +1,21 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCLp64jFkzDq9m
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 May 2016 22:39:10 +1000 (AEST)
-Date: Sun, 22 May 2016 12:37:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCbBy4ydbzDqBn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 07:58:02 +1000 (AEST)
+Date: Mon, 23 May 2016 07:52:20 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Andrea Gelmini <andrea.gelmini@gelma.net>
 Cc: trivial@kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- christophe.leroy@c-s.fr, oss@buserror.net, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0228/1529] Fix typo
-Message-ID: <20160522023732.GA23547@fergus.ozlabs.ibm.com>
-References: <20160521120618.11846-1-andrea.gelmini@gelma.net>
+ anton@samba.org, cyrilbur@gmail.com, mikey@neuling.org,
+ khandual@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0226/1529] Fix typo
+Message-ID: <20160522215220.GA26398@fergus.ozlabs.ibm.com>
+References: <20160521120600.11742-1-andrea.gelmini@gelma.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160521120618.11846-1-andrea.gelmini@gelma.net>
+In-Reply-To: <20160521120600.11742-1-andrea.gelmini@gelma.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 21, 2016 at 02:06:18PM +0200, Andrea Gelmini wrote:
+On Sat, May 21, 2016 at 02:06:00PM +0200, Andrea Gelmini wrote:
 > Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 > ---
->  arch/powerpc/lib/checksum_64.S | 4 ++--
+>  arch/powerpc/kernel/process.c | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
-> index 8e6e510..f3b5b7d 100644
-> --- a/arch/powerpc/lib/checksum_64.S
-> +++ b/arch/powerpc/lib/checksum_64.S
-> @@ -74,7 +74,7 @@ _GLOBAL(__csum_partial)
->  	ld	r11,24(r3)
->  
->  	/*
-> -	 * On POWER6 and POWER7 back to back addes take 2 cycles because of
-> +	 * On POWER6 and POWER7 back to back adds take 2 cycles because of
->  	 * the XER dependency. This means the fastest this loop can go is
->  	 * 16 cycles per iteration. The scheduling of the loop below has
->  	 * been shown to hit this on both POWER6 and POWER7.
-> @@ -275,7 +275,7 @@ source;	ld	r10,16(r3)
->  source;	ld	r11,24(r3)
->  
->  	/*
-> -	 * On POWER6 and POWER7 back to back addes take 2 cycles because of
-> +	 * On POWER6 and POWER7 back to back adds take 2 cycles because of
->  	 * the XER dependency. This means the fastest this loop can go is
->  	 * 16 cycles per iteration. The scheduling of the loop below has
->  	 * been shown to hit this on both POWER6 and POWER7.
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index e2f12cb..6d39786 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -709,7 +709,7 @@ static inline int set_dawr(struct arch_hw_breakpoint *brk)
+>  	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) \
+>  		                   >> 3; //* PRIM bits */
+>  	/* dawr length is stored in field MDR bits 48:53.  Matches range in
+> -	   doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
+> +	   doublewords (64 bits) raised by -1 eg. 0b000000=1DW and
 
-NAK - this is talking about the 'adde' instruction, not the 'add'
-instruction.
-
-Paul.
+biased
