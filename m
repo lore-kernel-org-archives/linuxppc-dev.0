@@ -1,20 +1,22 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCbBy5sSHzDqBv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCbBy5W0YzDqBt
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 07:58:02 +1000 (AEST)
-Date: Mon, 23 May 2016 07:57:16 +1000
+Date: Mon, 23 May 2016 07:53:59 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Andrea Gelmini <andrea.gelmini@gelma.net>
-Cc: trivial@kernel.org, geoff@infradead.org, benh@kernel.crashing.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0218/1529] Fix typo
-Message-ID: <20160522215716.GC26398@fergus.ozlabs.ibm.com>
-References: <20160521120442.11309-1-andrea.gelmini@gelma.net>
+Cc: trivial@kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ aneesh.kumar@linux.vnet.ibm.com, imunsie@au1.ibm.com,
+ scottwood@freescale.com, mikey@neuling.org, cyrilbur@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0230/1529] Fix typo
+Message-ID: <20160522215359.GB26398@fergus.ozlabs.ibm.com>
+References: <20160521120636.11948-1-andrea.gelmini@gelma.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160521120442.11309-1-andrea.gelmini@gelma.net>
+In-Reply-To: <20160521120636.11948-1-andrea.gelmini@gelma.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,30 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 21, 2016 at 02:04:42PM +0200, Andrea Gelmini wrote:
+On Sat, May 21, 2016 at 02:06:36PM +0200, Andrea Gelmini wrote:
 > Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 > ---
->  arch/powerpc/include/asm/ps3av.h | 4 ++--
+>  arch/powerpc/mm/hash_native_64.c | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/ps3av.h b/arch/powerpc/include/asm/ps3av.h
-> index 0427b0b..5176613 100644
-> --- a/arch/powerpc/include/asm/ps3av.h
-> +++ b/arch/powerpc/include/asm/ps3av.h
-> @@ -104,7 +104,7 @@
->  #define PS3AV_CMD_AV_INPUTLEN_16			0x02
->  #define PS3AV_CMD_AV_INPUTLEN_20			0x0a
->  #define PS3AV_CMD_AV_INPUTLEN_24			0x0b
-> -/* alayout */
-> +/* av_layout */
->  #define PS3AV_CMD_AV_LAYOUT_32				(1 << 0)
->  #define PS3AV_CMD_AV_LAYOUT_44				(1 << 1)
->  #define PS3AV_CMD_AV_LAYOUT_48				(1 << 2)
-> @@ -688,7 +688,7 @@ extern u8 ps3av_mode_cs_info[];
->  #define PS3AV_STATUS_INVALID_COMMAND		0x0003	/* obsolete invalid CID */
->  #define PS3AV_STATUS_INVALID_PORT		0x0004	/* invalid port number */
->  #define PS3AV_STATUS_INVALID_VID		0x0005	/* invalid video format */
-> -#define PS3AV_STATUS_INVALID_COLOR_SPACE	0x0006	/* invalid video colose space */
-> +#define PS3AV_STATUS_INVALID_COLOR_SPACE	0x0006	/* invalid video close space */
+> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+> index d873f65..0a4560d 100644
+> --- a/arch/powerpc/mm/hash_native_64.c
+> +++ b/arch/powerpc/mm/hash_native_64.c
+> @@ -55,7 +55,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+>  	 * We need 14 to 65 bits of va for a tlibe of 4K page
+>  	 * With vpn we ignore the lower VPN_SHIFT bits already.
+>  	 * And top two bits are already ignored because we can
+> -	 * only accomadate 76 bits in a 64 bit vpn with a VPN_SHIFT
+> +	 * only accomodate 76 bits in a 64 bit vpn with a VPN_SHIFT
 
-color
+accommodate
