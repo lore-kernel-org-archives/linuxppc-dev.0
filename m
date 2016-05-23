@@ -1,36 +1,23 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rD6sf0KD0zDqMq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 04:44:53 +1000 (AEST)
-Date: Mon, 23 May 2016 20:44:51 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: David Laight <David.Laight@ACULAB.COM>
-cc: Josh Poimboeuf <jpoimboe@redhat.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Jessica Yu <jeyu@redhat.com>, Vojtech Pavlik <vojtech@suse.com>,
- Petr Mladek <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>,
- "x86@kernel.org" <x86@kernel.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Andy Lutomirski <luto@kernel.org>,
- "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>,
- Jiri Slaby <jslaby@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Chris J Arges <chris.j.arges@canonical.com>
-Subject: RE: livepatch: change to a per-task consistency model
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
-Message-ID: <alpine.LNX.2.00.1605232043300.31937@cbobk.fhfr.pm>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
- <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
- <20160518165147.vyuamqfnm5kfwiqf@treble>
- <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
- <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rD8y445ynzDqN0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 06:18:52 +1000 (AEST)
+Date: Mon, 23 May 2016 15:17:47 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc32: use stmw/lmw for non volatile registers
+ save/restore
+Message-ID: <20160523201747.GA11583@gate.crashing.org>
+References: <20160523084637.063611A239A@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160523084637.063611A239A@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,17 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 23 May 2016, David Laight wrote:
+On Mon, May 23, 2016 at 10:46:36AM +0200, Christophe Leroy wrote:
+> lmw/stmw have a 1 cycle (2 cycles for lmw on some ppc) in addition
+> and implies serialising, however it reduces the amount of instructions
+> hence the amount of instruction fetch compared to the equivalent
+> operation with several lzw/stw. It means less pressure on cache and
+> less fetching delays on slow memory.
 
-> Related, please can we have a flag for the sleep and/or process so that
-> an uninterruptible sleep doesn't trigger the 'hung task' detector
+lmw/stmw do not work at all in LE mode, on most processors.  This is a
+supported configuration.  NAK.
 
-TASK_KILLABLE
+> When we transfer 20 registers, it is worth it.
+> gcc uses stmw/lmw at function entry/exit to save/restore non
+> volatile register, so lets also do it that way.
 
-> and also stops the process counting towards the 'load average'.
+No, C code is compiled with -mno-multiple for LE configs.  Saving a few
+bytes of code is not "worth it", anyway.
 
-TASK_NOLOAD
+> --- a/arch/powerpc/kernel/misc_32.S
+> +++ b/arch/powerpc/kernel/misc_32.S
+> @@ -1086,3 +1086,25 @@ relocate_new_kernel_end:
+>  relocate_new_kernel_size:
+>  	.long relocate_new_kernel_end - relocate_new_kernel
+>  #endif
+> +
+> +_GLOBAL(setjmp)
+> +	mflr	r0
+> +	li	r3, 0
+> +	stw	r0, 0(r3)
+> +	stw	r1, 4(r3)
+> +	stw	r2, 8(r3)
+> +	mfcr	r12
+> +	stmw	r12, 12(r3)
+> +	blr
 
--- 
-Jiri Kosina
-SUSE Labs
+This code has been tested?  I very much doubt it.
+
+
+Segher
