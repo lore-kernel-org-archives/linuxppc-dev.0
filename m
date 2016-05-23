@@ -1,35 +1,25 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCz740MhVzDqMp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 22:55:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rD2J629QdzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 01:19:02 +1000 (AEST)
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Mon, 23 May 2016 13:55:55 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 60E7B1B08078
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 13:56:50 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4NCtpuQ15663598
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 12:55:51 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4NCtp8i028660
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 06:55:51 -0600
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
- imunsie@au1.ibm.com, mikey@neuling.org,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [RESEND v5,2/2] cxl: Add set and get private data to context struct
-Date: Mon, 23 May 2016 14:55:48 +0200
-Message-Id: <1464008148-2762-1-git-send-email-felix@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Mon, 23 May 2016 09:18:58 -0600
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
+ linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+Subject: [PATCH v3 0/9] powerpc/powernv/cpuidle: Add support for POWER ISA v3
+ idle states
+Date: Mon, 23 May 2016 20:48:33 +0530
+Message-Id: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,88 +29,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-This provides AFU drivers a means to associate private data with a cxl
-context. This is particularly intended for make the new callbacks for
-driver specific events easier for AFU drivers to use, as they can easily
-get back to any private data structures they may use.
+This patch series adds support for this new mechanism.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
----
-No changes since v1, added Matt Ochs reviewed-by tag.
+Patches 1-6 are cleanups and code movement.
+Patch 7 adds platform specific support for stop and psscr handling.
+Patch 8 adds cpuidle driver support.
+Patch 9 makes offlined cpu use deepest stop state.
 
- drivers/misc/cxl/api.c | 21 +++++++++++++++++++++
- drivers/misc/cxl/cxl.h |  3 +++
- include/misc/cxl.h     |  7 +++++++
- 3 files changed, 31 insertions(+)
+Changes in v3
+=============
+ - Rebased on powerpc-next
+ - Dropping patch 1 since we are not adding a new file for P9 idle support
+ - Improved comments in multiple places
+ - Moved GET_PACA from power7_restore_hyp_resource to System Reset
+ - Instead of moving few functions from idle_power7 to idle_power_common,
+   renaming idle_power7.S to idle_power_common.S
+ - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+ - Dropped earlier patch 5 which moved few macros from idle_power_common to
+   asm/cpuidle.h. 
+ - Added a patch to rename reusable power7_* idle functions to pnv_*
+ - Added new patch that creates abstraction for saving SPRs before
+   entering deep idle states
+ - Instead of introducing new file idle_power_stop.S, P9 idle support
+   is added to idle_power_common.S using CPU_FTR sections.
+ - Fixed r4 reg clobbering in power_stop0
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 71673cb..efeaa6e 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -94,6 +94,27 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
- 	return 0;
- }
- 
-+
-+int cxl_set_priv(struct cxl_context *ctx, void *priv)
-+{
-+	if (!ctx)
-+		return -EINVAL;
-+
-+	ctx->priv = priv;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cxl_set_priv);
-+
-+void *cxl_get_priv(struct cxl_context *ctx)
-+{
-+	if (!ctx)
-+		return ERR_PTR(-EINVAL);
-+
-+	return ctx->priv;
-+}
-+EXPORT_SYMBOL_GPL(cxl_get_priv);
-+
- int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
- {
- 	int res;
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b0027e6..1e56304 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -478,6 +478,9 @@ struct cxl_context {
- 	/* Only used in PR mode */
- 	u64 process_token;
- 
-+	/* driver private data */
-+	void *priv;
-+
- 	unsigned long *irq_bitmap; /* Accessed from IRQ context */
- 	struct cxl_irq_ranges irqs;
- 	struct list_head irq_names;
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index ef3115e..667f99d 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -86,6 +86,13 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev);
- int cxl_release_context(struct cxl_context *ctx);
- 
- /*
-+ * Set and get private data associated with a context. Allows drivers to have a
-+ * back pointer to some useful structure.
-+ */
-+int cxl_set_priv(struct cxl_context *ctx, void *priv);
-+void *cxl_get_priv(struct cxl_context *ctx);
-+
-+/*
-  * Allocate AFU interrupts for this context. num=0 will allocate the default
-  * for this AFU as given in the AFU descriptor. This number doesn't include the
-  * interrupt 0 (CAIA defines AFU IRQ 0 for page faults). Each interrupt to be
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+
+Shreyas B. Prabhu (9):
+  powerpc/powernv: Move CHECK_HMI_INTERRUPT to exception-64s header
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Rename idle_power7.S to idle_power_common.S
+  powerpc/powernv: Make power7_powersave_common more generic
+  powerpc/powernv: abstraction for saving SPRs before entering deep idle
+    states
+  powerpc/powernv: set power_save func after the idle states are
+    initialized
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |   2 +
+ arch/powerpc/include/asm/exception-64s.h  |  18 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/machdep.h        |   1 +
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/paca.h           |   2 +
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   1 +
+ arch/powerpc/include/asm/reg.h            |  11 +
+ arch/powerpc/kernel/Makefile              |   2 +-
+ arch/powerpc/kernel/asm-offsets.c         |   2 +
+ arch/powerpc/kernel/exceptions-64s.S      |  28 +-
+ arch/powerpc/kernel/idle_power7.S         | 515 ------------------------
+ arch/powerpc/kernel/idle_power_common.S   | 642 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/idle.c     |  96 ++++-
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/setup.c    |   2 +-
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  57 ++-
+ 19 files changed, 843 insertions(+), 558 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/idle_power7.S
+ create mode 100644 arch/powerpc/kernel/idle_power_common.S
+
 -- 
-2.1.0
+2.4.11
