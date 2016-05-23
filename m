@@ -1,40 +1,34 @@
-Return-Path: <peterz@infradead.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.187])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCtRj4VGZzDqF5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 19:25:05 +1000 (AEST)
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rCtRj17dnz9sBm
- for <linuxppc-dev@ozlabs.org>; Mon, 23 May 2016 19:25:05 +1000 (AEST)
-Date: Mon, 23 May 2016 11:24:51 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Steve Muckle <steve.muckle@linaro.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
- linuxppc-dev@ozlabs.org
-Subject: Re: [RFC PATCH] Increase in idle power with schedutil
-Message-ID: <20160523092451.GF15728@worktop.ger.corp.intel.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
- <20160519114029.GW3193@twins.programming.kicks-ass.net>
- <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
- <20160522103912.GN3193@twins.programming.kicks-ass.net>
- <20160522204252.GH15383@graphite.smuckle.net>
- <20160523090004.GA21186@red-moon>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCtsX1qWZzDqCM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 19:43:59 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Jiri Kosina' <jikos@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>
+CC: "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Jessica Yu
+ <jeyu@redhat.com>, Vojtech Pavlik <vojtech@suse.com>, Petr Mladek
+ <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>, "x86@kernel.org"
+ <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Andy Lutomirski <luto@kernel.org>,
+ "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>, Jiri Slaby
+ <jslaby@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Chris J
+ Arges" <chris.j.arges@canonical.com>
+Subject: RE: livepatch: change to a per-task consistency model
+Date: Mon, 23 May 2016 09:42:37 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
+ <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
+ <20160518165147.vyuamqfnm5kfwiqf@treble>
+ <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
+In-Reply-To: <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160523090004.GA21186@red-moon>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,11 +38,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 23, 2016 at 10:00:04AM +0100, Lorenzo Pieralisi wrote:
-> It is also related to static leakage power that depends on the operating
-> voltage (ie higher operating frequencies require higher voltage) so in a
-> way scaling frequency before going idle may not be effective if voltage
-> does not scale too in turn.
-
-Sure, but the platform drivers 'know' all this and can make the right
-decision.
+RnJvbTogSmlyaSBLb3NpbmENCj4gU2VudDogMTggTWF5IDIwMTYgMjE6MjMNCj4gT24gV2VkLCAx
+OCBNYXkgMjAxNiwgSm9zaCBQb2ltYm9ldWYgd3JvdGU6DQo+IA0KPiA+IFllYWgsIEkgdGhpbmsg
+dGhpcyBzaXR1YXRpb24gLS0gYSB0YXNrIHNsZWVwaW5nIG9uIGFuIGFmZmVjdGVkIGZ1bmN0aW9u
+DQo+ID4gaW4gdW5pbnRlcnJ1cHRpYmxlIHN0YXRlIGZvciBhIGxvbmcgcGVyaW9kIG9mIHRpbWUg
+LS0gd291bGQgYmUNCj4gPiBleGNlZWRpbmdseSByYXJlIGFuZCBub3Qgc29tZXRoaW5nIHdlIG5l
+ZWQgdG8gd29ycnkgYWJvdXQgZm9yIG5vdy4NCj4gDQo+IFBsdXMgaW4gY2FzZSB0YXNrJ2QgYmUg
+aW4gVEFTS19VTklOVEVSUlVQVElCTEUgZm9yIG1vcmUgdGhhbiAxMjBzLCBodW5nDQo+IHRhc2sg
+ZGV0ZWN0b3Igd291bGQgdHJpZ2dlciBhbnl3YXkuDQoNClJlbGF0ZWQsIHBsZWFzZSBjYW4gd2Ug
+aGF2ZSBhIGZsYWcgZm9yIHRoZSBzbGVlcCBhbmQvb3IgcHJvY2VzcyBzbyB0aGF0DQphbiB1bmlu
+dGVycnVwdGlibGUgc2xlZXAgZG9lc24ndCB0cmlnZ2VyIHRoZSAnaHVuZyB0YXNrJyBkZXRlY3Rv
+cg0KYW5kIGFsc28gc3RvcHMgdGhlIHByb2Nlc3MgY291bnRpbmcgdG93YXJkcyB0aGUgJ2xvYWQg
+YXZlcmFnZScuDQoNCkluIHBhcnRpY3VsYXIgc29tZSBrZXJuZWwgdGhyZWFkcyBhcmUgbm90IHNp
+Z25hbGFibGUsIGFuZCBkbyBub3QNCndhbnQgdG8gYmUgd29rZW4gYnkgc2lnbmFscyAodGhleSBl
+eGl0IG9uIGEgc3BlY2lmaWMgcmVxdWVzdCkuDQoNCglEYXZpZA0KDQo=
