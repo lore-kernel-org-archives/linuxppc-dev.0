@@ -1,34 +1,35 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCtsX1qWZzDqCM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 19:43:59 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Jiri Kosina' <jikos@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>
-CC: "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Jessica Yu
- <jeyu@redhat.com>, Vojtech Pavlik <vojtech@suse.com>, Petr Mladek
- <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>, "x86@kernel.org"
- <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Andy Lutomirski <luto@kernel.org>,
- "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>, Jiri Slaby
- <jslaby@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Chris J
- Arges" <chris.j.arges@canonical.com>
-Subject: RE: livepatch: change to a per-task consistency model
-Date: Mon, 23 May 2016 09:42:37 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
- <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
- <20160518165147.vyuamqfnm5kfwiqf@treble>
- <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
-In-Reply-To: <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCyzM1typzDqMb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 22:49:18 +1000 (AEST)
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Mon, 23 May 2016 13:49:15 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 66A331B08069
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 13:50:11 +0100 (BST)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4NCnCdq11862354
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 12:49:12 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4NCnCec014440
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 06:49:12 -0600
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ imunsie@au1.ibm.com, mikey@neuling.org,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: [v5, 1/2] cxl: Add mechanism for delivering AFU driver specific events
+Date: Mon, 23 May 2016 14:49:01 +0200
+Message-Id: <1464007742-1941-1-git-send-email-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +39,386 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogSmlyaSBLb3NpbmENCj4gU2VudDogMTggTWF5IDIwMTYgMjE6MjMNCj4gT24gV2VkLCAx
-OCBNYXkgMjAxNiwgSm9zaCBQb2ltYm9ldWYgd3JvdGU6DQo+IA0KPiA+IFllYWgsIEkgdGhpbmsg
-dGhpcyBzaXR1YXRpb24gLS0gYSB0YXNrIHNsZWVwaW5nIG9uIGFuIGFmZmVjdGVkIGZ1bmN0aW9u
-DQo+ID4gaW4gdW5pbnRlcnJ1cHRpYmxlIHN0YXRlIGZvciBhIGxvbmcgcGVyaW9kIG9mIHRpbWUg
-LS0gd291bGQgYmUNCj4gPiBleGNlZWRpbmdseSByYXJlIGFuZCBub3Qgc29tZXRoaW5nIHdlIG5l
-ZWQgdG8gd29ycnkgYWJvdXQgZm9yIG5vdy4NCj4gDQo+IFBsdXMgaW4gY2FzZSB0YXNrJ2QgYmUg
-aW4gVEFTS19VTklOVEVSUlVQVElCTEUgZm9yIG1vcmUgdGhhbiAxMjBzLCBodW5nDQo+IHRhc2sg
-ZGV0ZWN0b3Igd291bGQgdHJpZ2dlciBhbnl3YXkuDQoNClJlbGF0ZWQsIHBsZWFzZSBjYW4gd2Ug
-aGF2ZSBhIGZsYWcgZm9yIHRoZSBzbGVlcCBhbmQvb3IgcHJvY2VzcyBzbyB0aGF0DQphbiB1bmlu
-dGVycnVwdGlibGUgc2xlZXAgZG9lc24ndCB0cmlnZ2VyIHRoZSAnaHVuZyB0YXNrJyBkZXRlY3Rv
-cg0KYW5kIGFsc28gc3RvcHMgdGhlIHByb2Nlc3MgY291bnRpbmcgdG93YXJkcyB0aGUgJ2xvYWQg
-YXZlcmFnZScuDQoNCkluIHBhcnRpY3VsYXIgc29tZSBrZXJuZWwgdGhyZWFkcyBhcmUgbm90IHNp
-Z25hbGFibGUsIGFuZCBkbyBub3QNCndhbnQgdG8gYmUgd29rZW4gYnkgc2lnbmFscyAodGhleSBl
-eGl0IG9uIGEgc3BlY2lmaWMgcmVxdWVzdCkuDQoNCglEYXZpZA0KDQo=
+This adds an afu_driver_ops structure with deliver_event() and
+event_delivered() callbacks. An AFU driver such as cxlflash can fill
+this out and associate it with a context to enable passing custom
+AFU specific events to userspace.
+
+This also adds a new kernel API function cxl_context_pending_events(),
+that the AFU driver can use to notify the cxl driver that new specific
+events are ready to be delivered, and wake up anyone waiting on the
+context wait queue.
+
+The current count of AFU driver specific events is stored in the field
+afu_driver_events of the context structure.
+
+The cxl driver checks the afu_driver_events count during poll, select,
+read, etc. calls to check if an AFU driver specific event is pending,
+and calls deliver_event() to obtain and deliver that event. This way,
+the cxl driver takes care of all the usual locking semantics around these
+calls and handles all the generic cxl events, so that the AFU driver only
+needs to worry about it's own events.
+
+deliver_event() return a struct cxl_event_afu_driver_reserved, allocated
+by the AFU driver, and filled in with the specific event information and
+size. Data size should not be greater than CXL_MAX_EVENT_DATA_SIZE.
+
+Th cxl driver prepends an appropriate cxl event header, copies the event
+to userspace, and finally calls event_delivered() to return the status of
+the operation to the AFU driver. The event is identified by the context
+and cxl_event_afu_driver_reserved pointers.
+
+Since AFU drivers provide their own means for userspace to obtain the
+AFU file descriptor (i.e. cxlflash uses an ioctl on their scsi file
+descriptor to obtain the AFU file descriptor) and the generic cxl driver
+will never use this event, the ABI of the event is up to each individual
+AFU driver.
+
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+Changes since v4:
+- Addressed comments from Vaibhav:
+  - Changed struct cxl_event_afu_driver_reserved from
+    { __u64 reserved[4]; } to { size_t data_size; u8 data[]; }
+  - Modified deliver_event to return a struct cxl_event_afu_driver_reserved
+  - Added new callback event_delivered
+  - Added static function afu_driver_event_copy
+
+Changes since v3:
+- Removed driver ops callback ctx_event_pending
+- Created cxl function cxl_context_pending_events
+- Created cxl function cxl_unset_driver_ops
+- Added atomic event counter afu_driver_events
+
+Changes since v2:
+- Fixed some typos spotted by Matt Ochs
+
+Changes since v1:
+- Rebased on upstream
+- Bumped cxl api version to 3
+- Addressed comments from mpe:
+  - Clarified commit message & some comments
+  - Mentioned 'cxlflash' as a possible user of this event
+  - Check driver ops on registration and warn if missing calls
+  - Remove redundant checks where driver ops is used
+  - Simplified ctx_event_pending and removed underscore version
+  - Changed deliver_event to take the context as the first argument
+
+ drivers/misc/cxl/Kconfig |  5 +++++
+ drivers/misc/cxl/api.c   | 27 +++++++++++++++++++++++++
+ drivers/misc/cxl/cxl.h   |  7 ++++++-
+ drivers/misc/cxl/file.c  | 52 ++++++++++++++++++++++++++++++++++++++++--------
+ include/misc/cxl.h       | 50 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/uapi/misc/cxl.h  | 21 +++++++++++++++++++
+ 6 files changed, 153 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index 8756d06..560412c 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -15,12 +15,17 @@ config CXL_EEH
+ 	bool
+ 	default n
+ 
++config CXL_AFU_DRIVER_OPS
++	bool
++	default n
++
+ config CXL
+ 	tristate "Support for IBM Coherent Accelerators (CXL)"
+ 	depends on PPC_POWERNV && PCI_MSI && EEH
+ 	select CXL_BASE
+ 	select CXL_KERNEL_API
+ 	select CXL_EEH
++	select CXL_AFU_DRIVER_OPS
+ 	default m
+ 	help
+ 	  Select this option to enable driver support for IBM Coherent
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 6d228cc..71673cb 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -323,6 +323,33 @@ struct cxl_context *cxl_fops_get_context(struct file *file)
+ }
+ EXPORT_SYMBOL_GPL(cxl_fops_get_context);
+ 
++void cxl_set_driver_ops(struct cxl_context *ctx,
++			struct cxl_afu_driver_ops *ops)
++{
++	WARN_ON(!ops->deliver_event || !ops->event_delivered);
++	atomic_set(&ctx->afu_driver_events, 0);
++	ctx->afu_driver_ops = ops;
++}
++EXPORT_SYMBOL_GPL(cxl_set_driver_ops);
++
++int cxl_unset_driver_ops(struct cxl_context *ctx)
++{
++	if (atomic_read(&ctx->afu_driver_events))
++		return -EBUSY;
++
++	ctx->afu_driver_ops = NULL;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(cxl_unset_driver_ops);
++
++void cxl_context_events_pending(struct cxl_context *ctx,
++				unsigned int new_events)
++{
++	atomic_add(new_events, &ctx->afu_driver_events);
++	wake_up_all(&ctx->wq);
++}
++EXPORT_SYMBOL_GPL(cxl_context_events_pending);
++
+ int cxl_start_work(struct cxl_context *ctx,
+ 		   struct cxl_ioctl_start_work *work)
+ {
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 4fe5078..b0027e6 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -24,6 +24,7 @@
+ #include <asm/reg.h>
+ #include <misc/cxl-base.h>
+ 
++#include <misc/cxl.h>
+ #include <uapi/misc/cxl.h>
+ 
+ extern uint cxl_verbose;
+@@ -34,7 +35,7 @@ extern uint cxl_verbose;
+  * Bump version each time a user API change is made, whether it is
+  * backwards compatible ot not.
+  */
+-#define CXL_API_VERSION 2
++#define CXL_API_VERSION 3
+ #define CXL_API_VERSION_COMPATIBLE 1
+ 
+ /*
+@@ -522,6 +523,10 @@ struct cxl_context {
+ 	bool pending_fault;
+ 	bool pending_afu_err;
+ 
++	/* Used by AFU drivers for driver specific event delivery */
++	struct cxl_afu_driver_ops *afu_driver_ops;
++	atomic_t afu_driver_events;
++
+ 	struct rcu_head rcu;
+ };
+ 
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index eec468f..6aebd0d 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -293,6 +293,17 @@ int afu_mmap(struct file *file, struct vm_area_struct *vm)
+ 	return cxl_context_iomap(ctx, vm);
+ }
+ 
++static inline bool ctx_event_pending(struct cxl_context *ctx)
++{
++	if (ctx->pending_irq || ctx->pending_fault || ctx->pending_afu_err)
++		return true;
++
++	if (ctx->afu_driver_ops && atomic_read(&ctx->afu_driver_events))
++		return true;
++
++	return false;
++}
++
+ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+@@ -305,8 +316,7 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ 	pr_devel("afu_poll wait done pe: %i\n", ctx->pe);
+ 
+ 	spin_lock_irqsave(&ctx->lock, flags);
+-	if (ctx->pending_irq || ctx->pending_fault ||
+-	    ctx->pending_afu_err)
++	if (ctx_event_pending(ctx))
+ 		mask |= POLLIN | POLLRDNORM;
+ 	else if (ctx->status == CLOSED)
+ 		/* Only error on closed when there are no futher events pending
+@@ -319,16 +329,32 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ 	return mask;
+ }
+ 
+-static inline int ctx_event_pending(struct cxl_context *ctx)
++static ssize_t afu_driver_event_copy(struct cxl_context *ctx,
++				     char __user *buf,
++				     struct cxl_event *event,
++				     struct cxl_event_afu_driver_reserved *pl)
+ {
+-	return (ctx->pending_irq || ctx->pending_fault ||
+-	    ctx->pending_afu_err || (ctx->status == CLOSED));
++	int header_size = sizeof(struct cxl_event_header);
++
++	/* Copy the event header */
++	if (copy_to_user(buf, event, header_size)) {
++		ctx->afu_driver_ops->event_delivered(ctx, pl, -EFAULT);
++		return -EFAULT;
++	}
++	/* Copy the event data */
++	if (copy_to_user(buf + header_size, &pl->data, pl->data_size)) {
++		ctx->afu_driver_ops->event_delivered(ctx, pl, -EFAULT);
++		return -EFAULT;
++	}
++	ctx->afu_driver_ops->event_delivered(ctx, pl, 0);
++	return event->header.size;
+ }
+ 
+ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 			loff_t *off)
+ {
+ 	struct cxl_context *ctx = file->private_data;
++	struct cxl_event_afu_driver_reserved *pl = NULL;
+ 	struct cxl_event event;
+ 	unsigned long flags;
+ 	int rc;
+@@ -344,7 +370,7 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 
+ 	for (;;) {
+ 		prepare_to_wait(&ctx->wq, &wait, TASK_INTERRUPTIBLE);
+-		if (ctx_event_pending(ctx))
++		if (ctx_event_pending(ctx) || (ctx->status == CLOSED))
+ 			break;
+ 
+ 		if (!cxl_ops->link_ok(ctx->afu->adapter, ctx->afu)) {
+@@ -374,7 +400,14 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 	memset(&event, 0, sizeof(event));
+ 	event.header.process_element = ctx->pe;
+ 	event.header.size = sizeof(struct cxl_event_header);
+-	if (ctx->pending_irq) {
++	if (ctx->afu_driver_ops && atomic_read(&ctx->afu_driver_events)) {
++		pr_devel("afu_read delivering AFU driver specific event\n");
++		pl = ctx->afu_driver_ops->deliver_event(ctx);
++		atomic_dec(&ctx->afu_driver_events);
++		WARN_ON(!pl || (pl->data_size > CXL_MAX_EVENT_DATA_SIZE));
++		event.header.size += pl->data_size;
++		event.header.type = CXL_EVENT_AFU_DRIVER;
++	} else if (ctx->pending_irq) {
+ 		pr_devel("afu_read delivering AFU interrupt\n");
+ 		event.header.size += sizeof(struct cxl_event_afu_interrupt);
+ 		event.header.type = CXL_EVENT_AFU_INTERRUPT;
+@@ -404,6 +437,9 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 
+ 	spin_unlock_irqrestore(&ctx->lock, flags);
+ 
++	if (event.header.type == CXL_EVENT_AFU_DRIVER)
++		return afu_driver_event_copy(ctx, buf, &event, pl);
++
+ 	if (copy_to_user(buf, &event, event.header.size))
+ 		return -EFAULT;
+ 	return event.header.size;
+@@ -558,7 +594,7 @@ int __init cxl_file_init(void)
+ 	 * If these change we really need to update API.  Either change some
+ 	 * flags or update API version number CXL_API_VERSION.
+ 	 */
+-	BUILD_BUG_ON(CXL_API_VERSION != 2);
++	BUILD_BUG_ON(CXL_API_VERSION != 3);
+ 	BUILD_BUG_ON(sizeof(struct cxl_ioctl_start_work) != 64);
+ 	BUILD_BUG_ON(sizeof(struct cxl_event_header) != 8);
+ 	BUILD_BUG_ON(sizeof(struct cxl_event_afu_interrupt) != 8);
+diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+index 56560c5..ef3115e 100644
+--- a/include/misc/cxl.h
++++ b/include/misc/cxl.h
+@@ -220,4 +220,54 @@ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
+  */
+ ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count);
+ 
++/*
++ * AFU driver ops allow an AFU driver to create their own events to pass to
++ * userspace through the file descriptor as a simpler alternative to overriding
++ * the read() and poll() calls that works with the generic cxl events. These
++ * events are given priority over the generic cxl events, so they will be
++ * delivered first if multiple types of events are pending.
++ *
++ * The AFU driver must call cxl_context_events_pending() to notify the cxl
++ * driver that new events are ready to be delivered for a specific context.
++ * cxl_context_events_pending() will adjust the current count of AFU driver
++ * events for this context, and wake up anyone waiting on the context wait
++ * queue.
++ *
++ * The cxl driver will then call deliver_event() to get a structure defining
++ * the size and address of the driver specific event data. Data size cannot
++ * be greater than CXL_MAX_EVENT_DATA_SIZE. The cxl driver will build a cxl
++ * header with type and process_element fields filled in, and header.size set
++ * to sizeof(struct cxl_event_header) + data_size.
++ *
++ * deliver_event() is called with a spin lock held, so it must not sleep.
++ *
++ * The cxl driver will finally call event_delivered() to return the status
++ * of the operation, identified by its context and AFU driver event data
++ * pointers. If the copy to user has failed, it is up to the AFU driver to
++ * retry and submit the event again with cxl_context_events_pending().
++ */
++struct cxl_afu_driver_ops {
++	struct cxl_event_afu_driver_reserved *(*deliver_event) (
++						struct cxl_context *ctx);
++	void (*event_delivered) (struct cxl_context *ctx,
++				 struct cxl_event_afu_driver_reserved *event,
++				 int rc);
++};
++
++/*
++ * Associate the above driver ops with a specific context.
++ * Reset the current count of AFU driver events.
++ */
++void cxl_set_driver_ops(struct cxl_context *ctx,
++			struct cxl_afu_driver_ops *ops);
++/*
++ * Remove the driver ops from a specific context.
++ * The current count of AFU driver events must be 0.
++ */
++int cxl_unset_driver_ops(struct cxl_context *ctx);
++
++/* Notify cxl driver that new events are ready to be delivered for context */
++void cxl_context_events_pending(struct cxl_context *ctx,
++				unsigned int new_events);
++
+ #endif /* _MISC_CXL_H */
+diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
+index 8cd334f..4fa36e4 100644
+--- a/include/uapi/misc/cxl.h
++++ b/include/uapi/misc/cxl.h
+@@ -93,6 +93,7 @@ enum cxl_event_type {
+ 	CXL_EVENT_AFU_INTERRUPT = 1,
+ 	CXL_EVENT_DATA_STORAGE  = 2,
+ 	CXL_EVENT_AFU_ERROR     = 3,
++	CXL_EVENT_AFU_DRIVER    = 4,
+ };
+ 
+ struct cxl_event_header {
+@@ -124,12 +125,32 @@ struct cxl_event_afu_error {
+ 	__u64 error;
+ };
+ 
++#define CXL_MAX_EVENT_DATA_SIZE 128
++
++struct cxl_event_afu_driver_reserved {
++	/*
++	 * Defines the buffer passed to the cxl driver by the AFU driver.
++	 *
++	 * This is not ABI since the event header.size passed to the user for
++	 * existing events is set in the read call to sizeof(cxl_event_header)
++	 * + sizeof(whatever event is being dispatched) and the user is already
++	 * required to use a 4K buffer on the read call.
++	 *
++	 * Of course the contents will be ABI, but that's up the AFU driver.
++	 *
++	 * data_size is limited to MAX_EVENT_DATA_SIZE to prevent abuse.
++	 */
++	size_t data_size;
++	u8 data[];
++};
++
+ struct cxl_event {
+ 	struct cxl_event_header header;
+ 	union {
+ 		struct cxl_event_afu_interrupt irq;
+ 		struct cxl_event_data_storage fault;
+ 		struct cxl_event_afu_error afu_error;
++		struct cxl_event_afu_driver_reserved afu_driver_event;
+ 	};
+ };
+ 
+-- 
+2.1.0
