@@ -1,22 +1,23 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from smtp684.redcondor.net (smtp684.redcondor.net [208.80.206.84])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCqX92qxrzDqCj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 17:13:43 +1000 (AEST)
-Date: Mon, 23 May 2016 03:12:44 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Russell Currey <ruscur@russell.cc>
-cc: Andrea Gelmini <andrea.gelmini@gelma.net>, trivial@kernel.org,
- linuxppc-dev@lists.ozlabs.org, paulus@samba.org
-Subject: Re: [PATCH 0213/1529] Fix typo
-In-Reply-To: <1463967017.2414.2.camel@russell.cc>
-Message-ID: <alpine.LFD.2.20.1605230312150.23426@Device-040570>
-References: <20160521120353.11023-1-andrea.gelmini@gelma.net>
- <1463967017.2414.2.camel@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCrR910jJzDqCn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 17:54:29 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id eu11so2333pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 00:54:29 -0700 (PDT)
+Date: Mon, 23 May 2016 17:54:17 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc: Improve comment explaining why we modify VRSAVE
+Message-ID: <20160523175417.2d96049b@camb691>
+In-Reply-To: <20160520044134.62712b79@kryten>
+References: <20160520044134.62712b79@kryten>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
- BOUNDARY="-1463808767-1116047029-1463987568=:23426"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 20 May 2016 04:41:34 +1000
+Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org> wrote:
 
----1463808767-1116047029-1463987568=:23426
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+> The comment explaining why we modify VRSAVE is misleading, glibc
+> does rely on the behaviour. Update the comment.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+> index 1c2e7a3..3907fcf 100644
+> --- a/arch/powerpc/kernel/vector.S
+> +++ b/arch/powerpc/kernel/vector.S
+> @@ -70,10 +70,11 @@ _GLOBAL(load_up_altivec)
+>  	MTMSRD(r5)			/* enable use of AltiVec now */
+>  	isync
+>  
+> -	/* Hack: if we get an altivec unavailable trap with VRSAVE
+> -	 * set to all zeros, we assume this is a broken application
+> -	 * that fails to set it properly, and thus we switch it to
+> -	 * all 1's
+> +	/*
+> +	 * While userspace in general ignores VRSAVE, glibc uses it as a
+> +	 * boolean to optimise userspace context save/restore. Whenever we
+> +	 * take an altivec unavailable exception we must set VRSAVE to
+> +	 * something non zero. Set it to all 1s.
 
-On Mon, 23 May 2016, Russell Currey wrote:
+I always assumed this was a little more complicated and that it revolved
+around trying to adhere to the programming note in 5.3.3 of the ISA:
 
-> On Sat, 2016-05-21 at 14:03 +0200, Andrea Gelmini wrote:
-> > Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
-> > ---
->
-> This entire comment needs to be rewritten as it's incredibly confusing, but alas
->
-> Acked-by: Russell Currey <ruscur@russell.cc>
->
-> >  arch/powerpc/include/asm/eeh.h | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-> > index fb9f376..7d34f3d 100644
-> > --- a/arch/powerpc/include/asm/eeh.h
-> > +++ b/arch/powerpc/include/asm/eeh.h
-> > @@ -57,7 +57,7 @@ struct pci_dn;
-> >  /*
-> >   * The struct is used to trace PE related EEH functionality.
-> >   * In theory, there will have one instance of the struct to
+"The VRSAVE register can be used to indicate which VRs are currently being used
+by a program. If this is done, the operating system could save only those VRs
+when an 'interrupt' occurs, and could restore only those VRs when resuming the
+interrupted program."
 
-  "there will have one instance"?
+In this scenario we don't trust userspace to do anything sane (IE the old
+comment saying 'broken application' because zero here can't be correct) and
+we're loading all 1's because we're now switching all (32) altivec registers.
+Obviously we're still going to switch all 32 even if userspace adheres to the
+note, doing so doesn't violate the note.
 
-rday
+Admittedly the note really does imply that it's userspaces responsibility to
+set it, however, if we're going to change it to something other than zero, it
+might be worth noting that all 1's is 'best' in case anyone does ever follow
+that note.
 
--- 
+Perhaps ending with "... Set it to all 1s as a best effort to adhere to the
+programming note in '5.3.3 VR Save Register' of the ISA"
 
-========================================================================
-Robert P. J. Day                                 Ottawa, Ontario, CANADA
-                        http://crashcourse.ca
+Having said all that, a reminder that glibc does look at it is very welcome
+here!
 
-Twitter:                                       http://twitter.com/rpjday
-LinkedIn:                               http://ca.linkedin.com/in/rpjday
-========================================================================
----1463808767-1116047029-1463987568=:23426--
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+
+>  	 */
+>  	mfspr	r4,SPRN_VRSAVE
+>  	cmpwi	0,r4,0
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
