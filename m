@@ -1,27 +1,23 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCgdq5cHhzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 11:18:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCgrQ6n2zzDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 11:27:18 +1000 (AEST)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Sun, 22 May 2016 19:18:04 -0600
+ Sun, 22 May 2016 19:27:16 -0600
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Andrea Gelmini <andrea.gelmini@gelma.net>, andrea.gelmini@gelma.net
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, trivial@kernel.org,
- pawel.moll@arm.com, devicetree@hellion.org.uk, sudeep.holla@arm.com,
- paulus@samba.org, galak@codeaurora.org, dt@kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0030/1529] Fix typo
-In-Reply-To: <20160521113934.453-1-andrea.gelmini@gelma.net>
-References: <20160521113934.453-1-andrea.gelmini@gelma.net>
-Date: Mon, 23 May 2016 11:17:51 +1000
-Message-ID: <878tz1y3ls.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+To: paulus@ozlabs.org, andrea.gelmini@gelma.net
+Cc: trivial@kernel.org, oss@buserror.net, linuxppc-dev@lists.ozlabs.org,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: [PATCH] Clarify that adde is an instruction and we mean plural
+Date: Mon, 23 May 2016 11:27:01 +1000
+Message-Id: <1463966821-14733-1-git-send-email-stewart@linux.vnet.ibm.com>
+In-Reply-To: <20160522023732.GA23547@fergus.ozlabs.ibm.com>
+References: <20160522023732.GA23547@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrea Gelmini <andrea.gelmini@gelma.net> writes:
-> Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
-> ---
->  Documentation/devicetree/bindings/rtc/rtc-opal.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/Documentation/devicetree/bindings/rtc/rtc-opal.txt b/Documentation/devicetree/bindings/rtc/rtc-opal.txt
-> index a1734e5..2340938c 100644
-> --- a/Documentation/devicetree/bindings/rtc/rtc-opal.txt
-> +++ b/Documentation/devicetree/bindings/rtc/rtc-opal.txt
-> @@ -2,7 +2,7 @@ IBM OPAL real-time clock
->  ------------------------
->  
->  Required properties:
-> -- comapatible: Should be "ibm,opal-rtc"
-> +- compatible: Should be "ibm,opal-rtc"
->  
->  Optional properties:
->  - wakeup-source: Decides if the wakeup is supported or not
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+ arch/powerpc/lib/checksum_64.S | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
+diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
+index 8e6e510..fdec6e6 100644
+--- a/arch/powerpc/lib/checksum_64.S
++++ b/arch/powerpc/lib/checksum_64.S
+@@ -74,9 +74,9 @@ _GLOBAL(__csum_partial)
+ 	ld	r11,24(r3)
+ 
+ 	/*
+-	 * On POWER6 and POWER7 back to back addes take 2 cycles because of
+-	 * the XER dependency. This means the fastest this loop can go is
+-	 * 16 cycles per iteration. The scheduling of the loop below has
++	 * On POWER6 and POWER7 back to back adde instructions take 2 cycles
++	 * because of the XER dependency. This means the fastest this loop can
++	 * go is 16 cycles per iteration. The scheduling of the loop below has
+ 	 * been shown to hit this on both POWER6 and POWER7.
+ 	 */
+ 	.align 5
+@@ -275,9 +275,9 @@ source;	ld	r10,16(r3)
+ source;	ld	r11,24(r3)
+ 
+ 	/*
+-	 * On POWER6 and POWER7 back to back addes take 2 cycles because of
+-	 * the XER dependency. This means the fastest this loop can go is
+-	 * 16 cycles per iteration. The scheduling of the loop below has
++	 * On POWER6 and POWER7 back to back adde instructions take 2 cycles
++	 * because of the XER dependency. This means the fastest this loop can
++	 * go is 16 cycles per iteration. The scheduling of the loop below has
+ 	 * been shown to hit this on both POWER6 and POWER7.
+ 	 */
+ 	.align 5
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+2.5.5
