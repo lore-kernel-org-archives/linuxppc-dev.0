@@ -1,23 +1,19 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCrR910jJzDqCn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 17:54:29 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id eu11so2333pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 00:54:29 -0700 (PDT)
-Date: Mon, 23 May 2016 17:54:17 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Improve comment explaining why we modify VRSAVE
-Message-ID: <20160523175417.2d96049b@camb691>
-In-Reply-To: <20160520044134.62712b79@kryten>
-References: <20160520044134.62712b79@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCnP53gqGzDqCj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 15:37:28 +1000 (AEST)
+Content-Type: multipart/alternative;
+ boundary=Apple-Mail-2C897F81-C964-4F59-BCD7-1703DF9C0C0F
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Mime-Version: 1.0 (1.0)
+Subject: PAGE_GUARDED
+Message-Id: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+Date: Mon, 23 May 2016 06:38:08 +0200
+To: linuxppc-dev@lists.ozlabs.org
+Cc: darren@stevens-zone.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 20 May 2016 04:41:34 +1000
-Anton Blanchard via Linuxppc-dev <linuxppc-dev@lists.ozlabs.org> wrote:
 
-> The comment explaining why we modify VRSAVE is misleading, glibc
-> does rely on the behaviour. Update the comment.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
-> index 1c2e7a3..3907fcf 100644
-> --- a/arch/powerpc/kernel/vector.S
-> +++ b/arch/powerpc/kernel/vector.S
-> @@ -70,10 +70,11 @@ _GLOBAL(load_up_altivec)
->  	MTMSRD(r5)			/* enable use of AltiVec now */
->  	isync
->  
-> -	/* Hack: if we get an altivec unavailable trap with VRSAVE
-> -	 * set to all zeros, we assume this is a broken application
-> -	 * that fails to set it properly, and thus we switch it to
-> -	 * all 1's
-> +	/*
-> +	 * While userspace in general ignores VRSAVE, glibc uses it as a
-> +	 * boolean to optimise userspace context save/restore. Whenever we
-> +	 * take an altivec unavailable exception we must set VRSAVE to
-> +	 * something non zero. Set it to all 1s.
+--Apple-Mail-2C897F81-C964-4F59-BCD7-1703DF9C0C0F
+Content-Type: text/plain;
+	charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 
-I always assumed this was a little more complicated and that it revolved
-around trying to adhere to the programming note in 5.3.3 of the ISA:
+Hi All,
 
-"The VRSAVE register can be used to indicate which VRs are currently being used
-by a program. If this is done, the operating system could save only those VRs
-when an 'interrupt' occurs, and could restore only those VRs when resuming the
-interrupted program."
+You removed PAGE_GUARDED in the commit =20
 
-In this scenario we don't trust userspace to do anything sane (IE the old
-comment saying 'broken application' because zero here can't be correct) and
-we're loading all 1's because we're now switching all (32) altivec registers.
-Obviously we're still going to switch all 32 even if userspace adheres to the
-note, doing so doesn't violate the note.
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=3D=
+c04a5880299eab3da8c10547db96ea9cdffd44a6
 
-Admittedly the note really does imply that it's userspaces responsibility to
-set it, however, if we're going to change it to something other than zero, it
-might be worth noting that all 1's is 'best' in case anyone does ever follow
-that note.
+We use
 
-Perhaps ending with "... Set it to all 1s as a best effort to adhere to the
-programming note in '5.3.3 VR Save Register' of the ISA"
+range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
 
-Having said all that, a reminder that glibc does look at it is very welcome
-here!
+This doesn't work anymore. What can we use instead?
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+Thanks in advance,
 
->  	 */
->  	mfspr	r4,SPRN_VRSAVE
->  	cmpwi	0,r4,0
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Christian=
+
+--Apple-Mail-2C897F81-C964-4F59-BCD7-1703DF9C0C0F
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
+utf-8"></head><body dir=3D"auto"><div><span></span></div><div><div>Hi All,</=
+div><div><br></div><div>You removed&nbsp;<span style=3D"background-color: rg=
+ba(255, 255, 255, 0);">PAGE_GUARDED in the&nbsp;commit &nbsp;</span></div><d=
+iv><span style=3D"background-color: rgba(255, 255, 255, 0);"><br></span></di=
+v><div><a href=3D"https://git.kernel.org/cgit/linux/kernel/git/torvalds/linu=
+x.git/commit/?id=3Dc04a5880299eab3da8c10547db96ea9cdffd44a6">https://git.ker=
+nel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=3Dc04a5880299eab=
+3da8c10547db96ea9cdffd44a6</a></div><div><br></div><div>We use</div><div><br=
+></div><div><dl class=3D"codebox" style=3D"margin: 0px; padding: 3px; border=
+: 1px solid rgb(216, 208, 201);"><dd style=3D"margin: 0px; padding: 0px;"><c=
+ode style=3D"margin: 2px 0px; padding: 5px 0px 0px; overflow: auto; display:=
+ block; height: auto; max-height: 200px; line-height: 1.3em;"><font face=3D"=
+UICTFontTextStyleBody"><span style=3D"background-color: rgba(255, 255, 255, 0=
+);">range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);</span></font></code></dd></dl=
+></div>
+</div><div><br>This doesn't work anymore. What can we use instead?<br><br></=
+div><div>Thanks in advance,</div><div><br></div><div>Christian</div></body><=
+/html>=
+
+--Apple-Mail-2C897F81-C964-4F59-BCD7-1703DF9C0C0F--
