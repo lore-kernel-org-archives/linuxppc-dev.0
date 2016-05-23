@@ -2,23 +2,34 @@ Return-Path: <felix@linux.vnet.ibm.com>
 Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCyzN6pQBzDqMb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 22:49:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCz740MhVzDqMp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 22:55:59 +1000 (AEST)
 Received: from localhost
  by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Mon, 23 May 2016 13:49:17 +0100
+ Mon, 23 May 2016 13:55:55 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 60E7B1B08078
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 13:56:50 +0100 (BST)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4NCtpuQ15663598
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 12:55:51 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4NCtp8i028660
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 06:55:51 -0600
 From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
  imunsie@au1.ibm.com, mikey@neuling.org,
  Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [v4,2/2] cxl: Add set and get private data to context struct
-Date: Mon, 23 May 2016 14:49:02 +0200
-Message-Id: <1464007742-1941-2-git-send-email-felix@linux.vnet.ibm.com>
-In-Reply-To: <1464007742-1941-1-git-send-email-felix@linux.vnet.ibm.com>
-References: <1464007742-1941-1-git-send-email-felix@linux.vnet.ibm.com>
+Subject: [RESEND v5,2/2] cxl: Add set and get private data to context struct
+Date: Mon, 23 May 2016 14:55:48 +0200
+Message-Id: <1464008148-2762-1-git-send-email-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
