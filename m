@@ -1,18 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <lorenzo.pieralisi@arm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rCsbP6yvZzDqR7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 18:46:41 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc32: use stmw/lmw for non volatile registers
- save/restore
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20160523084637.063611A239A@localhost.localdomain>
-Date: Mon, 23 May 2016 10:46:36 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rCstb6pzrzDqDm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 May 2016 18:59:51 +1000 (AEST)
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by ozlabs.org (Postfix) with ESMTP id 3rCstb2nRdz9s9n
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 May 2016 18:59:50 +1000 (AEST)
+Date: Mon, 23 May 2016 10:00:04 +0100
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com,
+ linuxppc-dev@ozlabs.org
+Subject: Re: [RFC PATCH] Increase in idle power with schedutil
+Message-ID: <20160523090004.GA21186@red-moon>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
+ <20160519114029.GW3193@twins.programming.kicks-ass.net>
+ <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
+ <20160522103912.GN3193@twins.programming.kicks-ass.net>
+ <20160522204252.GH15383@graphite.smuckle.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160522204252.GH15383@graphite.smuckle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,214 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-lmw/stmw have a 1 cycle (2 cycles for lmw on some ppc) in addition
-and implies serialising, however it reduces the amount of instructions
-hence the amount of instruction fetch compared to the equivalent
-operation with several lzw/stw. It means less pressure on cache and
-less fetching delays on slow memory.
-When we transfer 20 registers, it is worth it.
-gcc uses stmw/lmw at function entry/exit to save/restore non
-volatile register, so lets also do it that way.
+On Sun, May 22, 2016 at 01:42:52PM -0700, Steve Muckle wrote:
+> On Sun, May 22, 2016 at 12:39:12PM +0200, Peter Zijlstra wrote:
+> > On Fri, May 20, 2016 at 05:53:41PM +0530, Shilpasri G Bhat wrote:
+> > > 
+> > > Below are the comparisons by disabling watchdog.
+> > > Both schedutil and ondemand have a similar ramp-down trend. And in both the
+> > > cases I can see that frequency of the cpu is not reduced in deterministic
+> > > fashion. In a observation window of 30 seconds after running a workload I can
+> > > see that the frequency is not ramped down on some cpus in the system and are
+> > > idling at max frequency.
+> > 
+> > So does it actually matter what the frequency is when you idle? Isn't
+> > the whole thing clock gated anyway?
+> > 
+> > Because this seems to generate contradictory requirements, on the one
+> > hand we want to stay idle as long as possible while on the other hand
+> > you seem to want to clock down while idle, which requires not being
+> > idle.
+> > 
+> > If it matters; should not your idle state muck explicitly set/restore
+> > frequency?
+> 
+> AFAIK this is very platform dependent. Some will waste more power than
+> others when a CPU idles above fmin due to things like resource (bus
+> bandwidth, shared cache freq etc) voting.
 
-On powerpc64, we can't use lmw/stmw as it only handles 32 bits, so
-we move longjmp() and setjmp() from misc.S to misc_64.S, and we
-write a 32 bits version in misc_32.S using stmw/lmw
+It is also related to static leakage power that depends on the operating
+voltage (ie higher operating frequencies require higher voltage) so in a
+way scaling frequency before going idle may not be effective if voltage
+does not scale too in turn.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-The patch goes on top of "powerpc: inline current_stack_pointer()" or
-requires trivial manual merge in arch/powerpc/kernel/misc.S
-
- arch/powerpc/include/asm/ppc_asm.h |  6 ++--
- arch/powerpc/kernel/misc.S         | 61 --------------------------------------
- arch/powerpc/kernel/misc_32.S      | 22 ++++++++++++++
- arch/powerpc/kernel/misc_64.S      | 61 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 85 insertions(+), 65 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 2b31632..e29b649 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -82,10 +82,8 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #else
- #define SAVE_GPR(n, base)	stw	n,GPR0+4*(n)(base)
- #define REST_GPR(n, base)	lwz	n,GPR0+4*(n)(base)
--#define SAVE_NVGPRS(base)	SAVE_GPR(13, base); SAVE_8GPRS(14, base); \
--				SAVE_10GPRS(22, base)
--#define REST_NVGPRS(base)	REST_GPR(13, base); REST_8GPRS(14, base); \
--				REST_10GPRS(22, base)
-+#define SAVE_NVGPRS(base)	stmw	13, GPR0+4*13(base)
-+#define REST_NVGPRS(base)	lmw	13, GPR0+4*13(base)
- #endif
- 
- #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-index 7ce26d4..9de71d8 100644
---- a/arch/powerpc/kernel/misc.S
-+++ b/arch/powerpc/kernel/misc.S
-@@ -53,64 +53,3 @@ _GLOBAL(add_reloc_offset)
- 
- 	.align	3
- 2:	PPC_LONG 1b
--
--_GLOBAL(setjmp)
--	mflr	r0
--	PPC_STL	r0,0(r3)
--	PPC_STL	r1,SZL(r3)
--	PPC_STL	r2,2*SZL(r3)
--	mfcr	r0
--	PPC_STL	r0,3*SZL(r3)
--	PPC_STL	r13,4*SZL(r3)
--	PPC_STL	r14,5*SZL(r3)
--	PPC_STL	r15,6*SZL(r3)
--	PPC_STL	r16,7*SZL(r3)
--	PPC_STL	r17,8*SZL(r3)
--	PPC_STL	r18,9*SZL(r3)
--	PPC_STL	r19,10*SZL(r3)
--	PPC_STL	r20,11*SZL(r3)
--	PPC_STL	r21,12*SZL(r3)
--	PPC_STL	r22,13*SZL(r3)
--	PPC_STL	r23,14*SZL(r3)
--	PPC_STL	r24,15*SZL(r3)
--	PPC_STL	r25,16*SZL(r3)
--	PPC_STL	r26,17*SZL(r3)
--	PPC_STL	r27,18*SZL(r3)
--	PPC_STL	r28,19*SZL(r3)
--	PPC_STL	r29,20*SZL(r3)
--	PPC_STL	r30,21*SZL(r3)
--	PPC_STL	r31,22*SZL(r3)
--	li	r3,0
--	blr
--
--_GLOBAL(longjmp)
--	PPC_LCMPI r4,0
--	bne	1f
--	li	r4,1
--1:	PPC_LL	r13,4*SZL(r3)
--	PPC_LL	r14,5*SZL(r3)
--	PPC_LL	r15,6*SZL(r3)
--	PPC_LL	r16,7*SZL(r3)
--	PPC_LL	r17,8*SZL(r3)
--	PPC_LL	r18,9*SZL(r3)
--	PPC_LL	r19,10*SZL(r3)
--	PPC_LL	r20,11*SZL(r3)
--	PPC_LL	r21,12*SZL(r3)
--	PPC_LL	r22,13*SZL(r3)
--	PPC_LL	r23,14*SZL(r3)
--	PPC_LL	r24,15*SZL(r3)
--	PPC_LL	r25,16*SZL(r3)
--	PPC_LL	r26,17*SZL(r3)
--	PPC_LL	r27,18*SZL(r3)
--	PPC_LL	r28,19*SZL(r3)
--	PPC_LL	r29,20*SZL(r3)
--	PPC_LL	r30,21*SZL(r3)
--	PPC_LL	r31,22*SZL(r3)
--	PPC_LL	r0,3*SZL(r3)
--	mtcrf	0x38,r0
--	PPC_LL	r0,0(r3)
--	PPC_LL	r1,SZL(r3)
--	PPC_LL	r2,2*SZL(r3)
--	mtlr	r0
--	mr	r3,r4
--	blr
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index d9c912b..de419e9 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -1086,3 +1086,25 @@ relocate_new_kernel_end:
- relocate_new_kernel_size:
- 	.long relocate_new_kernel_end - relocate_new_kernel
- #endif
-+
-+_GLOBAL(setjmp)
-+	mflr	r0
-+	li	r3, 0
-+	stw	r0, 0(r3)
-+	stw	r1, 4(r3)
-+	stw	r2, 8(r3)
-+	mfcr	r12
-+	stmw	r12, 12(r3)
-+	blr
-+
-+_GLOBAL(longjmp)
-+	lwz	r0, 0(r3)
-+	lwz	r1, 4(r3)
-+	lwz	r2, 8(r3)
-+	lmw	r12, 12(r3)
-+	mtcrf	0x38, r12
-+	mtlr	r0
-+	mr.	r3, r4
-+	bnelr
-+	li	r3, 1
-+	blr
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index f28754c..7e25249 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -701,3 +701,64 @@ _GLOBAL(kexec_sequence)
- 	li	r5,0
- 	blr	/* image->start(physid, image->start, 0); */
- #endif /* CONFIG_KEXEC */
-+
-+_GLOBAL(setjmp)
-+	mflr	r0
-+	PPC_STL	r0,0(r3)
-+	PPC_STL	r1,SZL(r3)
-+	PPC_STL	r2,2*SZL(r3)
-+	mfcr	r0
-+	PPC_STL	r0,3*SZL(r3)
-+	PPC_STL	r13,4*SZL(r3)
-+	PPC_STL	r14,5*SZL(r3)
-+	PPC_STL	r15,6*SZL(r3)
-+	PPC_STL	r16,7*SZL(r3)
-+	PPC_STL	r17,8*SZL(r3)
-+	PPC_STL	r18,9*SZL(r3)
-+	PPC_STL	r19,10*SZL(r3)
-+	PPC_STL	r20,11*SZL(r3)
-+	PPC_STL	r21,12*SZL(r3)
-+	PPC_STL	r22,13*SZL(r3)
-+	PPC_STL	r23,14*SZL(r3)
-+	PPC_STL	r24,15*SZL(r3)
-+	PPC_STL	r25,16*SZL(r3)
-+	PPC_STL	r26,17*SZL(r3)
-+	PPC_STL	r27,18*SZL(r3)
-+	PPC_STL	r28,19*SZL(r3)
-+	PPC_STL	r29,20*SZL(r3)
-+	PPC_STL	r30,21*SZL(r3)
-+	PPC_STL	r31,22*SZL(r3)
-+	li	r3,0
-+	blr
-+
-+_GLOBAL(longjmp)
-+	PPC_LCMPI r4,0
-+	bne	1f
-+	li	r4,1
-+1:	PPC_LL	r13,4*SZL(r3)
-+	PPC_LL	r14,5*SZL(r3)
-+	PPC_LL	r15,6*SZL(r3)
-+	PPC_LL	r16,7*SZL(r3)
-+	PPC_LL	r17,8*SZL(r3)
-+	PPC_LL	r18,9*SZL(r3)
-+	PPC_LL	r19,10*SZL(r3)
-+	PPC_LL	r20,11*SZL(r3)
-+	PPC_LL	r21,12*SZL(r3)
-+	PPC_LL	r22,13*SZL(r3)
-+	PPC_LL	r23,14*SZL(r3)
-+	PPC_LL	r24,15*SZL(r3)
-+	PPC_LL	r25,16*SZL(r3)
-+	PPC_LL	r26,17*SZL(r3)
-+	PPC_LL	r27,18*SZL(r3)
-+	PPC_LL	r28,19*SZL(r3)
-+	PPC_LL	r29,20*SZL(r3)
-+	PPC_LL	r30,21*SZL(r3)
-+	PPC_LL	r31,22*SZL(r3)
-+	PPC_LL	r0,3*SZL(r3)
-+	mtcrf	0x38,r0
-+	PPC_LL	r0,0(r3)
-+	PPC_LL	r1,SZL(r3)
-+	PPC_LL	r2,2*SZL(r3)
-+	mtlr	r0
-+	mr	r3,r4
-+	blr
--- 
-2.1.0
+Lorenzo
