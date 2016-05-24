@@ -1,24 +1,24 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDbWS2WNMzDqMq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 23:15:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDbWX3D6CzDqNg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 23:15:52 +1000 (AEST)
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Tue, 24 May 2016 09:15:46 -0400
+ Tue, 24 May 2016 07:15:49 -0600
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
  linux-kernel@vger.kernel.org, mikey@neuling.org,
  ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
  "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v4 05/10] powerpc/powernv: Make pnv_powersave_common more
- generic
-Date: Tue, 24 May 2016 18:45:09 +0530
-Message-Id: <1464095714-48772-6-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v4 06/10] powerpc/powernv: abstraction for saving SPRs before
+ entering deep idle states
+Date: Tue, 24 May 2016 18:45:10 +0530
+Message-Id: <1464095714-48772-7-git-send-email-shreyas@linux.vnet.ibm.com>
 In-Reply-To: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
 References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,100 +30,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pnv_powersave_common does common steps needed before entering idle
-state and eventually changes MSR to MSR_IDLE and does rfid to
-pnv_enter_arch207_idle_mode.
-
-Move the updation of HSTATE_HWTHREAD_STATE to pnv_powersave_common
-from pnv_enter_arch207_idle_mode and make it more generic by passing
-the rfid address as a function parameter.
+Create a function for saving SPRs before entering deep idle states.
+This function can be reused for POWER9 deep idle states.
 
 Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 ---
-Changes in v4:
-==============
- - Moved renaming of power7_powersave_common to earlier patch
+ - No changes in v4
 
 Changes in v3:
-==============
- - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+=============
+ - Newly added in v3
 
- arch/powerpc/kernel/idle_power_common.S | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/idle_power_common.S | 54 +++++++++++++++++++--------------
+ 1 file changed, 32 insertions(+), 22 deletions(-)
 
 diff --git a/arch/powerpc/kernel/idle_power_common.S b/arch/powerpc/kernel/idle_power_common.S
-index 34dbfc9..a8397e3 100644
+index a8397e3..2f909a1 100644
 --- a/arch/powerpc/kernel/idle_power_common.S
 +++ b/arch/powerpc/kernel/idle_power_common.S
-@@ -75,6 +75,8 @@ core_idle_lock_held:
-  * To check IRQ_HAPPENED in r4
-  * 	0 - don't check
-  * 	1 - check
-+ *
-+ * Address to 'rfid' to in r5
-  */
- _GLOBAL(pnv_powersave_common)
- 	/* Use r3 to pass state nap/sleep/winkle */
-@@ -127,28 +129,28 @@ _GLOBAL(pnv_powersave_common)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
+@@ -53,6 +53,36 @@
+ 	.text
  
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	/* Tell KVM we're entering idle */
-+	li	r4,KVM_HWTHREAD_IN_NAP
-+	stb	r4,HSTATE_HWTHREAD_STATE(r13)
-+#endif
+ /*
++ * Used by threads before entering deep idle states. Saves SPRs
++ * in interrupt stack frame
++ */
++save_sprs_to_stack:
++	/*
++	 * Note all register i.e per-core, per-subcore or per-thread is saved
++	 * here since any thread in the core might wake up first
++	 */
++	mfspr	r3,SPRN_SDR1
++	std	r3,_SDR1(r1)
++	mfspr	r3,SPRN_RPR
++	std	r3,_RPR(r1)
++	mfspr	r3,SPRN_SPURR
++	std	r3,_SPURR(r1)
++	mfspr	r3,SPRN_PURR
++	std	r3,_PURR(r1)
++	mfspr	r3,SPRN_TSCR
++	std	r3,_TSCR(r1)
++	mfspr	r3,SPRN_DSCR
++	std	r3,_DSCR(r1)
++	mfspr	r3,SPRN_AMOR
++	std	r3,_AMOR(r1)
++	mfspr	r3,SPRN_WORT
++	std	r3,_WORT(r1)
++	mfspr	r3,SPRN_WORC
++	std	r3,_WORC(r1)
 +
- 	/*
- 	 * Go to real mode to do the nap, as required by the architecture.
- 	 * Also, we need to be in real mode before setting hwthread_state,
- 	 * because as soon as we do that, another thread can switch
- 	 * the MMU context to the guest.
- 	 */
--	LOAD_REG_IMMEDIATE(r5, MSR_IDLE)
-+	LOAD_REG_IMMEDIATE(r7, MSR_IDLE)
- 	li	r6, MSR_RI
- 	andc	r6, r9, r6
--	LOAD_REG_ADDR(r7, pnv_enter_arch207_idle_mode)
- 	mtmsrd	r6, 1		/* clear RI before setting SRR0/1 */
--	mtspr	SPRN_SRR0, r7
--	mtspr	SPRN_SRR1, r5
-+	mtspr	SPRN_SRR0, r5
-+	mtspr	SPRN_SRR1, r7
- 	rfid
++	blr
++
++/*
+  * Used by threads when the lock bit of core_idle_state is set.
+  * Threads will spin in HMT_LOW until the lock bit is cleared.
+  * r14 - pointer to core_idle_state
+@@ -209,28 +239,8 @@ fastsleep_workaround_at_entry:
+ 	b	common_enter
  
- 	.globl pnv_enter_arch207_idle_mode
- pnv_enter_arch207_idle_mode:
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	/* Tell KVM we're napping */
--	li	r4,KVM_HWTHREAD_IN_NAP
--	stb	r4,HSTATE_HWTHREAD_STATE(r13)
--#endif
- 	stb	r3,PACA_THREAD_IDLE_STATE(r13)
- 	cmpwi	cr3,r3,PNV_THREAD_SLEEP
- 	bge	cr3,2f
-@@ -243,18 +245,21 @@ _GLOBAL(power7_idle)
- _GLOBAL(power7_nap)
- 	mr	r4,r3
- 	li	r3,PNV_THREAD_NAP
-+	LOAD_REG_ADDR(r5, pnv_enter_arch207_idle_mode)
- 	b	pnv_powersave_common
- 	/* No return */
+ enter_winkle:
+-	/*
+-	 * Note all register i.e per-core, per-subcore or per-thread is saved
+-	 * here since any thread in the core might wake up first
+-	 */
+-	mfspr	r3,SPRN_SDR1
+-	std	r3,_SDR1(r1)
+-	mfspr	r3,SPRN_RPR
+-	std	r3,_RPR(r1)
+-	mfspr	r3,SPRN_SPURR
+-	std	r3,_SPURR(r1)
+-	mfspr	r3,SPRN_PURR
+-	std	r3,_PURR(r1)
+-	mfspr	r3,SPRN_TSCR
+-	std	r3,_TSCR(r1)
+-	mfspr	r3,SPRN_DSCR
+-	std	r3,_DSCR(r1)
+-	mfspr	r3,SPRN_AMOR
+-	std	r3,_AMOR(r1)
+-	mfspr	r3,SPRN_WORT
+-	std	r3,_WORT(r1)
+-	mfspr	r3,SPRN_WORC
+-	std	r3,_WORC(r1)
++	bl	save_sprs_to_stack
++
+ 	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
  
- _GLOBAL(power7_sleep)
- 	li	r3,PNV_THREAD_SLEEP
- 	li	r4,1
-+	LOAD_REG_ADDR(r5, pnv_enter_arch207_idle_mode)
- 	b	pnv_powersave_common
- 	/* No return */
- 
- _GLOBAL(power7_winkle)
- 	li	r3,PNV_THREAD_WINKLE
- 	li	r4,1
-+	LOAD_REG_ADDR(r5, pnv_enter_arch207_idle_mode)
- 	b	pnv_powersave_common
- 	/* No return */
- 
+ _GLOBAL(power7_idle)
 -- 
 2.4.11
