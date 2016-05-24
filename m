@@ -1,18 +1,38 @@
-Return-Path: <claudiu.manoil@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0085.outbound.protection.outlook.com [157.56.111.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <jikos@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDflS52kVzDqKM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:41:24 +1000 (AEST)
-From: Claudiu Manoil <claudiu.manoil@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <scottwood@freescale.com>
-Subject: [PATCH] powerpc/85xx: Don't report SRAM to L2 cache fallback as error
-Date: Tue, 24 May 2016 18:04:49 +0300
-Message-ID: <1464102289-28740-1-git-send-email-claudiu.manoil@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDr8N5S9szDqPX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 08:45:08 +1000 (AEST)
+Date: Wed, 25 May 2016 00:45:05 +0200 (CEST)
+From: Jiri Kosina <jikos@kernel.org>
+To: David Laight <David.Laight@ACULAB.COM>
+cc: Josh Poimboeuf <jpoimboe@redhat.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ Jessica Yu <jeyu@redhat.com>, Vojtech Pavlik <vojtech@suse.com>,
+ Petr Mladek <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Andy Lutomirski <luto@kernel.org>,
+ "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>,
+ Jiri Slaby <jslaby@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Chris J Arges <chris.j.arges@canonical.com>
+Subject: RE: livepatch: change to a per-task consistency model
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4C5254@AcuExch.aculab.com>
+Message-ID: <alpine.LNX.2.00.1605250042020.31937@cbobk.fhfr.pm>
+References: <cover.1461875890.git.jpoimboe@redhat.com>
+ <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
+ <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
+ <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
+ <20160518165147.vyuamqfnm5kfwiqf@treble>
+ <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
+ <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
+ <alpine.LNX.2.00.1605232043300.31937@cbobk.fhfr.pm>
+ <063D6719AE5E284EB5DD2968C1650D6D5F4C5254@AcuExch.aculab.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +42,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the SRAM region parameters are missing the SRAM driver
-probing exits and the L2 region is configured as L2 cache
-entirely.  This is the expected default behaviour, so it
-makes no sense to report it as an error.
+On Tue, 24 May 2016, David Laight wrote:
 
-Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
----
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+> > > Related, please can we have a flag for the sleep and/or process so that
+> > > an uninterruptible sleep doesn't trigger the 'hung task' detector
+> > 
+> > TASK_KILLABLE
+> 
+> Not sure that does what I want.
+> It appears to allow some 'kill' actions to wake the process.
+> I'm sure I've looked at the 'hung task' code since 2007.
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index 861cebf..15bc867 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -91,9 +91,8 @@ static int mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
- 	l2cache_size = *prop;
- 
- 	if (get_cache_sram_params(&sram_params)) {
--		dev_err(&dev->dev,
--			"Entire L2 as cache, provide valid sram offset and size\n");
--		return -EINVAL;
-+		dev_info(&dev->dev, "Configure entire L2 as cache\n");
-+		return 0;
- 	}
- 
- 
+The trick is the 
+
+	if (t->state == TASK_UNINTERRUPTIBLE)
+
+test in check_hung_uninterruptible_tasks(). That makes sure that 
+TASK_KILLABLE tasks (e.g. waiting on NFS I/O, but not limited only to 
+that; feel free to set it whereever you need) are skipped. Please note 
+that TASK_KILLABLE is actually a _mask_ that includes TASK_UNINTERRUPTIBLE 
+as well; therefore the '==' test skips such tasks.
+
 -- 
-1.7.11.7
+Jiri Kosina
+SUSE Labs
