@@ -1,26 +1,25 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::8])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDbWp4jnjzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 23:16:06 +1000 (AEST)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Tue, 24 May 2016 09:16:04 -0400
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org,
- ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v4 10/10] powerpc/powernv: Use deepest stop state when cpu is
- offlined
-Date: Tue, 24 May 2016 18:45:14 +0530
-Message-Id: <1464095714-48772-11-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDc8F5TpGzDqHh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 23:44:12 +1000 (AEST)
+Subject: PAGE_GUARDED
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <michaele@au1.ibm.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+Date: Tue, 24 May 2016 15:37:58 +0200
+MIME-Version: 1.0
+In-Reply-To: <1464088614.3078.79.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,85 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If hardware supports stop state, use the deepest stop state when
-the cpu is offlined.
+Ben,
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- - No changes since v1
+I tried:
 
- arch/powerpc/platforms/powernv/idle.c    | 15 +++++++++++++--
- arch/powerpc/platforms/powernv/powernv.h |  1 +
- arch/powerpc/platforms/powernv/smp.c     |  4 +++-
- 3 files changed, 17 insertions(+), 3 deletions(-)
+/* Workaround for lack of device tree */
+                        if (primary) {
+                                __ioremap_at(range.cpu_addr, (void 
+*)ISA_IO_BASE,
+                                range.size, pgprot_noncached(PAGE_KERNEL));
+                        hose->io_base_virt = (void *)_IO_BASE;
+                        printk("Initialised io_base_virt 0x%lx _IO_BASE 
+0x%llx\n", (unsigned long)hose->io_base_virt, (unsigned long long)_IO_BASE);
+                     }
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 8dc5936..d715235 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -242,6 +242,11 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
-  */
- u64 pnv_first_deep_stop_state;
- 
-+/*
-+ * Deepest stop idle state. Used when a cpu is offlined
-+ */
-+u64 pnv_deepest_stop_state;
-+
- static int __init pnv_init_idle_states(void)
- {
- 	struct device_node *power_mgt;
-@@ -290,8 +295,11 @@ static int __init pnv_init_idle_states(void)
- 		}
- 
- 		/*
--		 * Set pnv_first_deep_stop_state to the first stop level
--		 * to cause hypervisor state loss
-+		 * Set pnv_first_deep_stop_state and pnv_deepest_stop_state.
-+		 * pnv_first_deep_stop_state should be set to the first stop
-+		 * level to cause hypervisor state loss.
-+		 * pnv_deepest_stop_state should be set to the deepest stop
-+		 * stop state.
- 		 */
- 		pnv_first_deep_stop_state = MAX_POSSIBLE_STOP_STATE;
- 		for (i = 0; i < dt_idle_states; i++) {
-@@ -300,6 +308,9 @@ static int __init pnv_init_idle_states(void)
- 			if ((flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) &&
- 			     (pnv_first_deep_stop_state > psscr_rl))
- 				pnv_first_deep_stop_state = psscr_rl;
-+
-+			if (pnv_deepest_stop_state < psscr_rl)
-+				pnv_deepest_stop_state = psscr_rl;
- 		}
- 	}
- 
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 6dbc0a1..da7c843 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -18,6 +18,7 @@ static inline void pnv_pci_shutdown(void) { }
- #endif
- 
- extern u32 pnv_get_supported_cpuidle_states(void);
-+extern u64 pnv_deepest_stop_state;
- 
- extern void pnv_lpc_init(void);
- 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index ad7b1a3..f69ceb6 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -182,7 +182,9 @@ static void pnv_smp_cpu_kill_self(void)
- 
- 		ppc64_runlatch_off();
- 
--		if (idle_states & OPAL_PM_WINKLE_ENABLED)
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			srr1 = power_stop(pnv_deepest_stop_state);
-+		else if (idle_states & OPAL_PM_WINKLE_ENABLED)
- 			srr1 = power7_winkle();
- 		else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
- 				(idle_states & OPAL_PM_SLEEP_ENABLED_ER1))
--- 
-2.4.11
+Unfortunately I got some error messages:
+
+arch/powerpc/kernel/pci-common.c: In function 
+‘pci_process_bridge_OF_ranges’:
+arch/powerpc/kernel/pci-common.c:731:32: error: incompatible type for 
+argument 4 of ‘__ioremap_at’
+                                 __ioremap_at(range.cpu_addr, (void 
+*)ISA_IO_BASE,
+                                 ^
+In file included from include/linux/io.h:25:0,
+                  from include/linux/pci.h:31,
+                  from arch/powerpc/kernel/pci-common.c:20:
+./arch/powerpc/include/asm/io.h:746:23: note: expected ‘long unsigned 
+int’ but argument is of type ‘pgprot_t’
+  extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
+
+Cheers,
+
+Christian
+
+
+On 24 May 2016 at 1:16 PM, Benjamin Herrenschmidt wrote:
+> Actually, can you try pgprot_noncached(PAGE_KERNEL) ? If that works,
+> then I wonder what that's going on in pci_64.c ...
+>
+> Cheers,
+> Ben.
