@@ -1,41 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0049.outbound.protection.outlook.com [104.47.2.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDfgf0sgQzDqKM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:38:06 +1000 (AEST)
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 25 May 2016 01:38:04 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8CAD82CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:38:01 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4OFbrJ85439964
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:38:01 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4OFbTat022695
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:37:29 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net
-Cc: Michael Ellerman <michaele@au1.ibm.com>
-Subject: Re: PAGE_GUARDED
-In-Reply-To: <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
-References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
- <1463990507.3078.16.camel@kernel.crashing.org>
- <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
- <1464088614.3078.79.camel@kernel.crashing.org>
- <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
-Date: Tue, 24 May 2016 21:07:10 +0530
-Message-ID: <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDgrt20zQzDqKX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 02:31:09 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Claudiu Manoil <claudiu.manoil@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: "scottwood@freescale.com" <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: Don't report SRAM to L2 cache fallback as
+ error
+Date: Tue, 24 May 2016 16:31:01 +0000
+Message-ID: <DB5PR0401MB192818C12E929B766A82E60B914F0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <1464102289-28740-1-git-send-email-claudiu.manoil@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,71 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
-
-> Ben,
->
-> I tried:
->
-> /* Workaround for lack of device tree */
->                         if (primary) {
->                                 __ioremap_at(range.cpu_addr, (void=20
-> *)ISA_IO_BASE,
->                                 range.size, pgprot_noncached(PAGE_KERNEL)=
-);
->                         hose->io_base_virt =3D (void *)_IO_BASE;
->                         printk("Initialised io_base_virt 0x%lx _IO_BASE=20
-> 0x%llx\n", (unsigned long)hose->io_base_virt, (unsigned long long)_IO_BAS=
-E);
->                      }
->
-> Unfortunately I got some error messages:
->
-> arch/powerpc/kernel/pci-common.c: In function=20
-> =E2=80=98pci_process_bridge_OF_ranges=E2=80=99:
-> arch/powerpc/kernel/pci-common.c:731:32: error: incompatible type for=20
-> argument 4 of =E2=80=98__ioremap_at=E2=80=99
->                                  __ioremap_at(range.cpu_addr, (void=20
-> *)ISA_IO_BASE,
->                                  ^
-> In file included from include/linux/io.h:25:0,
->                   from include/linux/pci.h:31,
->                   from arch/powerpc/kernel/pci-common.c:20:
-> ./arch/powerpc/include/asm/io.h:746:23: note: expected =E2=80=98long unsi=
-gned=20
-> int=E2=80=99 but argument is of type =E2=80=98pgprot_t=E2=80=99
->   extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
->
-
-You can look at commit 72176dd0ad36c ("powerpc/mm: Use a helper for
-finding pte bits mapping I/O area") to find similar conversion we did.
-
-For ex:
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
-		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
-
-gets replaced by
-
- 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
-		     size, pgprot_val(pgprot_noncached(__pgprot(0))));
-
-Now that gets mapped to the below hpte bits
-
-pte bit -> _PAGE_NON_IDEMPOTENT
-
-Which get converted in htab_convert_pte_flags(unsigned long pteflags)
-to
-
-	if ((pteflags & _PAGE_CACHE_CTL ) =3D=3D _PAGE_NON_IDEMPOTENT)
-		rflags |=3D (HPTE_R_I | HPTE_R_G);
-
-BTW we default add (HPTE_R_C | HPTE_R_M ).
-
-Hence the final pte WIMG bits will be MIG. I guess that is what you
-wanted ?
-
-
-If that doesn't work, can you point me the current code so that I can
-look at it and suggest correct alternative.
-
--aneesh
+On 05/24/2016 10:07 AM, Claudiu Manoil wrote:=0A=
+> If the SRAM region parameters are missing the SRAM driver=0A=
+> probing exits and the L2 region is configured as L2 cache=0A=
+> entirely.  This is the expected default behaviour, so it=0A=
+> makes no sense to report it as an error.=0A=
+> =0A=
+> Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>=0A=
+> ---=0A=
+>  arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 5 ++---=0A=
+>  1 file changed, 2 insertions(+), 3 deletions(-)=0A=
+> =0A=
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/=
+fsl_85xx_l2ctlr.c=0A=
+> index 861cebf..15bc867 100644=0A=
+> --- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c=0A=
+> +++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c=0A=
+> @@ -91,9 +91,8 @@ static int mpc85xx_l2ctlr_of_probe(struct platform_devi=
+ce *dev)=0A=
+>  	l2cache_size =3D *prop;=0A=
+>  =0A=
+>  	if (get_cache_sram_params(&sram_params)) {=0A=
+> -		dev_err(&dev->dev,=0A=
+> -			"Entire L2 as cache, provide valid sram offset and size\n");=0A=
+> -		return -EINVAL;=0A=
+> +		dev_info(&dev->dev, "Configure entire L2 as cache\n");=0A=
+> +		return 0;=0A=
+>  	}=0A=
+=0A=
+There's no need to report it at all.  Imagine the mess that the boot log=0A=
+would be (even more than it already is) if every driver built into the=0A=
+kernel reported "no, didn't find this one".=0A=
+=0A=
+Plus, the message reads as a command to the user rather than a statement=0A=
+of fact.=0A=
+=0A=
+-Scott=0A=
+=0A=
