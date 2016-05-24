@@ -3,45 +3,47 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDVR31QzLzDqDh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 19:26:38 +1000 (AEST)
-Received: from pps.filterd (m0048827.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDWWH0Z8HzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 20:15:20 +1000 (AEST)
+Received: from pps.filterd (m0082756.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u4O8i3ei002931
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 04:47:51 -0400
-Message-Id: <201605240847.u4O8i3ei002931@mx0a-001b2d01.pphosted.com>
+ u4OAFAnB038915
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 06:15:17 -0400
+Message-Id: <201605241015.u4OAFAnB038915@mx0a-001b2d01.pphosted.com>
 Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0a-001b2d01.pphosted.com with ESMTP id 234dxx631h-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 232teajrn1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 04:47:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 06:15:16 -0400
 Received: from localhost
  by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 24 May 2016 14:17:46 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C02BA125805E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 14:19:59 +0530 (IST)
+ Tue, 24 May 2016 15:45:13 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id AA998E005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 15:48:27 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4O8lVcS23724290
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 14:17:31 +0530
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4OAFAX738338724
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 15:45:10 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4O8lcW6022383
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 14:17:40 +0530
-Subject: Re: [PATCH v3 7/9] powerpc/powernv: Add platform support for stop
- instruction
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
-References: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1464016722-7488-8-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com
+ u4OAF8xI010140
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 May 2016 15:45:09 +0530
+Subject: Re: [RFC PATCH v2 1/3] arch/powerpc : Add detour buffer support for
+ optprobes
+To: Anju T <anju@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <1463670640-25701-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1463670640-25701-2-git-send-email-anju@linux.vnet.ibm.com>
+Cc: ananth@in.ibm.com, mahesh@linux.vnet.ibm.com, paulus@samba.org,
+ mhiramat@kernel.org, naveen.n.rao@linux.vnet.ibm.com,
+ hemant@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 24 May 2016 14:17:30 +0530
+Date: Tue, 24 May 2016 15:45:06 +0530
 MIME-Version: 1.0
-In-Reply-To: <1464016722-7488-8-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <1463670640-25701-2-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,643 +55,194 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Monday 23 May 2016 08:48 PM, Shreyas B. Prabhu wrote:
-> POWER ISA v3 defines a new idle processor core mechanism. In summary,
->  a) new instruction named stop is added. This instruction replaces
-> 	instructions like nap, sleep, rvwinkle.
->  b) new per thread SPR named PSSCR is added which controls the behavior
-> 	of stop instruction.
-
-Kindly expand the register name at first use like
-Processor Stop Status and Control Register (PSSCR)
-
+On Thursday 19 May 2016 08:40 PM, Anju T wrote:
+> Detour buffer contains instructions to create an in memory pt_regs.
+> After the execution of prehandler a call is made for instruction emulation.
+> The NIP is decided after the probed instruction is executed. Hence a branch
+> instruction is created to the NIP returned by emulate_step().
 >
-> PSSCR has following key fields
-
-Having the PSSCR layout here will help? something like this
-
-----------------------------------------------------------
-| PLS | /// | SD | ESL | EC | PSLL | /// | TR | MTL | RL |
-----------------------------------------------------------
-0      4     41   42    43   44     48    54   56    60  
-
-> 	Bits 0:3  - Power-Saving Level Status. This field indicates the lowest
-> 	power-saving state the thread entered since stop instruction was last
-> 	executed.
+> Instruction slot for detour buffer is allocated from
+> the reserved area. For the time being 64KB is reserved
+> in memory for this purpose.
 >
-> 	Bit 42 - Enable State Loss
-> 	0 - No state is lost irrespective of other fields
-> 	1 - Allows state loss
->
-> 	Bits 44:47 - Power-Saving Level Limit
-> 	This limits the power-saving level that can be entered into.
->
-> 	Bits 60:63 - Requested Level
-> 	Used to specify which power-saving level must be entered on executing
-> 	stop instruction
->
-> This patch adds support for stop instruction and PSSCR handling.
->
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
 > ---
-> Changes in v3:
-> ==============
->  - Instead of introducing new file idle_power_stop.S, P9 idle support
->    is added to idle_power_common.S using CPU_FTR sections.
->  - Fixed r4 reg clobbering in power_stop0
->  - Improved comments
+>  arch/powerpc/include/asm/kprobes.h   |  25 ++++++++
+>  arch/powerpc/kernel/optprobes_head.S | 108 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 133 insertions(+)
+>  create mode 100644 arch/powerpc/kernel/optprobes_head.S
 >
-> Changes in v2:
-> ==============
->  - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
->
->
->  arch/powerpc/include/asm/cpuidle.h        |   2 +
->  arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
->  arch/powerpc/include/asm/machdep.h        |   1 +
->  arch/powerpc/include/asm/opal-api.h       |  11 ++-
->  arch/powerpc/include/asm/paca.h           |   2 +
->  arch/powerpc/include/asm/ppc-opcode.h     |   4 +
->  arch/powerpc/include/asm/processor.h      |   1 +
->  arch/powerpc/include/asm/reg.h            |  11 +++
->  arch/powerpc/kernel/asm-offsets.c         |   2 +
->  arch/powerpc/kernel/idle_power_common.S   | 143 +++++++++++++++++++++++++++---
->  arch/powerpc/platforms/powernv/idle.c     |  82 ++++++++++++++---
->  11 files changed, 234 insertions(+), 27 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-> index d2f99ca..3d7fc06 100644
-> --- a/arch/powerpc/include/asm/cpuidle.h
-> +++ b/arch/powerpc/include/asm/cpuidle.h
-> @@ -13,6 +13,8 @@
->  #ifndef __ASSEMBLY__
->  extern u32 pnv_fastsleep_workaround_at_entry[];
->  extern u32 pnv_fastsleep_workaround_at_exit[];
+> diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
+> index 039b583..3e4c998 100644
+> --- a/arch/powerpc/include/asm/kprobes.h
+> +++ b/arch/powerpc/include/asm/kprobes.h
+> @@ -38,7 +38,25 @@ struct pt_regs;
+>  struct kprobe;
+>  
+>  typedef ppc_opcode_t kprobe_opcode_t;
 > +
-> +extern u64 pnv_first_deep_stop_state;
->  #endif
->
->  #endif
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> index 72b6225..d318d43 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> @@ -162,7 +162,7 @@ struct kvmppc_book3s_shadow_vcpu {
->
->  /* Values for kvm_state */
->  #define KVM_HWTHREAD_IN_KERNEL	0
-> -#define KVM_HWTHREAD_IN_NAP	1
-> +#define KVM_HWTHREAD_IN_IDLE	1
->  #define KVM_HWTHREAD_IN_KVM	2
->
->  #endif /* __ASM_KVM_BOOK3S_ASM_H__ */
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index 6bdcd0d..ae3b155 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -262,6 +262,7 @@ struct machdep_calls {
->  extern void e500_idle(void);
->  extern void power4_idle(void);
->  extern void power7_idle(void);
-> +extern void power_stop0(void);
->  extern void ppc6xx_idle(void);
->  extern void book3e_idle(void);
->
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-> index 9bb8ddf..7f3f8c6 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -162,13 +162,20 @@
->
->  /* Device tree flags */
->
-> -/* Flags set in power-mgmt nodes in device tree if
-> - * respective idle states are supported in the platform.
+> +extern kprobe_opcode_t optinsn_slot;
+> +/* Optinsn template address */
+> +extern kprobe_opcode_t optprobe_template_entry[];
+> +extern kprobe_opcode_t optprobe_template_call_handler[];
+> +extern kprobe_opcode_t optprobe_template_call_emulate[];
+> +extern kprobe_opcode_t optprobe_template_ret_branch[];
+> +extern kprobe_opcode_t optprobe_template_ret[];
+> +extern kprobe_opcode_t optprobe_template_insn[];
+> +extern kprobe_opcode_t optprobe_template_op_address1[];
+> +extern kprobe_opcode_t optprobe_template_op_address2[];
+> +extern kprobe_opcode_t optprobe_template_end[];
+> +
+>  #define MAX_INSN_SIZE 1
+> +#define MAX_OPTIMIZED_LENGTH    4
+> +#define MAX_OPTINSN_SIZE				\
+> +	((unsigned long)&optprobe_template_end -	\
+> +	(unsigned long)&optprobe_template_entry)
+> +#define RELATIVEJUMP_SIZE       4
+>  
+>  #ifdef CONFIG_PPC64
+>  #if defined(_CALL_ELF) && _CALL_ELF == 2
+> @@ -129,5 +147,12 @@ struct kprobe_ctlblk {
+>  extern int kprobe_exceptions_notify(struct notifier_block *self,
+>  					unsigned long val, void *data);
+>  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+> +
+> +struct arch_optimized_insn {
+> +	kprobe_opcode_t copied_insn[1];
+> +	/* detour buffer */
+> +	kprobe_opcode_t *insn;
+> +};
+> +
+>  #endif /* __KERNEL__ */
+>  #endif	/* _ASM_POWERPC_KPROBES_H */
+> diff --git a/arch/powerpc/kernel/optprobes_head.S b/arch/powerpc/kernel/optprobes_head.S
+> new file mode 100644
+> index 0000000..ce32aec
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/optprobes_head.S
+> @@ -0,0 +1,108 @@
 > +/*
-> + * Flags set in power-mgmt nodes in device tree describing
-> + * idle states that are supported in the platform.
->   */
-> +
-> +#define OPAL_PM_TIMEBASE_STOP		0x00000002
-> +#define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
-> +#define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
->  #define OPAL_PM_NAP_ENABLED		0x00010000
->  #define OPAL_PM_SLEEP_ENABLED		0x00020000
->  #define OPAL_PM_WINKLE_ENABLED		0x00040000
->  #define OPAL_PM_SLEEP_ENABLED_ER1	0x00080000 /* with workaround */
-> +#define OPAL_PM_STOP_INST_FAST		0x00100000
-> +#define OPAL_PM_STOP_INST_DEEP		0x00200000
->
->  /*
->   * OPAL_CONFIG_CPU_IDLE_STATE parameters
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index 546540b..ef8e342 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -171,6 +171,8 @@ struct paca_struct {
->  	/* Mask to denote subcore sibling threads */
->  	u8 subcore_sibling_mask;
->  #endif
-> +	 /* Template for PSSCR with EC, ESL, TR, PSLL, MTL fields set */
-
-White space at start of the comment.
-
-> +	u64 thread_psscr;
->
->  #ifdef CONFIG_PPC_BOOK3S_64
->  	/* Exclusive emergency stack pointer for machine check exception. */
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index 1d035c1..6a8e43b 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -199,6 +199,8 @@
->  #define PPC_INST_SLEEP			0x4c0003a4
->  #define PPC_INST_WINKLE			0x4c0003e4
->
-> +#define PPC_INST_STOP			0x4c0002e4
-> +
->  /* A2 specific instructions */
->  #define PPC_INST_ERATWE			0x7c0001a6
->  #define PPC_INST_ERATRE			0x7c000166
-> @@ -370,6 +372,8 @@
->  #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
->  #define PPC_WINKLE		stringify_in_c(.long PPC_INST_WINKLE)
->
-> +#define PPC_STOP		stringify_in_c(.long PPC_INST_STOP)
-> +
->  /* BHRB instructions */
->  #define PPC_CLRBHRB		stringify_in_c(.long PPC_INST_CLRBHRB)
->  #define PPC_MFBHRBE(r, n)	stringify_in_c(.long PPC_INST_BHRBE | \
-> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-> index 009fab1..7f92fc8 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -457,6 +457,7 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
->  extern unsigned long power7_nap(int check_irq);
->  extern unsigned long power7_sleep(void);
->  extern unsigned long power7_winkle(void);
-> +extern unsigned long power_stop(unsigned long state);
->  extern void flush_instruction_cache(void);
->  extern void hard_reset_now(void);
->  extern void poweroff_now(void);
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index c1e82e9..ea971b6 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -145,6 +145,16 @@
->  #define MSR_64BIT	0
->  #endif
->
-> +/* Power Management - PSSCR Fields */
-> +#define PSSCR_RL_MASK		0x0000000F
-> +#define PSSCR_MTL_MASK		0x000000F0
-> +#define PSSCR_TR_MASK		0x00000300
-> +#define PSSCR_PSLL_MASK		0x000F0000
-> +#define PSSCR_EC		0x00100000
-> +#define PSSCR_ESL		0x00200000
-> +#define PSSCR_SD		0x00400000
-> +
-> +
->  /* Floating Point Status and Control Register (FPSCR) Fields */
->  #define FPSCR_FX	0x80000000	/* FPU exception summary */
->  #define FPSCR_FEX	0x40000000	/* FPU enabled exception summary */
-> @@ -288,6 +298,7 @@
->  #define SPRN_PMICR	0x354   /* Power Management Idle Control Reg */
->  #define SPRN_PMSR	0x355   /* Power Management Status Reg */
->  #define SPRN_PMMAR	0x356	/* Power Management Memory Activity Register */
-> +#define SPRN_PSSCR	0x357	/* Processor Stop Status and Control Register */
->  #define SPRN_PMCR	0x374	/* Power Management Control Register */
->
->  /* HFSCR and FSCR bit numbers are the same */
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 9ea0955..670d2a7 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -779,6 +779,8 @@ int main(void)
->  			offsetof(struct paca_struct, thread_mask));
->  	DEFINE(PACA_SUBCORE_SIBLING_MASK,
->  			offsetof(struct paca_struct, subcore_sibling_mask));
-> +	DEFINE(PACA_THREAD_PSSCR,
-> +			offsetof(struct paca_struct, thread_psscr));
->  #endif
->
->  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
-> diff --git a/arch/powerpc/kernel/idle_power_common.S b/arch/powerpc/kernel/idle_power_common.S
-> index d931537..628586a 100644
-> --- a/arch/powerpc/kernel/idle_power_common.S
-> +++ b/arch/powerpc/kernel/idle_power_common.S
-> @@ -1,5 +1,6 @@
->  /*
-> - *  This file contains the power_save function for Power7 CPUs.
-> + *  This file contains the idle entry/exit functions for
-> + *  POWER7, POWER8 and POWER9 CPUs.
->   *
->   *  This program is free software; you can redistribute it and/or
->   *  modify it under the terms of the GNU General Public License
-> @@ -20,6 +21,7 @@
->  #include <asm/opal.h>
->  #include <asm/cpuidle.h>
->  #include <asm/book3s/64/mmu-hash.h>
-> +#include <asm/mmu.h>
->
->  #undef DEBUG
->
-> @@ -36,6 +38,7 @@
->  #define _AMOR	GPR9
->  #define _WORT	GPR10
->  #define _WORC	GPR11
-> +#define _PTCR	GPR12
->
->  /* Idle state entry routines */
->
-> @@ -49,6 +52,15 @@
->  	IDLE_INST;						\
->  	b	.
->
-> +/*
-> + * rA - Requested stop state
-> + * rB - Spare reg that can be used
-> + */
-> +#define PSSCR_REQUEST_STATE(rA, rB) 		\
-> +	ld	rB, PACA_THREAD_PSSCR(r13);	\
-> +	or	rB,rB,rA;			\
-> +	mtspr	SPRN_PSSCR, rB;
-> +
->  	.text
->
->  /*
-> @@ -60,8 +72,13 @@ save_sprs_to_stack:
->  	 * Note all register i.e per-core, per-subcore or per-thread is saved
->  	 * here since any thread in the core might wake up first
->  	 */
-> +BEGIN_FTR_SECTION
-> +	mfspr	r3,SPRN_PTCR
-> +	std	r3,_PTCR(r1)
-> +FTR_SECTION_ELSE
->  	mfspr	r3,SPRN_SDR1
->  	std	r3,_SDR1(r1)
-> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
->  	mfspr	r3,SPRN_RPR
->  	std	r3,_RPR(r1)
->  	mfspr	r3,SPRN_SPURR
-> @@ -99,7 +116,8 @@ core_idle_lock_held:
->
->  /*
->   * Pass requested state in r3:
-> - *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE
-> + *	r3 - PNV_THREAD_NAP/SLEEP/WINKLE in POWER8
-> + *	   - Requested STOP state in POWER9
->   *
->   * To check IRQ_HAPPENED in r4
->   * 	0 - don't check
-> @@ -160,7 +178,7 @@ _GLOBAL(pnv_powersave_common)
->
->  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->  	/* Tell KVM we're napping */
-> -	li	r4,KVM_HWTHREAD_IN_NAP
-> +	li	r4,KVM_HWTHREAD_IN_IDLE
->  	stb	r4,HSTATE_HWTHREAD_STATE(r13)
->  #endif
->  	/*
-> @@ -241,6 +259,41 @@ enter_winkle:
->
->  	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
->
-> +/*
-> + * r3 - requested stop state
-> + */
-> +power_enter_stop:
-> +/*
-> + * Check if the requested state is a deep idle state.
-> + */
-> +	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
-> +	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
-> +	cmpd	r3,r4
-> +	bge	2f
-> +	IDLE_STATE_ENTER_SEQ(PPC_STOP)
-> +2:
-> +/*
-> + * Entering deep idle state.
-> + * Clear thread bit in PACA_CORE_IDLE_STATE, save SPRs to
-> + * stack and enter stop
-> + */
-> +	lbz     r7,PACA_THREAD_MASK(r13)
-> +	ld      r14,PACA_CORE_IDLE_STATE_PTR(r13)
-> +
-> +lwarx_loop_stop:
-> +	lwarx   r15,0,r14
-> +	andi.   r9,r15,PNV_CORE_IDLE_LOCK_BIT
-> +	bnel    core_idle_lock_held
-> +	andc    r15,r15,r7                      /* Clear thread bit */
-> +
-> +	stwcx.  r15,0,r14
-> +	bne-    lwarx_loop_stop
-> +	isync
-> +
-> +	bl	save_sprs_to_stack
-> +
-> +	IDLE_STATE_ENTER_SEQ(PPC_STOP)
-> +
->  _GLOBAL(power7_idle)
->  	/* Now check if user or arch enabled NAP mode */
->  	LOAD_REG_ADDRBASE(r3,powersave_nap)
-> @@ -291,6 +344,21 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->
->
->  /*
-> + * r3 - requested stop state
-> + */
-> +_GLOBAL(power_stop)
-> +	PSSCR_REQUEST_STATE(r3,r4)
-> +	li	r4, 1
-> +	LOAD_REG_ADDR(r5,power_enter_stop)
-> +	b	pnv_powersave_common
-> +	/* No return */
-> +
-
-Can you add comments here to say why we
-need power_stop0?
-
-> +_GLOBAL(power_stop0)
-> +	li	r3,0
-> +	b	power_stop
-> +	/* No return */
-> +
-> +/*
->   * Called from reset vector. Check whether we have woken up with
->   * hypervisor state loss. If yes, restore hypervisor state and return
->   * back to reset vector.
-> @@ -299,7 +367,32 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
->   * cr3 - set to gt if waking up with partial/complete hypervisor state loss
->   */
->  _GLOBAL(pnv_restore_hyp_resource)
-> +BEGIN_FTR_SECTION
-> +	/*
-> +	 * POWER ISA 3. Use PSSCR to determine if we
-> +	 * are waking up from deep idle state
-> +	 */
-> +	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
-> +	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
-> +
-> +	mfspr	r5,SPRN_PSSCR
-> +	/*
-> +	 * 0-4 bits correspond to Power-Saving Level Status
-
-PSL is bits 0-3 of PSSCR right?
-
-
-> +	 * which indicates the idle state we are waking up from
-> +	 */
-> +	rldicl  r5,r5,4,60
-> +	cmpd	cr4,r5,r4
-> +	bge	cr4,pnv_wakeup_tb_loss
-> +	/*
-> +	 * Waking up without hypervisor state loss. Return to
-> +	 * reset vector
-> +	 */
-> +	blr
-> +
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-> +
->  	/*
-> +	 * POWER ISA 2.07 or less.
->  	 * Check if last bit of HSPGR0 is set. This indicates whether we are
->  	 * waking up from winkle.
->  	 */
-> @@ -322,7 +415,16 @@ _GLOBAL(pnv_restore_hyp_resource)
->  	blr	/* Return back to System Reset vector from where
->  		   pnv_restore_hyp_resource was invoked */
->
-> -
-> +/*
-> + * Called if waking up from idle state which can cause either partial or
-> + * complete hyp state loss.
-> + * In POWER8, called if waking up from fastsleep or winkle
-> + * In POWER9, called if waking up from stop state >= pnv_first_deep_stop_state
+> + * Code to prepare detour buffer for optprobes in kernel.
 > + *
-> + * r13 - PACA
-> + * cr3 - gt if waking up with partial/complete hypervisor state loss
-> + * cr4 - eq if waking up from complete hypervisor state loss.
+> + * Copyright 2016, Anju T, IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
 > + */
->  _GLOBAL(pnv_wakeup_tb_loss)
->  	ld	r2,PACATOC(r13);
->  	ld	r1,PACAR1(r13)
-> @@ -365,10 +467,10 @@ lwarx_loop2:
->
->  	/*
->  	 * At this stage
-> -	 * cr1 - 0b0100 if first thread to wakeup in subcore
-> -	 * cr2 - 0b0100 if first thread to wakeup in core
-> -	 * cr3-  0b0010 if waking up from sleep or winkle
-> -	 * cr4 - 0b0100 if waking up from winkle
-> +	 * cr1 - eq if first thread to wakeup in subcore
-> +	 * cr2 - eq if first thread to wakeup in core
-> +	 * cr3-  gt if waking up with partial/complete hypervisor state loss
-> +	 * cr4 - eq if waking up from complete hypervisor state loss.
->  	 */
->
->  	or	r15,r15,r7		/* Set thread bit */
-> @@ -395,8 +497,11 @@ first_thread_in_subcore:
->  	bne	cr4,subcore_state_restored
->
->  	/* Restore per-subcore state */
-> +BEGIN_FTR_SECTION
->  	ld      r4,_SDR1(r1)
->  	mtspr   SPRN_SDR1,r4
-> +END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
 > +
->  	ld      r4,_RPR(r1)
->  	mtspr   SPRN_RPR,r4
->  	ld	r4,_AMOR(r1)
-> @@ -412,7 +517,8 @@ subcore_state_restored:
->  first_thread_in_core:
->
->  	/*
-> -	 * First thread in the core waking up from fastsleep. It needs to
-> +	 * First thread in the core waking up from any state which can cause
-> +	 * partial or complete hypervisor state loss. It needs to
->  	 * call the fastsleep workaround code if the platform requires it.
->  	 * Call it unconditionally here. The below branch instruction will
->  	 * be patched out when the idle states are discovered if platform
-> @@ -423,8 +529,10 @@ pnv_fastsleep_workaround_at_exit:
->  	b	fastsleep_workaround_at_exit
->
->  timebase_resync:
-> -	/* Do timebase resync if we are waking up from sleep. Use cr3 value
-> -	 * set in exceptions-64s.S */
-> +	/*
-> +	 * Use cr3 which indicates that we are waking up with atleast partial
-> +	 * hypervisor state loss to determine if TIMEBASE RESYNC is needed.
-> +	 */
->  	ble	cr3,clear_lock
->  	/* Time base re-sync */
->  	li	r0,OPAL_RESYNC_TIMEBASE
-> @@ -437,7 +545,16 @@ timebase_resync:
->  	 */
->  	bne	cr4,clear_lock
->
-> -	/* Restore per core state */
-> +	/*
-> +	 * First thread in the core to wake up and its waking up with
-> +	 * complete hypervisor state loss. Restore per core hypervisor
-> +	 * state.
-> +	 */
-> +BEGIN_FTR_SECTION
-> +	ld	r4,_PTCR(r1)
-> +	mtspr	SPRN_PTCR,r4
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> +#include <asm/ppc_asm.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/asm-offsets.h>
 > +
->  	ld	r4,_TSCR(r1)
->  	mtspr	SPRN_TSCR,r4
->  	ld	r4,_WORC(r1)
-> @@ -462,6 +579,7 @@ common_exit:
->  	/* Restore per thread state */
->  	bl	__restore_cpu_power8
->
-> +BEGIN_MMU_FTR_SECTION
->  	/* Restore SLB  from PACA */
->  	ld	r8,PACA_SLBSHADOWPTR(r13)
->
-> @@ -475,6 +593,7 @@ common_exit:
->  	slbmte	r6,r5
->  1:	addi	r8,r8,16
->  	.endr
-> +END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
->
->  	ld	r4,_SPURR(r1)
->  	mtspr	SPRN_SPURR,r4
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index fbb09fb..989cf5d 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -29,7 +29,7 @@
->
->  static u32 supported_cpuidle_states;
->
-> -int pnv_save_sprs_for_winkle(void)
-> +int pnv_save_sprs_for_deep_states(void)
->  {
->  	int cpu;
->  	int rc;
-> @@ -50,15 +50,19 @@ int pnv_save_sprs_for_winkle(void)
->  		uint64_t pir = get_hard_smp_processor_id(cpu);
->  		uint64_t hsprg0_val = (uint64_t)&paca[cpu];
->
-> -		/*
-> -		 * HSPRG0 is used to store the cpu's pointer to paca. Hence last
-> -		 * 3 bits are guaranteed to be 0. Program slw to restore HSPRG0
-> -		 * with 63rd bit set, so that when a thread wakes up at 0x100 we
-> -		 * can use this bit to distinguish between fastsleep and
-> -		 * deep winkle.
-> -		 */
-> -		hsprg0_val |= 1;
-> -
-> +		if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +			/*
-> +			 * HSPRG0 is used to store the cpu's pointer to paca.
-> +			 * Hence last 3 bits are guaranteed to be 0. Program
-> +			 * slw to restore HSPRG0 with 63rd bit set, so that
-> +			 * when a thread wakes up at 0x100 we can use this bit
-> +			 * to distinguish between fastsleep and deep winkle.
-> +			 * This is not necessary with stop/psscr since PLS
-> +			 * field of psscr indicates which state we are waking
-> +			 * up from.
-> +			 */
-> +			hsprg0_val |= 1;
-> +		}
->  		rc = opal_slw_set_reg(pir, SPRN_HSPRG0, hsprg0_val);
->  		if (rc != 0)
->  			return rc;
-> @@ -130,8 +134,8 @@ static void pnv_alloc_idle_core_states(void)
->
->  	update_subcore_sibling_mask();
->
-> -	if (supported_cpuidle_states & OPAL_PM_WINKLE_ENABLED)
-> -		pnv_save_sprs_for_winkle();
-> +	if (supported_cpuidle_states & OPAL_PM_LOSE_FULL_CONTEXT)
-> +		pnv_save_sprs_for_deep_states();
->  }
->
->  u32 pnv_get_supported_cpuidle_states(void)
-> @@ -230,11 +234,18 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
->  			show_fastsleep_workaround_applyonce,
->  			store_fastsleep_workaround_applyonce);
->
-> +/*
-> + * First deep stop state. Used to figure out when to save/restore
-> + * hypervisor context.
-> + */
-> +u64 pnv_first_deep_stop_state;
-> +
->  static int __init pnv_init_idle_states(void)
->  {
->  	struct device_node *power_mgt;
->  	int dt_idle_states;
->  	u32 *flags;
-> +	u64 *psscr_val = NULL;
->  	int i;
->
->  	supported_cpuidle_states = 0;
-> @@ -264,6 +275,32 @@ static int __init pnv_init_idle_states(void)
->  		goto out_free;
->  	}
->
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
-> +					GFP_KERNEL);
-> +		if (!psscr_val)
-> +			goto out_free;
-> +		if (of_property_read_u64_array(power_mgt,
-> +			"ibm,cpu-idle-state-psscr",
-> +			psscr_val, dt_idle_states)) {
-> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-> +			goto out_free_psscr;
-> +		}
-> +
-> +		/*
-> +		 * Set pnv_first_deep_stop_state to the first stop level
-> +		 * to cause hypervisor state loss
-> +		 */
-> +		pnv_first_deep_stop_state = 0xF;
-> +		for (i = 0; i < dt_idle_states; i++) {
-> +			u64 psscr_rl = psscr_val[i] & PSSCR_RL_MASK;
-> +
-> +			if ((flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) &&
-> +			     (pnv_first_deep_stop_state > psscr_rl))
-> +				pnv_first_deep_stop_state = psscr_rl;
-> +		}
-> +	}
-> +
->  	for (i = 0; i < dt_idle_states; i++)
->  		supported_cpuidle_states |= flags[i];
->
-> @@ -286,8 +323,29 @@ static int __init pnv_init_idle_states(void)
->
->  	pnv_alloc_idle_core_states();
->
-> +	if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
-> +		for_each_possible_cpu(i) {
-> +
-> +			u64 psscr_init_val = PSSCR_ESL | PSSCR_EC |
-> +					PSSCR_PSLL_MASK | PSSCR_TR_MASK |
-> +					PSSCR_MTL_MASK;
-> +
-> +			paca[i].thread_psscr = psscr_init_val;
-> +			/*
-> +			 * Memory barrier to ensure that the writes to PACA
-> +			 * goes through before ppc_md.power_save is updated
-> +			 * below.
-> +			 */
-> +			mb();
-> +		}
-> +
->  	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
->  		ppc_md.power_save = power7_idle;
-> +	else if (supported_cpuidle_states & OPAL_PM_STOP_INST_FAST)
-> +		ppc_md.power_save = power_stop0;
-> +
-> +out_free_psscr:
-> +	kfree(psscr_val);
->  out_free:
->  	kfree(flags);
->  out:
+> +.global optinsn_slot
+> +optinsn_slot:
+> +	/* Reserve an area to allocate slots for detour buffer */
+> +	.space	65536
+
+Can we replace "65536" with SLOT_SIZE?
+
+> +.global optprobe_template_entry
+> +optprobe_template_entry:
+> +	stdu	r1,-INT_FRAME_SIZE(r1)
+> +	SAVE_GPR(0,r1)
+> +	/* Save the previous SP into stack */
+> +	addi	r0,r1,INT_FRAME_SIZE
+> +	std	0,GPR1(r1)
+> +	SAVE_2GPRS(2,r1)
+> +	SAVE_8GPRS(4,r1)
+> +	SAVE_10GPRS(12,r1)
+> +	SAVE_10GPRS(22,r1)
+> +	/* Save SPRS */
+> +	mfcfar	r5
+> +	std	r5,_NIP(r1)
+> +	mfmsr	r5
+> +	std	r5,_MSR(r1)
+> +	mfctr	r5
+> +	std	r5,_CTR(r1)
+> +	mflr	r5
+> +	std	r5,_LINK(r1)
+> +	mfspr	r5,SPRN_XER
+> +	std	r5,_XER(r1)
+> +	li	r5,0
+> +	std	r5,_TRAP(r1)
+> +	mfdar	r5
+> +	std	r5,_DAR(r1)
+> +	mfdsisr	r5
+> +	std	r5,_DSISR(r1)
+
+We are missing _CCR (CR register)?
+
+Why tab space for the comment? and
+a new line before the command will be good
+
+> +	/* Pass parameters for optimized_callback */
+> +.global optprobe_template_op_address1
+> +optprobe_template_op_address1:
+> +	nop
+> +	nop
+> +	nop
+> +	nop
+> +	nop
+> +	addi	r4,r1,STACK_FRAME_OVERHEAD
+same here.
+
+> +	/* Branch to the prehandler */
+> +.global optprobe_template_call_handler
+> +optprobe_template_call_handler:
+> +	nop
+> +	/* Pass parameters for instruction emulation */
+> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+
+Same here and also rest of the patch
+
+> +.global optprobe_template_insn
+> +optprobe_template_insn:
+> +	nop
+> +	nop
+> +	/* Branch to instruction emulation  */
+> +.global optprobe_template_call_emulate
+> +optprobe_template_call_emulate:
+> +	nop
+> +.global optprobe_template_op_address2
+> +optprobe_template_op_address2:
+> +	nop
+> +	nop
+> +	nop
+> +	nop
+> +	nop
+> +	addi	r4,r1,STACK_FRAME_OVERHEAD
+> +	/* Branch to create_return_branch() function */
+> +.global optprobe_template_ret_branch
+> +optprobe_template_ret_branch:
+> +	nop
+> +	/* Restore the registers */
+> +	ld	r5,_MSR(r1)
+> +	mtmsr	r5
+> +	ld	r5,_CTR(r1)
+> +	mtctr	r5
+> +	ld	r5,_LINK(r1)
+> +	mtlr	r5
+> +	ld	r5,_XER(r1)
+> +	mtxer	r5
+> +	ld	r5,_DAR(r1)
+> +	mtdar	r5
+> +	ld	r5,_DSISR(r1)
+> +	mtdsisr	r5
+
+Again missing CR.
+
+> +	REST_GPR(0,r1)
+> +	REST_2GPRS(2,r1)
+> +	REST_8GPRS(4,r1)
+> +	REST_10GPRS(12,r1)
+> +	REST_10GPRS(22,r1)
+> +	/* Restore the previous SP */
+> +	addi	r1,r1,INT_FRAME_SIZE
+> +	/* Jump back to the normal workflow from trampoline */
+> +.global optprobe_template_ret
+> +optprobe_template_ret:
+> +	nop
+> +.global optprobe_template_end
+> +optprobe_template_end:
