@@ -1,36 +1,41 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDf1F3fQszDqJd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:08:17 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Jiri Kosina' <jikos@kernel.org>
-CC: Josh Poimboeuf <jpoimboe@redhat.com>, "linux-s390@vger.kernel.org"
- <linux-s390@vger.kernel.org>, Jessica Yu <jeyu@redhat.com>, Vojtech Pavlik
- <vojtech@suse.com>, Petr Mladek <pmladek@suse.com>, Peter Zijlstra
- <peterz@infradead.org>, "x86@kernel.org" <x86@kernel.org>, Heiko Carstens
- <heiko.carstens@de.ibm.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Andy
- Lutomirski" <luto@kernel.org>, "live-patching@vger.kernel.org"
- <live-patching@vger.kernel.org>, Jiri Slaby <jslaby@suse.cz>, Miroslav Benes
- <mbenes@suse.cz>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Chris J Arges <chris.j.arges@canonical.com>
-Subject: RE: livepatch: change to a per-task consistency model
-Date: Tue, 24 May 2016 15:06:54 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4C5254@AcuExch.aculab.com>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
- <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
- <20160518165147.vyuamqfnm5kfwiqf@treble>
- <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
- <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
- <alpine.LNX.2.00.1605232043300.31937@cbobk.fhfr.pm>
-In-Reply-To: <alpine.LNX.2.00.1605232043300.31937@cbobk.fhfr.pm>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDfgf0sgQzDqKM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:38:06 +1000 (AEST)
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 25 May 2016 01:38:04 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8CAD82CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:38:01 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4OFbrJ85439964
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:38:01 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4OFbTat022695
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:37:29 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net
+Cc: Michael Ellerman <michaele@au1.ibm.com>
+Subject: Re: PAGE_GUARDED
+In-Reply-To: <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+Date: Tue, 24 May 2016 21:07:10 +0530
+Message-ID: <87d1obqxg9.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,27 +45,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jiri Kosina=20
-> Sent: 23 May 2016 19:45
-> > Related, please can we have a flag for the sleep and/or process so that
-> > an uninterruptible sleep doesn't trigger the 'hung task' detector
->=20
-> TASK_KILLABLE
+Christian Zigotzky <chzigotzky@xenosoft.de> writes:
 
-Not sure that does what I want.
-It appears to allow some 'kill' actions to wake the process.
-I'm sure I've looked at the 'hung task' code since 2007.
+> Ben,
+>
+> I tried:
+>
+> /* Workaround for lack of device tree */
+>                         if (primary) {
+>                                 __ioremap_at(range.cpu_addr, (void=20
+> *)ISA_IO_BASE,
+>                                 range.size, pgprot_noncached(PAGE_KERNEL)=
+);
+>                         hose->io_base_virt =3D (void *)_IO_BASE;
+>                         printk("Initialised io_base_virt 0x%lx _IO_BASE=20
+> 0x%llx\n", (unsigned long)hose->io_base_virt, (unsigned long long)_IO_BAS=
+E);
+>                      }
+>
+> Unfortunately I got some error messages:
+>
+> arch/powerpc/kernel/pci-common.c: In function=20
+> =E2=80=98pci_process_bridge_OF_ranges=E2=80=99:
+> arch/powerpc/kernel/pci-common.c:731:32: error: incompatible type for=20
+> argument 4 of =E2=80=98__ioremap_at=E2=80=99
+>                                  __ioremap_at(range.cpu_addr, (void=20
+> *)ISA_IO_BASE,
+>                                  ^
+> In file included from include/linux/io.h:25:0,
+>                   from include/linux/pci.h:31,
+>                   from arch/powerpc/kernel/pci-common.c:20:
+> ./arch/powerpc/include/asm/io.h:746:23: note: expected =E2=80=98long unsi=
+gned=20
+> int=E2=80=99 but argument is of type =E2=80=98pgprot_t=E2=80=99
+>   extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
+>
 
-> > and also stops the process counting towards the 'load average'.
->=20
-> TASK_NOLOAD
+You can look at commit 72176dd0ad36c ("powerpc/mm: Use a helper for
+finding pte bits mapping I/O area") to find similar conversion we did.
 
-Ah, that was added in May 2015.
-Not surprising I didn't know about it.
+For ex:
+ 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+		     size, _PAGE_NO_CACHE|_PAGE_GUARDED);
 
-I'll leave the code doing:
-  set_current_state(signal_pending(current) ? TASK_UNINTERRUPTIBLE ? TASK_I=
-NTERRUPTIBLE);
-for a while longer.
+gets replaced by
 
-	David
+ 	__ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+		     size, pgprot_val(pgprot_noncached(__pgprot(0))));
+
+Now that gets mapped to the below hpte bits
+
+pte bit -> _PAGE_NON_IDEMPOTENT
+
+Which get converted in htab_convert_pte_flags(unsigned long pteflags)
+to
+
+	if ((pteflags & _PAGE_CACHE_CTL ) =3D=3D _PAGE_NON_IDEMPOTENT)
+		rflags |=3D (HPTE_R_I | HPTE_R_G);
+
+BTW we default add (HPTE_R_C | HPTE_R_M ).
+
+Hence the final pte WIMG bits will be MIG. I guess that is what you
+wanted ?
+
+
+If that doesn't work, can you point me the current code so that I can
+look at it and suggest correct alternative.
+
+-aneesh
