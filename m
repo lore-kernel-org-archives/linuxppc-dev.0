@@ -1,23 +1,54 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rF1T95Gg7zDqT6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 15:45:17 +1000 (AEST)
-Message-ID: <1464155117.8573.2.camel@ellerman.id.au>
-Subject: Re: [v4] powerpc/pci: Assign fixed PHB number based on device-tree
- properties
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org, linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- paulus@samba.org, imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com,
- bhelgaas@google.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 25 May 2016 15:45:17 +1000
-In-Reply-To: <56F9255A.1040900@linux.vnet.ibm.com>
-References: <3qWdQC0MVDz9s9Y@ozlabs.org> <56F9255A.1040900@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rF1Vk3dTgzDqcS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 15:46:38 +1000 (AEST)
+Received: from pps.filterd (m0075771.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u4P5i1si003562
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:46:36 -0400
+Message-Id: <201605250546.u4P5i1si003562@mx0a-001b2d01.pphosted.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 234qhw7x4e-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 01:46:35 -0400
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Wed, 25 May 2016 11:16:32 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7A4BFE0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 11:19:47 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4P5kSxD44499040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 11:16:28 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4P5kNjP001501
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 11:16:27 +0530
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/5] PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+To: Bjorn Helgaas <helgaas@kernel.org>
+References: <1461761010-5452-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1461761010-5452-2-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20160524205519.GA16463@localhost>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org, alex.williamson@redhat.com,
+ bhelgaas@google.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, joro@8bytes.org,
+ warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ alistair@popple.id.au, ruscur@russell.cc
+Date: Wed, 25 May 2016 13:46:23 +0800
+MIME-Version: 1.0
+In-Reply-To: <20160524205519.GA16463@localhost>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +58,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Guilherme,
+On 2016/5/25 4:55, Bjorn Helgaas wrote:
 
-Sorry for the very late reply, this got lost in my email filters.
+> On Wed, Apr 27, 2016 at 08:43:26PM +0800, Yongji Xie wrote:
+>> We introduce a new pci_bus_flags, PCI_BUS_FLAGS_MSI_REMAP
+>> which indicates all devices on the bus are protected by the
+>> hardware which supports IRQ remapping(intel naming).
+> This changelog is ambiguous.  It's possible that there is hardware
+> that *supports* IRQ remapping, but does not actually *do* IRQ
+> remapping.  For example, an IRQ remapping capability may be present
+> but not enabled.
+>
+> I think your intent is to set this flag only when MSI remapping is
+> actually *enabled* for all devices on the bus.
 
+Yes. This is exactly my intent. Thank you for the correction!
 
-On Mon, 2016-03-28 at 09:36 -0300, Guilherme G. Piccoli wrote:
-> On 03/25/2016 06:33 AM, Michael Ellerman wrote:
+> I'd also like to know exactly what protection is implied by
+> PCI_BUS_FLAGS_MSI_REMAP and IOMMU_CAP_INTR_REMAP.  I guess it means a
+> device can only generate MSIs to a certain set of CPUs?  I assume the
+> remapping hardware only checks the target address, not the data being
+> written?
 
-> > > +static int get_phb_number(struct device_node *dn)
-> > > +{
-> > > +	const __be64 *prop64;
-> > > +	const __be32 *regs;
-> > > +	int phb_id = 0;
-> > > +
-> > > +	/* try fixed PHB numbering first, by checking archs and reading
-> > > +	 * the respective device-tree property. */
-> > > +	if (machine_is(pseries)) {
-> > 
-> > Firstly I don't see why this check needs to be conditional on pseries. Any
-> > machine where the PHB has a 'reg' property should be able to use 'reg' for
-> > numbering.
-> 
-> This is something I'm not sure for all the powerpc sub-architectures, 
-> like Cell - that's the reason of the check. If you are sure about this, 
-> I'll gladly remove this check =)
+When IRQ remapping is enabled, the hardware will check both target
+address and data, then compute the interrupt_index from them.
+Interrupt_index will be used to find a specific Interrupt Remapping Table
+Entry containing some fields which could be used to identify a device or
+a group of devices(these devices should be in the same isolation domain).
+Then hardware can use this to verify the interrupt request. If the interrupt
+request is not from the specific devices, it will be blocked.
 
-Please do.
+So this flag indicate that the hardware can ensure that a given PCI device
+can only shoot the MSIs assigned for it. When there is something wrong
+with MSI in device or device driver, this can prevent all damage from it.
 
-I'll test on Cell & other platforms. If there are bugs we can fix them. Maybe
-if we can't get it to work on eg. Cell then we need a machine_is() check, but
-that should be the last resort.
-
-> > > +		regs = of_get_property(dn, "reg", NULL);
-> > > +		if (regs)
-> > > +			return (int)(be32_to_cpu(regs[1]) & 0xFFFF);
-> > 
-> > This should use of_property_read_u32().
-
-You missed this in v5 ^
-
-> > And finally in either case above, where you get a number from the device tree,
-> > you must check that it's not already allocated. Otherwise if you have a system
-> > where some PHBs have a property but others don't, you may give out the same
-> > number twice. Also you could have firmware give you the same number twice
-> > (which would be a firmware bug, but those happen).
-> > 
-> > If the number is allocated you fall back to dynamic numbering.
-> > 
-> > If it's not allocated you must mark it as allocated in the bitmap.
-> 
-> Hmm..interesting. I thought in performing such check, but I wasn't able 
-> to imagine a system in which we can have some PHBs indexed by 
-> device-tree properties and others don't, seemed impossible to me. The 
-> buggy fw case is an example, I can implement this modification if you 
-> think it's valid.
-> 
-> But, notice that for consistency in implementation, I'll might need to 
-> increase the MAX_PHBS value to 65536, otherwise we won't cover all the 
-> possible wrong cases, since I'm performing an AND with 0xFFFF mask 
-> (imagine if we can have a buggy fw exposing same value for two different 
-> PHBs, and this value is higher than 8192). What do you think about this?
-
-Yeah please increase the bitmap size to 65536. It will only take 8KB of memory,
-which is negligible.
-
-cheers
+Regards,
+Yongji
