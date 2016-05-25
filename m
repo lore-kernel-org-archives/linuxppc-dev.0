@@ -1,37 +1,28 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rF4yM4J7FzDqZT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 18:22:19 +1000 (AEST)
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Wed, 25 May 2016 18:22:18 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E56BB357805C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 18:21:52 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4P8LUnU38207694
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 18:21:52 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4P8KNre015561
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 18:20:24 +1000
-From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
- jeremy@goop.org, chrisw@sous-sol.org, akataria@vmware.com,
- rusty@rustcorp.com.au, Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v3 6/6] powerpc: pseries: Add pv-qspinlock build config/make
-Date: Wed, 25 May 2016 16:18:09 +0800
-Message-Id: <1464164289-6124-7-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-In-Reply-To: <1464164289-6124-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1464164289-6124-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rF9bC3x00zDqVp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 21:51:02 +1000 (AEST)
+Subject: PAGE_GUARDED
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <fa1a315f-6337-f88a-4be7-000f7d8495a8@xenosoft.de>
+Cc: Michael Ellerman <michaele@au1.ibm.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <79a087a4-24ed-3823-87f5-28df695d3d8a@xenosoft.de>
+Date: Wed, 25 May 2016 13:44:54 +0200
+MIME-Version: 1.0
+In-Reply-To: <fa1a315f-6337-f88a-4be7-000f7d8495a8@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +32,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pseries has PowerVM support, the default option is Y.
+Aneesh,
 
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/Makefile           | 1 +
- arch/powerpc/platforms/pseries/Kconfig | 8 ++++++++
- 2 files changed, 9 insertions(+)
+I understand what you mean. I tried
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 2da380f..ae7c2f1 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -50,6 +50,7 @@ obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
- obj-$(CONFIG_PPC_P7_NAP)	+= idle_power7.o
- procfs-y			:= proc_powerpc.o
- obj-$(CONFIG_PROC_FS)		+= $(procfs-y)
-+obj-$(CONFIG_PARAVIRT_SPINLOCKS)	+= paravirt.o
- rtaspci-$(CONFIG_PPC64)-$(CONFIG_PCI)	:= rtas_pci.o
- obj-$(CONFIG_PPC_RTAS)		+= rtas.o rtas-rtc.o $(rtaspci-y-y)
- obj-$(CONFIG_PPC_RTAS_DAEMON)	+= rtasd.o
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index f669323..46632e4 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -128,3 +128,11 @@ config HV_PERF_CTRS
- 	  systems. 24x7 is available on Power 8 systems.
- 
-           If unsure, select Y.
-+
-+config PARAVIRT_SPINLOCKS
-+	bool "Paravirtialization support for qspinlock"
-+	depends on PPC_SPLPAR && QUEUED_SPINLOCKS
-+	default y
-+	help
-+	  If platform supports virtualization, for example PowerVM, this option
-+	  can let guest have a better performace.
--- 
-1.9.1
+range.size, pgprot_val(pgprot_noncached(__pgprot(0))));
+
+a few days ago. It compiled but the kernel doesn't boot.
+
+Cheers,
+
+Christian
+
+
+On 25 May 2016 at 08:58 AM, Christian Zigotzky wrote:
+> Aneesh,
+>
+> Thank you for your help. I tried
+>
+> /* Workaround for lack of device tree */
+>                        if (primary) {
+>                                __ioremap_at(range.cpu_addr, (void 
+> *)ISA_IO_BASE,
+>                                range.size, HPTE_R_C | HPTE_R_M);
+>                        hose->io_base_virt = (void *)_IO_BASE;
+>                        printk("Initialised io_base_virt 0x%lx _IO_BASE 
+> 0x%llx\n", (unsigned long)hose->io_base_virt, (unsigned long 
+> long)_IO_BASE);
+>                     }
+>
+> Unfortunately the kernel doesn't boot.
+>
+> Cheers,
+>
+> Christian
+>
+> On 24 May 2016 at 5:37 PM, Aneesh Kumar K.V wrote:
+>> You can look at commit 72176dd0ad36c ("powerpc/mm: Use a helper for
+>> finding pte bits mapping I/O area") to find similar conversion we did.
+>>
+>> For ex:
+>>       __ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+>>              size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+>>
+>> gets replaced by
+>>
+>>       __ioremap_at(phb_io_base_phys, (void *)ISA_IO_BASE,
+>>              size, pgprot_val(pgprot_noncached(__pgprot(0))));
+>>
+>> Now that gets mapped to the below hpte bits
+>>
+>> pte bit -> _PAGE_NON_IDEMPOTENT
+>>
+>> Which get converted in htab_convert_pte_flags(unsigned long pteflags)
+>> to
+>>
+>>     if ((pteflags & _PAGE_CACHE_CTL ) == _PAGE_NON_IDEMPOTENT)
+>>         rflags |= (HPTE_R_I | HPTE_R_G);
+>>
+>> BTW we default add (HPTE_R_C | HPTE_R_M ).
+>>
+>> Hence the final pte WIMG bits will be MIG. I guess that is what you
+>> wanted ?
+>>
+>>
+>> If that doesn't work, can you point me the current code so that I can
+>> look at it and suggest correct alternative.
+>>
+>> -aneesh
+>>
+>>
+>
