@@ -1,29 +1,18 @@
-Return-Path: <boris.brezillon@free-electrons.com>
-Received: from mail.free-electrons.com (down.free-electrons.com
- [37.187.137.238])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rFPBy1mfpzDqKM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 06:34:17 +1000 (AEST)
-Date: Wed, 25 May 2016 22:34:12 +0200
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-To: Leo Li <pku.leo@gmail.com>
-Cc: Yang-Leo Li <leoyang.li@nxp.com>, Prabhakar Kushwaha
- <prabhakar.kushwaha@nxp.com>, Scott Wood <oss@buserror.net>, Raghav Dogra
- <raghav.dogra@nxp.com>, "linux-mtd@lists.infradead.org"
- <linux-mtd@lists.infradead.org>, Brian Norris
- <computersforpeace@gmail.com>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Raghav Dogra <raghav@freescale.com>,
- Jaiprakash Singh <b44839@freescale.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-Message-ID: <20160525223412.086e45e9@bbrezillon>
-In-Reply-To: <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
-References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
- <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
- <1455840434.2463.97.camel@buserror.net>
- <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
- <20160406175254.GC5243@localhost>
- <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
- <20160408024507.69fb4fc1@bbrezillon>
- <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rFRyQ7329zDqXp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 08:38:38 +1000 (AEST)
+Date: Thu, 26 May 2016 08:38:13 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ acsawdey@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc: Remove assembly versions of strcpy, strcat,
+ strlen and strcmp
+Message-ID: <20160526083813.0f96a454@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,71 +24,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 25 May 2016 14:18:43 -0500
-Leo Li <pku.leo@gmail.com> wrote:
+A number of our assembly implementations of string functions do not
+align their hot loops. I was going to align them manually, but I
+realised that they are are almost instruction for instruction
+identical to what gcc produces, with the advantage that gcc does
+align them.
 
-> On Thu, Apr 7, 2016 at 7:45 PM, Boris Brezillon
-> <boris.brezillon@free-electrons.com> wrote:
-> > On Wed, 6 Apr 2016 18:53:39 +0000
-> > Yang-Leo Li <leoyang.li@nxp.com> wrote:
-> >  
-> >>
-> >>  
-> >> > -----Original Message-----
-> >> > From: Brian Norris [mailto:computersforpeace@gmail.com]
-> >> > Sent: Wednesday, April 06, 2016 12:53 PM
-> >> > To: Li Yang <leoli@freescale.com>
-> >> > Cc: Scott Wood <oss@buserror.net>; Raghav Dogra <raghav.dogra@nxp.com>;
-> >> > linux-mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
-> >> > Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>; Raghav Dogra
-> >> > <raghav@freescale.com>; Jaiprakash Singh <b44839@freescale.com>; Boris
-> >> > Brezillon <boris.brezillon@free-electrons.com>
-> >> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-> >> >
-> >> > Hi,
-> >> >
-> >> > On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:  
-> >> > > Hi Brian,
-> >> > >
-> >> > > Could you help to review and pull in this patch and the Kconfig update
-> >> > > after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It  
-> >> >
-> >> > It's probably best for Boris to apply this now.  
-> >>
-> >> Thanks Brian.  I see Boris is taking over the maintenance of NAND recently, we will follow up with him.
-> >>
-> >> Hi Boris,
-> >>
-> >> Can you consider to pull in this patch and then Kconfig patch (https://patchwork.ozlabs.org/patch/557389/)?  
-> >
-> > Applied.
-> >
-> > Thanks,
-> >
-> > Boris  
-> 
-> Hi Boris,
-> 
-> It seems that the patch at https://patchwork.ozlabs.org/patch/557389/
-> mentioned above was not in tree for 4.7.  Can you review and apply
-> that patch too?
+In light of that, let's just remove the assembly versions.
 
-I see it in the PR Brian sent 2 days ago [1], so it should appear in
-Linus tree soon.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Regards,
-
-Boris
-
-[1]https://lkml.org/lkml/2016/5/24/9
-
-> 
-> Regards,
-> Leo
-
-
-
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+index e40010a..da3cdff 100644
+Index: linux.junk/arch/powerpc/include/asm/string.h
+===================================================================
+--- linux.junk.orig/arch/powerpc/include/asm/string.h
++++ linux.junk/arch/powerpc/include/asm/string.h
+@@ -3,12 +3,8 @@
+ 
+ #ifdef __KERNEL__
+ 
+-#define __HAVE_ARCH_STRCPY
+ #define __HAVE_ARCH_STRNCPY
+-#define __HAVE_ARCH_STRLEN
+-#define __HAVE_ARCH_STRCMP
+ #define __HAVE_ARCH_STRNCMP
+-#define __HAVE_ARCH_STRCAT
+ #define __HAVE_ARCH_MEMSET
+ #define __HAVE_ARCH_MEMCPY
+ #define __HAVE_ARCH_MEMMOVE
+Index: linux.junk/arch/powerpc/lib/ppc_ksyms.c
+===================================================================
+--- linux.junk.orig/arch/powerpc/lib/ppc_ksyms.c
++++ linux.junk/arch/powerpc/lib/ppc_ksyms.c
+@@ -9,11 +9,7 @@ EXPORT_SYMBOL(memmove);
+ EXPORT_SYMBOL(memcmp);
+ EXPORT_SYMBOL(memchr);
+ 
+-EXPORT_SYMBOL(strcpy);
+ EXPORT_SYMBOL(strncpy);
+-EXPORT_SYMBOL(strcat);
+-EXPORT_SYMBOL(strlen);
+-EXPORT_SYMBOL(strcmp);
+ EXPORT_SYMBOL(strncmp);
+ 
+ #ifndef CONFIG_GENERIC_CSUM
+Index: linux.junk/arch/powerpc/lib/string.S
+===================================================================
+--- linux.junk.orig/arch/powerpc/lib/string.S
++++ linux.junk/arch/powerpc/lib/string.S
+@@ -16,15 +16,6 @@
+ 	PPC_LONG_ALIGN
+ 	.text
+ 	
+-_GLOBAL(strcpy)
+-	addi	r5,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r0,1(r4)
+-	cmpwi	0,r0,0
+-	stbu	r0,1(r5)
+-	bne	1b
+-	blr
+-
+ /* This clears out any unused part of the destination buffer,
+    just as the libc version does.  -- paulus */
+ _GLOBAL(strncpy)
+@@ -45,30 +36,6 @@ _GLOBAL(strncpy)
+ 	bdnz	2b
+ 	blr
+ 
+-_GLOBAL(strcat)
+-	addi	r5,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r0,1(r5)
+-	cmpwi	0,r0,0
+-	bne	1b
+-	addi	r5,r5,-1
+-1:	lbzu	r0,1(r4)
+-	cmpwi	0,r0,0
+-	stbu	r0,1(r5)
+-	bne	1b
+-	blr
+-
+-_GLOBAL(strcmp)
+-	addi	r5,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r3,1(r5)
+-	cmpwi	1,r3,0
+-	lbzu	r0,1(r4)
+-	subf.	r3,r0,r3
+-	beqlr	1
+-	beq	1b
+-	blr
+-
+ _GLOBAL(strncmp)
+ 	PPC_LCMPI 0,r5,0
+ 	beq-	2f
+@@ -85,14 +52,6 @@ _GLOBAL(strncmp)
+ 2:	li	r3,0
+ 	blr
+ 
+-_GLOBAL(strlen)
+-	addi	r4,r3,-1
+-1:	lbzu	r0,1(r4)
+-	cmpwi	0,r0,0
+-	bne	1b
+-	subf	r3,r3,r4
+-	blr
+-
+ #ifdef CONFIG_PPC32
+ _GLOBAL(memcmp)
+ 	PPC_LCMPI 0,r5,0
