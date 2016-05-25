@@ -1,25 +1,35 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from smtp685.redcondor.net (smtp685.redcondor.net [208.80.206.85])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rFFp008S1zDqW4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 01:00:38 +1000 (AEST)
-Received: from astoria.ccjclearline.com ([64.235.106.9])
- by smtp685.redcondor.net ({20c8e40f-6b6c-4c9e-abff-1640ea7bf404})
- via TCP (outbound) with ESMTPS id 20160525150028713_0685
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 08:00:28 -0700
-Received: from [216.191.234.70] (port=12546 helo=crashcourse.ca)
- by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
- (Exim 4.80) (envelope-from <rpjday@crashcourse.ca>)
- id 1b5aJx-0007bZ-B3
- for linuxppc-dev@lists.ozlabs.org; Wed, 25 May 2016 11:02:05 -0400
-Date: Wed, 25 May 2016 10:59:51 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Linux PPC Mailing List <linuxppc-dev@lists.ozlabs.org>
-Subject: how can i see the *actual* bus and brg frequencies on running system?
-Message-ID: <alpine.LFD.2.20.1605251052330.30194@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rFMWt4VCfzDqWX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 05:18:49 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id a136so2830323wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 12:18:49 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20160408024507.69fb4fc1@bbrezillon>
+References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
+ <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
+ <1455840434.2463.97.camel@buserror.net>
+ <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
+ <20160406175254.GC5243@localhost>
+ <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
+ <20160408024507.69fb4fc1@bbrezillon>
+Date: Wed, 25 May 2016 14:18:43 -0500
+Message-ID: <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
+Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+From: Leo Li <pku.leo@gmail.com>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Yang-Leo Li <leoyang.li@nxp.com>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
+ Scott Wood <oss@buserror.net>, Raghav Dogra <raghav.dogra@nxp.com>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Raghav Dogra <raghav@freescale.com>,
+ Jaiprakash Singh <b44839@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +39,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Apr 7, 2016 at 7:45 PM, Boris Brezillon
+<boris.brezillon@free-electrons.com> wrote:
+> On Wed, 6 Apr 2016 18:53:39 +0000
+> Yang-Leo Li <leoyang.li@nxp.com> wrote:
+>
+>>
+>>
+>> > -----Original Message-----
+>> > From: Brian Norris [mailto:computersforpeace@gmail.com]
+>> > Sent: Wednesday, April 06, 2016 12:53 PM
+>> > To: Li Yang <leoli@freescale.com>
+>> > Cc: Scott Wood <oss@buserror.net>; Raghav Dogra <raghav.dogra@nxp.com>;
+>> > linux-mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
+>> > Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>; Raghav Dogra
+>> > <raghav@freescale.com>; Jaiprakash Singh <b44839@freescale.com>; Boris
+>> > Brezillon <boris.brezillon@free-electrons.com>
+>> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+>> >
+>> > Hi,
+>> >
+>> > On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:
+>> > > Hi Brian,
+>> > >
+>> > > Could you help to review and pull in this patch and the Kconfig update
+>> > > after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
+>> >
+>> > It's probably best for Boris to apply this now.
+>>
+>> Thanks Brian.  I see Boris is taking over the maintenance of NAND recently, we will follow up with him.
+>>
+>> Hi Boris,
+>>
+>> Can you consider to pull in this patch and then Kconfig patch (https://patchwork.ozlabs.org/patch/557389/)?
+>
+> Applied.
+>
+> Thanks,
+>
+> Boris
 
-  i asked about this a while ago, didn't see any response, and i'm
-still curious ... i have an MPC8360 system, ported u-boot to it, and
-in the dts file i got from someone, the bus and brg frequencies were
-set to lower values than they should have been, but we left them there
-and, once the system was up, i tried to check what the *actual*
-frequencies were being used.
+Hi Boris,
 
-  i checked under both /proc/device-tree, and way down under /sys, and
-both showed lower frequencies, but one of the embedded guys wrote a
-utility to read the actual PPC register that contained the bus
-frequency, and assured us it was running at 533MHz, which is what we
-wanted all along.
+It seems that the patch at https://patchwork.ozlabs.org/patch/557389/
+mentioned above was not in tree for 4.7.  Can you review and apply
+that patch too?
 
-  so dts stuff aside, is there a simple user space way to display the
-frequencies that are actually being used on the system? because it
-appears that what's under both /proc and /sys are showing only what is
-set in the device tree blob passed to the kernel, but that's not where
-the kernel is getting the final value from.
-
-rday
-
-p.s. we got the BSP for this board from elsewhere, so it's possible
-that during kernel boot, the kernel has been patched to ignore what it
-sees in the DTB, and gets the value from somewhere unique to this BSP.
-
-  but still, if that's the case, should it not still be possible to
-view the frequency that was finally set and used on the running
-system?
-
--- 
-
-========================================================================
-Robert P. J. Day                                 Ottawa, Ontario, CANADA
-                        http://crashcourse.ca
-
-Twitter:                                       http://twitter.com/rpjday
-LinkedIn:                               http://ca.linkedin.com/in/rpjday
-========================================================================
+Regards,
+Leo
