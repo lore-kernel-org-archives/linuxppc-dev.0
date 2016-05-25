@@ -1,38 +1,39 @@
-Return-Path: <jikos@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rDr8N5S9szDqPX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 08:45:08 +1000 (AEST)
-Date: Wed, 25 May 2016 00:45:05 +0200 (CEST)
-From: Jiri Kosina <jikos@kernel.org>
-To: David Laight <David.Laight@ACULAB.COM>
-cc: Josh Poimboeuf <jpoimboe@redhat.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Jessica Yu <jeyu@redhat.com>, Vojtech Pavlik <vojtech@suse.com>,
- Petr Mladek <pmladek@suse.com>, Peter Zijlstra <peterz@infradead.org>,
- "x86@kernel.org" <x86@kernel.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Andy Lutomirski <luto@kernel.org>,
- "live-patching@vger.kernel.org" <live-patching@vger.kernel.org>,
- Jiri Slaby <jslaby@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Chris J Arges <chris.j.arges@canonical.com>
-Subject: RE: livepatch: change to a per-task consistency model
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4C5254@AcuExch.aculab.com>
-Message-ID: <alpine.LNX.2.00.1605250042020.31937@cbobk.fhfr.pm>
-References: <cover.1461875890.git.jpoimboe@redhat.com>
- <d60b2b9ce6911bb10dbbf244df58df31c7a8af66.1461875890.git.jpoimboe@redhat.com>
- <20160517225357.GA30725@packer-debian-8-amd64.digitalocean.com>
- <alpine.LNX.2.00.1605181011550.31937@cbobk.fhfr.pm>
- <20160518165147.vyuamqfnm5kfwiqf@treble>
- <alpine.LNX.2.00.1605182221420.31937@cbobk.fhfr.pm>
- <063D6719AE5E284EB5DD2968C1650D6D5F4C40D2@AcuExch.aculab.com>
- <alpine.LNX.2.00.1605232043300.31937@cbobk.fhfr.pm>
- <063D6719AE5E284EB5DD2968C1650D6D5F4C5254@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rDwvK2X4szDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 12:19:09 +1000 (AEST)
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Wed, 25 May 2016 12:19:06 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id F2BD32CE806F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 12:18:39 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4P2IQr940304664
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 12:18:29 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4P2HTUF011241
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 May 2016 12:17:29 +1000
+Message-ID: <57450B0A.8080309@linux.vnet.ibm.com>
+Date: Wed, 25 May 2016 07:46:42 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: ego@linux.vnet.ibm.com
+CC: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
+ linux-kernel@vger.kernel.org, mikey@neuling.org
+Subject: Re: [PATCH v3 7/9] powerpc/powernv: Add platform support for stop
+ instruction
+References: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464016722-7488-8-git-send-email-shreyas@linux.vnet.ibm.com>
+ <20160524102449.GE12860@in.ibm.com>
+In-Reply-To: <20160524102449.GE12860@in.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +43,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 May 2016, David Laight wrote:
 
-> > > Related, please can we have a flag for the sleep and/or process so that
-> > > an uninterruptible sleep doesn't trigger the 'hung task' detector
-> > 
-> > TASK_KILLABLE
+
+On 05/24/2016 03:54 PM, Gautham R Shenoy wrote:
+> Hi Shreyas,
 > 
-> Not sure that does what I want.
-> It appears to allow some 'kill' actions to wake the process.
-> I'm sure I've looked at the 'hung task' code since 2007.
+> On Mon, May 23, 2016 at 08:48:40PM +0530, Shreyas B. Prabhu wrote:
+>> @@ -412,7 +517,8 @@ subcore_state_restored:
+>>  first_thread_in_core:
+>>
+>>  	/*
+>> -	 * First thread in the core waking up from fastsleep. It needs to
+>> +	 * First thread in the core waking up from any state which can cause
+>> +	 * partial or complete hypervisor state loss. It needs to
+>>  	 * call the fastsleep workaround code if the platform requires it.
+>>  	 * Call it unconditionally here. The below branch instruction will
+>>  	 * be patched out when the idle states are discovered if platform
+> 
+> Please update the comment to 
+> 
+> "The below branch instruction will be patched out if the platform does
+> not have fastsleep or does not require the workaround. Patching will
+> be performed during the discovery of idle-states."
 
-The trick is the 
+I've updated this in v4.
+> 
+>> @@ -423,8 +529,10 @@ pnv_fastsleep_workaround_at_exit:
+>>  	b	fastsleep_workaround_at_exit
+>>
+>>  timebase_resync:
+>> -	/* Do timebase resync if we are waking up from sleep. Use cr3 value
+>> -	 * set in exceptions-64s.S */
+>> +	/*
+>> +	 * Use cr3 which indicates that we are waking up with atleast partial
+>> +	 * hypervisor state loss to determine if TIMEBASE RESYNC is needed.
+>> +	 */
+>>  	ble	cr3,clear_lock
+>>  	/* Time base re-sync */
+>>  	li	r0,OPAL_RESYNC_TIMEBASE
+> 
+> 
+> [..snip..]
+>> @@ -264,6 +275,32 @@ static int __init pnv_init_idle_states(void)
+>>  		goto out_free;
+>>  	}
+>>
+>> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+>> +		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
+>> +					GFP_KERNEL);
+>> +		if (!psscr_val)
+>> +			goto out_free;
+>> +		if (of_property_read_u64_array(power_mgt,
+>> +			"ibm,cpu-idle-state-psscr",
+>> +			psscr_val, dt_idle_states)) {
+>> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
+>> +			goto out_free_psscr;
+>> +		}
+>> +
+>> +		/*
+>> +		 * Set pnv_first_deep_stop_state to the first stop level
+>> +		 * to cause hypervisor state loss
+>> +		 */
+>> +		pnv_first_deep_stop_state = 0xF;
+>   		
+> #define MAX_STOP_STATES	0xF ?
 
-	if (t->state == TASK_UNINTERRUPTIBLE)
+I changed this to MAX_POSSIBLE_STOP_STATE since 0xF is the max possible
+stop state allowed by the ISA.
 
-test in check_hung_uninterruptible_tasks(). That makes sure that 
-TASK_KILLABLE tasks (e.g. waiting on NFS I/O, but not limited only to 
-that; feel free to set it whereever you need) are skipped. Please note 
-that TASK_KILLABLE is actually a _mask_ that includes TASK_UNINTERRUPTIBLE 
-as well; therefore the '==' test skips such tasks.
+Thanks for the review,
 
--- 
-Jiri Kosina
-SUSE Labs
+-Shreyas
