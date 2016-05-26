@@ -1,50 +1,23 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rFVt600nMzDqJ1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 10:50:05 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rFVt53Gpkz9sf9
- for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2016 10:50:05 +1000 (AEST)
-Received: from pps.filterd (m0075420.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u4Q0mgkC000524
- for <linuxppc-dev@ozlabs.org>; Wed, 25 May 2016 20:50:03 -0400
-Message-Id: <201605260050.u4Q0mgkC000524@mx0a-001b2d01.pphosted.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 235f4x22bq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 25 May 2016 20:50:03 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 26 May 2016 10:50:00 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C9D792CE8065
- for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2016 10:49:36 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4Q0nJju51052704
- for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2016 10:49:26 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4Q0me2u026077
- for <linuxppc-dev@ozlabs.org>; Thu, 26 May 2016 10:48:40 +1000
-Date: Thu, 26 May 2016 10:46:52 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, gpiccoli@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/pseries: Fix PCI config address for DDW
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <201605252359.u4PNx2IH015480@mx0a-001b2d01.pphosted.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rFVtN674KzDqR6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 10:50:20 +1000 (AEST)
+Date: Thu, 26 May 2016 10:47:35 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com,
+ aik@au1.ibm.com, mpe@ellerman.id.au
+Subject: Re: [FIX PATCH v2 1/2] powerpc,numa: Fix whitespace in
+ hot_add_drconf_memory_max()
+Message-ID: <20160526004735.GR17226@voom.fritz.box>
+References: <1463060055-24158-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <1463060055-24158-2-git-send-email-bharata@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <201605252359.u4PNx2IH015480@mx0a-001b2d01.pphosted.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="EguBBKnZWdUQS9Kz"
+In-Reply-To: <1463060055-24158-2-git-send-email-bharata@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,59 +27,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 26, 2016 at 09:56:07AM +1000, Gavin Shan wrote:
->In commit <8445a87f7092> ("powerpc/iommu: Remove the dependency
->on EEH struct in DDW mechanism"), the PE address was replaced
->with the PCI config address in order to remove dependency on EEH.
->According to PAPR spec, firmware (pHyp or QEMU) should accept
->"xxBBSSxx" format PCI config address, not "xxxxBBSS" provided
->by the patch. Note that "BB" is PCI bus number and "SS" is the
->combination of slot and function number.
->
->This fixes the PCI address passed to DDW RTAS calls.
->
->Fixes: 8445a87f7092 ("powerpc/iommu: Remove the dependency on EEH struct in DDW mechanism")
->Reported-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Tested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->---
-> arch/powerpc/platforms/pseries/iommu.c | 4 ++--
-> 1 file changed, 2 insertions(+), 2 deletions(-)
->
 
-There are two mails sent for same patch. I don't know how is
-happening. Maybe there is something wrong in my mailbox scripts.
-Please ignore this one and sorry for the noise.
+--EguBBKnZWdUQS9Kz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Gavin 
+On Thu, May 12, 2016 at 07:04:14PM +0530, Bharata B Rao wrote:
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
->diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
->index b7dfc13..3e8865b 100644
->--- a/arch/powerpc/platforms/pseries/iommu.c
->+++ b/arch/powerpc/platforms/pseries/iommu.c
->@@ -927,7 +927,7 @@ static int query_ddw(struct pci_dev *dev, const u32 *ddw_avail,
-> 	dn = pci_device_to_OF_node(dev);
-> 	pdn = PCI_DN(dn);
-> 	buid = pdn->phb->buid;
->-	cfg_addr = (pdn->busno << 8) | pdn->devfn;
->+	cfg_addr = ((pdn->busno << 16) | (pdn->devfn << 8));
-> 
-> 	ret = rtas_call(ddw_avail[0], 3, 5, (u32 *)query,
-> 		  cfg_addr, BUID_HI(buid), BUID_LO(buid));
->@@ -956,7 +956,7 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
-> 	dn = pci_device_to_OF_node(dev);
-> 	pdn = PCI_DN(dn);
-> 	buid = pdn->phb->buid;
->-	cfg_addr = (pdn->busno << 8) | pdn->devfn;
->+	cfg_addr = ((pdn->busno << 16) | (pdn->devfn << 8));
-> 
-> 	do {
-> 		/* extra outputs are LIOBN and dma-addr (hi, lo) */
->-- 
->2.1.0
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+> ---
+>  arch/powerpc/mm/numa.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 669a15e..4a87ccb 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1163,18 +1163,18 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+> =20
+>  static u64 hot_add_drconf_memory_max(void)
+>  {
+> -        struct device_node *memory =3D NULL;
+> -        unsigned int drconf_cell_cnt =3D 0;
+> -        u64 lmb_size =3D 0;
+> +	struct device_node *memory =3D NULL;
+> +	unsigned int drconf_cell_cnt =3D 0;
+> +	u64 lmb_size =3D 0;
+>  	const __be32 *dm =3D NULL;
+> =20
+> -        memory =3D of_find_node_by_path("/ibm,dynamic-reconfiguration-me=
+mory");
+> -        if (memory) {
+> -                drconf_cell_cnt =3D of_get_drconf_memory(memory, &dm);
+> -                lmb_size =3D of_get_lmb_size(memory);
+> -                of_node_put(memory);
+> -        }
+> -        return lmb_size * drconf_cell_cnt;
+> +	memory =3D of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+> +	if (memory) {
+> +		drconf_cell_cnt =3D of_get_drconf_memory(memory, &dm);
+> +		lmb_size =3D of_get_lmb_size(memory);
+> +		of_node_put(memory);
+> +	}
+> +	return lmb_size * drconf_cell_cnt;
+>  }
+> =20
+>  /*
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--EguBBKnZWdUQS9Kz
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXRkenAAoJEGw4ysog2bOSOC4P/1mopSNUwApP3d9Ey6Sdgn2D
+ZnDGcvrRDU2dU9peX/1HcZllp/pwkyi65/05DUNYWCTu46z+aB/6etBKMWH1ogJf
+mCCn4Z+O0kaF+JLPjGLJbksJg7JzQkOi2jcnhLYG8jRjKtvLw7GpqoIWim8s46pm
+lWWBOOv7GW+QAIESFycBEKSegmBH8ARPoX9wskIKf66iBvtcbZNlKV8uW31q7v+/
+KEtVwiS9EzCHhrpqKyD/Jc/AeQkkDyp3a6ODjG1UB+BC6EmzkaCz8bkaxl7Eagaj
+jifDjklZzxeDelhqEc6QTT098PXfSj52L3+ytZ9MK9vjhLOMpXgjA+QpHt1xmuac
+YU870mDxCEvax+ml/A2/+k26yQdbMWB24k7CRkbRyB0+QPvbvqBfLtM1diBMVbjv
+B6nLXgQTM7+CjzCVGeVxebLCM+K9pL1TbhV4TZcfyN9r4VHDAeO0KkinjO9nrAlm
+7Id7VeqcN2kzyFBF5qRdhQnYcA5lCPJbhL8rDx0YK/aNFbDxUG5HQa50Cs2Y4eYB
+6B4yBc7LMd0NRXaYI5QSVqnxyLOBSw1Hgnjy6axDO3qed2PxGbxJY1lZt4Srn+si
+cpOO2q0hS6bPNGiS9vel/DOcjK0f2Xn4J8cp1z1xJF4MReQE2lkPchXj/fV3F4wt
+qnl/uD/tLpgMyb4Xppiu
+=V+7/
+-----END PGP SIGNATURE-----
+
+--EguBBKnZWdUQS9Kz--
