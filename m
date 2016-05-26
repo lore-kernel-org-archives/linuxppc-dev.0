@@ -1,38 +1,22 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0076.outbound.protection.outlook.com [157.56.112.76])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rFbCw6kljzDqRk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 14:05:48 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Scott Wood
- <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Mark
- Rutland" <mark.rutland@arm.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>, "Bhupesh
- Sharma" <bhupesh.sharma@freescale.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Kumar Gala
- <galak@codeaurora.org>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "Rob
- Herring" <robh+dt@kernel.org>, "linux-i2c@vger.kernel.org"
- <linux-i2c@vger.kernel.org>, Claudiu Manoil <claudiu.manoil@freescale.com>,
- Santosh Shilimkar <ssantosh@kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, Qiang Zhao
- <qiang.zhao@nxp.com>
-Subject: RE: [v10, 7/7] mmc: sdhci-of-esdhc: fix host version for
- T4240-R1.0-R2.0
-Date: Thu, 26 May 2016 04:05:26 +0000
-Message-ID: <HE1PR04MB0889852B7809A1CCFF8922ACF8410@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <4448030.Zs8fVnr3nm@wuerfel>
- <HE1PR04MB0889B52134A43C0E7A452B7BF87C0@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <5159406.HOFrj7pRfW@wuerfel> <1462937186.16584.77.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rFgdj0WGBzDqT6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 17:24:56 +1000 (AEST)
+Subject: Re: [PATCH 2/2] powerpc: Align hot loops of some string functions
+To: Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ acsawdey@linux.vnet.ibm.com
+References: <20160526083813.0f96a454@kryten> <20160526083955.3f7deda4@kryten>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <14a46745-dd1e-2963-1c1a-7daafa5aed4b@c-s.fr>
+Date: Thu, 26 May 2016 09:24:51 +0200
 MIME-Version: 1.0
+In-Reply-To: <20160526083955.3f7deda4@kryten>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,25 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgVWZmZSwNCg0KQ291bGQgd2UgbWVyZ2UgdGhpcyBwYXRjaHNldD8gLi4uDQpJdCBoYXMgYmVl
-biBhIGxvbmcgdGltZSB0byB3YWl0IGZvciBBcm5kJ3MgcmVzcG9uc2UuLi4NCiANClRoYW5rcyBh
-IGxvdC4NCg0KDQpCZXN0IHJlZ2FyZHMsDQpZYW5nYm8gTHUNCg0KDQo+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+IEZyb206IFlhbmdibyBMdQ0KPiBTZW50OiBGcmlkYXksIE1heSAyMCwg
-MjAxNiAyOjA2IFBNDQo+IFRvOiAnU2NvdHQgV29vZCc7IEFybmQgQmVyZ21hbm47IGxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmc7IE1hcmsgUnV0bGFuZDsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IHVs
-Zi5oYW5zc29uQGxpbmFyby5vcmc7IFJ1c3NlbGwgS2luZzsgQmh1cGVzaA0KPiBTaGFybWE7IG5l
-dGRldkB2Z2VyLmtlcm5lbC5vcmc7IEpvZXJnIFJvZWRlbDsgS3VtYXIgR2FsYTsgbGludXgtDQo+
-IG1tY0B2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IFlhbmct
-TGVvIExpOw0KPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZzsgUm9iIEhlcnJpbmc7
-IGxpbnV4LWkyY0B2Z2VyLmtlcm5lbC5vcmc7DQo+IENsYXVkaXUgTWFub2lsOyBTYW50b3NoIFNo
-aWxpbWthcjsgWGlhb2JvIFhpZTsgbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsNCj4gUWlhbmcg
-Wmhhbw0KPiBTdWJqZWN0OiBSRTogW3YxMCwgNy83XSBtbWM6IHNkaGNpLW9mLWVzZGhjOiBmaXgg
-aG9zdCB2ZXJzaW9uIGZvciBUNDI0MC0NCj4gUjEuMC1SMi4wDQo+IA0KPiBIaSBBcm5kLA0KPiAN
-Cj4gQW55IGNvbW1lbnRzPw0KPiBQbGVhc2UgcmVwbHkgd2hlbiB5b3Ugc2VlIHRoZSBlbWFpbCBz
-aW5jZSB3ZSB3YW50IHRoaXMgZVNESEMgaXNzdWUgdG8gYmUNCj4gZml4ZWQgc29vbi4NCj4gDQo+
-IEFsbCB0aGUgcGF0Y2hlcyBhcmUgRnJlZXNjYWxlLXNwZWNpZmljIGFuZCBpcyB0byBmaXggdGhl
-IGVTREhDIGRyaXZlci4NCj4gQ291bGQgd2UgbGV0IHRoZW0gbWVyZ2VkIGZpcnN0IGlmIHlvdSB3
-ZXJlIHRhbGtpbmcgYWJvdXQgYSBuZXcgd2F5IG9mDQo+IGFic3RyYWN0aW5nIGdldHRpbmcgU29D
-IHZlcnNpb24uDQo+IA0KPiANCj4gVGhhbmtzIDopDQo+IA0KPiANCj4gQmVzdCByZWdhcmRzLA0K
-PiBZYW5nYm8gTHUNCj4gDQoNCg==
+
+
+Le 26/05/2016 à 00:39, Anton Blanchard via Linuxppc-dev a écrit :
+> Align the hot loops in our assembly implementation of strncpy(),
+> strncmp() and memchr().
+Wouldn't it be better to add nops before the function entry in order to 
+get the hot loop aligned, instead of adding nops in the middle of the 
+function ?
+
+Christophe
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>
+> Index: linux.junk/arch/powerpc/lib/string.S
+> ===================================================================
+> --- linux.junk.orig/arch/powerpc/lib/string.S
+> +++ linux.junk/arch/powerpc/lib/string.S
+> @@ -24,6 +24,7 @@ _GLOBAL(strncpy)
+>   	mtctr	r5
+>   	addi	r6,r3,-1
+>   	addi	r4,r4,-1
+> +	.balign 16
+>   1:	lbzu	r0,1(r4)
+>   	cmpwi	0,r0,0
+>   	stbu	r0,1(r6)
+> @@ -42,6 +43,7 @@ _GLOBAL(strncmp)
+>   	mtctr	r5
+>   	addi	r5,r3,-1
+>   	addi	r4,r4,-1
+> +	.balign 16
+>   1:	lbzu	r3,1(r5)
+>   	cmpwi	1,r3,0
+>   	lbzu	r0,1(r4)
+> @@ -73,6 +75,7 @@ _GLOBAL(memchr)
+>   	beq-	2f
+>   	mtctr	r5
+>   	addi	r3,r3,-1
+> +	.balign 16
+>   1:	lbzu	r0,1(r3)
+>   	cmpw	0,r0,r4
+>   	bdnzf	2,1b
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
