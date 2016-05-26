@@ -1,23 +1,19 @@
-Return-Path: <safahamza1@gmail.com>
-Received: from mail-oi0-x22a.google.com (mail-oi0-x22a.google.com
- [IPv6:2607:f8b0:4003:c06::22a])
+Return-Path: <pc.ramachandra@gmail.com>
+Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
+ [IPv6:2607:f8b0:4001:c06::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rFn4T2YWzzDqV3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 21:30:01 +1000 (AEST)
-Received: by mail-oi0-x22a.google.com with SMTP id k23so119460380oih.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 04:30:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rFnmQ4WLBzDqVL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 22:01:10 +1000 (AEST)
+Received: by mail-io0-x231.google.com with SMTP id f8so51393697ioe.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 05:01:10 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1128bc83-dcaa-718b-4faf-0a58b789dbec@c-s.fr>
-References: <CAFwQ9hGFeC2700F3yy4vYVNdbO3vid=9hH_qO-5PbOuRDAHGdw@mail.gmail.com>
- <1128bc83-dcaa-718b-4faf-0a58b789dbec@c-s.fr>
-Date: Thu, 26 May 2016 12:29:57 +0100
-Message-ID: <CAFwQ9hFt7Zh2CRvLKh-7wi4yxJi3vd8ddPPNxcniKQ+KiuM3WQ@mail.gmail.com>
-Subject: Re: powerpc cross compiler issue
-From: Safa Hamza <safahamza1@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001a113d35b02194e80533bd1c18
+Date: Thu, 26 May 2016 17:31:08 +0530
+Message-ID: <CA+Wf0EH_c3fPO-W9HU8fSoW3MXquFgEDza5jP0DsyR-0a3xd3g@mail.gmail.com>
+Subject: how to change bss section address in u-boot.lds file
+From: Rama Chandra <pc.ramachandra@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, eldk@lists.denx.de
+Content-Type: multipart/alternative; boundary=94eb2c05c030a5de7e0533bd8b5a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,98 +23,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a113d35b02194e80533bd1c18
+--94eb2c05c030a5de7e0533bd8b5a
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
----------- Forwarded message ----------
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Thu, May 26, 2016 at 11:02 AM
-Subject: Re: powerpc cross compiler issue
-To: Safa Hamza <safahamza1@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Hai,
+I am using IBM PPC440GX board.In arch/powerpc/cpu/ppc4xx/u-boot.lds i am
+changing the values of resetvector and BSS addresses but it is not changing
+Presently i am changed
 
 
+#if (RESET_VECTOR_ADDRESS == 0xfffffff0)
+  . |= 44780000;
+#endif
+#endif /* CONFIG_SPL */
 
-Le 26/05/2016 =C3=A0 11:05, Safa Hamza a =C3=A9crit :
+  __bss_start = .;
+  .bss (NOLOAD)       :
 
-> hello every one
-> please can any one suggest to me a powerpc cross compiler package or from
-> source, i have downloaded  cross compiler package such as powerpc64le and=
- i
-> got a little endian and big endian problem, i have tried also to download
-> eldk cross compiler but i didn't know how
-> any suggestion please
->
+Actually Below detalis i am using in MULTI. But those  are not changing in
+Uboot.
+MEMORY {
+    Flash_memory  : ORIGIN = 0xfffBC000, LENGTH = 0x7000
+    Flash_memory_start : ORIGIN = 0xFFFFF000, LENGTH = 0x0FDF
+    reset_init :            ORIGIN = 0xFFFFFFF0, LENGTH = 0x0010
+    ram_main  :            ORIGIN = 0x44780000, LENGTH = 1M
+}
 
-https://www.kernel.org/pub/tools/crosstool/
+DEFAULTS {
 
+    heap_reserve = 32k
+    stack_reserve = 32K
 
-Christophe
+}
+SECTIONS
+{
+    .PPC.EMB.sdata0                    ABS : > Flash_memory
+    .PPC.EMB.sbss0                            CLEAR ABS : > .
+    .vectors :> Flash_memory_start
+    .control                   : {*(.control)}       > Flash_memory_start
+    .prefetch    : {*(.prefetch)} >  .
+    .reset_vec               : {*(.reset_vec)} > reset_init
+        .text               : > Flash_memory
+    .vletext     : > .
+    .syscall     : > .
+    .secinfo     : > .
+    .rodata     : > .
+    .textprefetch     : {*(.textprefetch)} > .
+    .sdata2     : > ram_main
+    .fixaddr   : > .
+    .fixtype : > .
 
-thanks for replying, I tried a powerpc cross compiler from the list you
-have send but I always got this error
+    .sdabase              ALIGN(16) : > ram_main
+    .sdata : > ram_main
+    .sbss : > .
+    .data : > .
+    .bss   : > .
+    .heap                  ALIGN(16) PAD(heap_reserve)  : > .
+    .stack                 ALIGN(16) PAD(stack_reserve) : > .
 
- VDSO32L arch/powerpc/kernel/vdso32/vdso32.so.dbg
-/home/marwa/Bureau/lauterbach/powerpc/gcc-4.6.3-nolibc/powerpc64-linux/bin/=
-../lib/gcc/powerpc64-linux/4.6.3/../../../../powerpc64-linux/bin/ld:
-arch/powerpc/kernel/vdso32/note.o: compiled for a little endian system and
-target is big endian
-/home/marwa/Bureau/lauterbach/powerpc/gcc-4.6.3-nolibc/powerpc64-linux/bin/=
-../lib/gcc/powerpc64-linux/4.6.3/../../../../powerpc64-linux/bin/ld:
-failed to merge target specific data of file
-arch/powerpc/kernel/vdso32/note.o
-collect2: ld returned 1 exit status
-make[2]: *** [arch/powerpc/kernel/vdso32/vdso32.so.dbg] Erreur 1
-make[1]: *** [arch/powerpc/kernel/vdso32] Erreur 2
-make: *** [arch/powerpc/kernel] Erreur 2
+     INTR_VECTOR_START = ADDR(.vectors);
+}
 
+-- 
+Thanks & Regards,
+RamaChandra PC
++918892147159.
 
-the kernel was configured with ppc64_defconfig (linux-4.4.1)
-
---001a113d35b02194e80533bd1c18
+--94eb2c05c030a5de7e0533bd8b5a
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><div><br><div class=3D"gmail_quote">---------- Forwarded m=
-essage ----------<br>From: <b class=3D"gmail_sendername">Christophe Leroy</=
-b> <span dir=3D"ltr">&lt;<a href=3D"mailto:christophe.leroy@c-s.fr">christo=
-phe.leroy@c-s.fr</a>&gt;</span><br>Date: Thu, May 26, 2016 at 11:02 AM<br>S=
-ubject: Re: powerpc cross compiler issue<br>To: Safa Hamza &lt;<a href=3D"m=
-ailto:safahamza1@gmail.com">safahamza1@gmail.com</a>&gt;, <a href=3D"mailto=
-:linuxppc-dev@lists.ozlabs.org">linuxppc-dev@lists.ozlabs.org</a><br><br><b=
-r><span class=3D""><br>
-Le 26/05/2016 =C3=A0 11:05, Safa Hamza a =C3=A9crit :<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-=
-left:1px solid rgb(204,204,204);padding-left:1ex">
-hello every one<br>
-please can any one suggest to me a powerpc cross compiler package or from s=
-ource, i have downloaded=C2=A0 cross compiler package such as powerpc64le a=
-nd i got a little endian and big endian problem, i have tried also to downl=
-oad eldk cross compiler but i didn&#39;t know how<br>
-any suggestion please<br>
-</blockquote>
-<br>
-</span><a href=3D"https://www.kernel.org/pub/tools/crosstool/" rel=3D"noref=
-errer" target=3D"_blank">https://www.kernel.org/pub/tools/crosstool/</a><sp=
-an class=3D""><font color=3D"#888888"><br></font></span></div><div class=3D=
-"gmail_quote"><span class=3D""><font color=3D"#888888"><br></font></span></=
-div><div class=3D"gmail_quote"><span class=3D""><font color=3D"#888888">
-<br>
-Christophe<br>
-</font></span></div><div class=3D"gmail_quote"><span class=3D""><font color=
-=3D"#888888"><br></font></span></div>thanks for replying, I tried a powerpc=
- cross compiler from the list you have send but I always got this error <br=
->=C2=A0<br>=C2=A0VDSO32L arch/powerpc/kernel/vdso32/vdso32.so.dbg<br>/home/=
-marwa/Bureau/lauterbach/powerpc/gcc-4.6.3-nolibc/powerpc64-linux/bin/../lib=
-/gcc/powerpc64-linux/4.6.3/../../../../powerpc64-linux/bin/ld: arch/powerpc=
-/kernel/vdso32/note.o: compiled for a little endian system and target is bi=
-g endian<br>/home/marwa/Bureau/lauterbach/powerpc/gcc-4.6.3-nolibc/powerpc6=
-4-linux/bin/../lib/gcc/powerpc64-linux/4.6.3/../../../../powerpc64-linux/bi=
-n/ld: failed to merge target specific data of file arch/powerpc/kernel/vdso=
-32/note.o<br>collect2: ld returned 1 exit status<br>make[2]: *** [arch/powe=
-rpc/kernel/vdso32/vdso32.so.dbg] Erreur 1<br>make[1]: *** [arch/powerpc/ker=
-nel/vdso32] Erreur 2<br>make: *** [arch/powerpc/kernel] Erreur 2<br><br><br=
-></div>the kernel was configured with ppc64_defconfig (linux-4.4.1)<br></di=
-v>
+<div dir=3D"ltr">Hai,<div>I am using IBM PPC440GX board.In arch/powerpc/cpu=
+/ppc4xx/u-boot.lds i am changing the values of resetvector and BSS addresse=
+s but it is not changing Presently i am changed=C2=A0</div><div><div><br></=
+div><div><br></div><div>#if (RESET_VECTOR_ADDRESS =3D=3D 0xfffffff0)</div><=
+div>=C2=A0 . |=3D 44780000;</div><div>#endif</div><div>#endif /* CONFIG_SPL=
+ */</div><div><br></div><div>=C2=A0 __bss_start =3D .;</div><div>=C2=A0 .bs=
+s (NOLOAD) =C2=A0 =C2=A0 =C2=A0 :</div><div><br></div><div>Actually Below d=
+etalis i am using in MULTI. But those =C2=A0are not changing in Uboot. =C2=
+=A0</div><div><div>MEMORY {</div><div>=C2=A0 =C2=A0 Flash_memory =C2=A0: OR=
+IGIN =3D 0xfffBC000, <span class=3D"" style=3D"white-space:pre">	</span>LEN=
+GTH =3D 0x7000<br></div><div>=C2=A0 =C2=A0 Flash_memory_start : ORIGIN =3D =
+0xFFFFF000, <span class=3D"" style=3D"white-space:pre">	</span>LENGTH =3D 0=
+x0FDF</div><div>=C2=A0 =C2=A0 reset_init : =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0ORIGIN =3D 0xFFFFFFF0, LENGTH =3D 0x0010</div><div>=C2=A0 =C2=A0 =
+ram_main =C2=A0: =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ORIGIN =3D 0x4478=
+0000, LENGTH =3D 1M</div><div>}<br></div><div><br></div><div>DEFAULTS {</di=
+v><div><br></div><div>=C2=A0 =C2=A0 heap_reserve =3D 32k</div><div>=C2=A0 =
+=C2=A0 stack_reserve =3D 32K</div><div><br></div><div>}</div><div>SECTIONS<=
+br></div><div>{</div><div>=C2=A0 =C2=A0 .PPC.EMB.sdata0 <span class=3D"" st=
+yle=3D"white-space:pre">	</span> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0<=
+span class=3D"" style=3D"white-space:pre">	</span> =C2=A0 =C2=A0<span class=
+=3D"" style=3D"white-space:pre">	</span> =C2=A0 =C2=A0ABS : &gt; Flash_memo=
+ry</div><div>=C2=A0 =C2=A0 .PPC.EMB.sbss0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0CLEAR ABS=
+ : &gt; .</div><div>=C2=A0 =C2=A0 .vectors<span class=3D"" style=3D"white-s=
+pace:pre">						</span>:&gt; Flash_memory_start</div><div>=C2=A0 =C2=A0 .co=
+ntrol =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 <span =
+class=3D"" style=3D"white-space:pre">		</span> : {*(.control)} =C2=A0 =C2=
+=A0 =C2=A0 &gt; Flash_memory_start</div><div>=C2=A0 =C2=A0 .prefetch <span =
+class=3D"" style=3D"white-space:pre">			</span> =C2=A0 =C2=A0: {*(.prefetch=
+)} <span class=3D"" style=3D"white-space:pre">	</span> &gt; =C2=A0.</div><d=
+iv>=C2=A0 =C2=A0 .reset_vec =C2=A0 =C2=A0 =C2=A0<span class=3D"" style=3D"w=
+hite-space:pre">		</span> =C2=A0 =C2=A0 =C2=A0 =C2=A0 : {*(.reset_vec)} &gt=
+; reset_init</div><div>=C2=A0 =C2=A0 =C2=A0 =C2=A0 .text =C2=A0<span class=
+=3D"" style=3D"white-space:pre">			</span> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0<span class=3D"" style=3D"white-space:pre">		</span>: &gt; Flash_=
+memory</div><div>=C2=A0 =C2=A0 .vletext <span class=3D"" style=3D"white-spa=
+ce:pre">				</span> =C2=A0 =C2=A0<span class=3D"" style=3D"white-space:pre"=
+>		</span>: &gt; .</div><div>=C2=A0 =C2=A0 .syscall <span class=3D"" style=
+=3D"white-space:pre">				</span> =C2=A0 =C2=A0<span class=3D"" style=3D"whi=
+te-space:pre">		</span>: &gt; .</div><div>=C2=A0 =C2=A0 .secinfo <span clas=
+s=3D"" style=3D"white-space:pre">				</span> =C2=A0 =C2=A0<span class=3D"" =
+style=3D"white-space:pre">		</span>: &gt; .</div><div>=C2=A0 =C2=A0 .rodata=
+ <span class=3D"" style=3D"white-space:pre">				</span> =C2=A0 =C2=A0<span =
+class=3D"" style=3D"white-space:pre">		</span>: &gt; .</div><div>=C2=A0 =C2=
+=A0 .textprefetch <span class=3D"" style=3D"white-space:pre">		</span> =C2=
+=A0 =C2=A0 : {*(.textprefetch)} &gt; .</div><div>=C2=A0 =C2=A0 .sdata2 <spa=
+n class=3D"" style=3D"white-space:pre">				</span> =C2=A0 =C2=A0<span class=
+=3D"" style=3D"white-space:pre">		</span>: &gt; ram_main=C2=A0</div><div>=
+=C2=A0 =C2=A0 .fixaddr<span class=3D"" style=3D"white-space:pre">			</span>=
+ <span class=3D"" style=3D"white-space:pre">	</span> =C2=A0 <span class=3D"=
+" style=3D"white-space:pre">		</span>: &gt; .</div><div>=C2=A0 =C2=A0 .fixt=
+ype<span class=3D"" style=3D"white-space:pre">						</span>: &gt; .</div><d=
+iv><br></div><div>=C2=A0 =C2=A0 .sdabase <span class=3D"" style=3D"white-sp=
+ace:pre">		</span> =C2=A0 =C2=A0 =C2=A0 =C2=A0<span class=3D"" style=3D"whi=
+te-space:pre">	</span> =C2=A0 =C2=A0 =C2=A0ALIGN(16) : &gt; ram_main <span =
+class=3D"" style=3D"white-space:pre">	</span></div><div>=C2=A0 =C2=A0 .sdat=
+a <span class=3D"" style=3D"white-space:pre">						</span>: &gt; ram_main=
+=C2=A0</div><div>=C2=A0 =C2=A0 .sbss <span class=3D"" style=3D"white-space:=
+pre">						</span>: &gt; .</div><div>=C2=A0 =C2=A0 .data <span class=3D"" s=
+tyle=3D"white-space:pre">						</span>: &gt; .</div><div>=C2=A0 =C2=A0 .bss=
+ <span class=3D"" style=3D"white-space:pre">		</span> =C2=A0<span class=3D"=
+" style=3D"white-space:pre">				</span>: &gt; .</div><div>=C2=A0 =C2=A0 .he=
+ap =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ALIGN(16) =
+PAD(heap_reserve) =C2=A0: &gt; . =C2=A0=C2=A0</div><div>=C2=A0 =C2=A0 .stac=
+k =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ALIGN(16) PAD(sta=
+ck_reserve) : &gt; .</div><div><br></div><div>=C2=A0 =C2=A0 =C2=A0INTR_VECT=
+OR_START =3D ADDR(.vectors);</div><div>}</div><div><br></div></div>-- <br><=
+div class=3D"gmail_signature"><div dir=3D"ltr"><div><div dir=3D"ltr"><div>T=
+hanks &amp; Regards,</div><div dir=3D"ltr">RamaChandra PC</div><div><span s=
+tyle=3D"font-size:12.8px">+918892147159.</span><br></div></div></div></div>=
+</div>
+</div></div>
 
---001a113d35b02194e80533bd1c18--
+--94eb2c05c030a5de7e0533bd8b5a--
