@@ -1,39 +1,37 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rGQm91vn9zDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 22:48:08 +1000 (AEST)
-Received: from localhost
- by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 27 May 2016 13:48:06 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id E46912190046
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 13:47:37 +0100 (BST)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4RCm3DR10748174
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 12:48:04 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4RCm3Mr019125
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 06:48:03 -0600
-Subject: Re: [PATCH] cxl: Abstract the differences between the PSL and XSL
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-References: <1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Message-ID: <57484202.1050603@linux.vnet.ibm.com>
-Date: Fri, 27 May 2016 14:48:02 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rGcgr2mz7zDqcZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2016 06:15:03 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id q62so1612576wmg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 13:15:03 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20160525223412.086e45e9@bbrezillon>
+References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
+ <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
+ <1455840434.2463.97.camel@buserror.net>
+ <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
+ <20160406175254.GC5243@localhost>
+ <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
+ <20160408024507.69fb4fc1@bbrezillon>
+ <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
+ <20160525223412.086e45e9@bbrezillon>
+Date: Fri, 27 May 2016 15:15:00 -0500
+Message-ID: <CADRPPNSeQsOZZ9XRR4BOfZvewoB9RoEy0KzPrRzoDm21LtacnQ@mail.gmail.com>
+Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+From: Leo Li <pku.leo@gmail.com>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Yang-Leo Li <leoyang.li@nxp.com>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
+ Scott Wood <oss@buserror.net>, Raghav Dogra <raghav.dogra@nxp.com>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Raghav Dogra <raghav@freescale.com>,
+ Jaiprakash Singh <b44839@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,21 +41,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ian,
+On Wed, May 25, 2016 at 3:34 PM, Boris Brezillon
+<boris.brezillon@free-electrons.com> wrote:
+> On Wed, 25 May 2016 14:18:43 -0500
+> Leo Li <pku.leo@gmail.com> wrote:
+>
+>> On Thu, Apr 7, 2016 at 7:45 PM, Boris Brezillon
+>> <boris.brezillon@free-electrons.com> wrote:
+>> > On Wed, 6 Apr 2016 18:53:39 +0000
+>> > Yang-Leo Li <leoyang.li@nxp.com> wrote:
+>> >
+>> >>
+>> >>
+>> >> > -----Original Message-----
+>> >> > From: Brian Norris [mailto:computersforpeace@gmail.com]
+>> >> > Sent: Wednesday, April 06, 2016 12:53 PM
+>> >> > To: Li Yang <leoli@freescale.com>
+>> >> > Cc: Scott Wood <oss@buserror.net>; Raghav Dogra <raghav.dogra@nxp.com>;
+>> >> > linux-mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
+>> >> > Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>; Raghav Dogra
+>> >> > <raghav@freescale.com>; Jaiprakash Singh <b44839@freescale.com>; Boris
+>> >> > Brezillon <boris.brezillon@free-electrons.com>
+>> >> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+>> >> >
+>> >> > Hi,
+>> >> >
+>> >> > On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:
+>> >> > > Hi Brian,
+>> >> > >
+>> >> > > Could you help to review and pull in this patch and the Kconfig update
+>> >> > > after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It
+>> >> >
+>> >> > It's probably best for Boris to apply this now.
+>> >>
+>> >> Thanks Brian.  I see Boris is taking over the maintenance of NAND recently, we will follow up with him.
+>> >>
+>> >> Hi Boris,
+>> >>
+>> >> Can you consider to pull in this patch and then Kconfig patch (https://patchwork.ozlabs.org/patch/557389/)?
+>> >
+>> > Applied.
+>> >
+>> > Thanks,
+>> >
+>> > Boris
+>>
+>> Hi Boris,
+>>
+>> It seems that the patch at https://patchwork.ozlabs.org/patch/557389/
+>> mentioned above was not in tree for 4.7.  Can you review and apply
+>> that patch too?
+>
+> I see it in the PR Brian sent 2 days ago [1], so it should appear in
+> Linus tree soon.
+>
+> Regards,
+>
+> Boris
+>
+> [1]https://lkml.org/lkml/2016/5/24/9
 
-It looks good, just one question:
 
-> +/* XSL registers (Mellanox CX4) */
-> +static const cxl_p1_reg_t CXL_XSL_Timebase  = {0x0100};
-> +static const cxl_p1_reg_t CXL_XSL_TB_CTLSTAT = {0x0108};
-> +static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
-> +static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
+The pull request does have patch "mtd/ifc: Add support for IFC
+controller version 2.0", but it doesn't have another patch
+"driver/memory: Update dependency of IFC for
+Layerscape"(https://patchwork.ozlabs.org/patch/557389/) needed to make
+the driver selectable on new hardware.
 
-Out of curiosity, in which document did you get those offsets from? I 
-remember there used to be some confusion about it. All I could find was 
-the internal offsets the firmware remaps those to (in xsl databook).
-
-Feel free to grab the "From:", since the patch has evolved since I 
-worked on it. I don't care.
-
-   Fred
+Regards,
+Leo
