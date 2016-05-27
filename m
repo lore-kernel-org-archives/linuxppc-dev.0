@@ -1,32 +1,25 @@
-Return-Path: <boris.brezillon@free-electrons.com>
-Received: from mail.free-electrons.com (down.free-electrons.com
- [37.187.137.238])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rGdKV1wDwzDqcZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2016 06:44:13 +1000 (AEST)
-Date: Fri, 27 May 2016 22:44:01 +0200
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-To: Leo Li <pku.leo@gmail.com>, Brian Norris <computersforpeace@gmail.com>
-Cc: Yang-Leo Li <leoyang.li@nxp.com>, Prabhakar Kushwaha
- <prabhakar.kushwaha@nxp.com>, Scott Wood <oss@buserror.net>, Raghav Dogra
- <raghav.dogra@nxp.com>, "linux-mtd@lists.infradead.org"
- <linux-mtd@lists.infradead.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Raghav Dogra <raghav@freescale.com>,
- Jaiprakash Singh <b44839@freescale.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-Message-ID: <20160527224401.4b776ad4@bbrezillon>
-In-Reply-To: <CADRPPNSeQsOZZ9XRR4BOfZvewoB9RoEy0KzPrRzoDm21LtacnQ@mail.gmail.com>
-References: <1455708258-3831-1-git-send-email-raghav.dogra@nxp.com>
- <CADRPPNS1i1XgtpyiT_=rDuDXBDn=ehNY32=RKTC9hdKXhWWq8A@mail.gmail.com>
- <1455840434.2463.97.camel@buserror.net>
- <CADRPPNTauz=T9oWCeZy8G8s0vo9fmieRhn=Gd3jVqqJJEHV_ag@mail.gmail.com>
- <20160406175254.GC5243@localhost>
- <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
- <20160408024507.69fb4fc1@bbrezillon>
- <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
- <20160525223412.086e45e9@bbrezillon>
- <CADRPPNSeQsOZZ9XRR4BOfZvewoB9RoEy0KzPrRzoDm21LtacnQ@mail.gmail.com>
+Return-Path: <giu.lippolis@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rGdyJ5zXyzDqcf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2016 07:12:39 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id q62so2044357wmg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 14:12:39 -0700 (PDT)
+Received: from Schopenhauer (x5ce00f19.dyn.telefonica.de. [92.224.15.25])
+ by smtp.gmail.com with ESMTPSA id i4sm21187597wjj.49.2016.05.27.14.12.35
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 27 May 2016 14:12:35 -0700 (PDT)
+From: "Giuseppe Lippolis" <giu.lippolis@gmail.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: problem with cuImage.mpc834x_mds image
+Date: Fri, 27 May 2016 23:12:20 +0200
+Message-ID: <004201d1b85c$75353ba0$5f9fb2e0$@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,100 +29,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Leo,
+Dear All,
+I'm trying with buildroot to build the linux-4.4.3 for an iomega 150d
+machine mounting the mpc8347E sys.
+Due the old U-Boot version is not possible to use the standard uImage, but
+it is needed to set the cuImage target (the one embedding the device tree).
 
-On Fri, 27 May 2016 15:15:00 -0500
-Leo Li <pku.leo@gmail.com> wrote:
+I start using the default configuration
+arch/powerpc/configs/mpc83xx_defconfig,
+and the default device tree mpc834x_mds.
 
-> On Wed, May 25, 2016 at 3:34 PM, Boris Brezillon
-> <boris.brezillon@free-electrons.com> wrote:
-> > On Wed, 25 May 2016 14:18:43 -0500
-> > Leo Li <pku.leo@gmail.com> wrote:
-> >  
-> >> On Thu, Apr 7, 2016 at 7:45 PM, Boris Brezillon
-> >> <boris.brezillon@free-electrons.com> wrote:  
-> >> > On Wed, 6 Apr 2016 18:53:39 +0000
-> >> > Yang-Leo Li <leoyang.li@nxp.com> wrote:
-> >> >  
-> >> >>
-> >> >>  
-> >> >> > -----Original Message-----
-> >> >> > From: Brian Norris [mailto:computersforpeace@gmail.com]
-> >> >> > Sent: Wednesday, April 06, 2016 12:53 PM
-> >> >> > To: Li Yang <leoli@freescale.com>
-> >> >> > Cc: Scott Wood <oss@buserror.net>; Raghav Dogra <raghav.dogra@nxp.com>;
-> >> >> > linux-mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
-> >> >> > Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>; Raghav Dogra
-> >> >> > <raghav@freescale.com>; Jaiprakash Singh <b44839@freescale.com>; Boris
-> >> >> > Brezillon <boris.brezillon@free-electrons.com>
-> >> >> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-> >> >> >
-> >> >> > Hi,
-> >> >> >
-> >> >> > On Wed, Mar 30, 2016 at 03:43:40PM -0500, Li Yang wrote:  
-> >> >> > > Hi Brian,
-> >> >> > >
-> >> >> > > Could you help to review and pull in this patch and the Kconfig update
-> >> >> > > after this patch(https://patchwork.ozlabs.org/patch/557389/)?  It  
-> >> >> >
-> >> >> > It's probably best for Boris to apply this now.  
-> >> >>
-> >> >> Thanks Brian.  I see Boris is taking over the maintenance of NAND recently, we will follow up with him.
-> >> >>
-> >> >> Hi Boris,
-> >> >>
-> >> >> Can you consider to pull in this patch and then Kconfig patch (https://patchwork.ozlabs.org/patch/557389/)?  
-> >> >
-> >> > Applied.
-> >> >
-> >> > Thanks,
-> >> >
-> >> > Boris  
-> >>
-> >> Hi Boris,
-> >>
-> >> It seems that the patch at https://patchwork.ozlabs.org/patch/557389/
-> >> mentioned above was not in tree for 4.7.  Can you review and apply
-> >> that patch too?  
-> >
-> > I see it in the PR Brian sent 2 days ago [1], so it should appear in
-> > Linus tree soon.
-> >
-> > Regards,
-> >
-> > Boris
-> >
-> > [1]https://lkml.org/lkml/2016/5/24/9  
-> 
-> 
-> The pull request does have patch "mtd/ifc: Add support for IFC
-> controller version 2.0", but it doesn't have another patch
-> "driver/memory: Update dependency of IFC for
-> Layerscape"(https://patchwork.ozlabs.org/patch/557389/) needed to make
-> the driver selectable on new hardware.
+In order to enable the console  output during the first linux boot stage I
+added the following line at the end of the device tree file:
 
-Sorry, I overlooked that part in your different emails (even though you
-clearly stated that you needed both patches).
+        chosen {
+                linux,stdout-path = "/soc8349/serial at 4500";
+        };
 
-For my defense, I haven't followed the patch series from the beginning,
-and only took the patch because Brian suggested to do so (and the
-changes seemed ok).
-It would have been clearer if the different patches were part of the
-same series.
+The kernel is compiled and I get the cuImage.mpc834x_mds image.
 
-Anyway, Brian, can you take it into your tree and make it appear in
--rc1 (or earlier if it's still possible)?
+Then I load it on the machine and execute:
 
-BTW, in the patch description you say you're only modifying a Kconfig
-dependency, but you're actually doing more than that: you're removing
-an asm header inclusion and manually include several other headers
-(which I guess were previously included by asm/prom.h).
+tftp 0x10000000 cuImage.mpc834x_mds
+Speed: 1000, full duplex
+Using Freescale TSEC0 device
+TFTP from server 192.168.178.36; our IP address is 192.168.178.10
+Filename 'cuImage.mpc834x_mds'.
+Load address: 0x10000000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         ################################
+done
+Bytes transferred = 2157489 (20ebb1 hex)
+IOMEGA=> bootm 0x10000000
+## Booting image at 10000000 ...
+   Image Name:   Linux-4.4.3
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    2157425 Bytes =  2.1 MB
+   Load Address: 00500000
+   Entry Point:  005001f8
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+Memory <- <0x0 0x20000000> (512MB)
+ethernet0: local-mac-address <- 00:d0:b8:01:d1:9f
+ethernet1: local-mac-address <- 9b:e3:00:01:72:6f
+CPU clock-frequency <- 0x179a7b00 (396MHz)
+CPU timebase-frequency <- 0x3ef1480 (66MHz)
+CPU bus-frequency <- 0xfbc5200 (264MHz)
 
-Regards,
+zImage starting: loaded at 0x00500000 (sp: 0x1ffb2ce8)
+Allocating 0x439a88 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0050e000:0x00940fe8)...done 0x422920 bytes
 
-Boris
+Linux/PowerPC load: root=/dev/mtdblock1 ro rootfstype=cramfs devfs=mount
+console=ttyS0,115200 init=/linuxrc
+Finalizing device tree... flat tree at 0x94d120
 
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+
+But at this point the process crash and the system is reset.
+It should be something near the handover between the first kenel boot stage
+and the vmlinux start, but I do not have a jtag to proceed the
+investigation.
+
+In any case it seems that the execution never entry the vmlinux start
+(head_32.S).
+
+I try to add this macro at the begin of the file:
+
+        .equ cnsladdr, 0xe0004500 (console address txreg)
+
+.macro dbg_prnt nid
+        lis     r24, cnsladdr at ha
+        addi    r24, r24, cnsladdr at l
+        li      r25, 'd'
+        stb     r25, 0(r24)
+        li      r25, 'b'
+        stb     r25, 0(r24)
+        li      r25, 'g'
+        stb     r25, 0(r24)
+        li      r25, '0'
+        addi    r25, r25, \nid
+        stb     r25, 0(r24)
+        li      r25, '\n'
+        stb     r25, 0(r24)
+.endm
+
+
+But I do not see anything in the console.
+The problem seems releted to the vmlinux call in arc/powerpc/boot/main.c
+
+kentry = (kernel_entry_t) vmlinux.addr;
+
+
+Any suggestion?
+Bye.
