@@ -1,18 +1,20 @@
 Return-Path: <rashmicy@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rGFSs5jWHzDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 15:49:17 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id f144so4800095pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 22:49:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rGFSz4Z1szDqbc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 15:49:23 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id c84so4358984pfc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 22:49:23 -0700 (PDT)
 From: Rashmica Gupta <rashmicy@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org,
 	mpe@ellerman.id.au
-Subject: [v3 PATCH 1/2] powerpc/mm: Dump linux pagetables
-Date: Fri, 27 May 2016 15:48:59 +1000
-Message-Id: <1464328140-31178-1-git-send-email-rashmicy@gmail.com>
+Subject: [v3 PATCH 2/2] powerpc/mm: Dump hash table
+Date: Fri, 27 May 2016 15:49:00 +1000
+Message-Id: <1464328140-31178-2-git-send-email-rashmicy@gmail.com>
+In-Reply-To: <1464328140-31178-1-git-send-email-rashmicy@gmail.com>
+References: <1464328140-31178-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,68 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Useful to be able to dump the kernels page tables to check permissions
-and memory types - derived from arm64's implementation.
+Useful to be able to dump the kernel hash page table to check
+which pages are hashed along with their sizes and other details.
 
-Add a debugfs file to check the page tables. To use this the PPC_PTDUMP
-config option must be selected.
+Add a debugfs file to check the hash page table. If radix is enabled
+(and so there is no hash page table) then this file doesn't exist. To
+use this the PPC_PTDUMP config option must be selected.
 
 Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
-v2 -> v3: Changed to be compatible with P9. 
+v2 -> v3: Changed to be compatible with P9.
 
- arch/powerpc/Kconfig.debug             |  12 +
- arch/powerpc/mm/Makefile               |   1 +
- arch/powerpc/mm/dump_linuxpagetables.c | 440 +++++++++++++++++++++++++++++++++
- 3 files changed, 453 insertions(+)
- create mode 100644 arch/powerpc/mm/dump_linuxpagetables.c
+ arch/powerpc/mm/Makefile             |   3 +-
+ arch/powerpc/mm/dump_hashpagetable.c | 543 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 545 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/mm/dump_hashpagetable.c
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 2be221874de8..d19f496a7e12 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -350,4 +350,16 @@ config FAIL_IOMMU
- 
- 	  If you are unsure, say N.
- 
-+config PPC_PTDUMP
-+        bool "Export kernel pagetable layout to userspace via debugfs"
-+        depends on DEBUG_KERNEL
-+        select DEBUG_FS
-+        help
-+	  This option exports the state of the kernel pagetables to a
-+	  debugfs file. This is only useful for kernel developers who are
-+	  working in architecture specific areas of the kernel - probably
-+	  not a good idea to enable this feature in a production kernel.
-+
-+	  If you are unsure, say N.
-+
- endmenu
 diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index f2cea6d5e764..d3dfa02082b1 100644
+index d3dfa02082b1..df4fbf56aa7b 100644
 --- a/arch/powerpc/mm/Makefile
 +++ b/arch/powerpc/mm/Makefile
-@@ -43,3 +43,4 @@ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+@@ -43,4 +43,5 @@ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
  obj-$(CONFIG_HIGHMEM)		+= highmem.o
  obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
  obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
-+obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+-obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o
++obj-$(CONFIG_PPC_PTDUMP)	+= dump_linuxpagetables.o \
++				   dump_hashpagetable.o
+diff --git a/arch/powerpc/mm/dump_hashpagetable.c b/arch/powerpc/mm/dump_hashpagetable.c
 new file mode 100644
-index 000000000000..d242bc79ae64
+index 000000000000..f8ccc224eb2c
 --- /dev/null
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -0,0 +1,440 @@
++++ b/arch/powerpc/mm/dump_hashpagetable.c
+@@ -0,0 +1,543 @@
 +/*
 + * Copyright 2016, Rashmica Gupta, IBM Corp.
 + *
-+ * This traverses the kernel pagetables and dumps the
-+ * information about the used sections of memory to
-+ * /sys/kernel/debug/kernel_pagetables.
++ * This traverses the kernel virtual memory and dumps the pages that are in
++ * the hash pagetable, along with their flags to
++ * /sys/kernel/debug/kernel_hash_pagetable.
 + *
-+ * Derived from the arm64 implementation:
-+ * Copyright (c) 2014, The Linux Foundation, Laura Abbott.
-+ * (C) Copyright 2008 Intel Corporation, Arjan van de Ven.
++ * If radix is enabled then there is no hash page table and so no debugfs file
++ * is generated.
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of the GNU General Public License
@@ -101,33 +83,10 @@ index 000000000000..d242bc79ae64
 +#include <linux/const.h>
 +#include <asm/page.h>
 +#include <asm/pgalloc.h>
++#include <asm/plpar_wrappers.h>
++#include <linux/memblock.h>
++#include <asm/firmware.h>
 +
-+/*
-+ * To visualise what is happening,
-+ *
-+ *  - PTRS_PER_P** = how many entries there are in the corresponding P**
-+ *  - P**_SHIFT = how many bits of the address we use to index into the
-+ * corresponding P**
-+ *  - P**_SIZE is how much memory we can access through the table - not the
-+ * size of the table itself.
-+ * P**={PGD, PUD, PMD, PTE}
-+ *
-+ *
-+ * Each entry of the PGD points to a PUD. Each entry of a PUD points to a
-+ * PMD. Each entry of a PMD points to a PTE. And every PTE entry points to
-+ * a page.
-+ *
-+ * In the case where there are only 3 levels, the PUD is folded into the
-+ * PGD: every PUD has only one entry which points to the PMD.
-+ *
-+ * The page dumper groups page table entries of the same type into a single
-+ * description. It uses pg_state to track the range information while
-+ * iterating over the PTE entries. When the continuity is broken it then
-+ * dumps out a description of the range - ie PTEs that are virtually contiguous
-+ * with the same PTE flags are chunked together. This is to make it clear how
-+ * different areas of the kernel virtual memory are used.
-+ *
-+ */
 +struct pg_state {
 +	struct seq_file *seq;
 +	const struct addr_marker *marker;
@@ -164,129 +123,98 @@ index 000000000000..d242bc79ae64
 +	int		shift;
 +};
 +
-+static const struct flag_info flag_array[] = {
++static const struct flag_info v_flag_array[] = {
 +	{
-+#ifdef CONFIG_PPC_STD_MMU_64
-+		.mask	= _PAGE_PRIVILEGED,
-+		.val	= 0,
-+#else
-+		.mask	= _PAGE_USER,
-+		.val	= _PAGE_USER,
-+#endif
-+		.set	= "user",
-+		.clear	= "    ",
++		.mask   = SLB_VSID_B,
++		.val    = SLB_VSID_B_256M,
++		.set    = "ssize: 256M",
++		.clear  = "ssize: 1T  ",
 +	}, {
-+		.mask	= _PAGE_RW,
-+		.val	= _PAGE_RW,
-+		.set	= "rw",
-+		.clear	= "ro",
++		.mask	= HPTE_V_SECONDARY,
++		.val	= HPTE_V_SECONDARY,
++		.set	= "secondary",
++		.clear	= "primary  ",
 +	}, {
-+		.mask	= _PAGE_EXEC,
-+		.val	= _PAGE_EXEC,
-+		.set	= " X ",
-+		.clear	= "   ",
++		.mask	= HPTE_V_VALID,
++		.val	= HPTE_V_VALID,
++		.set	= "valid  ",
++		.clear	= "invalid",
 +	}, {
-+		.mask	= _PAGE_PTE,
-+		.val	= _PAGE_PTE,
-+		.set	= "pte",
-+		.clear	= "   ",
-+	}, {
-+		.mask	= _PAGE_PRESENT,
-+		.val	= _PAGE_PRESENT,
-+		.set	= "present",
-+		.clear	= "       ",
-+	}, {
-+#ifdef CONFIG_PPC_STD_MMU_64
-+		.mask	= H_PAGE_HASHPTE,
-+		.val	= H_PAGE_HASHPTE,
-+#else
-+		.mask	= _PAGE_HASHPTE,
-+		.val	= _PAGE_HASHPTE,
-+#endif
-+		.set	= "hpte",
-+		.clear	= "    ",
-+	}, {
-+#ifndef CONFIG_PPC_STD_MMU_64
-+		.mask	= _PAGE_GUARDED,
-+		.val	= _PAGE_GUARDED,
-+		.set	= "guarded",
-+		.clear	= "       ",
-+	}, {
-+#endif
-+		.mask	= _PAGE_DIRTY,
-+		.val	= _PAGE_DIRTY,
-+		.set	= "dirty",
-+		.clear	= "     ",
-+	}, {
-+		.mask	= _PAGE_ACCESSED,
-+		.val	= _PAGE_ACCESSED,
-+		.set	= "accessed",
-+		.clear	= "        ",
-+	}, {
-+#ifndef CONFIG_PPC_STD_MMU_64
-+		.mask	= _PAGE_WRITETHRU,
-+		.val	= _PAGE_WRITETHRU,
-+		.set	= "write through",
-+		.clear	= "             ",
-+	}, {
-+#endif
-+		.mask	= _PAGE_NO_CACHE,
-+		.val	= _PAGE_NO_CACHE,
-+		.set	= "no cache",
-+		.clear	= "        ",
-+	}, {
-+		.mask	= H_PAGE_BUSY,
-+		.val	= H_PAGE_BUSY,
-+		.set	= "busy",
-+	}, {
-+#ifdef CONFIG_PPC_64K_PAGES
-+		.mask	= H_PAGE_COMBO,
-+		.val	= H_PAGE_COMBO,
-+		.set	= "combo",
-+	}, {
-+		.mask	= H_PAGE_4K_PFN,
-+		.val	= H_PAGE_4K_PFN,
-+		.set	= "4K_pfn",
-+	}, {
-+#endif
-+		.mask	= H_PAGE_F_GIX,
-+		.val	= H_PAGE_F_GIX,
-+		.set	= "f_gix",
-+		.is_val	= true,
-+		.shift	= H_PAGE_F_GIX_SHIFT,
-+	}, {
-+		.mask	= H_PAGE_F_SECOND,
-+		.val	= H_PAGE_F_SECOND,
-+		.set	= "f_second",
-+	}, {
-+		.mask	= _PAGE_SPECIAL,
-+		.val	= _PAGE_SPECIAL,
-+		.set	= "special",
++		.mask	= HPTE_V_BOLTED,
++		.val	= HPTE_V_BOLTED,
++		.set	= "bolted",
++		.clear	= "",
 +	}
 +};
 +
-+struct pgtable_level {
-+	const struct flag_info *flag;
-+	size_t num;
-+	u64 mask;
++static const struct flag_info r_flag_array[] = {
++	{
++		.mask	= HPTE_R_PP0 | HPTE_R_PP,
++		.val	= PP_RWXX,
++		.set	= "prot:RW--",
++	}, {
++		.mask	= HPTE_R_PP0 | HPTE_R_PP,
++		.val	= PP_RWRX,
++		.set	= "prot:RWR-",
++	}, {
++		.mask	= HPTE_R_PP0 | HPTE_R_PP,
++		.val	= PP_RWRW,
++		.set	= "prot:RWRW",
++	}, {
++		.mask	= HPTE_R_PP0 | HPTE_R_PP,
++		.val	= PP_RXRX,
++		.set	= "prot:R-R-",
++	}, {
++		.mask	= HPTE_R_PP0 | HPTE_R_PP,
++		.val	= PP_RXXX,
++		.set	= "prot:R---",
++	}, {
++		.mask	= HPTE_R_KEY_HI | HPTE_R_KEY_LO,
++		.val	= HPTE_R_KEY_HI | HPTE_R_KEY_LO,
++		.set	= "key",
++		.clear	= "",
++		.is_val = true,
++	}, {
++		.mask	= HPTE_R_R,
++		.val	= HPTE_R_R,
++		.set	= "ref",
++		.clear	= "   ",
++	}, {
++		.mask	= HPTE_R_C,
++		.val	= HPTE_R_C,
++		.set	= "changed",
++		.clear	= "       ",
++	}, {
++		.mask	= HPTE_R_N,
++		.val	= HPTE_R_N,
++		.set	= "no execute",
++	}, {
++		.mask	= HPTE_R_WIMG,
++		.val	= HPTE_R_W,
++		.set	= "writethru",
++	}, {
++		.mask	= HPTE_R_WIMG,
++		.val	= HPTE_R_I,
++		.set	= "no cache",
++	}, {
++		.mask	= HPTE_R_WIMG,
++		.val	= HPTE_R_G,
++		.set	= "guarded",
++	}
 +};
 +
-+static struct pgtable_level pg_level[] = {
-+	{
-+	}, { /* pgd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pud */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pmd */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	}, { /* pte */
-+		.flag	= flag_array,
-+		.num	= ARRAY_SIZE(flag_array),
-+	},
-+};
++static int calculate_pagesize(struct pg_state *st, int ps, char s[])
++{
++	static const char units[] = "BKMGTPE";
++	const char *unit = units;
++
++	while (ps > 9 && unit[1]) {
++		ps -= 10;
++		unit++;
++	}
++	seq_printf(st->seq, "  %s_ps: %i%c\t", s, 1<<ps, *unit);
++	return ps;
++}
 +
 +static void dump_flag_info(struct pg_state *st, const struct flag_info
 +		*flag, u64 pte, int num)
@@ -314,86 +242,224 @@ index 000000000000..d242bc79ae64
 +			if (s)
 +				seq_printf(st->seq, "  %s", s);
 +		}
-+		st->current_flags &= ~flag->mask;
 +	}
-+	if (st->current_flags != 0)
-+		seq_printf(st->seq, "  unknown flags:%llx", st->current_flags);
 +}
 +
-+static void dump_addr(struct pg_state *st, unsigned long addr)
++static void dump_hpte_info(struct pg_state *st, unsigned long ea, u64 v, u64 r,
++		unsigned long rpn, int bps, int aps, unsigned long lp)
 +{
-+	static const char units[] = "KMGTPE";
-+	const char *unit = units;
-+	unsigned long delta;
++	int aps_index;
 +
-+	seq_printf(st->seq, "0x%016lx-0x%016lx   ", st->start_address, addr-1);
-+	delta = (addr - st->start_address) >> 10;
-+	/* Work out what appropriate unit to use */
-+	while (!(delta & 1023) && unit[1]) {
-+		delta >>= 10;
-+		unit++;
-+	}
-+	seq_printf(st->seq, "%9lu%c", delta, *unit);
-+
-+}
-+
-+static void note_page(struct pg_state *st, unsigned long addr,
-+	       unsigned int level, u64 val)
-+{
-+	u64 flag = val & pg_level[level].mask;
-+	/* At first no level is set */
-+	if (!st->level) {
-+		st->level = level;
-+		st->current_flags = flag;
-+		st->start_address = addr;
++	while (ea >= st->marker[1].start_address) {
++		st->marker++;
 +		seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-+	/*
-+	 * Dump the section of virtual memory when:
-+	 *   - the PTE flags from one entry to the next differs.
-+	 *   - we change levels in the tree.
-+	 *   - the address is in a different section of memory and is thus
-+	 *   used for a different purpose, regardless of the flags.
-+	 */
-+	} else if (flag != st->current_flags || level != st->level ||
-+		   addr >= st->marker[1].start_address) {
-+
-+		/* Check the PTE flags */
-+		if (st->current_flags) {
-+			dump_addr(st, addr);
-+
-+			/* Dump all the flags */
-+			if (pg_level[st->level].flag)
-+				dump_flag_info(st, pg_level[st->level].flag,
-+					  st->current_flags,
-+					  pg_level[st->level].num);
-+
-+			seq_puts(st->seq, "\n");
-+		}
-+
-+		/*
-+		 * Address indicates we have passed the end of the
-+		 * current section of virtual memory
-+		 */
-+		while (addr >= st->marker[1].start_address) {
-+			st->marker++;
-+			seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
-+		}
-+		st->start_address = addr;
-+		st->current_flags = flag;
-+		st->level = level;
 +	}
++	seq_printf(st->seq, "0x%lx:\t", ea);
++	seq_printf(st->seq, "AVPN:%llx\t", HPTE_V_AVPN_VAL(v));
++	dump_flag_info(st, v_flag_array, v, ARRAY_SIZE(v_flag_array));
++	seq_printf(st->seq, "  rpn: %lx\t", rpn);
++	dump_flag_info(st, r_flag_array, r, ARRAY_SIZE(r_flag_array));
++
++	calculate_pagesize(st, bps, "base");
++	aps_index = calculate_pagesize(st, aps, "actual");
++	if (aps_index != 2)
++		seq_printf(st->seq, "LP enc: %lx", lp);
++	seq_puts(st->seq, "\n");
++}
++
++
++static int native_find(unsigned long ea, int psize, bool primary, u64 *v, u64
++		*r)
++{
++	struct hash_pte *hptep;
++	unsigned long hash, vsid, vpn, hpte_group, want_v, hpte_v;
++	int i, ssize = mmu_kernel_ssize;
++	unsigned long shift = mmu_psize_defs[psize].shift;
++
++	/* calculate hash */
++	vsid = get_kernel_vsid(ea, ssize);
++	vpn  = hpt_vpn(ea, vsid, ssize);
++	hash = hpt_hash(vpn, shift, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
++
++	/* to check in the secondary hash table, we invert the hash */
++	if (!primary)
++		hash = ~hash;
++	hpte_group = (hash & htab_hash_mask) * HPTES_PER_GROUP;
++	for (i = 0; i < HPTES_PER_GROUP; i++) {
++		hptep = htab_address + hpte_group;
++		hpte_v = be64_to_cpu(hptep->v);
++
++		if (HPTE_V_COMPARE(hpte_v, want_v) && (hpte_v & HPTE_V_VALID)) {
++			/* HPTE matches */
++			*v = be64_to_cpu(hptep->v);
++			*r = be64_to_cpu(hptep->r);
++			return 0;
++		}
++		++hpte_group;
++	}
++	return -1;
++}
++
++static int pseries_find(unsigned long ea, int psize, bool primary, u64 *v, u64
++		*r)
++{
++	struct hash_pte ptes[4];
++	unsigned long vsid, vpn, hash, hpte_group, want_v;
++	int i, j, ssize = mmu_kernel_ssize;
++	long lpar_rc = 0;
++	unsigned long shift = mmu_psize_defs[psize].shift;
++
++	/* calculate hash */
++	vsid = get_kernel_vsid(ea, ssize);
++	vpn  = hpt_vpn(ea, vsid, ssize);
++	hash = hpt_hash(vpn, shift, ssize);
++	want_v = hpte_encode_avpn(vpn, psize, ssize);
++
++	/* to check in the secondary hash table, we invert the hash */
++	if (!primary)
++		hash = ~hash;
++	hpte_group = ((hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
++	/* see if we can find an entry in the hpte with this hash */
++	for (i = 0; i < HPTES_PER_GROUP; i += 4, hpte_group += 4) {
++		lpar_rc = plpar_pte_read_4(0, hpte_group, (void *)ptes);
++
++		if (lpar_rc != H_SUCCESS)
++			continue;
++		for (j = 0; j < 4; j++) {
++			if (HPTE_V_COMPARE(ptes[j].v, want_v) &&
++					(ptes[j].v & HPTE_V_VALID)) {
++				/* HPTE matches */
++				*v = ptes[j].v;
++				*r = ptes[j].r;
++				return 0;
++			}
++		}
++	}
++	return -1;
++}
++
++static void decode_r(int bps, unsigned long r, unsigned long *rpn, int *aps,
++		unsigned long *lp_bits)
++{
++	struct mmu_psize_def entry;
++	unsigned long arpn, mask, lp;
++	int penc = -2, idx = 0, shift;
++
++	/*.
++	 * The LP field has 8 bits. Depending on the actual page size, some of
++	 * these bits are concatenated with the APRN to get the RPN. The rest
++	 * of the bits in the LP field is the LP value and is an encoding for
++	 * the base page size and the actual page size.
++	 *
++	 *  -	find the mmu entry for our base page size
++	 *  -	go through all page encodings and use the associated mask to
++	 *	find an encoding that matches our encoding in the LP field.
++	 */
++	arpn = (r & HPTE_R_RPN) >> HPTE_R_RPN_SHIFT;
++	lp = arpn & 0xff;
++
++	entry = mmu_psize_defs[bps];
++	while (idx < MMU_PAGE_COUNT) {
++		penc = entry.penc[idx];
++		if ((penc != -1) && (mmu_psize_defs[idx].shift)) {
++			shift = mmu_psize_defs[idx].shift -  HPTE_R_RPN_SHIFT;
++			mask = (0x1 << (shift)) - 1;
++			if ((lp & mask) == penc) {
++				*aps = mmu_psize_to_shift(idx);
++				*lp_bits = lp & mask;
++				*rpn = arpn >> shift;
++				return;
++			}
++		}
++		idx++;
++	}
++}
++
++static unsigned long hpte_find(struct pg_state *st, unsigned long ea, int psize)
++{
++	unsigned long slot;
++	u64 v  = 0, r = 0;
++	unsigned long rpn, lp_bits;
++	int base_psize = 0, actual_psize = 0;
++
++	if (ea <= PAGE_OFFSET)
++		return -1;
++
++	/* Look in primary table */
++	if (firmware_has_feature(FW_FEATURE_LPAR))
++		slot = pseries_find(ea, psize, true, &v, &r);
++	else
++		slot = native_find(ea, psize, true, &v, &r);
++
++	/* Look in secondary table */
++	if (slot == -1) {
++		if (firmware_has_feature(FW_FEATURE_LPAR))
++			slot = pseries_find(ea, psize, false, &v, &r);
++		else
++			slot = native_find(ea, psize, false, &v, &r);
++	}
++
++	/* No entry found */
++	if (slot == -1)
++		return -1;
++
++	/* We found an entry in the hash page table:
++	 *  - check that this has the same base page
++	 *  - find the actual page size
++	 *  - find the RPN
++	 */
++	base_psize = mmu_psize_to_shift(psize);
++
++	if ((v & HPTE_V_LARGE) == HPTE_V_LARGE) {
++		decode_r(psize, r, &rpn, &actual_psize, &lp_bits);
++	} else {
++		/* 4K actual page size */
++		actual_psize = 12;
++		rpn = (r & HPTE_R_RPN) >> HPTE_R_RPN_SHIFT;
++		/* In this case there are no LP bits */
++		lp_bits = -1;
++	}
++	/* We didn't find a matching encoding, so the PTE we found isn't for
++	 * this address.
++	 */
++	if (actual_psize == -1)
++		return -1;
++
++	dump_hpte_info(st, ea, v, r, rpn, base_psize, actual_psize, lp_bits);
++	return 0;
 +}
 +
 +static void walk_pte(struct pg_state *st, pmd_t *pmd, unsigned long start)
 +{
 +	pte_t *pte = pte_offset_kernel(pmd, 0);
-+	unsigned long addr;
-+	unsigned int i;
++	unsigned long addr, pteval, psize;
++	int i, status;
 +
 +	for (i = 0; i < PTRS_PER_PTE; i++, pte++) {
 +		addr = start + i * PAGE_SIZE;
-+		note_page(st, addr, 4, pte_val(*pte));
++		pteval = pte_val(*pte);
 +
++		if (addr < VMALLOC_END)
++			psize = mmu_vmalloc_psize;
++		else
++			psize = mmu_io_psize;
++#ifdef CONFIG_PPC_64K_PAGES
++		/* check for secret 4K mappings */
++		if (((pteval & H_PAGE_COMBO) == H_PAGE_COMBO) ||
++			((pteval & H_PAGE_4K_PFN) == H_PAGE_4K_PFN))
++			psize = mmu_io_psize;
++#endif
++		/* check for hashpte */
++		status = hpte_find(st, addr, psize);
++
++		if (((pteval & H_PAGE_HASHPTE) != H_PAGE_HASHPTE)
++				&& (status != -1)) {
++		/* found a hpte that is not in the linux page tables */
++			seq_printf(st->seq, "page probably bolted before linux"
++				" pagetables were set: addr:%lx, pteval:%lx\n",
++				addr, pteval);
++		}
 +	}
 +}
 +
@@ -408,8 +474,6 @@ index 000000000000..d242bc79ae64
 +		if (!pmd_none(*pmd))
 +			/* pmd exists */
 +			walk_pte(st, pmd, addr);
-+		else
-+			note_page(st, addr, 3, pmd_val(*pmd));
 +	}
 +}
 +
@@ -424,8 +488,6 @@ index 000000000000..d242bc79ae64
 +		if (!pud_none(*pud))
 +			/* pud exists */
 +			walk_pmd(st, pud, addr);
-+		else
-+			note_page(st, addr, 2, pud_val(*pud));
 +	}
 +}
 +
@@ -444,9 +506,38 @@ index 000000000000..d242bc79ae64
 +		if (!pgd_none(*pgd))
 +			/* pgd exists */
 +			walk_pud(st, pgd, addr);
-+		else
-+			note_page(st, addr, 1, pgd_val(*pgd));
 +	}
++}
++
++
++static void walk_linearmapping(struct pg_state *st)
++{
++	unsigned long addr;
++
++	/*
++	 * Traverse the linear mapping section of virtual memory and dump pages
++	 * that are in the hash pagetable.
++	 */
++	unsigned long psize = 1 << mmu_psize_defs[mmu_linear_psize].shift;
++
++	for (addr = PAGE_OFFSET; addr < PAGE_OFFSET +
++			memblock_phys_mem_size(); addr += psize)
++		hpte_find(st, addr, mmu_linear_psize);
++}
++
++static void walk_vmemmap(struct pg_state *st)
++{
++	struct vmemmap_backing *ptr = vmemmap_list;
++
++	/*
++	 * Traverse the vmemmaped memory and dump pages that are in the hash
++	 * pagetable.
++	 */
++	while (ptr->list) {
++		hpte_find(st, ptr->virt_addr, mmu_vmemmap_psize);
++		ptr = ptr->list;
++	}
++	seq_puts(st->seq, "---[ vmemmap end ]---\n");
 +}
 +
 +static void populate_markers(void)
@@ -471,15 +562,18 @@ index 000000000000..d242bc79ae64
 +{
 +	struct pg_state st = {
 +		.seq = m,
-+		.start_address = KERN_VIRT_START,
++		.start_address = PAGE_OFFSET,
 +		.marker = address_markers,
 +	};
-+	/* Traverse kernel page tables */
++	/*
++	 * Traverse the 0xc, 0xd and 0xf areas of the kernel virtual memory and
++	 * dump pages that are in the hash pagetable.
++	 */
++	walk_linearmapping(&st);
 +	walk_pagetables(&st);
-+	note_page(&st, 0, 0, 0);
++	walk_vmemmap(&st);
 +	return 0;
 +}
-+
 +
 +static int ptdump_open(struct inode *inode, struct file *file)
 +{
@@ -493,25 +587,17 @@ index 000000000000..d242bc79ae64
 +	.release	= single_release,
 +};
 +
-+static void build_pgtable_complete_mask(void)
-+{
-+	unsigned int i, j;
-+
-+	for (i = 0; i < ARRAY_SIZE(pg_level); i++)
-+		if (pg_level[i].flag)
-+			for (j = 0; j < pg_level[i].num; j++)
-+				pg_level[i].mask |= pg_level[i].flag[j].mask;
-+}
-+
 +static int ptdump_init(void)
 +{
 +	struct dentry *debugfs_file;
 +
-+	populate_markers();
-+	build_pgtable_complete_mask();
-+	debugfs_file = debugfs_create_file("kernel_pagetables", 0400, NULL,
-+			NULL, &ptdump_fops);
-+	return debugfs_file ? 0 : -ENOMEM;
++	if (!radix_enabled()) {
++		populate_markers();
++		debugfs_file = debugfs_create_file("kernel_hash_pagetable",
++				0400, NULL, NULL, &ptdump_fops);
++		return debugfs_file ? 0 : -ENOMEM;
++	}
++	return 0;
 +}
 +device_initcall(ptdump_init);
 -- 
