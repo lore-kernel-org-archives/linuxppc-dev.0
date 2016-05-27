@@ -1,21 +1,28 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rG2CF3QLQzDqBQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 07:21:44 +1000 (AEST)
-Date: Thu, 26 May 2016 14:21:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Oliver O'Halloran" <oohall@gmail.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, Mel Gorman
- <mgorman@techsingularity.net>
-Subject: Re: [RFC PATCH] mm/init: fix zone boundary creation
-Message-Id: <20160526142142.b16f7f3f18204faf0823ac65@linux-foundation.org>
-In-Reply-To: <1462435033-15601-1-git-send-email-oohall@gmail.com>
-References: <1462435033-15601-1-git-send-email-oohall@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rGDC52GbyzDqZG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 14:52:17 +1000 (AEST)
+Date: Fri, 27 May 2016 14:52:11 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Anton Blanchard <anton@samba.org>
+Cc: Alexander Graf <agraf@suse.de>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ qemu-devel@nongnu.org, qemu-ppc@nongnu.org
+Subject: Re: [PATCH v2] spapr: Don't set the TM ibm, pa-features bit in PR KVM
+ mode
+Message-ID: <20160527045211.GZ17226@voom.fritz.box>
+References: <20160404164457.539a55f0@kryten> <57021123.6050506@ozlabs.ru>
+ <20160404204346.1cf44df8@kryten> <20160404210928.0d9ae644@kryten>
+ <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
+ <20160430104800.0a7c1d11@kryten>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="9FlPK/CTwZII6yRd"
+In-Reply-To: <20160430104800.0a7c1d11@kryten>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu,  5 May 2016 17:57:13 +1000 "Oliver O'Halloran" <oohall@gmail.com> wrote:
 
-> As a part of memory initialisation the architecture passes an array to
-> free_area_init_nodes() which specifies the max PFN of each memory zone.
-> This array is not necessarily monotonic (due to unused zones) so this
-> array is parsed to build monotonic lists of the min and max PFN for
-> each zone. ZONE_MOVABLE is special cased here as its limits are managed by
-> the mm subsystem rather than the architecture. Unfortunately, this special
-> casing is broken when ZONE_MOVABLE is the not the last zone in the zone
-> list. The core of the issue is:
-> 
-> 	if (i == ZONE_MOVABLE)
-> 		continue;
-> 	arch_zone_lowest_possible_pfn[i] =
-> 		arch_zone_highest_possible_pfn[i-1];
-> 
-> As ZONE_MOVABLE is skipped the lowest_possible_pfn of the next zone
-> will be set to zero. This patch fixes this bug by adding explicitly
-> tracking where the next zone should start rather than relying on the
-> contents arch_zone_highest_possible_pfn[].
+--9FlPK/CTwZII6yRd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-hm, this is all ten year old Mel code.
+On Sat, Apr 30, 2016 at 10:48:00AM +1000, Anton Blanchard wrote:
+> We don't support transactional memory in PR KVM, so don't tell
+> the OS that we do.
+>=20
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-What's the priority on this?  What are the user-visible runtime
-effects, how many people are affected, etc?
+Relying on CAP_PPC_GET_PVINFO is a hack we need in some cases, but
+it's not something to be encouraged.  I'd prefer to see this examining
+a new capability specifically advertising TM support in KVM, with a
+fallback to PVINFO if necessary.
 
+Come to that, we probably shouldn't be advertising TM support in TCG,
+either, since IIRC our "support" for the TM instructions there is
+basically worse than useless.
 
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -5980,15 +5980,18 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
->  				sizeof(arch_zone_lowest_possible_pfn));
->  	memset(arch_zone_highest_possible_pfn, 0,
->  				sizeof(arch_zone_highest_possible_pfn));
-> -	arch_zone_lowest_possible_pfn[0] = find_min_pfn_with_active_regions();
-> -	arch_zone_highest_possible_pfn[0] = max_zone_pfn[0];
-> -	for (i = 1; i < MAX_NR_ZONES; i++) {
+> ---
+>=20
+> v2: Fix build with CONFIG_KVM disabled, noticed by Alex.
+>=20
+> diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
+> index b69995e..dc3e3c9 100644
+> --- a/hw/ppc/spapr.c
+> +++ b/hw/ppc/spapr.c
+> @@ -696,6 +696,14 @@ static void spapr_populate_cpu_dt(CPUState *cs, void=
+ *fdt, int offset,
+>      } else /* env->mmu_model =3D=3D POWERPC_MMU_2_07 */ {
+>          pa_features =3D pa_features_207;
+>          pa_size =3D sizeof(pa_features_207);
 > +
-> +	start_pfn = find_min_pfn_with_active_regions();
-> +
-> +	for (i = 0; i < MAX_NR_ZONES; i++) {
->  		if (i == ZONE_MOVABLE)
->  			continue;
-> -		arch_zone_lowest_possible_pfn[i] =
-> -			arch_zone_highest_possible_pfn[i-1];
-> -		arch_zone_highest_possible_pfn[i] =
-> -			max(max_zone_pfn[i], arch_zone_lowest_possible_pfn[i]);
-> +
-> +		end_pfn = max(max_zone_pfn[i], start_pfn);
-> +		arch_zone_lowest_possible_pfn[i] = start_pfn;
-> +		arch_zone_highest_possible_pfn[i] = end_pfn;
-> +
-> +		start_pfn = end_pfn;
->  	}
->  	arch_zone_lowest_possible_pfn[ZONE_MOVABLE] = 0;
->  	arch_zone_highest_possible_pfn[ZONE_MOVABLE] = 0;
+> +#ifdef CONFIG_KVM
+> +        /* Don't enable TM in PR KVM mode */
+> +        if (kvm_enabled() &&
+> +            kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINFO=
+)) {
+> +            pa_features[24] &=3D ~0x80;
+> +        }
+> +#endif
+>      }
+>      if (env->ci_large_pages) {
+>          pa_features[3] |=3D 0x20;
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--9FlPK/CTwZII6yRd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXR9J6AAoJEGw4ysog2bOSovYP/RhJYZNv+HE+O7LwtlEwRFuJ
+2/GSydZMUF9RC80aqZMmmDkcUKDAF6MkRgoiLAwxNGXFs4sK03N3+qErZIiB968f
+bNq2ie1A7AKsZReAkS9fDKkHQ3y8/GbSRD/348Ub4676O7W2KdGdjDO/C28Kf4AZ
+3Y/NLmxxfcEmuUG1ZGCmhl9wtwxff1nDiXl+4dHmrAgyRCvboUIZC8iQ7Mb2de+2
+CEQjKW1v0j0jMp60zy0VtG+Ey5zDiXYshhUI7pUXzBnEljkC3XIsHfWuhxBy0PoZ
+WVK81d9rvRGx8l1tfN0ZABFTUgNqBTl8+f8vxRfwUY2QZ3a3wOzOjrx5tOAHbeS2
+WeMScUOlPVmgZpf24xCQvwIuO3RvelbclBCYFVcGXwUvGd9F6NCfzZ3XO1oyo+yN
+IDjD8tIZDQGtOjros3ghauMyQETirV3EhVYy4xKIHOLj9+KKGfpINgvET5Twej6j
+acD4IeNIcZxvDH5msWclsSJEd2Wdf3oekrTEpfqsDtC+AKQPRFyVNEdyeiUFcKfQ
+URdCIt2O5zIYFPJQuSgpxVFLguk1xEO7lAxz9vFcmNzCbxIu1r1rqPsHXnT1e/FO
+TmIk1c6Hb4Yet8ZozGo9O6Btzkmx2Zzzjl9NMRjdLSCD/U6ZXzfl4ImCi8n9bkMc
+QGhvCkeeqoep3Fzt36N/
+=Rx8n
+-----END PGP SIGNATURE-----
+
+--9FlPK/CTwZII6yRd--
