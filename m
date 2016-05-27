@@ -1,19 +1,52 @@
-Return-Path: <pc.ramachandra@gmail.com>
-Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
- [IPv6:2607:f8b0:4001:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rGGdL4wd4zDqD3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 16:41:42 +1000 (AEST)
-Received: by mail-ig0-x22d.google.com with SMTP id fh2so60451851igd.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 May 2016 23:41:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rGMq83H21zDqZn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 20:35:32 +1000 (AEST)
+Received: from pps.filterd (m0049461.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u4RAXslq019795
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 06:35:29 -0400
+Message-Id: <201605271035.u4RAXslq019795@mx0a-001b2d01.pphosted.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 236aymdusk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 06:35:28 -0400
+Received: from localhost
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Fri, 27 May 2016 16:05:25 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E4B413940069
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 16:05:21 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4RAZ69d61800502
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 16:05:06 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4RAZFXf024184
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2016 16:05:19 +0530
+Date: Fri, 27 May 2016 18:34:58 +0800
+From: xinhui <xinhui.pan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Date: Fri, 27 May 2016 12:11:39 +0530
-Message-ID: <CA+Wf0EG4bOs42kP4OiR3wx+xDrq-yuzUu7BPPL_6Fh-0TL8BLA@mail.gmail.com>
-Subject: u-boot.lds file
-From: Rama Chandra <pc.ramachandra@gmail.com>
-To: eldk@lists.denx.de, linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=14dae9340503f691da0533cd323d
+To: Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, mingo@redhat.com,
+ paulmck@linux.vnet.ibm.com, jeremy@goop.org, chrisw@sous-sol.org,
+ akataria@vmware.com, rusty@rustcorp.com.au
+Subject: Re: [PATCH v3 5/6] pv-qspinlock: use cmpxchg_release in
+ __pv_queued_spin_unlock
+References: <1464164289-6124-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1464164289-6124-6-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20160526164729.GL3206@twins.programming.kicks-ass.net>
+ <20160526165712.GT3205@twins.programming.kicks-ass.net>
+In-Reply-To: <20160526165712.GT3205@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,222 +56,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---14dae9340503f691da0533cd323d
-Content-Type: text/plain; charset=UTF-8
-
-Hai,
-Hai,
-I am using IBM PPC440GX board.In arch/powerpc/cpu/ppc4xx/u-boot.lds i am
-usig the below details but MEMORY function failure coming. i am adding the
-file .
-/*
- * Copyright 2007-2009 Freescale Semiconductor, Inc.
- *
- * SPDX-License-Identifier: GPL-2.0+
- */
-
-#include "config.h" /* CONFIG_BOARDDIR */
-
-#ifndef RESET_VECTOR_ADDRESS
-#ifdef CONFIG_RESET_VECTOR_ADDRESS
-#define RESET_VECTOR_ADDRESS CONFIG_RESET_VECTOR_ADDRESS
-#else
-#define RESET_VECTOR_ADDRESS 0xfffffff0
-#endif
-#endif
-MEMORY
-{
-flash_start  : ORIGIN = 0xfffBC000, LENGTH = 0x42F00
-    flash_memory_start : ORIGIN = 0xFFFFF000, LENGTH = 0x0FDF
-    reset_init :            ORIGIN = 0xFFFFFFF0, LENGTH = 0x0010
-    isram  :            ORIGIN = 0x44780000, LENGTH = 1M
-}
-OUTPUT_ARCH(powerpc)
-
-PHDRS
-{
-  text PT_LOAD;
-  bss PT_LOAD;
-}
 
 
-SECTIONS
-{
-#ifdef CONFIG_440
-.bootpg 0xfffff000 :
-{
-arch/powerpc/cpu/ppc4xx/start.o (.bootpg)
+On 2016年05月27日 00:57, Peter Zijlstra wrote:
+> On Thu, May 26, 2016 at 06:47:29PM +0200, Peter Zijlstra wrote:
+>> On Wed, May 25, 2016 at 04:18:08PM +0800, Pan Xinhui wrote:
+>>> cmpxchg_release is light-wight than cmpxchg, we can gain a better
+>>> performace then. On some arch like ppc, barrier impact the performace
+>>> too much.
+>>>
+>>> Suggested-by:  Boqun Feng <boqun.feng@gmail.com>
+>>> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+>>> ---
+>>>   kernel/locking/qspinlock_paravirt.h | 2 +-
+>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/kernel/locking/qspinlock_paravirt.h b/kernel/locking/qspinlock_paravirt.h
+>>> index a5b1248..2bbffe4 100644
+>>> --- a/kernel/locking/qspinlock_paravirt.h
+>>> +++ b/kernel/locking/qspinlock_paravirt.h
+>>> @@ -614,7 +614,7 @@ __visible void __pv_queued_spin_unlock(struct qspinlock *lock)
+>>>   	 * unhash. Otherwise it would be possible to have multiple @lock
+>>>   	 * entries, which would be BAD.
+>>>   	 */
+>>> -	locked = cmpxchg(&l->locked, _Q_LOCKED_VAL, 0);
+>>> +	locked = cmpxchg_release(&l->locked, _Q_LOCKED_VAL, 0);
+>>>   	if (likely(locked == _Q_LOCKED_VAL))
+>>>   		return;
+>>
+>> This patch fails to explain _why_ it can be relaxed.
+>>
+>> And seeing how this cmpxchg() can actually unlock the lock, I don't see
+>> how this can possibly be correct. Maybe cmpxchg_release(), but relaxed
+>> seems very wrong.
+>
+> Clearly I need to stop working for the day, I cannea read. You're doing
+> release, not relaxed.
+>
+Never mind.  thanks for review :)
 
-/*
-* PPC440 board need a board specific object with the
-* TLB definitions. This needs to get included right after
-* start.o, since the first shadow TLB only covers 4k
-* of address space.
-*/
-CONFIG_BOARDDIR/init.o (.bootpg)
-} > flash_memory_start
-#endif
+> Still Changelog needs improvement.
+>
+Will do that.
 
-.resetvec 0xFFFFFFF0 :
-{
-KEEP(*(.resetvec))
-} > flash_start
-
-.text :
-{
-__start = .;
-arch/powerpc/cpu/ppc4xx/start.o (.text)
-CONFIG_BOARDDIR/init.o (.text)
-*(.text*)
-} > flash_start
-
-. = ALIGN(4);
-.data : { *(SORT_BY_ALIGNMENT(.data*)) } > flash_start
-
-. = ALIGN(4);
-.rodata : { *(SORT_BY_ALIGNMENT(.rodata*)) } > flash_start
-
-.bss :
-{
-. = ALIGN(4);
-__bss_start = .;
-*(.bss*)
-. = ALIGN(4);
-__bss_end = .;
-} > isram
-}
-
--- 
-Thanks & Regards,
-RamaChandra PC
-+918892147159.
-
---14dae9340503f691da0533cd323d
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Hai,<div><span style=3D"font-size:12.8px">Hai,</span><div =
-style=3D"font-size:12.8px">I am using IBM PPC440GX board.In arch/powerpc/cp=
-u/ppc4xx/u-boot.lds i am usig the below details but MEMORY function failure=
- coming. i am adding the file .</div><div style=3D""><div style=3D""><span =
-style=3D"font-size:12.8px">/*</span></div><div style=3D""><span style=3D"fo=
-nt-size:12.8px">=C2=A0* Copyright 2007-2009 Freescale Semiconductor, Inc.</=
-span></div><div style=3D""><span style=3D"font-size:12.8px">=C2=A0*</span><=
-/div><div style=3D""><span style=3D"font-size:12.8px">=C2=A0* SPDX-License-=
-Identifier:<span class=3D"" style=3D"white-space:pre">	</span>GPL-2.0+</spa=
-n></div><div style=3D""><span style=3D"font-size:12.8px">=C2=A0*/</span></d=
-iv><div style=3D""><span style=3D"font-size:12.8px"><br></span></div><div s=
-tyle=3D""><span style=3D"font-size:12.8px">#include &quot;config.h&quot;<sp=
-an class=3D"" style=3D"white-space:pre">	</span>/* CONFIG_BOARDDIR */</span=
-></div><div style=3D""><span style=3D"font-size:12.8px"><br></span></div><d=
-iv style=3D""><span style=3D"font-size:12.8px">#ifndef RESET_VECTOR_ADDRESS=
-</span></div><div style=3D""><span style=3D"font-size:12.8px">#ifdef CONFIG=
-_RESET_VECTOR_ADDRESS</span></div><div style=3D""><span style=3D"font-size:=
-12.8px">#define RESET_VECTOR_ADDRESS<span class=3D"" style=3D"white-space:p=
-re">	</span>CONFIG_RESET_VECTOR_ADDRESS</span></div><div style=3D""><span s=
-tyle=3D"font-size:12.8px">#else</span></div><div style=3D""><span style=3D"=
-font-size:12.8px">#define RESET_VECTOR_ADDRESS<span class=3D"" style=3D"whi=
-te-space:pre">	</span>0xfffffff0</span></div><div style=3D""><span style=3D=
-"font-size:12.8px">#endif</span></div><div style=3D""><span style=3D"font-s=
-ize:12.8px">#endif</span></div><div style=3D""><span style=3D"font-size:12.=
-8px">MEMORY</span></div><div style=3D""><span style=3D"font-size:12.8px">{<=
-/span></div><div style=3D""><span style=3D"font-size:12.8px"><span class=3D=
-"" style=3D"white-space:pre">	</span>flash_start =C2=A0: ORIGIN =3D 0xfffBC=
-000, <span class=3D"" style=3D"white-space:pre">	</span>LENGTH =3D 0x42F00<=
-/span></div><div style=3D""><span style=3D"font-size:12.8px">=C2=A0 =C2=A0 =
-flash_memory_start : ORIGIN =3D 0xFFFFF000, <span class=3D"" style=3D"white=
--space:pre">	</span>LENGTH =3D 0x0FDF</span></div><div style=3D""><span sty=
-le=3D"font-size:12.8px">=C2=A0 =C2=A0 reset_init : =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0ORIGIN =3D 0xFFFFFFF0, LENGTH =3D 0x0010</span></div><div =
-style=3D""><span style=3D"font-size:12.8px">=C2=A0 =C2=A0 isram =C2=A0: =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ORIGIN =3D 0x44780000, LENGTH =3D 1M<=
-/span></div><div style=3D""><span style=3D"font-size:12.8px">}</span></div>=
-<div style=3D""><span style=3D"font-size:12.8px">OUTPUT_ARCH(powerpc)</span=
-></div><div style=3D""><span style=3D"font-size:12.8px"><br></span></div><d=
-iv style=3D""><span style=3D"font-size:12.8px">PHDRS</span></div><div style=
-=3D""><span style=3D"font-size:12.8px">{</span></div><div style=3D""><span =
-style=3D"font-size:12.8px">=C2=A0 text PT_LOAD;</span></div><div style=3D""=
-><span style=3D"font-size:12.8px">=C2=A0 bss PT_LOAD;</span></div><div styl=
-e=3D""><span style=3D"font-size:12.8px">}</span></div><div style=3D""><span=
- style=3D"font-size:12.8px"><br></span></div><div style=3D""><br></div><div=
- style=3D""><span style=3D"font-size:12.8px">SECTIONS</span></div><div styl=
-e=3D""><span style=3D"font-size:12.8px">{</span></div><div style=3D""><span=
- style=3D"font-size:12.8px">#ifdef CONFIG_440</span></div><div style=3D""><=
-span style=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre">=
-	</span>.bootpg 0xfffff000 :</span></div><div style=3D""><span style=3D"fon=
-t-size:12.8px"><span class=3D"" style=3D"white-space:pre">	</span>{</span><=
-/div><div style=3D""><span style=3D"font-size:12.8px"><span class=3D"" styl=
-e=3D"white-space:pre">		</span>arch/powerpc/cpu/ppc4xx/start.o<span class=
-=3D"" style=3D"white-space:pre">	</span>(.bootpg)</span></div><div style=3D=
-""><span style=3D"font-size:12.8px"><br></span></div><div style=3D""><span =
-style=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre">		</s=
-pan>/*</span></div><div style=3D""><span style=3D"font-size:12.8px"><span c=
-lass=3D"" style=3D"white-space:pre">		</span> * PPC440 board need a board s=
-pecific object with the</span></div><div style=3D""><span style=3D"font-siz=
-e:12.8px"><span class=3D"" style=3D"white-space:pre">		</span> * TLB defini=
-tions. This needs to get included right after</span></div><div style=3D""><=
-span style=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre">=
-		</span> * start.o, since the first shadow TLB only covers 4k</span></div>=
-<div style=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=3D"=
-white-space:pre">		</span> * of address space.</span></div><div style=3D"">=
-<span style=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre"=
->		</span> */</span></div><div style=3D""><span style=3D"font-size:12.8px">=
-<span class=3D"" style=3D"white-space:pre">		</span>CONFIG_BOARDDIR/init.o<=
-span class=3D"" style=3D"white-space:pre">	</span>(.bootpg)</span></div><di=
-v style=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=3D"whi=
-te-space:pre">	</span>} &gt; flash_memory_start</span></div><div style=3D""=
-><span style=3D"font-size:12.8px">#endif</span></div><div style=3D""><span =
-style=3D"font-size:12.8px"><br></span></div><div style=3D""><span style=3D"=
-font-size:12.8px"><span class=3D"" style=3D"white-space:pre">	</span>.reset=
-vec 0xFFFFFFF0 :</span></div><div style=3D""><span style=3D"font-size:12.8p=
-x"><span class=3D"" style=3D"white-space:pre">	</span>{</span></div><div st=
-yle=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=3D"white-s=
-pace:pre">		</span>KEEP(*(.resetvec))</span></div><div style=3D""><span sty=
-le=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre">	</span>=
-} &gt; flash_start</span></div><div style=3D""><span style=3D"font-size:12.=
-8px"><br></span></div><div style=3D""><span style=3D"font-size:12.8px"><spa=
-n class=3D"" style=3D"white-space:pre">	</span>.text :</span></div><div sty=
-le=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=3D"white-sp=
-ace:pre">	</span>{</span></div><div style=3D""><span style=3D"font-size:12.=
-8px"><span class=3D"" style=3D"white-space:pre">		</span>__start =3D .;</sp=
-an></div><div style=3D""><span style=3D"font-size:12.8px"><span class=3D"" =
-style=3D"white-space:pre">		</span>arch/powerpc/cpu/ppc4xx/start.o<span cla=
-ss=3D"" style=3D"white-space:pre">	</span>(.text)</span></div><div style=3D=
-""><span style=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:p=
-re">		</span>CONFIG_BOARDDIR/init.o<span class=3D"" style=3D"white-space:pr=
-e">	</span>(.text)</span></div><div style=3D""><span style=3D"font-size:12.=
-8px"><span class=3D"" style=3D"white-space:pre">		</span>*(.text*)</span></=
-div><div style=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=
-=3D"white-space:pre">	</span>} &gt; flash_start</span></div><div style=3D""=
-><span style=3D"font-size:12.8px"><br></span></div><div style=3D""><span st=
-yle=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre">	</span=
->. =3D ALIGN(4);</span></div><div style=3D""><span style=3D"font-size:12.8p=
-x"><span class=3D"" style=3D"white-space:pre">	</span>.data : { *(SORT_BY_A=
-LIGNMENT(.data*)) } &gt; flash_start</span></div><div style=3D""><span styl=
-e=3D"font-size:12.8px"><br></span></div><div style=3D""><span style=3D"font=
--size:12.8px"><span class=3D"" style=3D"white-space:pre">	</span>. =3D ALIG=
-N(4);</span></div><div style=3D""><span style=3D"font-size:12.8px"><span cl=
-ass=3D"" style=3D"white-space:pre">	</span>.rodata : { *(SORT_BY_ALIGNMENT(=
-.rodata*)) } &gt; flash_start</span></div><div style=3D""><span style=3D"fo=
-nt-size:12.8px"><br></span></div><div style=3D""><span style=3D"font-size:1=
-2.8px"><span class=3D"" style=3D"white-space:pre">	</span>.bss :</span></di=
-v><div style=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=
-=3D"white-space:pre">	</span>{</span></div><div style=3D""><span style=3D"f=
-ont-size:12.8px"><span class=3D"" style=3D"white-space:pre">		</span>. =3D =
-ALIGN(4);</span></div><div style=3D""><span style=3D"font-size:12.8px"><spa=
-n class=3D"" style=3D"white-space:pre">		</span>__bss_start =3D .;</span></=
-div><div style=3D""><span style=3D"font-size:12.8px"><span class=3D"" style=
-=3D"white-space:pre">		</span>*(.bss*)</span></div><div style=3D""><span st=
-yle=3D"font-size:12.8px"><span class=3D"" style=3D"white-space:pre">		</spa=
-n>. =3D ALIGN(4);</span></div><div style=3D""><span style=3D"font-size:12.8=
-px"><span class=3D"" style=3D"white-space:pre">		</span>__bss_end =3D .;</s=
-pan></div><div style=3D""><span style=3D"font-size:12.8px"><span class=3D""=
- style=3D"white-space:pre">	</span>} &gt; isram</span></div><div style=3D""=
-><span style=3D"font-size:12.8px">}</span></div><div style=3D"font-size:12.=
-8px"><br></div></div>-- <br><div class=3D"gmail_signature" data-smartmail=
-=3D"gmail_signature"><div dir=3D"ltr"><div><div dir=3D"ltr"><div>Thanks &am=
-p; Regards,</div><div dir=3D"ltr">RamaChandra PC</div><div><span style=3D"f=
-ont-size:12.8px">+918892147159.</span><br></div></div></div></div></div>
-</div></div>
-
---14dae9340503f691da0533cd323d--
+thanks
+xinhui
