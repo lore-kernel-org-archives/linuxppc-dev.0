@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJQy06gn6zDqnV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 05:03:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJRDW05ffzDqfY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 05:16:10 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org,
@@ -14,9 +14,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v4 07/16] rtc: parisc: provide rtc_class_ops directly
-Date: Mon, 30 May 2016 20:57:55 +0200
-Message-Id: <1464634684-1248135-8-git-send-email-arnd@arndb.de>
+Subject: [PATCH v4 03/16] char/genrtc: x86: remove remnants of asm/rtc.h
+Date: Mon, 30 May 2016 20:57:51 +0200
+Message-Id: <1464634684-1248135-4-git-send-email-arnd@arndb.de>
 In-Reply-To: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
 References: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,96 +28,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The rtc-generic driver provides an architecture specific
-wrapper on top of the generic rtc_class_ops abstraction,
-and on pa-risc, that is implemented using an open-coded
-version of rtc_time_to_tm/rtc_tm_to_time.
+Commit 3195ef59cb42 ("x86: Do full rtc synchronization with ntp") had
+the side-effect of unconditionally enabling the RTC_LIB symbol on x86,
+which in turn disables the selection of the CONFIG_RTC and
+CONFIG_GEN_RTC drivers that contain a two older implementations of
+the CONFIG_RTC_DRV_CMOS driver.
 
-This changes the parisc rtc-generic device to provide its
-rtc_class_ops directly, using the normal helper functions,
-which makes this y2038 safe (on 32-bit) and simplifies
-the implementation.
+This removes x86 from the list for genrtc, and changes all references
+to the asm/rtc.h header to instead point to the interfaces
+from linux/mc146818rtc.h.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/parisc/kernel/time.c | 36 +++++++++++++++++++++++++++++++++++-
- drivers/rtc/rtc-generic.c |  3 +--
- 2 files changed, 36 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/rtc.h   | 1 -
+ arch/x86/kernel/hpet.c       | 3 +--
+ arch/x86/kernel/rtc.c        | 3 +--
+ arch/x86/platform/efi/efi.c  | 1 -
+ drivers/acpi/acpi_cmos_rtc.c | 2 +-
+ drivers/base/power/trace.c   | 6 +++---
+ drivers/char/Kconfig         | 2 +-
+ drivers/rtc/rtc-mrst.c       | 2 +-
+ 8 files changed, 8 insertions(+), 12 deletions(-)
+ delete mode 100644 arch/x86/include/asm/rtc.h
 
-diff --git a/arch/parisc/kernel/time.c b/arch/parisc/kernel/time.c
-index 58dd6801f5be..744878789752 100644
---- a/arch/parisc/kernel/time.c
-+++ b/arch/parisc/kernel/time.c
-@@ -12,6 +12,7 @@
+diff --git a/arch/x86/include/asm/rtc.h b/arch/x86/include/asm/rtc.h
+deleted file mode 100644
+index f71c3b0ed360..000000000000
+--- a/arch/x86/include/asm/rtc.h
++++ /dev/null
+@@ -1 +0,0 @@
+-#include <asm-generic/rtc.h>
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index f112af7aa62e..357900aad62c 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -1020,7 +1020,6 @@ void hpet_disable(void)
   */
- #include <linux/errno.h>
- #include <linux/module.h>
-+#include <linux/rtc.h>
- #include <linux/sched.h>
+ #include <linux/mc146818rtc.h>
+ #include <linux/rtc.h>
+-#include <asm/rtc.h>
+ 
+ #define DEFAULT_RTC_INT_FREQ	64
+ #define DEFAULT_RTC_SHIFT	6
+@@ -1244,7 +1243,7 @@ irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id)
+ 	memset(&curr_time, 0, sizeof(struct rtc_time));
+ 
+ 	if (hpet_rtc_flags & (RTC_UIE | RTC_AIE))
+-		get_rtc_time(&curr_time);
++		mc146818_set_time(&curr_time);
+ 
+ 	if (hpet_rtc_flags & RTC_UIE &&
+ 	    curr_time.tm_sec != hpet_prev_update_sec) {
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index eceaa082ec3f..79c6311cd912 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -13,7 +13,6 @@
+ #include <asm/x86_init.h>
+ #include <asm/time.h>
+ #include <asm/intel-mid.h>
+-#include <asm/rtc.h>
+ #include <asm/setup.h>
+ 
+ #ifdef CONFIG_X86_32
+@@ -47,7 +46,7 @@ int mach_set_rtc_mmss(const struct timespec *now)
+ 
+ 	rtc_time_to_tm(nowtime, &tm);
+ 	if (!rtc_valid_tm(&tm)) {
+-		retval = set_rtc_time(&tm);
++		retval = mc146818_set_time(&tm);
+ 		if (retval)
+ 			printk(KERN_ERR "%s: RTC write failed with error %d\n",
+ 			       __func__, retval);
+diff --git a/arch/x86/platform/efi/efi.c b/arch/x86/platform/efi/efi.c
+index f93545e7dc54..56400d03409f 100644
+--- a/arch/x86/platform/efi/efi.c
++++ b/arch/x86/platform/efi/efi.c
+@@ -51,7 +51,6 @@
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+ #include <asm/x86_init.h>
+-#include <asm/rtc.h>
+ #include <asm/uv/uv.h>
+ 
+ static struct efi efi_phys __initdata;
+diff --git a/drivers/acpi/acpi_cmos_rtc.c b/drivers/acpi/acpi_cmos_rtc.c
+index 81dc75033f15..0980a133916f 100644
+--- a/drivers/acpi/acpi_cmos_rtc.c
++++ b/drivers/acpi/acpi_cmos_rtc.c
+@@ -14,7 +14,7 @@
+ #include <linux/err.h>
  #include <linux/kernel.h>
- #include <linux/param.h>
-@@ -248,14 +249,47 @@ void __init start_cpu_itimer(void)
- 	per_cpu(cpu_data, cpu).it_value = next_tick;
- }
+ #include <linux/module.h>
+-#include <asm-generic/rtc.h>
++#include <linux/mc146818rtc.h>
  
-+#if IS_ENABLED(CONFIG_RTC_DRV_GENERIC)
-+static int rtc_generic_get_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct pdc_tod tod_data;
-+
-+	memset(tm, 0, sizeof(*tm));
-+	if (pdc_tod_read(&tod_data) < 0)
-+		return -EOPNOTSUPP;
-+
-+	/* we treat tod_sec as unsigned, so this can work until year 2106 */
-+	rtc_time64_to_tm(tod_data.tod_sec, tm);
-+	return rtc_valid_tm(tm);
-+}
-+
-+static int rtc_generic_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	time64_t secs = rtc_tm_to_time64(tm);
-+
-+	if (pdc_tod_set(secs, 0) < 0)
-+		return -EOPNOTSUPP;
-+
-+	return 0;
-+}
-+
-+static const struct rtc_class_ops rtc_generic_ops = {
-+	.read_time = rtc_generic_get_time,
-+	.set_time = rtc_generic_set_time,
-+};
-+
- static int __init rtc_init(void)
- {
- 	struct platform_device *pdev;
+ #include "internal.h"
  
--	pdev = platform_device_register_simple("rtc-generic", -1, NULL, 0);
-+	pdev = platform_device_register_data(NULL, "rtc-generic", -1,
-+					     &rtc_generic_ops,
-+					     sizeof(rtc_generic_ops));
-+
- 	return PTR_ERR_OR_ZERO(pdev);
- }
- device_initcall(rtc_init);
-+#endif
- 
- void read_persistent_clock(struct timespec *ts)
- {
-diff --git a/drivers/rtc/rtc-generic.c b/drivers/rtc/rtc-generic.c
-index 3958e87a05fa..92b5e02a3750 100644
---- a/drivers/rtc/rtc-generic.c
-+++ b/drivers/rtc/rtc-generic.c
-@@ -9,8 +9,7 @@
- #include <linux/platform_device.h>
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index a6975795e7f3..efec10b49d59 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -11,7 +11,7 @@
+ #include <linux/export.h>
  #include <linux/rtc.h>
  
--#if defined(CONFIG_M68K) || defined(CONFIG_PARISC) || \
--    defined(CONFIG_PPC)
-+#if defined(CONFIG_M68K) || defined(CONFIG_PPC)
- #include <asm/rtc.h>
+-#include <asm/rtc.h>
++#include <linux/mc146818rtc.h>
  
- static int generic_get_time(struct device *dev, struct rtc_time *tm)
+ #include "power.h"
+ 
+@@ -103,7 +103,7 @@ static int set_magic_time(unsigned int user, unsigned int file, unsigned int dev
+ 	n /= 24;
+ 	time.tm_min = (n % 20) * 3;
+ 	n /= 20;
+-	set_rtc_time(&time);
++	mc146818_set_time(&time);
+ 	return n ? -1 : 0;
+ }
+ 
+@@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
+ 	struct rtc_time time;
+ 	unsigned int val;
+ 
+-	get_rtc_time(&time);
++	mc146818_get_time(&time);
+ 	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
+ 		time.tm_hour, time.tm_min, time.tm_sec,
+ 		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 601f64fcc890..31b5861649ee 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -328,7 +328,7 @@ config JS_RTC
+ config GEN_RTC
+ 	tristate "Generic /dev/rtc emulation"
+ 	depends on RTC!=y
+-	depends on ALPHA || M68K || MN10300 || PARISC || PPC || X86
++	depends on ALPHA || M68K || MN10300 || PARISC || PPC
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/rtc with
+ 	  major number 10 and minor number 135 using mknod ("man mknod"), you
+diff --git a/drivers/rtc/rtc-mrst.c b/drivers/rtc/rtc-mrst.c
+index 0094d9bdd1e6..fe840c0edfef 100644
+--- a/drivers/rtc/rtc-mrst.c
++++ b/drivers/rtc/rtc-mrst.c
+@@ -32,11 +32,11 @@
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
+ #include <linux/kernel.h>
++#include <linux/mc146818rtc.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/sfi.h>
+ 
+-#include <asm-generic/rtc.h>
+ #include <asm/intel_scu_ipc.h>
+ #include <asm/intel-mid.h>
+ #include <asm/intel_mid_vrtc.h>
 -- 
 2.7.0
