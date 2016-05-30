@@ -1,26 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ2WS4T2PzDqPm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 13:42:44 +1000 (AEST)
-Message-ID: <1464579764.31883.2.camel@ellerman.id.au>
-Subject: Re: [PATCH V2 04/68] powerpc/mm: Use big endian page table for
- book3s 64
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 30 May 2016 13:42:44 +1000
-In-Reply-To: <20160530090833.4400ac83@kryten>
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160529210356.66dd944e@kryten>
- <1464557231.3078.185.camel@kernel.crashing.org>
- <20160530090833.4400ac83@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ4d34Dr0zDqPm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 15:17:42 +1000 (AEST)
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 29 May 2016 23:17:40 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@ozlabs.org>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org, acsawdey@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 3/3] powerpc: Avoid load hit store when using
+ find_linux_pte_or_hugepte()
+In-Reply-To: <1464523432-12605-3-git-send-email-anton@ozlabs.org>
+References: <1464523432-12605-1-git-send-email-anton@ozlabs.org>
+ <1464523432-12605-3-git-send-email-anton@ozlabs.org>
+Date: Mon, 30 May 2016 10:47:33 +0530
+Message-ID: <87wpmc15w2.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +31,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-05-30 at 09:08 +1000, Anton Blanchard via Linuxppc-dev wrote:
-> > That is surprising, do we have any idea what specifically increases
-> > the overhead so significantly ? Does gcc know about ldbrx/stdbrx ? I
-> > notice in our io.h for example we still do manual ld/std + swap
-> > because old processors didn't know these, we should fix that for
-> > CONFIG_POWER8 (or is it POWER7 that brought these ?).
-> 
-> The futex issue seems to be __get_user_pages_fast():
-> 
->         ld      r11,0(r6)
->         ...
->         rldicl  r8,r11,32,32
->         rotlwi  r28,r11,24
->         rlwimi  r28,r11,8,8,15
->         rotlwi  r6,r8,24
->         rlwimi  r28,r11,8,24,31
->         rlwimi  r6,r8,8,8,15
->         rlwimi  r6,r8,8,24,31
->         rldicr  r28,r28,32,31
->         or      r28,r28,r6
->         cmpdi   cr7,r28,0
->         beq     cr7,2428
-> 
-> That's a whole lot of work just to check if a pte is zero. I assume
-> the reason gcc can't replace this with a byte reversed load is that
-> we access the pte via the READ_ONCE() macro.
+Anton Blanchard <anton@ozlabs.org> writes:
 
-Did I mention we need a bswap instruction?
+> From: Anton Blanchard <anton@samba.org>
+>
+> In many cases we disable interrupts right before calling
+> find_linux_pte_or_hugepte().
+>
+> find_linux_pte_or_hugepte() first checks interrupts are disabled
+> before calling __find_linux_pte_or_hugepte():
+>
+>         if (!arch_irqs_disabled()) {
+>                 pr_info("%s called with irq enabled\n", __func__);
+>                 dump_stack();
+>         }
+>         return __find_linux_pte_or_hugepte(pgdir, ea, is_thp, shift);
+>
+> We know interrupts are disabled, but since the arch_irqs_*() macros
+> are hidden from the compiler with inline assembly, gcc does not. We
+> end up with a pretty awful load hit store:
+>
+> 	li      r9,0
+> 	lbz     r24,570(r13)
+> 	stb     r9,570(r13)	<----
+> 	lbz     r9,570(r13)	<---- ouch
+> 	cmpdi   cr7,r9,0
+> 	bne     cr7,c000000000049d30
+>
+> Find these cases, and call __find_linux_pte_or_hugepte() directly.
+>
 
-We can possibly improve some of them by doing the comparison on the raw value,
-eg. see hash__pte_same().
-
-The above is from pgd_none() ?
-
-cheers
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/powerpc/kvm/book3s_64_mmu_hv.c | 2 +-
+>  arch/powerpc/kvm/book3s_hv_rm_mmu.c | 2 +-
+>  arch/powerpc/kvm/e500_mmu_host.c    | 2 +-
+>  arch/powerpc/mm/hash_utils_64.c     | 2 +-
+>  arch/powerpc/mm/hugetlbpage.c       | 2 +-
+>  arch/powerpc/mm/tlb_hash64.c        | 5 +++--
+>  arch/powerpc/perf/callchain.c       | 2 +-
+>  7 files changed, 9 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index 05f09ae..ff53db5 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -543,7 +543,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  			 * hugepage split and collapse.
+>  			 */
+>  			local_irq_save(flags);
+> -			ptep = find_linux_pte_or_hugepte(current->mm->pgd,
+> +			ptep = __find_linux_pte_or_hugepte(current->mm->pgd,
+>  							 hva, NULL, NULL);
+>  			if (ptep) {
+>  				pte = kvmppc_read_update_linux_pte(ptep, 1);
+> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> index 99b4e9d..8ee1f49 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> @@ -225,7 +225,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+>  						   &hpage_shift);
+>  	else {
+>  		local_irq_save(irq_flags);
+> -		ptep = find_linux_pte_or_hugepte(pgdir, hva, NULL,
+> +		ptep = __find_linux_pte_or_hugepte(pgdir, hva, NULL,
+>  						 &hpage_shift);
+>  	}
+>  	if (ptep) {
+> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+> index b0333cc..b6487f5 100644
+> --- a/arch/powerpc/kvm/e500_mmu_host.c
+> +++ b/arch/powerpc/kvm/e500_mmu_host.c
+> @@ -476,7 +476,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+>  	 * can't run hence pfn won't change.
+>  	 */
+>  	local_irq_save(flags);
+> -	ptep = find_linux_pte_or_hugepte(pgdir, hva, NULL, NULL);
+> +	ptep = __find_linux_pte_or_hugepte(pgdir, hva, NULL, NULL);
+>  	if (ptep) {
+>  		pte_t pte = READ_ONCE(*ptep);
+>
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 5926896..5e47caa 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1384,7 +1384,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+>  	 * THP pages use update_mmu_cache_pmd. We don't do
+>  	 * hash preload there. Hence can ignore THP here
+>  	 */
+> -	ptep = find_linux_pte_or_hugepte(pgdir, ea, NULL, &hugepage_shift);
+> +	ptep = __find_linux_pte_or_hugepte(pgdir, ea, NULL, &hugepage_shift);
+>  	if (!ptep)
+>  		goto out_exit;
+>
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 5aac1a3..ee8bc5b 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -637,7 +637,7 @@ follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
+>  	struct page *page = ERR_PTR(-EINVAL);
+>
+>  	local_irq_save(flags);
+> -	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &is_thp, &shift);
+> +	ptep = __find_linux_pte_or_hugepte(mm->pgd, address, &is_thp, &shift);
+>  	if (!ptep)
+>  		goto no_page;
+>  	pte = READ_ONCE(*ptep);
+> diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+> index 4517aa4..f41bf3d 100644
+> --- a/arch/powerpc/mm/tlb_hash64.c
+> +++ b/arch/powerpc/mm/tlb_hash64.c
+> @@ -209,8 +209,9 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+>  	local_irq_save(flags);
+>  	arch_enter_lazy_mmu_mode();
+>  	for (; start < end; start += PAGE_SIZE) {
+> -		pte_t *ptep = find_linux_pte_or_hugepte(mm->pgd, start, &is_thp,
+> -							&hugepage_shift);
+> +		pte_t *ptep = __find_linux_pte_or_hugepte(mm->pgd, start,
+> +							  &is_thp,
+> +							  &hugepage_shift);
+>  		unsigned long pte;
+>
+>  		if (ptep == NULL)
+> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+> index 0fc2671..f4d1d88 100644
+> --- a/arch/powerpc/perf/callchain.c
+> +++ b/arch/powerpc/perf/callchain.c
+> @@ -127,7 +127,7 @@ static int read_user_stack_slow(void __user *ptr, void *buf, int nb)
+>  		return -EFAULT;
+>
+>  	local_irq_save(flags);
+> -	ptep = find_linux_pte_or_hugepte(pgdir, addr, NULL, &shift);
+> +	ptep = __find_linux_pte_or_hugepte(pgdir, addr, NULL, &shift);
+>  	if (!ptep)
+>  		goto err_out;
+>  	if (!shift)
+> -- 
+> 2.7.4
