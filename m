@@ -1,37 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x22d.google.com (mail-qk0-x22d.google.com
+ [IPv6:2607:f8b0:400d:c09::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJHFW4htMzDqvJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:16:31 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Yangbo Lu <yangbo.lu@nxp.com>,
- Mark Rutland <mark.rutland@arm.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yang-Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Kumar Gala <galak@codeaurora.org>
-Subject: [PATCH 3/4] mmc: sdhci-of-esdhc: fix host version for T4240-R1.0-R2.0
-Date: Mon, 30 May 2016 15:16:03 +0200
-Message-ID: <6110875.0k1HlSKhzn@wuerfel>
-In-Reply-To: <CAPDyKFqx2JMLzXoDxGCKFYMFV47+SegnkuWFXKvsQHK7L5w-1g@mail.gmail.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <HE1PR04MB0889852B7809A1CCFF8922ACF8410@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <CAPDyKFqx2JMLzXoDxGCKFYMFV47+SegnkuWFXKvsQHK7L5w-1g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJHHK3n6xzDr3F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:18:05 +1000 (AEST)
+Received: by mail-qk0-x22d.google.com with SMTP id h185so83319382qke.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 06:18:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20160530091504.GN2527@techsingularity.net>
+References: <1462435033-15601-1-git-send-email-oohall@gmail.com>
+ <20160526142142.b16f7f3f18204faf0823ac65@linux-foundation.org>
+ <20160530091504.GN2527@techsingularity.net>
+Date: Mon, 30 May 2016 23:18:03 +1000
+Message-ID: <CAOSf1CGCMxExXztXZ233DTDSEVbrd7Kj7U4JRY_rP2KFmXtY5g@mail.gmail.com>
+Subject: Re: [RFC PATCH] mm/init: fix zone boundary creation
+From: oliver <oohall@gmail.com>
+To: Mel Gorman <mgorman@techsingularity.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,72 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a rewrite of an earlier patch from Yangbo Lu, adding a quirk
-for the NXP QorIQ T4240 in the detection of the host device version.
+On Mon, May 30, 2016 at 7:15 PM, Mel Gorman <mgorman@techsingularity.net> wrote:
+> On Thu, May 26, 2016 at 02:21:42PM -0700, Andrew Morton wrote:
+>> On Thu,  5 May 2016 17:57:13 +1000 "Oliver O'Halloran" <oohall@gmail.com> wrote:
+>>
+>> > As a part of memory initialisation the architecture passes an array to
+>> > free_area_init_nodes() which specifies the max PFN of each memory zone.
+>> > This array is not necessarily monotonic (due to unused zones) so this
+>> > array is parsed to build monotonic lists of the min and max PFN for
+>> > each zone. ZONE_MOVABLE is special cased here as its limits are managed by
+>> > the mm subsystem rather than the architecture. Unfortunately, this special
+>> > casing is broken when ZONE_MOVABLE is the not the last zone in the zone
+>> > list. The core of the issue is:
+>> >
+>> >     if (i == ZONE_MOVABLE)
+>> >             continue;
+>> >     arch_zone_lowest_possible_pfn[i] =
+>> >             arch_zone_highest_possible_pfn[i-1];
+>> >
+>> > As ZONE_MOVABLE is skipped the lowest_possible_pfn of the next zone
+>> > will be set to zero. This patch fixes this bug by adding explicitly
+>> > tracking where the next zone should start rather than relying on the
+>> > contents arch_zone_highest_possible_pfn[].
+>>
+>> hm, this is all ten year old Mel code.
+>>
+>
+> ZONE_MOVABLE at the time always existed at the end of a node during
+> initialisation time. It was allowed because the memory was always "stolen"
+> from the end of the node where it could have the same limitations as
+> ZONE_HIGHMEM if necessary. It was also safe to assume that zones never
+> overlapped as zones were about addressing limitations. If ZONE_CMA or
+> ZONE_DEVICE can overlap with other zones during initialisation time then
+> there may be a few gremlins hiding in there. Unfortunately I have not
+> done an audit searching for problems with overlapping zones.
 
-Unfortunately, this device cannot be detected using the compatible
-string, as we have to support existing DTS files that use the generic
-"fsl,t4240-esdhc" identifier but that have other host versions that
-are correctly detected.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 3f34d354f1fc..1d4814fe4cb2 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -73,14 +73,16 @@ static u32 esdhc_readl_fixup(struct sdhci_host *host,
- static u16 esdhc_readw_fixup(struct sdhci_host *host,
- 				     int spec_reg, u32 value)
- {
-+	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-+	struct sdhci_esdhc *esdhc = sdhci_pltfm_priv(pltfm_host);
- 	u16 ret;
- 	int shift = (spec_reg & 0x2) * 8;
- 
- 	if (spec_reg == SDHCI_HOST_VERSION)
--		ret = value & 0xffff;
--	else
--		ret = (value >> shift) & 0xffff;
--	return ret;
-+		return esdhc->vendor_ver << SDHCI_VENDOR_VER_SHIFT |
-+		       esdhc->spec_ver;
-+
-+	return (value >> shift) & 0xffff;
- }
- 
- static u8 esdhc_readb_fixup(struct sdhci_host *host,
-@@ -562,16 +564,32 @@ static const struct sdhci_pltfm_data sdhci_esdhc_le_pdata = {
- 	.ops = &sdhci_esdhc_le_ops,
- };
- 
-+#define T4240_HOST_VER ((VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | SDHCI_SPEC_200)
-+static const struct soc_device_attribute esdhc_t4240_quirk = {
-+	/* T4240 revision < 0x20 uses vendor version 23, SDHCI version 200 */
-+	{ .soc_id = "T4*(0x824000)", .revision = "0x[01]?",
-+	  .data = (void *)(uintptr_t)(T4240_HOST_VER) },
-+	{ },
-+};
-+
- static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
- {
- 	struct sdhci_pltfm_host *pltfm_host;
- 	struct sdhci_esdhc *esdhc;
--	u16 host_ver;
- 
- 	pltfm_host = sdhci_priv(host);
- 	esdhc = sdhci_pltfm_priv(pltfm_host);
- 
- 	host_ver = sdhci_readw(host, SDHCI_HOST_VERSION);
-+
-+	if (of_device_is_compatible(pdev->dev.of_node, "fsl,t4240-esdhc")) {
-+		struct soc_device_attribute *match;
-+
-+		match = soc_device_match(&esdhc_t4240_quirk);
-+		if (match)
-+			host_ver = (uintptr_t)match->data;
-+	}
-+
- 	esdhc->vendor_ver = (host_ver & SDHCI_VENDOR_VER_MASK) >>
- 			     SDHCI_VENDOR_VER_SHIFT;
- 	esdhc->spec_ver = host_ver & SDHCI_SPEC_VER_MASK;
+I think it's still reasonable to assume there is no overlap in early init. The
+interface to free_area_init_nodes() ensures that zones are disjoint and as far
+as I can tell the only way to get an overlapping zone at that point is to hit
+the bug this patch fixes. ZONE_CMA is only populated when core_initcall()s are
+processed and ZONE_DEVICE is hotplugged by drivers so it should appear even
+later.
