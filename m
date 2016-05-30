@@ -1,24 +1,24 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
- [IPv6:2607:f8b0:400e:c00::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJMlc2KdPzDqPF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 02:39:24 +1000 (AEST)
-Received: by mail-pf0-x22b.google.com with SMTP id f144so53237664pfa.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:39:24 -0700 (PDT)
-Date: Mon, 30 May 2016 09:39:12 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Hugh Dickins <hughd@google.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm/hash: Fix the reference bit update when
- handling hash fault
-In-Reply-To: <201605270629.u4R6OCLx014831@mx0a-001b2d01.pphosted.com>
-Message-ID: <alpine.LSU.2.11.1605300903270.1076@eggly.anvils>
-References: <201605270629.u4R6OCLx014831@mx0a-001b2d01.pphosted.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJQrD5JNqzDqVV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 04:58:36 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org,
+ gregkh@linuxfoundation.org, deller@gmx.de, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, dalias@libc.org, dhowells@redhat.com,
+ linux-alpha@vger.kernel.org, a.zummo@towertech.it,
+ linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
+ linux-arch@vger.kernel.org
+Subject: [PATCH v4 01/16] rtc: cmos: remove empty asm/mc146818rtc.h files
+Date: Mon, 30 May 2016 20:57:49 +0200
+Message-Id: <1464634684-1248135-2-git-send-email-arnd@arndb.de>
+In-Reply-To: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
+References: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,122 +28,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 27 May 2016, Aneesh Kumar K.V wrote:
+Nothing on these architectures ever includes the asm/mc146818rtc.h
+file, the drivers that used to do this have been fixed long ago,
+and the remaining users are all PC-specific.
 
-> When we converted the asm routines to C functions, we missed updating
-> HPTE_R_R based on _PAGE_ACCESSED. ASM code used to copy over the lower
-> bits from pte via.
-> 
-> andi.	r3,r30,0x1fe		/* Get basic set of flags */
-> 
-> Fixes: 'commit 89ff725051d1 ("powerpc/mm: Convert __hash_page_64K to C")'
-> 
-> We also don't set C bit always with this patch. This was added by
-> 'commit c5cf0e30bf3d8 ("[PATCH] powerpc: Fix buglet with MMU hash management")'
-> 
-> With hash64, we need to make sure that hardware doesn't do a pte update
-> directly. This is because we do end up with entries in TLB with no hash
-> page table entry. This happens because when we find hash bucket full,
-> we "evict" a more/less random entry from it. When we do that we don't
-> invalidate the TLB (hpte_remove) because we assume the old translation
-> is still technically "valid". For more info look at
-> 'commit 0608d692463(" powerpc/mm: Always invalidate tlb on hpte invalidate and
-> update")'. Now that implies that hardware should never do a writeback to
-> update 'R' or 'C' hpte bits.
-> 
-> Commitc 5cf0e30bf3d8 did that for 'C' bit by enabling 'C' bit always.
-> We don't really need to do that because we never map a RW pte entry
-> without setting 'C' bit. on READ fault on a RW pte entry, we still map
-> it READ only, hence a store update in the page will still cause a hash
-> pte fault.
-> 
-> This patch reverts the 'C' update part of the c5cf0e30bf3d8
-> ("[PATCH] powerpc: Fix buglet with MMU hash management") and retain
-> the updatepp part.
-> - If we hit the updatepp path on native, the old code without that
->   commit, would fail to set C bcause native_hpte_updatepp()
->   was implemented to filter the same bits as H_PROTECT and not let C
->   through thus we would "upgrade" a RO HPTE to RW without setting C
->   thus causing the bug. So the real fix in that commit was the change
->   to native_hpte_updatepp
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/hash_utils_64.c | 22 ++++++++++++++++++++--
->  1 file changed, 20 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 9c594ea99149..76fa5f3eb450 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -159,6 +159,19 @@ static struct mmu_psize_def mmu_psize_defaults_gp[] = {
->  	},
->  };
->  
-> +/*
-> + * 'R' and 'C' update notes:
-> + *  - Under pHyp or KVM, the updatepp path will not set C, thus it *will*
-> + *     create writeable HPTEs without C set, because the hcall H_PROTECT
-> + *     that we use in that case will not update C
-> + *  - The above is however not a problem, because we also don't do that
-> + *     fancy "no flush" variant of eviction and we use H_REMOVE which will
-> + *     do the right thing and thus we don't have the race I described earlier
-> + *
-> + *    - Under bare metal,  we do have the race, so we need R and C set
-> + *    - We make sure R is always set and never lost
-> + *    - C is _PAGE_DIRTY, and *should* always be set for a writeable mapping
-> + */
->  unsigned long htab_convert_pte_flags(unsigned long pteflags)
->  {
->  	unsigned long rflags = 0;
-> @@ -186,9 +199,14 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
->  			rflags |= 0x1;
->  	}
->  	/*
-> -	 * Always add "C" bit for perf. Memory coherence is always enabled
-> +	 * We can't allow hardware to update hpte bits. Hence always
-> +	 * set 'R' bit and set 'C' if it is a write fault
-> +	 * Memory coherence is always enabled
->  	 */
-> -	rflags |=  HPTE_R_C | HPTE_R_M;
-> +	rflags |=  HPTE_R_R | HPTE_R_M;
-> +
-> +	if (pteflags & _PAGE_DIRTY)
-> +		rflags |= HPTE_R_C;
->  	/*
->  	 * Add in WIG bits
->  	 */
-> -- 
-> 2.7.4
+This removes the files for good.
 
-Thanks a lot for the patch: I'm just starting to try it out.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ arch/frv/include/asm/mc146818rtc.h    | 16 ----------------
+ arch/h8300/include/asm/mc146818rtc.h  |  9 ---------
+ arch/ia64/include/asm/mc146818rtc.h   | 10 ----------
+ arch/parisc/include/asm/mc146818rtc.h |  9 ---------
+ arch/sh/include/asm/mc146818rtc.h     |  7 -------
+ 5 files changed, 51 deletions(-)
+ delete mode 100644 arch/frv/include/asm/mc146818rtc.h
+ delete mode 100644 arch/h8300/include/asm/mc146818rtc.h
+ delete mode 100644 arch/ia64/include/asm/mc146818rtc.h
+ delete mode 100644 arch/parisc/include/asm/mc146818rtc.h
+ delete mode 100644 arch/sh/include/asm/mc146818rtc.h
 
-I had hoped to try it on 4.7-rc1, but found yesterday that rc1 has at
-least two issues (not specific to powerpc) with OOMing and leaking
-memory, that I've no chance of sustaining my swapping load on it.
-I'll hope at least one of them gets fixed by rc2 and try again then.
-
-So I've applied your patch to v4.5 and v4.6, and set v4.6 going for now.
-But if all goes well, I won't be able to report back with confidence for
-a couple of days.
-
-I don't mean to be churlish, and subtract from your triumph in tracking
-this down (assuming you have), but that commit log... okay, it's intended
-for powerpc mmu experts, not me, but if it hasn't already gone into git,
-then a rewrite could be very helpful.
-
-I gather that C is a bit as well as a language :) and there is a code
-comment which helped me by mentioning "C is _PAGE_DIRTY, and *should*
-always be set for a writeable mapping" (though I wonder what imposes
-that "should" - certainly not core mm); which was the first mention
-of "dirty" or "modified" in the whole thing.
-
-And it needs a Cc to stable.  And the patch title: "Fix the reference
-bit update"?  But this is about dirty bit, not referenced bit, isn't it?
-If it's just about referenced bit, then I don't see how we would have
-corruption before the fix (but again, I'm ignorant of powerpc mmu).
-
-Many thanks, I hope, for the fix: I shall report back.
-
-Hugh
+diff --git a/arch/frv/include/asm/mc146818rtc.h b/arch/frv/include/asm/mc146818rtc.h
+deleted file mode 100644
+index 90dfb7a633d1..000000000000
+--- a/arch/frv/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* mc146818rtc.h: RTC defs
+- *
+- * Copyright (C) 2005 Red Hat, Inc. All Rights Reserved.
+- * Written by David Howells (dhowells@redhat.com)
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#ifndef _ASM_MC146818RTC_H
+-#define _ASM_MC146818RTC_H
+-
+-
+-#endif /* _ASM_MC146818RTC_H */
+diff --git a/arch/h8300/include/asm/mc146818rtc.h b/arch/h8300/include/asm/mc146818rtc.h
+deleted file mode 100644
+index ab9d9646d241..000000000000
+--- a/arch/h8300/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-#ifndef _H8300_MC146818RTC_H
+-#define _H8300_MC146818RTC_H
+-
+-/* empty include file to satisfy the include in genrtc.c/ide-geometry.c */
+-
+-#endif /* _H8300_MC146818RTC_H */
+diff --git a/arch/ia64/include/asm/mc146818rtc.h b/arch/ia64/include/asm/mc146818rtc.h
+deleted file mode 100644
+index 407787a237ba..000000000000
+--- a/arch/ia64/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,10 +0,0 @@
+-#ifndef _ASM_IA64_MC146818RTC_H
+-#define _ASM_IA64_MC146818RTC_H
+-
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-
+-/* empty include file to satisfy the include in genrtc.c */
+-
+-#endif /* _ASM_IA64_MC146818RTC_H */
+diff --git a/arch/parisc/include/asm/mc146818rtc.h b/arch/parisc/include/asm/mc146818rtc.h
+deleted file mode 100644
+index adf41631449f..000000000000
+--- a/arch/parisc/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-#ifndef _ASM_MC146818RTC_H
+-#define _ASM_MC146818RTC_H
+-
+-/* empty include file to satisfy the include in genrtc.c */
+-
+-#endif /* _ASM_MC146818RTC_H */
+diff --git a/arch/sh/include/asm/mc146818rtc.h b/arch/sh/include/asm/mc146818rtc.h
+deleted file mode 100644
+index 0aee96a97330..000000000000
+--- a/arch/sh/include/asm/mc146818rtc.h
++++ /dev/null
+@@ -1,7 +0,0 @@
+-/*
+- * Machine dependent access functions for RTC registers.
+- */
+-#ifndef _ASM_MC146818RTC_H
+-#define _ASM_MC146818RTC_H
+-
+-#endif /* _ASM_MC146818RTC_H */
+-- 
+2.7.0
