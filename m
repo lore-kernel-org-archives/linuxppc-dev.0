@@ -1,19 +1,19 @@
 Return-Path: <rashmicy@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ5zk6kB2zDqX1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 16:18:58 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id f8so20582953pag.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2016 23:18:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ5zs0RgMzDqZ2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 16:19:05 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id gp3so13599640pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2016 23:19:04 -0700 (PDT)
 From: Rashmica Gupta <rashmicy@gmail.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
  nfont@linux.vnet.ibm.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/5] powerpc/pseries: Remove MPIC from pseries cpu hotplug
-Date: Mon, 30 May 2016 16:18:14 +1000
-Message-Id: <1464589095-442-4-git-send-email-rashmicy@gmail.com>
+Subject: [PATCH 5/5] powerpc/pseries: Remove MPIC from pseries event sources
+Date: Mon, 30 May 2016 16:18:15 +1000
+Message-Id: <1464589095-442-5-git-send-email-rashmicy@gmail.com>
 In-Reply-To: <1464589095-442-1-git-send-email-rashmicy@gmail.com>
 References: <1464589095-442-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,43 +26,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 MPIC was only used by Power3 which is now unsupported, so remove MPIC
-code.
+code. XICS is now the only supported interrupt controller for
+pSeries so do some cleanups too.
 
 Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 13 -------------
- 1 file changed, 13 deletions(-)
+ arch/powerpc/platforms/pseries/event_sources.c | 53 +++++++-------------------
+ 1 file changed, 13 insertions(+), 40 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 282837a1d74b..a1b63e00b2f7 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -903,8 +903,6 @@ static int parse_cede_parameters(void)
- 
- static int __init pseries_cpu_hotplug_init(void)
+diff --git a/arch/powerpc/platforms/pseries/event_sources.c b/arch/powerpc/platforms/pseries/event_sources.c
+index 18380e8f6dfe..a6ddca833119 100644
+--- a/arch/powerpc/platforms/pseries/event_sources.c
++++ b/arch/powerpc/platforms/pseries/event_sources.c
+@@ -26,48 +26,21 @@ void request_event_sources_irqs(struct device_node *np,
  {
--	struct device_node *np;
--	const char *typep;
- 	int cpu;
- 	int qcss_tok;
+ 	int i, index, count = 0;
+ 	struct of_phandle_args oirq;
+-	const u32 *opicprop;
+-	unsigned int opicplen;
+ 	unsigned int virqs[16];
  
-@@ -913,17 +911,6 @@ static int __init pseries_cpu_hotplug_init(void)
- 	ppc_md.cpu_release = dlpar_cpu_release;
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
- 
--	for_each_node_by_name(np, "interrupt-controller") {
--		typep = of_get_property(np, "compatible", NULL);
--		if (strstr(typep, "open-pic")) {
--			of_node_put(np);
+-	/* Check for obsolete "open-pic-interrupt" property. If present, then
+-	 * map those interrupts using the default interrupt host and default
+-	 * trigger
+-	 */
+-	opicprop = of_get_property(np, "open-pic-interrupt", &opicplen);
+-	if (opicprop) {
+-		opicplen /= sizeof(u32);
+-		for (i = 0; i < opicplen; i++) {
+-			if (count > 15)
+-				break;
+-			virqs[count] = irq_create_mapping(NULL, *(opicprop++));
+-			if (virqs[count] == NO_IRQ) {
+-				pr_err("event-sources: Unable to allocate "
+-				       "interrupt number for %s\n",
+-				       np->full_name);
+-				WARN_ON(1);
+-			}
+-			else
+-				count++;
 -
--			printk(KERN_INFO "CPU Hotplug not supported on "
--				"systems using MPIC\n");
--			return 0;
 -		}
 -	}
--
- 	rtas_stop_self_token = rtas_token("stop-self");
- 	qcss_tok = rtas_token("query-cpu-stopped-state");
+-	/* Else use normal interrupt tree parsing */
+-	else {
+-		/* First try to do a proper OF tree parsing */
+-		for (index = 0; of_irq_parse_one(np, index, &oirq) == 0;
+-		     index++) {
+-			if (count > 15)
+-				break;
+-			virqs[count] = irq_create_of_mapping(&oirq);
+-			if (virqs[count] == NO_IRQ) {
+-				pr_err("event-sources: Unable to allocate "
+-				       "interrupt number for %s\n",
+-				       np->full_name);
+-				WARN_ON(1);
+-			}
+-			else
+-				count++;
++	/* First try to do a proper OF tree parsing */
++	for (index = 0; of_irq_parse_one(np, index, &oirq) == 0;
++	     index++) {
++		if (count > 15)
++			break;
++		virqs[count] = irq_create_of_mapping(&oirq);
++		if (virqs[count] == NO_IRQ) {
++			pr_err("event-sources: Unable to allocate "
++			       "interrupt number for %s\n",
++			       np->full_name);
++			WARN_ON(1);
++		} else {
++			count++;
+ 		}
+ 	}
  
 -- 
 2.5.0
