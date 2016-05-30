@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJWTv2j1lzDqXx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 08:28:03 +1000 (AEST)
-Message-ID: <1464647262.3078.219.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm/hash: Fix the reference bit update when
- handling hash fault
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 31 May 2016 08:27:42 +1000
-In-Reply-To: <alpine.LSU.2.11.1605300903270.1076@eggly.anvils>
-References: <201605270629.u4R6OCLx014831@mx0a-001b2d01.pphosted.com>
- <alpine.LSU.2.11.1605300903270.1076@eggly.anvils>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJXDV4dYZzDqP9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 09:01:30 +1000 (AEST)
+Message-ID: <1464649282.16938.0.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: Abstract the differences between the PSL and XSL
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: John W Walthour <jwalthour@us.ibm.com>, fbarrat@linux.vnet.ibm.com
+Cc: frederic.barrat@fr.ibm.com, huyn@mellanox.com, imunsie@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+Date: Tue, 31 May 2016 09:01:22 +1000
+In-Reply-To: <20160527130754.71F7DBE03E@b03ledav005.gho.boulder.ibm.com>
+References: <57484202.1050603@linux.vnet.ibm.com>
+ ,<1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
+ <20160527130754.71F7DBE03E@b03ledav005.gho.boulder.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,42 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-05-30 at 09:39 -0700, Hugh Dickins wrote:
-> I don't mean to be churlish, and subtract from your triumph in tracking
-> this down (assuming you have), but that commit log... okay, it's intended
-> for powerpc mmu experts, not me, but if it hasn't already gone into git,
-> then a rewrite could be very helpful.
+On Fri, 2016-05-27 at 13:06 +0000, John W Walthour wrote:
 
-Something along these lines:
+>  
+> Those come from
+> XSL_databook_09_June_2014.pdf
 
-The powerpc hash table has a R (Referenced) and C (Changed) bits that
-somewhat correspond to Linux _PAGE_DIRTY and _PAGE_ACCESSED. However we
-don't currently use them.
+Where do I find that?
 
-Moreover, we also require them to never be updated by HW. This is due
-to an optimization we have in the hash eviction code, which would be
-racy vs. a hardware update as the HW updates are done non-atomically.
-
-Thus it's critical that valid hash PTEs always have R set and writeable
-ones have C set. We do this by hashing a non-dirty linux PTE as read-only and always setting _PAGE_ACCESSED (and thus R) when hashing anything else in. Any attempt by Linux at clearing those bits also removes the corresponding hash entry.
-
-The old commit <.....> fixed an issue where we would miss setting C in
-the specific case where a Linux PTE was upgraded from read only to
-read-write (and appropriately made dirty). The hash code would realize
-the hash PTE is already present and would use a different path than the
-normal insertion path for updating a hash entry in-place. That path
-unfortunately didn't update "C".
-
-That commit however got a bit over zealous and also forced C on any
-entry including those that aren't writeable. That was unnecessary.
-
-In commit 89ff725051d1, when converting to C, we mangled that up:
-
- - We kept the useless part of <....> setting C always instead of
-only when _PAGE_DIRTY is set
-
- - We never set R thus letting the HW do the racy updates.
-
-This fixes it.
-
-Ben.
+cheers
