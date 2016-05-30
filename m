@@ -1,37 +1,49 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJHJf2XY7zDr6L
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:19:13 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Yangbo Lu <yangbo.lu@nxp.com>,
- Mark Rutland <mark.rutland@arm.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yang-Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Kumar Gala <galak@codeaurora.org>
-Subject: [PATCH 4/4] Revert "powerpc/fsl: Move fsl_guts.h out of arch/powerpc"
-Date: Mon, 30 May 2016 15:18:43 +0200
-Message-ID: <5513501.AmZs7h1vI2@wuerfel>
-In-Reply-To: <CAPDyKFqx2JMLzXoDxGCKFYMFV47+SegnkuWFXKvsQHK7L5w-1g@mail.gmail.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <HE1PR04MB0889852B7809A1CCFF8922ACF8410@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <CAPDyKFqx2JMLzXoDxGCKFYMFV47+SegnkuWFXKvsQHK7L5w-1g@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJHjD48tHzDqX1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:37:04 +1000 (AEST)
+Received: from pps.filterd (m0048827.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u4UDY4HP031869
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:37:02 -0400
+Message-Id: <201605301337.u4UDY4HP031869@mx0a-001b2d01.pphosted.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 238k6un6qf-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:37:02 -0400
+Received: from localhost
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Mon, 30 May 2016 19:06:59 +0530
+Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 755501258065
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:09:16 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4UDatqh39845968
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:06:55 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4UDalgS004562
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:06:54 +0530
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org
+Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ joro@8bytes.org, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc,
+ kevin.tian@intel.com, David.Laight@ACULAB.COM
+Subject: [PATCH v2 1/6] PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+Date: Mon, 30 May 2016 21:32:08 +0800
+In-Reply-To: <1464615133-12050-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1464615133-12050-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,379 +53,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All users of this driver are PowerPC specific and the header file
-has no business in the global include/linux/ hierarchy, so move
-it back before anyone starts using it on ARM.
+We introduce a new pci_bus_flags, PCI_BUS_FLAGS_MSI_REMAP
+which indicates interrupts of all devices on the bus are
+managed by the hardware enabling IRQ remapping(intel naming).
+When the capability is enabled, a given PCI device can only
+shoot the MSIs assigned for it. In other words, the hardware
+can protect system from invalid MSIs of the device by checking
+the target address and data when there is something wrong
+with MSI part in device or device driver.
 
-This reverts commit 948486544713492f00ac8a9572909101ea892cb0.
+There is a existing flag for this capability in the IOMMU space:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+enum iommu_cap {
+	IOMMU_CAP_CACHE_COHERENCY,
+--->	IOMMU_CAP_INTR_REMAP,
+	IOMMU_CAP_NOEXEC,
+};
+
+and Eric also posted a patchset [1] to abstract it on MSI
+controller side for ARM. But it would make sense to have a
+more common flag like PCI_BUS_FLAGS_MSI_REMAP so that we can
+use a universal flag to test this capability on PCI side for
+different archs.
+
+With this flag enabled, we can easily know whether it's safe
+to expose MSI-X tables of PCI BARs to userspace. Some usespace
+drivers such as VFIO may benefit from this.
+
+[1] https://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg1138820.html
+
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 ---
-This part of the series is not required for the eSDHC quirk,
-but it restores the asm/fsl_guts.h header so it doesn't accidentally
-get abused for this in the future. I found two drivers outside of
-arch/powerpc that already accessed the registers directly, but the
-functions look fairly contained, and can be easily hidden in an
-#ifdef CONFIG_PPC
+ include/linux/pci.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/linux/fsl/guts.h b/arch/powerpc/include/asm/fsl_guts.h
-similarity index 99%
-rename from include/linux/fsl/guts.h
-rename to arch/powerpc/include/asm/fsl_guts.h
-index 649e9171a9b3..a67413c52701 100644
---- a/include/linux/fsl/guts.h
-+++ b/arch/powerpc/include/asm/fsl_guts.h
-@@ -12,10 +12,9 @@
-  * option) any later version.
-  */
- 
--#ifndef __FSL_GUTS_H__
--#define __FSL_GUTS_H__
--
--#include <linux/types.h>
-+#ifndef __ASM_POWERPC_FSL_GUTS_H__
-+#define __ASM_POWERPC_FSL_GUTS_H__
-+#ifdef __KERNEL__
- 
- /**
-  * Global Utility Registers.
-@@ -295,3 +294,4 @@ struct ccsr_rcpm_v2 {
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 932ec74..4ec37da 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -187,6 +187,7 @@ typedef unsigned short __bitwise pci_bus_flags_t;
+ enum pci_bus_flags {
+ 	PCI_BUS_FLAGS_NO_MSI   = (__force pci_bus_flags_t) 1,
+ 	PCI_BUS_FLAGS_NO_MMRBC = (__force pci_bus_flags_t) 2,
++	PCI_BUS_FLAGS_MSI_REMAP = (__force pci_bus_flags_t) 4,
  };
  
- #endif
-+#endif
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index f61cbe235581..00f052e9f2a2 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -34,7 +34,6 @@
- #include <linux/of_device.h>
- #include <linux/phy.h>
- #include <linux/memblock.h>
--#include <linux/fsl/guts.h>
- 
- #include <linux/atomic.h>
- #include <asm/time.h>
-@@ -52,6 +51,7 @@
- #include <soc/fsl/qe/qe_ic.h>
- #include <asm/mpic.h>
- #include <asm/swiotlb.h>
-+#include <asm/fsl_guts.h>
- #include "smp.h"
- 
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-index f05325f0cc03..a812c0511252 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-@@ -14,8 +14,8 @@
- #include <linux/kernel.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/fsl/guts.h>
- 
-+#include <asm/fsl_guts.h>
- #include <asm/io.h>
- #include <asm/fsl_pm.h>
- 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 3f4dad133338..453ddda00fce 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -17,7 +17,6 @@
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
- #include <linux/of_platform.h>
--#include <linux/fsl/guts.h>
- 
- #include <asm/time.h>
- #include <asm/machdep.h>
-@@ -28,6 +27,7 @@
- #include <asm/mpic.h>
- #include <soc/fsl/qe/qe.h>
- #include <soc/fsl/qe/qe_ic.h>
-+#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 371df822e88e..6ac986d3f8a3 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -16,7 +16,6 @@
-  * kind, whether express or implied.
-  */
- 
--#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- #include <asm/div64.h>
-@@ -26,6 +25,7 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
-+#include <asm/fsl_guts.h>
- #include <asm/fsl_lbc.h>
- #include "smp.h"
- 
-diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
-index 5087becaa8bc..680232d6ba48 100644
---- a/arch/powerpc/platforms/85xx/p1022_rdk.c
-+++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
-@@ -12,7 +12,6 @@
-  * kind, whether express or implied.
-  */
- 
--#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- #include <asm/div64.h>
-@@ -22,6 +21,7 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
-+#include <asm/fsl_guts.h>
- #include "smp.h"
- 
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index fe9f19e5e935..6bd3a292e790 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -18,7 +18,6 @@
- #include <linux/kexec.h>
- #include <linux/highmem.h>
- #include <linux/cpu.h>
--#include <linux/fsl/guts.h>
- 
- #include <asm/machdep.h>
- #include <asm/pgtable.h>
-@@ -26,6 +25,7 @@
- #include <asm/mpic.h>
- #include <asm/cacheflush.h>
- #include <asm/dbell.h>
-+#include <asm/fsl_guts.h>
- #include <asm/code-patching.h>
- #include <asm/cputhreads.h>
- #include <asm/fsl_pm.h>
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 71bc255b4324..2cac45f72d24 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -15,7 +15,6 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/errno.h>
--#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- 
-@@ -24,6 +23,7 @@
- #include <asm/mpic.h>
- #include <soc/fsl/qe/qe.h>
- #include <soc/fsl/qe/qe_ic.h>
-+#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 957473e5c8e5..761c81476957 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -24,7 +24,6 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
- #include <linux/of.h>
--#include <linux/fsl/guts.h>
- 
- #include <asm/time.h>
- #include <asm/machdep.h>
-@@ -39,6 +38,7 @@
- #include <sysdev/fsl_pci.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/simple_gpio.h>
-+#include <asm/fsl_guts.h>
- 
- #include "mpc86xx.h"
- 
-diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
-index 9259a94f70e1..8af22187cb25 100644
---- a/arch/powerpc/sysdev/fsl_rcpm.c
-+++ b/arch/powerpc/sysdev/fsl_rcpm.c
-@@ -19,7 +19,7 @@
- #include <linux/export.h>
- 
- #include <asm/io.h>
--#include <linux/fsl/guts.h>
-+#include <asm/fsl_guts.h>
- #include <asm/cputhreads.h>
- #include <asm/fsl_pm.h>
- #include <asm/smp.h>
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 58566a17944a..f311bd399672 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -12,7 +12,6 @@
- 
- #include <linux/clk.h>
- #include <linux/clk-provider.h>
--#include <linux/fsl/guts.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-@@ -21,6 +20,10 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- 
-+#ifdef CONFIG_PPC
-+#include <asm/fsl_guts.h>
-+#endif
-+
- #define PLL_DIV1	0
- #define PLL_DIV2	1
- #define PLL_DIV3	2
-@@ -341,6 +344,8 @@ static const struct clockgen_muxinfo t4240_hwa5 = {
- 	},
- };
- 
-+#ifdef CONFIG_PPC
-+
- #define RCWSR7_FM1_CLK_SEL	0x40000000
- #define RCWSR7_FM2_CLK_SEL	0x20000000
- #define RCWSR7_HWA_ASYNC_DIV	0x04000000
-@@ -408,6 +413,7 @@ static void __init p5040_init_periph(struct clockgen *cg)
- 	else
- 		cg->fman[1] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
- }
-+#endif
- 
- static void __init t1023_init_periph(struct clockgen *cg)
- {
-@@ -499,6 +505,7 @@ static const struct clockgen_chipinfo chipinfo[] = {
- 		.pll_mask = 0x37,
- 		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
- 	},
-+#ifdef CONFIG_PPC
- 	{
- 		.compat = "fsl,p2041-clockgen",
- 		.guts_compat = "fsl,qoriq-device-config-1.0",
-@@ -559,6 +566,7 @@ static const struct clockgen_chipinfo chipinfo[] = {
- 		},
- 		.pll_mask = 0x0f,
- 	},
-+#endif
- 	{
- 		.compat = "fsl,t1023-clockgen",
- 		.guts_compat = "fsl,t1023-device-config",
-diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
-index a34355fca37a..2570f2a25dc4 100644
---- a/drivers/iommu/fsl_pamu.c
-+++ b/drivers/iommu/fsl_pamu.c
-@@ -20,11 +20,11 @@
- 
- #include "fsl_pamu.h"
- 
--#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/genalloc.h>
- 
- #include <asm/mpc85xx.h>
-+#include <asm/fsl_guts.h>
- 
- /* define indexes for each operation mapping scenario */
- #define OMI_QMAN        0x00
-diff --git a/drivers/net/ethernet/freescale/fman/fman.c b/drivers/net/ethernet/freescale/fman/fman.c
-index 1de2e1e51c2b..dabee93fcadd 100644
---- a/drivers/net/ethernet/freescale/fman/fman.c
-+++ b/drivers/net/ethernet/freescale/fman/fman.c
-@@ -35,7 +35,6 @@
- #include "fman.h"
- #include "fman_muram.h"
- 
--#include <linux/fsl/guts.h>
- #include <linux/slab.h>
- #include <linux/delay.h>
- #include <linux/module.h>
-@@ -46,6 +45,10 @@
- #include <linux/interrupt.h>
- #include <linux/libfdt_env.h>
- 
-+#ifdef CONFIG_PPC
-+#include <asm/fsl_guts.h>
-+#endif
-+
- /* General defines */
- #define FMAN_LIODN_TBL			64	/* size of LIODN table */
- #define MAX_NUM_OF_MACS			10
-@@ -1889,7 +1892,9 @@ static int fman_reset(struct fman *fman)
- 			err = -EBUSY;
- 
- 		goto _return;
--	} else {
-+	}
-+#ifdef CONFIG_PPC
-+	else {
- 		struct device_node *guts_node;
- 		struct ccsr_guts __iomem *guts_regs;
- 		u32 devdisr2, reg;
-@@ -1952,6 +1957,7 @@ guts_node:
- 		dev_dbg(fman->dev, "%s: Didn't perform FManV3 reset due to Errata A007273!\n",
- 			__func__);
- 	}
-+#endif
- _return:
- 	return err;
- }
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index ddf49f30b23f..73b2b89d4a3e 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -12,11 +12,11 @@
- 
- #include <linux/module.h>
- #include <linux/interrupt.h>
--#include <linux/fsl/guts.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
-+#include <asm/fsl_guts.h>
- 
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
-diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
-index a1f780ecadf5..a24e04919f71 100644
---- a/sound/soc/fsl/p1022_ds.c
-+++ b/sound/soc/fsl/p1022_ds.c
-@@ -11,12 +11,12 @@
-  */
- 
- #include <linux/module.h>
--#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
-+#include <asm/fsl_guts.h>
- 
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
-diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
-index d4d88a8cb9c0..d8448887bfda 100644
---- a/sound/soc/fsl/p1022_rdk.c
-+++ b/sound/soc/fsl/p1022_rdk.c
-@@ -18,12 +18,12 @@
-  */
- 
- #include <linux/module.h>
--#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
-+#include <asm/fsl_guts.h>
- 
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
+ /* These values come from the PCI Express Spec */
+-- 
+1.7.9.5
