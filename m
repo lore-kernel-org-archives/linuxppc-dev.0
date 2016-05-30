@@ -1,37 +1,26 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJKWC59ZXzDqYf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 00:58:31 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Yangbo Lu <yangbo.lu@nxp.com>,
- Mark Rutland <mark.rutland@arm.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Yang-Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Kumar Gala <galak@codeaurora.org>
-Subject: Re: [PATCH 1/4]  base: soc: introduce soc_device_match() interface
-Date: Mon, 30 May 2016 16:57:55 +0200
-Message-ID: <4811326.1KLIei2jcl@wuerfel>
-In-Reply-To: <6032641.cjSseEG2PF@wuerfel>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <CAPDyKFqx2JMLzXoDxGCKFYMFV47+SegnkuWFXKvsQHK7L5w-1g@mail.gmail.com>
- <6032641.cjSseEG2PF@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJKXm3BwnzDqYg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 00:59:52 +1000 (AEST)
+Date: Mon, 30 May 2016 09:59:43 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Blanchard <anton@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V2 04/68] powerpc/mm: Use big endian page table for book3s
+ 64
+Message-ID: <20160530145943.GB13157@gate.crashing.org>
+References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1460182444-2468-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160529210356.66dd944e@kryten>
+ <1464557231.3078.185.camel@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1464557231.3078.185.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,175 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, May 30, 2016 3:14:38 PM CEST Arnd Bergmann wrote:
-> We keep running into cases where device drivers want to know the exact
-> version of the SoC a they are currently running on. In the past, this
-> has usually been done through a vendor specific API that can be called
-> by a driver, or by directly accessing some kind of version register
-> that is not part of the device itself but that belongs to a global
-> register area of the chip.
+On Mon, May 30, 2016 at 07:27:11AM +1000, Benjamin Herrenschmidt wrote:
+> > > This enables us to share the same page table code for
+> > > both radix and hash. Radix use a hardware defined big endian
+> > > page table
+> > This is measurably worse (a little over 2% on POWER8) on a futex
+> > microbenchmark:
 > 
-> Common reasons for doing this include:
-> 
-> - A machine is not using devicetree or similar for passing data
->   about on-chip devices, but just announces their presence using
->   boot-time platform devices, and the machine code itself does
->   not care about the revision.
-> 
-> - There is existing firmware or boot loaders with existing DT
->   binaries with generic compatible strings that do not identify
->   the particular revision of each device, but the driver knows
->   which SoC revisions include which part
-> 
-> - A prerelease version of a chip has some quirks and we are
->   using the same version of the bootloader and the DT blob
->   on both the prerelease and the final version. An update of
->   the DT binding seems inappropriate because that would involve
->   maintaining multiple copies of the dts and/or bootloader.
-> 
-> This introduces the soc_device_match() interface that is meant
-> to work like of_match_node() but instead of identifying the
-> version of a device, it identifies the SoC itself using a
-> vendor-agnostic interface.
-> 
-> Unlike soc_device_match(), we do not do an exact string compare
-> but instead use glob_match() to allow wildcards in strings.
+> That is surprising, do we have any idea what specifically increases the
+> overhead so significantly ? Does gcc know about ldbrx/stdbrx ? I notice
+> in our io.h for example we still do manual ld/std + swap because old
+> processors didn't know these, we should fix that for CONFIG_POWER8 (or
+> is it POWER7 that brought these ?).
 
-I'm sorry the series introduced build failures (I had done some changes
-after testing), here is a quick fixup. I'll resend the whole thing
-after someone has looked at it as none of the changes below should
-have any influence on the review.
+GCC knows about ldbrx.  ldbrx is v2.06, i.e. POWER7 (Cell also has it).
+As Michael says, we really want to have a byterev insn as well :-)
 
-	Arnd
+GCC does not know this is a big sequence of instructions, and it only
+_has_ it as one insn, until after register allocation.  If things get
+put in memory it is one insn, but the reg-reg sequence is a whopping
+nine instructions :-/
 
-diff --git a/drivers/base/soc.c b/drivers/base/soc.c
-index e9623c6674a5..c38573249777 100644
---- a/drivers/base/soc.c
-+++ b/drivers/base/soc.c
-@@ -173,7 +173,7 @@ module_exit(soc_bus_unregister);
- static int soc_device_match_one(struct device *dev, void *arg)
- {
- 	struct soc_device *soc_dev = container_of(dev, struct soc_device, dev);
--	struct soc_device_attribute *match = arg;
-+	const struct soc_device_attribute *match = arg;
- 
- 	if (match->machine && !glob_match(match->machine, soc_dev->attr->machine))
- 		return 0;
-@@ -208,7 +208,7 @@ static int soc_device_match_one(struct device *dev, void *arg)
-  * soc_device_attribute to pass a structure or function pointer for
-  * each entry.
-  */
--struct soc_device_attribute *soc_device_match(struct soc_device_attribute *matches)
-+const struct soc_device_attribute *soc_device_match(const struct soc_device_attribute *matches)
- {
- 	struct device *dev;
- 	int ret;
-@@ -219,7 +219,7 @@ struct soc_device_attribute *soc_device_match(struct soc_device_attribute *match
- 			return NULL;
- 
- 		dev = NULL;
--		ret = bus_for_each_dev(&soc_bus_type, dev, matches,
-+		ret = bus_for_each_dev(&soc_bus_type, dev, (void *)matches,
- 					 soc_device_match_one);
- 	}
- 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 1d4814fe4cb2..a7b8b05a13e8 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -19,6 +19,8 @@
- #include <linux/delay.h>
- #include <linux/module.h>
- #include <linux/mmc/host.h>
-+#include <linux/sys_soc.h>
-+
- #include "sdhci-pltfm.h"
- #include "sdhci-esdhc.h"
- 
-@@ -75,7 +77,6 @@ static u16 esdhc_readw_fixup(struct sdhci_host *host,
- {
- 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
- 	struct sdhci_esdhc *esdhc = sdhci_pltfm_priv(pltfm_host);
--	u16 ret;
- 	int shift = (spec_reg & 0x2) * 8;
- 
- 	if (spec_reg == SDHCI_HOST_VERSION)
-@@ -565,7 +566,7 @@ static const struct sdhci_pltfm_data sdhci_esdhc_le_pdata = {
- };
- 
- #define T4240_HOST_VER ((VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | SDHCI_SPEC_200)
--static const struct soc_device_attribute esdhc_t4240_quirk = {
-+static const struct soc_device_attribute esdhc_t4240_quirk[] = {
- 	/* T4240 revision < 0x20 uses vendor version 23, SDHCI version 200 */
- 	{ .soc_id = "T4*(0x824000)", .revision = "0x[01]?",
- 	  .data = (void *)(uintptr_t)(T4240_HOST_VER) },
-@@ -576,6 +577,7 @@ static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
- {
- 	struct sdhci_pltfm_host *pltfm_host;
- 	struct sdhci_esdhc *esdhc;
-+	u32 host_ver;
- 
- 	pltfm_host = sdhci_priv(host);
- 	esdhc = sdhci_pltfm_priv(pltfm_host);
-@@ -583,9 +585,9 @@ static void esdhc_init(struct platform_device *pdev, struct sdhci_host *host)
- 	host_ver = sdhci_readw(host, SDHCI_HOST_VERSION);
- 
- 	if (of_device_is_compatible(pdev->dev.of_node, "fsl,t4240-esdhc")) {
--		struct soc_device_attribute *match;
-+		const struct soc_device_attribute *match;
- 
--		match = soc_device_match(&esdhc_t4240_quirk);
-+		match = soc_device_match(esdhc_t4240_quirk);
- 		if (match)
- 			host_ver = (uintptr_t)match->data;
- 	}
-diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 2f30698f5bcf..476969644bed 100644
---- a/drivers/soc/fsl/guts.c
-+++ b/drivers/soc/fsl/guts.c
-@@ -34,14 +34,6 @@ static u32 fsl_guts_get_svr(struct guts *guts)
- 		return ioread32be(guts->regs + GUTS_SVR);
- }
- 
--static u32 fsl_guts_get_pvr(struct guts *guts)
--{
--	if (guts->little_endian)
--		return ioread32(guts->regs + GUTS_PVR);
--	else
--		return ioread32be(guts->regs + GUTS_PVR);
--}
--
- /*
-  * Table for matching compatible strings, for device tree
-  * guts node, for Freescale QorIQ SOCs.
-@@ -76,13 +68,15 @@ static const struct of_device_id fsl_guts_of_match[] = {
- 
- static void fsl_guts_init(struct device *dev, struct guts *guts)
- {
--	const struct of_device_id *id;
- 	u32 svr = fsl_guts_get_svr(guts);
-+	const struct of_device_id *id;
-+	const char *socname;
- 
- 	guts->soc.family = "NXP QorIQ";
- 	id = of_match_node(fsl_guts_of_match, dev->of_node);
--	guts->soc.soc_id = devm_kasprintf(dev, "%s (ver 0x%06x)" id->data,
--					  svr >> 8;
-+	socname = id->data;
-+	guts->soc.soc_id = devm_kasprintf(dev, GFP_KERNEL, "%s (ver 0x%06x)",
-+					  socname, svr >> 8);
- 	guts->soc.revision = devm_kasprintf(dev, GFP_KERNEL, "0x%02x",
- 					    svr & 0xff);
- }
-diff --git a/include/linux/sys_soc.h b/include/linux/sys_soc.h
-index 02c48c76052b..3dfc8714a88c 100644
---- a/include/linux/sys_soc.h
-+++ b/include/linux/sys_soc.h
-@@ -36,6 +36,6 @@ void soc_device_unregister(struct soc_device *soc_dev);
-  */
- struct device *soc_device_to_device(struct soc_device *soc);
- 
--struct soc_device_attribute *soc_device_match(struct soc_device_attribute *matches);
-+const struct soc_device_attribute *soc_device_match(const struct soc_device_attribute *matches);
- 
- #endif /* __SOC_BUS_H */
+
+Segher
