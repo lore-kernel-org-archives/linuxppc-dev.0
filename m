@@ -1,26 +1,23 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ7kX5MsWzDqT6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 17:37:40 +1000 (AEST)
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Mon, 30 May 2016 08:37:37 +0100
-Date: Mon, 30 May 2016 09:37:29 +0200
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ8Kx4HvJzDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 18:04:53 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: Fix definition of SIAR and SDAR registers
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Roth <mdroth@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- qemu-ppc@nongnu.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [Qemu-ppc] [PATCH] powerpc/pseries: start rtasd before PCI probing
-Message-ID: <20160530093729.768a9fe3@bahia.lab.toulouse-stg.fr.ibm.com>
-In-Reply-To: <146399210850.26372.5857516772891352049.stgit@bahia.huguette.org>
-References: <146399210850.26372.5857516772891352049.stgit@bahia.huguette.org>
+References: <1463052404-18092-1-git-send-email-thuth@redhat.com>
+ <20160513033546.GA22018@oak.ozlabs.ibm.com>
+Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <574BF41F.4050305@redhat.com>
+Date: Mon, 30 May 2016 10:04:47 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20160513033546.GA22018@oak.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,82 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 23 May 2016 10:28:28 +0200
-Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
+On 13.05.2016 05:35, Paul Mackerras wrote:
+> On Thu, May 12, 2016 at 01:26:44PM +0200, Thomas Huth wrote:
+>> The SIAR and SDAR registers are available twice, one time as SPRs
+>> 780 / 781 (unprivileged, but read-only), and one time as the SPRs
+>> 796 / 797 (privileged, but read and write). The Linux kernel code
+>> currently uses the unprivileged  SPRs - while this is OK for reading,
+>> writing to that register of course does not work.
+>> Since the KVM code tries to write to this register, too (see the mtspr
+>> in book3s_hv_rmhandlers.S), the contents of this register sometimes get
+>> lost for the guests, e.g. during migration of a VM.
+>> To fix this issue, simply switch to the privileged SPR numbers instead.
+>>
+>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> 
+> Acked-by: Paul Mackerras <paulus@ozlabs.org>
 
-> A strange behaviour is observed when comparing PCI hotplug in QEMU, between
-> x86 and pseries. If you consider the following steps:
-> - start a VM
-> - add a PCI device via the QEMU monitor before the rtasd has started (for
->   example starting the VM in paused state, or hotplug during FW or boot
->   loader)
-> - resume the VM execution
-> 
-> The x86 kernel detects the PCI device, but the pseries one does not.
-> 
-> This happens because the rtasd kernel worker is currently started under
-> device_initcall, while PCI probing happens earlier under subsys_initcall.
-> 
-> As a consequence, if we have a pending RTAS event at boot time, a message
-> is printed and the event is dropped.
-> 
-> This patch moves all the initialization of rtasd to arch_initcall, which is
-> run before subsys_call: this way, logging_enabled is true when the RTAS
-> event pops up and it is not lost anymore.
-> 
-> The proc fs bits stay at device_initcall because they cannot be run before
-> fs_initcall.
-> 
-> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
-> ---
+*ping*
 
-Ping ?
+Michael, could you please pick this patch up? I think it should rather
+go through the generic powerpc tree instead of kvm-ppc, since it also
+affects other parts than just KVM...
 
->  arch/powerpc/kernel/rtasd.c |   19 ++++++++++++++-----
->  1 file changed, 14 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-> index e864b7c5884e..ad9e4e1a2d5d 100644
-> --- a/arch/powerpc/kernel/rtasd.c
-> +++ b/arch/powerpc/kernel/rtasd.c
-> @@ -526,10 +526,8 @@ void rtas_cancel_event_scan(void)
->  }
->  EXPORT_SYMBOL_GPL(rtas_cancel_event_scan);
-> 
-> -static int __init rtas_init(void)
-> +static int __init rtas_event_scan_init(void)
->  {
-> -	struct proc_dir_entry *entry;
-> -
->  	if (!machine_is(pseries) && !machine_is(chrp))
->  		return 0;
-> 
-> @@ -562,13 +560,24 @@ static int __init rtas_init(void)
->  		return -ENOMEM;
->  	}
-> 
-> +	start_event_scan();
-> +
-> +	return 0;
-> +}
-> +arch_initcall(rtas_event_scan_init);
-> +
-> +static int __init rtas_init(void)
-> +{
-> +	struct proc_dir_entry *entry;
-> +
-> +	if (!machine_is(pseries) && !machine_is(chrp))
-> +		return 0;
-> +
->  	entry = proc_create("powerpc/rtas/error_log", S_IRUSR, NULL,
->  			    &proc_rtas_log_operations);
->  	if (!entry)
->  		printk(KERN_ERR "Failed to create error_log proc entry\n");
-> 
-> -	start_event_scan();
-> -
->  	return 0;
->  }
->  __initcall(rtas_init);
-> 
-> 
+Thanks,
+ Thomas
