@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJQrM3KDNzDqVV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 04:58:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJQrN0mj9zDqVt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 04:58:43 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org,
@@ -14,9 +14,11 @@ Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v4 00/16] genrtc removal
-Date: Mon, 30 May 2016 20:57:48 +0200
-Message-Id: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
+Subject: [PATCH v4 08/16] char/genrtc: remove parisc support
+Date: Mon, 30 May 2016 20:57:56 +0200
+Message-Id: <1464634684-1248135-9-git-send-email-arnd@arndb.de>
+In-Reply-To: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
+References: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,182 +28,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the promised resend of the removal of the genrtc driver and some
-related code, now that we are at a good time to merge this for the coming
-merge window.
+This architecture selects RTC_CLASS unconditionally, so the GEN_RTC
+has not worked here for a long time.
 
-The contents are the same as before, except fixing the build regressions
-reported by the 0day builder: on both x86 and mn10300 the rearranging
-of the header files caused some missing headers that were included
-implicitly before.
+Now we can remove both the asm/rtc.h header and the Kconfig dependency
+for CONFIG_GEN_RTC.
 
-Things regarding rtc are a bit intertwined, so I'm mixing patches for
-drivers/rtc with drivers/char and arch. This series should make that
-better in the end.
-
-This now thoroughly removes the genrtc driver including the asm/rtc.h
-headers it uses. For all architectures that still have a meaningful
-asm/rtc.h, this goes through two stages:
-
-1) make the rtc-generic implementation independent of asm/rtc.h
-2) remove the asm/rtc.h header and disallow the gen_rtc driver
-
-As the last step, the driver itself gets removed. There are a
-couple of follow-up cleanup tasks that we could do once this is
-all merged, including removing all the remaining nonstandard
-RTC drivers from drivers/char:
- 
-- alpha most likely doesn't ever use CONFIG_RTC, as it has its
-  own replacement driver in arch/alpha/kernel/rtc.c, and the legacy
-  driver is slightly broken on at least one alpha machine
-
-- loongson64 is the only MIPS machine that has the option of running
-  the legacy CONFIG_RTC driver, but it should also work with rtc-cmos,
-  and support for that was added in 2010 with 5df74352876 ("MIPS:
-  Loongson: Define rtc device on MC146818-equipped systems").
-
-- with the above two gone, the only remaining user of CONFIG_RTC
-  is arch/mn10300, and that just needs to register the appropriate
-  platform device to use the RTC_CMOS driver instead. I'm sure the
-  only reason that hasn't happened is because there is very little
-  active development on this architecture.
-
-- CONFIG_JS_RTC depends on SPARC32, but can not be selected there
-  because SPARC unconditionally selects RTC_CLASS since 2008, so
-  this is effectively dead code. Interestingly, this is not even
-  a separate driver, but actually uses the same code as CONFIG_RTC
-  with some #ifdef
-
-- CONFIG_EFI_RTC is actively used on all six Itanium configurations,
-  though the CONFIG_RTC_DRV_EFI replacement driver is also available
-  there (and has been Itanium-only until ARM64 support for EFI was
-  merged). I suspect it's just a matter of getting an Ack from the
-  Itanium maintainers to remove it and change the defconfigs.
-
-- the last remaining legacy RTC driver after those is CONFIG_DS1302,
-  which has a slightly nonstandard ioctl interface and is only used
-  on arch/m32r. I have experimented with this a bit and think it
-  can be converted in a backward-compatible way as well.
-
-- Regarding the users of RTC_DRV_GENERIC, it would be nice to convert
-  them into hardware-specific drivers that look more like the other
-  drivers. parisc is particularly easy, it just needs to call
-  platform_create_bundle() instead of platform_device_register.
-  The three other architectures have their own abstraction layer
-  on top of rtc-generic and should kill that off. There are only
-  a few drivers in each case: m68k has one (q40), sh has two
-  (dreamcast and sh3) and powerpc has four (rtas, mpc8xx, chrp
-  and pmac).
-
-- Once all RTC support uses the RTC class subsystem, we should
-  remove all implementations of read_persistent_clock{,64} that only
-  access the RTC or return a hardwired time, and we should
-  remove all update_persistent_clock{,64} users and
-  CONFIG_GENERIC_CMOS_UPDATE, as both are replaced with
-  generic rtc code.
-
-	Arnd
-
-Cc: geert@linux-m68k.org
-Cc: gregkh@linuxfoundation.org
-Cc: deller@gmx.de
-Cc: benh@kernel.crashing.org
-Cc: mpe@ellerman.id.au
-Cc: dalias@libc.org
-Cc: dhowells@redhat.com
-Cc: linux-alpha@vger.kernel.org
-Cc: a.zummo@towertech.it
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: rtc-linux@googlegroups.com
-Cc: linux-arch@vger.kernel.org
-
-Arnd Bergmann (16):
-  rtc: cmos: remove empty asm/mc146818rtc.h files
-  rtc: cmos: move mc146818rtc code out of asm-generic/rtc.h
-  char/genrtc: x86: remove remnants of asm/rtc.h
-  rtc: sh: provide rtc_class_ops directly
-  char/genrtc: remove alpha support
-  char/genrtc: remove mn10300 support
-  rtc: parisc: provide rtc_class_ops directly
-  char/genrtc: remove parisc support
-  rtc: m68k: provide rtc_class_ops directly
-  rtc: m68k: provide ioctl for q40
-  char/genrtc: remove m68k support
-  rtc: powerpc: provide rtc_class_ops directly
-  char/genrtc: remove powerpc support
-  rtc: generic: remove get_rtc_time/set_rtc_time wrappers
-  char/genrtc: remove asm-generic/rtc.h from mips
-  char/genrtc: remove the rest of the driver
-
- arch/alpha/include/asm/rtc.h                 |   1 -
- arch/alpha/kernel/core_marvel.c              |   1 -
- arch/alpha/kernel/rtc.c                      |   6 +-
- arch/frv/include/asm/mc146818rtc.h           |  16 -
- arch/h8300/include/asm/mc146818rtc.h         |   9 -
- arch/ia64/include/asm/mc146818rtc.h          |  10 -
- arch/m68k/amiga/config.c                     |   1 -
- arch/m68k/apollo/config.c                    |   1 -
- arch/m68k/bvme6000/config.c                  |   1 -
- arch/m68k/hp300/config.c                     |   2 +-
- arch/m68k/include/asm/rtc.h                  |  79 ----
- arch/m68k/kernel/time.c                      |  48 ++-
- arch/m68k/mac/config.c                       |   3 +-
- arch/m68k/mac/misc.c                         |   1 -
- arch/m68k/mvme147/config.c                   |   1 -
- arch/m68k/mvme16x/config.c                   |   1 -
- arch/m68k/q40/config.c                       |   2 +-
- arch/m68k/sun3/config.c                      |   1 -
- arch/m68k/sun3/intersil.c                    |   2 +-
- arch/m68k/sun3x/time.c                       |   2 +-
- arch/mips/sni/time.c                         |   1 -
- arch/mn10300/include/asm/rtc.h               |   2 -
- arch/mn10300/kernel/rtc.c                    |   2 +-
- arch/mn10300/proc-mn103e010/proc-init.c      |   1 +
- arch/mn10300/proc-mn2ws0050/proc-init.c      |   1 +
- arch/parisc/include/asm/mc146818rtc.h        |   9 -
- arch/parisc/include/asm/rtc.h                | 131 -------
- arch/parisc/kernel/time.c                    |  36 +-
- arch/powerpc/include/asm/rtc.h               |  78 ----
- arch/powerpc/kernel/time.c                   |  29 +-
- arch/powerpc/platforms/Kconfig               |  11 +
- arch/powerpc/platforms/ps3/time.c            |   2 +-
- arch/sh/include/asm/mc146818rtc.h            |   7 -
- arch/sh/include/asm/rtc.h                    |  11 -
- arch/sh/kernel/time.c                        |  33 +-
- arch/x86/include/asm/mc146818rtc.h           |   1 -
- arch/x86/include/asm/rtc.h                   |   1 -
- arch/x86/kernel/hpet.c                       |   3 +-
- arch/x86/kernel/rtc.c                        |   3 +-
- arch/x86/platform/efi/efi.c                  |   1 -
- arch/x86/platform/efi/efi_64.c               |   1 +
- arch/x86/platform/intel-mid/intel_mid_vrtc.c |   1 +
- drivers/acpi/acpi_cmos_rtc.c                 |   2 +-
- drivers/base/power/trace.c                   |   6 +-
- drivers/char/Kconfig                         |  26 --
- drivers/char/Makefile                        |   1 -
- drivers/char/genrtc.c                        | 539 ---------------------------
- drivers/rtc/rtc-cmos.c                       |  12 +-
- drivers/rtc/rtc-generic.c                    |  36 +-
- drivers/rtc/rtc-mrst.c                       |   2 +-
- include/asm-generic/rtc.h                    | 247 ------------
- include/linux/mc146818rtc.h                  | 194 ++++++++++
- 52 files changed, 362 insertions(+), 1256 deletions(-)
- delete mode 100644 arch/alpha/include/asm/rtc.h
- delete mode 100644 arch/frv/include/asm/mc146818rtc.h
- delete mode 100644 arch/h8300/include/asm/mc146818rtc.h
- delete mode 100644 arch/ia64/include/asm/mc146818rtc.h
- delete mode 100644 arch/m68k/include/asm/rtc.h
- delete mode 100644 arch/parisc/include/asm/mc146818rtc.h
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/parisc/include/asm/rtc.h | 131 ------------------------------------------
+ drivers/char/Kconfig          |   2 +-
+ 2 files changed, 1 insertion(+), 132 deletions(-)
  delete mode 100644 arch/parisc/include/asm/rtc.h
- delete mode 100644 arch/powerpc/include/asm/rtc.h
- delete mode 100644 arch/sh/include/asm/mc146818rtc.h
- delete mode 100644 arch/x86/include/asm/rtc.h
- delete mode 100644 drivers/char/genrtc.c
- delete mode 100644 include/asm-generic/rtc.h
 
+diff --git a/arch/parisc/include/asm/rtc.h b/arch/parisc/include/asm/rtc.h
+deleted file mode 100644
+index 099d641a42c2..000000000000
+--- a/arch/parisc/include/asm/rtc.h
++++ /dev/null
+@@ -1,131 +0,0 @@
+-/* 
+- * include/asm-parisc/rtc.h
+- *
+- * Copyright 2002 Randolph CHung <tausq@debian.org>
+- *
+- * Based on: include/asm-ppc/rtc.h and the genrtc driver in the
+- * 2.4 parisc linux tree
+- */
+-
+-#ifndef __ASM_RTC_H__
+-#define __ASM_RTC_H__
+-
+-#ifdef __KERNEL__
+-
+-#include <linux/rtc.h>
+-
+-#include <asm/pdc.h>
+-
+-#define SECS_PER_HOUR   (60 * 60)
+-#define SECS_PER_DAY    (SECS_PER_HOUR * 24)
+-
+-
+-#define RTC_PIE 0x40		/* periodic interrupt enable */
+-#define RTC_AIE 0x20		/* alarm interrupt enable */
+-#define RTC_UIE 0x10		/* update-finished interrupt enable */
+-
+-#define RTC_BATT_BAD 0x100	/* battery bad */
+-
+-/* some dummy definitions */
+-#define RTC_SQWE 0x08		/* enable square-wave output */
+-#define RTC_DM_BINARY 0x04	/* all time/date values are BCD if clear */
+-#define RTC_24H 0x02		/* 24 hour mode - else hours bit 7 means pm */
+-#define RTC_DST_EN 0x01	        /* auto switch DST - works f. USA only */
+-
+-# define __isleap(year) \
+-  ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
+-
+-/* How many days come before each month (0-12).  */
+-static const unsigned short int __mon_yday[2][13] =
+-{
+-	/* Normal years.  */
+-	{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+-	/* Leap years.  */
+-	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+-};
+-
+-static inline unsigned int get_rtc_time(struct rtc_time *wtime)
+-{
+-	struct pdc_tod tod_data;
+-	long int days, rem, y;
+-	const unsigned short int *ip;
+-
+-	memset(wtime, 0, sizeof(*wtime));
+-	if (pdc_tod_read(&tod_data) < 0)
+-		return RTC_24H | RTC_BATT_BAD;
+-
+-	// most of the remainder of this function is:
+-//	Copyright (C) 1991, 1993, 1997, 1998 Free Software Foundation, Inc.
+-//	This was originally a part of the GNU C Library.
+-//      It is distributed under the GPL, and was swiped from offtime.c
+-
+-
+-	days = tod_data.tod_sec / SECS_PER_DAY;
+-	rem = tod_data.tod_sec % SECS_PER_DAY;
+-
+-	wtime->tm_hour = rem / SECS_PER_HOUR;
+-	rem %= SECS_PER_HOUR;
+-	wtime->tm_min = rem / 60;
+-	wtime->tm_sec = rem % 60;
+-
+-	y = 1970;
+-
+-#define DIV(a, b) ((a) / (b) - ((a) % (b) < 0))
+-#define LEAPS_THRU_END_OF(y) (DIV (y, 4) - DIV (y, 100) + DIV (y, 400))
+-
+-	while (days < 0 || days >= (__isleap (y) ? 366 : 365))
+-	{
+-		/* Guess a corrected year, assuming 365 days per year.  */
+-		long int yg = y + days / 365 - (days % 365 < 0);
+-
+-		/* Adjust DAYS and Y to match the guessed year.  */
+-		days -= ((yg - y) * 365
+-			 + LEAPS_THRU_END_OF (yg - 1)
+-			 - LEAPS_THRU_END_OF (y - 1));
+-		y = yg;
+-	}
+-	wtime->tm_year = y - 1900;
+-
+-	ip = __mon_yday[__isleap(y)];
+-	for (y = 11; days < (long int) ip[y]; --y)
+-		continue;
+-	days -= ip[y];
+-	wtime->tm_mon = y;
+-	wtime->tm_mday = days + 1;
+-
+-	return RTC_24H;
+-}
+-
+-static int set_rtc_time(struct rtc_time *wtime)
+-{
+-	u_int32_t secs;
+-
+-	secs = mktime(wtime->tm_year + 1900, wtime->tm_mon + 1, wtime->tm_mday, 
+-		      wtime->tm_hour, wtime->tm_min, wtime->tm_sec);
+-
+-	if(pdc_tod_set(secs, 0) < 0)
+-		return -1;
+-	else
+-		return 0;
+-
+-}
+-
+-static inline unsigned int get_rtc_ss(void)
+-{
+-	struct rtc_time h;
+-
+-	get_rtc_time(&h);
+-	return h.tm_sec;
+-}
+-
+-static inline int get_rtc_pll(struct rtc_pll_info *pll)
+-{
+-	return -EINVAL;
+-}
+-static inline int set_rtc_pll(struct rtc_pll_info *pll)
+-{
+-	return -EINVAL;
+-}
+-
+-#endif /* __KERNEL__ */
+-#endif /* __ASM_RTC_H__ */
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 1d9e3063373b..074bc394e31b 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -328,7 +328,7 @@ config JS_RTC
+ config GEN_RTC
+ 	tristate "Generic /dev/rtc emulation"
+ 	depends on RTC!=y
+-	depends on M68K || PARISC || PPC
++	depends on M68K || PPC
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/rtc with
+ 	  major number 10 and minor number 135 using mknod ("man mknod"), you
 -- 
 2.7.0
