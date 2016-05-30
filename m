@@ -3,33 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJHkG4vS3zDqgB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:37:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJHkg65gdzDqgG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:38:19 +1000 (AEST)
 Received: from pps.filterd (m0048817.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u4UDY6Nw030482
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:37:56 -0400
-Message-Id: <201605301337.u4UDY6Nw030482@mx0a-001b2d01.pphosted.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 238k00wh54-1
+ u4UDY6mp030448
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:38:17 -0400
+Message-Id: <201605301338.u4UDY6mp030448@mx0a-001b2d01.pphosted.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 238k00whcq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:37:56 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:38:17 -0400
 Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Mon, 30 May 2016 19:07:52 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 37A5BE005A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:11:12 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u4UDbi7L16122240
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:07:44 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u4UDbgQs012454
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:07:48 +0530
+ Mon, 30 May 2016 23:38:14 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D255E3578056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:38:11 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4UDc35E58982528
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:38:11 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4UDbccP029187
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:37:39 +1000
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -40,9 +40,9 @@ Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
  nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
  gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc,
  kevin.tian@intel.com, David.Laight@ACULAB.COM
-Subject: [PATCH v2 5/6] pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host
- bridge
-Date: Mon, 30 May 2016 21:32:12 +0800
+Subject: [PATCH v2 3/6] PCI: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have
+ capability of IRQ remapping
+Date: Mon, 30 May 2016 21:32:10 +0800
 In-Reply-To: <1464615133-12050-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 References: <1464615133-12050-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -54,41 +54,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Any IODA host bridge have the capability of IRQ remapping.
-So we set PCI_BUS_FLAGS_MSI_REMAP when this kind of host birdge
-is detected.
+The capability of IRQ remapping is abstracted on IOMMU side on
+some archs. There is a existing flag IOMMU_CAP_INTR_REMAP for this.
+
+To have a universal flag to test this capability for different
+archs on PCI side, we set PCI_BUS_FLAGS_MSI_REMAP for PCI buses
+when IOMMU_CAP_INTR_REMAP is set.
 
 Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/pci/probe.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index c5baaf3..9011268 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3094,6 +3094,12 @@ static void pnv_pci_ioda_fixup(void)
- 	pnv_npu_ioda_fixup();
- }
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 2b9e3ba..15a33e2 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -16,6 +16,7 @@
+ #include <linux/aer.h>
+ #include <linux/acpi.h>
+ #include <linux/irqdomain.h>
++#include <linux/iommu.h>
+ #include "pci.h"
  
-+int pnv_pci_ioda_root_bridge_prepare(struct pci_host_bridge *bridge)
-+{
-+	bridge->bus->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
-+	return 0;
-+}
-+
- /*
-  * Returns the alignment for I/O or memory windows for P2P
-  * bridges. That actually depends on how PEs are segmented.
-@@ -3395,6 +3401,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	 */
- 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+ #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
+@@ -2160,6 +2161,9 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+ 	pci_set_bus_of_node(b);
+ 	pci_set_bus_msi_domain(b);
  
-+	ppc_md.pcibios_root_bridge_prepare = pnv_pci_ioda_root_bridge_prepare;
++	if (iommu_capable(&pci_bus_type, IOMMU_CAP_INTR_REMAP))
++		b->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
 +
- 	if (phb->type == PNV_PHB_NPU)
- 		hose->controller_ops = pnv_npu_ioda_controller_ops;
- 	else
+ 	if (!parent)
+ 		set_dev_node(b->bridge, pcibus_to_node(b));
+ 
 -- 
 1.7.9.5
