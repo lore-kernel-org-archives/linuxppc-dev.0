@@ -2,7 +2,7 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJQrD5JNqzDqVV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJQrD6MsjzDqVt
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 04:58:36 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
@@ -14,9 +14,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, geert@linux-m68k.org,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, rtc-linux@googlegroups.com,
  linux-arch@vger.kernel.org
-Subject: [PATCH v4 01/16] rtc: cmos: remove empty asm/mc146818rtc.h files
-Date: Mon, 30 May 2016 20:57:49 +0200
-Message-Id: <1464634684-1248135-2-git-send-email-arnd@arndb.de>
+Subject: [PATCH v4 10/16] rtc: m68k: provide ioctl for q40
+Date: Mon, 30 May 2016 20:57:58 +0200
+Message-Id: <1464634684-1248135-11-git-send-email-arnd@arndb.de>
 In-Reply-To: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
 References: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,107 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nothing on these architectures ever includes the asm/mc146818rtc.h
-file, the drivers that used to do this have been fixed long ago,
-and the remaining users are all PC-specific.
+The q40 platform is the only machine in the kernel that provides
+RTC_PLL_GET/RTC_PLL_SET ioctl commands in its rtc through the
+mach_get_rtc_pll/mach_set_rtc_pll callbacks.
 
-This removes the files for good.
+However, this currenctly works only in the old-style genrtc
+driver, not the (somewhat) modern rtc-generic driver replacing
+it. This adds an ioctl implementation to the m68k generic_rtc_ops
+in order to let both drivers provide the same API.
+
+After this, we should be able to remove support for genrtc
+from the m68k architecture.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- arch/frv/include/asm/mc146818rtc.h    | 16 ----------------
- arch/h8300/include/asm/mc146818rtc.h  |  9 ---------
- arch/ia64/include/asm/mc146818rtc.h   | 10 ----------
- arch/parisc/include/asm/mc146818rtc.h |  9 ---------
- arch/sh/include/asm/mc146818rtc.h     |  7 -------
- 5 files changed, 51 deletions(-)
- delete mode 100644 arch/frv/include/asm/mc146818rtc.h
- delete mode 100644 arch/h8300/include/asm/mc146818rtc.h
- delete mode 100644 arch/ia64/include/asm/mc146818rtc.h
- delete mode 100644 arch/parisc/include/asm/mc146818rtc.h
- delete mode 100644 arch/sh/include/asm/mc146818rtc.h
+ arch/m68k/kernel/time.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/arch/frv/include/asm/mc146818rtc.h b/arch/frv/include/asm/mc146818rtc.h
-deleted file mode 100644
-index 90dfb7a633d1..000000000000
---- a/arch/frv/include/asm/mc146818rtc.h
-+++ /dev/null
-@@ -1,16 +0,0 @@
--/* mc146818rtc.h: RTC defs
-- *
-- * Copyright (C) 2005 Red Hat, Inc. All Rights Reserved.
-- * Written by David Howells (dhowells@redhat.com)
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--
--#ifndef _ASM_MC146818RTC_H
--#define _ASM_MC146818RTC_H
--
--
--#endif /* _ASM_MC146818RTC_H */
-diff --git a/arch/h8300/include/asm/mc146818rtc.h b/arch/h8300/include/asm/mc146818rtc.h
-deleted file mode 100644
-index ab9d9646d241..000000000000
---- a/arch/h8300/include/asm/mc146818rtc.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--/*
-- * Machine dependent access functions for RTC registers.
-- */
--#ifndef _H8300_MC146818RTC_H
--#define _H8300_MC146818RTC_H
--
--/* empty include file to satisfy the include in genrtc.c/ide-geometry.c */
--
--#endif /* _H8300_MC146818RTC_H */
-diff --git a/arch/ia64/include/asm/mc146818rtc.h b/arch/ia64/include/asm/mc146818rtc.h
-deleted file mode 100644
-index 407787a237ba..000000000000
---- a/arch/ia64/include/asm/mc146818rtc.h
-+++ /dev/null
-@@ -1,10 +0,0 @@
--#ifndef _ASM_IA64_MC146818RTC_H
--#define _ASM_IA64_MC146818RTC_H
--
--/*
-- * Machine dependent access functions for RTC registers.
-- */
--
--/* empty include file to satisfy the include in genrtc.c */
--
--#endif /* _ASM_IA64_MC146818RTC_H */
-diff --git a/arch/parisc/include/asm/mc146818rtc.h b/arch/parisc/include/asm/mc146818rtc.h
-deleted file mode 100644
-index adf41631449f..000000000000
---- a/arch/parisc/include/asm/mc146818rtc.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--/*
-- * Machine dependent access functions for RTC registers.
-- */
--#ifndef _ASM_MC146818RTC_H
--#define _ASM_MC146818RTC_H
--
--/* empty include file to satisfy the include in genrtc.c */
--
--#endif /* _ASM_MC146818RTC_H */
-diff --git a/arch/sh/include/asm/mc146818rtc.h b/arch/sh/include/asm/mc146818rtc.h
-deleted file mode 100644
-index 0aee96a97330..000000000000
---- a/arch/sh/include/asm/mc146818rtc.h
-+++ /dev/null
-@@ -1,7 +0,0 @@
--/*
-- * Machine dependent access functions for RTC registers.
-- */
--#ifndef _ASM_MC146818RTC_H
--#define _ASM_MC146818RTC_H
--
--#endif /* _ASM_MC146818RTC_H */
+diff --git a/arch/m68k/kernel/time.c b/arch/m68k/kernel/time.c
+index bd6417d38d5a..4e5aa2f4f522 100644
+--- a/arch/m68k/kernel/time.c
++++ b/arch/m68k/kernel/time.c
+@@ -100,7 +100,32 @@ static int rtc_generic_set_time(struct device *dev, struct rtc_time *tm)
+ 	return 0;
+ }
+ 
++static int rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++{
++	struct rtc_pll_info pll;
++	struct rtc_pll_info __user *argp = (void __user *)arg;
++
++	switch (cmd) {
++	case RTC_PLL_GET:
++		if (!mach_get_rtc_pll || mach_get_rtc_pll(&pll))
++			return -EINVAL;
++		return copy_to_user(argp, &pll, sizeof pll) ? -EFAULT : 0;
++
++	case RTC_PLL_SET:
++		if (!mach_set_rtc_pll)
++			return -EINVAL;
++		if (!capable(CAP_SYS_TIME))
++			return -EACCES;
++		if (copy_from_user(&pll, argp, sizeof(pll)))
++			return -EFAULT;
++		return mach_set_rtc_pll(&pll);
++	}
++
++	return -ENOIOCTLCMD;
++}
++
+ static const struct rtc_class_ops generic_rtc_ops = {
++	.ioctl = rtc_ioctl,
+ 	.read_time = rtc_generic_get_time,
+ 	.set_time = rtc_generic_set_time,
+ };
 -- 
 2.7.0
