@@ -1,26 +1,47 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJDDk2Js6zDqSc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 21:00:37 +1000 (AEST)
-Message-ID: <1464606018.3078.199.camel@kernel.crashing.org>
-Subject: Re: [PATCH V2 04/68] powerpc/mm: Use big endian page table for
- book3s 64
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Anton Blanchard
- <anton@samba.org>
-Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- Michael Neuling <mikey@neuling.org>
-Date: Mon, 30 May 2016 21:00:18 +1000
-In-Reply-To: <87shx00we2.fsf@skywalker.in.ibm.com>
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160529210356.66dd944e@kryten>
- <1464557231.3078.185.camel@kernel.crashing.org>
- <20160530090833.4400ac83@kryten> <87shx00we2.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJGzs3S4KzDqPP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:04:41 +1000 (AEST)
+Received: from pps.filterd (m0048817.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u4UD4OxM016853
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:04:39 -0400
+Message-Id: <201605301304.u4UD4OxM016853@mx0a-001b2d01.pphosted.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 238k00vsxa-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 09:04:38 -0400
+Received: from localhost
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Mon, 30 May 2016 18:34:35 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B24B5E005F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 18:37:54 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4UD4VUJ26411144
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 18:34:31 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4UD4Sqo017516
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 18:34:30 +0530
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
+Cc: bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
+Subject: [PATCH v2 1/4] PCI: Ignore resource_alignment if PCI_PROBE_ONLY was
+ set
+Date: Mon, 30 May 2016 21:00:15 +0800
+In-Reply-To: <1464613218-23973-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1464613218-23973-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +51,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-05-30 at 14:12 +0530, Aneesh Kumar K.V wrote:
->  /* Encode and de-code a swap entry */
-> @@ -516,10 +533,12 @@ static inline pte_t pte_swp_mksoft_dirty(pte_t
-> pte)
->  {
->         return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
->  }
+The resource_alignment will releases memory resources allocated
+by firmware so that kernel can reassign new resources later on.
+But this will cause the problem that no resources can be
+allocated by kernel if PCI_PROBE_ONLY was set, e.g. on pSeries
+platform because PCI_PROBE_ONLY force kernel to use firmware
+setup and not to reassign any resources.
 
-These kind of setters (and mkspecial etc...) could also just OR
-the byteswapped constant to the raw PTE..
+To solve this problem, this patch ignores resource_alignment
+if PCI_PROBE_ONLY was set.
 
-Cheers,
-Ben.
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+---
+ drivers/pci/pci.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index c8b4dbd..a259394 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4761,6 +4761,12 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+ 	spin_lock(&resource_alignment_lock);
+ 	p = resource_alignment_param;
+ 	while (*p) {
++		if (pci_has_flag(PCI_PROBE_ONLY)) {
++			printk(KERN_ERR "PCI: Ignore resource_alignment parameter: %s with PCI_PROBE_ONLY set\n",
++					p);
++			*p = 0;
++			break;
++		}
+ 		count = 0;
+ 		if (sscanf(p, "%d%n", &align_order, &count) == 1 &&
+ 							p[count] == '@') {
+-- 
+1.7.9.5
