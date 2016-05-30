@@ -1,26 +1,19 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+Return-Path: <marwahamza63@gmail.com>
+Received: from mail-vk0-x241.google.com (mail-vk0-x241.google.com
+ [IPv6:2607:f8b0:400c:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ4wx4TgpzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 15:31:29 +1000 (AEST)
-Date: Mon, 30 May 2016 15:31:06 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Aneesh Kumar K.V\"  <aneesh.kumar@linux.vnet.ibm.com>,
- paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH V2 04/68] powerpc/mm: Use big endian page table for
- book3s 64
-Message-ID: <20160530153106.7ece1ca0@kryten>
-In-Reply-To: <20160530090833.4400ac83@kryten>
-References: <1460182444-2468-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1460182444-2468-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160529210356.66dd944e@kryten>
- <1464557231.3078.185.camel@kernel.crashing.org>
- <20160530090833.4400ac83@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJ9ff0pt8zDqR6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 19:04:26 +1000 (AEST)
+Received: by mail-vk0-x241.google.com with SMTP id a6so926371vkg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 02:04:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Mon, 30 May 2016 10:04:22 +0100
+Message-ID: <CAGF64GXnJ-qPHo6xoueE5hPmuNFDG+n+oNWr-O1J1kaUD0zyDg@mail.gmail.com>
+Subject: running qemu for powerpc (32bits) architecture
+From: Marwa Hamza <marwahamza63@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001a114847dadcf42305340b8a1a
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+--001a114847dadcf42305340b8a1a
+Content-Type: text/plain; charset=UTF-8
 
-> I see the same issue in unmap_page_range(), __hash_page_64K(),
-> handle_mm_fault().
+hello everyone
+I'm trying to run qemu for powerpc architecture but either
+*1/* i got a black screen with this sentence " QEMU 2.4.0.1 monitor - type
+help for more information"
+                       (QEMU)
+if i run this command ./ppc-softmmu/qemu-system-ppc -M ppce500 -kernel
+../linux-4.4.1/arch/powerpc/boot/zImage -initrd
+powerpc/busybox-1.21.0/rootfs.img.gz -append "root=/dev/ram rdinit=/bin/sh"
+*2/* or i got this error "rom: requested regions overlap (rom
+/home/marwa/Bureau/lauterbach/powerpc/busybox-1.21.0/rootfs.img.gz.
+free=0x0000000001878dfc, addr=0x0000000001579000)
+rom check and register reset failed " if i run this command
+./ppc-softmmu/qemu-system-ppc -M mac99 -kernel
+/home/marwa/Bureau/lauterbach/powerpc/linux-4.4.1/arch/powerpc/boot/zImage
+-initrd /home/marwa/Bureau/lauterbach/powerpc/busybox-1.21.0/rootfs.img.gz
+-append "root=/dev/ram rdinit=/bin/sh"
+*3/* or i got this error
+qemu-system-ppc: Could not load PowerPC BIOS 'ppc405_rom.bin'
+when i run this command
+./ppc-softmmu/qemu-system-ppc -M ref405ep -kernel
+/home/marwa/Bureau/lauterbach/powerpc/linux-4.4.1/arch/powerpc/boot/zImage
+-initrd /home/marwa/Bureau/lauterbach/powerpc/busybox-1.21.0/rootfs.img.gz
+-append "root=/dev/ram rdinit=/bin/sh"
 
-This looks to be about 10% slower on POWER8:
+and i have tried all machines available for powerpc in qemu but i got
+always one of those three result , i could't access to the file system
 
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <assert.h>
+any suggestion please
+regards,
+Marwa
 
-#define ITERATIONS 10000000
+--001a114847dadcf42305340b8a1a
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-#define MEMSIZE (128 * 1024 * 1024)
+<div dir=3D"ltr"><div><div><div><div><div>hello everyone<br></div>I&#39;m t=
+rying to run qemu for powerpc architecture but either<br><b>1/</b> i got a =
+black screen with this sentence &quot; QEMU 2.4.0.1 monitor - type help for=
+ more information&quot;<br></div>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0 (QEMU)<br></div>if i run this command ./ppc-softmmu/qemu-sy=
+stem-ppc -M ppce500 -kernel ../linux-4.4.1/arch/powerpc/boot/zImage -initrd=
+ powerpc/busybox-1.21.0/rootfs.img.gz -append &quot;root=3D/dev/ram rdinit=
+=3D/bin/sh&quot;<br></div><b>2/</b> or i got this error &quot;rom: requeste=
+d regions overlap (rom /home/marwa/Bureau/lauterbach/powerpc/busybox-1.21.0=
+/rootfs.img.gz. free=3D0x0000000001878dfc, addr=3D0x0000000001579000)<br>ro=
+m check and register reset failed &quot; if i run this command <br>./ppc-so=
+ftmmu/qemu-system-ppc -M mac99 -kernel /home/marwa/Bureau/lauterbach/powerp=
+c/linux-4.4.1/arch/powerpc/boot/zImage -initrd /home/marwa/Bureau/lauterbac=
+h/powerpc/busybox-1.21.0/rootfs.img.gz -append &quot;root=3D/dev/ram rdinit=
+=3D/bin/sh&quot;<br></div><b>3/</b> or i got this error <br><div>qemu-syste=
+m-ppc: Could not load PowerPC BIOS &#39;ppc405_rom.bin&#39;<br></div><div>w=
+hen i run this command <br>./ppc-softmmu/qemu-system-ppc -M ref405ep -kerne=
+l /home/marwa/Bureau/lauterbach/powerpc/linux-4.4.1/arch/powerpc/boot/zImag=
+e -initrd /home/marwa/Bureau/lauterbach/powerpc/busybox-1.21.0/rootfs.img.g=
+z -append &quot;root=3D/dev/ram rdinit=3D/bin/sh&quot;<br><br></div><div>an=
+d
+ i have tried all machines available for powerpc in qemu but i got=20
+always one of those three result , i could&#39;t access to the file system<=
+br><br></div><div>any suggestion please<br></div><div>regards,<br></div>Mar=
+wa</div>
 
-int main(void)
-{
-        unsigned long i = ITERATIONS;
-
-        while (i--) {
-                char *c = mmap(NULL, MEMSIZE, PROT_READ|PROT_WRITE,
-                               MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-                assert(c != MAP_FAILED);
-                munmap(c, MEMSIZE);
-        }
-
-        return 0;
-}
+--001a114847dadcf42305340b8a1a--
