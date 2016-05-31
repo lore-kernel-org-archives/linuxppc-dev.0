@@ -1,17 +1,19 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJjKQ0mR6zDqR7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 15:51:21 +1000 (AEST)
-From: Thomas Huth <thuth@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org
-Subject: [PATCH] powerpc/pseries: Add POWER8NVL support to ibm,
- client-architecture-support call
-Date: Tue, 31 May 2016 07:51:17 +0200
-Message-Id: <1464673877-30659-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJk4x10c3zDqXh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 16:25:37 +1000 (AEST)
+Message-ID: <1464675936.30958.22.camel@neuling.org>
+Subject: Re: [PATCH v3 1/2] powerpc/timer - large decrementer support
+From: Michael Neuling <mikey@neuling.org>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Jack Miller <jack@codezen.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 31 May 2016 16:25:36 +1000
+In-Reply-To: <1462856240-20648-1-git-send-email-oohall@gmail.com>
+References: <1462856240-20648-1-git-send-email-oohall@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +23,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we do not provide the PVR for POWER8NVL, a guest on this
-system currently ends up in PowerISA 2.06 compatibility mode on
-KVM, since QEMU does not provide a generic PowerISA 2.07 mode yet.
-So some new instructions from POWER8 (like "mtvsrd") get disabled
-for the guest, resulting in crashes when using code compiled
-explicitly for POWER8 (e.g. with the "-mcpu=power8" option of GCC).
+On Tue, 2016-05-10 at 14:57 +1000, Oliver O'Halloran wrote:
+> POWER ISA v3 adds large decrementer (LD) mode of operation which increase=
+s
+> the size of the decrementer register from 32 bits to an implementation
+> defined with of up to 64 bits.
+>=20
+> This patch adds support for the LD on processors with the CPU_FTR_ARCH_30=
+0
+> cpu feature flag set. For CPUs with this feature LD mode is enabled when
+> when the ibm,dec-bits devicetree property is supplied for the boot CPU. T=
+he
+> decrementer value is a signed quantity (with negative values indicating a
+> pending exception) and this property is required to find the maximum
+> positive decrementer value. If this property is not supplied then the
+> traditional decrementer width of 32 bits is assumed and LD mode is disabl=
+ed.
+>=20
+> This patch was based on initial work by Jack Miller.
+>=20
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Jack Miller <jack@codezen.org>
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- arch/powerpc/kernel/prom_init.c | 1 +
- 1 file changed, 1 insertion(+)
+A couple or minor comments below. =C2=A0
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index da51925..ccd2037 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -656,6 +656,7 @@ unsigned char ibm_architecture_vec[] = {
- 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
- 	W(0xffff0000), W(0x003f0000),	/* POWER7 */
- 	W(0xffff0000), W(0x004b0000),	/* POWER8E */
-+	W(0xffff0000), W(0x004c0000),   /* POWER8NVL */
- 	W(0xffff0000), W(0x004d0000),	/* POWER8 */
- 	W(0xffffffff), W(0x0f000004),	/* all 2.07-compliant */
- 	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
--- 
-1.8.3.1
+I've tested this against v4.7-rc1 in the systemsim p9 model (not public
+yet), with NO_HZ_FULL. From xmon I can see larger dec values being used=C2=
+=A0
+("Sr 16" in xmon).
+
+If you fix the comments below I'm happy to ACK it.
+
+Acked-by: Michael Neuling <mikey@neuling.org>
+
+
+> ---
+> =C2=A0arch/powerpc/include/asm/reg.h=C2=A0=C2=A0|=C2=A0=C2=A01 +
+> =C2=A0arch/powerpc/include/asm/time.h |=C2=A0=C2=A06 +--
+> =C2=A0arch/powerpc/kernel/time.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 92 =
++++++++++++++++++++++++++++++++++++++----
+> =C2=A03 files changed, 89 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
+g.h
+> index f5f4c66bbbc9..ff581ed1ab9d 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -332,6 +332,7 @@
+> =C2=A0#define=C2=A0=C2=A0=C2=A0LPCR_AIL_0	0x00000000	/* MMU off exception=
+ offset 0x0 */
+> =C2=A0#define=C2=A0=C2=A0=C2=A0LPCR_AIL_3	0x01800000	/* MMU on exception =
+offset 0xc00...4xxx */
+> =C2=A0#define=C2=A0=C2=A0=C2=A0LPCR_ONL	0x00040000	/* online - PURR/SPURR=
+ count */
+> +#define=C2=A0=C2=A0=C2=A0LPCR_LD	0x00020000	/* large decremeter */
+> =C2=A0#define=C2=A0=C2=A0=C2=A0LPCR_PECE	0x0001f000	/* powersave exit cau=
+se enable */
+> =C2=A0#define=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0LPCR_PECEDP	0x00010000	/* dire=
+cted priv dbells cause exit */
+> =C2=A0#define=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0LPCR_PECEDH	0x00008000	/* dire=
+cted hyp dbells cause exit */
+> diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/t=
+ime.h
+> index 1092fdd7e737..09211640a0e0 100644
+> --- a/arch/powerpc/include/asm/time.h
+> +++ b/arch/powerpc/include/asm/time.h
+> @@ -146,7 +146,7 @@ static inline void set_tb(unsigned int upper, unsigne=
+d int lower)
+> =C2=A0 * in auto-reload mode.=C2=A0=C2=A0The problem is PIT stops countin=
+g when it
+> =C2=A0 * hits zero.=C2=A0=C2=A0If it would wrap, we could use it just lik=
+e a decrementer.
+> =C2=A0 */
+> -static inline unsigned int get_dec(void)
+> +static inline u64 get_dec(void)
+> =C2=A0{
+> =C2=A0#if defined(CONFIG_40x)
+> =C2=A0	return (mfspr(SPRN_PIT));
+> @@ -160,10 +160,10 @@ static inline unsigned int get_dec(void)
+> =C2=A0 * in when the decrementer generates its interrupt: on the 1 to 0
+> =C2=A0 * transition for Book E/4xx, but on the 0 to -1 transition for oth=
+ers.
+> =C2=A0 */
+> -static inline void set_dec(int val)
+> +static inline void set_dec(u64 val)
+> =C2=A0{
+> =C2=A0#if defined(CONFIG_40x)
+> -	mtspr(SPRN_PIT, val);
+> +	mtspr(SPRN_PIT, (u32) val);
+> =C2=A0#else
+> =C2=A0#ifndef CONFIG_BOOKE
+> =C2=A0	--val;
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 81b0900a39ee..0656e80cadbf 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -95,7 +95,8 @@ static struct clocksource clocksource_timebase =3D {
+> =C2=A0	.read=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=3D tim=
+ebase_read,
+> =C2=A0};
+> =C2=A0
+> -#define DECREMENTER_MAX	0x7fffffff
+> +#define DECREMENTER_DEFAULT_MAX 0x7FFFFFFF
+> +u64 decrementer_max =3D DECREMENTER_DEFAULT_MAX;
+> =C2=A0
+> =C2=A0static int decrementer_set_next_event(unsigned long evt,
+> =C2=A0				=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct clock_event_device *=
+dev);
+> @@ -503,7 +504,7 @@ static void __timer_interrupt(void)
+> =C2=A0		__this_cpu_inc(irq_stat.timer_irqs_event);
+> =C2=A0	} else {
+> =C2=A0		now =3D *next_tb - now;
+> -		if (now <=3D DECREMENTER_MAX)
+> +		if (now <=3D decrementer_max)
+> =C2=A0			set_dec((int)now);
+
+You can remove the int cast here now since set_dec() takes a u64.
+
+> =C2=A0		/* We may have raced with new irq work */
+> =C2=A0		if (test_irq_work_pending())
+> @@ -534,7 +535,7 @@ void timer_interrupt(struct pt_regs * regs)
+> =C2=A0	/* Ensure a positive value is written to the decrementer, or else
+> =C2=A0	=C2=A0* some CPUs will continue to take decrementer exceptions.
+> =C2=A0	=C2=A0*/
+> -	set_dec(DECREMENTER_MAX);
+> +	set_dec(decrementer_max);
+> =C2=A0
+> =C2=A0	/* Some implementations of hotplug will get timer interrupts while
+> =C2=A0	=C2=A0* offline, just ignore these and we also need to set
+> @@ -582,9 +583,9 @@ static void generic_suspend_disable_irqs(void)
+> =C2=A0	=C2=A0* with suspending.
+> =C2=A0	=C2=A0*/
+> =C2=A0
+> -	set_dec(DECREMENTER_MAX);
+> +	set_dec(decrementer_max);
+> =C2=A0	local_irq_disable();
+> -	set_dec(DECREMENTER_MAX);
+> +	set_dec(decrementer_max);
+> =C2=A0}
+> =C2=A0
+> =C2=A0static void generic_suspend_enable_irqs(void)
+> @@ -865,7 +866,7 @@ static int decrementer_set_next_event(unsigned long e=
+vt,
+> =C2=A0
+> =C2=A0static int decrementer_shutdown(struct clock_event_device *dev)
+> =C2=A0{
+> -	decrementer_set_next_event(DECREMENTER_MAX, dev);
+> +	decrementer_set_next_event(decrementer_max, dev);
+> =C2=A0	return 0;
+> =C2=A0}
+> =C2=A0
+> @@ -891,6 +892,76 @@ static void register_decrementer_clockevent(int cpu)
+> =C2=A0	clockevents_register_device(dec);
+> =C2=A0}
+> =C2=A0
+> +static inline bool cpu_has_large_dec(void)
+> +{
+> +	return cpu_has_feature(CPU_FTR_ARCH_300);
+> +}
+> +
+> +static inline bool large_dec_enabled(void)
+> +{
+> +	return (mfspr(SPRN_LPCR) & LPCR_LD) =3D=3D LPCR_LD;
+> +}
+> +
+> +/* enables the large decrementer for the current CPU */
+> +static void enable_large_decrementer(void)
+> +{
+> +	/* do we have a large decrementer? */
+> +	if (!cpu_has_large_dec())
+> +		return;
+> +
+> +	/* do we need a large decrementer? */
+> +	if (decrementer_max <=3D DECREMENTER_DEFAULT_MAX)
+> +		return;
+> +
+> +	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
+> +
+> +	if (!large_dec_enabled()) {
+> +		decrementer_max =3D DECREMENTER_DEFAULT_MAX;
+> +
+> +		pr_warn("time_init: Failed to enable large decrementer on CPU %d\n",
+> +			smp_processor_id());
+
+Can you make this pr_warn_once() since every CPU is going to call this?
+
+> +	}
+> +}
+> +
+> +static void __init set_decrementer_max(void)
+> +{
+> +	struct device_node *cpu;
+> +	const __be32 *fp;
+> +	u64 bits =3D 32;
+> +
+> +	cpu =3D of_find_node_by_type(NULL, "cpu");
+> +	if (cpu)
+> +		fp =3D of_get_property(cpu, "ibm,dec-bits", NULL);
+> +
+> +	if (cpu && fp) {
+> +		u64 dt_bits =3D of_read_number(fp, 1);
+> +
+> +		bits =3D dt_bits;
+> +		if (bits > 64)
+> +			bits =3D 64;
+> +		else if (bits < 32)
+> +			bits =3D 32;
+> +
+> +		WARN(bits !=3D dt_bits, "firmware supplied invalid ibm,dec-bits");
+> +
+> +		/*
+> +		=C2=A0* Firmware says we support large dec but this cpu doesn't we
+> +		=C2=A0* should warn about it. We can still limp along with default
+> +		=C2=A0* 32 bit dec, but something is broken.
+> +		=C2=A0*/
+> +		if (!cpu_has_large_dec()) {
+> +			WARN_ON(bits > 32);
+> +			bits =3D 32;
+> +		}
+> +
+> +		/* calculate the signed maximum given this many bits */
+> +		decrementer_max =3D (1ul << (bits - 1)) - 1;
+> +	}
+> +
+> +	pr_info("time_init: %llu bit decrementer (max: %llx)\n",
+> +		bits, decrementer_max);
+> +}
+> +
+> =C2=A0static void __init init_decrementer_clockevent(void)
+> =C2=A0{
+> =C2=A0	int cpu =3D smp_processor_id();
+> @@ -898,7 +969,7 @@ static void __init init_decrementer_clockevent(void)
+> =C2=A0	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, =
+4);
+> =C2=A0
+> =C2=A0	decrementer_clockevent.max_delta_ns =3D
+> -		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
+> +		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
+> =C2=A0	decrementer_clockevent.min_delta_ns =3D
+> =C2=A0		clockevent_delta2ns(2, &decrementer_clockevent);
+> =C2=A0
+> @@ -907,6 +978,9 @@ static void __init init_decrementer_clockevent(void)
+> =C2=A0
+> =C2=A0void secondary_cpu_time_init(void)
+> =C2=A0{
+> +	/* Enable the large decrementer (if we need to) */
+> +	enable_large_decrementer();
+> +
+> =C2=A0	/* Start the decrementer on CPUs that have manual control
+> =C2=A0	=C2=A0* such as BookE
+> =C2=A0	=C2=A0*/
+> @@ -972,6 +1046,10 @@ void __init time_init(void)
+> =C2=A0	vdso_data->tb_update_count =3D 0;
+> =C2=A0	vdso_data->tb_ticks_per_sec =3D tb_ticks_per_sec;
+> =C2=A0
+> +	/* initialise and enable the large decrementer (if we have one) */
+> +	set_decrementer_max();
+> +	enable_large_decrementer();
+> +
+> =C2=A0	/* Start the decrementer on CPUs that have manual control
+> =C2=A0	=C2=A0* such as BookE
+> =C2=A0	=C2=A0*/
