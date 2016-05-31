@@ -1,21 +1,52 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJr9h2yNszDqjb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 21:00:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJvz75y7DzDqdC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 23:51:15 +1000 (AEST)
+Received: from pps.filterd (m0048827.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u4VDmxNG010501
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 09:51:13 -0400
+Message-Id: <201605311351.u4VDmxNG010501@mx0a-001b2d01.pphosted.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2395qe2xtc-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 09:51:13 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 31 May 2016 05:00:06 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: use _raw variant of page table accessors
-Date: Tue, 31 May 2016 16:29:42 +0530
-Message-Id: <1464692382-29698-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 31 May 2016 23:51:10 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4F1532BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 23:51:07 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u4VDowt78585640
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 23:51:06 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u4VDoVk8025173
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 23:50:32 +1000
+Date: Tue, 31 May 2016 19:20:04 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, mpe@ellerman.id.au
+CC: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
+ linux-kernel@vger.kernel.org, mikey@neuling.org,
+ ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
+ idle states
+References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
+ <574C4DA4.4050100@linaro.org>
+In-Reply-To: <574C4DA4.4050100@linaro.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,400 +56,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This switch few of the page table accessor to use the __raw variant
-and does the cpu to big endian conversion of constants. This helps in
-generating better code.
+Hi Daniel,
 
-For ex: a pgd_none(pgd) check with and without fix is listed below
+On 05/30/2016 07:56 PM, Daniel Lezcano wrote:
+> On 05/24/2016 03:15 PM, Shreyas B. Prabhu wrote:
+>> POWER ISA v3 defines a new idle processor core mechanism. In summary,
+>>   a) new instruction named stop is added.
+>>   b) new per thread SPR named PSSCR is added which controls the behavior
+>>     of stop instruction.
+>>
+>> Supported idle states and value to be written to PSSCR register to enter
+>> any idle state is exposed via ibm,cpu-idle-state-names and
+>> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+>> platform provided power_stop() needs to be invoked with the appropriate
+>> PSSCR value.
+>>
+>> This patch adds support for this new mechanism in cpuidle powernv driver.
+>>
+>> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Paul Mackerras <paulus@ozlabs.org>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+>>   - No changes since v1
+>>
+>>   drivers/cpuidle/cpuidle-powernv.c | 57
+>> ++++++++++++++++++++++++++++++++++++++-
+>>   1 file changed, 56 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c
+>> b/drivers/cpuidle/cpuidle-powernv.c
+>> index e12dc30..efe5221 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -21,6 +21,7 @@
+>>   #include <asm/runlatch.h>
+>>
+>>   #define MAX_POWERNV_IDLE_STATES    8
+>> +#define MAX_IDLE_STATE_NAME_LEN    10
+> 
+> Why not reuse cpuidle constants even if they are slightly different ?
+> 
+> #define CPUIDLE_STATE_MAX       10
+> #define CPUIDLE_NAME_LEN        16
+> 
 
-Without fix:
-------------
-   2240:	20 00 61 eb 	ld      r27,32(r1)
-/* PGD level */
-typedef struct { __be64 pgd; } pgd_t;
-static inline unsigned long pgd_val(pgd_t x)
-{
-	return be64_to_cpu(x.pgd);
+I'll reuse the them.
 
-    2244:	22 00 66 78 	rldicl  r6,r3,32,32
-    2248:	3e 40 7d 54 	rotlwi  r29,r3,8
-    224c:	0e c0 7d 50 	rlwimi  r29,r3,24,0,7
-    2250:	3e 40 c5 54 	rotlwi  r5,r6,8
-    2254:	2e c4 7d 50 	rlwimi  r29,r3,24,16,23
-    2258:	0e c0 c5 50 	rlwimi  r5,r6,24,0,7
-    225c:	2e c4 c5 50 	rlwimi  r5,r6,24,16,23
-    2260:	c6 07 bd 7b 	rldicr  r29,r29,32,31
-    2264:	78 2b bd 7f 	or      r29,r29,r5
-		if (pgd_none(pgd))
-    2268:	00 00 bd 2f 	cmpdi   cr7,r29,0
-    226c:	54 03 9e 41 	beq     cr7,25c0 <__get_user_pages_fast+0x500>
+>>   struct cpuidle_driver powernv_idle_driver = {
+>>       .name             = "powernv_idle",
+>> @@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
+>>
+>>   static int max_idle_state;
+>>   static struct cpuidle_state *cpuidle_state_table;
+>> +
+>> +static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
+>> +
+>>   static u64 snooze_timeout;
+>>   static bool snooze_timeout_en;
+>> -
+>>   static int snooze_loop(struct cpuidle_device *dev,
+>>               struct cpuidle_driver *drv,
+>>               int index)
+>> @@ -139,6 +142,15 @@ static struct notifier_block
+>> setup_hotplug_notifier = {
+>>       .notifier_call = powernv_cpuidle_add_cpu_notifier,
+>>   };
+>>
+>> +static int stop_loop(struct cpuidle_device *dev,
+>> +            struct cpuidle_driver *drv,
+>> +            int index)
+>> +{
+>> +    ppc64_runlatch_off();
+>> +    power_stop(stop_psscr_table[index]);
+>> +    ppc64_runlatch_on();
+>> +    return index;
+>> +}
+>>   /*
+>>    * powernv_cpuidle_driver_init()
+>>    */
+>> @@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
+>>       int nr_idle_states = 1; /* Snooze */
+>>       int dt_idle_states;
+>>       u32 *latency_ns, *residency_ns, *flags;
+>> +    u64 *psscr_val = NULL;
+>> +    const char *names[MAX_POWERNV_IDLE_STATES];
+>>       int i, rc;
+>>
+>>       /* Currently we have snooze statically defined */
+>> @@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
+>>           goto out_free_latency;
+>>       }
+>>
+>> +    rc = of_property_read_string_array(power_mgt,
+>> +        "ibm,cpu-idle-state-names", names, dt_idle_states);
+>> +    if (rc < -1) {
+> 
+> Why < -1 ?
+>
 
-With fix:
----------
-    2370:	20 00 61 eb 	ld      r27,32(r1)
-		if (pgd_none(pgd))
-    2374:	00 00 bd 2f 	cmpdi   cr7,r29,0
-    2378:	a8 03 9e 41 	beq     cr7,2720 <__get_user_pages_fast+0x530>
-			break;
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable-4k.h  |  6 +-
- arch/powerpc/include/asm/book3s/64/pgtable-64k.h |  6 +-
- arch/powerpc/include/asm/book3s/64/pgtable.h     | 99 +++++++++++++++++-------
- arch/powerpc/include/asm/pgtable-be-types.h      | 15 ++++
- 4 files changed, 91 insertions(+), 35 deletions(-)
+Oversight. I'll fix this.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-index 71e9abced493..9db83b4e017d 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-@@ -11,7 +11,7 @@ static inline int pmd_huge(pmd_t pmd)
- 	 * leaf pte for huge page
- 	 */
- 	if (radix_enabled())
--		return !!(pmd_val(pmd) & _PAGE_PTE);
-+		return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
- 	return 0;
- }
- 
-@@ -21,7 +21,7 @@ static inline int pud_huge(pud_t pud)
- 	 * leaf pte for huge page
- 	 */
- 	if (radix_enabled())
--		return !!(pud_val(pud) & _PAGE_PTE);
-+		return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
- 	return 0;
- }
- 
-@@ -31,7 +31,7 @@ static inline int pgd_huge(pgd_t pgd)
- 	 * leaf pte for huge page
- 	 */
- 	if (radix_enabled())
--		return !!(pgd_val(pgd) & _PAGE_PTE);
-+		return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
- 	return 0;
- }
- #define pgd_huge pgd_huge
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-index cb2d0a5fa3f8..0d2845b44763 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-@@ -15,7 +15,7 @@ static inline int pmd_huge(pmd_t pmd)
- 	/*
- 	 * leaf pte for huge page
- 	 */
--	return !!(pmd_val(pmd) & _PAGE_PTE);
-+	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
- }
- 
- static inline int pud_huge(pud_t pud)
-@@ -23,7 +23,7 @@ static inline int pud_huge(pud_t pud)
- 	/*
- 	 * leaf pte for huge page
- 	 */
--	return !!(pud_val(pud) & _PAGE_PTE);
-+	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
- }
- 
- static inline int pgd_huge(pgd_t pgd)
-@@ -31,7 +31,7 @@ static inline int pgd_huge(pgd_t pgd)
- 	/*
- 	 * leaf pte for huge page
- 	 */
--	return !!(pgd_val(pgd) & _PAGE_PTE);
-+	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
- }
- #define pgd_huge pgd_huge
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index cfd114bf8992..71f0d8ead71d 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -317,7 +317,7 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- {
- 	unsigned long old;
- 
--	if ((pte_val(*ptep) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
-+	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
- 		return 0;
- 	old = pte_update(mm, addr, ptep, _PAGE_ACCESSED, 0, 0);
- 	return (old & _PAGE_ACCESSED) != 0;
-@@ -335,8 +335,7 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 				      pte_t *ptep)
- {
--
--	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
-+	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_WRITE)) == 0)
- 		return;
- 
- 	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
-@@ -345,7 +344,7 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 					   unsigned long addr, pte_t *ptep)
- {
--	if ((pte_val(*ptep) & _PAGE_WRITE) == 0)
-+	if ((pte_raw(*ptep) & cpu_to_be64(_PAGE_WRITE)) == 0)
- 		return;
- 
- 	pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
-@@ -364,17 +363,35 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- {
- 	pte_update(mm, addr, ptep, ~0UL, 0, 0);
- }
--static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_WRITE);}
--static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
--static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
--static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
-+
-+static inline int pte_write(pte_t pte)
-+{
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_WRITE));
-+}
-+
-+static inline int pte_dirty(pte_t pte)
-+{
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_DIRTY));
-+}
-+
-+static inline int pte_young(pte_t pte)
-+{
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_ACCESSED));
-+}
-+
-+static inline int pte_special(pte_t pte)
-+{
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_SPECIAL));
-+}
-+
- static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
- 
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
- static inline bool pte_soft_dirty(pte_t pte)
- {
--	return !!(pte_val(pte) & _PAGE_SOFT_DIRTY);
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_SOFT_DIRTY));
- }
-+
- static inline pte_t pte_mksoft_dirty(pte_t pte)
- {
- 	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
-@@ -394,14 +411,14 @@ static inline pte_t pte_clear_soft_dirty(pte_t pte)
-  */
- static inline int pte_protnone(pte_t pte)
- {
--	return (pte_val(pte) & (_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
--		(_PAGE_PRESENT | _PAGE_PRIVILEGED);
-+	return (pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED)) ==
-+		cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED);
- }
- #endif /* CONFIG_NUMA_BALANCING */
- 
- static inline int pte_present(pte_t pte)
- {
--	return !!(pte_val(pte) & _PAGE_PRESENT);
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT));
- }
- /*
-  * Conversion functions: convert a page and protection to a page entry,
-@@ -473,7 +490,7 @@ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- 
- static inline bool pte_user(pte_t pte)
- {
--	return !(pte_val(pte) & _PAGE_PRIVILEGED);
-+	return !(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
- }
- 
- /* Encode and de-code a swap entry */
-@@ -516,10 +533,12 @@ static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
- {
- 	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
- }
-+
- static inline bool pte_swp_soft_dirty(pte_t pte)
- {
--	return !!(pte_val(pte) & _PAGE_SWP_SOFT_DIRTY);
-+	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_SWP_SOFT_DIRTY));
- }
-+
- static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
- {
- 	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
-@@ -626,8 +645,16 @@ static inline void pmd_clear(pmd_t *pmdp)
- 	*pmdp = __pmd(0);
- }
- 
--#define pmd_none(pmd)		(!pmd_val(pmd))
--#define	pmd_present(pmd)	(!pmd_none(pmd))
-+static inline int pmd_none(pmd_t pmd)
-+{
-+	return !pmd_raw(pmd);
-+}
-+
-+static inline int pmd_present(pmd_t pmd)
-+{
-+
-+	return !pmd_none(pmd);
-+}
- 
- static inline int pmd_bad(pmd_t pmd)
- {
-@@ -646,19 +673,26 @@ static inline void pud_clear(pud_t *pudp)
- 	*pudp = __pud(0);
- }
- 
--#define pud_none(pud)		(!pud_val(pud))
--#define pud_present(pud)	(pud_val(pud) != 0)
-+static inline int pud_none(pud_t pud)
-+{
-+	return !pud_raw(pud);
-+}
-+
-+static inline int pud_present(pud_t pud)
-+{
-+	return !pud_none(pud);
-+}
- 
- extern struct page *pud_page(pud_t pud);
- extern struct page *pmd_page(pmd_t pmd);
- static inline pte_t pud_pte(pud_t pud)
- {
--	return __pte(pud_val(pud));
-+	return __pte_raw(pud_raw(pud));
- }
- 
- static inline pud_t pte_pud(pte_t pte)
- {
--	return __pud(pte_val(pte));
-+	return __pud_raw(pte_raw(pte));
- }
- #define pud_write(pud)		pte_write(pud_pte(pud))
- 
-@@ -681,17 +715,24 @@ static inline void pgd_clear(pgd_t *pgdp)
- 	*pgdp = __pgd(0);
- }
- 
--#define pgd_none(pgd)		(!pgd_val(pgd))
--#define pgd_present(pgd)	(!pgd_none(pgd))
-+static inline int pgd_none(pgd_t pgd)
-+{
-+	return !pgd_raw(pgd);
-+}
-+
-+static inline int pgd_present(pgd_t pgd)
-+{
-+	return !pgd_none(pgd);
-+}
- 
- static inline pte_t pgd_pte(pgd_t pgd)
- {
--	return __pte(pgd_val(pgd));
-+	return __pte_raw(pgd_raw(pgd));
- }
- 
- static inline pgd_t pte_pgd(pte_t pte)
- {
--	return __pgd(pte_val(pte));
-+	return __pgd_raw(pte_raw(pte));
- }
- 
- static inline int pgd_bad(pgd_t pgd)
-@@ -783,12 +824,12 @@ struct page *realmode_pfn_to_page(unsigned long pfn);
- 
- static inline pte_t pmd_pte(pmd_t pmd)
- {
--	return __pte(pmd_val(pmd));
-+	return __pte_raw(pmd_raw(pmd));
- }
- 
- static inline pmd_t pte_pmd(pte_t pte)
- {
--	return __pmd(pte_val(pte));
-+	return __pmd_raw(pte_raw(pte));
- }
- 
- static inline pte_t *pmdp_ptep(pmd_t *pmd)
-@@ -849,7 +890,7 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
- 
- static inline int pmd_large(pmd_t pmd)
- {
--	return !!(pmd_val(pmd) & _PAGE_PTE);
-+	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
- }
- 
- static inline pmd_t pmd_mknotpresent(pmd_t pmd)
-@@ -865,7 +906,7 @@ static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
- {
- 	unsigned long old;
- 
--	if ((pmd_val(*pmdp) & (_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
-+	if ((pmd_raw(*pmdp) & cpu_to_be64(_PAGE_ACCESSED | H_PAGE_HASHPTE)) == 0)
- 		return 0;
- 	old = pmd_hugepage_update(mm, addr, pmdp, _PAGE_ACCESSED, 0);
- 	return ((old & _PAGE_ACCESSED) != 0);
-@@ -876,7 +917,7 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
- 				      pmd_t *pmdp)
- {
- 
--	if ((pmd_val(*pmdp) & _PAGE_WRITE) == 0)
-+	if ((pmd_raw(*pmdp) & cpu_to_be64(_PAGE_WRITE)) == 0)
- 		return;
- 
- 	pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
-diff --git a/arch/powerpc/include/asm/pgtable-be-types.h b/arch/powerpc/include/asm/pgtable-be-types.h
-index e2bf208605b1..49c0a5a80efa 100644
---- a/arch/powerpc/include/asm/pgtable-be-types.h
-+++ b/arch/powerpc/include/asm/pgtable-be-types.h
-@@ -6,6 +6,7 @@
- /* PTE level */
- typedef struct { __be64 pte; } pte_t;
- #define __pte(x)	((pte_t) { cpu_to_be64(x) })
-+#define __pte_raw(x)	((pte_t) { (x) })
- static inline unsigned long pte_val(pte_t x)
- {
- 	return be64_to_cpu(x.pte);
-@@ -20,6 +21,7 @@ static inline __be64 pte_raw(pte_t x)
- #ifdef CONFIG_PPC64
- typedef struct { __be64 pmd; } pmd_t;
- #define __pmd(x)	((pmd_t) { cpu_to_be64(x) })
-+#define __pmd_raw(x)	((pmd_t) { (x) })
- static inline unsigned long pmd_val(pmd_t x)
- {
- 	return be64_to_cpu(x.pmd);
-@@ -37,21 +39,34 @@ static inline __be64 pmd_raw(pmd_t x)
- #if defined(CONFIG_PPC_BOOK3S_64) || !defined(CONFIG_PPC_64K_PAGES)
- typedef struct { __be64 pud; } pud_t;
- #define __pud(x)	((pud_t) { cpu_to_be64(x) })
-+#define __pud_raw(x)	((pud_t) { (x) })
- static inline unsigned long pud_val(pud_t x)
- {
- 	return be64_to_cpu(x.pud);
- }
-+
-+static inline __be64 pud_raw(pud_t x)
-+{
-+	return x.pud;
-+}
-+
- #endif /* CONFIG_PPC_BOOK3S_64 || !CONFIG_PPC_64K_PAGES */
- #endif /* CONFIG_PPC64 */
- 
- /* PGD level */
- typedef struct { __be64 pgd; } pgd_t;
- #define __pgd(x)	((pgd_t) { cpu_to_be64(x) })
-+#define __pgd_raw(x)	((pgd_t) { (x) })
- static inline unsigned long pgd_val(pgd_t x)
- {
- 	return be64_to_cpu(x.pgd);
- }
- 
-+static inline __be64 pgd_raw(pgd_t x)
-+{
-+	return x.pgd;
-+}
-+
- /* Page protection bits */
- typedef struct { unsigned long pgprot; } pgprot_t;
- #define pgprot_val(x)	((x).pgprot)
--- 
-2.7.4
+>> +        pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names
+>> in DT\n");
+>> +        goto out_free_latency;
+>> +    }
+>> +
+>> +    if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> 
+> Isn't weird to mix cpu feature and DT bindings check ?
+> 
+
+Hmm. I'll add a compatible node in DT to avoid mixing cpu_has_feature
+check and DT bindings.
+
+>> +        psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
+>> +                    GFP_KERNEL);
+>> +        rc = of_property_read_u64_array(power_mgt,
+>> +            "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
+> 
+> [cc'ed Lorenzo and Rob ]
+> 
+> I don't see the documentation for the binding. Wouldn't make sense to
+> add the value per idle state instead of an index based array ?
+> 
+Existing hardware (POWER7 and POWER8) has been using following dt nodes
+which are arrays-
+ibm,cpu-idle-state-names
+ibm,cpu-idle-state-latencies-ns
+ibm,cpu-idle-state-flags
+ibm,cpu-idle-state-residency-ns
+I extended this design and added ibm,cpu-idle-state-psscr to convey the
+extra information needed for POWER ISA v3.
+
+Down the line it'll probably make better sense to expose these values
+per idle state rather than arrays of individual properties. But I'd like
+to hold off on making that design change yet and wait for more design
+inputs from the platform side.
+
+>> +        if (rc < -1) {
+>> +            pr_warn("cpuidle-powernv: missing
+>> ibm,cpu-idle-states-psscr in DT\n");
+>> +            goto out_free_psscr;
+>> +        }
+>> +    }
+>>       residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states,
+>> GFP_KERNEL);
+>>       rc = of_property_read_u32_array(power_mgt,
+>>           "ibm,cpu-idle-state-residency-ns", residency_ns,
+>> dt_idle_states);
+>> @@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
+>>               powernv_states[nr_idle_states].flags = 0;
+>>               powernv_states[nr_idle_states].target_residency = 100;
+>>               powernv_states[nr_idle_states].enter = &nap_loop;
+>> +        } else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+>> +                !(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+>> +            strncpy(powernv_states[nr_idle_states].name,
+>> +                (char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+> 
+> Why cast names[] to (char *) while strncpy is waiting for const char *,
+> the initial type of names[] ?
+>
+Oversight. Embarrassing one at that. I'll fix it.
+
+>> +            strncpy(powernv_states[nr_idle_states].desc,
+>> +                (char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+>> +            powernv_states[nr_idle_states].flags = 0;
+> 
+> No target_residency specified ?
+> 
+
+target_residency and latency are already specified in the existing code
+outside this if-else block. There is no change in interpreting those nodes.
+
+>> +
+>> +            powernv_states[nr_idle_states].enter = &stop_loop;
+> 
+> s/&stop_loop/stop_loop/
+
+I'll make the change.
+
+Thanks a lot for the review.
+
+-Shreyas
