@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJdY84ql1zDqYc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 13:01:14 +1000 (AEST)
-Message-ID: <1464663620.3078.222.camel@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] powerpc/pseries: Drop support for MPIC in pseries
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rashmica <rashmicy@gmail.com>, mpe@ellerman.id.au, paulus@samba.org,
- nfont@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJf9M52K3zDqYf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 13:29:11 +1000 (AEST)
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 30 May 2016 21:29:09 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@ozlabs.org>,
+ benh@kernel.crashing.org, paulus@samba.org, acsawdey@linux.vnet.ibm.com
 Cc: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 31 May 2016 13:00:20 +1000
-In-Reply-To: <574CEA20.5070809@gmail.com>
-References: <1464589095-442-1-git-send-email-rashmicy@gmail.com>
- <1464593541.3078.192.camel@kernel.crashing.org>
- <574CEA20.5070809@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Subject: Re: [PATCH 3/3] powerpc: Avoid load hit store when using
+ find_linux_pte_or_hugepte()
+In-Reply-To: <1464650992.16938.8.camel@ellerman.id.au>
+References: <1464523432-12605-1-git-send-email-anton@ozlabs.org>
+ <1464523432-12605-3-git-send-email-anton@ozlabs.org>
+ <1464650992.16938.8.camel@ellerman.id.au>
+Date: Tue, 31 May 2016 08:59:01 +0530
+Message-ID: <87k2ia29du.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-05-31 at 11:34 +1000, Rashmica wrote:
-> 
-> On 30/05/16 17:32, Benjamin Herrenschmidt wrote:
-> > 
-> > On Mon, 2016-05-30 at 16:18 +1000, Rashmica Gupta wrote:
-> > > 
-> > > MPIC was only used by Power3 which is now unsupported, so drop support
-> > > for MPIC. XICS is now the only supported interrupt controller for
-> > > pSeries so make the XICS functions generic.
-> > The second half I'm not sure ... XIVE is around the corner...
-> > 
-> > Cheers,
-> > Ben.
-> > 
-> I thought XIVE was replacing XICS? And so then we can just simply 
-> replace all the specific XICS code such as xics_init() and 
-> xics_smp_probe() with the relevant XIVE functions?
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-We still need to boot on P8 that doesn't have XIVE, so we need to
-support both. IE, the same way we had to chose at runtime between MPIC
-and XICS, we'll now have to chose between XICS and XIVE.
+> On Sun, 2016-05-29 at 22:03 +1000, Anton Blanchard wrote:
+>
+>> From: Anton Blanchard <anton@samba.org>
+>> 
+>> In many cases we disable interrupts right before calling
+>> find_linux_pte_or_hugepte().
+>> 
+>> find_linux_pte_or_hugepte() first checks interrupts are disabled
+>> before calling __find_linux_pte_or_hugepte():
+>> 
+>>         if (!arch_irqs_disabled()) {
+>>                 pr_info("%s called with irq enabled\n", __func__);
+>>                 dump_stack();
+>>         }
+>
+> Should that be a VM_WARN_ON()?
+>
 
-> By "make the XICS functions generic" I meant that if there is only one 
-> interrupt controller for pseries then we don't need to have both static 
-> void __init pseries_xics_init_IRQ(void) and static void __init 
-> pSeries_init_IRQ(void), etc.
+VM_WARN_ON() put them inside CONFIG_DEBUG_VM. We should be able to use
+WARN(!arch_irqs_disabled(), "%s called with irq enabled\n", __func__);
 
-There will be two.
-
-Cheers,
-Ben.
+-aneesh
