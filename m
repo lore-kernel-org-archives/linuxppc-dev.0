@@ -1,30 +1,35 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
+ [IPv6:2607:f8b0:4001:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJkh267xmzDqZC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 16:52:34 +1000 (AEST)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 31 May 2016 00:52:32 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@ozlabs.org>,
- benh@kernel.crashing.org, paulus@samba.org, acsawdey@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/3] powerpc: Avoid load hit store when using
- find_linux_pte_or_hugepte()
-In-Reply-To: <1464668290.32478.5.camel@ellerman.id.au>
-References: <1464523432-12605-1-git-send-email-anton@ozlabs.org>
- <1464523432-12605-3-git-send-email-anton@ozlabs.org>
- <1464650992.16938.8.camel@ellerman.id.au>
- <87k2ia29du.fsf@skywalker.in.ibm.com>
- <1464668290.32478.5.camel@ellerman.id.au>
-Date: Tue, 31 May 2016 12:22:22 +0530
-Message-ID: <87eg8i1zyx.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJkm76PZLzDqZC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 16:56:07 +1000 (AEST)
+Received: by mail-io0-x244.google.com with SMTP id l9so3109952ioe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:56:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <20160530203207.GY3451@piout.net>
+References: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
+ <20160530203207.GY3451@piout.net>
+Date: Tue, 31 May 2016 08:56:05 +0200
+Message-ID: <CAMuHMdV5mcKZcBz=v7Pn2pbDiuwMpQYs-70e6NmH6CZ88=JNzA@mail.gmail.com>
+Subject: Re: [PATCH v4 00/16] genrtc removal
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Greg KH <gregkh@linuxfoundation.org>,
+ Helge Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Rich Felker <dalias@libc.org>,
+ David Howells <dhowells@redhat.com>, alpha <linux-alpha@vger.kernel.org>,
+ Alessandro Zummo <a.zummo@towertech.it>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ RTCLINUX <rtc-linux@googlegroups.com>,
+ Linux-Arch <linux-arch@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Allo Alexandre,
 
-> On Tue, 2016-05-31 at 08:59 +0530, Aneesh Kumar K.V wrote:
->> Michael Ellerman <mpe@ellerman.id.au> writes:
->> > On Sun, 2016-05-29 at 22:03 +1000, Anton Blanchard wrote:
->> > > From: Anton Blanchard <anton@samba.org>
->> > > 
->> > > In many cases we disable interrupts right before calling
->> > > find_linux_pte_or_hugepte().
->> > > 
->> > > find_linux_pte_or_hugepte() first checks interrupts are disabled
->> > > before calling __find_linux_pte_or_hugepte():
->> > > 
->> > >         if (!arch_irqs_disabled()) {
->> > >                 pr_info("%s called with irq enabled\n", __func__);
->> > >                 dump_stack();
->> > >         }
->> > 
->> > Should that be a VM_WARN_ON()?
->> > 
->> 
->> VM_WARN_ON() put them inside CONFIG_DEBUG_VM. We should be able to use
+On Mon, May 30, 2016 at 10:32 PM, Alexandre Belloni
+<alexandre.belloni@free-electrons.com> wrote:
+> On 30/05/2016 at 20:57:48 +0200, Arnd Bergmann wrote :
+>> This is the promised resend of the removal of the genrtc driver and some
+>> related code, now that we are at a good time to merge this for the coming
+>> merge window.
+>>
 >
-> Yeah that was my point. Does this still need to be an always-on check, or can
-> we hide it behind CONFIG_DEBUG_VM ?
+> Thanks a lot!
+>
+> I'm applying the series right now so it sits in linux-next for a while
+> before the next merge window.
+>
+> I would still happily take any acks, Reviewed-by or Tested-by tags.
 
-Ok I guess we can move that within a CONFIG_DEBUG_VM #ifdef considering
-we will run with DEBUG_VM enabled once in a while to catch wrong usage. I will get
-a patch to do that.
+Looks like Arnd forgot to include these when reposting:
 
--aneesh
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+For the m68k bits:
+Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
