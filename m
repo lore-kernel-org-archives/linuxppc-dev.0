@@ -1,23 +1,21 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJq3Y43SpzDqdC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 20:09:45 +1000 (AEST)
-Date: Tue, 31 May 2016 20:09:21 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, acsawdey@linux.vnet.ibm.com,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJqCP4Qc2zDqcb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 20:16:33 +1000 (AEST)
+Date: Tue, 31 May 2016 18:16:07 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrea Gelmini <andrea.gelmini@gelma.net>
+Cc: trivial@kernel.org, davem@davemloft.net, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linux-crypto@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc: Avoid load hit store in __giveup_fpu() and
- __giveup_altivec()
-Message-ID: <20160531200921.53a44e15@kryten>
-In-Reply-To: <20160530081552.GA2547@visitor2.iram.es>
-References: <1464523432-12605-1-git-send-email-anton@ozlabs.org>
- <20160530081552.GA2547@visitor2.iram.es>
+Subject: Re: [PATCH 0211/1529] Fix typo
+Message-ID: <20160531101607.GF15376@gondor.apana.org.au>
+References: <20160521120338.10915-1-andrea.gelmini@gelma.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160521120338.10915-1-andrea.gelmini@gelma.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,10 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, May 21, 2016 at 02:03:38PM +0200, Andrea Gelmini wrote:
+> Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
 
-> Huh? Make it an unsigned long please, which is the type of the msr
-> field in struct pt_regs to work on both 32 and 64 bit processors.
-
-Thanks, not sure what I was thinking there. Will respin.
-
-Anton
+Applied.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
