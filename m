@@ -1,42 +1,24 @@
-Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJwxW4N14zDq64
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jun 2016 00:34:54 +1000 (AEST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout2.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8100650PU2EO70@mailout2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 31 May 2016 15:34:50 +0100 (BST)
-Subject: Re: [RFT PATCH 1/2] serial: Fix console setup section mismatch
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-References: <1464704372-17668-1-git-send-email-k.kozlowski@samsung.com>
- <20160531142142.GX19428@n2100.arm.linux.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Tobias Klauser <tklauser@distanz.ch>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, Sonic Zhang <sonic.zhang@analog.com>,
- "Maciej W. Rozycki" <macro@linux-mips.org>, Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>, Andy Gross <andy.gross@linaro.org>,
- David Brown <david.brown@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Barry Song <baohua@kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Tony Prisk <linux@prisktech.co.nz>, Michal Simek <michal.simek@xilinx.com>,
- =?UTF-8?Q?S=c3=b6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
- nios2-dev@lists.rocketboards.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
- linux-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Message-id: <574DA107.8050002@samsung.com>
-Date: Tue, 31 May 2016 16:34:47 +0200
-MIME-version: 1.0
-In-reply-to: <20160531142142.GX19428@n2100.arm.linux.org.uk>
-Content-type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJxPh6HS5zDqc9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jun 2016 00:55:52 +1000 (AEST)
+Date: Tue, 31 May 2016 23:55:38 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: Anju T <anju@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ ananth@in.ibm.com, naveen.n.rao@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ hemant@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com, mhiramat@kernel.org,
+ anjutsudhakar@gmail.com
+Subject: Re: [RFC PATCH v3 2/3] arch/powerpc : optprobes for powerpc core
+Message-Id: <20160531235538.2cddbe49246f5ab3162d879b@kernel.org>
+In-Reply-To: <201605311058.u4VAsdah009164@mx0a-001b2d01.pphosted.com>
+References: <1464692191-1167-1-git-send-email-anju@linux.vnet.ibm.com>
+ <201605311058.u4VAsdah009164@mx0a-001b2d01.pphosted.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,24 +28,410 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2016 04:21 PM, Russell King - ARM Linux wrote:
-> On Tue, May 31, 2016 at 04:19:31PM +0200, Krzysztof Kozlowski wrote:
->> Remove __init annotation from all of console->setup implementations
->> because:
->> 1. The pointer to it is stored in a struct console which is not
->>    marked with __initdata.
->> 2. It is referenced by register_console() from kernel which is not
->>    marked with __init.
+On Tue, 31 May 2016 16:26:30 +0530
+Anju T <anju@linux.vnet.ibm.com> wrote:
+
+> Instructions which can be emulated are suppliants for
+> optimization. Before optimization ensure that the address range
+> between the detour buffer allocated and the instruction being probed
+> is within +/- 32MB.
 > 
-> However, many of these drivers, the console can only be used when the
-> driver is built-in, and register_console() is only called early in
-> initialisation.
+> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/optprobes.c | 351 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 351 insertions(+)
+>  create mode 100644 arch/powerpc/kernel/optprobes.c
+> 
+> diff --git a/arch/powerpc/kernel/optprobes.c b/arch/powerpc/kernel/optprobes.c
+> new file mode 100644
+> index 0000000..c4253b6
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/optprobes.c
+> @@ -0,0 +1,351 @@
+> +/*
+> + * Code for Kernel probes Jump optimization.
+> + *
+> + * Copyright 2016, Anju T, IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#include <linux/kprobes.h>
+> +#include <linux/jump_label.h>
+> +#include <linux/types.h>
+> +#include <linux/slab.h>
+> +#include <linux/list.h>
+> +#include <asm/kprobes.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/cacheflush.h>
+> +#include <asm/code-patching.h>
+> +#include <asm/sstep.h>
+> +
+> +DEFINE_INSN_CACHE_OPS(ppc_optinsn)
+> +
+> +#define TMPL_CALL_HDLR_IDX	\
+> +	(optprobe_template_call_handler - optprobe_template_entry)
+> +#define TMPL_EMULATE_IDX	\
+> +	(optprobe_template_call_emulate - optprobe_template_entry)
+> +#define TMPL_RET_BRANCH_IDX	\
+> +	(optprobe_template_ret_branch - optprobe_template_entry)
+> +#define TMPL_RET_IDX	\
+> +	(optprobe_template_ret - optprobe_template_entry)
+> +#define TMPL_KP_IDX	\
+> +	(optprobe_template_kp_addr - optprobe_template_entry)
+> +#define TMPL_OP1_IDX	\
+> +	(optprobe_template_op_address1 - optprobe_template_entry)
+> +#define TMPL_OP2_IDX	\
+> +	(optprobe_template_op_address2 - optprobe_template_entry)
+> +#define TMPL_INSN_IDX	\
+> +	(optprobe_template_insn - optprobe_template_entry)
+> +#define TMPL_END_IDX	\
+> +	(optprobe_template_end - optprobe_template_entry)
+> +
+> +static unsigned long val_nip;
+> +
+> +static void *__ppc_alloc_insn_page(void)
+> +{
+> +	return &optinsn_slot;
+> +}
+> +
+> +static void *__ppc_free_insn_page(void *page __maybe_unused)
+> +{
+> +	return;
+> +}
 
-Indeed so maybe the word "fix" in commit subject is not proper because
-there might be no error at all. My point is that current solution is a
-little bit non-obvious and an error might happen. If we were sure that
-register_console() is called only from other __init functions, then it
-should be made also __init.
+Hmm, you should not return optinsn_slot twice or more, because
+it actually doesn't allocate memory but just returns reserved
+memory area. So, it should be something like this;
 
-Best regards,
-Krzysztof
+static bool insn_page_in_use;
+
+static void *__ppc_alloc_insn_page(void)
+{
+	if (insn_page_in_use)
+		return NULL;
+	insn_page_in_use = true;
+	return &optinsn_slot;
+}
+
+static void *__ppc_free_insn_page(void *page __maybe_unused)
+{
+	insn_page_in_use = false;
+}
+
+
+> +
+> +struct kprobe_insn_cache kprobe_ppc_optinsn_slots = {
+> +	.mutex = __MUTEX_INITIALIZER(kprobe_ppc_optinsn_slots.mutex),
+> +	.pages = LIST_HEAD_INIT(kprobe_ppc_optinsn_slots.pages),
+> +	/* insn_size initialized later */
+> +	.alloc = __ppc_alloc_insn_page,
+> +	.free = __ppc_free_insn_page,
+> +	.nr_garbage = 0,
+> +};
+> +
+> +kprobe_opcode_t *ppc_get_optinsn_slot(struct optimized_kprobe *op)
+> +{
+> +	/*
+> +	 * The insn slot is allocated from the reserved
+> +	 * area(ie &optinsn_slot).We are not optimizing probes
+> +	 * at module_addr now.
+> +	 */
+> +	kprobe_opcode_t *slot = NULL;
+> +
+> +	if (is_kernel_addr(op->kp.addr))
+> +		slot = get_ppc_optinsn_slot();
+> +	return slot;
+> +}
+> +
+> +static void ppc_free_optinsn_slot(struct optimized_kprobe *op)
+> +{
+> +	if (!op->optinsn.insn)
+> +		return;
+> +	if (is_kernel_addr((unsigned long)op->kp.addr))
+> +		free_ppc_optinsn_slot(op->optinsn.insn, 0);
+> +}
+> +
+> +static void
+> +__arch_remove_optimized_kprobe(struct optimized_kprobe *op, int dirty)
+> +{
+> +	ppc_free_optinsn_slot(op);
+> +	op->optinsn.insn = NULL;
+> +}
+> +
+> +static int can_optimize(struct kprobe *p)
+> +{
+> +	struct pt_regs *regs;
+> +	unsigned int instr;
+> +	int r;
+> +
+> +	/*
+> +	 * Not optimizing the kprobe placed by
+> +	 * kretprobe during boot time
+> +	 */
+> +	if ((kprobe_opcode_t)p->addr == (kprobe_opcode_t)&kretprobe_trampoline)
+> +		return 0;
+> +
+> +	regs = kmalloc(sizeof(*regs), GFP_KERNEL);
+> +	if (!regs)
+> +		return -ENOMEM;
+> +	memset(regs, 0, sizeof(struct pt_regs));
+> +	memcpy(regs, current_pt_regs(), sizeof(struct pt_regs));
+> +	regs->nip = p->addr;
+> +	instr = *(p->ainsn.insn);
+> +
+> +	/* Ensure the instruction can be emulated*/
+> +	r = emulate_step(regs, instr);
+> +	val_nip = regs->nip;
+> +	if (r != 1)
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
+> +static void
+> +create_return_branch(struct optimized_kprobe *op, struct pt_regs *regs)
+> +{
+> +	/*
+> +	 * Create a branch back to the return address
+> +	 * after the probed instruction is emulated
+> +	 */
+> +
+> +	kprobe_opcode_t branch, *buff;
+> +	unsigned long ret;
+> +
+> +	ret = regs->nip;
+> +	buff = op->optinsn.insn;
+> +	/*
+> +	 * TODO: For conditional branch instructions, the return
+> +	 * address may differ in SMP systems.This has to be addressed.
+> +	 */
+> +
+> +	branch = create_branch((unsigned int *)buff + TMPL_RET_IDX,
+> +			       (unsigned long)ret, 0);
+> +	buff[TMPL_RET_IDX] = branch;
+> +	isync();
+> +}
+> +
+> +static void
+> +optimized_callback(struct optimized_kprobe *op, struct pt_regs *regs)
+> +{
+> +	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +
+> +	if (kprobe_running())
+> +		kprobes_inc_nmissed_count(&op->kp);
+> +	else {
+> +		__this_cpu_write(current_kprobe, &op->kp);
+> +		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+> +		opt_pre_handler(&op->kp, regs);
+> +		__this_cpu_write(current_kprobe, NULL);
+> +	}
+> +	local_irq_restore(flags);
+> +}
+> +NOKPROBE_SYMBOL(optimized_callback);
+> +
+> +void arch_remove_optimized_kprobe(struct optimized_kprobe *op)
+> +{
+> +	 __arch_remove_optimized_kprobe(op, 1);
+> +}
+> +
+> +void  create_insn(unsigned int insn, kprobe_opcode_t *addr)
+> +{
+> +	u32 instr, instr2;
+> +
+> +	/*
+> +	 * emulate_step() requires insn to be emulated as
+> +	 * second parameter. Hence r4 should be loaded
+> +	 * with 'insn'.
+> +	 * synthesize addis r4,0,(insn)@h
+> +	 */
+> +	instr = 0x3c000000 | 0x800000 | ((insn >> 16) & 0xffff);
+> +	*addr++ = instr;
+> +
+> +	/* ori r4,r4,(insn)@l */
+> +	instr2 = 0x60000000 | 0x40000 | 0x800000;
+> +	instr2 = instr2 | (insn & 0xffff);
+> +	*addr = instr2;
+> +}
+> +
+> +void create_load_address_insn(unsigned long val, kprobe_opcode_t *addr)
+> +{
+> +	u32 instr1, instr2, instr3, instr4, instr5;
+> +	/*
+> +	 * Optimized_kprobe structure is required as a parameter
+> +	 * for invoking optimized_callback() and create_return_branch()
+> +	 * from detour buffer. Hence need to have a 64bit immediate
+> +	 * load into r3.
+> +	 *
+> +	 * lis r3,(op)@highest
+> +	 */
+> +	instr1 = 0x3c000000 | 0x600000 | ((val >> 48) & 0xffff);
+> +	*addr++ = instr1;
+> +
+> +	/* ori r3,r3,(op)@higher */
+> +	instr2 = 0x60000000 | 0x30000 | 0x600000 | ((val >> 32) & 0xffff);
+> +	*addr++ = instr2;
+> +
+> +	/* rldicr r3,r3,32,31 */
+> +	instr3 = 0x78000004 | 0x30000 | 0x600000 | ((32 & 0x1f) << 11);
+> +	instr3 = instr3 | ((31 & 0x1f) << 6) | ((32 & 0x20) >> 4);
+> +	*addr++ = instr3;
+> +
+> +	/* oris r3,r3,(op)@h */
+> +	instr4 = 0x64000000 |  0x30000 | 0x600000 | ((val >> 16) & 0xffff);
+> +	*addr++ = instr4;
+> +
+> +	/* ori r3,r3,(op)@l */
+> +	instr5 =  0x60000000 | 0x30000 | 0x600000 | (val & 0xffff);
+> +	*addr = instr5;
+> +}
+> +
+> +int arch_prepare_optimized_kprobe(struct optimized_kprobe *op, struct kprobe *p)
+> +{
+> +	kprobe_opcode_t *buff, branch, branch2, branch3;
+> +	long rel_chk, ret_chk;
+> +
+> +	kprobe_ppc_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+> +	op->optinsn.insn = NULL;
+> +
+> +	if (!can_optimize(p))
+> +		return -EILSEQ;
+> +
+> +	/* Allocate instruction slot for detour buffer*/
+> +	buff = ppc_get_optinsn_slot(op);
+> +	if (!buff)
+> +		return -ENOMEM;
+> +
+> +	/*
+> +	 * OPTPROBE use a 'b' instruction to branch to optinsn.insn.
+> +	 *
+> +	 * The target address has to be relatively nearby, to permit use
+> +	 * of branch instruction in powerpc because the address is specified
+> +	 * in an immediate field in the instruction opcode itself, ie 24 bits
+> +	 * in the opcode specify the address. Therefore the address gap should
+> +	 * be 32MB on either side of the current instruction.
+> +	 */
+> +	rel_chk = (long)buff - (unsigned long)p->addr;
+> +	if (rel_chk < -0x2000000 || rel_chk > 0x1fffffc || rel_chk & 0x3) {
+> +		ppc_free_optinsn_slot(op);
+> +		return -ERANGE;
+> +	}
+> +	/* Check the return address is also within 32MB range */
+> +	ret_chk = (long)(buff + TMPL_RET_IDX) - (unsigned long)val_nip;
+
+No, please don't pass the "regs->nip" via hidden channel like as this val_nip
+static local variable. Instead, you should run emulate_step() again here,
+or, at least you must keep the address and compare it. I recommend former.
+
+
+Thank you,
+
+> +	if (ret_chk < -0x2000000 || ret_chk > 0x1fffffc || ret_chk & 0x3) {
+> +		ppc_free_optinsn_slot(op);
+> +		return -ERANGE;
+> +	}
+> +
+> +	/* Do Copy arch specific instance from template*/
+> +	memcpy(buff, optprobe_template_entry,
+> +	       TMPL_END_IDX * sizeof(kprobe_opcode_t));
+> +	create_load_address_insn((unsigned long)p->addr, buff + TMPL_KP_IDX);
+> +	create_load_address_insn((unsigned long)op, buff + TMPL_OP1_IDX);
+> +	create_load_address_insn((unsigned long)op, buff + TMPL_OP2_IDX);
+> +
+> +	/* Create a branch to the optimized_callback function */
+> +	branch = create_branch((unsigned int *)buff + TMPL_CALL_HDLR_IDX,
+> +			       (unsigned long)optimized_callback + 8,
+> +				BRANCH_SET_LINK);
+> +
+> +	/* Place the branch instr into the trampoline */
+> +	buff[TMPL_CALL_HDLR_IDX] = branch;
+> +	create_insn(*(p->ainsn.insn), buff + TMPL_INSN_IDX);
+> +
+> +	/*Create a branch instruction into the emulate_step*/
+> +	branch3 = create_branch((unsigned int *)buff + TMPL_EMULATE_IDX,
+> +				(unsigned long)emulate_step + 8,
+> +				BRANCH_SET_LINK);
+> +	buff[TMPL_EMULATE_IDX] = branch3;
+> +
+> +	/* Create a branch for jumping back*/
+> +	branch2 = create_branch((unsigned int *)buff + TMPL_RET_BRANCH_IDX,
+> +				(unsigned long)create_return_branch + 8,
+> +				BRANCH_SET_LINK);
+> +	buff[TMPL_RET_BRANCH_IDX] = branch2;
+> +
+> +	op->optinsn.insn = buff;
+> +	smp_mb();
+> +	return 0;
+> +}
+> +
+> +int arch_prepared_optinsn(struct arch_optimized_insn *optinsn)
+> +{
+> +	return optinsn->insn;
+> +}
+> +
+> +/*
+> + * Here,kprobe opt always replace one instruction (4 bytes
+> + * aligned and 4 bytes long). It is impossible to encounter another
+> + * kprobe in the address range. So always return 0.
+> + */
+> +int arch_check_optimized_kprobe(struct optimized_kprobe *op)
+> +{
+> +	return 0;
+> +}
+> +
+> +void arch_optimize_kprobes(struct list_head *oplist)
+> +{
+> +	struct optimized_kprobe *op;
+> +	struct optimized_kprobe *tmp;
+> +
+> +	unsigned int branch;
+> +
+> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+> +		/*
+> +		 * Backup instructions which will be replaced
+> +		 *by jump address
+> +		 */
+> +		memcpy(op->optinsn.copied_insn, op->kp.addr,
+> +		       RELATIVEJUMP_SIZE);
+> +		branch = create_branch((unsigned int *)op->kp.addr,
+> +					(unsigned long)op->optinsn.insn, 0);
+> +		*op->kp.addr = branch;
+> +		list_del_init(&op->list);
+> +	}
+> +}
+> +
+> +void arch_unoptimize_kprobe(struct optimized_kprobe *op)
+> +{
+> +	arch_arm_kprobe(&op->kp);
+> +}
+> +
+> +void arch_unoptimize_kprobes(struct list_head *oplist,
+> +			     struct list_head *done_list)
+> +{
+> +	struct optimized_kprobe *op;
+> +	struct optimized_kprobe *tmp;
+> +
+> +	list_for_each_entry_safe(op, tmp, oplist, list) {
+> +		arch_unoptimize_kprobe(op);
+> +		list_move(&op->list, done_list);
+> +	}
+> +}
+> +
+> +int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+> +				 unsigned long addr)
+> +{
+> +	return 0;
+> +}
+> -- 
+> 2.1.0
+> 
+
+
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
