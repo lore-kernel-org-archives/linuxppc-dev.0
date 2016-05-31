@@ -1,23 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJk6L3tZhzDqZC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 16:26:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJkh267xmzDqZC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 16:52:34 +1000 (AEST)
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 31 May 2016 00:26:48 -0600
+ Tue, 31 May 2016 00:52:32 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 3/3] powerpc/mm/radix: Add missing tlb flush
-Date: Tue, 31 May 2016 11:56:31 +0530
-Message-Id: <1464675991-13023-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1464675991-13023-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1464675991-13023-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@ozlabs.org>,
+ benh@kernel.crashing.org, paulus@samba.org, acsawdey@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 3/3] powerpc: Avoid load hit store when using
+ find_linux_pte_or_hugepte()
+In-Reply-To: <1464668290.32478.5.camel@ellerman.id.au>
+References: <1464523432-12605-1-git-send-email-anton@ozlabs.org>
+ <1464523432-12605-3-git-send-email-anton@ozlabs.org>
+ <1464650992.16938.8.camel@ellerman.id.au>
+ <87k2ia29du.fsf@skywalker.in.ibm.com>
+ <1464668290.32478.5.camel@ellerman.id.au>
+Date: Tue, 31 May 2016 12:22:22 +0530
+Message-ID: <87eg8i1zyx.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This should not have any impact on hash, because hash does tlb
-invalidate with every pte update and we don't implement
-flush_tlb_* functions for hash. With radix we should make an explicit
-call to flush tlb outside pte update.
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/pgtable-book3s64.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+> On Tue, 2016-05-31 at 08:59 +0530, Aneesh Kumar K.V wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> > On Sun, 2016-05-29 at 22:03 +1000, Anton Blanchard wrote:
+>> > > From: Anton Blanchard <anton@samba.org>
+>> > > 
+>> > > In many cases we disable interrupts right before calling
+>> > > find_linux_pte_or_hugepte().
+>> > > 
+>> > > find_linux_pte_or_hugepte() first checks interrupts are disabled
+>> > > before calling __find_linux_pte_or_hugepte():
+>> > > 
+>> > >         if (!arch_irqs_disabled()) {
+>> > >                 pr_info("%s called with irq enabled\n", __func__);
+>> > >                 dump_stack();
+>> > >         }
+>> > 
+>> > Should that be a VM_WARN_ON()?
+>> > 
+>> 
+>> VM_WARN_ON() put them inside CONFIG_DEBUG_VM. We should be able to use
+>
+> Yeah that was my point. Does this still need to be an always-on check, or can
+> we hide it behind CONFIG_DEBUG_VM ?
 
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index eb4451144746..670318766545 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -33,10 +33,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 	changed = !pmd_same(*(pmdp), entry);
- 	if (changed) {
- 		__ptep_set_access_flags(pmdp_ptep(pmdp), pmd_pte(entry));
--		/*
--		 * Since we are not supporting SW TLB systems, we don't
--		 * have any thing similar to flush_tlb_page_nohash()
--		 */
-+		flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
- 	}
- 	return changed;
- }
--- 
-2.7.4
+Ok I guess we can move that within a CONFIG_DEBUG_VM #ifdef considering
+we will run with DEBUG_VM enabled once in a while to catch wrong usage. I will get
+a patch to do that.
+
+-aneesh
