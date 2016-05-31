@@ -1,21 +1,22 @@
 Return-Path: <oohall@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJlDr2D4LzDqbZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 17:17:32 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id gp3so17151615pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 00:17:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJlDy2nYhzDqfM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 17:17:38 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id gp3so17151994pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 00:17:38 -0700 (PDT)
 From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>, Michael Neuling <mikey@neuling.org>,
- Balbir Singh <bsingharora@gmail.com>, Jack Miller <jack@codezen.org>
-Subject: [PATCH 1/2] powerpc/timer - large decrementer support
-Date: Tue, 31 May 2016 17:16:55 +1000
-Message-Id: <1464679016-10347-1-git-send-email-oohall@gmail.com>
-In-Reply-To: <1464675936.30958.22.camel@neuling.org>
+Cc: Oliver O'Halloran <oohall@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Neuling <mikey@neuling.org>
+Subject: [PATCH 2/2] KVM: PPC: hypervisor large decrementer support
+Date: Tue, 31 May 2016 17:16:56 +1000
+Message-Id: <1464679016-10347-2-git-send-email-oohall@gmail.com>
+In-Reply-To: <1464679016-10347-1-git-send-email-oohall@gmail.com>
 References: <1464675936.30958.22.camel@neuling.org>
+ <1464679016-10347-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,229 +26,274 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER ISA v3 adds large decrementer (LD) mode of operation which increases
-the size of the decrementer register from 32 bits to an implementation
-defined with of up to 64 bits.
+Power ISAv3 extends the width of the decrementer register from 32 bits.
+The enlarged register width is implementation dependent, but reads from
+these registers are automatically sign extended to produce a 64 bit
+output when operating in large mode. The HDEC always operates in large
+mode while the DEC register can be operated in 32bit mode or large mode
+depending on the setting of the LPCR.LD bit.
 
-This patch adds support for the LD on processors with the CPU_FTR_ARCH_300
-cpu feature flag set. For CPUs with this feature LD mode is enabled when
-when the ibm,dec-bits devicetree property is supplied for the boot CPU. The
-decrementer value is a signed quantity (with negative values indicating a
-pending exception) and this property is required to find the maximum
-positive decrementer value. If this property is not supplied then the
-traditional decrementer width of 32 bits is assumed and LD mode is disabled.
+Currently the hypervisor assumes that reads from the DEC and HDEC
+register produce a 32 bit result which it sign extends to 64 bits using
+the extsw instruction. This behaviour can result in the guest DEC
+register value being corrupted by the hypervisor when the guest is
+operating in LD mode since the results of the extsw instruction only
+depends on the value of bit 31 in the register to be sign extended.
 
-This patch was based on initial work by Jack Miller.
+This patch adds the GET_DEC() and GET_HDEC() assembly macros for reading
+from the decrementer registers. These macros will return the current
+decrementer value as a 64 bit quantity regardless of the Host CPU or
+guest decrementer operating mode. Additionally this patch corrects
+several uses of decrementer values that assume a 32 bit register width.
 
 Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Michael Neuling <mikey@neuling.org>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Jack Miller <jack@codezen.org>
 ---
- arch/powerpc/include/asm/reg.h  |  1 +
- arch/powerpc/include/asm/time.h |  6 +--
- arch/powerpc/kernel/time.c      | 94 +++++++++++++++++++++++++++++++++++++----
- 3 files changed, 90 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h | 29 ++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_host.h      |  2 +-
+ arch/powerpc/include/asm/kvm_ppc.h       |  2 +-
+ arch/powerpc/include/uapi/asm/kvm.h      |  2 +-
+ arch/powerpc/kvm/book3s_hv_interrupts.S  |  3 +--
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 38 ++++++++++++++++++--------------
+ arch/powerpc/kvm/emulate.c               |  6 ++---
+ 7 files changed, 57 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index c1e82e968506..2793f3f03f9b 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -332,6 +332,7 @@
- #define   LPCR_AIL_0	0x00000000	/* MMU off exception offset 0x0 */
- #define   LPCR_AIL_3	0x01800000	/* MMU on exception offset 0xc00...4xxx */
- #define   LPCR_ONL	0x00040000	/* online - PURR/SPURR count */
-+#define   LPCR_LD	0x00020000	/* large decremeter */
- #define   LPCR_PECE	0x0001f000	/* powersave exit cause enable */
- #define     LPCR_PECEDP	0x00010000	/* directed priv dbells cause exit */
- #define     LPCR_PECEDH	0x00008000	/* directed hyp dbells cause exit */
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 1092fdd7e737..09211640a0e0 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -146,7 +146,7 @@ static inline void set_tb(unsigned int upper, unsigned int lower)
-  * in auto-reload mode.  The problem is PIT stops counting when it
-  * hits zero.  If it would wrap, we could use it just like a decrementer.
-  */
--static inline unsigned int get_dec(void)
-+static inline u64 get_dec(void)
- {
- #if defined(CONFIG_40x)
- 	return (mfspr(SPRN_PIT));
-@@ -160,10 +160,10 @@ static inline unsigned int get_dec(void)
-  * in when the decrementer generates its interrupt: on the 1 to 0
-  * transition for Book E/4xx, but on the 0 to -1 transition for others.
-  */
--static inline void set_dec(int val)
-+static inline void set_dec(u64 val)
- {
- #if defined(CONFIG_40x)
--	mtspr(SPRN_PIT, val);
-+	mtspr(SPRN_PIT, (u32) val);
- #else
- #ifndef CONFIG_BOOKE
- 	--val;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 3ed9a5a21d77..fe66f1c8d8b2 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -96,7 +96,8 @@ static struct clocksource clocksource_timebase = {
- 	.read         = timebase_read,
- };
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 93ae809fe5ea..4fa303bf6d5b 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -545,4 +545,33 @@ END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
+ #define FINISH_NAP
+ #endif
  
--#define DECREMENTER_MAX	0x7fffffff
-+#define DECREMENTER_DEFAULT_MAX 0x7FFFFFFF
-+u64 decrementer_max = DECREMENTER_DEFAULT_MAX;
++/*
++ * On ISAv3 processors the DEC register can be extended from 32 bits to 64 by
++ * setting the LD flag the LPCR. The decrementer value is a signed quantity so
++ * sign exension is required when operating in 32 bit mode. The GET_DEC() and
++ * GET_HDEC() handle this sign extension and yield a 64 bit result independent
++ * of the LD mode.
++ *
++ * NB: It's possible run with LD mode disabled on ISAv3 so GET_DEC() does not
++ *     use a CPU_FEATURE section. A feature section is used for GET_HDEC because
++ *     it has no mode bit. It is always 64 bits for ISAv3 processors.
++ */
++
++#define IS_LD_ENABLED(reg)                 \
++	mfspr  reg,SPRN_LPCR;              \
++	andis. reg,reg,(LPCR_LD >> 16);
++
++#define GET_DEC(reg)                       \
++	IS_LD_ENABLED(reg);                \
++	mfspr reg, SPRN_DEC;               \
++	bne 99f;                           \
++	extsw reg, reg;                    \
++99:
++
++#define GET_HDEC(reg) \
++	mfspr reg, SPRN_HDEC;           \
++BEGIN_FTR_SECTION                       \
++	extsw reg, reg;                 \
++END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
++
+ #endif	/* _ASM_POWERPC_EXCEPTION_H */
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index ec35af34a3fb..ddea233e2cce 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -520,7 +520,7 @@ struct kvm_vcpu_arch {
+ 	ulong mcsrr0;
+ 	ulong mcsrr1;
+ 	ulong mcsr;
+-	u32 dec;
++	u64 dec;
+ #ifdef CONFIG_BOOKE
+ 	u32 decar;
+ #endif
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 2544edabe7f3..4de0102930e9 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -94,7 +94,7 @@ extern int kvmppc_emulate_instruction(struct kvm_run *run,
+ extern int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu);
+ extern int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu);
+ extern void kvmppc_emulate_dec(struct kvm_vcpu *vcpu);
+-extern u32 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb);
++extern u64 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb);
+ extern void kvmppc_decrementer_func(struct kvm_vcpu *vcpu);
+ extern int kvmppc_sanity_check(struct kvm_vcpu *vcpu);
+ extern int kvmppc_subarch_vcpu_init(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index c93cf35ce379..2dd92e841127 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -215,7 +215,7 @@ struct kvm_sregs {
+ 			__u32 tsr;	/* KVM_SREGS_E_UPDATE_TSR */
+ 			__u32 tcr;
+ 			__u32 decar;
+-			__u32 dec;	/* KVM_SREGS_E_UPDATE_DEC */
++			__u64 dec;	/* KVM_SREGS_E_UPDATE_DEC */
  
- static int decrementer_set_next_event(unsigned long evt,
- 				      struct clock_event_device *dev);
-@@ -504,8 +505,8 @@ static void __timer_interrupt(void)
- 		__this_cpu_inc(irq_stat.timer_irqs_event);
- 	} else {
- 		now = *next_tb - now;
--		if (now <= DECREMENTER_MAX)
--			set_dec((int)now);
-+		if (now <= decrementer_max)
-+			set_dec(now);
- 		/* We may have raced with new irq work */
- 		if (test_irq_work_pending())
- 			set_dec(1);
-@@ -535,7 +536,7 @@ void timer_interrupt(struct pt_regs * regs)
- 	/* Ensure a positive value is written to the decrementer, or else
- 	 * some CPUs will continue to take decrementer exceptions.
+ 			/*
+ 			 * Userspace can read TB directly, but the
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 0fdc4a28970b..b408f72385e4 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -121,10 +121,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	 * Put whatever is in the decrementer into the
+ 	 * hypervisor decrementer.
  	 */
--	set_dec(DECREMENTER_MAX);
-+	set_dec(decrementer_max);
+-	mfspr	r8,SPRN_DEC
++	GET_DEC(r8)
+ 	mftb	r7
+ 	mtspr	SPRN_HDEC,r8
+-	extsw	r8,r8
+ 	add	r8,r8,r7
+ 	std	r8,HSTATE_DECEXP(r13)
  
- 	/* Some implementations of hotplug will get timer interrupts while
- 	 * offline, just ignore these and we also need to set
-@@ -583,9 +584,9 @@ static void generic_suspend_disable_irqs(void)
- 	 * with suspending.
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index e571ad277398..718e5581494e 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -183,6 +183,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ kvmppc_primary_no_guest:
+ 	/* We handle this much like a ceded vcpu */
+ 	/* put the HDEC into the DEC, since HDEC interrupts don't wake us */
++
++	/* XXX: ISA v3 only says the HDEC is at least as large as the DEC, but
++	 *      this code assumes we can fit HDEC in DEC. This is probably
++	 *      not an issue in practice, but... */
+ 	mfspr	r3, SPRN_HDEC
+ 	mtspr	SPRN_DEC, r3
+ 	/*
+@@ -249,9 +253,9 @@ kvm_novcpu_wakeup:
+ 	bge	kvm_novcpu_exit
+ 
+ 	/* See if our timeslice has expired (HDEC is negative) */
+-	mfspr	r0, SPRN_HDEC
++	GET_HDEC(r0);
+ 	li	r12, BOOK3S_INTERRUPT_HV_DECREMENTER
+-	cmpwi	r0, 0
++	cmpdi	r0, 0
+ 	blt	kvm_novcpu_exit
+ 
+ 	/* Got an IPI but other vcpus aren't yet exiting, must be a latecomer */
+@@ -340,8 +344,9 @@ kvm_secondary_got_guest:
+ 	lbz	r4, HSTATE_PTID(r13)
+ 	cmpwi	r4, 0
+ 	bne	63f
+-	lis	r6, 0x7fff
+-	ori	r6, r6, 0xffff
++
++	LOAD_REG_ADDR(r6, decrementer_max);
++	ld	r6,0(r6);
+ 	mtspr	SPRN_HDEC, r6
+ 	/* and set per-LPAR registers, if doing dynamic micro-threading */
+ 	ld	r6, HSTATE_SPLIT_MODE(r13)
+@@ -897,7 +902,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mftb	r7
+ 	subf	r3,r7,r8
+ 	mtspr	SPRN_DEC,r3
+-	stw	r3,VCPU_DEC(r4)
++	std	r3,VCPU_DEC(r4)
+ 
+ 	ld	r5, VCPU_SPRG0(r4)
+ 	ld	r6, VCPU_SPRG1(r4)
+@@ -953,8 +958,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	isync
+ 
+ 	/* Check if HDEC expires soon */
+-	mfspr	r3, SPRN_HDEC
+-	cmpwi	r3, 512		/* 1 microsecond */
++	GET_HDEC(r3)
++	cmpdi	r3, 512		/* 1 microsecond */
+ 	blt	hdec_soon
+ 
+ 	ld	r6, VCPU_CTR(r4)
+@@ -990,8 +995,9 @@ deliver_guest_interrupt:
+ 	beq	5f
+ 	li	r0, BOOK3S_INTERRUPT_EXTERNAL
+ 	bne	cr1, 12f
+-	mfspr	r0, SPRN_DEC
+-	cmpwi	r0, 0
++
++	GET_DEC(r0)
++	cmpdi	r0, 0
+ 	li	r0, BOOK3S_INTERRUPT_DECREMENTER
+ 	bge	5f
+ 
+@@ -1206,8 +1212,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	/* See if this is a leftover HDEC interrupt */
+ 	cmpwi	r12,BOOK3S_INTERRUPT_HV_DECREMENTER
+ 	bne	2f
+-	mfspr	r3,SPRN_HDEC
+-	cmpwi	r3,0
++	GET_HDEC(r3);
++	cmpdi	r3,0
+ 	mr	r4,r9
+ 	bge	fast_guest_return
+ 2:
+@@ -1326,9 +1332,8 @@ mc_cont:
+ 	mtspr	SPRN_SPURR,r4
+ 
+ 	/* Save DEC */
+-	mfspr	r5,SPRN_DEC
++	GET_DEC(r5);
+ 	mftb	r6
+-	extsw	r5,r5
+ 	add	r5,r5,r6
+ 	/* r5 is a guest timebase value here, convert to host TB */
+ 	ld	r3,HSTATE_KVM_VCORE(r13)
+@@ -2250,15 +2255,14 @@ _GLOBAL(kvmppc_h_cede)		/* r3 = vcpu pointer, r11 = msr, r13 = paca */
+ 	 * no later than the end of our timeslice (HDEC interrupts
+ 	 * don't wake us from nap).
  	 */
+-	mfspr	r3, SPRN_DEC
+-	mfspr	r4, SPRN_HDEC
++	GET_DEC(r3);
++	GET_HDEC(r4);
+ 	mftb	r5
+-	cmpw	r3, r4
++	cmpd	r3, r4
+ 	ble	67f
+ 	mtspr	SPRN_DEC, r4
+ 67:
+ 	/* save expiry time of guest decrementer */
+-	extsw	r3, r3
+ 	add	r3, r3, r5
+ 	ld	r4, HSTATE_KVM_VCPU(r13)
+ 	ld	r5, HSTATE_KVM_VCORE(r13)
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index 5cc2e7af3a7b..5d065c04f2d5 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -39,7 +39,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	unsigned long dec_nsec;
+ 	unsigned long long dec_time;
  
--	set_dec(DECREMENTER_MAX);
-+	set_dec(decrementer_max);
- 	local_irq_disable();
--	set_dec(DECREMENTER_MAX);
-+	set_dec(decrementer_max);
+-	pr_debug("mtDEC: %x\n", vcpu->arch.dec);
++	pr_debug("mtDEC: %llx\n", vcpu->arch.dec);
+ 	hrtimer_try_to_cancel(&vcpu->arch.dec_timer);
+ 
+ #ifdef CONFIG_PPC_BOOK3S
+@@ -47,7 +47,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	kvmppc_core_dequeue_dec(vcpu);
+ 
+ 	/* POWER4+ triggers a dec interrupt if the value is < 0 */
+-	if (vcpu->arch.dec & 0x80000000) {
++	if ((s64) vcpu->arch.dec < 0) {
+ 		kvmppc_core_queue_dec(vcpu);
+ 		return;
+ 	}
+@@ -78,7 +78,7 @@ void kvmppc_emulate_dec(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.dec_jiffies = get_tb();
  }
  
- static void generic_suspend_enable_irqs(void)
-@@ -866,7 +867,7 @@ static int decrementer_set_next_event(unsigned long evt,
- 
- static int decrementer_shutdown(struct clock_event_device *dev)
+-u32 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb)
++u64 kvmppc_get_dec(struct kvm_vcpu *vcpu, u64 tb)
  {
--	decrementer_set_next_event(DECREMENTER_MAX, dev);
-+	decrementer_set_next_event(decrementer_max, dev);
- 	return 0;
- }
+ 	u64 jd = tb - vcpu->arch.dec_jiffies;
  
-@@ -892,6 +893,76 @@ static void register_decrementer_clockevent(int cpu)
- 	clockevents_register_device(dec);
- }
- 
-+static inline bool cpu_has_large_dec(void)
-+{
-+	return cpu_has_feature(CPU_FTR_ARCH_300);
-+}
-+
-+static inline bool large_dec_enabled(void)
-+{
-+	return (mfspr(SPRN_LPCR) & LPCR_LD) == LPCR_LD;
-+}
-+
-+/* enables the large decrementer for the current CPU */
-+static void enable_large_decrementer(void)
-+{
-+	/* do we have a large decrementer? */
-+	if (!cpu_has_large_dec())
-+		return;
-+
-+	/* do we need a large decrementer? */
-+	if (decrementer_max <= DECREMENTER_DEFAULT_MAX)
-+		return;
-+
-+	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
-+
-+	if (!large_dec_enabled()) {
-+		decrementer_max = DECREMENTER_DEFAULT_MAX;
-+
-+		pr_warn_once("time_init: Failed to enable large decrementer on CPU %d\n",
-+			smp_processor_id());
-+	}
-+}
-+
-+static void __init set_decrementer_max(void)
-+{
-+	struct device_node *cpu;
-+	const __be32 *fp;
-+	u64 bits = 32;
-+
-+	cpu = of_find_node_by_type(NULL, "cpu");
-+	if (cpu)
-+		fp = of_get_property(cpu, "ibm,dec-bits", NULL);
-+
-+	if (cpu && fp) {
-+		u64 dt_bits = of_read_number(fp, 1);
-+
-+		bits = dt_bits;
-+		if (bits > 64)
-+			bits = 64;
-+		else if (bits < 32)
-+			bits = 32;
-+
-+		WARN(bits != dt_bits, "firmware supplied invalid ibm,dec-bits");
-+
-+		/*
-+		 * Firmware says we support large dec but this cpu doesn't we
-+		 * should warn about it. We can still limp along with default
-+		 * 32 bit dec, but something is broken.
-+		 */
-+		if (!cpu_has_large_dec()) {
-+			WARN_ON(bits > 32);
-+			bits = 32;
-+		}
-+
-+		/* calculate the signed maximum given this many bits */
-+		decrementer_max = (1ul << (bits - 1)) - 1;
-+	}
-+
-+	pr_info("time_init: %llu bit decrementer (max: %llx)\n",
-+		bits, decrementer_max);
-+}
-+
- static void __init init_decrementer_clockevent(void)
- {
- 	int cpu = smp_processor_id();
-@@ -899,7 +970,7 @@ static void __init init_decrementer_clockevent(void)
- 	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
- 
- 	decrementer_clockevent.max_delta_ns =
--		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
-+		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
- 	decrementer_clockevent.min_delta_ns =
- 		clockevent_delta2ns(2, &decrementer_clockevent);
- 
-@@ -908,6 +979,9 @@ static void __init init_decrementer_clockevent(void)
- 
- void secondary_cpu_time_init(void)
- {
-+	/* Enable the large decrementer (if we need to) */
-+	enable_large_decrementer();
-+
- 	/* Start the decrementer on CPUs that have manual control
- 	 * such as BookE
- 	 */
-@@ -973,6 +1047,10 @@ void __init time_init(void)
- 	vdso_data->tb_update_count = 0;
- 	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
- 
-+	/* initialise and enable the large decrementer (if we have one) */
-+	set_decrementer_max();
-+	enable_large_decrementer();
-+
- 	/* Start the decrementer on CPUs that have manual control
- 	 * such as BookE
- 	 */
 -- 
 2.5.5
