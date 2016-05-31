@@ -1,34 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
+Return-Path: <oohall@gmail.com>
+Received: from mail-qg0-x243.google.com (mail-qg0-x243.google.com
+ [IPv6:2607:f8b0:400d:c04::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJkm76PZLzDqZC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 16:56:07 +1000 (AEST)
-Received: by mail-io0-x244.google.com with SMTP id l9so3109952ioe.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2016 23:56:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJkz51Cy1zDqbD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 17:05:37 +1000 (AEST)
+Received: by mail-qg0-x243.google.com with SMTP id l75so10285481qgd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 00:05:37 -0700 (PDT)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20160530203207.GY3451@piout.net>
-References: <1464634684-1248135-1-git-send-email-arnd@arndb.de>
- <20160530203207.GY3451@piout.net>
-Date: Tue, 31 May 2016 08:56:05 +0200
-Message-ID: <CAMuHMdV5mcKZcBz=v7Pn2pbDiuwMpQYs-70e6NmH6CZ88=JNzA@mail.gmail.com>
-Subject: Re: [PATCH v4 00/16] genrtc removal
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Greg KH <gregkh@linuxfoundation.org>,
- Helge Deller <deller@gmx.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Rich Felker <dalias@libc.org>,
- David Howells <dhowells@redhat.com>, alpha <linux-alpha@vger.kernel.org>,
- Alessandro Zummo <a.zummo@towertech.it>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- RTCLINUX <rtc-linux@googlegroups.com>,
- Linux-Arch <linux-arch@vger.kernel.org>
+In-Reply-To: <1464675936.30958.22.camel@neuling.org>
+References: <1462856240-20648-1-git-send-email-oohall@gmail.com>
+ <1464675936.30958.22.camel@neuling.org>
+Date: Tue, 31 May 2016 17:05:34 +1000
+Message-ID: <CAOSf1CHc30sp_DTrKepCS7WvA6DpFxqRSya6XgShQeBc218XUg@mail.gmail.com>
+Subject: Re: [PATCH v3 1/2] powerpc/timer - large decrementer support
+From: oliver <oohall@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Jack Miller <jack@codezen.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,37 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allo Alexandre,
-
-On Mon, May 30, 2016 at 10:32 PM, Alexandre Belloni
-<alexandre.belloni@free-electrons.com> wrote:
-> On 30/05/2016 at 20:57:48 +0200, Arnd Bergmann wrote :
->> This is the promised resend of the removal of the genrtc driver and some
->> related code, now that we are at a good time to merge this for the coming
->> merge window.
->>
+On Tue, May 31, 2016 at 4:25 PM, Michael Neuling <mikey@neuling.org> wrote:
+> On Tue, 2016-05-10 at 14:57 +1000, Oliver O'Halloran wrote:
+>>  static int decrementer_set_next_event(unsigned long evt,
+>>                                     struct clock_event_device *dev);
+>> @@ -503,7 +504,7 @@ static void __timer_interrupt(void)
+>>               __this_cpu_inc(irq_stat.timer_irqs_event);
+>>       } else {
+>>               now = *next_tb - now;
+>> -             if (now <= DECREMENTER_MAX)
+>> +             if (now <= decrementer_max)
+>>                       set_dec((int)now);
 >
-> Thanks a lot!
+> You can remove the int cast here now since set_dec() takes a u64.
+
+I thought I had fixed this, but it looks like I squashed the change to
+into the second patch by accident, whoops.
+
+>> +/* enables the large decrementer for the current CPU */
+>> +static void enable_large_decrementer(void)
+>> +{
+>> +     /* do we have a large decrementer? */
+>> +     if (!cpu_has_large_dec())
+>> +             return;
+>> +
+>> +     /* do we need a large decrementer? */
+>> +     if (decrementer_max <= DECREMENTER_DEFAULT_MAX)
+>> +             return;
+>> +
+>> +     mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
+>> +
+>> +     if (!large_dec_enabled()) {
+>> +             decrementer_max = DECREMENTER_DEFAULT_MAX;
+>> +
+>> +             pr_warn("time_init: Failed to enable large decrementer on CPU %d\n",
+>> +                     smp_processor_id());
 >
-> I'm applying the series right now so it sits in linux-next for a while
-> before the next merge window.
->
-> I would still happily take any acks, Reviewed-by or Tested-by tags.
+> Can you make this pr_warn_once() since every CPU is going to call this?
 
-Looks like Arnd forgot to include these when reposting:
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-For the m68k bits:
-Tested-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Sure.
