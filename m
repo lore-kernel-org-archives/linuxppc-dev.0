@@ -1,18 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rJqDB4v7ZzDqfY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 20:17:14 +1000 (AEST)
-In-Reply-To: <1463052551-18206-1-git-send-email-thuth@redhat.com>
-To: Thomas Huth <thuth@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rJqHN5492zDqlW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2016 20:20:00 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/pseries: Add POWER8NVL support to
+ ibm,client-architecture-support call
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
-Subject: Re: powerpc: Use privileged SPR number for MMCR2
-Message-Id: <3rJqDB3nmxz9t5Q@ozlabs.org>
-Date: Tue, 31 May 2016 20:17:14 +1000 (AEST)
+References: <1464673877-30659-1-git-send-email-thuth@redhat.com>
+ <1464689047.23025.1.camel@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm-ppc@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <574D6549.3050903@redhat.com>
+Date: Tue, 31 May 2016 12:19:53 +0200
+MIME-Version: 1.0
+In-Reply-To: <1464689047.23025.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-12-05 at 11:29:11 UTC, Thomas Huth wrote:
-> We are already using the privileged versions of MMCR0, MMCR1
-> and MMCRA in the kernel, so for MMCR2, we should better use
-> the privileged versions, too, to be consistent.
+On 31.05.2016 12:04, Michael Ellerman wrote:
+> On Tue, 2016-05-31 at 07:51 +0200, Thomas Huth wrote:
 > 
-> Suggested-by: Paul Mackerras <paulus@ozlabs.org>
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
-> Acked-by: Paul Mackerras <paulus@ozlabs.org>
+>> If we do not provide the PVR for POWER8NVL, a guest on this
+>> system currently ends up in PowerISA 2.06 compatibility mode on
+>> KVM, since QEMU does not provide a generic PowerISA 2.07 mode yet.
+>> So some new instructions from POWER8 (like "mtvsrd") get disabled
+>> for the guest, resulting in crashes when using code compiled
+>> explicitly for POWER8 (e.g. with the "-mcpu=power8" option of GCC).
+>>
+>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> 
+> So this should say:
+> 
+>   Fixes: ddee09c099c3 ("powerpc: Add PVR for POWER8NVL processor")
+> 
+> And therefore:
+> 
+>   Cc: stable@vger.kernel.org # v4.0+
+> 
+> Am I right?
 
-Applied to powerpc fixes, thanks.
+Right. (At least for virtualized systems ... for bare-metal systems,
+that original patch was enough). So shall I resubmit my patch with these
+two lines, or could you add them when you pick this patch up?
 
-https://git.kernel.org/powerpc/c/8dd75ccb571f3c92c48014b3da
-
-cheers
+ Thomas
