@@ -1,28 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rKFlk0gKyzDqZ6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jun 2016 13:12:34 +1000 (AEST)
-Message-ID: <1464750753.19731.2.camel@ellerman.id.au>
-Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
- idle states
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rKGRg2G73zDqbD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jun 2016 13:43:43 +1000 (AEST)
+In-Reply-To: <1464523432-12605-3-git-send-email-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com, acsawdey@linux.vnet.ibm.com
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>, Daniel Lezcano
- <daniel.lezcano@linaro.org>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org,
- linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com,
- maddy@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo
- Pieralisi <Lorenzo.Pieralisi@arm.com>
-Date: Wed, 01 Jun 2016 13:12:33 +1000
-In-Reply-To: <201605311351.u4VDn1i7019941@mx0a-001b2d01.pphosted.com>
-References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
- <574C4DA4.4050100@linaro.org>
- <201605311351.u4VDn1i7019941@mx0a-001b2d01.pphosted.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [3/3] powerpc: Avoid load hit store when using
+ find_linux_pte_or_hugepte()
+Message-Id: <3rKGRg1Mkbz9t6g@ozlabs.org>
+Date: Wed,  1 Jun 2016 13:43:43 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-05-31 at 19:20 +0530, Shreyas B Prabhu wrote:
-> On 05/30/2016 07:56 PM, Daniel Lezcano wrote:
-> > On 05/24/2016 03:15 PM, Shreyas B. Prabhu wrote:
-> > > +        psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
-> > > +                    GFP_KERNEL);
-> > > +        rc = of_property_read_u64_array(power_mgt,
-> > > +            "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
-> > 
-> > [cc'ed Lorenzo and Rob ]
-> > 
-> > I don't see the documentation for the binding. Wouldn't make sense to
-> > add the value per idle state instead of an index based array ?
+On Sun, 2016-29-05 at 12:03:52 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
+> 
+> In many cases we disable interrupts right before calling
+> find_linux_pte_or_hugepte().
+> 
+> find_linux_pte_or_hugepte() first checks interrupts are disabled
+> before calling __find_linux_pte_or_hugepte():
+> 
+>         if (!arch_irqs_disabled()) {
+>                 pr_info("%s called with irq enabled\n", __func__);
+>                 dump_stack();
+>         }
+>         return __find_linux_pte_or_hugepte(pgdir, ea, is_thp, shift);
+> 
+> We know interrupts are disabled, but since the arch_irqs_*() macros
+> are hidden from the compiler with inline assembly, gcc does not. We
+> end up with a pretty awful load hit store:
+> 
+> 	li      r9,0
+> 	lbz     r24,570(r13)
+> 	stb     r9,570(r13)	<----
+> 	lbz     r9,570(r13)	<---- ouch
+> 	cmpdi   cr7,r9,0
+> 	bne     cr7,c000000000049d30
+> 
+> Find these cases, and call __find_linux_pte_or_hugepte() directly.
 
+I'd really rather __find_linux_pte_or_hugepte() was an internal detail, rather
+than the standard API.
 
-The binding *should* be documented here AFAIK:
+We do already have quite a few uses, but adding more just further spreads the
+details about how the implementation works.
 
-  https://github.com/open-power/skiboot/blob/master/doc/device-tree/ibm%2Copal/power-mgt.txt
+So I'm going to drop this in favor of Aneesh's patch to make irqs disabled check
+a VM_WARN().
 
 cheers
