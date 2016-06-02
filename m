@@ -1,24 +1,25 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2hd0RDdzDqxK
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:57:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2hg4xHLzDqwm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:57:39 +1000 (AEST)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 03:27:24 -0600
+ Thu, 2 Jun 2016 03:27:21 -0600
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
  waiman.long@hpe.com, Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v5 0/6] powerPC/pSeries use pv-qpsinlock as the default
- spinlock implemention
-Date: Thu,  2 Jun 2016 17:26:23 +0800
-Message-Id: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Subject: [PATCH v5 1/6] qspinlock: powerpc support qspinlock
+Date: Thu,  2 Jun 2016 17:26:25 +0800
+Message-Id: <1464859590-5292-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+In-Reply-To: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+References: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,89 +29,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-change from v4:
-	BUG FIX. thanks boqun reporting this issue.
-	struct  __qspinlock has different layout in bigendian mahcine.
-	native_queued_spin_unlock() may write value to a wrong address. now fix it.
-	sorry for not even doing a test on bigendian machine before!!!
+Base code to enable qspinlock on powerpc. this patch add some #ifdef
+here and there. Although there is no paravirt related code, we can
+successfully build a qspinlock kernel after apply this patch.
 
-change from v3:
-	a big change in [PATCH v4 4/6] pv-qspinlock: powerpc support pv-qspinlock
-	no other patch changed.
-	and the patch cover letter tilte has changed as only pseries may need use pv-qspinlock, not all powerpc.
-
-	1) __pv_wait will not return until *ptr != val as Waiman gives me a tip.
-	2) support lock holder serching by storing cpu number into a hash table(implemented as an array)
-	This is because lock_stealing hit too much, up to 10%~20% of all the successful lock(), and avoid
-	vcpu slices bounce.
-	
-change from v2:
-	__spin_yeild_cpu() will yield slices to lpar if target cpu is running.
-	remove unnecessary rmb() in __spin_yield/wake_cpu.
-	__pv_wait() will check the *ptr == val.
-	some commit message change
-
-change fome v1:
-	separate into 6 pathes from one patch
-	some minor code changes.
-
-I do several tests on pseries IBM,8408-E8E with 32cpus, 64GB memory, kernel 4.6
-benchmark test results are below.
-
-2 perf tests:
-perf bench futex hash
-perf bench futex lock-pi
-
-_____test________________spinlcok______________pv-qspinlcok_____
-|futex hash	|	528572 ops	|	573238 ops	|
-|futex lock-pi	|	354 ops		|	352 ops		|
-
-scheduler test:
-Test how many loops of schedule() can finish within 10 seconds on all cpus.
-
-_____test________________spinlcok______________pv-qspinlcok_____
-|schedule() loops|	340890082 	|	331730973	|
-
-kernel compiling test:
-build a default linux kernel image to see how long it took
-
-_____test________________spinlcok______________pv-qspinlcok_____
-| compiling takes|	22m 		|	22m		|
-
-some notes:
-the performace is as good as current spinlock's. in some case better while some cases worse.
-But in some other tests(not listed here), we verify the two spinlock's workloads by perf record&report.
-pv-qspinlock is light-weight than current spinlock.
-This patch series depends on 2 patches:
-[patch]powerpc: Implement {cmp}xchg for u8 and u16
-[patch]locking/pvqspinlock: Add lock holder CPU argument to pv_wait() from Waiman
-
-Some other patches in Waiman's "locking/pvqspinlock: Fix missed PV wakeup & support PPC" are not applied for now.
-
-Pan Xinhui (6):
-  qspinlock: powerpc support qspinlock
-  powerpc: pseries/Kconfig: Add qspinlock build config
-  powerpc: lib/locks.c: Add cpu yield/wake helper function
-  pv-qspinlock: powerpc support pv-qspinlock
-  pv-qspinlock: use cmpxchg_release in __pv_queued_spin_unlock
-  powerpc: pseries: Add pv-qspinlock build config/make
-
- arch/powerpc/include/asm/qspinlock.h               |  41 +++++++
- arch/powerpc/include/asm/qspinlock_paravirt.h      |  38 +++++++
- .../powerpc/include/asm/qspinlock_paravirt_types.h |  13 +++
- arch/powerpc/include/asm/spinlock.h                |  31 ++++--
- arch/powerpc/include/asm/spinlock_types.h          |   4 +
- arch/powerpc/kernel/Makefile                       |   1 +
- arch/powerpc/kernel/paravirt.c                     | 121 +++++++++++++++++++++
- arch/powerpc/lib/locks.c                           |  37 +++++++
- arch/powerpc/platforms/pseries/Kconfig             |   9 ++
- arch/powerpc/platforms/pseries/setup.c             |   5 +
- kernel/locking/qspinlock_paravirt.h                |   2 +-
- 11 files changed, 289 insertions(+), 13 deletions(-)
+Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/qspinlock.h      | 26 ++++++++++++++++++++++++++
+ arch/powerpc/include/asm/spinlock.h       | 27 +++++++++++++++------------
+ arch/powerpc/include/asm/spinlock_types.h |  4 ++++
+ arch/powerpc/lib/locks.c                  |  4 ++++
+ 4 files changed, 49 insertions(+), 12 deletions(-)
  create mode 100644 arch/powerpc/include/asm/qspinlock.h
- create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt.h
- create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt_types.h
- create mode 100644 arch/powerpc/kernel/paravirt.c
 
+diff --git a/arch/powerpc/include/asm/qspinlock.h b/arch/powerpc/include/asm/qspinlock.h
+new file mode 100644
+index 0000000..fc83cd2
+--- /dev/null
++++ b/arch/powerpc/include/asm/qspinlock.h
+@@ -0,0 +1,26 @@
++#ifndef _ASM_POWERPC_QSPINLOCK_H
++#define _ASM_POWERPC_QSPINLOCK_H
++
++#include <asm-generic/qspinlock_types.h>
++
++#define SPIN_THRESHOLD (1 << 15)
++#define queued_spin_unlock queued_spin_unlock
++
++static inline void native_queued_spin_unlock(struct qspinlock *lock)
++{
++	u8 *locked = (u8 *)lock;
++#ifdef __BIG_ENDIAN
++	locked += 3;
++#endif
++	/* no load/store can be across the unlock()*/
++	smp_store_release(locked, 0);
++}
++
++static inline void queued_spin_unlock(struct qspinlock *lock)
++{
++	native_queued_spin_unlock(lock);
++}
++
++#include <asm-generic/qspinlock.h>
++
++#endif /* _ASM_POWERPC_QSPINLOCK_H */
+diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+index 523673d..4359ee6 100644
+--- a/arch/powerpc/include/asm/spinlock.h
++++ b/arch/powerpc/include/asm/spinlock.h
+@@ -52,6 +52,20 @@
+ #define SYNC_IO
+ #endif
+ 
++#if defined(CONFIG_PPC_SPLPAR)
++/* We only yield to the hypervisor if we are in shared processor mode */
++#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
++extern void __spin_yield(arch_spinlock_t *lock);
++extern void __rw_yield(arch_rwlock_t *lock);
++#else /* SPLPAR */
++#define __spin_yield(x)	barrier()
++#define __rw_yield(x)	barrier()
++#define SHARED_PROCESSOR	0
++#endif
++
++#ifdef CONFIG_QUEUED_SPINLOCKS
++#include <asm/qspinlock.h>
++#else
+ static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
+ {
+ 	return lock.slock == 0;
+@@ -106,18 +120,6 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
+  * held.  Conveniently, we have a word in the paca that holds this
+  * value.
+  */
+-
+-#if defined(CONFIG_PPC_SPLPAR)
+-/* We only yield to the hypervisor if we are in shared processor mode */
+-#define SHARED_PROCESSOR (lppaca_shared_proc(local_paca->lppaca_ptr))
+-extern void __spin_yield(arch_spinlock_t *lock);
+-extern void __rw_yield(arch_rwlock_t *lock);
+-#else /* SPLPAR */
+-#define __spin_yield(x)	barrier()
+-#define __rw_yield(x)	barrier()
+-#define SHARED_PROCESSOR	0
+-#endif
+-
+ static inline void arch_spin_lock(arch_spinlock_t *lock)
+ {
+ 	CLEAR_IO_SYNC;
+@@ -169,6 +171,7 @@ extern void arch_spin_unlock_wait(arch_spinlock_t *lock);
+ 	do { while (arch_spin_is_locked(lock)) cpu_relax(); } while (0)
+ #endif
+ 
++#endif /* !CONFIG_QUEUED_SPINLOCKS */
+ /*
+  * Read-write spinlocks, allowing multiple readers
+  * but only one writer.
+diff --git a/arch/powerpc/include/asm/spinlock_types.h b/arch/powerpc/include/asm/spinlock_types.h
+index 2351adc..bd7144e 100644
+--- a/arch/powerpc/include/asm/spinlock_types.h
++++ b/arch/powerpc/include/asm/spinlock_types.h
+@@ -5,11 +5,15 @@
+ # error "please don't include this file directly"
+ #endif
+ 
++#ifdef CONFIG_QUEUED_SPINLOCKS
++#include <asm-generic/qspinlock_types.h>
++#else
+ typedef struct {
+ 	volatile unsigned int slock;
+ } arch_spinlock_t;
+ 
+ #define __ARCH_SPIN_LOCK_UNLOCKED	{ 0 }
++#endif
+ 
+ typedef struct {
+ 	volatile signed int lock;
+diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+index f7deebd..a9ebd71 100644
+--- a/arch/powerpc/lib/locks.c
++++ b/arch/powerpc/lib/locks.c
+@@ -23,6 +23,7 @@
+ #include <asm/hvcall.h>
+ #include <asm/smp.h>
+ 
++#ifndef CONFIG_QUEUED_SPINLOCKS
+ void __spin_yield(arch_spinlock_t *lock)
+ {
+ 	unsigned int lock_value, holder_cpu, yield_count;
+@@ -42,6 +43,7 @@ void __spin_yield(arch_spinlock_t *lock)
+ 		get_hard_smp_processor_id(holder_cpu), yield_count);
+ }
+ EXPORT_SYMBOL_GPL(__spin_yield);
++#endif
+ 
+ /*
+  * Waiting for a read lock or a write lock on a rwlock...
+@@ -69,6 +71,7 @@ void __rw_yield(arch_rwlock_t *rw)
+ }
+ #endif
+ 
++#ifndef CONFIG_QUEUED_SPINLOCKS
+ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ {
+ 	smp_mb();
+@@ -84,3 +87,4 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ }
+ 
+ EXPORT_SYMBOL(arch_spin_unlock_wait);
++#endif
 -- 
 2.4.11
