@@ -1,17 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rKzg75ffHzDqcV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 17:41:07 +1000 (AEST)
-Message-ID: <1464853260.19646.6.camel@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc: export cpu_to_core_id()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rKzlM2PS5zDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 17:44:47 +1000 (AEST)
+Message-ID: <1464853486.19646.8.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm: use _raw variant of page table accessors
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Thu, 02 Jun 2016 17:41:00 +1000
-In-Reply-To: <201606012016.u51KDwr8046821@mx0a-001b2d01.pphosted.com>
-References: <201606012016.u51KDwr8046821@mx0a-001b2d01.pphosted.com>
+To: Ram Pai <linuxram@us.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 02 Jun 2016 17:44:46 +1000
+In-Reply-To: <20160601221311.GB5658@ram.oc3035372033.ibm.com>
+References: <1464692382-29698-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160601221311.GB5658@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,13 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-06-01 at 17:16 -0300, Mauricio Faria de Oliveira wrote:
+On Wed, 2016-06-01 at 15:13 -0700, Ram Pai wrote:
+> On Tue, May 31, 2016 at 04:29:42PM +0530, Aneesh Kumar K.V wrote:
+> > diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> > index 71e9abced493..9db83b4e017d 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
+> > @@ -31,7 +31,7 @@ static inline int pgd_huge(pgd_t pgd)
+> >  	 * leaf pte for huge page
+> >  	 */
+> >  	if (radix_enabled())
+> > -		return !!(pgd_val(pgd) & _PAGE_PTE);
+> > +		return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
+> 
+> pgd_raw() will not do the endian swapping.
+> But instead cpu_to_be64(_PAGE_PTE) will now do the endian swapping. So does it
+> really optimize anything? i tend to think it just moves the endian
+> swapping overhead from one place to the other. no?
 
-> Export cpu_to_core_id().  This will be used by the lpfc driver.
+> Is cpu_to_be64(constant) faster than cpu_to_be64(variable)  ?
 
-Can you explain why?
+Yes, the compiler will do it at compile time for constants, or anything it can
+prove is a constant.
 
-I would have thought there'd be architecture neutral APIs you can use - and if
-there aren't maybe we should write them.
+You can also see from the asm dump that Aneesh posted that it drastically
+improves the generated code.
 
 cheers
