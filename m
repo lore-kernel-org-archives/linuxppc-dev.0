@@ -1,21 +1,21 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2dm3cTBzDqxm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:55:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2gf5h3TzDqkL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:56:46 +1000 (AEST)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 03:44:56 -0600
+ Thu, 2 Jun 2016 03:46:39 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm/radix: Make the pid unsigned long
-Date: Thu,  2 Jun 2016 15:14:48 +0530
-Message-Id: <1464860688-2085-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] Fix .long's in mm/tlb-radix.c to more meaningful
+Date: Thu,  2 Jun 2016 15:16:27 +0530
+Message-Id: <1464860789-3672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +25,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Semantic Issue: comparison of constant 18446744073709551615 with
-expression of type 'unsigned int' is always false.
+From: Balbir Singh <bsingharora@gmail.com>
 
+The .longs with the shifts are harder to read, use more
+meaningful names for the opcodes. PPC_TLBIE_5 is introduced
+for the 5 opcode variation of the instruction due to an existing
+op-code for the 2 opcode variant
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/tlb-radix.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h | 14 ++++++++++++++
+ arch/powerpc/mm/tlb-radix.c           | 13 +++++--------
+ 2 files changed, 19 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 1d035c1cc889..c0e9ea44fee3 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -184,6 +184,7 @@
+ #define PPC_INST_STSWX			0x7c00052a
+ #define PPC_INST_STXVD2X		0x7c000798
+ #define PPC_INST_TLBIE			0x7c000264
++#define PPC_INST_TLBIEL			0x7c000224
+ #define PPC_INST_TLBILX			0x7c000024
+ #define PPC_INST_WAIT			0x7c00007c
+ #define PPC_INST_TLBIVAX		0x7c000624
+@@ -257,6 +258,9 @@
+ #define ___PPC_RB(b)	(((b) & 0x1f) << 11)
+ #define ___PPC_RS(s)	(((s) & 0x1f) << 21)
+ #define ___PPC_RT(t)	___PPC_RS(t)
++#define ___PPC_R(r)	(((r) & 0x1) << 16)
++#define ___PPC_PRS(prs)	(((prs) & 0x1) << 17)
++#define ___PPC_RIC(ric)	(((ric) & 0x3) << 18)
+ #define __PPC_RA(a)	___PPC_RA(__REG_##a)
+ #define __PPC_RA0(a)	___PPC_RA(__REGA0_##a)
+ #define __PPC_RB(b)	___PPC_RB(__REG_##b)
+@@ -321,6 +325,16 @@
+ 					__PPC_WC(w))
+ #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
+ 					       ___PPC_RB(a) | ___PPC_RS(lp))
++#define	PPC_TLBIE_5(rb,rs,ric,prs,r) \
++				stringify_in_c(.long PPC_INST_TLBIE | \
++					___PPC_RB(rb) | ___PPC_RS(rs) | \
++					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
++					___PPC_R(r))
++#define	PPC_TLBIEL(rb,rs,ric,prs,r) \
++				stringify_in_c(.long PPC_INST_TLBIEL | \
++					___PPC_RB(rb) | ___PPC_RS(rs) | \
++					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
++					___PPC_R(r))
+ #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
+ 					__PPC_RA0(a) | __PPC_RB(b))
+ #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 7f2fa82bd155..0484fcdca00a 100644
+index 0fdaf93a3e09..e6b7487ad28f 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -115,7 +115,7 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
-  */
- void radix__local_flush_tlb_mm(struct mm_struct *mm)
- {
--	unsigned int pid;
-+	unsigned long pid;
+@@ -12,6 +12,7 @@
+ #include <linux/mm.h>
+ #include <linux/hugetlb.h>
+ #include <linux/memblock.h>
++#include <asm/ppc-opcode.h>
  
- 	preempt_disable();
- 	pid = mm->context.id;
-@@ -128,7 +128,7 @@ EXPORT_SYMBOL(radix__local_flush_tlb_mm);
- void radix___local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
- 			    unsigned long ap, int nid)
- {
--	unsigned int pid;
-+	unsigned long pid;
+ #include <asm/tlb.h>
+ #include <asm/tlbflush.h>
+@@ -30,8 +31,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set)
+ 	ric = 2;  /* invalidate all the caches */
  
- 	preempt_disable();
- 	pid = mm ? mm->context.id : 0;
-@@ -158,7 +158,7 @@ static int mm_is_core_local(struct mm_struct *mm)
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(".long 0x7c000224 | (%0 << 11) | (%1 << 16) |"
+-		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
++	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
+ }
+@@ -60,8 +60,7 @@ static inline void _tlbie_pid(unsigned long pid)
+ 	ric = 2;  /* invalidate all the caches */
  
- void radix__flush_tlb_mm(struct mm_struct *mm)
- {
--	unsigned int pid;
-+	unsigned long pid;
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(".long 0x7c000264 | (%0 << 11) | (%1 << 16) |"
+-		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
++	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
+@@ -79,8 +78,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ 	ric = 0;  /* no cluster flush yet */
  
- 	preempt_disable();
- 	pid = mm->context.id;
-@@ -207,7 +207,7 @@ EXPORT_SYMBOL(radix__flush_tlb_mm_pwc);
- void radix___flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
- 		       unsigned long ap, int nid)
- {
--	unsigned int pid;
-+	unsigned long pid;
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(".long 0x7c000224 | (%0 << 11) | (%1 << 16) |"
+-		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
++	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("ptesync": : :"memory");
+ }
+@@ -98,8 +96,7 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+ 	ric = 0;  /* no cluster flush yet */
  
- 	preempt_disable();
- 	pid = mm ? mm->context.id : 0;
+ 	asm volatile("ptesync": : :"memory");
+-	asm volatile(".long 0x7c000264 | (%0 << 11) | (%1 << 16) |"
+-		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
++	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+ 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
 -- 
 2.7.4
