@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
- [210.118.77.11])
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKF5BtzzDqgm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:21 +1000 (AEST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout1.w1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKN20TrzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:28 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout4.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500MZ6I8W9W00@mailout1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:21 +0100 (BST)
+ with ESMTP id <0O8500AJTI8ZB610@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:24 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,9 +63,9 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 18/45] iommu: dma-mapping: Use unsigned long for dma_attrs
-Date: Thu, 02 Jun 2016 17:39:20 +0200
-Message-id: <1464881987-13203-19-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 19/45] [media] dma-mapping: Use unsigned long for dma_attrs
+Date: Thu, 02 Jun 2016 17:39:21 +0200
+Message-id: <1464881987-13203-20-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -82,124 +82,309 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/iommu/amd_iommu.c | 12 ++++++------
- drivers/iommu/dma-iommu.c |  6 +++---
- include/linux/dma-iommu.h |  6 +++---
- 3 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/media/platform/sti/bdisp/bdisp-hw.c    | 26 +++++++---------------
+ drivers/media/v4l2-core/videobuf2-dma-contig.c | 30 +++++++++++---------------
+ drivers/media/v4l2-core/videobuf2-dma-sg.c     | 19 ++++------------
+ include/media/videobuf2-dma-contig.h           |  7 ++----
+ 4 files changed, 26 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
-index 634f636393d5..afbb0de6a7f5 100644
---- a/drivers/iommu/amd_iommu.c
-+++ b/drivers/iommu/amd_iommu.c
-@@ -2716,7 +2716,7 @@ static void __unmap_single(struct dma_ops_domain *dma_dom,
- static dma_addr_t map_page(struct device *dev, struct page *page,
- 			   unsigned long offset, size_t size,
- 			   enum dma_data_direction dir,
--			   struct dma_attrs *attrs)
-+			   unsigned long attrs)
- {
- 	phys_addr_t paddr = page_to_phys(page) + offset;
- 	struct protection_domain *domain;
-@@ -2738,7 +2738,7 @@ static dma_addr_t map_page(struct device *dev, struct page *page,
-  * The exported unmap_single function for dma_ops.
+diff --git a/drivers/media/platform/sti/bdisp/bdisp-hw.c b/drivers/media/platform/sti/bdisp/bdisp-hw.c
+index 052c932ac942..1600958939a5 100644
+--- a/drivers/media/platform/sti/bdisp/bdisp-hw.c
++++ b/drivers/media/platform/sti/bdisp/bdisp-hw.c
+@@ -125,14 +125,11 @@ int bdisp_hw_get_and_clear_irq(struct bdisp_dev *bdisp)
   */
- static void unmap_page(struct device *dev, dma_addr_t dma_addr, size_t size,
--		       enum dma_data_direction dir, struct dma_attrs *attrs)
-+		       enum dma_data_direction dir, unsigned long attrs)
+ void bdisp_hw_free_nodes(struct bdisp_ctx *ctx)
  {
- 	struct protection_domain *domain;
- 
-@@ -2755,7 +2755,7 @@ static void unmap_page(struct device *dev, dma_addr_t dma_addr, size_t size,
-  */
- static int map_sg(struct device *dev, struct scatterlist *sglist,
- 		  int nelems, enum dma_data_direction dir,
--		  struct dma_attrs *attrs)
-+		  unsigned long attrs)
- {
- 	struct protection_domain *domain;
- 	int i;
-@@ -2803,7 +2803,7 @@ unmap:
-  */
- static void unmap_sg(struct device *dev, struct scatterlist *sglist,
- 		     int nelems, enum dma_data_direction dir,
--		     struct dma_attrs *attrs)
-+		     unsigned long attrs)
- {
- 	struct protection_domain *domain;
- 	struct scatterlist *s;
-@@ -2825,7 +2825,7 @@ static void unmap_sg(struct device *dev, struct scatterlist *sglist,
-  */
- static void *alloc_coherent(struct device *dev, size_t size,
- 			    dma_addr_t *dma_addr, gfp_t flag,
--			    struct dma_attrs *attrs)
-+			    unsigned long attrs)
- {
- 	u64 dma_mask = dev->coherent_dma_mask;
- 	struct protection_domain *domain;
-@@ -2879,7 +2879,7 @@ out_free:
-  */
- static void free_coherent(struct device *dev, size_t size,
- 			  void *virt_addr, dma_addr_t dma_addr,
--			  struct dma_attrs *attrs)
-+			  unsigned long attrs)
- {
- 	struct protection_domain *domain;
- 	struct page *page;
-diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
-index ea5a9ebf0f78..6c1bda504fb1 100644
---- a/drivers/iommu/dma-iommu.c
-+++ b/drivers/iommu/dma-iommu.c
-@@ -286,7 +286,7 @@ void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
-  *	   or NULL on failure.
-  */
- struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
--		struct dma_attrs *attrs, int prot, dma_addr_t *handle,
-+		unsigned long attrs, int prot, dma_addr_t *handle,
- 		void (*flush_page)(struct device *, const void *, phys_addr_t))
- {
- 	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
-@@ -400,7 +400,7 @@ dma_addr_t iommu_dma_map_page(struct device *dev, struct page *page,
+-	if (ctx && ctx->node[0]) {
+-		DEFINE_DMA_ATTRS(attrs);
+-
+-		dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
++	if (ctx && ctx->node[0])
+ 		dma_free_attrs(ctx->bdisp_dev->dev,
+ 			       sizeof(struct bdisp_node) * MAX_NB_NODE,
+-			       ctx->node[0], ctx->node_paddr[0], &attrs);
+-	}
++			       ctx->node[0], ctx->node_paddr[0],
++			       DMA_ATTR_WRITE_COMBINE);
  }
  
- void iommu_dma_unmap_page(struct device *dev, dma_addr_t handle, size_t size,
--		enum dma_data_direction dir, struct dma_attrs *attrs)
-+		enum dma_data_direction dir, unsigned long attrs)
+ /**
+@@ -150,12 +147,10 @@ int bdisp_hw_alloc_nodes(struct bdisp_ctx *ctx)
+ 	unsigned int i, node_size = sizeof(struct bdisp_node);
+ 	void *base;
+ 	dma_addr_t paddr;
+-	DEFINE_DMA_ATTRS(attrs);
+ 
+ 	/* Allocate all the nodes within a single memory page */
+-	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
+ 	base = dma_alloc_attrs(dev, node_size * MAX_NB_NODE, &paddr,
+-			       GFP_KERNEL | GFP_DMA, &attrs);
++			       GFP_KERNEL | GFP_DMA, DMA_ATTR_WRITE_COMBINE);
+ 	if (!base) {
+ 		dev_err(dev, "%s no mem\n", __func__);
+ 		return -ENOMEM;
+@@ -188,13 +183,9 @@ void bdisp_hw_free_filters(struct device *dev)
  {
- 	__iommu_dma_unmap(iommu_get_domain_for_dev(dev), handle);
- }
-@@ -560,7 +560,7 @@ out_restore_sg:
+ 	int size = (BDISP_HF_NB * NB_H_FILTER) + (BDISP_VF_NB * NB_V_FILTER);
+ 
+-	if (bdisp_h_filter[0].virt) {
+-		DEFINE_DMA_ATTRS(attrs);
+-
+-		dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
++	if (bdisp_h_filter[0].virt)
+ 		dma_free_attrs(dev, size, bdisp_h_filter[0].virt,
+-			       bdisp_h_filter[0].paddr, &attrs);
+-	}
++			       bdisp_h_filter[0].paddr,DMA_ATTR_WRITE_COMBINE);
  }
  
- void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
--		enum dma_data_direction dir, struct dma_attrs *attrs)
-+		enum dma_data_direction dir, unsigned long attrs)
- {
- 	/*
- 	 * The scatterlist segments are mapped into a single
-diff --git a/include/linux/dma-iommu.h b/include/linux/dma-iommu.h
-index 8443bbb5c071..81c5c8d167ad 100644
---- a/include/linux/dma-iommu.h
-+++ b/include/linux/dma-iommu.h
-@@ -39,7 +39,7 @@ int dma_direction_to_prot(enum dma_data_direction dir, bool coherent);
-  * the arch code to take care of attributes and cache maintenance
-  */
- struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
--		struct dma_attrs *attrs, int prot, dma_addr_t *handle,
-+		unsigned long attrs, int prot, dma_addr_t *handle,
- 		void (*flush_page)(struct device *, const void *, phys_addr_t));
- void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
- 		dma_addr_t *handle);
-@@ -56,9 +56,9 @@ int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
-  * directly as DMA mapping callbacks for simplicity
-  */
- void iommu_dma_unmap_page(struct device *dev, dma_addr_t handle, size_t size,
--		enum dma_data_direction dir, struct dma_attrs *attrs);
-+		enum dma_data_direction dir, unsigned long attrs);
- void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
--		enum dma_data_direction dir, struct dma_attrs *attrs);
-+		enum dma_data_direction dir, unsigned long attrs);
- int iommu_dma_supported(struct device *dev, u64 mask);
- int iommu_dma_mapping_error(struct device *dev, dma_addr_t dma_addr);
+ /**
+@@ -211,12 +202,11 @@ int bdisp_hw_alloc_filters(struct device *dev)
+ 	unsigned int i, size;
+ 	void *base;
+ 	dma_addr_t paddr;
+-	DEFINE_DMA_ATTRS(attrs);
  
+ 	/* Allocate all the filters within a single memory page */
+ 	size = (BDISP_HF_NB * NB_H_FILTER) + (BDISP_VF_NB * NB_V_FILTER);
+-	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
+-	base = dma_alloc_attrs(dev, size, &paddr, GFP_KERNEL | GFP_DMA, &attrs);
++	base = dma_alloc_attrs(dev, size, &paddr, GFP_KERNEL | GFP_DMA,
++			       DMA_ATTR_WRITE_COMBINE);
+ 	if (!base)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/media/v4l2-core/videobuf2-dma-contig.c b/drivers/media/v4l2-core/videobuf2-dma-contig.c
+index 5361197f3e57..8009a582326b 100644
+--- a/drivers/media/v4l2-core/videobuf2-dma-contig.c
++++ b/drivers/media/v4l2-core/videobuf2-dma-contig.c
+@@ -23,7 +23,7 @@
+ 
+ struct vb2_dc_conf {
+ 	struct device		*dev;
+-	struct dma_attrs	attrs;
++	unsigned long		attrs;
+ };
+ 
+ struct vb2_dc_buf {
+@@ -32,7 +32,7 @@ struct vb2_dc_buf {
+ 	unsigned long			size;
+ 	void				*cookie;
+ 	dma_addr_t			dma_addr;
+-	struct dma_attrs		attrs;
++	unsigned long			attrs;
+ 	enum dma_data_direction		dma_dir;
+ 	struct sg_table			*dma_sgt;
+ 	struct frame_vector		*vec;
+@@ -135,7 +135,7 @@ static void vb2_dc_put(void *buf_priv)
+ 		kfree(buf->sgt_base);
+ 	}
+ 	dma_free_attrs(buf->dev, buf->size, buf->cookie, buf->dma_addr,
+-			&buf->attrs);
++		       buf->attrs);
+ 	put_device(buf->dev);
+ 	kfree(buf);
+ }
+@@ -153,14 +153,14 @@ static void *vb2_dc_alloc(void *alloc_ctx, unsigned long size,
+ 
+ 	buf->attrs = conf->attrs;
+ 	buf->cookie = dma_alloc_attrs(dev, size, &buf->dma_addr,
+-					GFP_KERNEL | gfp_flags, &buf->attrs);
++					GFP_KERNEL | gfp_flags, buf->attrs);
+ 	if (!buf->cookie) {
+ 		dev_err(dev, "dma_alloc_coherent of size %ld failed\n", size);
+ 		kfree(buf);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+-	if (!dma_get_attr(DMA_ATTR_NO_KERNEL_MAPPING, &buf->attrs))
++	if (!dma_get_attr(DMA_ATTR_NO_KERNEL_MAPPING, buf->attrs))
+ 		buf->vaddr = buf->cookie;
+ 
+ 	/* Prevent the device from being released while the buffer is used */
+@@ -194,7 +194,7 @@ static int vb2_dc_mmap(void *buf_priv, struct vm_area_struct *vma)
+ 	vma->vm_pgoff = 0;
+ 
+ 	ret = dma_mmap_attrs(buf->dev, vma, buf->cookie,
+-		buf->dma_addr, buf->size, &buf->attrs);
++		buf->dma_addr, buf->size, buf->attrs);
+ 
+ 	if (ret) {
+ 		pr_err("Remapping memory failed, error: %d\n", ret);
+@@ -377,7 +377,7 @@ static struct sg_table *vb2_dc_get_base_sgt(struct vb2_dc_buf *buf)
+ 	}
+ 
+ 	ret = dma_get_sgtable_attrs(buf->dev, sgt, buf->cookie, buf->dma_addr,
+-		buf->size, &buf->attrs);
++		buf->size, buf->attrs);
+ 	if (ret < 0) {
+ 		dev_err(buf->dev, "failed to get scatterlist from DMA API\n");
+ 		kfree(sgt);
+@@ -426,15 +426,12 @@ static void vb2_dc_put_userptr(void *buf_priv)
+ 	struct page **pages;
+ 
+ 	if (sgt) {
+-		DEFINE_DMA_ATTRS(attrs);
+-
+-		dma_set_attr(DMA_ATTR_SKIP_CPU_SYNC, &attrs);
+ 		/*
+ 		 * No need to sync to CPU, it's already synced to the CPU
+ 		 * since the finish() memop will have been called before this.
+ 		 */
+ 		dma_unmap_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents,
+-				   buf->dma_dir, &attrs);
++				   buf->dma_dir, DMA_ATTR_SKIP_CPU_SYNC);
+ 		pages = frame_vector_pages(buf->vec);
+ 		/* sgt should exist only if vector contains pages... */
+ 		BUG_ON(IS_ERR(pages));
+@@ -490,9 +487,6 @@ static void *vb2_dc_get_userptr(void *alloc_ctx, unsigned long vaddr,
+ 	struct sg_table *sgt;
+ 	unsigned long contig_size;
+ 	unsigned long dma_align = dma_get_cache_alignment();
+-	DEFINE_DMA_ATTRS(attrs);
+-
+-	dma_set_attr(DMA_ATTR_SKIP_CPU_SYNC, &attrs);
+ 
+ 	/* Only cache aligned DMA transfers are reliable */
+ 	if (!IS_ALIGNED(vaddr | size, dma_align)) {
+@@ -554,7 +548,7 @@ static void *vb2_dc_get_userptr(void *alloc_ctx, unsigned long vaddr,
+ 	 * prepare() memop is called.
+ 	 */
+ 	sgt->nents = dma_map_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents,
+-				      buf->dma_dir, &attrs);
++				      buf->dma_dir, DMA_ATTR_SKIP_CPU_SYNC);
+ 	if (sgt->nents <= 0) {
+ 		pr_err("failed to map scatterlist\n");
+ 		ret = -EIO;
+@@ -578,7 +572,7 @@ out:
+ 
+ fail_map_sg:
+ 	dma_unmap_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents,
+-			   buf->dma_dir, &attrs);
++			   buf->dma_dir, DMA_ATTR_SKIP_CPU_SYNC);
+ 
+ fail_sgt_init:
+ 	sg_free_table(sgt);
+@@ -730,7 +724,7 @@ const struct vb2_mem_ops vb2_dma_contig_memops = {
+ EXPORT_SYMBOL_GPL(vb2_dma_contig_memops);
+ 
+ void *vb2_dma_contig_init_ctx_attrs(struct device *dev,
+-				    struct dma_attrs *attrs)
++				    unsigned long attrs)
+ {
+ 	struct vb2_dc_conf *conf;
+ 
+@@ -740,7 +734,7 @@ void *vb2_dma_contig_init_ctx_attrs(struct device *dev,
+ 
+ 	conf->dev = dev;
+ 	if (attrs)
+-		conf->attrs = *attrs;
++		conf->attrs = attrs;
+ 
+ 	return conf;
+ }
+diff --git a/drivers/media/v4l2-core/videobuf2-dma-sg.c b/drivers/media/v4l2-core/videobuf2-dma-sg.c
+index 9985c89f0513..94f24e610fe7 100644
+--- a/drivers/media/v4l2-core/videobuf2-dma-sg.c
++++ b/drivers/media/v4l2-core/videobuf2-dma-sg.c
+@@ -107,9 +107,6 @@ static void *vb2_dma_sg_alloc(void *alloc_ctx, unsigned long size,
+ 	struct sg_table *sgt;
+ 	int ret;
+ 	int num_pages;
+-	DEFINE_DMA_ATTRS(attrs);
+-
+-	dma_set_attr(DMA_ATTR_SKIP_CPU_SYNC, &attrs);
+ 
+ 	if (WARN_ON(alloc_ctx == NULL))
+ 		return NULL;
+@@ -148,7 +145,7 @@ static void *vb2_dma_sg_alloc(void *alloc_ctx, unsigned long size,
+ 	 * prepare() memop is called.
+ 	 */
+ 	sgt->nents = dma_map_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents,
+-				      buf->dma_dir, &attrs);
++				      buf->dma_dir, DMA_ATTR_SKIP_CPU_SYNC);
+ 	if (!sgt->nents)
+ 		goto fail_map;
+ 
+@@ -183,13 +180,10 @@ static void vb2_dma_sg_put(void *buf_priv)
+ 	int i = buf->num_pages;
+ 
+ 	if (atomic_dec_and_test(&buf->refcount)) {
+-		DEFINE_DMA_ATTRS(attrs);
+-
+-		dma_set_attr(DMA_ATTR_SKIP_CPU_SYNC, &attrs);
+ 		dprintk(1, "%s: Freeing buffer of %d pages\n", __func__,
+ 			buf->num_pages);
+ 		dma_unmap_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents,
+-				   buf->dma_dir, &attrs);
++				   buf->dma_dir, DMA_ATTR_SKIP_CPU_SYNC);
+ 		if (buf->vaddr)
+ 			vm_unmap_ram(buf->vaddr, buf->num_pages);
+ 		sg_free_table(buf->dma_sgt);
+@@ -233,10 +227,8 @@ static void *vb2_dma_sg_get_userptr(void *alloc_ctx, unsigned long vaddr,
+ 	struct vb2_dma_sg_conf *conf = alloc_ctx;
+ 	struct vb2_dma_sg_buf *buf;
+ 	struct sg_table *sgt;
+-	DEFINE_DMA_ATTRS(attrs);
+ 	struct frame_vector *vec;
+ 
+-	dma_set_attr(DMA_ATTR_SKIP_CPU_SYNC, &attrs);
+ 	buf = kzalloc(sizeof *buf, GFP_KERNEL);
+ 	if (!buf)
+ 		return NULL;
+@@ -267,7 +259,7 @@ static void *vb2_dma_sg_get_userptr(void *alloc_ctx, unsigned long vaddr,
+ 	 * prepare() memop is called.
+ 	 */
+ 	sgt->nents = dma_map_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents,
+-				      buf->dma_dir, &attrs);
++				      buf->dma_dir, DMA_ATTR_SKIP_CPU_SYNC);
+ 	if (!sgt->nents)
+ 		goto userptr_fail_map;
+ 
+@@ -291,14 +283,11 @@ static void vb2_dma_sg_put_userptr(void *buf_priv)
+ 	struct vb2_dma_sg_buf *buf = buf_priv;
+ 	struct sg_table *sgt = &buf->sg_table;
+ 	int i = buf->num_pages;
+-	DEFINE_DMA_ATTRS(attrs);
+-
+-	dma_set_attr(DMA_ATTR_SKIP_CPU_SYNC, &attrs);
+ 
+ 	dprintk(1, "%s: Releasing userspace buffer of %d pages\n",
+ 	       __func__, buf->num_pages);
+ 	dma_unmap_sg_attrs(buf->dev, sgt->sgl, sgt->orig_nents, buf->dma_dir,
+-			   &attrs);
++			   DMA_ATTR_SKIP_CPU_SYNC);
+ 	if (buf->vaddr)
+ 		vm_unmap_ram(buf->vaddr, buf->num_pages);
+ 	sg_free_table(buf->dma_sgt);
+diff --git a/include/media/videobuf2-dma-contig.h b/include/media/videobuf2-dma-contig.h
+index 2087c9a68be3..048df1320451 100644
+--- a/include/media/videobuf2-dma-contig.h
++++ b/include/media/videobuf2-dma-contig.h
+@@ -16,8 +16,6 @@
+ #include <media/videobuf2-v4l2.h>
+ #include <linux/dma-mapping.h>
+ 
+-struct dma_attrs;
+-
+ static inline dma_addr_t
+ vb2_dma_contig_plane_dma_addr(struct vb2_buffer *vb, unsigned int plane_no)
+ {
+@@ -26,12 +24,11 @@ vb2_dma_contig_plane_dma_addr(struct vb2_buffer *vb, unsigned int plane_no)
+ 	return *addr;
+ }
+ 
+-void *vb2_dma_contig_init_ctx_attrs(struct device *dev,
+-				    struct dma_attrs *attrs);
++void *vb2_dma_contig_init_ctx_attrs(struct device *dev, unsigned long attrs);
+ 
+ static inline void *vb2_dma_contig_init_ctx(struct device *dev)
+ {
+-	return vb2_dma_contig_init_ctx_attrs(dev, NULL);
++	return vb2_dma_contig_init_ctx_attrs(dev, 0);
+ }
+ 
+ void vb2_dma_contig_cleanup_ctx(void *alloc_ctx);
 -- 
 1.9.1
