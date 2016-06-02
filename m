@@ -1,23 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2gx3VnrzDqpM
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:57:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2hX44ftzDqvs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:57:32 +1000 (AEST)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 03:46:43 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 2/3] powerpc/mm/radix: Update to tlb functions ric argument
-Date: Thu,  2 Jun 2016 15:16:28 +0530
-Message-Id: <1464860789-3672-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1464860789-3672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1464860789-3672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Thu, 2 Jun 2016 03:27:19 -0600
+From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ peterz@infradead.org, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
+ waiman.long@hpe.com, Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Subject: [PATCH v5 0/6] powerPC/pSeries use pv-qpsinlock as the default
+ spinlock implemention
+Date: Thu,  2 Jun 2016 17:26:24 +0800
+Message-Id: <1464859590-5292-2-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+In-Reply-To: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+References: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,167 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Radix invalidate control (RIC) is used to control which cache to flush
-using tlb instructions. When doing a PID flush, we currently flush
-everything including page walk cache. For address range flush, we flush
-only the TLB. In the later patch, we add support for flushing only
-page walk cache.
+change from v4:
+	BUG FIX. thanks boqun reporting this issue.
+	struct  __qspinlock has different layout in bigendian mahcine.
+	native_queued_spin_unlock() may write value to a wrong address. now fix it.
+	sorry for not even doing a test on bigendian machine before!!!
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/tlb-radix.c | 43 ++++++++++++++++++++++---------------------
- 1 file changed, 22 insertions(+), 21 deletions(-)
+change from v3:
+	a big change in [PATCH v4 4/6] pv-qspinlock: powerpc support pv-qspinlock
+	no other patch changed.
+	and the patch cover letter tilte has changed as only pseries may need use pv-qspinlock, not all powerpc.
 
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index e6b7487ad28f..b33b7c77cfa3 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -19,16 +19,20 @@
- 
- static DEFINE_RAW_SPINLOCK(native_tlbie_lock);
- 
--static inline void __tlbiel_pid(unsigned long pid, int set)
-+#define RIC_FLUSH_TLB 0
-+#define RIC_FLUSH_PWC 1
-+#define RIC_FLUSH_ALL 2
-+
-+static inline void __tlbiel_pid(unsigned long pid, int set,
-+				unsigned long ric)
- {
--	unsigned long rb,rs,ric,prs,r;
-+	unsigned long rb,rs,prs,r;
- 
- 	rb = PPC_BIT(53); /* IS = 1 */
- 	rb |= set << PPC_BITLSHIFT(51);
- 	rs = ((unsigned long)pid) << PPC_BITLSHIFT(31);
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
--	ric = 2;  /* invalidate all the caches */
- 
- 	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-@@ -39,25 +43,24 @@ static inline void __tlbiel_pid(unsigned long pid, int set)
- /*
-  * We use 128 set in radix mode and 256 set in hpt mode.
-  */
--static inline void _tlbiel_pid(unsigned long pid)
-+static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
- {
- 	int set;
- 
- 	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
--		__tlbiel_pid(pid, set);
-+		__tlbiel_pid(pid, set, ric);
- 	}
- 	return;
- }
- 
--static inline void _tlbie_pid(unsigned long pid)
-+static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- {
--	unsigned long rb,rs,ric,prs,r;
-+	unsigned long rb,rs,prs,r;
- 
- 	rb = PPC_BIT(53); /* IS = 1 */
- 	rs = pid << PPC_BITLSHIFT(31);
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
--	ric = 2;  /* invalidate all the caches */
- 
- 	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-@@ -66,16 +69,15 @@ static inline void _tlbie_pid(unsigned long pid)
- }
- 
- static inline void _tlbiel_va(unsigned long va, unsigned long pid,
--			      unsigned long ap)
-+			      unsigned long ap, unsigned long ric)
- {
--	unsigned long rb,rs,ric,prs,r;
-+	unsigned long rb,rs,prs,r;
- 
- 	rb = va & ~(PPC_BITMASK(52, 63));
- 	rb |= ap << PPC_BITLSHIFT(58);
- 	rs = pid << PPC_BITLSHIFT(31);
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
--	ric = 0;  /* no cluster flush yet */
- 
- 	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-@@ -84,16 +86,15 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- }
- 
- static inline void _tlbie_va(unsigned long va, unsigned long pid,
--			     unsigned long ap)
-+			     unsigned long ap, unsigned long ric)
- {
--	unsigned long rb,rs,ric,prs,r;
-+	unsigned long rb,rs,prs,r;
- 
- 	rb = va & ~(PPC_BITMASK(52, 63));
- 	rb |= ap << PPC_BITLSHIFT(58);
- 	rs = pid << PPC_BITLSHIFT(31);
- 	prs = 1; /* process scoped */
- 	r = 1;   /* raidx format */
--	ric = 0;  /* no cluster flush yet */
- 
- 	asm volatile("ptesync": : :"memory");
- 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-@@ -119,7 +120,7 @@ void radix__local_flush_tlb_mm(struct mm_struct *mm)
- 	preempt_disable();
- 	pid = mm->context.id;
- 	if (pid != MMU_NO_CONTEXT)
--		_tlbiel_pid(pid);
-+		_tlbiel_pid(pid, RIC_FLUSH_ALL);
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__local_flush_tlb_mm);
-@@ -132,7 +133,7 @@ void radix___local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
- 	preempt_disable();
- 	pid = mm ? mm->context.id : 0;
- 	if (pid != MMU_NO_CONTEXT)
--		_tlbiel_va(vmaddr, pid, ap);
-+		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
- 	preempt_enable();
- }
- 
-@@ -169,11 +170,11 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 
- 		if (lock_tlbie)
- 			raw_spin_lock(&native_tlbie_lock);
--		_tlbie_pid(pid);
-+		_tlbie_pid(pid, RIC_FLUSH_ALL);
- 		if (lock_tlbie)
- 			raw_spin_unlock(&native_tlbie_lock);
- 	} else
--		_tlbiel_pid(pid);
-+		_tlbiel_pid(pid, RIC_FLUSH_ALL);
- no_context:
- 	preempt_enable();
- }
-@@ -193,11 +194,11 @@ void radix___flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
- 
- 		if (lock_tlbie)
- 			raw_spin_lock(&native_tlbie_lock);
--		_tlbie_va(vmaddr, pid, ap);
-+		_tlbie_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
- 		if (lock_tlbie)
- 			raw_spin_unlock(&native_tlbie_lock);
- 	} else
--		_tlbiel_va(vmaddr, pid, ap);
-+		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
- bail:
- 	preempt_enable();
- }
-@@ -221,7 +222,7 @@ void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
- 
- 	if (lock_tlbie)
- 		raw_spin_lock(&native_tlbie_lock);
--	_tlbie_pid(0);
-+	_tlbie_pid(0, RIC_FLUSH_ALL);
- 	if (lock_tlbie)
- 		raw_spin_unlock(&native_tlbie_lock);
- }
+	1) __pv_wait will not return until *ptr != val as Waiman gives me a tip.
+	2) support lock holder serching by storing cpu number into a hash table(implemented as an array)
+	This is because lock_stealing hit too much, up to 10%~20% of all the successful lock(), and avoid
+	vcpu slices bounce.
+	
+change from v2:
+	__spin_yeild_cpu() will yield slices to lpar if target cpu is running.
+	remove unnecessary rmb() in __spin_yield/wake_cpu.
+	__pv_wait() will check the *ptr == val.
+	some commit message change
+
+change fome v1:
+	separate into 6 pathes from one patch
+	some minor code changes.
+
+I do several tests on pseries IBM,8408-E8E with 32cpus, 64GB memory, kernel 4.6
+benchmark test results are below.
+
+2 perf tests:
+perf bench futex hash
+perf bench futex lock-pi
+
+_____test________________spinlcok______________pv-qspinlcok_____
+|futex hash	|	528572 ops	|	573238 ops	|
+|futex lock-pi	|	354 ops		|	352 ops		|
+
+scheduler test:
+Test how many loops of schedule() can finish within 10 seconds on all cpus.
+
+_____test________________spinlcok______________pv-qspinlcok_____
+|schedule() loops|	340890082 	|	331730973	|
+
+kernel compiling test:
+build a default linux kernel image to see how long it took
+
+_____test________________spinlcok______________pv-qspinlcok_____
+| compiling takes|	22m 		|	22m		|
+
+some notes:
+the performace is as good as current spinlock's. in some case better while some cases worse.
+But in some other tests(not listed here), we verify the two spinlock's workloads by perf record&report.
+pv-qspinlock is light-weight than current spinlock.
+This patch series depends on 2 patches:
+[patch]powerpc: Implement {cmp}xchg for u8 and u16
+[patch]locking/pvqspinlock: Add lock holder CPU argument to pv_wait() from Waiman
+
+Some other patches in Waiman's "locking/pvqspinlock: Fix missed PV wakeup & support PPC" are not applied for now.
+
+Pan Xinhui (6):
+  qspinlock: powerpc support qspinlock
+  powerpc: pseries/Kconfig: Add qspinlock build config
+  powerpc: lib/locks.c: Add cpu yield/wake helper function
+  pv-qspinlock: powerpc support pv-qspinlock
+  pv-qspinlock: use cmpxchg_release in __pv_queued_spin_unlock
+  powerpc: pseries: Add pv-qspinlock build config/make
+
+ arch/powerpc/include/asm/qspinlock.h               |  41 +++++++
+ arch/powerpc/include/asm/qspinlock_paravirt.h      |  38 +++++++
+ .../powerpc/include/asm/qspinlock_paravirt_types.h |  13 +++
+ arch/powerpc/include/asm/spinlock.h                |  31 ++++--
+ arch/powerpc/include/asm/spinlock_types.h          |   4 +
+ arch/powerpc/kernel/Makefile                       |   1 +
+ arch/powerpc/kernel/paravirt.c                     | 121 +++++++++++++++++++++
+ arch/powerpc/lib/locks.c                           |  37 +++++++
+ arch/powerpc/platforms/pseries/Kconfig             |   9 ++
+ arch/powerpc/platforms/pseries/setup.c             |   5 +
+ kernel/locking/qspinlock_paravirt.h                |   2 +-
+ 11 files changed, 289 insertions(+), 13 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/qspinlock.h
+ create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt.h
+ create mode 100644 arch/powerpc/include/asm/qspinlock_paravirt_types.h
+ create mode 100644 arch/powerpc/kernel/paravirt.c
+
 -- 
-2.7.4
+2.4.11
