@@ -1,37 +1,44 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL1GC6TLzzDqNq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 18:53:07 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>, Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Joerg Roedel <joro@8bytes.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>, Yangbo Lu <yangbo.lu@nxp.com>,
- Kumar Gala <galak@codeaurora.org>, Yang-Leo Li <leoyang.li@nxp.com>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Qiang Zhao <qiang.zhao@nxp.com>
-Subject: Re: [PATCH 3/4] mmc: sdhci-of-esdhc: fix host version for
- T4240-R1.0-R2.0
-Date: Thu, 02 Jun 2016 10:52:48 +0200
-Message-ID: <3851136.KiJNtFycNm@wuerfel>
-In-Reply-To: <1464829874.16584.163.camel@buserror.net>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <6110875.0k1HlSKhzn@wuerfel> <1464829874.16584.163.camel@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL1R04GlvzDqNq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:00:44 +1000 (AEST)
+Received: from pps.filterd (m0075771.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u528tPo9035094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jun 2016 05:00:42 -0400
+Message-Id: <201606020900.u528tPo9035094@mx0a-001b2d01.pphosted.com>
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23a7nqpyfu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jun 2016 05:00:42 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Thu, 2 Jun 2016 06:00:40 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 922F3352005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 05:00:22 -0400 (EDT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5290bYI27197722
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jun 2016 06:00:37 -0300
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5290bKT020406
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jun 2016 06:00:37 -0300
+Subject: Re: [PATCH 1/3] powerpc: export cpu_to_core_id()
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <201606012016.u51KDwr8046821@mx0a-001b2d01.pphosted.com>
+ <1464853260.19646.6.camel@ellerman.id.au>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Thu, 2 Jun 2016 06:00:34 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1464853260.19646.6.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,58 +48,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, June 1, 2016 8:11:14 PM CEST Scott Wood wrote:
-> > +#define T4240_HOST_VER ((VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) |
-> > SDHCI_SPEC_200)
-> > +static const struct soc_device_attribute esdhc_t4240_quirk = {
-> > +     /* T4240 revision < 0x20 uses vendor version 23, SDHCI version 200
-> > */
-> > +     { .soc_id = "T4*(0x824000)", .revision = "0x[01]?",
-> > +       .data = (void *)(uintptr_t)(T4240_HOST_VER) },
-> 
-> Why should this code need to care that the string begins with "T4"?  This
-> creates dual maintenance if that were to change.  It's also broken because
-> T4240 has compatible = "fsl,t4240-device-config", "fsl,qoriq-device-config
-> -2.0" and thus with these patches it would incorrectly show up as "P series
-> (0x824000)".  The compatible string of this node was never meant to be a key
-> for choosing a string to describe the system to userspace.
+Hi Michael,
 
-This is an artifact of not knowing the specific SoC name, and we can change
-that by looking up the name from the SVR value in the soc_device driver.
- 
-> 0x824000 is a magic number which should be represented symbolically.
+On 06/02/2016 04:41 AM, Michael Ellerman wrote:
+> On Wed, 2016-06-01 at 17:16 -0300, Mauricio Faria de Oliveira wrote:
+>
+>> Export cpu_to_core_id().  This will be used by the lpfc driver.
+>
+> Can you explain why?
 
-Sure, feel free to change the format of the soc_device string in any
-name, I just converted the information I had available in the comments.
-The only thing that is important here is that the string matches what
-the soc_device driver calls it.
+Yup,
 
-> If T4240 is affected, then so are the reduced-core variants T4160 and T4080,
-> but 0x824000 doesn't match them (Yangbo's patch had the same problem).  And
-> please don't respond with "0x824*"
-> 
-> You also didn't strip out the E bit of SVR which indicates encryption
-> capability and nothing else (Yangbo's patch did not have this problem because
-> it used SVR_SOC_VER).
+> I would have thought there'd be architecture neutral APIs you can use - and if
+> there aren't maybe we should write them.
 
-Ok, that should be easy enough to fix in the soc_device driver.
+I actually use topology_core_id() from  <kernel/topology.h> in lpfc [1]
+(defined to cpu_to_core_id() by arch/powerpc/include/asm/topology.h).
 
-> What happens if the revision condition is more complicated, such as <= 0x20
-> with 0x21 being fine?  Multiple quirk entries where before we had as simple
-> comparison?
+That is arch-neutral, used by eg /sys/devices/system/cpu/cpu*/topology,
+but drivers/base/topology.c is built-in (obj-y in ./Makefile), and thus
+didn't need the export.
 
-I guess yes. I would really hope that there is no need to use this interface
-pervasively, it's really just to work around the cases where there is no
-way to pass the information in DT otherwise.
+Thus, since the module uses topology_core_id() and this is defined to
+cpu_to_core_id(), it needs the export:
 
-> I fail to see how this approach is an improvement (much less one that needs to
-> hold up a patchset that is fixing a problem and is not touching any generic
-> code).  Why does this need to be a string?
+     ERROR: "cpu_to_core_id" [drivers/scsi/lpfc/lpfc.ko] undefined!
+     make[1]: *** [__modpost] Error 1
+     make: *** [modules] Error 2
 
-A string is what user space gets in /sys/devices/soc/*, and we already have
-code that does the same things there to work around quirks, here we just
-use the same interface in a completely generic way. Note that not every
-SoC family uses numbers in the same way, some have multiple subrevisions,
-some have names etc.
+Thanks,
 
-	Arnd
+[1] http://marc.info/?l=linux-scsi&m=146481382301686
+
+-- 
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
