@@ -1,14 +1,14 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2hX44ftzDqvs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:57:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2hd0RDdzDqxK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:57:36 +1000 (AEST)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 03:27:19 -0600
+ Thu, 2 Jun 2016 03:27:24 -0600
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org
@@ -17,10 +17,8 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  waiman.long@hpe.com, Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 Subject: [PATCH v5 0/6] powerPC/pSeries use pv-qpsinlock as the default
  spinlock implemention
-Date: Thu,  2 Jun 2016 17:26:24 +0800
-Message-Id: <1464859590-5292-2-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-In-Reply-To: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Date: Thu,  2 Jun 2016 17:26:23 +0800
+Message-Id: <1464859590-5292-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
