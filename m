@@ -3,13 +3,13 @@ Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
  [210.118.77.11])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKF0Nq4zDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:20 +1000 (AEST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKF5BtzzDqgm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:21 +1000 (AEST)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
  by mailout1.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500NYBI8T0I00@mailout1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:18 +0100 (BST)
+ with ESMTP id <0O8500MZ6I8W9W00@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:21 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,10 +63,9 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 17/45] infiniband: dma-mapping: Use unsigned long for
- dma_attrs
-Date: Thu, 02 Jun 2016 17:39:19 +0200
-Message-id: <1464881987-13203-18-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 18/45] iommu: dma-mapping: Use unsigned long for dma_attrs
+Date: Thu, 02 Jun 2016 17:39:20 +0200
+Message-id: <1464881987-13203-19-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -83,85 +82,124 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/infiniband/core/umem.c | 7 +++----
- include/rdma/ib_verbs.h        | 8 ++++----
- 2 files changed, 7 insertions(+), 8 deletions(-)
+ drivers/iommu/amd_iommu.c | 12 ++++++------
+ drivers/iommu/dma-iommu.c |  6 +++---
+ include/linux/dma-iommu.h |  6 +++---
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
-index fe4d2e1a8b58..75d8a8b178a5 100644
---- a/drivers/infiniband/core/umem.c
-+++ b/drivers/infiniband/core/umem.c
-@@ -37,7 +37,6 @@
- #include <linux/sched.h>
- #include <linux/export.h>
- #include <linux/hugetlb.h>
--#include <linux/dma-attrs.h>
- #include <linux/slab.h>
- #include <rdma/ib_umem_odp.h>
+diff --git a/drivers/iommu/amd_iommu.c b/drivers/iommu/amd_iommu.c
+index 634f636393d5..afbb0de6a7f5 100644
+--- a/drivers/iommu/amd_iommu.c
++++ b/drivers/iommu/amd_iommu.c
+@@ -2716,7 +2716,7 @@ static void __unmap_single(struct dma_ops_domain *dma_dom,
+ static dma_addr_t map_page(struct device *dev, struct page *page,
+ 			   unsigned long offset, size_t size,
+ 			   enum dma_data_direction dir,
+-			   struct dma_attrs *attrs)
++			   unsigned long attrs)
+ {
+ 	phys_addr_t paddr = page_to_phys(page) + offset;
+ 	struct protection_domain *domain;
+@@ -2738,7 +2738,7 @@ static dma_addr_t map_page(struct device *dev, struct page *page,
+  * The exported unmap_single function for dma_ops.
+  */
+ static void unmap_page(struct device *dev, dma_addr_t dma_addr, size_t size,
+-		       enum dma_data_direction dir, struct dma_attrs *attrs)
++		       enum dma_data_direction dir, unsigned long attrs)
+ {
+ 	struct protection_domain *domain;
  
-@@ -92,12 +91,12 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
- 	unsigned long npages;
- 	int ret;
+@@ -2755,7 +2755,7 @@ static void unmap_page(struct device *dev, dma_addr_t dma_addr, size_t size,
+  */
+ static int map_sg(struct device *dev, struct scatterlist *sglist,
+ 		  int nelems, enum dma_data_direction dir,
+-		  struct dma_attrs *attrs)
++		  unsigned long attrs)
+ {
+ 	struct protection_domain *domain;
  	int i;
--	DEFINE_DMA_ATTRS(attrs);
-+	unsigned long attrs = 0;
- 	struct scatterlist *sg, *sg_list_start;
- 	int need_release = 0;
- 
- 	if (dmasync)
--		dma_set_attr(DMA_ATTR_WRITE_BARRIER, &attrs);
-+		attrs |= DMA_ATTR_WRITE_BARRIER;
- 
- 	if (!size)
- 		return ERR_PTR(-EINVAL);
-@@ -215,7 +214,7 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
- 				  umem->sg_head.sgl,
- 				  umem->npages,
- 				  DMA_BIDIRECTIONAL,
--				  &attrs);
-+				  attrs);
- 
- 	if (umem->nmap <= 0) {
- 		ret = -ENOMEM;
-diff --git a/include/rdma/ib_verbs.h b/include/rdma/ib_verbs.h
-index 432bed510369..4d73928962c7 100644
---- a/include/rdma/ib_verbs.h
-+++ b/include/rdma/ib_verbs.h
-@@ -2819,7 +2819,7 @@ static inline void ib_dma_unmap_single(struct ib_device *dev,
- static inline u64 ib_dma_map_single_attrs(struct ib_device *dev,
- 					  void *cpu_addr, size_t size,
- 					  enum dma_data_direction direction,
--					  struct dma_attrs *attrs)
-+					  unsigned long attrs)
+@@ -2803,7 +2803,7 @@ unmap:
+  */
+ static void unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 		     int nelems, enum dma_data_direction dir,
+-		     struct dma_attrs *attrs)
++		     unsigned long attrs)
  {
- 	return dma_map_single_attrs(dev->dma_device, cpu_addr, size,
- 				    direction, attrs);
-@@ -2828,7 +2828,7 @@ static inline u64 ib_dma_map_single_attrs(struct ib_device *dev,
- static inline void ib_dma_unmap_single_attrs(struct ib_device *dev,
- 					     u64 addr, size_t size,
- 					     enum dma_data_direction direction,
--					     struct dma_attrs *attrs)
-+					     unsigned long attrs)
+ 	struct protection_domain *domain;
+ 	struct scatterlist *s;
+@@ -2825,7 +2825,7 @@ static void unmap_sg(struct device *dev, struct scatterlist *sglist,
+  */
+ static void *alloc_coherent(struct device *dev, size_t size,
+ 			    dma_addr_t *dma_addr, gfp_t flag,
+-			    struct dma_attrs *attrs)
++			    unsigned long attrs)
  {
- 	return dma_unmap_single_attrs(dev->dma_device, addr, size,
- 				      direction, attrs);
-@@ -2906,7 +2906,7 @@ static inline void ib_dma_unmap_sg(struct ib_device *dev,
- static inline int ib_dma_map_sg_attrs(struct ib_device *dev,
- 				      struct scatterlist *sg, int nents,
- 				      enum dma_data_direction direction,
--				      struct dma_attrs *attrs)
-+				      unsigned long attrs)
+ 	u64 dma_mask = dev->coherent_dma_mask;
+ 	struct protection_domain *domain;
+@@ -2879,7 +2879,7 @@ out_free:
+  */
+ static void free_coherent(struct device *dev, size_t size,
+ 			  void *virt_addr, dma_addr_t dma_addr,
+-			  struct dma_attrs *attrs)
++			  unsigned long attrs)
  {
- 	return dma_map_sg_attrs(dev->dma_device, sg, nents, direction, attrs);
+ 	struct protection_domain *domain;
+ 	struct page *page;
+diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
+index ea5a9ebf0f78..6c1bda504fb1 100644
+--- a/drivers/iommu/dma-iommu.c
++++ b/drivers/iommu/dma-iommu.c
+@@ -286,7 +286,7 @@ void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
+  *	   or NULL on failure.
+  */
+ struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
+-		struct dma_attrs *attrs, int prot, dma_addr_t *handle,
++		unsigned long attrs, int prot, dma_addr_t *handle,
+ 		void (*flush_page)(struct device *, const void *, phys_addr_t))
+ {
+ 	struct iommu_domain *domain = iommu_get_domain_for_dev(dev);
+@@ -400,7 +400,7 @@ dma_addr_t iommu_dma_map_page(struct device *dev, struct page *page,
  }
-@@ -2914,7 +2914,7 @@ static inline int ib_dma_map_sg_attrs(struct ib_device *dev,
- static inline void ib_dma_unmap_sg_attrs(struct ib_device *dev,
- 					 struct scatterlist *sg, int nents,
- 					 enum dma_data_direction direction,
--					 struct dma_attrs *attrs)
-+					 unsigned long attrs)
+ 
+ void iommu_dma_unmap_page(struct device *dev, dma_addr_t handle, size_t size,
+-		enum dma_data_direction dir, struct dma_attrs *attrs)
++		enum dma_data_direction dir, unsigned long attrs)
  {
- 	dma_unmap_sg_attrs(dev->dma_device, sg, nents, direction, attrs);
+ 	__iommu_dma_unmap(iommu_get_domain_for_dev(dev), handle);
  }
+@@ -560,7 +560,7 @@ out_restore_sg:
+ }
+ 
+ void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+-		enum dma_data_direction dir, struct dma_attrs *attrs)
++		enum dma_data_direction dir, unsigned long attrs)
+ {
+ 	/*
+ 	 * The scatterlist segments are mapped into a single
+diff --git a/include/linux/dma-iommu.h b/include/linux/dma-iommu.h
+index 8443bbb5c071..81c5c8d167ad 100644
+--- a/include/linux/dma-iommu.h
++++ b/include/linux/dma-iommu.h
+@@ -39,7 +39,7 @@ int dma_direction_to_prot(enum dma_data_direction dir, bool coherent);
+  * the arch code to take care of attributes and cache maintenance
+  */
+ struct page **iommu_dma_alloc(struct device *dev, size_t size, gfp_t gfp,
+-		struct dma_attrs *attrs, int prot, dma_addr_t *handle,
++		unsigned long attrs, int prot, dma_addr_t *handle,
+ 		void (*flush_page)(struct device *, const void *, phys_addr_t));
+ void iommu_dma_free(struct device *dev, struct page **pages, size_t size,
+ 		dma_addr_t *handle);
+@@ -56,9 +56,9 @@ int iommu_dma_map_sg(struct device *dev, struct scatterlist *sg,
+  * directly as DMA mapping callbacks for simplicity
+  */
+ void iommu_dma_unmap_page(struct device *dev, dma_addr_t handle, size_t size,
+-		enum dma_data_direction dir, struct dma_attrs *attrs);
++		enum dma_data_direction dir, unsigned long attrs);
+ void iommu_dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+-		enum dma_data_direction dir, struct dma_attrs *attrs);
++		enum dma_data_direction dir, unsigned long attrs);
+ int iommu_dma_supported(struct device *dev, u64 mask);
+ int iommu_dma_mapping_error(struct device *dev, dma_addr_t dma_addr);
+ 
 -- 
 1.9.1
