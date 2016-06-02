@@ -1,21 +1,24 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2gf5h3TzDqkL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:56:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL2gl5tvZzDqmt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 19:56:51 +1000 (AEST)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 03:46:39 -0600
+ Thu, 2 Jun 2016 03:46:48 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 1/3] Fix .long's in mm/tlb-radix.c to more meaningful
-Date: Thu,  2 Jun 2016 15:16:27 +0530
-Message-Id: <1464860789-3672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 3/3] powerpc/mm/radix: Flush page walk cache when freeing page
+ table
+Date: Thu,  2 Jun 2016 15:16:29 +0530
+Message-Id: <1464860789-3672-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1464860789-3672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1464860789-3672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,110 +28,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Balbir Singh <bsingharora@gmail.com>
+Even though a tlb_flush() does a flush with invalidate all cache,
+we can end up doing an RCU page table free, before calling tlb_flush().
+That means we can have page walk cache entries even after we free the
+page table pages. This can result in us doing wrong page table walk.
 
-The .longs with the shifts are harder to read, use more
-meaningful names for the opcodes. PPC_TLBIE_5 is introduced
-for the 5 opcode variation of the instruction due to an existing
-op-code for the 2 opcode variant
+Avoid this by doing pwc flush on every page table free. We can't batch
+the pwc flush, because the rcu call back function where we free the
+page table pages doesn't have information of the mmu gather. Thus we
+have to do a pwc on every page table page freed.
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Note: I also removed the dummy tlb_flush_pgtable call functions for
+hash 32.
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 14 ++++++++++++++
- arch/powerpc/mm/tlb-radix.c           | 13 +++++--------
- 2 files changed, 19 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgalloc.h  |  1 -
+ arch/powerpc/include/asm/book3s/64/pgalloc.h  | 16 ++++++++++-
+ arch/powerpc/include/asm/book3s/64/tlbflush.h |  1 +
+ arch/powerpc/include/asm/book3s/pgalloc.h     |  5 ----
+ arch/powerpc/mm/tlb-radix.c                   | 39 +++++++++++++++++++++++++++
+ 5 files changed, 55 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 1d035c1cc889..c0e9ea44fee3 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -184,6 +184,7 @@
- #define PPC_INST_STSWX			0x7c00052a
- #define PPC_INST_STXVD2X		0x7c000798
- #define PPC_INST_TLBIE			0x7c000264
-+#define PPC_INST_TLBIEL			0x7c000224
- #define PPC_INST_TLBILX			0x7c000024
- #define PPC_INST_WAIT			0x7c00007c
- #define PPC_INST_TLBIVAX		0x7c000624
-@@ -257,6 +258,9 @@
- #define ___PPC_RB(b)	(((b) & 0x1f) << 11)
- #define ___PPC_RS(s)	(((s) & 0x1f) << 21)
- #define ___PPC_RT(t)	___PPC_RS(t)
-+#define ___PPC_R(r)	(((r) & 0x1) << 16)
-+#define ___PPC_PRS(prs)	(((prs) & 0x1) << 17)
-+#define ___PPC_RIC(ric)	(((ric) & 0x3) << 18)
- #define __PPC_RA(a)	___PPC_RA(__REG_##a)
- #define __PPC_RA0(a)	___PPC_RA(__REGA0_##a)
- #define __PPC_RB(b)	___PPC_RB(__REG_##b)
-@@ -321,6 +325,16 @@
- 					__PPC_WC(w))
- #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
- 					       ___PPC_RB(a) | ___PPC_RS(lp))
-+#define	PPC_TLBIE_5(rb,rs,ric,prs,r) \
-+				stringify_in_c(.long PPC_INST_TLBIE | \
-+					___PPC_RB(rb) | ___PPC_RS(rs) | \
-+					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
-+					___PPC_R(r))
-+#define	PPC_TLBIEL(rb,rs,ric,prs,r) \
-+				stringify_in_c(.long PPC_INST_TLBIEL | \
-+					___PPC_RB(rb) | ___PPC_RS(rs) | \
-+					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
-+					___PPC_R(r))
- #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
- 					__PPC_RA0(a) | __PPC_RB(b))
- #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index a2350194fc76..8e21bb492dca 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -102,7 +102,6 @@ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+ {
+-	tlb_flush_pgtable(tlb, address);
+ 	pgtable_page_dtor(table);
+ 	pgtable_free_tlb(tlb, page_address(table), 0);
+ }
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index 488279edb1f0..26eb2cb80c4e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -110,6 +110,11 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
+                                   unsigned long address)
+ {
++	/*
++	 * By now all the pud entries should be none entries. So go
++	 * ahead and flush the page walk cache
++	 */
++	flush_tlb_pgtable(tlb, address);
+         pgtable_free_tlb(tlb, pud, PUD_INDEX_SIZE);
+ }
+ 
+@@ -127,6 +132,11 @@ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
+                                   unsigned long address)
+ {
++	/*
++	 * By now all the pud entries should be none entries. So go
++	 * ahead and flush the page walk cache
++	 */
++	flush_tlb_pgtable(tlb, address);
+         return pgtable_free_tlb(tlb, pmd, PMD_CACHE_INDEX);
+ }
+ 
+@@ -198,7 +208,11 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+ {
+-	tlb_flush_pgtable(tlb, address);
++	/*
++	 * By now all the pud entries should be none entries. So go
++	 * ahead and flush the page walk cache
++	 */
++	flush_tlb_pgtable(tlb, address);
+ 	pgtable_free_tlb(tlb, table, 0);
+ }
+ 
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+index d98424ae356c..05a45dc18080 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -73,4 +73,5 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ #define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
+ #endif /* CONFIG_SMP */
+ 
++extern void flush_tlb_pgtable(struct mmu_gather *tlb, unsigned long address);
+ #endif /*  _ASM_POWERPC_BOOK3S_64_TLBFLUSH_H */
+diff --git a/arch/powerpc/include/asm/book3s/pgalloc.h b/arch/powerpc/include/asm/book3s/pgalloc.h
+index 54f591e9572e..c0a69ae92256 100644
+--- a/arch/powerpc/include/asm/book3s/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/pgalloc.h
+@@ -4,11 +4,6 @@
+ #include <linux/mm.h>
+ 
+ extern void tlb_remove_table(struct mmu_gather *tlb, void *table);
+-static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
+-				     unsigned long address)
+-{
+-
+-}
+ 
+ #ifdef CONFIG_PPC64
+ #include <asm/book3s/64/pgalloc.h>
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 0fdaf93a3e09..e6b7487ad28f 100644
+index b33b7c77cfa3..7f2fa82bd155 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -12,6 +12,7 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- #include <linux/memblock.h>
-+#include <asm/ppc-opcode.h>
- 
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
-@@ -30,8 +31,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set)
- 	ric = 2;  /* invalidate all the caches */
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000224 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("ptesync": : :"memory");
+@@ -180,6 +180,30 @@ no_context:
  }
-@@ -60,8 +60,7 @@ static inline void _tlbie_pid(unsigned long pid)
- 	ric = 2;  /* invalidate all the caches */
+ EXPORT_SYMBOL(radix__flush_tlb_mm);
  
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000264 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
++void radix__flush_tlb_mm_pwc(struct mm_struct *mm)
++{
++	unsigned int pid;
++
++	preempt_disable();
++	pid = mm->context.id;
++	if (unlikely(pid == MMU_NO_CONTEXT))
++		goto no_context;
++
++	if (!mm_is_core_local(mm)) {
++		int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
++
++		if (lock_tlbie)
++			raw_spin_lock(&native_tlbie_lock);
++		_tlbie_pid(pid, RIC_FLUSH_PWC);
++		if (lock_tlbie)
++			raw_spin_unlock(&native_tlbie_lock);
++	} else
++		_tlbiel_pid(pid, RIC_FLUSH_PWC);
++no_context:
++	preempt_enable();
++}
++EXPORT_SYMBOL(radix__flush_tlb_mm_pwc);
++
+ void radix___flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+ 		       unsigned long ap, int nid)
+ {
+@@ -247,3 +271,18 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 	struct mm_struct *mm = tlb->mm;
+ 	radix__flush_tlb_mm(mm);
  }
-@@ -79,8 +78,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- 	ric = 0;  /* no cluster flush yet */
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000224 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("ptesync": : :"memory");
- }
-@@ -98,8 +96,7 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 	ric = 0;  /* no cluster flush yet */
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000264 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
++/*
++ * flush the page walk cache for the address
++ */
++void flush_tlb_pgtable(struct mmu_gather *tlb, unsigned long address)
++{
++	struct mm_struct *mm = tlb->mm;
++	/*
++	 * flush the page table walk cache on freeing page table. We already
++	 * have marked the upper/higher level page table entry none by now.
++	 * So it is safe to flush PWC here.
++	 */
++	if (!radix_enabled())
++		return;
++	radix__flush_tlb_mm_pwc(mm);
++}
 -- 
 2.7.4
