@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14])
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKP36PLzDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKT0mTrzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:33 +1000 (AEST)
 Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout4.w1.samsung.com
+ by mailout1.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500CADI92Z110@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:27 +0100 (BST)
+ with ESMTP id <0O8500MZAI959W00@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:30 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,9 +63,9 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 20/45] xen: dma-mapping: Use unsigned long for dma_attrs
-Date: Thu, 02 Jun 2016 17:39:22 +0200
-Message-id: <1464881987-13203-21-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 21/45] swiotlb: dma-mapping: Use unsigned long for dma_attrs
+Date: Thu, 02 Jun 2016 17:39:23 +0200
+Message-id: <1464881987-13203-22-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -82,117 +82,109 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/xen/swiotlb-xen.c | 14 +++++++-------
- include/xen/swiotlb-xen.h | 12 ++++++------
- 2 files changed, 13 insertions(+), 13 deletions(-)
+ include/linux/swiotlb.h | 10 +++++-----
+ lib/swiotlb.c           | 13 +++++++------
+ 2 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index 7399782c0998..87e6035c9e81 100644
---- a/drivers/xen/swiotlb-xen.c
-+++ b/drivers/xen/swiotlb-xen.c
-@@ -294,7 +294,7 @@ error:
- void *
- xen_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 			   dma_addr_t *dma_handle, gfp_t flags,
--			   struct dma_attrs *attrs)
-+			   unsigned long attrs)
- {
- 	void *ret;
- 	int order = get_order(size);
-@@ -346,7 +346,7 @@ EXPORT_SYMBOL_GPL(xen_swiotlb_alloc_coherent);
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index 017fced60242..5f81f8a187f2 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -6,7 +6,6 @@
+ #include <linux/types.h>
  
- void
- xen_swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
--			  dma_addr_t dev_addr, struct dma_attrs *attrs)
-+			  dma_addr_t dev_addr, unsigned long attrs)
- {
- 	int order = get_order(size);
- 	phys_addr_t phys;
-@@ -378,7 +378,7 @@ EXPORT_SYMBOL_GPL(xen_swiotlb_free_coherent);
- dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
- 				unsigned long offset, size_t size,
- 				enum dma_data_direction dir,
--				struct dma_attrs *attrs)
-+				unsigned long attrs)
- {
- 	phys_addr_t map, phys = page_to_phys(page) + offset;
- 	dma_addr_t dev_addr = xen_phys_to_bus(phys);
-@@ -434,7 +434,7 @@ EXPORT_SYMBOL_GPL(xen_swiotlb_map_page);
-  */
- static void xen_unmap_single(struct device *hwdev, dma_addr_t dev_addr,
- 			     size_t size, enum dma_data_direction dir,
--				 struct dma_attrs *attrs)
-+			     unsigned long attrs)
- {
- 	phys_addr_t paddr = xen_bus_to_phys(dev_addr);
+ struct device;
+-struct dma_attrs;
+ struct page;
+ struct scatterlist;
  
-@@ -462,7 +462,7 @@ static void xen_unmap_single(struct device *hwdev, dma_addr_t dev_addr,
+@@ -68,10 +67,10 @@ swiotlb_free_coherent(struct device *hwdev, size_t size,
+ extern dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 				   unsigned long offset, size_t size,
+ 				   enum dma_data_direction dir,
+-				   struct dma_attrs *attrs);
++				   unsigned long attrs);
+ extern void swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
+ 			       size_t size, enum dma_data_direction dir,
+-			       struct dma_attrs *attrs);
++			       unsigned long attrs);
  
- void xen_swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
- 			    size_t size, enum dma_data_direction dir,
+ extern int
+ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sg, int nents,
+@@ -83,12 +82,13 @@ swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nents,
+ 
+ extern int
+ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+-		     enum dma_data_direction dir, struct dma_attrs *attrs);
++		     enum dma_data_direction dir,
++		     unsigned long attrs);
+ 
+ extern void
+ swiotlb_unmap_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
+ 		       int nelems, enum dma_data_direction dir,
+-		       struct dma_attrs *attrs);
++		       unsigned long attrs);
+ 
+ extern void
+ swiotlb_sync_single_for_cpu(struct device *hwdev, dma_addr_t dev_addr,
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 76f29ecba8f4..22e13a0e19d7 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -738,7 +738,7 @@ swiotlb_full(struct device *dev, size_t size, enum dma_data_direction dir,
+ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
+ 			    unsigned long offset, size_t size,
+ 			    enum dma_data_direction dir,
 -			    struct dma_attrs *attrs)
 +			    unsigned long attrs)
  {
- 	xen_unmap_single(hwdev, dev_addr, size, dir, attrs);
+ 	phys_addr_t map, phys = page_to_phys(page) + offset;
+ 	dma_addr_t dev_addr = phys_to_dma(dev, phys);
+@@ -807,7 +807,7 @@ static void unmap_single(struct device *hwdev, dma_addr_t dev_addr,
+ 
+ void swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
+ 			size_t size, enum dma_data_direction dir,
+-			struct dma_attrs *attrs)
++			unsigned long attrs)
+ {
+ 	unmap_single(hwdev, dev_addr, size, dir);
  }
-@@ -538,7 +538,7 @@ EXPORT_SYMBOL_GPL(xen_swiotlb_sync_single_for_device);
+@@ -877,7 +877,7 @@ EXPORT_SYMBOL(swiotlb_sync_single_for_device);
+  */
  int
- xen_swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
- 			 int nelems, enum dma_data_direction dir,
--			 struct dma_attrs *attrs)
-+			 unsigned long attrs)
+ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
+-		     enum dma_data_direction dir, struct dma_attrs *attrs)
++		     enum dma_data_direction dir, unsigned long attrs)
  {
  	struct scatterlist *sg;
  	int i;
-@@ -599,7 +599,7 @@ EXPORT_SYMBOL_GPL(xen_swiotlb_map_sg_attrs);
+@@ -914,7 +914,7 @@ int
+ swiotlb_map_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 	       enum dma_data_direction dir)
+ {
+-	return swiotlb_map_sg_attrs(hwdev, sgl, nelems, dir, NULL);
++	return swiotlb_map_sg_attrs(hwdev, sgl, nelems, dir, 0);
+ }
+ EXPORT_SYMBOL(swiotlb_map_sg);
+ 
+@@ -924,7 +924,8 @@ EXPORT_SYMBOL(swiotlb_map_sg);
+  */
  void
- xen_swiotlb_unmap_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
- 			   int nelems, enum dma_data_direction dir,
--			   struct dma_attrs *attrs)
-+			   unsigned long attrs)
+ swiotlb_unmap_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
+-		       int nelems, enum dma_data_direction dir, struct dma_attrs *attrs)
++		       int nelems, enum dma_data_direction dir,
++		       unsigned long attrs)
  {
  	struct scatterlist *sg;
  	int i;
-diff --git a/include/xen/swiotlb-xen.h b/include/xen/swiotlb-xen.h
-index 8b2eb93ae8ba..7c35e279d1e3 100644
---- a/include/xen/swiotlb-xen.h
-+++ b/include/xen/swiotlb-xen.h
-@@ -9,30 +9,30 @@ extern int xen_swiotlb_init(int verbose, bool early);
- extern void
- *xen_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 			    dma_addr_t *dma_handle, gfp_t flags,
--			    struct dma_attrs *attrs);
-+			    unsigned long attrs);
+@@ -941,7 +942,7 @@ void
+ swiotlb_unmap_sg(struct device *hwdev, struct scatterlist *sgl, int nelems,
+ 		 enum dma_data_direction dir)
+ {
+-	return swiotlb_unmap_sg_attrs(hwdev, sgl, nelems, dir, NULL);
++	return swiotlb_unmap_sg_attrs(hwdev, sgl, nelems, dir, 0);
+ }
+ EXPORT_SYMBOL(swiotlb_unmap_sg);
  
- extern void
- xen_swiotlb_free_coherent(struct device *hwdev, size_t size,
- 			  void *vaddr, dma_addr_t dma_handle,
--			  struct dma_attrs *attrs);
-+			  unsigned long attrs);
- 
- extern dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
- 				       unsigned long offset, size_t size,
- 				       enum dma_data_direction dir,
--				       struct dma_attrs *attrs);
-+				       unsigned long attrs);
- 
- extern void xen_swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
- 				   size_t size, enum dma_data_direction dir,
--				   struct dma_attrs *attrs);
-+				   unsigned long attrs);
- extern int
- xen_swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
- 			 int nelems, enum dma_data_direction dir,
--			 struct dma_attrs *attrs);
-+			 unsigned long attrs);
- 
- extern void
- xen_swiotlb_unmap_sg_attrs(struct device *hwdev, struct scatterlist *sgl,
- 			   int nelems, enum dma_data_direction dir,
--			   struct dma_attrs *attrs);
-+			   unsigned long attrs);
- 
- extern void
- xen_swiotlb_sync_single_for_cpu(struct device *hwdev, dma_addr_t dev_addr,
 -- 
 1.9.1
