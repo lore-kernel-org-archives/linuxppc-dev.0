@@ -1,18 +1,25 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL5Wp2rnHzDqPD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 22:05:10 +1000 (AEST)
-Message-ID: <1464869109.31709.0.camel@ellerman.id.au>
-Subject: Re: [PATCH] selftests/powerpc: Import Anton's mmap & futex micro
- benchmarks
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL5bc111kzDqS7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 22:08:28 +1000 (AEST)
+Message-ID: <1464869307.31709.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 3/8] cpufreq: powerenv: Fix memory leak
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: Anton Blanchard <anton@samba.org>
-Date: Thu, 02 Jun 2016 22:05:09 +1000
-In-Reply-To: <1464868921-30413-1-git-send-email-mpe@ellerman.id.au>
-References: <1464868921-30413-1-git-send-email-mpe@ellerman.id.au>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ linaro-kernel@lists.linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Date: Thu, 02 Jun 2016 22:08:27 +1000
+In-Reply-To: <20160602114311.GR3725@vireshk-i7>
+References: <cover.1464776797.git.viresh.kumar@linaro.org>
+ <f67b4b395c777a3e933ab51eafcd76b1299bf1fb.1464776797.git.viresh.kumar@linaro.org>
+ <1464865688.11826.1.camel@ellerman.id.au>
+ <20160602112203.GO3725@vireshk-i7>
+ <1464867465.11826.4.camel@ellerman.id.au>
+ <20160602114311.GR3725@vireshk-i7>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,22 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-06-02 at 22:02 +1000, Michael Ellerman wrote:
-> +
-> +int test_futex(void)
-> +{
-> +	struct timespec ts_start, ts_end;
-> +        unsigned long i = ITERATIONS;
-> +
-> +	clock_gettime(CLOCK_MONOTONIC, &ts_start);
-> +
-> +        while (i--) {
-> +                unsigned int addr = 0;
-> +                futex(&addr, FUTEX_WAKE, 1, NULL, NULL, 0);
-> +        }
+On Thu, 2016-06-02 at 17:13 +0530, Viresh Kumar wrote:
+> On 02-06-16, 21:37, Michael Ellerman wrote:
+> > On Thu, 2016-06-02 at 16:52 +0530, Viresh Kumar wrote:
+> > > On 02-06-16, 21:08, Michael Ellerman wrote:
+> > > > On Wed, 2016-06-01 at 16:04 +0530, Viresh Kumar wrote:
+> > > > 
+> > > > > The policy is copied (unnecessarily) and is never freed. Fix it by just
+> > > > > getting a reference to the existing policy structure and putting it
+> > > > > back.
+> > > > > 
+> > > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > 
+> > > > When was it broken, always?
+> > > > 
+> > > > Cc: stable ?
+> > > 
+> > > Its a small memory leak and its not that we will fail on something. So
+> > > didn't bother to add those details, but in case they are required:
+> > > 
+> > > Cc: <stable@vger.kernel.org> # 4.3+
+> > > Fixes: 227942809b52 ("cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling")
+> > 
+> > OK. I can't actually see where the copy is?
+> > 
+> > But if we are leaking even a small amount of memory in a loop like that, in a
+> > function that's run semi-regularly, then it's going to add up eventually.
+> 
+> Urg, it wasn't a memory leak actually. I misread.
+> 
+> I somehow thought that cpufreq_get_policy() is also allocating memory
+> for the policy, but it just memcpy's it into the callers buffer. So,
+> that's not a problem really.
+> 
+> This patch should be just dropped. Sorry for the noise.
 
-Ugh, I can't even ..
-
-Obviously I'll fix up the whitespace before committing.
+OK, no worries.
 
 cheers
