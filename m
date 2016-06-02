@@ -1,27 +1,27 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rKxTJ5B7qzDqPy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 16:02:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rKxl366stzDqXT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 16:14:23 +1000 (AEST)
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 00:02:17 -0600
+ Thu, 2 Jun 2016 00:14:21 -0600
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
-Cc: bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
+To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org
+Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [RESEND PATCH v2 1/4] PCI: Ignore resource_alignment if
- PCI_PROBE_ONLY was set
-Date: Thu,  2 Jun 2016 13:46:48 +0800
-Message-Id: <1464846411-16895-2-git-send-email-xyjxie@linux.vnet.ibm.com>
-In-Reply-To: <1464846411-16895-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1464846411-16895-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ joro@8bytes.org, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc,
+ kevin.tian@intel.com, David.Laight@ACULAB.COM
+Subject: [RESEND PATCH v2 0/6] vfio-pci: Add support for mmapping MSI-X table
+Date: Thu,  2 Jun 2016 14:09:57 +0800
+Message-Id: <1464847803-22756-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The resource_alignment will releases memory resources allocated
-by firmware so that kernel can reassign new resources later on.
-But this will cause the problem that no resources can be
-allocated by kernel if PCI_PROBE_ONLY was set, e.g. on pSeries
-platform because PCI_PROBE_ONLY force kernel to use firmware
-setup and not to reassign any resources.
+Current vfio-pci implementation disallows to mmap the page
+containing MSI-X table in case that users can write directly
+to MSI-X table and generate an incorrect MSIs.
 
-To solve this problem, this patch ignores resource_alignment
-if PCI_PROBE_ONLY was set.
+However, this will cause some performance issue when there
+are some critical device registers in the same page as the 
+MSI-X table. We have to handle the mmio access to these
+registers in QEMU emulation rather than in guest.
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- drivers/pci/pci.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+To solve this issue, this series allows to expose MSI-X table
+to userspace when hardware enables the capability of interrupt
+remapping which can ensure that a given PCI device can only
+shoot the MSIs assigned for it. And we introduce a new bus_flags
+PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+for different archs.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index c8b4dbd..a259394 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4761,6 +4761,12 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
- 	while (*p) {
-+		if (pci_has_flag(PCI_PROBE_ONLY)) {
-+			printk(KERN_ERR "PCI: Ignore resource_alignment parameter: %s with PCI_PROBE_ONLY set\n",
-+					p);
-+			*p = 0;
-+			break;
-+		}
- 		count = 0;
- 		if (sscanf(p, "%d%n", &align_order, &count) == 1 &&
- 							p[count] == '@') {
+The patch 3 are based on the proposed patchset[1].
+
+Changelog v2: 
+- Make the commit log more clear
+- Replace pci_bus_check_msi_remapping() with pci_bus_msi_isolated()
+  so that we could clearly know what the function does
+- Set PCI_BUS_FLAGS_MSI_REMAP in pci_create_root_bus() instead
+  of iommu_bus_notifier()
+- Reserve VFIO_REGION_INFO_FLAG_CAPS when we allow to mmap MSI-X
+  table so that we can know whether we allow to mmap MSI-X table
+  in QEMU
+
+[1] https://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg1138820.html
+
+Yongji Xie (6):
+  PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+  PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller enables IRQ remapping
+  PCI: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have capability of IRQ remapping
+  iommu: Set PCI_BUS_FLAGS_MSI_REMAP on iommu driver initialization
+  pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host bridge
+  vfio-pci: Allow to expose MSI-X table to userspace if interrupt remapping is enabled
+
+ arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
+ drivers/iommu/iommu.c                     |    8 ++++++++
+ drivers/pci/msi.c                         |   15 +++++++++++++++
+ drivers/pci/probe.c                       |    7 +++++++
+ drivers/vfio/pci/vfio_pci.c               |   17 ++++++++++++++---
+ drivers/vfio/pci/vfio_pci_rdwr.c          |    3 ++-
+ include/linux/msi.h                       |    5 ++++-
+ include/linux/pci.h                       |    1 +
+ 8 files changed, 59 insertions(+), 5 deletions(-)
+
 -- 
 1.7.9.5
