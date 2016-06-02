@@ -1,22 +1,17 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0084.outbound.protection.outlook.com [157.56.110.84])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rKrlC2QPPzDqW9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 12:29:10 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <oss@buserror.net>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <netdev@vger.kernel.org>, <xiaobo.xie@nxp.com>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [Patch v2 5/5] drivers/net: support hdlc function for QE-UCC
-Date: Thu, 2 Jun 2016 09:45:01 +0800
-Message-ID: <1464831901-15913-5-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1464831901-15913-1-git-send-email-qiang.zhao@nxp.com>
-References: <1464831901-15913-1-git-send-email-qiang.zhao@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rKvQm0RPWzDqXb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 14:30:08 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id b124so6443143pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jun 2016 21:30:07 -0700 (PDT)
+From: Rashmica Gupta <rashmicy@gmail.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc/asm: Use OFFSET macro in asm-offsets.c
+Date: Thu,  2 Jun 2016 14:29:46 +1000
+Message-Id: <1464841788-17465-1-git-send-email-rashmicy@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,1482 +21,856 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver add hdlc support for Freescale QUICC Engine.
-It support NMSI and TSA mode.
+A lot of entries in asm-offests.c look like this:
+DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+But there is a common macro, OFFSET, which makes this cleaner:
+OFFSET(TI_flags, thread_info, flags), so use this.
+
+Signed-off-by: Rashmica Gupta <rashmicy@gmail.com>
 ---
-Changes for v2:
-	- remove useless code.
-	- remove Unnecessary casts
-	- return IRQ_NONE when there are no interrupt
-	- remove Useless comments
+ arch/powerpc/kernel/asm-offsets.c | 685 ++++++++++++++++++--------------------
+ 1 file changed, 333 insertions(+), 352 deletions(-)
 
- MAINTAINERS                    |    7 +
- drivers/net/wan/Kconfig        |   11 +
- drivers/net/wan/Makefile       |    1 +
- drivers/net/wan/fsl_ucc_hdlc.c | 1189 ++++++++++++++++++++++++++++++++++++++++
- drivers/net/wan/fsl_ucc_hdlc.h |  147 +++++
- include/soc/fsl/qe/qe.h        |    1 +
- include/soc/fsl/qe/ucc_fast.h  |   21 +-
- 7 files changed, 1375 insertions(+), 2 deletions(-)
- create mode 100644 drivers/net/wan/fsl_ucc_hdlc.c
- create mode 100644 drivers/net/wan/fsl_ucc_hdlc.h
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 74bbff3..bdada16 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4572,6 +4572,13 @@ F:	drivers/net/ethernet/freescale/gianfar*
- X:	drivers/net/ethernet/freescale/gianfar_ptp.c
- F:	Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index f351f7325f20..345a351909c5 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -70,188 +70,180 @@
  
-+FREESCALE QUICC ENGINE UCC HDLC DRIVER
-+M:	Zhao Qiang <qiang.zhao@nxp.com>
-+L:	netdev@vger.kernel.org
-+L:	linuxppc-dev@lists.ozlabs.org
-+S:	Maintained
-+F:	drivers/net/wan/fsl_ucc_hdlc*
-+
- FREESCALE QUICC ENGINE UCC UART DRIVER
- M:	Timur Tabi <timur@tabi.org>
- L:	linuxppc-dev@lists.ozlabs.org
-diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
-index a2fdd15..9e314b7 100644
---- a/drivers/net/wan/Kconfig
-+++ b/drivers/net/wan/Kconfig
-@@ -280,6 +280,17 @@ config DSCC4
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called dscc4.
+ int main(void)
+ {
+-	DEFINE(THREAD, offsetof(struct task_struct, thread));
+-	DEFINE(MM, offsetof(struct task_struct, mm));
+-	DEFINE(MMCONTEXTID, offsetof(struct mm_struct, context.id));
++	OFFSET(THREAD, task_struct, thread);
++	OFFSET(MM, task_struct, mm);
++	OFFSET(MMCONTEXTID, mm_struct, context.id);
+ #ifdef CONFIG_PPC64
+ 	DEFINE(SIGSEGV, SIGSEGV);
+ 	DEFINE(NMI_MASK, NMI_MASK);
+-	DEFINE(TASKTHREADPPR, offsetof(struct task_struct, thread.ppr));
++	OFFSET(TASKTHREADPPR, task_struct, thread.ppr);
+ #else
+-	DEFINE(THREAD_INFO, offsetof(struct task_struct, stack));
++	OFFSET(THREAD_INFO, task_struct, stack);
+ 	DEFINE(THREAD_INFO_GAP, _ALIGN_UP(sizeof(struct thread_info), 16));
+-	DEFINE(KSP_LIMIT, offsetof(struct thread_struct, ksp_limit));
++	OFFSET(KSP_LIMIT, thread_struct, ksp_limit);
+ #endif /* CONFIG_PPC64 */
  
-+config FSL_UCC_HDLC
-+	tristate "Freescale QUICC Engine HDLC support"
-+	depends on HDLC
-+	depends on QUICC_ENGINE
-+	help
-+	  Driver for Freescale QUICC Engine HDLC controller. The driver
-+	  supports HDLC in NMSI and TDM mode.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called fsl_ucc_hdlc.
-+
- config DSCC4_PCISYNC
- 	bool "Etinc PCISYNC features"
- 	depends on DSCC4
-diff --git a/drivers/net/wan/Makefile b/drivers/net/wan/Makefile
-index c135ef4..25fec40 100644
---- a/drivers/net/wan/Makefile
-+++ b/drivers/net/wan/Makefile
-@@ -32,6 +32,7 @@ obj-$(CONFIG_WANXL)		+= wanxl.o
- obj-$(CONFIG_PCI200SYN)		+= pci200syn.o
- obj-$(CONFIG_PC300TOO)		+= pc300too.o
- obj-$(CONFIG_IXP4XX_HSS)	+= ixp4xx_hss.o
-+obj-$(CONFIG_FSL_UCC_HDLC)	+= fsl_ucc_hdlc.o
+ #ifdef CONFIG_LIVEPATCH
+-	DEFINE(TI_livepatch_sp, offsetof(struct thread_info, livepatch_sp));
++	OFFSET(TI_livepatch_sp, thread_info, livepatch_sp);
+ #endif
  
- clean-files := wanxlfw.inc
- $(obj)/wanxl.o:	$(obj)/wanxlfw.inc
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-new file mode 100644
-index 0000000..f72634d
---- /dev/null
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -0,0 +1,1189 @@
-+/* Freescale QUICC Engine HDLC Device Driver
-+ *
-+ * Copyright 2016 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
+-	DEFINE(KSP, offsetof(struct thread_struct, ksp));
+-	DEFINE(PT_REGS, offsetof(struct thread_struct, regs));
++	OFFSET(KSP, thread_struct, ksp);
++	OFFSET(PT_REGS, thread_struct, regs);
+ #ifdef CONFIG_BOOKE
+-	DEFINE(THREAD_NORMSAVES, offsetof(struct thread_struct, normsave[0]));
++	OFFSET(THREAD_NORMSAVES, thread_struct, normsave[0]);
+ #endif
+-	DEFINE(THREAD_FPEXC_MODE, offsetof(struct thread_struct, fpexc_mode));
+-	DEFINE(THREAD_FPSTATE, offsetof(struct thread_struct, fp_state));
+-	DEFINE(THREAD_FPSAVEAREA, offsetof(struct thread_struct, fp_save_area));
+-	DEFINE(FPSTATE_FPSCR, offsetof(struct thread_fp_state, fpscr));
+-	DEFINE(THREAD_LOAD_FP, offsetof(struct thread_struct, load_fp));
++	OFFSET(THREAD_FPEXC_MODE, thread_struct, fpexc_mode);
++	OFFSET(THREAD_FPSTATE, thread_struct, fp_state);
++	OFFSET(THREAD_FPSAVEAREA, thread_struct, fp_save_area);
++	OFFSET(FPSTATE_FPSCR, thread_fp_state, fpscr);
++	OFFSET(THREAD_LOAD_FP, thread_struct, load_fp);
+ #ifdef CONFIG_ALTIVEC
+-	DEFINE(THREAD_VRSTATE, offsetof(struct thread_struct, vr_state));
+-	DEFINE(THREAD_VRSAVEAREA, offsetof(struct thread_struct, vr_save_area));
+-	DEFINE(THREAD_VRSAVE, offsetof(struct thread_struct, vrsave));
+-	DEFINE(THREAD_USED_VR, offsetof(struct thread_struct, used_vr));
+-	DEFINE(VRSTATE_VSCR, offsetof(struct thread_vr_state, vscr));
+-	DEFINE(THREAD_LOAD_VEC, offsetof(struct thread_struct, load_vec));
++	OFFSET(THREAD_VRSTATE, thread_struct, vr_state);
++	OFFSET(THREAD_VRSAVEAREA, thread_struct, vr_save_area);
++	OFFSET(THREAD_VRSAVE, thread_struct, vrsave);
++	OFFSET(THREAD_USED_VR, thread_struct, used_vr);
++	OFFSET(VRSTATE_VSCR, thread_vr_state, vscr);
++	OFFSET(THREAD_LOAD_VEC, thread_struct, load_vec);
+ #endif /* CONFIG_ALTIVEC */
+ #ifdef CONFIG_VSX
+-	DEFINE(THREAD_USED_VSR, offsetof(struct thread_struct, used_vsr));
++	OFFSET(THREAD_USED_VSR, thread_struct, used_vsr);
+ #endif /* CONFIG_VSX */
+ #ifdef CONFIG_PPC64
+-	DEFINE(KSP_VSID, offsetof(struct thread_struct, ksp_vsid));
++	OFFSET(KSP_VSID, thread_struct, ksp_vsid);
+ #else /* CONFIG_PPC64 */
+-	DEFINE(PGDIR, offsetof(struct thread_struct, pgdir));
++	OFFSET(PGDIR, thread_struct, pgdir);
+ #ifdef CONFIG_SPE
+-	DEFINE(THREAD_EVR0, offsetof(struct thread_struct, evr[0]));
+-	DEFINE(THREAD_ACC, offsetof(struct thread_struct, acc));
+-	DEFINE(THREAD_SPEFSCR, offsetof(struct thread_struct, spefscr));
+-	DEFINE(THREAD_USED_SPE, offsetof(struct thread_struct, used_spe));
++	OFFSET(THREAD_EVR0, thread_struct, evr[0]);
++	OFFSET(THREAD_ACC, thread_struct, acc);
++	OFFSET(THREAD_SPEFSCR, thread_struct, spefscr);
++	OFFSET(THREAD_USED_SPE, thread_struct, used_spe);
+ #endif /* CONFIG_SPE */
+ #endif /* CONFIG_PPC64 */
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+-	DEFINE(THREAD_DBCR0, offsetof(struct thread_struct, debug.dbcr0));
++	OFFSET(THREAD_DBCR0, thread_struct, debug.dbcr0);
+ #endif
+ #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
+-	DEFINE(THREAD_KVM_SVCPU, offsetof(struct thread_struct, kvm_shadow_vcpu));
++	OFFSET(THREAD_KVM_SVCPU, thread_struct, kvm_shadow_vcpu);
+ #endif
+ #if defined(CONFIG_KVM) && defined(CONFIG_BOOKE)
+-	DEFINE(THREAD_KVM_VCPU, offsetof(struct thread_struct, kvm_vcpu));
++	OFFSET(THREAD_KVM_VCPU, thread_struct, kvm_vcpu);
+ #endif
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
+-	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
+-	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
+-	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
+-	DEFINE(THREAD_TM_TAR, offsetof(struct thread_struct, tm_tar));
+-	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
+-	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
+-	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
+-	DEFINE(THREAD_TRANSACT_VRSTATE, offsetof(struct thread_struct,
+-						 transact_vr));
+-	DEFINE(THREAD_TRANSACT_VRSAVE, offsetof(struct thread_struct,
+-					    transact_vrsave));
+-	DEFINE(THREAD_TRANSACT_FPSTATE, offsetof(struct thread_struct,
+-						 transact_fp));
++	OFFSET(PACATMSCRATCH, paca_struct, tm_scratch);
++	OFFSET(THREAD_TM_TFHAR, thread_struct, tm_tfhar);
++	OFFSET(THREAD_TM_TEXASR, thread_struct, tm_texasr);
++	OFFSET(THREAD_TM_TFIAR, thread_struct, tm_tfiar);
++	OFFSET(THREAD_TM_TAR, thread_struct, tm_tar);
++	OFFSET(THREAD_TM_PPR, thread_struct, tm_ppr);
++	OFFSET(THREAD_TM_DSCR, thread_struct, tm_dscr);
++	OFFSET(PT_CKPT_REGS, thread_struct, ckpt_regs);
++	OFFSET(THREAD_TRANSACT_VRSTATE, thread_struct, transact_vr);
++	OFFSET(THREAD_TRANSACT_VRSAVE, thread_struct, transact_vrsave);
++	OFFSET(THREAD_TRANSACT_FPSTATE, thread_struct, transact_fp);
+ 	/* Local pt_regs on stack for Transactional Memory funcs. */
+ 	DEFINE(TM_FRAME_SIZE, STACK_FRAME_OVERHEAD +
+ 	       sizeof(struct pt_regs) + 16);
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
+-	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
+-	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
+-	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
+-	DEFINE(TI_TASK, offsetof(struct thread_info, task));
+-	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
++	OFFSET(TI_FLAGS, thread_info, flags);
++	OFFSET(TI_LOCAL_FLAGS, thread_info, local_flags);
++	OFFSET(TI_PREEMPT, thread_info, preempt_count);
++	OFFSET(TI_TASK, thread_info, task);
++	OFFSET(TI_CPU, thread_info, cpu);
+ 
+ #ifdef CONFIG_PPC64
+-	DEFINE(DCACHEL1LINESIZE, offsetof(struct ppc64_caches, dline_size));
+-	DEFINE(DCACHEL1LOGLINESIZE, offsetof(struct ppc64_caches, log_dline_size));
+-	DEFINE(DCACHEL1LINESPERPAGE, offsetof(struct ppc64_caches, dlines_per_page));
+-	DEFINE(ICACHEL1LINESIZE, offsetof(struct ppc64_caches, iline_size));
+-	DEFINE(ICACHEL1LOGLINESIZE, offsetof(struct ppc64_caches, log_iline_size));
+-	DEFINE(ICACHEL1LINESPERPAGE, offsetof(struct ppc64_caches, ilines_per_page));
++	OFFSET(DCACHEL1LINESIZE, ppc64_caches, dline_size);
++	OFFSET(DCACHEL1LOGLINESIZE, ppc64_caches, log_dline_size);
++	OFFSET(DCACHEL1LINESPERPAGE, ppc64_caches, dlines_per_page);
++	OFFSET(ICACHEL1LINESIZE, ppc64_caches, iline_size);
++	OFFSET(ICACHEL1LOGLINESIZE, ppc64_caches, log_iline_size);
++	OFFSET(ICACHEL1LINESPERPAGE, ppc64_caches, ilines_per_page);
+ 	/* paca */
+ 	DEFINE(PACA_SIZE, sizeof(struct paca_struct));
+-	DEFINE(PACAPACAINDEX, offsetof(struct paca_struct, paca_index));
+-	DEFINE(PACAPROCSTART, offsetof(struct paca_struct, cpu_start));
+-	DEFINE(PACAKSAVE, offsetof(struct paca_struct, kstack));
+-	DEFINE(PACACURRENT, offsetof(struct paca_struct, __current));
+-	DEFINE(PACASAVEDMSR, offsetof(struct paca_struct, saved_msr));
+-	DEFINE(PACASTABRR, offsetof(struct paca_struct, stab_rr));
+-	DEFINE(PACAR1, offsetof(struct paca_struct, saved_r1));
+-	DEFINE(PACATOC, offsetof(struct paca_struct, kernel_toc));
+-	DEFINE(PACAKBASE, offsetof(struct paca_struct, kernelbase));
+-	DEFINE(PACAKMSR, offsetof(struct paca_struct, kernel_msr));
+-	DEFINE(PACASOFTIRQEN, offsetof(struct paca_struct, soft_enabled));
+-	DEFINE(PACAIRQHAPPENED, offsetof(struct paca_struct, irq_happened));
++	OFFSET(PACAPACAINDEX, paca_struct, paca_index);
++	OFFSET(PACAPROCSTART, paca_struct, cpu_start);
++	OFFSET(PACAKSAVE, paca_struct, kstack);
++	OFFSET(PACACURRENT, paca_struct, __current);
++	OFFSET(PACASAVEDMSR, paca_struct, saved_msr);
++	OFFSET(PACASTABRR, paca_struct, stab_rr);
++	OFFSET(PACAR1, paca_struct, saved_r1);
++	OFFSET(PACATOC, paca_struct, kernel_toc);
++	OFFSET(PACAKBASE, paca_struct, kernelbase);
++	OFFSET(PACAKMSR, paca_struct, kernel_msr);
++	OFFSET(PACASOFTIRQEN, paca_struct, soft_enabled);
++	OFFSET(PACAIRQHAPPENED, paca_struct, irq_happened);
+ #ifdef CONFIG_PPC_BOOK3S
+-	DEFINE(PACACONTEXTID, offsetof(struct paca_struct, mm_ctx_id));
++	OFFSET(PACACONTEXTID, paca_struct, mm_ctx_id);
+ #ifdef CONFIG_PPC_MM_SLICES
+-	DEFINE(PACALOWSLICESPSIZE, offsetof(struct paca_struct,
+-					    mm_ctx_low_slices_psize));
+-	DEFINE(PACAHIGHSLICEPSIZE, offsetof(struct paca_struct,
+-					    mm_ctx_high_slices_psize));
++	OFFSET(PACALOWSLICESPSIZE, paca_struct, mm_ctx_low_slices_psize);
++	OFFSET(PACAHIGHSLICEPSIZE, paca_struct, mm_ctx_high_slices_psize);
+ 	DEFINE(MMUPSIZEDEFSIZE, sizeof(struct mmu_psize_def));
+ #endif /* CONFIG_PPC_MM_SLICES */
+ #endif
+ 
+ #ifdef CONFIG_PPC_BOOK3E
+-	DEFINE(PACAPGD, offsetof(struct paca_struct, pgd));
+-	DEFINE(PACA_KERNELPGD, offsetof(struct paca_struct, kernel_pgd));
+-	DEFINE(PACA_EXGEN, offsetof(struct paca_struct, exgen));
+-	DEFINE(PACA_EXTLB, offsetof(struct paca_struct, extlb));
+-	DEFINE(PACA_EXMC, offsetof(struct paca_struct, exmc));
+-	DEFINE(PACA_EXCRIT, offsetof(struct paca_struct, excrit));
+-	DEFINE(PACA_EXDBG, offsetof(struct paca_struct, exdbg));
+-	DEFINE(PACA_MC_STACK, offsetof(struct paca_struct, mc_kstack));
+-	DEFINE(PACA_CRIT_STACK, offsetof(struct paca_struct, crit_kstack));
+-	DEFINE(PACA_DBG_STACK, offsetof(struct paca_struct, dbg_kstack));
+-	DEFINE(PACA_TCD_PTR, offsetof(struct paca_struct, tcd_ptr));
+-
+-	DEFINE(TCD_ESEL_NEXT,
+-		offsetof(struct tlb_core_data, esel_next));
+-	DEFINE(TCD_ESEL_MAX,
+-		offsetof(struct tlb_core_data, esel_max));
+-	DEFINE(TCD_ESEL_FIRST,
+-		offsetof(struct tlb_core_data, esel_first));
++	OFFSET(PACAPGD, paca_struct, pgd);
++	OFFSET(PACA_KERNELPGD, paca_struct, kernel_pgd);
++	OFFSET(PACA_EXGEN, paca_struct, exgen);
++	OFFSET(PACA_EXTLB, paca_struct, extlb);
++	OFFSET(PACA_EXMC, paca_struct, exmc);
++	OFFSET(PACA_EXCRIT, paca_struct, excrit);
++	OFFSET(PACA_EXDBG, paca_struct, exdbg);
++	OFFSET(PACA_MC_STACK, paca_struct, mc_kstack);
++	OFFSET(PACA_CRIT_STACK, paca_struct, crit_kstack);
++	OFFSET(PACA_DBG_STACK, paca_struct, dbg_kstack);
++	OFFSET(PACA_TCD_PTR, paca_struct, tcd_ptr);
 +
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/hdlc.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/netdevice.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/sched.h>
-+#include <linux/skbuff.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/stddef.h>
-+#include <soc/fsl/qe/qe_tdm.h>
-+#include <uapi/linux/if_arp.h>
-+
-+#include "fsl_ucc_hdlc.h"
-+
-+#define DRV_DESC "Freescale QE UCC HDLC Driver"
-+#define DRV_NAME "ucc_hdlc"
-+
-+#define TDM_PPPOHT_SLIC_MAXIN
-+#define BROKEN_FRAME_INFO
-+
-+static struct ucc_tdm_info utdm_primary_info = {
-+	.uf_info = {
-+		.tsa = 0,
-+		.cdp = 0,
-+		.cds = 1,
-+		.ctsp = 1,
-+		.ctss = 1,
-+		.revd = 0,
-+		.urfs = 256,
-+		.utfs = 256,
-+		.urfet = 128,
-+		.urfset = 192,
-+		.utfet = 128,
-+		.utftt = 0x40,
-+		.ufpt = 256,
-+		.mode = UCC_FAST_PROTOCOL_MODE_HDLC,
-+		.ttx_trx = UCC_FAST_GUMR_TRANSPARENT_TTX_TRX_NORMAL,
-+		.tenc = UCC_FAST_TX_ENCODING_NRZ,
-+		.renc = UCC_FAST_RX_ENCODING_NRZ,
-+		.tcrc = UCC_FAST_16_BIT_CRC,
-+		.synl = UCC_FAST_SYNC_LEN_NOT_USED,
-+	},
-+
-+	.si_info = {
-+#ifdef TDM_PPPOHT_SLIC_MAXIN
-+		.simr_rfsd = 1,
-+		.simr_tfsd = 2,
-+#else
-+		.simr_rfsd = 0,
-+		.simr_tfsd = 0,
++	OFFSET(TCD_ESEL_NEXT, tlb_core_data, esel_next);
++	OFFSET(TCD_ESEL_MAX, tlb_core_data, esel_max);
++	OFFSET(TCD_ESEL_FIRST, tlb_core_data, esel_first);
+ #endif /* CONFIG_PPC_BOOK3E */
+ 
+ #ifdef CONFIG_PPC_STD_MMU_64
+-	DEFINE(PACASLBCACHE, offsetof(struct paca_struct, slb_cache));
+-	DEFINE(PACASLBCACHEPTR, offsetof(struct paca_struct, slb_cache_ptr));
+-	DEFINE(PACAVMALLOCSLLP, offsetof(struct paca_struct, vmalloc_sllp));
++	OFFSET(PACASLBCACHE, paca_struct, slb_cache);
++	OFFSET(PACASLBCACHEPTR, paca_struct, slb_cache_ptr);
++	OFFSET(PACAVMALLOCSLLP, paca_struct, vmalloc_sllp);
+ #ifdef CONFIG_PPC_MM_SLICES
+-	DEFINE(MMUPSIZESLLP, offsetof(struct mmu_psize_def, sllp));
++	OFFSET(MMUPSIZESLLP, mmu_psize_def, sllp);
+ #else
+-	DEFINE(PACACONTEXTSLLP, offsetof(struct paca_struct, mm_ctx_sllp));
++	OFFSET(PACACONTEXTSLLP, paca_struct, mm_ctx_sllp);
+ #endif /* CONFIG_PPC_MM_SLICES */
+-	DEFINE(PACA_EXGEN, offsetof(struct paca_struct, exgen));
+-	DEFINE(PACA_EXMC, offsetof(struct paca_struct, exmc));
+-	DEFINE(PACA_EXSLB, offsetof(struct paca_struct, exslb));
+-	DEFINE(PACALPPACAPTR, offsetof(struct paca_struct, lppaca_ptr));
+-	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr));
+-	DEFINE(SLBSHADOW_STACKVSID,
+-	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid));
+-	DEFINE(SLBSHADOW_STACKESID,
+-	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].esid));
+-	DEFINE(SLBSHADOW_SAVEAREA, offsetof(struct slb_shadow, save_area));
+-	DEFINE(LPPACA_PMCINUSE, offsetof(struct lppaca, pmcregs_in_use));
+-	DEFINE(LPPACA_DTLIDX, offsetof(struct lppaca, dtl_idx));
+-	DEFINE(LPPACA_YIELDCOUNT, offsetof(struct lppaca, yield_count));
+-	DEFINE(PACA_DTL_RIDX, offsetof(struct paca_struct, dtl_ridx));
++	OFFSET(PACA_EXGEN, paca_struct, exgen);
++	OFFSET(PACA_EXMC, paca_struct, exmc);
++	OFFSET(PACA_EXSLB, paca_struct, exslb);
++	OFFSET(PACALPPACAPTR, paca_struct, lppaca_ptr);
++	OFFSET(PACA_SLBSHADOWPTR, paca_struct, slb_shadow_ptr);
++	OFFSET(SLBSHADOW_STACKVSID, slb_shadow, save_area[SLB_NUM_BOLTED -
++			1].vsid);
++	OFFSET(SLBSHADOW_STACKESID, slb_shadow, save_area[SLB_NUM_BOLTED -
++			1].esid);
++	OFFSET(SLBSHADOW_SAVEAREA, slb_shadow, save_area);
++	OFFSET(LPPACA_PMCINUSE, lppaca, pmcregs_in_use);
++	OFFSET(LPPACA_DTLIDX, lppaca, dtl_idx);
++	OFFSET(LPPACA_YIELDCOUNT, lppaca, yield_count);
++	OFFSET(PACA_DTL_RIDX, paca_struct, dtl_ridx);
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+-	DEFINE(PACAEMERGSP, offsetof(struct paca_struct, emergency_sp));
++	OFFSET(PACAEMERGSP, paca_struct, emergency_sp);
+ #ifdef CONFIG_PPC_BOOK3S_64
+-	DEFINE(PACAMCEMERGSP, offsetof(struct paca_struct, mc_emergency_sp));
+-	DEFINE(PACA_IN_MCE, offsetof(struct paca_struct, in_mce));
+-#endif
+-	DEFINE(PACAHWCPUID, offsetof(struct paca_struct, hw_cpu_id));
+-	DEFINE(PACAKEXECSTATE, offsetof(struct paca_struct, kexec_state));
+-	DEFINE(PACA_DSCR_DEFAULT, offsetof(struct paca_struct, dscr_default));
+-	DEFINE(PACA_STARTTIME, offsetof(struct paca_struct, starttime));
+-	DEFINE(PACA_STARTTIME_USER, offsetof(struct paca_struct, starttime_user));
+-	DEFINE(PACA_USER_TIME, offsetof(struct paca_struct, user_time));
+-	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+-	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+-	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct, nap_state_lost));
+-	DEFINE(PACA_SPRG_VDSO, offsetof(struct paca_struct, sprg_vdso));
++	OFFSET(PACAMCEMERGSP, paca_struct, mc_emergency_sp);
++	OFFSET(PACA_IN_MCE, paca_struct, in_mce);
 +#endif
-+		.simr_crt = 0,
-+		.simr_sl = 0,
-+		.simr_ce = 1,
-+		.simr_fe = 1,
-+		.simr_gm = 0,
-+	},
-+};
-+
-+static struct ucc_tdm_info utdm_info[MAX_HDLC_NUM];
-+
-+static int uhdlc_init(struct ucc_hdlc_private *priv)
-+{
-+	struct ucc_tdm_info *ut_info;
-+	struct ucc_fast_info *uf_info;
-+	u32 cecr_subblock;
-+	u16 bd_status;
-+	int ret, i;
-+	void *bd_buffer;
-+	dma_addr_t bd_dma_addr;
-+	u32 riptr;
-+	u32 tiptr;
-+	u32 gumr;
-+
-+	ut_info = priv->ut_info;
-+	uf_info = &ut_info->uf_info;
-+
-+	if (priv->tsa) {
-+		uf_info->tsa = 1;
-+		uf_info->ctsp = 1;
-+	}
-+	uf_info->uccm_mask = ((UCC_HDLC_UCCE_RXB | UCC_HDLC_UCCE_RXF |
-+				UCC_HDLC_UCCE_TXB) << 16);
-+
-+	ret = ucc_fast_init(uf_info, &priv->uccf);
-+	if (ret) {
-+		dev_err(priv->dev, "Failed to init uccf.");
-+		return ret;
-+	}
-+
-+	priv->uf_regs = priv->uccf->uf_regs;
-+	ucc_fast_disable(priv->uccf, COMM_DIR_RX | COMM_DIR_TX);
-+
-+	/* Loopback mode */
-+	if (priv->loopback) {
-+		dev_info(priv->dev, "Loopback Mode\n");
-+		gumr = ioread32be(&priv->uf_regs->gumr);
-+		gumr |= (UCC_FAST_GUMR_LOOPBACK | UCC_FAST_GUMR_CDS |
-+			 UCC_FAST_GUMR_TCI);
-+		gumr &= ~(UCC_FAST_GUMR_CTSP | UCC_FAST_GUMR_RSYN);
-+		iowrite32be(gumr, &priv->uf_regs->gumr);
-+	}
-+
-+	/* Initialize SI */
-+	if (priv->tsa)
-+		ucc_tdm_init(priv->utdm, priv->ut_info);
-+
-+	/* Write to QE CECR, UCCx channel to Stop Transmission */
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(uf_info->ucc_num);
-+	ret = qe_issue_cmd(QE_STOP_TX, cecr_subblock,
-+			   QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	/* Set UPSMR normal mode (need fixed)*/
-+	iowrite32be(0, &priv->uf_regs->upsmr);
-+
-+	priv->rx_ring_size = RX_BD_RING_LEN;
-+	priv->tx_ring_size = TX_BD_RING_LEN;
-+	/* Alloc Rx BD */
-+	priv->rx_bd_base = dma_alloc_coherent(priv->dev,
-+			RX_BD_RING_LEN * sizeof(struct qe_bd *),
-+			&priv->dma_rx_bd, GFP_KERNEL);
-+
-+	if (!priv->rx_bd_base) {
-+		dev_err(priv->dev, "Cannot allocate MURAM memory for RxBDs\n");
-+		ret = -ENOMEM;
-+		goto rxbd_alloc_error;
-+	}
-+
-+	/* Alloc Tx BD */
-+	priv->tx_bd_base = dma_alloc_coherent(priv->dev,
-+			TX_BD_RING_LEN * sizeof(struct qe_bd *),
-+			&priv->dma_tx_bd, GFP_KERNEL);
-+
-+	if (!priv->tx_bd_base) {
-+		dev_err(priv->dev, "Cannot allocate MURAM memory for TxBDs\n");
-+		ret = -ENOMEM;
-+		goto txbd_alloc_error;
-+	}
-+
-+	/* Alloc parameter ram for ucc hdlc */
-+	priv->ucc_pram_offset = qe_muram_alloc(sizeof(priv->ucc_pram),
-+				ALIGNMENT_OF_UCC_HDLC_PRAM);
-+
-+	if (priv->ucc_pram_offset < 0) {
-+		dev_err(priv->dev, "Can not allocate MURAM for hdlc prameter.\n");
-+		ret = -ENOMEM;
-+		goto pram_alloc_error;
-+	}
-+
-+	priv->rx_skbuff = kzalloc(priv->rx_ring_size * sizeof(*priv->rx_skbuff),
-+				  GFP_KERNEL);
-+	if (!priv->rx_skbuff)
-+		goto rx_skb_alloc_error;
-+
-+	priv->tx_skbuff = kzalloc(priv->tx_ring_size * sizeof(*priv->tx_skbuff),
-+				  GFP_KERNEL);
-+	if (!priv->tx_skbuff)
-+		goto tx_skb_alloc_error;
-+
-+	priv->skb_curtx = 0;
-+	priv->skb_dirtytx = 0;
-+	priv->curtx_bd = priv->tx_bd_base;
-+	priv->dirty_tx = priv->tx_bd_base;
-+	priv->currx_bd = priv->rx_bd_base;
-+	priv->currx_bdnum = 0;
-+
-+	/* init parameter base */
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(uf_info->ucc_num);
-+	ret = qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, cecr_subblock,
-+			   QE_CR_PROTOCOL_UNSPECIFIED, priv->ucc_pram_offset);
-+
-+	priv->ucc_pram = (struct ucc_hdlc_param __iomem *)
-+					qe_muram_addr(priv->ucc_pram_offset);
-+
-+	/* Zero out parameter ram */
-+	memset_io(priv->ucc_pram, 0, sizeof(struct ucc_hdlc_param));
-+
-+	/* Alloc riptr, tiptr */
-+	riptr = qe_muram_alloc(32, 32);
-+	if (riptr < 0) {
-+		dev_err(priv->dev, "Cannot allocate MURAM mem for Receive internal temp data pointer\n");
-+		ret = -ENOMEM;
-+		goto riptr_alloc_error;
-+	}
-+
-+	tiptr = qe_muram_alloc(32, 32);
-+	if (tiptr < 0) {
-+		dev_err(priv->dev, "Cannot allocate MURAM mem for Transmit internal temp data pointer\n");
-+		ret = -ENOMEM;
-+		goto tiptr_alloc_error;
-+	}
-+
-+	/* Set RIPTR, TIPTR */
-+	iowrite16be(riptr, &priv->ucc_pram->riptr);
-+	iowrite16be(tiptr, &priv->ucc_pram->tiptr);
-+
-+	/* Set MRBLR */
-+	iowrite16be(MAX_RX_BUF_LENGTH, &priv->ucc_pram->mrblr);
-+
-+	/* Set RBASE, TBASE */
-+	iowrite32be(priv->dma_rx_bd, &priv->ucc_pram->rbase);
-+	iowrite32be(priv->dma_tx_bd, &priv->ucc_pram->tbase);
-+
-+	/* Set RSTATE, TSTATE */
-+	iowrite32be(BMR_GBL | BMR_BIG_ENDIAN, &priv->ucc_pram->rstate);
-+	iowrite32be(BMR_GBL | BMR_BIG_ENDIAN, &priv->ucc_pram->tstate);
-+
-+	/* Set C_MASK, C_PRES for 16bit CRC */
-+	iowrite32be(CRC_16BIT_MASK, &priv->ucc_pram->c_mask);
-+	iowrite32be(CRC_16BIT_PRES, &priv->ucc_pram->c_pres);
-+
-+	iowrite16be(MAX_FRAME_LENGTH, &priv->ucc_pram->mflr);
-+	iowrite16be(DEFAULT_RFTHR, &priv->ucc_pram->rfthr);
-+	iowrite16be(DEFAULT_RFTHR, &priv->ucc_pram->rfcnt);
-+	iowrite16be(DEFAULT_ADDR_MASK, &priv->ucc_pram->hmask);
-+	iowrite16be(DEFAULT_HDLC_ADDR, &priv->ucc_pram->haddr1);
-+	iowrite16be(DEFAULT_HDLC_ADDR, &priv->ucc_pram->haddr2);
-+	iowrite16be(DEFAULT_HDLC_ADDR, &priv->ucc_pram->haddr3);
-+	iowrite16be(DEFAULT_HDLC_ADDR, &priv->ucc_pram->haddr4);
-+
-+	/* Get BD buffer */
-+	bd_buffer = dma_alloc_coherent(priv->dev,
-+				       (RX_BD_RING_LEN + TX_BD_RING_LEN) *
-+				       MAX_RX_BUF_LENGTH,
-+				       &bd_dma_addr, GFP_KERNEL);
-+
-+	if (!bd_buffer) {
-+		dev_err(priv->dev, "Could not allocate buffer descriptors\n");
-+		ret = -ENOMEM;
-+		goto bd_alloc_error;
-+	}
-+
-+	memset(bd_buffer, 0, (RX_BD_RING_LEN + TX_BD_RING_LEN)
-+			* MAX_RX_BUF_LENGTH);
-+
-+	priv->rx_buffer = bd_buffer;
-+	priv->tx_buffer = bd_buffer + RX_BD_RING_LEN * MAX_RX_BUF_LENGTH;
-+
-+	priv->dma_rx_addr = bd_dma_addr;
-+	priv->dma_tx_addr = bd_dma_addr + RX_BD_RING_LEN * MAX_RX_BUF_LENGTH;
-+
-+	for (i = 0; i < RX_BD_RING_LEN; i++) {
-+		if (i < (RX_BD_RING_LEN - 1))
-+			bd_status = R_E_S | R_I_S;
-+		else
-+			bd_status = R_E_S | R_I_S | R_W_S;
-+
-+		iowrite16be(bd_status, &priv->rx_bd_base[i].status);
-+		iowrite32be(priv->dma_rx_addr + i * MAX_RX_BUF_LENGTH,
-+			    &priv->rx_bd_base[i].buf);
-+	}
-+
-+	for (i = 0; i < TX_BD_RING_LEN; i++) {
-+		if (i < (TX_BD_RING_LEN - 1))
-+			bd_status =  T_I_S | T_TC_S;
-+		else
-+			bd_status =  T_I_S | T_TC_S | T_W_S;
-+
-+		iowrite16be(bd_status, &priv->tx_bd_base[i].status);
-+		iowrite32be(priv->dma_tx_addr + i * MAX_RX_BUF_LENGTH,
-+			    &priv->tx_bd_base[i].buf);
-+	}
-+
-+	return 0;
-+
-+bd_alloc_error:
-+	qe_muram_free(tiptr);
-+tiptr_alloc_error:
-+	qe_muram_free(riptr);
-+riptr_alloc_error:
-+	kfree(priv->tx_skbuff);
-+tx_skb_alloc_error:
-+	kfree(priv->rx_skbuff);
-+rx_skb_alloc_error:
-+	qe_muram_free(priv->ucc_pram_offset);
-+pram_alloc_error:
-+	dma_free_coherent(priv->dev,
-+			  TX_BD_RING_LEN * sizeof(struct qe_bd),
-+			  priv->tx_bd_base, priv->dma_tx_bd);
-+txbd_alloc_error:
-+	dma_free_coherent(priv->dev,
-+			  RX_BD_RING_LEN * sizeof(struct qe_bd),
-+			  priv->rx_bd_base, priv->dma_rx_bd);
-+rxbd_alloc_error:
-+	ucc_fast_free(priv->uccf);
-+
-+	return ret;
-+}
-+
-+static netdev_tx_t ucc_hdlc_tx(struct sk_buff *skb, struct net_device *dev)
-+{
-+	hdlc_device *hdlc = dev_to_hdlc(dev);
-+	struct ucc_hdlc_private *priv = (struct ucc_hdlc_private *)hdlc->priv;
-+	struct qe_bd __iomem *bd;
-+	u16 bd_status;
-+	unsigned long flags;
-+	u8 *send_buf;
-+	int i;
-+	u16 *proto_head;
-+
-+	switch (dev->type) {
-+	case ARPHRD_RAWHDLC:
-+		if (skb_headroom(skb) < HDLC_HEAD_LEN) {
-+			dev->stats.tx_dropped++;
-+			dev_kfree_skb(skb);
-+			netdev_err(dev, "No enough space for hdlc head\n");
-+			return -ENOMEM;
-+		}
-+
-+		skb_push(skb, HDLC_HEAD_LEN);
-+
-+		proto_head = (u16 *)skb->data;
-+		*proto_head = htons(DEFAULT_HDLC_HEAD);
-+
-+		dev->stats.tx_bytes += skb->len;
-+		break;
-+
-+	case ARPHRD_PPP:
-+		proto_head = (u16 *)skb->data;
-+		if (*proto_head != htons(DEFAULT_PPP_HEAD)) {
-+			dev->stats.tx_dropped++;
-+			dev_kfree_skb(skb);
-+			netdev_err(dev, "Wrong ppp header\n");
-+			return -ENOMEM;
-+		}
-+
-+		dev->stats.tx_bytes += skb->len;
-+		break;
-+
-+	default:
-+		dev->stats.tx_dropped++;
-+		dev_kfree_skb(skb);
-+		return -ENOMEM;
-+	}
-+
-+	pr_info("Tx data skb->len:%d ", skb->len);
-+	send_buf = (u8 *)skb->data;
-+	pr_info("\nTransmitted data:\n");
-+	for (i = 0; i < 16; i++) {
-+		if (i == skb->len)
-+			pr_info("++++");
-+		else
-+		pr_info("%02x\n", send_buf[i]);
-+	}
-+	spin_lock_irqsave(&priv->lock, flags);
-+
-+	/* Start from the next BD that should be filled */
-+	bd = priv->curtx_bd;
-+	bd_status = ioread16be(&bd->status);
-+	/* Save the skb pointer so we can free it later */
-+	priv->tx_skbuff[priv->skb_curtx] = skb;
-+
-+	/* Update the current skb pointer (wrapping if this was the last) */
-+	priv->skb_curtx =
-+	    (priv->skb_curtx + 1) & TX_RING_MOD_MASK(TX_BD_RING_LEN);
-+
-+	/* copy skb data to tx buffer for sdma processing */
-+	memcpy(priv->tx_buffer + (be32_to_cpu(bd->buf) - priv->dma_tx_addr),
-+	       skb->data, skb->len);
-+
-+	/* set bd status and length */
-+	bd_status = (bd_status & T_W_S) | T_R_S | T_I_S | T_L_S | T_TC_S;
-+
-+	iowrite16be(bd_status, &bd->status);
-+	iowrite16be(skb->len, &bd->length);
-+
-+	/* Move to next BD in the ring */
-+	if (!(bd_status & T_W_S))
-+		bd += 1;
-+	else
-+		bd = priv->tx_bd_base;
-+
-+	if (bd == priv->dirty_tx) {
-+		if (!netif_queue_stopped(dev))
-+			netif_stop_queue(dev);
-+	}
-+
-+	priv->curtx_bd = bd;
-+
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+
-+	return NETDEV_TX_OK;
-+}
-+
-+static int hdlc_tx_done(struct ucc_hdlc_private *priv)
-+{
-+	/* Start from the next BD that should be filled */
-+	struct net_device *dev = priv->ndev;
-+	struct qe_bd *bd;		/* BD pointer */
-+	u16 bd_status;
-+
-+	bd = priv->dirty_tx;
-+	bd_status = ioread16be(&bd->status);
-+
-+	/* Normal processing. */
-+	while ((bd_status & T_R_S) == 0) {
-+		struct sk_buff *skb;
-+
-+		/* BD contains already transmitted buffer.   */
-+		/* Handle the transmitted buffer and release */
-+		/* the BD to be used with the current frame  */
-+
-+		skb = priv->tx_skbuff[priv->skb_dirtytx];
-+		if (!skb)
-+			break;
-+		pr_info("TxBD: %x\n", bd_status);
-+		dev->stats.tx_packets++;
-+		memset(priv->tx_buffer +
-+		       (be32_to_cpu(bd->buf) - priv->dma_tx_addr),
-+		       0, skb->len);
-+		dev_kfree_skb_irq(skb);
-+
-+		priv->tx_skbuff[priv->skb_dirtytx] = NULL;
-+		priv->skb_dirtytx =
-+		    (priv->skb_dirtytx +
-+		     1) & TX_RING_MOD_MASK(TX_BD_RING_LEN);
-+
-+		/* We freed a buffer, so now we can restart transmission */
-+		if (netif_queue_stopped(dev))
-+			netif_wake_queue(dev);
-+
-+		/* Advance the confirmation BD pointer */
-+		if (!(bd_status & T_W_S))
-+			bd += 1;
-+		else
-+			bd = priv->tx_bd_base;
-+		bd_status = ioread16be(&bd->status);
-+	}
-+	priv->dirty_tx = bd;
-+
-+	return 0;
-+}
-+
-+static int hdlc_rx_done(struct ucc_hdlc_private *priv, int rx_work_limit)
-+{
-+	struct net_device *dev = priv->ndev;
-+	struct sk_buff *skb;
-+	hdlc_device *hdlc = dev_to_hdlc(dev);
-+	struct qe_bd *bd;
-+	u32 bd_status;
-+	u16 length, howmany = 0;
-+	u8 *bdbuffer;
-+	int i;
-+	static int entry;
-+
-+	bd = priv->currx_bd;
-+	bd_status = ioread16be(&bd->status);
-+
-+	/* while there are received buffers and BD is full (~R_E) */
-+	while (!((bd_status & (R_E_S)) || (--rx_work_limit < 0))) {
-+		if (bd_status & R_CR_S) {
-+#ifdef BROKEN_FRAME_INFO
-+			pr_info("Broken Frame with RxBD: %x\n", bd_status);
++	OFFSET(PACAHWCPUID, paca_struct, hw_cpu_id);
++	OFFSET(PACAKEXECSTATE, paca_struct, kexec_state);
++	OFFSET(PACA_DSCR_DEFAULT, paca_struct, dscr_default);
++	OFFSET(PACA_STARTTIME, paca_struct, starttime);
++	OFFSET(PACA_STARTTIME_USER, paca_struct, starttime_user);
++	OFFSET(PACA_USER_TIME, paca_struct, user_time);
++	OFFSET(PACA_SYSTEM_TIME, paca_struct, system_time);
++	OFFSET(PACA_TRAP_SAVE, paca_struct, trap_save);
++	OFFSET(PACA_NAPSTATELOST, paca_struct, nap_state_lost);
++	OFFSET(PACA_SPRG_VDSO, paca_struct, sprg_vdso);
+ #endif /* CONFIG_PPC64 */
+ 
+ 	/* RTAS */
+-	DEFINE(RTASBASE, offsetof(struct rtas_t, base));
+-	DEFINE(RTASENTRY, offsetof(struct rtas_t, entry));
++	OFFSET(RTASBASE, rtas_t, base);
++	OFFSET(RTASENTRY, rtas_t, entry);
+ 
+ 	/* Interrupt register frame */
+ 	DEFINE(INT_FRAME_SIZE, STACK_INT_FRAME_SIZE);
+@@ -332,17 +324,17 @@ int main(void)
+ #endif
+ 
+ #ifndef CONFIG_PPC64
+-	DEFINE(MM_PGD, offsetof(struct mm_struct, pgd));
++	OFFSET(MM_PGD, mm_struct, pgd);
+ #endif /* ! CONFIG_PPC64 */
+ 
+ 	/* About the CPU features table */
+-	DEFINE(CPU_SPEC_FEATURES, offsetof(struct cpu_spec, cpu_features));
+-	DEFINE(CPU_SPEC_SETUP, offsetof(struct cpu_spec, cpu_setup));
+-	DEFINE(CPU_SPEC_RESTORE, offsetof(struct cpu_spec, cpu_restore));
++	OFFSET(CPU_SPEC_FEATURES, cpu_spec, cpu_features);
++	OFFSET(CPU_SPEC_SETUP, cpu_spec, cpu_setup);
++	OFFSET(CPU_SPEC_RESTORE, cpu_spec, cpu_restore);
+ 
+-	DEFINE(pbe_address, offsetof(struct pbe, address));
+-	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
+-	DEFINE(pbe_next, offsetof(struct pbe, next));
++	OFFSET(pbe_address, pbe, address);
++	OFFSET(pbe_orig_address, pbe, orig_address);
++	OFFSET(pbe_next, pbe, next);
+ 
+ #ifndef CONFIG_PPC64
+ 	DEFINE(TASK_SIZE, TASK_SIZE);
+@@ -350,40 +342,40 @@ int main(void)
+ #endif /* ! CONFIG_PPC64 */
+ 
+ 	/* datapage offsets for use by vdso */
+-	DEFINE(CFG_TB_ORIG_STAMP, offsetof(struct vdso_data, tb_orig_stamp));
+-	DEFINE(CFG_TB_TICKS_PER_SEC, offsetof(struct vdso_data, tb_ticks_per_sec));
+-	DEFINE(CFG_TB_TO_XS, offsetof(struct vdso_data, tb_to_xs));
+-	DEFINE(CFG_TB_UPDATE_COUNT, offsetof(struct vdso_data, tb_update_count));
+-	DEFINE(CFG_TZ_MINUTEWEST, offsetof(struct vdso_data, tz_minuteswest));
+-	DEFINE(CFG_TZ_DSTTIME, offsetof(struct vdso_data, tz_dsttime));
+-	DEFINE(CFG_SYSCALL_MAP32, offsetof(struct vdso_data, syscall_map_32));
+-	DEFINE(WTOM_CLOCK_SEC, offsetof(struct vdso_data, wtom_clock_sec));
+-	DEFINE(WTOM_CLOCK_NSEC, offsetof(struct vdso_data, wtom_clock_nsec));
+-	DEFINE(STAMP_XTIME, offsetof(struct vdso_data, stamp_xtime));
+-	DEFINE(STAMP_SEC_FRAC, offsetof(struct vdso_data, stamp_sec_fraction));
+-	DEFINE(CFG_ICACHE_BLOCKSZ, offsetof(struct vdso_data, icache_block_size));
+-	DEFINE(CFG_DCACHE_BLOCKSZ, offsetof(struct vdso_data, dcache_block_size));
+-	DEFINE(CFG_ICACHE_LOGBLOCKSZ, offsetof(struct vdso_data, icache_log_block_size));
+-	DEFINE(CFG_DCACHE_LOGBLOCKSZ, offsetof(struct vdso_data, dcache_log_block_size));
++	OFFSET(CFG_TB_ORIG_STAMP, vdso_data, tb_orig_stamp);
++	OFFSET(CFG_TB_TICKS_PER_SEC, vdso_data, tb_ticks_per_sec);
++	OFFSET(CFG_TB_TO_XS, vdso_data, tb_to_xs);
++	OFFSET(CFG_TB_UPDATE_COUNT, vdso_data, tb_update_count);
++	OFFSET(CFG_TZ_MINUTEWEST, vdso_data, tz_minuteswest);
++	OFFSET(CFG_TZ_DSTTIME, vdso_data, tz_dsttime);
++	OFFSET(CFG_SYSCALL_MAP32, vdso_data, syscall_map_32);
++	OFFSET(WTOM_CLOCK_SEC, vdso_data, wtom_clock_sec);
++	OFFSET(WTOM_CLOCK_NSEC, vdso_data, wtom_clock_nsec);
++	OFFSET(STAMP_XTIME, vdso_data, stamp_xtime);
++	OFFSET(STAMP_SEC_FRAC, vdso_data, stamp_sec_fraction);
++	OFFSET(CFG_ICACHE_BLOCKSZ, vdso_data, icache_block_size);
++	OFFSET(CFG_DCACHE_BLOCKSZ, vdso_data, dcache_block_size);
++	OFFSET(CFG_ICACHE_LOGBLOCKSZ, vdso_data, icache_log_block_size);
++	OFFSET(CFG_DCACHE_LOGBLOCKSZ, vdso_data, dcache_log_block_size);
+ #ifdef CONFIG_PPC64
+-	DEFINE(CFG_SYSCALL_MAP64, offsetof(struct vdso_data, syscall_map_64));
+-	DEFINE(TVAL64_TV_SEC, offsetof(struct timeval, tv_sec));
+-	DEFINE(TVAL64_TV_USEC, offsetof(struct timeval, tv_usec));
+-	DEFINE(TVAL32_TV_SEC, offsetof(struct compat_timeval, tv_sec));
+-	DEFINE(TVAL32_TV_USEC, offsetof(struct compat_timeval, tv_usec));
+-	DEFINE(TSPC64_TV_SEC, offsetof(struct timespec, tv_sec));
+-	DEFINE(TSPC64_TV_NSEC, offsetof(struct timespec, tv_nsec));
+-	DEFINE(TSPC32_TV_SEC, offsetof(struct compat_timespec, tv_sec));
+-	DEFINE(TSPC32_TV_NSEC, offsetof(struct compat_timespec, tv_nsec));
++	OFFSET(CFG_SYSCALL_MAP64, vdso_data, syscall_map_64);
++	OFFSET(TVAL64_TV_SEC, timeval, tv_sec);
++	OFFSET(TVAL64_TV_USEC, timeval, tv_usec);
++	OFFSET(TVAL32_TV_SEC, compat_timeval, tv_sec);
++	OFFSET(TVAL32_TV_USEC, compat_timeval, tv_usec);
++	OFFSET(TSPC64_TV_SEC, timespec, tv_sec);
++	OFFSET(TSPC64_TV_NSEC, timespec, tv_nsec);
++	OFFSET(TSPC32_TV_SEC, compat_timespec, tv_sec);
++	OFFSET(TSPC32_TV_NSEC, compat_timespec, tv_nsec);
+ #else
+-	DEFINE(TVAL32_TV_SEC, offsetof(struct timeval, tv_sec));
+-	DEFINE(TVAL32_TV_USEC, offsetof(struct timeval, tv_usec));
+-	DEFINE(TSPC32_TV_SEC, offsetof(struct timespec, tv_sec));
+-	DEFINE(TSPC32_TV_NSEC, offsetof(struct timespec, tv_nsec));
++	OFFSET(TVAL32_TV_SEC, timeval, tv_sec);
++	OFFSET(TVAL32_TV_USEC, timeval, tv_usec);
++	OFFSET(TSPC32_TV_SEC, timespec, tv_sec);
++	OFFSET(TSPC32_TV_NSEC, timespec, tv_nsec);
+ #endif
+ 	/* timeval/timezone offsets for use by vdso */
+-	DEFINE(TZONE_TZ_MINWEST, offsetof(struct timezone, tz_minuteswest));
+-	DEFINE(TZONE_TZ_DSTTIME, offsetof(struct timezone, tz_dsttime));
++	OFFSET(TZONE_TZ_MINWEST, timezone, tz_minuteswest);
++	OFFSET(TZONE_TZ_DSTTIME, timezone, tz_dsttime);
+ 
+ 	/* Other bits used by the vdso */
+ 	DEFINE(CLOCK_REALTIME, CLOCK_REALTIME);
+@@ -403,163 +395,163 @@ int main(void)
+ 	DEFINE(PTE_SIZE, sizeof(pte_t));
+ 
+ #ifdef CONFIG_KVM
+-	DEFINE(VCPU_HOST_STACK, offsetof(struct kvm_vcpu, arch.host_stack));
+-	DEFINE(VCPU_HOST_PID, offsetof(struct kvm_vcpu, arch.host_pid));
+-	DEFINE(VCPU_GUEST_PID, offsetof(struct kvm_vcpu, arch.pid));
+-	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
+-	DEFINE(VCPU_VRSAVE, offsetof(struct kvm_vcpu, arch.vrsave));
+-	DEFINE(VCPU_FPRS, offsetof(struct kvm_vcpu, arch.fp.fpr));
++	OFFSET(VCPU_HOST_STACK, kvm_vcpu, arch.host_stack);
++	OFFSET(VCPU_HOST_PID, kvm_vcpu, arch.host_pid);
++	OFFSET(VCPU_GUEST_PID, kvm_vcpu, arch.pid);
++	OFFSET(VCPU_GPRS, kvm_vcpu, arch.gpr);
++	OFFSET(VCPU_VRSAVE, kvm_vcpu, arch.vrsave);
++	OFFSET(VCPU_FPRS, kvm_vcpu, arch.fp.fpr);
+ #ifdef CONFIG_ALTIVEC
+-	DEFINE(VCPU_VRS, offsetof(struct kvm_vcpu, arch.vr.vr));
++	OFFSET(VCPU_VRS, kvm_vcpu, arch.vr.vr);
+ #endif
+-	DEFINE(VCPU_XER, offsetof(struct kvm_vcpu, arch.xer));
+-	DEFINE(VCPU_CTR, offsetof(struct kvm_vcpu, arch.ctr));
+-	DEFINE(VCPU_LR, offsetof(struct kvm_vcpu, arch.lr));
++	OFFSET(VCPU_XER, kvm_vcpu, arch.xer);
++	OFFSET(VCPU_CTR, kvm_vcpu, arch.ctr);
++	OFFSET(VCPU_LR, kvm_vcpu, arch.lr);
+ #ifdef CONFIG_PPC_BOOK3S
+-	DEFINE(VCPU_TAR, offsetof(struct kvm_vcpu, arch.tar));
++	OFFSET(VCPU_TAR, kvm_vcpu, arch.tar);
+ #endif
+-	DEFINE(VCPU_CR, offsetof(struct kvm_vcpu, arch.cr));
+-	DEFINE(VCPU_PC, offsetof(struct kvm_vcpu, arch.pc));
++	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
++	OFFSET(VCPU_PC, kvm_vcpu, arch.pc);
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	DEFINE(VCPU_MSR, offsetof(struct kvm_vcpu, arch.shregs.msr));
+-	DEFINE(VCPU_SRR0, offsetof(struct kvm_vcpu, arch.shregs.srr0));
+-	DEFINE(VCPU_SRR1, offsetof(struct kvm_vcpu, arch.shregs.srr1));
+-	DEFINE(VCPU_SPRG0, offsetof(struct kvm_vcpu, arch.shregs.sprg0));
+-	DEFINE(VCPU_SPRG1, offsetof(struct kvm_vcpu, arch.shregs.sprg1));
+-	DEFINE(VCPU_SPRG2, offsetof(struct kvm_vcpu, arch.shregs.sprg2));
+-	DEFINE(VCPU_SPRG3, offsetof(struct kvm_vcpu, arch.shregs.sprg3));
++	OFFSET(VCPU_MSR, kvm_vcpu, arch.shregs.msr);
++	OFFSET(VCPU_SRR0, kvm_vcpu, arch.shregs.srr0);
++	OFFSET(VCPU_SRR1, kvm_vcpu, arch.shregs.srr1);
++	OFFSET(VCPU_SPRG0, kvm_vcpu, arch.shregs.sprg0);
++	OFFSET(VCPU_SPRG1, kvm_vcpu, arch.shregs.sprg1);
++	OFFSET(VCPU_SPRG2, kvm_vcpu, arch.shregs.sprg2);
++	OFFSET(VCPU_SPRG3, kvm_vcpu, arch.shregs.sprg3);
+ #endif
+ #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
+-	DEFINE(VCPU_TB_RMENTRY, offsetof(struct kvm_vcpu, arch.rm_entry));
+-	DEFINE(VCPU_TB_RMINTR, offsetof(struct kvm_vcpu, arch.rm_intr));
+-	DEFINE(VCPU_TB_RMEXIT, offsetof(struct kvm_vcpu, arch.rm_exit));
+-	DEFINE(VCPU_TB_GUEST, offsetof(struct kvm_vcpu, arch.guest_time));
+-	DEFINE(VCPU_TB_CEDE, offsetof(struct kvm_vcpu, arch.cede_time));
+-	DEFINE(VCPU_CUR_ACTIVITY, offsetof(struct kvm_vcpu, arch.cur_activity));
+-	DEFINE(VCPU_ACTIVITY_START, offsetof(struct kvm_vcpu, arch.cur_tb_start));
+-	DEFINE(TAS_SEQCOUNT, offsetof(struct kvmhv_tb_accumulator, seqcount));
+-	DEFINE(TAS_TOTAL, offsetof(struct kvmhv_tb_accumulator, tb_total));
+-	DEFINE(TAS_MIN, offsetof(struct kvmhv_tb_accumulator, tb_min));
+-	DEFINE(TAS_MAX, offsetof(struct kvmhv_tb_accumulator, tb_max));
+-#endif
+-	DEFINE(VCPU_SHARED_SPRG3, offsetof(struct kvm_vcpu_arch_shared, sprg3));
+-	DEFINE(VCPU_SHARED_SPRG4, offsetof(struct kvm_vcpu_arch_shared, sprg4));
+-	DEFINE(VCPU_SHARED_SPRG5, offsetof(struct kvm_vcpu_arch_shared, sprg5));
+-	DEFINE(VCPU_SHARED_SPRG6, offsetof(struct kvm_vcpu_arch_shared, sprg6));
+-	DEFINE(VCPU_SHARED_SPRG7, offsetof(struct kvm_vcpu_arch_shared, sprg7));
+-	DEFINE(VCPU_SHADOW_PID, offsetof(struct kvm_vcpu, arch.shadow_pid));
+-	DEFINE(VCPU_SHADOW_PID1, offsetof(struct kvm_vcpu, arch.shadow_pid1));
+-	DEFINE(VCPU_SHARED, offsetof(struct kvm_vcpu, arch.shared));
+-	DEFINE(VCPU_SHARED_MSR, offsetof(struct kvm_vcpu_arch_shared, msr));
+-	DEFINE(VCPU_SHADOW_MSR, offsetof(struct kvm_vcpu, arch.shadow_msr));
++	OFFSET(VCPU_TB_RMENTRY, kvm_vcpu, arch.rm_entry);
++	OFFSET(VCPU_TB_RMINTR, kvm_vcpu, arch.rm_intr);
++	OFFSET(VCPU_TB_RMEXIT, kvm_vcpu, arch.rm_exit);
++	OFFSET(VCPU_TB_GUEST, kvm_vcpu, arch.guest_time);
++	OFFSET(VCPU_TB_CEDE, kvm_vcpu, arch.cede_time);
++	OFFSET(VCPU_CUR_ACTIVITY, kvm_vcpu, arch.cur_activity);
++	OFFSET(VCPU_ACTIVITY_START, kvm_vcpu, arch.cur_tb_start);
++	OFFSET(TAS_SEQCOUNT, kvmhv_tb_accumulator, seqcount);
++	OFFSET(TAS_TOTAL, kvmhv_tb_accumulator, tb_total);
++	OFFSET(TAS_MIN, kvmhv_tb_accumulator, tb_min);
++	OFFSET(TAS_MAX, kvmhv_tb_accumulator, tb_max);
 +#endif
-+			dev->stats.rx_dropped++;
-+			goto recycle;
-+		}
-+		bdbuffer = priv->rx_buffer +
-+			(priv->currx_bdnum * MAX_RX_BUF_LENGTH);
-+		length = ioread16be(&bd->length);
-+
-+		pr_info("Received data length:%d", length);
-+		pr_info("while entry times:%d", entry++);
-+
-+		pr_info("\nReceived data:\n");
-+		for (i = 0; (i < 16); i++) {
-+			if (i == length)
-+				pr_info("++++");
-+			else
-+			pr_info("%02x\n", bdbuffer[i]);
-+		}
-+
-+		switch (dev->type) {
-+		case ARPHRD_RAWHDLC:
-+			bdbuffer += HDLC_HEAD_LEN;
-+			length -= (HDLC_HEAD_LEN + HDLC_CRC_SIZE);
-+
-+			skb = dev_alloc_skb(length);
-+			if (!skb) {
-+				dev->stats.rx_dropped++;
-+				return -ENOMEM;
-+			}
-+
-+			skb_put(skb, length);
-+			skb->len = length;
-+			skb->dev = dev;
-+			memcpy(skb->data, bdbuffer, length);
-+			break;
-+
-+		case ARPHRD_PPP:
-+			length -= HDLC_CRC_SIZE;
-+
-+			skb = dev_alloc_skb(length);
-+			if (!skb) {
-+				dev->stats.rx_dropped++;
-+				return -ENOMEM;
-+			}
-+
-+			skb_put(skb, length);
-+			skb->len = length;
-+			skb->dev = dev;
-+			memcpy(skb->data, bdbuffer, length);
-+			break;
-+		}
-+
-+		dev->stats.rx_packets++;
-+		dev->stats.rx_bytes += skb->len;
-+		howmany++;
-+		if (hdlc->proto)
-+			skb->protocol = hdlc_type_trans(skb, dev);
-+		pr_info("skb->protocol:%x\n", skb->protocol);
-+		netif_receive_skb(skb);
-+
-+recycle:
-+		iowrite16be(bd_status | R_E_S | R_I_S, &bd->status);
-+
-+		/* update to point at the next bd */
-+		if (bd_status & R_W_S) {
-+			priv->currx_bdnum = 0;
-+			bd = priv->rx_bd_base;
-+		} else {
-+			if (priv->currx_bdnum < (RX_BD_RING_LEN - 1))
-+				priv->currx_bdnum += 1;
-+			else
-+				priv->currx_bdnum = RX_BD_RING_LEN - 1;
-+
-+			bd += 1;
-+		}
-+
-+		bd_status = ioread16be(&bd->status);
-+	}
-+
-+	priv->currx_bd = bd;
-+	return howmany;
-+}
-+
-+static int ucc_hdlc_poll(struct napi_struct *napi, int budget)
-+{
-+	struct ucc_hdlc_private *priv = container_of(napi,
-+						     struct ucc_hdlc_private,
-+						     napi);
-+	int howmany;
-+
-+	/* Tx event processing */
-+	spin_lock(&priv->lock);
-+		hdlc_tx_done(priv);
-+	spin_unlock(&priv->lock);
-+
-+	howmany = 0;
-+	howmany += hdlc_rx_done(priv, budget - howmany);
-+
-+	if (howmany < budget) {
-+		napi_complete(napi);
-+		qe_setbits32(priv->uccf->p_uccm,
-+			     (UCCE_HDLC_RX_EVENTS | UCCE_HDLC_TX_EVENTS) << 16);
-+	}
-+
-+	return howmany;
-+}
-+
-+static irqreturn_t ucc_hdlc_irq_handler(int irq, void *dev_id)
-+{
-+	struct ucc_hdlc_private *priv = (struct ucc_hdlc_private *)dev_id;
-+	struct net_device *dev = priv->ndev;
-+	struct ucc_fast_private *uccf;
-+	struct ucc_tdm_info *ut_info;
-+	u32 ucce;
-+	u32 uccm;
-+
-+	ut_info = priv->ut_info;
-+	uccf = priv->uccf;
-+
-+	ucce = ioread32be(uccf->p_ucce);
-+	uccm = ioread32be(uccf->p_uccm);
-+	ucce &= uccm;
-+	iowrite32be(ucce, uccf->p_ucce);
-+	pr_info("irq ucce:%x\n", ucce);
-+	if (!ucce)
-+		return IRQ_NONE;
-+
-+	if ((ucce >> 16) & (UCCE_HDLC_RX_EVENTS | UCCE_HDLC_TX_EVENTS)) {
-+		if (napi_schedule_prep(&priv->napi)) {
-+			uccm &= ~((UCCE_HDLC_RX_EVENTS | UCCE_HDLC_TX_EVENTS)
-+				  << 16);
-+			iowrite32be(uccm, uccf->p_uccm);
-+			__napi_schedule(&priv->napi);
-+		}
-+	}
-+
-+	/* Errors and other events */
-+	if (ucce >> 16 & UCC_HDLC_UCCE_BSY)
-+		dev->stats.rx_errors++;
-+	if (ucce >> 16 & UCC_HDLC_UCCE_TXE)
-+		dev->stats.tx_errors++;
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int uhdlc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-+{
-+	const size_t size = sizeof(te1_settings);
-+	te1_settings line;
-+	struct ucc_hdlc_private *priv = netdev_priv(dev);
-+
-+	if (cmd != SIOCWANDEV)
-+		return hdlc_ioctl(dev, ifr, cmd);
-+
-+	switch (ifr->ifr_settings.type) {
-+	case IF_GET_IFACE:
-+		ifr->ifr_settings.type = IF_IFACE_E1;
-+		if (ifr->ifr_settings.size < size) {
-+			ifr->ifr_settings.size = size; /* data size wanted */
-+			return -ENOBUFS;
-+		}
-+		line.clock_type = priv->clocking;
-+		line.clock_rate = 0;
-+		line.loopback = 0;
-+
-+		if (copy_to_user(ifr->ifr_settings.ifs_ifsu.sync, &line, size))
-+			return -EFAULT;
-+		return 0;
-+
-+	default:
-+		return hdlc_ioctl(dev, ifr, cmd);
-+	}
-+}
-+
-+static int uhdlc_open(struct net_device *dev)
-+{
-+	u32 cecr_subblock;
-+	hdlc_device *hdlc = dev_to_hdlc(dev);
-+	struct ucc_hdlc_private *priv = hdlc->priv;
-+	struct ucc_tdm *utdm = priv->utdm;
-+
-+	if (priv->hdlc_busy != 1) {
-+		if (request_irq(priv->ut_info->uf_info.irq,
-+				ucc_hdlc_irq_handler, 0, "hdlc", priv))
-+			return -ENODEV;
-+
-+		cecr_subblock = ucc_fast_get_qe_cr_subblock(
-+					priv->ut_info->uf_info.ucc_num);
-+
-+		qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
-+			     QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+		ucc_fast_enable(priv->uccf, COMM_DIR_RX | COMM_DIR_TX);
-+
-+		/* Enable the TDM port */
-+		if (priv->tsa)
-+			utdm->si_regs->siglmr1_h |= (0x1 << utdm->tdm_port);
-+
-+		priv->hdlc_busy = 1;
-+		netif_device_attach(priv->ndev);
-+		napi_enable(&priv->napi);
-+		netif_start_queue(dev);
-+		hdlc_open(dev);
-+	}
-+
-+	return 0;
-+}
-+
-+static void uhdlc_memclean(struct ucc_hdlc_private *priv)
-+{
-+	qe_muram_free(priv->ucc_pram->riptr);
-+	qe_muram_free(priv->ucc_pram->tiptr);
-+
-+	if (priv->rx_bd_base) {
-+		dma_free_coherent(priv->dev,
-+				  RX_BD_RING_LEN * sizeof(struct qe_bd),
-+				  priv->rx_bd_base, priv->dma_rx_bd);
-+
-+		priv->rx_bd_base = NULL;
-+		priv->dma_rx_bd = 0;
-+	}
-+
-+	if (priv->tx_bd_base) {
-+		dma_free_coherent(priv->dev,
-+				  TX_BD_RING_LEN * sizeof(struct qe_bd),
-+				  priv->tx_bd_base, priv->dma_tx_bd);
-+
-+		priv->tx_bd_base = NULL;
-+		priv->dma_tx_bd = 0;
-+	}
-+
-+	if (priv->ucc_pram) {
-+		qe_muram_free(priv->ucc_pram_offset);
-+		priv->ucc_pram = NULL;
-+		priv->ucc_pram_offset = 0;
-+	 }
-+
-+	kfree(priv->rx_skbuff);
-+	priv->rx_skbuff = NULL;
-+
-+	kfree(priv->tx_skbuff);
-+	priv->tx_skbuff = NULL;
-+
-+	if (priv->uf_regs) {
-+		iounmap(priv->uf_regs);
-+		priv->uf_regs = NULL;
-+	}
-+
-+	if (priv->uccf) {
-+		ucc_fast_free(priv->uccf);
-+		priv->uccf = NULL;
-+	}
-+
-+	if (priv->rx_buffer) {
-+		dma_free_coherent(priv->dev,
-+				  RX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
-+				  priv->rx_buffer, priv->dma_rx_addr);
-+		priv->rx_buffer = NULL;
-+		priv->dma_rx_addr = 0;
-+	}
-+
-+	if (priv->tx_buffer) {
-+		dma_free_coherent(priv->dev,
-+				  TX_BD_RING_LEN * MAX_RX_BUF_LENGTH,
-+				  priv->tx_buffer, priv->dma_tx_addr);
-+		priv->tx_buffer = NULL;
-+		priv->dma_tx_addr = 0;
-+	}
-+}
-+
-+static int uhdlc_close(struct net_device *dev)
-+{
-+	struct ucc_hdlc_private *priv = dev_to_hdlc(dev)->priv;
-+	struct ucc_tdm *utdm = priv->utdm;
-+	u32 cecr_subblock;
-+
-+	napi_disable(&priv->napi);
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(
-+				priv->ut_info->uf_info.ucc_num);
-+
-+	qe_issue_cmd(QE_GRACEFUL_STOP_TX, cecr_subblock,
-+		     (u8)QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+	qe_issue_cmd(QE_CLOSE_RX_BD, cecr_subblock,
-+		     (u8)QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	if (priv->tsa)
-+		utdm->si_regs->siglmr1_h &= ~(0x1 << utdm->tdm_port);
-+
-+	ucc_fast_disable(priv->uccf, COMM_DIR_RX | COMM_DIR_TX);
-+
-+	free_irq(priv->ut_info->uf_info.irq, priv);
-+	netif_stop_queue(dev);
-+	priv->hdlc_busy = 0;
-+
-+	return 0;
-+}
-+
-+static int ucc_hdlc_attach(struct net_device *dev, unsigned short encoding,
-+			   unsigned short parity)
-+{
-+	struct ucc_hdlc_private *priv = dev_to_hdlc(dev)->priv;
-+
-+	if (encoding != ENCODING_NRZ &&
-+	    encoding != ENCODING_NRZI)
-+		return -EINVAL;
-+
-+	if (parity != PARITY_NONE &&
-+	    parity != PARITY_CRC32_PR1_CCITT &&
-+	    parity != PARITY_CRC16_PR1_CCITT)
-+		return -EINVAL;
-+
-+	priv->encoding = encoding;
-+	priv->parity = parity;
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static void store_clk_config(struct ucc_hdlc_private *priv)
-+{
-+	struct qe_mux *qe_mux_reg = &qe_immr->qmx;
-+
-+	/* store si clk */
-+	priv->cmxsi1cr_h = ioread32be(&qe_mux_reg->cmxsi1cr_h);
-+	priv->cmxsi1cr_l = ioread32be(&qe_mux_reg->cmxsi1cr_l);
-+
-+	/* store si sync */
-+	priv->cmxsi1syr = ioread32be(&qe_mux_reg->cmxsi1syr);
-+
-+	/* store ucc clk */
-+	memcpy_fromio(priv->cmxucr, qe_mux_reg->cmxucr, 4 * sizeof(u32));
-+}
-+
-+static void resume_clk_config(struct ucc_hdlc_private *priv)
-+{
-+	struct qe_mux *qe_mux_reg = &qe_immr->qmx;
-+
-+	memcpy_toio(qe_mux_reg->cmxucr, priv->cmxucr, 4 * sizeof(u32));
-+
-+	iowrite32be(priv->cmxsi1cr_h, &qe_mux_reg->cmxsi1cr_h);
-+	iowrite32be(priv->cmxsi1cr_l, &qe_mux_reg->cmxsi1cr_l);
-+
-+	iowrite32be(priv->cmxsi1syr, &qe_mux_reg->cmxsi1syr);
-+}
-+
-+static int uhdlc_suspend(struct device *dev)
-+{
-+	struct ucc_hdlc_private *priv = dev_get_drvdata(dev);
-+	struct ucc_tdm_info *ut_info;
-+	struct ucc_fast __iomem *uf_regs;
-+
-+	if (!priv)
-+		return -EINVAL;
-+
-+	if (!netif_running(priv->ndev))
-+		return 0;
-+
-+	netif_device_detach(priv->ndev);
-+	napi_disable(&priv->napi);
-+
-+	ut_info = priv->ut_info;
-+	uf_regs = priv->uf_regs;
-+
-+	/* backup gumr guemr*/
-+	priv->gumr = ioread32be(&uf_regs->gumr);
-+	priv->guemr = ioread8(&uf_regs->guemr);
-+
-+	priv->ucc_pram_bak = kmalloc(sizeof(*priv->ucc_pram_bak),
-+					GFP_KERNEL);
-+	if (!priv->ucc_pram_bak)
-+		return -ENOMEM;
-+
-+	/* backup HDLC parameter */
-+	memcpy_fromio(priv->ucc_pram_bak, priv->ucc_pram,
-+		      sizeof(struct ucc_hdlc_param));
-+
-+	/* store the clk configuration */
-+	store_clk_config(priv);
-+
-+	/* save power */
-+	ucc_fast_disable(priv->uccf, COMM_DIR_RX | COMM_DIR_TX);
-+
-+	dev_dbg(dev, "ucc hdlc suspend\n");
-+	return 0;
-+}
-+
-+static int uhdlc_resume(struct device *dev)
-+{
-+	struct ucc_hdlc_private *priv = dev_get_drvdata(dev);
-+	struct ucc_tdm *utdm = priv->utdm;
-+	struct ucc_tdm_info *ut_info;
-+	struct ucc_fast __iomem *uf_regs;
-+	struct ucc_fast_private *uccf;
-+	struct ucc_fast_info *uf_info;
-+	int ret, i;
-+	u32 cecr_subblock;
-+	u16 bd_status;
-+
-+	if (!priv)
-+		return -EINVAL;
-+
-+	if (!netif_running(priv->ndev))
-+		return 0;
-+
-+	ut_info = priv->ut_info;
-+	uf_info = &ut_info->uf_info;
-+	uf_regs = priv->uf_regs;
-+	uccf = priv->uccf;
-+
-+	/* restore gumr guemr */
-+	iowrite8(priv->guemr, &uf_regs->guemr);
-+	iowrite32be(priv->gumr, &uf_regs->gumr);
-+
-+	/* Set Virtual Fifo registers */
-+	iowrite16be(uf_info->urfs, &uf_regs->urfs);
-+	iowrite16be(uf_info->urfet, &uf_regs->urfet);
-+	iowrite16be(uf_info->urfset, &uf_regs->urfset);
-+	iowrite16be(uf_info->utfs, &uf_regs->utfs);
-+	iowrite16be(uf_info->utfet, &uf_regs->utfet);
-+	iowrite16be(uf_info->utftt, &uf_regs->utftt);
-+	/* utfb, urfb are offsets from MURAM base */
-+	iowrite32be(uccf->ucc_fast_tx_virtual_fifo_base_offset, &uf_regs->utfb);
-+	iowrite32be(uccf->ucc_fast_rx_virtual_fifo_base_offset, &uf_regs->urfb);
-+
-+	/* Rx Tx and sync clock routing */
-+	resume_clk_config(priv);
-+
-+	iowrite32be(uf_info->uccm_mask, &uf_regs->uccm);
-+	iowrite32be(0xffffffff, &uf_regs->ucce);
-+
-+	ucc_fast_disable(priv->uccf, COMM_DIR_RX | COMM_DIR_TX);
-+
-+	/* rebuild SIRAM */
-+	if (priv->tsa)
-+		ucc_tdm_init(priv->utdm, priv->ut_info);
-+
-+	/* Write to QE CECR, UCCx channel to Stop Transmission */
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(uf_info->ucc_num);
-+	ret = qe_issue_cmd(QE_STOP_TX, cecr_subblock,
-+			   (u8)QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+	/* Set UPSMR normal mode */
-+	iowrite32be(0, &uf_regs->upsmr);
-+
-+	/* init parameter base */
-+	cecr_subblock = ucc_fast_get_qe_cr_subblock(uf_info->ucc_num);
-+	ret = qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, cecr_subblock,
-+			   QE_CR_PROTOCOL_UNSPECIFIED, priv->ucc_pram_offset);
-+
-+	priv->ucc_pram = (struct ucc_hdlc_param __iomem *)
-+				qe_muram_addr(priv->ucc_pram_offset);
-+
-+	/* restore ucc parameter */
-+	memcpy_toio(priv->ucc_pram, priv->ucc_pram_bak,
-+		    sizeof(struct ucc_hdlc_param));
-+	kfree(priv->ucc_pram_bak);
-+
-+	/* rebuild BD entry */
-+	for (i = 0; i < RX_BD_RING_LEN; i++) {
-+		if (i < (RX_BD_RING_LEN - 1))
-+			bd_status = R_E_S | R_I_S;
-+		else
-+			bd_status = R_E_S | R_I_S | R_W_S;
-+
-+		iowrite16be(bd_status, &priv->rx_bd_base[i].status);
-+		iowrite32be(priv->dma_rx_addr + i * MAX_RX_BUF_LENGTH,
-+			    &priv->rx_bd_base[i].buf);
-+	}
-+
-+	for (i = 0; i < TX_BD_RING_LEN; i++) {
-+		if (i < (TX_BD_RING_LEN - 1))
-+			bd_status =  T_I_S | T_TC_S;
-+		else
-+			bd_status =  T_I_S | T_TC_S | T_W_S;
-+
-+		iowrite16be(bd_status, &priv->tx_bd_base[i].status);
-+		iowrite32be(priv->dma_tx_addr + i * MAX_RX_BUF_LENGTH,
-+			    &priv->tx_bd_base[i].buf);
-+	}
-+
-+	/* if hdlc is busy enable TX and RX */
-+	if (priv->hdlc_busy == 1) {
-+		cecr_subblock = ucc_fast_get_qe_cr_subblock(
-+					priv->ut_info->uf_info.ucc_num);
-+
-+		qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
-+			     (u8)QE_CR_PROTOCOL_UNSPECIFIED, 0);
-+
-+		ucc_fast_enable(priv->uccf, COMM_DIR_RX | COMM_DIR_TX);
-+
-+		/* Enable the TDM port */
-+		if (priv->tsa)
-+			utdm->si_regs->siglmr1_h |= (0x1 << utdm->tdm_port);
-+	}
-+
-+	napi_enable(&priv->napi);
-+	netif_device_attach(priv->ndev);
-+
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops uhdlc_pm_ops = {
-+	.suspend = uhdlc_suspend,
-+	.resume = uhdlc_resume,
-+	.freeze = uhdlc_suspend,
-+	.thaw = uhdlc_resume,
-+};
-+
-+#define HDLC_PM_OPS (&uhdlc_pm_ops)
-+
-+#else
-+
-+#define HDLC_PM_OPS NULL
-+
-+#endif
-+static const struct net_device_ops uhdlc_ops = {
-+	.ndo_open       = uhdlc_open,
-+	.ndo_stop       = uhdlc_close,
-+	.ndo_change_mtu = hdlc_change_mtu,
-+	.ndo_start_xmit = hdlc_start_xmit,
-+	.ndo_do_ioctl   = uhdlc_ioctl,
-+};
-+
-+static int ucc_hdlc_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct ucc_hdlc_private *uhdlc_priv = NULL;
-+	struct ucc_tdm_info *ut_info;
-+	struct ucc_tdm *utdm;
-+	struct resource res;
-+	struct net_device *dev;
-+	hdlc_device *hdlc;
-+	int ucc_num;
-+	const char *sprop;
-+	int ret;
-+	u32 val;
-+
-+	ret = of_property_read_u32_index(np, "cell-index", 0, &val);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Invalid ucc property\n");
-+		return -ENODEV;
-+	}
-+
-+	ucc_num = val - 1;
-+	if ((ucc_num > 3) || (ucc_num < 0)) {
-+		dev_err(&pdev->dev, ": Invalid UCC num\n");
-+		return -EINVAL;
-+	}
-+
-+	memcpy(&utdm_info[ucc_num], &utdm_primary_info,
-+	       sizeof(utdm_primary_info));
-+
-+	ut_info = &utdm_info[ucc_num];
-+	ut_info->uf_info.ucc_num = ucc_num;
-+
-+	sprop = of_get_property(np, "rx-clock-name", NULL);
-+	if (sprop) {
-+		ut_info->uf_info.rx_clock = qe_clock_source(sprop);
-+		if ((ut_info->uf_info.rx_clock < QE_CLK_NONE) ||
-+		    (ut_info->uf_info.rx_clock > QE_CLK24)) {
-+			dev_err(&pdev->dev, "Invalid rx-clock-name property\n");
-+			return -EINVAL;
-+		}
-+	} else {
-+		dev_err(&pdev->dev, "Invalid rx-clock-name property\n");
-+		return -EINVAL;
-+	}
-+
-+	sprop = of_get_property(np, "tx-clock-name", NULL);
-+	if (sprop) {
-+		ut_info->uf_info.tx_clock = qe_clock_source(sprop);
-+		if ((ut_info->uf_info.tx_clock < QE_CLK_NONE) ||
-+		    (ut_info->uf_info.tx_clock > QE_CLK24)) {
-+			dev_err(&pdev->dev, "Invalid tx-clock-name property\n");
-+			return -EINVAL;
-+		}
-+	} else {
-+		dev_err(&pdev->dev, "Invalid tx-clock-name property\n");
-+		return -EINVAL;
-+	}
-+
-+	/* use the same clock when work in loopback */
-+	if (ut_info->uf_info.rx_clock == ut_info->uf_info.tx_clock)
-+		qe_setbrg(ut_info->uf_info.rx_clock, 20000000, 1);
-+
-+	ret = of_address_to_resource(np, 0, &res);
-+	if (ret)
-+		return -EINVAL;
-+
-+	ut_info->uf_info.regs = res.start;
-+	ut_info->uf_info.irq = irq_of_parse_and_map(np, 0);
-+
-+	uhdlc_priv = kzalloc(sizeof(*uhdlc_priv), GFP_KERNEL);
-+	if (!uhdlc_priv) {
-+		ret = -ENOMEM;
-+		dev_err(&pdev->dev, "No mem to alloc hdlc private data\n");
-+		goto err_alloc_priv;
-+	}
-+
-+	dev_set_drvdata(&pdev->dev, uhdlc_priv);
-+	uhdlc_priv->dev = &pdev->dev;
-+	uhdlc_priv->ut_info = ut_info;
-+
-+	if (of_get_property(np, "fsl,tdm-interface", NULL))
-+		uhdlc_priv->tsa = 1;
-+
-+	if (of_get_property(np, "fsl,ucc-internal-loopback", NULL))
-+		uhdlc_priv->loopback = 1;
-+
-+	if (uhdlc_priv->tsa == 1) {
-+		utdm = kzalloc(sizeof(*utdm), GFP_KERNEL);
-+		if (!utdm) {
-+			ret = -ENOMEM;
-+			dev_err(&pdev->dev, "No mem to alloc ucc tdm data\n");
-+			goto err_alloc_utdm;
-+		}
-+		uhdlc_priv->utdm = utdm;
-+		ret = ucc_of_parse_tdm(np, utdm, ut_info);
-+		if (ret)
-+			goto err_miss_tsa_property;
-+	}
-+
-+	ret = uhdlc_init(uhdlc_priv);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to init uhdlc\n");
-+		goto err_hdlc_init;
-+	}
-+
-+	dev = alloc_hdlcdev(uhdlc_priv);
-+	if (!dev) {
-+		ret = -ENOMEM;
-+		pr_err("ucc_hdlc: unable to allocate memory\n");
-+		goto err_hdlc_init;
-+	}
-+
-+	uhdlc_priv->ndev = dev;
-+	hdlc = dev_to_hdlc(dev);
-+	dev->tx_queue_len = 16;
-+	dev->netdev_ops = &uhdlc_ops;
-+	hdlc->attach = ucc_hdlc_attach;
-+	hdlc->xmit = ucc_hdlc_tx;
-+	netif_napi_add(dev, &uhdlc_priv->napi, ucc_hdlc_poll, 32);
-+	if (register_hdlc_device(dev)) {
-+		ret = -ENOBUFS;
-+		pr_err("ucc_hdlc: unable to register hdlc device\n");
-+		free_netdev(dev);
-+		goto err_hdlc_init;
-+	}
-+
-+	return 0;
-+
-+err_hdlc_init:
-+err_miss_tsa_property:
-+	kfree(uhdlc_priv);
-+	if (uhdlc_priv->tsa)
-+		kfree(utdm);
-+err_alloc_utdm:
-+	kfree(uhdlc_priv);
-+err_alloc_priv:
-+	return ret;
-+}
-+
-+static int ucc_hdlc_remove(struct platform_device *pdev)
-+{
-+	struct ucc_hdlc_private *priv = dev_get_drvdata(&pdev->dev);
-+
-+	uhdlc_memclean(priv);
-+
-+	if (priv->utdm->si_regs) {
-+		iounmap(priv->utdm->si_regs);
-+		priv->utdm->si_regs = NULL;
-+	}
-+
-+	if (priv->utdm->siram) {
-+		iounmap(priv->utdm->siram);
-+		priv->utdm->siram = NULL;
-+	}
-+	kfree(priv);
-+
-+	dev_info(&pdev->dev, "UCC based hdlc module removed\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id fsl_ucc_hdlc_of_match[] = {
-+	{
-+	.compatible = "fsl,ucc-hdlc",
-+	},
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(of, fsl_ucc_hdlc_of_match);
-+
-+static struct platform_driver ucc_hdlc_driver = {
-+	.probe	= ucc_hdlc_probe,
-+	.remove	= ucc_hdlc_remove,
-+	.driver	= {
-+		.owner		= THIS_MODULE,
-+		.name		= DRV_NAME,
-+		.pm		= HDLC_PM_OPS,
-+		.of_match_table	= fsl_ucc_hdlc_of_match,
-+	},
-+};
-+
-+static int __init ucc_hdlc_init(void)
-+{
-+	return platform_driver_register(&ucc_hdlc_driver);
-+}
-+
-+static void __exit ucc_hdlc_exit(void)
-+{
-+	platform_driver_unregister(&ucc_hdlc_driver);
-+}
-+
-+module_init(ucc_hdlc_init);
-+module_exit(ucc_hdlc_exit);
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.h b/drivers/net/wan/fsl_ucc_hdlc.h
-new file mode 100644
-index 0000000..525786a
---- /dev/null
-+++ b/drivers/net/wan/fsl_ucc_hdlc.h
-@@ -0,0 +1,147 @@
-+/* Freescale QUICC Engine HDLC Device Driver
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifndef CONFIG_UCC_HDLC_H
-+#define CONFIG_UCC_HDLC_H
-+
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+
-+#include <soc/fsl/qe/immap_qe.h>
-+#include <soc/fsl/qe/qe.h>
-+
-+#include <soc/fsl/qe/ucc.h>
-+#include <soc/fsl/qe/ucc_fast.h>
-+
-+/* UCC HDLC event register */
-+#define UCCE_HDLC_RX_EVENTS	\
-+(UCC_HDLC_UCCE_RXF | UCC_HDLC_UCCE_RXB | UCC_HDLC_UCCE_BSY)
-+#define UCCE_HDLC_TX_EVENTS	(UCC_HDLC_UCCE_TXB | UCC_HDLC_UCCE_TXE)
-+
-+struct ucc_hdlc_param {
-+	__be16 riptr;
-+	__be16 tiptr;
-+	__be16 res0;
-+	__be16 mrblr;
-+	__be32 rstate;
-+	__be32 rbase;
-+	__be16 rbdstat;
-+	__be16 rbdlen;
-+	__be32 rdptr;
-+	__be32 tstate;
-+	__be32 tbase;
-+	__be16 tbdstat;
-+	__be16 tbdlen;
-+	__be32 tdptr;
-+	__be32 rbptr;
-+	__be32 tbptr;
-+	__be32 rcrc;
-+	__be32 res1;
-+	__be32 tcrc;
-+	__be32 res2;
-+	__be32 res3;
-+	__be32 c_mask;
-+	__be32 c_pres;
-+	__be16 disfc;
-+	__be16 crcec;
-+	__be16 abtsc;
-+	__be16 nmarc;
-+	__be32 max_cnt;
-+	__be16 mflr;
-+	__be16 rfthr;
-+	__be16 rfcnt;
-+	__be16 hmask;
-+	__be16 haddr1;
-+	__be16 haddr2;
-+	__be16 haddr3;
-+	__be16 haddr4;
-+	__be16 ts_tmp;
-+	__be16 tmp_mb;
-+};
-+
-+struct ucc_hdlc_private {
-+	struct ucc_tdm	*utdm;
-+	struct ucc_tdm_info *ut_info;
-+	struct ucc_fast_private *uccf;
-+	struct device *dev;
-+	struct net_device *ndev;
-+	struct napi_struct napi;
-+	struct ucc_fast __iomem *uf_regs;	/* UCC Fast registers */
-+	struct ucc_hdlc_param __iomem *ucc_pram;
-+	u16 tsa;
-+	bool hdlc_busy;
-+	bool loopback;
-+
-+	u8 *tx_buffer;
-+	u8 *rx_buffer;
-+	dma_addr_t dma_tx_addr;
-+	dma_addr_t dma_rx_addr;
-+
-+	struct qe_bd *tx_bd_base;
-+	struct qe_bd *rx_bd_base;
-+	dma_addr_t dma_tx_bd;
-+	dma_addr_t dma_rx_bd;
-+	struct qe_bd *curtx_bd;
-+	struct qe_bd *currx_bd;
-+	struct qe_bd *dirty_tx;
-+	u16 currx_bdnum;
-+
-+	struct sk_buff **tx_skbuff;
-+	struct sk_buff **rx_skbuff;
-+	u16 skb_curtx;
-+	u16 skb_currx;
-+	unsigned short skb_dirtytx;
-+
-+	unsigned short tx_ring_size;
-+	unsigned short rx_ring_size;
-+	u32 ucc_pram_offset;
-+
-+	unsigned short encoding;
-+	unsigned short parity;
-+	u32 clocking;
-+	spinlock_t lock;	/* lock for Tx BD and Tx buffer */
-+#ifdef CONFIG_PM
-+	struct ucc_hdlc_param *ucc_pram_bak;
-+	u32 gumr;
-+	u8 guemr;
-+	u32 cmxsi1cr_l, cmxsi1cr_h;
-+	u32 cmxsi1syr;
-+	u32 cmxucr[4];
-+#endif
-+};
-+
-+#define TX_BD_RING_LEN	0x10
-+#define RX_BD_RING_LEN	0x20
-+#define RX_CLEAN_MAX	0x10
-+#define NUM_OF_BUF	4
-+#define MAX_RX_BUF_LENGTH	(48 * 0x20)
-+#define MAX_FRAME_LENGTH	(MAX_RX_BUF_LENGTH + 8)
-+#define ALIGNMENT_OF_UCC_HDLC_PRAM	64
-+#define SI_BANK_SIZE	128
-+#define MAX_HDLC_NUM	4
-+#define HDLC_HEAD_LEN	2
-+#define HDLC_CRC_SIZE	2
-+#define TX_RING_MOD_MASK(size) (size - 1)
-+#define RX_RING_MOD_MASK(size) (size - 1)
-+
-+#define HDLC_HEAD_MASK		0x0000
-+#define DEFAULT_HDLC_HEAD	0xff44
-+#define DEFAULT_ADDR_MASK	0x00ff
-+#define DEFAULT_HDLC_ADDR	0x00ff
-+
-+#define BMR_GBL			0x20000000
-+#define BMR_BIG_ENDIAN		0x10000000
-+#define CRC_16BIT_MASK		0x0000F0B8
-+#define CRC_16BIT_PRES		0x0000FFFF
-+#define DEFAULT_RFTHR		1
-+
-+#define DEFAULT_PPP_HEAD    0xff03
-+
-+#endif
-diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
-index c3b1dc8..70339d7 100644
---- a/include/soc/fsl/qe/qe.h
-+++ b/include/soc/fsl/qe/qe.h
-@@ -657,6 +657,7 @@ struct ucc_slow_pram {
- #define UCC_SLOW_GUMR_L_MODE_QMC	0x00000002
++	OFFSET(VCPU_SHARED_SPRG3, kvm_vcpu_arch_shared, sprg3);
++	OFFSET(VCPU_SHARED_SPRG4, kvm_vcpu_arch_shared, sprg4);
++	OFFSET(VCPU_SHARED_SPRG5, kvm_vcpu_arch_shared, sprg5);
++	OFFSET(VCPU_SHARED_SPRG6, kvm_vcpu_arch_shared, sprg6);
++	OFFSET(VCPU_SHARED_SPRG7, kvm_vcpu_arch_shared, sprg7);
++	OFFSET(VCPU_SHADOW_PID, kvm_vcpu, arch.shadow_pid);
++	OFFSET(VCPU_SHADOW_PID1, kvm_vcpu, arch.shadow_pid1);
++	OFFSET(VCPU_SHARED, kvm_vcpu, arch.shared);
++	OFFSET(VCPU_SHARED_MSR, kvm_vcpu_arch_shared, msr);
++	OFFSET(VCPU_SHADOW_MSR, kvm_vcpu, arch.shadow_msr);
+ #if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_KVM_BOOK3S_PR_POSSIBLE)
+-	DEFINE(VCPU_SHAREDBE, offsetof(struct kvm_vcpu, arch.shared_big_endian));
++	OFFSET(VCPU_SHAREDBE, kvm_vcpu, arch.shared_big_endian);
+ #endif
  
- /* General UCC FAST Mode Register */
-+#define UCC_FAST_GUMR_LOOPBACK	0x40000000
- #define UCC_FAST_GUMR_TCI	0x20000000
- #define UCC_FAST_GUMR_TRX	0x10000000
- #define UCC_FAST_GUMR_TTX	0x08000000
-diff --git a/include/soc/fsl/qe/ucc_fast.h b/include/soc/fsl/qe/ucc_fast.h
-index e898895..f55cd5a 100644
---- a/include/soc/fsl/qe/ucc_fast.h
-+++ b/include/soc/fsl/qe/ucc_fast.h
-@@ -21,19 +21,36 @@
+-	DEFINE(VCPU_SHARED_MAS0, offsetof(struct kvm_vcpu_arch_shared, mas0));
+-	DEFINE(VCPU_SHARED_MAS1, offsetof(struct kvm_vcpu_arch_shared, mas1));
+-	DEFINE(VCPU_SHARED_MAS2, offsetof(struct kvm_vcpu_arch_shared, mas2));
+-	DEFINE(VCPU_SHARED_MAS7_3, offsetof(struct kvm_vcpu_arch_shared, mas7_3));
+-	DEFINE(VCPU_SHARED_MAS4, offsetof(struct kvm_vcpu_arch_shared, mas4));
+-	DEFINE(VCPU_SHARED_MAS6, offsetof(struct kvm_vcpu_arch_shared, mas6));
++	OFFSET(VCPU_SHARED_MAS0, kvm_vcpu_arch_shared, mas0);
++	OFFSET(VCPU_SHARED_MAS1, kvm_vcpu_arch_shared, mas1);
++	OFFSET(VCPU_SHARED_MAS2, kvm_vcpu_arch_shared, mas2);
++	OFFSET(VCPU_SHARED_MAS7_3, kvm_vcpu_arch_shared, mas7_3);
++	OFFSET(VCPU_SHARED_MAS4, kvm_vcpu_arch_shared, mas4);
++	OFFSET(VCPU_SHARED_MAS6, kvm_vcpu_arch_shared, mas6);
  
- #include <soc/fsl/qe/ucc.h>
+-	DEFINE(VCPU_KVM, offsetof(struct kvm_vcpu, kvm));
+-	DEFINE(KVM_LPID, offsetof(struct kvm, arch.lpid));
++	OFFSET(VCPU_KVM, kvm_vcpu, kvm);
++	OFFSET(KVM_LPID, kvm, arch.lpid);
  
--/* Receive BD's status */
-+/* Receive BD's status and length*/
- #define R_E	0x80000000	/* buffer empty */
- #define R_W	0x20000000	/* wrap bit */
- #define R_I	0x10000000	/* interrupt on reception */
- #define R_L	0x08000000	/* last */
- #define R_F	0x04000000	/* first */
+ 	/* book3s */
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	DEFINE(KVM_SDR1, offsetof(struct kvm, arch.sdr1));
+-	DEFINE(KVM_HOST_LPID, offsetof(struct kvm, arch.host_lpid));
+-	DEFINE(KVM_HOST_LPCR, offsetof(struct kvm, arch.host_lpcr));
+-	DEFINE(KVM_HOST_SDR1, offsetof(struct kvm, arch.host_sdr1));
+-	DEFINE(KVM_NEED_FLUSH, offsetof(struct kvm, arch.need_tlb_flush.bits));
+-	DEFINE(KVM_ENABLED_HCALLS, offsetof(struct kvm, arch.enabled_hcalls));
+-	DEFINE(KVM_VRMA_SLB_V, offsetof(struct kvm, arch.vrma_slb_v));
+-	DEFINE(VCPU_DSISR, offsetof(struct kvm_vcpu, arch.shregs.dsisr));
+-	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
+-	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa.pinned_addr));
+-	DEFINE(VCPU_VPA_DIRTY, offsetof(struct kvm_vcpu, arch.vpa.dirty));
+-	DEFINE(VCPU_HEIR, offsetof(struct kvm_vcpu, arch.emul_inst));
+-	DEFINE(VCPU_CPU, offsetof(struct kvm_vcpu, cpu));
+-	DEFINE(VCPU_THREAD_CPU, offsetof(struct kvm_vcpu, arch.thread_cpu));
++	OFFSET(KVM_SDR1, kvm, arch.sdr1);
++	OFFSET(KVM_HOST_LPID, kvm, arch.host_lpid);
++	OFFSET(KVM_HOST_LPCR, kvm, arch.host_lpcr);
++	OFFSET(KVM_HOST_SDR1, kvm, arch.host_sdr1);
++	OFFSET(KVM_NEED_FLUSH, kvm, arch.need_tlb_flush.bits);
++	OFFSET(KVM_ENABLED_HCALLS, kvm, arch.enabled_hcalls);
++	OFFSET(KVM_VRMA_SLB_V, kvm, arch.vrma_slb_v);
++	OFFSET(VCPU_DSISR, kvm_vcpu, arch.shregs.dsisr);
++	OFFSET(VCPU_DAR, kvm_vcpu, arch.shregs.dar);
++	OFFSET(VCPU_VPA, kvm_vcpu, arch.vpa.pinned_addr);
++	OFFSET(VCPU_VPA_DIRTY, kvm_vcpu, arch.vpa.dirty);
++	OFFSET(VCPU_HEIR, kvm_vcpu, arch.emul_inst);
++	OFFSET(VCPU_CPU, kvm_vcpu, cpu);
++	OFFSET(VCPU_THREAD_CPU, kvm_vcpu, arch.thread_cpu);
+ #endif
+ #ifdef CONFIG_PPC_BOOK3S
+-	DEFINE(VCPU_PURR, offsetof(struct kvm_vcpu, arch.purr));
+-	DEFINE(VCPU_SPURR, offsetof(struct kvm_vcpu, arch.spurr));
+-	DEFINE(VCPU_IC, offsetof(struct kvm_vcpu, arch.ic));
+-	DEFINE(VCPU_VTB, offsetof(struct kvm_vcpu, arch.vtb));
+-	DEFINE(VCPU_DSCR, offsetof(struct kvm_vcpu, arch.dscr));
+-	DEFINE(VCPU_AMR, offsetof(struct kvm_vcpu, arch.amr));
+-	DEFINE(VCPU_UAMOR, offsetof(struct kvm_vcpu, arch.uamor));
+-	DEFINE(VCPU_IAMR, offsetof(struct kvm_vcpu, arch.iamr));
+-	DEFINE(VCPU_CTRL, offsetof(struct kvm_vcpu, arch.ctrl));
+-	DEFINE(VCPU_DABR, offsetof(struct kvm_vcpu, arch.dabr));
+-	DEFINE(VCPU_DABRX, offsetof(struct kvm_vcpu, arch.dabrx));
+-	DEFINE(VCPU_DAWR, offsetof(struct kvm_vcpu, arch.dawr));
+-	DEFINE(VCPU_DAWRX, offsetof(struct kvm_vcpu, arch.dawrx));
+-	DEFINE(VCPU_CIABR, offsetof(struct kvm_vcpu, arch.ciabr));
+-	DEFINE(VCPU_HFLAGS, offsetof(struct kvm_vcpu, arch.hflags));
+-	DEFINE(VCPU_DEC, offsetof(struct kvm_vcpu, arch.dec));
+-	DEFINE(VCPU_DEC_EXPIRES, offsetof(struct kvm_vcpu, arch.dec_expires));
+-	DEFINE(VCPU_PENDING_EXC, offsetof(struct kvm_vcpu, arch.pending_exceptions));
+-	DEFINE(VCPU_CEDED, offsetof(struct kvm_vcpu, arch.ceded));
+-	DEFINE(VCPU_PRODDED, offsetof(struct kvm_vcpu, arch.prodded));
+-	DEFINE(VCPU_MMCR, offsetof(struct kvm_vcpu, arch.mmcr));
+-	DEFINE(VCPU_PMC, offsetof(struct kvm_vcpu, arch.pmc));
+-	DEFINE(VCPU_SIAR, offsetof(struct kvm_vcpu, arch.siar));
+-	DEFINE(VCPU_SDAR, offsetof(struct kvm_vcpu, arch.sdar));
+-	DEFINE(VCPU_SIER, offsetof(struct kvm_vcpu, arch.sier));
+-	DEFINE(VCPU_SLB, offsetof(struct kvm_vcpu, arch.slb));
+-	DEFINE(VCPU_SLB_MAX, offsetof(struct kvm_vcpu, arch.slb_max));
+-	DEFINE(VCPU_SLB_NR, offsetof(struct kvm_vcpu, arch.slb_nr));
+-	DEFINE(VCPU_FAULT_DSISR, offsetof(struct kvm_vcpu, arch.fault_dsisr));
+-	DEFINE(VCPU_FAULT_DAR, offsetof(struct kvm_vcpu, arch.fault_dar));
+-	DEFINE(VCPU_INTR_MSR, offsetof(struct kvm_vcpu, arch.intr_msr));
+-	DEFINE(VCPU_LAST_INST, offsetof(struct kvm_vcpu, arch.last_inst));
+-	DEFINE(VCPU_TRAP, offsetof(struct kvm_vcpu, arch.trap));
+-	DEFINE(VCPU_CFAR, offsetof(struct kvm_vcpu, arch.cfar));
+-	DEFINE(VCPU_PPR, offsetof(struct kvm_vcpu, arch.ppr));
+-	DEFINE(VCPU_FSCR, offsetof(struct kvm_vcpu, arch.fscr));
+-	DEFINE(VCPU_PSPB, offsetof(struct kvm_vcpu, arch.pspb));
+-	DEFINE(VCPU_EBBHR, offsetof(struct kvm_vcpu, arch.ebbhr));
+-	DEFINE(VCPU_EBBRR, offsetof(struct kvm_vcpu, arch.ebbrr));
+-	DEFINE(VCPU_BESCR, offsetof(struct kvm_vcpu, arch.bescr));
+-	DEFINE(VCPU_CSIGR, offsetof(struct kvm_vcpu, arch.csigr));
+-	DEFINE(VCPU_TACR, offsetof(struct kvm_vcpu, arch.tacr));
+-	DEFINE(VCPU_TCSCR, offsetof(struct kvm_vcpu, arch.tcscr));
+-	DEFINE(VCPU_ACOP, offsetof(struct kvm_vcpu, arch.acop));
+-	DEFINE(VCPU_WORT, offsetof(struct kvm_vcpu, arch.wort));
+-	DEFINE(VCORE_ENTRY_EXIT, offsetof(struct kvmppc_vcore, entry_exit_map));
+-	DEFINE(VCORE_IN_GUEST, offsetof(struct kvmppc_vcore, in_guest));
+-	DEFINE(VCORE_NAPPING_THREADS, offsetof(struct kvmppc_vcore, napping_threads));
+-	DEFINE(VCORE_KVM, offsetof(struct kvmppc_vcore, kvm));
+-	DEFINE(VCORE_TB_OFFSET, offsetof(struct kvmppc_vcore, tb_offset));
+-	DEFINE(VCORE_LPCR, offsetof(struct kvmppc_vcore, lpcr));
+-	DEFINE(VCORE_PCR, offsetof(struct kvmppc_vcore, pcr));
+-	DEFINE(VCORE_DPDES, offsetof(struct kvmppc_vcore, dpdes));
+-	DEFINE(VCPU_SLB_E, offsetof(struct kvmppc_slb, orige));
+-	DEFINE(VCPU_SLB_V, offsetof(struct kvmppc_slb, origv));
++	OFFSET(VCPU_PURR, kvm_vcpu, arch.purr);
++	OFFSET(VCPU_SPURR, kvm_vcpu, arch.spurr);
++	OFFSET(VCPU_IC, kvm_vcpu, arch.ic);
++	OFFSET(VCPU_VTB, kvm_vcpu, arch.vtb);
++	OFFSET(VCPU_DSCR, kvm_vcpu, arch.dscr);
++	OFFSET(VCPU_AMR, kvm_vcpu, arch.amr);
++	OFFSET(VCPU_UAMOR, kvm_vcpu, arch.uamor);
++	OFFSET(VCPU_IAMR, kvm_vcpu, arch.iamr);
++	OFFSET(VCPU_CTRL, kvm_vcpu, arch.ctrl);
++	OFFSET(VCPU_DABR, kvm_vcpu, arch.dabr);
++	OFFSET(VCPU_DABRX, kvm_vcpu, arch.dabrx);
++	OFFSET(VCPU_DAWR, kvm_vcpu, arch.dawr);
++	OFFSET(VCPU_DAWRX, kvm_vcpu, arch.dawrx);
++	OFFSET(VCPU_CIABR, kvm_vcpu, arch.ciabr);
++	OFFSET(VCPU_HFLAGS, kvm_vcpu, arch.hflags);
++	OFFSET(VCPU_DEC, kvm_vcpu, arch.dec);
++	OFFSET(VCPU_DEC_EXPIRES, kvm_vcpu, arch.dec_expires);
++	OFFSET(VCPU_PENDING_EXC, kvm_vcpu, arch.pending_exceptions);
++	OFFSET(VCPU_CEDED, kvm_vcpu, arch.ceded);
++	OFFSET(VCPU_PRODDED, kvm_vcpu, arch.prodded);
++	OFFSET(VCPU_MMCR, kvm_vcpu, arch.mmcr);
++	OFFSET(VCPU_PMC, kvm_vcpu, arch.pmc);
++	OFFSET(VCPU_SIAR, kvm_vcpu, arch.siar);
++	OFFSET(VCPU_SDAR, kvm_vcpu, arch.sdar);
++	OFFSET(VCPU_SIER, kvm_vcpu, arch.sier);
++	OFFSET(VCPU_SLB, kvm_vcpu, arch.slb);
++	OFFSET(VCPU_SLB_MAX, kvm_vcpu, arch.slb_max);
++	OFFSET(VCPU_SLB_NR, kvm_vcpu, arch.slb_nr);
++	OFFSET(VCPU_FAULT_DSISR, kvm_vcpu, arch.fault_dsisr);
++	OFFSET(VCPU_FAULT_DAR, kvm_vcpu, arch.fault_dar);
++	OFFSET(VCPU_INTR_MSR, kvm_vcpu, arch.intr_msr);
++	OFFSET(VCPU_LAST_INST, kvm_vcpu, arch.last_inst);
++	OFFSET(VCPU_TRAP, kvm_vcpu, arch.trap);
++	OFFSET(VCPU_CFAR, kvm_vcpu, arch.cfar);
++	OFFSET(VCPU_PPR, kvm_vcpu, arch.ppr);
++	OFFSET(VCPU_FSCR, kvm_vcpu, arch.fscr);
++	OFFSET(VCPU_PSPB, kvm_vcpu, arch.pspb);
++	OFFSET(VCPU_EBBHR, kvm_vcpu, arch.ebbhr);
++	OFFSET(VCPU_EBBRR, kvm_vcpu, arch.ebbrr);
++	OFFSET(VCPU_BESCR, kvm_vcpu, arch.bescr);
++	OFFSET(VCPU_CSIGR, kvm_vcpu, arch.csigr);
++	OFFSET(VCPU_TACR, kvm_vcpu, arch.tacr);
++	OFFSET(VCPU_TCSCR, kvm_vcpu, arch.tcscr);
++	OFFSET(VCPU_ACOP, kvm_vcpu, arch.acop);
++	OFFSET(VCPU_WORT, kvm_vcpu, arch.wort);
++	OFFSET(VCORE_ENTRY_EXIT, kvmppc_vcore, entry_exit_map);
++	OFFSET(VCORE_IN_GUEST, kvmppc_vcore, in_guest);
++	OFFSET(VCORE_NAPPING_THREADS, kvmppc_vcore, napping_threads);
++	OFFSET(VCORE_KVM, kvmppc_vcore, kvm);
++	OFFSET(VCORE_TB_OFFSET, kvmppc_vcore, tb_offset);
++	OFFSET(VCORE_LPCR, kvmppc_vcore, lpcr);
++	OFFSET(VCORE_PCR, kvmppc_vcore, pcr);
++	OFFSET(VCORE_DPDES, kvmppc_vcore, dpdes);
++	OFFSET(VCPU_SLB_E, kvmppc_slb, orige);
++	OFFSET(VCPU_SLB_V, kvmppc_slb, origv);
+ 	DEFINE(VCPU_SLB_SIZE, sizeof(struct kvmppc_slb));
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	DEFINE(VCPU_TFHAR, offsetof(struct kvm_vcpu, arch.tfhar));
+-	DEFINE(VCPU_TFIAR, offsetof(struct kvm_vcpu, arch.tfiar));
+-	DEFINE(VCPU_TEXASR, offsetof(struct kvm_vcpu, arch.texasr));
+-	DEFINE(VCPU_GPR_TM, offsetof(struct kvm_vcpu, arch.gpr_tm));
+-	DEFINE(VCPU_FPRS_TM, offsetof(struct kvm_vcpu, arch.fp_tm.fpr));
+-	DEFINE(VCPU_VRS_TM, offsetof(struct kvm_vcpu, arch.vr_tm.vr));
+-	DEFINE(VCPU_VRSAVE_TM, offsetof(struct kvm_vcpu, arch.vrsave_tm));
+-	DEFINE(VCPU_CR_TM, offsetof(struct kvm_vcpu, arch.cr_tm));
+-	DEFINE(VCPU_LR_TM, offsetof(struct kvm_vcpu, arch.lr_tm));
+-	DEFINE(VCPU_CTR_TM, offsetof(struct kvm_vcpu, arch.ctr_tm));
+-	DEFINE(VCPU_AMR_TM, offsetof(struct kvm_vcpu, arch.amr_tm));
+-	DEFINE(VCPU_PPR_TM, offsetof(struct kvm_vcpu, arch.ppr_tm));
+-	DEFINE(VCPU_DSCR_TM, offsetof(struct kvm_vcpu, arch.dscr_tm));
+-	DEFINE(VCPU_TAR_TM, offsetof(struct kvm_vcpu, arch.tar_tm));
++	OFFSET(VCPU_TFHAR, kvm_vcpu, arch.tfhar);
++	OFFSET(VCPU_TFIAR, kvm_vcpu, arch.tfiar);
++	OFFSET(VCPU_TEXASR, kvm_vcpu, arch.texasr);
++	OFFSET(VCPU_GPR_TM, kvm_vcpu, arch.gpr_tm);
++	OFFSET(VCPU_FPRS_TM, kvm_vcpu, arch.fp_tm.fpr);
++	OFFSET(VCPU_VRS_TM, kvm_vcpu, arch.vr_tm.vr);
++	OFFSET(VCPU_VRSAVE_TM, kvm_vcpu, arch.vrsave_tm);
++	OFFSET(VCPU_CR_TM, kvm_vcpu, arch.cr_tm);
++	OFFSET(VCPU_LR_TM, kvm_vcpu, arch.lr_tm);
++	OFFSET(VCPU_CTR_TM, kvm_vcpu, arch.ctr_tm);
++	OFFSET(VCPU_AMR_TM, kvm_vcpu, arch.amr_tm);
++	OFFSET(VCPU_PPR_TM, kvm_vcpu, arch.ppr_tm);
++	OFFSET(VCPU_DSCR_TM, kvm_vcpu, arch.dscr_tm);
++	OFFSET(VCPU_TAR_TM, kvm_vcpu, arch.tar_tm);
+ #endif
  
--/* transmit BD's status */
-+/* transmit BD's status and length*/
- #define T_R	0x80000000	/* ready bit */
- #define T_W	0x20000000	/* wrap bit */
- #define T_I	0x10000000	/* interrupt on completion */
- #define T_L	0x08000000	/* last */
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+-	DEFINE(PACA_SVCPU, offsetof(struct paca_struct, shadow_vcpu));
++	OFFSET(PACA_SVCPU, paca_struct, shadow_vcpu);
+ # define SVCPU_FIELD(x, f)	DEFINE(x, offsetof(struct paca_struct, shadow_vcpu.f))
+ #else
+ # define SVCPU_FIELD(x, f)
+@@ -642,11 +634,11 @@ int main(void)
+ 	HSTATE_FIELD(HSTATE_DECEXP, dec_expires);
+ 	HSTATE_FIELD(HSTATE_SPLIT_MODE, kvm_split_mode);
+ 	DEFINE(IPI_PRIORITY, IPI_PRIORITY);
+-	DEFINE(KVM_SPLIT_RPR, offsetof(struct kvm_split_mode, rpr));
+-	DEFINE(KVM_SPLIT_PMMAR, offsetof(struct kvm_split_mode, pmmar));
+-	DEFINE(KVM_SPLIT_LDBAR, offsetof(struct kvm_split_mode, ldbar));
+-	DEFINE(KVM_SPLIT_DO_NAP, offsetof(struct kvm_split_mode, do_nap));
+-	DEFINE(KVM_SPLIT_NAPPED, offsetof(struct kvm_split_mode, napped));
++	OFFSET(KVM_SPLIT_RPR, kvm_split_mode, rpr);
++	OFFSET(KVM_SPLIT_PMMAR, kvm_split_mode, pmmar);
++	OFFSET(KVM_SPLIT_LDBAR, kvm_split_mode, ldbar);
++	OFFSET(KVM_SPLIT_DO_NAP, kvm_split_mode, do_nap);
++	OFFSET(KVM_SPLIT_NAPPED, kvm_split_mode, napped);
+ #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
  
-+/* Receive BD's status */
-+#define R_E_S	0x8000	/* buffer empty */
-+#define R_W_S	0x2000	/* wrap bit */
-+#define R_I_S	0x1000	/* interrupt on reception */
-+#define R_L_S	0x0800	/* last */
-+#define R_F_S	0x0400	/* first */
-+#define R_CM_S	0x0200	/* continuous mode */
-+#define R_CR_S	0x0004	/* crc */
-+
-+/* transmit BD's status */
-+#define T_R_S	0x8000	/* ready bit */
-+#define T_W_S	0x2000	/* wrap bit */
-+#define T_I_S	0x1000	/* interrupt on completion */
-+#define T_L_S	0x0800	/* last */
-+#define T_TC_S	0x0400	/* crc */
-+#define T_TM_S	0x0200	/* continuous mode */
-+
- /* Rx Data buffer must be 4 bytes aligned in most cases */
- #define UCC_FAST_RX_ALIGN			4
- #define UCC_FAST_MRBLR_ALIGNMENT		4
+ #ifdef CONFIG_PPC_BOOK3S_64
+@@ -656,32 +648,27 @@ int main(void)
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ #else /* CONFIG_PPC_BOOK3S */
+-	DEFINE(VCPU_CR, offsetof(struct kvm_vcpu, arch.cr));
+-	DEFINE(VCPU_XER, offsetof(struct kvm_vcpu, arch.xer));
+-	DEFINE(VCPU_LR, offsetof(struct kvm_vcpu, arch.lr));
+-	DEFINE(VCPU_CTR, offsetof(struct kvm_vcpu, arch.ctr));
+-	DEFINE(VCPU_PC, offsetof(struct kvm_vcpu, arch.pc));
+-	DEFINE(VCPU_SPRG9, offsetof(struct kvm_vcpu, arch.sprg9));
+-	DEFINE(VCPU_LAST_INST, offsetof(struct kvm_vcpu, arch.last_inst));
+-	DEFINE(VCPU_FAULT_DEAR, offsetof(struct kvm_vcpu, arch.fault_dear));
+-	DEFINE(VCPU_FAULT_ESR, offsetof(struct kvm_vcpu, arch.fault_esr));
+-	DEFINE(VCPU_CRIT_SAVE, offsetof(struct kvm_vcpu, arch.crit_save));
++	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
++	OFFSET(VCPU_XER, kvm_vcpu, arch.xer);
++	OFFSET(VCPU_LR, kvm_vcpu, arch.lr);
++	OFFSET(VCPU_CTR, kvm_vcpu, arch.ctr);
++	OFFSET(VCPU_PC, kvm_vcpu, arch.pc);
++	OFFSET(VCPU_SPRG9, kvm_vcpu, arch.sprg9);
++	OFFSET(VCPU_LAST_INST, kvm_vcpu, arch.last_inst);
++	OFFSET(VCPU_FAULT_DEAR, kvm_vcpu, arch.fault_dear);
++	OFFSET(VCPU_FAULT_ESR, kvm_vcpu, arch.fault_esr);
++	OFFSET(VCPU_CRIT_SAVE, kvm_vcpu, arch.crit_save);
+ #endif /* CONFIG_PPC_BOOK3S */
+ #endif /* CONFIG_KVM */
+ 
+ #ifdef CONFIG_KVM_GUEST
+-	DEFINE(KVM_MAGIC_SCRATCH1, offsetof(struct kvm_vcpu_arch_shared,
+-					    scratch1));
+-	DEFINE(KVM_MAGIC_SCRATCH2, offsetof(struct kvm_vcpu_arch_shared,
+-					    scratch2));
+-	DEFINE(KVM_MAGIC_SCRATCH3, offsetof(struct kvm_vcpu_arch_shared,
+-					    scratch3));
+-	DEFINE(KVM_MAGIC_INT, offsetof(struct kvm_vcpu_arch_shared,
+-				       int_pending));
+-	DEFINE(KVM_MAGIC_MSR, offsetof(struct kvm_vcpu_arch_shared, msr));
+-	DEFINE(KVM_MAGIC_CRITICAL, offsetof(struct kvm_vcpu_arch_shared,
+-					    critical));
+-	DEFINE(KVM_MAGIC_SR, offsetof(struct kvm_vcpu_arch_shared, sr));
++	OFFSET(KVM_MAGIC_SCRATCH1, kvm_vcpu_arch_shared, scratch1);
++	OFFSET(KVM_MAGIC_SCRATCH2, kvm_vcpu_arch_shared, scratch2);
++	OFFSET(KVM_MAGIC_SCRATCH3, kvm_vcpu_arch_shared, scratch3);
++	OFFSET(KVM_MAGIC_INT, kvm_vcpu_arch_shared, int_pending);
++	OFFSET(KVM_MAGIC_MSR, kvm_vcpu_arch_shared, msr);
++	OFFSET(KVM_MAGIC_CRITICAL, kvm_vcpu_arch_shared, critical);
++	OFFSET(KVM_MAGIC_SR, kvm_vcpu_arch_shared, sr);
+ #endif
+ 
+ #ifdef CONFIG_44x
+@@ -690,45 +677,39 @@ int main(void)
+ #endif
+ #ifdef CONFIG_PPC_FSL_BOOK3E
+ 	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
+-	DEFINE(TLBCAM_MAS0, offsetof(struct tlbcam, MAS0));
+-	DEFINE(TLBCAM_MAS1, offsetof(struct tlbcam, MAS1));
+-	DEFINE(TLBCAM_MAS2, offsetof(struct tlbcam, MAS2));
+-	DEFINE(TLBCAM_MAS3, offsetof(struct tlbcam, MAS3));
+-	DEFINE(TLBCAM_MAS7, offsetof(struct tlbcam, MAS7));
++	OFFSET(TLBCAM_MAS0, tlbcam, MAS0);
++	OFFSET(TLBCAM_MAS1, tlbcam, MAS1);
++	OFFSET(TLBCAM_MAS2, tlbcam, MAS2);
++	OFFSET(TLBCAM_MAS3, tlbcam, MAS3);
++	OFFSET(TLBCAM_MAS7, tlbcam, MAS7);
+ #endif
+ 
+ #if defined(CONFIG_KVM) && defined(CONFIG_SPE)
+-	DEFINE(VCPU_EVR, offsetof(struct kvm_vcpu, arch.evr[0]));
+-	DEFINE(VCPU_ACC, offsetof(struct kvm_vcpu, arch.acc));
+-	DEFINE(VCPU_SPEFSCR, offsetof(struct kvm_vcpu, arch.spefscr));
+-	DEFINE(VCPU_HOST_SPEFSCR, offsetof(struct kvm_vcpu, arch.host_spefscr));
++	OFFSET(VCPU_EVR, kvm_vcpu, arch.evr[0]);
++	OFFSET(VCPU_ACC, kvm_vcpu, arch.acc);
++	OFFSET(VCPU_SPEFSCR, kvm_vcpu, arch.spefscr);
++	OFFSET(VCPU_HOST_SPEFSCR, kvm_vcpu, arch.host_spefscr);
+ #endif
+ 
+ #ifdef CONFIG_KVM_BOOKE_HV
+-	DEFINE(VCPU_HOST_MAS4, offsetof(struct kvm_vcpu, arch.host_mas4));
+-	DEFINE(VCPU_HOST_MAS6, offsetof(struct kvm_vcpu, arch.host_mas6));
++	OFFSET(VCPU_HOST_MAS4, kvm_vcpu, arch.host_mas4);
++	OFFSET(VCPU_HOST_MAS6, kvm_vcpu, arch.host_mas6);
+ #endif
+ 
+ #ifdef CONFIG_KVM_EXIT_TIMING
+-	DEFINE(VCPU_TIMING_EXIT_TBU, offsetof(struct kvm_vcpu,
+-						arch.timing_exit.tv32.tbu));
+-	DEFINE(VCPU_TIMING_EXIT_TBL, offsetof(struct kvm_vcpu,
+-						arch.timing_exit.tv32.tbl));
+-	DEFINE(VCPU_TIMING_LAST_ENTER_TBU, offsetof(struct kvm_vcpu,
+-					arch.timing_last_enter.tv32.tbu));
+-	DEFINE(VCPU_TIMING_LAST_ENTER_TBL, offsetof(struct kvm_vcpu,
+-					arch.timing_last_enter.tv32.tbl));
++	OFFSET(VCPU_TIMING_EXIT_TBU, kvm_vcpu, arch.timing_exit.tv32.tbu);
++	OFFSET(VCPU_TIMING_EXIT_TBL, kvm_vcpu, arch.timing_exit.tv32.tbl);
++	OFFSET(VCPU_TIMING_LAST_ENTER_TBU, kvm_vcpu,
++			arch.timing_last_enter.tv32.tbu);
++	OFFSET(VCPU_TIMING_LAST_ENTER_TBL, kvm_vcpu,
++			arch.timing_last_enter.tv32.tbl);
+ #endif
+ 
+ #ifdef CONFIG_PPC_POWERNV
+-	DEFINE(PACA_CORE_IDLE_STATE_PTR,
+-			offsetof(struct paca_struct, core_idle_state_ptr));
+-	DEFINE(PACA_THREAD_IDLE_STATE,
+-			offsetof(struct paca_struct, thread_idle_state));
+-	DEFINE(PACA_THREAD_MASK,
+-			offsetof(struct paca_struct, thread_mask));
+-	DEFINE(PACA_SUBCORE_SIBLING_MASK,
+-			offsetof(struct paca_struct, subcore_sibling_mask));
++	OFFSET(PACA_CORE_IDLE_STATE_PTR, paca_struct, core_idle_state_ptr);
++	OFFSET(PACA_THREAD_IDLE_STATE, paca_struct, thread_idle_state);
++	OFFSET(PACA_THREAD_MASK, paca_struct, thread_mask);
++	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+ #endif
+ 
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
 -- 
-2.1.0.27.g96db324
+2.5.0
