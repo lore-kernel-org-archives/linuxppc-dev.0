@@ -1,30 +1,37 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL52Y32WPzDqgc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 21:43:16 +1000 (AEST)
-Received: by mail-pa0-x234.google.com with SMTP id um11so5336147pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jun 2016 04:43:16 -0700 (PDT)
-Date: Thu, 2 Jun 2016 17:13:11 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linaro-kernel@lists.linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH 3/8] cpufreq: powerenv: Fix memory leak
-Message-ID: <20160602114311.GR3725@vireshk-i7>
-References: <cover.1464776797.git.viresh.kumar@linaro.org>
- <f67b4b395c777a3e933ab51eafcd76b1299bf1fb.1464776797.git.viresh.kumar@linaro.org>
- <1464865688.11826.1.camel@ellerman.id.au>
- <20160602112203.GO3725@vireshk-i7>
- <1464867465.11826.4.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rL53d4MDmzDqyc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 21:44:13 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Scott Wood <oss@buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Ulf Hansson <ulf.hansson@linaro.org>,
+ Yangbo Lu <yangbo.lu@nxp.com>, Mark Rutland <mark.rutland@arm.com>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Yang-Leo Li <leoyang.li@nxp.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Kumar Gala <galak@codeaurora.org>
+Subject: Re: [PATCH 4/4] Revert "powerpc/fsl: Move fsl_guts.h out of
+ arch/powerpc"
+Date: Thu, 02 Jun 2016 11:01:45 +0200
+Message-ID: <3225846.9EJ0sHv0XK@wuerfel>
+In-Reply-To: <1464830660.22191.6.camel@buserror.net>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ <5513501.AmZs7h1vI2@wuerfel> <1464830660.22191.6.camel@buserror.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1464867465.11826.4.camel@ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,39 +41,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02-06-16, 21:37, Michael Ellerman wrote:
-> On Thu, 2016-06-02 at 16:52 +0530, Viresh Kumar wrote:
-> > On 02-06-16, 21:08, Michael Ellerman wrote:
-> > > On Wed, 2016-06-01 at 16:04 +0530, Viresh Kumar wrote:
-> > > 
-> > > > The policy is copied (unnecessarily) and is never freed. Fix it by just
-> > > > getting a reference to the existing policy structure and putting it
-> > > > back.
-> > > > 
-> > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > 
-> > > When was it broken, always?
-> > > 
-> > > Cc: stable ?
+On Wednesday, June 1, 2016 8:24:20 PM CEST Scott Wood wrote:
+> On Mon, 2016-05-30 at 15:18 +0200, Arnd Bergmann wrote:
+> > All users of this driver are PowerPC specific and the header file
+> > has no business in the global include/linux/ hierarchy, so move
+> > it back before anyone starts using it on ARM.
 > > 
-> > Its a small memory leak and its not that we will fail on something. So
-> > didn't bother to add those details, but in case they are required:
+> > This reverts commit 948486544713492f00ac8a9572909101ea892cb0.
 > > 
-> > Cc: <stable@vger.kernel.org> # 4.3+
-> > Fixes: 227942809b52 ("cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling")
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> > This part of the series is not required for the eSDHC quirk,
+> > but it restores the asm/fsl_guts.h header so it doesn't accidentally
+> > get abused for this in the future. I found two drivers outside of
+> > arch/powerpc that already accessed the registers directly, but the
+> > functions look fairly contained, and can be easily hidden in an
+> > #ifdef CONFIG_PPC
 > 
-> OK. I can't actually see where the copy is?
+> NACK
 > 
-> But if we are leaking even a small amount of memory in a loop like that, in a
-> function that's run semi-regularly, then it's going to add up eventually.
+> Besides adding ifdef pollution for no good reason, this register block is used
+> on some ARM chips as well.  Why is it a problem if "anyone starts using it on
+> ARM"?
 
-Urg, it wasn't a memory leak actually. I misread.
+It's just not a good interface when it's defined as "this is the layout of
+a register area that any driver can ioremap() if they can figure out the
+device node". It's not uncommon to have register areas like that, but
+normally you have at the minimum a 'syscon' device to handle locking
+between drivers accessing the same registers and to avoid having to map
+the same area multiple times.
 
-I somehow thought that cpufreq_get_policy() is also allocating memory
-for the policy, but it just memcpy's it into the callers buffer. So,
-that's not a problem really.
+If we need to use 'guts' registers on ARM, we can find a way to abstract
+them properly for the given use cases, using a syscon or a driver with
+exported functions, but just making a PowerPC platform specific header
+global to all Linux drivers by putting it into include/linux doesn't seem
+right.
 
-This patch should be just dropped. Sorry for the noise.
+Note that the header file uses a structure definition rather than the more
+common macros with register offsets, which is fine for a driver that has
+its own registers and abstracts them, but it doesn't really work with
+the regmap interface, so if we want to use it with syscon, it also needs to
+be rewritten.
 
--- 
-viresh
+> BTW, of all the mailing lists you included on this CC, you seem to have left
+> off the PPC list (I've added it).
+
+Sorry, my mistake.
+
+	Arnd
