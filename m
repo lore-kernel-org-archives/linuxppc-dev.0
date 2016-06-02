@@ -1,36 +1,20 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0082.outbound.protection.outlook.com [207.46.100.82])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rKqqL0KqyzDqXp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 11:47:41 +1000 (AEST)
-Message-ID: <1464832042.22191.23.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Yangbo Lu <yangbo.lu@nxp.com>,
- Mark Rutland <mark.rutland@arm.com>, Xiaobo Xie <xiaobo.xie@nxp.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, Qiang Zhao
- <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>,  Joerg Roedel <joro@8bytes.org>, Claudiu
- Manoil <claudiu.manoil@freescale.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Santosh
- Shilimkar <ssantosh@kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Yang-Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Kumar Gala <galak@codeaurora.org>,  linuxppc-dev@lists.ozlabs.org
-Date: Wed, 01 Jun 2016 20:47:22 -0500
-In-Reply-To: <5339448.D8rpq4ofAC@wuerfel>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <HE1PR04MB0889852B7809A1CCFF8922ACF8410@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <CAPDyKFqx2JMLzXoDxGCKFYMFV47+SegnkuWFXKvsQHK7L5w-1g@mail.gmail.com>
- <5339448.D8rpq4ofAC@wuerfel>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rKr096p11zDqXp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 11:55:21 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <oss@buserror.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <netdev@vger.kernel.org>, <xiaobo.xie@nxp.com>, Zhao Qiang
+ <qiang.zhao@nxp.com>
+Subject: [PATCH v2 1/5] fsl/qe: add rx_sync and tx_sync for TDM mode
+Date: Thu, 2 Jun 2016 09:44:57 +0800
+Message-ID: <1464831901-15913-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,130 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-05-30 at 15:15 +0200, Arnd Bergmann wrote:
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> new file mode 100644
-> index 000000000000..2f30698f5bcf
-> --- /dev/null
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -0,0 +1,130 @@
-> +/*
-> + * Freescale QorIQ Platforms GUTS Driver
-> + *
-> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#include <linux/io.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/module.h>
-> +#include <linux/slab.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/sys_soc.h>
-> +
-> +#define GUTS_PVR	0x0a0
-> +#define GUTS_SVR	0x0a4
-> +
-> +struct guts {
-> +	void __iomem *regs;
+Rx_sync and tx_sync are used by QE-TDM mode,
+add them to struct ucc_fast_info.
 
-We already have a struct to define guts.  Why are you not using it?  Why do
-you consider using it to be "abuse"?  What if we want to move more guts
-functionality into this driver?
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+Changes for v2:
+	- use strcmp instead of strcasecmp
 
-> +	bool little_endian;
-> +	struct soc_device_attribute soc;
-> +};
-> +
-> +static u32 fsl_guts_get_svr(struct guts *guts)
-> +{
-> +	if (guts->little_endian)
-> +		return ioread32(guts->regs + GUTS_SVR);
-> +	else
-> +		return ioread32be(guts->regs + GUTS_SVR);
-> +}
-> +
-> +static u32 fsl_guts_get_pvr(struct guts *guts)
-> +{
-> +	if (guts->little_endian)
-> +		return ioread32(guts->regs + GUTS_PVR);
-> +	else
-> +		return ioread32be(guts->regs + GUTS_PVR);
-> +}
+ drivers/soc/fsl/qe/qe.c       | 6 ++++++
+ include/soc/fsl/qe/qe.h       | 2 ++
+ include/soc/fsl/qe/ucc_fast.h | 2 ++
+ 3 files changed, 10 insertions(+)
 
-You've removed the fallback to mfspr() on PPC, which would be helpful in some
-virtualized environments where we don't have the guts node (but do have other
-directly assigned devices).  Of course, this is a consequence of the
-conversion into a platform device.
-
-> +
-> +/*
-> + * Table for matching compatible strings, for device tree
-> + * guts node, for Freescale QorIQ SOCs.
-> + */
-> +static const struct of_device_id fsl_guts_of_match[] = {
-> +	/* For T4 & B4 Series SOCs */
-> +	{ .compatible = "fsl,qoriq-device-config-1.0", .data = "T4/B4
-> series" },
-[snip]
-> +	{ .compatible = "fsl,qoriq-device-config-2.0", .data = "P series"
-
-As noted in my comment on patch 3/4, these descriptions are reversed.
-
-They're also incomplete.  t2080 has device config 2.0.  t1040 is described as
-2.0 though it should probably be 2.1 (or better, drop the generic compatible
-altogether).
-
-> +	/*
-> +	 * syscon devices default to little-endian, but on powerpc we have
-> +	 * existing device trees with big-endian maps and an absent
-> endianess
-> +	 * "big-property"
-> +	 */
-> +	if (!IS_ENABLED(CONFIG_POWERPC) &&
-> +	    !of_property_read_bool(dev->of_node, "big-endian"))
-> +		guts->little_endian = true;
-
-This is not a syscon device (Yangbo's patch to add a guts node on ls2080 is
-the only guts node that says "syscon", and that was a leftover from earlier
-revisions and should probably be removed).  Even if it were, where is it
-documented that syscon defaults to little-endian?  
-
-Documentation/devicetree/bindings/common-properties.txt says that the
-individual binding specifies the default.  The default for this node should be
-big-endian because that's what existed before there was a need to describe the
-endianness.  And we need an update to the guts binding to specify that.
-
-> +
-> +	guts->regs = devm_ioremap_resource(dev, 0);
-> +	if (!guts->regs) {
-> +		ret = -ENOMEM;
-> +		kfree(guts);
-> +		goto out;
-> +	}
-> +
-> +	fsl_guts_init(dev, guts);
-> +	ret = 0;
-> +out:
-> +	return ret;
-> +}
-> +
-> +static struct platform_driver fsl_soc_guts = {
-> +	.probe = fsl_guts_probe,
-> +	.driver.of_match_table = fsl_guts_of_match,
-> +};
-> +
-> +module_platform_driver(fsl_soc_guts);
-
-Again, this means that the information is not available during early boot,
-such as in the clock driver.  Thus we would not be able to convert clk-qoriq's
-direct mfspr(SPRN_SVR) into an soc_device_match() (or anything else that makes
-use of this file), nor would we be able to move its access of the guts RCW
-registers into this driver.
-
--Scott
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 709fc63..7026507 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -239,6 +239,12 @@ enum qe_clock qe_clock_source(const char *source)
+ 	if (strcasecmp(source, "none") == 0)
+ 		return QE_CLK_NONE;
+ 
++	if (strcmp(source, "tsync_pin") == 0)
++		return QE_TSYNC_PIN;
++
++	if (strcmp(source, "rsync_pin") == 0)
++		return QE_RSYNC_PIN;
++
+ 	if (strncasecmp(source, "brg", 3) == 0) {
+ 		i = simple_strtoul(source + 3, NULL, 10);
+ 		if ((i >= 1) && (i <= 16))
+diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
+index 33b29ea..f918745 100644
+--- a/include/soc/fsl/qe/qe.h
++++ b/include/soc/fsl/qe/qe.h
+@@ -80,6 +80,8 @@ enum qe_clock {
+ 	QE_CLK22,		/* Clock 22 */
+ 	QE_CLK23,		/* Clock 23 */
+ 	QE_CLK24,		/* Clock 24 */
++	QE_RSYNC_PIN,		/* RSYNC from pin */
++	QE_TSYNC_PIN,		/* TSYNC from pin */
+ 	QE_CLK_DUMMY
+ };
+ 
+diff --git a/include/soc/fsl/qe/ucc_fast.h b/include/soc/fsl/qe/ucc_fast.h
+index df8ea79..31548b7 100644
+--- a/include/soc/fsl/qe/ucc_fast.h
++++ b/include/soc/fsl/qe/ucc_fast.h
+@@ -120,6 +120,8 @@ struct ucc_fast_info {
+ 	int ucc_num;
+ 	enum qe_clock rx_clock;
+ 	enum qe_clock tx_clock;
++	enum qe_clock rx_sync;
++	enum qe_clock tx_sync;
+ 	u32 regs;
+ 	int irq;
+ 	u32 uccm_mask;
+-- 
+2.1.0.27.g96db324
