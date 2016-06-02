@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14])
+Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
+ [210.118.77.13])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKk634RzDqG1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:46 +1000 (AEST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout4.w1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKr49ClzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:52 +1000 (AEST)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout3.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500CA4I9LR710@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:46 +0100 (BST)
+ with ESMTP id <0O85008MEI9OD710@mailout3.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:49 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,9 +63,9 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 26/45] h8300: dma-mapping: Use unsigned long for dma_attrs
-Date: Thu, 02 Jun 2016 17:39:28 +0200
-Message-id: <1464881987-13203-27-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 27/45] hexagon: dma-mapping: Use unsigned long for dma_attrs
+Date: Thu, 02 Jun 2016 17:39:29 +0200
+Message-id: <1464881987-13203-28-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -82,47 +82,61 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/h8300/kernel/dma.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/hexagon/include/asm/dma-mapping.h | 1 -
+ arch/hexagon/kernel/dma.c              | 8 ++++----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/h8300/kernel/dma.c b/arch/h8300/kernel/dma.c
-index eeb13d3f2424..3651da045806 100644
---- a/arch/h8300/kernel/dma.c
-+++ b/arch/h8300/kernel/dma.c
-@@ -12,7 +12,7 @@
+diff --git a/arch/hexagon/include/asm/dma-mapping.h b/arch/hexagon/include/asm/dma-mapping.h
+index aa6203464520..7ef58df909fc 100644
+--- a/arch/hexagon/include/asm/dma-mapping.h
++++ b/arch/hexagon/include/asm/dma-mapping.h
+@@ -26,7 +26,6 @@
+ #include <linux/mm.h>
+ #include <linux/scatterlist.h>
+ #include <linux/dma-debug.h>
+-#include <linux/dma-attrs.h>
+ #include <asm/io.h>
  
- static void *dma_alloc(struct device *dev, size_t size,
- 		       dma_addr_t *dma_handle, gfp_t gfp,
--		       struct dma_attrs *attrs)
-+		       unsigned long attrs)
+ struct device;
+diff --git a/arch/hexagon/kernel/dma.c b/arch/hexagon/kernel/dma.c
+index 9e3ddf792bd3..b9017785fb71 100644
+--- a/arch/hexagon/kernel/dma.c
++++ b/arch/hexagon/kernel/dma.c
+@@ -51,7 +51,7 @@ static struct gen_pool *coherent_pool;
+ 
+ static void *hexagon_dma_alloc_coherent(struct device *dev, size_t size,
+ 				 dma_addr_t *dma_addr, gfp_t flag,
+-				 struct dma_attrs *attrs)
++				 unsigned long attrs)
  {
  	void *ret;
  
-@@ -32,7 +32,7 @@ static void *dma_alloc(struct device *dev, size_t size,
- 
- static void dma_free(struct device *dev, size_t size,
- 		     void *vaddr, dma_addr_t dma_handle,
--		     struct dma_attrs *attrs)
-+		     unsigned long attrs)
- 
- {
- 	free_pages((unsigned long)vaddr, get_order(size));
-@@ -41,14 +41,14 @@ static void dma_free(struct device *dev, size_t size,
- static dma_addr_t map_page(struct device *dev, struct page *page,
- 				  unsigned long offset, size_t size,
- 				  enum dma_data_direction direction,
--				  struct dma_attrs *attrs)
-+				  unsigned long attrs)
- {
- 	return page_to_phys(page) + offset;
+@@ -84,7 +84,7 @@ static void *hexagon_dma_alloc_coherent(struct device *dev, size_t size,
  }
  
- static int map_sg(struct device *dev, struct scatterlist *sgl,
- 		  int nents, enum dma_data_direction direction,
--		  struct dma_attrs *attrs)
-+		  unsigned long attrs)
+ static void hexagon_free_coherent(struct device *dev, size_t size, void *vaddr,
+-				  dma_addr_t dma_addr, struct dma_attrs *attrs)
++				  dma_addr_t dma_addr, unsigned long attrs)
  {
- 	struct scatterlist *sg;
+ 	gen_pool_free(coherent_pool, (unsigned long) vaddr, size);
+ }
+@@ -105,7 +105,7 @@ static int check_addr(const char *name, struct device *hwdev,
+ 
+ static int hexagon_map_sg(struct device *hwdev, struct scatterlist *sg,
+ 			  int nents, enum dma_data_direction dir,
+-			  struct dma_attrs *attrs)
++			  unsigned long attrs)
+ {
+ 	struct scatterlist *s;
  	int i;
+@@ -172,7 +172,7 @@ static inline void dma_sync(void *addr, size_t size,
+ static dma_addr_t hexagon_map_page(struct device *dev, struct page *page,
+ 				   unsigned long offset, size_t size,
+ 				   enum dma_data_direction dir,
+-				   struct dma_attrs *attrs)
++				   unsigned long attrs)
+ {
+ 	dma_addr_t bus = page_to_phys(page) + offset;
+ 	WARN_ON(size == 0);
 -- 
 1.9.1
