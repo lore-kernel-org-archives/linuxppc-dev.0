@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13])
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBK72P4czDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:15 +1000 (AEST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout3.w1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBK974LYzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:17 +1000 (AEST)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout4.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O85008LTI8ND710@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:11 +0100 (BST)
+ with ESMTP id <0O8500AJLI8QB610@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:15 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,10 +63,10 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 15/45] drm/nouveau: dma-mapping: Use unsigned long for
+Subject: [RFC v3 16/45] drm/rockship: dma-mapping: Use unsigned long for
  dma_attrs
-Date: Thu, 02 Jun 2016 17:39:17 +0200
-Message-id: <1464881987-13203-16-git-send-email-k.kozlowski@samsung.com>
+Date: Thu, 02 Jun 2016 17:39:18 +0200
+Message-id: <1464881987-13203-17-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -83,53 +83,90 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/gpu/drm/nouveau/nvkm/subdev/instmem/gk20a.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/gpu/drm/rockchip/rockchip_drm_gem.c | 17 +++++++----------
+ drivers/gpu/drm/rockchip/rockchip_drm_gem.h |  2 +-
+ 2 files changed, 8 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/instmem/gk20a.c b/drivers/gpu/drm/nouveau/nvkm/subdev/instmem/gk20a.c
-index 6b8f2a19b2d9..a6a7fa0d7679 100644
---- a/drivers/gpu/drm/nouveau/nvkm/subdev/instmem/gk20a.c
-+++ b/drivers/gpu/drm/nouveau/nvkm/subdev/instmem/gk20a.c
-@@ -109,7 +109,7 @@ struct gk20a_instmem {
- 	u16 iommu_bit;
+diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
+index 9c2d8a894093..7b1788e2a808 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
++++ b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
+@@ -17,8 +17,6 @@
+ #include <drm/drm_gem.h>
+ #include <drm/drm_vma_manager.h>
  
- 	/* Only used by DMA API */
--	struct dma_attrs attrs;
-+	unsigned long attrs;
- };
- #define gk20a_instmem(p) container_of((p), struct gk20a_instmem, base)
+-#include <linux/dma-attrs.h>
+-
+ #include "rockchip_drm_drv.h"
+ #include "rockchip_drm_gem.h"
  
-@@ -293,7 +293,7 @@ gk20a_instobj_dtor_dma(struct nvkm_memory *memory)
- 		goto out;
+@@ -28,15 +26,14 @@ static int rockchip_gem_alloc_buf(struct rockchip_gem_object *rk_obj,
+ 	struct drm_gem_object *obj = &rk_obj->base;
+ 	struct drm_device *drm = obj->dev;
  
- 	dma_free_attrs(dev, node->base.mem.size << PAGE_SHIFT, node->base.vaddr,
--		       node->handle, &imem->attrs);
-+		       node->handle, imem->attrs);
+-	init_dma_attrs(&rk_obj->dma_attrs);
+-	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &rk_obj->dma_attrs);
++	rk_obj->dma_attrs = DMA_ATTR_WRITE_COMBINE;
  
- out:
- 	return node;
-@@ -386,7 +386,7 @@ gk20a_instobj_ctor_dma(struct gk20a_instmem *imem, u32 npages, u32 align,
+ 	if (!alloc_kmap)
+-		dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &rk_obj->dma_attrs);
++		rk_obj->dma_attrs |= DMA_ATTR_NO_KERNEL_MAPPING;
  
- 	node->base.vaddr = dma_alloc_attrs(dev, npages << PAGE_SHIFT,
- 					   &node->handle, GFP_KERNEL,
--					   &imem->attrs);
-+					   imem->attrs);
- 	if (!node->base.vaddr) {
- 		nvkm_error(subdev, "cannot allocate DMA memory\n");
+ 	rk_obj->kvaddr = dma_alloc_attrs(drm->dev, obj->size,
+ 					 &rk_obj->dma_addr, GFP_KERNEL,
+-					 &rk_obj->dma_attrs);
++					 rk_obj->dma_attrs);
+ 	if (!rk_obj->kvaddr) {
+ 		DRM_ERROR("failed to allocate %#x byte dma buffer", obj->size);
  		return -ENOMEM;
-@@ -597,10 +597,9 @@ gk20a_instmem_new(struct nvkm_device *device, int index,
+@@ -51,7 +48,7 @@ static void rockchip_gem_free_buf(struct rockchip_gem_object *rk_obj)
+ 	struct drm_device *drm = obj->dev;
  
- 		nvkm_info(&imem->base.subdev, "using IOMMU\n");
- 	} else {
--		init_dma_attrs(&imem->attrs);
--		dma_set_attr(DMA_ATTR_NON_CONSISTENT, &imem->attrs);
--		dma_set_attr(DMA_ATTR_WEAK_ORDERING, &imem->attrs);
--		dma_set_attr(DMA_ATTR_WRITE_COMBINE, &imem->attrs);
-+		imem->attrs = DMA_ATTR_NON_CONSISTENT |
-+			      DMA_ATTR_WEAK_ORDERING |
-+			      DMA_ATTR_WRITE_COMBINE;
+ 	dma_free_attrs(drm->dev, obj->size, rk_obj->kvaddr, rk_obj->dma_addr,
+-		       &rk_obj->dma_attrs);
++		       rk_obj->dma_attrs);
+ }
  
- 		nvkm_info(&imem->base.subdev, "using DMA API\n");
- 	}
+ static int rockchip_drm_gem_object_mmap(struct drm_gem_object *obj,
+@@ -70,7 +67,7 @@ static int rockchip_drm_gem_object_mmap(struct drm_gem_object *obj,
+ 	vma->vm_pgoff = 0;
+ 
+ 	ret = dma_mmap_attrs(drm->dev, vma, rk_obj->kvaddr, rk_obj->dma_addr,
+-			     obj->size, &rk_obj->dma_attrs);
++			     obj->size, rk_obj->dma_attrs);
+ 	if (ret)
+ 		drm_gem_vm_close(vma);
+ 
+@@ -262,7 +259,7 @@ struct sg_table *rockchip_gem_prime_get_sg_table(struct drm_gem_object *obj)
+ 
+ 	ret = dma_get_sgtable_attrs(drm->dev, sgt, rk_obj->kvaddr,
+ 				    rk_obj->dma_addr, obj->size,
+-				    &rk_obj->dma_attrs);
++				    rk_obj->dma_attrs);
+ 	if (ret) {
+ 		DRM_ERROR("failed to allocate sgt, %d\n", ret);
+ 		kfree(sgt);
+@@ -276,7 +273,7 @@ void *rockchip_gem_prime_vmap(struct drm_gem_object *obj)
+ {
+ 	struct rockchip_gem_object *rk_obj = to_rockchip_obj(obj);
+ 
+-	if (dma_get_attr(DMA_ATTR_NO_KERNEL_MAPPING, &rk_obj->dma_attrs))
++	if (dma_get_attr(DMA_ATTR_NO_KERNEL_MAPPING, rk_obj->dma_attrs))
+ 		return NULL;
+ 
+ 	return rk_obj->kvaddr;
+diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_gem.h b/drivers/gpu/drm/rockchip/rockchip_drm_gem.h
+index ad22618473a4..18b3488db4ec 100644
+--- a/drivers/gpu/drm/rockchip/rockchip_drm_gem.h
++++ b/drivers/gpu/drm/rockchip/rockchip_drm_gem.h
+@@ -23,7 +23,7 @@ struct rockchip_gem_object {
+ 
+ 	void *kvaddr;
+ 	dma_addr_t dma_addr;
+-	struct dma_attrs dma_attrs;
++	unsigned long dma_attrs;
+ };
+ 
+ struct sg_table *rockchip_gem_prime_get_sg_table(struct drm_gem_object *obj);
 -- 
 1.9.1
