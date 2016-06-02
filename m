@@ -1,27 +1,20 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rL9hP6LXVzDqg3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:12:53 +1000 (AEST)
-Received: by mail-pa0-x232.google.com with SMTP id bz2so6522405pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jun 2016 08:12:53 -0700 (PDT)
-Date: Thu, 2 Jun 2016 08:12:40 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm/hash: Fix the reference bit update when
- handling hash fault
-In-Reply-To: <alpine.LSU.2.11.1605310902480.7816@eggly.anvils>
-Message-ID: <alpine.LSU.2.11.1606020807590.9580@eggly.anvils>
-References: <201605270629.u4R6OCLx014831@mx0a-001b2d01.pphosted.com>
- <alpine.LSU.2.11.1605300903270.1076@eggly.anvils>
- <1464647262.3078.219.camel@kernel.crashing.org>
- <alpine.LSU.2.11.1605310902480.7816@eggly.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rLHHC68W6zDqhC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 05:24:55 +1000 (AEST)
+Date: Thu, 02 Jun 2016 12:24:51 -0700 (PDT)
+Message-Id: <20160602.122451.160749876120675817.davem@davemloft.net>
+To: qiang.zhao@nxp.com
+Cc: oss@buserror.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org, xiaobo.xie@nxp.com
+Subject: Re: [PATCH v2 2/5] fsl/qe: setup clock source for TDM mode
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1464831901-15913-2-git-send-email-qiang.zhao@nxp.com>
+References: <1464831901-15913-1-git-send-email-qiang.zhao@nxp.com>
+ <1464831901-15913-2-git-send-email-qiang.zhao@nxp.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,15 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 31 May 2016, Hugh Dickins wrote:
-> 
-> But all my evidence so far is that it is now right: I'll continue
-> testing v4.6+fix on a couple of loads until this evening: all is
-> well so far.  And then switch to testing v4.5+fix on those loads
-> for another day and a half.
+From: Zhao Qiang <qiang.zhao@nxp.com>
+Date: Thu, 2 Jun 2016 09:44:58 +0800
 
-I'm glad to confirm: your patch to htab_convert_pte_flags() fixes all
-the elusive sigsegv issues I was seeing under load on v4.5 and v4.6.
-Thank you!
+> +static int ucc_get_tdm_sync_source(u32 tdm_num, enum qe_clock clock,
+> +				   enum comm_dir mode)
+> +{
+> +	int source = -EINVAL;
+> +
+> +	if (mode == COMM_DIR_RX && clock == QE_RSYNC_PIN) {
+> +		source = 0;
+> +		return source;
+> +	}
+> +	if (mode == COMM_DIR_TX && clock == QE_TSYNC_PIN) {
+> +		source = 0;
+> +		return source;
+> +	}
+> +
+> +	switch (tdm_num) {
+> +	case 0:
+> +	case 1:
+> +		switch (clock) {
+> +		case QE_BRG9:
+> +				source = 1;
+> +				break;
+> +		case QE_BRG10:
+> +				source = 2;
+> +				break;
 
-Hugh
+These switch case bodies are over indented.  Same goes for the rest of
+this function.
