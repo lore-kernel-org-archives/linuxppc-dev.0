@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14])
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBK974LYzDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:17 +1000 (AEST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout4.w1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBKF0Nq4zDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:20 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout1.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500AJLI8QB610@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:15 +0100 (BST)
+ with ESMTP id <0O8500NYBI8T0I00@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:18 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,10 +63,10 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 16/45] drm/rockship: dma-mapping: Use unsigned long for
+Subject: [RFC v3 17/45] infiniband: dma-mapping: Use unsigned long for
  dma_attrs
-Date: Thu, 02 Jun 2016 17:39:18 +0200
-Message-id: <1464881987-13203-17-git-send-email-k.kozlowski@samsung.com>
+Date: Thu, 02 Jun 2016 17:39:19 +0200
+Message-id: <1464881987-13203-18-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -83,90 +83,85 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/gpu/drm/rockchip/rockchip_drm_gem.c | 17 +++++++----------
- drivers/gpu/drm/rockchip/rockchip_drm_gem.h |  2 +-
- 2 files changed, 8 insertions(+), 11 deletions(-)
+ drivers/infiniband/core/umem.c | 7 +++----
+ include/rdma/ib_verbs.h        | 8 ++++----
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
-index 9c2d8a894093..7b1788e2a808 100644
---- a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
-+++ b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
-@@ -17,8 +17,6 @@
- #include <drm/drm_gem.h>
- #include <drm/drm_vma_manager.h>
- 
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index fe4d2e1a8b58..75d8a8b178a5 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -37,7 +37,6 @@
+ #include <linux/sched.h>
+ #include <linux/export.h>
+ #include <linux/hugetlb.h>
 -#include <linux/dma-attrs.h>
--
- #include "rockchip_drm_drv.h"
- #include "rockchip_drm_gem.h"
+ #include <linux/slab.h>
+ #include <rdma/ib_umem_odp.h>
  
-@@ -28,15 +26,14 @@ static int rockchip_gem_alloc_buf(struct rockchip_gem_object *rk_obj,
- 	struct drm_gem_object *obj = &rk_obj->base;
- 	struct drm_device *drm = obj->dev;
+@@ -92,12 +91,12 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
+ 	unsigned long npages;
+ 	int ret;
+ 	int i;
+-	DEFINE_DMA_ATTRS(attrs);
++	unsigned long attrs = 0;
+ 	struct scatterlist *sg, *sg_list_start;
+ 	int need_release = 0;
  
--	init_dma_attrs(&rk_obj->dma_attrs);
--	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &rk_obj->dma_attrs);
-+	rk_obj->dma_attrs = DMA_ATTR_WRITE_COMBINE;
+ 	if (dmasync)
+-		dma_set_attr(DMA_ATTR_WRITE_BARRIER, &attrs);
++		attrs |= DMA_ATTR_WRITE_BARRIER;
  
- 	if (!alloc_kmap)
--		dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &rk_obj->dma_attrs);
-+		rk_obj->dma_attrs |= DMA_ATTR_NO_KERNEL_MAPPING;
+ 	if (!size)
+ 		return ERR_PTR(-EINVAL);
+@@ -215,7 +214,7 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
+ 				  umem->sg_head.sgl,
+ 				  umem->npages,
+ 				  DMA_BIDIRECTIONAL,
+-				  &attrs);
++				  attrs);
  
- 	rk_obj->kvaddr = dma_alloc_attrs(drm->dev, obj->size,
- 					 &rk_obj->dma_addr, GFP_KERNEL,
--					 &rk_obj->dma_attrs);
-+					 rk_obj->dma_attrs);
- 	if (!rk_obj->kvaddr) {
- 		DRM_ERROR("failed to allocate %#x byte dma buffer", obj->size);
- 		return -ENOMEM;
-@@ -51,7 +48,7 @@ static void rockchip_gem_free_buf(struct rockchip_gem_object *rk_obj)
- 	struct drm_device *drm = obj->dev;
- 
- 	dma_free_attrs(drm->dev, obj->size, rk_obj->kvaddr, rk_obj->dma_addr,
--		       &rk_obj->dma_attrs);
-+		       rk_obj->dma_attrs);
- }
- 
- static int rockchip_drm_gem_object_mmap(struct drm_gem_object *obj,
-@@ -70,7 +67,7 @@ static int rockchip_drm_gem_object_mmap(struct drm_gem_object *obj,
- 	vma->vm_pgoff = 0;
- 
- 	ret = dma_mmap_attrs(drm->dev, vma, rk_obj->kvaddr, rk_obj->dma_addr,
--			     obj->size, &rk_obj->dma_attrs);
-+			     obj->size, rk_obj->dma_attrs);
- 	if (ret)
- 		drm_gem_vm_close(vma);
- 
-@@ -262,7 +259,7 @@ struct sg_table *rockchip_gem_prime_get_sg_table(struct drm_gem_object *obj)
- 
- 	ret = dma_get_sgtable_attrs(drm->dev, sgt, rk_obj->kvaddr,
- 				    rk_obj->dma_addr, obj->size,
--				    &rk_obj->dma_attrs);
-+				    rk_obj->dma_attrs);
- 	if (ret) {
- 		DRM_ERROR("failed to allocate sgt, %d\n", ret);
- 		kfree(sgt);
-@@ -276,7 +273,7 @@ void *rockchip_gem_prime_vmap(struct drm_gem_object *obj)
+ 	if (umem->nmap <= 0) {
+ 		ret = -ENOMEM;
+diff --git a/include/rdma/ib_verbs.h b/include/rdma/ib_verbs.h
+index 432bed510369..4d73928962c7 100644
+--- a/include/rdma/ib_verbs.h
++++ b/include/rdma/ib_verbs.h
+@@ -2819,7 +2819,7 @@ static inline void ib_dma_unmap_single(struct ib_device *dev,
+ static inline u64 ib_dma_map_single_attrs(struct ib_device *dev,
+ 					  void *cpu_addr, size_t size,
+ 					  enum dma_data_direction direction,
+-					  struct dma_attrs *attrs)
++					  unsigned long attrs)
  {
- 	struct rockchip_gem_object *rk_obj = to_rockchip_obj(obj);
- 
--	if (dma_get_attr(DMA_ATTR_NO_KERNEL_MAPPING, &rk_obj->dma_attrs))
-+	if (dma_get_attr(DMA_ATTR_NO_KERNEL_MAPPING, rk_obj->dma_attrs))
- 		return NULL;
- 
- 	return rk_obj->kvaddr;
-diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_gem.h b/drivers/gpu/drm/rockchip/rockchip_drm_gem.h
-index ad22618473a4..18b3488db4ec 100644
---- a/drivers/gpu/drm/rockchip/rockchip_drm_gem.h
-+++ b/drivers/gpu/drm/rockchip/rockchip_drm_gem.h
-@@ -23,7 +23,7 @@ struct rockchip_gem_object {
- 
- 	void *kvaddr;
- 	dma_addr_t dma_addr;
--	struct dma_attrs dma_attrs;
-+	unsigned long dma_attrs;
- };
- 
- struct sg_table *rockchip_gem_prime_get_sg_table(struct drm_gem_object *obj);
+ 	return dma_map_single_attrs(dev->dma_device, cpu_addr, size,
+ 				    direction, attrs);
+@@ -2828,7 +2828,7 @@ static inline u64 ib_dma_map_single_attrs(struct ib_device *dev,
+ static inline void ib_dma_unmap_single_attrs(struct ib_device *dev,
+ 					     u64 addr, size_t size,
+ 					     enum dma_data_direction direction,
+-					     struct dma_attrs *attrs)
++					     unsigned long attrs)
+ {
+ 	return dma_unmap_single_attrs(dev->dma_device, addr, size,
+ 				      direction, attrs);
+@@ -2906,7 +2906,7 @@ static inline void ib_dma_unmap_sg(struct ib_device *dev,
+ static inline int ib_dma_map_sg_attrs(struct ib_device *dev,
+ 				      struct scatterlist *sg, int nents,
+ 				      enum dma_data_direction direction,
+-				      struct dma_attrs *attrs)
++				      unsigned long attrs)
+ {
+ 	return dma_map_sg_attrs(dev->dma_device, sg, nents, direction, attrs);
+ }
+@@ -2914,7 +2914,7 @@ static inline int ib_dma_map_sg_attrs(struct ib_device *dev,
+ static inline void ib_dma_unmap_sg_attrs(struct ib_device *dev,
+ 					 struct scatterlist *sg, int nents,
+ 					 enum dma_data_direction direction,
+-					 struct dma_attrs *attrs)
++					 unsigned long attrs)
+ {
+ 	dma_unmap_sg_attrs(dev->dma_device, sg, nents, direction, attrs);
+ }
 -- 
 1.9.1
