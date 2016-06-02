@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13])
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBLk18FqzDqgm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:42:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBLn0CJZzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:42:40 +1000 (AEST)
 Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout3.w1.samsung.com
+ by mailout1.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O85008N2IAYD710@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:42:35 +0100 (BST)
+ with ESMTP id <0O8500NZMIB10I00@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:42:38 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,9 +63,9 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 42/45] unicore32: dma-mapping: Use unsigned long for dma_attrs
-Date: Thu, 02 Jun 2016 17:39:44 +0200
-Message-id: <1464881987-13203-43-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 43/45] xtensa: dma-mapping: Use unsigned long for dma_attrs
+Date: Thu, 02 Jun 2016 17:39:45 +0200
+Message-id: <1464881987-13203-44-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -82,29 +82,65 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/unicore32/mm/dma-swiotlb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/xtensa/kernel/pci-dma.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/unicore32/mm/dma-swiotlb.c b/arch/unicore32/mm/dma-swiotlb.c
-index 16c08b2143a7..3e9f6489ba38 100644
---- a/arch/unicore32/mm/dma-swiotlb.c
-+++ b/arch/unicore32/mm/dma-swiotlb.c
-@@ -19,14 +19,14 @@
+diff --git a/arch/xtensa/kernel/pci-dma.c b/arch/xtensa/kernel/pci-dma.c
+index cd66698348ca..1e68806d6695 100644
+--- a/arch/xtensa/kernel/pci-dma.c
++++ b/arch/xtensa/kernel/pci-dma.c
+@@ -142,7 +142,7 @@ static void xtensa_sync_sg_for_device(struct device *dev,
  
- static void *unicore_swiotlb_alloc_coherent(struct device *dev, size_t size,
- 					    dma_addr_t *dma_handle, gfp_t flags,
--					    struct dma_attrs *attrs)
-+					    unsigned long attrs)
+ static void *xtensa_dma_alloc(struct device *dev, size_t size,
+ 			      dma_addr_t *handle, gfp_t flag,
+-			      struct dma_attrs *attrs)
++			      unsigned long attrs)
  {
- 	return swiotlb_alloc_coherent(dev, size, dma_handle, flags);
+ 	unsigned long ret;
+ 	unsigned long uncached = 0;
+@@ -171,7 +171,7 @@ static void *xtensa_dma_alloc(struct device *dev, size_t size,
  }
  
- static void unicore_swiotlb_free_coherent(struct device *dev, size_t size,
- 					  void *vaddr, dma_addr_t dma_addr,
--					  struct dma_attrs *attrs)
-+					  unsigned long attrs)
+ static void xtensa_dma_free(struct device *hwdev, size_t size, void *vaddr,
+-			    dma_addr_t dma_handle, struct dma_attrs *attrs)
++			    dma_addr_t dma_handle, unsigned long attrs)
  {
- 	swiotlb_free_coherent(dev, size, vaddr, dma_addr);
+ 	unsigned long addr = (unsigned long)vaddr +
+ 		XCHAL_KSEG_CACHED_VADDR - XCHAL_KSEG_BYPASS_VADDR;
+@@ -185,7 +185,7 @@ static void xtensa_dma_free(struct device *hwdev, size_t size, void *vaddr,
+ static dma_addr_t xtensa_map_page(struct device *dev, struct page *page,
+ 				  unsigned long offset, size_t size,
+ 				  enum dma_data_direction dir,
+-				  struct dma_attrs *attrs)
++				  unsigned long attrs)
+ {
+ 	dma_addr_t dma_handle = page_to_phys(page) + offset;
+ 
+@@ -195,14 +195,14 @@ static dma_addr_t xtensa_map_page(struct device *dev, struct page *page,
+ 
+ static void xtensa_unmap_page(struct device *dev, dma_addr_t dma_handle,
+ 			      size_t size, enum dma_data_direction dir,
+-			      struct dma_attrs *attrs)
++			      unsigned long attrs)
+ {
+ 	xtensa_sync_single_for_cpu(dev, dma_handle, size, dir);
  }
+ 
+ static int xtensa_map_sg(struct device *dev, struct scatterlist *sg,
+ 			 int nents, enum dma_data_direction dir,
+-			 struct dma_attrs *attrs)
++			 unsigned long attrs)
+ {
+ 	struct scatterlist *s;
+ 	int i;
+@@ -217,7 +217,7 @@ static int xtensa_map_sg(struct device *dev, struct scatterlist *sg,
+ static void xtensa_unmap_sg(struct device *dev,
+ 			    struct scatterlist *sg, int nents,
+ 			    enum dma_data_direction dir,
+-			    struct dma_attrs *attrs)
++			    unsigned long attrs)
+ {
+ 	struct scatterlist *s;
+ 	int i;
 -- 
 1.9.1
