@@ -3,13 +3,13 @@ Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
  [210.118.77.12])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBJt3zRszDqgm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:02 +1000 (AEST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBJv291zzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:41:03 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
  by mailout2.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500GGWI8BC540@mailout2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:40:59 +0100 (BST)
+ with ESMTP id <0O8500DRFI8E1J40@mailout2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:41:02 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,9 +63,10 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 11/45] frv: dma-mapping: Use unsigned long for dma_attrs
-Date: Thu, 02 Jun 2016 17:39:13 +0200
-Message-id: <1464881987-13203-12-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 12/45] drm/exynos: dma-mapping: Use unsigned long for
+ dma_attrs
+Date: Thu, 02 Jun 2016 17:39:14 +0200
+Message-id: <1464881987-13203-13-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -82,89 +83,179 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/frv/mb93090-mb00/pci-dma-nommu.c | 8 ++++----
- arch/frv/mb93090-mb00/pci-dma.c       | 9 ++++-----
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/gpu/drm/exynos/exynos_drm_fbdev.c |  2 +-
+ drivers/gpu/drm/exynos/exynos_drm_g2d.c   | 12 +++++-------
+ drivers/gpu/drm/exynos/exynos_drm_gem.c   | 20 ++++++++++----------
+ drivers/gpu/drm/exynos/exynos_drm_gem.h   |  2 +-
+ 4 files changed, 17 insertions(+), 19 deletions(-)
 
-diff --git a/arch/frv/mb93090-mb00/pci-dma-nommu.c b/arch/frv/mb93090-mb00/pci-dma-nommu.c
-index 082be49b5df0..90f2e4cb33d6 100644
---- a/arch/frv/mb93090-mb00/pci-dma-nommu.c
-+++ b/arch/frv/mb93090-mb00/pci-dma-nommu.c
-@@ -35,7 +35,7 @@ static DEFINE_SPINLOCK(dma_alloc_lock);
- static LIST_HEAD(dma_alloc_list);
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+index 67dcd6831291..dd091175fc2d 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_fbdev.c
+@@ -52,7 +52,7 @@ static int exynos_drm_fb_mmap(struct fb_info *info,
  
- static void *frv_dma_alloc(struct device *hwdev, size_t size, dma_addr_t *dma_handle,
--		gfp_t gfp, struct dma_attrs *attrs)
-+		gfp_t gfp, unsigned long attrs)
- {
- 	struct dma_alloc_record *new;
- 	struct list_head *this = &dma_alloc_list;
-@@ -86,7 +86,7 @@ static void *frv_dma_alloc(struct device *hwdev, size_t size, dma_addr_t *dma_ha
+ 	ret = dma_mmap_attrs(to_dma_dev(helper->dev), vma, exynos_gem->cookie,
+ 			     exynos_gem->dma_addr, exynos_gem->size,
+-			     &exynos_gem->dma_attrs);
++			     exynos_gem->dma_attrs);
+ 	if (ret < 0) {
+ 		DRM_ERROR("failed to mmap.\n");
+ 		return ret;
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_g2d.c b/drivers/gpu/drm/exynos/exynos_drm_g2d.c
+index 493552368295..15539aea8415 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_g2d.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_g2d.c
+@@ -17,7 +17,6 @@
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ #include <linux/dma-mapping.h>
+-#include <linux/dma-attrs.h>
+ #include <linux/of.h>
+ 
+ #include <drm/drmP.h>
+@@ -235,7 +234,7 @@ struct g2d_data {
+ 	struct mutex			cmdlist_mutex;
+ 	dma_addr_t			cmdlist_pool;
+ 	void				*cmdlist_pool_virt;
+-	struct dma_attrs		cmdlist_dma_attrs;
++	unsigned long			cmdlist_dma_attrs;
+ 
+ 	/* runqueue*/
+ 	struct g2d_runqueue_node	*runqueue_node;
+@@ -256,13 +255,12 @@ static int g2d_init_cmdlist(struct g2d_data *g2d)
+ 	int ret;
+ 	struct g2d_buf_info *buf_info;
+ 
+-	init_dma_attrs(&g2d->cmdlist_dma_attrs);
+-	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &g2d->cmdlist_dma_attrs);
++	g2d->cmdlist_dma_attrs = DMA_ATTR_WRITE_COMBINE;
+ 
+ 	g2d->cmdlist_pool_virt = dma_alloc_attrs(to_dma_dev(subdrv->drm_dev),
+ 						G2D_CMDLIST_POOL_SIZE,
+ 						&g2d->cmdlist_pool, GFP_KERNEL,
+-						&g2d->cmdlist_dma_attrs);
++						g2d->cmdlist_dma_attrs);
+ 	if (!g2d->cmdlist_pool_virt) {
+ 		dev_err(dev, "failed to allocate dma memory\n");
+ 		return -ENOMEM;
+@@ -295,7 +293,7 @@ static int g2d_init_cmdlist(struct g2d_data *g2d)
+ err:
+ 	dma_free_attrs(to_dma_dev(subdrv->drm_dev), G2D_CMDLIST_POOL_SIZE,
+ 			g2d->cmdlist_pool_virt,
+-			g2d->cmdlist_pool, &g2d->cmdlist_dma_attrs);
++			g2d->cmdlist_pool, g2d->cmdlist_dma_attrs);
+ 	return ret;
  }
  
- static void frv_dma_free(struct device *hwdev, size_t size, void *vaddr,
--		dma_addr_t dma_handle, struct dma_attrs *attrs)
-+		dma_addr_t dma_handle, unsigned long attrs)
- {
- 	struct dma_alloc_record *rec;
- 	unsigned long flags;
-@@ -107,7 +107,7 @@ static void frv_dma_free(struct device *hwdev, size_t size, void *vaddr,
- 
- static int frv_dma_map_sg(struct device *dev, struct scatterlist *sglist,
- 		int nents, enum dma_data_direction direction,
--		struct dma_attrs *attrs)
-+		unsigned long attrs)
- {
- 	int i;
- 	struct scatterlist *sg;
-@@ -124,7 +124,7 @@ static int frv_dma_map_sg(struct device *dev, struct scatterlist *sglist,
- 
- static dma_addr_t frv_dma_map_page(struct device *dev, struct page *page,
- 		unsigned long offset, size_t size,
--		enum dma_data_direction direction, struct dma_attrs *attrs)
-+		enum dma_data_direction direction, unsigned long attrs)
- {
- 	BUG_ON(direction == DMA_NONE);
- 	flush_dcache_page(page);
-diff --git a/arch/frv/mb93090-mb00/pci-dma.c b/arch/frv/mb93090-mb00/pci-dma.c
-index 316b7b65348d..f585745b1abc 100644
---- a/arch/frv/mb93090-mb00/pci-dma.c
-+++ b/arch/frv/mb93090-mb00/pci-dma.c
-@@ -19,8 +19,7 @@
- #include <asm/io.h>
- 
- static void *frv_dma_alloc(struct device *hwdev, size_t size,
--		dma_addr_t *dma_handle, gfp_t gfp,
--		struct dma_attrs *attrs)
-+		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
- {
- 	void *ret;
- 
-@@ -32,14 +31,14 @@ static void *frv_dma_alloc(struct device *hwdev, size_t size,
+@@ -309,7 +307,7 @@ static void g2d_fini_cmdlist(struct g2d_data *g2d)
+ 		dma_free_attrs(to_dma_dev(subdrv->drm_dev),
+ 				G2D_CMDLIST_POOL_SIZE,
+ 				g2d->cmdlist_pool_virt,
+-				g2d->cmdlist_pool, &g2d->cmdlist_dma_attrs);
++				g2d->cmdlist_pool, g2d->cmdlist_dma_attrs);
+ 	}
  }
  
- static void frv_dma_free(struct device *hwdev, size_t size, void *vaddr,
--		dma_addr_t dma_handle, struct dma_attrs *attrs)
-+		dma_addr_t dma_handle, unsigned long attrs)
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_gem.c b/drivers/gpu/drm/exynos/exynos_drm_gem.c
+index cdf9f1af4347..f2ae72ba7d5a 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_gem.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_gem.c
+@@ -24,7 +24,7 @@
+ static int exynos_drm_alloc_buf(struct exynos_drm_gem *exynos_gem)
  {
- 	consistent_free(vaddr);
+ 	struct drm_device *dev = exynos_gem->base.dev;
+-	enum dma_attr attr;
++	unsigned long attr;
+ 	unsigned int nr_pages;
+ 	struct sg_table sgt;
+ 	int ret = -ENOMEM;
+@@ -34,7 +34,7 @@ static int exynos_drm_alloc_buf(struct exynos_drm_gem *exynos_gem)
+ 		return 0;
+ 	}
+ 
+-	init_dma_attrs(&exynos_gem->dma_attrs);
++	exynos_gem->dma_attrs = 0;
+ 
+ 	/*
+ 	 * if EXYNOS_BO_CONTIG, fully physically contiguous memory
+@@ -42,7 +42,7 @@ static int exynos_drm_alloc_buf(struct exynos_drm_gem *exynos_gem)
+ 	 * as possible.
+ 	 */
+ 	if (!(exynos_gem->flags & EXYNOS_BO_NONCONTIG))
+-		dma_set_attr(DMA_ATTR_FORCE_CONTIGUOUS, &exynos_gem->dma_attrs);
++		exynos_gem->dma_attrs |= DMA_ATTR_FORCE_CONTIGUOUS;
+ 
+ 	/*
+ 	 * if EXYNOS_BO_WC or EXYNOS_BO_NONCACHABLE, writecombine mapping
+@@ -54,8 +54,8 @@ static int exynos_drm_alloc_buf(struct exynos_drm_gem *exynos_gem)
+ 	else
+ 		attr = DMA_ATTR_NON_CONSISTENT;
+ 
+-	dma_set_attr(attr, &exynos_gem->dma_attrs);
+-	dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &exynos_gem->dma_attrs);
++	exynos_gem->dma_attrs |= attr;
++	exynos_gem->dma_attrs |= DMA_ATTR_NO_KERNEL_MAPPING;
+ 
+ 	nr_pages = exynos_gem->size >> PAGE_SHIFT;
+ 
+@@ -67,7 +67,7 @@ static int exynos_drm_alloc_buf(struct exynos_drm_gem *exynos_gem)
+ 
+ 	exynos_gem->cookie = dma_alloc_attrs(to_dma_dev(dev), exynos_gem->size,
+ 					     &exynos_gem->dma_addr, GFP_KERNEL,
+-					     &exynos_gem->dma_attrs);
++					     exynos_gem->dma_attrs);
+ 	if (!exynos_gem->cookie) {
+ 		DRM_ERROR("failed to allocate buffer.\n");
+ 		goto err_free;
+@@ -75,7 +75,7 @@ static int exynos_drm_alloc_buf(struct exynos_drm_gem *exynos_gem)
+ 
+ 	ret = dma_get_sgtable_attrs(to_dma_dev(dev), &sgt, exynos_gem->cookie,
+ 				    exynos_gem->dma_addr, exynos_gem->size,
+-				    &exynos_gem->dma_attrs);
++				    exynos_gem->dma_attrs);
+ 	if (ret < 0) {
+ 		DRM_ERROR("failed to get sgtable.\n");
+ 		goto err_dma_free;
+@@ -99,7 +99,7 @@ err_sgt_free:
+ 	sg_free_table(&sgt);
+ err_dma_free:
+ 	dma_free_attrs(to_dma_dev(dev), exynos_gem->size, exynos_gem->cookie,
+-		       exynos_gem->dma_addr, &exynos_gem->dma_attrs);
++		       exynos_gem->dma_addr, exynos_gem->dma_attrs);
+ err_free:
+ 	drm_free_large(exynos_gem->pages);
+ 
+@@ -120,7 +120,7 @@ static void exynos_drm_free_buf(struct exynos_drm_gem *exynos_gem)
+ 
+ 	dma_free_attrs(to_dma_dev(dev), exynos_gem->size, exynos_gem->cookie,
+ 			(dma_addr_t)exynos_gem->dma_addr,
+-			&exynos_gem->dma_attrs);
++			exynos_gem->dma_attrs);
+ 
+ 	drm_free_large(exynos_gem->pages);
  }
+@@ -346,7 +346,7 @@ static int exynos_drm_gem_mmap_buffer(struct exynos_drm_gem *exynos_gem,
  
- static int frv_dma_map_sg(struct device *dev, struct scatterlist *sglist,
- 		int nents, enum dma_data_direction direction,
--		struct dma_attrs *attrs)
-+		unsigned long attrs)
- {
- 	unsigned long dampr2;
- 	void *vaddr;
-@@ -69,7 +68,7 @@ static int frv_dma_map_sg(struct device *dev, struct scatterlist *sglist,
- 
- static dma_addr_t frv_dma_map_page(struct device *dev, struct page *page,
- 		unsigned long offset, size_t size,
--		enum dma_data_direction direction, struct dma_attrs *attrs)
-+		enum dma_data_direction direction, unsigned long attrs)
- {
- 	flush_dcache_page(page);
- 	return (dma_addr_t) page_to_phys(page) + offset;
+ 	ret = dma_mmap_attrs(to_dma_dev(drm_dev), vma, exynos_gem->cookie,
+ 			     exynos_gem->dma_addr, exynos_gem->size,
+-			     &exynos_gem->dma_attrs);
++			     exynos_gem->dma_attrs);
+ 	if (ret < 0) {
+ 		DRM_ERROR("failed to mmap.\n");
+ 		return ret;
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_gem.h b/drivers/gpu/drm/exynos/exynos_drm_gem.h
+index 78100742281d..df7c543d6558 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_gem.h
++++ b/drivers/gpu/drm/exynos/exynos_drm_gem.h
+@@ -50,7 +50,7 @@ struct exynos_drm_gem {
+ 	void			*cookie;
+ 	void __iomem		*kvaddr;
+ 	dma_addr_t		dma_addr;
+-	struct dma_attrs	dma_attrs;
++	unsigned long		dma_attrs;
+ 	struct page		**pages;
+ 	struct sg_table		*sgt;
+ };
 -- 
 1.9.1
