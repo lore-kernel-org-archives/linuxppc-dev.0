@@ -1,14 +1,14 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rKxl366stzDqXT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 16:14:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rKxlD1j2yzDqdD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2016 16:14:31 +1000 (AEST)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 2 Jun 2016 00:14:21 -0600
+ Thu, 2 Jun 2016 00:14:29 -0600
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -19,9 +19,12 @@ Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
  nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
  gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc,
  kevin.tian@intel.com, David.Laight@ACULAB.COM
-Subject: [RESEND PATCH v2 0/6] vfio-pci: Add support for mmapping MSI-X table
-Date: Thu,  2 Jun 2016 14:09:57 +0800
-Message-Id: <1464847803-22756-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Subject: [RESEND PATCH v2 3/6] PCI: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have
+ capability of IRQ remapping
+Date: Thu,  2 Jun 2016 14:10:00 +0800
+Message-Id: <1464847803-22756-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1464847803-22756-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1464847803-22756-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current vfio-pci implementation disallows to mmap the page
-containing MSI-X table in case that users can write directly
-to MSI-X table and generate an incorrect MSIs.
+The capability of IRQ remapping is abstracted on IOMMU side on
+some archs. There is a existing flag IOMMU_CAP_INTR_REMAP for this.
 
-However, this will cause some performance issue when there
-are some critical device registers in the same page as the 
-MSI-X table. We have to handle the mmio access to these
-registers in QEMU emulation rather than in guest.
+To have a universal flag to test this capability for different
+archs on PCI side, we set PCI_BUS_FLAGS_MSI_REMAP for PCI buses
+when IOMMU_CAP_INTR_REMAP is set.
 
-To solve this issue, this series allows to expose MSI-X table
-to userspace when hardware enables the capability of interrupt
-remapping which can ensure that a given PCI device can only
-shoot the MSIs assigned for it. And we introduce a new bus_flags
-PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
-for different archs.
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+---
+ drivers/pci/probe.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-The patch 3 are based on the proposed patchset[1].
-
-Changelog v2: 
-- Make the commit log more clear
-- Replace pci_bus_check_msi_remapping() with pci_bus_msi_isolated()
-  so that we could clearly know what the function does
-- Set PCI_BUS_FLAGS_MSI_REMAP in pci_create_root_bus() instead
-  of iommu_bus_notifier()
-- Reserve VFIO_REGION_INFO_FLAG_CAPS when we allow to mmap MSI-X
-  table so that we can know whether we allow to mmap MSI-X table
-  in QEMU
-
-[1] https://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg1138820.html
-
-Yongji Xie (6):
-  PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
-  PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller enables IRQ remapping
-  PCI: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have capability of IRQ remapping
-  iommu: Set PCI_BUS_FLAGS_MSI_REMAP on iommu driver initialization
-  pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host bridge
-  vfio-pci: Allow to expose MSI-X table to userspace if interrupt remapping is enabled
-
- arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
- drivers/iommu/iommu.c                     |    8 ++++++++
- drivers/pci/msi.c                         |   15 +++++++++++++++
- drivers/pci/probe.c                       |    7 +++++++
- drivers/vfio/pci/vfio_pci.c               |   17 ++++++++++++++---
- drivers/vfio/pci/vfio_pci_rdwr.c          |    3 ++-
- include/linux/msi.h                       |    5 ++++-
- include/linux/pci.h                       |    1 +
- 8 files changed, 59 insertions(+), 5 deletions(-)
-
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 2b9e3ba..15a33e2 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -16,6 +16,7 @@
+ #include <linux/aer.h>
+ #include <linux/acpi.h>
+ #include <linux/irqdomain.h>
++#include <linux/iommu.h>
+ #include "pci.h"
+ 
+ #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
+@@ -2160,6 +2161,9 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+ 	pci_set_bus_of_node(b);
+ 	pci_set_bus_msi_domain(b);
+ 
++	if (iommu_capable(&pci_bus_type, IOMMU_CAP_INTR_REMAP))
++		b->bus_flags |= PCI_BUS_FLAGS_MSI_REMAP;
++
+ 	if (!parent)
+ 		set_dev_node(b->bridge, pcibus_to_node(b));
+ 
 -- 
 1.7.9.5
