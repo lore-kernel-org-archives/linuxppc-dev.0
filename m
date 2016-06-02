@@ -1,15 +1,15 @@
 Return-Path: <k.kozlowski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14])
+Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
+ [210.118.77.13])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBJf0h7gzDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:40:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLBJh6wgLzDqgj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 01:40:52 +1000 (AEST)
 Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout4.w1.samsung.com
+ by mailout3.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0O8500AJ6I7YB610@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:40:47 +0100 (BST)
+ with ESMTP id <0O85008LJI81D710@mailout3.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 02 Jun 2016 16:40:50 +0100 (BST)
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 To: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
@@ -63,9 +63,9 @@ To: Richard Henderson <rth@twiddle.net>,
  linux-fbdev@vger.kernel.org
 Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 07/45] avr32: dma-mapping: Use unsigned long for dma_attrs
-Date: Thu, 02 Jun 2016 17:39:09 +0200
-Message-id: <1464881987-13203-8-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC v3 08/45] blackfin: dma-mapping: Use unsigned long for dma_attrs
+Date: Thu, 02 Jun 2016 17:39:10 +0200
+Message-id: <1464881987-13203-9-git-send-email-k.kozlowski@samsung.com>
 In-reply-to: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -82,48 +82,48 @@ squashed with main commit.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/avr32/mm/dma-coherent.c | 8 ++++----
+ arch/blackfin/kernel/dma-mapping.c | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/avr32/mm/dma-coherent.c b/arch/avr32/mm/dma-coherent.c
-index 92cf1fb2b3e6..fc51f4421933 100644
---- a/arch/avr32/mm/dma-coherent.c
-+++ b/arch/avr32/mm/dma-coherent.c
-@@ -99,7 +99,7 @@ static void __dma_free(struct device *dev, size_t size,
+diff --git a/arch/blackfin/kernel/dma-mapping.c b/arch/blackfin/kernel/dma-mapping.c
+index 771afe6e4264..53fbbb61aa86 100644
+--- a/arch/blackfin/kernel/dma-mapping.c
++++ b/arch/blackfin/kernel/dma-mapping.c
+@@ -79,7 +79,7 @@ static void __free_dma_pages(unsigned long addr, unsigned int pages)
  }
  
- static void *avr32_dma_alloc(struct device *dev, size_t size,
--		dma_addr_t *handle, gfp_t gfp, struct dma_attrs *attrs)
-+		dma_addr_t *handle, gfp_t gfp, unsigned long attrs)
+ static void *bfin_dma_alloc(struct device *dev, size_t size,
+-		dma_addr_t *dma_handle, gfp_t gfp, struct dma_attrs *attrs)
++		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
  {
- 	struct page *page;
- 	dma_addr_t phys;
-@@ -119,7 +119,7 @@ static void *avr32_dma_alloc(struct device *dev, size_t size,
+ 	void *ret;
+ 
+@@ -94,7 +94,7 @@ static void *bfin_dma_alloc(struct device *dev, size_t size,
  }
  
- static void avr32_dma_free(struct device *dev, size_t size,
--		void *cpu_addr, dma_addr_t handle, struct dma_attrs *attrs)
-+		void *cpu_addr, dma_addr_t handle, unsigned long attrs)
+ static void bfin_dma_free(struct device *dev, size_t size, void *vaddr,
+-		  dma_addr_t dma_handle, struct dma_attrs *attrs)
++		  dma_addr_t dma_handle, unsigned long attrs)
  {
- 	struct page *page;
+ 	__free_dma_pages((unsigned long)vaddr, get_pages(size));
+ }
+@@ -111,7 +111,7 @@ EXPORT_SYMBOL(__dma_sync);
  
-@@ -142,7 +142,7 @@ static void avr32_dma_free(struct device *dev, size_t size,
- 
- static dma_addr_t avr32_dma_map_page(struct device *dev, struct page *page,
- 		unsigned long offset, size_t size,
--		enum dma_data_direction direction, struct dma_attrs *attrs)
-+		enum dma_data_direction direction, unsigned long attrs)
- {
- 	void *cpu_addr = page_address(page) + offset;
- 
-@@ -152,7 +152,7 @@ static dma_addr_t avr32_dma_map_page(struct device *dev, struct page *page,
- 
- static int avr32_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+ static int bfin_dma_map_sg(struct device *dev, struct scatterlist *sg_list,
  		int nents, enum dma_data_direction direction,
 -		struct dma_attrs *attrs)
 +		unsigned long attrs)
  {
- 	int i;
  	struct scatterlist *sg;
+ 	int i;
+@@ -139,7 +139,7 @@ static void bfin_dma_sync_sg_for_device(struct device *dev,
+ 
+ static dma_addr_t bfin_dma_map_page(struct device *dev, struct page *page,
+ 		unsigned long offset, size_t size, enum dma_data_direction dir,
+-		struct dma_attrs *attrs)
++		unsigned long attrs)
+ {
+ 	dma_addr_t handle = (dma_addr_t)(page_address(page) + offset);
+ 
 -- 
 1.9.1
