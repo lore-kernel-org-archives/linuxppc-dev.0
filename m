@@ -1,25 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLWTX31sSzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 14:34:40 +1000 (AEST)
-Message-ID: <1464928427.26773.26.camel@kernel.crashing.org>
-Subject: Re: [PATCH v5 1/6] qspinlock: powerpc support qspinlock
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org
-Cc: paulus@samba.org, mpe@ellerman.id.au, peterz@infradead.org,
- mingo@redhat.com, paulmck@linux.vnet.ibm.com, waiman.long@hpe.com
-Date: Fri, 03 Jun 2016 14:33:47 +1000
-In-Reply-To: <57510353.1020209@linux.vnet.ibm.com>
-References: <1464859370-5162-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1464859370-5162-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1464917520.26773.11.camel@kernel.crashing.org>
- <1464917548.26773.12.camel@au1.ibm.com>
- <57510353.1020209@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLXgW22swzDqkj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 15:28:23 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id di3so5048898pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jun 2016 22:28:23 -0700 (PDT)
+Received: from balbir.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id c206sm4744965pfc.40.2016.06.02.22.28.19
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1/SSLv3 cipher=OTHER);
+ Thu, 02 Jun 2016 22:28:20 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/mm/radix: Make the pid unsigned long
+To: linuxppc-dev@lists.ozlabs.org
+References: <1464860688-2085-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <1afe3307-7bc3-fa0e-911a-7552143494bf@gmail.com>
+Date: Fri, 3 Jun 2016 15:28:16 +1000
+MIME-Version: 1.0
+In-Reply-To: <1464860688-2085-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-06-03 at 12:10 +0800, xinhui wrote:
-> On 2016年06月03日 09:32, Benjamin Herrenschmidt wrote:
-> > On Fri, 2016-06-03 at 11:32 +1000, Benjamin Herrenschmidt wrote:
-> >> On Thu, 2016-06-02 at 17:22 +0800, Pan Xinhui wrote:
-> >>>
-> >>> Base code to enable qspinlock on powerpc. this patch add some
-> >>> #ifdef
-> >>> here and there. Although there is no paravirt related code, we
-> can
-> >>> successfully build a qspinlock kernel after apply this patch.
-> >> This is missing the IO_SYNC stuff ... It means we'll fail to do a
-> >> full
-> >> sync to order vs MMIOs.
-> >>
-> >> You need to add that back in the unlock path.
-> >
-> > Well, and in the lock path as well...
-> >
-> Oh, yes. I missed IO_SYNC stuff.
+
+
+On 02/06/16 19:44, Aneesh Kumar K.V wrote:
+> Semantic Issue: comparison of constant 18446744073709551615 with
+> expression of type 'unsigned int' is always false.
 > 
-> thank you, Ben :)
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/tlb-radix.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+> index 7f2fa82bd155..0484fcdca00a 100644
+> --- a/arch/powerpc/mm/tlb-radix.c
+> +++ b/arch/powerpc/mm/tlb-radix.c
+> @@ -115,7 +115,7 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+>   */
+>  void radix__local_flush_tlb_mm(struct mm_struct *mm)
+>  {
+> -	unsigned int pid;
+> +	unsigned long pid;
+>  
+>  	preempt_disable();
+>  	pid = mm->context.id;
+> @@ -128,7 +128,7 @@ EXPORT_SYMBOL(radix__local_flush_tlb_mm);
+>  void radix___local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+>  			    unsigned long ap, int nid)
+>  {
+> -	unsigned int pid;
+> +	unsigned long pid;
+>  
+>  	preempt_disable();
+>  	pid = mm ? mm->context.id : 0;
+> @@ -158,7 +158,7 @@ static int mm_is_core_local(struct mm_struct *mm)
+>  
+>  void radix__flush_tlb_mm(struct mm_struct *mm)
+>  {
+> -	unsigned int pid;
+> +	unsigned long pid;
+>  
+>  	preempt_disable();
+>  	pid = mm->context.id;
+> @@ -207,7 +207,7 @@ EXPORT_SYMBOL(radix__flush_tlb_mm_pwc);
+>  void radix___flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+>  		       unsigned long ap, int nid)
+>  {
+> -	unsigned int pid;
+> +	unsigned long pid;
+>  
+>  	preempt_disable();
+>  	pid = mm ? mm->context.id : 0;
+> 
 
-Ok couple of other things that would be nice from my perspective (and
-Michael's) if you can produce them:
-
- - Some benchmarks of the qspinlock alone, without the PV stuff,
-   so we understand how much of the overhead is inherent to the
-   qspinlock and how much is introduced by the PV bits.
-
- - For the above, can you show (or describe) where the qspinlock
-   improves things compared to our current locks. While there's
-   theory and to some extent practice on x86, it would be nice to
-   validate the effects on POWER.
-
- - Comparative benchmark with the PV stuff in on a bare metal system
-   to understand the overhead there.
-
- - Comparative benchmark with the PV stuff under pHyp and KVM
-
-Spinlocks are fiddly and a critical piece of infrastructure, it's
-important we fully understand the performance implications before we
-decide to switch to a new model.
-
-Cheers,
-Ben.
+Reviewed-by: Balbir Singh <bsingharora@gmail.com>
