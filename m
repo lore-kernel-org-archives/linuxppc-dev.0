@@ -1,19 +1,19 @@
 Return-Path: <hongtao.jia@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0089.outbound.protection.outlook.com [207.46.100.89])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0063.outbound.protection.outlook.com [65.55.169.63])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLbDF5KvXzDqmC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:23:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLbDv1tkGzDqmB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:23:58 +1000 (AEST)
 From: Jia Hongtao <hongtao.jia@nxp.com>
 To: <edubezval@gmail.com>, <rui.zhang@intel.com>, <robh+dt@kernel.org>,
  <galak@codeaurora.org>, <scott.wood@nxp.com>, <shawnguo@kernel.org>
 CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@lists.infradead.org>, <hongtao.jia@nxp.com>
-Subject: [PATCH 6/7] arm64:dt:ls2080a: Add TMU device tree support for LS2080A
-Date: Fri, 3 Jun 2016 14:57:38 +0800
-Message-ID: <1464937059-19349-6-git-send-email-hongtao.jia@nxp.com>
+Subject: [PATCH 7/7] thermal: qoriq: Add thermal management support
+Date: Fri, 3 Jun 2016 14:57:39 +0800
+Message-ID: <1464937059-19349-7-git-send-email-hongtao.jia@nxp.com>
 In-Reply-To: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
 References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
 MIME-Version: 1.0
@@ -27,237 +27,386 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also add nodes and properties for thermal management support.
+This driver add thermal management support by enabling TMU (Thermal
+Monitoring Unit) on QorIQ platform.
+
+It's based on thermal of framework:
+- Trip points defined in device tree.
+- Cpufreq as cooling device registered in qoriq cpufreq driver.
 
 Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts  |   2 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts  |   2 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts |   2 +-
- arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     | 116 +++++++++++++++++++--
- 4 files changed, 111 insertions(+), 11 deletions(-)
+ drivers/thermal/Kconfig         |   9 ++
+ drivers/thermal/Makefile        |   1 +
+ drivers/thermal/qoriq_thermal.c | 328 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 338 insertions(+)
+ create mode 100644 drivers/thermal/qoriq_thermal.c
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
-index e8801fa..18e99f4 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
-@@ -46,7 +46,7 @@
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 2d702ca..bef26cd 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -195,6 +195,15 @@ config IMX_THERMAL
+ 	  cpufreq is used as the cooling device to throttle CPUs when the
+ 	  passive trip is crossed.
  
- /dts-v1/;
- 
--/include/ "fsl-ls2080a.dtsi"
-+#include "fsl-ls2080a.dtsi"
- 
- / {
- 	model = "Freescale Layerscape 2080a QDS Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
-index e127f0b..f1c8115 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
-@@ -46,7 +46,7 @@
- 
- /dts-v1/;
- 
--/include/ "fsl-ls2080a.dtsi"
-+#include "fsl-ls2080a.dtsi"
- 
- / {
- 	model = "Freescale Layerscape 2080a RDB Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
-index 505d038..290604b 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
-@@ -46,7 +46,7 @@
- 
- /dts-v1/;
- 
--/include/ "fsl-ls2080a.dtsi"
-+#include "fsl-ls2080a.dtsi"
- 
- / {
- 	model = "Freescale Layerscape 2080a software Simulator model";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-index 3187c82..5cc27df 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
-@@ -44,6 +44,8 @@
-  *     OTHER DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <dt-bindings/thermal/thermal.h>
++config QORIQ_THERMAL
++	tristate "QorIQ Thermal Monitoring Unit"
++	depends on THERMAL_OF
++	help
++	  Support for Thermal Monitoring Unit (TMU) found on QorIQ platforms.
++	  It supports one critical trip point and one passive trip point. The
++	  cpufreq is used as the cooling device to throttle CPUs when the
++	  passive trip is crossed.
 +
- / {
- 	compatible = "fsl,ls2080a";
- 	interrupt-parent = <&gic>;
-@@ -62,56 +64,60 @@
- 		 */
- 
- 		/* We have 4 clusters having 2 Cortex-A57 cores each */
--		cpu@0 {
-+		cpu0: cpu@0 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x0>;
- 			clocks = <&clockgen 1 0>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@1 {
-+		cpu1: cpu@1 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x1>;
- 			clocks = <&clockgen 1 0>;
- 		};
- 
--		cpu@100 {
-+		cpu2: cpu@100 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x100>;
- 			clocks = <&clockgen 1 1>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@101 {
-+		cpu3: cpu@101 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x101>;
- 			clocks = <&clockgen 1 1>;
- 		};
- 
--		cpu@200 {
-+		cpu4: cpu@200 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x200>;
- 			clocks = <&clockgen 1 2>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@201 {
-+		cpu5: cpu@201 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x201>;
- 			clocks = <&clockgen 1 2>;
- 		};
- 
--		cpu@300 {
-+		cpu6: cpu@300 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x300>;
- 			clocks = <&clockgen 1 3>;
-+			#cooling-cells = <2>;
- 		};
- 
--		cpu@301 {
-+		cpu7: cpu@301 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a57";
- 			reg = <0x0 0x301>;
-@@ -191,6 +197,100 @@
- 			clocks = <&sysclk>;
- 		};
- 
-+		tmu: tmu@1f80000 {
-+			compatible = "fsl,qoriq-tmu";
-+			reg = <0x0 0x1f80000 0x0 0x10000>;
-+			interrupts = <0 23 0x4>;
-+			fsl,tmu-range = <0xb0000 0x9002a 0x6004c 0x30062>;
-+			fsl,tmu-calibration = <0x00000000 0x00000026
-+					       0x00000001 0x0000002d
-+					       0x00000002 0x00000032
-+					       0x00000003 0x00000039
-+					       0x00000004 0x0000003f
-+					       0x00000005 0x00000046
-+					       0x00000006 0x0000004d
-+					       0x00000007 0x00000054
-+					       0x00000008 0x0000005a
-+					       0x00000009 0x00000061
-+					       0x0000000a 0x0000006a
-+					       0x0000000b 0x00000071
+ config SPEAR_THERMAL
+ 	tristate "SPEAr thermal sensor driver"
+ 	depends on PLAT_SPEAR || COMPILE_TEST
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 10b07c1..6662232 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -37,6 +37,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
+ obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+ obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
++obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+ obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+new file mode 100644
+index 0000000..644ba52
+--- /dev/null
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -0,0 +1,328 @@
++/*
++ * Copyright 2016 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
 +
-+					       0x00010000 0x00000025
-+					       0x00010001 0x0000002c
-+					       0x00010002 0x00000035
-+					       0x00010003 0x0000003d
-+					       0x00010004 0x00000045
-+					       0x00010005 0x0000004e
-+					       0x00010006 0x00000057
-+					       0x00010007 0x00000061
-+					       0x00010008 0x0000006b
-+					       0x00010009 0x00000076
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/thermal.h>
 +
-+					       0x00020000 0x00000029
-+					       0x00020001 0x00000033
-+					       0x00020002 0x0000003d
-+					       0x00020003 0x00000049
-+					       0x00020004 0x00000056
-+					       0x00020005 0x00000061
-+					       0x00020006 0x0000006d
++#include "thermal_core.h"
 +
-+					       0x00030000 0x00000021
-+					       0x00030001 0x0000002a
-+					       0x00030002 0x0000003c
-+					       0x00030003 0x0000004e>;
-+			little-endian;
-+			#thermal-sensor-cells = <1>;
-+		};
++#define SITES_MAX	16
 +
-+		thermal-zones {
-+			cpu_thermal: cpu-thermal {
-+				polling-delay-passive = <1000>;
-+				polling-delay = <5000>;
++/*
++ * QorIQ TMU Registers
++ */
++struct qoriq_tmu_site_regs {
++	u32 tritsr;		/* Immediate Temperature Site Register */
++	u32 tratsr;		/* Average Temperature Site Register */
++	u8 res0[0x8];
++};
 +
-+				thermal-sensors = <&tmu 4>;
++struct qoriq_tmu_regs {
++	u32 tmr;		/* Mode Register */
++#define TMR_DISABLE	0x0
++#define TMR_ME		0x80000000
++#define TMR_ALPF	0x0c000000
++	u32 tsr;		/* Status Register */
++	u32 tmtmir;		/* Temperature measurement interval Register */
++#define TMTMIR_DEFAULT	0x0000000f
++	u8 res0[0x14];
++	u32 tier;		/* Interrupt Enable Register */
++#define TIER_DISABLE	0x0
++	u32 tidr;		/* Interrupt Detect Register */
++	u32 tiscr;		/* Interrupt Site Capture Register */
++	u32 ticscr;		/* Interrupt Critical Site Capture Register */
++	u8 res1[0x10];
++	u32 tmhtcrh;		/* High Temperature Capture Register */
++	u32 tmhtcrl;		/* Low Temperature Capture Register */
++	u8 res2[0x8];
++	u32 tmhtitr;		/* High Temperature Immediate Threshold */
++	u32 tmhtatr;		/* High Temperature Average Threshold */
++	u32 tmhtactr;	/* High Temperature Average Crit Threshold */
++	u8 res3[0x24];
++	u32 ttcfgr;		/* Temperature Configuration Register */
++	u32 tscfgr;		/* Sensor Configuration Register */
++	u8 res4[0x78];
++	struct qoriq_tmu_site_regs site[SITES_MAX];
++	u8 res5[0x9f8];
++	u32 ipbrr0;		/* IP Block Revision Register 0 */
++	u32 ipbrr1;		/* IP Block Revision Register 1 */
++	u8 res6[0x310];
++	u32 ttr0cr;		/* Temperature Range 0 Control Register */
++	u32 ttr1cr;		/* Temperature Range 1 Control Register */
++	u32 ttr2cr;		/* Temperature Range 2 Control Register */
++	u32 ttr3cr;		/* Temperature Range 3 Control Register */
++};
 +
-+				trips {
-+					cpu_alert: cpu-alert {
-+						temperature = <75000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
-+					cpu_crit: cpu-crit {
-+						temperature = <85000>;
-+						hysteresis = <2000>;
-+						type = "critical";
-+					};
-+				};
++/*
++ * Thermal zone data
++ */
++struct qoriq_tmu_data {
++	struct thermal_zone_device *tz;
++	struct qoriq_tmu_regs __iomem *regs;
++	int sensor_id;
++	bool little_endian;
++};
 +
-+				cooling-maps {
-+					map0 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu0 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+					map1 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu2 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+					map2 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu4 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+					map3 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu6 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
++static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
++{
++	if (p->little_endian)
++		iowrite32(val, addr);
++	else
++		iowrite32be(val, addr);
++}
 +
- 		serial0: serial@21c0500 {
- 			compatible = "fsl,ns16550", "ns16550a";
- 			reg = <0x0 0x21c0500 0x0 0x100>;
++static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
++{
++	if (p->little_endian)
++		return ioread32(addr);
++	else
++		return ioread32be(addr);
++}
++
++static int tmu_get_temp(void *p, int *temp)
++{
++	u32 val;
++	struct qoriq_tmu_data *data = p;
++
++	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
++	*temp = (val & 0xff) * 1000;
++
++	return 0;
++}
++
++static int qoriq_tmu_get_sensor_id(void)
++{
++	int ret, id;
++	struct of_phandle_args sensor_specs;
++	struct device_node *np, *sensor_np;
++
++	np = of_find_node_by_name(NULL, "thermal-zones");
++	if (!np)
++		return -ENODEV;
++
++	sensor_np = of_get_next_child(np, NULL);
++	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
++			"#thermal-sensor-cells",
++			0, &sensor_specs);
++	if (ret) {
++		of_node_put(np);
++		of_node_put(sensor_np);
++		return ret;
++	}
++
++	if (sensor_specs.args_count >= 1) {
++		id = sensor_specs.args[0];
++		WARN(sensor_specs.args_count > 1,
++				"%s: too many cells in sensor specifier %d\n",
++				sensor_specs.np->name, sensor_specs.args_count);
++	} else {
++		id = 0;
++	}
++
++	of_node_put(np);
++	of_node_put(sensor_np);
++
++	return id;
++}
++
++static int qoriq_tmu_calibration(struct platform_device *pdev)
++{
++	int i, val, len;
++	u32 range[4];
++	const u32 *calibration;
++	struct device_node *np = pdev->dev.of_node;
++	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
++
++	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
++		dev_err(&pdev->dev, "missing calibration range.\n");
++		return -ENODEV;
++	}
++
++	/* Init temperature range registers */
++	tmu_write(data, range[0], &data->regs->ttr0cr);
++	tmu_write(data, range[1], &data->regs->ttr1cr);
++	tmu_write(data, range[2], &data->regs->ttr2cr);
++	tmu_write(data, range[3], &data->regs->ttr3cr);
++
++	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
++	if (calibration == NULL || len % 8) {
++		dev_err(&pdev->dev, "invalid calibration data.\n");
++		return -ENODEV;
++	}
++
++	for (i = 0; i < len; i += 8, calibration += 2) {
++		val = of_read_number(calibration, 1);
++		tmu_write(data, val, &data->regs->ttcfgr);
++		val = of_read_number(calibration + 1, 1);
++		tmu_write(data, val, &data->regs->tscfgr);
++	}
++
++	return 0;
++}
++
++static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
++{
++	/* Disable interrupt, using polling instead */
++	tmu_write(data, TIER_DISABLE, &data->regs->tier);
++
++	/* Set update_interval */
++	tmu_write(data, TMTMIR_DEFAULT, &data->regs->tmtmir);
++
++	/* Disable monitoring */
++	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
++}
++
++static struct thermal_zone_of_device_ops tmu_tz_ops = {
++	.get_temp = tmu_get_temp,
++};
++
++static int qoriq_tmu_probe(struct platform_device *pdev)
++{
++	int ret;
++	const struct thermal_trip *trip;
++	struct qoriq_tmu_data *data;
++	struct device_node *np = pdev->dev.of_node;
++	u32 site = 0;
++
++	if (!np) {
++		dev_err(&pdev->dev, "Device OF-Node is NULL");
++		return -ENODEV;
++	}
++
++	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
++			    GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, data);
++
++	data->little_endian = of_property_read_bool(np, "little-endian");
++
++	data->sensor_id = qoriq_tmu_get_sensor_id();
++	if (data->sensor_id < 0) {
++		dev_err(&pdev->dev, "Failed to get sensor id\n");
++		ret = -ENODEV;
++		goto err_iomap;
++	}
++
++	data->regs = of_iomap(np, 0);
++	if (!data->regs) {
++		dev_err(&pdev->dev, "Failed to get memory region\n");
++		ret = -ENODEV;
++		goto err_iomap;
++	}
++
++	qoriq_tmu_init_device(data);	/* TMU initialization */
++
++	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
++	if (ret < 0)
++		goto err_tmu;
++
++	data->tz = thermal_zone_of_sensor_register(&pdev->dev, data->sensor_id,
++				data, &tmu_tz_ops);
++	if (IS_ERR(data->tz)) {
++		ret = PTR_ERR(data->tz);
++		dev_err(&pdev->dev,
++			"Failed to register thermal zone device %d\n", ret);
++		goto err_tmu;
++	}
++
++	trip = of_thermal_get_trip_points(data->tz);
++
++	/* Enable monitoring */
++	site |= 0x1 << (15 - data->sensor_id);
++	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
++
++	return 0;
++
++err_tmu:
++	iounmap(data->regs);
++
++err_iomap:
++	platform_set_drvdata(pdev, NULL);
++
++	return ret;
++}
++
++static int qoriq_tmu_remove(struct platform_device *pdev)
++{
++	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
++
++	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
++
++	/* Disable monitoring */
++	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
++
++	iounmap(data->regs);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int qoriq_tmu_suspend(struct device *dev)
++{
++	u32 tmr;
++	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
++
++	/* Disable monitoring */
++	tmr = tmu_read(data, &data->regs->tmr);
++	tmr &= ~TMR_ME;
++	tmu_write(data, tmr, &data->regs->tmr);
++
++	return 0;
++}
++
++static int qoriq_tmu_resume(struct device *dev)
++{
++	u32 tmr;
++	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
++
++	/* Enable monitoring */
++	tmr = tmu_read(data, &data->regs->tmr);
++	tmr |= TMR_ME;
++	tmu_write(data, tmr, &data->regs->tmr);
++
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
++			 qoriq_tmu_suspend, qoriq_tmu_resume);
++
++static const struct of_device_id qoriq_tmu_match[] = {
++	{ .compatible = "fsl,qoriq-tmu", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
++
++static struct platform_driver qoriq_tmu = {
++	.driver	= {
++		.name		= "qoriq_thermal",
++		.pm		= &qoriq_tmu_pm_ops,
++		.of_match_table	= qoriq_tmu_match,
++	},
++	.probe	= qoriq_tmu_probe,
++	.remove	= qoriq_tmu_remove,
++};
++module_platform_driver(qoriq_tmu);
++
++MODULE_AUTHOR("Jia Hongtao <hongtao.jia@nxp.com>");
++MODULE_DESCRIPTION("QorIQ Thermal Monitoring Unit driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.1.0.27.g96db324
