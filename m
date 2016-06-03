@@ -1,51 +1,23 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hongtao.jia@nxp.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0098.outbound.protection.outlook.com [207.46.100.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLZnC11XPzDqkr
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:03:26 +1000 (AEST)
-Received: from pps.filterd (m0048827.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5370RXD035331
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jun 2016 03:03:25 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23b3g1c1d4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jun 2016 03:03:25 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Fri, 3 Jun 2016 17:03:21 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7BD9F3578067
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:02:58 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5372mLU65994858
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jun 2016 17:02:53 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5372k0e017929
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jun 2016 17:02:47 +1000
-Date: Fri, 03 Jun 2016 15:02:11 +0800
-From: xinhui <xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLbBy6wNVzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:22:18 +1000 (AEST)
+From: Jia Hongtao <hongtao.jia@nxp.com>
+To: <edubezval@gmail.com>, <rui.zhang@intel.com>, <robh+dt@kernel.org>,
+ <galak@codeaurora.org>, <scott.wood@nxp.com>, <shawnguo@kernel.org>
+CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@lists.infradead.org>, <hongtao.jia@nxp.com>
+Subject: [PATCH 4/7] arm:dt:ls1021a: Add TMU device tree support for LS1021A
+Date: Fri, 3 Jun 2016 14:57:36 +0800
+Message-ID: <1464937059-19349-4-git-send-email-hongtao.jia@nxp.com>
+In-Reply-To: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
+References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org
-CC: paulus@samba.org, mpe@ellerman.id.au, peterz@infradead.org,
- mingo@redhat.com, paulmck@linux.vnet.ibm.com, waiman.long@hpe.com
-Subject: Re: [PATCH v5 1/6] qspinlock: powerpc support qspinlock
-References: <1464859370-5162-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1464859370-5162-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1464917520.26773.11.camel@kernel.crashing.org>
- <1464917548.26773.12.camel@au1.ibm.com> <57510353.1020209@linux.vnet.ibm.com>
- <1464928427.26773.26.camel@kernel.crashing.org>
-In-Reply-To: <1464928427.26773.26.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57512B73.5010005@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,59 +27,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Also add nodes and properties for thermal management support.
 
+Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+---
+ arch/arm/boot/dts/ls1021a.dtsi | 84 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 2 deletions(-)
 
-On 2016年06月03日 12:33, Benjamin Herrenschmidt wrote:
-> On Fri, 2016-06-03 at 12:10 +0800, xinhui wrote:
->> On 2016年06月03日 09:32, Benjamin Herrenschmidt wrote:
->>> On Fri, 2016-06-03 at 11:32 +1000, Benjamin Herrenschmidt wrote:
->>>> On Thu, 2016-06-02 at 17:22 +0800, Pan Xinhui wrote:
->>>>>
->>>>> Base code to enable qspinlock on powerpc. this patch add some
->>>>> #ifdef
->>>>> here and there. Although there is no paravirt related code, we
->> can
->>>>> successfully build a qspinlock kernel after apply this patch.
->>>> This is missing the IO_SYNC stuff ... It means we'll fail to do a
->>>> full
->>>> sync to order vs MMIOs.
->>>>
->>>> You need to add that back in the unlock path.
->>>
->>> Well, and in the lock path as well...
->>>
->> Oh, yes. I missed IO_SYNC stuff.
->>
->> thank you, Ben :)
->
-> Ok couple of other things that would be nice from my perspective (and
-> Michael's) if you can produce them:
->
->   - Some benchmarks of the qspinlock alone, without the PV stuff,
->     so we understand how much of the overhead is inherent to the
->     qspinlock and how much is introduced by the PV bits.
->
->   - For the above, can you show (or describe) where the qspinlock
->     improves things compared to our current locks. While there's
->     theory and to some extent practice on x86, it would be nice to
->     validate the effects on POWER.
->
->   - Comparative benchmark with the PV stuff in on a bare metal system
->     to understand the overhead there.
->
->   - Comparative benchmark with the PV stuff under pHyp and KVM
->
-Will do such benchmark tests in next days.
-thanks for your kind suggestions. :)
-
-> Spinlocks are fiddly and a critical piece of infrastructure, it's
-> important we fully understand the performance implications before we
-> decide to switch to a new model.
->
-yes, We really need understand how {pv}qspinlock works in more complex cases.
-
-thanks
-xinhui
-> Cheers,
-> Ben.
->
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 5ae8e92..1bac9d8 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -47,6 +47,7 @@
+ 
+ #include "skeleton64.dtsi"
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/thermal.h>
+ 
+ / {
+ 	compatible = "fsl,ls1021a";
+@@ -70,14 +71,15 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		cpu@f00 {
++		cpu0: cpu@f00 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0xf00>;
+ 			clocks = <&cluster1_clk>;
++			#cooling-cells = <2>;
+ 		};
+ 
+-		cpu@f01 {
++		cpu1: cpu@f01 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0xf01>;
+@@ -251,6 +253,84 @@
+ 			};
+ 		};
+ 
++		tmu: tmu@1f00000 {
++			compatible = "fsl,qoriq-tmu";
++			reg = <0x0 0x1f00000 0x0 0x10000>;
++			interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
++			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
++			fsl,tmu-calibration = <0x00000000 0x0000000f
++					       0x00000001 0x00000017
++					       0x00000002 0x0000001e
++					       0x00000003 0x00000026
++					       0x00000004 0x0000002e
++					       0x00000005 0x00000035
++					       0x00000006 0x0000003d
++					       0x00000007 0x00000044
++					       0x00000008 0x0000004c
++					       0x00000009 0x00000053
++					       0x0000000a 0x0000005b
++					       0x0000000b 0x00000064
++
++					       0x00010000 0x00000011
++					       0x00010001 0x0000001c
++					       0x00010002 0x00000024
++					       0x00010003 0x0000002b
++					       0x00010004 0x00000034
++					       0x00010005 0x00000039
++					       0x00010006 0x00000042
++					       0x00010007 0x0000004c
++					       0x00010008 0x00000051
++					       0x00010009 0x0000005a
++					       0x0001000a 0x00000063
++
++					       0x00020000 0x00000013
++					       0x00020001 0x00000019
++					       0x00020002 0x00000024
++					       0x00020003 0x0000002c
++					       0x00020004 0x00000035
++					       0x00020005 0x0000003d
++					       0x00020006 0x00000046
++					       0x00020007 0x00000050
++					       0x00020008 0x00000059
++
++					       0x00030000 0x00000002
++					       0x00030001 0x0000000d
++					       0x00030002 0x00000019
++					       0x00030003 0x00000024>;
++			#thermal-sensor-cells = <1>;
++		};
++
++		thermal-zones {
++			cpu_thermal: cpu-thermal {
++				polling-delay-passive = <1000>;
++				polling-delay = <5000>;
++
++				thermal-sensors = <&tmu 0>;
++
++				trips {
++					cpu_alert: cpu-alert {
++						temperature = <85000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++					cpu_crit: cpu-crit {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu0 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++					};
++				};
++			};
++		};
++
+ 		dspi0: dspi@2100000 {
+ 			compatible = "fsl,ls1021a-v1.0-dspi";
+ 			#address-cells = <1>;
+-- 
+2.1.0.27.g96db324
