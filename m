@@ -1,23 +1,92 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0078.outbound.protection.outlook.com [207.46.100.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLbF907V9zDqrG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:24:12 +1000 (AEST)
-From: Jia Hongtao <hongtao.jia@nxp.com>
-To: <edubezval@gmail.com>, <rui.zhang@intel.com>, <robh+dt@kernel.org>,
- <galak@codeaurora.org>, <scott.wood@nxp.com>, <shawnguo@kernel.org>
-CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>, <hongtao.jia@nxp.com>
-Subject: [PATCH 5/7] arm64:dt:ls1043a: Add TMU device tree support for LS1043A
-Date: Fri, 3 Jun 2016 14:57:37 +0800
-Message-ID: <1464937059-19349-5-git-send-email-hongtao.jia@nxp.com>
-In-Reply-To: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
-References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLb4v0tjyzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:17:03 +1000 (AEST)
+Received: by mail-it0-x241.google.com with SMTP id k76so6766819ita.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jun 2016 00:17:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1464881987-13203-3-git-send-email-k.kozlowski@samsung.com>
+References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
+ <1464881987-13203-3-git-send-email-k.kozlowski@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 3 Jun 2016 09:17:00 +0200
+Message-ID: <CAMuHMdXWMf7Dt77wSUj8NytQqb99jzDiAz46kJkAEz+6BX3Uvw@mail.gmail.com>
+Subject: Re: [RFC v3 02/45] dma-mapping: Use unsigned long for dma_attrs
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Stefano Stabellini <sstabellini@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ Steven Miao <realmz6@gmail.com>, Mark Salter <msalter@redhat.com>,
+ Aurelien Jacquiot <a-jacquiot@ti.com>, Mikael Starvik <starvik@axis.com>,
+ Jesper Nilsson <jesper.nilsson@axis.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ James Hogan <james.hogan@imgtec.com>, Michal Simek <monstr@monstr.eu>,
+ Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+ Ley Foon Tan <lftan@altera.com>, Jonas Bonn <jonas@southpole.se>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
+ Olof Johansson <olof@lixom.net>,
+ Geoff Levand <geoff@infradead.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, "the arch/x86 maintainers" <x86@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ David Vrabel <david.vrabel@citrix.com>,
+ Juergen Gross <jgross@suse.com>, Muli Ben-Yehuda <muli@il.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ David Airlie <airlied@linux.ie>, Joerg Roedel <joro@8bytes.org>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ alpha <linux-alpha@vger.kernel.org>,
+ arcml <linux-snps-arc@lists.infradead.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ xen-devel@lists.xenproject.org,
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>, linux-c6x-dev@linux-c6x.org,
+ Cris <linux-cris-kernel@axis.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ "open list:METAG ARCHITECTURE" <linux-metag@vger.kernel.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ "moderated list:PANASONIC MN10300..." <linux-am33-list@redhat.com>,
+ nios2-dev@lists.rocketboards.org,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ discuss@x86-64.org, linux-pci <linux-pci@vger.kernel.org>,
+ "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
+ linux-mediatek@lists.infradead.org,
+ "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
+ freedreno@lists.freedesktop.org, nouveau@lists.freedesktop.org,
+ "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>,
+ linux-rdma <linux-rdma@vger.kernel.org>, iommu@lists.linux-foundation.org,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ Christoph Hellwig <hch@infradead.org>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,143 +96,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also add nodes and properties for thermal management support.
+Hi Krzysztof,
 
-Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
----
- arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts |  2 +-
- arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts |  2 +-
- arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi    | 78 +++++++++++++++++++++++
- 3 files changed, 80 insertions(+), 2 deletions(-)
+On Thu, Jun 2, 2016 at 5:39 PM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -5,13 +5,25 @@
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts b/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
-index 9d3e9fe..fa447b6 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
-@@ -45,7 +45,7 @@
-  */
- 
- /dts-v1/;
--/include/ "fsl-ls1043a.dtsi"
-+#include "fsl-ls1043a.dtsi"
- 
- / {
- 	model = "LS1043A QDS Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
-index f895fc0..6015d88 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
-@@ -45,7 +45,7 @@
-  */
- 
- /dts-v1/;
--/include/ "fsl-ls1043a.dtsi"
-+#include "fsl-ls1043a.dtsi"
- 
- / {
- 	model = "LS1043A RDB Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-index de0323b..4004273 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-@@ -44,6 +44,8 @@
-  *     OTHER DEALINGS IN THE SOFTWARE.
-  */
- 
-+#include <dt-bindings/thermal/thermal.h>
-+
- / {
- 	compatible = "fsl,ls1043a";
- 	interrupt-parent = <&gic>;
-@@ -65,6 +67,7 @@
- 			compatible = "arm,cortex-a53";
- 			reg = <0x0 0x0>;
- 			clocks = <&clockgen 1 0>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -196,6 +199,81 @@
- 			bus-width = <4>;
- 		};
- 
-+		tmu: tmu@1f00000 {
-+			compatible = "fsl,qoriq-tmu";
-+			reg = <0x0 0x1f00000 0x0 0x10000>;
-+			interrupts = <0 33 0x4>;
-+			fsl,tmu-range = <0xb0000 0x9002a 0x6004c 0x30062>;
-+			fsl,tmu-calibration = <0x00000000 0x00000026
-+					       0x00000001 0x0000002d
-+					       0x00000002 0x00000032
-+					       0x00000003 0x00000039
-+					       0x00000004 0x0000003f
-+					       0x00000005 0x00000046
-+					       0x00000006 0x0000004d
-+					       0x00000007 0x00000054
-+					       0x00000008 0x0000005a
-+					       0x00000009 0x00000061
-+					       0x0000000a 0x0000006a
-+					       0x0000000b 0x00000071
-+
-+					       0x00010000 0x00000025
-+					       0x00010001 0x0000002c
-+					       0x00010002 0x00000035
-+					       0x00010003 0x0000003d
-+					       0x00010004 0x00000045
-+					       0x00010005 0x0000004e
-+					       0x00010006 0x00000057
-+					       0x00010007 0x00000061
-+					       0x00010008 0x0000006b
-+					       0x00010009 0x00000076
-+
-+					       0x00020000 0x00000029
-+					       0x00020001 0x00000033
-+					       0x00020002 0x0000003d
-+					       0x00020003 0x00000049
-+					       0x00020004 0x00000056
-+					       0x00020005 0x00000061
-+					       0x00020006 0x0000006d
-+
-+					       0x00030000 0x00000021
-+					       0x00030001 0x0000002a
-+					       0x00030002 0x0000003c
-+					       0x00030003 0x0000004e>;
-+			#thermal-sensor-cells = <1>;
-+		};
-+
-+		thermal-zones {
-+			cpu_thermal: cpu-thermal {
-+				polling-delay-passive = <1000>;
-+				polling-delay = <5000>;
-+
-+				thermal-sensors = <&tmu 3>;
-+
-+				trips {
-+					cpu_alert: cpu-alert {
-+						temperature = <85000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
-+					cpu_crit: cpu-crit {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "critical";
-+					};
-+				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&cpu_alert>;
-+						cooling-device =
-+							<&cpu0 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
-+					};
-+				};
-+			};
-+		};
-+
- 		dspi0: dspi@2100000 {
- 			compatible = "fsl,ls1043a-dspi", "fsl,ls1021a-v1.0-dspi";
- 			#address-cells = <1>;
--- 
-2.1.0.27.g96db324
+> +/**
+> + * List of possible attributes associated with a DMA mapping. The semantics
+> + * of each attribute should be defined in Documentation/DMA-attributes.txt.
+> + */
+> +#define DMA_ATTR_WRITE_BARRIER         (1UL << 1)
+
+Any particular reason they start at 2, not 1?
+
+> +#define DMA_ATTR_WEAK_ORDERING         (1UL << 2)
+> +#define DMA_ATTR_WRITE_COMBINE         (1UL << 3)
+> +#define DMA_ATTR_NON_CONSISTENT                (1UL << 4)
+> +#define DMA_ATTR_NO_KERNEL_MAPPING     (1UL << 5)
+> +#define DMA_ATTR_SKIP_CPU_SYNC         (1UL << 6)
+> +#define DMA_ATTR_FORCE_CONTIGUOUS      (1UL << 7)
+> +#define DMA_ATTR_ALLOC_SINGLE_PAGES    (1UL << 8)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
