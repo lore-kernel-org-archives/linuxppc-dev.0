@@ -1,21 +1,21 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
+Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
+ [IPv6:2607:f8b0:4001:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLb4v0tjyzDqks
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:17:03 +1000 (AEST)
-Received: by mail-it0-x241.google.com with SMTP id k76so6766819ita.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jun 2016 00:17:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rLb6x1Yk4zDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 17:18:48 +1000 (AEST)
+Received: by mail-io0-x243.google.com with SMTP id l9so9301406ioe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jun 2016 00:18:48 -0700 (PDT)
 MIME-Version: 1.0
 Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1464881987-13203-3-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1464881987-13203-30-git-send-email-k.kozlowski@samsung.com>
 References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
- <1464881987-13203-3-git-send-email-k.kozlowski@samsung.com>
+ <1464881987-13203-30-git-send-email-k.kozlowski@samsung.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 3 Jun 2016 09:17:00 +0200
-Message-ID: <CAMuHMdXWMf7Dt77wSUj8NytQqb99jzDiAz46kJkAEz+6BX3Uvw@mail.gmail.com>
-Subject: Re: [RFC v3 02/45] dma-mapping: Use unsigned long for dma_attrs
+Date: Fri, 3 Jun 2016 09:18:44 +0200
+Message-ID: <CAMuHMdXpMu6iuSYRJwyqP8mx_A9cAnsgkTh-8nU+JMpD4f2-SA@mail.gmail.com>
+Subject: Re: [RFC v3 29/45] m68k: dma-mapping: Use unsigned long for dma_attrs
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Richard Henderson <rth@twiddle.net>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
@@ -96,29 +96,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Krzysztof,
-
 On Thu, Jun 2, 2016 at 5:39 PM, Krzysztof Kozlowski
 <k.kozlowski@samsung.com> wrote:
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -5,13 +5,25 @@
+> Split out subsystem specific changes for easier reviews. This will be
+> squashed with main commit.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-> +/**
-> + * List of possible attributes associated with a DMA mapping. The semantics
-> + * of each attribute should be defined in Documentation/DMA-attributes.txt.
-> + */
-> +#define DMA_ATTR_WRITE_BARRIER         (1UL << 1)
+Looks good.
 
-Any particular reason they start at 2, not 1?
-
-> +#define DMA_ATTR_WEAK_ORDERING         (1UL << 2)
-> +#define DMA_ATTR_WRITE_COMBINE         (1UL << 3)
-> +#define DMA_ATTR_NON_CONSISTENT                (1UL << 4)
-> +#define DMA_ATTR_NO_KERNEL_MAPPING     (1UL << 5)
-> +#define DMA_ATTR_SKIP_CPU_SYNC         (1UL << 6)
-> +#define DMA_ATTR_FORCE_CONTIGUOUS      (1UL << 7)
-> +#define DMA_ATTR_ALLOC_SINGLE_PAGES    (1UL << 8)
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 Gr{oetje,eeting}s,
 
