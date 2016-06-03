@@ -1,31 +1,19 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rLlV61RmbzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2016 23:35:57 +1000 (AEST)
-Received: by mail-pf0-x230.google.com with SMTP id g64so43967845pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jun 2016 06:35:57 -0700 (PDT)
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, steve.muckle@linaro.org,
- linuxppc-dev@lists.ozlabs.org,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Krzysztof Kozlowski <k.kozlowski@samsung.com>,
- Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>,
- Steven Miao <realmz6@gmail.com>
-Subject: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in ascending
- order
-Date: Fri,  3 Jun 2016 19:05:14 +0530
-Message-Id: <e155257e7f76c3dc71f9347e0433fb1e4d9a3358.1464960877.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1464960877.git.viresh.kumar@linaro.org>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1464960877.git.viresh.kumar@linaro.org>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rLpmn6Dj4zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 02:03:53 +1000 (AEST)
+Date: Sat, 4 Jun 2016 00:01:45 +0800
+From: kbuild test robot <lkp@intel.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: kbuild-all@01.org, akpm@linux-foundation.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/3] mm: Change the interface for __tlb_remove_page
+Message-ID: <201606032349.D2Up4DnI%fengguang.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="IJpNTDwzlM2Ie8A6"
+In-Reply-To: <1464959359-7543-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,541 +23,362 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The drivers aren't required to provide a sorted frequency table today,
-and its not optimal to work on an unsorted frequency tables.
 
-To simplify and improve code performance, always keep policy->freq_table
-sorted in ascending order.
+--IJpNTDwzlM2Ie8A6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Now that freq_table is sorted, update cpufreq_frequency_table_target()
-to make it more efficient with help of new helpers.
+Hi,
 
-As these helpers will be used by scheduler hotpath later on, keep them
-in a new header cpufreq_table.h to avoid unnecessary function calls.
+[auto build test ERROR on arm/for-next]
+[also build test ERROR on v4.7-rc1 next-20160603]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Also update acpi-cpufreq driver to use the efficient
-cpufreq_frequency_table_target() routine, as we can't assume the
-descending order of frequencies in freq_table anymore.
+url:    https://github.com/0day-ci/linux/commits/Aneesh-Kumar-K-V/mm-hugetlb-Simplify-hugetlb-unmap/20160603-211611
+base:   http://repo.or.cz/linux-2.6/linux-2.6-arm.git for-next
+config: sh-titan_defconfig (attached as .config)
+compiler: sh4-linux-gnu-gcc (Debian 5.3.1-8) 5.3.1 20160205
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=sh 
 
-Tested on Exynos board with both ondemand and schedutil governor and
-confirmed with help of various print messages that we are eventually
-switching to the desired frequency based on a target frequency.
+Note: the linux-review/Aneesh-Kumar-K-V/mm-hugetlb-Simplify-hugetlb-unmap/20160603-211611 HEAD d6ef168b95ef6261d48eff011e532d6a8798f4cd builds fine.
+      It only hurts bisectibility.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+All errors (new ones prefixed by >>):
+
+   mm/memory.c: In function 'zap_pte_range':
+>> mm/memory.c:1210:4: error: implicit declaration of function '__tlb_adjust_range' [-Werror=implicit-function-declaration]
+       __tlb_adjust_range(tlb, tlb->addr);
+       ^
+>> mm/memory.c:1210:31: error: 'struct mmu_gather' has no member named 'addr'
+       __tlb_adjust_range(tlb, tlb->addr);
+                                  ^
+   cc1: some warnings being treated as errors
+
+vim +/__tlb_adjust_range +1210 mm/memory.c
+
+  1204		 */
+  1205		if (force_flush) {
+  1206			force_flush = 0;
+  1207			tlb_flush_mmu_free(tlb);
+  1208			if (pending_page) {
+  1209				/* remove the page with new size */
+> 1210				__tlb_adjust_range(tlb, tlb->addr);
+  1211				__tlb_remove_page(tlb, pending_page);
+  1212				pending_page = NULL;
+  1213			}
+
 ---
- MAINTAINERS                        |   1 +
- drivers/cpufreq/acpi-cpufreq.c     |  16 ++--
- drivers/cpufreq/cpufreq.c          |  20 +++--
- drivers/cpufreq/cpufreq_ondemand.h |   1 +
- drivers/cpufreq/freq_table.c       | 163 +++++++++++++++----------------------
- drivers/cpufreq/powernv-cpufreq.c  |   1 +
- drivers/cpufreq/s3c24xx-cpufreq.c  |   1 +
- drivers/cpufreq/s5pv210-cpufreq.c  |   1 +
- include/linux/cpufreq.h            |   3 -
- include/linux/cpufreq_table.h      | 139 +++++++++++++++++++++++++++++++
- 10 files changed, 227 insertions(+), 119 deletions(-)
- create mode 100644 include/linux/cpufreq_table.h
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7304d2e37a98..315d49d68500 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3205,6 +3205,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
- T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
- F:	drivers/cpufreq/
- F:	include/linux/cpufreq.h
-+F:	include/linux/cpufreq_table.h
- 
- CPU FREQUENCY DRIVERS - ARM BIG LITTLE
- M:	Viresh Kumar <viresh.kumar@linaro.org>
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 32a15052f363..364b86119f3f 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -33,6 +33,7 @@
- #include <linux/smp.h>
- #include <linux/sched.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpufreq_table.h>
- #include <linux/compiler.h>
- #include <linux/dmi.h>
- #include <linux/slab.h>
-@@ -468,20 +469,15 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
- 	struct cpufreq_frequency_table *entry;
--	unsigned int next_perf_state, next_freq, freq;
-+	unsigned int next_perf_state, next_freq, index;
- 
- 	/*
- 	 * Find the closest frequency above target_freq.
--	 *
--	 * The table is sorted in the reverse order with respect to the
--	 * frequency and all of the entries are valid (see the initialization).
- 	 */
--	entry = policy->freq_table;
--	do {
--		entry++;
--		freq = entry->frequency;
--	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
--	entry--;
-+	index = cpufreq_frequency_table_target(policy, target_freq,
-+					       CPUFREQ_RELATION_L);
-+
-+	entry = &policy->freq_table[index];
- 	next_freq = entry->frequency;
- 	next_perf_state = entry->driver_data;
- 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9ae58a18ccb9..91f33bc28fa4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -19,6 +19,7 @@
- 
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpufreq_table.h>
- #include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/init.h>
-@@ -1137,6 +1138,16 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy, bool notify)
- 	kfree(policy);
- }
- 
-+static void cpufreq_policy_exit(struct cpufreq_policy *policy)
-+{
-+	if (!cpufreq_driver->exit)
-+		return;
-+
-+	cpufreq_driver->exit(policy);
-+	kfree(policy->freq_table);
-+	policy->freq_table = NULL;
-+}
-+
- static int cpufreq_online(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
-@@ -1291,9 +1302,7 @@ static int cpufreq_online(unsigned int cpu)
- 
- out_exit_policy:
- 	up_write(&policy->rwsem);
--
--	if (cpufreq_driver->exit)
--		cpufreq_driver->exit(policy);
-+	cpufreq_policy_exit(policy);
- out_free_policy:
- 	cpufreq_policy_free(policy, !new_policy);
- 	return ret;
-@@ -1378,10 +1387,7 @@ static void cpufreq_offline(unsigned int cpu)
- 	 * since this is a core component, and is essential for the
- 	 * subsequent light-weight ->init() to succeed.
- 	 */
--	if (cpufreq_driver->exit) {
--		cpufreq_driver->exit(policy);
--		policy->freq_table = NULL;
--	}
-+	cpufreq_policy_exit(policy);
- 
- unlock:
- 	up_write(&policy->rwsem);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.h b/drivers/cpufreq/cpufreq_ondemand.h
-index 640ea4e97106..dc90c07ace8e 100644
---- a/drivers/cpufreq/cpufreq_ondemand.h
-+++ b/drivers/cpufreq/cpufreq_ondemand.h
-@@ -9,6 +9,7 @@
-  * published by the Free Software Foundation.
-  */
- 
-+#include <linux/cpufreq_table.h>
- #include "cpufreq_governor.h"
- 
- struct od_policy_dbs_info {
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index eac8bcbdaad1..740b3a9fce8e 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -13,6 +13,7 @@
- 
- #include <linux/cpufreq.h>
- #include <linux/module.h>
-+#include <linux/slab.h>
- 
- /*********************************************************************
-  *                     FREQUENCY TABLE HELPERS                       *
-@@ -113,100 +114,6 @@ int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy)
- }
- EXPORT_SYMBOL_GPL(cpufreq_generic_frequency_table_verify);
- 
--int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				    unsigned int target_freq,
--				    unsigned int relation)
--{
--	struct cpufreq_frequency_table optimal = {
--		.driver_data = ~0,
--		.frequency = 0,
--	};
--	struct cpufreq_frequency_table suboptimal = {
--		.driver_data = ~0,
--		.frequency = 0,
--	};
--	struct cpufreq_frequency_table *pos;
--	struct cpufreq_frequency_table *table = policy->freq_table;
--	unsigned int freq, diff, i = 0;
--	int index;
--
--	pr_debug("request for target %u kHz (relation: %u) for cpu %u\n",
--					target_freq, relation, policy->cpu);
--
--	switch (relation) {
--	case CPUFREQ_RELATION_H:
--		suboptimal.frequency = ~0;
--		break;
--	case CPUFREQ_RELATION_L:
--	case CPUFREQ_RELATION_C:
--		optimal.frequency = ~0;
--		break;
--	}
--
--	cpufreq_for_each_valid_entry(pos, table) {
--		freq = pos->frequency;
--
--		i = pos - table;
--		if ((freq < policy->min) || (freq > policy->max))
--			continue;
--		if (freq == target_freq) {
--			optimal.driver_data = i;
--			break;
--		}
--		switch (relation) {
--		case CPUFREQ_RELATION_H:
--			if (freq < target_freq) {
--				if (freq >= optimal.frequency) {
--					optimal.frequency = freq;
--					optimal.driver_data = i;
--				}
--			} else {
--				if (freq <= suboptimal.frequency) {
--					suboptimal.frequency = freq;
--					suboptimal.driver_data = i;
--				}
--			}
--			break;
--		case CPUFREQ_RELATION_L:
--			if (freq > target_freq) {
--				if (freq <= optimal.frequency) {
--					optimal.frequency = freq;
--					optimal.driver_data = i;
--				}
--			} else {
--				if (freq >= suboptimal.frequency) {
--					suboptimal.frequency = freq;
--					suboptimal.driver_data = i;
--				}
--			}
--			break;
--		case CPUFREQ_RELATION_C:
--			diff = abs(freq - target_freq);
--			if (diff < optimal.frequency ||
--			    (diff == optimal.frequency &&
--			     freq > table[optimal.driver_data].frequency)) {
--				optimal.frequency = diff;
--				optimal.driver_data = i;
--			}
--			break;
--		}
--	}
--	if (optimal.driver_data > i) {
--		if (suboptimal.driver_data > i) {
--			WARN(1, "Invalid frequency table: %d\n", policy->cpu);
--			return 0;
--		}
--
--		index = suboptimal.driver_data;
--	} else
--		index = optimal.driver_data;
--
--	pr_debug("target index is %u, freq is:%u kHz\n", index,
--		 table[index].frequency);
--	return index;
--}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
--
- int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
- 		unsigned int freq)
- {
-@@ -297,15 +204,73 @@ struct freq_attr *cpufreq_generic_attr[] = {
- };
- EXPORT_SYMBOL_GPL(cpufreq_generic_attr);
- 
-+static int next_larger(struct cpufreq_policy *policy, unsigned int freq,
-+		       struct cpufreq_frequency_table *table)
-+{
-+	struct cpufreq_frequency_table *pos;
-+	unsigned int next_freq = ~0;
-+	int index = -EINVAL;
-+
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		if (pos->frequency <= freq)
-+			continue;
-+
-+		if (next_freq > pos->frequency) {
-+			next_freq = pos->frequency;
-+			index = pos - table;
-+		}
-+	}
-+
-+	return index;
-+}
-+
-+static int create_sorted_freq_table(struct cpufreq_policy *policy,
-+				    struct cpufreq_frequency_table *table)
-+{
-+	struct cpufreq_frequency_table *pos, *new_table;
-+	unsigned int freq, index, i, count = 0;
-+
-+	cpufreq_for_each_valid_entry(pos, table)
-+		count++;
-+
-+	/* Extra entry for CPUFREQ_TABLE_END */
-+	count++;
-+
-+	new_table = kmalloc_array(count, sizeof(*new_table), GFP_KERNEL);
-+	if (!new_table)
-+		return -ENOMEM;
-+
-+	for (i = 0, freq = 0; i < count - 1; i++) {
-+		index = next_larger(policy, freq, table);
-+		if (index == -EINVAL)
-+			break;
-+
-+		new_table[i].frequency = table[index].frequency;
-+		new_table[i].driver_data = table[index].driver_data;
-+		new_table[i].flags = table[index].flags;
-+
-+		freq = table[index].frequency;
-+	}
-+
-+	new_table[i].frequency = CPUFREQ_TABLE_END;
-+	policy->freq_table = new_table;
-+
-+	return 0;
-+}
-+
- int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
--				      struct cpufreq_frequency_table *table)
-+				    struct cpufreq_frequency_table *table)
- {
--	int ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	int ret;
-+
-+	if (!table)
-+		return -EINVAL;
- 
--	if (!ret)
--		policy->freq_table = table;
-+	ret = cpufreq_frequency_table_cpuinfo(policy, table);
-+	if (ret)
-+		return ret;
- 
--	return ret;
-+	return create_sorted_freq_table(policy, table);
- }
- EXPORT_SYMBOL_GPL(cpufreq_table_validate_and_show);
- 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b29c5c20c3a1..06c0f39d0133 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -24,6 +24,7 @@
- #include <linux/cpumask.h>
- #include <linux/module.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpufreq_table.h>
- #include <linux/smp.h>
- #include <linux/of.h>
- #include <linux/reboot.h>
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index 7b596fa38ad2..1ff12e869e02 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -17,6 +17,7 @@
- #include <linux/interrupt.h>
- #include <linux/ioport.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpufreq_table.h>
- #include <linux/cpu.h>
- #include <linux/clk.h>
- #include <linux/err.h>
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index 4f4e9df9b7fc..89e0ae4c7b11 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -18,6 +18,7 @@
- #include <linux/clk.h>
- #include <linux/io.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpufreq_table.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index c378776628b4..ee23b25b6c61 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -597,9 +597,6 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table);
- int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy);
- 
--int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				   unsigned int target_freq,
--				   unsigned int relation);
- int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
- 		unsigned int freq);
- 
-diff --git a/include/linux/cpufreq_table.h b/include/linux/cpufreq_table.h
-new file mode 100644
-index 000000000000..a3e4a09ac58f
---- /dev/null
-+++ b/include/linux/cpufreq_table.h
-@@ -0,0 +1,139 @@
-+/*
-+ * linux/include/linux/cpufreq_table.h
-+ *
-+ * Copyright (C) 2016 Viresh Kumar <viresh.kumar@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#ifndef _LINUX_CPUFREQ_TABLE_H
-+#define _LINUX_CPUFREQ_TABLE_H
-+
-+#include <linux/cpufreq.h>
-+
-+static inline int cpufreq_find_index_l(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
-+{
-+	struct cpufreq_frequency_table *table = policy->freq_table;
-+	struct cpufreq_frequency_table *pos, *best = NULL;
-+	unsigned int freq;
-+
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		freq = pos->frequency;
-+
-+		if ((freq < policy->min) || (freq > policy->max))
-+			continue;
-+
-+		if (freq >= target_freq)
-+			return pos - table;
-+
-+		best = pos;
-+	}
-+
-+	if (best)
-+		return best - table;
-+
-+	return -EINVAL;
-+}
-+
-+static inline int cpufreq_find_index_h(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
-+{
-+	struct cpufreq_frequency_table *table = policy->freq_table;
-+	struct cpufreq_frequency_table *pos, *best = NULL;
-+	unsigned int freq;
-+
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		freq = pos->frequency;
-+
-+		if ((freq < policy->min) || (freq > policy->max))
-+			continue;
-+
-+		if (freq == target_freq)
-+			return pos - table;
-+
-+		if (freq < target_freq) {
-+			best = pos;
-+			continue;
-+		}
-+
-+		/* No freq found below target_freq */
-+		if (!best)
-+			best = pos;
-+		break;
-+	}
-+
-+	if (best)
-+		return best - table;
-+
-+	return -EINVAL;
-+}
-+
-+static inline int cpufreq_find_index_c(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
-+{
-+	struct cpufreq_frequency_table *table = policy->freq_table;
-+	struct cpufreq_frequency_table *pos, *best = NULL;
-+	unsigned int freq;
-+
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		freq = pos->frequency;
-+
-+		if ((freq < policy->min) || (freq > policy->max))
-+			continue;
-+
-+		if (freq == target_freq)
-+			return pos - table;
-+
-+		if (freq < target_freq) {
-+			best = pos;
-+			continue;
-+		}
-+
-+		/* No freq found below target_freq */
-+		if (!best) {
-+			best = pos;
-+			break;
-+		}
-+
-+		/* Choose the closest freq */
-+		if (target_freq - best->frequency > freq - target_freq)
-+			best = pos;
-+
-+		break;
-+	}
-+
-+	if (best)
-+		return best - table;
-+
-+	return -EINVAL;
-+}
-+
-+static inline int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
-+						 unsigned int target_freq,
-+						 unsigned int relation)
-+{
-+	int index;
-+
-+	switch (relation) {
-+	case CPUFREQ_RELATION_L:
-+		index = cpufreq_find_index_l(policy, target_freq);
-+		break;
-+	case CPUFREQ_RELATION_H:
-+		index = cpufreq_find_index_h(policy, target_freq);
-+		break;
-+	case CPUFREQ_RELATION_C:
-+		index = cpufreq_find_index_c(policy, target_freq);
-+		break;
-+	default:
-+		pr_err("%s: Invalid relation: %d\n", __func__, relation);
-+		return -EINVAL;
-+	}
-+
-+	if (index == -EINVAL)
-+		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
-+
-+	return index;
-+}
-+#endif /* _LINUX_CPUFREQ_TABLE_H */
--- 
-2.7.1.410.g6faf27b
+--IJpNTDwzlM2Ie8A6
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+1/KCzZEHAQA=
+
+--IJpNTDwzlM2Ie8A6--
