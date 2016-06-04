@@ -1,26 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rMN7V4mTzzDq8f
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2016 00:07:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rMNwJ0GwkzDq80
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2016 00:42:23 +1000 (AEST)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 4 Jun 2016 08:06:59 -0600
+ Sat, 4 Jun 2016 08:42:21 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v3 3/3] mm/mmu_gather: Track page size with mmu gather and
- force flush if page size change
-Date: Sat,  4 Jun 2016 19:36:33 +0530
-Message-Id: <1465049193-22197-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1465049193-22197-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1465049193-22197-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
+ Michael Ellerman <michaele@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>
+Subject: Re: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+In-Reply-To: <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+Date: Sat, 04 Jun 2016 20:12:15 +0530
+Message-ID: <874m99uibc.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,289 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This allows arch which need to do special handing with respect to
-different page size when flushing tlb to implement the same in mmu gather
+Christian Zigotzky <chzigotzky@xenosoft.de> writes:
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/arm/include/asm/tlb.h  | 12 ++++++++++++
- arch/ia64/include/asm/tlb.h | 12 ++++++++++++
- arch/s390/include/asm/tlb.h | 13 +++++++++++++
- arch/sh/include/asm/tlb.h   | 12 ++++++++++++
- arch/um/include/asm/tlb.h   | 12 ++++++++++++
- include/asm-generic/tlb.h   | 27 +++++++++++++++++++++------
- mm/huge_memory.c            |  2 +-
- mm/hugetlb.c                |  2 +-
- mm/memory.c                 | 10 +++++++++-
- 9 files changed, 93 insertions(+), 9 deletions(-)
+> Aneesh,
+>
+> Could you please send me only your patch for the Power ISA 3.0 (Power9) 
+> Radix Tree MMU? You have done the most modifications for the kernel 4.7. 
+> If the kernel boots with your modifications then I have to look to the 
+> other few modifications.
+>
+> Thanks in advance,
+>
 
-diff --git a/arch/arm/include/asm/tlb.h b/arch/arm/include/asm/tlb.h
-index a9d2aee3826f..1e25cd80589e 100644
---- a/arch/arm/include/asm/tlb.h
-+++ b/arch/arm/include/asm/tlb.h
-@@ -225,12 +225,24 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
- 	}
- }
- 
-+static inline bool __tlb_remove_page_size(struct mmu_gather *tlb,
-+					  struct page *page, int page_size)
-+{
-+	return __tlb_remove_page(tlb, page);
-+}
-+
- static inline bool __tlb_remove_pte_page(struct mmu_gather *tlb,
- 					 struct page *page)
- {
- 	return __tlb_remove_page(tlb, page);
- }
- 
-+static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-+					struct page *page, int page_size)
-+{
-+	return tlb_remove_page(tlb, page);
-+}
-+
- static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte,
- 	unsigned long addr)
- {
-diff --git a/arch/ia64/include/asm/tlb.h b/arch/ia64/include/asm/tlb.h
-index e7da41aa9110..77e541cf0e5d 100644
---- a/arch/ia64/include/asm/tlb.h
-+++ b/arch/ia64/include/asm/tlb.h
-@@ -242,12 +242,24 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
- 	}
- }
- 
-+static inline bool __tlb_remove_page_size(struct mmu_gather *tlb,
-+					  struct page *page, int page_size)
-+{
-+	return __tlb_remove_page(tlb, page);
-+}
-+
- static inline bool __tlb_remove_pte_page(struct mmu_gather *tlb,
- 					 struct page *page)
- {
- 	return __tlb_remove_page(tlb, page);
- }
- 
-+static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-+					struct page *page, int page_size)
-+{
-+	return tlb_remove_page(tlb, page);
-+}
-+
- /*
-  * Remove TLB entry for PTE mapped at virtual address ADDRESS.  This is called for any
-  * PTE, not just those pointing to (normal) physical memory.
-diff --git a/arch/s390/include/asm/tlb.h b/arch/s390/include/asm/tlb.h
-index 30759b560849..15711de10403 100644
---- a/arch/s390/include/asm/tlb.h
-+++ b/arch/s390/include/asm/tlb.h
-@@ -98,11 +98,24 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
- 	free_page_and_swap_cache(page);
- }
- 
-+static inline bool __tlb_remove_page_size(struct mmu_gather *tlb,
-+					  struct page *page, int page_size)
-+{
-+	return __tlb_remove_page(tlb, page);
-+}
-+
- static inline bool __tlb_remove_pte_page(struct mmu_gather *tlb,
- 					 struct page *page)
- {
- 	return __tlb_remove_page(tlb, page);
- }
-+
-+static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-+					struct page *page, int page_size)
-+{
-+	return tlb_remove_page(tlb, page);
-+}
-+
- /*
-  * pte_free_tlb frees a pte table and clears the CRSTE for the
-  * page table from the tlb.
-diff --git a/arch/sh/include/asm/tlb.h b/arch/sh/include/asm/tlb.h
-index 21ae8f5546b2..025cdb1032f6 100644
---- a/arch/sh/include/asm/tlb.h
-+++ b/arch/sh/include/asm/tlb.h
-@@ -109,12 +109,24 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
- 	__tlb_remove_page(tlb, page);
- }
- 
-+static inline bool __tlb_remove_page_size(struct mmu_gather *tlb,
-+					  struct page *page, int page_size)
-+{
-+	return __tlb_remove_page(tlb, page);
-+}
-+
- static inline bool __tlb_remove_pte_page(struct mmu_gather *tlb,
- 					 struct page *page)
- {
- 	return __tlb_remove_page(tlb, page);
- }
- 
-+static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-+					struct page *page, int page_size)
-+{
-+	return tlb_remove_page(tlb, page);
-+}
-+
- #define pte_free_tlb(tlb, ptep, addr)	pte_free((tlb)->mm, ptep)
- #define pmd_free_tlb(tlb, pmdp, addr)	pmd_free((tlb)->mm, pmdp)
- #define pud_free_tlb(tlb, pudp, addr)	pud_free((tlb)->mm, pudp)
-diff --git a/arch/um/include/asm/tlb.h b/arch/um/include/asm/tlb.h
-index 3dc4cbb3c2c0..821ff0acfe17 100644
---- a/arch/um/include/asm/tlb.h
-+++ b/arch/um/include/asm/tlb.h
-@@ -110,12 +110,24 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
- 	__tlb_remove_page(tlb, page);
- }
- 
-+static inline bool __tlb_remove_page_size(struct mmu_gather *tlb,
-+					  struct page *page, int page_size)
-+{
-+	return __tlb_remove_page(tlb, page);
-+}
-+
- static inline bool __tlb_remove_pte_page(struct mmu_gather *tlb,
- 					 struct page *page)
- {
- 	return __tlb_remove_page(tlb, page);
- }
- 
-+static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-+					struct page *page, int page_size)
-+{
-+	return tlb_remove_page(tlb, page);
-+}
-+
- /**
-  * tlb_remove_tlb_entry - remember a pte unmapping for later tlb invalidation.
-  *
-diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-index 7b899a46a4cb..c6d667187608 100644
---- a/include/asm-generic/tlb.h
-+++ b/include/asm-generic/tlb.h
-@@ -112,6 +112,7 @@ struct mmu_gather {
- 	 * that that we can adjust the range after the flush
- 	 */
- 	unsigned long addr;
-+	int page_size;
- };
- 
- #define HAVE_GENERIC_MMU_GATHER
-@@ -120,7 +121,8 @@ void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, unsigned long
- void tlb_flush_mmu(struct mmu_gather *tlb);
- void tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start,
- 							unsigned long end);
--bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page);
-+extern bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page,
-+				   int page_size);
- 
- static inline void __tlb_adjust_range(struct mmu_gather *tlb,
- 				      unsigned long address)
-@@ -145,23 +147,36 @@ static inline void __tlb_reset_range(struct mmu_gather *tlb)
- 	}
- }
- 
-+static inline void tlb_remove_page_size(struct mmu_gather *tlb,
-+					struct page *page, int page_size)
-+{
-+	if (__tlb_remove_page_size(tlb, page, page_size)) {
-+		tlb_flush_mmu(tlb);
-+		tlb->page_size = page_size;
-+		__tlb_adjust_range(tlb, tlb->addr);
-+		__tlb_remove_page_size(tlb, page, page_size);
-+	}
-+}
-+
-+static bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-+{
-+	return __tlb_remove_page_size(tlb, page, PAGE_SIZE);
-+}
-+
- /* tlb_remove_page
-  *	Similar to __tlb_remove_page but will call tlb_flush_mmu() itself when
-  *	required.
-  */
- static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
- {
--	if (__tlb_remove_page(tlb, page)) {
--		tlb_flush_mmu(tlb);
--		__tlb_adjust_range(tlb, tlb->addr);
--		__tlb_remove_page(tlb, page);
--	}
-+	return tlb_remove_page_size(tlb, page, PAGE_SIZE);
- }
- 
- static inline bool __tlb_remove_pte_page(struct mmu_gather *tlb, struct page *page)
- {
- 	/* active->nr should be zero when we call this */
- 	VM_BUG_ON_PAGE(tlb->active->nr, page);
-+	tlb->page_size = PAGE_SIZE;
- 	__tlb_adjust_range(tlb, tlb->addr);
- 	return __tlb_remove_page(tlb, page);
- }
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 9ed58530f695..a5711093a829 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1694,7 +1694,7 @@ int zap_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		pte_free(tlb->mm, pgtable_trans_huge_withdraw(tlb->mm, pmd));
- 		atomic_long_dec(&tlb->mm->nr_ptes);
- 		spin_unlock(ptl);
--		tlb_remove_page(tlb, page);
-+		tlb_remove_page_size(tlb, page, HPAGE_PMD_SIZE);
- 	}
- 	return 1;
- }
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 741429d01668..cab0b1861670 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -3211,7 +3211,7 @@ void __unmap_hugepage_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		page_remove_rmap(page, true);
- 
- 		spin_unlock(ptl);
--		tlb_remove_page(tlb, page);
-+		tlb_remove_page_size(tlb, page, huge_page_size(h));
- 		/*
- 		 * Bail out after unmapping reference page if supplied
- 		 */
-diff --git a/mm/memory.c b/mm/memory.c
-index 8e78a3bc75b3..c2e7ea955f06 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -233,6 +233,7 @@ void tlb_gather_mmu(struct mmu_gather *tlb, struct mm_struct *mm, unsigned long
- #ifdef CONFIG_HAVE_RCU_TABLE_FREE
- 	tlb->batch = NULL;
- #endif
-+	tlb->page_size = 0;
- 
- 	__tlb_reset_range(tlb);
- }
-@@ -294,12 +295,19 @@ void tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long e
-  *	When out of page slots we must call tlb_flush_mmu().
-  *returns true if the caller should flush.
-  */
--bool __tlb_remove_page(struct mmu_gather *tlb, struct page *page)
-+bool __tlb_remove_page_size(struct mmu_gather *tlb, struct page *page, int page_size)
- {
- 	struct mmu_gather_batch *batch;
- 
- 	VM_BUG_ON(!tlb->end);
- 
-+	if (!tlb->page_size)
-+		tlb->page_size = page_size;
-+	else {
-+		if (page_size != tlb->page_size)
-+			return true;
-+	}
-+
- 	batch = tlb->active;
- 	if (batch->nr == batch->max) {
- 		if (!tlb_next_batch(tlb))
--- 
-2.7.4
+Are you looking for changes too kernel that will add ISA 3.0 MMU model
+without making changes to other part of kernel ?. I don't think we ever
+had a kernel patch which did the ISA 3.0 work like that. In order to add
+the new ISA support we did have to make changes to other part of the
+kernel.
+
+To debug your boot issue, I still haven't understood why the suggested
+changes are not working. Because for a  non cache guarded page the
+mapping didn't change at all. Hence I was asking for what the expected
+WIMG values are for your board.
+
+One other option is to bisect test the kernel and if you can isolate
+which patch is breaking the boot, we can possibly understand it better.
+ie, instead of reverting the entire merge, try a git bisect.
+
+-aneesh
