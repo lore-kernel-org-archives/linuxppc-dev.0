@@ -1,23 +1,28 @@
-Return-Path: <yinghai@kernel.org>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::8])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rM2qq0C3wzDq7n
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 11:07:18 +1000 (AEST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rMCDX5sLwzDq80
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 17:25:48 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Khalid Aziz <khalid.aziz@oracle.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v12 08/15] powerpc/PCI: Keep resource idx order with bridge
- register number
-Date: Fri,  3 Jun 2016 17:06:35 -0700
-Message-Id: <20160604000642.28162-9-yinghai@kernel.org>
-In-Reply-To: <20160604000642.28162-1-yinghai@kernel.org>
-References: <20160604000642.28162-1-yinghai@kernel.org>
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
+ Michael Ellerman <michaele@au1.ibm.com>, Julian Margetson
+ <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+Date: Sat, 4 Jun 2016 09:19:36 +0200
+MIME-Version: 1.0
+In-Reply-To: <87d1obqxg9.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +32,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Same as sparc version.
+Hi All,
 
-Make resource with consistent sequence
-like other arch or directly from pci_read_bridge_bases(),
-even when non-pref mmio is missing, or out of ordering in firmware reporting.
+The commit powerpc-4.7-2 [2] was released yesterday.
 
-Just hold i = 1 for non pref mmio, and i = 2 for pref mmio.
+There is a conflict in my local kernel git directory if I use git pull 
+because I have reverted the commit powerpc-4.7-1. [1]
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/pci_of_scan.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+The commit powerpc-4.7-2 [2] needs the commit powerpc-4.7-1. [1]
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 526ac67..719f225 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -252,7 +252,7 @@ void of_scan_pci_bridge(struct pci_dev *dev)
- 		bus->resource[i] = res;
- 		++res;
- 	}
--	i = 1;
-+	i = 3;
- 	for (; len >= 32; len -= 32, ranges += 8) {
- 		flags = pci_parse_of_flags(of_read_number(ranges, 1), 1);
- 		size = of_read_number(&ranges[6], 2);
-@@ -265,6 +265,12 @@ void of_scan_pci_bridge(struct pci_dev *dev)
- 				       " for bridge %s\n", node->full_name);
- 				continue;
- 			}
-+		} else if ((flags & IORESOURCE_PREFETCH) &&
-+			   !bus->resource[2]->flags) {
-+			res = bus->resource[2];
-+		} else if (((flags & (IORESOURCE_MEM | IORESOURCE_PREFETCH)) ==
-+			    IORESOURCE_MEM) && !bus->resource[1]->flags) {
-+			res = bus->resource[1];
- 		} else {
- 			if (i >= PCI_NUM_RESOURCES - PCI_BRIDGE_RESOURCES) {
- 				printk(KERN_ERR "PCI: too many memory ranges"
--- 
-2.8.3
+I created a new local kernel git directory for the RC2 with:
+
+git clone 
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 
+linux-git-without-powerpc-commits
+
+After that I reverted the two commits:
+
+powerpc-4.7-2 [2]:
+
+git revert 5306d766f15e72bc79c61d88f77e5a6b1fcc0e68 -m 1
+
+powerpc-4.7-1 [1]:
+
+git revert c04a5880299eab3da8c10547db96ea9cdffd44a6 -m 1
+
+Afterwards I successfully tested our latest Nemo patch 4.7-1 [3] with 
+the following commands:
+
+cp -R linux-git-without-powerpc-commits linux-4.7
+
+patch -p0 < nemo_4.7-1.patch
+
+I tried to solve the boot issue last week. I modified the code a lot and 
+I replaced some files. Unfortunately without any success. The RC1 
+without the commit powerpc-4.7-1 [1] boots and works fantastic. I don't 
+have any ideas anymore. Please help me to solve the boot problems.
+
+Thanks in advance,
+
+Christian
+
+[1] 
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c04a5880299eab3da8c10547db96ea9cdffd44a6
+[2] 
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=5306d766f15e72bc79c61d88f77e5a6b1fcc0e68
+[3] http://www.xenosoft.de/nemo_4.7-1.patch
+
+On 28 May 2016 at 8:51 PM, Darren Stevens wrote:
+> Hello Adrian
+>
+> On 28/05/2016, Adrian Cox wrote:
+>>> From: Christian Zigotzky [mailto:chzigotzky@xenosoft.de]
+>>> Sent: 28 May 2016 07:06
+>>> Adrian, what is the expected WIMG bit mapping for the Nemo board?
+>>>
+>> I'm not able to help much here, I'm afraid. I don't have a Nemo board at
+>> the moment, and it's been a few years. From memory all the peripherals
+>> required standard uncached and guarded mappings on Nemo.
+> Before everybody gets too involved, from what I've seen with my tests today
+> the kernel is crashing long before it gets to the pci-common code.
+>
+> I've attached 2 boot logs, one from a 4.4 kernel I've been working on, and
+> from a build of the latest git.
+>
+> You can see from this that the 4.7 kernel hangs right after the booting linux
+> via __start(), whereas in the 4.4 there's about 29 lines of output before it
+> gets to the Initialised io_base_virt printk in our patch.
+>
+> The last time we had a hang this early in the boot it turned out to be a
+> problem in head_64.S, I think there is something else wrong in the commit
+> Christian has identified
+>
+> I will see if this is something I can fix, but it may need better low level
+> knowledge of PPC hardware than I have.
+>
+> Regards
+> Darren
+
+On 28 May 2016 at 6:53 PM, Adrian Cox wrote:
+>> From: Christian Zigotzky [mailto:chzigotzky@xenosoft.de]
+>> Sent: 28 May 2016 07:06
+>> Adrian, what is the expected WIMG bit mapping for the Nemo board?
+>>
+> I'm not able to help much here, I'm afraid. I don't have a Nemo board at the moment, and it's been a few years. From memory all the peripherals required standard uncached and guarded mappings on Nemo.
+>
+> The difficult bit that usually breaks on kernel upgrades is not the WIMG settings, but the PCI probing routine.  The SB600 doesn't follow normal PCIe address decoding rules, as in its original use as an AMD south bridge it was designed to appear as if it were integrated into the north bridge.
+>
+> --
+> Adrian
+>
