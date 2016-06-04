@@ -1,29 +1,49 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::10])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rMHMd3krvzDq8G
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 20:32:13 +1000 (AEST)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rMCZG0w8zzDq8G
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 17:41:09 +1000 (AEST)
-Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
- Michael Ellerman <michaele@au1.ibm.com>, Julian Margetson
- <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>
-References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
- <1463990507.3078.16.camel@kernel.crashing.org>
- <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
- <1464088614.3078.79.camel@kernel.crashing.org>
- <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
- <87d1obqxg9.fsf@skywalker.in.ibm.com>
- <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
-Date: Sat, 4 Jun 2016 09:40:54 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 3rMHMc6pnYz9t89
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Jun 2016 20:32:12 +1000 (AEST)
+Received: from pps.filterd (m0075420.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u54ASa2B031400
+ for <linuxppc-dev@ozlabs.org>; Sat, 4 Jun 2016 06:32:09 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23bsgapk6b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Sat, 04 Jun 2016 06:32:08 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Sat, 4 Jun 2016 20:32:05 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D184C3578052
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Jun 2016 20:32:02 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u54AW2sk9961824
+ for <linuxppc-dev@ozlabs.org>; Sat, 4 Jun 2016 20:32:02 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u54AW2xO013193
+ for <linuxppc-dev@ozlabs.org>; Sat, 4 Jun 2016 20:32:02 +1000
+Date: Sat, 4 Jun 2016 16:01:14 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Define and use PPC_ELF_ABI_v2
+References: <1461836327-15417-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1461836327-15417-1-git-send-email-mpe@ellerman.id.au>
+Message-Id: <20160604103113.GM18654@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,121 +53,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aneesh,
+On 2016/04/28 07:38PM, Michael Ellerman wrote:
+> We're approaching 20 locations where we need to check for ELF ABI v2.
+> That's fine, except the logic is a bit awkward, because we have to check
+> that _CALL_ELF is defined and then what its value is.
+> 
+> So check it once in asm/types.h and define PPC_ELF_ABI_v2 when ELF ABI
+> v2 is detected.
+> 
+> We don't add explicit includes of asm/types.h because it's included
+> basically everywhere via compiler.h.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/code-patching.h | 6 +++---
+>  arch/powerpc/include/asm/ftrace.h        | 2 +-
+>  arch/powerpc/include/asm/kprobes.h       | 4 ++--
+>  arch/powerpc/include/asm/linkage.h       | 2 +-
+>  arch/powerpc/include/asm/ppc_asm.h       | 4 ++--
+>  arch/powerpc/include/asm/ptrace.h        | 2 +-
+>  arch/powerpc/include/asm/sections.h      | 2 +-
+>  arch/powerpc/include/asm/types.h         | 4 ++++
+>  arch/powerpc/kernel/entry_64.S           | 2 +-
+>  arch/powerpc/kernel/head_64.S            | 2 +-
+>  arch/powerpc/kernel/kprobes.c            | 2 +-
+>  arch/powerpc/kernel/misc_64.S            | 2 +-
+>  arch/powerpc/kernel/module_64.c          | 4 ++--
+>  arch/powerpc/kvm/book3s_interrupts.S     | 2 +-
+>  arch/powerpc/kvm/book3s_rmhandlers.S     | 2 +-
+>  15 files changed, 23 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+> index 994c60a857ce..d325b35315d3 100644
+> --- a/arch/powerpc/include/asm/code-patching.h
+> +++ b/arch/powerpc/include/asm/code-patching.h
+> @@ -50,7 +50,7 @@ void __patch_exception(int exc, unsigned long addr);
+>  static inline unsigned long ppc_function_entry(void *func)
+>  {
+>  #if defined(CONFIG_PPC64)
+> -#if defined(_CALL_ELF) && _CALL_ELF == 2
+> +#ifdef PPC_ELF_ABI_v2
+>  	u32 *insn = func;
+>  
+>  	/*
+> @@ -90,7 +90,7 @@ static inline unsigned long ppc_function_entry(void *func)
+>  
+>  static inline unsigned long ppc_global_function_entry(void *func)
+>  {
+> -#if defined(CONFIG_PPC64) && defined(_CALL_ELF) && _CALL_ELF == 2
+> +#if defined(CONFIG_PPC64) && defined(PPC_ELF_ABI_v2)
+>  	/* PPC64 ABIv2 the global entry point is at the address */
+>  	return (unsigned long)func;
+>  #else
+> @@ -106,7 +106,7 @@ static inline unsigned long ppc_global_function_entry(void *func)
+>   */
+>  
+>  /* This must match the definition of STK_GOT in <asm/ppc_asm.h> */
+> -#if defined(_CALL_ELF) && _CALL_ELF == 2
+> +#ifdef PPC_ELF_ABI_v2
+>  #define R2_STACK_OFFSET         24
+>  #else
+>  #define R2_STACK_OFFSET         40
+> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+> index 50ca7585abe2..0b0bfcaa587a 100644
+> --- a/arch/powerpc/include/asm/ftrace.h
+> +++ b/arch/powerpc/include/asm/ftrace.h
+> @@ -66,7 +66,7 @@ struct dyn_arch_ftrace {
+>  #endif
+>  
+>  #if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64) && !defined(__ASSEMBLY__)
+> -#if !defined(_CALL_ELF) || _CALL_ELF != 2
+> +#ifdef PPC_ELF_ABI_v2
 
-Could you please send me only your patch for the Power ISA 3.0 (Power9) 
-Radix Tree MMU? You have done the most modifications for the kernel 4.7. 
-If the kernel boots with your modifications then I have to look to the 
-other few modifications.
+That should be #ifndef.
 
-Thanks in advance,
 
-Christian
-
-On 04 June 2016 at 09:19 AM, Christian Zigotzky wrote:
-> Hi All,
->
-> The commit powerpc-4.7-2 [2] was released yesterday.
->
-> There is a conflict in my local kernel git directory if I use git pull 
-> because I have reverted the commit powerpc-4.7-1. [1]
->
-> The commit powerpc-4.7-2 [2] needs the commit powerpc-4.7-1. [1]
->
-> I created a new local kernel git directory for the RC2 with:
->
-> git clone 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 
-> linux-git-without-powerpc-commits
->
-> After that I reverted the two commits:
->
-> powerpc-4.7-2 [2]:
->
-> git revert 5306d766f15e72bc79c61d88f77e5a6b1fcc0e68 -m 1
->
-> powerpc-4.7-1 [1]:
->
-> git revert c04a5880299eab3da8c10547db96ea9cdffd44a6 -m 1
->
-> Afterwards I successfully tested our latest Nemo patch 4.7-1 [3] with 
-> the following commands:
->
-> cp -R linux-git-without-powerpc-commits linux-4.7
->
-> patch -p0 < nemo_4.7-1.patch
->
-> I tried to solve the boot issue last week. I modified the code a lot 
-> and I replaced some files. Unfortunately without any success. The RC1 
-> without the commit powerpc-4.7-1 [1] boots and works fantastic. I 
-> don't have any ideas anymore. Please help me to solve the boot problems.
->
-> Thanks in advance,
->
-> Christian
->
-> [1] 
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c04a5880299eab3da8c10547db96ea9cdffd44a6
-> [2] 
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=5306d766f15e72bc79c61d88f77e5a6b1fcc0e68
-> [3] http://www.xenosoft.de/nemo_4.7-1.patch
->
-> On 28 May 2016 at 8:51 PM, Darren Stevens wrote:
->> Hello Adrian
->>
->> On 28/05/2016, Adrian Cox wrote:
->>>> From: Christian Zigotzky [mailto:chzigotzky@xenosoft.de]
->>>> Sent: 28 May 2016 07:06
->>>> Adrian, what is the expected WIMG bit mapping for the Nemo board?
->>>>
->>> I'm not able to help much here, I'm afraid. I don't have a Nemo 
->>> board at
->>> the moment, and it's been a few years. From memory all the peripherals
->>> required standard uncached and guarded mappings on Nemo.
->> Before everybody gets too involved, from what I've seen with my tests 
->> today
->> the kernel is crashing long before it gets to the pci-common code.
->>
->> I've attached 2 boot logs, one from a 4.4 kernel I've been working 
->> on, and
->> from a build of the latest git.
->>
->> You can see from this that the 4.7 kernel hangs right after the 
->> booting linux
->> via __start(), whereas in the 4.4 there's about 29 lines of output 
->> before it
->> gets to the Initialised io_base_virt printk in our patch.
->>
->> The last time we had a hang this early in the boot it turned out to be a
->> problem in head_64.S, I think there is something else wrong in the 
->> commit
->> Christian has identified
->>
->> I will see if this is something I can fix, but it may need better low 
->> level
->> knowledge of PPC hardware than I have.
->>
->> Regards
->> Darren
->
-> On 28 May 2016 at 6:53 PM, Adrian Cox wrote:
->>> From: Christian Zigotzky [mailto:chzigotzky@xenosoft.de]
->>> Sent: 28 May 2016 07:06
->>> Adrian, what is the expected WIMG bit mapping for the Nemo board?
->>>
->> I'm not able to help much here, I'm afraid. I don't have a Nemo board 
->> at the moment, and it's been a few years. From memory all the 
->> peripherals required standard uncached and guarded mappings on Nemo.
->>
->> The difficult bit that usually breaks on kernel upgrades is not the 
->> WIMG settings, but the PCI probing routine.  The SB600 doesn't follow 
->> normal PCIe address decoding rules, as in its original use as an AMD 
->> south bridge it was designed to appear as if it were integrated into 
->> the north bridge.
->>
->> -- 
->> Adrian
->>
->
->
->
+- Naveen
