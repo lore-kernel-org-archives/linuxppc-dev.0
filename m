@@ -1,18 +1,23 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rM1rp1LQlzDq8G
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 10:23:05 +1000 (AEST)
-Message-ID: <1464999780.22191.53.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Marwa Hamza <marwahamza63@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 03 Jun 2016 19:23:00 -0500
-In-Reply-To: <CAGF64GXnJ-qPHo6xoueE5hPmuNFDG+n+oNWr-O1J1kaUD0zyDg@mail.gmail.com>
-References: <CAGF64GXnJ-qPHo6xoueE5hPmuNFDG+n+oNWr-O1J1kaUD0zyDg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: running qemu for powerpc (32bits) architecture
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rM2qq0C3wzDq7n
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jun 2016 11:07:18 +1000 (AEST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Khalid Aziz <khalid.aziz@oracle.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v12 08/15] powerpc/PCI: Keep resource idx order with bridge
+ register number
+Date: Fri,  3 Jun 2016 17:06:35 -0700
+Message-Id: <20160604000642.28162-9-yinghai@kernel.org>
+In-Reply-To: <20160604000642.28162-1-yinghai@kernel.org>
+References: <20160604000642.28162-1-yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-05-30 at 10:04 +0100, Marwa Hamza wrote:
-> hello everyone
-> I'm trying to run qemu for powerpc architecture but either
-> 1/ i got a black screen with this sentence " QEMU 2.4.0.1 monitor - type
-> help for more information"
->                        (QEMU)
-> if i run this command ./ppc-softmmu/qemu-system-ppc -M ppce500 -kernel
-> ../linux-4.4.1/arch/powerpc/boot/zImage -initrd powerpc/busybox
-> -1.21.0/rootfs.img.gz -append "root=/dev/ram rdinit=/bin/sh"
+Same as sparc version.
 
-I can't help with the other platforms, but for ppce500, make sure you have
-CONFIG_PPC_QEMU_E500 enabled in the kernel (and that it's an e500 build, of
-course), pass either uImage or vmlinux (not zImage) to -kernel, and specify
-the desired cpu type on the QEMU command line (using -cpu) to match the type
-of kernel you built.  I recommend using e500mc rather than older e500 because
-then you get standard floating point which your RFS may depend on.
+Make resource with consistent sequence
+like other arch or directly from pci_read_bridge_bases(),
+even when non-pref mmio is missing, or out of ordering in firmware reporting.
 
-Also note that this target will have a serial port for output, not a display,
-so configure QEMU appropriately with -serial for how you want to access that.
+Just hold i = 1 for non pref mmio, and i = 2 for pref mmio.
 
-If you need more help (especially with other PPC platforms) I suggest the 
-qemu-ppc@nongnu.org mailing list.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci_of_scan.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
--Scott
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 526ac67..719f225 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -252,7 +252,7 @@ void of_scan_pci_bridge(struct pci_dev *dev)
+ 		bus->resource[i] = res;
+ 		++res;
+ 	}
+-	i = 1;
++	i = 3;
+ 	for (; len >= 32; len -= 32, ranges += 8) {
+ 		flags = pci_parse_of_flags(of_read_number(ranges, 1), 1);
+ 		size = of_read_number(&ranges[6], 2);
+@@ -265,6 +265,12 @@ void of_scan_pci_bridge(struct pci_dev *dev)
+ 				       " for bridge %s\n", node->full_name);
+ 				continue;
+ 			}
++		} else if ((flags & IORESOURCE_PREFETCH) &&
++			   !bus->resource[2]->flags) {
++			res = bus->resource[2];
++		} else if (((flags & (IORESOURCE_MEM | IORESOURCE_PREFETCH)) ==
++			    IORESOURCE_MEM) && !bus->resource[1]->flags) {
++			res = bus->resource[1];
+ 		} else {
+ 			if (i >= PCI_NUM_RESOURCES - PCI_BRIDGE_RESOURCES) {
+ 				printk(KERN_ERR "PCI: too many memory ranges"
+-- 
+2.8.3
