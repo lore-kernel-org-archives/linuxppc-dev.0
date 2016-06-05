@@ -1,22 +1,36 @@
-Return-Path: <marwahamza63@gmail.com>
-Received: from mail-vk0-x232.google.com (mail-vk0-x232.google.com
- [IPv6:2607:f8b0:400c:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::8])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rMwfT4qS0zDq7w
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2016 21:32:17 +1000 (AEST)
-Received: by mail-vk0-x232.google.com with SMTP id e4so31029702vkb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jun 2016 04:32:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rN2pM2ZFtzDq7v
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 02:09:28 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
+ Michael Ellerman <michaele@au1.ibm.com>, Julian Margetson
+ <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>, rtd@a-eon.com,
+ rtd2@xtra.co.nz, pjwall@mac.com, pjwall@me.com, matthew@a-eon.biz,
+ intermediadc@hotmail.com, contact@a-eon.com, info@xenosoft.de
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <fa666396-4b81-f317-18e2-48078233bb57@xenosoft.de>
+ <871t4dui4g.fsf@skywalker.in.ibm.com>
+ <2bf8f412-2631-75b4-70a3-cb5ecee5cf48@xenosoft.de>
+ <2FB13B5B-42F0-4396-AD29-70924D2710CC@xenosoft.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <053dd416-a9ab-5b06-5c3b-1acefb53fd3b@xenosoft.de>
+Date: Sun, 5 Jun 2016 18:09:05 +0200
 MIME-Version: 1.0
-In-Reply-To: <1464999780.22191.53.camel@buserror.net>
-References: <CAGF64GXnJ-qPHo6xoueE5hPmuNFDG+n+oNWr-O1J1kaUD0zyDg@mail.gmail.com>
- <1464999780.22191.53.camel@buserror.net>
-From: Marwa Hamza <marwahamza63@gmail.com>
-Date: Sun, 5 Jun 2016 12:32:14 +0100
-Message-ID: <CAGF64GWve7q2gEhz6nHCoZg2vJf+M2UT-_1HXPhF+ss0V483CQ@mail.gmail.com>
-Subject: Fwd: running qemu for powerpc (32bits) architecture
-To: oss@buserror.net, linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=94eb2c0b7694b8b6120534864edf
+In-Reply-To: <2FB13B5B-42F0-4396-AD29-70924D2710CC@xenosoft.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,117 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---94eb2c0b7694b8b6120534864edf
-Content-Type: text/plain; charset=UTF-8
+All,
 
----------- Forwarded message ----------
-From: Scott Wood <oss@buserror.net>
-Date: 2016-06-04 1:23 GMT+01:00
-Subject: Re: running qemu for powerpc (32bits) architecture
-To: Marwa Hamza <marwahamza63@gmail.com>, linuxppc-dev@lists.ozlabs.org
+I need an answer because I think Darren's guess is correct. It isn't a 
+problem in the pci code. I replaced the file head_64.S that Darren 
+mentioned with the one from the kernel 4.6 and it compiled but 
+unfortunately it doesn't boot. We know "head_64.S" is one file for the 
+early boot phase but I think there are some other files.
 
+I am not a fan of reverting the PowerPC commits but there are some other 
+new things in the new kernel e.g. DRM 2.45.0 which are very interesting 
+for the Nemo board.
 
-On Mon, 2016-05-30 at 10:04 +0100, Marwa Hamza wrote:
-> hello everyone
-> I'm trying to run qemu for powerpc architecture but either
-> 1/ i got a black screen with this sentence " QEMU 2.4.0.1 monitor - type
-> help for more information"
->                        (QEMU)
-> if i run this command ./ppc-softmmu/qemu-system-ppc -M ppce500 -kernel
-> ../linux-4.4.1/arch/powerpc/boot/zImage -initrd powerpc/busybox
-> -1.21.0/rootfs.img.gz -append "root=/dev/ram rdinit=/bin/sh"
+@Julian
 
-I can't help with the other platforms, but for ppce500, make sure you have
-CONFIG_PPC_QEMU_E500 enabled in the kernel (and that it's an e500 build, of
-course), pass either uImage or vmlinux (not zImage) to -kernel, and specify
-the desired cpu type on the QEMU command line (using -cpu) to match the type
-of kernel you built.  I recommend using e500mc rather than older e500
-because
-then you get standard floating point which your RFS may depend on.
+What about the issues with the Sam460ex? Have you solved the problem 
+with the commit powerpc-4.7-1?
 
-Also note that this target will have a serial port for output, not a
-display,
-so configure QEMU appropriately with -serial for how you want to access
-that.
+Cheers,
 
-If you need more help (especially with other PPC platforms) I suggest the
-qemu-ppc@nongnu.org mailing list.
+Christian
 
--Scott
+On 04 June 2016 at 5:25 PM, Christian Zigotzky wrote:
+> Which files are responsible for the early boot phase in the commit powerpc-4.7-1? Perhaps the problem is there.
+>
+> - Christian
+>
+> Sent from my iPhone
+>
 
-
-
-hey
-i tried what you said,
-./ppc-softmmu/qemu-system-ppc -M ppce500 -kernel
-/home/powerpc/linux-4.4.1/vmlinux -initrd
-/home/busybox-1.21.0/rootfs.img.gz -append "root=/dev/ram console=ttyAMA0
-rdinit=/sbin/init" -serial stdio -cpu e500mc
-an error displayed Qemu can't load kernel vmlinux
-other thing i didn't understand how i made sure that CONFIG_PPC_QEMU_E500
-enabled in the kernel, what is the default configuration should i use?
-what's the e500 build ?
-regards
-marwa
-
---94eb2c0b7694b8b6120534864edf
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_quote">---------- Forwarded messag=
-e ----------<br>From: <b class=3D"gmail_sendername">Scott Wood</b> <span di=
-r=3D"ltr">&lt;<a href=3D"mailto:oss@buserror.net">oss@buserror.net</a>&gt;<=
-/span><br>Date: 2016-06-04 1:23 GMT+01:00<br>Subject: Re: running qemu for =
-powerpc (32bits) architecture<br>To: Marwa Hamza &lt;<a href=3D"mailto:marw=
-ahamza63@gmail.com">marwahamza63@gmail.com</a>&gt;, <a href=3D"mailto:linux=
-ppc-dev@lists.ozlabs.org">linuxppc-dev@lists.ozlabs.org</a><br><br><br><spa=
-n class=3D"">On Mon, 2016-05-30 at 10:04 +0100, Marwa Hamza wrote:<br>
-&gt; hello everyone<br>
-&gt; I&#39;m trying to run qemu for powerpc architecture but either<br>
-&gt; 1/ i got a black screen with this sentence &quot; QEMU 2.4.0.1 monitor=
- - type<br>
-&gt; help for more information&quot;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 (QEMU)<br>
-&gt; if i run this command ./ppc-softmmu/qemu-system-ppc -M ppce500 -kernel=
-<br>
-&gt; ../linux-4.4.1/arch/powerpc/boot/zImage -initrd powerpc/busybox<br>
-&gt; -1.21.0/rootfs.img.gz -append &quot;root=3D/dev/ram rdinit=3D/bin/sh&q=
-uot;<br>
-<br>
-</span>I can&#39;t help with the other platforms, but for ppce500, make sur=
-e you have<br>
-CONFIG_PPC_QEMU_E500 enabled in the kernel (and that it&#39;s an e500 build=
-, of<br>
-course), pass either uImage or vmlinux (not zImage) to -kernel, and specify=
-<br>
-the desired cpu type on the QEMU command line (using -cpu) to match the typ=
-e<br>
-of kernel you built.=C2=A0 I recommend using e500mc rather than older e500 =
-because<br>
-then you get standard floating point which your RFS may depend on.<br>
-<br>
-Also note that this target will have a serial port for output, not a displa=
-y,<br>
-so configure QEMU appropriately with -serial for how you want to access tha=
-t.<br>
-<br>
-If you need more help (especially with other PPC platforms) I suggest the<b=
-r>
-<a href=3D"mailto:qemu-ppc@nongnu.org">qemu-ppc@nongnu.org</a> mailing list=
-.<br>
-<span class=3D""><font color=3D"#888888"><br>
--Scott<br>
-<br>
-<br>
-</font></span></div><br><div><div><div><div><div>hey<br></div>i tried what =
-you said, <br>./ppc-softmmu/qemu-system-ppc
- -M ppce500 -kernel /home/powerpc/linux-4.4.1/vmlinux -initrd=20
-/home/busybox-1.21.0/rootfs.img.gz -append &quot;root=3D/dev/ram=20
-console=3DttyAMA0 rdinit=3D/sbin/init&quot; -serial stdio -cpu e500mc<br></=
-div>an error displayed Qemu can&#39;t load kernel vmlinux <br></div>other
- thing i didn&#39;t understand how i made sure that CONFIG_PPC_QEMU_E500=20
-enabled in the kernel, what is the default configuration should i use?=20
-what&#39;s the e500 build ? <br></div>regards<br></div>marwa</div>
-
---94eb2c0b7694b8b6120534864edf--
+On 28 May 2016 at 8:51 PM, Darren Stevens wrote:
+> Hello Adrian
+>
+> On 28/05/2016, Adrian Cox wrote:
+>>> From: Christian Zigotzky [mailto:chzigotzky@xenosoft.de]
+>>> Sent: 28 May 2016 07:06
+>>> Adrian, what is the expected WIMG bit mapping for the Nemo board?
+>>>
+>> I'm not able to help much here, I'm afraid. I don't have a Nemo board at
+>> the moment, and it's been a few years. From memory all the peripherals
+>> required standard uncached and guarded mappings on Nemo.
+> Before everybody gets too involved, from what I've seen with my tests today
+> the kernel is crashing long before it gets to the pci-common code.
+>
+> I've attached 2 boot logs, one from a 4.4 kernel I've been working on, and
+> from a build of the latest git.
+>
+> You can see from this that the 4.7 kernel hangs right after the booting linux
+> via __start(), whereas in the 4.4 there's about 29 lines of output before it
+> gets to the Initialised io_base_virt printk in our patch.
+>
+> The last time we had a hang this early in the boot it turned out to be a
+> problem in head_64.S, I think there is something else wrong in the commit
+> Christian has identified
+>
+> I will see if this is something I can fix, but it may need better low level
+> knowledge of PPC hardware than I have.
+>
+> Regards
+> Darren
