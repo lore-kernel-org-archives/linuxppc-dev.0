@@ -1,23 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNGSK0KDGzDqFF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 10:54:41 +1000 (AEST)
-Message-ID: <1465174480.12265.2.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNGX73XGMzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 10:57:59 +1000 (AEST)
+Message-ID: <1465174679.12265.4.camel@ellerman.id.au>
 Subject: Re: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Christian Zigotzky
- <chzigotzky@xenosoft.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,  linuxppc-dev@lists.ozlabs.org,
+To: Christian Zigotzky <chzigotzky@xenosoft.de>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
  darren@stevens-zone.net, Michael Ellerman <michaele@au1.ibm.com>, Julian
  Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
- "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat
- Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,  "contact@a-eon.com"
- <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>, luigi burdo
- <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
-Date: Mon, 06 Jun 2016 10:54:40 +1000
-In-Reply-To: <871t4dui4g.fsf@skywalker.in.ibm.com>
+ rtd@a-eon.com, rtd2@xtra.co.nz,  pjwall@mac.com, pjwall@me.com,
+ matthew@a-eon.biz, intermediadc@hotmail.com,  contact@a-eon.com,
+ info@xenosoft.de
+Date: Mon, 06 Jun 2016 10:57:59 +1000
+In-Reply-To: <053dd416-a9ab-5b06-5c3b-1acefb53fd3b@xenosoft.de>
 References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
  <1463990507.3078.16.camel@kernel.crashing.org>
  <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
@@ -28,6 +27,9 @@ References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
  <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
  <fa666396-4b81-f317-18e2-48078233bb57@xenosoft.de>
  <871t4dui4g.fsf@skywalker.in.ibm.com>
+ <2bf8f412-2631-75b4-70a3-cb5ecee5cf48@xenosoft.de>
+ <2FB13B5B-42F0-4396-AD29-70924D2710CC@xenosoft.de>
+ <053dd416-a9ab-5b06-5c3b-1acefb53fd3b@xenosoft.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,49 +41,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2016-06-04 at 20:16 +0530, Aneesh Kumar K.V wrote:
-> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
-> 
-> > Hi All,
-> > 
-> > I compiled the latest git version of kernel 4.7 with all PowerPC 
-> > commits. Maybe the latest commit powerpc-4.7-2 solved the boot issues. 
-> > Our latest Nemo patch 4.7-1 works without any problems with the latest 
-> > git version.
-> 
-> 
-> instead of using powerpc-4.7-2 can you use the upstream SHA1 commit id
-> ?. I am not sure how to map 4.7-2 to a kernel version.
+On Sun, 2016-06-05 at 18:09 +0200, Christian Zigotzky wrote:
 
-That's my tag:
-
-  https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/tag/?h=powerpc-4.7-2
-
-> > I got the following error message:
-> > 
-> > arch/powerpc/kernel/pci-common.c: In function 
-> > ‘pci_process_bridge_OF_ranges’:
-> > arch/powerpc/kernel/pci-common.c:732:59: error: ‘_PAGE_GUARDED’ 
-> > undeclared (first use in this function)
-> >                                  range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
-> >                                                             ^
-> > arch/powerpc/kernel/pci-common.c:732:59: note: each undeclared 
-> > identifier is reported only once for each function it appears in
-> > make[1]: *** [arch/powerpc/kernel/pci-common.o] Error 1
-> > make: *** [arch/powerpc/kernel] Error 2
+> All,
 > 
-> Which kernel is that ? For upstream I have at that line
-> 
->  729                         hose->pci_io_size = range.pci_addr + range.size;
->  730                         hose->io_base_phys = range.cpu_addr - range.pci_addr;
->  731 
->  732                         /* Build resource */
->  733                         res = &hose->io_resource;
->  734                         range.cpu_addr = range.pci_addr;
->  735                         break;
->  736                 case IORESOURCE_MEM:
+> I need an answer because I think Darren's guess is correct. It isn't a 
+> problem in the pci code. I replaced the file head_64.S that Darren 
+> mentioned with the one from the kernel 4.6 and it compiled but 
+> unfortunately it doesn't boot. We know "head_64.S" is one file for the 
+> early boot phase but I think there are some other files.
 
-Christian is running an out-of-tree patch for the nemo board. He did post it to
-the list at some point.
+There's lots of files used in the early boot, you can't revert individual files
+and expect it to work.
+
+> On 28 May 2016 at 8:51 PM, Darren Stevens wrote:
+> > You can see from this that the 4.7 kernel hangs right after the booting linux
+> > via __start(), whereas in the 4.4 there's about 29 lines of output before it
+> > gets to the Initialised io_base_virt printk in our patch.
+
+If the last thing you see is "booting linux via __start()" that means the kernel
+crashed early, before it could detect and initialise the console.
+
+Do you have a serial or other console in that machine at a known location? If so
+you can hard-code the kernel to use that console, which means you can get
+messages earlier in boot. See udbg_early_init() for starters.
 
 cheers
