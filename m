@@ -1,20 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
+ [209.85.218.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNZdc43JGzDqBP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 23:03:48 +1000 (AEST)
-Message-Id: <fa7c4346e0f30a32520241be3e80ce7442b6be8e.1464390096.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1464390094.git.christophe.leroy@c-s.fr>
-References: <cover.1464390094.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 7/7] crypto: talitos - templates for AEAD using
- HMAC_SNOOP_NO_AFEU
-To: Kim Phillips <kim.phillips@arm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
-Date: Mon,  6 Jun 2016 13:20:46 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNbbh4WPCzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 23:47:12 +1000 (AEST)
+Received: by mail-oi0-f67.google.com with SMTP id r4so5451017oib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jun 2016 06:47:12 -0700 (PDT)
+Date: Mon, 6 Jun 2016 08:47:08 -0500
+From: Rob Herring <robh@kernel.org>
+To: Jia Hongtao <hongtao.jia@nxp.com>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, galak@codeaurora.org,
+ scott.wood@nxp.com, shawnguo@kernel.org, devicetree@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 1/7] dt-bindings: Update QorIQ TMU thermal bindings
+Message-ID: <20160606134708.GA27357@rob-hp-laptop>
+References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,259 +29,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This will allow IPSEC on SEC1
+On Fri, Jun 03, 2016 at 02:57:33PM +0800, Jia Hongtao wrote:
+> For different types of SoC the sensor id and endianness may vary.
+> "#thermal-sensor-cells" is used to provide sensor id information.
+> "little-endian" property is to tell the endianness of TMU.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+> ---
+>  .../devicetree/bindings/thermal/qoriq-thermal.txt     | 19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+> index 66223d5..8eeef80 100644
+> --- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+> @@ -1,22 +1,28 @@
+>  * Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
+>  
+>  Required properties:
+> -- compatible : Must include "fsl,qoriq-tmu". The version of the device is
+> +- compatible: Must include "fsl,qoriq-tmu". The version of the device is
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/crypto/talitos.c | 180 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 180 insertions(+)
+Please split functional changes from formatting changes. This one seems 
+pretty pointless.
 
-diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index dfd3a93..0418a2f 100644
---- a/drivers/crypto/talitos.c
-+++ b/drivers/crypto/talitos.c
-@@ -811,6 +811,11 @@ static void talitos_unregister_rng(struct device *dev)
-  * crypto alg
-  */
- #define TALITOS_CRA_PRIORITY		3000
-+/*
-+ * Defines a priority for doing AEAD with descriptors type
-+ * HMAC_SNOOP_NO_AFEA (HSNA) instead of type IPSEC_ESP
-+ */
-+#define TALITOS_CRA_PRIORITY_AEAD_HSNA	(TALITOS_CRA_PRIORITY - 1)
- #define TALITOS_MAX_KEY_SIZE		96
- #define TALITOS_MAX_IV_LENGTH		16 /* max of AES_BLOCK_SIZE, DES3_EDE_BLOCK_SIZE */
- 
-@@ -2152,6 +2157,27 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_SHA1_HMAC,
- 	},
- 	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(sha1),cbc(aes))",
-+				.cra_driver_name = "authenc-hmac-sha1-"
-+						   "cbc-aes-talitos",
-+				.cra_blocksize = AES_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = AES_BLOCK_SIZE,
-+			.maxauthsize = SHA1_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_AESU |
-+				     DESC_HDR_MODE0_AESU_CBC |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_SHA1_HMAC,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
- 				.cra_name = "authenc(hmac(sha1),"
-@@ -2173,6 +2199,29 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_PAD |
- 		                     DESC_HDR_MODE1_MDEU_SHA1_HMAC,
- 	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(sha1),"
-+					    "cbc(des3_ede))",
-+				.cra_driver_name = "authenc-hmac-sha1-"
-+						   "cbc-3des-talitos",
-+				.cra_blocksize = DES3_EDE_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = DES3_EDE_BLOCK_SIZE,
-+			.maxauthsize = SHA1_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU |
-+				     DESC_HDR_MODE0_DEU_CBC |
-+				     DESC_HDR_MODE0_DEU_3DES |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_SHA1_HMAC,
-+	},
- 	{       .type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
-@@ -2193,6 +2242,27 @@ static struct talitos_alg_template driver_algs[] = {
- 				     DESC_HDR_MODE1_MDEU_PAD |
- 				     DESC_HDR_MODE1_MDEU_SHA224_HMAC,
- 	},
-+	{       .type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(sha224),cbc(aes))",
-+				.cra_driver_name = "authenc-hmac-sha224-"
-+						   "cbc-aes-talitos",
-+				.cra_blocksize = AES_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = AES_BLOCK_SIZE,
-+			.maxauthsize = SHA224_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_AESU |
-+				     DESC_HDR_MODE0_AESU_CBC |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_SHA224_HMAC,
-+	},
- 	{	.type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
-@@ -2216,6 +2286,29 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_SHA224_HMAC,
- 	},
- 	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(sha224),"
-+					    "cbc(des3_ede))",
-+				.cra_driver_name = "authenc-hmac-sha224-"
-+						   "cbc-3des-talitos",
-+				.cra_blocksize = DES3_EDE_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = DES3_EDE_BLOCK_SIZE,
-+			.maxauthsize = SHA224_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU |
-+				     DESC_HDR_MODE0_DEU_CBC |
-+				     DESC_HDR_MODE0_DEU_3DES |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_SHA224_HMAC,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
- 				.cra_name = "authenc(hmac(sha256),cbc(aes))",
-@@ -2236,6 +2329,27 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_SHA256_HMAC,
- 	},
- 	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(sha256),cbc(aes))",
-+				.cra_driver_name = "authenc-hmac-sha256-"
-+						   "cbc-aes-talitos",
-+				.cra_blocksize = AES_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = AES_BLOCK_SIZE,
-+			.maxauthsize = SHA256_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_AESU |
-+				     DESC_HDR_MODE0_AESU_CBC |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_SHA256_HMAC,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
- 				.cra_name = "authenc(hmac(sha256),"
-@@ -2258,6 +2372,29 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_SHA256_HMAC,
- 	},
- 	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(sha256),"
-+					    "cbc(des3_ede))",
-+				.cra_driver_name = "authenc-hmac-sha256-"
-+						   "cbc-3des-talitos",
-+				.cra_blocksize = DES3_EDE_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = DES3_EDE_BLOCK_SIZE,
-+			.maxauthsize = SHA256_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU |
-+				     DESC_HDR_MODE0_DEU_CBC |
-+				     DESC_HDR_MODE0_DEU_3DES |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_SHA256_HMAC,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
- 				.cra_name = "authenc(hmac(sha384),cbc(aes))",
-@@ -2362,6 +2499,27 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_MD5_HMAC,
- 	},
- 	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(md5),cbc(aes))",
-+				.cra_driver_name = "authenc-hmac-md5-"
-+						   "cbc-aes-talitos",
-+				.cra_blocksize = AES_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = AES_BLOCK_SIZE,
-+			.maxauthsize = MD5_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_AESU |
-+				     DESC_HDR_MODE0_AESU_CBC |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_MD5_HMAC,
-+	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
- 		.alg.aead = {
- 			.base = {
- 				.cra_name = "authenc(hmac(md5),cbc(des3_ede))",
-@@ -2382,6 +2540,28 @@ static struct talitos_alg_template driver_algs[] = {
- 		                     DESC_HDR_MODE1_MDEU_PAD |
- 		                     DESC_HDR_MODE1_MDEU_MD5_HMAC,
- 	},
-+	{	.type = CRYPTO_ALG_TYPE_AEAD,
-+		.priority = TALITOS_CRA_PRIORITY_AEAD_HSNA,
-+		.alg.aead = {
-+			.base = {
-+				.cra_name = "authenc(hmac(md5),cbc(des3_ede))",
-+				.cra_driver_name = "authenc-hmac-md5-"
-+						   "cbc-3des-talitos",
-+				.cra_blocksize = DES3_EDE_BLOCK_SIZE,
-+				.cra_flags = CRYPTO_ALG_ASYNC,
-+			},
-+			.ivsize = DES3_EDE_BLOCK_SIZE,
-+			.maxauthsize = MD5_DIGEST_SIZE,
-+		},
-+		.desc_hdr_template = DESC_HDR_TYPE_HMAC_SNOOP_NO_AFEU |
-+				     DESC_HDR_SEL0_DEU |
-+				     DESC_HDR_MODE0_DEU_CBC |
-+				     DESC_HDR_MODE0_DEU_3DES |
-+				     DESC_HDR_SEL1_MDEUA |
-+				     DESC_HDR_MODE1_MDEU_INIT |
-+				     DESC_HDR_MODE1_MDEU_PAD |
-+				     DESC_HDR_MODE1_MDEU_MD5_HMAC,
-+	},
- 	/* ABLKCIPHER algorithms. */
- 	{	.type = CRYPTO_ALG_TYPE_ABLKCIPHER,
- 		.alg.crypto = {
--- 
-2.1.0
+>  	determined by the TMU IP Block Revision Register (IPBRR0) at
+>  	offset 0x0BF8.
+> -	Table of correspondences between IPBRR0 values and example  chips:
+> +	Table of correspondences between IPBRR0 values and example chips:
+>  		Value           Device
+>  		----------      -----
+>  		0x01900102      T1040
+> -- reg : Address range of TMU registers.
+> -- interrupts : Contains the interrupt for TMU.
+> -- fsl,tmu-range : The values to be programmed into TTRnCR, as specified by
+> +- reg: Address range of TMU registers.
+> +- interrupts: Contains the interrupt for TMU.
+> +- fsl,tmu-range: The values to be programmed into TTRnCR, as specified by
+>  	the SoC reference manual. The first cell is TTR0CR, the second is
+>  	TTR1CR, etc.
+> -- fsl,tmu-calibration : A list of cell pairs containing temperature
+> +- fsl,tmu-calibration: A list of cell pairs containing temperature
+>  	calibration data, as specified by the SoC reference manual.
+>  	The first cell of each pair is the value to be written to TTCFGR,
+>  	and the second is the value to be written to TSCFGR.
+> +- #thermal-sensor-cells: Must be 1. The sensor specifier is the monitoring
+> +	site ID, and represents the "n" in TRITSRn and TRATSRn.
+> +
+> +Optional property:
+> +- little-endian: If present, the TMU registers are little endian.  If absent,
+> +	the default is big endian.
+>  
+>  Example:
+>  
+> @@ -60,4 +66,5 @@ tmu@f0000 {
+>  
+>  			       0x00030000 0x00000012
+>  			       0x00030001 0x0000001d>;
+> +	#thermal-sensor-cells = <1>;
+>  };
+> -- 
+> 2.1.0.27.g96db324
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
