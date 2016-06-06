@@ -1,16 +1,39 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNHm06QZ9zDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 11:53:20 +1000 (AEST)
-In-Reply-To: <201605252359.u4PNx2IH015480@mx0a-001b2d01.pphosted.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNHvp6VCgzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 12:00:06 +1000 (AEST)
+Message-ID: <1465178406.12265.6.camel@ellerman.id.au>
+Subject: Re: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, gpiccoli@linux.vnet.ibm.com
-Subject: Re: powerpc/pseries: Fix PCI config address for DDW
-Message-Id: <3rNHm03Vg2z9t5P@ozlabs.org>
-Date: Mon,  6 Jun 2016 11:53:20 +1000 (AEST)
+To: Julian Margetson <runaway@candw.ms>, Christian Zigotzky
+ <chzigotzky@xenosoft.de>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>,  Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ darren@stevens-zone.net, Michael Ellerman <michaele@au1.ibm.com>, Adrian
+ Cox <adrian@humboldt.co.uk>, rtd@a-eon.com,  rtd2@xtra.co.nz,
+ pjwall@mac.com, pjwall@me.com, matthew@a-eon.biz,
+ intermediadc@hotmail.com, contact@a-eon.com, info@xenosoft.de
+Date: Mon, 06 Jun 2016 12:00:06 +1000
+In-Reply-To: <5fb9d8e9-d456-0537-ef77-82658e4538cd@candw.ms>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <fa666396-4b81-f317-18e2-48078233bb57@xenosoft.de>
+ <871t4dui4g.fsf@skywalker.in.ibm.com>
+ <2bf8f412-2631-75b4-70a3-cb5ecee5cf48@xenosoft.de>
+ <2FB13B5B-42F0-4396-AD29-70924D2710CC@xenosoft.de>
+ <053dd416-a9ab-5b06-5c3b-1acefb53fd3b@xenosoft.de>
+ <1465174679.12265.4.camel@ellerman.id.au>
+ <5fb9d8e9-d456-0537-ef77-82658e4538cd@candw.ms>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +43,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-25-05 at 23:56:07 UTC, Gavin Shan wrote:
-> In commit <8445a87f7092> ("powerpc/iommu: Remove the dependency
-> on EEH struct in DDW mechanism"), the PE address was replaced
-> with the PCI config address in order to remove dependency on EEH.
-> According to PAPR spec, firmware (pHyp or QEMU) should accept
-> "xxBBSSxx" format PCI config address, not "xxxxBBSS" provided
-> by the patch. Note that "BB" is PCI bus number and "SS" is the
-> combination of slot and function number.
+On Sun, 2016-06-05 at 21:23 -0400, Julian Margetson wrote:
+> > > 
+> > > ï»¿drivers/gpu/drm/drm_vm.c: In function â€˜drm_dma_protâ€™:
+> > > drivers/gpu/drm/drm_vm.c:83:6: error: invalid operands to binary | 
+> > > (have â€˜pgprot_t {aka struct <anonymous>}â€™ and â€˜intâ€™)
+> > >     tmp |= _PAGE_NO_CACHE;
+> > >         ^
+> > > 
+> > That is because that usage is wrong based on type. _PAGE_NO_CACHE is not
+> > of type pgprot_t. What you really need there is
+> > 
+> > tmp = __pgprot(pgprot_val(tmp) | _PAGE_NO_CACHE);
+> > 
+> > or a better option would be
+> > 
+> > tmp = pgprot_noncached_wc(tmp);
+> > 
+> > -aneesh
 > 
-> This fixes the PCI address passed to DDW RTAS calls.
+> tmp = pgprot_noncached_wc(tmp);
 > 
-> Fixes: 8445a87f7092 ("powerpc/iommu: Remove the dependency on EEH struct in DDW mechanism")
+> compiles but  I then run in to the following
+> 
+>   CC      drivers/gpu/drm/drm_scatter.o
+> drivers/gpu/drm/drm_scatter.c: In function â€˜drm_vmalloc_dmaâ€™:
+> drivers/gpu/drm/drm_scatter.c:44:49: error: invalid operands to binary | 
+> (have â€˜pgprot_t {aka struct <anonymous>}â€™ and â€˜intâ€™)
+>    return __vmalloc(size, GFP_KERNEL, PAGE_KERNEL | _PAGE_NO_CACHE);
+>                                                   ^
+> drivers/gpu/drm/drm_scatter.c:48:1: warning: control reaches end of 
+> non-void function [-Wreturn-type]
+>   }
+>   ^
 
-That commit was Cc'ed to stable, so this needs to be also.
+Aneesh showed you how to fix that in his reply above.
 
-I've added it here.
+    return __vmalloc(size, GFP_KERNEL, pgprot_noncached_wc(PAGE_KERNEL));
 
 cheers
