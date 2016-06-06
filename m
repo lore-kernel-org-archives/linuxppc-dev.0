@@ -1,53 +1,65 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNTB53hdQzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 18:58:05 +1000 (AEST)
+Received: from mx0b-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNSSP6sbczDqFh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 18:25:25 +1000 (AEST)
-Received: from pps.filterd (m0075420.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3rNTB50kB5z9sdm
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Jun 2016 18:58:02 +1000 (AEST)
+Received: from pps.filterd (m0082756.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u568OZB8036751
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 04:25:23 -0400
-Message-Id: <201606060825.u568OZB8036751@mx0a-001b2d01.pphosted.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23d39hqed4-1
+ u568nZvn009460
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Jun 2016 04:58:00 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23bt1pwdch-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jun 2016 04:25:23 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 06 Jun 2016 04:57:59 -0400
 Received: from localhost
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Mon, 6 Jun 2016 13:55:19 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 172913940067
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 13:55:16 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u568PAJW20775098
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 13:55:10 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u568PAsp018438
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 13:55:14 +0530
-Subject: Re: [RESEND PATCH v2 2/6] PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI
- controller enables IRQ remapping
-To: kbuild test robot <lkp@intel.com>
-References: <201606060500.cgRhY40o%fengguang.wu@intel.com>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
- will.deacon@arm.com, paulus@samba.org, eric.auger@linaro.org,
- joro@8bytes.org, kevin.tian@intel.com, nikunj@linux.vnet.ibm.com,
- alistair@popple.id.au, gwshan@linux.vnet.ibm.com,
- alex.williamson@redhat.com, bhelgaas@google.com,
- zhong@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, David.Laight@ACULAB.COM,
- kbuild-all@01.org, warrier@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Date: Mon, 6 Jun 2016 16:25:18 +0800
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 6 Jun 2016 18:57:52 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C0B683578052
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Jun 2016 18:57:49 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u568viwC13304158
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Jun 2016 18:57:44 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u568vL6F026486
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Jun 2016 18:57:23 +1000
+Date: Mon, 06 Jun 2016 14:27:11 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <201606060500.cgRhY40o%fengguang.wu@intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: Cyril Bur <cyrilbur@gmail.com>
+CC: Paul.Clothier@imgtec.com, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, dhowells@redhat.com,
+ linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ shuahkh@osg.samsung.com, kirjanov@gmail.com,
+ sukadev@linux.vnet.ibm.com, james.hogan@imgtec.com,
+ Ulrich.Weigand@de.ibm.com, davej@redhat.com, tglx@linutronix.de,
+ avagin@openvz.org, palves@redhat.com, oleg@redhat.com,
+ davem@davemloft.net, Andrew Morton <akpm@linux-foundation.org>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ emachado@linux.vnet.ibm.com, sam.bobroff@au1.ibm.com
+Subject: Re: [PATCH V10 00/28] Add new powerpc specific ELF core notes
+References: <1455613198-5113-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <57062722.5090706@linux.vnet.ibm.com>
+ <5EA48413-85A1-4CB7-8843-CE22B2BB1F08@ellerman.id.au>
+ <570B54EB.90507@linux.vnet.ibm.com> <1460524468.30704.5.camel@ellerman.id.au>
+ <5718F901.6010104@linux.vnet.ibm.com> <5748004F.7040408@linux.vnet.ibm.com>
+ <1464649951.16938.5.camel@ellerman.id.au>
+ <201606010827.u518O0bl023243@mx0a-001b2d01.pphosted.com>
+ <CAN-ccASsMPA2=rXnCQaDnnzYAFqkMACVyrM-Oz=OH76-SbogCw@mail.gmail.com>
+In-Reply-To: <CAN-ccASsMPA2=rXnCQaDnnzYAFqkMACVyrM-Oz=OH76-SbogCw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <57553AE7.3060704@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,51 +69,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/6/6 5:11, kbuild test robot wrote:
+On 06/03/2016 03:56 AM, Cyril Bur wrote:
+> On 1 June 2016 at 18:26, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> wrote:
+> 
+>> On 05/31/2016 04:42 AM, Michael Ellerman wrote:
+>>> Hi Laurent,
+>>>
+>>> Sorry no. My next branch closed for 4.7 about 3 weeks ago.
+>>>
+>>> This series has been blocked for a long time on the gdb support, but
+>> that is
+>>> now working. However it still doesn't pass its own selftests, and I had
+>> some
+>>
+>> This series was clearing all of the selftests at the time it was posted.
+>> But yes, it has some assumptions from timing and sync perspective which
+>> gets broken some times as the kernel changes. Its been bit difficult to
+>> perfect the sync requirements as we can do only some much inside the
+>> transaction once it gets started. There are scopes here to improve these
+>> selftests but not clearing them today does not really mean the patches are
+>> now functionally broken.
+>>
+>>> disagreements with the implementation - it duplicates a lot of code
+>> rather
+>>> than refactoring things.
+>>
+>> hmm, sorry, I dont remember the context here. Can you please point to the
+>> discussion in this regard ?
+>>
+>>>
+>>> I'm waiting on a patch from Cyril which will rework how the TM FP state
+>> is
+>>> handled, and that should make this series easier to implement.
+>>
+>> Can you please elaborate on this ? Has this patch been posted in the
+>> mailing
+>> list ? How does this make it easier for us to implement these ELF notes ?
+> 
+> 
+> Hi Anshuman,
+> 
+> I'm doing a bit of a rewrite of the TM handling of the FP/VMX/VSX state.
+> 
+> At the moment is is rather confusing since pt_regs is the always the 'live'
+> state
+> and theres a ckpt_regs that is the pt_regs for the checkpointed state.
+> FPU/VMX/VSX
+> is done differently which is really only creating confusion so I'm changing
+> it to do the
+> same at for pt_regs/ckpt_regs. Ultimately this is part of more work from me
 
-> Hi,
->
-> [auto build test ERROR on vfio/next]
-> [also build test ERROR on v4.7-rc1 next-20160603]
-> [cannot apply to pci/next]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Yongji-Xie/PCI-Add-a-new-PCI_BUS_FLAGS_MSI_REMAP-flag/20160530-215348
-> base:   https://github.com/awilliam/linux-vfio.git next
-> config: arm-allmodconfig (attached as .config)
-> compiler: arm-linux-gnueabi-gcc (Debian 5.3.1-8) 5.3.1 20160205
-> reproduce:
->          wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          # save the attached .config to linux build tree
->          make.cross ARCH=arm
->
-> All errors (new ones prefixed by >>):
->
->     drivers/pci/msi.c: In function 'pci_bus_msi_isolated':
->>> drivers/pci/msi.c:1146:20: error: 'MSI_FLAG_IRQ_REMAPPING' undeclared (first use in this function)
->       if (info->flags & MSI_FLAG_IRQ_REMAPPING)
->                         ^
->     drivers/pci/msi.c:1146:20: note: each undeclared identifier is reported only once for each function it appears in
->
-> vim +/MSI_FLAG_IRQ_REMAPPING +1146 drivers/pci/msi.c
->
->    1140		struct msi_domain_info *info;
->    1141	
->    1142		if (!domain)
->    1143			return 0;
->    1144	
->    1145		info = msi_get_domain_info(domain);
->> 1146		if (info->flags & MSI_FLAG_IRQ_REMAPPING)
->    1147			return 1;
->    1148	#endif
->    1149		return 0;
+But that changes the basic semantics on which this ptrace series is written.
+With this change, a significant part of the ptrace series has to be changed.
+Its just an improvement on how we store running and check pointed values for
+FP/VSX/VMX registers inside the kernel. How does it improve ptrace interface
+from the user point of view ? If not, then why this change is necessary for
+the acceptance of this patch series ? This change should be implemented as
+an independent work and then necessary ptrace change can be incorporated
+there after.
 
-This fault is expected because this patch is based on patchset [1] which
-introduce flag MSI_FLAG_IRQ_REMAPPING.
-
-[1] 
-https://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg1138820.html
-
-Thanks,
-Yongji
+> but
+> Michael has told me that at least this bit is useful now so I'm splitting
+> it off from
+> the bigger picture and sending asap. At the very least it will make it
+> easier to know
+> what and where the transactional state it and where the checkpointed state
+> is.
+> 
+> It isn't on the list but I hope I'll get it out today.
