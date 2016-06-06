@@ -1,39 +1,39 @@
 Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0b-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNSNH1htXzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 18:21:51 +1000 (AEST)
-Received: from pps.filterd (m0048827.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNSSP6sbczDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 18:25:25 +1000 (AEST)
+Received: from pps.filterd (m0075420.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u568JFxu010784
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 04:21:49 -0400
-Message-Id: <201606060821.u568JFxu010784@mx0a-001b2d01.pphosted.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23d4rbtv78-1
+ u568OZB8036751
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 04:25:23 -0400
+Message-Id: <201606060825.u568OZB8036751@mx0a-001b2d01.pphosted.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23d39hqed4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jun 2016 04:21:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jun 2016 04:25:23 -0400
 Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Mon, 6 Jun 2016 13:51:43 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E7B79125804F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 13:54:05 +0530 (IST)
+ Mon, 6 Jun 2016 13:55:19 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 172913940067
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 13:55:16 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u568LERL11272632
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 13:51:14 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u568PAJW20775098
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 13:55:10 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u568LUoM008191
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 13:51:39 +0530
+ u568PAsp018438
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 13:55:14 +0530
 Subject: Re: [RESEND PATCH v2 2/6] PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI
  controller enables IRQ remapping
 To: kbuild test robot <lkp@intel.com>
-References: <201606060406.lSpseFnO%fengguang.wu@intel.com>
+References: <201606060500.cgRhY40o%fengguang.wu@intel.com>
 Cc: kvm@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
  will.deacon@arm.com, paulus@samba.org, eric.auger@linaro.org,
  joro@8bytes.org, kevin.tian@intel.com, nikunj@linux.vnet.ibm.com,
@@ -44,9 +44,9 @@ Cc: kvm@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
  kbuild-all@01.org, warrier@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Date: Mon, 6 Jun 2016 16:21:35 +0800
+Date: Mon, 6 Jun 2016 16:25:18 +0800
 MIME-Version: 1.0
-In-Reply-To: <201606060406.lSpseFnO%fengguang.wu@intel.com>
+In-Reply-To: <201606060500.cgRhY40o%fengguang.wu@intel.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -57,7 +57,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016/6/6 4:10, kbuild test robot wrote:
+On 2016/6/6 5:11, kbuild test robot wrote:
 
 > Hi,
 >
@@ -68,7 +68,7 @@ On 2016/6/6 4:10, kbuild test robot wrote:
 >
 > url:    https://github.com/0day-ci/linux/commits/Yongji-Xie/PCI-Add-a-new-PCI_BUS_FLAGS_MSI_REMAP-flag/20160530-215348
 > base:   https://github.com/awilliam/linux-vfio.git next
-> config: arm-sa1100 (attached as .config)
+> config: arm-allmodconfig (attached as .config)
 > compiler: arm-linux-gnueabi-gcc (Debian 5.3.1-8) 5.3.1 20160205
 > reproduce:
 >          wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
@@ -78,14 +78,30 @@ On 2016/6/6 4:10, kbuild test robot wrote:
 >
 > All errors (new ones prefixed by >>):
 >
->     drivers/built-in.o: In function `pci_set_bus_msi_domain':
->>> arm_pmu.c:(.text+0x5c58): undefined reference to `pci_bus_msi_isolated'
+>     drivers/pci/msi.c: In function 'pci_bus_msi_isolated':
+>>> drivers/pci/msi.c:1146:20: error: 'MSI_FLAG_IRQ_REMAPPING' undeclared (first use in this function)
+>       if (info->flags & MSI_FLAG_IRQ_REMAPPING)
+>                         ^
+>     drivers/pci/msi.c:1146:20: note: each undeclared identifier is reported only once for each function it appears in
+>
+> vim +/MSI_FLAG_IRQ_REMAPPING +1146 drivers/pci/msi.c
+>
+>    1140		struct msi_domain_info *info;
+>    1141	
+>    1142		if (!domain)
+>    1143			return 0;
+>    1144	
+>    1145		info = msi_get_domain_info(domain);
+>> 1146		if (info->flags & MSI_FLAG_IRQ_REMAPPING)
+>    1147			return 1;
+>    1148	#endif
+>    1149		return 0;
 
-Sorry for this fault. I will fix it in next version.  The 
-pci_bus_msi_isolated() should not
-depend on CONFIG_PCI_MSI, I would move this function from 
-drivers/pci/msi.c to
-drivers/pci/probe.c.
+This fault is expected because this patch is based on patchset [1] which
+introduce flag MSI_FLAG_IRQ_REMAPPING.
+
+[1] 
+https://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg1138820.html
 
 Thanks,
 Yongji
