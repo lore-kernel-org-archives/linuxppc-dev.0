@@ -1,34 +1,49 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::5])
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from mx0b-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNNX04dgrzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 15:28:16 +1000 (AEST)
-Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
- Michael Ellerman <michaele@au1.ibm.com>, Julian Margetson
- <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>
-References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
- <1463990507.3078.16.camel@kernel.crashing.org>
- <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
- <1464088614.3078.79.camel@kernel.crashing.org>
- <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
- <87d1obqxg9.fsf@skywalker.in.ibm.com>
- <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
- <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
- <874m99uibc.fsf@skywalker.in.ibm.com>
- <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
- <1465174304.12265.0.camel@ellerman.id.au>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <fb6cfe13-8c5d-08c0-e2a6-eb88ba738d87@xenosoft.de>
-Date: Mon, 6 Jun 2016 07:21:48 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNNcf6qQfzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 15:32:18 +1000 (AEST)
+Received: from pps.filterd (m0075771.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u565TNk9048951
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 01:32:17 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23br4sqxer-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jun 2016 01:32:16 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Mon, 6 Jun 2016 15:32:13 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 725202CE8062
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 15:32:01 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u565Vu9E45547670
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 15:31:56 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u565VofN002473
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 15:31:50 +1000
+Date: Mon, 06 Jun 2016 13:31:30 +0800
+From: xinhui <xinhui.pan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1465174304.12265.0.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+CC: Andrzej Hajda <a.hajda@samsung.com>,
+ Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, tglx@linutronix.de,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: powerpc/nvram: Fix an incorrect partition merge
+References: <3rLj4P6Swcz9t6B@ozlabs.org>
+In-Reply-To: <3rLj4P6Swcz9t6B@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-Id: <57550AB2.8090500@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,25 +53,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks. I'll try it.
 
-- Christian
 
-On 06 June 2016 at 02:51 AM, Michael Ellerman wrote:
-> On Sat, 2016-06-04 at 17:07 +0200, Christian Zigotzky wrote:
->
->> Aneesh,
+On 2016年06月03日 19:47, Michael Ellerman wrote:
+> On Thu, 2015-10-12 at 07:30:02 UTC, xinhui wrote:
+>> From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 >>
->> Shall I bisect the kernel from the powerpc git?
-> No just use linus' tree.
->
->> Shall I start with the following commit?
+>> When we merge two contiguous partitions whose signatures are marked
+>> NVRAM_SIG_FREE, We need update prev's length and checksum, then write it
+>> to nvram, not cur's. So lets fix this mistake now.
 >>
->> https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?id=8ffb4103f5e28d7e7890ed4774d8e009f253f56e
-> Yeah that would be a good one to start with.
+>> Also use memset instead of strncpy to set the partition's name. It's
+>> more readable if we want to fill up with duplicate chars .
 >
-> Then mark rc1 as bad and bisect should do the rest.
+> Does this ever happen in practice? ie. should we backport the fix to stable
+> kernels?
 >
+
+I did not see that nvram warning in practice. BUT I suggest to backport it to stable kernel. :)
+
+Let me recall the story. :)
+In past days, I was using pstore to keep some kernel logs. and sometimes I found my own logs and the panic logs did not show.
+pstore use a fixed-address reserved memory In x86 while nvram instead in ppc.
+
+Then I spent some days to review the nvram codes.
+And worked out three patches to fix all issues that I found in nvram. BUT looks like I only sent out two of them. :)
+I lost the third patch maybe...
+
+> Has it always been broken?
+>
+
+no. after nvram partition corruption hit, all nvram partitions will be erased and re-alloc after the second machine reboot.
+I don't know who does it but i guess it is the firmware. :)
+
+thanks
+xinhui
 > cheers
->
 >
