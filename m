@@ -1,44 +1,29 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNpdP4hQtzDqG1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 08:04:25 +1000 (AEST)
-Received: from pps.filterd (m0049461.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u56Lx9H4038692
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 18:04:21 -0400
-Message-Id: <201606062204.u56Lx9H4038692@mx0a-001b2d01.pphosted.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23dcu8j2kc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jun 2016 18:04:21 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Mon, 6 Jun 2016 19:04:19 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 44B1C1DC006F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 18:04:09 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u56M4Gj333947908
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 19:04:16 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u56M4Fgg011742
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jun 2016 19:04:16 -0300
-Subject: Re: [PATCH v2] powerpc: export cpu_to_core_id()
-To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-References: <201606021145.u52Behar021447@mx0a-001b2d01.pphosted.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Mon, 6 Jun 2016 19:04:15 -0300
-MIME-Version: 1.0
-In-Reply-To: <201606021145.u52Behar021447@mx0a-001b2d01.pphosted.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNpvH133nzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 08:16:26 +1000 (AEST)
+Message-ID: <1465249297.4274.72.camel@kernel.crashing.org>
+Subject: Re: [PATCH v5 1/6] qspinlock: powerpc support qspinlock
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux-foundation.org, paulus@samba.org,
+ mpe@ellerman.id.au, mingo@redhat.com, paulmck@linux.vnet.ibm.com,
+ waiman.long@hpe.com
+Date: Tue, 07 Jun 2016 07:41:37 +1000
+In-Reply-To: <20160606155907.GH30909@twins.programming.kicks-ass.net>
+References: <1464859370-5162-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1464859370-5162-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1464917520.26773.11.camel@kernel.crashing.org>
+ <1464917548.26773.12.camel@au1.ibm.com>
+ <57510353.1020209@linux.vnet.ibm.com>
+ <1464928427.26773.26.camel@kernel.crashing.org>
+ <20160606155907.GH30909@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,56 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/2016 08:45 AM, Mauricio Faria de Oliveira wrote:
-> Export cpu_to_core_id().  This will be used by the lpfc driver.
->
-> This enables topology_core_id() from  <linux/topology.h> (defined
-> to cpu_to_core_id() in arch/powerpc/include/asm/topology.h) to be
-> used by (non-builtin) modules.
->
-> That is arch-neutral, already used by eg, drivers/base/topology.c,
-> but it is builtin (obj-y in Makefile) thus didn't need the export.
->
-> Since the module uses topology_core_id() and this is defined to
-> cpu_to_core_id(), it needs the export, otherwise:
->
->      ERROR: "cpu_to_core_id" [drivers/scsi/lpfc/lpfc.ko] undefined!
->      make[1]: *** [__modpost] Error 1
->      make: *** [modules] Error 2
->
-> Tested on next-20160601.
->
-> Changelog:
->   - v2: include details about the need for this patch with regards
->         to the architecture-neutral topology API.
->
-> Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/kernel/smp.c | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 55c924b..67136e7 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -593,6 +593,7 @@ out:
->   	of_node_put(np);
->   	return id;
->   }
-> +EXPORT_SYMBOL_GPL(cpu_to_core_id);
->
->   /* Helper routines for cpu to core mapping */
->   int cpu_core_index_of_thread(int cpu)
->
+On Mon, 2016-06-06 at 17:59 +0200, Peter Zijlstra wrote:
+> On Fri, Jun 03, 2016 at 02:33:47PM +1000, Benjamin Herrenschmidt wrote:
+> > 
+> >  - For the above, can you show (or describe) where the qspinlock
+> >    improves things compared to our current locks.
+> So currently PPC has a fairly straight forward test-and-set spinlock
+> IIRC. You have this because LPAR/virt muck and lock holder preemption
+> issues etc..
+> qspinlock is 1) a fair lock (like ticket locks) and 2) provides
+> out-of-word spinning, reducing cacheline pressure.
 
-Hi Maurício, I'm planning to use this in another driver heheh
-Thanks for exporting the symbol.
+Thanks Peter. I think I understand the theory, but I'd like see it
+translate into real numbers.
 
-I built a kernel with your patch and it's working fine, so you can add:
+> Esp. on multi-socket x86 we saw the out-of-word spinning being a big win
+> over our ticket locks.
+> 
+> And fairness, brought to us by the ticket locks a long time ago,
+> eliminated starvation issues we had, where a spinner local to the holder
+> would 'always' win from a spinner further away. So under heavy enough
+> local contention, the spinners on 'remote' CPUs would 'never' get to own
+> the lock.
 
-"Tested-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>"
+I think our HW has tweaks to avoid that from happening with the simple
+locks in the underlying ll/sc implementation. In any case, what I'm
+asking is actual tests to verify it works as expected for us.
+
+> pv-qspinlock tries to preserve the fairness while allowing limited lock
+> stealing and explicitly managing which vcpus to wake.
+
+Right.
+> > 
+> > 	While there's
+> >    theory and to some extent practice on x86, it would be nice to
+> >    validate the effects on POWER.
+> Right; so that will have to be from benchmarks which I cannot help you
+> with ;-)
+
+Precisely :-) This is what I was asking for ;-)
 
 Cheers,
-
-
-Guilherme
+Ben.
