@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rNCGX6ThFzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 08:31:00 +1000 (AEST)
-Message-ID: <1465165853.4274.22.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: use _raw variant of page table accessors
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 06 Jun 2016 08:30:53 +1000
-In-Reply-To: <7ba4cc59-351c-e990-97b4-c3429a0e7f34@gmail.com>
-References: <1464692382-29698-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <7ba4cc59-351c-e990-97b4-c3429a0e7f34@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rNFdX6KTPzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2016 10:17:36 +1000 (AEST)
+In-Reply-To: <1464675991-13023-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [1/3] powerpc/mm/radix: Update LPCR only if it is powernv
+Message-Id: <3rNFdX5PDzz9t48@ozlabs.org>
+Date: Mon,  6 Jun 2016 10:17:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-06-03 at 15:34 +1000, Balbir Singh wrote:
+On Tue, 2016-31-05 at 06:26:29 UTC, "Aneesh Kumar K.V" wrote:
+> LPCR cannot be updated when running in guest mode.
 > 
-> Can we just save the cpu_to_be64(_PAGE_PTE) as _BE64_PAGE_PTE constant
-> in big-endian (pgtable-be-types.h) and similar for other things. I know its
-> not the best option, but we don't really expect these bits to change often or anymore
-> 
-How does that help ? The compiler solves it at compile time either
-way, I'm not sure adding yet another constant will improve
-readability here.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Cheers,
-Ben.
+Applied to powerpc fixes, thanks.
+
+https://git.kernel.org/powerpc/c/d6c886006c948141f24e84aceb
+
+cheers
