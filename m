@@ -1,31 +1,49 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPFVM5v8XzDqYl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 01:14:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPG1d0S0DzDq64
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 01:38:28 +1000 (AEST)
+Received: from pps.filterd (m0075420.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u57FXtbq028861
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jun 2016 11:38:26 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23duqske8j-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 11:38:26 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 7 Jun 2016 09:14:48 -0600
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <htejun@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] workqueue:Fix affinity of an unbound worker of a node
- with 1 online CPU
-Date: Tue,  7 Jun 2016 20:44:03 +0530
-Message-Id: <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
-In-Reply-To: <cover.1465311052.git.ego@linux.vnet.ibm.com>
-References: <5756BE20.3040208@linux.vnet.ibm.com>
- <cover.1465311052.git.ego@linux.vnet.ibm.com>
-In-Reply-To: <cover.1465311052.git.ego@linux.vnet.ibm.com>
-References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 7 Jun 2016 21:08:22 +0530
+Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1ADE7394005E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 21:08:19 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u57FcIsU15991022
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jun 2016 21:08:18 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u57FakKs009989
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jun 2016 21:08:17 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, mpe@ellerman.id.au
+Cc: Matt Evans <matt@ozlabs.org>, Denis Kirjanov <kda@linux-powerpc.org>,
+ Paul Mackerras <paulus@samba.org>, Alexei Starovoitov <ast@fb.com>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: [PATCH 3/6] ppc: bpf/jit: Introduce rotate immediate instructions
+Date: Tue,  7 Jun 2016 19:02:20 +0530
+In-Reply-To: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <7189f933a997dcb069272880e5529bf87e031323.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,97 +53,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With commit e9d867a67fd03ccc ("sched: Allow per-cpu kernel threads to
-run on online && !active"), __set_cpus_allowed_ptr() expects that only
-strict per-cpu kernel threads can have affinity to an online CPU which
-is not yet active.
+Since we will be using the rotate immediate instructions for extended
+BPF JIT, let's introduce macros for the same. And since the shift
+immediate operations use the rotate immediate instructions, let's redo
+those macros to use the newly introduced instructions.
 
-This assumption is currently broken in the CPU_ONLINE notification
-handler for the workqueues where restore_unbound_workers_cpumask()
-calls set_cpus_allowed_ptr() when the first cpu in the unbound
-worker's pool->attr->cpumask comes online. Since
-set_cpus_allowed_ptr() is called with pool->attr->cpumask in which
-only one CPU is online which is not yet active, we get the following
-WARN_ON during an CPU online operation.
-
-------------[ cut here ]------------
-WARNING: CPU: 40 PID: 248 at kernel/sched/core.c:1166
-__set_cpus_allowed_ptr+0x228/0x2e0
-Modules linked in:
-CPU: 40 PID: 248 Comm: cpuhp/40 Not tainted 4.6.0-autotest+ #4
-<..snip..>
-Call Trace:
-[c000000f273ff920] [c00000000010493c] __set_cpus_allowed_ptr+0x2cc/0x2e0 (unreliable)
-[c000000f273ffac0] [c0000000000ed4b0] workqueue_cpu_up_callback+0x2c0/0x470
-[c000000f273ffb70] [c0000000000f5c58] notifier_call_chain+0x98/0x100
-[c000000f273ffbc0] [c0000000000c5ed0] __cpu_notify+0x70/0xe0
-[c000000f273ffc00] [c0000000000c6028] notify_online+0x38/0x50
-[c000000f273ffc30] [c0000000000c5214] cpuhp_invoke_callback+0x84/0x250
-[c000000f273ffc90] [c0000000000c562c] cpuhp_up_callbacks+0x5c/0x120
-[c000000f273ffce0] [c0000000000c64d4] cpuhp_thread_fun+0x184/0x1c0
-[c000000f273ffd20] [c0000000000fa050] smpboot_thread_fn+0x290/0x2a0
-[c000000f273ffd80] [c0000000000f45b0] kthread+0x110/0x130
-[c000000f273ffe30] [c000000000009570] ret_from_kernel_thread+0x5c/0x6c
----[ end trace 00f1456578b2a3b2 ]---
-
-This patch sets the affinity of the worker to
-a) the only online CPU in the cpumask of the worker pool when it comes
-   online.
-b) the cpumask of the worker pool when the second CPU in the pool's
-   cpumask comes online.
-
-Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tejun Heo <htejun@gmail.com>
+Cc: Matt Evans <matt@ozlabs.org>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Alexei Starovoitov <ast@fb.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- kernel/workqueue.c | 19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |  2 ++
+ arch/powerpc/net/bpf_jit.h            | 20 +++++++++++---------
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index e412794..1199f73 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -4586,7 +4586,7 @@ static void rebind_workers(struct worker_pool *pool)
-  *
-  * An unbound pool may end up with a cpumask which doesn't have any online
-  * CPUs.  When a worker of such pool get scheduled, the scheduler resets
-- * its cpus_allowed.  If @cpu is in @pool's cpumask which didn't have any
-+ * its cpus_allowed.  If @cpu is in @pool's cpumask which had at most one
-  * online CPU before, cpus_allowed of all its workers should be restored.
-  */
- static void restore_unbound_workers_cpumask(struct worker_pool *pool, int cpu)
-@@ -4600,15 +4600,26 @@ static void restore_unbound_workers_cpumask(struct worker_pool *pool, int cpu)
- 	if (!cpumask_test_cpu(cpu, pool->attrs->cpumask))
- 		return;
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 1d035c1..fd8d640 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -272,6 +272,8 @@
+ #define __PPC_SH(s)	__PPC_WS(s)
+ #define __PPC_MB(s)	(((s) & 0x1f) << 6)
+ #define __PPC_ME(s)	(((s) & 0x1f) << 1)
++#define __PPC_MB64(s)	(__PPC_MB(s) | ((s) & 0x20))
++#define __PPC_ME64(s)	__PPC_MB64(s)
+ #define __PPC_BI(s)	(((s) & 0x1f) << 16)
+ #define __PPC_CT(t)	(((t) & 0x0f) << 21)
  
--	/* is @cpu the only online CPU? */
- 	cpumask_and(&cpumask, pool->attrs->cpumask, cpu_online_mask);
--	if (cpumask_weight(&cpumask) != 1)
+diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+index 4c1e055..95d0e38 100644
+--- a/arch/powerpc/net/bpf_jit.h
++++ b/arch/powerpc/net/bpf_jit.h
+@@ -210,18 +210,20 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ 				     ___PPC_RS(a) | ___PPC_RB(s))
+ #define PPC_SRW(d, a, s)	EMIT(PPC_INST_SRW | ___PPC_RA(d) |	      \
+ 				     ___PPC_RS(a) | ___PPC_RB(s))
++#define PPC_RLWINM(d, a, i, mb, me)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) | \
++					___PPC_RS(a) | __PPC_SH(i) |	      \
++					__PPC_MB(mb) | __PPC_ME(me))
++#define PPC_RLDICR(d, a, i, me)		EMIT(PPC_INST_RLDICR | ___PPC_RA(d) | \
++					___PPC_RS(a) | __PPC_SH(i) |	      \
++					__PPC_ME64(me) | (((i) & 0x20) >> 4))
 +
-+	/*
-+	 * The affinity needs to be set
-+	 * a) to @cpu when that is the only online CPU in
-+	 *    pool->attrs->cpumask.
-+	 * b) to pool->attrs->cpumask when exactly two CPUs in
-+	 *    pool->attrs->cpumask are online. This affinity will be
-+	 *    retained when subsequent CPUs come online.
-+	 */
-+	if (cpumask_weight(&cpumask) > 2)
- 		return;
- 
-+	if (cpumask_weight(&cpumask) == 2)
-+		cpumask_copy(&cpumask, pool->attrs->cpumask);
+ /* slwi = rlwinm Rx, Ry, n, 0, 31-n */
+-#define PPC_SLWI(d, a, i)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) |	      \
+-				     ___PPC_RS(a) | __PPC_SH(i) |	      \
+-				     __PPC_MB(0) | __PPC_ME(31-(i)))
++#define PPC_SLWI(d, a, i)	PPC_RLWINM(d, a, i, 0, 31-(i))
+ /* srwi = rlwinm Rx, Ry, 32-n, n, 31 */
+-#define PPC_SRWI(d, a, i)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) |	      \
+-				     ___PPC_RS(a) | __PPC_SH(32-(i)) |	      \
+-				     __PPC_MB(i) | __PPC_ME(31))
++#define PPC_SRWI(d, a, i)	PPC_RLWINM(d, a, 32-(i), i, 31)
+ /* sldi = rldicr Rx, Ry, n, 63-n */
+-#define PPC_SLDI(d, a, i)	EMIT(PPC_INST_RLDICR | ___PPC_RA(d) |	      \
+-				     ___PPC_RS(a) | __PPC_SH(i) |	      \
+-				     __PPC_MB(63-(i)) | (((i) & 0x20) >> 4))
++#define PPC_SLDI(d, a, i)	PPC_RLDICR(d, a, i, 63-(i))
 +
- 	/* as we're called from CPU_ONLINE, the following shouldn't fail */
- 	for_each_pool_worker(worker, pool)
- 		WARN_ON_ONCE(set_cpus_allowed_ptr(worker->task,
--						  pool->attrs->cpumask) < 0);
-+						  &cpumask) < 0);
- }
+ #define PPC_NEG(d, a)		EMIT(PPC_INST_NEG | ___PPC_RT(d) | ___PPC_RA(a))
  
- /*
+ /* Long jump; (unconditional 'branch') */
 -- 
-1.9.3
+2.8.2
