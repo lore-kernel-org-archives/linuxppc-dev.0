@@ -2,20 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rP8jW0h1JzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 21:39:11 +1000 (AEST)
-Message-ID: <1465299544.16285.3.camel@ellerman.id.au>
-Subject: Re: powerpc/nvram: Fix an incorrect partition merge
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rP9L3178czDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 22:07:23 +1000 (AEST)
+Message-ID: <1465301235.16285.4.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm/hash: Fix the reference bit update when
+ handling hash fault
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+To: Hugh Dickins <hughd@google.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
  linuxppc-dev@lists.ozlabs.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Christophe Jaillet
- <christophe.jaillet@wanadoo.fr>, Hari Bathini
- <hbathini@linux.vnet.ibm.com>,  Paul Mackerras <paulus@samba.org>,
- tglx@linutronix.de, Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 07 Jun 2016 21:39:04 +1000
-In-Reply-To: <57550AB2.8090500@linux.vnet.ibm.com>
-References: <3rLj4P6Swcz9t6B@ozlabs.org> <57550AB2.8090500@linux.vnet.ibm.com>
+Date: Tue, 07 Jun 2016 22:07:15 +1000
+In-Reply-To: <alpine.LSU.2.11.1606020807590.9580@eggly.anvils>
+References: <201605270629.u4R6OCLx014831@mx0a-001b2d01.pphosted.com>
+ <alpine.LSU.2.11.1605300903270.1076@eggly.anvils>
+ <1464647262.3078.219.camel@kernel.crashing.org>
+ <alpine.LSU.2.11.1605310902480.7816@eggly.anvils>
+ <alpine.LSU.2.11.1606020807590.9580@eggly.anvils>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,38 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-06-06 at 13:31 +0800, xinhui wrote:
-> On 2016年06月03日 19:47, Michael Ellerman wrote:
-> > On Thu, 2015-10-12 at 07:30:02 UTC, xinhui wrote:
-> > > From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-> > > 
-> > > When we merge two contiguous partitions whose signatures are marked
-> > > NVRAM_SIG_FREE, We need update prev's length and checksum, then write it
-> > > to nvram, not cur's. So lets fix this mistake now.
-> > > 
-> > > Also use memset instead of strncpy to set the partition's name. It's
-> > > more readable if we want to fill up with duplicate chars .
+On Thu, 2016-06-02 at 08:12 -0700, Hugh Dickins wrote:
+> On Tue, 31 May 2016, Hugh Dickins wrote:
 > > 
-> > Does this ever happen in practice? ie. should we backport the fix to stable
-> > kernels?
+> > But all my evidence so far is that it is now right: I'll continue
+> > testing v4.6+fix on a couple of loads until this evening: all is
+> > well so far.  And then switch to testing v4.5+fix on those loads
+> > for another day and a half.
 > 
-> I did not see that nvram warning in practice. BUT I suggest to backport it to stable kernel. :)
-> 
-> Let me recall the story. :)
-> In past days, I was using pstore to keep some kernel logs. and sometimes I found my own logs and the panic logs did not show.
-> pstore use a fixed-address reserved memory In x86 while nvram instead in ppc.
-> 
-> Then I spent some days to review the nvram codes.
-> And worked out three patches to fix all issues that I found in nvram. BUT looks like I only sent out two of them. :)
-> I lost the third patch maybe...
+> I'm glad to confirm: your patch to htab_convert_pte_flags() fixes all
+> the elusive sigsegv issues I was seeing under load on v4.5 and v4.6.
+> Thank you!
 
-OK.
-
-> > Has it always been broken?
-> 
-> no. after nvram partition corruption hit, all nvram partitions will be erased and re-alloc after the second machine reboot.
-> I don't know who does it but i guess it is the firmware. :)
-
-Actually I meant has the code always contained the bug, or was it added recently.
+Thanks for all the testing Hugh, and sorry for the bug.
 
 cheers
