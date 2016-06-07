@@ -1,65 +1,51 @@
-Return-Path: <prvs=95959861b=david.vrabel@citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
- (using TLSv1.2 with cipher RC4-SHA (128/128 bits))
+Return-Path: <anton@au1.ibm.com>
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rP5T24xWTzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 19:13:10 +1000 (AEST)
-Subject: Re: [RFC v3 20/45] xen: dma-mapping: Use unsigned long for dma_attrs
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Richard Henderson
- <rth@twiddle.net>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
- <mattst88@gmail.com>, Vineet Gupta <vgupta@synopsys.com>, Russell King
- <linux@armlinux.org.uk>, Stefano Stabellini <sstabellini@kernel.org>,
- "Catalin Marinas" <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, "Haavard Skinnemoen" <hskinnemoen@gmail.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>, Steven Miao
- <realmz6@gmail.com>, Mark Salter <msalter@redhat.com>, Aurelien Jacquiot
- <a-jacquiot@ti.com>, Mikael Starvik <starvik@axis.com>, Jesper Nilsson
- <jesper.nilsson@axis.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>, Fenghua
- Yu <fenghua.yu@intel.com>, "Konrad Rzeszutek Wilk" <konrad.wilk@oracle.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, James Hogan
- <james.hogan@imgtec.com>, Michal Simek <monstr@monstr.eu>, "Ralf Baechle"
- <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>, "Ley Foon Tan"
- <lftan@altera.com>, Jonas Bonn <jonas@southpole.se>, "James E.J. Bottomley"
- <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, "Benjamin
- Herrenschmidt" <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>, "Olof
- Johansson" <olof@lixom.net>, Geoff Levand <geoff@infradead.org>, "Martin
- Schwidefsky" <schwidefsky@de.ibm.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H.
- Peter Anvin" <hpa@zytor.com>, <x86@kernel.org>, Boris Ostrovsky
- <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, "Muli
- Ben-Yehuda" <muli@il.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>, "David
- Airlie" <airlied@linux.ie>, Joerg Roedel <joro@8bytes.org>, David Woodhouse
- <dwmw2@infradead.org>, Andrew Morton <akpm@linux-foundation.org>,
- <linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-alpha@vger.kernel.org>, <linux-snps-arc@lists.infradead.org>,
- <linux-arm-kernel@lists.infradead.org>, <xen-devel@lists.xenproject.org>,
- <adi-buildroot-devel@lists.sourceforge.net>, <linux-c6x-dev@linux-c6x.org>,
- <linux-cris-kernel@axis.com>, <uclinux-h8-devel@lists.sourceforge.jp>,
- <linux-hexagon@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
- <linux-m68k@lists.linux-m68k.org>, <linux-metag@vger.kernel.org>,
- <linux-mips@linux-mips.org>, <linux-am33-list@redhat.com>,
- <nios2-dev@lists.rocketboards.org>, <linux-parisc@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>,
- <discuss@x86-64.org>, <linux-pci@vger.kernel.org>,
- <linux-xtensa@linux-xtensa.org>, <dri-devel@lists.freedesktop.org>,
- <linux-samsung-soc@vger.kernel.org>, <linux-mediatek@lists.infradead.org>,
- <linux-arm-msm@vger.kernel.org>, <freedreno@lists.freedesktop.org>,
- <nouveau@lists.freedesktop.org>, <linux-rockchip@lists.infradead.org>,
- <linux-rdma@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
- <linux-media@vger.kernel.org>, <linux-omap@vger.kernel.org>,
- <linux-fbdev@vger.kernel.org>
-References: <1464881987-13203-1-git-send-email-k.kozlowski@samsung.com>
- <1464881987-13203-21-git-send-email-k.kozlowski@samsung.com>
-CC: <hch@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-From: David Vrabel <david.vrabel@citrix.com>
-Message-ID: <57568E8B.4000707@citrix.com>
-Date: Tue, 7 Jun 2016 10:06:19 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rP9qT3vT1zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 22:29:24 +1000 (AEST)
+Received: from pps.filterd (m0049461.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u57CTHPg004253
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jun 2016 08:29:21 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23drc3ufv4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 08:29:20 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anton@au1.ibm.com>;
+ Tue, 7 Jun 2016 22:29:09 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 53C402BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2016 22:29:03 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u57CSqkr10748206
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jun 2016 22:28:52 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u57CSlnx031528
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jun 2016 22:28:47 +1000
+Date: Tue, 7 Jun 2016 22:28:42 +1000
+From: Anton Blanchard <anton@au1.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Michael Ellerman
+ <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Michael Neuling
+ <mikey@neuling.org>, David Gibson <david@gibson.dropbear.id.au>,
+ linuxppc-dev@lists.ozlabs.org, qemu-devel@nongnu.org, qemu-ppc@nongnu.org
+Subject: [PATCH 1/2] Add PowerPC AT_HWCAP2 definitions
+In-Reply-To: <20160430104800.0a7c1d11@kryten>
+References: <20160404164457.539a55f0@kryten> <57021123.6050506@ozlabs.ru>
+ <20160404204346.1cf44df8@kryten> <20160404210928.0d9ae644@kryten>
+ <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
+ <20160430104800.0a7c1d11@kryten>
 MIME-Version: 1.0
-In-Reply-To: <1464881987-13203-21-git-send-email-k.kozlowski@samsung.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20160607222842.4a745724@kryten>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -69,10 +55,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/06/16 16:39, Krzysztof Kozlowski wrote:
-> Split out subsystem specific changes for easier reviews. This will be
-> squashed with main commit.
+From: Anton Blanchard <anton@samba.org>
 
-Acked-by: David Vrabel <david.vrabel@citrix.com>
+We need the PPC_FEATURE2_HAS_HTM bit in a subsequent patch, so
+add the PowerPC AT_HWCAP2 definitions.
 
-David
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/include/elf.h b/include/elf.h
+index 28d448b..8533b2a 100644
+--- a/include/elf.h
++++ b/include/elf.h
+@@ -477,6 +477,19 @@ typedef struct {
+ #define PPC_FEATURE_TRUE_LE             0x00000002
+ #define PPC_FEATURE_PPC_LE              0x00000001
+ 
++/* Bits present in AT_HWCAP2 for PowerPC.  */
++
++#define PPC_FEATURE2_ARCH_2_07          0x80000000
++#define PPC_FEATURE2_HAS_HTM            0x40000000
++#define PPC_FEATURE2_HAS_DSCR           0x20000000
++#define PPC_FEATURE2_HAS_EBB            0x10000000
++#define PPC_FEATURE2_HAS_ISEL           0x08000000
++#define PPC_FEATURE2_HAS_TAR            0x04000000
++#define PPC_FEATURE2_HAS_VEC_CRYPTO     0x02000000
++#define PPC_FEATURE2_HTM_NOSC           0x01000000
++#define PPC_FEATURE2_ARCH_3_00          0x00800000
++#define PPC_FEATURE2_HAS_IEEE128        0x00400000
++
+ /* Bits present in AT_HWCAP for Sparc.  */
+ 
+ #define HWCAP_SPARC_FLUSH               0x00000001
