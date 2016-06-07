@@ -1,18 +1,18 @@
 Return-Path: <davem@davemloft.net>
 Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rPRwg5sChzDqXZ
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rPRwg5mrbzDqV3
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 09:04:50 +1000 (AEST)
-Date: Tue, 07 Jun 2016 15:57:00 -0700 (PDT)
-Message-Id: <20160607.155700.714057854670184561.davem@davemloft.net>
+Date: Tue, 07 Jun 2016 15:56:55 -0700 (PDT)
+Message-Id: <20160607.155655.1537089837551478543.davem@davemloft.net>
 To: qiang.zhao@nxp.com
 Cc: oss@buserror.net, Joakim.Tjernlund@infinera.com,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  netdev@vger.kernel.org, xiaobo.xie@nxp.com
-Subject: Re: [Patch v3 4/5] fsl/qe: Add QE TDM lib
+Subject: Re: [Patch v3 3/5] fsl/qe: Make regs resouce_size_t
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1465194602-43209-4-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1465194602-43209-3-git-send-email-qiang.zhao@nxp.com>
 References: <1465194602-43209-1-git-send-email-qiang.zhao@nxp.com>
- <1465194602-43209-4-git-send-email-qiang.zhao@nxp.com>
+ <1465194602-43209-3-git-send-email-qiang.zhao@nxp.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,13 +25,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Zhao Qiang <qiang.zhao@nxp.com>
-Date: Mon, 6 Jun 2016 14:30:01 +0800
+Date: Mon, 6 Jun 2016 14:30:00 +0800
 
-> QE has module to support TDM, some other protocols
-> supported by QE are based on TDM.
-> add a qe-tdm lib, this lib provides functions to the protocols
-> using TDM to configurate QE-TDM.
-> 
 > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 
 Applied.
