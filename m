@@ -1,25 +1,38 @@
-Return-Path: <yinghai@kernel.org>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.161])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPKNQ0LfDzDqd2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 04:09:57 +1000 (AEST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPNLV5MdpzDqG1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 06:23:30 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Khalid Aziz <khalid.aziz@oracle.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
- linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org
-Subject: [PATCH v12.update 01/15] PCI: Let pci_mmap_page_range() take extra
- resource pointer
-Date: Tue,  7 Jun 2016 11:08:46 -0700
-Message-Id: <20160607180847.15205-1-yinghai@kernel.org>
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
+ Michael Ellerman <michaele@au1.ibm.com>, Julian Margetson
+ <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
+ "contact@a-eon.com" <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>,
+ luigi burdo <intermediadc@hotmail.com>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+Date: Tue, 7 Jun 2016 22:17:08 +0200
+MIME-Version: 1.0
+In-Reply-To: <1465174304.12265.0.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,460 +42,346 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This one is preparing patch for next one:
-  PCI: Let pci_mmap_page_range() take resource addr
+Hi Michael,
 
-We need to pass extra resource pointer to avoid searching that again
-for powerpc and microblaze prot set operation.
+On 06 June 2016 at 02:51 AM, Michael Ellerman wrote:
+> On Sat, 2016-06-04 at 17:07 +0200, Christian Zigotzky wrote:
+>
+>> Aneesh,
+>>
+>> Shall I bisect the kernel from the powerpc git?
+> No just use linus' tree.
+>
+>> Shall I start with the following commit?
+>>
+>> https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?id=8ffb4103f5e28d7e7890ed4774d8e009f253f56e
+> Yeah that would be a good one to start with.
+>
+> Then mark rc1 as bad and bisect should do the rest.
+>
+> cheers
+>
+>
+"range.size, pgprot_val(pgprot_noncached(__pgprot(0))));" isn't the 
+problem. :-) It works.
 
-update for fixing bisectibility problem found by build test robot.
+764041e0f43cc7846f6d8eb246d65b53cc06c764 is the first bad commit
+commit 764041e0f43cc7846f6d8eb246d65b53cc06c764
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Fri Apr 29 23:26:09 2016 +1000
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-cris-kernel@axis.com
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-mips@linux-mips.org
-Cc: linux-am33-list@redhat.com
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-xtensa@linux-xtensa.org
----
- arch/arm/include/asm/pci.h              | 2 --
- arch/arm/kernel/bios32.c                | 3 ++-
- arch/cris/arch-v32/drivers/pci/bios.c   | 3 ++-
- arch/cris/include/asm/pci.h             | 3 ---
- arch/ia64/include/asm/pci.h             | 2 --
- arch/ia64/pci/pci.c                     | 3 ++-
- arch/microblaze/include/asm/pci.h       | 3 ---
- arch/microblaze/pci/pci-common.c        | 3 ++-
- arch/mips/include/asm/pci.h             | 3 ---
- arch/mips/pci/pci.c                     | 3 ++-
- arch/mn10300/include/asm/pci.h          | 3 ---
- arch/mn10300/unit-asb2305/pci-asb2305.c | 3 ++-
- arch/parisc/include/asm/pci.h           | 3 ---
- arch/parisc/kernel/pci.c                | 3 ++-
- arch/powerpc/include/asm/pci.h          | 3 ---
- arch/powerpc/kernel/pci-common.c        | 3 ++-
- arch/sh/drivers/pci/pci.c               | 3 ++-
- arch/sh/include/asm/pci.h               | 2 --
- arch/sparc/include/asm/pci_64.h         | 4 ----
- arch/sparc/kernel/pci.c                 | 3 ++-
- arch/unicore32/include/asm/pci.h        | 2 --
- arch/unicore32/kernel/pci.c             | 3 ++-
- arch/x86/include/asm/pci.h              | 4 ----
- arch/x86/pci/i386.c                     | 3 ++-
- arch/xtensa/include/asm/pci.h           | 4 ----
- arch/xtensa/kernel/pci.c                | 3 ++-
- drivers/pci/pci-sysfs.c                 | 2 +-
- drivers/pci/proc.c                      | 2 +-
- include/linux/pci.h                     | 6 ++++++
- 29 files changed, 34 insertions(+), 53 deletions(-)
+     powerpc/mm/radix: Add checks in slice code to catch radix usage
 
-diff --git a/arch/arm/include/asm/pci.h b/arch/arm/include/asm/pci.h
-index 057d381..51118a0 100644
---- a/arch/arm/include/asm/pci.h
-+++ b/arch/arm/include/asm/pci.h
-@@ -29,8 +29,6 @@ static inline int pci_proc_domain(struct pci_bus *bus)
- #define PCI_DMA_BUS_IS_PHYS     (1)
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--                               enum pci_mmap_state mmap_state, int write_combine);
- 
- static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- {
-diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-index 05e61a2..d3245d1 100644
---- a/arch/arm/kernel/bios32.c
-+++ b/arch/arm/kernel/bios32.c
-@@ -602,7 +602,8 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
- 	return pci_enable_resources(dev, mask);
- }
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	if (mmap_state == pci_mmap_io)
-diff --git a/arch/cris/arch-v32/drivers/pci/bios.c b/arch/cris/arch-v32/drivers/pci/bios.c
-index 64a5fb9..082efb9 100644
---- a/arch/cris/arch-v32/drivers/pci/bios.c
-+++ b/arch/cris/arch-v32/drivers/pci/bios.c
-@@ -14,7 +14,8 @@ void pcibios_set_master(struct pci_dev *dev)
- 	pci_write_config_byte(dev, PCI_LATENCY_TIMER, lat);
- }
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
-diff --git a/arch/cris/include/asm/pci.h b/arch/cris/include/asm/pci.h
-index b1b289d..65198cb 100644
---- a/arch/cris/include/asm/pci.h
-+++ b/arch/cris/include/asm/pci.h
-@@ -42,9 +42,6 @@ struct pci_dev;
- #define PCI_DMA_BUS_IS_PHYS	(1)
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--			       enum pci_mmap_state mmap_state, int write_combine);
--
- 
- #endif /* __KERNEL__ */
- 
-diff --git a/arch/ia64/include/asm/pci.h b/arch/ia64/include/asm/pci.h
-index c0835b0..6a2f5d8 100644
---- a/arch/ia64/include/asm/pci.h
-+++ b/arch/ia64/include/asm/pci.h
-@@ -51,8 +51,6 @@ extern unsigned long ia64_max_iommu_merge_mask;
- #define PCI_DMA_BUS_IS_PHYS	(ia64_max_iommu_merge_mask == ~0UL)
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range (struct pci_dev *dev, struct vm_area_struct *vma,
--				enum pci_mmap_state mmap_state, int write_combine);
- #define HAVE_PCI_LEGACY
- extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
- 				      struct vm_area_struct *vma,
-diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
-index 8f6ac2f..1518d66 100644
---- a/arch/ia64/pci/pci.c
-+++ b/arch/ia64/pci/pci.c
-@@ -419,7 +419,8 @@ pcibios_align_resource (void *data, const struct resource *res,
- }
- 
- int
--pci_mmap_page_range (struct pci_dev *dev, struct vm_area_struct *vma,
-+pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+		     struct vm_area_struct *vma,
- 		     enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long size = vma->vm_end - vma->vm_start;
-diff --git a/arch/microblaze/include/asm/pci.h b/arch/microblaze/include/asm/pci.h
-index fc3ecb5..1b93824 100644
---- a/arch/microblaze/include/asm/pci.h
-+++ b/arch/microblaze/include/asm/pci.h
-@@ -46,9 +46,6 @@ extern int pci_domain_nr(struct pci_bus *bus);
- extern int pci_proc_domain(struct pci_bus *bus);
- 
- struct vm_area_struct;
--/* Map a range of PCI memory or I/O space for a device into user space */
--int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
--			enum pci_mmap_state mmap_state, int write_combine);
- 
- /* Tell drivers/pci/proc.c that we have pci_mmap_page_range() */
- #define HAVE_PCI_MMAP	1
-diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
-index 14cba60..fd2b013 100644
---- a/arch/microblaze/pci/pci-common.c
-+++ b/arch/microblaze/pci/pci-common.c
-@@ -304,7 +304,8 @@ pgprot_t pci_phys_mem_access_prot(struct file *file,
-  *
-  * Returns a negative error code on failure, zero on success.
-  */
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	resource_size_t offset =
-diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
-index 86b239d..71d2c3b 100644
---- a/arch/mips/include/asm/pci.h
-+++ b/arch/mips/include/asm/pci.h
-@@ -75,9 +75,6 @@ extern void pcibios_set_master(struct pci_dev *dev);
- 
- #define HAVE_PCI_MMAP
- 
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--	enum pci_mmap_state mmap_state, int write_combine);
--
- #define HAVE_ARCH_PCI_RESOURCE_TO_USER
- 
- static inline void pci_resource_to_user(const struct pci_dev *dev, int bar,
-diff --git a/arch/mips/pci/pci.c b/arch/mips/pci/pci.c
-index f1b11f0..e620333 100644
---- a/arch/mips/pci/pci.c
-+++ b/arch/mips/pci/pci.c
-@@ -319,7 +319,8 @@ void pcibios_fixup_bus(struct pci_bus *bus)
- EXPORT_SYMBOL(PCIBIOS_MIN_IO);
- EXPORT_SYMBOL(PCIBIOS_MIN_MEM);
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
-diff --git a/arch/mn10300/include/asm/pci.h b/arch/mn10300/include/asm/pci.h
-index 51159ff..082b6de 100644
---- a/arch/mn10300/include/asm/pci.h
-+++ b/arch/mn10300/include/asm/pci.h
-@@ -74,9 +74,6 @@ static inline int pci_controller_num(struct pci_dev *dev)
- }
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--			       enum pci_mmap_state mmap_state,
--			       int write_combine);
- 
- #endif /* __KERNEL__ */
- 
-diff --git a/arch/mn10300/unit-asb2305/pci-asb2305.c b/arch/mn10300/unit-asb2305/pci-asb2305.c
-index b7ab837..40efdc6 100644
---- a/arch/mn10300/unit-asb2305/pci-asb2305.c
-+++ b/arch/mn10300/unit-asb2305/pci-asb2305.c
-@@ -211,7 +211,8 @@ void __init pcibios_resource_survey(void)
- 	pcibios_allocate_resources(1);
- }
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
-diff --git a/arch/parisc/include/asm/pci.h b/arch/parisc/include/asm/pci.h
-index defebd9..bb9ea90 100644
---- a/arch/parisc/include/asm/pci.h
-+++ b/arch/parisc/include/asm/pci.h
-@@ -201,7 +201,4 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- 
- #define HAVE_PCI_MMAP
- 
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--	enum pci_mmap_state mmap_state, int write_combine);
--
- #endif /* __ASM_PARISC_PCI_H */
-diff --git a/arch/parisc/kernel/pci.c b/arch/parisc/kernel/pci.c
-index 0903c6a..8d5c34c 100644
---- a/arch/parisc/kernel/pci.c
-+++ b/arch/parisc/kernel/pci.c
-@@ -228,7 +228,8 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- }
- 
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index a6f3ac0..662c1ef 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -77,9 +77,6 @@ extern int pci_domain_nr(struct pci_bus *bus);
- extern int pci_proc_domain(struct pci_bus *bus);
- 
- struct vm_area_struct;
--/* Map a range of PCI memory or I/O space for a device into user space */
--int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
--			enum pci_mmap_state mmap_state, int write_combine);
- 
- /* Tell drivers/pci/proc.c that we have pci_mmap_page_range() */
- #define HAVE_PCI_MMAP	1
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 0f7a60f..1596362 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -445,7 +445,8 @@ pgprot_t pci_phys_mem_access_prot(struct file *file,
-  *
-  * Returns a negative error code on failure, zero on success.
-  */
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	resource_size_t offset =
-diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
-index d5462b7..a1bc7ba 100644
---- a/arch/sh/drivers/pci/pci.c
-+++ b/arch/sh/drivers/pci/pci.c
-@@ -269,7 +269,8 @@ void __init_refok pcibios_report_status(unsigned int status_mask, int warn)
- 	}
- }
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	/*
-diff --git a/arch/sh/include/asm/pci.h b/arch/sh/include/asm/pci.h
-index 644314f..8e0fdb9 100644
---- a/arch/sh/include/asm/pci.h
-+++ b/arch/sh/include/asm/pci.h
-@@ -66,8 +66,6 @@ extern unsigned long PCIBIOS_MIN_IO, PCIBIOS_MIN_MEM;
- struct pci_dev;
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--	enum pci_mmap_state mmap_state, int write_combine);
- extern void pcibios_set_master(struct pci_dev *dev);
- 
- /* Dynamic DMA mapping stuff.
-diff --git a/arch/sparc/include/asm/pci_64.h b/arch/sparc/include/asm/pci_64.h
-index 022d160..f7a93df 100644
---- a/arch/sparc/include/asm/pci_64.h
-+++ b/arch/sparc/include/asm/pci_64.h
-@@ -45,10 +45,6 @@ static inline int pci_proc_domain(struct pci_bus *bus)
- #define HAVE_ARCH_PCI_GET_UNMAPPED_AREA
- #define get_pci_unmapped_area get_fb_unmapped_area
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--			enum pci_mmap_state mmap_state,
--			int write_combine);
--
- static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- {
- 	return PCI_IRQ_NONE;
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index c2b202d..86d7dda 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -862,7 +862,8 @@ static void __pci_mmap_set_pgprot(struct pci_dev *dev, struct vm_area_struct *vm
-  *
-  * Returns a negative error code on failure, zero on success.
-  */
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state,
- 			int write_combine)
- {
-diff --git a/arch/unicore32/include/asm/pci.h b/arch/unicore32/include/asm/pci.h
-index 37e55d0..a5129086 100644
---- a/arch/unicore32/include/asm/pci.h
-+++ b/arch/unicore32/include/asm/pci.h
-@@ -17,8 +17,6 @@
- #include <mach/hardware.h> /* for PCIBIOS_MIN_* */
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--	enum pci_mmap_state mmap_state, int write_combine);
- 
- #endif /* __KERNEL__ */
- #endif
-diff --git a/arch/unicore32/kernel/pci.c b/arch/unicore32/kernel/pci.c
-index d45fa5f..ff1b7ef 100644
---- a/arch/unicore32/kernel/pci.c
-+++ b/arch/unicore32/kernel/pci.c
-@@ -362,7 +362,8 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
- 	return 0;
- }
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long phys;
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index 9ab7507..eb87481 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -88,10 +88,6 @@ int pcibios_set_irq_routing(struct pci_dev *dev, int pin, int irq);
- 
- 
- #define HAVE_PCI_MMAP
--extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--			       enum pci_mmap_state mmap_state,
--			       int write_combine);
--
- 
- #ifdef CONFIG_PCI
- extern void early_quirks(void);
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 0a9f2ca..36463c7 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -411,7 +411,8 @@ static const struct vm_operations_struct pci_mmap_ops = {
- 	.access = generic_access_phys,
- };
- 
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state, int write_combine)
- {
- 	unsigned long prot;
-diff --git a/arch/xtensa/include/asm/pci.h b/arch/xtensa/include/asm/pci.h
-index 5d6bd93..bb5510b 100644
---- a/arch/xtensa/include/asm/pci.h
-+++ b/arch/xtensa/include/asm/pci.h
-@@ -46,10 +46,6 @@ struct pci_dev;
- 
- #define PCI_DMA_BUS_IS_PHYS	(1)
- 
--/* Map a range of PCI memory or I/O space for a device into user space */
--int pci_mmap_page_range(struct pci_dev *pdev, struct vm_area_struct *vma,
--			enum pci_mmap_state mmap_state, int write_combine);
--
- /* Tell drivers/pci/proc.c that we have pci_mmap_page_range() */
- #define HAVE_PCI_MMAP	1
- 
-diff --git a/arch/xtensa/kernel/pci.c b/arch/xtensa/kernel/pci.c
-index b848cc3..89c8687 100644
---- a/arch/xtensa/kernel/pci.c
-+++ b/arch/xtensa/kernel/pci.c
-@@ -362,7 +362,8 @@ __pci_mmap_set_pgprot(struct pci_dev *dev, struct vm_area_struct *vma,
-  *
-  * Returns a negative error code on failure, zero on success.
-  */
--int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
- 			enum pci_mmap_state mmap_state,
- 			int write_combine)
- {
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index d319a9c..5bbe20c 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -1027,7 +1027,7 @@ static int pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
- 	pci_resource_to_user(pdev, i, res, &start, &end);
- 	vma->vm_pgoff += start >> PAGE_SHIFT;
- 	mmap_type = res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_io;
--	return pci_mmap_page_range(pdev, vma, mmap_type, write_combine);
-+	return pci_mmap_page_range(pdev, res, vma, mmap_type, write_combine);
- }
- 
- static int pci_mmap_resource_uc(struct file *filp, struct kobject *kobj,
-diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
-index 3f155e7..f19ee2a 100644
---- a/drivers/pci/proc.c
-+++ b/drivers/pci/proc.c
-@@ -245,7 +245,7 @@ static int proc_bus_pci_mmap(struct file *file, struct vm_area_struct *vma)
- 	if (i >= PCI_ROM_RESOURCE)
- 		return -ENODEV;
- 
--	ret = pci_mmap_page_range(dev, vma,
-+	ret = pci_mmap_page_range(dev, &dev->resource[i], vma,
- 				  fpriv->mmap_state,
- 				  fpriv->write_combine);
- 	if (ret < 0)
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index b67e4df..3c1a0f4 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -70,6 +70,12 @@ enum pci_mmap_state {
- 	pci_mmap_mem
- };
- 
-+struct vm_area_struct;
-+/* Map a range of PCI memory or I/O space for a device into user space */
-+int pci_mmap_page_range(struct pci_dev *dev, struct resource *res,
-+			struct vm_area_struct *vma,
-+			enum pci_mmap_state mmap_state, int write_combine);
-+
- /*
-  *  For PCI devices, the region numbers are assigned this way:
-  */
--- 
-2.8.3
+     Radix doesn't need slice support. Catch incorrect usage of slice code
+     when radix is enabled.
+
+     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+Cheers,
+
+Christian
+
+
+Git Log:
+
+git clone 
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux-git
+
+git bisect start
+
+git bisect good 8ffb4103f5e28d7e7890ed4774d8e009f253f56e
+
+git bisect bad 1a695a905c18548062509178b98bc91e67510864 (Linux 4.7-rc1)
+
+Output:
+
+Bisecting: 6333 revisions left to test after this (roughly 13 steps)
+[4741526b83c5d3a3d661d1896f9e7414c5730bcb] mm, page_alloc: restore the 
+original nodemask if the fast path allocation failed
+
+----
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0_A-EON_AmigaONE_X1000_Nemo-05145-g4741526-dirty #1 SMP Mon Jun 6 
+14:35:01 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+Bisecting: 3014 revisions left to test after this (roughly 12 steps)
+[2f37dd131c5d3a2eac21cd5baf80658b1b02a8ac] Merge tag 'staging-4.7-rc1' 
+of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled but it doesn't boot 
+so "git bisect bad"
+
+Output:
+
+Bisecting: 1693 revisions left to test after this (roughly 11 steps)
+[54cf809b9512be95f53ed4a5e3b631d1ac42f0fa] locking,qspinlock: Fix 
+spin_is_locked() and spin_unlock_wait()
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled but it doesn't boot 
+so "git bisect bad"
+
+Output:
+
+Bisecting: 721 revisions left to test after this (roughly 10 steps)
+[f4c80d5a16eb4b08a0d9ade154af1ebdc63f5752] Merge tag 'sound-4.7-rc1' of 
+git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound
+
+----
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0_A-EON_AmigaONE_X1000_Nemo-05931-gf4c80d5-dirty #1 SMP Mon Jun 6 
+19:13:42 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+Bisecting: 324 revisions left to test after this (roughly 9 steps)
+[c04a5880299eab3da8c10547db96ea9cdffd44a6] Merge tag 'powerpc-4.7-1' of 
+git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled but it doesn't boot 
+so "git bisect bad"
+
+Output:
+
+Bisecting: 186 revisions left to test after this (roughly 8 steps)
+[e9ad9b9bd3a3b95c89a29b2a197476e662db4233] Merge tag 'docs-for-linus' of 
+git://git.lwn.net/linux
+
+----
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0_A-EON_AmigaONE_X1000_Nemo-06141-ge9ad9b9-dirty #1 SMP Tue Jun 7 
+08:32:33 CEST 2016 ppc64 GNU/Linux)
+
+Bisecting: 93 revisions left to test after this (roughly 7 steps)
+[0e5b5ba17ac33a05d9f4a48b5eb8b5e30f2274d7] cxl: Remove duplicate #defines
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled but it doesn't boot 
+so "git bisect bad"
+
+Output:
+
+Bisecting: 46 revisions left to test after this (roughly 6 steps)
+[764041e0f43cc7846f6d8eb246d65b53cc06c764] powerpc/mm/radix: Add checks 
+in slice code to catch radix usage
+
+----
+
+It doesn't boot. Booting Linux via __start()... didn't appear in the CFE.
+
+git bisect bad
+
+Output:
+
+Bisecting: 22 revisions left to test after this (roughly 5 steps)
+[2e8735198af0392d9032a356ee6c82686afca779] powerpc/mm: Move common pte 
+bits and accessors to book3s/64/pgtable.h
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled and booted with 
+"range.size, pgprot_val(pgprot_noncached(__pgprot(0))));". That means, 
+"range.size, pgprot_val(pgprot_noncached(__pgprot(0))));" isn't the 
+problem. :-)
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0-rc3_A-EON_AmigaONE_X1000_Nemo-00067-g2e87351-dirty #1 SMP Tue Jun 
+7 15:29:19 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+Bisecting: 11 revisions left to test after this (roughly 4 steps)
+[2bfd65e45e877fb5704730244da67c748d28a1b8] powerpc/mm/radix: Add radix 
+callbacks for early init routines
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled and it also booted 
+with "range.size, pgprot_val(pgprot_noncached(__pgprot(0))));"!
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0-rc3_A-EON_AmigaONE_X1000_Nemo-00078-g2bfd65e-dirty #1 SMP Tue Jun 
+7 16:50:47 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+Bisecting: 5 revisions left to test after this (roughly 3 steps)
+[676012a66f651a98808459bc8ab75661828ed96f] powerpc/mm: Hash abstraction 
+for tlbflush routines
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled and it also booted 
+with "range.size, pgprot_val(pgprot_noncached(__pgprot(0))));"!
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0-rc3_A-EON_AmigaONE_X1000_Nemo-00084-g676012a-dirty #1 SMP Tue Jun 
+7 19:03:59 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+Bisecting: 2 revisions left to test after this (roughly 2 steps)
+[a8ed87c92adf1fd45142323e04f15b522117d575] powerpc/mm/radix: Add 
+MMU_FTR_RADIX
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled and it also booted 
+with "range.size, pgprot_val(pgprot_noncached(__pgprot(0))));"!
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0-rc3_A-EON_AmigaONE_X1000_Nemo-00087-ga8ed87c-dirty #1 SMP Tue Jun 
+7 20:25:11 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+Bisecting: 0 revisions left to test after this (roughly 1 step)
+[d8c476eeb697c9aac46b390e9cbd7af7032814f1] powerpc/mm/radix: Isolate 
+hash table function from pseries guest code
+
+----
+
+I had to replace
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, _PAGE_NO_CACHE|_PAGE_GUARDED);
+
+with
+
+__ioremap_at(range.cpu_addr, (void *)ISA_IO_BASE,
+                                range.size, 
+pgprot_val(pgprot_noncached(__pgprot(0))));
+
+
+in the file "pci-common.c". After that it compiled and it also booted 
+with "range.size, pgprot_val(pgprot_noncached(__pgprot(0))));"!
+
+git bisect good (Linux AmigaoneX1000 
+4.6.0-rc3_A-EON_AmigaONE_X1000_Nemo-00089-gd8c476e-dirty #1 SMP Tue Jun 
+7 21:53:24 CEST 2016 ppc64 GNU/Linux)
+
+Output:
+
+764041e0f43cc7846f6d8eb246d65b53cc06c764 is the first bad commit
+commit 764041e0f43cc7846f6d8eb246d65b53cc06c764
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Fri Apr 29 23:26:09 2016 +1000
+
+     powerpc/mm/radix: Add checks in slice code to catch radix usage
+
+     Radix doesn't need slice support. Catch incorrect usage of slice code
+     when radix is enabled.
+
+     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+:040000 040000 e66f81f989a42a4de238a49a2191f787ae65d4a2 
+6b7b4380d14db00d9aae28b5990e5dd8d6cf23a0 M    arch
