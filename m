@@ -1,29 +1,38 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
- [209.85.220.52])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPVqP0SVYzDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 11:15:29 +1000 (AEST)
-Received: by mail-pa0-f52.google.com with SMTP id ec8so45138916pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 18:15:28 -0700 (PDT)
-Received: from balbir.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id s90sm37949551pfj.86.2016.06.07.18.14.19
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1/SSLv3 cipher=OTHER);
- Tue, 07 Jun 2016 18:14:24 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/pseries: Add POWER8NVL support to
- ibm,client-architecture-support call
-To: linuxppc-dev@lists.ozlabs.org
-References: <1464673877-30659-1-git-send-email-thuth@redhat.com>
- <1464689047.23025.1.camel@ellerman.id.au> <574D6549.3050903@redhat.com>
- <1464690745.23025.2.camel@ellerman.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <70305fb4-d345-bd89-e395-04c39b266fe4@gmail.com>
-Date: Wed, 8 Jun 2016 11:14:16 +1000
-MIME-Version: 1.0
-In-Reply-To: <1464690745.23025.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPWcW2r02zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 11:51:07 +1000 (AEST)
+Message-ID: <1465350666.14294.0.camel@ellerman.id.au>
+Subject: Re: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ darren@stevens-zone.net, Michael Ellerman <michaele@au1.ibm.com>, Julian
+ Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ "R.T.Dickinson" <rtd@a-eon.com>,  "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat
+ Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,  "contact@a-eon.com"
+ <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>, luigi burdo
+ <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
+Date: Wed, 08 Jun 2016 11:51:06 +1000
+In-Reply-To: <2a3a9bf7-baa4-07a9-1da0-94b596b3a955@xenosoft.de>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <2a3a9bf7-baa4-07a9-1da0-94b596b3a955@xenosoft.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,37 +42,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 31/05/16 20:32, Michael Ellerman wrote:
-> On Tue, 2016-05-31 at 12:19 +0200, Thomas Huth wrote:
->> On 31.05.2016 12:04, Michael Ellerman wrote:
->>> On Tue, 2016-05-31 at 07:51 +0200, Thomas Huth wrote:
->>>> If we do not provide the PVR for POWER8NVL, a guest on this
->>>> system currently ends up in PowerISA 2.06 compatibility mode on
->>>> KVM, since QEMU does not provide a generic PowerISA 2.07 mode yet.
->>>> So some new instructions from POWER8 (like "mtvsrd") get disabled
->>>> for the guest, resulting in crashes when using code compiled
->>>> explicitly for POWER8 (e.g. with the "-mcpu=power8" option of GCC).
->>>>
->>>> Signed-off-by: Thomas Huth <thuth@redhat.com>
->>>
->>> So this should say:
->>>
->>>   Fixes: ddee09c099c3 ("powerpc: Add PVR for POWER8NVL processor")
->>>
->>> And therefore:
->>>
->>>   Cc: stable@vger.kernel.org # v4.0+
->>>
->>> Am I right?
->>
->> Right. (At least for virtualized systems ... for bare-metal systems,
->> that original patch was enough). So shall I resubmit my patch with these
->> two lines, or could you add them when you pick this patch up?
+On Wed, 2016-06-08 at 00:14 +0200, Christian Zigotzky wrote:
+> Hi All,
 > 
-> Thanks, I'll add them here.
+> I replaced the file "slice.c" with the old one from kernel 4.6. It 
+> compiled but unfortunately it doesn't boot.
 
-Don't we need to update IBM_ARCH_VEC_NRCORES_OFFSET as well?
+I would expect nothing else.
 
-Balbir Singh
+You can't just replace whole files from different versions, the unit of work is
+a commit, not a file.
+
+cheers
