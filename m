@@ -1,45 +1,31 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPc3L3P4QzDqHh
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 15:11:10 +1000 (AEST)
-Received: from pps.filterd (m0048817.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u58597a3006676
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 01:11:07 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23e9mf206m-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 01:11:07 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPdD667pQzDq5m
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 16:03:48 +1000 (AEST)
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 8 Jun 2016 15:11:04 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E0FBA2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 15:10:44 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u585AY2h8782302
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 15:10:39 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u585AS6f013014
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 15:10:29 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, mikey <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH, RFC] cxl: Add support for CAPP DMA mode
-Date: Wed,  8 Jun 2016 15:09:54 +1000
-In-Reply-To: <1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
-References: <1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
-Message-Id: <1465362594-10437-1-git-send-email-imunsie@au.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Wed, 8 Jun 2016 00:03:46 -0600
+Subject: Re: [PATCH 2/2] workqueue:Fix affinity of an unbound worker of a node
+ with 1 online CPU
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <htejun@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>
+References: <5756BE20.3040208@linux.vnet.ibm.com>
+ <cover.1465311052.git.ego@linux.vnet.ibm.com>
+ <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Message-ID: <5757B538.1010806@linux.vnet.ibm.com>
+Date: Wed, 8 Jun 2016 11:33:36 +0530
+MIME-Version: 1.0
+In-Reply-To: <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,94 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+Hi Gautham,
 
-This adds support for using CAPP DMA mode, which is required for XSL
-based cards such as the Mellanox CX4 to function.
+Thanks a lot for the fix.
 
-This is currently an RFC as it depends on the corresponding support to
-be merged into skiboot first, which was submitted here:
-http://patchwork.ozlabs.org/patch/625582/
+With your patches applied, 4.7.0-rc2 builds fine on ppc64le bare metal.
+Boot was successful with No call traces.
 
-In the event that the skiboot on the system does not have the above
-support, it will indicate as such in the kernel log and abort the init
-process.
+Thanks for all your support !
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h       | 1 +
- arch/powerpc/platforms/powernv/pci-ioda.c | 4 +++-
- drivers/misc/cxl/cxl.h                    | 1 +
- drivers/misc/cxl/pci.c                    | 4 +++-
- 4 files changed, 8 insertions(+), 2 deletions(-)
+Regard's
+Abdul
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 9bb8ddf..d29c584 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -825,6 +825,7 @@ enum {
- 	OPAL_PHB_CAPI_MODE_CAPI		= 1,
- 	OPAL_PHB_CAPI_MODE_SNOOP_OFF    = 2,
- 	OPAL_PHB_CAPI_MODE_SNOOP_ON	= 3,
-+	OPAL_PHB_CAPI_MODE_DMA		= 4,
- };
- 
- /* OPAL I2C request */
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3a5ea82..5a42e98 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2793,7 +2793,9 @@ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
- 	pe_info(pe, "Switching PHB to CXL\n");
- 
- 	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, mode, pe->pe_number);
--	if (rc)
-+	if (rc == OPAL_UNSUPPORTED)
-+		dev_err(&dev->dev, "Required cxl mode not supported by firmware - update skiboot\n");
-+	else if (rc)
- 		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
- 
- 	return rc;
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 92e7f19..aa69a84 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -542,6 +542,7 @@ struct cxl_service_layer_ops {
- 	void (*debugfs_stop_trace)(struct cxl *adapter);
- 	void (*write_timebase_ctrl)(struct cxl *adapter);
- 	u64 (*timebase_read)(struct cxl *adapter);
-+	int capi_mode;
- };
- 
- struct cxl_native {
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 556718d..648817a 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1249,7 +1249,7 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- 	if ((rc = adapter->native->sl_ops->adapter_regs_init(adapter, dev)))
- 		goto err;
- 
--	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_CAPI)))
-+	if ((rc = pnv_phb_to_cxl_mode(dev, adapter->native->sl_ops->capi_mode)))
- 		goto err;
- 
- 	/* If recovery happened, the last step is to turn on snooping.
-@@ -1293,6 +1293,7 @@ static const struct cxl_service_layer_ops psl_ops = {
- 	.debugfs_stop_trace = cxl_stop_trace,
- 	.write_timebase_ctrl = write_timebase_ctrl_psl,
- 	.timebase_read = timebase_read_psl,
-+	.capi_mode = OPAL_PHB_CAPI_MODE_CAPI,
- };
- 
- static const struct cxl_service_layer_ops xsl_ops = {
-@@ -1300,6 +1301,7 @@ static const struct cxl_service_layer_ops xsl_ops = {
- 	.debugfs_add_adapter_sl_regs = cxl_debugfs_add_adapter_xsl_regs,
- 	.write_timebase_ctrl = write_timebase_ctrl_xsl,
- 	.timebase_read = timebase_read_xsl,
-+	.capi_mode = OPAL_PHB_CAPI_MODE_DMA,
- };
- 
- static void set_sl_ops(struct cxl *adapter, struct pci_dev *dev)
--- 
-2.8.1
+On Tuesday 07 June 2016 08:44 PM, Gautham R. Shenoy wrote:
+
+> With commit e9d867a67fd03ccc ("sched: Allow per-cpu kernel threads to
+> run on online && !active"), __set_cpus_allowed_ptr() expects that only
+> strict per-cpu kernel threads can have affinity to an online CPU which
+> is not yet active.
+>
+> This assumption is currently broken in the CPU_ONLINE notification
+> handler for the workqueues where restore_unbound_workers_cpumask()
+> calls set_cpus_allowed_ptr() when the first cpu in the unbound
+> worker's pool->attr->cpumask comes online. Since
+> set_cpus_allowed_ptr() is called with pool->attr->cpumask in which
+> only one CPU is online which is not yet active, we get the following
+> WARN_ON during an CPU online operation.
+>
+> ------------[ cut here ]------------
+> WARNING: CPU: 40 PID: 248 at kernel/sched/core.c:1166
+> __set_cpus_allowed_ptr+0x228/0x2e0
+> Modules linked in:
+> CPU: 40 PID: 248 Comm: cpuhp/40 Not tainted 4.6.0-autotest+ #4
+> <..snip..>
+> Call Trace:
+> [c000000f273ff920] [c00000000010493c] __set_cpus_allowed_ptr+0x2cc/0x2e0 (unreliable)
+> [c000000f273ffac0] [c0000000000ed4b0] workqueue_cpu_up_callback+0x2c0/0x470
+> [c000000f273ffb70] [c0000000000f5c58] notifier_call_chain+0x98/0x100
+> [c000000f273ffbc0] [c0000000000c5ed0] __cpu_notify+0x70/0xe0
+> [c000000f273ffc00] [c0000000000c6028] notify_online+0x38/0x50
+> [c000000f273ffc30] [c0000000000c5214] cpuhp_invoke_callback+0x84/0x250
+> [c000000f273ffc90] [c0000000000c562c] cpuhp_up_callbacks+0x5c/0x120
+> [c000000f273ffce0] [c0000000000c64d4] cpuhp_thread_fun+0x184/0x1c0
+> [c000000f273ffd20] [c0000000000fa050] smpboot_thread_fn+0x290/0x2a0
+> [c000000f273ffd80] [c0000000000f45b0] kthread+0x110/0x130
+> [c000000f273ffe30] [c000000000009570] ret_from_kernel_thread+0x5c/0x6c
+> ---[ end trace 00f1456578b2a3b2 ]---
+>
+> This patch sets the affinity of the worker to
+> a) the only online CPU in the cpumask of the worker pool when it comes
+>     online.
+> b) the cpumask of the worker pool when the second CPU in the pool's
+>     cpumask comes online.
+>
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Tejun Heo <htejun@gmail.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
