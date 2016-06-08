@@ -2,21 +2,19 @@ Return-Path: <thuth@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPlld3f9GzDqGb
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 20:58:04 +1000 (AEST)
-Subject: Re: [PATCH] powerpc/pseries: Add POWER8NVL support to
- ibm,client-architecture-support call
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPlsy69nlzDqGn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 21:03:34 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: Fix IBM_ARCH_VEC_NRCORES_OFFSET value
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-References: <1464673877-30659-1-git-send-email-thuth@redhat.com>
- <1464689047.23025.1.camel@ellerman.id.au> <574D6549.3050903@redhat.com>
- <1464690745.23025.2.camel@ellerman.id.au>
- <70305fb4-d345-bd89-e395-04c39b266fe4@gmail.com>
+References: <1465339861.3263.24.camel@kernel.crashing.org>
+Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ Balbir Singh <bsingharora@gmail.com>
 From: Thomas Huth <thuth@redhat.com>
-Message-ID: <5757FA38.3030108@redhat.com>
-Date: Wed, 8 Jun 2016 12:58:00 +0200
+Message-ID: <5757FB81.7040905@redhat.com>
+Date: Wed, 8 Jun 2016 13:03:29 +0200
 MIME-Version: 1.0
-In-Reply-To: <70305fb4-d345-bd89-e395-04c39b266fe4@gmail.com>
+In-Reply-To: <1465339861.3263.24.camel@kernel.crashing.org>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,46 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08.06.2016 03:14, Balbir Singh wrote:
+On 08.06.2016 00:51, Benjamin Herrenschmidt wrote:
+> Commit 7cc851039d643a2ee7df4d18177150f2c3a484f5
+> "powerpc/pseries: Add POWER8NVL support to ibm,client-architecture-support call"
+> introduced a regression by adding fields to the beginning of the
+> ibm_architecture_vec structure without updating IBM_ARCH_VEC_NRCORES_OFFSET.
 > 
-> On 31/05/16 20:32, Michael Ellerman wrote:
->> On Tue, 2016-05-31 at 12:19 +0200, Thomas Huth wrote:
->>> On 31.05.2016 12:04, Michael Ellerman wrote:
->>>> On Tue, 2016-05-31 at 07:51 +0200, Thomas Huth wrote:
->>>>> If we do not provide the PVR for POWER8NVL, a guest on this
->>>>> system currently ends up in PowerISA 2.06 compatibility mode on
->>>>> KVM, since QEMU does not provide a generic PowerISA 2.07 mode yet.
->>>>> So some new instructions from POWER8 (like "mtvsrd") get disabled
->>>>> for the guest, resulting in crashes when using code compiled
->>>>> explicitly for POWER8 (e.g. with the "-mcpu=power8" option of GCC).
->>>>>
->>>>> Signed-off-by: Thomas Huth <thuth@redhat.com>
->>>>
->>>> So this should say:
->>>>
->>>>   Fixes: ddee09c099c3 ("powerpc: Add PVR for POWER8NVL processor")
->>>>
->>>> And therefore:
->>>>
->>>>   Cc: stable@vger.kernel.org # v4.0+
->>>>
->>>> Am I right?
->>>
->>> Right. (At least for virtualized systems ... for bare-metal systems,
->>> that original patch was enough). So shall I resubmit my patch with these
->>> two lines, or could you add them when you pick this patch up?
->>
->> Thanks, I'll add them here.
+> This causes the kernel to print a warning at boot and to fail to adjust
+> the number of cores based on the number of threads before doing the CAS
+> call to firmware.
 > 
-> Don't we need to update IBM_ARCH_VEC_NRCORES_OFFSET as well?
+> This is quite a fragile piece of code sadly, we should try to find a way
+> to avoid that hard coded offset at some point, but for now this fixes it.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index ccd2037..6ee4b72 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -719,7 +719,7 @@ unsigned char ibm_architecture_vec[] = {
+>  	 * must match by the macro below. Update the definition if
+>  	 * the structure layout changes.
+>  	 */
+> -#define IBM_ARCH_VEC_NRCORES_OFFSET	125
+> +#define IBM_ARCH_VEC_NRCORES_OFFSET	133
+>  	W(NR_CPUS),			/* number of cores supported */
+>  	0,
+>  	0,
 
-D'oh! You're right, that needs to be changed, too! I'll send a fixup
-patch once I've tested it...
+Yes, that should be the right offset now!
 
-By the way, there seems to be already a check for
-ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET] != NR_CPUS in
-prom_send_capabilities(), but it only prints out a warning which easily
-gets lost in the kernel log ... I wonder whether we should rather stop
-the boot there instead to catch this problem more easily?
+Please also add "Cc: stable@vger.kernel.org # v4.0+" to the patch since
+the commit 7cc851039d64 did have that as well.
 
- Thomas
+And sorry for breaking this!
+
+Reviewed-by: Thomas Huth <thuth@redhat.com>
