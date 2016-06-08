@@ -3,28 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPrlt2C8nzDqtW
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 00:43:38 +1000 (AEST)
-Received: from pps.filterd (m0082756.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPrly40NczDt0W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 00:43:42 +1000 (AEST)
+Received: from pps.filterd (m0075771.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u58Ed2rW046193
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 10:43:36 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23e9mf2s02-1
+ u58Ed0gf007170
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 10:43:40 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23e9mf2nua-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 10:43:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 10:43:40 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 8 Jun 2016 08:43:35 -0600
+ Wed, 8 Jun 2016 08:43:39 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 00/16] TLB flush improvments and Segment table support
-Date: Wed,  8 Jun 2016 20:13:07 +0530
-Message-Id: <1465397003-26812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 01/16] mm/hugetlb: Simplify hugetlb unmap
+Date: Wed,  8 Jun 2016 20:13:08 +0530
+In-Reply-To: <1465397003-26812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1465397003-26812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1465397003-26812-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,77 +36,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series include patches which got posted earlier as independent series.
-Some of this patches will go upstream via -mm tree. 
+For hugetlb like THP (and unlike regular page), we do tlb flush after
+dropping ptl. Because of the above, we don't need to track force_flush
+like we do now. Instead we can simply call tlb_remove_page() which
+will do the flush if needed.
 
-Changes from V1:
-* Address review feedback
-* rebase on top of radix fixes which got posted earlier
-* Fixes for segment table support.
+No functionality change in this patch.
 
-NOTE:
-Even though the patch series include changes to generic mm and other architectures
-this series is not cross-posted. That is because, the generic mm changes got
-posted as a separate patch series which can be found at
-http://thread.gmane.org/gmane.linux.kernel.mm/152620 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ mm/hugetlb.c | 54 +++++++++++++++++++++---------------------------------
+ 1 file changed, 21 insertions(+), 33 deletions(-)
 
-
-Aneesh Kumar K.V (16):
-  mm/hugetlb: Simplify hugetlb unmap
-  mm: Change the interface for __tlb_remove_page
-  mm/mmu_gather: Track page size with mmu gather and force flush if page
-    size change
-  powerpc/mm/radix: Implement tlb mmu gather flush efficiently
-  powerpc/mm: Make MMU_FTR_RADIX a MMU family feature
-  powerpc/mm/hash: Add helper for finding SLBE LLP encoding
-  powerpc/mm: Use hugetlb flush functions
-  powerpc/mm: Drop multiple definition of mm_is_core_local
-  powerpc/mm/radix: Add tlb flush of THP ptes
-  powerpc/mm/radix: Rename function and drop unused arg
-  powerpc/mm/radix/hugetlb: Add helper for finding page size from hstate
-  powerpc/mm/hugetlb: Add flush_hugetlb_tlb_range
-  powerpc/mm: remove flush_tlb_page_nohash
-  powerpc/mm: Cleanup LPCR defines
-  powerpc/mm: Switch user slb fault handling to translation enabled
-  powerpc/mm: Support segment table for Power9
-
- arch/arm/include/asm/tlb.h                         |  29 +-
- arch/ia64/include/asm/tlb.h                        |  31 +-
- arch/powerpc/include/asm/book3s/64/hash.h          |  10 +
- arch/powerpc/include/asm/book3s/64/hugetlb-radix.h |  15 +
- arch/powerpc/include/asm/book3s/64/mmu-hash.h      |  26 ++
- arch/powerpc/include/asm/book3s/64/mmu.h           |   7 +-
- arch/powerpc/include/asm/book3s/64/tlbflush-hash.h |   5 -
- .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  16 +-
- arch/powerpc/include/asm/book3s/64/tlbflush.h      |  27 +-
- arch/powerpc/include/asm/hugetlb.h                 |   2 +-
- arch/powerpc/include/asm/kvm_book3s_64.h           |   3 +-
- arch/powerpc/include/asm/mmu.h                     |  18 +-
- arch/powerpc/include/asm/mmu_context.h             |   5 +-
- arch/powerpc/include/asm/reg.h                     |  54 ++--
- arch/powerpc/include/asm/tlb.h                     |  13 +
- arch/powerpc/include/asm/tlbflush.h                |   1 -
- arch/powerpc/kernel/entry_64.S                     |   2 +-
- arch/powerpc/kernel/exceptions-64s.S               |  63 +++-
- arch/powerpc/kernel/prom.c                         |   3 +-
- arch/powerpc/mm/hash_native_64.c                   |   6 +-
- arch/powerpc/mm/hash_utils_64.c                    |  86 ++++-
- arch/powerpc/mm/hugetlbpage-radix.c                |  39 +--
- arch/powerpc/mm/mmu_context_book3s64.c             |  32 +-
- arch/powerpc/mm/pgtable-book3s64.c                 |   4 +-
- arch/powerpc/mm/pgtable.c                          |   2 +-
- arch/powerpc/mm/slb.c                              | 359 +++++++++++++++++++++
- arch/powerpc/mm/tlb-radix.c                        | 104 +++++-
- arch/powerpc/mm/tlb_hash32.c                       |  11 -
- arch/powerpc/mm/tlb_nohash.c                       |   6 -
- arch/s390/include/asm/tlb.h                        |  22 +-
- arch/sh/include/asm/tlb.h                          |  20 +-
- arch/um/include/asm/tlb.h                          |  20 +-
- include/asm-generic/tlb.h                          |  59 +++-
- mm/huge_memory.c                                   |   2 +-
- mm/hugetlb.c                                       |  64 ++--
- mm/memory.c                                        |  27 +-
- 36 files changed, 981 insertions(+), 212 deletions(-)
-
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index d26162e81fea..741429d01668 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -3138,7 +3138,6 @@ void __unmap_hugepage_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 			    unsigned long start, unsigned long end,
+ 			    struct page *ref_page)
+ {
+-	int force_flush = 0;
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	unsigned long address;
+ 	pte_t *ptep;
+@@ -3157,19 +3156,22 @@ void __unmap_hugepage_range(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 	tlb_start_vma(tlb, vma);
+ 	mmu_notifier_invalidate_range_start(mm, mmun_start, mmun_end);
+ 	address = start;
+-again:
+ 	for (; address < end; address += sz) {
+ 		ptep = huge_pte_offset(mm, address);
+ 		if (!ptep)
+ 			continue;
+ 
+ 		ptl = huge_pte_lock(h, mm, ptep);
+-		if (huge_pmd_unshare(mm, &address, ptep))
+-			goto unlock;
++		if (huge_pmd_unshare(mm, &address, ptep)) {
++			spin_unlock(ptl);
++			continue;
++		}
+ 
+ 		pte = huge_ptep_get(ptep);
+-		if (huge_pte_none(pte))
+-			goto unlock;
++		if (huge_pte_none(pte)) {
++			spin_unlock(ptl);
++			continue;
++		}
+ 
+ 		/*
+ 		 * Migrating hugepage or HWPoisoned hugepage is already
+@@ -3177,7 +3179,8 @@ again:
+ 		 */
+ 		if (unlikely(!pte_present(pte))) {
+ 			huge_pte_clear(mm, address, ptep);
+-			goto unlock;
++			spin_unlock(ptl);
++			continue;
+ 		}
+ 
+ 		page = pte_page(pte);
+@@ -3187,9 +3190,10 @@ again:
+ 		 * are about to unmap is the actual page of interest.
+ 		 */
+ 		if (ref_page) {
+-			if (page != ref_page)
+-				goto unlock;
+-
++			if (page != ref_page) {
++				spin_unlock(ptl);
++				continue;
++			}
+ 			/*
+ 			 * Mark the VMA as having unmapped its page so that
+ 			 * future faults in this VMA will fail rather than
+@@ -3205,30 +3209,14 @@ again:
+ 
+ 		hugetlb_count_sub(pages_per_huge_page(h), mm);
+ 		page_remove_rmap(page, true);
+-		force_flush = !__tlb_remove_page(tlb, page);
+-		if (force_flush) {
+-			address += sz;
+-			spin_unlock(ptl);
+-			break;
+-		}
+-		/* Bail out after unmapping reference page if supplied */
+-		if (ref_page) {
+-			spin_unlock(ptl);
+-			break;
+-		}
+-unlock:
++
+ 		spin_unlock(ptl);
+-	}
+-	/*
+-	 * mmu_gather ran out of room to batch pages, we break out of
+-	 * the PTE lock to avoid doing the potential expensive TLB invalidate
+-	 * and page-free while holding it.
+-	 */
+-	if (force_flush) {
+-		force_flush = 0;
+-		tlb_flush_mmu(tlb);
+-		if (address < end && !ref_page)
+-			goto again;
++		tlb_remove_page(tlb, page);
++		/*
++		 * Bail out after unmapping reference page if supplied
++		 */
++		if (ref_page)
++			break;
+ 	}
+ 	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
+ 	tlb_end_vma(tlb, vma);
 -- 
 2.7.4
