@@ -1,15 +1,40 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.162])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPpwp3s8GzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 23:21:14 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/nohash: Fix build break with 4K pages
-Date: Wed,  8 Jun 2016 23:21:11 +1000
-Message-Id: <1465392071-18715-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPq0m5jHKzDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 23:24:40 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: Darren Stevens <darren@stevens-zone.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <michaele@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
+ "contact@a-eon.com" <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>,
+ luigi burdo <intermediadc@hotmail.com>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <a7e2f4b1-7f18-cdb6-f27d-232592e0ba1c@xenosoft.de>
+Date: Wed, 8 Jun 2016 15:24:04 +0200
+MIME-Version: 1.0
+In-Reply-To: <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,31 +44,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 74701d5947a6 "powerpc/mm: Rename function to indicate we are
-allocating fragments" renamed page_table_free() to pte_fragment_free().
-One occurrence was mistyped as pte_fragment_fre().
+Hi Darren,
 
-This only breaks the nohash 4K page build, which is not the default or
-enabled in any defconfig.
+Many thanks for your help. I started my bisect with the following commits:
 
-Fixes: 74701d5947a6 ("powerpc/mm: Rename function to indicate we are allocating fragments")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/nohash/64/pgalloc.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+git bisect start
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-index 0c12a3bfe2ab..069369f6414b 100644
---- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
-@@ -172,7 +172,7 @@ static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
- 
- static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
- {
--	pte_fragment_fre((unsigned long *)pte, 1);
-+	pte_fragment_free((unsigned long *)pte, 1);
- }
- 
- static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
--- 
-2.5.0
+git bisect good 8ffb4103f5e28d7e7890ed4774d8e009f253f56e
+
+git bisect bad 1a695a905c18548062509178b98bc91e67510864 (Linux 4.7-rc1)
+
+Did you start your bisect with the same bad and good commit?
+
+I will revert your bad commit and compile a new test kernel.
+
+Thanks,
+
+Christian
+
+On 08 June 2016 at 1:33 PM, Darren Stevens wrote:
+> Hello Christian
+>
+> That's not where I ended up with my bisect, this commit is about 10 before the
+> one I found to be bad, which is:
+>
+> commit d6a9996e84ac4beb7713e9485f4563e100a9b03e
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Fri Apr 29 23:26:21 2016 +1000
+>
+>      powerpc/mm: vmalloc abstraction in preparation for radix
+>      
+>      The vmalloc range differs between hash and radix config. Hence make
+>      VMALLOC_START and related constants a variable which will be runtime
+>      initialized depending on whether hash or radix mode is active.
+>      
+>      Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>      [mpe: Fix missing init of ioremap_bot in pgtable_64.c for ppc64e]
+>      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Not sure how we are getting different results though. I have attached my
+> bisect log and the suspect commit, whcih is quite large. I'm not sure which
+> part of it is at fault. I have some jobs to do now, but hope to get tesing
+> this later today.
+>
+> Regards
+> Darren
