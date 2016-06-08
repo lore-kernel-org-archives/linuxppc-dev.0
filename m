@@ -1,38 +1,28 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-oi0-f48.google.com (mail-oi0-f48.google.com
- [209.85.218.48])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPnVd1z69zDqp9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 22:16:57 +1000 (AEST)
-Received: by mail-oi0-f48.google.com with SMTP id k23so9310795oih.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 05:16:57 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1465321121-22238-6-git-send-email-peter.griffin@linaro.org>
+Return-Path: <jonathanh@nvidia.com>
+Received: from hqemgate15.nvidia.com (hqemgate15.nvidia.com [216.228.121.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPhT62yndzDqXy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 18:30:18 +1000 (AEST)
+Subject: Re: [PATCH 8/8] dmaengine: Remove site specific OOM error messages on
+ kzalloc
+To: Peter Griffin <peter.griffin@linaro.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+ <kernel@stlinux.com>, <vinod.koul@intel.com>, <linus.walleij@linaro.org>,
+ <dan.j.williams@intel.com>, <leoli@freescale.com>, <zw@zh-kernel.org>,
+ <baohua@kernel.org>, <maxime.ripard@free-electrons.com>, <wens@csie.org>,
+ <ldewangan@nvidia.com>, <swarren@wwwdotorg.org>, <thierry.reding@gmail.com>,
+ <gnurou@gmail.com>
 References: <1465321121-22238-1-git-send-email-peter.griffin@linaro.org>
- <1465321121-22238-6-git-send-email-peter.griffin@linaro.org>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 8 Jun 2016 14:15:55 +0200
-Message-ID: <CACRpkdaFhAbWtoOmmK4m-MaQsNgPya4mEOmAUDZmNNxvRotY3A@mail.gmail.com>
-Subject: Re: [PATCH 5/8] dmaengine: ste_dma40: Only calculate residue if
- txstate exists.
-To: Peter Griffin <peter.griffin@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "open list:ARM/STI ARCHITECTURE" <kernel@stlinux.com>,
- Vinod Koul <vinod.koul@intel.com>,
- Dan Williams <dan.j.williams@intel.com>, Leo Li <leoli@freescale.com>,
- Zhang Wei <zw@zh-kernel.org>, Barry Song <baohua@kernel.org>,
- Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>,
- Laxman Dewangan <ldewangan@nvidia.com>, Jon Hunter <jonathanh@nvidia.com>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- Alexandre Courbot <gnurou@gmail.com>, Lee Jones <lee.jones@linaro.org>,
- dmaengine@vger.kernel.org,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ <1465321121-22238-9-git-send-email-peter.griffin@linaro.org>
+CC: <lee.jones@linaro.org>, <dmaengine@vger.kernel.org>,
+ <linux-tegra@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Message-ID: <5757D5DB.5030401@nvidia.com>
+Date: Wed, 8 Jun 2016 09:22:51 +0100
+MIME-Version: 1.0
+In-Reply-To: <1465321121-22238-9-git-send-email-peter.griffin@linaro.org>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,14 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 7, 2016 at 7:38 PM, Peter Griffin <peter.griffin@linaro.org> wrote:
 
-> There is no point calculating the residue if there is
-> no txstate to store the value.
->
+On 07/06/16 18:38, Peter Griffin wrote:
+> If kzalloc() fails it will issue it's own error message including
+> a dump_stack(). So remove the site specific error messages.
+> 
 > Signed-off-by: Peter Griffin <peter.griffin@linaro.org>
+> ---
+>  drivers/dma/amba-pl08x.c        | 10 +---------
+>  drivers/dma/bestcomm/bestcomm.c |  2 --
+>  drivers/dma/edma.c              | 16 ++++------------
+>  drivers/dma/fsldma.c            |  2 --
+>  drivers/dma/k3dma.c             | 10 ++++------
+>  drivers/dma/mmp_tdma.c          |  5 ++---
+>  drivers/dma/moxart-dma.c        |  4 +---
+>  drivers/dma/nbpfaxi.c           |  5 ++---
+>  drivers/dma/pl330.c             |  5 +----
+>  drivers/dma/ppc4xx/adma.c       |  2 --
+>  drivers/dma/s3c24xx-dma.c       |  5 +----
+>  drivers/dma/sh/shdmac.c         |  9 ++-------
+>  drivers/dma/sh/sudmac.c         |  9 ++-------
+>  drivers/dma/sirf-dma.c          |  5 ++---
+>  drivers/dma/ste_dma40.c         |  4 +---
+>  drivers/dma/tegra20-apb-dma.c   | 11 +++--------
+>  drivers/dma/timb_dma.c          |  8 ++------
+>  17 files changed, 28 insertions(+), 84 deletions(-)
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+[snip]
 
-Yours,
-Linus Walleij
+> diff --git a/drivers/dma/tegra20-apb-dma.c b/drivers/dma/tegra20-apb-dma.c
+> index 7f4af8c..032884f 100644
+> --- a/drivers/dma/tegra20-apb-dma.c
+> +++ b/drivers/dma/tegra20-apb-dma.c
+> @@ -300,10 +300,8 @@ static struct tegra_dma_desc *tegra_dma_desc_get(
+>  
+>  	/* Allocate DMA desc */
+>  	dma_desc = kzalloc(sizeof(*dma_desc), GFP_NOWAIT);
+> -	if (!dma_desc) {
+> -		dev_err(tdc2dev(tdc), "dma_desc alloc failed\n");
+> +	if (!dma_desc)
+>  		return NULL;
+> -	}
+>  
+>  	dma_async_tx_descriptor_init(&dma_desc->txd, &tdc->dma_chan);
+>  	dma_desc->txd.tx_submit = tegra_dma_tx_submit;
+> @@ -340,8 +338,7 @@ static struct tegra_dma_sg_req *tegra_dma_sg_req_get(
+>  	spin_unlock_irqrestore(&tdc->lock, flags);
+>  
+>  	sg_req = kzalloc(sizeof(struct tegra_dma_sg_req), GFP_NOWAIT);
+> -	if (!sg_req)
+> -		dev_err(tdc2dev(tdc), "sg_req alloc failed\n");
+> +
+>  	return sg_req;
+>  }
+>  
+> @@ -1319,10 +1316,8 @@ static int tegra_dma_probe(struct platform_device *pdev)
+>  
+>  	tdma = devm_kzalloc(&pdev->dev, sizeof(*tdma) + cdata->nr_channels *
+>  			sizeof(struct tegra_dma_channel), GFP_KERNEL);
+> -	if (!tdma) {
+> -		dev_err(&pdev->dev, "Error: memory allocation failed\n");
+> +	if (!tdma)
+>  		return -ENOMEM;
+> -	}
+>  
+>  	tdma->dev = &pdev->dev;
+>  	tdma->chip_data = cdata;
+
+For the tegra portion ...
+
+Acked-by: Jon Hunter <jonathanh@nvidia.com>
+
+Cheers
+Jon
+
+-- 
+nvpublic
