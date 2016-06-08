@@ -1,34 +1,44 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPsHt3H11zF03V
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 01:07:54 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u58F4Mdg041942
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 11:07:51 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23e9m3uc26-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 11:07:51 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPsN843R3zDqn2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 01:11:36 +1000 (AEST)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 8 Jun 2016 09:07:50 -0600
+ Wed, 8 Jun 2016 11:11:30 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V2 16/16] powerpc/mm: Support segment table for Power9
-In-Reply-To: <1465397003-26812-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1465397003-26812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1465397003-26812-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 08 Jun 2016 20:37:45 +0530
+To: Darren Stevens <darren@stevens-zone.net>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <michaele@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>,
+ Adrian Cox <adrian@humboldt.co.uk>, "R.T.Dickinson" <rtd@a-eon.com>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat Wall <pjwall@mac.com>,
+ Pat Wall <pjwall@me.com>, "contact@a-eon.com" <contact@a-eon.com>,
+ Matthew Leaman <matthew@a-eon.biz>, luigi burdo <intermediadc@hotmail.com>
+Subject: Re: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+In-Reply-To: <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+Date: Wed, 08 Jun 2016 20:41:18 +0530
+Message-ID: <87r3c71zs9.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87twh31zy6.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +48,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Darren Stevens <darren@stevens-zone.net> writes:
 
-> PowerISA 3.0 adds an in memory table for storing segment translation
-> information. In this mode, which is enabled by setting both HOST RADIX
-> and GUEST RADIX bits in partition table to 0 and enabling UPRT to
-> 1, we have a per process segment table. The segment table details
-> are stored in the process table indexed by PID value.
+> Hello Christian
+
+> That's not where I ended up with my bisect, this commit is about 10 before the
+> one I found to be bad, which is:
 >
-> Segment table mode also requires us to map the process table at the
-> beginning of a 1TB segment.
+> commit d6a9996e84ac4beb7713e9485f4563e100a9b03e
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Fri Apr 29 23:26:21 2016 +1000
 >
-> On the linux kernel side we enable this model if we find that
-> the radix is explicitily disabled by setting the ibm,pa-feature radix
-> bit (byte 40 bit 0) set to 0. If the size of ibm,pa-feature node is less
-> than 40 bytes, we enable the legacy HPT mode using SLB. If radix bit
-> is set to 1, we use the radix mode.
-
-
-Missed updating the commit message.
-
-On the linux kernel side we enable this model if we find hash mmu bit
-(byte 58 bit 0) of ibm,pa-feature device tree node set to 1. If the size
-of ibm,pa-feature node is less than 58 bytes or if the hash mmu bit is
-set to 0, we enable the legacy HPT mode using SLB. If radix bit (byte 40
-bit 0) is set to 1, we use the radix mode.
-
+>     powerpc/mm: vmalloc abstraction in preparation for radix
+>     
+>     The vmalloc range differs between hash and radix config. Hence make
+>     VMALLOC_START and related constants a variable which will be runtime
+>     initialized depending on whether hash or radix mode is active.
+>     
+>     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>     [mpe: Fix missing init of ioremap_bot in pgtable_64.c for ppc64e]
+>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 >
-> With respect to SLB mapping, we bolt mapp the entire kernel range and
-> and only handle user space segment fault.
->
+
+Can you check the value of ISA_IO_BASE where you are
+using it. If you are calling it early, you will find wrong value in
+that. With the latest kernel it is a variable and is initialized in
+hash__early_init_mmu();
 
 -aneesh
