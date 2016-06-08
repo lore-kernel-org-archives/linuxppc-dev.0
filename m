@@ -1,28 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPqYN0GBrzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 23:49:28 +1000 (AEST)
-Message-ID: <1465393760.10567.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>,
- Boqun Feng <boqun.feng@gmail.com>
-Date: Wed, 08 Jun 2016 23:49:20 +1000
-In-Reply-To: <20160608123507.GR30154@twins.programming.kicks-ass.net>
-References: <1465213340.2658.1.camel@ellerman.id.au>
- <20160606115655.GD30909@twins.programming.kicks-ass.net>
- <1465215445.2658.4.camel@ellerman.id.au>
- <20160606144659.GG30909@twins.programming.kicks-ass.net>
- <1465384845.13854.7.camel@ellerman.id.au>
- <20160608123507.GR30154@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPqbp6DT7zDqJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 23:51:34 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: Darren Stevens <darren@stevens-zone.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <michaele@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
+ "contact@a-eon.com" <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>,
+ luigi burdo <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <18d21f44-295c-d177-6283-7bebf49382dd@xenosoft.de>
+Date: Wed, 8 Jun 2016 15:51:00 +0200
+MIME-Version: 1.0
+In-Reply-To: <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +44,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-06-08 at 14:35 +0200, Peter Zijlstra wrote:
-> On Wed, Jun 08, 2016 at 09:20:45PM +1000, Michael Ellerman wrote:
-> > On Mon, 2016-06-06 at 16:46 +0200, Peter Zijlstra wrote:
-> > > On Mon, Jun 06, 2016 at 10:17:25PM +1000, Michael Ellerman wrote:
-> > > > On Mon, 2016-06-06 at 13:56 +0200, Peter Zijlstra wrote:
-> > > > > On Mon, Jun 06, 2016 at 09:42:20PM +1000, Michael Ellerman wrote:
-> > > > > 
-> > > > > Why the move to in-line this implementation? It looks like a fairly big
-> > > > > function.
-> > > > 
-> > > > I agree it's not pretty.
-> > > 
-> > > > I'm not beholden to v3 though if you hate it.
-> > > 
-> > > I don't mind; its just that I am in a similar boat with qspinlock and
-> > > chose the other option. So I just figured I'd ask :-)
-> > 
-> > OK. I'll go with inline and we'll see which version gets "cleaned-up" by a
-> > janitor first ;)
-> 
-> Ok; what tree does this go in? I have this dependent series which I'd
-> like to get sorted and merged somewhere.
+Hi All,
 
-Ah sorry, I didn't realise. I was going to put it in my next (which doesn't
-exist yet but hopefully will early next week).
+I tried to revert this commit but unfortunately I doesn't work:
 
-I'll make a topic branch with just that commit based on rc2 or rc3?
+git revert d6a9996e84ac4beb7713e9485f4563e100a9b03e
 
-cheers
+error: could not revert d6a9996... powerpc/mm: vmalloc abstraction in 
+preparation for radix
+hint: after resolving the conflicts, mark the corrected paths
+hint: with 'git add <paths>' or 'git rm <paths>'
+hint: and commit the result with 'git commit'
+
+
+Any hints?
+
+Thanks,
+
+Christian
+
+On 08 June 2016 at 1:33 PM, Darren Stevens wrote:
+> Hello Christian
+>
+> That's not where I ended up with my bisect, this commit is about 10 before the
+> one I found to be bad, which is:
+>
+> commit d6a9996e84ac4beb7713e9485f4563e100a9b03e
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Date:   Fri Apr 29 23:26:21 2016 +1000
+>
+>      powerpc/mm: vmalloc abstraction in preparation for radix
+>      
+>      The vmalloc range differs between hash and radix config. Hence make
+>      VMALLOC_START and related constants a variable which will be runtime
+>      initialized depending on whether hash or radix mode is active.
+>      
+>      Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>      [mpe: Fix missing init of ioremap_bot in pgtable_64.c for ppc64e]
+>      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Not sure how we are getting different results though. I have attached my
+> bisect log and the suspect commit, whcih is quite large. I'm not sure which
+> part of it is at fault. I have some jobs to do now, but hope to get tesing
+> this later today.
+>
+> Regards
+> Darren
