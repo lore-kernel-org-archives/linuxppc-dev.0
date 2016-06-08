@@ -1,17 +1,17 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPlND2D3KzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 20:41:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPlNF4QRlzDqFm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 20:41:17 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Jack Miller <jack@codezen.org>
 Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org,
  cyrilbur@gmail.com
-Subject: [PATCH v6 2/3] powerpc: Load Monitor Register Support
-Date: Wed,  8 Jun 2016 20:38:35 +1000
-Message-Id: <1465382316-18588-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH v6 3/3] powerpc: Load Monitor Register Tests
+Date: Wed,  8 Jun 2016 20:38:36 +1000
+Message-Id: <1465382316-18588-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1465382316-18588-1-git-send-email-mikey@neuling.org>
 References: <1462501822-11262-1-git-send-email-mikey@neuling.org>
  <1465382316-18588-1-git-send-email-mikey@neuling.org>
@@ -26,130 +26,301 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Jack Miller <jack@codezen.org>
 
-This enables new registers, LMRR and LMSER, that can trigger an EBB in
-userspace code when a monitored load (via the new ldmx instruction)
-loads memory from a monitored space. This facility is controlled by a
-new FSCR bit, LM.
-
-This patch disables the FSCR LM control bit on task init and enables
-that bit when a load monitor facility unavailable exception is taken
-for using it. On context switch, this bit is then used to determine
-whether the two relevant registers are saved and restored. This is
-done lazily for performance reasons.
+Adds two tests. One is a simple test to ensure that the new registers
+LMRR and LMSER are properly maintained. The other actually uses the
+existing EBB test infrastructure to test that LMRR and LMSER behave as
+documented.
 
 Signed-off-by: Jack Miller <jack@codezen.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/processor.h |  2 ++
- arch/powerpc/include/asm/reg.h       |  5 +++++
- arch/powerpc/kernel/process.c        | 18 ++++++++++++++++++
- arch/powerpc/kernel/traps.c          |  4 ++++
- 4 files changed, 29 insertions(+)
+ tools/testing/selftests/powerpc/pmu/ebb/.gitignore |   2 +
+ tools/testing/selftests/powerpc/pmu/ebb/Makefile   |   2 +-
+ tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c  | 143 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h  |  39 ++++++
+ .../selftests/powerpc/pmu/ebb/ebb_lmr_regs.c       |  37 ++++++
+ tools/testing/selftests/powerpc/reg.h              |   5 +
+ 6 files changed, 227 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
+ create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
+ create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 1833fe9..ac7670d 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -314,6 +314,8 @@ struct thread_struct {
- 	unsigned long	mmcr2;
- 	unsigned 	mmcr0;
- 	unsigned 	used_ebb;
-+	unsigned long	lmrr;
-+	unsigned long	lmser;
- #endif
- };
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/.gitignore b/tools/testing/selftests/powerpc/pmu/ebb/.gitignore
+index 42bddbe..44b7df1 100644
+--- a/tools/testing/selftests/powerpc/pmu/ebb/.gitignore
++++ b/tools/testing/selftests/powerpc/pmu/ebb/.gitignore
+@@ -20,3 +20,5 @@ back_to_back_ebbs_test
+ lost_exception_test
+ no_handler_test
+ cycles_with_mmcr2_test
++ebb_lmr
++ebb_lmr_regs
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/Makefile b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
+index 8d2279c4..6b0453e 100644
+--- a/tools/testing/selftests/powerpc/pmu/ebb/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/ebb/Makefile
+@@ -14,7 +14,7 @@ TEST_PROGS := reg_access_test event_attributes_test cycles_test	\
+ 	 fork_cleanup_test ebb_on_child_test			\
+ 	 ebb_on_willing_child_test back_to_back_ebbs_test	\
+ 	 lost_exception_test no_handler_test			\
+-	 cycles_with_mmcr2_test
++	 cycles_with_mmcr2_test ebb_lmr ebb_lmr_regs
  
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index a0948f4..ce44fe2 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -282,6 +282,8 @@
- #define SPRN_HRMOR	0x139	/* Real mode offset register */
- #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
- #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
-+#define SPRN_LMRR	0x32D	/* Load Monitor Region Register */
-+#define SPRN_LMSER	0x32E	/* Load Monitor Section Enable Register */
- #define SPRN_IC		0x350	/* Virtual Instruction Count */
- #define SPRN_VTB	0x351	/* Virtual Time Base */
- #define SPRN_LDBAR	0x352	/* LD Base Address Register */
-@@ -291,6 +293,7 @@
- #define SPRN_PMCR	0x374	/* Power Management Control Register */
+ all: $(TEST_PROGS)
  
- /* HFSCR and FSCR bit numbers are the same */
-+#define FSCR_LM_LG	11	/* Enable Load Monitor Registers */
- #define FSCR_TAR_LG	8	/* Enable Target Address Register */
- #define FSCR_EBB_LG	7	/* Enable Event Based Branching */
- #define FSCR_TM_LG	5	/* Enable Transactional Memory */
-@@ -300,10 +303,12 @@
- #define FSCR_VECVSX_LG	1	/* Enable VMX/VSX  */
- #define FSCR_FP_LG	0	/* Enable Floating Point */
- #define SPRN_FSCR	0x099	/* Facility Status & Control Register */
-+#define   FSCR_LM	__MASK(FSCR_LM_LG)
- #define   FSCR_TAR	__MASK(FSCR_TAR_LG)
- #define   FSCR_EBB	__MASK(FSCR_EBB_LG)
- #define   FSCR_DSCR	__MASK(FSCR_DSCR_LG)
- #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
-+#define   HFSCR_LM	__MASK(FSCR_LM_LG)
- #define   HFSCR_TAR	__MASK(FSCR_TAR_LG)
- #define   HFSCR_EBB	__MASK(FSCR_EBB_LG)
- #define   HFSCR_TM	__MASK(FSCR_TM_LG)
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 74ea8db..2e22f60 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1009,6 +1009,14 @@ static inline void save_sprs(struct thread_struct *t)
- 		 */
- 		t->tar = mfspr(SPRN_TAR);
- 	}
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
+new file mode 100644
+index 0000000..c47ebd5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.c
+@@ -0,0 +1,143 @@
++/*
++ * Copyright 2016, Jack Miller, IBM Corp.
++ * Licensed under GPLv2.
++ */
 +
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		/* Conditionally save Load Monitor registers, if enabled */
-+		if (t->fscr & FSCR_LM) {
-+			t->lmrr = mfspr(SPRN_LMRR);
-+			t->lmser = mfspr(SPRN_LMSER);
++#include <stdlib.h>
++#include <stdio.h>
++
++#include "ebb.h"
++#include "ebb_lmr.h"
++
++#define SIZE		(32 * 1024 * 1024)	/* 32M */
++#define LM_SIZE		0	/* Smallest encoding, 32M */
++
++#define SECTIONS	64	/* 1 per bit in LMSER */
++#define SECTION_SIZE	(SIZE / SECTIONS)
++#define SECTION_LONGS   (SECTION_SIZE / sizeof(long))
++
++static unsigned long *test_mem;
++
++static int lmr_count = 0;
++
++void ebb_lmr_handler(void)
++{
++	lmr_count++;
++}
++
++void ldmx_full_section(unsigned long *mem, int section)
++{
++	unsigned long *ptr;
++	int i;
++
++	for (i = 0; i < SECTION_LONGS; i++) {
++		ptr = &mem[(SECTION_LONGS * section) + i];
++		ldmx((unsigned long) &ptr);
++		ebb_lmr_reset();
++	}
++}
++
++unsigned long section_masks[] = {
++	0x8000000000000000,
++	0xFF00000000000000,
++	0x0000000F70000000,
++	0x8000000000000001,
++	0xF0F0F0F0F0F0F0F0,
++	0x0F0F0F0F0F0F0F0F,
++	0x0
++};
++
++int ebb_lmr_section_test(unsigned long *mem)
++{
++	unsigned long *mask = section_masks;
++	int i;
++
++	for (; *mask; mask++) {
++		mtspr(SPRN_LMSER, *mask);
++		printf("Testing mask 0x%016lx\n", mfspr(SPRN_LMSER));
++
++		for (i = 0; i < 64; i++) {
++			lmr_count = 0;
++			ldmx_full_section(mem, i);
++			if (*mask & (1UL << (63 - i)))
++				FAIL_IF(lmr_count != SECTION_LONGS);
++			else
++				FAIL_IF(lmr_count);
 +		}
 +	}
- #endif
- }
- 
-@@ -1044,6 +1052,16 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- 		if (old_thread->tar != new_thread->tar)
- 			mtspr(SPRN_TAR, new_thread->tar);
- 	}
 +
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		/* Conditionally restore Load Monitor registers, if enabled */
-+		if (new_thread->fscr & FSCR_LM) {
-+			if (old_thread->lmrr != new_thread->lmrr)
-+				mtspr(SPRN_LMRR, new_thread->lmrr);
-+			if (old_thread->lmser != new_thread->lmser)
-+				mtspr(SPRN_LMSER, new_thread->lmser);
-+		}
++	return 0;
++}
++
++int ebb_lmr(void)
++{
++	int i;
++
++	SKIP_IF(!lmr_is_supported());
++
++	setup_ebb_handler(ebb_lmr_handler);
++
++	ebb_global_enable();
++
++	FAIL_IF(posix_memalign((void **)&test_mem, SIZE, SIZE) != 0);
++
++	mtspr(SPRN_LMSER, 0);
++
++	FAIL_IF(mfspr(SPRN_LMSER) != 0);
++
++	mtspr(SPRN_LMRR, ((unsigned long)test_mem | LM_SIZE));
++
++	FAIL_IF(mfspr(SPRN_LMRR) != ((unsigned long)test_mem | LM_SIZE));
++
++	/* Read every single byte to ensure we get no false positives */
++	for (i = 0; i < SECTIONS; i++)
++		ldmx_full_section(test_mem, i);
++
++	FAIL_IF(lmr_count != 0);
++
++	/* Turn on the first section */
++
++	mtspr(SPRN_LMSER, (1UL << 63));
++	FAIL_IF(mfspr(SPRN_LMSER) != (1UL << 63));
++
++	/* Enable LM (BESCR) */
++
++	mtspr(SPRN_BESCR, mfspr(SPRN_BESCR) | BESCR_LME);
++	FAIL_IF(!(mfspr(SPRN_BESCR) & BESCR_LME));
++
++	ldmx((unsigned long)&test_mem);
++
++	FAIL_IF(lmr_count != 1);	// exactly one exception
++	FAIL_IF(mfspr(SPRN_BESCR) & BESCR_LME);	// LM now disabled
++	FAIL_IF(!(mfspr(SPRN_BESCR) & BESCR_LMEO));	// occurred bit set
++
++	printf("Simple LMR EBB OK\n");
++
++	/* This shouldn't cause an EBB since it's been disabled */
++	ldmx((unsigned long)&test_mem);
++	FAIL_IF(lmr_count != 1);
++
++	printf("LMR disable on EBB OK\n");
++
++	ebb_lmr_reset();
++
++	/* This should cause an EBB or reset is broken */
++	ldmx((unsigned long)&test_mem);
++	FAIL_IF(lmr_count != 2);
++
++	printf("LMR reset EBB OK\n");
++
++	ebb_lmr_reset();
++
++	return ebb_lmr_section_test(test_mem);
++}
++
++int main(void)
++{
++	int ret = test_harness(ebb_lmr, "ebb_lmr");
++
++	if (test_mem)
++		free(test_mem);
++
++	return ret;
++}
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
+new file mode 100644
+index 0000000..ef50abd
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr.h
+@@ -0,0 +1,39 @@
++#ifndef _SELFTESTS_POWERPC_PMU_EBB_LMR_H
++#define _SELFTESTS_POWERPC_PMU_EBB_LMR_H
++
++#include "reg.h"
++
++#ifndef PPC_FEATURE2_ARCH_3_00
++#define PPC_FEATURE2_ARCH_3_00 0x00800000
++#endif
++
++#define lmr_is_supported() have_hwcap2(PPC_FEATURE2_ARCH_3_00)
++
++static inline void ebb_lmr_reset(void)
++{
++	unsigned long bescr = mfspr(SPRN_BESCR);
++	bescr &= ~(BESCR_LMEO);
++	bescr |= BESCR_LME;
++	mtspr(SPRN_BESCR, bescr);
++}
++
++#define LDMX(t, a, b)\
++	(0x7c00026a |				\
++	 (((t) & 0x1f) << 21) |			\
++	 (((a) & 0x1f) << 16) |			\
++	 (((b) & 0x1f) << 11))
++
++static inline unsigned long ldmx(unsigned long address)
++{
++	unsigned long ret;
++
++	asm volatile ("mr 9, %1\r\n"
++		      ".long " __stringify(LDMX(9, 0, 9)) "\r\n"
++		      "mr %0, 9\r\n":"=r"(ret)
++		      :"r"(address)
++		      :"r9");
++
++	return ret;
++}
++
++#endif
+diff --git a/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
+new file mode 100644
+index 0000000..aff4241
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/ebb/ebb_lmr_regs.c
+@@ -0,0 +1,37 @@
++/*
++ * Copyright 2016, Jack Miller, IBM Corp.
++ * Licensed under GPLv2.
++ */
++
++#include <stdlib.h>
++#include <stdio.h>
++#include <unistd.h>
++
++#include "ebb.h"
++#include "ebb_lmr.h"
++
++#define CHECKS 10000
++
++int ebb_lmr_regs(void)
++{
++	int i;
++
++	SKIP_IF(!lmr_is_supported());
++
++	ebb_global_enable();
++
++	for (i = 0; i < CHECKS; i++) {
++		mtspr(SPRN_LMRR, i << 25);	// skip size and rsvd bits
++		mtspr(SPRN_LMSER, i);
++
++		FAIL_IF(mfspr(SPRN_LMRR) != (i << 25));
++		FAIL_IF(mfspr(SPRN_LMSER) != i);
 +	}
- #endif
- }
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(ebb_lmr_regs, "ebb_lmr_regs");
++}
+diff --git a/tools/testing/selftests/powerpc/reg.h b/tools/testing/selftests/powerpc/reg.h
+index 65bfdee..fddf368 100644
+--- a/tools/testing/selftests/powerpc/reg.h
++++ b/tools/testing/selftests/powerpc/reg.h
+@@ -34,6 +34,11 @@
  
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index a4b00ee..aabdeac 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1376,6 +1376,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 		[FSCR_TM_LG] = "TM",
- 		[FSCR_EBB_LG] = "EBB",
- 		[FSCR_TAR_LG] = "TAR",
-+		[FSCR_LM_LG] = "LM",
- 	};
- 	char *facility = "unknown";
- 	u64 value;
-@@ -1433,6 +1434,9 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 			emulate_single_step(regs);
- 		}
- 		return;
-+	} else if ((status == FSCR_LM_LG) && cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		mtspr(SPRN_FSCR, value | FSCR_LM);
-+		return;
- 	}
+ #define BESCR_PMEO     0x1     /* PMU Event-based exception Occurred */
+ #define BESCR_PME      (0x1ul << 32) /* PMU Event-based exception Enable */
++#define BESCR_LME      (0x1ul << 34) /* Load Monitor Enable */
++#define BESCR_LMEO     (0x1ul << 2)  /* Load Monitor Exception Occurred */
++
++#define SPRN_LMRR      813     /* Load Monitor Region Register */
++#define SPRN_LMSER     814     /* Load Monitor Section Enable Register */
  
- 	if ((status < ARRAY_SIZE(facility_strings)) &&
+ #define SPRN_PMC1      771
+ #define SPRN_PMC2      772
 -- 
 2.7.4
