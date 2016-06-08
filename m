@@ -2,47 +2,47 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPZWs4Q9SzDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 14:02:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPZWv3JJSzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 14:02:19 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rPZWs0Frzz9sxS
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2016 14:02:16 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3rPZWv08yCz9sxb
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2016 14:02:18 +1000 (AEST)
+Received: from pps.filterd (m0048827.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u583wigt092740
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2016 00:02:15 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m3hc2v-1
+ u583xJsn003271
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2016 00:02:17 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23e9mdhc3e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 08 Jun 2016 00:02:14 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 08 Jun 2016 00:02:17 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Wed, 8 Jun 2016 14:02:12 +1000
+ Wed, 8 Jun 2016 14:02:14 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 602A93578069
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2016 14:01:57 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AA3142CE807B
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jun 2016 14:01:56 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5841pvn51904696
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2016 14:01:51 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5841ebg030763
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2016 14:01:41 +1000
+ u5841fdB24838368
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2016 14:01:46 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5841eem012042
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jun 2016 14:01:40 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: [PATCH 2/5] selftests/powerpc: Add test to check TM ucontext creation
-Date: Wed,  8 Jun 2016 14:00:33 +1000
+Subject: [PATCH 4/5] powerpc: tm: Rename transct_(*) to ck(\1)_state
+Date: Wed,  8 Jun 2016 14:00:35 +1000
 In-Reply-To: <20160608040036.13064-1-cyrilbur@gmail.com>
 References: <20160608040036.13064-1-cyrilbur@gmail.com>
-Message-Id: <20160608040036.13064-3-cyrilbur@gmail.com>
+Message-Id: <20160608040036.13064-5-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,1239 +52,540 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Make the structures being used for checkpointed state named
+consistently with the pt_regs/ckpt_regs.
+
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/basic_asm.h        |   4 +
- tools/testing/selftests/powerpc/fpu_asm.h          |  72 ++++++++++++
- tools/testing/selftests/powerpc/gpr_asm.h          |  96 ++++++++++++++++
- tools/testing/selftests/powerpc/math/fpu_asm.S     |  73 +-----------
- tools/testing/selftests/powerpc/math/vmx_asm.S     |  85 +-------------
- tools/testing/selftests/powerpc/tm/Makefile        |   9 +-
- .../powerpc/tm/tm-signal-context-chk-fpu.c         |  94 +++++++++++++++
- .../powerpc/tm/tm-signal-context-chk-gpr.c         |  96 ++++++++++++++++
- .../powerpc/tm/tm-signal-context-chk-vmx.c         | 112 ++++++++++++++++++
- .../powerpc/tm/tm-signal-context-chk-vsx.c         | 127 +++++++++++++++++++++
- .../selftests/powerpc/tm/tm-signal-context-chk.c   | 102 +++++++++++++++++
- tools/testing/selftests/powerpc/tm/tm-signal.S     | 105 +++++++++++++++++
- tools/testing/selftests/powerpc/vmx_asm.h          |  98 ++++++++++++++++
- 13 files changed, 920 insertions(+), 153 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/fpu_asm.h
- create mode 100644 tools/testing/selftests/powerpc/gpr_asm.h
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal.S
- create mode 100644 tools/testing/selftests/powerpc/vmx_asm.h
+ arch/powerpc/include/asm/processor.h | 20 +++---------
+ arch/powerpc/kernel/asm-offsets.c    | 12 ++++----
+ arch/powerpc/kernel/fpu.S            |  2 +-
+ arch/powerpc/kernel/process.c        |  4 +--
+ arch/powerpc/kernel/signal.h         |  8 ++---
+ arch/powerpc/kernel/signal_32.c      | 60 ++++++++++++++++++------------------
+ arch/powerpc/kernel/signal_64.c      | 32 +++++++++----------
+ arch/powerpc/kernel/tm.S             | 12 ++++----
+ arch/powerpc/kernel/vector.S         |  4 +--
+ 9 files changed, 71 insertions(+), 83 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/basic_asm.h b/tools/testing/selftests/powerpc/basic_asm.h
-index 3349a07..5131059 100644
---- a/tools/testing/selftests/powerpc/basic_asm.h
-+++ b/tools/testing/selftests/powerpc/basic_asm.h
-@@ -4,6 +4,10 @@
- #include <ppc-asm.h>
- #include <asm/unistd.h>
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 009fab1..6fd0f00 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -147,7 +147,7 @@ typedef struct {
+ } mm_segment_t;
  
-+#define TBEGIN .long 0x7C00051D
-+#define TSUSPEND .long 0x7C0005DD
-+#define TRESUME .long 0x7C2005DD
-+
- #define LOAD_REG_IMMEDIATE(reg,expr) \
- 	lis	reg,(expr)@highest;	\
- 	ori	reg,reg,(expr)@higher;	\
-diff --git a/tools/testing/selftests/powerpc/fpu_asm.h b/tools/testing/selftests/powerpc/fpu_asm.h
-new file mode 100644
-index 0000000..a73a7a9
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/fpu_asm.h
-@@ -0,0 +1,72 @@
-+#ifndef _SELFTESTS_POWERPC_FPU_ASM_H
-+#define _SELFTESTS_POWERPC_FPU_ASM_H
-+#include "basic_asm.h"
-+
-+#define PUSH_FPU(stack_size) \
-+	stfd	f31,(stack_size + STACK_FRAME_MIN_SIZE)(%r1); \
-+	stfd	f30,(stack_size + STACK_FRAME_MIN_SIZE - 8)(%r1); \
-+	stfd	f29,(stack_size + STACK_FRAME_MIN_SIZE - 16)(%r1); \
-+	stfd	f28,(stack_size + STACK_FRAME_MIN_SIZE - 24)(%r1); \
-+	stfd	f27,(stack_size + STACK_FRAME_MIN_SIZE - 32)(%r1); \
-+	stfd	f26,(stack_size + STACK_FRAME_MIN_SIZE - 40)(%r1); \
-+	stfd	f25,(stack_size + STACK_FRAME_MIN_SIZE - 48)(%r1); \
-+	stfd	f24,(stack_size + STACK_FRAME_MIN_SIZE - 56)(%r1); \
-+	stfd	f23,(stack_size + STACK_FRAME_MIN_SIZE - 64)(%r1); \
-+	stfd	f22,(stack_size + STACK_FRAME_MIN_SIZE - 72)(%r1); \
-+	stfd	f21,(stack_size + STACK_FRAME_MIN_SIZE - 80)(%r1); \
-+	stfd	f20,(stack_size + STACK_FRAME_MIN_SIZE - 88)(%r1); \
-+	stfd	f19,(stack_size + STACK_FRAME_MIN_SIZE - 96)(%r1); \
-+	stfd	f18,(stack_size + STACK_FRAME_MIN_SIZE - 104)(%r1); \
-+	stfd	f17,(stack_size + STACK_FRAME_MIN_SIZE - 112)(%r1); \
-+	stfd	f16,(stack_size + STACK_FRAME_MIN_SIZE - 120)(%r1); \
-+	stfd	f15,(stack_size + STACK_FRAME_MIN_SIZE - 128)(%r1); \
-+	stfd	f14,(stack_size + STACK_FRAME_MIN_SIZE - 136)(%r1);
-+
-+#define POP_FPU(stack_size) \
-+	lfd	f31,(stack_size + STACK_FRAME_MIN_SIZE)(%r1); \
-+	lfd	f30,(stack_size + STACK_FRAME_MIN_SIZE - 8)(%r1); \
-+	lfd	f29,(stack_size + STACK_FRAME_MIN_SIZE - 16)(%r1); \
-+	lfd	f28,(stack_size + STACK_FRAME_MIN_SIZE - 24)(%r1); \
-+	lfd	f27,(stack_size + STACK_FRAME_MIN_SIZE - 32)(%r1); \
-+	lfd	f26,(stack_size + STACK_FRAME_MIN_SIZE - 40)(%r1); \
-+	lfd	f25,(stack_size + STACK_FRAME_MIN_SIZE - 48)(%r1); \
-+	lfd	f24,(stack_size + STACK_FRAME_MIN_SIZE - 56)(%r1); \
-+	lfd	f23,(stack_size + STACK_FRAME_MIN_SIZE - 64)(%r1); \
-+	lfd	f22,(stack_size + STACK_FRAME_MIN_SIZE - 72)(%r1); \
-+	lfd	f21,(stack_size + STACK_FRAME_MIN_SIZE - 80)(%r1); \
-+	lfd	f20,(stack_size + STACK_FRAME_MIN_SIZE - 88)(%r1); \
-+	lfd	f19,(stack_size + STACK_FRAME_MIN_SIZE - 96)(%r1); \
-+	lfd	f18,(stack_size + STACK_FRAME_MIN_SIZE - 104)(%r1); \
-+	lfd	f17,(stack_size + STACK_FRAME_MIN_SIZE - 112)(%r1); \
-+	lfd	f16,(stack_size + STACK_FRAME_MIN_SIZE - 120)(%r1); \
-+	lfd	f15,(stack_size + STACK_FRAME_MIN_SIZE - 128)(%r1); \
-+	lfd	f14,(stack_size + STACK_FRAME_MIN_SIZE - 136)(%r1);
-+
-+/*
-+ * Careful calling this, it will 'clobber' fpu (by design)
-+ * Don't call this from C
-+ */
-+FUNC_START(load_fpu)
-+	lfd	f14,0(r3)
-+	lfd	f15,8(r3)
-+	lfd	f16,16(r3)
-+	lfd	f17,24(r3)
-+	lfd	f18,32(r3)
-+	lfd	f19,40(r3)
-+	lfd	f20,48(r3)
-+	lfd	f21,56(r3)
-+	lfd	f22,64(r3)
-+	lfd	f23,72(r3)
-+	lfd	f24,80(r3)
-+	lfd	f25,88(r3)
-+	lfd	f26,96(r3)
-+	lfd	f27,104(r3)
-+	lfd	f28,112(r3)
-+	lfd	f29,120(r3)
-+	lfd	f30,128(r3)
-+	lfd	f31,136(r3)
-+	blr
-+FUNC_END(load_fpu)
-+
-+#endif /* _SELFTESTS_POWERPC_FPU_ASM_H */
-+
-diff --git a/tools/testing/selftests/powerpc/gpr_asm.h b/tools/testing/selftests/powerpc/gpr_asm.h
-new file mode 100644
-index 0000000..475fde9
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/gpr_asm.h
-@@ -0,0 +1,96 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _SELFTESTS_POWERPC_GPR_ASM_H
-+#define _SELFTESTS_POWERPC_GPR_ASM_H
-+
-+#include "basic_asm.h"
-+
-+#define __PUSH_NVREGS(top_pos); \
-+	std r31,(top_pos)(%r1); \
-+	std r30,(top_pos - 8)(%r1); \
-+	std r29,(top_pos - 16)(%r1); \
-+	std r28,(top_pos - 24)(%r1); \
-+	std r27,(top_pos - 32)(%r1); \
-+	std r26,(top_pos - 40)(%r1); \
-+	std r25,(top_pos - 48)(%r1); \
-+	std r24,(top_pos - 56)(%r1); \
-+	std r23,(top_pos - 64)(%r1); \
-+	std r22,(top_pos - 72)(%r1); \
-+	std r21,(top_pos - 80)(%r1); \
-+	std r20,(top_pos - 88)(%r1); \
-+	std r19,(top_pos - 96)(%r1); \
-+	std r18,(top_pos - 104)(%r1); \
-+	std r17,(top_pos - 112)(%r1); \
-+	std r16,(top_pos - 120)(%r1); \
-+	std r15,(top_pos - 128)(%r1); \
-+	std r14,(top_pos - 136)(%r1)
-+
-+#define __POP_NVREGS(top_pos); \
-+	ld r31,(top_pos)(%r1); \
-+	ld r30,(top_pos - 8)(%r1); \
-+	ld r29,(top_pos - 16)(%r1); \
-+	ld r28,(top_pos - 24)(%r1); \
-+	ld r27,(top_pos - 32)(%r1); \
-+	ld r26,(top_pos - 40)(%r1); \
-+	ld r25,(top_pos - 48)(%r1); \
-+	ld r24,(top_pos - 56)(%r1); \
-+	ld r23,(top_pos - 64)(%r1); \
-+	ld r22,(top_pos - 72)(%r1); \
-+	ld r21,(top_pos - 80)(%r1); \
-+	ld r20,(top_pos - 88)(%r1); \
-+	ld r19,(top_pos - 96)(%r1); \
-+	ld r18,(top_pos - 104)(%r1); \
-+	ld r17,(top_pos - 112)(%r1); \
-+	ld r16,(top_pos - 120)(%r1); \
-+	ld r15,(top_pos - 128)(%r1); \
-+	ld r14,(top_pos - 136)(%r1)
-+
-+#define PUSH_NVREGS(stack_size) \
-+	__PUSH_NVREGS(stack_size + STACK_FRAME_MIN_SIZE)
-+
-+/* 18 NV FPU REGS */
-+#define PUSH_NVREGS_BELOW_FPU(stack_size) \
-+	__PUSH_NVREGS(stack_size + STACK_FRAME_MIN_SIZE - (18 * 8))
-+
-+#define POP_NVREGS(stack_size) \
-+	__POP_NVREGS(stack_size + STACK_FRAME_MIN_SIZE)
-+
-+/* 18 NV FPU REGS */
-+#define POP_NVREGS_BELOW_FPU(stack_size) \
-+	__POP_NVREGS(stack_size + STACK_FRAME_MIN_SIZE - (18 * 8))
-+
-+/*
-+ * Careful calling this, it will 'clobber' NVGPRs (by design)
-+ * Don't call this from C
-+ */
-+FUNC_START(load_gpr)
-+	ld	r14,0(r3)
-+	ld	r15,8(r3)
-+	ld	r16,16(r3)
-+	ld	r17,24(r3)
-+	ld	r18,32(r3)
-+	ld	r19,40(r3)
-+	ld	r20,48(r3)
-+	ld	r21,56(r3)
-+	ld	r22,64(r3)
-+	ld	r23,72(r3)
-+	ld	r24,80(r3)
-+	ld	r25,88(r3)
-+	ld	r26,96(r3)
-+	ld	r27,104(r3)
-+	ld	r28,112(r3)
-+	ld	r29,120(r3)
-+	ld	r30,128(r3)
-+	ld	r31,136(r3)
-+	blr
-+FUNC_END(load_gpr)
-+
-+
-+#endif /* _SELFTESTS_POWERPC_GPR_ASM_H */
-diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
-index f3711d8..241f067 100644
---- a/tools/testing/selftests/powerpc/math/fpu_asm.S
-+++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
-@@ -8,70 +8,7 @@
-  */
+ #define TS_FPR(i) fp_state.fpr[i][TS_FPROFFSET]
+-#define TS_TRANS_FPR(i) transact_fp.fpr[i][TS_FPROFFSET]
++#define TS_CKFPR(i) ckfp_state.fpr[i][TS_FPROFFSET]
  
- #include "../basic_asm.h"
--
--#define PUSH_FPU(pos) \
--	stfd	f14,pos(sp); \
--	stfd	f15,pos+8(sp); \
--	stfd	f16,pos+16(sp); \
--	stfd	f17,pos+24(sp); \
--	stfd	f18,pos+32(sp); \
--	stfd	f19,pos+40(sp); \
--	stfd	f20,pos+48(sp); \
--	stfd	f21,pos+56(sp); \
--	stfd	f22,pos+64(sp); \
--	stfd	f23,pos+72(sp); \
--	stfd	f24,pos+80(sp); \
--	stfd	f25,pos+88(sp); \
--	stfd	f26,pos+96(sp); \
--	stfd	f27,pos+104(sp); \
--	stfd	f28,pos+112(sp); \
--	stfd	f29,pos+120(sp); \
--	stfd	f30,pos+128(sp); \
--	stfd	f31,pos+136(sp);
--
--#define POP_FPU(pos) \
--	lfd	f14,pos(sp); \
--	lfd	f15,pos+8(sp); \
--	lfd	f16,pos+16(sp); \
--	lfd	f17,pos+24(sp); \
--	lfd	f18,pos+32(sp); \
--	lfd	f19,pos+40(sp); \
--	lfd	f20,pos+48(sp); \
--	lfd	f21,pos+56(sp); \
--	lfd	f22,pos+64(sp); \
--	lfd	f23,pos+72(sp); \
--	lfd	f24,pos+80(sp); \
--	lfd	f25,pos+88(sp); \
--	lfd	f26,pos+96(sp); \
--	lfd	f27,pos+104(sp); \
--	lfd	f28,pos+112(sp); \
--	lfd	f29,pos+120(sp); \
--	lfd	f30,pos+128(sp); \
--	lfd	f31,pos+136(sp);
--
--# Careful calling this, it will 'clobber' fpu (by design)
--# Don't call this from C
--FUNC_START(load_fpu)
--	lfd	f14,0(r3)
--	lfd	f15,8(r3)
--	lfd	f16,16(r3)
--	lfd	f17,24(r3)
--	lfd	f18,32(r3)
--	lfd	f19,40(r3)
--	lfd	f20,48(r3)
--	lfd	f21,56(r3)
--	lfd	f22,64(r3)
--	lfd	f23,72(r3)
--	lfd	f24,80(r3)
--	lfd	f25,88(r3)
--	lfd	f26,96(r3)
--	lfd	f27,104(r3)
--	lfd	f28,112(r3)
--	lfd	f29,120(r3)
--	lfd	f30,128(r3)
--	lfd	f31,136(r3)
--	blr
--FUNC_END(load_fpu)
-+#include "../fpu_asm.h"
+ /* FP and VSX 0-31 register set */
+ struct thread_fp_state {
+@@ -266,21 +266,9 @@ struct thread_struct {
+ 	unsigned long	tm_ppr;
+ 	unsigned long	tm_dscr;
  
- FUNC_START(check_fpu)
- 	mr r4,r3
-@@ -138,9 +75,9 @@ FUNC_START(test_fpu)
- 	# r4 holds pointer to the pid
- 	# f14-f31 are non volatiles
- 	PUSH_BASIC_STACK(256)
-+	PUSH_FPU(256)
- 	std	r3,STACK_FRAME_PARAM(0)(sp) # Address of darray
- 	std r4,STACK_FRAME_PARAM(1)(sp) # Address of pid
--	PUSH_FPU(STACK_FRAME_LOCAL(2,0))
+-	/*
+-	 * Transactional FP and VSX 0-31 register set.
+-	 * NOTE: the sense of these is the opposite of the integer ckpt_regs!
+-	 *
+-	 * When a transaction is active/signalled/scheduled etc., *regs is the
+-	 * most recent set of/speculated GPRs with ckpt_regs being the older
+-	 * checkpointed regs to which we roll back if transaction aborts.
+-	 *
+-	 * However, fpr[] is the checkpointed 'base state' of FP regs, and
+-	 * transact_fpr[] is the new set of transactional values.
+-	 * VRs work the same way.
+-	 */
+-	struct thread_fp_state transact_fp;
+-	struct thread_vr_state transact_vr;
+-	unsigned long	transact_vrsave;
++	struct thread_fp_state ckfp_state; /* Checkpointed FP state */
++	struct thread_vr_state ckvr_state; /* Checkpointed VR state */
++	unsigned long	ckvrsave; /* Checkpointed VRSAVE */
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ #ifdef CONFIG_KVM_BOOK3S_32_HANDLER
+ 	void*		kvm_shadow_vcpu; /* KVM internal data */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 9ea0955..e67741f 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -152,12 +152,12 @@ int main(void)
+ 	DEFINE(THREAD_TM_PPR, offsetof(struct thread_struct, tm_ppr));
+ 	DEFINE(THREAD_TM_DSCR, offsetof(struct thread_struct, tm_dscr));
+ 	DEFINE(PT_CKPT_REGS, offsetof(struct thread_struct, ckpt_regs));
+-	DEFINE(THREAD_TRANSACT_VRSTATE, offsetof(struct thread_struct,
+-						 transact_vr));
+-	DEFINE(THREAD_TRANSACT_VRSAVE, offsetof(struct thread_struct,
+-					    transact_vrsave));
+-	DEFINE(THREAD_TRANSACT_FPSTATE, offsetof(struct thread_struct,
+-						 transact_fp));
++	DEFINE(THREAD_CKVRSTATE, offsetof(struct thread_struct,
++						 ckvr_state));
++	DEFINE(THREAD_CKVRSAVE, offsetof(struct thread_struct,
++					    ckvrsave));
++	DEFINE(THREAD_CKFPSTATE, offsetof(struct thread_struct,
++						 ckfp_state));
+ 	/* Local pt_regs on stack for Transactional Memory funcs. */
+ 	DEFINE(TM_FRAME_SIZE, STACK_FRAME_OVERHEAD +
+ 	       sizeof(struct pt_regs) + 16);
+diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+index 15da2b5..181c187 100644
+--- a/arch/powerpc/kernel/fpu.S
++++ b/arch/powerpc/kernel/fpu.S
+@@ -68,7 +68,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ 	SYNC
+ 	MTMSRD(r5)
  
- 	bl load_fpu
- 	nop
-@@ -155,7 +92,7 @@ FUNC_START(test_fpu)
- 	bl check_fpu
- 	nop
+-	addi	r7,r3,THREAD_TRANSACT_FPSTATE
++	addi	r7,r3,THREAD_CKFPSTATE
+ 	lfd	fr0,FPSTATE_FPSCR(r7)
+ 	MTFSF_L(fr0)
+ 	REST_32FPVSRS(0, R4, R7)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 696e0236..15462c9 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -813,8 +813,8 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
+ 	 *
+ 	 * In switching we need to maintain a 2nd register state as
+ 	 * oldtask->thread.ckpt_regs.  We tm_reclaim(oldproc); this saves the
+-	 * checkpointed (tbegin) state in ckpt_regs and saves the transactional
+-	 * (current) FPRs into oldtask->thread.transact_fpr[].
++	 * checkpointed (tbegin) state in ckpt_regs, ckfp_state and
++	 * ckvr_state
+ 	 *
+ 	 * We also context switch (save) TFHAR/TEXASR/TFIAR in here.
+ 	 */
+diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
+index be305c8..b1cebf66 100644
+--- a/arch/powerpc/kernel/signal.h
++++ b/arch/powerpc/kernel/signal.h
+@@ -23,20 +23,20 @@ extern int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
  
--	POP_FPU(STACK_FRAME_LOCAL(2,0))
-+	POP_FPU(256)
- 	POP_BASIC_STACK(256)
+ extern unsigned long copy_fpr_to_user(void __user *to,
+ 				      struct task_struct *task);
+-extern unsigned long copy_transact_fpr_to_user(void __user *to,
++extern unsigned long copy_ckfpr_to_user(void __user *to,
+ 					       struct task_struct *task);
+ extern unsigned long copy_fpr_from_user(struct task_struct *task,
+ 					void __user *from);
+-extern unsigned long copy_transact_fpr_from_user(struct task_struct *task,
++extern unsigned long copy_ckfpr_from_user(struct task_struct *task,
+ 						 void __user *from);
+ #ifdef CONFIG_VSX
+ extern unsigned long copy_vsx_to_user(void __user *to,
+ 				      struct task_struct *task);
+-extern unsigned long copy_transact_vsx_to_user(void __user *to,
++extern unsigned long copy_ckvsx_to_user(void __user *to,
+ 					       struct task_struct *task);
+ extern unsigned long copy_vsx_from_user(struct task_struct *task,
+ 					void __user *from);
+-extern unsigned long copy_transact_vsx_from_user(struct task_struct *task,
++extern unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 						 void __user *from);
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index d106b91..c7d905b 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -315,7 +315,7 @@ unsigned long copy_vsx_from_user(struct task_struct *task,
+ }
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-unsigned long copy_transact_fpr_to_user(void __user *to,
++unsigned long copy_ckfpr_to_user(void __user *to,
+ 				  struct task_struct *task)
+ {
+ 	u64 buf[ELF_NFPREG];
+@@ -323,12 +323,12 @@ unsigned long copy_transact_fpr_to_user(void __user *to,
+ 
+ 	/* save FPR copy to local buffer then write to the thread_struct */
+ 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
+-		buf[i] = task->thread.TS_TRANS_FPR(i);
+-	buf[i] = task->thread.transact_fp.fpscr;
++		buf[i] = task->thread.TS_CKFPR(i);
++	buf[i] = task->thread.ckfp_state.fpscr;
+ 	return __copy_to_user(to, buf, ELF_NFPREG * sizeof(double));
+ }
+ 
+-unsigned long copy_transact_fpr_from_user(struct task_struct *task,
++unsigned long copy_ckfpr_from_user(struct task_struct *task,
+ 					  void __user *from)
+ {
+ 	u64 buf[ELF_NFPREG];
+@@ -337,13 +337,13 @@ unsigned long copy_transact_fpr_from_user(struct task_struct *task,
+ 	if (__copy_from_user(buf, from, ELF_NFPREG * sizeof(double)))
+ 		return 1;
+ 	for (i = 0; i < (ELF_NFPREG - 1) ; i++)
+-		task->thread.TS_TRANS_FPR(i) = buf[i];
+-	task->thread.transact_fp.fpscr = buf[i];
++		task->thread.TS_CKFPR(i) = buf[i];
++	task->thread.ckfp_state.fpscr = buf[i];
+ 
+ 	return 0;
+ }
+ 
+-unsigned long copy_transact_vsx_to_user(void __user *to,
++unsigned long copy_ckvsx_to_user(void __user *to,
+ 				  struct task_struct *task)
+ {
+ 	u64 buf[ELF_NVSRHALFREG];
+@@ -351,11 +351,11 @@ unsigned long copy_transact_vsx_to_user(void __user *to,
+ 
+ 	/* save FPR copy to local buffer then write to the thread_struct */
+ 	for (i = 0; i < ELF_NVSRHALFREG; i++)
+-		buf[i] = task->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET];
++		buf[i] = task->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET];
+ 	return __copy_to_user(to, buf, ELF_NVSRHALFREG * sizeof(double));
+ }
+ 
+-unsigned long copy_transact_vsx_from_user(struct task_struct *task,
++unsigned long copy_ckvsx_from_user(struct task_struct *task,
+ 					  void __user *from)
+ {
+ 	u64 buf[ELF_NVSRHALFREG];
+@@ -364,7 +364,7 @@ unsigned long copy_transact_vsx_from_user(struct task_struct *task,
+ 	if (__copy_from_user(buf, from, ELF_NVSRHALFREG * sizeof(double)))
+ 		return 1;
+ 	for (i = 0; i < ELF_NVSRHALFREG ; i++)
+-		task->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = buf[i];
++		task->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
+ 	return 0;
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+@@ -384,17 +384,17 @@ inline unsigned long copy_fpr_from_user(struct task_struct *task,
+ }
+ 
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-inline unsigned long copy_transact_fpr_to_user(void __user *to,
++inline unsigned long copy_ckfpr_to_user(void __user *to,
+ 					 struct task_struct *task)
+ {
+-	return __copy_to_user(to, task->thread.transact_fp.fpr,
++	return __copy_to_user(to, task->thread.ckfp_state.fpr,
+ 			      ELF_NFPREG * sizeof(double));
+ }
+ 
+-inline unsigned long copy_transact_fpr_from_user(struct task_struct *task,
++inline unsigned long copy_ckfpr_from_user(struct task_struct *task,
+ 						 void __user *from)
+ {
+-	return __copy_from_user(task->thread.transact_fp.fpr, from,
++	return __copy_from_user(task->thread.ckfp_state.fpr, from,
+ 				ELF_NFPREG * sizeof(double));
+ }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+@@ -542,7 +542,7 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ #ifdef CONFIG_ALTIVEC
+ 	/* save altivec registers */
+ 	if (current->thread.used_vr) {
+-		if (__copy_to_user(&frame->mc_vregs, &current->thread.transact_vr,
++		if (__copy_to_user(&frame->mc_vregs, &current->thread.ckvr_state,
+ 				   ELF_NVRREG * sizeof(vector128)))
+ 			return 1;
+ 		if (msr & MSR_VEC) {
+@@ -552,7 +552,7 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 				return 1;
+ 		} else {
+ 			if (__copy_to_user(&tm_frame->mc_vregs,
+-					   &current->thread.transact_vr,
++					   &current->thread.ckvr_state,
+ 					   ELF_NVRREG * sizeof(vector128)))
+ 				return 1;
+ 		}
+@@ -569,8 +569,8 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 	 * most significant bits of that same vector. --BenH
+ 	 */
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-		current->thread.transact_vrsave = mfspr(SPRN_VRSAVE);
+-	if (__put_user(current->thread.transact_vrsave,
++		current->thread.ckvrsave = mfspr(SPRN_VRSAVE);
++	if (__put_user(current->thread.ckvrsave,
+ 		       (u32 __user *)&frame->mc_vregs[32]))
+ 		return 1;
+ 	if (msr & MSR_VEC) {
+@@ -578,19 +578,19 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 			       (u32 __user *)&tm_frame->mc_vregs[32]))
+ 			return 1;
+ 	} else {
+-		if (__put_user(current->thread.transact_vrsave,
++		if (__put_user(current->thread.ckvrsave,
+ 			       (u32 __user *)&tm_frame->mc_vregs[32]))
+ 			return 1;
+ 	}
+ #endif /* CONFIG_ALTIVEC */
+ 
+-	if (copy_transact_fpr_to_user(&frame->mc_fregs, current))
++	if (copy_ckfpr_to_user(&frame->mc_fregs, current))
+ 		return 1;
+ 	if (msr & MSR_FP) {
+ 		if (copy_fpr_to_user(&tm_frame->mc_fregs, current))
+ 			return 1;
+ 	} else {
+-		if (copy_transact_fpr_to_user(&tm_frame->mc_fregs, current))
++		if (copy_ckfpr_to_user(&tm_frame->mc_fregs, current))
+ 			return 1;
+ 	}
+ 
+@@ -602,14 +602,14 @@ static int save_tm_user_regs(struct pt_regs *regs,
+ 	 * contains valid data
+ 	 */
+ 	if (current->thread.used_vsr) {
+-		if (copy_transact_vsx_to_user(&frame->mc_vsregs, current))
++		if (copy_ckvsx_to_user(&frame->mc_vsregs, current))
+ 			return 1;
+ 		if (msr & MSR_VSX) {
+ 			if (copy_vsx_to_user(&tm_frame->mc_vsregs,
+ 						      current))
+ 				return 1;
+ 		} else {
+-			if (copy_transact_vsx_to_user(&tm_frame->mc_vsregs, current))
++			if (copy_ckvsx_to_user(&tm_frame->mc_vsregs, current))
+ 				return 1;
+ 		}
+ 
+@@ -788,7 +788,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	regs->msr &= ~MSR_VEC;
+ 	if (msr & MSR_VEC) {
+ 		/* restore altivec registers from the stack */
+-		if (__copy_from_user(&current->thread.transact_vr, &sr->mc_vregs,
++		if (__copy_from_user(&current->thread.ckvr_state, &sr->mc_vregs,
+ 				     sizeof(sr->mc_vregs)) ||
+ 		    __copy_from_user(&current->thread.vr_state,
+ 				     &tm_sr->mc_vregs,
+@@ -797,24 +797,24 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 	} else if (current->thread.used_vr) {
+ 		memset(&current->thread.vr_state, 0,
+ 		       ELF_NVRREG * sizeof(vector128));
+-		memset(&current->thread.transact_vr, 0,
++		memset(&current->thread.ckvr_state, 0,
+ 		       ELF_NVRREG * sizeof(vector128));
+ 	}
+ 
+ 	/* Always get VRSAVE back */
+-	if (__get_user(current->thread.transact_vrsave,
++	if (__get_user(current->thread.ckvrsave,
+ 		       (u32 __user *)&sr->mc_vregs[32]) ||
+ 	    __get_user(current->thread.vrsave,
+ 		       (u32 __user *)&tm_sr->mc_vregs[32]))
+ 		return 1;
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-		mtspr(SPRN_VRSAVE, current->thread.transact_vrsave);
++		mtspr(SPRN_VRSAVE, current->thread.ckvrsave);
+ #endif /* CONFIG_ALTIVEC */
+ 
+ 	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1);
+ 
+ 	if (copy_fpr_from_user(current, &sr->mc_fregs) ||
+-	    copy_transact_fpr_from_user(current, &tm_sr->mc_fregs))
++	    copy_ckfpr_from_user(current, &tm_sr->mc_fregs))
+ 		return 1;
+ 
+ #ifdef CONFIG_VSX
+@@ -825,12 +825,12 @@ static long restore_tm_user_regs(struct pt_regs *regs,
+ 		 * buffer, then write this out to the thread_struct
+ 		 */
+ 		if (copy_vsx_from_user(current, &tm_sr->mc_vsregs) ||
+-		    copy_transact_vsx_from_user(current, &sr->mc_vsregs))
++		    copy_ckvsx_from_user(current, &sr->mc_vsregs))
+ 			return 1;
+ 	} else if (current->thread.used_vsr)
+ 		for (i = 0; i < 32 ; i++) {
+ 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+-			current->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = 0;
++			current->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+ 		}
+ #endif /* CONFIG_VSX */
+ 
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 9f9fdb5..bb26aeb 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -217,7 +217,7 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 	/* save altivec registers */
+ 	if (current->thread.used_vr) {
+ 		/* Copy 33 vec registers (vr0..31 and vscr) to the stack */
+-		err |= __copy_to_user(v_regs, &current->thread.transact_vr,
++		err |= __copy_to_user(v_regs, &current->thread.ckvr_state,
+ 				      33 * sizeof(vector128));
+ 		/* If VEC was enabled there are transactional VRs valid too,
+ 		 * else they're a copy of the checkpointed VRs.
+@@ -228,7 +228,7 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 					      33 * sizeof(vector128));
+ 		else
+ 			err |= __copy_to_user(tm_v_regs,
+-					      &current->thread.transact_vr,
++					      &current->thread.ckvr_state,
+ 					      33 * sizeof(vector128));
+ 
+ 		/* set MSR_VEC in the MSR value in the frame to indicate
+@@ -240,13 +240,13 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 	 * use altivec.
+ 	 */
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+-		current->thread.transact_vrsave = mfspr(SPRN_VRSAVE);
+-	err |= __put_user(current->thread.transact_vrsave, (u32 __user *)&v_regs[33]);
++		current->thread.ckvrsave = mfspr(SPRN_VRSAVE);
++	err |= __put_user(current->thread.ckvrsave, (u32 __user *)&v_regs[33]);
+ 	if (msr & MSR_VEC)
+ 		err |= __put_user(current->thread.vrsave,
+ 				  (u32 __user *)&tm_v_regs[33]);
+ 	else
+-		err |= __put_user(current->thread.transact_vrsave,
++		err |= __put_user(current->thread.ckvrsave,
+ 				  (u32 __user *)&tm_v_regs[33]);
+ 
+ #else /* CONFIG_ALTIVEC */
+@@ -255,11 +255,11 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ #endif /* CONFIG_ALTIVEC */
+ 
+ 	/* copy fpr regs and fpscr */
+-	err |= copy_transact_fpr_to_user(&sc->fp_regs, current);
++	err |= copy_ckfpr_to_user(&sc->fp_regs, current);
+ 	if (msr & MSR_FP)
+ 		err |= copy_fpr_to_user(&tm_sc->fp_regs, current);
+ 	else
+-		err |= copy_transact_fpr_to_user(&tm_sc->fp_regs, current);
++		err |= copy_ckfpr_to_user(&tm_sc->fp_regs, current);
+ 
+ #ifdef CONFIG_VSX
+ 	/*
+@@ -271,12 +271,12 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
+ 		v_regs += ELF_NVRREG;
+ 		tm_v_regs += ELF_NVRREG;
+ 
+-		err |= copy_transact_vsx_to_user(v_regs, current);
++		err |= copy_ckvsx_to_user(v_regs, current);
+ 
+ 		if (msr & MSR_VSX)
+ 			err |= copy_vsx_to_user(tm_v_regs, current);
+ 		else
+-			err |= copy_transact_vsx_to_user(tm_v_regs, current);
++			err |= copy_ckvsx_to_user(tm_v_regs, current);
+ 
+ 		/* set MSR_VSX in the MSR value in the frame to
+ 		 * indicate that sc->vs_reg) contains valid data.
+@@ -475,32 +475,32 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ 		return -EFAULT;
+ 	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
+ 	if (v_regs != NULL && tm_v_regs != NULL && (msr & MSR_VEC) != 0) {
+-		err |= __copy_from_user(&current->thread.transact_vr, v_regs,
++		err |= __copy_from_user(&current->thread.ckvr_state, v_regs,
+ 					33 * sizeof(vector128));
+ 		err |= __copy_from_user(&current->thread.vr_state, tm_v_regs,
+ 					33 * sizeof(vector128));
+ 	}
+ 	else if (current->thread.used_vr) {
+ 		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
+-		memset(&current->thread.transact_vr, 0, 33 * sizeof(vector128));
++		memset(&current->thread.ckvr_state, 0, 33 * sizeof(vector128));
+ 	}
+ 	/* Always get VRSAVE back */
+ 	if (v_regs != NULL && tm_v_regs != NULL) {
+-		err |= __get_user(current->thread.transact_vrsave,
++		err |= __get_user(current->thread.ckvrsave,
+ 				  (u32 __user *)&v_regs[33]);
+ 		err |= __get_user(current->thread.vrsave,
+ 				  (u32 __user *)&tm_v_regs[33]);
+ 	}
+ 	else {
+ 		current->thread.vrsave = 0;
+-		current->thread.transact_vrsave = 0;
++		current->thread.ckvrsave = 0;
+ 	}
+ 	if (cpu_has_feature(CPU_FTR_ALTIVEC))
+ 		mtspr(SPRN_VRSAVE, current->thread.vrsave);
+ #endif /* CONFIG_ALTIVEC */
+ 	/* restore floating point */
+ 	err |= copy_fpr_from_user(current, &tm_sc->fp_regs);
+-	err |= copy_transact_fpr_from_user(current, &sc->fp_regs);
++	err |= copy_ckfpr_from_user(current, &sc->fp_regs);
+ #ifdef CONFIG_VSX
+ 	/*
+ 	 * Get additional VSX data. Update v_regs to point after the
+@@ -511,11 +511,11 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
+ 		v_regs += ELF_NVRREG;
+ 		tm_v_regs += ELF_NVRREG;
+ 		err |= copy_vsx_from_user(current, tm_v_regs);
+-		err |= copy_transact_vsx_from_user(current, v_regs);
++		err |= copy_ckvsx_from_user(current, v_regs);
+ 	} else {
+ 		for (i = 0; i < 32 ; i++) {
+ 			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+-			current->thread.transact_fp.fpr[i][TS_VSRLOWOFFSET] = 0;
++			current->thread.ckfp_state.fpr[i][TS_VSRLOWOFFSET] = 0;
+ 		}
+ 	}
+ #endif
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index 3741b47..409b2c8 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -249,19 +249,19 @@ _GLOBAL(tm_reclaim)
+ 	andis.		r0, r4, MSR_VEC@h
+ 	beq	dont_backup_vec
+ 
+-	addi	r7, r3, THREAD_TRANSACT_VRSTATE
++	addi	r7, r3, THREAD_CKVRSTATE
+ 	SAVE_32VRS(0, r6, r7)	/* r6 scratch, r7 transact vr state */
+ 	mfvscr	v0
+ 	li	r6, VRSTATE_VSCR
+ 	stvx	v0, r7, r6
+ dont_backup_vec:
+ 	mfspr	r0, SPRN_VRSAVE
+-	std	r0, THREAD_TRANSACT_VRSAVE(r3)
++	std	r0, THREAD_CKVRSAVE(r3)
+ 
+ 	andi.	r0, r4, MSR_FP
+ 	beq	dont_backup_fp
+ 
+-	addi	r7, r3, THREAD_TRANSACT_FPSTATE
++	addi	r7, r3, THREAD_CKFPSTATE
+ 	SAVE_32FPRS_VSRS(0, R6, R7)	/* r6 scratch, r7 transact fp state */
+ 
+ 	mffs    fr0
+@@ -364,20 +364,20 @@ _GLOBAL(__tm_recheckpoint)
+ 	andis.	r0, r4, MSR_VEC@h
+ 	beq	dont_restore_vec
+ 
+-	addi	r8, r3, THREAD_TRANSACT_VRSTATE
++	addi	r8, r3, THREAD_CKVRSTATE
+ 	li	r5, VRSTATE_VSCR
+ 	lvx	v0, r8, r5
+ 	mtvscr	v0
+ 	REST_32VRS(0, r5, r8)			/* r5 scratch, r8 ptr */
+ dont_restore_vec:
+-	ld	r5, THREAD_TRANSACT_VRSAVE(r3)
++	ld	r5, THREAD_CKVRSAVE(r3)
+ 	mtspr	SPRN_VRSAVE, r5
+ #endif
+ 
+ 	andi.	r0, r4, MSR_FP
+ 	beq	dont_restore_fp
+ 
+-	addi	r8, r3, THREAD_TRANSACT_FPSTATE
++	addi	r8, r3, THREAD_CKFPSTATE
+ 	lfd	fr0, FPSTATE_FPSCR(r8)
+ 	MTFSF_L(fr0)
+ 	REST_32FPRS_VSRS(0, R4, R8)
+diff --git a/arch/powerpc/kernel/vector.S b/arch/powerpc/kernel/vector.S
+index 1c2e7a3..b5d5025 100644
+--- a/arch/powerpc/kernel/vector.S
++++ b/arch/powerpc/kernel/vector.S
+@@ -23,10 +23,10 @@ _GLOBAL(do_load_up_transact_altivec)
+ 	li	r4,1
+ 	stw	r4,THREAD_USED_VR(r3)
+ 
+-	li	r10,THREAD_TRANSACT_VRSTATE+VRSTATE_VSCR
++	li	r10,THREAD_CKVRSTATE+VRSTATE_VSCR
+ 	lvx	v0,r10,r3
+ 	mtvscr	v0
+-	addi	r10,r3,THREAD_TRANSACT_VRSTATE
++	addi	r10,r3,THREAD_CKVRSTATE
+ 	REST_32VRS(0,r4,r10)
+ 
  	blr
- FUNC_END(test_fpu)
-@@ -166,10 +103,10 @@ FUNC_END(test_fpu)
- # registers while running is not zero.
- FUNC_START(preempt_fpu)
- 	PUSH_BASIC_STACK(256)
-+	PUSH_FPU(256)
- 	std r3,STACK_FRAME_PARAM(0)(sp) # double *darray
- 	std r4,STACK_FRAME_PARAM(1)(sp) # int *threads_starting
- 	std r5,STACK_FRAME_PARAM(2)(sp) # int *running
--	PUSH_FPU(STACK_FRAME_LOCAL(3,0))
- 
- 	bl load_fpu
- 	nop
-@@ -192,7 +129,7 @@ FUNC_START(preempt_fpu)
- 	cmpwi r5,0
- 	bne 2b
- 
--3:	POP_FPU(STACK_FRAME_LOCAL(3,0))
-+3:	POP_FPU(256)
- 	POP_BASIC_STACK(256)
- 	blr
- FUNC_END(preempt_fpu)
-diff --git a/tools/testing/selftests/powerpc/math/vmx_asm.S b/tools/testing/selftests/powerpc/math/vmx_asm.S
-index 1b8c248..fd74da4 100644
---- a/tools/testing/selftests/powerpc/math/vmx_asm.S
-+++ b/tools/testing/selftests/powerpc/math/vmx_asm.S
-@@ -8,90 +8,7 @@
-  */
- 
- #include "../basic_asm.h"
--
--# POS MUST BE 16 ALIGNED!
--#define PUSH_VMX(pos,reg) \
--	li	reg,pos; \
--	stvx	v20,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v21,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v22,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v23,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v24,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v25,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v26,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v27,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v28,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v29,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v30,reg,sp; \
--	addi	reg,reg,16; \
--	stvx	v31,reg,sp;
--
--# POS MUST BE 16 ALIGNED!
--#define POP_VMX(pos,reg) \
--	li	reg,pos; \
--	lvx	v20,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v21,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v22,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v23,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v24,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v25,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v26,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v27,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v28,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v29,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v30,reg,sp; \
--	addi	reg,reg,16; \
--	lvx	v31,reg,sp;
--
--# Carefull this will 'clobber' vmx (by design)
--# Don't call this from C
--FUNC_START(load_vmx)
--	li	r5,0
--	lvx	v20,r5,r3
--	addi	r5,r5,16
--	lvx	v21,r5,r3
--	addi	r5,r5,16
--	lvx	v22,r5,r3
--	addi	r5,r5,16
--	lvx	v23,r5,r3
--	addi	r5,r5,16
--	lvx	v24,r5,r3
--	addi	r5,r5,16
--	lvx	v25,r5,r3
--	addi	r5,r5,16
--	lvx	v26,r5,r3
--	addi	r5,r5,16
--	lvx	v27,r5,r3
--	addi	r5,r5,16
--	lvx	v28,r5,r3
--	addi	r5,r5,16
--	lvx	v29,r5,r3
--	addi	r5,r5,16
--	lvx	v30,r5,r3
--	addi	r5,r5,16
--	lvx	v31,r5,r3
--	blr
--FUNC_END(load_vmx)
-+#include "../vmx_asm.h"
- 
- # Should be safe from C, only touches r4, r5 and v0,v1,v2
- FUNC_START(check_vmx)
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index d0505db..4362666 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,4 +1,8 @@
--TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-fork tm-tar tm-tmspr
-+SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu \
-+	tm-signal-context-chk-vmx tm-signal-context-chk-vsx
-+
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
-+	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
- 
- all: $(TEST_PROGS)
- 
-@@ -8,6 +12,9 @@ tm-syscall: tm-syscall-asm.S
- tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
- tm-tmspr: CFLAGS += -pthread
- 
-+$(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
-+$(SIGNAL_CONTEXT_CHK_TESTS): CFLAGS += -mhtm
-+
- include ../../lib.mk
- 
- clean:
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
-new file mode 100644
-index 0000000..776457d
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
-@@ -0,0 +1,94 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ * Licensed under GPLv2.
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be delivered
-+ * while the thread was in a transaction. Expected behaviour is that the
-+ * currently executing code is in the first and the checkpointed state (the
-+ * state that will be rolled back to) is in the uc_link ucontext.
-+ *
-+ * The reason for this is that code which is not TM aware and installs a signal
-+ * handler will expect to see/modify its currently running state in the uc,
-+ * this code may have dynamicially linked against code which is TM aware and is
-+ * doing HTM under the hood.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define TBEGIN          ".long 0x7C00051D ;"
-+#define TSUSPEND        ".long 0x7C0005DD ;"
-+#define TRESUME         ".long 0x7C2005DD ;"
-+#define MAX_ATTEMPT 100
-+
-+#define NV_FPU_REGS 18
-+
-+/* Be sure there are 2x as many as there are NV FPU regs (2x18) */
-+static double fps[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-+					   -1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18 };
-+
-+extern long tm_signal_self_context_load(pid_t pid, long *gps, double *fps, vector int *vms, vector int *vss);
-+
-+static int signaled;
-+static int fail;
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	signaled = 1;
-+
-+	for (i = 0; i < NV_FPU_REGS && !fail; i++) {
-+		fail = (ucp->uc_mcontext.fp_regs[i + 14] != fps[i]);
-+		fail |= (tm_ucp->uc_mcontext.fp_regs[i + 14] != fps[i + NV_FPU_REGS]);
-+	}
-+	if (fail)
-+		printf("Failed on %d FP %g or %g\n", i - 1, ucp->uc_mcontext.fp_regs[i + 13], tm_ucp->uc_mcontext.fp_regs[i + 13]);
-+}
-+
-+static int tm_signal_context_chk_fpu()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (!signaled && i < MAX_ATTEMPT) {
-+		rc = tm_signal_self_context_load(pid, NULL, fps, NULL, NULL);
-+		if (!rc)
-+			fprintf(stderr, "Transaction was not doomed...\n");
-+		FAIL_IF(!rc);
-+
-+		i++;
-+	}
-+
-+	if (i == MAX_ATTEMPT)
-+		fprintf(stderr, "Tried to signal %d times and didn't work, failing!\n", MAX_ATTEMPT);
-+	FAIL_IF(i == MAX_ATTEMPT);
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk_fpu, "tm_signal_context_chk_fpu");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-new file mode 100644
-index 0000000..22abe48
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-@@ -0,0 +1,96 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ * Licensed under GPLv2.
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be delivered
-+ * while the thread was in a transaction. Expected behaviour is that the
-+ * currently executing code is in the first and the checkpointed state (the
-+ * state that will be rolled back to) is in the uc_link ucontext.
-+ *
-+ * The reason for this is that code which is not TM aware and installs a signal
-+ * handler will expect to see/modify its currently running state in the uc,
-+ * this code may have dynamicially linked against code which is TM aware and is
-+ * doing HTM under the hood.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <altivec.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define TBEGIN          ".long 0x7C00051D ;"
-+#define TSUSPEND        ".long 0x7C0005DD ;"
-+#define TRESUME         ".long 0x7C2005DD ;"
-+#define MAX_ATTEMPT 100
-+
-+#define NV_GPR_REGS 18
-+
-+extern long tm_signal_self_context_load(pid_t pid, long *gps, double *fps, vector int *vms, vector int *vss);
-+
-+static int signaled;
-+static int fail;
-+
-+static long gps[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-+					 -1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18};
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	signaled = 1;
-+
-+	/* Always be 64bit, don't really care about 32bit */
-+	for (i = 0; i < NV_GPR_REGS && !fail; i++) {
-+		fail = (ucp->uc_mcontext.gp_regs[i + 14] != gps[i]);
-+		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != gps[i + NV_GPR_REGS]);
-+	}
-+	if (fail)
-+		printf("Failed on %d GPR %lu or %lu\n", i - 1,
-+				ucp->uc_mcontext.gp_regs[i + 13], tm_ucp->uc_mcontext.gp_regs[i + 13]);
-+}
-+
-+static int tm_signal_context_chk_gpr()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (!signaled && i < MAX_ATTEMPT) {
-+		rc = tm_signal_self_context_load(pid, gps, NULL, NULL, NULL);
-+		if (!rc)
-+			fprintf(stderr, "Transaction was not doomed...\n");
-+		FAIL_IF(!rc);
-+		i++;
-+	}
-+
-+	if (i == MAX_ATTEMPT)
-+		fprintf(stderr, "Tried to signal %d times and didn't work, failing!\n", MAX_ATTEMPT);
-+	FAIL_IF(i == MAX_ATTEMPT);
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk_gpr, "tm_signal_context_chk_gpr");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
-new file mode 100644
-index 0000000..fd58369
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
-@@ -0,0 +1,112 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ * Licensed under GPLv2.
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be delivered
-+ * while the thread was in a transaction. Expected behaviour is that the
-+ * currently executing code is in the first and the checkpointed state (the
-+ * state that will be rolled back to) is in the uc_link ucontext.
-+ *
-+ * The reason for this is that code which is not TM aware and installs a signal
-+ * handler will expect to see/modify its currently running state in the uc,
-+ * this code may have dynamicially linked against code which is TM aware and is
-+ * doing HTM under the hood.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <altivec.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define TBEGIN          ".long 0x7C00051D ;"
-+#define TSUSPEND        ".long 0x7C0005DD ;"
-+#define TRESUME         ".long 0x7C2005DD ;"
-+#define MAX_ATTEMPT 100
-+
-+extern long tm_signal_self_context_load(pid_t pid, long *gps, double *fps, vector int *vms, vector int *vss);
-+
-+static int signaled;
-+static int fail;
-+
-+vector int vms[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
-+	{13,14,15,16},{17,18,19,20},{21,22,23,24},
-+	{25,26,27,28},{29,30,31,32},{33,34,35,36},
-+	{37,38,39,40},{41,42,43,44},{45,46,47,48},
-+	{-1, -2, -3, -4}, {-5, -6, -7, -8}, {-9, -10,-11,-12},
-+	{-13,-14,-15,-16},{-17,-18,-19,-20},{-21,-22,-23,-24},
-+	{-25,-26,-27,-28},{-29,-30,-31,-32},{-33,-34,-35,-36},
-+	{-37,-38,-39,-40},{-41,-42,-43,-44},{-45,-46,-47,-48}};
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	signaled = 1;
-+
-+	/* Always be 64bit, don't really care about 32bit */
-+	for (i = 0; i < 12 && !fail; i++) {
-+		fail = memcmp(ucp->uc_mcontext.v_regs->vrregs[i + 20], &vms[i], 16);
-+		fail |= memcmp(tm_ucp->uc_mcontext.v_regs->vrregs[i + 20], &vms[i + 12], 16);
-+	}
-+	if (fail) {
-+		int j;
-+
-+		fprintf(stderr, "Failed on %d vmx 0x", i - 1);
-+		for (j = 0; j < 4; j++)
-+			fprintf(stderr, "%08x", ucp->uc_mcontext.v_regs->vrregs[i + 19][j]);
-+		fprintf(stderr, " vs 0x");
-+		for (j = 0 ; j < 4; j++)
-+			fprintf(stderr, "%08x", tm_ucp->uc_mcontext.v_regs->vrregs[i + 19][j]);
-+		fprintf(stderr, "\n");
-+		return;
-+	}
-+}
-+
-+static int tm_signal_context_chk()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (!signaled && i < MAX_ATTEMPT) {
-+		rc = tm_signal_self_context_load(pid, NULL, NULL, vms, NULL);
-+		if (!rc) {
-+			fprintf(stderr, "Transaction was not doomed...\n");
-+			FAIL_IF(!rc);
-+		}
-+		i++;
-+	}
-+
-+	if (i == MAX_ATTEMPT) {
-+		fprintf(stderr, "Tried to signal %d times and didn't work, failing!\n", MAX_ATTEMPT);
-+		fail = 1;
-+	}
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk, "tm_signal_context_chk_vmx");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c
-new file mode 100644
-index 0000000..9685881
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vsx.c
-@@ -0,0 +1,127 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ * Licensed under GPLv2.
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be delivered
-+ * while the thread was in a transaction. Expected behaviour is that the
-+ * currently executing code is in the first and the checkpointed state (the
-+ * state that will be rolled back to) is in the uc_link ucontext.
-+ *
-+ * The reason for this is that code which is not TM aware and installs a signal
-+ * handler will expect to see/modify its currently running state in the uc,
-+ * this code may have dynamicially linked against code which is TM aware and is
-+ * doing HTM under the hood.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include <altivec.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define TBEGIN          ".long 0x7C00051D ;"
-+#define TSUSPEND        ".long 0x7C0005DD ;"
-+#define TRESUME         ".long 0x7C2005DD ;"
-+#define MAX_ATTEMPT 100
-+
-+extern long tm_signal_self_context_load(pid_t pid, long *gps, double *fps, vector int *vms, vector int *vss);
-+
-+static int signaled;
-+static int fail;
-+
-+vector int vss[] = {{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10,11,12},
-+	{13,14,15,16},{17,18,19,20},{21,22,23,24},
-+	{25,26,27,28},{29,30,31,32},{33,34,35,36},
-+	{37,38,39,40},{41,42,43,44},{45,46,47,48},
-+	{-1, -2, -3, -4}, {-5, -6, -7, -8}, {-9, -10,-11,-12},
-+	{-13,-14,-15,-16},{-17,-18,-19,-20},{-21,-22,-23,-24},
-+	{-25,-26,-27,-28},{-29,-30,-31,-32},{-33,-34,-35,-36},
-+	{-37,-38,-39,-40},{-41,-42,-43,-44},{-45,-46,-47,-48}};
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	uint8_t vsc[16];
-+	uint8_t vst[16];
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	signaled = 1;
-+
-+	/*
-+	 * The other half of the VSX regs will be after v_regs.
-+	 *
-+	 * In short, vmx_reserve array holds everything. v_regs is a 16
-+	 * byte aligned pointer at the start of vmx_reserve (vmx_reserve
-+	 * may or may not be 16 aligned) where the v_regs structure exists.
-+	 * (half of) The VSX regsters are directly after v_regs so the
-+	 * easiest way to find them below.
-+	 */
-+	long *vsx_ptr = (long *)(ucp->uc_mcontext.v_regs + 1);
-+	long *tm_vsx_ptr = (long *)(tm_ucp->uc_mcontext.v_regs + 1);
-+	/* Always be 64bit, don't really care about 32bit */
-+	for (i = 0; i < 12 && !fail; i++) {
-+		memcpy(vsc, &ucp->uc_mcontext.fp_regs[i + 20], 8);
-+		memcpy(vsc + 8, &vsx_ptr[20 + i], 8);
-+		fail = memcmp(vsc, &vss[i], 16);
-+		memcpy(vst, &tm_ucp->uc_mcontext.fp_regs[i + 20], 8);
-+		memcpy(vst + 8, &tm_vsx_ptr[20 + i], 8);
-+		fail |= memcmp(vst, &vss[i + 12], 16);
-+	}
-+	if (fail) {
-+		fprintf(stderr, "Failed on %d vsx 0x", i - 1);
-+		for (i = 0; i < 16; i++)
-+			fprintf(stderr, "%02x", vsc[i]);
-+		fprintf(stderr, " vs 0x");
-+		for (i = 0; i < 16; i++)
-+			fprintf(stderr, "%02x", vst[i]);
-+		fprintf(stderr, "\n");
-+		return;
-+	}
-+}
-+
-+static int tm_signal_context_chk()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (!signaled && i < MAX_ATTEMPT) {
-+		rc = tm_signal_self_context_load(pid, NULL, NULL, NULL, vss);
-+		if (!rc) {
-+			fprintf(stderr, "Transaction was not doomed...\n");
-+			FAIL_IF(!rc);
-+		}
-+		i++;
-+	}
-+
-+	if (i == MAX_ATTEMPT) {
-+		fprintf(stderr, "Tried to signal %d times and didn't work, failing!\n", MAX_ATTEMPT);
-+		fail = 1;
-+	}
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk, "tm_signal_context_chk_vsx");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk.c
-new file mode 100644
-index 0000000..4c906cf
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk.c
-@@ -0,0 +1,102 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ * Licensed under GPLv2.
-+ *
-+ * Test the kernel's signal frame code.
-+ *
-+ * The kernel sets up two sets of ucontexts if the signal was to be delivered
-+ * while the thread was in a transaction. Expected behaviour is that the
-+ * currently executing code is in the first and the checkpointed state (the
-+ * state that will be rolled back to) is in the uc_link ucontext.
-+ *
-+ * The reason for this is that code which is not TM aware and installs a signal
-+ * handler will expect to see/modify its currently running state in the uc,
-+ * this code may have dynamicially linked against code which is TM aware and is
-+ * doing HTM under the hood.
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <signal.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+#define TBEGIN          ".long 0x7C00051D ;"
-+#define TSUSPEND        ".long 0x7C0005DD ;"
-+#define TRESUME         ".long 0x7C2005DD ;"
-+#define MAX_ATTEMPT 100
-+
-+static double fps[] = { 1, 2, 3, 4, 5, 6, 7, 8,
-+						-1, -2, -3, -4, -5, -6, -7, -8 };
-+
-+extern long tm_signal_self(pid_t pid, double *fps);
-+
-+static int signaled;
-+static int fail;
-+
-+static void signal_usr1(int signum, siginfo_t *info, void *uc)
-+{
-+	int i;
-+	ucontext_t *ucp = uc;
-+	ucontext_t *tm_ucp = ucp->uc_link;
-+
-+	signaled = 1;
-+
-+	/* Always be 64bit, don't really care about 32bit */
-+	for (i = 0; i < 8 && !fail; i++) {
-+		fail = (ucp->uc_mcontext.gp_regs[i + 14] != i);
-+		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != 0xFF - i);
-+	}
-+	if (fail) {
-+		printf("Failed on %d gpr %lu or %lu\n", i - 1, ucp->uc_mcontext.gp_regs[i + 13], tm_ucp->uc_mcontext.gp_regs[i + 13]);
-+		return;
-+	}
-+	for (i = 0; i < 8 && !fail; i++) {
-+		fail = (ucp->uc_mcontext.fp_regs[i + 14] != fps[i]);
-+		fail |= (tm_ucp->uc_mcontext.fp_regs[i + 14] != fps[i + 8]);
-+	}
-+	if (fail) {
-+		printf("Failed on %d FP %g or %g\n", i - 1, ucp->uc_mcontext.fp_regs[i + 13], tm_ucp->uc_mcontext.fp_regs[i + 13]);
-+	}
-+}
-+
-+static int tm_signal_context_chk()
-+{
-+	struct sigaction act;
-+	int i;
-+	long rc;
-+	pid_t pid = getpid();
-+
-+	SKIP_IF(!have_htm());
-+
-+	act.sa_sigaction = signal_usr1;
-+	sigemptyset(&act.sa_mask);
-+	act.sa_flags = SA_SIGINFO;
-+	if (sigaction(SIGUSR1, &act, NULL) < 0) {
-+		perror("sigaction sigusr1");
-+		exit(1);
-+	}
-+
-+	i = 0;
-+	while (!signaled && i < MAX_ATTEMPT) {
-+		rc = tm_signal_self(pid, fps);
-+		if (!rc) {
-+			fprintf(stderr, "Transaction was not doomed...\n");
-+			FAIL_IF(!rc);
-+		}
-+		i++;
-+	}
-+
-+	if (i == MAX_ATTEMPT) {
-+		fprintf(stderr, "Tried to signal %d times and didn't work, failing!\n", MAX_ATTEMPT);
-+		fail = 1;
-+	}
-+	return fail;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(tm_signal_context_chk, "tm_signal_context_chk");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal.S b/tools/testing/selftests/powerpc/tm/tm-signal.S
-new file mode 100644
-index 0000000..c9e7d1e
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal.S
-@@ -0,0 +1,105 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include "../basic_asm.h"
-+#include "../gpr_asm.h"
-+#include "../fpu_asm.h"
-+#include "../vmx_asm.h"
-+#include "../vsx_asm.h"
-+
-+/* long tm_signal_self(pid_t pid, long *gprs, double *fps, vector *vms, vector *vss); */
-+FUNC_START(tm_signal_self_context_load)
-+	PUSH_BASIC_STACK(512)
-+	/*
-+	 * Don't strictly need to save and restore as it depends on if
-+	 * we're going to use them, however this reduces messy logic
-+	 */
-+	PUSH_VMX(STACK_FRAME_LOCAL(5,0),r8)
-+	PUSH_FPU(512)
-+	PUSH_NVREGS_BELOW_FPU(512)
-+	std r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	std r4, STACK_FRAME_PARAM(1)(sp) /* gps */
-+	std r5, STACK_FRAME_PARAM(2)(sp) /* fps */
-+	std r6, STACK_FRAME_PARAM(3)(sp) /* vms */
-+	std r7, STACK_FRAME_PARAM(4)(sp) /* vss */
-+
-+	ld r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi r3, 0
-+	beq skip_gpr_lc
-+	bl load_gpr
-+skip_gpr_lc:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lc
-+	bl load_fpu
-+skip_fpu_lc:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lc
-+	bl load_vmx
-+skip_vmx_lc:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lc
-+	bl load_vsx
-+skip_vsx_lc:
-+	/* Set r3 (return value) before TBEGIN. Use the pid as a known
-+	 * 'all good' return value, zero is used to indicate a non-doomed
-+	 * transaction.
-+	 */
-+	ld	r3, STACK_FRAME_PARAM(0)(sp)
-+	TBEGIN
-+	beq	1f
-+	ld	r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi	r3, 0
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	beq skip_gpr_lt
-+	bl load_gpr
-+skip_gpr_lt:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_fpu
-+skip_fpu_lt:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vmx
-+skip_vmx_lt:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vsx
-+skip_vsx_lt:
-+	TSUSPEND /* Can't enter a syscall transactionally, hardware won't let us */
-+	li	r0, 37 /* sys_kill */
-+	ld r3, STACK_FRAME_PARAM(0)(sp)
-+	li r4, 10 /* SIGUSR1 */
-+	sc /* Taking the signal will doom the transaction */
-+	TRESUME
-+	/*
-+	 * This will cause us to resume doomed transaction and cause
-+	 * hardware to cleanup, we'll end up at 1: anything between
-+	 * TRESUME and 1: shouldn't ever run.
-+	 */
-+	li r3, 0
-+	1:
-+	POP_VMX(STACK_FRAME_LOCAL(5,0),r4)
-+	POP_FPU(512)
-+	POP_NVREGS_BELOW_FPU(512)
-+	POP_BASIC_STACK(512)
-+	blr
-+FUNC_END(tm_signal_self_context_load)
-diff --git a/tools/testing/selftests/powerpc/vmx_asm.h b/tools/testing/selftests/powerpc/vmx_asm.h
-new file mode 100644
-index 0000000..461845dd
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/vmx_asm.h
-@@ -0,0 +1,98 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include "basic_asm.h"
-+
-+/* POS MUST BE 16 ALIGNED! */
-+#define PUSH_VMX(pos,reg) \
-+	li	reg,pos; \
-+	stvx	v20,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v21,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v22,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v23,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v24,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v25,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v26,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v27,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v28,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v29,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v30,reg,%r1; \
-+	addi	reg,reg,16; \
-+	stvx	v31,reg,%r1;
-+
-+/* POS MUST BE 16 ALIGNED! */
-+#define POP_VMX(pos,reg) \
-+	li	reg,pos; \
-+	lvx	v20,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v21,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v22,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v23,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v24,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v25,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v26,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v27,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v28,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v29,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v30,reg,%r1; \
-+	addi	reg,reg,16; \
-+	lvx	v31,reg,%r1;
-+
-+/*
-+ * Careful this will 'clobber' vmx (by design)
-+ * Don't call this from C
-+ */
-+FUNC_START(load_vmx)
-+	li	r5,0
-+	lvx	v20,r5,r3
-+	addi	r5,r5,16
-+	lvx	v21,r5,r3
-+	addi	r5,r5,16
-+	lvx	v22,r5,r3
-+	addi	r5,r5,16
-+	lvx	v23,r5,r3
-+	addi	r5,r5,16
-+	lvx	v24,r5,r3
-+	addi	r5,r5,16
-+	lvx	v25,r5,r3
-+	addi	r5,r5,16
-+	lvx	v26,r5,r3
-+	addi	r5,r5,16
-+	lvx	v27,r5,r3
-+	addi	r5,r5,16
-+	lvx	v28,r5,r3
-+	addi	r5,r5,16
-+	lvx	v29,r5,r3
-+	addi	r5,r5,16
-+	lvx	v30,r5,r3
-+	addi	r5,r5,16
-+	lvx	v31,r5,r3
-+	blr
-+FUNC_END(load_vmx)
-+
-+
 -- 
 2.8.3
