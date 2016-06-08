@@ -1,36 +1,18 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
- [209.85.220.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPZDw5pKBzDqfd
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 13:49:20 +1000 (AEST)
-Received: by mail-pa0-f43.google.com with SMTP id b5so23591206pas.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 20:49:20 -0700 (PDT)
-Date: Wed, 8 Jun 2016 09:18:15 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- Steve Muckle <steve.muckle@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Krzysztof Kozlowski <k.kozlowski@samsung.com>,
- Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
-Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
- ascending order
-Message-ID: <20160608034815.GA20114@vireshk-i7>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
- <20160607042807.GC21466@vireshk-i7>
- <3409903.LrptLTtVZr@vostro.rjw.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3409903.LrptLTtVZr@vostro.rjw.lan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPZRv0B1gzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 13:58:51 +1000 (AEST)
+In-Reply-To: <1464860688-2085-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm/radix: Make the pid unsigned long
+Message-Id: <3rPZRt6Q4wz9sxb@ozlabs.org>
+Date: Wed,  8 Jun 2016 13:58:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08-06-16, 02:38, Rafael J. Wysocki wrote:
-> On Tuesday, June 07, 2016 09:58:07 AM Viresh Kumar wrote:
-> > On 06-06-16, 23:56, Rafael J. Wysocki wrote:
-> > > Since you are adding new code, you can write it so it doesn't do
-> > > unnecessary checks from the start.
-> > 
-> > Hmm, I will do all that in this series only now.
-> > 
-> > > While at it, the "if ((freq < policy->min) || (freq > policy->max))"
-> > > checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
-> > > good to me, because they very well may cause those function to return
-> > > -EINVAL even when there's a valid table and that may cause
-> > > acpi_cpufreq_fast_switch() to do bad things.
-> > 
-> > Hmm. So, the checks are for sure required here, otherwise we may end up
-> > returning a frequency which we aren't allowed to. Also note that 'freq' here
-> > isn't the target-freq, but the entry in the freq-table.
-> > 
-> > This routine should be returning a valid freq within the ranges specified by
-> > policy->min/max.
+On Thu, 2016-02-06 at 09:44:48 UTC, "Aneesh Kumar K.V" wrote:
+> Semantic Issue: comparison of constant 18446744073709551615 with
+> expression of type 'unsigned int' is always false.
 > 
-> Which in principle may not be possible if the range doesn't include any
-> frequency in the table, eg. min == max and between the table entries.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> ---
+>  arch/powerpc/mm/tlb-radix.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-By within ranges I meant, policy->min <= freq <= policy->max, and that's how all
-our checks are. So even if the table will have a single valid frequency, we will
-return that only.
+I'm going to take this as a fix, I rewrote the change log to:
 
-> However, the CPU has to run at *some* frequency, even if there's none in the
-> min/max range.
+    powerpc/mm/radix: Fix always false comparison against MMU_NO_CONTEXT
+    
+    In some of the radix TLB flush routines, we use a local to store the
+    mm->context.id, AKA the PID.
+    
+    Currently we use an int, but the PID is unsigned long, so large values
+    of PID will be truncated. In particular MMU_NO_CONTEXT is -1, which
+    means all our comparisons against that value can never be true.
+    
+    This means we'll issue TLB flushes when we shouldn't on radix enabled
+    machines.
+    
+    Fix it by using an unsigned long for the local. Discovered by Coverity.
+    
+    Fixes: 1a472c9dba6b ("powerpc/mm/radix: Add tlbflush routines")
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+    Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+    [mpe: Write change log]
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-I completely agree. But the error will be fired only if there is no frequency
-within ranges we can switch to. And that's a bug somewhere else then.
-
-> And if we are sure that there is at least one valid frequency between min
-> and max, please note that target_freq has already been clamped between them,
-
-Yeah, its already clamped by the freq-change helpers in cpufreq core, but others
-may not be doing it properly.
-
-> > Also note that these routines shall *never* return -EINVAL, otherwise it is
-> > mostly a bug we are hitting.
-> 
-> So make them explicitly return a valid frequency every time.
-
-I thought about return Index 0 on such errors, will that be fine ? Anyway the
-new patches have added a WARN() for such cases.
-
-> > We have enough checks in place to make sure that there is at least one valid
-> > entry in the freq-table which is >= policy->min and <= policy->max.
-> 
-> That assuming that the driver will always do the right thing in its ->verify
-> callback.
-
-Yeah.
-
--- 
-viresh
+cheers
