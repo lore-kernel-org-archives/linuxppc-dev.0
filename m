@@ -1,20 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPfYb4P4PzDq68
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 17:04:02 +1000 (AEST)
-To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Becky Bruce <beckyb@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC] Implementing HUGEPAGE on MPC 8xx
-Message-ID: <b2980a9d-4795-ae1b-16dd-ba244d559a31@c-s.fr>
-Date: Wed, 8 Jun 2016 09:03:56 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPgWp4ftbzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 17:47:34 +1000 (AEST)
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 8 Jun 2016 01:47:32 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ Huy Nguyen <huyn@mellanox.com>
+Cc: Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH, RFC] cxl: Add support for CAPP DMA mode
+In-Reply-To: <1465362594-10437-1-git-send-email-imunsie@au.ibm.com>
+References: <1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
+ <1465362594-10437-1-git-send-email-imunsie@au.ibm.com>
+Date: Wed, 08 Jun 2016 17:46:27 +1000
+Message-ID: <87lh2gi0mk.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Ian Munsie <imunsie@au1.ibm.com> writes:
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 3a5ea82..5a42e98 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2793,7 +2793,9 @@ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
+>  	pe_info(pe, "Switching PHB to CXL\n");
+>  
+>  	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, mode, pe->pe_number);
+> -	if (rc)
+> +	if (rc == OPAL_UNSUPPORTED)
+> +		dev_err(&dev->dev, "Required cxl mode not supported by firmware - update skiboot\n");
+> +	else if (rc)
+>  		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed:
+> %i\n", rc);
 
-MPC 8xx has several page sizes: 4k, 16k, 512k and 8M.
-Today, 4k and 16k sizes are implemented as normal page sizes and 8M is 
-used for mapping linear memory space in kernel.
+Could mention version required, which would be skiboot 5.3.x or higher.
 
-I'd like to implement HUGE PAGE to reduce TLB misses from user apps.
+This could be something we start doing - there's enough random bits of
+functionality we could tell the user exactly what they have to upgrade
+to to have work.
 
-In 4k mode, PAGE offset is 12 bits, PTE offset is 10 bits and PGD offset 
-is 10 bits
-In 16k mode, PAGE offset is 14 bits, PTE offset is 12 bits and PGD 
-offset is 6 bits
-
-In 4k mode, we could use 512k HUGE PAGE and have a HPAGE offset of 19 
-bits so HPTE offset of 3 bits and PGD offset of 10 bits
-In 16k mode, we could use both 512k HUGE PAGE and 8M HUGE PAGE and have:
-* For 512k: a HPAGE offset of 19 bits so HPTE offset of 7 bits and PGD 
-offset of 6 bits
-* For 8M: a HPAGE offset of 23 bits so HPTE offset of 3 bits and PGD 
-offset of 6 bits
-
-In see in the current ppc kernel that for PPC32, SYS_SUPPORTS_HUGETLBFS 
-is selected only if we have PHYS_64BIT.
-What is the reason for only implementing HUGETLBFS with 64 bits phys 
-addresses ?
-
- From your point of view, what would be the best approach to extend 
-support of HUGE PAGES to PPC_8xx ?
-Would the good starting point be to implement a hugepagetlb-8xx.c from 
-hugepagetlb-book3e.c ?
-
-Christophe
+-- 
+Stewart Smith
+OPAL Architect, IBM.
