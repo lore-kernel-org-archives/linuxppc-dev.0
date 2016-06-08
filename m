@@ -3,31 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPrm64XDxzDt2V
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 00:43:50 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPrmB4pxJzDt2C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 00:43:54 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u58EcwVY141207
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 10:43:48 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m3tvs2-1
+ u58Ed1tS135939
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 10:43:52 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m3tus7-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 10:43:48 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 10:43:52 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 8 Jun 2016 08:43:47 -0600
+ Wed, 8 Jun 2016 08:43:52 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 04/16] powerpc/mm/radix: Implement tlb mmu gather flush
- efficiently
-Date: Wed,  8 Jun 2016 20:13:11 +0530
+Subject: [PATCH V2 05/16] powerpc/mm: Make MMU_FTR_RADIX a MMU family feature
+Date: Wed,  8 Jun 2016 20:13:12 +0530
 In-Reply-To: <1465397003-26812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1465397003-26812-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1465397003-26812-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1465397003-26812-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,114 +36,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we track page size in mmu_gather, we can use address based
-tlbie format when doing a tlb_flush(). We don't do this if we are
-invalidating the full address space.
+MMU feature bits are defined such that we use the lower half to
+present MMU family features. Remove the strict split of half and
+also move Radix to a mmu family feature. Radix introduce a new MMU
+model and strictly speaking it is a new MMU family. This also free
+up bits which can be used for individual features later.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  2 +
- arch/powerpc/mm/tlb-radix.c                        | 73 +++++++++++++++++++++-
- 2 files changed, 74 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h |  3 +--
+ arch/powerpc/include/asm/mmu.h           | 16 +++++++---------
+ arch/powerpc/kernel/entry_64.S           |  2 +-
+ arch/powerpc/kernel/exceptions-64s.S     |  8 ++++----
+ arch/powerpc/kernel/prom.c               |  2 +-
+ 5 files changed, 14 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index 3fa94fcac628..862c8fa50268 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -10,6 +10,8 @@ static inline int mmu_get_ap(int psize)
- 	return mmu_psize_defs[psize].ap;
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index d4eda6420523..6d8306d9aa7a 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -24,12 +24,11 @@ struct mmu_psize_def {
+ extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
  
-+extern void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
-+					 unsigned long end, int psize);
- extern void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 			    unsigned long end);
- extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 231e3ed2e684..03e719ee6747 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -279,9 +279,80 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- }
- EXPORT_SYMBOL(radix__flush_tlb_range);
+ #ifdef CONFIG_PPC_RADIX_MMU
+-#define radix_enabled() mmu_has_feature(MMU_FTR_RADIX)
++#define radix_enabled() mmu_has_feature(MMU_FTR_TYPE_RADIX)
+ #else
+ #define radix_enabled() (0)
+ #endif
  
-+static int radix_get_mmu_psize(int page_size)
-+{
-+	int psize;
-+
-+	if (page_size == (1UL << mmu_psize_defs[mmu_virtual_psize].shift))
-+		psize = mmu_virtual_psize;
-+	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_2M].shift))
-+		psize = MMU_PAGE_2M;
-+	else if (page_size == (1UL << mmu_psize_defs[MMU_PAGE_1G].shift))
-+		psize = MMU_PAGE_1G;
-+	else
-+		return -1;
-+	return psize;
-+}
+-
+ #endif /* __ASSEMBLY__ */
  
- void radix__tlb_flush(struct mmu_gather *tlb)
- {
-+	int psize = 0;
- 	struct mm_struct *mm = tlb->mm;
--	radix__flush_tlb_mm(mm);
-+	int page_size = tlb->page_size;
-+
-+	psize = radix_get_mmu_psize(page_size);
-+	/*
-+	 * if page size is not something we understand, do a full mm flush
-+	 */
-+	if (psize != -1 && !tlb->fullmm && !tlb->need_flush_all)
-+		radix__flush_tlb_range_psize(mm, tlb->start, tlb->end, psize);
-+	else
-+		radix__flush_tlb_mm(mm);
-+}
-+
-+#define TLB_FLUSH_ALL -1UL
-+/*
-+ * Number of pages above which we will do a bcast tlbie. Just a
-+ * number at this point copied from x86
+ /* 64-bit classic hash table MMU */
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 616575fcbcc7..21b71469e66b 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -12,7 +12,7 @@
+  */
+ 
+ /*
+- * First half is MMU families
++ * MMU families
+  */
+ #define MMU_FTR_HPTE_TABLE		ASM_CONST(0x00000001)
+ #define MMU_FTR_TYPE_8xx		ASM_CONST(0x00000002)
+@@ -20,9 +20,12 @@
+ #define MMU_FTR_TYPE_44x		ASM_CONST(0x00000008)
+ #define MMU_FTR_TYPE_FSL_E		ASM_CONST(0x00000010)
+ #define MMU_FTR_TYPE_47x		ASM_CONST(0x00000020)
+-
+ /*
+- * This is individual features
++ * Radix page table available
 + */
-+static unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
-+
-+void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
-+				  unsigned long end, int psize)
-+{
-+	unsigned long pid;
-+	unsigned long addr;
-+	int local = mm_is_core_local(mm);
-+	unsigned long ap = mmu_get_ap(psize);
-+	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
-+	unsigned long page_size = 1UL << mmu_psize_defs[psize].shift;
-+
-+
-+	preempt_disable();
-+	pid = mm ? mm->context.id : 0;
-+	if (unlikely(pid == MMU_NO_CONTEXT))
-+		goto err_out;
-+
-+	if (end == TLB_FLUSH_ALL ||
-+	    (end - start) > tlb_single_page_flush_ceiling * page_size) {
-+		if (local)
-+			_tlbiel_pid(pid, RIC_FLUSH_TLB);
-+		else
-+			_tlbie_pid(pid, RIC_FLUSH_TLB);
-+		goto err_out;
-+	}
-+	for (addr = start; addr < end; addr += page_size) {
-+
-+		if (local)
-+			_tlbiel_va(addr, pid, ap, RIC_FLUSH_TLB);
-+		else {
-+			if (lock_tlbie)
-+				raw_spin_lock(&native_tlbie_lock);
-+			_tlbie_va(addr, pid, ap, RIC_FLUSH_TLB);
-+			if (lock_tlbie)
-+				raw_spin_unlock(&native_tlbie_lock);
-+		}
-+	}
-+err_out:
-+	preempt_enable();
- }
++#define MMU_FTR_TYPE_RADIX		ASM_CONST(0x00000040)
++/*
++ * individual features
+  */
+ /*
+  * We need to clear top 16bits of va (from the remaining 64 bits )in
+@@ -93,11 +96,6 @@
+  */
+ #define MMU_FTR_1T_SEGMENT		ASM_CONST(0x40000000)
+ 
+-/*
+- * Radix page table available
+- */
+-#define MMU_FTR_RADIX			ASM_CONST(0x80000000)
+-
+ /* MMU feature bit sets for various CPUs */
+ #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
+ 	MMU_FTR_HPTE_TABLE | MMU_FTR_PPCAS_ARCH_V2
+@@ -132,7 +130,7 @@ enum {
+ 		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
+ 		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
+ #ifdef CONFIG_PPC_RADIX_MMU
+-		MMU_FTR_RADIX |
++		MMU_FTR_TYPE_RADIX |
+ #endif
+ 		0,
+ };
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 73e461a3dfbb..dd26d4ed7513 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -532,7 +532,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ #ifdef CONFIG_PPC_STD_MMU_64
+ BEGIN_MMU_FTR_SECTION
+ 	b	2f
+-END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+ BEGIN_FTR_SECTION
+ 	clrrdi	r6,r8,28	/* get its ESID */
+ 	clrrdi	r9,r1,28	/* get current sp ESID */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4c9440629128..f2bd375b9a4e 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -945,7 +945,7 @@ BEGIN_MMU_FTR_SECTION
+ 	b	do_hash_page		/* Try to handle as hpte fault */
+ MMU_FTR_SECTION_ELSE
+ 	b	handle_page_fault
+-ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 
+ 	.align  7
+ 	.globl  h_data_storage_common
+@@ -976,7 +976,7 @@ BEGIN_MMU_FTR_SECTION
+ 	b	do_hash_page		/* Try to handle as hpte fault */
+ MMU_FTR_SECTION_ELSE
+ 	b	handle_page_fault
+-ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 
+ 	STD_EXCEPTION_COMMON(0xe20, h_instr_storage, unknown_exception)
+ 
+@@ -1390,7 +1390,7 @@ slb_miss_realmode:
+ #ifdef CONFIG_PPC_STD_MMU_64
+ BEGIN_MMU_FTR_SECTION
+ 	bl	slb_allocate_realmode
+-END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
++END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ #endif
+ 	/* All done -- return from exception. */
+ 
+@@ -1401,7 +1401,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
+ 	mtlr	r10
+ BEGIN_MMU_FTR_SECTION
+ 	b	2f
+-END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+ 	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+ 	beq-	2f
+ 
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 946e34ffeae9..44b4417804db 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -168,7 +168,7 @@ static struct ibm_pa_feature {
+ 	 */
+ 	{CPU_FTR_TM_COMP, 0, 0,
+ 	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
+-	{0, MMU_FTR_RADIX, 0, 0,		40, 0, 0},
++	{0, MMU_FTR_TYPE_RADIX, 0, 0,		40, 0, 0},
+ };
+ 
+ static void __init scan_features(unsigned long node, const unsigned char *ftrs,
 -- 
 2.7.4
