@@ -2,16 +2,16 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPlNC1TggzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 20:41:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPlND2D3KzDqFm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 20:41:16 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Jack Miller <jack@codezen.org>
 Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, mikey@neuling.org,
  cyrilbur@gmail.com
-Subject: [PATCH v6 1/3] powerpc: Improve FSCR init and context switching
-Date: Wed,  8 Jun 2016 20:38:34 +1000
-Message-Id: <1465382316-18588-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH v6 2/3] powerpc: Load Monitor Register Support
+Date: Wed,  8 Jun 2016 20:38:35 +1000
+Message-Id: <1465382316-18588-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1465382316-18588-1-git-send-email-mikey@neuling.org>
 References: <1462501822-11262-1-git-send-email-mikey@neuling.org>
  <1465382316-18588-1-git-send-email-mikey@neuling.org>
@@ -24,146 +24,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a few issues with FSCR init and switching.
+From: Jack Miller <jack@codezen.org>
 
-In this patch:
-    powerpc: Create context switch helpers save_sprs() and restore_sprs()
-    Author: Anton Blanchard <anton@samba.org>
-    commit 152d523e6307c7152f9986a542f873b5c5863937
-We moved the setting of the FSCR register from inside an
-CPU_FTR_ARCH_207S section to inside just a CPU_FTR_ARCH_DSCR section.
-Hence we are setting FSCR on POWER6/7 where the FSCR doesn't
-exist. This is harmless but we shouldn't do it.
+This enables new registers, LMRR and LMSER, that can trigger an EBB in
+userspace code when a monitored load (via the new ldmx instruction)
+loads memory from a monitored space. This facility is controlled by a
+new FSCR bit, LM.
 
-Also, we can simplify the FSCR context switch. We don't need to go
-through the calculation involving dscr_inherit. We can just restore
-what we saved last time.
+This patch disables the FSCR LM control bit on task init and enables
+that bit when a load monitor facility unavailable exception is taken
+for using it. On context switch, this bit is then used to determine
+whether the two relevant registers are saved and restored. This is
+done lazily for performance reasons.
 
-Also, we currently don't explicitly init the FSCR for userspace
-applications. Currently we init FSCR on boot in __init_fscr: and then
-the first task inherits based on that. Currently it works but is
-delicate. This adds the initial fscr value to INIT_THREAD to
-explicitly set the FSCR for userspace applications and removes
-__init_fscr: boot time init.
-
-Based on patch by Jack Miller.
-
+Signed-off-by: Jack Miller <jack@codezen.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/processor.h  |  1 +
- arch/powerpc/kernel/cpu_setup_power.S | 10 ----------
- arch/powerpc/kernel/process.c         | 12 ++++--------
- arch/powerpc/kernel/traps.c           |  3 ++-
- 4 files changed, 7 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/processor.h |  2 ++
+ arch/powerpc/include/asm/reg.h       |  5 +++++
+ arch/powerpc/kernel/process.c        | 18 ++++++++++++++++++
+ arch/powerpc/kernel/traps.c          |  4 ++++
+ 4 files changed, 29 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 009fab1..1833fe9 100644
+index 1833fe9..ac7670d 100644
 --- a/arch/powerpc/include/asm/processor.h
 +++ b/arch/powerpc/include/asm/processor.h
-@@ -347,6 +347,7 @@ struct thread_struct {
- 	.fs = KERNEL_DS, \
- 	.fpexc_mode = 0, \
- 	.ppr = INIT_PPR, \
-+	.fscr = FSCR_TAR | FSCR_EBB \
- }
+@@ -314,6 +314,8 @@ struct thread_struct {
+ 	unsigned long	mmcr2;
+ 	unsigned 	mmcr0;
+ 	unsigned 	used_ebb;
++	unsigned long	lmrr;
++	unsigned long	lmser;
  #endif
+ };
  
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 584e119..75f98c8 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -49,7 +49,6 @@ _GLOBAL(__restore_cpu_power7)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a0948f4..ce44fe2 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -282,6 +282,8 @@
+ #define SPRN_HRMOR	0x139	/* Real mode offset register */
+ #define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
++#define SPRN_LMRR	0x32D	/* Load Monitor Region Register */
++#define SPRN_LMSER	0x32E	/* Load Monitor Section Enable Register */
+ #define SPRN_IC		0x350	/* Virtual Instruction Count */
+ #define SPRN_VTB	0x351	/* Virtual Time Base */
+ #define SPRN_LDBAR	0x352	/* LD Base Address Register */
+@@ -291,6 +293,7 @@
+ #define SPRN_PMCR	0x374	/* Power Management Control Register */
  
- _GLOBAL(__setup_cpu_power8)
- 	mflr	r11
--	bl	__init_FSCR
- 	bl	__init_PMU
- 	bl	__init_hvmode_206
- 	mtlr	r11
-@@ -67,7 +66,6 @@ _GLOBAL(__setup_cpu_power8)
- 
- _GLOBAL(__restore_cpu_power8)
- 	mflr	r11
--	bl	__init_FSCR
- 	bl	__init_PMU
- 	mfmsr	r3
- 	rldicl.	r0,r3,4,63
-@@ -86,7 +84,6 @@ _GLOBAL(__restore_cpu_power8)
- 
- _GLOBAL(__setup_cpu_power9)
- 	mflr	r11
--	bl	__init_FSCR
- 	bl	__init_hvmode_206
- 	mtlr	r11
- 	beqlr
-@@ -102,7 +99,6 @@ _GLOBAL(__setup_cpu_power9)
- 
- _GLOBAL(__restore_cpu_power9)
- 	mflr	r11
--	bl	__init_FSCR
- 	mfmsr	r3
- 	rldicl.	r0,r3,4,63
- 	mtlr	r11
-@@ -155,12 +151,6 @@ __init_LPCR:
- 	isync
- 	blr
- 
--__init_FSCR:
--	mfspr	r3,SPRN_FSCR
--	ori	r3,r3,FSCR_TAR|FSCR_DSCR|FSCR_EBB
--	mtspr	SPRN_FSCR,r3
--	blr
--
- __init_HFSCR:
- 	mfspr	r3,SPRN_HFSCR
- 	ori	r3,r3,HFSCR_TAR|HFSCR_TM|HFSCR_BHRB|HFSCR_PM|\
+ /* HFSCR and FSCR bit numbers are the same */
++#define FSCR_LM_LG	11	/* Enable Load Monitor Registers */
+ #define FSCR_TAR_LG	8	/* Enable Target Address Register */
+ #define FSCR_EBB_LG	7	/* Enable Event Based Branching */
+ #define FSCR_TM_LG	5	/* Enable Transactional Memory */
+@@ -300,10 +303,12 @@
+ #define FSCR_VECVSX_LG	1	/* Enable VMX/VSX  */
+ #define FSCR_FP_LG	0	/* Enable Floating Point */
+ #define SPRN_FSCR	0x099	/* Facility Status & Control Register */
++#define   FSCR_LM	__MASK(FSCR_LM_LG)
+ #define   FSCR_TAR	__MASK(FSCR_TAR_LG)
+ #define   FSCR_EBB	__MASK(FSCR_EBB_LG)
+ #define   FSCR_DSCR	__MASK(FSCR_DSCR_LG)
+ #define SPRN_HFSCR	0xbe	/* HV=1 Facility Status & Control Register */
++#define   HFSCR_LM	__MASK(FSCR_LM_LG)
+ #define   HFSCR_TAR	__MASK(FSCR_TAR_LG)
+ #define   HFSCR_EBB	__MASK(FSCR_EBB_LG)
+ #define   HFSCR_TM	__MASK(FSCR_TM_LG)
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e2f12cb..74ea8db 100644
+index 74ea8db..2e22f60 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -1023,18 +1023,11 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- #ifdef CONFIG_PPC_BOOK3S_64
- 	if (cpu_has_feature(CPU_FTR_DSCR)) {
- 		u64 dscr = get_paca()->dscr_default;
--		u64 fscr = old_thread->fscr & ~FSCR_DSCR;
--
--		if (new_thread->dscr_inherit) {
-+		if (new_thread->dscr_inherit)
- 			dscr = new_thread->dscr;
--			fscr |= FSCR_DSCR;
--		}
- 
- 		if (old_thread->dscr != dscr)
- 			mtspr(SPRN_DSCR, dscr);
--
--		if (old_thread->fscr != fscr)
--			mtspr(SPRN_FSCR, fscr);
+@@ -1009,6 +1009,14 @@ static inline void save_sprs(struct thread_struct *t)
+ 		 */
+ 		t->tar = mfspr(SPRN_TAR);
  	}
- 
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
-@@ -1045,6 +1038,9 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- 		if (old_thread->ebbrr != new_thread->ebbrr)
- 			mtspr(SPRN_EBBRR, new_thread->ebbrr);
- 
-+		if (old_thread->fscr != new_thread->fscr)
-+			mtspr(SPRN_FSCR, new_thread->fscr);
 +
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		/* Conditionally save Load Monitor registers, if enabled */
++		if (t->fscr & FSCR_LM) {
++			t->lmrr = mfspr(SPRN_LMRR);
++			t->lmser = mfspr(SPRN_LMSER);
++		}
++	}
+ #endif
+ }
+ 
+@@ -1044,6 +1052,16 @@ static inline void restore_sprs(struct thread_struct *old_thread,
  		if (old_thread->tar != new_thread->tar)
  			mtspr(SPRN_TAR, new_thread->tar);
  	}
++
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		/* Conditionally restore Load Monitor registers, if enabled */
++		if (new_thread->fscr & FSCR_LM) {
++			if (old_thread->lmrr != new_thread->lmrr)
++				mtspr(SPRN_LMRR, new_thread->lmrr);
++			if (old_thread->lmser != new_thread->lmser)
++				mtspr(SPRN_LMSER, new_thread->lmser);
++		}
++	}
+ #endif
+ }
+ 
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 9229ba6..a4b00ee 100644
+index a4b00ee..aabdeac 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -1418,7 +1418,8 @@ void facility_unavailable_exception(struct pt_regs *regs)
- 			rd = (instword >> 21) & 0x1f;
- 			current->thread.dscr = regs->gpr[rd];
- 			current->thread.dscr_inherit = 1;
--			mtspr(SPRN_FSCR, value | FSCR_DSCR);
-+			current->thread.fscr = value | FSCR_DSCR;
-+			mtspr(SPRN_FSCR, current->thread.fscr);
+@@ -1376,6 +1376,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 		[FSCR_TM_LG] = "TM",
+ 		[FSCR_EBB_LG] = "EBB",
+ 		[FSCR_TAR_LG] = "TAR",
++		[FSCR_LM_LG] = "LM",
+ 	};
+ 	char *facility = "unknown";
+ 	u64 value;
+@@ -1433,6 +1434,9 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 			emulate_single_step(regs);
  		}
+ 		return;
++	} else if ((status == FSCR_LM_LG) && cpu_has_feature(CPU_FTR_ARCH_300)) {
++		mtspr(SPRN_FSCR, value | FSCR_LM);
++		return;
+ 	}
  
- 		/* Read from DSCR (mfspr RT, 0x03) */
+ 	if ((status < ARRAY_SIZE(facility_strings)) &&
 -- 
 2.7.4
