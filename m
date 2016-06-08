@@ -1,49 +1,51 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPvrH41YCzDskQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 03:02:39 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u58GxTXl029298
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 13:02:37 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m3x4hv-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPwCs4kLyzDqXZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 03:19:36 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u58HJBCR041006
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 13:19:33 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23e9m3xg0x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 13:02:37 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 13:19:33 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 9 Jun 2016 03:02:35 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C82F23578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 03:02:11 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151] (may be
- forged))
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u58H26er917842
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 03:02:06 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u58H1Wu8000874
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 03:01:32 +1000
-Date: Wed, 08 Jun 2016 22:31:20 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 9 Jun 2016 03:19:30 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4C9CE2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 03:19:13 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u58HIvaY9044424
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 03:18:57 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u58HIkVG014965
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 03:18:47 +1000
+Date: Wed, 8 Jun 2016 22:47:47 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Alexei Starovoitov <alexei.starovoitov@gmail.com>
+Cc: Daniel Borkmann <daniel@iogearbox.net>, Matt Evans <matt@ozlabs.org>,
+ Alexei Starovoitov <ast@fb.com>, netdev@vger.kernel.org,
+ Denis Kirjanov <kda@linux-powerpc.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH 6/6] ppc: ebpf/jit: Implement JIT compiler for extended BPF
+References: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+ <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20160607225609.GA40706@ast-mbp.thefacebook.com>
 MIME-Version: 1.0
-To: benh@au1.ibm.com, mpe@ellerman.id.au
-CC: ego@linux.vnet.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 08/11] powerpc/powernv: Add platform support for stop
- instruction
-References: <1464871141-11568-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1464871141-11568-9-git-send-email-shreyas@linux.vnet.ibm.com>
- <1465165718.4274.20.camel@au1.ibm.com>
-In-Reply-To: <1465165718.4274.20.camel@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <57584F60.7010504@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160607225609.GA40706@ast-mbp.thefacebook.com>
+Message-Id: <20160608171747.GP18654@naverao1-tp.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,28 +55,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-
-Sorry for the delayed response.
-
-On 06/06/2016 03:58 AM, Benjamin Herrenschmidt wrote:
-> On Thu, 2016-06-02 at 07:38 -0500, Shreyas B. Prabhu wrote:
->> @@ -61,8 +72,13 @@ save_sprs_to_stack:
->>          * Note all register i.e per-core, per-subcore or per-thread is saved
->>          * here since any thread in the core might wake up first
->>          */
->> +BEGIN_FTR_SECTION
->> +       mfspr   r3,SPRN_PTCR
->> +       std     r3,_PTCR(r1)
->> +FTR_SECTION_ELSE
->>         mfspr   r3,SPRN_SDR1
->>         std     r3,_SDR1(r1)
->> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+On 2016/06/07 03:56PM, Alexei Starovoitov wrote:
+> On Tue, Jun 07, 2016 at 07:02:23PM +0530, Naveen N. Rao wrote:
+> > PPC64 eBPF JIT compiler.
+> > 
+> > Enable with:
+> > echo 1 > /proc/sys/net/core/bpf_jit_enable
+> > or
+> > echo 2 > /proc/sys/net/core/bpf_jit_enable
+> > 
+> > ... to see the generated JIT code. This can further be processed with
+> > tools/net/bpf_jit_disasm.
+> > 
+> > With CONFIG_TEST_BPF=m and 'modprobe test_bpf':
+> > test_bpf: Summary: 305 PASSED, 0 FAILED, [297/297 JIT'ed]
+> > 
+> > ... on both ppc64 BE and LE.
 > 
-> This is the only new SPR we care about in P9 ?
-> 
-After reviewing ISA again, I've identified LMRR, LMSER and ASDR also
-need to be restored. I've fixed this in v6.
+> Nice. That's even better than on x64 which cannot jit one test:
+> test_bpf: #262 BPF_MAXINSNS: Jump, gap, jump, ... jited:0 168 PASS
+> which was designed specifically to hit x64 jit pass limit.
+> ppc jit has predicatble number of passes and doesn't have this problem
+> as expected. Great.
 
-Thanks,
-Shreyas
+Yes, that's thanks to the clever handling of conditional branches by 
+Matt -- we always emit 2 instructions for this reason (encoded in 
+PPC_BCC() macro).
+
+> 
+> > The details of the approach are documented through various comments in
+> > the code.
+> > 
+> > Cc: Matt Evans <matt@ozlabs.org>
+> > Cc: Denis Kirjanov <kda@linux-powerpc.org>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Alexei Starovoitov <ast@fb.com>
+> > Cc: Daniel Borkmann <daniel@iogearbox.net>
+> > Cc: "David S. Miller" <davem@davemloft.net>
+> > Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/Kconfig                  |   3 +-
+> >  arch/powerpc/include/asm/asm-compat.h |   2 +
+> >  arch/powerpc/include/asm/ppc-opcode.h |  20 +-
+> >  arch/powerpc/net/Makefile             |   4 +
+> >  arch/powerpc/net/bpf_jit.h            |  53 +-
+> >  arch/powerpc/net/bpf_jit64.h          | 102 ++++
+> >  arch/powerpc/net/bpf_jit_asm64.S      | 180 +++++++
+> >  arch/powerpc/net/bpf_jit_comp64.c     | 956 ++++++++++++++++++++++++++++++++++
+> >  8 files changed, 1317 insertions(+), 3 deletions(-)
+> >  create mode 100644 arch/powerpc/net/bpf_jit64.h
+> >  create mode 100644 arch/powerpc/net/bpf_jit_asm64.S
+> >  create mode 100644 arch/powerpc/net/bpf_jit_comp64.c
+> 
+> don't see any issues with the code.
+> Thank you for working on this.
+> 
+> Acked-by: Alexei Starovoitov <ast@kernel.org>
+
+Thanks, Alexei!
+
+
+Regards,
+Naveen
