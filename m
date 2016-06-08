@@ -1,18 +1,20 @@
-Return-Path: <andreas.ziegler@fau.de>
-Received: from faui40.informatik.uni-erlangen.de
- (faui40.informatik.uni-erlangen.de [131.188.34.40])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geliangtang@gmail.com>
+Received: from mail-pf0-f193.google.com (mail-pf0-f193.google.com
+ [209.85.192.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPkFP2x4KzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 19:50:17 +1000 (AEST)
-From: Andreas Ziegler <andreas.ziegler@fau.de>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Valentin Rothberg <valentinrothberg@gmail.com>,
- linux-kernel@vger.kernel.org, Andreas Ziegler <andreas.ziegler@fau.de>
-Subject: [PATCH] drivers/net/fsl_ucc: Do not prefix header guard with CONFIG_
-Date: Wed,  8 Jun 2016 11:40:28 +0200
-Message-Id: <1465378828-7077-1-git-send-email-andreas.ziegler@fau.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPkY96sW4zDqGK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 20:03:57 +1000 (AEST)
+Received: by mail-pf0-f193.google.com with SMTP id l188so291132pfl.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 03:03:57 -0700 (PDT)
+From: Geliang Tang <geliangtang@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Geliang Tang <geliangtang@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/nvram: remove unused pstore headers
+Date: Wed,  8 Jun 2016 18:02:37 +0800
+Message-Id: <4bd4cc6de1d163cb5c67270596bad7a03b569d7a.1465380013.git.geliangtang@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CONFIG_ prefix should only be used for options which
-can be configured through Kconfig and not for guarding headers.
+Since the pstore code has moved away from nvram.c, remove unused
+pstore headers pstore.h and kmsg_dump.h.
 
-Signed-off-by: Andreas Ziegler <andreas.ziegler@fau.de>
+Signed-off-by: Geliang Tang <geliangtang@gmail.com>
 ---
- drivers/net/wan/fsl_ucc_hdlc.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/nvram.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.h b/drivers/net/wan/fsl_ucc_hdlc.h
-index 525786a..881ecde 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.h
-+++ b/drivers/net/wan/fsl_ucc_hdlc.h
-@@ -8,8 +8,8 @@
-  * option) any later version.
-  */
- 
--#ifndef CONFIG_UCC_HDLC_H
--#define CONFIG_UCC_HDLC_H
-+#ifndef _UCC_HDLC_H_
-+#define _UCC_HDLC_H_
- 
- #include <linux/kernel.h>
- #include <linux/list.h>
+diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
+index 9f818417..79aef8c 100644
+--- a/arch/powerpc/platforms/pseries/nvram.c
++++ b/arch/powerpc/platforms/pseries/nvram.c
+@@ -17,8 +17,6 @@
+ #include <linux/init.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+-#include <linux/kmsg_dump.h>
+-#include <linux/pstore.h>
+ #include <linux/ctype.h>
+ #include <asm/uaccess.h>
+ #include <asm/nvram.h>
 -- 
 1.9.1
