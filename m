@@ -1,31 +1,29 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
- [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 3rPTvp5k4JzDq5m
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 10:34:13 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
- Steve Muckle <steve.muckle@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>,
- Steven Miao <realmz6@gmail.com>
-Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
- ascending order
-Date: Wed, 08 Jun 2016 02:38:09 +0200
-Message-ID: <3409903.LrptLTtVZr@vostro.rjw.lan>
-In-Reply-To: <20160607042807.GC21466@vireshk-i7>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
- <20160607042807.GC21466@vireshk-i7>
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
+ [209.85.220.52])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPVqP0SVYzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 11:15:29 +1000 (AEST)
+Received: by mail-pa0-f52.google.com with SMTP id ec8so45138916pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 18:15:28 -0700 (PDT)
+Received: from balbir.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id s90sm37949551pfj.86.2016.06.07.18.14.19
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1/SSLv3 cipher=OTHER);
+ Tue, 07 Jun 2016 18:14:24 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/pseries: Add POWER8NVL support to
+ ibm,client-architecture-support call
+To: linuxppc-dev@lists.ozlabs.org
+References: <1464673877-30659-1-git-send-email-thuth@redhat.com>
+ <1464689047.23025.1.camel@ellerman.id.au> <574D6549.3050903@redhat.com>
+ <1464690745.23025.2.camel@ellerman.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <70305fb4-d345-bd89-e395-04c39b266fe4@gmail.com>
+Date: Wed, 8 Jun 2016 11:14:16 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <1464690745.23025.2.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,48 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, June 07, 2016 09:58:07 AM Viresh Kumar wrote:
-> On 06-06-16, 23:56, Rafael J. Wysocki wrote:
-> > Since you are adding new code, you can write it so it doesn't do
-> > unnecessary checks from the start.
+
+
+On 31/05/16 20:32, Michael Ellerman wrote:
+> On Tue, 2016-05-31 at 12:19 +0200, Thomas Huth wrote:
+>> On 31.05.2016 12:04, Michael Ellerman wrote:
+>>> On Tue, 2016-05-31 at 07:51 +0200, Thomas Huth wrote:
+>>>> If we do not provide the PVR for POWER8NVL, a guest on this
+>>>> system currently ends up in PowerISA 2.06 compatibility mode on
+>>>> KVM, since QEMU does not provide a generic PowerISA 2.07 mode yet.
+>>>> So some new instructions from POWER8 (like "mtvsrd") get disabled
+>>>> for the guest, resulting in crashes when using code compiled
+>>>> explicitly for POWER8 (e.g. with the "-mcpu=power8" option of GCC).
+>>>>
+>>>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+>>>
+>>> So this should say:
+>>>
+>>>   Fixes: ddee09c099c3 ("powerpc: Add PVR for POWER8NVL processor")
+>>>
+>>> And therefore:
+>>>
+>>>   Cc: stable@vger.kernel.org # v4.0+
+>>>
+>>> Am I right?
+>>
+>> Right. (At least for virtualized systems ... for bare-metal systems,
+>> that original patch was enough). So shall I resubmit my patch with these
+>> two lines, or could you add them when you pick this patch up?
 > 
-> Hmm, I will do all that in this series only now.
-> 
-> > While at it, the "if ((freq < policy->min) || (freq > policy->max))"
-> > checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
-> > good to me, because they very well may cause those function to return
-> > -EINVAL even when there's a valid table and that may cause
-> > acpi_cpufreq_fast_switch() to do bad things.
-> 
-> Hmm. So, the checks are for sure required here, otherwise we may end up
-> returning a frequency which we aren't allowed to. Also note that 'freq' here
-> isn't the target-freq, but the entry in the freq-table.
-> 
-> This routine should be returning a valid freq within the ranges specified by
-> policy->min/max.
+> Thanks, I'll add them here.
 
-Which in principle may not be possible if the range doesn't include any
-frequency in the table, eg. min == max and between the table entries.
+Don't we need to update IBM_ARCH_VEC_NRCORES_OFFSET as well?
 
-However, the CPU has to run at *some* frequency, even if there's none in the
-min/max range.
-
-And if we are sure that there is at least one valid frequency between min
-and max, please note that target_freq has already been clamped between them,
-so clamping again is rather unuseful.  And of course it is racy in general,
-which makes it even more unuseful.
-
-> Also note that these routines shall *never* return -EINVAL, otherwise it is
-> mostly a bug we are hitting.
-
-So make them explicitly return a valid frequency every time.
-
-> We have enough checks in place to make sure that there is at least one valid
-> entry in the freq-table which is >= policy->min and <= policy->max.
-
-That assuming that the driver will always do the right thing in its ->verify
-callback.
-
-> I will take care of rest of the comments though. Thanks.
-
-Thanks!
+Balbir Singh
