@@ -1,35 +1,49 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPvgn4swgzDqST
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 02:55:17 +1000 (AEST)
-Received: from pps.filterd (m0049461.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u58GsXQs023178
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 12:55:15 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23e9mwwe98-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPvrH41YCzDskQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 03:02:39 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u58GxTXl029298
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 13:02:37 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m3x4hv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 12:55:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 13:02:37 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 8 Jun 2016 10:55:13 -0600
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
- ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v6 11/11] powerpc/powernv: Use deepest stop state when cpu is
- offlined
-Date: Wed,  8 Jun 2016 11:54:31 -0500
-In-Reply-To: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Message-Id: <1465404871-5406-12-git-send-email-shreyas@linux.vnet.ibm.com>
+ Thu, 9 Jun 2016 03:02:35 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C82F23578052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 03:02:11 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151] (may be
+ forged))
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u58H26er917842
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 03:02:06 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u58H1Wu8000874
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 03:01:32 +1000
+Date: Wed, 08 Jun 2016 22:31:20 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: benh@au1.ibm.com, mpe@ellerman.id.au
+CC: ego@linux.vnet.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 08/11] powerpc/powernv: Add platform support for stop
+ instruction
+References: <1464871141-11568-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464871141-11568-9-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1465165718.4274.20.camel@au1.ibm.com>
+In-Reply-To: <1465165718.4274.20.camel@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <57584F60.7010504@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,85 +53,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If hardware supports stop state, use the deepest stop state when
-the cpu is offlined.
+Hi Ben,
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- - No changes since v1
+Sorry for the delayed response.
 
- arch/powerpc/platforms/powernv/idle.c    | 15 +++++++++++++--
- arch/powerpc/platforms/powernv/powernv.h |  1 +
- arch/powerpc/platforms/powernv/smp.c     |  4 +++-
- 3 files changed, 17 insertions(+), 3 deletions(-)
+On 06/06/2016 03:58 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2016-06-02 at 07:38 -0500, Shreyas B. Prabhu wrote:
+>> @@ -61,8 +72,13 @@ save_sprs_to_stack:
+>>          * Note all register i.e per-core, per-subcore or per-thread is saved
+>>          * here since any thread in the core might wake up first
+>>          */
+>> +BEGIN_FTR_SECTION
+>> +       mfspr   r3,SPRN_PTCR
+>> +       std     r3,_PTCR(r1)
+>> +FTR_SECTION_ELSE
+>>         mfspr   r3,SPRN_SDR1
+>>         std     r3,_SDR1(r1)
+>> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+> 
+> This is the only new SPR we care about in P9 ?
+> 
+After reviewing ISA again, I've identified LMRR, LMSER and ASDR also
+need to be restored. I've fixed this in v6.
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index bfbd359..b38cb33 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -242,6 +242,11 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
-  */
- u64 pnv_first_deep_stop_state;
- 
-+/*
-+ * Deepest stop idle state. Used when a cpu is offlined
-+ */
-+u64 pnv_deepest_stop_state;
-+
- static int __init pnv_init_idle_states(void)
- {
- 	struct device_node *power_mgt;
-@@ -290,8 +295,11 @@ static int __init pnv_init_idle_states(void)
- 		}
- 
- 		/*
--		 * Set pnv_first_deep_stop_state to the first stop level
--		 * to cause hypervisor state loss
-+		 * Set pnv_first_deep_stop_state and pnv_deepest_stop_state.
-+		 * pnv_first_deep_stop_state should be set to the first stop
-+		 * level to cause hypervisor state loss.
-+		 * pnv_deepest_stop_state should be set to the deepest stop
-+		 * stop state.
- 		 */
- 		pnv_first_deep_stop_state = MAX_STOP_STATE;
- 		for (i = 0; i < dt_idle_states; i++) {
-@@ -300,6 +308,9 @@ static int __init pnv_init_idle_states(void)
- 			if ((flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) &&
- 			     (pnv_first_deep_stop_state > psscr_rl))
- 				pnv_first_deep_stop_state = psscr_rl;
-+
-+			if (pnv_deepest_stop_state < psscr_rl)
-+				pnv_deepest_stop_state = psscr_rl;
- 		}
- 	}
- 
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 6dbc0a1..da7c843 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -18,6 +18,7 @@ static inline void pnv_pci_shutdown(void) { }
- #endif
- 
- extern u32 pnv_get_supported_cpuidle_states(void);
-+extern u64 pnv_deepest_stop_state;
- 
- extern void pnv_lpc_init(void);
- 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index ad7b1a3..f69ceb6 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -182,7 +182,9 @@ static void pnv_smp_cpu_kill_self(void)
- 
- 		ppc64_runlatch_off();
- 
--		if (idle_states & OPAL_PM_WINKLE_ENABLED)
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			srr1 = power_stop(pnv_deepest_stop_state);
-+		else if (idle_states & OPAL_PM_WINKLE_ENABLED)
- 			srr1 = power7_winkle();
- 		else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
- 				(idle_states & OPAL_PM_SLEEP_ENABLED_ER1))
--- 
-2.1.4
+Thanks,
+Shreyas
