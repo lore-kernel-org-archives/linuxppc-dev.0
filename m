@@ -1,21 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPrNG674pzDqs2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 00:26:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPrNH4SGmzDqXZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 00:26:39 +1000 (AEST)
+Received: from pps.filterd (m0082756.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u58ENg5b016566
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jun 2016 10:26:38 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23e9mf2dp0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 10:26:37 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 8 Jun 2016 10:26:32 -0400
+ Wed, 8 Jun 2016 08:26:36 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 00/10] Fixes for Radix support
-Date: Wed,  8 Jun 2016 19:55:48 +0530
-Message-Id: <1465395958-21349-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 02/10] powerpc/mm/radix: Update to tlb functions ric
+ argument
+Date: Wed,  8 Jun 2016 19:55:50 +0530
+In-Reply-To: <1465395958-21349-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1465395958-21349-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1465395958-21349-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +37,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Radix invalidate control (RIC) is used to control which cache to flush
+using tlb instructions. When doing a PID flush, we currently flush
+everything including page walk cache. For address range flush, we flush
+only the TLB. In the later patch, we add support for flushing only
+page walk cache.
 
-This series includes patches I had posted before. I collected them in a series
-and marked the series V2. This address the review feedback I received from
-last post.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/tlb-radix.c | 43 ++++++++++++++++++++++---------------------
+ 1 file changed, 22 insertions(+), 21 deletions(-)
 
-
-Aneesh Kumar K.V (9):
-  powerpc/mm/radix: Update to tlb functions ric argument
-  powerpc/mm/radix: Flush page walk cache when freeing page table
-  powerpc/mm/radix: Update LPCR HR bit as per ISA
-  powerpc/mm: use _raw variant of page table accessors
-  powerpc/mm: Compile out radix related functions if RADIX_MMU is
-    disabled
-  powerpc/hash: Use the correct ppp mask when updating hpte
-  powerpc/mm: Clear top 16 bits of va only on older cpus
-  powerpc/mm: Print formation regarding the the MMU mode
-  powerpc/mm/hash: Update SDR1 size encoding as documented in ISA 3.0
-
-Balbir Singh (1):
-  Fix .long's in mm/tlb-radix.c to more meaningful
-
- arch/powerpc/include/asm/book3s/32/pgalloc.h       |  1 -
- arch/powerpc/include/asm/book3s/64/mmu-hash.h      |  1 +
- arch/powerpc/include/asm/book3s/64/mmu.h           |  5 ++
- arch/powerpc/include/asm/book3s/64/pgalloc.h       | 16 +++-
- arch/powerpc/include/asm/book3s/64/pgtable-4k.h    |  6 +-
- arch/powerpc/include/asm/book3s/64/pgtable-64k.h   |  6 +-
- arch/powerpc/include/asm/book3s/64/pgtable.h       | 99 +++++++++++++++-------
- .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  3 +
- arch/powerpc/include/asm/book3s/64/tlbflush.h      | 15 +++-
- arch/powerpc/include/asm/book3s/pgalloc.h          |  5 --
- arch/powerpc/include/asm/mmu.h                     | 12 ++-
- arch/powerpc/include/asm/pgtable-be-types.h        | 15 ++++
- arch/powerpc/include/asm/ppc-opcode.h              | 14 +++
- arch/powerpc/include/asm/reg.h                     |  1 +
- arch/powerpc/mm/hash_native_64.c                   | 14 +--
- arch/powerpc/mm/hash_utils_64.c                    | 12 +--
- arch/powerpc/mm/pgtable-radix.c                    |  7 +-
- arch/powerpc/mm/tlb-radix.c                        | 94 +++++++++++++-------
- 18 files changed, 236 insertions(+), 90 deletions(-)
-
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index e6b7487ad28f..b33b7c77cfa3 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -19,16 +19,20 @@
+ 
+ static DEFINE_RAW_SPINLOCK(native_tlbie_lock);
+ 
+-static inline void __tlbiel_pid(unsigned long pid, int set)
++#define RIC_FLUSH_TLB 0
++#define RIC_FLUSH_PWC 1
++#define RIC_FLUSH_ALL 2
++
++static inline void __tlbiel_pid(unsigned long pid, int set,
++				unsigned long ric)
+ {
+-	unsigned long rb,rs,ric,prs,r;
++	unsigned long rb,rs,prs,r;
+ 
+ 	rb = PPC_BIT(53); /* IS = 1 */
+ 	rb |= set << PPC_BITLSHIFT(51);
+ 	rs = ((unsigned long)pid) << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
+-	ric = 2;  /* invalidate all the caches */
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+@@ -39,25 +43,24 @@ static inline void __tlbiel_pid(unsigned long pid, int set)
+ /*
+  * We use 128 set in radix mode and 256 set in hpt mode.
+  */
+-static inline void _tlbiel_pid(unsigned long pid)
++static inline void _tlbiel_pid(unsigned long pid, unsigned long ric)
+ {
+ 	int set;
+ 
+ 	for (set = 0; set < POWER9_TLB_SETS_RADIX ; set++) {
+-		__tlbiel_pid(pid, set);
++		__tlbiel_pid(pid, set, ric);
+ 	}
+ 	return;
+ }
+ 
+-static inline void _tlbie_pid(unsigned long pid)
++static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
+ {
+-	unsigned long rb,rs,ric,prs,r;
++	unsigned long rb,rs,prs,r;
+ 
+ 	rb = PPC_BIT(53); /* IS = 1 */
+ 	rs = pid << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
+-	ric = 2;  /* invalidate all the caches */
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+@@ -66,16 +69,15 @@ static inline void _tlbie_pid(unsigned long pid)
+ }
+ 
+ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+-			      unsigned long ap)
++			      unsigned long ap, unsigned long ric)
+ {
+-	unsigned long rb,rs,ric,prs,r;
++	unsigned long rb,rs,prs,r;
+ 
+ 	rb = va & ~(PPC_BITMASK(52, 63));
+ 	rb |= ap << PPC_BITLSHIFT(58);
+ 	rs = pid << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
+-	ric = 0;  /* no cluster flush yet */
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+@@ -84,16 +86,15 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
+ }
+ 
+ static inline void _tlbie_va(unsigned long va, unsigned long pid,
+-			     unsigned long ap)
++			     unsigned long ap, unsigned long ric)
+ {
+-	unsigned long rb,rs,ric,prs,r;
++	unsigned long rb,rs,prs,r;
+ 
+ 	rb = va & ~(PPC_BITMASK(52, 63));
+ 	rb |= ap << PPC_BITLSHIFT(58);
+ 	rs = pid << PPC_BITLSHIFT(31);
+ 	prs = 1; /* process scoped */
+ 	r = 1;   /* raidx format */
+-	ric = 0;  /* no cluster flush yet */
+ 
+ 	asm volatile("ptesync": : :"memory");
+ 	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+@@ -119,7 +120,7 @@ void radix__local_flush_tlb_mm(struct mm_struct *mm)
+ 	preempt_disable();
+ 	pid = mm->context.id;
+ 	if (pid != MMU_NO_CONTEXT)
+-		_tlbiel_pid(pid);
++		_tlbiel_pid(pid, RIC_FLUSH_ALL);
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(radix__local_flush_tlb_mm);
+@@ -132,7 +133,7 @@ void radix___local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+ 	preempt_disable();
+ 	pid = mm ? mm->context.id : 0;
+ 	if (pid != MMU_NO_CONTEXT)
+-		_tlbiel_va(vmaddr, pid, ap);
++		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
+ 	preempt_enable();
+ }
+ 
+@@ -169,11 +170,11 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
+ 
+ 		if (lock_tlbie)
+ 			raw_spin_lock(&native_tlbie_lock);
+-		_tlbie_pid(pid);
++		_tlbie_pid(pid, RIC_FLUSH_ALL);
+ 		if (lock_tlbie)
+ 			raw_spin_unlock(&native_tlbie_lock);
+ 	} else
+-		_tlbiel_pid(pid);
++		_tlbiel_pid(pid, RIC_FLUSH_ALL);
+ no_context:
+ 	preempt_enable();
+ }
+@@ -193,11 +194,11 @@ void radix___flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+ 
+ 		if (lock_tlbie)
+ 			raw_spin_lock(&native_tlbie_lock);
+-		_tlbie_va(vmaddr, pid, ap);
++		_tlbie_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
+ 		if (lock_tlbie)
+ 			raw_spin_unlock(&native_tlbie_lock);
+ 	} else
+-		_tlbiel_va(vmaddr, pid, ap);
++		_tlbiel_va(vmaddr, pid, ap, RIC_FLUSH_TLB);
+ bail:
+ 	preempt_enable();
+ }
+@@ -221,7 +222,7 @@ void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
+ 
+ 	if (lock_tlbie)
+ 		raw_spin_lock(&native_tlbie_lock);
+-	_tlbie_pid(0);
++	_tlbie_pid(0, RIC_FLUSH_ALL);
+ 	if (lock_tlbie)
+ 		raw_spin_unlock(&native_tlbie_lock);
+ }
 -- 
 2.7.4
