@@ -1,39 +1,30 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-vk0-f67.google.com (mail-vk0-f67.google.com
- [209.85.213.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linz@li-pro.net>
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQ3FJ28d3zDqnN
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 08:36:20 +1000 (AEST)
-Received: by mail-vk0-f67.google.com with SMTP id t7so3656275vkf.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 15:36:20 -0700 (PDT)
-MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <20160608210322.GA4248@localhost>
-References: <20160604000642.28162-1-yinghai@kernel.org>
- <20160604000642.28162-2-yinghai@kernel.org>
- <20160608210322.GA4248@localhost>
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Wed, 8 Jun 2016 15:35:16 -0700
-Message-ID: <CAE9FiQXPmG6UYYGHG52_i8vaBJ5yPm6Z4Zfx_BhQxVhyWC5fnw@mail.gmail.com>
-Subject: Re: [PATCH v12 01/15] PCI: Let pci_mmap_page_range() take extra
- resource pointer
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQ3FG3MRzzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 08:36:17 +1000 (AEST)
+From: Stephan Linz <linz@li-pro.net>
+To: linux-leds@vger.kernel.org,
+	linux-ide@vger.kernel.org
+Cc: Stephan Linz <linz@li-pro.net>, Joseph Jezak <josejx@gentoo.org>,
+ Nico Macrionitis <acrux@cruxppc.org>,
+ =?UTF-8?q?J=C3=B6rg=20Sommer?= <joerg@alea.gnuu.de>,
+ Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, Khalid Aziz <khalid.aziz@oracle.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-cris-kernel@axis.com,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- linux-am33-list@redhat.com,
- linux-parisc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-sh@vger.kernel.org,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- linux-xtensa@linux-xtensa.org
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v3 3/7] powerpc: use the new LED disk activity trigger
+Date: Thu,  9 Jun 2016 00:29:38 +0200
+Message-Id: <20160608223000.433-3-linz@li-pro.net>
+In-Reply-To: <20160608223000.433-1-linz@li-pro.net>
+References: <20160608223000.433-1-linz@li-pro.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,226 +35,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 8, 2016 at 2:03 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> Microblaze does look up the resource in pci_mmap_page_range(), but it
-> never actually uses it.  It *looks* like it uses it, but that code is
-> actually dead and I think we should apply the first patch below.
+- dts: rename 'ide-disk' to 'disk-activity'
+- defconfig: rename 'ADB_PMU_LED_IDE' to 'ADB_PMU_LED_DISK'
 
-Good one.
+Cc: Joseph Jezak <josejx@gentoo.org>
+Cc: Nico Macrionitis <acrux@cruxppc.org>
+Cc: Jörg Sommer <joerg@alea.gnuu.de>
+Signed-off-by: Stephan Linz <linz@li-pro.net>
+---
+ arch/powerpc/boot/dts/mpc8315erdb.dts |  2 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts |  2 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts |  2 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts |  2 +-
+ arch/powerpc/configs/pmac32_defconfig |  2 +-
+ arch/powerpc/configs/ppc6xx_defconfig |  2 +-
+ drivers/macintosh/Kconfig             | 13 ++++++-------
+ drivers/macintosh/via-pmu-led.c       |  4 ++--
+ 8 files changed, 14 insertions(+), 15 deletions(-)
 
->
-> That leaves powerpc as the only arch that would use this extra
-> resource pointer.  It uses it in __pci_mmap_set_pgprot() to help
-> decide whether to make a normal uncacheable mapping or a write-
-> combining one.  There's nothing here that's specific to the powerpc
-> architecture, and I don't think we should add this parameter just to
-> cater to powerpc.
->
-> There are two cases where __pci_mmap_set_pgprot() on powerpc does
-> something based on the resource:
->
->   1) We're using procfs to mmap I/O port space after we requested
->      write-combining, e.g., we did this:
->
->        ioctl(fd, PCIIOC_MMAP_IS_IO);           # request I/O port space
->        ioctl(fd, PCIIOC_WRITE_COMBINE, 1);     # request write-combining
->        mmap(fd, ...)
->
->      On powerpc, we ignore the write-combining request in this case.
->
->      I think we can handle this case by applying the second patch
->      below to ignore write-combining on I/O space for all arches, not
->      just powerpc.
->
->   2) We're using sysfs to mmap resourceN (not resourceN_wc), and
->      the resource is prefetchable.  On powerpc, we turn *on*
->      write-combining, even though the user didn't ask for it.
->
->      I'm not sure this case is actually safe, because it changes the
->      ordering properties.  If it *is* safe, we could enable write-
->      combining in pci_mmap_resource(), where we already have the
->      resource and it could be done for all arches.
->
->      This case is not strictly necessary, except to avoid a
->      performance regression, because the user could have mapped
->      resourceN_wc to explicitly request write-combining.
->
-
-Agreed.
-
->
-> commit 4e712b691abc5b579e3e4327f56b0b7988bdd1cb
-> Author: Bjorn Helgaas <bhelgaas@google.com>
-> Date:   Wed Jun 8 14:00:14 2016 -0500
->
->     microblaze/PCI: Remove useless __pci_mmap_set_pgprot()
->
->     The microblaze __pci_mmap_set_pgprot() was apparently copied from powerpc,
->     where it computes either an uncacheable pgprot_t or a write-combining one.
->     But on microblaze, we always use the regular uncacheable pgprot_t.
->
->     Remove the useless code in __pci_mmap_set_pgprot() and inline the
->     pgprot_noncached() at the only caller.
->
->     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->
-> diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
-> index 14cba60..1974567 100644
-> --- a/arch/microblaze/pci/pci-common.c
-> +++ b/arch/microblaze/pci/pci-common.c
-> @@ -219,33 +219,6 @@ static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
->  }
->
->  /*
-> - * Set vm_page_prot of VMA, as appropriate for this architecture, for a pci
-> - * device mapping.
-> - */
-> -static pgprot_t __pci_mmap_set_pgprot(struct pci_dev *dev, struct resource *rp,
-> -                                     pgprot_t protection,
-> -                                     enum pci_mmap_state mmap_state,
-> -                                     int write_combine)
-> -{
-> -       pgprot_t prot = protection;
-> -
-> -       /* Write combine is always 0 on non-memory space mappings. On
-> -        * memory space, if the user didn't pass 1, we check for a
-> -        * "prefetchable" resource. This is a bit hackish, but we use
-> -        * this to workaround the inability of /sysfs to provide a write
-> -        * combine bit
-> -        */
-> -       if (mmap_state != pci_mmap_mem)
-> -               write_combine = 0;
-> -       else if (write_combine == 0) {
-> -               if (rp->flags & IORESOURCE_PREFETCH)
-> -                       write_combine = 1;
-> -       }
-> -
-> -       return pgprot_noncached(prot);
-> -}
-> -
-> -/*
->   * This one is used by /dev/mem and fbdev who have no clue about the
->   * PCI device, it tries to find the PCI device first and calls the
->   * above routine
-> @@ -317,9 +290,7 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
->                 return -EINVAL;
->
->         vma->vm_pgoff = offset >> PAGE_SHIFT;
-> -       vma->vm_page_prot = __pci_mmap_set_pgprot(dev, rp,
-> -                                                 vma->vm_page_prot,
-> -                                                 mmap_state, write_combine);
-> +       vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
->
->         ret = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
->                                vma->vm_end - vma->vm_start, vma->vm_page_prot);
->
-
-Acked-by: Yinghai Lu <yinghai@kernel.org>
-
->
->
-> commit 962972ee5e0ba6ceb680cb182bad65f8886586a6
-> Author: Bjorn Helgaas <bhelgaas@google.com>
-> Date:   Wed Jun 8 14:46:54 2016 -0500
->
->     PCI: Ignore write-combining when mapping I/O port space
->
->     PCI exposes files like /proc/bus/pci/00/00.0 in procfs.  These files
->     support operations like this:
->
->       ioctl(fd, PCIIOC_MMAP_IS_IO);           # request I/O port space
->       ioctl(fd, PCIIOC_WRITE_COMBINE, 1);     # request write-combining
->       mmap(fd, ...)
->
->     Many architectures don't allow mmap of I/O port space at all, but I don't
->     think it makes sense to do a write-combining mapping on the ones that do.
->     We could change proc_bus_pci_ioctl() so the user could never enable write-
->     combining for I/O port space, but that would break the following sequence,
->     which is currently legal:
->
->       mmap(fd, ...)                           # default is I/O, non-combining
->       ioctl(fd, PCIIOC_WRITE_COMBINE, 1);     # request write-combining
->       ioctl(fd, PCIIOC_MMAP_IS_MEM);          # request memory space
->       mmap(fd, ...)
->
->     Ignore the write-combining flag when mapping I/O port space.
->
->     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->
-> diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
-> index 3f155e7..21f8d613 100644
-> --- a/drivers/pci/proc.c
-> +++ b/drivers/pci/proc.c
-> @@ -247,7 +247,8 @@ static int proc_bus_pci_mmap(struct file *file, struct vm_area_struct *vma)
->
->         ret = pci_mmap_page_range(dev, vma,
->                                   fpriv->mmap_state,
-> -                                 fpriv->write_combine);
-> +                                 (fpriv->mmap_state == pci_mmap_mem) ?
-> +                                       fpriv->write_combine : 0);
->         if (ret < 0)
->                 return ret;
->
-
-ok to me.
-
-At the same time, can you kill __pci_mmap_set_pgprot() for powerpc.
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 0f7a60f..0d0148d 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -356,36 +356,6 @@ static struct resource
-*__pci_mmap_make_offset(struct pci_dev *dev,
- }
-
- /*
-- * Set vm_page_prot of VMA, as appropriate for this architecture, for a pci
-- * device mapping.
-- */
--static pgprot_t __pci_mmap_set_pgprot(struct pci_dev *dev, struct resource *rp,
--                      pgprot_t protection,
--                      enum pci_mmap_state mmap_state,
--                      int write_combine)
--{
--
--    /* Write combine is always 0 on non-memory space mappings. On
--     * memory space, if the user didn't pass 1, we check for a
--     * "prefetchable" resource. This is a bit hackish, but we use
--     * this to workaround the inability of /sysfs to provide a write
--     * combine bit
--     */
--    if (mmap_state != pci_mmap_mem)
--        write_combine = 0;
--    else if (write_combine == 0) {
--        if (rp->flags & IORESOURCE_PREFETCH)
--            write_combine = 1;
--    }
--
--    /* XXX would be nice to have a way to ask for write-through */
--    if (write_combine)
--        return pgprot_noncached_wc(protection);
--    else
--        return pgprot_noncached(protection);
--}
--
--/*
-  * This one is used by /dev/mem and fbdev who have no clue about the
-  * PCI device, it tries to find the PCI device first and calls the
-  * above routine
-@@ -458,9 +428,10 @@ int pci_mmap_page_range(struct pci_dev *dev,
-struct vm_area_struct *vma,
-         return -EINVAL;
-
-     vma->vm_pgoff = offset >> PAGE_SHIFT;
--    vma->vm_page_prot = __pci_mmap_set_pgprot(dev, rp,
--                          vma->vm_page_prot,
--                          mmap_state, write_combine);
-+    if (write_combine)
-+        vma->vm_page_prot = pgprot_noncached_wc(protection);
-+    else
-+        vma->vm_page_prot = pgprot_noncached(protection);
-
-     ret = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
-                    vma->vm_end - vma->vm_start, vma->vm_page_prot);
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index 4354684..ca5139e 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -472,7 +472,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 2b4b653..e326139 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -496,7 +496,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 74b6a53..71842fc 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -480,7 +480,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 3b5cbac..e442a29 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -446,7 +446,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+index ea8705f..3f6c9a6 100644
+--- a/arch/powerpc/configs/pmac32_defconfig
++++ b/arch/powerpc/configs/pmac32_defconfig
+@@ -158,7 +158,7 @@ CONFIG_ADB=y
+ CONFIG_ADB_CUDA=y
+ CONFIG_ADB_PMU=y
+ CONFIG_ADB_PMU_LED=y
+-CONFIG_ADB_PMU_LED_IDE=y
++CONFIG_ADB_PMU_LED_DISK=y
+ CONFIG_PMAC_APM_EMU=m
+ CONFIG_PMAC_MEDIABAY=y
+ CONFIG_PMAC_BACKLIGHT=y
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+index 99ccbeba..1dde0be 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -442,7 +442,7 @@ CONFIG_ADB=y
+ CONFIG_ADB_CUDA=y
+ CONFIG_ADB_PMU=y
+ CONFIG_ADB_PMU_LED=y
+-CONFIG_ADB_PMU_LED_IDE=y
++CONFIG_ADB_PMU_LED_DISK=y
+ CONFIG_PMAC_APM_EMU=y
+ CONFIG_PMAC_MEDIABAY=y
+ CONFIG_PMAC_BACKLIGHT=y
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 3e8b29e..d28690f 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -96,19 +96,18 @@ config ADB_PMU_LED
+ 	  Support the front LED on Power/iBooks as a generic LED that can
+ 	  be triggered by any of the supported triggers. To get the
+ 	  behaviour of the old CONFIG_BLK_DEV_IDE_PMAC_BLINK, select this
+-	  and the ide-disk LED trigger and configure appropriately through
+-	  sysfs.
++	  and the disk LED trigger and configure appropriately through sysfs.
+ 
+-config ADB_PMU_LED_IDE
+-	bool "Use front LED as IDE LED by default"
++config ADB_PMU_LED_DISK
++	bool "Use front LED as DISK LED by default"
+ 	depends on ADB_PMU_LED
+ 	depends on LEDS_CLASS
+ 	depends on IDE_GD_ATA
+ 	select LEDS_TRIGGERS
+-	select LEDS_TRIGGER_IDE_DISK
++	select LEDS_TRIGGER_DISK
+ 	help
+-	  This option makes the front LED default to the IDE trigger
+-	  so that it blinks on IDE activity.
++	  This option makes the front LED default to the disk trigger
++	  so that it blinks on disk activity.
+ 
+ config PMAC_SMU
+ 	bool "Support for SMU  based PowerMacs"
+diff --git a/drivers/macintosh/via-pmu-led.c b/drivers/macintosh/via-pmu-led.c
+index 19c3718..ae067ab 100644
+--- a/drivers/macintosh/via-pmu-led.c
++++ b/drivers/macintosh/via-pmu-led.c
+@@ -73,8 +73,8 @@ static void pmu_led_set(struct led_classdev *led_cdev,
+ 
+ static struct led_classdev pmu_led = {
+ 	.name = "pmu-led::front",
+-#ifdef CONFIG_ADB_PMU_LED_IDE
+-	.default_trigger = "ide-disk",
++#ifdef CONFIG_ADB_PMU_LED_DISK
++	.default_trigger = "disk-activity",
+ #endif
+ 	.brightness_set = pmu_led_set,
+ };
+-- 
+2.8.4
