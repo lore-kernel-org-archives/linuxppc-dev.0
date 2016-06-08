@@ -1,28 +1,42 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPnvn3xR6zDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 22:35:17 +1000 (AEST)
-Date: Wed, 8 Jun 2016 14:35:07 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.163])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPpFR10jMzDqXn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 22:50:34 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Will Deacon <will.deacon@arm.com>, Boqun Feng <boqun.feng@gmail.com>
-Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
-Message-ID: <20160608123507.GR30154@twins.programming.kicks-ass.net>
-References: <1465213340.2658.1.camel@ellerman.id.au>
- <20160606115655.GD30909@twins.programming.kicks-ass.net>
- <1465215445.2658.4.camel@ellerman.id.au>
- <20160606144659.GG30909@twins.programming.kicks-ass.net>
- <1465384845.13854.7.camel@ellerman.id.au>
+ linuxppc-dev@lists.ozlabs.org, darren@stevens-zone.net,
+ Michael Ellerman <michaele@au1.ibm.com>, Julian Margetson
+ <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
+ "contact@a-eon.com" <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>,
+ luigi burdo <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <1465354334.14294.4.camel@ellerman.id.au>
+ <409c2f4c-52bf-8f46-8a29-c6f384c75946@xenosoft.de>
+ <1465385458.13854.11.camel@ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <01746caf-c878-7beb-6694-db5863709f40@xenosoft.de>
+Date: Wed, 8 Jun 2016 14:50:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1465384845.13854.7.camel@ellerman.id.au>
+In-Reply-To: <1465385458.13854.11.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +46,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 08, 2016 at 09:20:45PM +1000, Michael Ellerman wrote:
-> On Mon, 2016-06-06 at 16:46 +0200, Peter Zijlstra wrote:
-> > On Mon, Jun 06, 2016 at 10:17:25PM +1000, Michael Ellerman wrote:
-> > > On Mon, 2016-06-06 at 13:56 +0200, Peter Zijlstra wrote:
-> > > > On Mon, Jun 06, 2016 at 09:42:20PM +1000, Michael Ellerman wrote:
-> > > > 
-> > > > Why the move to in-line this implementation? It looks like a fairly big
-> > > > function.
-> > > 
-> > > I agree it's not pretty.
-> > 
-> > > I'm not beholden to v3 though if you hate it.
-> > 
-> > I don't mind; its just that I am in a similar boat with qspinlock and
-> > chose the other option. So I just figured I'd ask :-)
-> 
-> OK. I'll go with inline and we'll see which version gets "cleaned-up" by a
-> janitor first ;)
+Hi Michael,
 
-Ok; what tree does this go in? I have this dependent series which I'd
-like to get sorted and merged somewhere.
+Thanks a lot for the hint. I compiled it without the commit below but 
+unfortunately it doesn't boot.
+
+Cheers,
+
+Christian
+
+On 08 June 2016 at 1:30 PM, Michael Ellerman wrote:
+>
+> It's not a merge, so just plain git revert:
+>
+>    $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux-git
+>    $ cd linux-git
+>    $ git revert 764041e0f43cc7846f6d8eb246d65b53cc06c764
+>    [master 5dd9737a173e] Revert "powerpc/mm/radix: Add checks in slice code to catch radix usage"
+>     1 file changed, 16 deletions(-)
+>
+> cheers
+>
+>
