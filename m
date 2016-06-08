@@ -1,28 +1,27 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPXNw5jwrzDq62
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPXNw6PzszDq66
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 12:26:08 +1000 (AEST)
-Date: Wed, 8 Jun 2016 12:26:02 +1000
+Date: Wed, 8 Jun 2016 12:19:52 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Anton Blanchard <anton@au1.ibm.com>
 Cc: Alexander Graf <agraf@suse.de>, Alexey Kardashevskiy <aik@ozlabs.ru>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- qemu-devel@nongnu.org, qemu-ppc@nongnu.org
-Subject: Re: [PATCH 2/2] spapr: Better handling of ibm,pa-features TM bit
-Message-ID: <20160608022602.GU9226@voom.fritz.box>
+ qemu-devel@nongnu.org, pbonzini@redhat.com
+Subject: Re: [PATCH 1/2] Add PowerPC AT_HWCAP2 definitions
+Message-ID: <20160608021952.GT9226@voom.fritz.box>
 References: <20160404164457.539a55f0@kryten> <57021123.6050506@ozlabs.ru>
  <20160404204346.1cf44df8@kryten> <20160404210928.0d9ae644@kryten>
  <F99A6122-6B6D-45A3-99E2-2F56F143FB50@suse.de>
  <20160430104800.0a7c1d11@kryten> <20160607222842.4a745724@kryten>
- <20160607223210.2b1b42ae@kryten>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ULJ2Z7kCM1hyNsWd"
-In-Reply-To: <20160607223210.2b1b42ae@kryten>
+ protocol="application/pgp-signature"; boundary="k8r0khnpBuGu0wUi"
+In-Reply-To: <20160607222842.4a745724@kryten>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,82 +32,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---ULJ2Z7kCM1hyNsWd
+--k8r0khnpBuGu0wUi
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 07, 2016 at 10:32:10PM +1000, Anton Blanchard wrote:
+On Tue, Jun 07, 2016 at 10:28:42PM +1000, Anton Blanchard wrote:
 > From: Anton Blanchard <anton@samba.org>
 >=20
-> There are a few issues with our handling of the ibm,pa-features
-> TM bit:
->=20
-> - We don't support transactional memory in PR KVM, so don't tell
->   the OS that we do.
->=20
-> - In full emulation we have a minimal implementation of TM that always
->   fails, so for performance reasons lets not tell the OS that we
->   support it either.
->=20
-> - In HV KVM mode, we should mirror the host TM enabled state by
->   looking at the AT_HWCAP2 bit.
+> We need the PPC_FEATURE2_HAS_HTM bit in a subsequent patch, so
+> add the PowerPC AT_HWCAP2 definitions.
 >=20
 > Signed-off-by: Anton Blanchard <anton@samba.org>
 
-So, we certainly need a change like this.  I'm not entirely happy with
-the current implementation though.
+Applied to ppc-for-2.7.
 
-> diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-> index 0636642..c403fbb 100644
-> --- a/hw/ppc/spapr.c
-> +++ b/hw/ppc/spapr.c
-> @@ -620,7 +620,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void =
-*fdt, int offset,
->          0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
->          0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
->          0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
-> -        0x80, 0x00, 0x80, 0x00, 0x80, 0x00 };
-> +        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
->      uint8_t *pa_features;
->      size_t pa_size;
+Paolo or Peter: since this is a change to PPC specific bits, it seems
+reasonable to go through my tree although it's technically a generic
+header.  If someone wants to drop an explicit Ack, that wouldn't hurt
+of course.
+
+> ---
+>=20
+> diff --git a/include/elf.h b/include/elf.h
+> index 28d448b..8533b2a 100644
+> --- a/include/elf.h
+> +++ b/include/elf.h
+> @@ -477,6 +477,19 @@ typedef struct {
+>  #define PPC_FEATURE_TRUE_LE             0x00000002
+>  #define PPC_FEATURE_PPC_LE              0x00000001
 > =20
-> @@ -697,6 +697,19 @@ static void spapr_populate_cpu_dt(CPUState *cs, void=
- *fdt, int offset,
->      } else /* env->mmu_model =3D=3D POWERPC_MMU_2_07 */ {
->          pa_features =3D pa_features_207;
->          pa_size =3D sizeof(pa_features_207);
+> +/* Bits present in AT_HWCAP2 for PowerPC.  */
 > +
-> +#ifdef CONFIG_KVM
-> +        /* Only enable TM in HV KVM mode */
-> +        if (kvm_enabled() &&
-> +            !kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINF=
-O)) {
-> +            unsigned long hwcap2 =3D qemu_getauxval(AT_HWCAP2);
+> +#define PPC_FEATURE2_ARCH_2_07          0x80000000
+> +#define PPC_FEATURE2_HAS_HTM            0x40000000
+> +#define PPC_FEATURE2_HAS_DSCR           0x20000000
+> +#define PPC_FEATURE2_HAS_EBB            0x10000000
+> +#define PPC_FEATURE2_HAS_ISEL           0x08000000
+> +#define PPC_FEATURE2_HAS_TAR            0x04000000
+> +#define PPC_FEATURE2_HAS_VEC_CRYPTO     0x02000000
+> +#define PPC_FEATURE2_HTM_NOSC           0x01000000
+> +#define PPC_FEATURE2_ARCH_3_00          0x00800000
+> +#define PPC_FEATURE2_HAS_IEEE128        0x00400000
 > +
-> +            /* Guest should inherit host TM enabled bit */
-> +            if (hwcap2 & PPC_FEATURE2_HAS_HTM) {
-> +                pa_features[24] |=3D 0x80;
-> +            }
-> +        }
-> +#endif
-
-So first, I think this stanza wants to move into target-ppc/kvm.c -
-maybe a kvm_filter_pa_features() call or something.
-
-Second, although using PVINFO to determine if we have HV KVM is a
-standard trick, we don't want to use it as our first option.  We
-really want to introduce an actual KVM CAP flag for TM support, then
-fall back to checking PVINFO if we can't use that.
-
-I wonder if we actually want to just blanket disable TM in one patch -
-since it doesn't work at all with PR KVM, and "works" only in the most
-rules-lawyering and useless way on TCG.  Then re-enable it on HV KVM
-in a second patch.
-
->      }
->      if (env->ci_large_pages) {
->          pa_features[3] |=3D 0x20;
+>  /* Bits present in AT_HWCAP for Sparc.  */
+> =20
+>  #define HWCAP_SPARC_FLUSH               0x00000001
 >=20
 
 --=20
@@ -117,25 +86,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---ULJ2Z7kCM1hyNsWd
+--k8r0khnpBuGu0wUi
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJXV4I6AAoJEGw4ysog2bOSM4oP/jsvhqZofhQTZ7LLaKZLjSDv
-Q1i+uSFnmx/nL4Su006vMLV0HAsF2samabPbTP/AHtXpalI3jVwDF1YRT8i+E5Wo
-W7zPjYGcKgWTayypFG0Z2t01DEiaBaMcLZpGKXHcuAaUZlfmjC7V/vNgeHeM8w49
-vILy60xQnWt0FUKOT1JHty8d4xeYdxMPOxZt0N0KDHXivPyZwoCm0fwZeCGEThf8
-tEKGE101+qreqPytdnBY0TM9lQIzu0aVZMItenpIsu1xo1PqItGAGlSwGYpPI1P0
-8c8Z7X8lQ5xRz6qJAuzjdiViycz1bZ3uMrrHovbZ/LrvvRrdQWOYeyp/lttR7OSx
-NMTbJM2ZoU3K/JQwIv2RbW7gu7cZDqNYY7K55TI2xY8JN4wwhaeZTdKQ+nYhyQ8W
-8W4iqOJ22+le9oH+wLyjjQdwVkk1U/uliltknDUP0SjKjySes5LRm75TD3i3uSVL
-TjnX+J5Krci+7ja1SAugcXaY6o/0jDEcZqVXwAPP5+EWWTTofWCPJebOLlpQkmhX
-MWemk/4jSLrvWlQTty/thhfZvxTLoYUQDEInRKXfYcqRYEjoES4PG7mkiUM2nhRY
-rSwLGjv+Z+45R9Vuq2xPLJkDeVxS5jTRHbKY7FZuczcDhRhoFsRBolexx79TWkhr
-0eCA1kRCkQT4qBInuzpf
-=e3dq
+iQIcBAEBAgAGBQJXV4DHAAoJEGw4ysog2bOS2SkP/A3zHKtYT2pU3JPkxuVOe2m+
+/NY8wjZn3lO5tWof569U3y9TVXEpnEUVrGvyvZUfd6OJ+zn+xQj4ro9CDORhG85e
+Za3Rzf6l5/95jVclUFa3P7QZggwjb9gfc5c5ySZ2oNep1l2CBOWahJHsgOQ86cV0
+yh2EL/wkH55y/HJOPWmaJ7y5W4lzGy0UOhsZ+0+VtolOrDw0KwSIzKx4RHP2I8em
+IO39/xl9c5eiiil2b1ivTULkDJ0chvig8oY90KMHyoH5WqmPbxCYH3RBP6EVbeea
+ED3H8kCaLcZCphWXhzptsBIQAsRIRR+r+TR6XrSd40s9uEyv9IcD84lthJ7te4QW
+G+c1VnhGYVXabDaK/Q479LKjtUiS9NhgNRbCq9agqzc9YkHFgskkLOD0Z/q4mdk1
+3wQRswT/Rg3+3+wyP7AzqWmBqs9XE5zP4DXvqVG3YqHf1vrHNStMQQp7GCJc6jzo
+lyQbnW/nK5iuObORmJv0SPamGW9pS28n4TdSJVb16D6CXMgKXhlrp32j61zIE5BD
+tgQw077WmsA7e1hurp/k4bi1EJQwZV1tA3MFWfx82yxNCtMtUgj2kJ7XxI6pMXD8
+zDxZco9QZWwFx7XLxxxom6lRRbcA7Uz4mBIAQfl4F0h1ZJltxGx+zP9MkGtUPAKs
+IqbNJFtEbdeoYnfW67oQ
+=MQAK
 -----END PGP SIGNATURE-----
 
---ULJ2Z7kCM1hyNsWd--
+--k8r0khnpBuGu0wUi--
