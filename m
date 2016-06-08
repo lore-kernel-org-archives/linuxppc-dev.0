@@ -1,24 +1,36 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-f195.google.com (mail-pf0-f195.google.com
- [209.85.192.195])
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
+ [209.85.220.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPZCs2KJLzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 13:48:25 +1000 (AEST)
-Received: by mail-pf0-f195.google.com with SMTP id 62so21965420pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 20:48:25 -0700 (PDT)
-Subject: Re: [PATCH v10 09/18] powerpc/powernv: Extend PCI bridge resources
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1463726502-14679-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1463726502-14679-10-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- alistair@popple.id.au
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <9bd72b5a-c4c5-9ab7-7c82-cb4d7e8d51fd@ozlabs.ru>
-Date: Wed, 8 Jun 2016 13:47:16 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPZDw5pKBzDqfd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 13:49:20 +1000 (AEST)
+Received: by mail-pa0-f43.google.com with SMTP id b5so23591206pas.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2016 20:49:20 -0700 (PDT)
+Date: Wed, 8 Jun 2016 09:18:15 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Steve Muckle <steve.muckle@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Krzysztof Kozlowski <k.kozlowski@samsung.com>,
+ Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
+Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
+ ascending order
+Message-ID: <20160608034815.GA20114@vireshk-i7>
+References: <cover.1464960877.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
+ <20160607042807.GC21466@vireshk-i7>
+ <3409903.LrptLTtVZr@vostro.rjw.lan>
 MIME-Version: 1.0
-In-Reply-To: <1463726502-14679-10-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3409903.LrptLTtVZr@vostro.rjw.lan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,117 +40,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/05/16 16:41, Gavin Shan wrote:
-> The PCI slots are associated with root port or downstream ports
-> of the PCIe switch connected to root port. When adapter is hot
-> added to the PCI slot, it usually requests more IO or memory
-> resource from the directly connected parent bridge (port) and
-> update the bridge's windows accordingly. The resource windows
-> of upstream bridges can't be updated automatically. It possibly
-> leads to unbalanced resource across the bridges: The window of
-> downstream bridge is overruning that of upstream bridge. The
-> IO or MMIO path won't work.
+On 08-06-16, 02:38, Rafael J. Wysocki wrote:
+> On Tuesday, June 07, 2016 09:58:07 AM Viresh Kumar wrote:
+> > On 06-06-16, 23:56, Rafael J. Wysocki wrote:
+> > > Since you are adding new code, you can write it so it doesn't do
+> > > unnecessary checks from the start.
+> > 
+> > Hmm, I will do all that in this series only now.
+> > 
+> > > While at it, the "if ((freq < policy->min) || (freq > policy->max))"
+> > > checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
+> > > good to me, because they very well may cause those function to return
+> > > -EINVAL even when there's a valid table and that may cause
+> > > acpi_cpufreq_fast_switch() to do bad things.
+> > 
+> > Hmm. So, the checks are for sure required here, otherwise we may end up
+> > returning a frequency which we aren't allowed to. Also note that 'freq' here
+> > isn't the target-freq, but the entry in the freq-table.
+> > 
+> > This routine should be returning a valid freq within the ranges specified by
+> > policy->min/max.
 > 
-> This resolves the above issue by extending bridge windows of
-> root port and upstream port of the PCIe switch connected to
-> the root port to PHB's windows.
+> Which in principle may not be possible if the range doesn't include any
+> frequency in the table, eg. min == max and between the table entries.
+
+By within ranges I meant, policy->min <= freq <= policy->max, and that's how all
+our checks are. So even if the table will have a single valid frequency, we will
+return that only.
+
+> However, the CPU has to run at *some* frequency, even if there's none in the
+> min/max range.
+
+I completely agree. But the error will be fired only if there is no frequency
+within ranges we can switch to. And that's a bug somewhere else then.
+
+> And if we are sure that there is at least one valid frequency between min
+> and max, please note that target_freq has already been clamped between them,
+
+Yeah, its already clamped by the freq-change helpers in cpufreq core, but others
+may not be doing it properly.
+
+> > Also note that these routines shall *never* return -EINVAL, otherwise it is
+> > mostly a bug we are hitting.
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> So make them explicitly return a valid frequency every time.
 
+I thought about return Index 0 on such errors, will that be fine ? Anyway the
+new patches have added a WARN() for such cases.
 
-This breaks Garrison machine (g86l):
-
-EEH: Frozen PE#f9 on PHB#5 detected
-EEH: PE location: Backplane PLX, PHB location: N/A
-EEH: This PCI device has failed 1 times in the last hour
-EEH: Notify device drivers to shutdown
-EEH: Collect temporary log
-
-
-PHB#5 has a boot device so we end up in initramdisk.
-
-
-0005:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0
-xHCI Host Controller (rev 02)
-0005:04:00.0 SATA controller: Marvell Technology Group Ltd. 88SE9235 PCIe
-2.0 x2 4-port SATA 6 Gb/s Controller (rev 11)
-0005:05:00.0 PCI bridge: ASPEED Technology, Inc. AST1150 PCI-to-PCI Bridge
-(rev 03)
-0005:06:00.0 VGA compatible controller: ASPEED Technology, Inc. ASPEED
-Graphics Family (rev 30)
-
-
-
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 46 +++++++++++++++++++++++++++++++
->  1 file changed, 46 insertions(+)
+> > We have enough checks in place to make sure that there is at least one valid
+> > entry in the freq-table which is >= policy->min and <= policy->max.
 > 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 3186a29..e97a5fa 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -3221,6 +3221,49 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
->  	return phb->ioda.io_segsize;
->  }
->  
-> +/*
-> + * We are updating root port or the upstream port of the
-> + * bridge behind the root port with PHB's windows in order
-> + * to accommodate the changes on required resources during
-> + * PCI (slot) hotplug, which is connected to either root
-> + * port or the downstream ports of PCIe switch behind the
-> + * root port.
-> + */
-> +static void pnv_pci_fixup_bridge_resources(struct pci_bus *bus,
-> +					   unsigned long type)
-> +{
-> +	struct pci_controller *hose = pci_bus_to_host(bus);
-> +	struct pnv_phb *phb = hose->private_data;
-> +	struct pci_dev *bridge = bus->self;
-> +	struct resource *r, *w;
-> +	int i;
-> +
-> +	/* Check if we need apply fixup to the bridge's windows */
-> +	if (!pci_is_root_bus(bridge->bus) &&
-> +	    !pci_is_root_bus(bridge->bus->self->bus))
-> +		return;
-> +
-> +	/* Fixup the resources */
-> +	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
-> +		r = &bridge->resource[PCI_BRIDGE_RESOURCES + i];
-> +		if (!r->flags || !r->parent)
-> +			continue;
-> +
-> +		w = NULL;
-> +		if (r->flags & type & IORESOURCE_IO)
-> +			w = &hose->io_resource;
-> +		else if (pnv_pci_is_mem_pref_64(r->flags) &&
-> +			 (type & IORESOURCE_PREFETCH) &&
-> +			 phb->ioda.m64_segsize)
-> +			w = &hose->mem_resources[1];
-> +		else if (r->flags & type & IORESOURCE_MEM)
-> +			w = &hose->mem_resources[0];
-> +
-> +		r->start = w->start;
-> +		r->end = w->end;
-> +	}
-> +}
-> +
->  static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
->  {
->  	struct pci_controller *hose = pci_bus_to_host(bus);
-> @@ -3229,6 +3272,9 @@ static void pnv_pci_setup_bridge(struct pci_bus *bus, unsigned long type)
->  	struct pnv_ioda_pe *pe;
->  	bool all = (pci_pcie_type(bridge) == PCI_EXP_TYPE_PCI_BRIDGE);
->  
-> +	/* Extend bridge's windows if necessary */
-> +	pnv_pci_fixup_bridge_resources(bus, type);
-> +
->  	/* The PE for root bus should be realized before any one else */
->  	if (!phb->ioda.root_pe_populated) {
->  		pe = pnv_ioda_setup_bus_PE(phb->hose->bus, false);
-> 
+> That assuming that the driver will always do the right thing in its ->verify
+> callback.
 
+Yeah.
 
 -- 
-Alexey
+viresh
