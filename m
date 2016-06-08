@@ -1,28 +1,27 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1.2 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <eric.auger@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rPgWp4ftbzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 17:47:34 +1000 (AEST)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 8 Jun 2016 01:47:32 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [PATCH, RFC] cxl: Add support for CAPP DMA mode
-In-Reply-To: <1465362594-10437-1-git-send-email-imunsie@au.ibm.com>
-References: <1464025158-23849-1-git-send-email-imunsie@au.ibm.com>
- <1465362594-10437-1-git-send-email-imunsie@au.ibm.com>
-Date: Wed, 08 Jun 2016 17:46:27 +1000
-Message-ID: <87lh2gi0mk.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rPgNX3mnCzDqGR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2016 17:41:16 +1000 (AEST)
+Subject: Re: [RESEND PATCH v2 0/6] vfio-pci: Add support for mmapping MSI-X
+ table
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org
+References: <1464847803-22756-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Cc: alex.williamson@redhat.com, bhelgaas@google.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ joro@8bytes.org, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, eric.auger@linaro.org, will.deacon@arm.com,
+ gwshan@linux.vnet.ibm.com, alistair@popple.id.au, ruscur@russell.cc,
+ kevin.tian@intel.com, David.Laight@ACULAB.COM
+From: Auger Eric <eric.auger@redhat.com>
+Message-ID: <e03d36bb-c8ff-ec95-780e-5f625bdaf78e@redhat.com>
+Date: Wed, 8 Jun 2016 09:41:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1464847803-22756-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +31,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ian Munsie <imunsie@au1.ibm.com> writes:
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 3a5ea82..5a42e98 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2793,7 +2793,9 @@ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
->  	pe_info(pe, "Switching PHB to CXL\n");
->  
->  	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, mode, pe->pe_number);
-> -	if (rc)
-> +	if (rc == OPAL_UNSUPPORTED)
-> +		dev_err(&dev->dev, "Required cxl mode not supported by firmware - update skiboot\n");
-> +	else if (rc)
->  		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed:
-> %i\n", rc);
+Hi Yongji,
 
-Could mention version required, which would be skiboot 5.3.x or higher.
+Le 02/06/2016 à 08:09, Yongji Xie a écrit :
+> Current vfio-pci implementation disallows to mmap the page
+> containing MSI-X table in case that users can write directly
+> to MSI-X table and generate an incorrect MSIs.
+> 
+> However, this will cause some performance issue when there
+> are some critical device registers in the same page as the 
+> MSI-X table. We have to handle the mmio access to these
+> registers in QEMU emulation rather than in guest.
+> 
+> To solve this issue, this series allows to expose MSI-X table
+> to userspace when hardware enables the capability of interrupt
+> remapping which can ensure that a given PCI device can only
+> shoot the MSIs assigned for it. And we introduce a new bus_flags
+> PCI_BUS_FLAGS_MSI_REMAP to test this capability on PCI side
+> for different archs.
+> 
+> The patch 3 are based on the proposed patchset[1].
+You may have noticed I sent a respin of [1] yesterday:
+http://www.gossamer-threads.com/lists/linux/kernel/2455187.
 
-This could be something we start doing - there's enough random bits of
-functionality we could tell the user exactly what they have to upgrade
-to to have work.
+Unfortunately you will see I removed the patch defining the new
+msi_domain_info MSI_FLAG_IRQ_REMAPPING flag you rely on in this series.
+I did so because I was not using it anymore. At the beginning this was
+used to detect whether the MSI assignment was safe but this
+method was covering cases where the MSI controller was
+upstream to the IOMMU. So now I rely on a mechanism where MSI controller
+are supposed to register their MSI doorbells and tag whether it is safe.
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+I don't know yet how this change will be welcomed though. Depending
+on reviews/discussions, might happen we revert to the previous flag.
+
+If you need the feature you can embed the used patches in your series and
+follow the review process separately. Sorry for the setback.
+
+Best Regards
+
+Eric
+> 
+> Changelog v2: 
+> - Make the commit log more clear
+> - Replace pci_bus_check_msi_remapping() with pci_bus_msi_isolated()
+>   so that we could clearly know what the function does
+> - Set PCI_BUS_FLAGS_MSI_REMAP in pci_create_root_bus() instead
+>   of iommu_bus_notifier()
+> - Reserve VFIO_REGION_INFO_FLAG_CAPS when we allow to mmap MSI-X
+>   table so that we can know whether we allow to mmap MSI-X table
+>   in QEMU
+> 
+> [1] https://www.mail-archive.com/linux-kernel%40vger.kernel.org/msg1138820.html
+> 
+> Yongji Xie (6):
+>   PCI: Add a new PCI_BUS_FLAGS_MSI_REMAP flag
+>   PCI: Set PCI_BUS_FLAGS_MSI_REMAP if MSI controller enables IRQ remapping
+>   PCI: Set PCI_BUS_FLAGS_MSI_REMAP if IOMMU have capability of IRQ remapping
+>   iommu: Set PCI_BUS_FLAGS_MSI_REMAP on iommu driver initialization
+>   pci-ioda: Set PCI_BUS_FLAGS_MSI_REMAP for IODA host bridge
+>   vfio-pci: Allow to expose MSI-X table to userspace if interrupt remapping is enabled
+> 
+>  arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++++++
+>  drivers/iommu/iommu.c                     |    8 ++++++++
+>  drivers/pci/msi.c                         |   15 +++++++++++++++
+>  drivers/pci/probe.c                       |    7 +++++++
+>  drivers/vfio/pci/vfio_pci.c               |   17 ++++++++++++++---
+>  drivers/vfio/pci/vfio_pci_rdwr.c          |    3 ++-
+>  include/linux/msi.h                       |    5 ++++-
+>  include/linux/pci.h                       |    1 +
+>  8 files changed, 59 insertions(+), 5 deletions(-)
+> 
