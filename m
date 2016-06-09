@@ -1,36 +1,35 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQd6Z5bF1zDqJv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 07:02:30 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id t190so16329947pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 14:02:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQd6b2P3FzDqHh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 07:02:31 +1000 (AEST)
+Received: by mail-pa0-x232.google.com with SMTP id b5so16518525pas.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 14:02:31 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
-Cc: Kees Cook <keescook@chromium.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+Cc: Kees Cook <keescook@chromium.org>, Ralf Baechle <ralf@linux-mips.org>,
+ "Maciej W. Rozycki" <macro@imgtec.com>,
+ James Hogan <james.hogan@imgtec.com>, linux-mips@linux-mips.org,
  Andy Lutomirski <luto@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Chris Metcalf <cmetcalf@mellanox.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- James Hogan <james.hogan@imgtec.com>, Jeff Dike <jdike@addtoit.com>,
- linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, "Maciej W. Rozycki" <macro@imgtec.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Helge Deller <deller@gmx.de>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Jeff Dike <jdike@addtoit.com>, linux-arch@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  Mark Rutland <mark.rutland@arm.com>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Ralf Baechle <ralf@linux-mips.org>, Richard Weinberger <richard@nod.at>,
- Russell King <linux@armlinux.org.uk>,
+ Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>,
  user-mode-linux-devel@lists.sourceforge.net,
  Will Deacon <will.deacon@arm.com>, x86@kernel.org
-Subject: [PATCH 10/14] parisc/ptrace: run seccomp after ptrace
-Date: Thu,  9 Jun 2016 14:02:00 -0700
-Message-Id: <1465506124-21866-11-git-send-email-keescook@chromium.org>
+Subject: [PATCH 09/14] MIPS/ptrace: run seccomp after ptrace
+Date: Thu,  9 Jun 2016 14:01:59 -0700
+Message-Id: <1465506124-21866-10-git-send-email-keescook@chromium.org>
 In-Reply-To: <1465506124-21866-1-git-send-email-keescook@chromium.org>
 References: <1465506124-21866-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,39 +44,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Close the hole where ptrace can change a syscall out from under seccomp.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-parisc@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: "Maciej W. Rozycki" <macro@imgtec.com>
+Cc: James Hogan <james.hogan@imgtec.com>
+Cc: linux-mips@linux-mips.org
 ---
- arch/parisc/kernel/ptrace.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ arch/mips/kernel/ptrace.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/parisc/kernel/ptrace.c b/arch/parisc/kernel/ptrace.c
-index 8edc47c0b98e..e02d7b4d2b69 100644
---- a/arch/parisc/kernel/ptrace.c
-+++ b/arch/parisc/kernel/ptrace.c
-@@ -311,10 +311,6 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 
- long do_syscall_trace_enter(struct pt_regs *regs)
+diff --git a/arch/mips/kernel/ptrace.c b/arch/mips/kernel/ptrace.c
+index c50af846ecf9..6103b24d1bfc 100644
+--- a/arch/mips/kernel/ptrace.c
++++ b/arch/mips/kernel/ptrace.c
+@@ -888,17 +888,16 @@ long arch_ptrace(struct task_struct *child, long request,
+  */
+ asmlinkage long syscall_trace_enter(struct pt_regs *regs, long syscall)
  {
--	/* Do the secure computing check first. */
+-	long ret = 0;
+ 	user_exit();
+ 
+ 	current_thread_info()->syscall = syscall;
+ 
 -	if (secure_computing(NULL) == -1)
 -		return -1;
 -
  	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
- 	    tracehook_report_syscall_entry(regs)) {
- 		/*
-@@ -325,6 +321,11 @@ long do_syscall_trace_enter(struct pt_regs *regs)
- 		regs->gr[20] = -1UL;
- 		goto out;
- 	}
-+
-+	/* Do the secure computing check after ptrace. */
-+	if (secure_computing(NULL) == -1)
+ 	    tracehook_report_syscall_entry(regs))
+-		ret = -1;
 +		return -1;
 +
- #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
++	if (secure_computing(NULL) == -1)
++		return -1;
+ 
  	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
- 		trace_sys_enter(regs, regs->gr[20]);
+ 		trace_sys_enter(regs, regs->regs[2]);
 -- 
 2.7.4
