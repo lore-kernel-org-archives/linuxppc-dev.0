@@ -1,29 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQPbr1ZJRzDq9y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 22:23:36 +1000 (AEST)
-Message-ID: <1465475008.16363.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>
-Date: Thu, 09 Jun 2016 22:23:28 +1000
-In-Reply-To: <20160608135903.GT30154@twins.programming.kicks-ass.net>
-References: <1465213340.2658.1.camel@ellerman.id.au>
- <20160606115655.GD30909@twins.programming.kicks-ass.net>
- <1465215445.2658.4.camel@ellerman.id.au>
- <20160606144659.GG30909@twins.programming.kicks-ass.net>
- <1465384845.13854.7.camel@ellerman.id.au>
- <20160608123507.GR30154@twins.programming.kicks-ass.net>
- <1465393760.10567.4.camel@ellerman.id.au>
- <20160608135903.GT30154@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQQkK2qFjzDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 23:14:16 +1000 (AEST)
+Subject: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Darren Stevens <darren@stevens-zone.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <michaele@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
+ Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
+ "contact@a-eon.com" <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>,
+ luigi burdo <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+ <87r3c71zs9.fsf@skywalker.in.ibm.com>
+ <d3753fa2-d88b-2e31-7d0d-d8952c29a12b@xenosoft.de>
+ <bab57839-0160-ae01-3cfb-6950067652c0@xenosoft.de>
+ <1465470910.31662.10.camel@ellerman.id.au>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <40816527-1be8-329c-2be0-86c39062c2e9@xenosoft.de>
+Date: Thu, 9 Jun 2016 15:13:58 +0200
+MIME-Version: 1.0
+In-Reply-To: <1465470910.31662.10.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +48,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-06-08 at 15:59 +0200, Peter Zijlstra wrote:
-> On Wed, Jun 08, 2016 at 11:49:20PM +1000, Michael Ellerman wrote:
+Michael,
+
+Thank you for your patch. I was able to compile the kernel but 
+unfortunately it doesn't boot.
+
+Do you have another hint or patch for me?
+
+Thanks in advance,
+
+Christian
+
+On 09 June 2016 at 1:15 PM, Michael Ellerman wrote:
+> On Thu, 2016-06-09 at 10:48 +0200, Christian Zigotzky wrote:
 >
-> > > Ok; what tree does this go in? I have this dependent series which I'd
-> > > like to get sorted and merged somewhere.
-> > 
-> > Ah sorry, I didn't realise. I was going to put it in my next (which doesn't
-> > exist yet but hopefully will early next week).
-> > 
-> > I'll make a topic branch with just that commit based on rc2 or rc3?
-> 
-> Works for me; thanks!
- 
-Unfortunately the patch isn't 100%.
-
-It's causing some of my machines to lock up hard, which isn't surprising when
-you look at the generated code for the non-atomic spin loop:
-
-  c00000000009af48:	7c 21 0b 78 	mr      r1,r1					# HMT_LOW
-  c00000000009af4c:	40 9e ff fc 	bne     cr7,c00000000009af48 <.do_exit+0x6d8>
-
-Which is a spin loop waiting for a result in cr7, but with no comparison.
-
-The problem seems to be that we did:
-
-@@ -184,7 +184,7 @@ static inline void arch_spin_unlock_wait(arch_spinlock_t *lock)
- 	if (arch_spin_value_unlocked(lock_val))
- 		goto out;
- 
--	while (lock->slock) {
-+	while (!arch_spin_value_unlocked(*lock)) {
- 		HMT_low();
- 		if (SHARED_PROCESSOR)
- 			__spin_yield(lock);
-
-Which seems to be hiding the fact that lock->slock is volatile from the
-compiler, even though arch_spin_value_unlocked() is inline. Not sure if that's
-our bug or gcc's.
-
-Will sleep on it.
-
-cheers
+>> Shall I modify the workaround? Is the workaround for lack of the device
+>> tree the problem?
+> I don't think so.
+>
+> You could try this patch to try and isolate it:
+>
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index 88a5ecaa157b..ae2f2705e8a0 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -251,7 +251,7 @@ extern unsigned long ioremap_bot;
+>    *  PHB_IO_BASE = ISA_IO_BASE + 64K to ISA_IO_BASE + 2G, PHB IO spaces
+>    * IOREMAP_BASE = ISA_IO_BASE + 2G to VMALLOC_START + PGTABLE_RANGE
+>    */
+> -#define KERN_IO_START	(KERN_VIRT_START + (KERN_VIRT_SIZE >> 1))
+> +#define KERN_IO_START	(H_KERN_VIRT_START + (H_KERN_VIRT_SIZE >> 1))
+>   #define FULL_IO_SIZE	0x80000000ul
+>   #define  ISA_IO_BASE	(KERN_IO_START)
+>   #define  ISA_IO_END	(KERN_IO_START + 0x10000ul)
+>
+>
+> cheers
+>
+>
