@@ -1,42 +1,45 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQN514Vf4zDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 21:15:17 +1000 (AEST)
-Message-ID: <1465470910.31662.10.camel@ellerman.id.au>
-Subject: Re: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Darren Stevens
- <darren@stevens-zone.net>,  Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, Michael Ellerman
- <michaele@au1.ibm.com>,  Julian Margetson <runaway@candw.ms>, Adrian Cox
- <adrian@humboldt.co.uk>, "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson"
- <rtd2@xtra.co.nz>, Pat Wall <pjwall@mac.com>,  Pat Wall <pjwall@me.com>,
- "contact@a-eon.com" <contact@a-eon.com>, Matthew Leaman
- <matthew@a-eon.biz>,  luigi burdo <intermediadc@hotmail.com>, Christian
- Zigotzky <info@xenosoft.de>
-Date: Thu, 09 Jun 2016 21:15:10 +1000
-In-Reply-To: <bab57839-0160-ae01-3cfb-6950067652c0@xenosoft.de>
-References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
- <1463990507.3078.16.camel@kernel.crashing.org>
- <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
- <1464088614.3078.79.camel@kernel.crashing.org>
- <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
- <87d1obqxg9.fsf@skywalker.in.ibm.com>
- <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
- <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
- <874m99uibc.fsf@skywalker.in.ibm.com>
- <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
- <1465174304.12265.0.camel@ellerman.id.au>
- <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
- <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
- <87r3c71zs9.fsf@skywalker.in.ibm.com>
- <d3753fa2-d88b-2e31-7d0d-d8952c29a12b@xenosoft.de>
- <bab57839-0160-ae01-3cfb-6950067652c0@xenosoft.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <felipe.balbi@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rQHZQ3d8WzDqFm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 17:51:57 +1000 (AEST)
+From: Felipe Balbi <balbi@kernel.org>
+To: Deepa Dinamani <deepa.kernel@gmail.com>, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
+ Al Viro <viro@zeniv.linux.org.uk>,
+ Linus Torvalds <torvalds@linux-foundation.org>, y2038@lists.linaro.org,
+ Anna Schumaker <anna.schumaker@netapp.com>, Anton Vorontsov <anton@enomsg.org>,
+ Benny Halevy <bhalevy@primarydata.com>, Boaz Harrosh <ooo@electrozaur.com>,
+ Changman Lee <cm224.lee@samsung.com>, Chris Mason <clm@fb.com>,
+ Colin Cross <ccross@android.com>, Dave Kleikamp <shaggy@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>, David Sterba <dsterba@suse.com>,
+ Eric Van Hensbergen <ericvh@gmail.com>, Hugh Dickins <hughd@google.com>,
+ Ian Kent <raven@themaw.net>, Jaegeuk Kim <jaegeuk@kernel.org>,
+ Joern Engel <joern@logfs.org>, Josef Bacik <jbacik@fb.com>,
+ Kees Cook <keescook@chromium.org>, Latchesar Ionkov <lucho@ionkov.net>,
+ Matt Fleming <matt@codeblueprint.co.uk>,
+ Matthew Garrett <matthew.garrett@nebula.com>,
+ Miklos Szeredi <miklos@szeredi.hu>, Nadia Yvette Chambers <nyc@holomorphy.com>,
+ Prasad Joshi <prasadjoshi.linux@gmail.com>, Robert Richter <rric@kernel.org>,
+ Ron Minnich <rminnich@sandia.gov>, Tony Luck <tony.luck@intel.com>,
+ Trond Myklebust <trond.myklebust@primarydata.com>, autofs@vger.kernel.org,
+ cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
+ linux-btrfs@vger.kernel.org, linux-efi@vger.kernel.org,
+ linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
+ linux-nfs@vger.kernel.org, linux-nilfs@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-rdma@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-usb@vger.kernel.org, logfs@logfs.org, netdev@vger.kernel.org,
+ ocfs2-devel@oss.oracle.com, oprofile-list@lists.sf.net, osd-dev@open-osd.org,
+ selinux@tycho.nsa.gov, v9fs-developer@lists.sourceforge.net
+Subject: Re: [PATCH 00/21] Delete CURRENT_TIME and CURRENT_TIME_SEC macros
+In-Reply-To: <1465448705-25055-1-git-send-email-deepa.kernel@gmail.com>
+References: <1465448705-25055-1-git-send-email-deepa.kernel@gmail.com>
+Date: Thu, 09 Jun 2016 10:51:31 +0300
+Message-ID: <87twh294vw.fsf@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha256; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,28 +49,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-06-09 at 10:48 +0200, Christian Zigotzky wrote:
-
-> Shall I modify the workaround? Is the workaround for lack of the device 
-> tree the problem?
-
-I don't think so.
-
-You could try this patch to try and isolate it:
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 88a5ecaa157b..ae2f2705e8a0 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -251,7 +251,7 @@ extern unsigned long ioremap_bot;
-  *  PHB_IO_BASE = ISA_IO_BASE + 64K to ISA_IO_BASE + 2G, PHB IO spaces
-  * IOREMAP_BASE = ISA_IO_BASE + 2G to VMALLOC_START + PGTABLE_RANGE
-  */
--#define KERN_IO_START	(KERN_VIRT_START + (KERN_VIRT_SIZE >> 1))
-+#define KERN_IO_START	(H_KERN_VIRT_START + (H_KERN_VIRT_SIZE >> 1))
- #define FULL_IO_SIZE	0x80000000ul
- #define  ISA_IO_BASE	(KERN_IO_START)
- #define  ISA_IO_END	(KERN_IO_START + 0x10000ul)
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
-cheers
+Hi,
+
+Deepa Dinamani <deepa.kernel@gmail.com> writes:
+>  drivers/usb/gadget/function/f_fs.c                 |  2 +-
+>  drivers/usb/gadget/legacy/inode.c                  |  2 +-
+
+for drivers/usb/gadget:
+
+Acked-by: Felipe Balbi <balbi@kernel.org>
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXWSADAAoJEIaOsuA1yqRE3xkP/iQ1fuTIybbV6wTI8KcBipLN
+RYE+b6JJVPFMIpj76aDznk/eZG+CSnwRUAPoPGWs1o7xVqnVGqfLDMWyHLp3pU5C
+NQyphaTDahzkV3cbTbAjbLpcluDKmCmRb++9YyfSyEcFP4HnlpgmIVFM7SinMADk
+OXGwum3/L0HpAs+91j4FORMHiKma5fa5CXmE5aHsM3TSWONWldycLywu9jlF/AyU
+lY83J4AjvL2qii9hWdlxX81+zFZ92Vh9v5vvms8ErPB2w3a75PbM70gaoVM2VOxQ
+kMeLZUiGywrnDv+/RKC+9WX3KiwDsAlTk1rbuDBePE7PbjQmRW/hfRtXcpECXAyG
+LrV9HskF1UIIv8aVyWoR/GwQdO0cdxoW8uBuw+/l7pSHTvfpvl3/sb+VNBH3j2lQ
+aosxpF7QlU08QxWzpPHgrQ7TNbZ0o9zl5aZ8HAhAPt9FZDu1KKHy/EEJ0aI5d25y
+p7aTdxvf2SxMGVo6K1ozZUq/EeXOW061oeOUmDLT1NZWS69g19lGBx/XSWLpqf1b
+V6SK0hpP3QqHajNOsTFfHLuP13zygCZsSQJU1Z4MO3RyawyMsgjCqAKrEHCoF0zL
+rCfYHY+r6PMRmrirPoBdPwdoWB8/i1INydBfU4OqjO/7dRgjhl2iPSUvSOPrhVlu
+g2HkIFwp1Wj8eyUm+JYM
+=tfo4
+-----END PGP SIGNATURE-----
+--=-=-=--
