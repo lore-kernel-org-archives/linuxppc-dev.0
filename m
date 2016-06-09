@@ -1,33 +1,21 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQXsh07CTzDq68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 03:51:03 +1000 (AEST)
-Date: Thu, 9 Jun 2016 19:50:54 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Boqun Feng <boqun.feng@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQYWL0blwzDqGs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 04:20:13 +1000 (AEST)
+Subject: [PATCH v1 0/3] PCI: Clean up write combining usage for user mmap
+To: Yinghai Lu <yinghai@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
-Message-ID: <20160609175054.GY30154@twins.programming.kicks-ass.net>
-References: <1465213340.2658.1.camel@ellerman.id.au>
- <20160606115655.GD30909@twins.programming.kicks-ass.net>
- <1465215445.2658.4.camel@ellerman.id.au>
- <20160606144659.GG30909@twins.programming.kicks-ass.net>
- <1465384845.13854.7.camel@ellerman.id.au>
- <20160608123507.GR30154@twins.programming.kicks-ass.net>
- <1465393760.10567.4.camel@ellerman.id.au>
- <20160608135903.GT30154@twins.programming.kicks-ass.net>
- <1465475008.16363.1.camel@ellerman.id.au>
+ Michal Simek <monstr@monstr.eu>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Thu, 09 Jun 2016 13:20:08 -0500
+Message-ID: <20160609181102.13455.33593.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1465475008.16363.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,10 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 09, 2016 at 10:23:28PM +1000, Michael Ellerman wrote:
-> Unfortunately the patch isn't 100%.
+These patches:
 
-So what I'll do; since my patch is trying to ensure all implementations
-of spin_unlock_wait() provide ACQUIRE semantics, and this patch does
-indeed do so, is skip touching PPC entirely and hope this patch lands
-before 4.8.
+  - Enforce a "no write combining on I/O port space mapping" policy.
+    This seems like an obviously good thing but was previously
+    enforced only by powerpc.
+
+  - Stop giving powerpc users write combining mappings of prefetchable
+    memory they ask for write combining with the procfs
+    PCIIOC_WRITE_COMBINE ioctl or a sysfs "resourceN_wc" file.
+
+  - Clean up arch-specific code that related to the above.
+
+Ben, I'm particularly interested in your thoughts about the powerpc
+change.  It should "only" affect performance of users who aren't
+actually requesting write combining.  I don't know how many of those
+users there might be.
+
+Yinghai, I added your sign-off to the powerpc part, since you posted
+that exact patch.  Let me know if you don't want that.
+
+These are on my pci/resource branch.
+
+---
+
+Bjorn Helgaas (2):
+      PCI: Ignore write combining when mapping I/O port space
+      microblaze/PCI: Remove useless __pci_mmap_set_pgprot()
+
+Yinghai Lu (1):
+      powerpc/pci: Remove __pci_mmap_set_pgprot()
+
+
+ arch/microblaze/pci/pci-common.c |   31 +------------------------------
+ arch/powerpc/kernel/pci-common.c |   37 ++++---------------------------------
+ drivers/pci/proc.c               |    9 ++++++---
+ 3 files changed, 11 insertions(+), 66 deletions(-)
