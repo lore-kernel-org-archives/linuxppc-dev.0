@@ -1,15 +1,16 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x22f.google.com (mail-pf0-x22f.google.com
- [IPv6:2607:f8b0:400e:c00::22f])
+Received: from mail-pf0-x22b.google.com (mail-pf0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c00::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQd6Z0mBHzDqPC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQd6Z2Bk0zDqJ2
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 07:02:30 +1000 (AEST)
-Received: by mail-pf0-x22f.google.com with SMTP id 62so16361387pfd.1
+Received: by mail-pf0-x22b.google.com with SMTP id y124so16392076pfy.0
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 14:02:30 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
-Cc: Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>,
+Cc: Kees Cook <keescook@chromium.org>, x86@kernel.org,
+ Andy Lutomirski <luto@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Chris Metcalf <cmetcalf@mellanox.com>,
@@ -26,10 +27,10 @@ Cc: Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>,
  Ralf Baechle <ralf@linux-mips.org>, Richard Weinberger <richard@nod.at>,
  Russell King <linux@armlinux.org.uk>,
  user-mode-linux-devel@lists.sourceforge.net,
- Will Deacon <will.deacon@arm.com>, x86@kernel.org
-Subject: [PATCH 03/14] x86/entry: Get rid of two-phase syscall entry work
-Date: Thu,  9 Jun 2016 14:01:53 -0700
-Message-Id: <1465506124-21866-4-git-send-email-keescook@chromium.org>
+ Will Deacon <will.deacon@arm.com>
+Subject: [PATCH 06/14] x86/ptrace: run seccomp after ptrace
+Date: Thu,  9 Jun 2016 14:01:56 -0700
+Message-Id: <1465506124-21866-7-git-send-email-keescook@chromium.org>
 In-Reply-To: <1465506124-21866-1-git-send-email-keescook@chromium.org>
 References: <1465506124-21866-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,146 +42,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andy Lutomirski <luto@kernel.org>
+This moves seccomp after ptrace on x86 to that seccomp can catch changes
+made by ptrace. Emulation should skip the rest of processing too.
 
-I added two-phase syscall entry work back when the entry slow path
-was very slow.  Nowadays, the entry slow path is fast and two-phase
-entry work serves no purpose.  Remove it.
+We can get rid of test_thread_flag because there's no longer any
+opportunity for seccomp to mess with ptrace state before invoking
+ptrace.
 
-Signed-off-by: Andy Lutomirski <luto@kernel.org>
+Suggested-by: Andy Lutomirski <luto@kernel.org>
 Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: x86@kernel.org
+Cc: Andy Lutomirski <luto@kernel.org>
 ---
- arch/x86/entry/common.c       | 84 +++++--------------------------------------
- arch/x86/include/asm/ptrace.h |  6 ----
- 2 files changed, 8 insertions(+), 82 deletions(-)
+ arch/x86/entry/common.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
 diff --git a/arch/x86/entry/common.c b/arch/x86/entry/common.c
-index ec138e538c44..df56ca394877 100644
+index df56ca394877..81c0e12d831c 100644
 --- a/arch/x86/entry/common.c
 +++ b/arch/x86/entry/common.c
-@@ -64,20 +64,13 @@ static void do_audit_syscall_entry(struct pt_regs *regs, u32 arch)
- }
+@@ -73,6 +73,7 @@ static long syscall_trace_enter(struct pt_regs *regs)
  
- /*
-- * We can return 0 to resume the syscall or anything else to go to phase
-- * 2.  If we resume the syscall, we need to put something appropriate in
-- * regs->orig_ax.
-- *
-- * NB: We don't have full pt_regs here, but regs->orig_ax and regs->ax
-- * are fully functional.
-- *
-- * For phase 2's benefit, our return value is:
-- * 0:			resume the syscall
-- * 1:			go to phase 2; no seccomp phase 2 needed
-- * anything else:	go to phase 2; pass return value to seccomp
-+ * Returns the syscall nr to run (which should match regs->orig_ax) or -1
-+ * to skip the syscall.
-  */
--unsigned long syscall_trace_enter_phase1(struct pt_regs *regs, u32 arch)
-+static long syscall_trace_enter(struct pt_regs *regs)
- {
-+	u32 arch = in_ia32_syscall() ? AUDIT_ARCH_I386 : AUDIT_ARCH_X86_64;
-+
  	struct thread_info *ti = pt_regs_to_thread_info(regs);
  	unsigned long ret = 0;
++	bool emulated = false;
  	u32 work;
-@@ -118,59 +111,9 @@ unsigned long syscall_trace_enter_phase1(struct pt_regs *regs, u32 arch)
- 			sd.args[5] = regs->bp;
- 		}
  
--		BUILD_BUG_ON(SECCOMP_PHASE1_OK != 0);
--		BUILD_BUG_ON(SECCOMP_PHASE1_SKIP != 1);
--
--		ret = seccomp_phase1(&sd);
--		if (ret == SECCOMP_PHASE1_SKIP) {
--			regs->orig_ax = -1;
--			ret = 0;
--		} else if (ret != SECCOMP_PHASE1_OK) {
--			return ret;  /* Go directly to phase 2 */
--		}
--
--		work &= ~_TIF_SECCOMP;
--	}
--#endif
--
--	/* Do our best to finish without phase 2. */
--	if (work == 0)
--		return ret;  /* seccomp and/or nohz only (ret == 0 here) */
--
--#ifdef CONFIG_AUDITSYSCALL
--	if (work == _TIF_SYSCALL_AUDIT) {
--		/*
--		 * If there is no more work to be done except auditing,
--		 * then audit in phase 1.  Phase 2 always audits, so, if
--		 * we audit here, then we can't go on to phase 2.
--		 */
--		do_audit_syscall_entry(regs, arch);
--		return 0;
--	}
--#endif
--
--	return 1;  /* Something is enabled that we can't handle in phase 1 */
--}
--
--/* Returns the syscall nr to run (which should match regs->orig_ax). */
--long syscall_trace_enter_phase2(struct pt_regs *regs, u32 arch,
--				unsigned long phase1_result)
--{
--	struct thread_info *ti = pt_regs_to_thread_info(regs);
--	long ret = 0;
--	u32 work = ACCESS_ONCE(ti->flags) & _TIF_WORK_SYSCALL_ENTRY;
--
--	if (IS_ENABLED(CONFIG_DEBUG_ENTRY))
--		BUG_ON(regs != task_pt_regs(current));
--
--#ifdef CONFIG_SECCOMP
--	/*
--	 * Call seccomp_phase2 before running the other hooks so that
--	 * they can see any changes made by a seccomp tracer.
--	 */
--	if (phase1_result > 1 && seccomp_phase2(phase1_result)) {
--		/* seccomp failures shouldn't expose any additional code. */
--		return -1;
-+		ret = __secure_computing(&sd);
-+		if (ret == -1)
-+			return ret;
+ 	if (IS_ENABLED(CONFIG_DEBUG_ENTRY))
+@@ -80,11 +81,19 @@ static long syscall_trace_enter(struct pt_regs *regs)
+ 
+ 	work = ACCESS_ONCE(ti->flags) & _TIF_WORK_SYSCALL_ENTRY;
+ 
++	if (unlikely(work & _TIF_SYSCALL_EMU))
++		emulated = true;
++
++	if ((emulated || (work & _TIF_SYSCALL_TRACE)) &&
++	    tracehook_report_syscall_entry(regs))
++		return -1L;
++
++	if (emulated)
++		return -1L;
++
+ #ifdef CONFIG_SECCOMP
+ 	/*
+-	 * Do seccomp first -- it should minimize exposure of other
+-	 * code, and keeping seccomp fast is probably more valuable
+-	 * than the rest of this.
++	 * Do seccomp after ptrace, to catch any tracer changes.
+ 	 */
+ 	if (work & _TIF_SECCOMP) {
+ 		struct seccomp_data sd;
+@@ -117,13 +126,6 @@ static long syscall_trace_enter(struct pt_regs *regs)
  	}
  #endif
  
-@@ -189,17 +132,6 @@ long syscall_trace_enter_phase2(struct pt_regs *regs, u32 arch,
- 	return ret ?: regs->orig_ax;
- }
+-	if (unlikely(work & _TIF_SYSCALL_EMU))
+-		ret = -1L;
+-
+-	if ((ret || test_thread_flag(TIF_SYSCALL_TRACE)) &&
+-	    tracehook_report_syscall_entry(regs))
+-		ret = -1L;
+-
+ 	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_sys_enter(regs, regs->orig_ax);
  
--long syscall_trace_enter(struct pt_regs *regs)
--{
--	u32 arch = in_ia32_syscall() ? AUDIT_ARCH_I386 : AUDIT_ARCH_X86_64;
--	unsigned long phase1_result = syscall_trace_enter_phase1(regs, arch);
--
--	if (phase1_result == 0)
--		return regs->orig_ax;
--	else
--		return syscall_trace_enter_phase2(regs, arch, phase1_result);
--}
--
- #define EXIT_TO_USERMODE_LOOP_FLAGS				\
- 	(_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_UPROBE |	\
- 	 _TIF_NEED_RESCHED | _TIF_USER_RETURN_NOTIFY)
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index 6271281f947d..2b5d686ea9f3 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -83,12 +83,6 @@ extern void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs,
- 			 int error_code, int si_code);
- 
- 
--extern unsigned long syscall_trace_enter_phase1(struct pt_regs *, u32 arch);
--extern long syscall_trace_enter_phase2(struct pt_regs *, u32 arch,
--				       unsigned long phase1_result);
--
--extern long syscall_trace_enter(struct pt_regs *);
--
- static inline unsigned long regs_return_value(struct pt_regs *regs)
- {
- 	return regs->ax;
 -- 
 2.7.4
