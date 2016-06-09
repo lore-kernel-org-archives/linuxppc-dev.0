@@ -1,20 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQ5J84Wh6zDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 10:08:56 +1000 (AEST)
-Message-ID: <1465430936.27819.0.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/nohash: Fix build break with 4K pages
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org
-Date: Thu, 09 Jun 2016 10:08:56 +1000
-In-Reply-To: <87wplz20t3.fsf@skywalker.in.ibm.com>
-References: <1465392071-18715-1-git-send-email-mpe@ellerman.id.au>
- <87wplz20t3.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQ5RQ5vztzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 10:15:14 +1000 (AEST)
+Message-ID: <1465431308.22191.101.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, LinuxPPC-dev
+ <linuxppc-dev@lists.ozlabs.org>, Becky Bruce <beckyb@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Date: Wed, 08 Jun 2016 19:15:08 -0500
+In-Reply-To: <b2980a9d-4795-ae1b-16dd-ba244d559a31@c-s.fr>
+References: <b2980a9d-4795-ae1b-16dd-ba244d559a31@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: [RFC] Implementing HUGEPAGE on MPC 8xx
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-06-08 at 20:19 +0530, Aneesh Kumar K.V wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
-> > Commit 74701d5947a6 "powerpc/mm: Rename function to indicate we are
-> > allocating fragments" renamed page_table_free() to pte_fragment_free().
-> > One occurrence was mistyped as pte_fragment_fre().
-> > 
-> > This only breaks the nohash 4K page build, which is not the default or
-> > enabled in any defconfig.
-> 
-> Can you share the .config. I will add it to the build test.
+On Wed, 2016-06-08 at 09:03 +0200, Christophe Leroy wrote:
+> In see in the current ppc kernel that for PPC32, SYS_SUPPORTS_HUGETLBFS 
+> is selected only if we have PHYS_64BIT.
+> What is the reason for only implementing HUGETLBFS with 64 bits phys 
+> addresses ?
 
-It was a randconfig, it still doesn't build even with this patch:
+That's not for PPC32 in general -- it's for 32-bit FSL Book E.  The reason for
+the limitation is that there are separate TLB miss handlers depending on
+whether PHYS_64BIT is enabled, and we didn't want to have to implement hugetlb
+support in both of them unless there was actual demand for it.
 
-  http://kisskb.ellerman.id.au/kisskb/buildresult/12705111/
+>  From your point of view, what would be the best approach to extend 
+> support of HUGE PAGES to PPC_8xx ?
+> Would the good starting point be to implement a hugepagetlb-8xx.c from 
+> hugepagetlb-book3e.c ?
 
-cheers
+Yes.
+
+-Scott
