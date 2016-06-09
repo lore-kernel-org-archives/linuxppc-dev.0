@@ -1,24 +1,48 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQBjs6fnWzDqR5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 14:13:05 +1000 (AEST)
-Message-ID: <1465445571.2948.29.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Balbir Singh
- <bsingharora@gmail.com>, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 09 Jun 2016 14:12:51 +1000
-In-Reply-To: <87mvofedtd.fsf@skywalker.in.ibm.com>
-References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
- <1461711943.3135.72.camel@kernel.crashing.org> <57200F4A.4070104@gmail.com>
- <1461721589.3586.0.camel@kernel.crashing.org>
- <87mvofedtd.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQCNz5VrmzDqBK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 14:43:31 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u594YaLA056261
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 00:43:29 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m495nx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 00:43:29 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Thu, 9 Jun 2016 14:43:27 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C2D3C3578061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 14:43:09 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u594grTi60620992
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 14:42:53 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u594gbin032201
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 14:42:38 +1000
+Date: Thu, 9 Jun 2016 14:42:25 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, ego@linux.vnet.ibm.com, mikey@neuling.org,
+ maddy@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 08/11] powerpc/powernv: Add platform support for stop
+ instruction
+References: <1464871141-11568-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464871141-11568-9-git-send-email-shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1464871141-11568-9-git-send-email-shreyas@linux.vnet.ibm.com>
+Message-Id: <20160609044225.GA16550@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +52,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-04-27 at 12:30 +0530, Aneesh Kumar K.V wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > 
-> > On Wed, 2016-04-27 at 11:00 +1000, Balbir Singh wrote:
-> > > 
-> > > Just basic testing across CPUs with various mm features 
-> > > enabled/disabled. Just for sanity
-> > I still don't think it's worth scattering the change. Either the jump
-> > label works or it doesn't ... The only problem is make sure we identify
-> > all the pre-boot ones but that's about it.
-> > 
-> There are two ways to do this. One is to follow the approach listed
-> below done by Kevin, which is to do the jump_label_init early during boot and
-> switch both cpu and mmu feature check to plain jump label.
-> 
-> http://mid.gmane.org/1440415228-8006-1-git-send-email-haokexin@gmail.com
-> 
-> I already found one use case of cpu_has_feature before that
-> jump_label_init. In this approach we need to carefully audit all the
-> cpu/mmu_has_feature calls to make sure they don't get called before
-> jump_label_init. A missed conversion mean we miss a cpu/mmu feature
-> check.
-> 
-> 
-> Other option is to follow the patch I posted above, with the simple
-> change of renaming mmu_feature_enabled to mmu_has_feature. So we can
-> use it in early boot without really worrying about when we init jump
-> label.
-> 
-> What do you suggest we follow ?
+On Thu, Jun 02, 2016 at 07:38:58AM -0500, Shreyas B. Prabhu wrote:
 
-So I really don't like your patch, sorry :-(
+...
 
-It adds a whole new section "_in_c", duplicates a lot of infrastructure
-somewhat differently etc... ugh.
+> +/* Power Management - PSSCR Fields */
 
-I'd rather we follow Kevin's approach and convert all the CPU/MMU/...
-feature things to static keys in C. There aren't that many that
-need to be done really early on, we can audit them.
+It might be nice to give the full name of the register, as below with the FPSCR.
 
-I would suggest doing:
-
- 1- Add __mmu_has_feature/__cpu_has_feature/... which initially is
-identical to the current one (or just make the current one use the __ variant).
-
- 2- Convert selectively the early boot stuff to use __. There aren't *that*
-many, I can help you audit them
-
- 3- Add the static key version for all the non  __
-
-Do you have time or should I look into this ?
+> +#define PSSCR_RL_MASK		0x0000000F
+> +#define PSSCR_MTL_MASK		0x000000F0
+> +#define PSSCR_TR_MASK		0x00000300
+> +#define PSSCR_PSLL_MASK		0x000F0000
+> +#define PSSCR_EC		0x00100000
+> +#define PSSCR_ESL		0x00200000
+> +#define PSSCR_SD		0x00400000
+> +
+> +
+>  /* Floating Point Status and Control Register (FPSCR) Fields */
 
 Cheers,
-Ben.
+Sam.
