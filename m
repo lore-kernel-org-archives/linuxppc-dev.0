@@ -1,49 +1,36 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-io0-x230.google.com (mail-io0-x230.google.com
+ [IPv6:2607:f8b0:4001:c06::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQVd00dqPzDq68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 02:09:55 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u59G3rQj084252
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2016 12:09:53 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23eejymq6k-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 12:09:52 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 10 Jun 2016 02:09:50 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C4F0B2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 02:09:37 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u59G9MOx4981128
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 02:09:27 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u59G9Lwo024865
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 02:09:22 +1000
-Date: Thu, 09 Jun 2016 21:39:09 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQXCk69zlzDq68
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 03:21:38 +1000 (AEST)
+Received: by mail-io0-x230.google.com with SMTP id o189so43963786ioe.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 10:21:38 -0700 (PDT)
+Date: Fri, 10 Jun 2016 01:25:03 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Will Deacon <will.deacon@arm.com>
+Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
+Message-ID: <20160609172503.GB26274@insomnia>
+References: <1465213340.2658.1.camel@ellerman.id.au>
+ <20160606115655.GD30909@twins.programming.kicks-ass.net>
+ <1465215445.2658.4.camel@ellerman.id.au>
+ <20160606144659.GG30909@twins.programming.kicks-ass.net>
+ <1465384845.13854.7.camel@ellerman.id.au>
+ <20160608123507.GR30154@twins.programming.kicks-ass.net>
+ <1465393760.10567.4.camel@ellerman.id.au>
+ <20160608135903.GT30154@twins.programming.kicks-ass.net>
+ <1465475008.16363.1.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-CC: mpe@ellerman.id.au, ego@linux.vnet.ibm.com, mikey@neuling.org,
- maddy@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v5 08/11] powerpc/powernv: Add platform support for stop
- instruction
-References: <1464871141-11568-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1464871141-11568-9-git-send-email-shreyas@linux.vnet.ibm.com>
- <20160609044225.GA16550@tungsten.ozlabs.ibm.com>
-In-Reply-To: <20160609044225.GA16550@tungsten.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <575994A5.3010205@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="24zk1gE8NUlDmwG9"
+In-Reply-To: <1465475008.16363.1.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,33 +41,146 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--24zk1gE8NUlDmwG9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 06/09/2016 10:12 AM, Sam Bobroff wrote:
-> On Thu, Jun 02, 2016 at 07:38:58AM -0500, Shreyas B. Prabhu wrote:
-> 
-> ...
-> 
->> +/* Power Management - PSSCR Fields */
-> 
-> It might be nice to give the full name of the register, as below with the FPSCR.
-> 
+On Thu, Jun 09, 2016 at 10:23:28PM +1000, Michael Ellerman wrote:
+> On Wed, 2016-06-08 at 15:59 +0200, Peter Zijlstra wrote:
+> > On Wed, Jun 08, 2016 at 11:49:20PM +1000, Michael Ellerman wrote:
+> >
+> > > > Ok; what tree does this go in? I have this dependent series which I=
+'d
+> > > > like to get sorted and merged somewhere.
+> > >=20
+> > > Ah sorry, I didn't realise. I was going to put it in my next (which d=
+oesn't
+> > > exist yet but hopefully will early next week).
+> > >=20
+> > > I'll make a topic branch with just that commit based on rc2 or rc3?
+> >=20
+> > Works for me; thanks!
+> =20
+> Unfortunately the patch isn't 100%.
+>=20
+> It's causing some of my machines to lock up hard, which isn't surprising =
+when
+> you look at the generated code for the non-atomic spin loop:
+>=20
+>   c00000000009af48:	7c 21 0b 78 	mr      r1,r1					# HMT_LOW
+>   c00000000009af4c:	40 9e ff fc 	bne     cr7,c00000000009af48 <.do_exit+0=
+x6d8>
+>=20
 
-I'll make the change while posting the next rev.
+There is even no code checking for SHARED_PROCESSOR here, so I assume
+your config is !PPC_SPLPAR.
 
-Thanks,
-Shreyas
+> Which is a spin loop waiting for a result in cr7, but with no comparison.
+>=20
+> The problem seems to be that we did:
+>=20
+> @@ -184,7 +184,7 @@ static inline void arch_spin_unlock_wait(arch_spinloc=
+k_t *lock)
+>  	if (arch_spin_value_unlocked(lock_val))
+>  		goto out;
+> =20
+> -	while (lock->slock) {
+> +	while (!arch_spin_value_unlocked(*lock)) {
+>  		HMT_low();
+>  		if (SHARED_PROCESSOR)
+>  			__spin_yield(lock);
+>=20
 
->> +#define PSSCR_RL_MASK		0x0000000F
->> +#define PSSCR_MTL_MASK		0x000000F0
->> +#define PSSCR_TR_MASK		0x00000300
->> +#define PSSCR_PSLL_MASK		0x000F0000
->> +#define PSSCR_EC		0x00100000
->> +#define PSSCR_ESL		0x00200000
->> +#define PSSCR_SD		0x00400000
->> +
->> +
->>  /* Floating Point Status and Control Register (FPSCR) Fields */
-> 
-> Cheers,
-> Sam.
-> 
+And as I also did an consolidation in this patch, we now share the same
+piece of arch_spin_unlock_wait(), so if !PPC_SPLPAR, the previous loop
+became:
+
+	while (!arch_spin_value_unlocked(*lock)) {
+ 		HMT_low();
+	}
+
+and given HMT_low() is not a compiler barrier. So the compiler may
+optimize out the loop..
+
+> Which seems to be hiding the fact that lock->slock is volatile from the
+> compiler, even though arch_spin_value_unlocked() is inline. Not sure if t=
+hat's
+> our bug or gcc's.
+>=20
+
+I think arch_spin_value_unlocked() is not volatile because
+arch_spin_value_unlocked() takes the value of the lock rather than the
+address of the lock as its parameter, which makes it a pure function.
+
+To fix this we can add READ_ONCE() for the read of lock value like the
+following:
+
+	while(!arch_spin_value_unlock(READ_ONCE(*lock))) {
+		HMT_low();
+		...
+
+Or you prefer to simply using lock->slock which is a volatile variable
+already?
+
+Or maybe we can refactor the code a little like this:
+
+static inline void arch_spin_unlock_wait(arch_spinlock_t *lock)
+{
+       arch_spinlock_t lock_val;
+
+       smp_mb();
+
+       /*
+        * Atomically load and store back the lock value (unchanged).  This
+        * ensures that our observation of the lock value is ordered with
+        * respect to other lock operations.
+        */
+       __asm__ __volatile__(
+"1:    " PPC_LWARX(%0, 0, %2, 0) "\n"
+"      stwcx. %0, 0, %2\n"
+"      bne- 1b\n"
+       : "=3D&r" (lock_val), "+m" (*lock)
+       : "r" (lock)
+       : "cr0", "xer");
+
+       while (!arch_spin_value_unlocked(lock_val)) {
+               HMT_low();
+               if (SHARED_PROCESSOR)
+                       __spin_yield(lock);
+
+               lock_val =3D READ_ONCE(*lock);
+       }
+       HMT_medium();
+
+       smp_mb();
+}
+
+> Will sleep on it.
+>=20
+
+Bed time for me too, I will run more tests on the three proposals above
+tomorrow and see how things are going.
+
+Regards,
+Boqun
+
+> cheers
+>=20
+
+--24zk1gE8NUlDmwG9
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXWaZqAAoJEEl56MO1B/q4880H/RKWUYNNgFgMWweJBB5YXgk9
+QlU+v7f3tm+/nl/wJKGGWiyAgHbvAs7L/h+HOLmcC2wqkv9CZoKw3bjQfMx/vYYp
+knOko0VI0rWQ9piRg9tLrBZlCcOCxb2R9z2nTDhzcP8AGDCLfopVfcNNYxmdTXyH
+6JjC+ZaHRaq1Ci0bMQ2+5GjybbqCtIFQ4fKigep94E8YC5sPyZK7wcdJqoYEiCUA
+atqIQBTuW1gNWMHh1EufcemrlOLM14gWlwn4U9cgVLu2MxQ/ubnLbmklokOxTBBM
+onop75ZKyQJvDWVJlD/+Vn4X08zotu2v2NuwZbaaC6Le74d+f2fomqIHFE/OL4k=
+=u5ps
+-----END PGP SIGNATURE-----
+
+--24zk1gE8NUlDmwG9--
