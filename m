@@ -1,45 +1,29 @@
-Return-Path: <felipe.balbi@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rQHZQ3d8WzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 17:51:57 +1000 (AEST)
-From: Felipe Balbi <balbi@kernel.org>
-To: Deepa Dinamani <deepa.kernel@gmail.com>, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
- Al Viro <viro@zeniv.linux.org.uk>,
- Linus Torvalds <torvalds@linux-foundation.org>, y2038@lists.linaro.org,
- Anna Schumaker <anna.schumaker@netapp.com>, Anton Vorontsov <anton@enomsg.org>,
- Benny Halevy <bhalevy@primarydata.com>, Boaz Harrosh <ooo@electrozaur.com>,
- Changman Lee <cm224.lee@samsung.com>, Chris Mason <clm@fb.com>,
- Colin Cross <ccross@android.com>, Dave Kleikamp <shaggy@kernel.org>,
- "David S. Miller" <davem@davemloft.net>, David Sterba <dsterba@suse.com>,
- Eric Van Hensbergen <ericvh@gmail.com>, Hugh Dickins <hughd@google.com>,
- Ian Kent <raven@themaw.net>, Jaegeuk Kim <jaegeuk@kernel.org>,
- Joern Engel <joern@logfs.org>, Josef Bacik <jbacik@fb.com>,
- Kees Cook <keescook@chromium.org>, Latchesar Ionkov <lucho@ionkov.net>,
- Matt Fleming <matt@codeblueprint.co.uk>,
- Matthew Garrett <matthew.garrett@nebula.com>,
- Miklos Szeredi <miklos@szeredi.hu>, Nadia Yvette Chambers <nyc@holomorphy.com>,
- Prasad Joshi <prasadjoshi.linux@gmail.com>, Robert Richter <rric@kernel.org>,
- Ron Minnich <rminnich@sandia.gov>, Tony Luck <tony.luck@intel.com>,
- Trond Myklebust <trond.myklebust@primarydata.com>, autofs@vger.kernel.org,
- cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
- linux-btrfs@vger.kernel.org, linux-efi@vger.kernel.org,
- linux-f2fs-devel@lists.sourceforge.net, linux-mm@kvack.org,
- linux-nfs@vger.kernel.org, linux-nilfs@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-rdma@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-security-module@vger.kernel.org,
- linux-usb@vger.kernel.org, logfs@logfs.org, netdev@vger.kernel.org,
- ocfs2-devel@oss.oracle.com, oprofile-list@lists.sf.net, osd-dev@open-osd.org,
- selinux@tycho.nsa.gov, v9fs-developer@lists.sourceforge.net
-Subject: Re: [PATCH 00/21] Delete CURRENT_TIME and CURRENT_TIME_SEC macros
-In-Reply-To: <1465448705-25055-1-git-send-email-deepa.kernel@gmail.com>
-References: <1465448705-25055-1-git-send-email-deepa.kernel@gmail.com>
-Date: Thu, 09 Jun 2016 10:51:31 +0300
-Message-ID: <87twh294vw.fsf@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQPbr1ZJRzDq9y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 22:23:36 +1000 (AEST)
+Message-ID: <1465475008.16363.1.camel@ellerman.id.au>
+Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>
+Date: Thu, 09 Jun 2016 22:23:28 +1000
+In-Reply-To: <20160608135903.GT30154@twins.programming.kicks-ass.net>
+References: <1465213340.2658.1.camel@ellerman.id.au>
+ <20160606115655.GD30909@twins.programming.kicks-ass.net>
+ <1465215445.2658.4.camel@ellerman.id.au>
+ <20160606144659.GG30909@twins.programming.kicks-ass.net>
+ <1465384845.13854.7.camel@ellerman.id.au>
+ <20160608123507.GR30154@twins.programming.kicks-ass.net>
+ <1465393760.10567.4.camel@ellerman.id.au>
+ <20160608135903.GT30154@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,42 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2016-06-08 at 15:59 +0200, Peter Zijlstra wrote:
+> On Wed, Jun 08, 2016 at 11:49:20PM +1000, Michael Ellerman wrote:
+>
+> > > Ok; what tree does this go in? I have this dependent series which I'd
+> > > like to get sorted and merged somewhere.
+> > 
+> > Ah sorry, I didn't realise. I was going to put it in my next (which doesn't
+> > exist yet but hopefully will early next week).
+> > 
+> > I'll make a topic branch with just that commit based on rc2 or rc3?
+> 
+> Works for me; thanks!
+ 
+Unfortunately the patch isn't 100%.
 
+It's causing some of my machines to lock up hard, which isn't surprising when
+you look at the generated code for the non-atomic spin loop:
 
-Hi,
+  c00000000009af48:	7c 21 0b 78 	mr      r1,r1					# HMT_LOW
+  c00000000009af4c:	40 9e ff fc 	bne     cr7,c00000000009af48 <.do_exit+0x6d8>
 
-Deepa Dinamani <deepa.kernel@gmail.com> writes:
->  drivers/usb/gadget/function/f_fs.c                 |  2 +-
->  drivers/usb/gadget/legacy/inode.c                  |  2 +-
+Which is a spin loop waiting for a result in cr7, but with no comparison.
 
-for drivers/usb/gadget:
+The problem seems to be that we did:
 
-Acked-by: Felipe Balbi <balbi@kernel.org>
+@@ -184,7 +184,7 @@ static inline void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ 	if (arch_spin_value_unlocked(lock_val))
+ 		goto out;
+ 
+-	while (lock->slock) {
++	while (!arch_spin_value_unlocked(*lock)) {
+ 		HMT_low();
+ 		if (SHARED_PROCESSOR)
+ 			__spin_yield(lock);
 
-=2D-=20
-balbi
+Which seems to be hiding the fact that lock->slock is volatile from the
+compiler, even though arch_spin_value_unlocked() is inline. Not sure if that's
+our bug or gcc's.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+Will sleep on it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXWSADAAoJEIaOsuA1yqRE3xkP/iQ1fuTIybbV6wTI8KcBipLN
-RYE+b6JJVPFMIpj76aDznk/eZG+CSnwRUAPoPGWs1o7xVqnVGqfLDMWyHLp3pU5C
-NQyphaTDahzkV3cbTbAjbLpcluDKmCmRb++9YyfSyEcFP4HnlpgmIVFM7SinMADk
-OXGwum3/L0HpAs+91j4FORMHiKma5fa5CXmE5aHsM3TSWONWldycLywu9jlF/AyU
-lY83J4AjvL2qii9hWdlxX81+zFZ92Vh9v5vvms8ErPB2w3a75PbM70gaoVM2VOxQ
-kMeLZUiGywrnDv+/RKC+9WX3KiwDsAlTk1rbuDBePE7PbjQmRW/hfRtXcpECXAyG
-LrV9HskF1UIIv8aVyWoR/GwQdO0cdxoW8uBuw+/l7pSHTvfpvl3/sb+VNBH3j2lQ
-aosxpF7QlU08QxWzpPHgrQ7TNbZ0o9zl5aZ8HAhAPt9FZDu1KKHy/EEJ0aI5d25y
-p7aTdxvf2SxMGVo6K1ozZUq/EeXOW061oeOUmDLT1NZWS69g19lGBx/XSWLpqf1b
-V6SK0hpP3QqHajNOsTFfHLuP13zygCZsSQJU1Z4MO3RyawyMsgjCqAKrEHCoF0zL
-rCfYHY+r6PMRmrirPoBdPwdoWB8/i1INydBfU4OqjO/7dRgjhl2iPSUvSOPrhVlu
-g2HkIFwp1Wj8eyUm+JYM
-=tfo4
------END PGP SIGNATURE-----
---=-=-=--
+cheers
