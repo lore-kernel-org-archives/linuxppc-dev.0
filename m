@@ -1,23 +1,41 @@
-Return-Path: <d6malek@digitaldans.com>
-Received: from digitaldans.com (digitaldans.com [69.36.177.99])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-vk0-f67.google.com (mail-vk0-f67.google.com
+ [209.85.213.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQ3nq3fgjzDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 09:01:03 +1000 (AEST)
-Content-Type: text/plain; charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 9.2 \(3112\))
-Subject: Re: [RFC] Implementing HUGEPAGE on MPC 8xx
-From: Dan Malek <d6malek@digitaldans.com>
-In-Reply-To: <b2980a9d-4795-ae1b-16dd-ba244d559a31@c-s.fr>
-Date: Wed, 8 Jun 2016 15:46:15 -0700
-Cc: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- Becky Bruce <beckyb@kernel.crashing.org>,
- David Gibson <david@gibson.dropbear.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQ57z4hgnzDqFm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2016 10:01:51 +1000 (AEST)
+Received: by mail-vk0-f67.google.com with SMTP id t7so3882760vkf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2016 17:01:51 -0700 (PDT)
+MIME-Version: 1.0
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <CAE9FiQXPmG6UYYGHG52_i8vaBJ5yPm6Z4Zfx_BhQxVhyWC5fnw@mail.gmail.com>
+References: <20160604000642.28162-1-yinghai@kernel.org>
+ <20160604000642.28162-2-yinghai@kernel.org>
+ <20160608210322.GA4248@localhost>
+ <CAE9FiQXPmG6UYYGHG52_i8vaBJ5yPm6Z4Zfx_BhQxVhyWC5fnw@mail.gmail.com>
+From: Yinghai Lu <yinghai@kernel.org>
+Date: Wed, 8 Jun 2016 17:00:47 -0700
+Message-ID: <CAE9FiQWw0pUB=1iDrX_1qyMFAUGQidSaV7CPc0aNb2CzPB-fZw@mail.gmail.com>
+Subject: Re: [PATCH v12 01/15] PCI: Let pci_mmap_page_range() take extra
+ resource pointer
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Scott Wood <oss@buserror.net>
-Message-Id: <9ED9D9D9-67F5-4598-94F7-D0E0A6FF5EA7@digitaldans.com>
-References: <b2980a9d-4795-ae1b-16dd-ba244d559a31@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, Khalid Aziz <khalid.aziz@oracle.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-cris-kernel@axis.com,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ linux-am33-list@redhat.com,
+ linux-parisc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-sh@vger.kernel.org,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ linux-xtensa@linux-xtensa.org
+Content-Type: multipart/mixed; boundary=001a113f269454a1b90534cd1d05
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +45,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--001a113f269454a1b90534cd1d05
+Content-Type: text/plain; charset=UTF-8
 
-Hello Christophe.
+On Wed, Jun 8, 2016 at 3:35 PM, Yinghai Lu <yinghai@kernel.org> wrote:
 
-I=E2=80=99m surprised there is still any interest in this processor =
-family :)
+> At the same time, can you kill __pci_mmap_set_pgprot() for powerpc.
 
-On Jun 8, 2016, at 12:03 AM, Christophe Leroy <christophe.leroy@c-s.fr> =
-wrote:
+Can you please put your two patches and this attached one into to pci/next?
 
-> MPC 8xx has several page sizes: 4k, 16k, 512k and 8M.
-> Today, 4k and 16k sizes are implemented as normal page sizes and 8M is =
-used for mapping linear memory space in kernel.
->=20
-> I'd like to implement HUGE PAGE to reduce TLB misses from user apps.
+Then I could send updated PCI: Let pci_mmap_page_range() take resource address.
 
-My original plan was to implement the TLB miss handler in three lines of =
-code.  I haven=E2=80=99t investigated recently, but I know the amount of =
-code has grown substantially :)
+Thanks
 
-> In 4k mode, PAGE offset is 12 bits, PTE offset is 10 bits and PGD =
-offset is 10 bits
-> In 16k mode, PAGE offset is 14 bits, PTE offset is 12 bits and PGD =
-offset is 6 bits
+Yinghai
 
-Since the 8xx systems typically have rather small real memory, I was =
-considering a combination of 4k and 512k pages as an attempt to maximize =
-real memory utilization.  The 4k pages in the PTE tables as today, and =
-the 512k flagged in the PGD and just loaded from there.  I don=E2=80=99t =
-know if 16k is a big enough win (unless it=E2=80=99s the =E2=80=9Cstandard=
-=E2=80=9D page size to keep TLBmiss as simple as possible), or if 8M is =
-terribly useful from user space.
+--001a113f269454a1b90534cd1d05
+Content-Type: text/x-patch; charset=US-ASCII; name="remove_powerpc_pci_prot.patch"
+Content-Disposition: attachment; filename="remove_powerpc_pci_prot.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_ip7jeokf0
 
-> =46rom your point of view, what would be the best approach to extend =
-support of HUGE PAGES to PPC_8xx ?
-> Would the good starting point be to implement a hugepagetlb-8xx.c from =
-hugepagetlb-book3e.c ?
-
-I guess that is the place to start.  When I first thought about this =
-many years ago, I was hoping to map shared libraries and properly =
-behaving programs.  The mechanism I considered to do this was either =
-inspection of the section headers, using some section flags, or maybe =
-Aux Vector  to set up mmap() to hugetlb at run-time.
-
-Good Luck.
-
-	=E2=80=94 Dan
+RnJvbTogQmpvcm4gSGVsZ2FhcyA8YmhlbGdhYXNAZ29vZ2xlLmNvbT4KU3ViamVjdDogW1BBVENI
+XSBwb3dlcnBjL1BDSTogUmVtb3ZlIF9fcGNpX21tYXBfc2V0X3BncHJvdCgpCgogIFBDSTogSWdu
+b3JlIHdyaXRlLWNvbWJpbmluZyB3aGVuIG1hcHBpbmcgSS9PIHBvcnQgc3BhY2UKYWxyZWFkeSBo
+YW5kbGUgdGhlIGlvIHBvcnQgbW1hcCBwYXRoLgoKRm9yIG1taW8gbW1hcCBwYXRoLCBjYWxsZXIg
+c2hvdWxkIHN0YXRlIHRoYXQgY29ycmVjdGx5IGlmIHdyaXRlX2NvbWJpbmUKaXMgcmVhbGx5IG5l
+ZWRlZC4KCnZpYSBwcm9jIHBhdGggaXQgc2hvdWxkIGxvb2sgbGlrZToKICBtbWFwKGZkLCAuLi4p
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIyBkZWZhdWx0IGlzIEkvTywgbm9uLWNvbWJpbmlu
+ZwogIGlvY3RsKGZkLCBQQ0lJT0NfV1JJVEVfQ09NQklORSwgMSk7ICAgICAjIHJlcXVlc3Qgd3Jp
+dGUtY29tYmluaW5nCiAgaW9jdGwoZmQsIFBDSUlPQ19NTUFQX0lTX01FTSk7ICAgICAgICAgICMg
+cmVxdWVzdCBtZW1vcnkgc3BhY2UKICBtbWFwKGZkLCAuLi4pCgpzeXNmcyBwYXRoLCBpdCBzaG91
+bGQgdXNlIHJlc291cmNlXT9dX3djLgoKU2lnbmVkLW9mZi1ieTogQmpvcm4gSGVsZ2FhcyA8Ymhl
+bGdhYXNAZ29vZ2xlLmNvbT4KCi0tLQogYXJjaC9wb3dlcnBjL2tlcm5lbC9wY2ktY29tbW9uLmMg
+fCAgIDM3ICsrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KIDEgZmlsZSBjaGFu
+Z2VkLCA0IGluc2VydGlvbnMoKyksIDMzIGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9h
+cmNoL3Bvd2VycGMva2VybmVsL3BjaS1jb21tb24uYwo9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYu
+b3JpZy9hcmNoL3Bvd2VycGMva2VybmVsL3BjaS1jb21tb24uYworKysgbGludXgtMi42L2FyY2gv
+cG93ZXJwYy9rZXJuZWwvcGNpLWNvbW1vbi5jCkBAIC0zNTYsMzYgKzM1Niw2IEBAIHN0YXRpYyBz
+dHJ1Y3QgcmVzb3VyY2UgKl9fcGNpX21tYXBfbWFrZV8KIH0KIAogLyoKLSAqIFNldCB2bV9wYWdl
+X3Byb3Qgb2YgVk1BLCBhcyBhcHByb3ByaWF0ZSBmb3IgdGhpcyBhcmNoaXRlY3R1cmUsIGZvciBh
+IHBjaQotICogZGV2aWNlIG1hcHBpbmcuCi0gKi8KLXN0YXRpYyBwZ3Byb3RfdCBfX3BjaV9tbWFw
+X3NldF9wZ3Byb3Qoc3RydWN0IHBjaV9kZXYgKmRldiwgc3RydWN0IHJlc291cmNlICpycCwKLQkJ
+CQkgICAgICBwZ3Byb3RfdCBwcm90ZWN0aW9uLAotCQkJCSAgICAgIGVudW0gcGNpX21tYXBfc3Rh
+dGUgbW1hcF9zdGF0ZSwKLQkJCQkgICAgICBpbnQgd3JpdGVfY29tYmluZSkKLXsKLQotCS8qIFdy
+aXRlIGNvbWJpbmUgaXMgYWx3YXlzIDAgb24gbm9uLW1lbW9yeSBzcGFjZSBtYXBwaW5ncy4gT24K
+LQkgKiBtZW1vcnkgc3BhY2UsIGlmIHRoZSB1c2VyIGRpZG4ndCBwYXNzIDEsIHdlIGNoZWNrIGZv
+ciBhCi0JICogInByZWZldGNoYWJsZSIgcmVzb3VyY2UuIFRoaXMgaXMgYSBiaXQgaGFja2lzaCwg
+YnV0IHdlIHVzZQotCSAqIHRoaXMgdG8gd29ya2Fyb3VuZCB0aGUgaW5hYmlsaXR5IG9mIC9zeXNm
+cyB0byBwcm92aWRlIGEgd3JpdGUKLQkgKiBjb21iaW5lIGJpdAotCSAqLwotCWlmIChtbWFwX3N0
+YXRlICE9IHBjaV9tbWFwX21lbSkKLQkJd3JpdGVfY29tYmluZSA9IDA7Ci0JZWxzZSBpZiAod3Jp
+dGVfY29tYmluZSA9PSAwKSB7Ci0JCWlmIChycC0+ZmxhZ3MgJiBJT1JFU09VUkNFX1BSRUZFVENI
+KQotCQkJd3JpdGVfY29tYmluZSA9IDE7Ci0JfQotCi0JLyogWFhYIHdvdWxkIGJlIG5pY2UgdG8g
+aGF2ZSBhIHdheSB0byBhc2sgZm9yIHdyaXRlLXRocm91Z2ggKi8KLQlpZiAod3JpdGVfY29tYmlu
+ZSkKLQkJcmV0dXJuIHBncHJvdF9ub25jYWNoZWRfd2MocHJvdGVjdGlvbik7Ci0JZWxzZQotCQly
+ZXR1cm4gcGdwcm90X25vbmNhY2hlZChwcm90ZWN0aW9uKTsKLX0KLQotLyoKICAqIFRoaXMgb25l
+IGlzIHVzZWQgYnkgL2Rldi9tZW0gYW5kIGZiZGV2IHdobyBoYXZlIG5vIGNsdWUgYWJvdXQgdGhl
+CiAgKiBQQ0kgZGV2aWNlLCBpdCB0cmllcyB0byBmaW5kIHRoZSBQQ0kgZGV2aWNlIGZpcnN0IGFu
+ZCBjYWxscyB0aGUKICAqIGFib3ZlIHJvdXRpbmUKQEAgLTQ1OCw5ICs0MjgsMTAgQEAgaW50IHBj
+aV9tbWFwX3BhZ2VfcmFuZ2Uoc3RydWN0IHBjaV9kZXYgKgogCQlyZXR1cm4gLUVJTlZBTDsKIAog
+CXZtYS0+dm1fcGdvZmYgPSBvZmZzZXQgPj4gUEFHRV9TSElGVDsKLQl2bWEtPnZtX3BhZ2VfcHJv
+dCA9IF9fcGNpX21tYXBfc2V0X3BncHJvdChkZXYsIHJwLAotCQkJCQkJICB2bWEtPnZtX3BhZ2Vf
+cHJvdCwKLQkJCQkJCSAgbW1hcF9zdGF0ZSwgd3JpdGVfY29tYmluZSk7CisJaWYgKHdyaXRlX2Nv
+bWJpbmUpCisJCXZtYS0+dm1fcGFnZV9wcm90ID0gcGdwcm90X25vbmNhY2hlZF93Yyh2bWEtPnZt
+X3BhZ2VfcHJvdCk7CisJZWxzZQorCQl2bWEtPnZtX3BhZ2VfcHJvdCA9IHBncHJvdF9ub25jYWNo
+ZWQodm1hLT52bV9wYWdlX3Byb3QpOwogCiAJcmV0ID0gcmVtYXBfcGZuX3JhbmdlKHZtYSwgdm1h
+LT52bV9zdGFydCwgdm1hLT52bV9wZ29mZiwKIAkJCSAgICAgICB2bWEtPnZtX2VuZCAtIHZtYS0+
+dm1fc3RhcnQsIHZtYS0+dm1fcGFnZV9wcm90KTsK
+--001a113f269454a1b90534cd1d05--
