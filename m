@@ -1,11 +1,11 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQd6Z22cZzDqHm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQd6Z1wwrzDqHh
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 07:02:30 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id c2so16362980pfa.2
+Received: by mail-pf0-x234.google.com with SMTP id 62so16361335pfd.1
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 14:02:30 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
@@ -27,9 +27,9 @@ Cc: Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>,
  Russell King <linux@armlinux.org.uk>,
  user-mode-linux-devel@lists.sourceforge.net,
  Will Deacon <will.deacon@arm.com>, x86@kernel.org
-Subject: [PATCH 04/14] seccomp: remove 2-phase API
-Date: Thu,  9 Jun 2016 14:01:54 -0700
-Message-Id: <1465506124-21866-5-git-send-email-keescook@chromium.org>
+Subject: [PATCH 01/14] seccomp: add tests for ptrace hole
+Date: Thu,  9 Jun 2016 14:01:51 -0700
+Message-Id: <1465506124-21866-2-git-send-email-keescook@chromium.org>
 In-Reply-To: <1465506124-21866-1-git-send-email-keescook@chromium.org>
 References: <1465506124-21866-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,214 +41,269 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since nothing is using the 2-phase API, and it adds more complexity than
-benefit, remove it.
+One problem with seccomp was that ptrace could be used to change a
+syscall after seccomp filtering had completed. This was a well documented
+limitation, and it was recommended to block ptrace when defining a filter
+to avoid this problem. This can be quite a limitation for containers or
+other places where ptrace is desired even under seccomp filters.
+
+This adds tests for both SECCOMP_RET_TRACE and PTRACE_SYSCALL manipulations.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 Cc: Andy Lutomirski <luto@kernel.org>
 ---
- include/linux/seccomp.h |   6 ---
- kernel/seccomp.c        | 129 +++++++++++++++---------------------------------
- 2 files changed, 41 insertions(+), 94 deletions(-)
+ tools/testing/selftests/seccomp/seccomp_bpf.c | 176 ++++++++++++++++++++++++--
+ 1 file changed, 165 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/seccomp.h b/include/linux/seccomp.h
-index 9eaa7b34d6da..ecc296c137cd 100644
---- a/include/linux/seccomp.h
-+++ b/include/linux/seccomp.h
-@@ -35,12 +35,6 @@ static inline int secure_computing(const struct seccomp_data *sd)
- 		return  __secure_computing(sd);
- 	return 0;
- }
--
--#define SECCOMP_PHASE1_OK	0
--#define SECCOMP_PHASE1_SKIP	1
--
--extern u32 seccomp_phase1(struct seccomp_data *sd);
--int seccomp_phase2(u32 phase1_result);
- #else
- extern void secure_computing_strict(int this_syscall);
- #endif
-diff --git a/kernel/seccomp.c b/kernel/seccomp.c
-index 06816290a212..14a37d71b612 100644
---- a/kernel/seccomp.c
-+++ b/kernel/seccomp.c
-@@ -173,7 +173,7 @@ static int seccomp_check_filter(struct sock_filter *filter, unsigned int flen)
-  *
-  * Returns valid seccomp BPF response codes.
-  */
--static u32 seccomp_run_filters(struct seccomp_data *sd)
-+static u32 seccomp_run_filters(const struct seccomp_data *sd)
+diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+index 2e58549b2f02..03f1fa495d74 100644
+--- a/tools/testing/selftests/seccomp/seccomp_bpf.c
++++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+@@ -1021,8 +1021,8 @@ void tracer_stop(int sig)
+ typedef void tracer_func_t(struct __test_metadata *_metadata,
+ 			   pid_t tracee, int status, void *args);
+ 
+-void tracer(struct __test_metadata *_metadata, int fd, pid_t tracee,
+-	    tracer_func_t tracer_func, void *args)
++void start_tracer(struct __test_metadata *_metadata, int fd, pid_t tracee,
++	    tracer_func_t tracer_func, void *args, bool ptrace_syscall)
  {
- 	struct seccomp_data sd_local;
- 	u32 ret = SECCOMP_RET_ALLOW;
-@@ -554,20 +554,9 @@ void secure_computing_strict(int this_syscall)
- 		BUG();
- }
- #else
--int __secure_computing(const struct seccomp_data *sd)
--{
--	u32 phase1_result = seccomp_phase1(sd);
--
--	if (likely(phase1_result == SECCOMP_PHASE1_OK))
--		return 0;
--	else if (likely(phase1_result == SECCOMP_PHASE1_SKIP))
--		return -1;
--	else
--		return seccomp_phase2(phase1_result);
--}
+ 	int ret = -1;
+ 	struct sigaction action = {
+@@ -1042,12 +1042,16 @@ void tracer(struct __test_metadata *_metadata, int fd, pid_t tracee,
+ 	/* Wait for attach stop */
+ 	wait(NULL);
  
- #ifdef CONFIG_SECCOMP_FILTER
--static u32 __seccomp_phase1_filter(int this_syscall, struct seccomp_data *sd)
-+static int __seccomp_filter(int this_syscall, const struct seccomp_data *sd)
- {
- 	u32 filter_ret, action;
- 	int data;
-@@ -599,10 +588,33 @@ static u32 __seccomp_phase1_filter(int this_syscall, struct seccomp_data *sd)
- 		goto skip;
- 
- 	case SECCOMP_RET_TRACE:
--		return filter_ret;  /* Save the rest for phase 2. */
-+		/* ENOSYS these calls if there is no tracer attached. */
-+		if (!ptrace_event_enabled(current, PTRACE_EVENT_SECCOMP)) {
-+			syscall_set_return_value(current,
-+						 task_pt_regs(current),
-+						 -ENOSYS, 0);
-+			goto skip;
-+		}
-+
-+		/* Allow the BPF to provide the event message */
-+		ptrace_event(PTRACE_EVENT_SECCOMP, data);
-+		/*
-+		 * The delivery of a fatal signal during event
-+		 * notification may silently skip tracer notification.
-+		 * Terminating the task now avoids executing a system
-+		 * call that may not be intended.
-+		 */
-+		if (fatal_signal_pending(current))
-+			do_exit(SIGSYS);
-+		/* Check if the tracer forced the syscall to be skipped. */
-+		this_syscall = syscall_get_nr(current, task_pt_regs(current));
-+		if (this_syscall < 0)
-+			goto skip;
-+
-+		return 0;
- 
- 	case SECCOMP_RET_ALLOW:
--		return SECCOMP_PHASE1_OK;
-+		return 0;
- 
- 	case SECCOMP_RET_KILL:
- 	default:
-@@ -614,96 +626,37 @@ static u32 __seccomp_phase1_filter(int this_syscall, struct seccomp_data *sd)
- 
- skip:
- 	audit_seccomp(this_syscall, 0, action);
--	return SECCOMP_PHASE1_SKIP;
-+	return -1;
-+}
-+#else
-+static int __seccomp_filter(int this_syscall, const struct seccomp_data *sd)
-+{
-+	BUG();
- }
- #endif
- 
--/**
-- * seccomp_phase1() - run fast path seccomp checks on the current syscall
-- * @arg sd: The seccomp_data or NULL
-- *
-- * This only reads pt_regs via the syscall_xyz helpers.  The only change
-- * it will make to pt_regs is via syscall_set_return_value, and it will
-- * only do that if it returns SECCOMP_PHASE1_SKIP.
-- *
-- * If sd is provided, it will not read pt_regs at all.
-- *
-- * It may also call do_exit or force a signal; these actions must be
-- * safe.
-- *
-- * If it returns SECCOMP_PHASE1_OK, the syscall passes checks and should
-- * be processed normally.
-- *
-- * If it returns SECCOMP_PHASE1_SKIP, then the syscall should not be
-- * invoked.  In this case, seccomp_phase1 will have set the return value
-- * using syscall_set_return_value.
-- *
-- * If it returns anything else, then the return value should be passed
-- * to seccomp_phase2 from a context in which ptrace hooks are safe.
-- */
--u32 seccomp_phase1(struct seccomp_data *sd)
-+int __secure_computing(const struct seccomp_data *sd)
- {
- 	int mode = current->seccomp.mode;
--	int this_syscall = sd ? sd->nr :
--		syscall_get_nr(current, task_pt_regs(current));
-+	int this_syscall;
- 
- 	if (config_enabled(CONFIG_CHECKPOINT_RESTORE) &&
- 	    unlikely(current->ptrace & PT_SUSPEND_SECCOMP))
--		return SECCOMP_PHASE1_OK;
-+		return 0;
-+
-+	this_syscall = sd ? sd->nr :
-+		syscall_get_nr(current, task_pt_regs(current));
- 
- 	switch (mode) {
- 	case SECCOMP_MODE_STRICT:
- 		__secure_computing_strict(this_syscall);  /* may call do_exit */
--		return SECCOMP_PHASE1_OK;
--#ifdef CONFIG_SECCOMP_FILTER
-+		return 0;
- 	case SECCOMP_MODE_FILTER:
--		return __seccomp_phase1_filter(this_syscall, sd);
--#endif
-+		return __seccomp_filter(this_syscall, sd);
- 	default:
- 		BUG();
+-	ret = ptrace(PTRACE_SETOPTIONS, tracee, NULL, PTRACE_O_TRACESECCOMP);
++	ret = ptrace(PTRACE_SETOPTIONS, tracee, NULL, ptrace_syscall ?
++						      PTRACE_O_TRACESYSGOOD :
++						      PTRACE_O_TRACESECCOMP);
+ 	ASSERT_EQ(0, ret) {
+ 		TH_LOG("Failed to set PTRACE_O_TRACESECCOMP");
+ 		kill(tracee, SIGKILL);
  	}
- }
--
--/**
-- * seccomp_phase2() - finish slow path seccomp work for the current syscall
-- * @phase1_result: The return value from seccomp_phase1()
-- *
-- * This must be called from a context in which ptrace hooks can be used.
-- *
-- * Returns 0 if the syscall should be processed or -1 to skip the syscall.
-- */
--int seccomp_phase2(u32 phase1_result)
--{
--	struct pt_regs *regs = task_pt_regs(current);
--	u32 action = phase1_result & SECCOMP_RET_ACTION;
--	int data = phase1_result & SECCOMP_RET_DATA;
--
--	BUG_ON(action != SECCOMP_RET_TRACE);
--
--	audit_seccomp(syscall_get_nr(current, regs), 0, action);
--
--	/* Skip these calls if there is no tracer. */
--	if (!ptrace_event_enabled(current, PTRACE_EVENT_SECCOMP)) {
--		syscall_set_return_value(current, regs,
--					 -ENOSYS, 0);
--		return -1;
--	}
--
--	/* Allow the BPF to provide the event message */
--	ptrace_event(PTRACE_EVENT_SECCOMP, data);
--	/*
--	 * The delivery of a fatal signal during event
--	 * notification may silently skip tracer notification.
--	 * Terminating the task now avoids executing a system
--	 * call that may not be intended.
--	 */
--	if (fatal_signal_pending(current))
--		do_exit(SIGSYS);
--	if (syscall_get_nr(current, regs) < 0)
--		return -1;  /* Explicit request to skip. */
--
--	return 0;
--}
- #endif /* CONFIG_HAVE_ARCH_SECCOMP_FILTER */
+-	ptrace(PTRACE_CONT, tracee, NULL, 0);
++	ret = ptrace(ptrace_syscall ? PTRACE_SYSCALL : PTRACE_CONT,
++		     tracee, NULL, 0);
++	ASSERT_EQ(0, ret);
  
- long prctl_get_seccomp(void)
+ 	/* Unblock the tracee */
+ 	ASSERT_EQ(1, write(fd, "A", 1));
+@@ -1063,12 +1067,13 @@ void tracer(struct __test_metadata *_metadata, int fd, pid_t tracee,
+ 			/* Child is dead. Time to go. */
+ 			return;
+ 
+-		/* Make sure this is a seccomp event. */
+-		ASSERT_EQ(true, IS_SECCOMP_EVENT(status));
++		/* Check if this is a seccomp event. */
++		ASSERT_EQ(!ptrace_syscall, IS_SECCOMP_EVENT(status));
+ 
+ 		tracer_func(_metadata, tracee, status, args);
+ 
+-		ret = ptrace(PTRACE_CONT, tracee, NULL, NULL);
++		ret = ptrace(ptrace_syscall ? PTRACE_SYSCALL : PTRACE_CONT,
++			     tracee, NULL, 0);
+ 		ASSERT_EQ(0, ret);
+ 	}
+ 	/* Directly report the status of our test harness results. */
+@@ -1079,7 +1084,7 @@ void tracer(struct __test_metadata *_metadata, int fd, pid_t tracee,
+ void cont_handler(int num)
+ { }
+ pid_t setup_trace_fixture(struct __test_metadata *_metadata,
+-			  tracer_func_t func, void *args)
++			  tracer_func_t func, void *args, bool ptrace_syscall)
+ {
+ 	char sync;
+ 	int pipefd[2];
+@@ -1095,7 +1100,8 @@ pid_t setup_trace_fixture(struct __test_metadata *_metadata,
+ 	signal(SIGALRM, cont_handler);
+ 	if (tracer_pid == 0) {
+ 		close(pipefd[0]);
+-		tracer(_metadata, pipefd[1], tracee, func, args);
++		start_tracer(_metadata, pipefd[1], tracee, func, args,
++			     ptrace_syscall);
+ 		syscall(__NR_exit, 0);
+ 	}
+ 	close(pipefd[1]);
+@@ -1177,7 +1183,7 @@ FIXTURE_SETUP(TRACE_poke)
+ 
+ 	/* Launch tracer. */
+ 	self->tracer = setup_trace_fixture(_metadata, tracer_poke,
+-					   &self->tracer_args);
++					   &self->tracer_args, false);
+ }
+ 
+ FIXTURE_TEARDOWN(TRACE_poke)
+@@ -1399,6 +1405,29 @@ void tracer_syscall(struct __test_metadata *_metadata, pid_t tracee,
+ 
+ }
+ 
++void tracer_ptrace(struct __test_metadata *_metadata, pid_t tracee,
++		   int status, void *args)
++{
++	int ret, nr;
++	unsigned long msg;
++	static bool entry;
++
++	/* Make sure we got an empty message. */
++	ret = ptrace(PTRACE_GETEVENTMSG, tracee, NULL, &msg);
++	EXPECT_EQ(0, ret);
++	EXPECT_EQ(0, msg);
++
++	/* The only way to tell PTRACE_SYSCALL entry/exit is by counting. */
++	entry = !entry;
++	if (!entry)
++		return;
++
++	nr = get_syscall(_metadata, tracee);
++
++	if (nr == __NR_getpid)
++		change_syscall(_metadata, tracee, __NR_getppid);
++}
++
+ FIXTURE_DATA(TRACE_syscall) {
+ 	struct sock_fprog prog;
+ 	pid_t tracer, mytid, mypid, parent;
+@@ -1440,7 +1469,8 @@ FIXTURE_SETUP(TRACE_syscall)
+ 	ASSERT_NE(self->parent, self->mypid);
+ 
+ 	/* Launch tracer. */
+-	self->tracer = setup_trace_fixture(_metadata, tracer_syscall, NULL);
++	self->tracer = setup_trace_fixture(_metadata, tracer_syscall, NULL,
++					   false);
+ }
+ 
+ FIXTURE_TEARDOWN(TRACE_syscall)
+@@ -1500,6 +1530,130 @@ TEST_F(TRACE_syscall, syscall_dropped)
+ 	EXPECT_NE(self->mytid, syscall(__NR_gettid));
+ }
+ 
++TEST_F(TRACE_syscall, skip_after_RET_TRACE)
++{
++	struct sock_filter filter[] = {
++		BPF_STMT(BPF_LD|BPF_W|BPF_ABS,
++			offsetof(struct seccomp_data, nr)),
++		BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_getppid, 0, 1),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ERRNO | EPERM),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
++	};
++	struct sock_fprog prog = {
++		.len = (unsigned short)ARRAY_SIZE(filter),
++		.filter = filter,
++	};
++	long ret;
++
++	ret = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Install fixture filter. */
++	ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &self->prog, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Install "errno on getppid" filter. */
++	ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Tracer will redirect getpid to getppid, and we should see EPERM. */
++	EXPECT_EQ(-1, syscall(__NR_getpid));
++	EXPECT_EQ(EPERM, errno);
++}
++
++TEST_F_SIGNAL(TRACE_syscall, kill_after_RET_TRACE, SIGSYS)
++{
++	struct sock_filter filter[] = {
++		BPF_STMT(BPF_LD|BPF_W|BPF_ABS,
++			offsetof(struct seccomp_data, nr)),
++		BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_getppid, 0, 1),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_KILL),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
++	};
++	struct sock_fprog prog = {
++		.len = (unsigned short)ARRAY_SIZE(filter),
++		.filter = filter,
++	};
++	long ret;
++
++	ret = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Install fixture filter. */
++	ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &self->prog, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Install "death on getppid" filter. */
++	ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Tracer will redirect getpid to getppid, and we should die. */
++	EXPECT_NE(self->mypid, syscall(__NR_getpid));
++}
++
++TEST_F(TRACE_syscall, skip_after_ptrace)
++{
++	struct sock_filter filter[] = {
++		BPF_STMT(BPF_LD|BPF_W|BPF_ABS,
++			offsetof(struct seccomp_data, nr)),
++		BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_getppid, 0, 1),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ERRNO | EPERM),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
++	};
++	struct sock_fprog prog = {
++		.len = (unsigned short)ARRAY_SIZE(filter),
++		.filter = filter,
++	};
++	long ret;
++
++	/* Swap SECCOMP_RET_TRACE tracer for PTRACE_SYSCALL tracer. */
++	teardown_trace_fixture(_metadata, self->tracer);
++	self->tracer = setup_trace_fixture(_metadata, tracer_ptrace, NULL,
++					   true);
++
++	ret = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Install "errno on getppid" filter. */
++	ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Tracer will redirect getpid to getppid, and we should see EPERM. */
++	EXPECT_EQ(-1, syscall(__NR_getpid));
++	EXPECT_EQ(EPERM, errno);
++}
++
++TEST_F_SIGNAL(TRACE_syscall, kill_after_ptrace, SIGSYS)
++{
++	struct sock_filter filter[] = {
++		BPF_STMT(BPF_LD|BPF_W|BPF_ABS,
++			offsetof(struct seccomp_data, nr)),
++		BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_getppid, 0, 1),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_KILL),
++		BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
++	};
++	struct sock_fprog prog = {
++		.len = (unsigned short)ARRAY_SIZE(filter),
++		.filter = filter,
++	};
++	long ret;
++
++	/* Swap SECCOMP_RET_TRACE tracer for PTRACE_SYSCALL tracer. */
++	teardown_trace_fixture(_metadata, self->tracer);
++	self->tracer = setup_trace_fixture(_metadata, tracer_ptrace, NULL,
++					   true);
++
++	ret = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Install "death on getppid" filter. */
++	ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog, 0, 0);
++	ASSERT_EQ(0, ret);
++
++	/* Tracer will redirect getpid to getppid, and we should die. */
++	EXPECT_NE(self->mypid, syscall(__NR_getpid));
++}
++
+ #ifndef __NR_seccomp
+ # if defined(__i386__)
+ #  define __NR_seccomp 354
 -- 
 2.7.4
