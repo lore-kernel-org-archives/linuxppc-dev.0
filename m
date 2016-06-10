@@ -1,30 +1,30 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linz@li-pro.net>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQsHJ16N4zDqHd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 16:10:52 +1000 (AEST)
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rQsHH23q0z9sBc
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Jun 2016 16:10:51 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id fg1so4368613pad.3
- for <linuxppc-dev@ozlabs.org>; Thu, 09 Jun 2016 23:10:51 -0700 (PDT)
-Date: Fri, 10 Jun 2016 16:10:40 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/5] selftests/powerpc: Check for VSX preservation
- across userspace preemption
-Message-ID: <20160610161040.1ea9d4d7@camb691>
-In-Reply-To: <87mvmvqh38.fsf@possimpible.ozlabs.ibm.com>
-References: <20160608040036.13064-1-cyrilbur@gmail.com>
- <20160608040036.13064-2-cyrilbur@gmail.com>
- <87mvmvqh38.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQsSW4tCCzDqNn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 16:18:50 +1000 (AEST)
+From: Stephan Linz <linz@li-pro.net>
+To: linux-leds@vger.kernel.org,
+	linux-ide@vger.kernel.org
+Cc: Stephan Linz <linz@li-pro.net>, Joseph Jezak <josejx@gentoo.org>,
+ =?UTF-8?q?J=C3=B6rg=20Sommer?= <joerg@alea.gnuu.de>,
+ Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v4 3/7] powerpc: use the new LED disk activity trigger
+Date: Fri, 10 Jun 2016 07:59:58 +0200
+Message-Id: <20160610060021.12382-3-linz@li-pro.net>
+In-Reply-To: <20160610060021.12382-1-linz@li-pro.net>
+References: <20160610060021.12382-1-linz@li-pro.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,167 +34,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 09 Jun 2016 11:35:55 +1000
-Daniel Axtens <dja@axtens.net> wrote:
+- dts: rename 'ide-disk' to 'disk-activity'
+- defconfig: rename 'ADB_PMU_LED_IDE' to 'ADB_PMU_LED_DISK'
 
-> Yay for tests!
-> 
-> I have a few minor nits, and one more major one (rc == 2 below).
-> 
-> > +/*
-> > + * Copyright 2015, Cyril Bur, IBM Corp.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + */  
-> I realise this is well past a lost cause by now, but isn't the idea to
-> be version 2, not version 2 or later?
-> 
-> > +
-> > +#include "../basic_asm.h"
-> > +#include "../vsx_asm.h"
-> > +  
-> 
-> Some of your other functions start with a comment. That would be super
-> helpful here - I'm still not super comfortable I understand the calling
-> convention. 
-> > +FUNC_START(check_vsx)
-> > +	PUSH_BASIC_STACK(32)
-> > +	std	r3,STACK_FRAME_PARAM(0)(sp)
-> > +	addi r3, r3, 16 * 12 #Second half of array
-> > +	bl store_vsx
-> > +	ld r3,STACK_FRAME_PARAM(0)(sp)
-> > +	bl vsx_memcmp
-> > +	POP_BASIC_STACK(32)
-> > +	blr
-> > +FUNC_END(check_vsx)
-> > +  
-> 
-> 
-> 
-> > +long vsx_memcmp(vector int *a) {
-> > +	vector int zero = {0,0,0,0};
-> > +	int i;
-> > +
-> > +	FAIL_IF(a != varray);
-> > +
-> > +	for(i = 0; i < 12; i++) {
-> > +		if (memcmp(&a[i + 12], &zero, 16) == 0) {
-> > +			fprintf(stderr, "Detected zero from the VSX reg %d\n", i + 12);
-> > +			return 1;
-> > +		}
-> > +	}
-> > +
-> > +	if (memcmp(a, &a[12], 12 * 16)) {  
-> I'm somewhat confused as to how this comparison works. You're comparing
-> the new saved ones to the old saved ones, yes?
+Cc: Joseph Jezak <josejx@gentoo.org>
+Cc: Jörg Sommer <joerg@alea.gnuu.de>
+Signed-off-by: Stephan Linz <linz@li-pro.net>
+---
+ arch/powerpc/boot/dts/mpc8315erdb.dts |  2 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts |  2 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts |  2 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts |  2 +-
+ arch/powerpc/configs/pmac32_defconfig |  2 +-
+ arch/powerpc/configs/ppc6xx_defconfig |  2 +-
+ drivers/macintosh/Kconfig             | 13 ++++++-------
+ drivers/macintosh/via-pmu-led.c       |  4 ++--
+ 8 files changed, 14 insertions(+), 15 deletions(-)
 
-check_vmx() has put the live registers on the end of the array... so the first
-12 in 'a' are the known values and the next 12 are the live values... they
-should match.
-
-> > +		long *p = (long *)a;
-> > +		fprintf(stderr, "VSX mismatch\n");
-> > +		for (i = 0; i < 24; i=i+2)
-> > +			fprintf(stderr, "%d: 0x%08lx%08lx | 0x%08lx%08lx\n",
-> > +					i/2 + i%2 + 20, p[i], p[i + 1], p[i + 24], p[i + 25]);
-> > +		return 1;
-> > +	}
-> > +	return 0;
-> > +}
-> > +
-> > +void *preempt_vsx_c(void *p)
-> > +{
-> > +	int i, j;
-> > +	long rc;
-> > +	srand(pthread_self());
-> > +	for (i = 0; i < 12; i++)
-> > +		for (j = 0; j < 4; j++) {
-> > +			varray[i][j] = rand();
-> > +			/* Don't want zero because it hides kernel problems */
-> > +			if (varray[i][j] == 0)
-> > +				j--;
-> > +		}
-> > +	rc = preempt_vsx(varray, &threads_starting, &running);
-> > +	if (rc == 2)  
-> How would rc == 2? AIUI, preempt_vsx returns the value of check_vsx,
-> which in turn returns the value of vsx_memcmp, which returns 1 or 0.
-> 
-> > +		fprintf(stderr, "Caught zeros in VSX compares\n");  
-> Isn't it zeros or a mismatched value?
-
-I think that patch went through too many iterations and no enough cleanups.
-Fixed
-
-> > +	return (void *)rc;
-> > +}
-> > +
-> > +int test_preempt_vsx(void)
-> > +{
-> > +	int i, rc, threads;
-> > +	pthread_t *tids;
-> > +
-> > +	threads = sysconf(_SC_NPROCESSORS_ONLN) * THREAD_FACTOR;
-> > +	tids = malloc(threads * sizeof(pthread_t));
-> > +	FAIL_IF(!tids);
-> > +
-> > +	running = true;
-> > +	threads_starting = threads;
-> > +	for (i = 0; i < threads; i++) {
-> > +		rc = pthread_create(&tids[i], NULL, preempt_vsx_c, NULL);
-> > +		FAIL_IF(rc);
-> > +	}
-> > +
-> > +	setbuf(stdout, NULL);
-> > +	/* Not really nessesary but nice to wait for every thread to start */
-> > +	printf("\tWaiting for %d workers to start...", threads_starting);
-> > +	while(threads_starting)
-> > +		asm volatile("": : :"memory");  
-> I think __sync_synchronise() might be ... more idiomatic or something?
-> Not super fussy.
-> 
-
-Best to be consistent with how all the other powerpc/math tests do it, which
-was initially an MPE recommendation.
-
-> > +	printf("done\n");
-> > +
-> > +	printf("\tWaiting for %d seconds to let some workers get preempted...", PREEMPT_TIME);
-> > +	sleep(PREEMPT_TIME);
-> > +	printf("done\n");
-> > +
-> > +	printf("\tStopping workers...");
-> > +	/*
-> > +	 * Working are checking this value every loop. In preempt_vsx 'cmpwi r5,0; bne 2b'.
-> > +	 * r5 will have loaded the value of running.
-> > +	 */
-> > +	running = 0;  
-> Do you need some sort of synchronisation here? You're assuming it
-> eventually gets to the threads, which is of course true, but maybe it
-> would be a good idea to synchronise it more explicitly? Again, not super
-> fussy.
-
-Why bother? A barrier might 'nice' it really buys us nothing. Also that's how
-all the other powerpc/math tests currently kill workers.
-
-> > +	for (i = 0; i < threads; i++) {
-> > +		void *rc_p;
-> > +		pthread_join(tids[i], &rc_p);
-> > +
-> > +		/*
-> > +		 * Harness will say the fail was here, look at why preempt_vsx
-> > +		 * returned
-> > +		 */
-> > +		if ((long) rc_p)
-> > +			printf("oops\n");
-> > +		FAIL_IF((long) rc_p);
-> > +	}
-> > +	printf("done\n");
-> > +
-> > +	return 0;
-> > +}
-> > +  
-> Regards,
-> Daniel
+diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
+index 4354684..ca5139e 100644
+--- a/arch/powerpc/boot/dts/mpc8315erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
+@@ -472,7 +472,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+index 2b4b653..e326139 100644
+--- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
+@@ -496,7 +496,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+index 74b6a53..71842fc 100644
+--- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
+@@ -480,7 +480,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+index 3b5cbac..e442a29 100644
+--- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
+@@ -446,7 +446,7 @@
+ 
+ 		hdd {
+ 			gpios = <&mcu_pio 1 0>;
+-			linux,default-trigger = "ide-disk";
++			linux,default-trigger = "disk-activity";
+ 		};
+ 	};
+ };
+diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+index ea8705f..3f6c9a6 100644
+--- a/arch/powerpc/configs/pmac32_defconfig
++++ b/arch/powerpc/configs/pmac32_defconfig
+@@ -158,7 +158,7 @@ CONFIG_ADB=y
+ CONFIG_ADB_CUDA=y
+ CONFIG_ADB_PMU=y
+ CONFIG_ADB_PMU_LED=y
+-CONFIG_ADB_PMU_LED_IDE=y
++CONFIG_ADB_PMU_LED_DISK=y
+ CONFIG_PMAC_APM_EMU=m
+ CONFIG_PMAC_MEDIABAY=y
+ CONFIG_PMAC_BACKLIGHT=y
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+index 99ccbeba..1dde0be 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -442,7 +442,7 @@ CONFIG_ADB=y
+ CONFIG_ADB_CUDA=y
+ CONFIG_ADB_PMU=y
+ CONFIG_ADB_PMU_LED=y
+-CONFIG_ADB_PMU_LED_IDE=y
++CONFIG_ADB_PMU_LED_DISK=y
+ CONFIG_PMAC_APM_EMU=y
+ CONFIG_PMAC_MEDIABAY=y
+ CONFIG_PMAC_BACKLIGHT=y
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 3e8b29e..d28690f 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -96,19 +96,18 @@ config ADB_PMU_LED
+ 	  Support the front LED on Power/iBooks as a generic LED that can
+ 	  be triggered by any of the supported triggers. To get the
+ 	  behaviour of the old CONFIG_BLK_DEV_IDE_PMAC_BLINK, select this
+-	  and the ide-disk LED trigger and configure appropriately through
+-	  sysfs.
++	  and the disk LED trigger and configure appropriately through sysfs.
+ 
+-config ADB_PMU_LED_IDE
+-	bool "Use front LED as IDE LED by default"
++config ADB_PMU_LED_DISK
++	bool "Use front LED as DISK LED by default"
+ 	depends on ADB_PMU_LED
+ 	depends on LEDS_CLASS
+ 	depends on IDE_GD_ATA
+ 	select LEDS_TRIGGERS
+-	select LEDS_TRIGGER_IDE_DISK
++	select LEDS_TRIGGER_DISK
+ 	help
+-	  This option makes the front LED default to the IDE trigger
+-	  so that it blinks on IDE activity.
++	  This option makes the front LED default to the disk trigger
++	  so that it blinks on disk activity.
+ 
+ config PMAC_SMU
+ 	bool "Support for SMU  based PowerMacs"
+diff --git a/drivers/macintosh/via-pmu-led.c b/drivers/macintosh/via-pmu-led.c
+index 19c3718..ae067ab 100644
+--- a/drivers/macintosh/via-pmu-led.c
++++ b/drivers/macintosh/via-pmu-led.c
+@@ -73,8 +73,8 @@ static void pmu_led_set(struct led_classdev *led_cdev,
+ 
+ static struct led_classdev pmu_led = {
+ 	.name = "pmu-led::front",
+-#ifdef CONFIG_ADB_PMU_LED_IDE
+-	.default_trigger = "ide-disk",
++#ifdef CONFIG_ADB_PMU_LED_DISK
++	.default_trigger = "disk-activity",
+ #endif
+ 	.brightness_set = pmu_led_set,
+ };
+-- 
+2.8.4
