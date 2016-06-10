@@ -1,18 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQndj26D4zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 13:26:33 +1000 (AEST)
-In-Reply-To: <1465231718-2577-1-git-send-email-wsa@the-dreams.de>
-To: Wolfram Sang <wsa@the-dreams.de>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQnjJ4Q3DzDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 13:29:40 +1000 (AEST)
+Message-ID: <1465529379.26682.7.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/nohash: Fix build break with 4K pages
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: devicetree@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>,
- Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- Andreas Schwab <schwab@linux-m68k.org>, Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: of: fix autoloading due to broken modalias with no 'compatible'
-Message-Id: <3rQndj0N39z9snk@ozlabs.org>
-Date: Fri, 10 Jun 2016 13:26:32 +1000 (AEST)
+To: Scott Wood <oss@buserror.net>, linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Date: Fri, 10 Jun 2016 13:29:39 +1000
+In-Reply-To: <1465523584.22191.127.camel@buserror.net>
+References: <1465392071-18715-1-git-send-email-mpe@ellerman.id.au>
+ <1465523584.22191.127.camel@buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-06-06 at 16:48:38 UTC, Wolfram Sang wrote:
-> Because of an improper dereference, a stray 'C' character was output to
-> the modalias when no 'compatible' was specified. This is the case for
-> some old PowerMac drivers which only set the 'name' property. Fix it to
-> let them match again.
+On Thu, 2016-06-09 at 20:53 -0500, Scott Wood wrote:
+> On Wed, 2016-06-08 at 23:21 +1000, Michael Ellerman wrote:
+> > Commit 74701d5947a6 "powerpc/mm: Rename function to indicate we are
+> > allocating fragments" renamed page_table_free() to pte_fragment_free().
+> > One occurrence was mistyped as pte_fragment_fre().
+> > 
+> > This only breaks the nohash 4K page build, which is not the default or
+> > enabled in any defconfig.
 > 
-> Reported-by: Mathieu Malaterre <malat@debian.org>
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> Tested-by: Mathieu Malaterre <malat@debian.org>
-> Cc: Philipp Zabel <p.zabel@pengutronix.de>
-> Cc: Andreas Schwab <schwab@linux-m68k.org>
-> Fixes: 6543becf26fff6 ("mod/file2alias: make modalias generation safe for cross compiling")
+> s/4K/64K/
 
-Applied to powerpc fixes, thanks.
+Ugh, yep sorry, the ifdef confused me:
 
-https://git.kernel.org/powerpc/c/b3c0a4dab7e35a9b6d69c04156
+  #ifndef CONFIG_PPC_64K_PAGES
+  ...
+  #else /* if CONFIG_PPC_64K_PAGES */
+  ...
+  static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+  {
+  	pte_fragment_fre((unsigned long *)pte, 1);
+  }
+  ...
+  #endif /* CONFIG_PPC_64K_PAGES */
+
+
+Will update before committing.
 
 cheers
