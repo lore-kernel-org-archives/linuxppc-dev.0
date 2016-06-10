@@ -1,31 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <oss@buserror.net>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQkLB2sGCzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 10:57:54 +1000 (AEST)
-Message-ID: <1465520274.26682.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc: spinlock: Fix spin_unlock_wait()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Boqun Feng <boqun.feng@gmail.com>, linuxppc-dev@lists.ozlabs.org, Linux
- Kernel Mailing List <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Paul E.
- McKenney" <paulmck@linux.vnet.ibm.com>, Will Deacon <will.deacon@arm.com>
-Date: Fri, 10 Jun 2016 10:57:54 +1000
-In-Reply-To: <20160609175054.GY30154@twins.programming.kicks-ass.net>
-References: <1465213340.2658.1.camel@ellerman.id.au>
- <20160606115655.GD30909@twins.programming.kicks-ass.net>
- <1465215445.2658.4.camel@ellerman.id.au>
- <20160606144659.GG30909@twins.programming.kicks-ass.net>
- <1465384845.13854.7.camel@ellerman.id.au>
- <20160608123507.GR30154@twins.programming.kicks-ass.net>
- <1465393760.10567.4.camel@ellerman.id.au>
- <20160608135903.GT30154@twins.programming.kicks-ass.net>
- <1465475008.16363.1.camel@ellerman.id.au>
- <20160609175054.GY30154@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQlYz756KzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 11:53:11 +1000 (AEST)
+Message-ID: <1465523584.22191.127.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: aneesh.kumar@linux.vnet.ibm.com
+Date: Thu, 09 Jun 2016 20:53:04 -0500
+In-Reply-To: <1465392071-18715-1-git-send-email-mpe@ellerman.id.au>
+References: <1465392071-18715-1-git-send-email-mpe@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Subject: Re: [PATCH] powerpc/nohash: Fix build break with 4K pages
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,18 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-06-09 at 19:50 +0200, Peter Zijlstra wrote:
-> On Thu, Jun 09, 2016 at 10:23:28PM +1000, Michael Ellerman wrote:
-> > Unfortunately the patch isn't 100%.
+On Wed, 2016-06-08 at 23:21 +1000, Michael Ellerman wrote:
+> Commit 74701d5947a6 "powerpc/mm: Rename function to indicate we are
+> allocating fragments" renamed page_table_free() to pte_fragment_free().
+> One occurrence was mistyped as pte_fragment_fre().
 > 
-> So what I'll do; since my patch is trying to ensure all implementations
-> of spin_unlock_wait() provide ACQUIRE semantics, and this patch does
-> indeed do so, is skip touching PPC entirely and hope this patch lands
-> before 4.8.
+> This only breaks the nohash 4K page build, which is not the default or
+> enabled in any defconfig.
 
-OK.
+s/4K/64K/
 
-I don't see any reason it wouldn't make 4.8, we just need to decide whether we
-use the old "while (lock->slock)" or one of the other options Boqun proposed.
-
-cheers
+-Scott
