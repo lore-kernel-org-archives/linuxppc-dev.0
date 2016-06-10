@@ -1,25 +1,27 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQp6Y4B10zDq5s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 13:48:05 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id i6so794478ith.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2016 20:48:05 -0700 (PDT)
-From: Boqun Feng <boqun.feng@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Alexander Graf <agraf@suse.de>,
- "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH v4] powerpc: spinlock: Fix spin_unlock_wait()
-Date: Fri, 10 Jun 2016 11:51:28 +0800
-Message-Id: <20160610035128.21087-1-boqun.feng@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQplL2r1XzDq5s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 14:16:30 +1000 (AEST)
+Message-ID: <1465532189.26682.9.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Balbir Singh
+ <bsingharora@gmail.com>, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 10 Jun 2016 14:16:29 +1000
+In-Reply-To: <87oa7a8ica.fsf@skywalker.in.ibm.com>
+References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
+ <1461711943.3135.72.camel@kernel.crashing.org> <57200F4A.4070104@gmail.com>
+ <1461721589.3586.0.camel@kernel.crashing.org>
+ <87mvofedtd.fsf@skywalker.in.ibm.com>
+ <1465445571.2948.29.camel@kernel.crashing.org>
+ <87oa7a8ica.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,162 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is an ordering issue with spin_unlock_wait() on powerpc, because
-the spin_lock primitive is an ACQUIRE and an ACQUIRE is only ordering
-the load part of the operation with memory operations following it.
-Therefore the following event sequence can happen:
-
-CPU 1			CPU 2			CPU 3
-
-==================	====================	==============
-						spin_unlock(&lock);
-			spin_lock(&lock):
-			  r1 = *lock; // r1 == 0;
-o = object;		o = READ_ONCE(object); // reordered here
-object = NULL;
-smp_mb();
-spin_unlock_wait(&lock);
-			  *lock = 1;
-smp_mb();
-o->dead = true;         < o = READ_ONCE(object); > // reordered upwards
-			if (o) // true
-				BUG_ON(o->dead); // true!!
-
-To fix this, we add a "nop" ll/sc loop in arch_spin_unlock_wait() on
-ppc, the "nop" ll/sc loop reads the lock
-value and writes it back atomically, in this way it will synchronize the
-view of the lock on CPU1 with that on CPU2. Therefore in the scenario
-above, either CPU2 will fail to get the lock at first or CPU1 will see
-the lock acquired by CPU2, both cases will eliminate this bug. This is a
-similar idea as what Will Deacon did for ARM64 in:
-
-  d86b8da04dfa ("arm64: spinlock: serialise spin_unlock_wait against concurrent lockers")
-
-Furthermore, if the "nop" ll/sc figures out the lock is locked, we
-actually don't need to do the "nop" ll/sc trick again, we can just do a
-normal load+check loop for the lock to be released, because in that
-case, spin_unlock_wait() is called when someone is holding the lock, and
-the store part of the "nop" ll/sc happens before the lock release of the
-current lock holder:
-
-	"nop" ll/sc -> spin_unlock()
-
-and the lock release happens before the next lock acquisition:
-
-	spin_unlock() -> spin_lock() <next holder>
-
-which means the "nop" ll/sc happens before the next lock acquisition:
-
-	"nop" ll/sc -> spin_unlock() -> spin_lock() <next holder>
-
-With a smp_mb() preceding spin_unlock_wait(), the store of object is
-guaranteed to be observed by the next lock holder:
-
-	STORE -> smp_mb() -> "nop" ll/sc
-	-> spin_unlock() -> spin_lock() <next holder>
-
-This patch therefore fixes the issue and also cleans the
-arch_spin_unlock_wait() a little bit by removing superfluous memory
-barriers in loops and consolidating the implementations for PPC32 and
-PPC64 into one.
-
-Suggested-by: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-Reviewed-by: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-[mpe: Inline the "nop" ll/sc loop and set EH=0, munge change log]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
-v4 (boqun):
- - replace !arch_spin_value_unlocked() with lock->slock in the loop condition
-   to avoid a bug caused by compiler optimization.
-
-v3 (mpe):
- - Inline the ll/sc loop.
- - Change the EH on the LWARX to 0
- - Rewrite change log to cope with the fact we removed arch_spin_is_locked_sync()
-
-v1-->v2:
-
- - Improve the commit log, suggested by Peter Zijlstra
- - Keep two smp_mb()s for the safety, which though could be deleted
-   if all the users have been aduited and fixed later.
-
- arch/powerpc/include/asm/spinlock.h | 38 +++++++++++++++++++++++++++++++------
- arch/powerpc/lib/locks.c            | 16 ----------------
- 2 files changed, 32 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 523673d7583c..fa37fe93bc02 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -162,12 +162,38 @@ static inline void arch_spin_unlock(arch_spinlock_t *lock)
- 	lock->slock = 0;
- }
+On Thu, 2016-06-09 at 21:28 +0530, Aneesh Kumar K.V wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> > On Wed, 2016-04-27 at 12:30 +0530, Aneesh Kumar K.V wrote:
+> 
+> So how early can we call jump_label_init() ? What is the reason why we
+> do the existing feature fixups in setup_system and not before that ?.
+> The previous patch series did end up moving jump_label_init() to
+> 
+>  @@ -250,6 +250,8 @@ void __init early_setup(unsigned long dt_ptr)
+>          /* Initialize lockdep early or else spinlocks will blow */
+>          lockdep_init();
+> 
+>  	jump_label_init();
+> 
+>         /* -------- printk is now safe to use ------- */
+> 
+> is that safe to do ?
  
--#ifdef CONFIG_PPC64
--extern void arch_spin_unlock_wait(arch_spinlock_t *lock);
--#else
--#define arch_spin_unlock_wait(lock) \
--	do { while (arch_spin_is_locked(lock)) cpu_relax(); } while (0)
--#endif
-+static inline void arch_spin_unlock_wait(arch_spinlock_t *lock)
-+{
-+	arch_spinlock_t lock_val;
-+
-+	smp_mb();
-+
-+	/*
-+	 * Atomically load and store back the lock value (unchanged). This
-+	 * ensures that our observation of the lock value is ordered with
-+	 * respect to other lock operations.
-+	 */
-+	__asm__ __volatile__(
-+"1:	" PPC_LWARX(%0, 0, %2, 0) "\n"
-+"	stwcx. %0, 0, %2\n"
-+"	bne- 1b\n"
-+	: "=&r" (lock_val), "+m" (*lock)
-+	: "r" (lock)
-+	: "cr0", "xer");
-+
-+	if (arch_spin_value_unlocked(lock_val))
-+		goto out;
-+
-+	while (lock->slock) {
-+		HMT_low();
-+		if (SHARED_PROCESSOR)
-+			__spin_yield(lock);
-+	}
-+	HMT_medium();
-+
-+out:
-+	smp_mb();
-+}
- 
- /*
-  * Read-write spinlocks, allowing multiple readers
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index f7deebdf3365..b7b1237d4aa6 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -68,19 +68,3 @@ void __rw_yield(arch_rwlock_t *rw)
- 		get_hard_smp_processor_id(holder_cpu), yield_count);
- }
- #endif
--
--void arch_spin_unlock_wait(arch_spinlock_t *lock)
--{
--	smp_mb();
--
--	while (lock->slock) {
--		HMT_low();
--		if (SHARED_PROCESSOR)
--			__spin_yield(lock);
--	}
--	HMT_medium();
--
--	smp_mb();
--}
--
--EXPORT_SYMBOL(arch_spin_unlock_wait);
--- 
-2.8.3
+Maybe. Maybe not.
+
+It depends what that function does. It might work now, but it could break later
+when someone changes the jump label code, and it might work on some platforms
+but not others.
+
+That is *really* early. We haven't looked at the device tree yet, we haven't
+even enabled early debug.
+
+So I'd rather we did it later, but that has other issues I guess.
+
+cheers
