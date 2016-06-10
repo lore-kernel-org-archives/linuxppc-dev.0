@@ -1,28 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rQrsG3ydFzDqHm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 15:51:46 +1000 (AEST)
-Message-ID: <1465537595.2948.52.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: Use jump label to speed up radix_enabled check
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 10 Jun 2016 15:46:35 +1000
-In-Reply-To: <1465532189.26682.9.camel@ellerman.id.au>
-References: <1461687855-23017-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1461704701.3135.68.camel@kernel.crashing.org> <571FE8C1.4030903@gmail.com>
- <1461711943.3135.72.camel@kernel.crashing.org> <57200F4A.4070104@gmail.com>
- <1461721589.3586.0.camel@kernel.crashing.org>
- <87mvofedtd.fsf@skywalker.in.ibm.com>
- <1465445571.2948.29.camel@kernel.crashing.org>
- <87oa7a8ica.fsf@skywalker.in.ibm.com>
- <1465532189.26682.9.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rQryG0GKSzDqJV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2016 15:56:06 +1000 (AEST)
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rQryF0x5Bz9sCk
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Jun 2016 15:56:05 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id fg1so4340092pad.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 09 Jun 2016 22:56:05 -0700 (PDT)
+Date: Fri, 10 Jun 2016 15:55:53 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/5] selftests/powerpc: Add test to check TM ucontext
+ creation
+Message-ID: <20160610155553.7240b3b9@camb691>
+In-Reply-To: <87a8ivlzcc.fsf@possimpible.ozlabs.ibm.com>
+References: <20160608040036.13064-1-cyrilbur@gmail.com>
+ <20160608040036.13064-3-cyrilbur@gmail.com>
+ <87a8ivlzcc.fsf@possimpible.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +34,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-06-10 at 14:16 +1000, Michael Ellerman wrote:
-> 
-> It depends what that function does. It might work now, but it could break later
-> when someone changes the jump label code, and it might work on some platforms
-> but not others.
-> 
-> That is *really* early. We haven't looked at the device tree yet, we haven't
-> even enabled early debug.
-> 
-> So I'd rather we did it later, but that has other issues I guess.
+On Thu, 09 Jun 2016 15:12:51 +1000
+Daniel Axtens <dja@axtens.net> wrote:
 
-Yes it's too early. We may still change some of the CPU/MMU feature
-values at that point.
+As stated in the cover-letter, this patch needs the most work and quite a lot
+too.
 
-Cheers,
-Ben.
+Turns out the comment you took is wrong (the code actually does the opposite),
+once again, just sent the series to get eyes on the actual patch.
+
+> I'm trying not to be too nit picky or difficult on tests, so here's a
+> pre-written commit message for you:
+> 
+> "The kernel sets up two sets of ucontexts if the signal was to be
+> delivered while the thread was in a transaction. Expected behaviour is
+> that the currently executing code is in the first and the checkpointed
+> state (the state that will be rolled back to) is in the uc_link
+> ucontext.
+> 
+> The reason for this is that:
+> 
+>  - code which is not TM aware and installs a signal handler will expect
+>    to see/modify its currently running state in the uc.
+> 
+>  - but, that TM-unaware code may have dynamicially linked against code
+>    which is TM aware and is doing HTM under the hood, so the
+>    checkpointed state needs to be made available somewhere
+> 
+> Test if the live and checkpointed state is made stored correctly.
+> Test:
+>  - GPRs
+>  - FP registers
+>  - VMX
+>  - VSX
+> "
+> 
+> > +#define TBEGIN .long 0x7C00051D
+> > +#define TSUSPEND .long 0x7C0005DD
+> > +#define TRESUME .long 0x7C2005DD  
+> You define these 3 opcodes in a number of files. I assume you're going
+> to consolidate them in v2?
+> 
+> > + * The kernel sets up two sets of ucontexts if the signal was to be delivered
+> > + * while the thread was in a transaction. Expected behaviour is that the
+> > + * currently executing code is in the first and the checkpointed state (the
+> > + * state that will be rolled back to) is in the uc_link ucontext.
+> > + *
+> > + * The reason for this is that code which is not TM aware and installs a signal
+> > + * handler will expect to see/modify its currently running state in the uc,
+> > + * this code may have dynamicially linked against code which is TM aware and is
+> > + * doing HTM under the hood.  
+> 
+> I had real trouble parsing this sentence the first few times. I think
+> it's missing a while:
+> 
+> The reason for this is that _while_ code which is not TM aware...
+> 
+> (Although it would be better in several sentences :P)
+> 
+> > +++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
+> > @@ -0,0 +1,96 @@
+> > +/*
+> > + * Copyright 2016, Cyril Bur, IBM Corp.
+> > + * Licensed under GPLv2.  
+> Ironically, it seems this now needs to be GPLv2+, probably with the
+> regular license grant paragraph.
+> 
+> > +	/* Always be 64bit, don't really care about 32bit */  
+> Forgive my ignorance of the test suite: are we guaranteed this by the
+> build system, or should we add a SKIP_IF() for it?
+> > +	for (i = 0; i < NV_GPR_REGS && !fail; i++) {
+> > +		fail = (ucp->uc_mcontext.gp_regs[i + 14] != gps[i]);
+> > +		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != gps[i + NV_GPR_REGS]);
+> > +	}
+> > +	if (fail)
+> > +		printf("Failed on %d GPR %lu or %lu\n", i - 1,
+> > +				ucp->uc_mcontext.gp_regs[i + 13], tm_ucp->uc_mcontext.gp_regs[i + 13]);
+> > +}
+> > +  
+> 
+> Looking good otherwise!
+> 
+> Regards,
+> Daniel
