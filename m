@@ -1,27 +1,28 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0076.outbound.protection.outlook.com [157.56.112.76])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rSDHJ27cfzDqW9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jun 2016 21:30:35 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@nxp.com>
-To: kbuild test robot <lkp@intel.com>
-CC: "kbuild-all@01.org" <kbuild-all@01.org>, "edubezval@gmail.com"
- <edubezval@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "galak@codeaurora.org"
- <galak@codeaurora.org>, Scott Wood <scott.wood@nxp.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH 7/7] thermal: qoriq: Add thermal management support
-Date: Sun, 12 Jun 2016 08:58:42 +0000
-Message-ID: <AM4PR0401MB1843BE91034567CEC96A76FEEB520@AM4PR0401MB1843.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="gb2312"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rSPpT3hrFzDqYn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 04:39:45 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id c74so8960587pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jun 2016 11:39:45 -0700 (PDT)
+Subject: Re: case sensitivity for devicetree node names
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <575B1D84.2010703@gmail.com> <575C68A1.1020701@gmail.com>
+ <1465682743.19533.18.camel@kernel.crashing.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Grant Likely
+ <grant.likely@secretlab.ca>, David Gibson <david@gibson.dropbear.id.au>,
+ "devicetree-spec@vger.kernel.org" <devicetree-spec@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <575DAC69.5010804@gmail.com>
+Date: Sun, 12 Jun 2016 11:39:37 -0700
 MIME-Version: 1.0
+In-Reply-To: <1465682743.19533.18.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgYWxsLA0KDQpJIHJlY2VpdmVkIHRoaXMgYXV0byBidWlsZCBlcnJvciBub3RpY2UuIEkgaGF2
-ZSBzb21ldGhpbmcgdG8gY2xhcmlmeSBhbmQgYXNrOg0KLSBbY2Fubm90IGFwcGx5IHRvIHJvYmgv
-Zm9yLW5leHQgc29jLXRoZXJtYWwvbmV4dF0NCiAgIEl0IGNvdWxkIGFwcGx5IHRvIHJvYmgvZm9y
-LW5leHQuDQogICBJdCBjb3VsZCBub3QgYXBwbHkgdG8gc29jLXRoZXJtYWwvbmV4dCBiZWNhdXNl
-IHRoaXMgYnJhbmNoIGlzIG5vdCB1cGRhdGVkIHRvIHRoZSBsYXRlc3Qga2VybmVsLg0KDQotIFth
-dXRvIGJ1aWxkIHRlc3QgRVJST1Igb24gdjQuNy1yYzFdIFthbHNvIGJ1aWxkIHRlc3QgRVJST1Ig
-b24gbmV4dC0yMDE2MDYwM10NCiAgIEl0IHBhc3NlZCBhbGwgYnVpbGQgdGVzdCB1bmRlciBBUkNI
-PWFybS9wb3dlcnBjL3g4Ni4NCiAgIFRoZSBlcnJvciBsb2cgdW5kZXIgQVJDSD11bSAiaW1wbGlj
-aXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24gJ2lvdW5tYXAnIiBsb29rcyBvZGQgZm9yIG1lIGJl
-Y2F1c2UNCiAgIEkgYmVsaWV2ZSBpdCdzIGluY2x1ZGVkIGluIDxsaW51eC9pby5oPi4gQW55IHN1
-Z2dlc3Rpb25zIGZvciBtZSB0byBmaXggdGhpcyBpc3N1ZT8NCg0KVGhhbmtzLg0KLSBIb25ndGFv
-DQoNCg0KPiAtLS0tLdPKvP7Urbz+LS0tLS0NCj4gt6K8/sjLOiBrYnVpbGQgdGVzdCByb2JvdCBb
-bWFpbHRvOmxrcEBpbnRlbC5jb21dDQo+ILeiy83KsbzkOiBNb25kYXksIEp1bmUgMDYsIDIwMTYg
-MTo1MiBBTQ0KPiDK1bz+yMs6IEhvbmd0YW8gSmlhIDxob25ndGFvLmppYUBueHAuY29tPg0KPiCz
-rcvNOiBrYnVpbGQtYWxsQDAxLm9yZzsgZWR1YmV6dmFsQGdtYWlsLmNvbTsgcnVpLnpoYW5nQGlu
-dGVsLmNvbTsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBnYWxha0Bjb2RlYXVyb3JhLm9yZzsgU2Nv
-dHQgV29vZA0KPiA8c2NvdHQud29vZEBueHAuY29tPjsgc2hhd25ndW9Aa2VybmVsLm9yZzsgbGlu
-dXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGlu
-dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
-b3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IEhvbmd0YW8gSmlhDQo+
-IDxob25ndGFvLmppYUBueHAuY29tPg0KPiDW98ziOiBSZTogW1BBVENIIDcvN10gdGhlcm1hbDog
-cW9yaXE6IEFkZCB0aGVybWFsIG1hbmFnZW1lbnQgc3VwcG9ydA0KPiANCj4gSGksDQo+IA0KPiBb
-YXV0byBidWlsZCB0ZXN0IEVSUk9SIG9uIHY0LjctcmMxXQ0KPiBbYWxzbyBidWlsZCB0ZXN0IEVS
-Uk9SIG9uIG5leHQtMjAxNjA2MDNdDQo+IFtjYW5ub3QgYXBwbHkgdG8gcm9iaC9mb3ItbmV4dCBz
-b2MtdGhlcm1hbC9uZXh0XQ0KPiBbaWYgeW91ciBwYXRjaCBpcyBhcHBsaWVkIHRvIHRoZSB3cm9u
-ZyBnaXQgdHJlZSwgcGxlYXNlIGRyb3AgdXMgYSBub3RlIHRvIGhlbHANCj4gaW1wcm92ZSB0aGUg
-c3lzdGVtXQ0KPiANCj4gdXJsOiAgICBodHRwczovL2dpdGh1Yi5jb20vMGRheS1jaS9saW51eC9j
-b21taXRzL0ppYS1Ib25ndGFvL2R0LWJpbmRpbmdzLQ0KPiBVcGRhdGUtUW9ySVEtVE1VLXRoZXJt
-YWwtYmluZGluZ3MvMjAxNjA2MDMtMTU0NDI4DQo+IGNvbmZpZzogdW0tYWxsbW9kY29uZmlnIChh
-dHRhY2hlZCBhcyAuY29uZmlnKQ0KPiBjb21waWxlcjogZ2NjLTYgKERlYmlhbiA2LjEuMS0xKSA2
-LjEuMSAyMDE2MDQzMA0KPiByZXByb2R1Y2U6DQo+ICAgICAgICAgIyBzYXZlIHRoZSBhdHRhY2hl
-ZCAuY29uZmlnIHRvIGxpbnV4IGJ1aWxkIHRyZWUNCj4gICAgICAgICBtYWtlIEFSQ0g9dW0NCj4g
-DQo+IEFsbCBlcnJvcnMgKG5ldyBvbmVzIHByZWZpeGVkIGJ5ID4+KToNCj4gDQo+ICAgIGRyaXZl
-cnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmM6IEluIGZ1bmN0aW9uICdxb3JpcV90bXVfcHJvYmUn
-Og0KPiA+PiBkcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jOjI1NToyOiBlcnJvcjogaW1w
-bGljaXQgZGVjbGFyYXRpb24gb2YNCj4gZnVuY3Rpb24gJ2lvdW5tYXAnIFstV2Vycm9yPWltcGxp
-Y2l0LWZ1bmN0aW9uLWRlY2xhcmF0aW9uXQ0KPiAgICAgIGlvdW5tYXAoZGF0YS0+cmVncyk7DQo+
-ICAgICAgXn5+fn5+fg0KPiAgICBjYzE6IHNvbWUgd2FybmluZ3MgYmVpbmcgdHJlYXRlZCBhcyBl
-cnJvcnMNCj4gDQo+IHZpbSArL2lvdW5tYXAgKzI1NSBkcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhl
-cm1hbC5jDQo+IA0KPiAgICAyNDkJCXNpdGUgfD0gMHgxIDw8ICgxNSAtIGRhdGEtPnNlbnNvcl9p
-ZCk7DQo+ICAgIDI1MAkJdG11X3dyaXRlKGRhdGEsIHNpdGUgfCBUTVJfTUUgfCBUTVJfQUxQRiwg
-JmRhdGEtPnJlZ3MtDQo+ID50bXIpOw0KPiAgICAyNTENCj4gICAgMjUyCQlyZXR1cm4gMDsNCj4g
-ICAgMjUzDQo+ICAgIDI1NAllcnJfdG11Og0KPiAgPiAyNTUJCWlvdW5tYXAoZGF0YS0+cmVncyk7
-DQo+ICAgIDI1Ng0KPiAgICAyNTcJZXJyX2lvbWFwOg0KPiAgICAyNTgJCXBsYXRmb3JtX3NldF9k
-cnZkYXRhKHBkZXYsIE5VTEwpOw0KPiANCj4gLS0tDQo+IDAtREFZIGtlcm5lbCB0ZXN0IGluZnJh
-c3RydWN0dXJlICAgICAgICAgICAgICAgIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyDQo+
-IGh0dHBzOi8vbGlzdHMuMDEub3JnL3BpcGVybWFpbC9rYnVpbGQtYWxsICAgICAgICAgICAgICAg
-ICAgIEludGVsIENvcnBvcmF0aW9uDQo=
+On 06/11/16 15:05, Benjamin Herrenschmidt wrote:
+> On Sat, 2016-06-11 at 12:38 -0700, Frank Rowand wrote:
+>> I chased through the history and found a 2.6.0-test5 announcement
+>> which noted the patch from you which adds:
+>>
+>>   of_find_node_by_path()
+>>   of_find_node_by_name()
+>>   of_find_node_by_type()
+>>   of_find_compatible_node()
+>>
+>> (And the patch is commit 394edd852a14 in the git recreation
+>> of bitkeeper days, which is found at
+>> git://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git)
+>>
+>> That version of the functions uses a case insensitive compare for
+>> devicetree node names.
+>>
+>> Do you remember why you chose to not use a case sensitive compare?
+> 
+>>From memory, there were inconsistency in case on various earlier
+> machines (notably old macs). I think that's the main reason.
+> 
+> Cheers,
+> Ben.
+
+Is there a kernel config option (or a small set of config options)
+that would identify the affected machines?  It would be ok if
+the option(s) also included some non-affected machines.  That
+way we could use the case insensitive compare for a small
+set of machines.
