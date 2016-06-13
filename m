@@ -1,22 +1,46 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rSsZZ29ylzDqZk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 22:31:02 +1000 (AEST)
-Date: Mon, 13 Jun 2016 20:30:21 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Anton Blanchard <anton@ozlabs.org>
-Cc: pfsmorigo@linux.vnet.ibm.com, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, davem@davemloft.net,
- strosake@austin.ibm.com, linux-crypto@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rStrX612tzDqZq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 23:28:12 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5DDOFFg074387
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 09:28:08 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23getkpqdx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 09:28:08 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Mon, 13 Jun 2016 10:28:06 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 5A26A352007C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 09:27:48 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5DDS3kx65011756
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 10:28:03 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5DDS2k1030491
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 10:28:02 -0300
+Subject: Re: [PATCH] powerpc: convert 'iommu_alloc failed' messages to dynamic
+ debug
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] crypto: vmx: Fix ABI detection
-Message-ID: <20160613123021.GC8583@gondor.apana.org.au>
-References: <1465541223-17537-1-git-send-email-anton@ozlabs.org>
+References: <1465563831-6565-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1465686148.19533.28.camel@kernel.crashing.org>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Mon, 13 Jun 2016 10:27:58 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1465541223-17537-1-git-send-email-anton@ozlabs.org>
+In-Reply-To: <1465686148.19533.28.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <575EB4DE.9080807@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +50,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 10, 2016 at 04:47:02PM +1000, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
-> 
-> When calling ppc-xlate.pl, we pass it either linux-ppc64 or
-> linux-ppc64le. The script however was expecting linux64le, a result
-> of its OpenSSL origins. This means we aren't obeying the ppc64le
-> ABIv2 rules.
-> 
-> Fix this by checking for linux-ppc64le.
-> 
-> Fixes: 5ca55738201c ("crypto: vmx - comply with ABIs that specify vrsave as reserved.")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+Hi Ben,
 
-Both applied.  Thanks.
+On 06/11/2016 08:02 PM, Benjamin Herrenschmidt wrote:
+> I'm not fan of this. This is a very useful message to diagnose why,
+> for example, your network adapter is not working properly.
+>
+> A lot of drivers don't deal well with IOMMU errors.
+>
+> The fact that NVME trigger these is a problem that needs to be solved
+> differently.
+
+Ok, I understand your points.
+
+Thanks for the review -- helps in setting another direction.
+
+Kind regards,
+
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
