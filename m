@@ -19,10 +19,10 @@ CC: <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
  <linux-mmc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <linux-pwm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Andrew F .
  Davis" <afd@ti.com>
-Subject: [PATCH 05/12] macintosh: Only descend into directory when
- CONFIG_MACINTOSH_DRIVERS is set
-Date: Mon, 13 Jun 2016 15:02:04 -0500
-Message-ID: <20160613200211.14790-6-afd@ti.com>
+Subject: [PATCH 10/12] lguest: Only descend into lguest directory when
+ CONFIG_LGUEST is set
+Date: Mon, 13 Jun 2016 15:02:09 -0500
+Message-ID: <20160613200211.14790-11-afd@ti.com>
 In-Reply-To: <20160613200211.14790-1-afd@ti.com>
 References: <20160613200211.14790-1-afd@ti.com>
 MIME-Version: 1.0
@@ -36,10 +36,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_MACINTOSH_DRIVERS is not set make will still descend into the
-macintosh directory but nothing will be built. This produces unneeded
-build artifacts and messages in addition to slowing the build.
-Fix this here.
+When CONFIG_LGUEST is not set make will still descend into the lguest
+directory but nothing will be built. This produces unneeded build
+artifacts and messages in addition to slowing the build. Fix this here.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
@@ -47,17 +46,17 @@ Signed-off-by: Andrew F. Davis <afd@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 4a885d8..5be5619 100644
+index 19305e0..b178e2f 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -73,7 +73,7 @@ obj-$(CONFIG_LIBNVDIMM)		+= nvdimm/
- obj-$(CONFIG_DEV_DAX)		+= dax/
- obj-$(CONFIG_DMA_SHARED_BUFFER) += dma-buf/
- obj-$(CONFIG_NUBUS)		+= nubus/
--obj-y				+= macintosh/
-+obj-$(CONFIG_MACINTOSH_DRIVERS)	+= macintosh/
- obj-$(CONFIG_IDE)		+= ide/
- obj-$(CONFIG_SCSI)		+= scsi/
- obj-y				+= nvme/
+@@ -122,7 +122,7 @@ obj-$(CONFIG_ACCESSIBILITY)	+= accessibility/
+ obj-$(CONFIG_ISDN)		+= isdn/
+ obj-$(CONFIG_EDAC)		+= edac/
+ obj-$(CONFIG_EISA)		+= eisa/
+-obj-y				+= lguest/
++obj-$(CONFIG_LGUEST)		+= lguest/
+ obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
+ obj-y				+= mmc/
 -- 
 2.8.3
