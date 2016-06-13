@@ -1,53 +1,44 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
+ [IPv6:2a00:1450:400c:c09::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rT4WV34JpzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 06:44:06 +1000 (AEST)
-Date: Mon, 13 Jun 2016 14:43:59 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Topi Miettinen <toiwoton@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>, Fenghua
- Yu <fenghua.yu@intel.com>, Alexander Graf <agraf@suse.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Doug Ledford
- <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock
- <hal.rosenstock@gmail.com>, Mike Marciniszyn <mike.marciniszyn@intel.com>,
- Dennis Dalessandro <dennis.dalessandro@intel.com>, Christian Benvenuti
- <benve@cisco.com>, Dave Goodell <dgoodell@cisco.com>, Sudeep Dutt
- <sudeep.dutt@intel.com>, Ashutosh Dixit <ashutosh.dixit@intel.com>, Ingo
- Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Alexei
- Starovoitov <ast@kernel.org>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>, Andrew Morton
- <akpm@linux-foundation.org>, Konstantin Khlebnikov <koct9i@gmail.com>, Jiri
- Slaby <jslaby@suse.cz>, Cyrill Gorcunov <gorcunov@openvz.org>, Thomas
- Gleixner <tglx@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dan Carpenter
- <dan.carpenter@oracle.com>, Nikhil Rao <nikhil.rao@intel.com>, Vlastimil
- Babka <vbabka@suse.cz>, "Kirill A. Shutemov"
- <kirill.shutemov@linux.intel.com>, Michal Hocko <mhocko@suse.com>, Eric B
- Munson <emunson@akamai.com>, Alexey Klimov <klimov.linux@gmail.com>, Andrea
- Arcangeli <aarcange@redhat.com>, Alexander Kuleshov
- <kuleshovmail@gmail.com>, Oleg Nesterov <oleg@redhat.com>, Chen Gang
- <gang.chen.5i5j@gmail.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>,
- David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- linux-ia64@vger.kernel.org (open list:IA64 (Itanium) PLATFORM),
- kvm-ppc@vger.kernel.org (open
- list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC), kvm@vger.kernel.org (open
- list:KERNEL VIRTUAL MACHINE (KVM)), linuxppc-dev@lists.ozlabs.org (open
- list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
- linux-rdma@vger.kernel.org (open list:INFINIBAND SUBSYSTEM),
- netdev@vger.kernel.org (open list:BPF (Safe dynamic programs and tools)),
- linux-mm@kvack.org (open list:MEMORY MANAGEMENT)
-Subject: Re: [RFC 12/18] limits: track RLIMIT_MEMLOCK actual max
-Message-ID: <20160613144359.677edee4@ul30vt.home>
-In-Reply-To: <1465847065-3577-13-git-send-email-toiwoton@gmail.com>
-References: <1465847065-3577-1-git-send-email-toiwoton@gmail.com>
- <1465847065-3577-13-git-send-email-toiwoton@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rT4gX0RlKzDqcl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 06:51:03 +1000 (AEST)
+Received: by mail-wm0-x231.google.com with SMTP id n184so94718627wmn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 13:51:03 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Sender: keescook@google.com
+In-Reply-To: <1465506124-21866-1-git-send-email-keescook@chromium.org>
+References: <1465506124-21866-1-git-send-email-keescook@chromium.org>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 13 Jun 2016 13:50:57 -0700
+Message-ID: <CAGXu5jJsWOdhRBauQ-_S-4ODd4m+xUbdjk1_zPXQqY7Qp-Dgdw@mail.gmail.com>
+Subject: Re: [PATCH 00/14] run seccomp after ptrace
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andy Lutomirski <luto@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Helge Deller <deller@gmx.de>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ James Hogan <james.hogan@imgtec.com>,
+ Jeff Dike <jdike@addtoit.com>, linux-arch <linux-arch@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linux-parisc <linux-parisc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "Maciej W. Rozycki" <macro@imgtec.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Ralf Baechle <ralf@linux-mips.org>, Richard Weinberger <richard@nod.at>,
+ Russell King <linux@armlinux.org.uk>,
+ user-mode-linux-devel@lists.sourceforge.net,
+ Will Deacon <will.deacon@arm.com>, "x86@kernel.org" <x86@kernel.org>,
+ linux-security-module <linux-security-module@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,50 +48,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Jun 2016 22:44:19 +0300
-Topi Miettinen <toiwoton@gmail.com> wrote:
+(Oops, forgot to send this series through the lsm list...)
 
-> Track maximum size of locked memory, presented in /proc/self/limits.
-> 
-> Signed-off-by: Topi Miettinen <toiwoton@gmail.com>
-> ---
->  arch/ia64/kernel/perfmon.c                 |  1 +
->  arch/powerpc/kvm/book3s_64_vio.c           |  1 +
->  arch/powerpc/mm/mmu_context_iommu.c        |  1 +
->  drivers/infiniband/core/umem.c             |  1 +
->  drivers/infiniband/hw/hfi1/user_pages.c    |  1 +
->  drivers/infiniband/hw/qib/qib_user_pages.c |  1 +
->  drivers/infiniband/hw/usnic/usnic_uiom.c   |  2 ++
->  drivers/misc/mic/scif/scif_rma.c           |  1 +
->  drivers/vfio/vfio_iommu_spapr_tce.c        |  2 ++
->  drivers/vfio/vfio_iommu_type1.c            |  2 ++
->  include/linux/sched.h                      | 10 ++++++++--
->  kernel/bpf/syscall.c                       |  6 ++++++
->  kernel/events/core.c                       |  1 +
->  mm/mlock.c                                 |  7 +++++++
->  mm/mmap.c                                  |  3 +++
->  mm/mremap.c                                |  3 +++
->  16 files changed, 41 insertions(+), 2 deletions(-)
-...  
+On Thu, Jun 9, 2016 at 2:01 PM, Kees Cook <keescook@chromium.org> wrote:
+> There has been a long-standing (and documented) issue with seccomp
+> where ptrace can be used to change a syscall out from under seccomp.
+> This is a problem for containers and other wider seccomp filtered
+> environments where ptrace needs to remain available, as it allows
+> for an escape of the seccomp filter.
 >
-> diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
-> index 2ba1942..4c6e7a3 100644
-> --- a/drivers/vfio/vfio_iommu_type1.c
-> +++ b/drivers/vfio/vfio_iommu_type1.c
-> @@ -312,6 +312,8 @@ static long vfio_pin_pages(unsigned long vaddr, long npage,
->  		}
->  	}
->  
-> +	bump_rlimit(RLIMIT_MEMLOCK, (current->mm->locked_vm + i) << PAGE_SHIFT);
-> +
->  	if (!rsvd)
->  		vfio_lock_acct(i);
->  
+> Since the ptrace attack surface is available for any allowed syscall,
+> moving seccomp after ptrace doesn't increase the actually available
+> attack surface. And this actually improves tracing since, for
+> example, tracers will be notified of syscall entry before seccomp
+> sends a SIGSYS, which makes debugging filters much easier.
+>
+> The per-architecture changes do make one (hopefully small)
+> semantic change, which is that since ptrace comes first, it may
+> request a syscall be skipped. Running seccomp after this doesn't
+> make sense, so if ptrace wants to skip a syscall, it will bail
+> out early similarly to how seccomp was. This means that skipped
+> syscalls will not be fed through audit, though that likely means
+> we're actually avoiding noise this way.
+>
+> This series first cleans up seccomp to remove the now unneeded
+> two-phase entry, fixes the SECCOMP_RET_TRACE hole (same as the
+> ptrace hole above), and then reorders seccomp after ptrace on
+> each architecture.
 
+Has anyone else had a chance to review this series? I'd like to get it
+landed in -next as early as possible in case there are unexpected
+problems...
 
-Not all cases passing through here bump rlimit (see: rsvd), there's an
-entire case above the other end of this closing bracket that does bump
-rlimit but returns before here, and I wonder why we wouldn't just do
-this in our vfio_lock_acct() accounting function anyway.  Thanks,
+-Kees
 
-Alex
+-- 
+Kees Cook
+Chrome OS & Brillo Security
