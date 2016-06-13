@@ -1,25 +1,22 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
- [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 3rT4ls53lPzDqZ6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 06:54:48 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-pm@vger.kernel.org
-Subject: Re: [PATCH v6 09/11] cpuidle/powernv: Use CPUIDLE_STATE_MAX instead
- of MAX_POWERNV_IDLE_STATES
-Date: Mon, 13 Jun 2016 22:58:52 +0200
-Message-ID: <1824456.bQhIAi46Pe@vostro.rjw.lan>
-In-Reply-To: <20160613150150.GE10634@linaro.org>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1465404871-5406-10-git-send-email-shreyas@linux.vnet.ibm.com>
- <20160613150150.GE10634@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rT5TK3YmgzDqcg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 07:27:11 +1000 (AEST)
+Message-ID: <1465853216.3022.26.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: convert 'iommu_alloc failed' messages to
+ dynamic debug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 14 Jun 2016 07:26:56 +1000
+In-Reply-To: <575EB4DE.9080807@linux.vnet.ibm.com>
+References: <1465563831-6565-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1465686148.19533.28.camel@kernel.crashing.org>
+ <575EB4DE.9080807@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, June 13, 2016 05:01:50 PM Daniel Lezcano wrote:
-> On Wed, Jun 08, 2016 at 11:54:29AM -0500, Shreyas B. Prabhu wrote:
-> > Use cpuidle's CPUIDLE_STATE_MAX macro instead of powernv specific
-> > MAX_POWERNV_IDLE_STATES.
-> > 
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: linux-pm@vger.kernel.org
-> > Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> > ---
+On Mon, 2016-06-13 at 10:27 -0300, Mauricio Faria de Oliveira wrote:
+> Hi Ben,
 > 
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> On 06/11/2016 08:02 PM, Benjamin Herrenschmidt wrote:
+> > I'm not fan of this. This is a very useful message to diagnose why,
+> > for example, your network adapter is not working properly.
+> > 
+> > A lot of drivers don't deal well with IOMMU errors.
+> > 
+> > The fact that NVME trigger these is a problem that needs to be
+> > solved
+> > differently.
+> 
+> Ok, I understand your points.
+> 
+> Thanks for the review -- helps in setting another direction.
 
-Since this seems to depend on some other patches in the series, I'm expecting
-it to go in along with the patches it depends on.
+I've been thinking about this a bit... it might be worthwhile adding
+a dma_* call to query the approximate size of the IOMMU window, as
+a way for the device to adjust its requirements dynamically.
 
-Thanks,
-Rafael
+Another option would be to use a dma_attr for silencing mapping errors
+which NVME could use provided it does handle them gracefully ...
+
+Cheers,
+Ben.
