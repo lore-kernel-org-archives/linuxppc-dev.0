@@ -19,12 +19,9 @@ CC: <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
  <linux-mmc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <linux-pwm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Andrew F .
  Davis" <afd@ti.com>
-Subject: [PATCH 10/12] lguest: Only descend into lguest directory when
- CONFIG_LGUEST is set
-Date: Mon, 13 Jun 2016 15:02:09 -0500
-Message-ID: <20160613200211.14790-11-afd@ti.com>
-In-Reply-To: <20160613200211.14790-1-afd@ti.com>
-References: <20160613200211.14790-1-afd@ti.com>
+Subject: [PATCH 00/12] Remove unneeded build directory traversals
+Date: Mon, 13 Jun 2016 15:01:59 -0500
+Message-ID: <20160613200211.14790-1-afd@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,27 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_LGUEST is not set make will still descend into the lguest
-directory but nothing will be built. This produces unneeded build
-artifacts and messages in addition to slowing the build. Fix this here.
+Hello all,
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
----
- drivers/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I was building a kernel for x86 and noticed Make still descended into
+directories like drivers/gpu/drm/hisilicon, this seems kind of odd given
+nothing will be built here. It looks to be due to some directories being
+included in obj-y unconditionally instead of only when the relevant
+CONFIG_ is set.
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 19305e0..b178e2f 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -122,7 +122,7 @@ obj-$(CONFIG_ACCESSIBILITY)	+= accessibility/
- obj-$(CONFIG_ISDN)		+= isdn/
- obj-$(CONFIG_EDAC)		+= edac/
- obj-$(CONFIG_EISA)		+= eisa/
--obj-y				+= lguest/
-+obj-$(CONFIG_LGUEST)		+= lguest/
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
- obj-y				+= mmc/
+These patches are split by subsystem in-case, for some reason, a file in
+a directory does need to be built, I believe I have checked for all
+instances of this, but a quick review from some maintainers would be nice.
+
+Thanks,
+Andrew
+
+Andrew F. Davis (12):
+  gpio: Only descend into gpio directory when CONFIG_GPIOLIB is set
+  pwm: Only descend into pwm directory when CONFIG_PWM is set
+  amba: Only descend into amba directory when CONFIG_ARM_AMBA is set
+  NFC: Only descend into nfc directory when CONFIG_NFC is set
+  macintosh: Only descend into directory when CONFIG_MACINTOSH_DRIVERS
+    is set
+  hsi: Only descend into hsi directory when CONFIG_HSI is set
+  auxdisplay: Only descend into directory when CONFIG_AUXDISPLAY is set
+  i2c: Only descend into i2c directory when CONFIG_I2C is set
+  [media] Only descend into directory when CONFIG_MEDIA_SUPPORT is set
+  lguest: Only descend into lguest directory when CONFIG_LGUEST is set
+  mmc: Only descend into mmc directory when CONFIG_MMC is set
+  leds: Only descend into leds directory when CONFIG_NEW_LEDS is set
+
+ drivers/Makefile | 27 ++++++++++++++++-----------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
+
 -- 
 2.8.3
