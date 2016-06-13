@@ -19,10 +19,10 @@ CC: <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
  <linux-mmc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <linux-pwm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Andrew F .
  Davis" <afd@ti.com>
-Subject: [PATCH 04/12] NFC: Only descend into nfc directory when CONFIG_NFC is
+Subject: [PATCH 06/12] hsi: Only descend into hsi directory when CONFIG_HSI is
  set
-Date: Mon, 13 Jun 2016 15:02:03 -0500
-Message-ID: <20160613200211.14790-5-afd@ti.com>
+Date: Mon, 13 Jun 2016 15:02:05 -0500
+Message-ID: <20160613200211.14790-7-afd@ti.com>
 In-Reply-To: <20160613200211.14790-1-afd@ti.com>
 References: <20160613200211.14790-1-afd@ti.com>
 MIME-Version: 1.0
@@ -36,31 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_NFC is not set make will still descend into the nfc
+When CONFIG_HSI is not set make will still descend into the hsi
 directory but nothing will be built. This produces unneeded build
 artifacts and messages in addition to slowing the build. Fix this here.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- drivers/Makefile | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 841c2dc..4a885d8 100644
+index 5be5619..78162ba 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -64,7 +64,11 @@ obj-$(CONFIG_FB_INTEL)          += video/fbdev/intelfb/
- 
- obj-$(CONFIG_PARPORT)		+= parport/
- obj-$(CONFIG_NVM)		+= lightnvm/
--obj-y				+= base/ block/ misc/ mfd/ nfc/
-+obj-y				+= base/
-+obj-y				+= block/
-+obj-y				+= misc/
-+obj-y				+= mfd/
-+obj-$(CONFIG_NFC)		+= nfc/
- obj-$(CONFIG_LIBNVDIMM)		+= nvdimm/
- obj-$(CONFIG_DEV_DAX)		+= dax/
- obj-$(CONFIG_DMA_SHARED_BUFFER) += dma-buf/
+@@ -82,7 +82,7 @@ obj-$(CONFIG_TARGET_CORE)	+= target/
+ obj-$(CONFIG_MTD)		+= mtd/
+ obj-$(CONFIG_SPI)		+= spi/
+ obj-$(CONFIG_SPMI)		+= spmi/
+-obj-y				+= hsi/
++obj-$(CONFIG_HSI)		+= hsi/
+ obj-y				+= net/
+ obj-$(CONFIG_ATM)		+= atm/
+ obj-$(CONFIG_FUSION)		+= message/
 -- 
 2.8.3
