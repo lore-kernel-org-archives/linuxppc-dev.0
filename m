@@ -19,10 +19,10 @@ CC: <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
  <linux-mmc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <linux-pwm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Andrew F .
  Davis" <afd@ti.com>
-Subject: [PATCH 06/12] hsi: Only descend into hsi directory when CONFIG_HSI is
- set
-Date: Mon, 13 Jun 2016 15:02:05 -0500
-Message-ID: <20160613200211.14790-7-afd@ti.com>
+Subject: [PATCH 01/12] gpio: Only descend into gpio directory when
+ CONFIG_GPIOLIB is set
+Date: Mon, 13 Jun 2016 15:02:00 -0500
+Message-ID: <20160613200211.14790-2-afd@ti.com>
 In-Reply-To: <20160613200211.14790-1-afd@ti.com>
 References: <20160613200211.14790-1-afd@ti.com>
 MIME-Version: 1.0
@@ -36,7 +36,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_HSI is not set make will still descend into the hsi
+When CONFIG_GPIOLIB is not set make will still descend into the gpio
 directory but nothing will be built. This produces unneeded build
 artifacts and messages in addition to slowing the build. Fix this here.
 
@@ -46,17 +46,17 @@ Signed-off-by: Andrew F. Davis <afd@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 5be5619..78162ba 100644
+index 0b6f3d6..50f6131 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -82,7 +82,7 @@ obj-$(CONFIG_TARGET_CORE)	+= target/
- obj-$(CONFIG_MTD)		+= mtd/
- obj-$(CONFIG_SPI)		+= spi/
- obj-$(CONFIG_SPMI)		+= spmi/
--obj-y				+= hsi/
-+obj-$(CONFIG_HSI)		+= hsi/
- obj-y				+= net/
- obj-$(CONFIG_ATM)		+= atm/
- obj-$(CONFIG_FUSION)		+= message/
+@@ -12,7 +12,7 @@ obj-$(CONFIG_GENERIC_PHY)	+= phy/
+ 
+ # GPIO must come after pinctrl as gpios may need to mux pins etc
+ obj-$(CONFIG_PINCTRL)		+= pinctrl/
+-obj-y				+= gpio/
++obj-$(CONFIG_GPIOLIB)		+= gpio/
+ obj-y				+= pwm/
+ obj-$(CONFIG_PCI)		+= pci/
+ obj-$(CONFIG_PARISC)		+= parisc/
 -- 
 2.8.3
