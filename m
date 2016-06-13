@@ -19,10 +19,10 @@ CC: <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
  <linux-mmc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <linux-pwm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Andrew F .
  Davis" <afd@ti.com>
-Subject: [PATCH 01/12] gpio: Only descend into gpio directory when
- CONFIG_GPIOLIB is set
-Date: Mon, 13 Jun 2016 15:02:00 -0500
-Message-ID: <20160613200211.14790-2-afd@ti.com>
+Subject: [PATCH 12/12] leds: Only descend into leds directory when
+ CONFIG_NEW_LEDS is set
+Date: Mon, 13 Jun 2016 15:02:11 -0500
+Message-ID: <20160613200211.14790-13-afd@ti.com>
 In-Reply-To: <20160613200211.14790-1-afd@ti.com>
 References: <20160613200211.14790-1-afd@ti.com>
 MIME-Version: 1.0
@@ -36,7 +36,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_GPIOLIB is not set make will still descend into the gpio
+When CONFIG_NEW_LEDS is not set make will still descend into the leds
 directory but nothing will be built. This produces unneeded build
 artifacts and messages in addition to slowing the build. Fix this here.
 
@@ -46,17 +46,17 @@ Signed-off-by: Andrew F. Davis <afd@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index 0b6f3d6..50f6131 100644
+index 567e32c..fa514d5 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -12,7 +12,7 @@ obj-$(CONFIG_GENERIC_PHY)	+= phy/
- 
- # GPIO must come after pinctrl as gpios may need to mux pins etc
- obj-$(CONFIG_PINCTRL)		+= pinctrl/
--obj-y				+= gpio/
-+obj-$(CONFIG_GPIOLIB)		+= gpio/
- obj-y				+= pwm/
- obj-$(CONFIG_PCI)		+= pci/
- obj-$(CONFIG_PARISC)		+= parisc/
+@@ -127,7 +127,7 @@ obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
+ obj-$(CONFIG_MMC)		+= mmc/
+ obj-$(CONFIG_MEMSTICK)		+= memstick/
+-obj-y				+= leds/
++obj-$(CONFIG_NEW_LEDS)		+= leds/
+ obj-$(CONFIG_INFINIBAND)	+= infiniband/
+ obj-$(CONFIG_SGI_SN)		+= sn/
+ obj-y				+= firmware/
 -- 
 2.8.3
