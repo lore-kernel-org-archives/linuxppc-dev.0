@@ -2,15 +2,15 @@ Return-Path: <dyoung@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rSkW05X0XzDqWf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 17:12:28 +1000 (AEST)
-Date: Mon, 13 Jun 2016 15:12:21 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rSktz2GW0zDqZN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 17:29:46 +1000 (AEST)
+Date: Mon, 13 Jun 2016 15:29:39 +0800
 From: Dave Young <dyoung@redhat.com>
 To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
  linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
 Subject: Re: [PATCH 2/8] kexec_file: Generalize kexec_add_buffer.
-Message-ID: <20160613071221.GC4974@dhcp-128-65.nay.redhat.com>
+Message-ID: <20160613072939.GD4974@dhcp-128-65.nay.redhat.com>
 References: <1465701022-11601-1-git-send-email-bauerman@linux.vnet.ibm.com>
  <1465701022-11601-3-git-send-email-bauerman@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -29,13 +29,14 @@ On 06/12/16 at 12:10am, Thiago Jung Bauermann wrote:
 > Allow architectures to specify different memory walking functions for
 > kexec_add_buffer. Intel uses iomem to track reserved memory ranges,
 > but PowerPC uses the memblock subsystem.
+
+Can the crashk_res be inserted to iomem_resource so that only one
+weak function for system ram is needed?
+
 > 
 > Also, factor kexec_locate_mem_hole out of kexec_add_buffer. It will be
 > used by the PowerPC kexec_file_load implementation to find free memory
 > for the purgatory stack.
-
-Split factoring locate hole function to another patch will be clearer.
-
 > 
 > Cc: Eric Biederman <ebiederm@xmission.com>
 > Cc: kexec@lists.infradead.org
