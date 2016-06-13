@@ -19,10 +19,10 @@ CC: <linux-gpio@vger.kernel.org>, <linux-i2c@vger.kernel.org>,
  <linux-mmc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <linux-pwm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Andrew F .
  Davis" <afd@ti.com>
-Subject: [PATCH 11/12] mmc: Only descend into mmc directory when CONFIG_MMC is
- set
-Date: Mon, 13 Jun 2016 15:02:10 -0500
-Message-ID: <20160613200211.14790-12-afd@ti.com>
+Subject: [PATCH 09/12] [media] Only descend into directory when
+ CONFIG_MEDIA_SUPPORT is set
+Date: Mon, 13 Jun 2016 15:02:08 -0500
+Message-ID: <20160613200211.14790-10-afd@ti.com>
 In-Reply-To: <20160613200211.14790-1-afd@ti.com>
 References: <20160613200211.14790-1-afd@ti.com>
 MIME-Version: 1.0
@@ -36,8 +36,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When CONFIG_MMC is not set make will still descend into the mmc
-directory but nothing will be built. This produces unneeded build
+When CONFIG_MEDIA_SUPPORT is not set make will still descend into the
+media directory but nothing will be built. This produces unneeded build
 artifacts and messages in addition to slowing the build. Fix this here.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
@@ -46,17 +46,17 @@ Signed-off-by: Andrew F. Davis <afd@ti.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/Makefile b/drivers/Makefile
-index b178e2f..567e32c 100644
+index 2d99d4e..19305e0 100644
 --- a/drivers/Makefile
 +++ b/drivers/Makefile
-@@ -125,7 +125,7 @@ obj-$(CONFIG_EISA)		+= eisa/
- obj-$(CONFIG_LGUEST)		+= lguest/
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
--obj-y				+= mmc/
-+obj-$(CONFIG_MMC)		+= mmc/
- obj-$(CONFIG_MEMSTICK)		+= memstick/
- obj-y				+= leds/
- obj-$(CONFIG_INFINIBAND)	+= infiniband/
+@@ -108,7 +108,7 @@ obj-$(CONFIG_GAMEPORT)		+= input/gameport/
+ obj-$(CONFIG_INPUT)		+= input/
+ obj-$(CONFIG_RTC_LIB)		+= rtc/
+ obj-$(CONFIG_I2C)		+= i2c/
+-obj-y				+= media/
++obj-$(CONFIG_MEDIA_SUPPORT)	+= media/
+ obj-$(CONFIG_PPS)		+= pps/
+ obj-$(CONFIG_PTP_1588_CLOCK)	+= ptp/
+ obj-$(CONFIG_W1)		+= w1/
 -- 
 2.8.3
