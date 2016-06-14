@@ -1,46 +1,17 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTHDt6N0yzDqgc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 14:47:10 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5E4jLL9116371
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 00:47:08 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23get0r8x0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 00:47:08 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Tue, 14 Jun 2016 14:47:03 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5468F2BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 14:47:00 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5E4l03j11862272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 14:47:00 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5E4kxw2018237
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 14:46:59 +1000
-Date: Tue, 14 Jun 2016 10:16:51 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: david@gibson.dropbear.id.au, nfont@linux.vnet.ibm.com, aik@au1.ibm.com,
- mpe@ellerman.id.au
-Subject: Re: [FIX PATCH v2 0/2] Fix powerpc,numa: Fix memory_hotplug_max()
-Reply-To: bharata@linux.vnet.ibm.com
-References: <1463060055-24158-1-git-send-email-bharata@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1463060055-24158-1-git-send-email-bharata@linux.vnet.ibm.com>
-Message-Id: <20160614044651.GB5916@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTHSj6FtNzDqh5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 14:57:25 +1000 (AEST)
+In-Reply-To: <87y46e995o.fsf@skywalker.in.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [V2, 08/10] powerpc/mm: Clear top 16 bits of va only on older cpus
+Message-Id: <3rTHSj5DMRz9t0G@ozlabs.org>
+Date: Tue, 14 Jun 2016 14:57:25 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,23 +21,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 12, 2016 at 07:04:13PM +0530, Bharata B Rao wrote:
-> This patchset fixes memory_hotplug_max() routine to return correct
-> value of maximum hotpluggable address.
+On Thu, 2016-09-06 at 06:19:15 UTC, "Aneesh Kumar K.V" wrote:
+> Updated patch below. MMU_FTRS_POWER4 is inherited by others, hence don't
+> update that.
 > 
-> In this version, whitespace fixes are separated into a different patch.
+> >From 4ed66fd24dc4f976969cc34aca8df2ddbc69fe61 Mon Sep 17 00:00:00 2001
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> Date: Sat, 4 Jun 2016 19:58:26 +0530
+> Subject: [PATCH] powerpc/mm: Clear top 16 bits of va only on older cpus
 > 
-> v2: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg103342.html
-> 
-> Bharata B Rao (2):
->   powerpc,numa: Fix whitespace in hot_add_drconf_memory_max()
->   powerpc,numa: Fix memory_hotplug_max()
-> 
->  arch/powerpc/mm/numa.c | 36 ++++++++++++++++++++++++++----------
->  1 file changed, 26 insertions(+), 10 deletions(-)
+> As per ISA, we need to do this only for architecture version 2.02 and
+> earlier. This continued to work even for 2.07. But let's not do this for
+> anything after 2.02
 
-Can this fix be considered for inclusion ? Should I be posting this against
-latest git now ?
+What are the practical effects of this?
 
-Regards,
-Bharata.
+> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+> index e53ebebff474..fa314b1d667e 100644
+> --- a/arch/powerpc/include/asm/mmu.h
+> +++ b/arch/powerpc/include/asm/mmu.h
+> @@ -24,6 +24,11 @@
+>  /*
+>   * This is individual features
+>   */
+> +/*
+> + * We need to clear top 16bits of va (from the remaining 64 bits )in
+> + * tlbie* instructions
+> + */
+> +#define MMU_FTR_TLBIE_CROP_VA		ASM_CONST(0x00008000)
+>  
+>  /* Enable use of high BAT registers */
+>  #define MMU_FTR_USE_HIGH_BATS		ASM_CONST(0x00010000)
+> @@ -124,7 +129,7 @@ enum {
+>  		MMU_FTR_USE_TLBRSRV | MMU_FTR_USE_PAIRED_MAS |
+>  		MMU_FTR_NO_SLBIE_B | MMU_FTR_16M_PAGE | MMU_FTR_TLBIEL |
+>  		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
+> -		MMU_FTR_1T_SEGMENT |
+> +		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
+>  #ifdef CONFIG_PPC_RADIX_MMU
+>  		MMU_FTR_RADIX |
+>  #endif
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+> index eeeacf6235a3..d8a0f7ca74e1 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -137,7 +137,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  		.cpu_name		= "POWER4 (gp)",
+>  		.cpu_features		= CPU_FTRS_POWER4,
+>  		.cpu_user_features	= COMMON_USER_POWER4,
+> -		.mmu_features		= MMU_FTRS_POWER4,
+> +		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
+>  		.icache_bsize		= 128,
+>  		.dcache_bsize		= 128,
+>  		.num_pmcs		= 8,
+> @@ -152,7 +152,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  		.cpu_name		= "POWER4+ (gq)",
+>  		.cpu_features		= CPU_FTRS_POWER4,
+>  		.cpu_user_features	= COMMON_USER_POWER4,
+> -		.mmu_features		= MMU_FTRS_POWER4,
+> +		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
+>  		.icache_bsize		= 128,
+>  		.dcache_bsize		= 128,
+>  		.num_pmcs		= 8,
+> @@ -168,7 +168,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+>  		.cpu_features		= CPU_FTRS_PPC970,
+>  		.cpu_user_features	= COMMON_USER_POWER4 |
+>  			PPC_FEATURE_HAS_ALTIVEC_COMP,
+> -		.mmu_features		= MMU_FTRS_PPC970,
+> +		.mmu_features		= MMU_FTRS_PPC970 | MMU_FTR_TLBIE_CROP_VA,
+
+Please add it to MMU_FTRS_PPC970, rather than at every usage.
+
+cheers
