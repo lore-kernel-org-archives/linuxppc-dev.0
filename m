@@ -1,49 +1,27 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTSD426jJzDqZq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 21:32:03 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5EBU3vt015853
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 07:32:02 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23jfmnb9xe-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 07:32:01 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 14 Jun 2016 21:31:59 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9335A3578056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 21:31:57 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5EBVvwD38011036
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 21:31:57 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5EBVuoW017057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 21:31:57 +1000
-Subject: Re: [PATCH v6 10/11] cpuidle/powernv: Add support for POWER ISA v3
- idle states
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, "Rafael J. Wysocki"
- <rafael.j.wysocki@intel.com>,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo
- Pieralisi <Lorenzo.Pieralisi@arm.com>, maddy@linux.vnet.ibm.com
-Date: Tue, 14 Jun 2016 21:31:17 +1000
-In-Reply-To: <575FE64C.9080107@linux.vnet.ibm.com>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Message-Id: <1465903877.30200.9.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTTtF6XVjzDqdh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 22:46:45 +1000 (AEST)
+Date: Tue, 14 Jun 2016 09:46:39 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@ozlabs.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ He Kuang <hekuang@huawei.com>
+Subject: Re: [PATCH 2/2] perf annotate: add powerpc support
+Message-ID: <20160614124639.GB3978@kernel.org>
+References: <6c96da46e8a3b44a3fdb2670897fae7a35c76460.1465563491.git.naveen.n.rao@linux.vnet.ibm.com>
+ <21173b25482dd19f85416f02bc8050324fe5eb76.1465563491.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20160610133644.GB3826@kernel.org>
+ <20160610143822.GT18654@naverao1-tp.localdomain>
+ <1465875647.31436.0.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1465875647.31436.0.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,39 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	
- <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com>
-	
-	
- <1465854492.3022.30.camel@au1.ibm.com>
-	 <575FE64C.9080107@linux.vnet.ibm.com>
-Organization: IBM Australia
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.20.3 (3.20.3-1.fc24) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Em Tue, Jun 14, 2016 at 01:40:47PM +1000, Michael Ellerman escreveu:
+> On Fri, 2016-06-10 at 20:08 +0530, Naveen N. Rao wrote:
+> > On 2016/06/10 10:36AM, Arnaldo Carvalho de Melo wrote:
+> > > Em Fri, Jun 10, 2016 at 06:32:51PM +0530, Naveen N. Rao escreveu:
+> > > > Convert ins__find() to a __weak function for generic functionality,
+> > > > while adding a powerpc-specific variant. We look at the function name
+> > > > for branch instructions and classify the instructions to one among a
+> > > > branch, a function call (branch with LR update) or a function return
+> > > > (branch to LR).
 
-On Tue, 2016-06-14 at 16:41 +0530, Shreyas B Prabhu wrote:
-> >> +            psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
-> >> +                                GFP_KERNEL);
-> >> +            rc = of_property_read_u64_array(power_mgt,
-> >> +                                            "ibm,cpu-idle-state-psscr",
-> >> +                                            psscr_val, dt_idle_states);
-> > 
-> > Here, psscr val is only one u64 ... shouldn't you kmalloc sizeof(..) *
-> > dt_idle_states ?
-> 
-> I'm using kcalloc here since checkpatch script suggested kcalloc over
-> kzalloc for allocating memory for arrays.
-> I'll also include a patch to use kcalloc throughout the file for
-> uniformity in next version. I was originally planning to post that
-> cleanup separately.
+> > > How would this allow one to get a perf.data collected on a powerpc
+> > > system, transfer it to a x86-64 (or aarch64, to mention another
+> > > workstation wannabe chip) system and then try annotating it?
 
-Ah ok, I missed the use of kcalloc (I didn't even know its existence),
-my brain just read kmalloc :-)
+> > > There was a previous discussion about this, and it involved having all
+> > > yout ppc tables available as well as other arches tables, and then
+> > > choosing which one to use based on:
 
-Still, I find it inconsistent that you allocate here while you use the
-stack for the names. Any reason for that ?
+> > > 	normalize_arch(thread->mg->machine->env->arch)
 
-Cheers,
-Ben.
+> > > just like was done for support cross unwinding, see recent patch kit by
+> > > He Kuang, CCed.
+
+> > Nice. This would be good to have. I will look at adding powerpc support 
+> > for cross-architecture unwind.
+
+> > However, for cross-architecture annotation, I think there will be a lot 
+> > more dependencies since perf currently uses objdump to obtain the 
+> > disassembly. In addition, the actual binaries will also be needed.
+ 
+> It's possible to build a multi-arch objdump, I don't know if it's packaged on
+> all distros, or if perf wants to depend on it.
+
+Somebody noticed that we can specify a different objdump binary, from a
+cross toolchain package.
+
+We need to at least check if the objdump being used supports the
+architecture where the perf.data file was generated, refusing to process
+the file for which there is no support, providing a clear message to
+users trying to process such files.
+
+I.e. checking if normalize_arch(thread->mg->machine->env->arch) is one of:
+
+[acme@jouet linux]$ objdump -m 2>&1|grep 'objdump: supported' 
+objdump: supported targets: elf64-x86-64 elf32-i386 elf32-x86-64 a.out-i386-linux pei-i386 pei-x86-64 elf64-l1om elf64-k1om elf64-little elf64-big elf32-little elf32-big plugin srec symbolsrec verilog tekhex binary ihex
+objdump: supported architectures: i386 i386:x86-64 i386:x64-32 i8086 i386:intel i386:x86-64:intel i386:x64-32:intel i386:nacl i386:x86-64:nacl i386:x64-32:nacl l1om l1om:intel k1om k1om:intel plugin
+[acme@jouet linux]$
+
+- Arnaldo
