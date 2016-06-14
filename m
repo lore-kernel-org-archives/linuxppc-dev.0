@@ -1,24 +1,30 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
- [IPv6:2a00:1450:400c:c09::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTK066ddRzDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 16:06:14 +1000 (AEST)
-Received: by mail-wm0-x22d.google.com with SMTP id n184so105582227wmn.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jun 2016 23:06:14 -0700 (PDT)
-MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <1465874771.18900.4.camel@ellerman.id.au>
-References: <CA+7wUsxzwTkWKgRH5yG2rNawcJZYYFLaQP0aun8YUD5eoC1i-g@mail.gmail.com>
- <1465874771.18900.4.camel@ellerman.id.au>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 14 Jun 2016 08:05:52 +0200
-Message-ID: <CA+7wUsyTQCZZJO7jR7Wm-tkHQARGTANkfoqcdDwefG=Vmtr_GA@mail.gmail.com>
-Subject: Re: Rational for having CONFIG_FB_RADEON=m
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTL4P6VXTzDqgd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 16:55:01 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5E6rxPF079059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 02:54:59 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23jch3rufe-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 02:54:59 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 14 Jun 2016 00:54:58 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 01/10] powerpc/mm: Add __cpu/__mmu_has_feature
+Date: Tue, 14 Jun 2016 12:24:39 +0530
+Message-Id: <1465887288-12952-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +34,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+In later patches, we will be switching cpu and mmu feature check to
+use static keys. This would require us to have a variant of feature
+check that can be used in early boot before jump label is initialized.
+This patch adds the same. We also add a variant for radix_enabled()
+check
 
-On Tue, Jun 14, 2016 at 5:26 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Mon, 2016-06-13 at 17:46 +0200, Mathieu Malaterre wrote:
->
->> 2. Try to fix `radeonfb` so that it is able to kick offb out of the
->> way. Eg: https://lists.freedesktop.org/archives/dri-devel/2010-August/002907.html
->>
->> From my understanding it would make sense to go for (2), since it
->> would allow for proper support for CONFIG_FB_RADEON=m on PowerMac. In
->> this case, would such patch be accepted ?
->
-> Sounds like the right fix to me. Ben's patch above was merged, so it's supposed
-> to kick out offb AFAICS, the fact that it can't seems like a bug.
+We also update the return type to bool.
 
-I can do a `modprobe radeon` just fine, thanks to this patch. A
-similar patch needs to be applied for `radeonfb` now. I'll work on it
-ASAP.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/64/mmu.h | 19 +++++++++++++++----
+ arch/powerpc/include/asm/cputable.h      | 15 ++++++++++-----
+ arch/powerpc/include/asm/mmu.h           | 13 +++++++++++--
+ arch/powerpc/xmon/ppc-dis.c              |  1 +
+ 4 files changed, 37 insertions(+), 11 deletions(-)
 
--M
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index b7514f19863f..7c4843e08948 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -24,9 +24,20 @@ struct mmu_psize_def {
+ extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
+ 
+ #ifdef CONFIG_PPC_RADIX_MMU
+-#define radix_enabled() mmu_has_feature(MMU_FTR_TYPE_RADIX)
++static inline bool radix_enabled(void)
++{
++	return mmu_has_feature(MMU_FTR_TYPE_RADIX);
++}
++#define radix_enabled radix_enabled
++
++static inline bool __radix_enabled(void)
++{
++	return __mmu_has_feature(MMU_FTR_TYPE_RADIX);
++}
++#define __radix_enabled __radix_enabled
+ #else
+ #define radix_enabled() (0)
++#define __radix_enabled() (0)
+ #endif
+ 
+ #endif /* __ASSEMBLY__ */
+@@ -115,7 +126,7 @@ extern void hash__early_init_mmu(void);
+ extern void radix__early_init_mmu(void);
+ static inline void early_init_mmu(void)
+ {
+-	if (radix_enabled())
++	if (__radix_enabled())
+ 		return radix__early_init_mmu();
+ 	return hash__early_init_mmu();
+ }
+@@ -123,7 +134,7 @@ extern void hash__early_init_mmu_secondary(void);
+ extern void radix__early_init_mmu_secondary(void);
+ static inline void early_init_mmu_secondary(void)
+ {
+-	if (radix_enabled())
++	if (__radix_enabled())
+ 		return radix__early_init_mmu_secondary();
+ 	return hash__early_init_mmu_secondary();
+ }
+@@ -135,7 +146,7 @@ extern void radix__setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ static inline void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 					      phys_addr_t first_memblock_size)
+ {
+-	if (radix_enabled())
++	if (__radix_enabled())
+ 		return radix__setup_initial_memory_limit(first_memblock_base,
+ 						   first_memblock_size);
+ 	return hash__setup_initial_memory_limit(first_memblock_base,
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index df4fb5faba43..dfdf36bc2664 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -576,12 +576,17 @@ enum {
+ };
+ #endif /* __powerpc64__ */
+ 
+-static inline int cpu_has_feature(unsigned long feature)
++static inline bool __cpu_has_feature(unsigned long feature)
+ {
+-	return (CPU_FTRS_ALWAYS & feature) ||
+-	       (CPU_FTRS_POSSIBLE
+-		& cur_cpu_spec->cpu_features
+-		& feature);
++	if (CPU_FTRS_ALWAYS & feature)
++		return true;
++
++	return !!(CPU_FTRS_POSSIBLE & cur_cpu_spec->cpu_features & feature);
++}
++
++static inline bool cpu_has_feature(unsigned long feature)
++{
++	return __cpu_has_feature(feature);
+ }
+ 
+ #define HBP_NUM 1
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index c740da6990a5..c488db09f7a0 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -138,9 +138,14 @@ enum {
+ 		0,
+ };
+ 
+-static inline int mmu_has_feature(unsigned long feature)
++static inline bool __mmu_has_feature(unsigned long feature)
+ {
+-	return (MMU_FTRS_POSSIBLE & cur_cpu_spec->mmu_features & feature);
++	return !!(MMU_FTRS_POSSIBLE & cur_cpu_spec->mmu_features & feature);
++}
++
++static inline bool mmu_has_feature(unsigned long feature)
++{
++	return __mmu_has_feature(feature);
+ }
+ 
+ static inline void mmu_clear_feature(unsigned long feature)
+@@ -236,5 +241,9 @@ extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ #define radix_enabled() (0)
+ #endif
+ 
++#ifndef __radix_enabled
++#define __radix_enabled() (0)
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_MMU_H_ */
+diff --git a/arch/powerpc/xmon/ppc-dis.c b/arch/powerpc/xmon/ppc-dis.c
+index 89098f320ad5..acad77b4f7b6 100644
+--- a/arch/powerpc/xmon/ppc-dis.c
++++ b/arch/powerpc/xmon/ppc-dis.c
+@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
+ along with this file; see the file COPYING.  If not, write to the Free
+ Software Foundation, 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
+ 
++#include <linux/types.h>
+ #include <asm/cputable.h>
+ #include "nonstdio.h"
+ #include "ansidecl.h"
+-- 
+2.7.4
