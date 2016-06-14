@@ -1,27 +1,41 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTTtF6XVjzDqdh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 22:46:45 +1000 (AEST)
-Date: Tue, 14 Jun 2016 09:46:39 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@ozlabs.org>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- He Kuang <hekuang@huawei.com>
-Subject: Re: [PATCH 2/2] perf annotate: add powerpc support
-Message-ID: <20160614124639.GB3978@kernel.org>
-References: <6c96da46e8a3b44a3fdb2670897fae7a35c76460.1465563491.git.naveen.n.rao@linux.vnet.ibm.com>
- <21173b25482dd19f85416f02bc8050324fe5eb76.1465563491.git.naveen.n.rao@linux.vnet.ibm.com>
- <20160610133644.GB3826@kernel.org>
- <20160610143822.GT18654@naverao1-tp.localdomain>
- <1465875647.31436.0.camel@ellerman.id.au>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTXZB6VLczDqdy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 00:48:02 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5EEhpA6092993
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 10:48:00 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23jch48e6g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 10:48:00 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Tue, 14 Jun 2016 10:47:59 -0400
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1465875647.31436.0.camel@ellerman.id.au>
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [v5,
+ 1/2] cxl: Add mechanism for delivering AFU driver specific events
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <201605250723.u4P7IYhH011389@mx0a-001b2d01.pphosted.com>
+Date: Tue, 14 Jun 2016 09:47:51 -0500
+Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+References: <1464007742-1941-1-git-send-email-felix@linux.vnet.ibm.com>
+ <87mvngx7oq.fsf@vajain21.in.ibm.com>
+ <324850BE-6213-41ED-87B1-33A726D56AD8@linux.vnet.ibm.com>
+ <201605250723.u4P7IYhH011389@mx0a-001b2d01.pphosted.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Message-Id: <3A7B845C-450D-469C-A547-8DB420CE1CCD@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +45,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Tue, Jun 14, 2016 at 01:40:47PM +1000, Michael Ellerman escreveu:
-> On Fri, 2016-06-10 at 20:08 +0530, Naveen N. Rao wrote:
-> > On 2016/06/10 10:36AM, Arnaldo Carvalho de Melo wrote:
-> > > Em Fri, Jun 10, 2016 at 06:32:51PM +0530, Naveen N. Rao escreveu:
-> > > > Convert ins__find() to a __weak function for generic functionality,
-> > > > while adding a powerpc-specific variant. We look at the function name
-> > > > for branch instructions and classify the instructions to one among a
-> > > > branch, a function call (branch with LR update) or a function return
-> > > > (branch to LR).
+Vaibhav/Philippe,
 
-> > > How would this allow one to get a perf.data collected on a powerpc
-> > > system, transfer it to a x86-64 (or aarch64, to mention another
-> > > workstation wannabe chip) system and then try annotating it?
+Finally getting back around to looking at this.
 
-> > > There was a previous discussion about this, and it involved having all
-> > > yout ppc tables available as well as other arches tables, and then
-> > > choosing which one to use based on:
 
-> > > 	normalize_arch(thread->mg->machine->env->arch)
+-matt
 
-> > > just like was done for support cross unwinding, see recent patch kit by
-> > > He Kuang, CCed.
+> On May 25, 2016, at 2:22 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> =
+wrote:
+>=20
+> Hi Matt,
+>=20
+> "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com> writes:
+>> The purpose for the count is so the AFU driver is only called when it
+>> has something to send. Otherwise we don't want to be called.
+>=20
+> Agreed, but this opens up a possible boundary condition where in we =
+have
+> non-zero event count and deliver_event callback returns a NULL/empty
+> struct (This isn't handled correctly at the moment). Imo the condition
+> event-count =3D=3D number-of-calls-to-deliver_events is bit too rigid.
+>=20
+> Instead a more relaxed condition can be =
+number-of-calls-to-deliver_event =3D=3D
+> count-until-deliver_event-returns-NULL. This could be implemented as
+> boolean flag inside the context to indicate that afu-driver has some
+> events queued. This flag can be set when cxl_context_events_pending =
+gets
+> called. The cxl code can simply call deliver_event on each read call
+> until it returns NULL in which case this boolean flag is reset.
 
-> > Nice. This would be good to have. I will look at adding powerpc support 
-> > for cross-architecture unwind.
+We're fine with being called until we return NULL. We just don't want to
+always be called. =3D)
 
-> > However, for cross-architecture annotation, I think there will be a lot 
-> > more dependencies since perf currently uses objdump to obtain the 
-> > disassembly. In addition, the actual binaries will also be needed.
- 
-> It's possible to build a multi-arch objdump, I don't know if it's packaged on
-> all distros, or if perf wants to depend on it.
+I believe the earlier discussions we had with Ian indicated that us =
+returning
+NULL (effectively 'failing') could be problematic for the read handler. =
+Perhaps
+this is no longer the case with the updated patch.
 
-Somebody noticed that we can specify a different objdump binary, from a
-cross toolchain package.
+Regardless of your internal implementation, we would still like for the =
+API
+we call to indicate the number of events we've enqueued and desire to =
+send
+to the user. This will allow for flexibility in the future should your =
+internal
+implementation change.
 
-We need to at least check if the objdump being used supports the
-architecture where the perf.data file was generated, refusing to process
-the file for which there is no support, providing a clear message to
-users trying to process such files.
-
-I.e. checking if normalize_arch(thread->mg->machine->env->arch) is one of:
-
-[acme@jouet linux]$ objdump -m 2>&1|grep 'objdump: supported' 
-objdump: supported targets: elf64-x86-64 elf32-i386 elf32-x86-64 a.out-i386-linux pei-i386 pei-x86-64 elf64-l1om elf64-k1om elf64-little elf64-big elf32-little elf32-big plugin srec symbolsrec verilog tekhex binary ihex
-objdump: supported architectures: i386 i386:x86-64 i386:x64-32 i8086 i386:intel i386:x86-64:intel i386:x64-32:intel i386:nacl i386:x86-64:nacl i386:x64-32:nacl l1om l1om:intel k1om k1om:intel plugin
-[acme@jouet linux]$
-
-- Arnaldo
+>=20
+> This should slightly simplify the code flow at the afu-driver end as
+> enquing to an event need not be paired by a call to
+> cxl_context_events_pending. It can quite possibly enqueue bunch of
+> events and then do a single call to cxl_context_events_pending. In =
+this
+> case the function cxl_context_events_pending essentially works more =
+like
+> a function named as cxl_context_events_flush.
+>=20
+> ~ Vaibhav
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
