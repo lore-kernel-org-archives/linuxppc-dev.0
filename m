@@ -1,34 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTbJp4BnCzDqcp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 02:51:38 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5EGn2C7011496
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 12:51:36 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23jfmnpu30-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 12:51:36 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 14 Jun 2016 10:51:35 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Michael Neuling <mikey@neuling.org>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rTc6n4m0wzDqfD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 03:28:01 +1000 (AEST)
+Date: Wed, 15 Jun 2016 01:32:30 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Subject: Re: [PATCH] New MMU feature for new hpte format in ISA3
-In-Reply-To: <f57f41e9-487d-0d64-0ef3-141a2aabac8f@gmail.com>
-References: <f57f41e9-487d-0d64-0ef3-141a2aabac8f@gmail.com>
-Date: Tue, 14 Jun 2016 22:21:29 +0530
+Message-ID: <201606150125.sOHrjrp4%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87shwfaf3i.fsf@skywalker.in.ibm.com>
+Content-Type: multipart/mixed; boundary="5vNYLRcllDrimb99"
+In-Reply-To: <f57f41e9-487d-0d64-0ef3-141a2aabac8f@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,151 +22,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Balbir Singh <bsingharora@gmail.com> writes:
 
-> This patch has been lightly tested and needs testing
-> on additional platforms and different page sizes, largely
-> due to the mmu_features changes noted below
->
-> Commit 50de596de introduced support for the new PTE
-> format in the functions hpte_encode_r and hpte_encode_avpn.
-> This patch abstracts the change under
-> MMU_FTR_ISA3_HPTE_FORMAT. This bit is provided by the
-> ibm,pa-feature mechanism; hypervisor for guests
-> and via firmware for powernv.
+--5vNYLRcllDrimb99
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
+Hi,
 
-IIUC, ISA 3.0 require new hpte format. So not sure why would need a mmu
-feature bit for it. For a guest running in P8 compat mode, which is
-negotiated via ibm,client-architecture-support , the HCALL interface
-should do the necessary mapping from the HPTE format we use with p8
-kernel to the new ISA 3.0 format.
+[auto build test ERROR on v4.7-rc3]
+[also build test ERROR on next-20160614]
+[cannot apply to powerpc/next]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
->
-> The patch has a larger impact as the new feature bit
-> changes the definition of mmu_features from unsigned int
-> to unsigned long and also changes the print in setup_64.c
-> of the same feature.
->
-> This patch needs complementary changes to the
-> ibm,client-architecture in arch/powerpc/kernel/prom_init.c.
-> This is noted as a TODO
->
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  5 ++---
->  arch/powerpc/include/asm/cputable.h           |  2 +-
->  arch/powerpc/include/asm/mmu.h                | 11 ++++++++++-
->  arch/powerpc/kernel/prom.c                    |  1 +
->  arch/powerpc/kernel/setup_64.c                |  2 +-
->  5 files changed, 15 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> index 290157e..373f765 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> @@ -229,7 +229,7 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
->  	 */
->  	v = (vpn >> (23 - VPN_SHIFT)) & ~(mmu_psize_defs[psize].avpnm);
->  	v <<= HPTE_V_AVPN_SHIFT;
-> -	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +	if (!mmu_has_feature(MMU_FTR_ISA3_HPTE_FORMAT))
->  		v |= ((unsigned long) ssize) << HPTE_V_SSIZE_SHIFT;
->  	return v;
->  }
-> @@ -256,8 +256,7 @@ static inline unsigned long hpte_encode_v(unsigned long vpn, int base_psize,
->  static inline unsigned long hpte_encode_r(unsigned long pa, int base_psize,
->  					  int actual_psize, int ssize)
->  {
-> -
-> -	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +	if (mmu_has_feature(MMU_FTR_ISA3_HPTE_FORMAT))
->  		pa |= ((unsigned long) ssize) << HPTE_R_3_0_SSIZE_SHIFT;
->
->  	/* A 4K page needs no special encoding */
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index df4fb5f..469c9be 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -58,7 +58,7 @@ struct cpu_spec {
->  	unsigned long	cpu_features;		/* Kernel features */
->  	unsigned int	cpu_user_features;	/* Userland features */
->  	unsigned int	cpu_user_features2;	/* Userland features v2 */
-> -	unsigned int	mmu_features;		/* MMU features */
-> +	unsigned long	mmu_features;		/* MMU features */
->
->  	/* cache line sizes */
->  	unsigned int	icache_bsize;
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index e53ebeb..e121db1 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -92,6 +92,12 @@
->   * Radix page table available
->   */
->  #define MMU_FTR_RADIX			ASM_CONST(0x80000000)
-> +/*
-> + * Support of new PTE format as defined in ISA 3.0
-> + */
-> +#ifdef CONFIG_PPC_STD_MMU_64
-> +#define MMU_FTR_ISA3_HPTE_FORMAT	ASM_CONST(0x100000000)
-> +#endif
->
->  /* MMU feature bit sets for various CPUs */
->  #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
-> @@ -128,10 +134,13 @@ enum {
->  #ifdef CONFIG_PPC_RADIX_MMU
->  		MMU_FTR_RADIX |
->  #endif
-> +#ifdef CONFIG_PPC_STD_MMU_64
-> +		MMU_FTR_ISA3_HPTE_FORMAT |
-> +#endif
->  		0,
->  };
->
-> -static inline int mmu_has_feature(unsigned long feature)
-> +static inline unsigned long mmu_has_feature(unsigned long feature)
->  {
->  	return (MMU_FTRS_POSSIBLE & cur_cpu_spec->mmu_features & feature);
->  }
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 946e34f..f9cb4a9 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -169,6 +169,7 @@ static struct ibm_pa_feature {
->  	{CPU_FTR_TM_COMP, 0, 0,
->  	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
->  	{0, MMU_FTR_RADIX, 0, 0,		40, 0, 0},
-> +	{0, MMU_FTR_ISA3_HPTE_FORMAT, 0, 0,	58, 0, 0},
+url:    https://github.com/0day-ci/linux/commits/Balbir-Singh/New-MMU-feature-for-new-hpte-format-in-ISA3/20160615-000245
+config: powerpc-defconfig (attached as .config)
+compiler: powerpc-linux-gnu-gcc (Debian 5.3.1-8) 5.3.1 20160205
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
+All errors (new ones prefixed by >>):
 
-IIUC, that bit indicate the usage of segment table. Not really new HPTE
-format. With ISA 3.0, hash mode always need the new hpte format. Hence it
-is not a something we could disable. ie, if we are on ISA 3.0 and using
-hash mode, hash page table entries should have new format.
+>> arch/powerpc/kernel/prom.c:172:6: error: 'MMU_FTR_ISA3_HPTE_FORMAT' undeclared here (not in a function)
+     {0, MMU_FTR_ISA3_HPTE_FORMAT, 0, 0, 58, 0, 0},
+         ^
 
+vim +/MMU_FTR_ISA3_HPTE_FORMAT +172 arch/powerpc/kernel/prom.c
 
->  };
->
->  static void __init scan_features(unsigned long node, const unsigned char *ftrs,
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index 96d4a2b..2e15490 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -561,7 +561,7 @@ void __init setup_system(void)
->  	pr_info("  always          = 0x%016lx\n", CPU_FTRS_ALWAYS);
->  	pr_info("cpu_user_features = 0x%08x 0x%08x\n", cur_cpu_spec->cpu_user_features,
->  		cur_cpu_spec->cpu_user_features2);
-> -	pr_info("mmu_features      = 0x%08x\n", cur_cpu_spec->mmu_features);
-> +	pr_info("mmu_features      = 0x%016lx\n", cur_cpu_spec->mmu_features);
->  	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
->
->  #ifdef CONFIG_PPC_STD_MMU_64
-> -- 
-> 2.5.5
+   166		 * we don't want to turn on TM here, so we use the *_COMP versions
+   167		 * which are 0 if the kernel doesn't support TM.
+   168		 */
+   169		{CPU_FTR_TM_COMP, 0, 0,
+   170		 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
+   171		{0, MMU_FTR_RADIX, 0, 0,		40, 0, 0},
+ > 172		{0, MMU_FTR_ISA3_HPTE_FORMAT, 0, 0,	58, 0, 0},
+   173	};
+   174	
+   175	static void __init scan_features(unsigned long node, const unsigned char *ftrs,
 
--aneesh
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+--5vNYLRcllDrimb99
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+
+--5vNYLRcllDrimb99--
