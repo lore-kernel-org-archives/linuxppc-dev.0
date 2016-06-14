@@ -1,34 +1,52 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <shreyas@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTLVJ3YBFzDqgP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 17:14:00 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTRDZ1TqhzDqjX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 20:47:24 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5E7Dfkk083510
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 03:13:58 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23gbhfrb3c-1
+ u5EAhmaZ041089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 06:47:21 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23gdxu3ac5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 03:13:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 06:47:21 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 14 Jun 2016 01:13:57 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
- paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [V2, 08/10] powerpc/mm: Clear top 16 bits of va only on older cpus
-In-Reply-To: <3rTHSj5DMRz9t0G@ozlabs.org>
-References: <3rTHSj5DMRz9t0G@ozlabs.org>
-Date: Tue, 14 Jun 2016 12:43:52 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 14 Jun 2016 20:47:19 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 90E512BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 20:47:17 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5EAlHvj3146150
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 20:47:17 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5EAlG2j030841
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 20:47:17 +1000
+Date: Tue, 14 Jun 2016 16:17:12 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <878ty8utsf.fsf@skywalker.in.ibm.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+CC: mpe@ellerman.id.au, benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
+ ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v6 10/11] cpuidle/powernv: Add support for POWER ISA v3
+ idle states
+References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com>
+ <20160613153446.GF10634@linaro.org>
+In-Reply-To: <20160613153446.GF10634@linaro.org>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <575FE0B0.4030309@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,85 +56,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-
-> On Thu, 2016-09-06 at 06:19:15 UTC, "Aneesh Kumar K.V" wrote:
->> Updated patch below. MMU_FTRS_POWER4 is inherited by others, hence don't
->> update that.
->> 
->> >From 4ed66fd24dc4f976969cc34aca8df2ddbc69fe61 Mon Sep 17 00:00:00 2001
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> Date: Sat, 4 Jun 2016 19:58:26 +0530
->> Subject: [PATCH] powerpc/mm: Clear top 16 bits of va only on older cpus
->> 
->> As per ISA, we need to do this only for architecture version 2.02 and
->> earlier. This continued to work even for 2.07. But let's not do this for
->> anything after 2.02
->
-> What are the practical effects of this?
 
 
-For ISA 3.0 we require these top bits to be not cleared. I have updated
-the commit message to reflect that.
+On 06/13/2016 09:04 PM, Daniel Lezcano wrote:
+> On Wed, Jun 08, 2016 at 11:54:30AM -0500, Shreyas B. Prabhu wrote:
+>> POWER ISA v3 defines a new idle processor core mechanism. In summary,
+>>  a) new instruction named stop is added.
+>>  b) new per thread SPR named PSSCR is added which controls the behavior
+>> 	of stop instruction.
+>>
+>> Supported idle states and value to be written to PSSCR register to enter
+>> any idle state is exposed via ibm,cpu-idle-state-names and
+>> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+>> platform provided power_stop() needs to be invoked with the appropriate
+>> PSSCR value.
+>>
+>> This patch adds support for this new mechanism in cpuidle powernv driver.
+>>
+>> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Paul Mackerras <paulus@ozlabs.org>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+> 
+> [ ... ]
+> 
+>> +	rc = of_property_read_string_array(power_mgt,
+>> +					   "ibm,cpu-idle-state-names", names,
+>> +					   dt_idle_states);
+>> +	if (rc < 0) {
+>> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+>> +		goto out_free_latency;
+>> +	}
+>> +
+>> +	/*
+>> +	 * If the idle states use stop instruction, probe for psscr values
+>> +	 * which are necessary to specify required stop level.
+>> +	 */
+>> +	if (flags[0] & (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP)) {
+>> +		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
+>> +				    GFP_KERNEL);
+> 
+> if (!psscr_val) check missing.
 
->
->> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
->> index e53ebebff474..fa314b1d667e 100644
->> --- a/arch/powerpc/include/asm/mmu.h
->> +++ b/arch/powerpc/include/asm/mmu.h
->> @@ -24,6 +24,11 @@
->>  /*
->>   * This is individual features
->>   */
->> +/*
->> + * We need to clear top 16bits of va (from the remaining 64 bits )in
->> + * tlbie* instructions
->> + */
->> +#define MMU_FTR_TLBIE_CROP_VA		ASM_CONST(0x00008000)
->>  
->>  /* Enable use of high BAT registers */
->>  #define MMU_FTR_USE_HIGH_BATS		ASM_CONST(0x00010000)
->> @@ -124,7 +129,7 @@ enum {
->>  		MMU_FTR_USE_TLBRSRV | MMU_FTR_USE_PAIRED_MAS |
->>  		MMU_FTR_NO_SLBIE_B | MMU_FTR_16M_PAGE | MMU_FTR_TLBIEL |
->>  		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
->> -		MMU_FTR_1T_SEGMENT |
->> +		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
->>  #ifdef CONFIG_PPC_RADIX_MMU
->>  		MMU_FTR_RADIX |
->>  #endif
->> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
->> index eeeacf6235a3..d8a0f7ca74e1 100644
->> --- a/arch/powerpc/kernel/cputable.c
->> +++ b/arch/powerpc/kernel/cputable.c
->> @@ -137,7 +137,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->>  		.cpu_name		= "POWER4 (gp)",
->>  		.cpu_features		= CPU_FTRS_POWER4,
->>  		.cpu_user_features	= COMMON_USER_POWER4,
->> -		.mmu_features		= MMU_FTRS_POWER4,
->> +		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
->>  		.icache_bsize		= 128,
->>  		.dcache_bsize		= 128,
->>  		.num_pmcs		= 8,
->> @@ -152,7 +152,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->>  		.cpu_name		= "POWER4+ (gq)",
->>  		.cpu_features		= CPU_FTRS_POWER4,
->>  		.cpu_user_features	= COMMON_USER_POWER4,
->> -		.mmu_features		= MMU_FTRS_POWER4,
->> +		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
->>  		.icache_bsize		= 128,
->>  		.dcache_bsize		= 128,
->>  		.num_pmcs		= 8,
->> @@ -168,7 +168,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->>  		.cpu_features		= CPU_FTRS_PPC970,
->>  		.cpu_user_features	= COMMON_USER_POWER4 |
->>  			PPC_FEATURE_HAS_ALTIVEC_COMP,
->> -		.mmu_features		= MMU_FTRS_PPC970,
->> +		.mmu_features		= MMU_FTRS_PPC970 | MMU_FTR_TLBIE_CROP_VA,
->
-> Please add it to MMU_FTRS_PPC970, rather than at every usage.
->
+I ignored adding this check because this is part of initcall and we are
+unlikely to run out of memory at this state. But I'll add the check in
+next version.
+> 
+>> +		rc = of_property_read_u64_array(power_mgt,
+>> +						"ibm,cpu-idle-state-psscr",
+>> +						psscr_val, dt_idle_states);
+>> +		if (rc) {
+>> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
+>> +			goto out_free_psscr;
+>> +		}
+>> +	}
+>>  	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
+> 
+> if (!residency_ns) check missing.
+> 
+> I suppose the code is relying on 'of_property_read_u32_array' to check it, 
+> right ?
 
-Done
+I'll add the NULL check for existing kzalloc's in the file as well in
+the next version.
 
--aneesh
+Thanks,
+Shreyas
