@@ -1,17 +1,20 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTHSj6FtNzDqh5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 14:57:25 +1000 (AEST)
-In-Reply-To: <87y46e995o.fsf@skywalker.in.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTHy81HdyzDqh8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2016 15:19:28 +1000 (AEST)
+Message-ID: <1465881567.17785.2.camel@ellerman.id.au>
+Subject: Re: [FIX PATCH v2 0/2] Fix powerpc,numa: Fix memory_hotplug_max()
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [V2, 08/10] powerpc/mm: Clear top 16 bits of va only on older cpus
-Message-Id: <3rTHSj5DMRz9t0G@ozlabs.org>
-Date: Tue, 14 Jun 2016 14:57:25 +1000 (AEST)
+To: bharata@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: david@gibson.dropbear.id.au, nfont@linux.vnet.ibm.com, aik@au1.ibm.com
+Date: Tue, 14 Jun 2016 15:19:27 +1000
+In-Reply-To: <20160614044651.GB5916@in.ibm.com>
+References: <1463060055-24158-1-git-send-email-bharata@linux.vnet.ibm.com>
+ <20160614044651.GB5916@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,75 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-09-06 at 06:19:15 UTC, "Aneesh Kumar K.V" wrote:
-> Updated patch below. MMU_FTRS_POWER4 is inherited by others, hence don't
-> update that.
+On Tue, 2016-06-14 at 10:16 +0530, Bharata B Rao wrote:
+> On Thu, May 12, 2016 at 07:04:13PM +0530, Bharata B Rao wrote:
+> > This patchset fixes memory_hotplug_max() routine to return correct
+> > value of maximum hotpluggable address.
+> > 
+> > In this version, whitespace fixes are separated into a different patch.
+> > 
+> > v2: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg103342.html
+> > 
+> > Bharata B Rao (2):
+> >   powerpc,numa: Fix whitespace in hot_add_drconf_memory_max()
+> >   powerpc,numa: Fix memory_hotplug_max()
+> > 
+> >  arch/powerpc/mm/numa.c | 36 ++++++++++++++++++++++++++----------
+> >  1 file changed, 26 insertions(+), 10 deletions(-)
 > 
-> >From 4ed66fd24dc4f976969cc34aca8df2ddbc69fe61 Mon Sep 17 00:00:00 2001
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> Date: Sat, 4 Jun 2016 19:58:26 +0530
-> Subject: [PATCH] powerpc/mm: Clear top 16 bits of va only on older cpus
-> 
-> As per ISA, we need to do this only for architecture version 2.02 and
-> earlier. This continued to work even for 2.07. But let's not do this for
-> anything after 2.02
+> Can this fix be considered for inclusion ? Should I be posting this against
+> latest git now ?
 
-What are the practical effects of this?
+No that's fine, it still applies cleanly.
 
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index e53ebebff474..fa314b1d667e 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -24,6 +24,11 @@
->  /*
->   * This is individual features
->   */
-> +/*
-> + * We need to clear top 16bits of va (from the remaining 64 bits )in
-> + * tlbie* instructions
-> + */
-> +#define MMU_FTR_TLBIE_CROP_VA		ASM_CONST(0x00008000)
->  
->  /* Enable use of high BAT registers */
->  #define MMU_FTR_USE_HIGH_BATS		ASM_CONST(0x00010000)
-> @@ -124,7 +129,7 @@ enum {
->  		MMU_FTR_USE_TLBRSRV | MMU_FTR_USE_PAIRED_MAS |
->  		MMU_FTR_NO_SLBIE_B | MMU_FTR_16M_PAGE | MMU_FTR_TLBIEL |
->  		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
-> -		MMU_FTR_1T_SEGMENT |
-> +		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
->  #ifdef CONFIG_PPC_RADIX_MMU
->  		MMU_FTR_RADIX |
->  #endif
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> index eeeacf6235a3..d8a0f7ca74e1 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -137,7 +137,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  		.cpu_name		= "POWER4 (gp)",
->  		.cpu_features		= CPU_FTRS_POWER4,
->  		.cpu_user_features	= COMMON_USER_POWER4,
-> -		.mmu_features		= MMU_FTRS_POWER4,
-> +		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
->  		.icache_bsize		= 128,
->  		.dcache_bsize		= 128,
->  		.num_pmcs		= 8,
-> @@ -152,7 +152,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  		.cpu_name		= "POWER4+ (gq)",
->  		.cpu_features		= CPU_FTRS_POWER4,
->  		.cpu_user_features	= COMMON_USER_POWER4,
-> -		.mmu_features		= MMU_FTRS_POWER4,
-> +		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
->  		.icache_bsize		= 128,
->  		.dcache_bsize		= 128,
->  		.num_pmcs		= 8,
-> @@ -168,7 +168,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
->  		.cpu_features		= CPU_FTRS_PPC970,
->  		.cpu_user_features	= COMMON_USER_POWER4 |
->  			PPC_FEATURE_HAS_ALTIVEC_COMP,
-> -		.mmu_features		= MMU_FTRS_PPC970,
-> +		.mmu_features		= MMU_FTRS_PPC970 | MMU_FTR_TLBIE_CROP_VA,
+Have you tested this on PowerVM ?
 
-Please add it to MMU_FTRS_PPC970, rather than at every usage.
+Has this always been broken, or did we break it in a particular commit? If the
+latter can you tell me which commit.
+
+Should we be sending this to stable?
 
 cheers
