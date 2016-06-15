@@ -1,27 +1,43 @@
-Return-Path: <Yuri.Norov@caviumnetworks.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0098.outbound.protection.outlook.com [65.55.169.98])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVK1x03kxzDqlJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 07:11:16 +1000 (AEST)
-Date: Thu, 16 Jun 2016 00:11:04 +0300
-From: Yury Norov <ynorov@caviumnetworks.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Arnaldo
- Carvalho de Melo <acme@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
- Borislav Petkov <bp@suse.de>, David Ahern <dsahern@gmail.com>, George Spelvin
- <linux@horizon.com>, Jiri Olsa <jolsa@redhat.com>, Namhyung Kim
- <namhyung@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Wang Nan
- <wangnan0@huawei.com>, Yury Norov <yury.norov@gmail.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: Re: [PATCH] tools/perf: fix the word selected in find_*_bit
-Message-ID: <20160615211104.GA6978@yury-N73SV>
-References: <1465990973-31483-1-git-send-email-maddy@linux.vnet.ibm.com>
- <20160615195127.GA6039@yury-N73SV>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20160615195127.GA6039@yury-N73SV>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVKzB0TpCzDqlR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 07:53:57 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5FLnHEw067087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 17:53:56 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23jgmpdj4h-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 17:53:55 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Thu, 16 Jun 2016 07:53:53 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B469D2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 07:53:50 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5FLro6A14745620
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 07:53:50 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5FLro1v006370
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 07:53:50 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] cxl: Make vPHB device node match adapter's
+In-reply-to: <1466001736-3074-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1466001736-3074-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Date: Thu, 16 Jun 2016 07:53:49 +1000
+Message-Id: <1466027386-sup-9561@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,130 +47,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 15, 2016 at 10:51:27PM +0300, Yury Norov wrote:
-> Hi Madhavan,
-> 
-> On Wed, Jun 15, 2016 at 05:12:53PM +0530, Madhavan Srinivasan wrote:
-> > When decoding the perf_regs mask in regs_dump__printf(),
-> > we loop through the mask using find_first_bit and find_next_bit functions.
-> > And mask is of type "u64". But "u64" is send as a "unsigned long *" to
-> > lib functions along with sizeof().
-> > 
-> > While the exisitng code works fine in most of the case, when using a 32bit perf
-> > on a 64bit kernel (Big Endian), we end reading the wrong word. In find_first_bit(),
-> > one word at a time (based on BITS_PER_LONG) is loaded and
-> > checked for any bit set. In 32bit BE userspace,
-> > BITS_PER_LONG turns out to be 32, and for a mask value of
-> > "0x00000000000000ff", find_first_bit will return 32, instead of 0.
-> > Reason for this is that, value in the word0 is all zeros and value
-> > in word1 is 0xff. Ideally, second word in the mask should be loaded
-> > and searched. Patch swaps the word to look incase of 32bit BE.
-> 
-> I think this is not a problem of find_bit() at all. You have wrong
-> typecast as the source of problem (tools/perf/util/session.c"):
-> 
-> 940 static void regs_dump__printf(u64 mask, u64 *regs)
-> 941 {
-> 942         unsigned rid, i = 0;
-> 943 
-> 944         for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
->                                           ^^^^ Here ^^^^
-> 945                 u64 val = regs[i++];
-> 946 
-> 947                 printf(".... %-5s 0x%" PRIx64 "\n",
-> 948                        perf_reg_name(rid), val);
-> 949         }
-> 950 }
-> 
-> But for some reason you change correct find_bit()...
-> 
-> Though proper fix is like this for me:
-> 
-> static void regs_dump__printf(u64 mask, u64 *regs)
-> {
->         unsigned rid, i = 0;
->         unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
-> 
->         _mask[0] = mask & ULONG_MAX;
->         if (sizeof(mask) > sizeof(unsigned long))
->                 _mask[1] = mask >> BITS_PER_LONG;
-> 
->         for_each_set_bit(rid, _mask, sizeof(mask) * BITS_PER_BYTE) {
->                 u64 val = regs[i++];
-> 
->                 printf(".... %-5s 0x%" PRIx64 "\n",
->                        perf_reg_name(rid), val);
->         }
-> }
-> 
-> Maybe there already is some macro doing the conversion for you...
+This could probably use a description in the commit message, perhaps
+including output showing the before/after difference this makes to
+lsvpd, but otherwise it looks fine to me.
 
-yes it is, cpu_to_le64() is what you want
+@Mikey - this look OK to you?
 
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+
+Excerpts from Frederic Barrat's message of 2016-06-15 16:42:16 +0200:
+> Tested by cxlflash on bare-metal and powerVM.
 > 
-> Yury.
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> ---
+>  drivers/misc/cxl/vphb.c | 21 ++++++++++-----------
+>  1 file changed, 10 insertions(+), 11 deletions(-)
 > 
-> > Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> > Cc: Adrian Hunter <adrian.hunter@intel.com>
-> > Cc: Borislav Petkov <bp@suse.de>
-> > Cc: David Ahern <dsahern@gmail.com>
-> > Cc: George Spelvin <linux@horizon.com>
-> > Cc: Jiri Olsa <jolsa@redhat.com>
-> > Cc: Namhyung Kim <namhyung@kernel.org>
-> > Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> > Cc: Wang Nan <wangnan0@huawei.com>
-> > Cc: Yury Norov <yury.norov@gmail.com>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> > ---
-> >  tools/lib/find_bit.c | 17 +++++++++++++++++
-> >  1 file changed, 17 insertions(+)
-> > 
-> > diff --git a/tools/lib/find_bit.c b/tools/lib/find_bit.c
-> > index 9122a9e80046..996b3e04324f 100644
-> > --- a/tools/lib/find_bit.c
-> > +++ b/tools/lib/find_bit.c
-> > @@ -37,7 +37,12 @@ static unsigned long _find_next_bit(const unsigned long *addr,
-> >  	if (!nbits || start >= nbits)
-> >  		return nbits;
-> > 
-> > +#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
-> > +	tmp = addr[(((nbits - 1)/BITS_PER_LONG) - (start / BITS_PER_LONG))]
-> > +								^ invert;
-> > +#else
-> >  	tmp = addr[start / BITS_PER_LONG] ^ invert;
-> > +#endif
-> > 
-> >  	/* Handle 1st word. */
-> >  	tmp &= BITMAP_FIRST_WORD_MASK(start);
-> > @@ -48,7 +53,12 @@ static unsigned long _find_next_bit(const unsigned long *addr,
-> >  		if (start >= nbits)
-> >  			return nbits;
-> > 
-> > +#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
-> > +		tmp = addr[(((nbits - 1)/BITS_PER_LONG) - (start / BITS_PER_LONG))]
-> > +								^ invert;
-> > +#else
-> >  		tmp = addr[start / BITS_PER_LONG] ^ invert;
-> > +#endif
-> >  	}
-> > 
-> >  	return min(start + __ffs(tmp), nbits);
-> > @@ -75,8 +85,15 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
-> >  	unsigned long idx;
-> > 
-> >  	for (idx = 0; idx * BITS_PER_LONG < size; idx++) {
-> > +#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
-> > +		if (addr[(((size-1)/BITS_PER_LONG) - idx)])
-> > +			return min(idx * BITS_PER_LONG +
-> > +				__ffs(addr[(((size-1)/BITS_PER_LONG) - idx)]),
-> > +									size);
-> > +#else
-> >  		if (addr[idx])
-> >  			return min(idx * BITS_PER_LONG + __ffs(addr[idx]), size);
-> > +#endif
-> >  	}
-> > 
-> >  	return size;
-> > --
-> > 1.9.1
+> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+> index cdc7723..012b6aa 100644
+> --- a/drivers/misc/cxl/vphb.c
+> +++ b/drivers/misc/cxl/vphb.c
+> @@ -208,20 +208,19 @@ static struct pci_controller_ops cxl_pci_controller_ops =
+>  
+>  int cxl_pci_vphb_add(struct cxl_afu *afu)
+>  {
+> -    struct pci_dev *phys_dev;
+> -    struct pci_controller *phb, *phys_phb;
+> +    struct pci_controller *phb;
+>      struct device_node *vphb_dn;
+>      struct device *parent;
+>  
+> -    if (cpu_has_feature(CPU_FTR_HVMODE)) {
+> -        phys_dev = to_pci_dev(afu->adapter->dev.parent);
+> -        phys_phb = pci_bus_to_host(phys_dev->bus);
+> -        vphb_dn = phys_phb->dn;
+> -        parent = &phys_dev->dev;
+> -    } else {
+> -        vphb_dn = afu->adapter->dev.parent->of_node;
+> -        parent = afu->adapter->dev.parent;
+> -    }
+> +    /* The parent device is the adapter. Reuse the device node of
+> +     * the adapter.
+> +     * We don't seem to care what device node is used for the vPHB,
+> +     * but tools such as lsvpd walk up the device parents looking
+> +     * for a valid location code, so we might as well show devices
+> +     * attached to the adapter as being located on that adapter.
+> +     */
+> +    parent = afu->adapter->dev.parent;
+> +    vphb_dn = parent->of_node;
+>  
+>      /* Alloc and setup PHB data structure */
+>      phb = pcibios_alloc_controller(vphb_dn);
