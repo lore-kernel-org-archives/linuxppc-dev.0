@@ -1,28 +1,47 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rV4Bg5y1czDqj7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 21:32:59 +1000 (AEST)
-Date: Wed, 15 Jun 2016 13:32:49 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <htejun@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] workqueue:Fix affinity of an unbound worker of a
- node with 1 online CPU
-Message-ID: <20160615113249.GH30909@twins.programming.kicks-ass.net>
-References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
- <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
- <20160614112234.GF30154@twins.programming.kicks-ass.net>
- <20160615101936.GA31671@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160615101936.GA31671@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rV4Qj17xDzDqj8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 21:43:24 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5FBY4u7084739
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 07:43:22 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23jfuhh43k-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 07:43:22 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 15 Jun 2016 21:43:19 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 632013578058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 21:43:02 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5FBh2rP6685140
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 21:43:02 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5FBh1Oe015289
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 21:43:02 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Adrian Hunter <adrian.hunter@intel.com>, Borislav Petkov <bp@suse.de>,
+ David Ahern <dsahern@gmail.com>, George Spelvin <linux@horizon.com>,
+ Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Wang Nan <wangnan0@huawei.com>, Yury Norov <yury.norov@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] tools/perf: fix the word selected in find_*_bit
+Date: Wed, 15 Jun 2016 17:12:53 +0530
+Message-Id: <1465990973-31483-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,77 +51,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 15, 2016 at 03:49:36PM +0530, Gautham R Shenoy wrote:
+When decoding the perf_regs mask in regs_dump__printf(),
+we loop through the mask using find_first_bit and find_next_bit functions.
+And mask is of type "u64". But "u64" is send as a "unsigned long *" to
+lib functions along with sizeof().
 
-> Also, with the first patch in the series (which ensures that
-> restore_unbound_workers are called *after* the new workers for the
-> newly onlined CPUs are created) and without this one, you can
-> reproduce this WARN_ON on both x86 and PPC by offlining all the CPUs
-> of a node and bringing just one of them online.
+While the exisitng code works fine in most of the case, when using a 32bit perf
+on a 64bit kernel (Big Endian), we end reading the wrong word. In find_first_bit(),
+one word at a time (based on BITS_PER_LONG) is loaded and
+checked for any bit set. In 32bit BE userspace,
+BITS_PER_LONG turns out to be 32, and for a mask value of
+"0x00000000000000ff", find_first_bit will return 32, instead of 0.
+Reason for this is that, value in the word0 is all zeros and value
+in word1 is 0xff. Ideally, second word in the mask should be loaded
+and searched. Patch swaps the word to look incase of 32bit BE.
 
-Ah good.
-
-> I am not sure about that. The workqueue creates unbound workers for a
-> node via wq_update_unbound_numa() whenever the first CPU of every node
-> comes online. So that seems legitimate. It then tries to affine these
-> workers to the cpumask of that node. Again this seems right. As an
-> optimization, it does this only when the first CPU of the node comes
-> online. Since this online CPU is not yet active, and since
-> nr_cpus_allowed > 1, we will hit the WARN_ON().
-
-So I had another look and isn't the below a much simpler solution?
-
-It seems to work on my x86 with:
-
-  for i in /sys/devices/system/cpu/cpu*/online ; do echo 0 > $i ; done
-  for i in /sys/devices/system/cpu/cpu*/online ; do echo 1 > $i ; done
-
-without complaint.
-
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: David Ahern <dsahern@gmail.com>
+Cc: George Spelvin <linux@horizon.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Wang Nan <wangnan0@huawei.com>
+Cc: Yury Norov <yury.norov@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- kernel/workqueue.c | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ tools/lib/find_bit.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index e1c0e99..09c9160 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -4600,15 +4600,11 @@ static void restore_unbound_workers_cpumask(struct worker_pool *pool, int cpu)
- 	if (!cpumask_test_cpu(cpu, pool->attrs->cpumask))
- 		return;
- 
--	/* is @cpu the only online CPU? */
- 	cpumask_and(&cpumask, pool->attrs->cpumask, cpu_online_mask);
--	if (cpumask_weight(&cpumask) != 1)
--		return;
- 
- 	/* as we're called from CPU_ONLINE, the following shouldn't fail */
- 	for_each_pool_worker(worker, pool)
--		WARN_ON_ONCE(set_cpus_allowed_ptr(worker->task,
--						  pool->attrs->cpumask) < 0);
-+		WARN_ON_ONCE(set_cpus_allowed_ptr(worker->task, &cpumask) < 0);
- }
- 
- /*
-@@ -4638,6 +4634,10 @@ static int workqueue_cpu_up_callback(struct notifier_block *nfb,
- 	case CPU_ONLINE:
- 		mutex_lock(&wq_pool_mutex);
- 
-+		/* update NUMA affinity of unbound workqueues */
-+		list_for_each_entry(wq, &workqueues, list)
-+			wq_update_unbound_numa(wq, cpu, true);
-+
- 		for_each_pool(pool, pi) {
- 			mutex_lock(&pool->attach_mutex);
- 
-@@ -4649,10 +4649,6 @@ static int workqueue_cpu_up_callback(struct notifier_block *nfb,
- 			mutex_unlock(&pool->attach_mutex);
- 		}
- 
--		/* update NUMA affinity of unbound workqueues */
--		list_for_each_entry(wq, &workqueues, list)
--			wq_update_unbound_numa(wq, cpu, true);
--
- 		mutex_unlock(&wq_pool_mutex);
- 		break;
+diff --git a/tools/lib/find_bit.c b/tools/lib/find_bit.c
+index 9122a9e80046..996b3e04324f 100644
+--- a/tools/lib/find_bit.c
++++ b/tools/lib/find_bit.c
+@@ -37,7 +37,12 @@ static unsigned long _find_next_bit(const unsigned long *addr,
+ 	if (!nbits || start >= nbits)
+ 		return nbits;
+
++#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
++	tmp = addr[(((nbits - 1)/BITS_PER_LONG) - (start / BITS_PER_LONG))]
++								^ invert;
++#else
+ 	tmp = addr[start / BITS_PER_LONG] ^ invert;
++#endif
+
+ 	/* Handle 1st word. */
+ 	tmp &= BITMAP_FIRST_WORD_MASK(start);
+@@ -48,7 +53,12 @@ static unsigned long _find_next_bit(const unsigned long *addr,
+ 		if (start >= nbits)
+ 			return nbits;
+
++#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
++		tmp = addr[(((nbits - 1)/BITS_PER_LONG) - (start / BITS_PER_LONG))]
++								^ invert;
++#else
+ 		tmp = addr[start / BITS_PER_LONG] ^ invert;
++#endif
  	}
+
+ 	return min(start + __ffs(tmp), nbits);
+@@ -75,8 +85,15 @@ unsigned long find_first_bit(const unsigned long *addr, unsigned long size)
+ 	unsigned long idx;
+
+ 	for (idx = 0; idx * BITS_PER_LONG < size; idx++) {
++#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
++		if (addr[(((size-1)/BITS_PER_LONG) - idx)])
++			return min(idx * BITS_PER_LONG +
++				__ffs(addr[(((size-1)/BITS_PER_LONG) - idx)]),
++									size);
++#else
+ 		if (addr[idx])
+ 			return min(idx * BITS_PER_LONG + __ffs(addr[idx]), size);
++#endif
+ 	}
+
+ 	return size;
+--
+1.9.1
