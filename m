@@ -1,24 +1,42 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rV1HD18gFzDqjK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 19:21:44 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id hf6so1175825pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 02:21:44 -0700 (PDT)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kvm-ppc@vger.kernel.org, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, kvm@vger.kernel.org, pbonzini@redhat.com,
- agraf@suse.com, rkrcmar@redhat.com,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: [PATCH 4/4] powerpc/kvm/stats: Implement existing and add new halt
- polling vcpu stats
-Date: Wed, 15 Jun 2016 19:21:08 +1000
-Message-Id: <1465982468-18833-4-git-send-email-sjitindarsingh@gmail.com>
-In-Reply-To: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
-References: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rV2ZJ4TdzzDqhZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 20:19:51 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5FAEM9f059209
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 06:19:49 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23jggt5rb9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 06:19:49 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 15 Jun 2016 04:19:48 -0600
+Date: Wed, 15 Jun 2016 15:49:36 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <htejun@gmail.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] workqueue:Fix affinity of an unbound worker of a
+ node with 1 online CPU
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
+ <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
+ <20160614112234.GF30154@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160614112234.GF30154@twins.programming.kicks-ass.net>
+Message-Id: <20160615101936.GA31671@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,120 +46,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vcpu stats are used to collect information about a vcpu which can be viewed
-in the debugfs. For example halt_attempted_poll and halt_successful_poll
-are used to keep track of the number of times the vcpu attempts to and
-successfully polls. These stats are currently not used on powerpc.
+Hi Peter,
 
-Implement incrementation of the halt_attempted_poll and
-halt_successful_poll vcpu stats for powerpc. Since these stats are summed
-over all the vcpus for all running guests it doesn't matter which vcpu
-they are attributed to, thus we choose the current runner vcpu of the
-vcore.
+On Tue, Jun 14, 2016 at 01:22:34PM +0200, Peter Zijlstra wrote:
+> On Tue, Jun 07, 2016 at 08:44:03PM +0530, Gautham R. Shenoy wrote:
+> 
+> I'm still puzzled why we don't see this on x86. Afaict there's nothing
+> PPC specific about this.
 
-Also add new vcpu stats: halt_poll_time and halt_wait_time to be used to
-accumulate the total time spend polling and waiting respectively, and
-halt_successful_wait to accumulate the number of times the vcpu waits.
-Given that halt_poll_time and halt_wait_time are expressed in nanoseconds
-it is necessary to represent these as 64-bit quantities, otherwise they
-would overflow after only about 4 seconds.
+You are right. On PPC, at boot time we hit the WARN_ON like once in 5
+times. Using some debug prints, I have verified that these are
+instances when the workqueue subsystem gets initialized before all the
+CPUs come online. On x86, I have never been able to hit this since it
+appears that every time the workqueues get initialized only after all
+the CPUs have come online.
 
-Given that the total time spend either polling or waiting will be known and
-the number of times that each was done, it will be possible to determine
-the average poll and wait times. This will give the ability to tune the kvm
-module parameters based on the calculated average wait and poll times.
+PPC doesn't uses any specific unbound workqueue early in the boot. The
+unbound workqueues causing the WARN_ON() were the
+"events_unbound" workqueue which was created by workqueue_init().
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
----
- arch/powerpc/include/asm/kvm_host.h |  3 +++
- arch/powerpc/kvm/book3s.c           |  3 +++
- arch/powerpc/kvm/book3s_hv.c        | 14 +++++++++++++-
- 3 files changed, 19 insertions(+), 1 deletion(-)
+=================================================================================
+[WQ] Creating Unbound workers for WQ events_unbound,cpumask 0-127.
+     online mask 0
+[WQ] Creating Unbound workers for WQ events_unbound,cpumask 0-31. 
+     online mask 0
+[WQ] Creating Unbound workers for WQ events_unbound,cpumask 32-63.
+      online mask 0
+[WQ] Creating Unbound workers for WQ events_unbound,cpumask 64-95.
+      online mask 0
+[WQ] Creating Unbound workers for WQ events_unbound,cpumask 96-127.
+      online mask 0
+=================================================================================
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index b34efe8..2ece5fc 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -114,8 +114,11 @@ struct kvm_vcpu_stat {
- 	u32 emulated_inst_exits;
- 	u32 dec_exits;
- 	u32 ext_intr_exits;
-+	u64 halt_poll_time;
-+	u64 halt_wait_time;
- 	u32 halt_successful_poll;
- 	u32 halt_attempted_poll;
-+	u32 halt_successful_wait;
- 	u32 halt_poll_invalid;
- 	u32 halt_wakeup;
- 	u32 dbell_exits;
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index ed9132b..6217bea 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -53,8 +53,11 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "dec",         VCPU_STAT(dec_exits) },
- 	{ "ext_intr",    VCPU_STAT(ext_intr_exits) },
- 	{ "queue_intr",  VCPU_STAT(queue_intr) },
-+	{ "halt_poll_time_ns",		VCPU_STAT_U64(halt_poll_time) },
-+	{ "halt_wait_time_ns",		VCPU_STAT_U64(halt_wait_time) },
- 	{ "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
- 	{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
-+	{ "halt_successful_wait",	VCPU_STAT(halt_successful_wait) },
- 	{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
- 	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
- 	{ "pf_storage",  VCPU_STAT(pf_storage) },
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 0d8ce14..a0dae63 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2688,6 +2688,7 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	cur = start = ktime_get();
- 	if (vc->halt_poll_ns) {
- 		ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
-+		++vc->runner->stat.halt_attempted_poll;
- 
- 		vc->vcore_state = VCORE_POLLING;
- 		spin_unlock(&vc->lock);
-@@ -2703,8 +2704,10 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 		spin_lock(&vc->lock);
- 		vc->vcore_state = VCORE_INACTIVE;
- 
--		if (!do_sleep)
-+		if (!do_sleep) {
-+			++vc->runner->stat.halt_successful_poll;
- 			goto out;
-+		}
- 	}
- 
- 	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-@@ -2712,6 +2715,9 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	if (kvmppc_vcore_check_block(vc)) {
- 		finish_swait(&vc->wq, &wait);
- 		do_sleep = 0;
-+		/* If we polled, count this as a successful poll */
-+		if (vc->halt_poll_ns)
-+			++vc->runner->stat.halt_successful_poll;
- 		goto out;
- 	}
- 
-@@ -2723,12 +2729,18 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	spin_lock(&vc->lock);
- 	vc->vcore_state = VCORE_INACTIVE;
- 	trace_kvmppc_vcore_blocked(vc, 1);
-+	++vc->runner->stat.halt_successful_wait;
- 
- 	cur = ktime_get();
- 
- out:
- 	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
- 
-+	if (do_sleep)
-+		vc->runner->stat.halt_wait_time += block_ns;
-+	else if (vc->halt_poll_ns)
-+		vc->runner->stat.halt_poll_time += block_ns;
-+
- 	if (halt_poll_max_ns) {
- 		if (block_ns <= vc->halt_poll_ns)
- 			;
--- 
-2.5.5
+Also, with the first patch in the series (which ensures that
+restore_unbound_workers are called *after* the new workers for the
+newly onlined CPUs are created) and without this one, you can
+reproduce this WARN_ON on both x86 and PPC by offlining all the CPUs
+of a node and bringing just one of them online. So essentially the BUG
+fixed by the previous patch is currently hiding this BUG which is why
+we are not able to reproduce this WARN_ON() with CPU-hotplug once the
+system has booted.
+
+> 
+> > This patch sets the affinity of the worker to
+> > a) the only online CPU in the cpumask of the worker pool when it comes
+> >    online.
+> > b) the cpumask of the worker pool when the second CPU in the pool's
+> >    cpumask comes online.
+> 
+> This basically works around the WARN conditions, which I suppose is fair
+> enough, but I would like a note here to revisit this once the whole cpu
+> hotplug rework has settled.
+> 
+
+Sure.
+
+> The real problem is that workqueues seem to want to create worker
+> threads before there's anybody who would use them or something like
+> that.
+
+I am not sure about that. The workqueue creates unbound workers for a
+node via wq_update_unbound_numa() whenever the first CPU of every node
+comes online. So that seems legitimate. It then tries to affine these
+workers to the cpumask of that node. Again this seems right. As an
+optimization, it does this only when the first CPU of the node comes
+online. Since this online CPU is not yet active, and since
+nr_cpus_allowed > 1, we will hit the WARN_ON().
+
+However, I agree with you that during boot-up, the workqueue subsystem
+needs to create unbound worker threads for only the online CPUs
+(instead of all possible CPUs as it currently does!) and let the
+CPU_ONLINE notification take care of creating the remaining workers
+when they are really required.
+
+> 
+> Or is that what PPC does funny? Use an unbound workqueue this early in
+> cpu bringup?
+
+Like I pointed out above, PPC doesn't use an unbound workqueue early
+in the CPU bring up.
+
+--
+Thanks and Regards
+gautham.
