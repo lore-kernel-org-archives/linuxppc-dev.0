@@ -1,30 +1,34 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rV6Rg4wspzDqcl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 23:14:23 +1000 (AEST)
-Date: Wed, 15 Jun 2016 15:14:15 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <htejun@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] workqueue:Fix affinity of an unbound worker of a
- node with 1 online CPU
-Message-ID: <20160615131415.GI30909@twins.programming.kicks-ass.net>
-References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
- <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
- <20160614112234.GF30154@twins.programming.kicks-ass.net>
- <20160615101936.GA31671@in.ibm.com>
- <20160615113249.GH30909@twins.programming.kicks-ass.net>
- <20160615125033.GB31671@in.ibm.com>
+Return-Path: <sre@kernel.org>
+Date: Wed, 15 Jun 2016 14:48:42 +0200
+From: Sebastian Reichel <sre@kernel.org>
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
+ Russell King <linux@armlinux.org.uk>,
+ Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>,
+ Richard Purdie <rpurdie@rpsys.net>,
+ Jacek Anaszewski <j.anaszewski@samsung.com>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>,
+ Lauro Ramos Venancio <lauro.venancio@openbossa.org>,
+ Aloisio Almeida Jr <aloisio.almeida@openbossa.org>,
+ Samuel Ortiz <sameo@linux.intel.com>,
+ Ingo Molnar <mingo@kernel.org>, linux-pwm@vger.kernel.org,
+ lguest@lists.ozlabs.org, linux-wireless@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ linux-media@vger.kernel.org
+Subject: Re: [PATCH] hsi: Build hsi_boardinfo.c into hsi core if enabled
+Message-ID: <20160615124842.GA6702@earth>
+References: <201606140808.bRJtAy1i%fengguang.wu@intel.com>
+ <57602D10.4080708@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160615125033.GB31671@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
+In-Reply-To: <57602D10.4080708@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,13 +38,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 15, 2016 at 06:20:33PM +0530, Gautham R Shenoy wrote:
-> We will no longer have the optimization in
-> restore_unbound_workers_cpumask() but I suppose we don't lose much by
-> resetting the affinity every time a CPU in the pool->attr->cpumask
-> comes online.
 
-Right; optimizing hotplug really isn't worth it. The code needs to be
-simple and robust (ha! funny).
+--h31gzZEtNLTqOjlF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In any case, Tejun, does this work for you?
+Hi Andrew,
+
+On Tue, Jun 14, 2016 at 11:13:04AM -0500, Andrew F. Davis wrote:
+> If the HSI core is built as a module hsi_boardinfo may still
+> be built-in as its Kconfig type is bool, which can cause build
+> issues. Fix this by building this code into the HSI core when
+> enabled.
+>=20
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> ---
+> This build error seems to be due to Kconfig symbol CONFIG_HSI_BOARDINFO
+> being a bool but depending on a tristate (CONFIG_HSI). This is normally
+> okay when it is just a flag to enable a feature in source, but the
+> helper code file hsi_boardinfo.c is built as a separate entity when
+> enabled. This patch is probably how it was intended, and is more like
+> how others do this kind of thing.
+>=20
+> This patch should be applied before the parent patch:
+
+Thanks, I applied both patches.
+
+-- Sebastian
+
+--h31gzZEtNLTqOjlF
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXYU6oAAoJENju1/PIO/qae6QP/35LQ3B8vO2lZZLD3fJoRLEz
+yJp80KFgWVGLlJIxoywl6Lm8tK1b48miCd73ee7Euagta3zJqZMutPO3lCiaExQh
+QXIykcVyzZXxa6AELhlPXbJlffoetyTvq7n831+Hk1IqhwOgCpm8jSVszgw11fyH
+FIDtsW7QpUnhq/lBIl+6yc8OYszH3N69Cv0sS3J5neDT2W9dochTcv01JEMAmFIL
+8TWT+5hZ/7WvvXt2tDJ03uP7aNbpDOAhutNaAjsYZEA9pX+SVa17O9eQGT5tAT5a
+0pWIFazcVt06+phTF28XlkPqVhSA0wtXeRoyLuz+UHFjGWJiwmbKTJ6QipFclEL7
+yXNE8V+g2FRiH4ZqBQ3EQtzusatln5CixirVF1wtPXp75mpZ9XHynDS2tvI6GmO+
+7jPGFRtp8QueA6LzlQN6AskCEm7BpVX2CbwTc4k3W5BDn3kmeVKdcd7a5fVLfN7Z
+y6e3kkYa8MSNfu/GFEXzeYfraIrtjwE2JfcqjDp8SgOcEaxI46n5fXNhqs4Mq/Kd
+FXUswYrJPl+hbCAklxt0YouQP55fzhBBc6FZIf3sCg/Tw1RhUs7ka0X0yKwGBp1r
+K8rHk8x9QA7ypJ66vOr4bYmqvXn5SzBb6pF4HkKLFDIrWYTrym/z2uD+H4wFq6ZN
+3viKiXS2qFAhhSbKm82E
+=h2dd
+-----END PGP SIGNATURE-----
+
+--h31gzZEtNLTqOjlF--
