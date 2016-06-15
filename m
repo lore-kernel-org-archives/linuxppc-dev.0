@@ -1,27 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rTyYk63vxzDqhN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 17:19:06 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id 62so1147491pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 00:19:06 -0700 (PDT)
-Subject: Re: [V2][PATCH] New MMU feature for new hpte format in ISA3
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <f57f41e9-487d-0d64-0ef3-141a2aabac8f@gmail.com>
- <87shwfaf3i.fsf@skywalker.in.ibm.com>
- <CAKTCnz=q5ubKytJ=_hObzQ58taVdCCKYSp6mFU7mcB4Ty-ttJg@mail.gmail.com>
- <20a3b6f5-ba76-81e0-ef94-e6d10798679b@gmail.com>
- <87porj9fez.fsf@skywalker.in.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, Michael Neuling <mikey@neuling.org>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <8938f698-7311-9e04-acd8-a8d6a54461c6@gmail.com>
-Date: Wed, 15 Jun 2016 17:19:00 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rTyt10PDJzDqhN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 17:33:10 +1000 (AEST)
+Date: Wed, 15 Jun 2016 15:33:02 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH v2 2/9] kexec_file: Generalize kexec_add_buffer.
+Message-ID: <20160615073302.GA5684@dhcp-128-65.nay.redhat.com>
+References: <1465916349-3398-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1465916349-3398-3-git-send-email-bauerman@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87porj9fez.fsf@skywalker.in.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1465916349-3398-3-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +25,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi, Thiago
 
-
-On 15/06/16 15:42, Aneesh Kumar K.V wrote:
-> Balbir Singh <bsingharora@gmail.com> writes:
+On 06/14/16 at 11:59am, Thiago Jung Bauermann wrote:
+> Allow architectures to specify different memory walking functions for
+> kexec_add_buffer. Intel uses iomem to track reserved memory ranges,
+> but PowerPC uses the memblock subsystem.
 > 
->> On 15/06/16 10:38, Balbir Singh wrote:
->>>
->>> Thanks for a review, I'll do a V2 with some changes
->>>
->>> Balbir
->>>
->>
->> Michael, please review and check if you like the #ifdef,
->> since we are crossing the 32 bit boundary, I've used a
->> conditional define to select the feature.
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Cc: Eric Biederman <ebiederm@xmission.com>
+> Cc: Dave Young <dyoung@redhat.com>
+> Cc: kexec@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  include/linux/kexec.h |  3 +++
+>  kernel/kexec_file.c   | 44 ++++++++++++++++++++++++++++++++++++--------
+>  2 files changed, 39 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+> index e8acb2b43dd9..7321043aa65a 100644
+> --- a/include/linux/kexec.h
+> +++ b/include/linux/kexec.h
+> @@ -315,6 +315,9 @@ int __weak arch_kexec_apply_relocations_add(const Elf_Ehdr *ehdr,
+>  					Elf_Shdr *sechdrs, unsigned int relsec);
+>  int __weak arch_kexec_apply_relocations(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
+>  					unsigned int relsec);
+> +int __weak arch_kexec_walk_mem(unsigned int image_type, unsigned long start,
+> +			       unsigned long end, bool top_down, void *data,
+> +			       int (*func)(u64, u64, void *));
+>  void arch_kexec_protect_crashkres(void);
+>  void arch_kexec_unprotect_crashkres(void);
+>  
+> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+> index b6eec7527e9f..a3ca7cfe070e 100644
+> --- a/kernel/kexec_file.c
+> +++ b/kernel/kexec_file.c
+> @@ -428,6 +428,31 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
+>  	return locate_mem_hole_bottom_up(start, end, kbuf);
+>  }
+>  
+> +/**
+> + * arch_kexec_walk_mem - call func(data) on free memory regions
+> + * @image_type:	kimage.type
+> + * @start:	Don't visit memory regions below this address.
+> + * @end:	Don't visit memory regions above this address.
+> + * @top_down:	Start from the highest address?
+> + * @data:	Argument to pass to @func.
+> + * @func:	Function to call for each memory region.
+> + *
+> + * Return: The memory walk will stop when func returns a non-zero value
+> + * and that value will be returned. If all free regions are visited without
+> + * func returning non-zero, then zero will be returned.
+> + */
+> +int __weak arch_kexec_walk_mem(unsigned int image_type, unsigned long start,
+> +			       unsigned long end, bool top_down, void *data,
+> +			       int (*func)(u64, u64, void *))
+> +{
+> +	if (image_type == KEXEC_TYPE_CRASH)
+> +		return walk_iomem_res_desc(crashk_res.desc,
+> +					   IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+> +					   start, end, data, func);
+> +	else
+> +		return walk_system_ram_res(start, end, data, func);
+> +}
+> +
+>  /*
+>   * Helper function for placing a buffer in a kexec segment. This assumes
+>   * that kexec_mutex is held.
+> @@ -441,6 +466,7 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
+>  	struct kexec_segment *ksegment;
+>  	struct kexec_buf buf, *kbuf;
+>  	int ret;
+> +	unsigned long start, end;
+>  
+>  	/* Currently adding segment this way is allowed only in file mode */
+>  	if (!image->file_mode)
+> @@ -472,14 +498,16 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
+>  	kbuf->top_down = top_down;
+>  
+>  	/* Walk the RAM ranges and allocate a suitable range for the buffer */
+> -	if (image->type == KEXEC_TYPE_CRASH)
+> -		ret = walk_iomem_res_desc(crashk_res.desc,
+> -				IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+> -				crashk_res.start, crashk_res.end, kbuf,
+> -				locate_mem_hole_callback);
+> -	else
+> -		ret = walk_system_ram_res(0, -1, kbuf,
+> -					  locate_mem_hole_callback);
+> +	if (image->type == KEXEC_TYPE_CRASH) {
+> +		start = crashk_res.start;
+> +		end = crashk_res.end;
+> +	} else {
+> +		start = 0;
+> +		end = ULONG_MAX;
+> +	}
+
+For crashk_res, start and end is global, the non-crash values are
+hard coded, thus it is not necessary to pass these two in arguments.
+
+Moving above to arch_kexec_walk_mem will make it cleaner.
+
+> +
+> +	ret = arch_kexec_walk_mem(image->type, start, end, top_down, kbuf,
+> +				   locate_mem_hole_callback);
+>  	if (ret != 1) {
+>  		/* A suitable memory range could not be found for buffer */
+>  		return -EADDRNOTAVAIL;
+> -- 
+> 1.9.1
 > 
 > 
-> We really don't need to make it unsigned long. Take a look at
-> 
-> http://mid.gmane.org/1465395958-21349-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
-
-The comment in the file states that
-
-
-/*
- * First half is MMU families
- */
-
-So effectively the first 16 bits are for families. Unless we decide to override
-that decision. One can also debate the description of what a MMU family is :)
-
-
-> 
-> But I still am not sure why we need an mmu feature for selecting new hpte
-> format. Why would the exiting ISA 3.0 check won't work?
-> 
-
-I thought I answered it in my previous email. The check for CPU_FTR_ARCH_300 is
-too large and we don't want to use it unless advertised via ibm,pa-features.
-
-> 
-> For the pa-feature 58 byte look at
-> http://mid.gmane.org/1465397003-26812-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+Thanks
+Dave
