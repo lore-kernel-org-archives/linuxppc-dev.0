@@ -1,30 +1,47 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <bauerman@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVBCs2Yv1zDqhZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 02:04:25 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVBbY1c5yzDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 02:21:29 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5FG3oTX145547
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 12:04:23 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23jgmp2mnd-1
+ u5FGJkQ2027787
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 12:21:27 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23jj0f0382-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 12:04:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 12:21:27 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 15 Jun 2016 10:04:21 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V3] powerpc/mm: Clear top 16 bits of va only on older cpus
-Date: Wed, 15 Jun 2016 21:34:12 +0530
-Message-Id: <1466006652-14199-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Wed, 15 Jun 2016 13:21:24 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 4D2C61DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 12:21:14 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5FGLLbP4571370
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 13:21:21 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5FGLLHw012658
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 13:21:21 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Dave Young <dyoung@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH v2 2/9] kexec_file: Generalize kexec_add_buffer.
+Date: Wed, 15 Jun 2016 13:21:16 -0300
+In-Reply-To: <20160615073302.GA5684@dhcp-128-65.nay.redhat.com>
+References: <1465916349-3398-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1465916349-3398-3-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20160615073302.GA5684@dhcp-128-65.nay.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <3237367.XLxdnj8q4x@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,101 +51,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As per ISA, we need to do this only for architecture version 2.02 and
-earlier. This continued to work even for 2.07. But let's not do this for
-anything after 2.02. ISA 3.0 requires these top bits to be not cleared.
+Hello Dave,
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-Changes from v2:
-* Update commit message
-* Add the mmu feature flag to 970 feature, because it applies to
-  all 970 variant.
+Am Mittwoch, 15 Juni 2016, 15:33:02 schrieb Dave Young:
+> > @@ -472,14 +498,16 @@ int kexec_add_buffer(struct kimage *image, char
+> > *buffer, unsigned long bufsz,> 
+> >  	kbuf->top_down = top_down;
+> >  	
+> >  	/* Walk the RAM ranges and allocate a suitable range for the buffer */
+> > 
+> > -	if (image->type == KEXEC_TYPE_CRASH)
+> > -		ret = walk_iomem_res_desc(crashk_res.desc,
+> > -				IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+> > -				crashk_res.start, crashk_res.end, kbuf,
+> > -				locate_mem_hole_callback);
+> > -	else
+> > -		ret = walk_system_ram_res(0, -1, kbuf,
+> > -					  locate_mem_hole_callback);
+> > +	if (image->type == KEXEC_TYPE_CRASH) {
+> > +		start = crashk_res.start;
+> > +		end = crashk_res.end;
+> > +	} else {
+> > +		start = 0;
+> > +		end = ULONG_MAX;
+> > +	}
+> 
+> For crashk_res, start and end is global, the non-crash values are
+> hard coded, thus it is not necessary to pass these two in arguments.
+> 
+> Moving above to arch_kexec_walk_mem will make it cleaner.
 
- arch/powerpc/include/asm/mmu.h   | 9 +++++++--
- arch/powerpc/kernel/cputable.c   | 4 ++--
- arch/powerpc/mm/hash_native_64.c | 6 ++++--
- 3 files changed, 13 insertions(+), 6 deletions(-)
+That's true. What about this version?
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index e53ebebff474..54471228f7b8 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -24,6 +24,11 @@
- /*
-  * This is individual features
-  */
-+/*
-+ * We need to clear top 16bits of va (from the remaining 64 bits )in
-+ * tlbie* instructions
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
+
+
+    kexec_file: Generalize kexec_add_buffer.
+    
+    Allow architectures to specify different memory walking functions for
+    kexec_add_buffer. Intel uses iomem to track reserved memory ranges,
+    but PowerPC uses the memblock subsystem.
+    
+    Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+    Cc: Eric Biederman <ebiederm@xmission.com>
+    Cc: Dave Young <dyoung@redhat.com>
+    Cc: kexec@lists.infradead.org
+    Cc: linux-kernel@vger.kernel.org
+
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index e8acb2b43dd9..9b02f907b40a 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -315,6 +315,8 @@ int __weak arch_kexec_apply_relocations_add(const Elf_Ehdr *ehdr,
+ 					Elf_Shdr *sechdrs, unsigned int relsec);
+ int __weak arch_kexec_apply_relocations(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
+ 					unsigned int relsec);
++int __weak arch_kexec_walk_mem(unsigned int image_type, bool top_down,
++			       void *data, int (*func)(u64, u64, void *));
+ void arch_kexec_protect_crashkres(void);
+ void arch_kexec_unprotect_crashkres(void);
+ 
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index b6eec7527e9f..2d066c458222 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -428,6 +428,29 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
+ 	return locate_mem_hole_bottom_up(start, end, kbuf);
+ }
+ 
++/**
++ * arch_kexec_walk_mem - call func(data) on free memory regions
++ * @image_type:	kimage.type
++ * @top_down:	Start from the highest address?
++ * @data:	Argument to pass to @func.
++ * @func:	Function to call for each memory region.
++ *
++ * Return: The memory walk will stop when func returns a non-zero value
++ * and that value will be returned. If all free regions are visited without
++ * func returning non-zero, then zero will be returned.
 + */
-+#define MMU_FTR_TLBIE_CROP_VA		ASM_CONST(0x00008000)
++int __weak arch_kexec_walk_mem(unsigned int image_type, bool top_down,
++			       void *data, int (*func)(u64, u64, void *))
++{
++	if (image_type == KEXEC_TYPE_CRASH)
++		return walk_iomem_res_desc(crashk_res.desc,
++					   IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
++					   crashk_res.start, crashk_res.end,
++					   data, func);
++	else
++		return walk_system_ram_res(0, ULONG_MAX, data, func);
++}
++
+ /*
+  * Helper function for placing a buffer in a kexec segment. This assumes
+  * that kexec_mutex is held.
+@@ -472,14 +495,8 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
+ 	kbuf->top_down = top_down;
  
- /* Enable use of high BAT registers */
- #define MMU_FTR_USE_HIGH_BATS		ASM_CONST(0x00010000)
-@@ -97,7 +102,7 @@
- #define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
- 	MMU_FTR_HPTE_TABLE | MMU_FTR_PPCAS_ARCH_V2
- #define MMU_FTRS_POWER4		MMU_FTRS_DEFAULT_HPTE_ARCH_V2
--#define MMU_FTRS_PPC970		MMU_FTRS_POWER4
-+#define MMU_FTRS_PPC970		MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA
- #define MMU_FTRS_POWER5		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
- #define MMU_FTRS_POWER6		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
- #define MMU_FTRS_POWER7		MMU_FTRS_POWER4 | MMU_FTR_LOCKLESS_TLBIE
-@@ -124,7 +129,7 @@ enum {
- 		MMU_FTR_USE_TLBRSRV | MMU_FTR_USE_PAIRED_MAS |
- 		MMU_FTR_NO_SLBIE_B | MMU_FTR_16M_PAGE | MMU_FTR_TLBIEL |
- 		MMU_FTR_LOCKLESS_TLBIE | MMU_FTR_CI_LARGE_PAGE |
--		MMU_FTR_1T_SEGMENT |
-+		MMU_FTR_1T_SEGMENT | MMU_FTR_TLBIE_CROP_VA |
- #ifdef CONFIG_PPC_RADIX_MMU
- 		MMU_FTR_RADIX |
- #endif
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index eeeacf6235a3..d81f826d1029 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -137,7 +137,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_name		= "POWER4 (gp)",
- 		.cpu_features		= CPU_FTRS_POWER4,
- 		.cpu_user_features	= COMMON_USER_POWER4,
--		.mmu_features		= MMU_FTRS_POWER4,
-+		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-@@ -152,7 +152,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_name		= "POWER4+ (gq)",
- 		.cpu_features		= CPU_FTRS_POWER4,
- 		.cpu_user_features	= COMMON_USER_POWER4,
--		.mmu_features		= MMU_FTRS_POWER4,
-+		.mmu_features		= MMU_FTRS_POWER4 | MMU_FTR_TLBIE_CROP_VA,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.num_pmcs		= 8,
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index f8a871a72985..200c103a03c6 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -64,7 +64,8 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- 	 * Older versions of the architecture (2.02 and earler) require the
- 	 * masking of the top 16 bits.
- 	 */
--	va &= ~(0xffffULL << 48);
-+	if (mmu_has_feature(MMU_FTR_TLBIE_CROP_VA))
-+		va &= ~(0xffffULL << 48);
- 
- 	switch (psize) {
- 	case MMU_PAGE_4K:
-@@ -113,7 +114,8 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 	 * Older versions of the architecture (2.02 and earler) require the
- 	 * masking of the top 16 bits.
- 	 */
--	va &= ~(0xffffULL << 48);
-+	if (mmu_has_feature(MMU_FTR_TLBIE_CROP_VA))
-+		va &= ~(0xffffULL << 48);
- 
- 	switch (psize) {
- 	case MMU_PAGE_4K:
--- 
-2.7.4
+ 	/* Walk the RAM ranges and allocate a suitable range for the buffer */
+-	if (image->type == KEXEC_TYPE_CRASH)
+-		ret = walk_iomem_res_desc(crashk_res.desc,
+-				IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+-				crashk_res.start, crashk_res.end, kbuf,
+-				locate_mem_hole_callback);
+-	else
+-		ret = walk_system_ram_res(0, -1, kbuf,
+-					  locate_mem_hole_callback);
++	ret = arch_kexec_walk_mem(image->type, top_down, kbuf,
++				   locate_mem_hole_callback);
+ 	if (ret != 1) {
+ 		/* A suitable memory range could not be found for buffer */
+ 		return -EADDRNOTAVAIL;
