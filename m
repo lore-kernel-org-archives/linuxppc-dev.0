@@ -1,24 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-yw0-x234.google.com (mail-yw0-x234.google.com
- [IPv6:2607:f8b0:4002:c05::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rV50D5fwpzDqjB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 22:09:00 +1000 (AEST)
-Received: by mail-yw0-x234.google.com with SMTP id v137so17836668ywa.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 05:09:00 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87k2hqaegk.fsf@skywalker.in.ibm.com>
-References: <900d62c2-8bdf-839a-49fa-99aff00a4d87@gmail.com>
- <87k2hqaegk.fsf@skywalker.in.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 15 Jun 2016 22:08:55 +1000
-Message-ID: <CAKTCnzmLQoBLTyE+bDqwbCTJ+zDLih1Xzm17Qf3M=8v2MBAptQ@mail.gmail.com>
-Subject: Re: [PATCH] Add support for power9 in ibm_architecture_vec
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rV5cb2f7rzDqjK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 22:37:03 +1000 (AEST)
+In-Reply-To: <1465395958-21349-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [V2, 02/10] powerpc/mm/radix: Update to tlb functions ric argument
+Message-Id: <3rV5cb1MMwz9t1T@ozlabs.org>
+Date: Wed, 15 Jun 2016 22:37:03 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 15, 2016 at 9:17 PM, Aneesh Kumar K.V
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Shouldn't this be 125 + 16 ?
+On Wed, 2016-08-06 at 14:25:50 UTC, "Aneesh Kumar K.V" wrote:
+> Radix invalidate control (RIC) is used to control which cache to flush
+> using tlb instructions. When doing a PID flush, we currently flush
+> everything including page walk cache. For address range flush, we flush
+> only the TLB. In the later patch, we add support for flushing only
+> page walk cache.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Actually the previous patch broke it and Ben fixed it, it should have
-been 133 after adding POWER8NVL. My patch adds 16+1 (1 for the
-OV1_PPC_3_00)
+Applied to powerpc fixes, thanks.
 
-133+17 = 150
+https://git.kernel.org/powerpc/c/36194812a4063dd2a72070aec3
 
-Michael, can you please check. I did a quick check with  gdb
-
-Balbir Singh
+cheers
