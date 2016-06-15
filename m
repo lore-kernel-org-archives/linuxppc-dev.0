@@ -1,21 +1,22 @@
 Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rV1H65JvPzDqdD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 19:21:38 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id 66so1392987pfy.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 02:21:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rV1HD18gFzDqjK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 19:21:44 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id hf6so1175825pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 02:21:44 -0700 (PDT)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: kvm-ppc@vger.kernel.org, mpe@ellerman.id.au, paulus@samba.org,
  benh@kernel.crashing.org, kvm@vger.kernel.org, pbonzini@redhat.com,
  agraf@suse.com, rkrcmar@redhat.com,
  Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Subject: [PATCH 3/4] kvm/stats: Add provisioning for 64-bit vcpu statistics
-Date: Wed, 15 Jun 2016 19:21:07 +1000
-Message-Id: <1465982468-18833-3-git-send-email-sjitindarsingh@gmail.com>
+Subject: [PATCH 4/4] powerpc/kvm/stats: Implement existing and add new halt
+ polling vcpu stats
+Date: Wed, 15 Jun 2016 19:21:08 +1000
+Message-Id: <1465982468-18833-4-git-send-email-sjitindarsingh@gmail.com>
 In-Reply-To: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
 References: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,136 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vcpus have statistics associated with them which can be viewed within the
-debugfs. Currently it is assumed within the vcpu_stat_get() and
-vcpu_stat_get_per_vm() functions that all of these statistics are
-represented as 32-bit numbers. The next patch adds some 64-bit statistics,
-so add provisioning for the display of 64-bit vcpu statistics.
+vcpu stats are used to collect information about a vcpu which can be viewed
+in the debugfs. For example halt_attempted_poll and halt_successful_poll
+are used to keep track of the number of times the vcpu attempts to and
+successfully polls. These stats are currently not used on powerpc.
+
+Implement incrementation of the halt_attempted_poll and
+halt_successful_poll vcpu stats for powerpc. Since these stats are summed
+over all the vcpus for all running guests it doesn't matter which vcpu
+they are attributed to, thus we choose the current runner vcpu of the
+vcore.
+
+Also add new vcpu stats: halt_poll_time and halt_wait_time to be used to
+accumulate the total time spend polling and waiting respectively, and
+halt_successful_wait to accumulate the number of times the vcpu waits.
+Given that halt_poll_time and halt_wait_time are expressed in nanoseconds
+it is necessary to represent these as 64-bit quantities, otherwise they
+would overflow after only about 4 seconds.
+
+Given that the total time spend either polling or waiting will be known and
+the number of times that each was done, it will be possible to determine
+the average poll and wait times. This will give the ability to tune the kvm
+module parameters based on the calculated average wait and poll times.
 
 Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 ---
- arch/powerpc/kvm/book3s.c |  1 +
- include/linux/kvm_host.h  |  1 +
- virt/kvm/kvm_main.c       | 60 +++++++++++++++++++++++++++++++++++++++++++----
- 3 files changed, 58 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |  3 +++
+ arch/powerpc/kvm/book3s.c           |  3 +++
+ arch/powerpc/kvm/book3s_hv.c        | 14 +++++++++++++-
+ 3 files changed, 19 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index b34efe8..2ece5fc 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -114,8 +114,11 @@ struct kvm_vcpu_stat {
+ 	u32 emulated_inst_exits;
+ 	u32 dec_exits;
+ 	u32 ext_intr_exits;
++	u64 halt_poll_time;
++	u64 halt_wait_time;
+ 	u32 halt_successful_poll;
+ 	u32 halt_attempted_poll;
++	u32 halt_successful_wait;
+ 	u32 halt_poll_invalid;
+ 	u32 halt_wakeup;
+ 	u32 dbell_exits;
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 47018fc..ed9132b 100644
+index ed9132b..6217bea 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -40,6 +40,7 @@
- #include "trace.h"
+@@ -53,8 +53,11 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
+ 	{ "dec",         VCPU_STAT(dec_exits) },
+ 	{ "ext_intr",    VCPU_STAT(ext_intr_exits) },
+ 	{ "queue_intr",  VCPU_STAT(queue_intr) },
++	{ "halt_poll_time_ns",		VCPU_STAT_U64(halt_poll_time) },
++	{ "halt_wait_time_ns",		VCPU_STAT_U64(halt_wait_time) },
+ 	{ "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
+ 	{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
++	{ "halt_successful_wait",	VCPU_STAT(halt_successful_wait) },
+ 	{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
+ 	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
+ 	{ "pf_storage",  VCPU_STAT(pf_storage) },
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 0d8ce14..a0dae63 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -2688,6 +2688,7 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+ 	cur = start = ktime_get();
+ 	if (vc->halt_poll_ns) {
+ 		ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
++		++vc->runner->stat.halt_attempted_poll;
  
- #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
-+#define VCPU_STAT_U64(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU_U64
+ 		vc->vcore_state = VCORE_POLLING;
+ 		spin_unlock(&vc->lock);
+@@ -2703,8 +2704,10 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+ 		spin_lock(&vc->lock);
+ 		vc->vcore_state = VCORE_INACTIVE;
  
- /* #define EXIT_DEBUG */
+-		if (!do_sleep)
++		if (!do_sleep) {
++			++vc->runner->stat.halt_successful_poll;
+ 			goto out;
++		}
+ 	}
  
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 1c9c973..667b30e 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -991,6 +991,7 @@ static inline bool kvm_is_error_gpa(struct kvm *kvm, gpa_t gpa)
- enum kvm_stat_kind {
- 	KVM_STAT_VM,
- 	KVM_STAT_VCPU,
-+	KVM_STAT_VCPU_U64,
- };
+ 	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
+@@ -2712,6 +2715,9 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+ 	if (kvmppc_vcore_check_block(vc)) {
+ 		finish_swait(&vc->wq, &wait);
+ 		do_sleep = 0;
++		/* If we polled, count this as a successful poll */
++		if (vc->halt_poll_ns)
++			++vc->runner->stat.halt_successful_poll;
+ 		goto out;
+ 	}
  
- struct kvm_stat_data {
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 02e98f3..ac47ffb 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3566,6 +3566,20 @@ static int vcpu_stat_get_per_vm(void *data, u64 *val)
- 	return 0;
- }
+@@ -2723,12 +2729,18 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+ 	spin_lock(&vc->lock);
+ 	vc->vcore_state = VCORE_INACTIVE;
+ 	trace_kvmppc_vcore_blocked(vc, 1);
++	++vc->runner->stat.halt_successful_wait;
  
-+static int vcpu_stat_u64_get_per_vm(void *data, u64 *val)
-+{
-+	int i;
-+	struct kvm_stat_data *stat_data = (struct kvm_stat_data *)data;
-+	struct kvm_vcpu *vcpu;
+ 	cur = ktime_get();
+ 
+ out:
+ 	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
+ 
++	if (do_sleep)
++		vc->runner->stat.halt_wait_time += block_ns;
++	else if (vc->halt_poll_ns)
++		vc->runner->stat.halt_poll_time += block_ns;
 +
-+	*val = 0;
-+
-+	kvm_for_each_vcpu(i, vcpu, stat_data->kvm)
-+		*val += *(u64 *)((void *)vcpu + stat_data->offset);
-+
-+	return 0;
-+}
-+
- static int vcpu_stat_get_per_vm_open(struct inode *inode, struct file *file)
- {
- 	__simple_attr_check_format("%llu\n", 0ull);
-@@ -3573,6 +3587,13 @@ static int vcpu_stat_get_per_vm_open(struct inode *inode, struct file *file)
- 				 NULL, "%llu\n");
- }
- 
-+static int vcpu_stat_u64_get_per_vm_open(struct inode *inode, struct file *file)
-+{
-+	__simple_attr_check_format("%llu\n", 0ull);
-+	return kvm_debugfs_open(inode, file, vcpu_stat_u64_get_per_vm,
-+				 NULL, "%llu\n");
-+}
-+
- static const struct file_operations vcpu_stat_get_per_vm_fops = {
- 	.owner   = THIS_MODULE,
- 	.open    = vcpu_stat_get_per_vm_open,
-@@ -3582,9 +3603,19 @@ static const struct file_operations vcpu_stat_get_per_vm_fops = {
- 	.llseek  = generic_file_llseek,
- };
- 
-+static const struct file_operations vcpu_stat_u64_get_per_vm_fops = {
-+	.owner   = THIS_MODULE,
-+	.open    = vcpu_stat_u64_get_per_vm_open,
-+	.release = kvm_debugfs_release,
-+	.read    = simple_attr_read,
-+	.write   = simple_attr_write,
-+	.llseek  = generic_file_llseek,
-+};
-+
- static const struct file_operations *stat_fops_per_vm[] = {
--	[KVM_STAT_VCPU] = &vcpu_stat_get_per_vm_fops,
--	[KVM_STAT_VM]   = &vm_stat_get_per_vm_fops,
-+	[KVM_STAT_VCPU]		= &vcpu_stat_get_per_vm_fops,
-+	[KVM_STAT_VCPU_U64]	= &vcpu_stat_u64_get_per_vm_fops,
-+	[KVM_STAT_VM]		= &vm_stat_get_per_vm_fops,
- };
- 
- static int vm_stat_get(void *_offset, u64 *val)
-@@ -3627,9 +3658,30 @@ static int vcpu_stat_get(void *_offset, u64 *val)
- 
- DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_fops, vcpu_stat_get, NULL, "%llu\n");
- 
-+static int vcpu_stat_u64_get(void *_offset, u64 *val)
-+{
-+	unsigned offset = (long)_offset;
-+	struct kvm *kvm;
-+	struct kvm_stat_data stat_tmp = {.offset = offset};
-+	u64 tmp_val;
-+
-+	*val = 0;
-+	spin_lock(&kvm_lock);
-+	list_for_each_entry(kvm, &vm_list, vm_list) {
-+		stat_tmp.kvm = kvm;
-+		vcpu_stat_u64_get_per_vm((void *)&stat_tmp, &tmp_val);
-+		*val += tmp_val;
-+	}
-+	spin_unlock(&kvm_lock);
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_u64_fops, vcpu_stat_u64_get, NULL, "%llu\n");
-+
- static const struct file_operations *stat_fops[] = {
--	[KVM_STAT_VCPU] = &vcpu_stat_fops,
--	[KVM_STAT_VM]   = &vm_stat_fops,
-+	[KVM_STAT_VCPU]		= &vcpu_stat_fops,
-+	[KVM_STAT_VCPU_U64]	= &vcpu_stat_u64_fops,
-+	[KVM_STAT_VM]		= &vm_stat_fops,
- };
- 
- static int kvm_init_debug(void)
+ 	if (halt_poll_max_ns) {
+ 		if (block_ns <= vc->halt_poll_ns)
+ 			;
 -- 
 2.5.5
