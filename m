@@ -1,19 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rV5cd0TvTzDqjK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 22:37:05 +1000 (AEST)
-In-Reply-To: <1465395958-21349-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rV5g1461bzDqmq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 22:39:09 +1000 (AEST)
+In-Reply-To: <20160526083813.0f96a454@kryten>
+To: Unknown sender due to SPF <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, acsawdey@linux.vnet.ibm.com
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V2,
- 07/10] powerpc/hash: Use the correct ppp mask when updating hpte
-Message-Id: <3rV5cc5xBZz9t1P@ozlabs.org>
-Date: Wed, 15 Jun 2016 22:37:04 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] powerpc: Remove assembly versions of strcpy, strcat,
+ strlen and strcmp
+Message-Id: <3rV5g13G0jz9t1T@ozlabs.org>
+Date: Wed, 15 Jun 2016 22:39:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-08-06 at 14:25:55 UTC, "Aneesh Kumar K.V" wrote:
-> With commit: e58e87adc8bf9 ("powerpc/mm: Update _PAGE_KERNEL_RO") we
-> now use all the three PPP bits. The top bit is now used to have a
-> PPP value of 0b110 which will be mapped to kernel read only. When
-> updating the hpte entry use right mask such that we update the
-> 63rd bit (top 'P' bit) too.
+On Wed, 2016-25-05 at 22:38:13 UTC, Unknown sender due to SPF wrote:
+> A number of our assembly implementations of string functions do not
+> align their hot loops. I was going to align them manually, but I
+> realised that they are are almost instruction for instruction
+> identical to what gcc produces, with the advantage that gcc does
+> align them.
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> In light of that, let's just remove the assembly versions.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8550e2fa34f077c8a87cf1ba24
+https://git.kernel.org/powerpc/c/3ece16632b64120df2ef566ce3
 
 cheers
