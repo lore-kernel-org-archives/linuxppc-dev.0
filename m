@@ -1,47 +1,33 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVjYG4vWDzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 22:36:18 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5GCYGOR067602
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 08:36:16 -0400
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23kr61a7ky-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 08:36:16 -0400
-Received: from localhost
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 16 Jun 2016 13:36:13 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2D9DE2190063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 13:35:42 +0100 (BST)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5GCaAda33816802
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 12:36:10 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5GCaAlt000949
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 06:36:10 -0600
-Subject: Re: [PATCH] cxl: Make vPHB device node match adapter's
-To: Ian Munsie <imunsie@au1.ibm.com>
-References: <1466001736-3074-1-git-send-email-fbarrat@linux.vnet.ibm.com>
- <1466027386-sup-9561@x230.ozlabs.ibm.com>
-Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Thu, 16 Jun 2016 14:36:09 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVjmM4WB2zDqk9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 22:45:55 +1000 (AEST)
+Date: Thu, 16 Jun 2016 14:45:48 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Tejun Heo <htejun@gmail.com>, Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] workqueue:Fix affinity of an unbound worker of a
+ node with 1 online CPU
+Message-ID: <20160616124548.GE30921@twins.programming.kicks-ass.net>
+References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
+ <c284ee977a3d52ddd5c01638be391e24b7a59b3d.1465311052.git.ego@linux.vnet.ibm.com>
+ <20160614112234.GF30154@twins.programming.kicks-ass.net>
+ <20160615101936.GA31671@in.ibm.com>
+ <20160615113249.GH30909@twins.programming.kicks-ass.net>
+ <20160615125033.GB31671@in.ibm.com>
+ <20160615131415.GI30909@twins.programming.kicks-ass.net>
+ <20160615160112.GC24102@mtj.duckdns.org>
+ <1466079084.19127.2.camel@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1466027386-sup-9561@x230.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57629D39.8030802@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1466079084.19127.2.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,88 +37,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks, Ian. Here is a hopefully better commit message:
+On Thu, Jun 16, 2016 at 10:11:24PM +1000, Michael Ellerman wrote:
+> Peterz do you want to send a SOB'ed patch, or can we take what you posted and
+> add your SOB?
 
-cxl: Make vPHB device node match adapter's
+So I took Ego's first patch, so as to not steal his credits take that
+one and then see below.
 
-On bare-metal, when a device is attached to the cxl card, lsvpd shows
-a location code such as (with cxlflash):
-     # lsvpd -l sg22
-     ...
-     *YL U78CB.001.WZS0073-P1-C33-B0-T0-L0
-which makes it hard to easily identify the cxl adapter owning the
-flash device, since in this example C33 refers to a P8 processor.
+---
+Subject: workqueue: Fix setting affinity of unbound worker threads
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Thu Jun 16 14:38:42 CEST 2016
 
-lsvpd looks in the parent devices until it finds a location code, so the
-device node for the vPHB ends up being used.
+With commit e9d867a67fd03ccc ("sched: Allow per-cpu kernel threads to
+run on online && !active"), __set_cpus_allowed_ptr() expects that only
+strict per-cpu kernel threads can have affinity to an online CPU which
+is not yet active.
 
-By reusing the device node of the adapter for the vPHB, lsvpd shows:
-     # lsvpd -l sg16
-     ...
-     *YL U78C9.001.WZS09XA-P1-C7-B1-T0-L3
-where C7 is the PCI slot of the cxl adapter.
+This assumption is currently broken in the CPU_ONLINE notification
+handler for the workqueues where restore_unbound_workers_cpumask()
+calls set_cpus_allowed_ptr() when the first cpu in the unbound
+worker's pool->attr->cpumask comes online. Since
+set_cpus_allowed_ptr() is called with pool->attr->cpumask in which
+only one CPU is online which is not yet active, we get the following
+WARN_ON during an CPU online operation.
 
-On powerVM, the vPHB was already using the adapter device node, so
-there's no change there.
+------------[ cut here ]------------
+WARNING: CPU: 40 PID: 248 at kernel/sched/core.c:1166
+__set_cpus_allowed_ptr+0x228/0x2e0
+Modules linked in:
+CPU: 40 PID: 248 Comm: cpuhp/40 Not tainted 4.6.0-autotest+ #4
+<..snip..>
+Call Trace:
+[c000000f273ff920] [c00000000010493c] __set_cpus_allowed_ptr+0x2cc/0x2e0 (unreliable)
+[c000000f273ffac0] [c0000000000ed4b0] workqueue_cpu_up_callback+0x2c0/0x470
+[c000000f273ffb70] [c0000000000f5c58] notifier_call_chain+0x98/0x100
+[c000000f273ffbc0] [c0000000000c5ed0] __cpu_notify+0x70/0xe0
+[c000000f273ffc00] [c0000000000c6028] notify_online+0x38/0x50
+[c000000f273ffc30] [c0000000000c5214] cpuhp_invoke_callback+0x84/0x250
+[c000000f273ffc90] [c0000000000c562c] cpuhp_up_callbacks+0x5c/0x120
+[c000000f273ffce0] [c0000000000c64d4] cpuhp_thread_fun+0x184/0x1c0
+[c000000f273ffd20] [c0000000000fa050] smpboot_thread_fn+0x290/0x2a0
+[c000000f273ffd80] [c0000000000f45b0] kthread+0x110/0x130
+[c000000f273ffe30] [c000000000009570] ret_from_kernel_thread+0x5c/0x6c
+---[ end trace 00f1456578b2a3b2 ]---
 
-Tested by cxlflash on bare-metal and powerVM.
+This patch fixes this by limiting the mask to the intersection of
+the pool affinity and online CPUs.
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Changelog-cribbed-from: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+---
+ kernel/workqueue.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-
-
-
-
-
-Le 15/06/2016 23:53, Ian Munsie a écrit :
-> This could probably use a description in the commit message, perhaps
-> including output showing the before/after difference this makes to
-> lsvpd, but otherwise it looks fine to me.
->
-> @Mikey - this look OK to you?
->
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
->
-> Excerpts from Frederic Barrat's message of 2016-06-15 16:42:16 +0200:
->> Tested by cxlflash on bare-metal and powerVM.
->>
->> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->> ---
->>   drivers/misc/cxl/vphb.c | 21 ++++++++++-----------
->>   1 file changed, 10 insertions(+), 11 deletions(-)
->>
->> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
->> index cdc7723..012b6aa 100644
->> --- a/drivers/misc/cxl/vphb.c
->> +++ b/drivers/misc/cxl/vphb.c
->> @@ -208,20 +208,19 @@ static struct pci_controller_ops cxl_pci_controller_ops =
->>
->>   int cxl_pci_vphb_add(struct cxl_afu *afu)
->>   {
->> -    struct pci_dev *phys_dev;
->> -    struct pci_controller *phb, *phys_phb;
->> +    struct pci_controller *phb;
->>       struct device_node *vphb_dn;
->>       struct device *parent;
->>
->> -    if (cpu_has_feature(CPU_FTR_HVMODE)) {
->> -        phys_dev = to_pci_dev(afu->adapter->dev.parent);
->> -        phys_phb = pci_bus_to_host(phys_dev->bus);
->> -        vphb_dn = phys_phb->dn;
->> -        parent = &phys_dev->dev;
->> -    } else {
->> -        vphb_dn = afu->adapter->dev.parent->of_node;
->> -        parent = afu->adapter->dev.parent;
->> -    }
->> +    /* The parent device is the adapter. Reuse the device node of
->> +     * the adapter.
->> +     * We don't seem to care what device node is used for the vPHB,
->> +     * but tools such as lsvpd walk up the device parents looking
->> +     * for a valid location code, so we might as well show devices
->> +     * attached to the adapter as being located on that adapter.
->> +     */
->> +    parent = afu->adapter->dev.parent;
->> +    vphb_dn = parent->of_node;
->>
->>       /* Alloc and setup PHB data structure */
->>       phb = pcibios_alloc_controller(vphb_dn);
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -4600,15 +4600,11 @@ static void restore_unbound_workers_cpum
+ 	if (!cpumask_test_cpu(cpu, pool->attrs->cpumask))
+ 		return;
+ 
+-	/* is @cpu the only online CPU? */
+ 	cpumask_and(&cpumask, pool->attrs->cpumask, cpu_online_mask);
+-	if (cpumask_weight(&cpumask) != 1)
+-		return;
+ 
+ 	/* as we're called from CPU_ONLINE, the following shouldn't fail */
+ 	for_each_pool_worker(worker, pool)
+-		WARN_ON_ONCE(set_cpus_allowed_ptr(worker->task,
+-						  pool->attrs->cpumask) < 0);
++		WARN_ON_ONCE(set_cpus_allowed_ptr(worker->task, &cpumask) < 0);
+ }
+ 
+ /*
