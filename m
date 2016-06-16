@@ -1,30 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <hekuang@huawei.com>
+Received: from szxga04-in.huawei.com (unknown [119.145.14.52])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVTFj51h8zDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 13:22:01 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5G3JEGF124361
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 23:21:58 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23jggu4x0d-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2016 23:21:58 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 15 Jun 2016 23:21:58 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm/radix: Update Radix tree size as per ISA 3.0
-Date: Thu, 16 Jun 2016 08:51:49 +0530
-Message-Id: <1466047309-8390-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVQtw3S5dzDqln
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 11:35:36 +1000 (AEST)
+From: He Kuang <hekuang@huawei.com>
+To: <peterz@infradead.org>, <mingo@redhat.com>, <acme@kernel.org>,
+ <alexander.shishkin@linux.intel.com>, <hekuang@huawei.com>,
+ <wangnan0@huawei.com>, <adrian.hunter@intel.com>, <ak@linux.intel.com>,
+ <maddy@linux.vnet.ibm.com>, <bp@suse.de>, <dsahern@gmail.com>,
+ <linux@horizon.com>, <jolsa@redhat.com>, <namhyung@kernel.org>,
+ <linux@rasmusvillemoes.dk>, <yury.norov@gmail.com>, <mpe@ellerman.id.au>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] tools include: Fix wrong macro definitions for cpu_to_le* for
+ big endian
+Date: Thu, 16 Jun 2016 01:27:06 +0000
+Message-ID: <1466040426-97061-1-git-send-email-hekuang@huawei.com>
+In-Reply-To: <20160615212958.GC4882@kernel.org>
+References: <20160615212958.GC4882@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,85 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ISA 3.0 updated it to be encoded as Radix tree size = 2^(RTS + 31). We
-have it encoded as 2^(RTS + 28). Add a helper with the correct encoding
-and use it instead of opencoding.
+From: Wang Nan <wangnan0@huawei.com>
 
-Fixes commit 2bfd65e45e87 ("powerpc/mm/radix: Add radix callbacks for
-early init routine ")
+The cpu_to_le* macros in kernel.h are defined without considering
+endianese. This patch includes "byteoder/generic.h" instead to fix the
+bug, and removes redundant le64_to_cpu definition in intel-bts.c.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Wang Nan <wangnan0@huawei.com>
+Signed-off-by: He Kuang <hekuang@huawei.com>
 ---
- arch/powerpc/include/asm/book3s/64/radix.h | 15 +++++++++++++++
- arch/powerpc/mm/mmu_context_book3s64.c     |  2 +-
- arch/powerpc/mm/pgtable-radix.c            |  9 +++------
- 3 files changed, 19 insertions(+), 7 deletions(-)
+ tools/include/linux/kernel.h | 5 ++---
+ tools/perf/util/intel-bts.c  | 5 -----
+ 2 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 0d980de55c40..cdf791af8ab2 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -260,5 +260,20 @@ extern void radix__vmemmap_remove_mapping(unsigned long start,
- 
- extern int radix__map_kernel_page(unsigned long ea, unsigned long pa,
- 				 pgprot_t flags, unsigned int psz);
-+
-+static inline unsigned long radix__get_rts_value(void)
-+{
-+	unsigned long rts_field;
-+	/*
-+	 * we support 52 bits, hence 52-31 = 21, 0b10101
-+	 * RTS encoding details
-+	 * bits 0 - 3 of rts -> bits 6 - 8 unsigned long
-+	 * bits 4 - 5 of rts -> bits 62 - 63 of unsigned long
-+	 */
-+	rts_field = (0x5UL << 5); /* 6 - 8 bits */
-+	rts_field |= (0x2UL << 61);
-+
-+	return rts_field;
-+}
- #endif /* __ASSEMBLY__ */
+diff --git a/tools/include/linux/kernel.h b/tools/include/linux/kernel.h
+index 76df535..6145e41 100644
+--- a/tools/include/linux/kernel.h
++++ b/tools/include/linux/kernel.h
+@@ -64,11 +64,10 @@
  #endif
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index 78ebc3877530..d48067bf4b24 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -65,7 +65,7 @@ static int radix__init_new_context(struct mm_struct *mm, int index)
- 	/*
- 	 * set the process table entry,
- 	 */
--	rts_field = 3ull << PPC_BITLSHIFT(2);
-+	rts_field = radix__get_rts_value();
- 	process_tb[index].prtb0 = cpu_to_be64(rts_field | __pa(mm->pgd) | RADIX_PGD_INDEX_SIZE);
- 	return 0;
- }
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 85da0212b276..8a25877b96bc 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -181,9 +181,8 @@ redo:
- 	process_tb = early_alloc_pgtable(1UL << PRTB_SIZE_SHIFT);
- 	/*
- 	 * Fill in the process table.
--	 * we support 52 bits, hence 52-28 = 24, 11000
- 	 */
--	rts_field = 3ull << PPC_BITLSHIFT(2);
-+	rts_field = radix__get_rts_value();
- 	process_tb->prtb0 = cpu_to_be64(rts_field | __pa(init_mm.pgd) | RADIX_PGD_INDEX_SIZE);
- 	/*
- 	 * Fill in the partition table. We are suppose to use effective address
-@@ -197,10 +196,8 @@ redo:
- static void __init radix_init_partition_table(void)
- {
- 	unsigned long rts_field;
--	/*
--	 * we support 52 bits, hence 52-28 = 24, 11000
--	 */
--	rts_field = 3ull << PPC_BITLSHIFT(2);
-+
-+	rts_field = radix__get_rts_value();
  
- 	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 24), "Partition table size too large.");
- 	partition_tb = early_alloc_pgtable(1UL << PATB_SIZE_SHIFT);
+ /*
+- * Both need more care to handle endianness
++ * Need more care to handle endianness
+  * (Don't use bitmap_copy_le() for now)
+  */
+-#define cpu_to_le64(x)	(x)
+-#define cpu_to_le32(x)	(x)
++#include <linux/byteorder/generic.h>
+ 
+ static inline int
+ vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
+diff --git a/tools/perf/util/intel-bts.c b/tools/perf/util/intel-bts.c
+index 9df9960..0e632c4 100644
+--- a/tools/perf/util/intel-bts.c
++++ b/tools/perf/util/intel-bts.c
+@@ -40,11 +40,6 @@
+ #define INTEL_BTS_ERR_NOINSN  5
+ #define INTEL_BTS_ERR_LOST    9
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
+-#define le64_to_cpu bswap_64
+-#else
+-#define le64_to_cpu
+-#endif
+ 
+ struct intel_bts {
+ 	struct auxtrace			auxtrace;
 -- 
-2.7.4
+1.8.3.4
