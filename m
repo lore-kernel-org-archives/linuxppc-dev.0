@@ -1,28 +1,27 @@
-Return-Path: <darrick.wong@oracle.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <frowand.list@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVpbB3v4VzDqpd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 02:23:18 +1000 (AEST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rVpb971W3z9t17
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 02:23:17 +1000 (AEST)
-Date: Thu, 16 Jun 2016 09:23:03 -0700
-From: "Darrick J. Wong" <darrick.wong@oracle.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: kernel bug in "Drop WIMG in favour of new constants"?
-Message-ID: <20160616162303.GA7573@birch.djwong.org>
-References: <20160616043340.GB22590@birch.djwong.org>
- <1466054627.5400.5.camel@ellerman.id.au>
- <20160616055746.GC22590@birch.djwong.org>
- <8737oda1lt.fsf@skywalker.in.ibm.com>
- <87ziql8l93.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVrSK6c5WzDqpc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 03:47:29 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id fg1so4112227pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 10:47:29 -0700 (PDT)
+Subject: Re: [PATCH v2] of: fix memory leak related to safe_name()
+To: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+References: <5761BDAD.3060107@gmail.com>
+ <CA+7wUszph+weTn=bu24d6YdkChOk39ae_dOkQXJQxykkQH0PNg@mail.gmail.com>
+ <CA+7wUsz0OnOHVyGTE=nzAbCi_GbmLvU-Q4wQHjs=SOLRUB4E5w@mail.gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Frank Rowand <frowand.list@gmail.com>
+Message-ID: <5762E629.8060301@gmail.com>
+Date: Thu, 16 Jun 2016 10:47:21 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87ziql8l93.fsf@skywalker.in.ibm.com>
+In-Reply-To: <CA+7wUsz0OnOHVyGTE=nzAbCi_GbmLvU-Q4wQHjs=SOLRUB4E5w@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 16, 2016 at 04:16:00PM +0530, Aneesh Kumar K.V wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On 06/16/16 00:51, Mathieu Malaterre wrote:
+> Sorry, symptoms not solved. According to kmemleak, I have now:
 > 
-> > "Darrick J. Wong" <darrick.wong@oracle.com> writes:
-> >
-> >> On Thu, Jun 16, 2016 at 03:23:47PM +1000, Michael Ellerman wrote:
-> >>> On Wed, 2016-06-15 at 21:33 -0700, Darrick J. Wong wrote:
-> >>> 
-> >>> > Hi Aneesh,
-> >>> > 
-> >>> > I noticed when trying out 4.7-rc3 on qemu-2.5 that the kernel no longer
-> >>> > boots.  4.6 booted just fine, so I bisected the kernel to the commit
-> >>> > 30bda41aba4efb2370c97e2cbe7385de93ccc372, which is "powerpc/mm: Drop WIMG in
-> >>> > favour of new constants".  The changelog suggests that the KVM changes need
-> >>> > closer review, and here's an actual crash:
-> >>> > 
-> >>> > (I can send libvirt's machine xml, .config, and full dmesg if that helps.)
-> >>> 
-> >>> Yes please.
-> >>> 
-> >>> I'm successfully booting 4.7-rc's on qemu (2.5.0 (Debian 1:2.5+dfsg-5ubuntu10.1)).
-> >>
-> >> Ok, see attached.  I also sent along the dpkg --status output for qemu
-> >> and qemu-slof; looks like we're running the same Ubuntu packages...
-> >>
-> >> ...my host kernel is 4.6.0 on x64.
-> >
-> > So this is Qemu TCG mode right ? I will try some test and update later.
-> >
+> [  661.323100] kmemleak: 100 new suspected memory leaks (see
+> /sys/kernel/debug/kmemleak)
+> [ 1260.226120] kmemleak: 1 new suspected memory leaks (see
+> /sys/kernel/debug/kmemleak)
 > 
-> I am able to reproduce this with
-> 
-> qemu-system-ppc64 -kernel vmlinux -machine
-> type=pseries,usb=off -smp 1 -m 1G  -vga none -nographic    -device
-> usb-ehci -device usb-kbd -device usb-mouse
-> 
-> Looks like enabling usb device is the issue.
+> # head -40 /sys/kernel/debug/kmemleak
+> unreferenced object 0xdf5326a0 (size 32):
+>   comm "swapper", pid 1, jiffies 4294892300 (age 2564.708s)
+>   hex dump (first 32 bytes):
+>     62 61 73 65 00 00 4c d8 c5 78 df dc cc 43 e4 bc  base..L..x...C..
+>     c4 c8 ec 8c ee de ce cf e8 c9 8a ea dc cc c6 fd  ................
+>   backtrace:
+>     [<c014d4d8>] kstrdup+0x48/0x88
+>     [<c0454678>] __of_attach_node_sysfs+0xf0/0x100
+>     [<c075f21c>] of_core_init+0x8c/0xf8
+>     [<c0729594>] kernel_init_freeable+0xd4/0x208
+>     [<c00047e8>] kernel_init+0x24/0x11c
+>     [<c00158ec>] ret_from_kernel_thread+0x5c/0x64
 
-<nod> Unfortunately, libvirt cleverly reinstalls the usb configuration
-if I delete all the usb lines from the xml file.  I don't need USB, I'm
-merely the stuckee. ;)
+< snip >
 
---D
+Brown paper bag time.  I left out the kfree() in the one place that
+your first patch added it.  Version 3 on the way.
 
-> 
-> -aneesh
-> 
+-Frank
