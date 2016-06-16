@@ -1,9 +1,9 @@
 Return-Path: <hekuang@huawei.com>
-Received: from szxga04-in.huawei.com (unknown [119.145.14.52])
+Received: from szxga05-in.huawei.com (unknown [119.145.14.199])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVQtw3S5dzDqln
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 11:35:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVQzJ1KDCzDqlq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 11:39:23 +1000 (AEST)
 From: He Kuang <hekuang@huawei.com>
 To: <peterz@infradead.org>, <mingo@redhat.com>, <acme@kernel.org>,
  <alexander.shishkin@linux.intel.com>, <hekuang@huawei.com>,
@@ -14,8 +14,8 @@ To: <peterz@infradead.org>, <mingo@redhat.com>, <acme@kernel.org>,
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
 Subject: [PATCH] tools include: Fix wrong macro definitions for cpu_to_le* for
  big endian
-Date: Thu, 16 Jun 2016 01:27:06 +0000
-Message-ID: <1466040426-97061-1-git-send-email-hekuang@huawei.com>
+Date: Thu, 16 Jun 2016 01:32:07 +0000
+Message-ID: <1466040729-100926-1-git-send-email-hekuang@huawei.com>
 In-Reply-To: <20160615212958.GC4882@kernel.org>
 References: <20160615212958.GC4882@kernel.org>
 MIME-Version: 1.0
