@@ -1,49 +1,23 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVhsb14ZNzDqmb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 22:05:23 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rVhsZ4qCfz9t1v
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 22:05:21 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5GC42ZO068630
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 08:05:19 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23ktnhay8t-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 08:05:19 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Thu, 16 Jun 2016 22:05:16 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E753A2CE8056
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 22:05:13 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5GC5DPY10551598
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 22:05:13 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5GC5D8l001151
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 22:05:13 +1000
-Subject: Re: kernel bug in "Drop WIMG in favour of new constants"?
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, "Darrick J. Wong"
- <darrick.wong@oracle.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Date: Thu, 16 Jun 2016 22:05:09 +1000
-In-Reply-To: <87wplp8kxh.fsf@skywalker.in.ibm.com>
-References: <20160616043340.GB22590@birch.djwong.org>
-Message-Id: <1466078709.24271.17.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVhvm1wJCzDqmb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 22:07:16 +1000 (AEST)
+Message-ID: <1466078830.19127.0.camel@ellerman.id.au>
+Subject: Re: unrecoverable exception on G5 with CONFIG_PPC_EARLY_DEBUG enabled
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu, 16 Jun 2016 22:07:10 +1000
+In-Reply-To: <CAOJe8K1bBf-J6ZJq+VfVv+CVcwGyff32beGL4kXaZBr5ZL9hmw@mail.gmail.com>
+References: <CAOJe8K1S9-AjJ106rQJMmTg_5238RzKgjFb9dyGuDY5ddydkgQ@mail.gmail.com>
+ <1465216025.2658.7.camel@ellerman.id.au>
+ <CAOJe8K1bBf-J6ZJq+VfVv+CVcwGyff32beGL4kXaZBr5ZL9hmw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,37 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	
- <1466054627.5400.5.camel@ellerman.id.au>
-	
-	
- <20160616055746.GC22590@birch.djwong.org>
-	
-	
- <8737oda1lt.fsf@skywalker.in.ibm.com>
-	
-	 <87ziql8l93.fsf@skywalker.in.ibm.com>
-	 <87wplp8kxh.fsf@skywalker.in.ibm.com>
-Organization: IBM Australia
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.20.3 (3.20.3-1.fc24) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-
-On Thu, 2016-06-16 at 16:22 +0530, Aneesh Kumar K.V wrote:
-> Hmm Qemu  does
+On Thu, 2016-06-16 at 11:12 +0300, Denis Kirjanov wrote:
+> On 6/6/16, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > On Mon, 2016-06-06 at 10:52 +0300, Denis Kirjanov wrote:
+> > > I haven't bisected this yet. Photo attached.
+> > 
+> > A bisect would be awesome.
 > 
->         /* Looks like an IO address */
->         /* FIXME: What WIMG combinations could be sensible for IO?
->          * For now we allow WIMG=010x, but are there others? */
->         /* FIXME: Should we check against registered IO addresses? */
->         if ((ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M)) != HPTE64_R_I) {
->             return H_PARAMETER;
->         }
-> 
-> -aneesh
+> Ok, the issue was introduced by the commit
+> caca285e5ab4a7a19fede51688106ceed6fc45dd (powerpc/mm/radix: Use
+> STD_MMU_64 to properly isolate hash related code) and 970mp dies on
+> the following condition:
 
-And what do we get ? M ? I think we might be OR'ing it
-unconditionaly...
+> +BEGIN_MMU_FTR_SECTION
+>         bl      slb_allocate_realmode
+> -
+> +END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
 
-Ben.
+Thanks.
+
+How did you work that out?
+
+That FTR section says to call slb_allocate_realmode() when MMU_FTR_RADIX is
+clear (ie. zero). That should always be the case on your machine, unless you've
+plugged a Power9 into your G5 ;)
+
+> In my config I've enabled radix MMU lookup but in my understanding
+> only recent IBM  machines support this feature and we have to call SLB
+> entry through slb_allocate_realmode on HPTE machine?
+
+That's right, and that's what the code should be doing.
+
+My G5 is booting OK:
+
+michael@cogito:~$ uname -a
+Linux cogito 4.7.0-rc3-gdb06d75 #1 SMP Thu Jun 16 05:16:31 AEST 2016 ppc64 GNU/Linux
+
+michael@cogito:~$ cat /proc/cpuinfo 
+processor	: 0
+cpu		: PPC970FX, altivec supported
+clock		: 1599.999000MHz
+revision	: 3.0 (pvr 003c 0300)
+
+timebase	: 33333333
+platform	: PowerMac
+model		: PowerMac8,1
+machine		: PowerMac8,1
+motherboard	: PowerMac8,1 MacRISC4 Power Macintosh 
+detected as	: 338 (iMac G5)
+pmac flags	: 00000000
+L2 cache	: 512K unified
+pmac-generation	: NewWorld
+
+michael@cogito:~$ zgrep RADIX /proc/config.gz 
+CONFIG_PPC_RADIX_MMU=y
+
+michael@cogito:~$ dmesg|grep _features
+[    0.000000] cpu_features      = 0x0804806318100448
+[    0.000000] cpu_user_features = 0xdc080000 0x00000000
+[    0.000000] mmu_features      = 0x0c000001
+[    0.000000] firmware_features = 0x0000000000000000
+
+In particular notice:
+
+#define MMU_FTR_RADIX			ASM_CONST(0x80000000)
+                              mmu_features      = 0x0c000001
+
+ie. MMU_FTR_RADIX is clear.
+
+Do you see a different value for mmu_features?
+
+cheers
