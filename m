@@ -1,28 +1,25 @@
-Return-Path: <bsingharora@gmail.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVX3Q5J8kzDqld
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 15:28:18 +1000 (AEST)
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rVX3P5CnSz9t0v
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 15:28:17 +1000 (AEST)
-Received: by mail-pa0-x229.google.com with SMTP id b5so14544508pas.3
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jun 2016 22:28:16 -0700 (PDT)
-Subject: Re: kernel bug in "Drop WIMG in favour of new constants"?
-To: "Darrick J. Wong" <darrick.wong@oracle.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <20160616043340.GB22590@birch.djwong.org>
-Cc: linuxppc-dev@ozlabs.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <c4e18fda-f864-6d2a-5dea-ab1b7da990e2@gmail.com>
-Date: Thu, 16 Jun 2016 15:28:10 +1000
-MIME-Version: 1.0
-In-Reply-To: <20160616043340.GB22590@birch.djwong.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVX7R31f7zDqmC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 15:31:47 +1000 (AEST)
+Message-ID: <1466055106.5400.7.camel@ellerman.id.au>
+Subject: Re: [PATCH][V2] Add support for power9 in ibm_architecture_vec
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>
+Date: Thu, 16 Jun 2016 15:31:46 +1000
+In-Reply-To: <c624cbd5-0017-5408-a146-949f3950ba69@gmail.com>
+References: <900d62c2-8bdf-839a-49fa-99aff00a4d87@gmail.com>
+ <87k2hqaegk.fsf@skywalker.in.ibm.com>
+ <CAKTCnzmLQoBLTyE+bDqwbCTJ+zDLih1Xzm17Qf3M=8v2MBAptQ@mail.gmail.com>
+ <87h9cua1fl.fsf@skywalker.in.ibm.com>
+ <8d2526bd-1f31-bcfc-d188-5b15cb0624e8@gmail.com>
+ <c624cbd5-0017-5408-a146-949f3950ba69@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> Subject: [PATCH][V2] Add support for power9 in ibm_architecture_vec
 
+Can you use "[PATCH v2]", my scripts don't grok your format.
 
-On 16/06/16 14:33, Darrick J. Wong wrote:
-> Hi Aneesh,
+On Thu, 2016-06-16 at 14:54 +1000, Balbir Singh wrote:
 > 
-> I noticed when trying out 4.7-rc3 on qemu-2.5 that the kernel no longer
-> boots.  4.6 booted just fine, so I bisected the kernel to the commit
-> 30bda41aba4efb2370c97e2cbe7385de93ccc372, which is "powerpc/mm: Drop WIMG in
-> favour of new constants".  The changelog suggests that the KVM changes need
-> closer review, and here's an actual crash:
-> 
-> (I can send libvirt's machine xml, .config, and full dmesg if that helps.)
-> 
-> --Darrick
+> On 16/06/16 10:09, Balbir Singh wrote:
 
+> > Yes, my bad.. I'll respin. I thought I had it, but I clearly did not
+> > 
 
-Looking at the address - 0xd000080080000010, looks like map_kernel_page followed
-by a fault here did not do the right thing. This EA range belongs to the io_remap
-range, IIUC. The only suspicious bits I could find are
+Please don't send patches in replies like this, I have to manually clean the
+above up before committing.
+ 
+> V2: Update the vector length for OV1 after adding 3.0 support
 
-+       /*
-+        * if host is mapped cache inhibited, make sure hptel also have
-+        * cache inhibited.
-+        */
-+       if (wimg & HPTE_R_W) /* FIXME!! is this ok for all guest. ? */
-+               return false;
+This should go below the "---" line so that it's stripped from the history.
 
+> The PVR list has been updated and IBM_ARCH_VEC_NRCORES_OFFSET.
+> This provides the cpu version supported to the hypervisor
 
-Aneesh also posted some changes to hpte_update and hpte_updatepp that might be
-interesting
+Can you give me more explanation of the practical effects of the patch. eg. This
+allows guests kernels to signal to the hypervisor that they support ISA 3.0
+features.
 
-Balbir
+cheers
