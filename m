@@ -1,24 +1,31 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVxgR4VHnzDqs7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 07:42:27 +1000 (AEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Chris Metcalf <cmetcalf@mellanox.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- <linuxppc-dev@lists.ozlabs.org>,
- Adhemerval Zanella <adhemerval.zanella@linaro.org>,
- Mike Frysinger <vapier@gentoo.org>
-Subject: Re: possible bug in powerpc LE compat syscalls with 64-bit args
-References: <28c367c1-0f60-cd1d-b443-d3876798a627__12262.0927206755$1466112970$gmane$org@mellanox.com>
-Date: Thu, 16 Jun 2016 23:42:14 +0200
-In-Reply-To: <28c367c1-0f60-cd1d-b443-d3876798a627__12262.0927206755$1466112970$gmane$org@mellanox.com>
- (Chris Metcalf's message of "Thu, 16 Jun 2016 11:36:59 -0400")
-Message-ID: <87r3bwq095.fsf@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVylM4yNGzDqs8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 08:30:55 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rVylL5wzqz9t1N
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 08:30:54 +1000 (AEST)
+Message-ID: <1466116236.24271.26.camel@kernel.crashing.org>
+Subject: Re: kernel bug in "Drop WIMG in favour of new constants"?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, "Darrick J. Wong"
+ <darrick.wong@oracle.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Date: Fri, 17 Jun 2016 08:30:36 +1000
+In-Reply-To: <87twgt8ask.fsf@skywalker.in.ibm.com>
+References: <20160616043340.GB22590@birch.djwong.org>
+ <1466054627.5400.5.camel@ellerman.id.au>
+ <20160616055746.GC22590@birch.djwong.org>
+ <8737oda1lt.fsf@skywalker.in.ibm.com>
+ <87ziql8l93.fsf@skywalker.in.ibm.com>
+ <87wplp8kxh.fsf@skywalker.in.ibm.com>
+ <87twgt8ask.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +35,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Chris Metcalf <cmetcalf@mellanox.com> writes:
+On Thu, 2016-06-16 at 20:01 +0530, Aneesh Kumar K.V wrote:
+> The pHyp part of the comment was added by you in 
+> 3c726f8dee6f55e96475574e9f645327e461884c ([PATCH] ppc64: support 64k
+> page) really an old commit. I also remember we having the discussion and
+> concluding that it should be safe to assume that we can always enable
+> memory coherence. Should we do the below patch of get Qemu fixed up ?
+> like below
+> 
+> -        if ((ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M)) != HPTE64_R_I) {
+> +        wimg_flags = (ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M));
+> +
+> +        if (wimg_flags != HPTE64_R_I && wimg_flags != (HPTE64_R_I | HPTE64_R_M)) {
+>              return H_PARAMETER;
+>          }
 
-> Reviewing what other platforms do, it seems like powerpc compat mode may
-> have the opposite problem in little-endian mode, since arguments are passed
-> in "hi, lo" order unconditionally in arch/powerpc/kernel/sys_ppc32.c.
+Makes sense.
 
-PPC32 is always big-endian.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Cheers,
+Ben.
