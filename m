@@ -1,42 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVgGC3bQWzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 20:53:07 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <hekuang@huawei.com>
+Received: from szxga04-in.huawei.com (unknown [119.145.14.52])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rVgGB4k6Vz9t1f
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 20:53:06 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5GAn883061398
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 06:53:04 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23kqtg7149-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 06:53:04 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 16 Jun 2016 04:53:03 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Darrick J. Wong" <darrick.wong@oracle.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: kernel bug in "Drop WIMG in favour of new constants"?
-In-Reply-To: <87ziql8l93.fsf@skywalker.in.ibm.com>
-References: <20160616043340.GB22590@birch.djwong.org>
- <1466054627.5400.5.camel@ellerman.id.au>
- <20160616055746.GC22590@birch.djwong.org>
- <8737oda1lt.fsf@skywalker.in.ibm.com> <87ziql8l93.fsf@skywalker.in.ibm.com>
-Date: Thu, 16 Jun 2016 16:22:58 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVgKN6KG8zDqkX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 20:55:50 +1000 (AEST)
+From: He Kuang <hekuang@huawei.com>
+To: <peterz@infradead.org>, <mingo@redhat.com>, <acme@kernel.org>,
+ <alexander.shishkin@linux.intel.com>, <hekuang@huawei.com>,
+ <wangnan0@huawei.com>, <adrian.hunter@intel.com>, <ak@linux.intel.com>,
+ <maddy@linux.vnet.ibm.com>, <bp@suse.de>, <dsahern@gmail.com>,
+ <linux@horizon.com>, <jolsa@redhat.com>, <namhyung@kernel.org>,
+ <linux@rasmusvillemoes.dk>, <yury.norov@gmail.com>, <mpe@ellerman.id.au>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 2/2] tools include: Fix wrong macro definitions for
+ cpu_to_le* for big endian
+Date: Thu, 16 Jun 2016 10:41:32 +0000
+Message-ID: <1466073692-88702-2-git-send-email-hekuang@huawei.com>
+In-Reply-To: <1466073692-88702-1-git-send-email-hekuang@huawei.com>
+References: <1466073692-88702-1-git-send-email-hekuang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87wplp8kxh.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,54 +29,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+From: Wang Nan <wangnan0@huawei.com>
 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->
->> "Darrick J. Wong" <darrick.wong@oracle.com> writes:
->>
->>> On Thu, Jun 16, 2016 at 03:23:47PM +1000, Michael Ellerman wrote:
->>>> On Wed, 2016-06-15 at 21:33 -0700, Darrick J. Wong wrote:
->>>> 
->>>> > Hi Aneesh,
->>>> > 
->>>> > I noticed when trying out 4.7-rc3 on qemu-2.5 that the kernel no longer
->>>> > boots.  4.6 booted just fine, so I bisected the kernel to the commit
->>>> > 30bda41aba4efb2370c97e2cbe7385de93ccc372, which is "powerpc/mm: Drop WIMG in
->>>> > favour of new constants".  The changelog suggests that the KVM changes need
->>>> > closer review, and here's an actual crash:
->>>> > 
->>>> > (I can send libvirt's machine xml, .config, and full dmesg if that helps.)
->>>> 
->>>> Yes please.
->>>> 
->>>> I'm successfully booting 4.7-rc's on qemu (2.5.0 (Debian 1:2.5+dfsg-5ubuntu10.1)).
->>>
->>> Ok, see attached.  I also sent along the dpkg --status output for qemu
->>> and qemu-slof; looks like we're running the same Ubuntu packages...
->>>
->>> ...my host kernel is 4.6.0 on x64.
->>
->> So this is Qemu TCG mode right ? I will try some test and update later.
->>
->
-> I am able to reproduce this with
->
-> qemu-system-ppc64 -kernel vmlinux -machine
-> type=pseries,usb=off -smp 1 -m 1G  -vga none -nographic    -device
-> usb-ehci -device usb-kbd -device usb-mouse
->
-> Looks like enabling usb device is the issue.
->
+The cpu_to_le* macros in kernel.h are defined without considering
+endianese. This patch includes "byteoder/generic.h" instead to fix the
+bug, and removes redundant definitions of those macros in intel-bts.c
+and intel-pt-pkt-decoder.c.
 
-Hmm Qemu  does
+Signed-off-by: Wang Nan <wangnan0@huawei.com>
+Signed-off-by: He Kuang <hekuang@huawei.com>
+---
+ tools/include/linux/kernel.h                            | 7 +------
+ tools/perf/util/intel-bts.c                             | 5 -----
+ tools/perf/util/intel-pt-decoder/intel-pt-pkt-decoder.c | 7 +------
+ 3 files changed, 2 insertions(+), 17 deletions(-)
 
-        /* Looks like an IO address */
-        /* FIXME: What WIMG combinations could be sensible for IO?
-         * For now we allow WIMG=010x, but are there others? */
-        /* FIXME: Should we check against registered IO addresses? */
-        if ((ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M)) != HPTE64_R_I) {
-            return H_PARAMETER;
-        }
-
--aneesh
+diff --git a/tools/include/linux/kernel.h b/tools/include/linux/kernel.h
+index 76df535..ccf8daf 100644
+--- a/tools/include/linux/kernel.h
++++ b/tools/include/linux/kernel.h
+@@ -63,12 +63,7 @@
+ #endif
+ #endif
+ 
+-/*
+- * Both need more care to handle endianness
+- * (Don't use bitmap_copy_le() for now)
+- */
+-#define cpu_to_le64(x)	(x)
+-#define cpu_to_le32(x)	(x)
++#include <linux/byteorder/generic.h>
+ 
+ static inline int
+ vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
+diff --git a/tools/perf/util/intel-bts.c b/tools/perf/util/intel-bts.c
+index 9df9960..0e632c4 100644
+--- a/tools/perf/util/intel-bts.c
++++ b/tools/perf/util/intel-bts.c
+@@ -40,11 +40,6 @@
+ #define INTEL_BTS_ERR_NOINSN  5
+ #define INTEL_BTS_ERR_LOST    9
+ 
+-#if __BYTE_ORDER == __BIG_ENDIAN
+-#define le64_to_cpu bswap_64
+-#else
+-#define le64_to_cpu
+-#endif
+ 
+ struct intel_bts {
+ 	struct auxtrace			auxtrace;
+diff --git a/tools/perf/util/intel-pt-decoder/intel-pt-pkt-decoder.c b/tools/perf/util/intel-pt-decoder/intel-pt-pkt-decoder.c
+index b1257c8..9a428f7 100644
+--- a/tools/perf/util/intel-pt-decoder/intel-pt-pkt-decoder.c
++++ b/tools/perf/util/intel-pt-decoder/intel-pt-pkt-decoder.c
+@@ -17,6 +17,7 @@
+ #include <string.h>
+ #include <endian.h>
+ #include <byteswap.h>
++#include <linux/byteorder/generic.h>
+ 
+ #include "intel-pt-pkt-decoder.h"
+ 
+@@ -27,17 +28,11 @@
+ #define NR_FLAG		BIT63
+ 
+ #if __BYTE_ORDER == __BIG_ENDIAN
+-#define le16_to_cpu bswap_16
+-#define le32_to_cpu bswap_32
+-#define le64_to_cpu bswap_64
+ #define memcpy_le64(d, s, n) do { \
+ 	memcpy((d), (s), (n));    \
+ 	*(d) = le64_to_cpu(*(d)); \
+ } while (0)
+ #else
+-#define le16_to_cpu
+-#define le32_to_cpu
+-#define le64_to_cpu
+ #define memcpy_le64 memcpy
+ #endif
+ 
+-- 
+1.8.5.2
