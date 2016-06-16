@@ -1,24 +1,27 @@
 Return-Path: <hekuang@huawei.com>
-Received: from szxga05-in.huawei.com (unknown [119.145.14.199])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rVQzK6ZKhzDqln
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 11:39:25 +1000 (AEST)
-From: He Kuang <hekuang@huawei.com>
-To: <peterz@infradead.org>, <mingo@redhat.com>, <acme@kernel.org>,
- <alexander.shishkin@linux.intel.com>, <hekuang@huawei.com>,
- <wangnan0@huawei.com>, <adrian.hunter@intel.com>, <ak@linux.intel.com>,
- <maddy@linux.vnet.ibm.com>, <bp@suse.de>, <dsahern@gmail.com>,
- <linux@horizon.com>, <jolsa@redhat.com>, <namhyung@kernel.org>,
- <linux@rasmusvillemoes.dk>, <yury.norov@gmail.com>, <mpe@ellerman.id.au>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] tools include: Fix wrong macro definitions for cpu_to_le*
- for big endian
-Date: Thu, 16 Jun 2016 01:32:09 +0000
-Message-ID: <1466040729-100926-3-git-send-email-hekuang@huawei.com>
-In-Reply-To: <1466040729-100926-1-git-send-email-hekuang@huawei.com>
-References: <20160615212958.GC4882@kernel.org>
- <1466040729-100926-1-git-send-email-hekuang@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [58.251.152.64])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rVR242zhkzDqW9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 11:41:46 +1000 (AEST)
+Subject: Re: [PATCH] tools/perf: fix the word selected in find_*_bit
+To: Arnaldo Carvalho de Melo <acme@kernel.org>, Yury Norov
+ <ynorov@caviumnetworks.com>
+References: <1465990973-31483-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160615195127.GA6039@yury-N73SV> <20160615211104.GA6978@yury-N73SV>
+ <20160615212958.GC4882@kernel.org>
+CC: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, "Adrian
+ Hunter" <adrian.hunter@intel.com>,
+ Borislav Petkov <bp@suse.de>, David Ahern <dsahern@gmail.com>,
+ George Spelvin <linux@horizon.com>, Jiri Olsa <jolsa@redhat.com>,
+ Namhyung Kim <namhyung@kernel.org>, Rasmus Villemoes
+ <linux@rasmusvillemoes.dk>, Wang Nan <wangnan0@huawei.com>, Yury Norov
+ <yury.norov@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+From: Hekuang <hekuang@huawei.com>
+Message-ID: <5762027C.2020507@huawei.com>
+Date: Thu, 16 Jun 2016 09:35:56 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20160615212958.GC4882@kernel.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Nan <wangnan0@huawei.com>
 
-The cpu_to_le* macros in kernel.h are defined without considering
-endianese. This patch includes "byteoder/generic.h" instead to fix the
-bug, and removes redundant le64_to_cpu definition in intel-bts.c.
 
-Signed-off-by: Wang Nan <wangnan0@huawei.com>
-Signed-off-by: He Kuang <hekuang@huawei.com>
----
- tools/include/linux/kernel.h | 5 ++---
- tools/perf/util/intel-bts.c  | 5 -----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+在 2016/6/16 5:29, Arnaldo Carvalho de Melo 写道:
+> Em Thu, Jun 16, 2016 at 12:11:04AM +0300, Yury Norov escreveu:
+>> On Wed, Jun 15, 2016 at 10:51:27PM +0300, Yury Norov wrote:
+>>> Maybe there already is some macro doing the conversion for you...
+>> yes it is, cpu_to_le64() is what you want
+> Beware that the cpu_to_le64() in tools/perf is bogus, we need to grab a
+> copy from the kernel sources.
+>
+> - Arnaldo
+>
+[PATCH 1/2] tools include: Sync byteorder/generic.h
+[PATCH 2/2] tools include: Fix wrong macro definitions for cpu_to_le* 
+for big endian
 
-diff --git a/tools/include/linux/kernel.h b/tools/include/linux/kernel.h
-index 76df535..6145e41 100644
---- a/tools/include/linux/kernel.h
-+++ b/tools/include/linux/kernel.h
-@@ -64,11 +64,10 @@
- #endif
- 
- /*
-- * Both need more care to handle endianness
-+ * Need more care to handle endianness
-  * (Don't use bitmap_copy_le() for now)
-  */
--#define cpu_to_le64(x)	(x)
--#define cpu_to_le32(x)	(x)
-+#include <linux/byteorder/generic.h>
- 
- static inline int
- vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
-diff --git a/tools/perf/util/intel-bts.c b/tools/perf/util/intel-bts.c
-index 9df9960..0e632c4 100644
---- a/tools/perf/util/intel-bts.c
-+++ b/tools/perf/util/intel-bts.c
-@@ -40,11 +40,6 @@
- #define INTEL_BTS_ERR_NOINSN  5
- #define INTEL_BTS_ERR_LOST    9
- 
--#if __BYTE_ORDER == __BIG_ENDIAN
--#define le64_to_cpu bswap_64
--#else
--#define le64_to_cpu
--#endif
- 
- struct intel_bts {
- 	struct auxtrace			auxtrace;
--- 
-1.8.5.2
+Here're two patches related to this issue, sorry for wrongly sent two more
+reduntant mails.
+
+Thank you.
