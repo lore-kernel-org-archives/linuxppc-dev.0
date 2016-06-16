@@ -1,46 +1,43 @@
-Return-Path: <felix@linux.vnet.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVmH54XB8zDqnM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 00:39:13 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVlkS59T2zDqsY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 00:14:24 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3rVmH51Pbpz9t0l
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 00:39:13 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5GEDj3a015531
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 10:14:22 -0400
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23ktnhgb81-1
+ u5GEY68x140665
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 10:39:11 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23kr61fcey-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 10:14:22 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 10:39:11 -0400
 Received: from localhost
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Thu, 16 Jun 2016 15:14:20 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 246301B08069
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 15:15:28 +0100 (BST)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5GEEINA64094304
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 14:14:18 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5GEEI30029007
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 08:14:18 -0600
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
- imunsie@au1.ibm.com, mikey@neuling.org,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [v6,2/2] cxl: Add set and get private data to context struct
-Date: Thu, 16 Jun 2016 16:13:35 +0200
-In-Reply-To: <1466086415-30586-1-git-send-email-felix@linux.vnet.ibm.com>
-References: <1466086415-30586-1-git-send-email-felix@linux.vnet.ibm.com>
-Message-Id: <1466086415-30586-2-git-send-email-felix@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 16 Jun 2016 08:39:09 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: "Darrick J. Wong" <darrick.wong@oracle.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: kernel bug in "Drop WIMG in favour of new constants"?
+In-Reply-To: <87wplp8kxh.fsf@skywalker.in.ibm.com>
+References: <20160616043340.GB22590@birch.djwong.org>
+ <1466054627.5400.5.camel@ellerman.id.au>
+ <20160616055746.GC22590@birch.djwong.org>
+ <8737oda1lt.fsf@skywalker.in.ibm.com> <87ziql8l93.fsf@skywalker.in.ibm.com>
+ <87wplp8kxh.fsf@skywalker.in.ibm.com>
+Date: Thu, 16 Jun 2016 20:01:55 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87twgt8ask.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,88 +47,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-This provides AFU drivers a means to associate private data with a cxl
-context. This is particularly intended for make the new callbacks for
-driver specific events easier for AFU drivers to use, as they can easily
-get back to any private data structures they may use.
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+>
+>> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+>>
+>>> "Darrick J. Wong" <darrick.wong@oracle.com> writes:
+>>>
+>>>> On Thu, Jun 16, 2016 at 03:23:47PM +1000, Michael Ellerman wrote:
+>>>>> On Wed, 2016-06-15 at 21:33 -0700, Darrick J. Wong wrote:
+>>>>> 
+>>>>> > Hi Aneesh,
+>>>>> > 
+>>>>> > I noticed when trying out 4.7-rc3 on qemu-2.5 that the kernel no longer
+>>>>> > boots.  4.6 booted just fine, so I bisected the kernel to the commit
+>>>>> > 30bda41aba4efb2370c97e2cbe7385de93ccc372, which is "powerpc/mm: Drop WIMG in
+>>>>> > favour of new constants".  The changelog suggests that the KVM changes need
+>>>>> > closer review, and here's an actual crash:
+>>>>> > 
+>>>>> > (I can send libvirt's machine xml, .config, and full dmesg if that helps.)
+>>>>> 
+>>>>> Yes please.
+>>>>> 
+>>>>> I'm successfully booting 4.7-rc's on qemu (2.5.0 (Debian 1:2.5+dfsg-5ubuntu10.1)).
+>>>>
+>>>> Ok, see attached.  I also sent along the dpkg --status output for qemu
+>>>> and qemu-slof; looks like we're running the same Ubuntu packages...
+>>>>
+>>>> ...my host kernel is 4.6.0 on x64.
+>>>
+>>> So this is Qemu TCG mode right ? I will try some test and update later.
+>>>
+>>
+>> I am able to reproduce this with
+>>
+>> qemu-system-ppc64 -kernel vmlinux -machine
+>> type=pseries,usb=off -smp 1 -m 1G  -vga none -nographic    -device
+>> usb-ehci -device usb-kbd -device usb-mouse
+>>
+>> Looks like enabling usb device is the issue.
+>>
+>
+> Hmm Qemu  does
+>
+>         /* Looks like an IO address */
+>         /* FIXME: What WIMG combinations could be sensible for IO?
+>          * For now we allow WIMG=010x, but are there others? */
+>         /* FIXME: Should we check against registered IO addresses? */
+>         if ((ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M)) != HPTE64_R_I) {
+>             return H_PARAMETER;
+>         }
+>
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
----
-No changes since v1. Added Matt Ochs reviewed-by tag.
 
- drivers/misc/cxl/api.c | 21 +++++++++++++++++++++
- drivers/misc/cxl/cxl.h |  3 +++
- include/misc/cxl.h     |  7 +++++++
- 3 files changed, 31 insertions(+)
+Can you try this patch ?
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 23f98f4..28d5b41 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -94,6 +94,27 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
- 	return 0;
+Ben,
+
+The pHyp part of the comment was added by you in 
+3c726f8dee6f55e96475574e9f645327e461884c ([PATCH] ppc64: support 64k
+page) really an old commit. I also remember we having the discussion and
+concluding that it should be safe to assume that we can always enable
+memory coherence. Should we do the below patch of get Qemu fixed up ?
+like below
+
+-        if ((ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M)) != HPTE64_R_I) {
++        wimg_flags = (ptel & (HPTE64_R_W | HPTE64_R_I | HPTE64_R_M));
++
++        if (wimg_flags != HPTE64_R_I && wimg_flags != (HPTE64_R_I | HPTE64_R_M)) {
+             return H_PARAMETER;
+         }
+
+
+commit 58f32706f64ee8fe21bbd7d6c211720cedec1292
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Thu Jun 16 19:43:39 2016 +0530
+
+    powerpc/mm/hash: Don't add memory coherence if cache inhibited is set
+    
+    H_ENTER hcall handling in qemu had assumptions that a cache inhibited
+    hpte entry won't have memory conference set. Also older kernel
+    mentioned that some version of pHyp required this (look at the comment
+    removed by the commit mentioned below).
+    
+    Fixes: commit 30bda41aba4e("powerpc/mm: Drop WIMG in favour of new constant")
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index fcf676f7f522..89c2791bc510 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -201,9 +201,8 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	/*
+ 	 * We can't allow hardware to update hpte bits. Hence always
+ 	 * set 'R' bit and set 'C' if it is a write fault
+-	 * Memory coherence is always enabled
+ 	 */
+-	rflags |=  HPTE_R_R | HPTE_R_M;
++	rflags |=  HPTE_R_R;
+ 
+ 	if (pteflags & _PAGE_DIRTY)
+ 		rflags |= HPTE_R_C;
+@@ -216,7 +215,12 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
+ 	if ((pteflags & _PAGE_CACHE_CTL ) == _PAGE_NON_IDEMPOTENT)
+ 		rflags |= (HPTE_R_I | HPTE_R_G);
+ 	if ((pteflags & _PAGE_CACHE_CTL) == _PAGE_SAO)
+-		rflags |= (HPTE_R_I | HPTE_R_W);
++		rflags |= (HPTE_R_W | HPTE_R_I | HPTE_R_M);
++	/*
++	 * Add memory coherence if cache inhibited is not set
++	 */
++	if (!(rflags & HPTE_R_I))
++		rflags |= HPTE_R_M;
+ 
+ 	return rflags;
  }
- 
-+
-+int cxl_set_priv(struct cxl_context *ctx, void *priv)
-+{
-+	if (!ctx)
-+		return -EINVAL;
-+
-+	ctx->priv = priv;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cxl_set_priv);
-+
-+void *cxl_get_priv(struct cxl_context *ctx)
-+{
-+	if (!ctx)
-+		return ERR_PTR(-EINVAL);
-+
-+	return ctx->priv;
-+}
-+EXPORT_SYMBOL_GPL(cxl_get_priv);
-+
- int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
- {
- 	int res;
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b0027e6..1e56304 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -478,6 +478,9 @@ struct cxl_context {
- 	/* Only used in PR mode */
- 	u64 process_token;
- 
-+	/* driver private data */
-+	void *priv;
-+
- 	unsigned long *irq_bitmap; /* Accessed from IRQ context */
- 	struct cxl_irq_ranges irqs;
- 	struct list_head irq_names;
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index 1d8dde8..8f89110 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -86,6 +86,13 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev);
- int cxl_release_context(struct cxl_context *ctx);
- 
- /*
-+ * Set and get private data associated with a context. Allows drivers to have a
-+ * back pointer to some useful structure.
-+ */
-+int cxl_set_priv(struct cxl_context *ctx, void *priv);
-+void *cxl_get_priv(struct cxl_context *ctx);
-+
-+/*
-  * Allocate AFU interrupts for this context. num=0 will allocate the default
-  * for this AFU as given in the AFU descriptor. This number doesn't include the
-  * interrupt 0 (CAIA defines AFU IRQ 0 for page faults). Each interrupt to be
--- 
-2.1.0
