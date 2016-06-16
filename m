@@ -1,48 +1,26 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rVZZw0xH1zDqdd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 17:22:15 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5G7Innf078922
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 03:22:14 -0400
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23jgpfkhe2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 03:22:13 -0400
-Received: from localhost
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 16 Jun 2016 12:52:11 +0530
-Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4ED97394005C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 12:52:09 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5G7M9Su50331782
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 12:52:09 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5G7Lv97010343
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 12:52:07 +0530
-Subject: Re: [PATCH] tools/perf: fix the word selected in find_*_bit
-To: George Spelvin <linux@sciencehorizons.net>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20160615124409.6985.qmail@ns.sciencehorizons.net>
-Cc: acme@kernel.org, adrian.hunter@intel.com, bp@suse.de, dsahern@gmail.com,
- jolsa@redhat.com, linux@horizon.com, linux@rasmusvillemoes.dk,
- mpe@ellerman.id.au, namhyung@kernel.org, wangnan0@huawei.com,
- yury.norov@gmail.com
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Thu, 16 Jun 2016 12:51:44 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rVbFJ4D53zDqmm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 17:52:04 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id m124so9277859wme.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2016 00:52:04 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20160615124409.6985.qmail@ns.sciencehorizons.net>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <479a4811-9aa2-57fd-a1a5-900bacdd69fc@linux.vnet.ibm.com>
+In-Reply-To: <CA+7wUszph+weTn=bu24d6YdkChOk39ae_dOkQXJQxykkQH0PNg@mail.gmail.com>
+References: <5761BDAD.3060107@gmail.com>
+ <CA+7wUszph+weTn=bu24d6YdkChOk39ae_dOkQXJQxykkQH0PNg@mail.gmail.com>
+From: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+Date: Thu, 16 Jun 2016 09:51:41 +0200
+Message-ID: <CA+7wUsz0OnOHVyGTE=nzAbCi_GbmLvU-Q4wQHjs=SOLRUB4E5w@mail.gmail.com>
+Subject: Re: [PATCH v2] of: fix memory leak related to safe_name()
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,30 +30,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Sorry, symptoms not solved. According to kmemleak, I have now:
+
+[  661.323100] kmemleak: 100 new suspected memory leaks (see
+/sys/kernel/debug/kmemleak)
+[ 1260.226120] kmemleak: 1 new suspected memory leaks (see
+/sys/kernel/debug/kmemleak)
+
+# head -40 /sys/kernel/debug/kmemleak
+unreferenced object 0xdf5326a0 (size 32):
+  comm "swapper", pid 1, jiffies 4294892300 (age 2564.708s)
+  hex dump (first 32 bytes):
+    62 61 73 65 00 00 4c d8 c5 78 df dc cc 43 e4 bc  base..L..x...C..
+    c4 c8 ec 8c ee de ce cf e8 c9 8a ea dc cc c6 fd  ................
+  backtrace:
+    [<c014d4d8>] kstrdup+0x48/0x88
+    [<c0454678>] __of_attach_node_sysfs+0xf0/0x100
+    [<c075f21c>] of_core_init+0x8c/0xf8
+    [<c0729594>] kernel_init_freeable+0xd4/0x208
+    [<c00047e8>] kernel_init+0x24/0x11c
+    [<c00158ec>] ret_from_kernel_thread+0x5c/0x64
+unreferenced object 0xdf532240 (size 32):
+  comm "swapper", pid 1, jiffies 4294892300 (age 2564.708s)
+  hex dump (first 32 bytes):
+    63 70 75 73 00 68 65 2d 73 69 7a 65 00 c6 dc ac  cpus.he-size....
+    ac 6f 48 ec ec 99 86 78 ac eb c9 ac 4c 4c ee db  .oH....x....LL..
+  backtrace:
+    [<c014d4d8>] kstrdup+0x48/0x88
+    [<c04545f4>] __of_attach_node_sysfs+0x6c/0x100
+    [<c075f21c>] of_core_init+0x8c/0xf8
+    [<c0729594>] kernel_init_freeable+0xd4/0x208
+    [<c00047e8>] kernel_init+0x24/0x11c
+    [<c00158ec>] ret_from_kernel_thread+0x5c/0x64
+unreferenced object 0xdf5320a0 (size 32):
+  comm "swapper", pid 1, jiffies 4294892300 (age 2564.708s)
+  hex dump (first 32 bytes):
+    50 6f 77 65 72 50 43 2c 47 34 40 30 00 4f 5c 5c  PowerPC,G4@0.O\\
+    c4 4d c0 d8 0e ec ed cc 9e cc 4d ce a8 2c cc c6  .M........M..,..
+  backtrace:
+    [<c014d4d8>] kstrdup+0x48/0x88
+    [<c04545f4>] __of_attach_node_sysfs+0x6c/0x100
+    [<c075f21c>] of_core_init+0x8c/0xf8
+    [<c0729594>] kernel_init_freeable+0xd4/0x208
+    [<c00047e8>] kernel_init+0x24/0x11c
+    [<c00158ec>] ret_from_kernel_thread+0x5c/0x64
+unreferenced object 0xdf5586c0 (size 32):
+  comm "swapper", pid 1, jiffies 4294892300 (age 2564.708s)
+  hex dump (first 32 bytes):
+    6c 32 2d 63 61 63 68 65 23 31 00 ac c0 21 02 f4  l2-cache#1...!..
 
 
-On Wednesday 15 June 2016 06:14 PM, George Spelvin wrote:
-> Madhavan Srinivasan wrote:
->> +#if (__BYTE_ORDER == __BIG_ENDIAN) && (BITS_PER_LONG != 64)
->> +	tmp = addr[(((nbits - 1)/BITS_PER_LONG) - (start / BITS_PER_LONG))]
->> +								^ invert;
->> +#else
->>  	tmp = addr[start / BITS_PER_LONG] ^ invert;
->> +#endif
-> Than you for diagnosing this problem, but I don't think the fix
-> is correct.
+On Thu, Jun 16, 2016 at 9:15 AM, Mathieu Malaterre
+<mathieu.malaterre@gmail.com> wrote:
+> I only tested v2. I confirm this solve the symptoms I was seeing in
+> the bug report.
 >
-> 1) It's not clear that all users of _find_next_bit and for_each_set_bit()
->    want this change.
-> 2) Is your code even correct?  I'd think you'd want addr[x ^ 1].  Are you
->    sure you shpuld be reversing the whole array, and not just the halves of
->    each 64-bit word?
-> 3) You've now broken the case of 32-bit big-endian kernel.
-
-Yes. But looks like we havent hit this case yet. Will post a fix.
-
-Maddy
-
+> Tested-by: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 >
-> I think the proper solution is uglier than this. :-(
+> thanks, your patch is actually much cleaner!
 >
+> On Wed, Jun 15, 2016 at 10:42 PM, Frank Rowand <frowand.list@gmail.com> wrote:
+>> From: Frank Rowand <frank.rowand@am.sony.com>
+>>
+>> Fix a memory leak resulting from memory allocation in safe_name().
+>> This patch fixes all call sites of safe_name().
+>>
+>> Mathieu Malaterre reported the memory leak on boot:
+>>
+>> On my PowerMac device-tree would generate a duplicate name:
+>>
+>> [    0.023043] device-tree: Duplicate name in PowerPC,G4@0, renamed to "l2-cache#1"
+>>
+>> in this case a newly allocated name is generated by `safe_name`. However
+>> in this case it is never deallocated.
+>>
+>> The bug was found using kmemleak reported as:
+>>
+>> unreferenced object 0xdf532e60 (size 32):
+>>   comm "swapper", pid 1, jiffies 4294892300 (age 1993.532s)
+>>   hex dump (first 32 bytes):
+>>     6c 32 2d 63 61 63 68 65 23 31 00 dd e4 dd 1e c2  l2-cache#1......
+>>     ec d4 ba ce 04 ec cc de 8e 85 e9 ca c4 ec cc 9e  ................
+>>   backtrace:
+>>     [<c02d3350>] kvasprintf+0x64/0xc8
+>>     [<c02d3400>] kasprintf+0x4c/0x5c
+>>     [<c0453814>] safe_name.isra.1+0x80/0xc4
+>>     [<c04545d8>] __of_attach_node_sysfs+0x6c/0x11c
+>>     [<c075f21c>] of_core_init+0x8c/0xf8
+>>     [<c0729594>] kernel_init_freeable+0xd4/0x208
+>>     [<c00047e8>] kernel_init+0x24/0x11c
+>>     [<c00158ec>] ret_from_kernel_thread+0x5c/0x64
+>>
+>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=120331
+>>
+>> Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
+>> Reported-by: mathieu.malaterre@gmail.com
+>> ---
+>>
+>> changes from v1
+>>   Move the prototype of __of_sysfs_remove_bin_file() into of_private.h
+>>
+>>  drivers/of/base.c       |   29 ++++++++++++++++++++---------
+>>  drivers/of/dynamic.c    |    2 +-
+>>  drivers/of/of_private.h |    3 +++
+>>  3 files changed, 24 insertions(+), 10 deletions(-)
+>>
+>> Index: b/drivers/of/base.c
+>> ===================================================================
+>> --- a/drivers/of/base.c
+>> +++ b/drivers/of/base.c
+>> @@ -112,6 +112,7 @@ static ssize_t of_node_property_read(str
+>>         return memory_read_from_buffer(buf, count, &offset, pp->value, pp->length);
+>>  }
+>>
+>> +/* always return newly allocated name, caller must free after use */
+>>  static const char *safe_name(struct kobject *kobj, const char *orig_name)
+>>  {
+>>         const char *name = orig_name;
+>> @@ -126,9 +127,12 @@ static const char *safe_name(struct kobj
+>>                 name = kasprintf(GFP_KERNEL, "%s#%i", orig_name, ++i);
+>>         }
+>>
+>> -       if (name != orig_name)
+>> +       if (name == orig_name) {
+>> +               name = kstrdup(orig_name, GFP_KERNEL);
+>> +       } else {
+>>                 pr_warn("device-tree: Duplicate name in %s, renamed to \"%s\"\n",
+>>                         kobject_name(kobj), name);
+>> +       }
+>>         return name;
+>>  }
+>>
+>> @@ -159,6 +163,7 @@ int __of_add_property_sysfs(struct devic
+>>  int __of_attach_node_sysfs(struct device_node *np)
+>>  {
+>>         const char *name;
+>> +       struct kobject *parent;
+>>         struct property *pp;
+>>         int rc;
+>>
+>> @@ -171,15 +176,15 @@ int __of_attach_node_sysfs(struct device
+>>         np->kobj.kset = of_kset;
+>>         if (!np->parent) {
+>>                 /* Nodes without parents are new top level trees */
+>> -               rc = kobject_add(&np->kobj, NULL, "%s",
+>> -                                safe_name(&of_kset->kobj, "base"));
+>> +               name = safe_name(&of_kset->kobj, "base");
+>> +               parent = NULL;
+>>         } else {
+>>                 name = safe_name(&np->parent->kobj, kbasename(np->full_name));
+>> -               if (!name || !name[0])
+>> -                       return -EINVAL;
+>> -
+>> -               rc = kobject_add(&np->kobj, &np->parent->kobj, "%s", name);
+>> +               parent = &np->parent->kobj;
+>>         }
+>> +       if (!name)
+>> +               return -ENOMEM;
+>> +       rc = kobject_add(&np->kobj, parent, "%s", name);
+>>         if (rc)
+>>                 return rc;
+>>
+>> @@ -1815,6 +1820,12 @@ int __of_remove_property(struct device_n
+>>         return 0;
+>>  }
+>>
+>> +void __of_sysfs_remove_bin_file(struct device_node *np, struct property *prop)
+>> +{
+>> +       sysfs_remove_bin_file(&np->kobj, &prop->attr);
+>> +       kfree(prop->attr.attr.name);
+>> +}
+>> +
+>>  void __of_remove_property_sysfs(struct device_node *np, struct property *prop)
+>>  {
+>>         if (!IS_ENABLED(CONFIG_SYSFS))
+>> @@ -1822,7 +1833,7 @@ void __of_remove_property_sysfs(struct d
+>>
+>>         /* at early boot, bail here and defer setup to of_init() */
+>>         if (of_kset && of_node_is_attached(np))
+>> -               sysfs_remove_bin_file(&np->kobj, &prop->attr);
+>> +               __of_sysfs_remove_bin_file(np, prop);
+>>  }
+>>
+>>  /**
+>> @@ -1895,7 +1906,7 @@ void __of_update_property_sysfs(struct d
+>>                 return;
+>>
+>>         if (oldprop)
+>> -               sysfs_remove_bin_file(&np->kobj, &oldprop->attr);
+>> +               __of_sysfs_remove_bin_file(np, oldprop);
+>>         __of_add_property_sysfs(np, newprop);
+>>  }
+>>
+>> Index: b/drivers/of/dynamic.c
+>> ===================================================================
+>> --- a/drivers/of/dynamic.c
+>> +++ b/drivers/of/dynamic.c
+>> @@ -55,7 +55,7 @@ void __of_detach_node_sysfs(struct devic
+>>         /* only remove properties if on sysfs */
+>>         if (of_node_is_attached(np)) {
+>>                 for_each_property_of_node(np, pp)
+>> -                       sysfs_remove_bin_file(&np->kobj, &pp->attr);
+>> +                       __of_sysfs_remove_bin_file(np, pp);
+>>                 kobject_del(&np->kobj);
+>>         }
+>>
+>> Index: b/drivers/of/of_private.h
+>> ===================================================================
+>> --- a/drivers/of/of_private.h
+>> +++ b/drivers/of/of_private.h
+>> @@ -83,6 +83,9 @@ extern int __of_attach_node_sysfs(struct
+>>  extern void __of_detach_node(struct device_node *np);
+>>  extern void __of_detach_node_sysfs(struct device_node *np);
+>>
+>> +extern void __of_sysfs_remove_bin_file(struct device_node *np,
+>> +                                      struct property *prop);
+>> +
+>>  /* iterators for transactions, used for overlays */
+>>  /* forward iterator */
+>>  #define for_each_transaction_entry(_oft, _te) \
+>
+>
+>
+> --
+> Mathieu
+
+
+
+-- 
+Mathieu
