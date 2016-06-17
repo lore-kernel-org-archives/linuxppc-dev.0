@@ -1,23 +1,25 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rWBqm6jd3zDqvG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 17:35:32 +1000 (AEST)
-Date: Fri, 17 Jun 2016 15:35:23 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v2 2/9] kexec_file: Generalize kexec_add_buffer.
-Message-ID: <20160617073523.GA5091@dhcp-128-65.nay.redhat.com>
-References: <1465916349-3398-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <3237367.XLxdnj8q4x@hactar>
- <20160616015853.GA4103@dhcp-128-65.nay.redhat.com>
- <16133071.BqvF7Se0c2@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rWCBj3PCmzDqfV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 17:51:56 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id m124so16571191wme.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 00:51:56 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <16133071.BqvF7Se0c2@hactar>
+In-Reply-To: <5762E732.1030908@gmail.com>
+References: <5762E732.1030908@gmail.com>
+From: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+Date: Fri, 17 Jun 2016 09:51:33 +0200
+Message-ID: <CA+7wUsziB9P24bXnSrLB_t-KOZ2CVj9p5xZYsCnr5DNZL8mg+w@mail.gmail.com>
+Subject: Re: [PATCH v3] of: fix memory leak related to safe_name()
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,153 +29,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/16/16 at 05:39pm, Thiago Jung Bauermann wrote:
-> Am Donnerstag, 16 Juni 2016, 09:58:53 schrieb Dave Young:
-> > On 06/15/16 at 01:21pm, Thiago Jung Bauermann wrote:
-> > > +/**
-> > > + * arch_kexec_walk_mem - call func(data) on free memory regions
-> > > + * @image_type:	kimage.type
-> > > + * @top_down:	Start from the highest address?
-> > > + * @data:	Argument to pass to @func.
-> > > + * @func:	Function to call for each memory region.
-> > > + *
-> > > + * Return: The memory walk will stop when func returns a non-zero value
-> > > + * and that value will be returned. If all free regions are visited
-> > > without + * func returning non-zero, then zero will be returned.
-> > > + */
-> > > +int __weak arch_kexec_walk_mem(unsigned int image_type, bool top_down,
-> > > +			       void *data, int (*func)(u64, u64, void *))
-> > > +{
-> > 
-> > top_down is also not used?
-> 
-> It's unused in the default implementation, but the powerpc implementation in patch 8 uses it:
+v3 tested here multiple times ! memleak is now gone.
 
-Well, arch_kexec_walk_mem use kbuf as "data", you can even drop
-"image_type" since kbuf has all you want kbuf->image->type, and
-kbuf->top_down 
-
-int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
-			       int (*func)(u64, u64, void *))
-> 
-> int arch_kexec_walk_mem(unsigned int type, bool top_down, void *data,
-> 			int (*func)(u64, u64, void *))
-> {
-> 	int ret = 0;
-> 	u64 i;
-> 	phys_addr_t mstart, mend;
-> 
-> 	if (top_down) {
-> 		for_each_free_mem_range_reverse(i, NUMA_NO_NODE, 0,
-> 						&mstart, &mend, NULL) {
-> 			ret = func(mstart, mend, data);
-> 			if (ret)
-> 				break;
-> 		}
-> 	} else {
-> 		for_each_free_mem_range(i, NUMA_NO_NODE, 0, &mstart, &mend,
-> 					NULL) {
-> 			ret = func(mstart, mend, data);
-> 			if (ret)
-> 				break;
-> 		}
-> 	}
-> 
-> 	return ret;
-> }
-> 
-> > Rethink about the argument name type should be better than image_type,
-> > it is obvious in the comments and the code and simpler.
-> 
-> Ok, renamed in the patch below.
-> 
-> []'s
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
-> 
-> 
->     kexec_file: Generalize kexec_add_buffer.
->     
->     Allow architectures to specify different memory walking functions for
->     kexec_add_buffer. Intel uses iomem to track reserved memory ranges,
->     but PowerPC uses the memblock subsystem.
->     
->     Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
->     Cc: Eric Biederman <ebiederm@xmission.com>
->     Cc: Dave Young <dyoung@redhat.com>
->     Cc: kexec@lists.infradead.org
->     Cc: linux-kernel@vger.kernel.org
-> 
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index e8acb2b43dd9..42b31f2e1d88 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -315,6 +315,8 @@ int __weak arch_kexec_apply_relocations_add(const Elf_Ehdr *ehdr,
->  					Elf_Shdr *sechdrs, unsigned int relsec);
->  int __weak arch_kexec_apply_relocations(const Elf_Ehdr *ehdr, Elf_Shdr *sechdrs,
->  					unsigned int relsec);
-> +int __weak arch_kexec_walk_mem(unsigned int type, bool top_down, void *data,
-> +			       int (*func)(u64, u64, void *));
->  void arch_kexec_protect_crashkres(void);
->  void arch_kexec_unprotect_crashkres(void);
->  
-> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-> index b6eec7527e9f..989647a324f2 100644
-> --- a/kernel/kexec_file.c
-> +++ b/kernel/kexec_file.c
-> @@ -428,6 +428,29 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
->  	return locate_mem_hole_bottom_up(start, end, kbuf);
->  }
->  
-> +/**
-> + * arch_kexec_walk_mem - call func(data) on free memory regions
-> + * @type:	kimage.type
-> + * @top_down:	Start from the highest address?
-> + * @data:	Argument to pass to @func.
-> + * @func:	Function to call for each memory region.
-> + *
-> + * Return: The memory walk will stop when func returns a non-zero value
-> + * and that value will be returned. If all free regions are visited without
-> + * func returning non-zero, then zero will be returned.
-> + */
-> +int __weak arch_kexec_walk_mem(unsigned int type, bool top_down, void *data,
-> +			       int (*func)(u64, u64, void *))
-> +{
-> +	if (type == KEXEC_TYPE_CRASH)
-> +		return walk_iomem_res_desc(crashk_res.desc,
-> +					   IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
-> +					   crashk_res.start, crashk_res.end,
-> +					   data, func);
-> +	else
-> +		return walk_system_ram_res(0, ULONG_MAX, data, func);
-> +}
-> +
->  /*
->   * Helper function for placing a buffer in a kexec segment. This assumes
->   * that kexec_mutex is held.
-> @@ -472,14 +495,8 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
->  	kbuf->top_down = top_down;
->  
->  	/* Walk the RAM ranges and allocate a suitable range for the buffer */
-> -	if (image->type == KEXEC_TYPE_CRASH)
-> -		ret = walk_iomem_res_desc(crashk_res.desc,
-> -				IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
-> -				crashk_res.start, crashk_res.end, kbuf,
-> -				locate_mem_hole_callback);
-> -	else
-> -		ret = walk_system_ram_res(0, -1, kbuf,
-> -					  locate_mem_hole_callback);
-> +	ret = arch_kexec_walk_mem(image->type, top_down, kbuf,
-> +				   locate_mem_hole_callback);
->  	if (ret != 1) {
->  		/* A suitable memory range could not be found for buffer */
->  		return -EADDRNOTAVAIL;
-> 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+Tested-by: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 
 Thanks
-Dave
+
+On Thu, Jun 16, 2016 at 7:51 PM, Frank Rowand <frowand.list@gmail.com> wrote:
+> From: Frank Rowand <frank.rowand@am.sony.com>
+>
+> Fix a memory leak resulting from memory allocation in safe_name().
+> This patch fixes all call sites of safe_name().
+>
+> Mathieu Malaterre reported the memory leak on boot:
+>
+> On my PowerMac device-tree would generate a duplicate name:
+>
+> [    0.023043] device-tree: Duplicate name in PowerPC,G4@0, renamed to "l2-cache#1"
+>
+> in this case a newly allocated name is generated by `safe_name`. However
+> in this case it is never deallocated.
+>
+> The bug was found using kmemleak reported as:
+>
+> unreferenced object 0xdf532e60 (size 32):
+>   comm "swapper", pid 1, jiffies 4294892300 (age 1993.532s)
+>   hex dump (first 32 bytes):
+>     6c 32 2d 63 61 63 68 65 23 31 00 dd e4 dd 1e c2  l2-cache#1......
+>     ec d4 ba ce 04 ec cc de 8e 85 e9 ca c4 ec cc 9e  ................
+>   backtrace:
+>     [<c02d3350>] kvasprintf+0x64/0xc8
+>     [<c02d3400>] kasprintf+0x4c/0x5c
+>     [<c0453814>] safe_name.isra.1+0x80/0xc4
+>     [<c04545d8>] __of_attach_node_sysfs+0x6c/0x11c
+>     [<c075f21c>] of_core_init+0x8c/0xf8
+>     [<c0729594>] kernel_init_freeable+0xd4/0x208
+>     [<c00047e8>] kernel_init+0x24/0x11c
+>     [<c00158ec>] ret_from_kernel_thread+0x5c/0x64
+>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=120331
+>
+> Signed-off-by: Frank Rowand <frank.rowand@am.sony.com>
+> Reported-by: mathieu.malaterre@gmail.com
+> ---
+>
+> changes from v1
+>   Move the prototype of __of_sysfs_remove_bin_file() into of_private.h
+>
+> changes from v2
+>   Add the kfree that was in Mathieu's original patch
+>
+>  drivers/of/base.c       |   30 +++++++++++++++++++++---------
+>  drivers/of/dynamic.c    |    2 +-
+>  drivers/of/of_private.h |    3 +++
+>  3 files changed, 25 insertions(+), 10 deletions(-)
+>
+> Index: b/drivers/of/base.c
+> ===================================================================
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -112,6 +112,7 @@ static ssize_t of_node_property_read(str
+>         return memory_read_from_buffer(buf, count, &offset, pp->value, pp->length);
+>  }
+>
+> +/* always return newly allocated name, caller must free after use */
+>  static const char *safe_name(struct kobject *kobj, const char *orig_name)
+>  {
+>         const char *name = orig_name;
+> @@ -126,9 +127,12 @@ static const char *safe_name(struct kobj
+>                 name = kasprintf(GFP_KERNEL, "%s#%i", orig_name, ++i);
+>         }
+>
+> -       if (name != orig_name)
+> +       if (name == orig_name) {
+> +               name = kstrdup(orig_name, GFP_KERNEL);
+> +       } else {
+>                 pr_warn("device-tree: Duplicate name in %s, renamed to \"%s\"\n",
+>                         kobject_name(kobj), name);
+> +       }
+>         return name;
+>  }
+>
+> @@ -159,6 +163,7 @@ int __of_add_property_sysfs(struct devic
+>  int __of_attach_node_sysfs(struct device_node *np)
+>  {
+>         const char *name;
+> +       struct kobject *parent;
+>         struct property *pp;
+>         int rc;
+>
+> @@ -171,15 +176,16 @@ int __of_attach_node_sysfs(struct device
+>         np->kobj.kset = of_kset;
+>         if (!np->parent) {
+>                 /* Nodes without parents are new top level trees */
+> -               rc = kobject_add(&np->kobj, NULL, "%s",
+> -                                safe_name(&of_kset->kobj, "base"));
+> +               name = safe_name(&of_kset->kobj, "base");
+> +               parent = NULL;
+>         } else {
+>                 name = safe_name(&np->parent->kobj, kbasename(np->full_name));
+> -               if (!name || !name[0])
+> -                       return -EINVAL;
+> -
+> -               rc = kobject_add(&np->kobj, &np->parent->kobj, "%s", name);
+> +               parent = &np->parent->kobj;
+>         }
+> +       if (!name)
+> +               return -ENOMEM;
+> +       rc = kobject_add(&np->kobj, parent, "%s", name);
+> +       kfree(name);
+>         if (rc)
+>                 return rc;
+>
+> @@ -1815,6 +1821,12 @@ int __of_remove_property(struct device_n
+>         return 0;
+>  }
+>
+> +void __of_sysfs_remove_bin_file(struct device_node *np, struct property *prop)
+> +{
+> +       sysfs_remove_bin_file(&np->kobj, &prop->attr);
+> +       kfree(prop->attr.attr.name);
+> +}
+> +
+>  void __of_remove_property_sysfs(struct device_node *np, struct property *prop)
+>  {
+>         if (!IS_ENABLED(CONFIG_SYSFS))
+> @@ -1822,7 +1834,7 @@ void __of_remove_property_sysfs(struct d
+>
+>         /* at early boot, bail here and defer setup to of_init() */
+>         if (of_kset && of_node_is_attached(np))
+> -               sysfs_remove_bin_file(&np->kobj, &prop->attr);
+> +               __of_sysfs_remove_bin_file(np, prop);
+>  }
+>
+>  /**
+> @@ -1895,7 +1907,7 @@ void __of_update_property_sysfs(struct d
+>                 return;
+>
+>         if (oldprop)
+> -               sysfs_remove_bin_file(&np->kobj, &oldprop->attr);
+> +               __of_sysfs_remove_bin_file(np, oldprop);
+>         __of_add_property_sysfs(np, newprop);
+>  }
+>
+> Index: b/drivers/of/dynamic.c
+> ===================================================================
+> --- a/drivers/of/dynamic.c
+> +++ b/drivers/of/dynamic.c
+> @@ -55,7 +55,7 @@ void __of_detach_node_sysfs(struct devic
+>         /* only remove properties if on sysfs */
+>         if (of_node_is_attached(np)) {
+>                 for_each_property_of_node(np, pp)
+> -                       sysfs_remove_bin_file(&np->kobj, &pp->attr);
+> +                       __of_sysfs_remove_bin_file(np, pp);
+>                 kobject_del(&np->kobj);
+>         }
+>
+> Index: b/drivers/of/of_private.h
+> ===================================================================
+> --- a/drivers/of/of_private.h
+> +++ b/drivers/of/of_private.h
+> @@ -83,6 +83,9 @@ extern int __of_attach_node_sysfs(struct
+>  extern void __of_detach_node(struct device_node *np);
+>  extern void __of_detach_node_sysfs(struct device_node *np);
+>
+> +extern void __of_sysfs_remove_bin_file(struct device_node *np,
+> +                                      struct property *prop);
+> +
+>  /* iterators for transactions, used for overlays */
+>  /* forward iterator */
+>  #define for_each_transaction_entry(_oft, _te) \
+
+
+
+-- 
+Mathieu
