@@ -1,21 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hekuang@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [58.251.152.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rW3DF7598zDql7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 11:52:45 +1000 (AEST)
-Message-ID: <1466128365.12899.9.camel@ellerman.id.au>
-Subject: Re: possible bug in powerpc LE compat syscalls with 64-bit args
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Chris Metcalf <cmetcalf@mellanox.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Adhemerval Zanella
- <adhemerval.zanella@linaro.org>,  Mike Frysinger <vapier@gentoo.org>
-Date: Fri, 17 Jun 2016 11:52:45 +1000
-In-Reply-To: <28c367c1-0f60-cd1d-b443-d3876798a627@mellanox.com>
-References: <28c367c1-0f60-cd1d-b443-d3876798a627@mellanox.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rW3H55kQTzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 11:55:13 +1000 (AEST)
+Subject: Re: [PATCH v2 1/2] tools include: Adopt byte ordering macros from
+ byteorder/generic.h
+To: Jiri Olsa <jolsa@redhat.com>
+References: <1466073692-88702-1-git-send-email-hekuang@huawei.com>
+ <20160616113600.GB20646@krava>
+CC: <peterz@infradead.org>, <mingo@redhat.com>, <acme@kernel.org>,
+ <alexander.shishkin@linux.intel.com>, <wangnan0@huawei.com>,
+ <adrian.hunter@intel.com>, <ak@linux.intel.com>,
+ <maddy@linux.vnet.ibm.com>, <bp@suse.de>, <dsahern@gmail.com>,
+ <linux@horizon.com>, <namhyung@kernel.org>, <linux@rasmusvillemoes.dk>,
+ <yury.norov@gmail.com>, <mpe@ellerman.id.au>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+From: Hekuang <hekuang@huawei.com>
+Message-ID: <57635752.6020201@huawei.com>
+Date: Fri, 17 Jun 2016 09:50:10 +0800
+MIME-Version: 1.0
+In-Reply-To: <20160616113600.GB20646@krava>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-06-16 at 11:36 -0400, Chris Metcalf wrote:
 
-> Adhemerval Zanella is cleaning up the preadv/pwritev implementation in glibc
-> and came across an issue with the tilepro/tilegx32 implementation of argument
-> passing for 64-bit arguments in split register pairs.
-> 
-> The glibc code base uses __LONG_LONG_PAIR to split 64-bit arguments,
-> passing "hi, lo" for BE systems and "lo, hi" for LE systems.  Tile is almost uniformly
-> LE, but we do support BE for specific customers.  The 32-bit compat mode on
-> tilegx was getting passed "hi, lo" arguments by glibc but looking for them to
-> be "lo, hi" arguments on the kernel side.  I fixed this here:
-> 
-> https://lkml.kernel.org/g/1466019219-10462-1-git-send-email-cmetcalf@mellanox.com
-> 
-> Reviewing what other platforms do, it seems like powerpc compat mode may
-> have the opposite problem in little-endian mode, since arguments are passed
-> in "hi, lo" order unconditionally in arch/powerpc/kernel/sys_ppc32.c.  You may
-> want to adopt the solution in the patch cited above, or similar solutions
-> elsewhere, eg regs_to_64 in arch/arm64/include/asm/assembler.h, or
-> merge_64 in arch/mips/kernel/linux32.c.
 
-We don't support compat mode on ppc64le. So I think we're OK?
+在 2016/6/16 19:36, Jiri Olsa 写道:
+> On Thu, Jun 16, 2016 at 10:41:31AM +0000, He Kuang wrote:
+>> From: Wang Nan <wangnan0@huawei.com>
+>>
+>> This patch adopts the macros for byte order conversion from
+>> "include/linux/byteorder/generic.h" to
+>> "tools/include/linux/byteorder/generic.h"
+>>
+>> tools/perf/MANIFEST is also updated for 'make perf-*-src-pkg'.
+> other than explanation for the kbuild test robot email:
+>    http://marc.info/?l=linux-kernel&m=146605819924421&w=2
+I think that's because of yesterday I sent these two patches
+separately while the second one deponds on the first.
 
-Thanks for letting us know.
-
-cheers
+Thank you.
+>
+> it looks ok..
+>
+> jirka
+>
