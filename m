@@ -2,30 +2,23 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rWWBN2RJpzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 05:52:43 +1000 (AEST)
-Date: Fri, 17 Jun 2016 14:52:37 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rWWDK4Pz8zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 05:54:25 +1000 (AEST)
+Date: Fri, 17 Jun 2016 14:54:20 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>,
- Khalid Aziz <khalid.aziz@oracle.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- linux-xtensa@linux-xtensa.org
-Subject: Re: [PATCH v12.update2 02/15] PCI: Let pci_mmap_page_range() take
- resource address
-Message-ID: <20160617195237.GA10416@localhost>
-References: <20160609222552.6938-1-yinghai@kernel.org>
- <20160617021555.GA21125@localhost>
- <CAE9FiQVMxuo16MArLXjT8oaSGMce1G=evaWqeOaW-WeT_ju6Mw@mail.gmail.com>
+ Michal Simek <monstr@monstr.eu>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 2/3] powerpc/pci: Remove __pci_mmap_set_pgprot()
+Message-ID: <20160617195419.GA2688@localhost>
+References: <20160609181102.13455.33593.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20160609182023.13455.82564.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAE9FiQVMxuo16MArLXjT8oaSGMce1G=evaWqeOaW-WeT_ju6Mw@mail.gmail.com>
+In-Reply-To: <20160609182023.13455.82564.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,74 +28,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 17, 2016 at 12:25:49PM -0700, Yinghai Lu wrote:
-> On Thu, Jun 16, 2016 at 7:15 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Thu, Jun 09, 2016 at 03:25:52PM -0700, Yinghai Lu wrote:
-> >> In 8c05cd08a7 ("PCI: fix offset check for sysfs mmapped files"), try
-> >> to check exposed value with resource start/end in proc mmap path.
-> >>
-> >> |        start = vma->vm_pgoff;
-> >> |        size = ((pci_resource_len(pdev, resno) - 1) >> PAGE_SHIFT) + 1;
-> >> |        pci_start = (mmap_api == PCI_MMAP_PROCFS) ?
-> >> |                        pci_resource_start(pdev, resno) >> PAGE_SHIFT : 0;
-> >> |        if (start >= pci_start && start < pci_start + size &&
-> >> |                        start + nr <= pci_start + size)
-> >>
-> >> That breaks sparc that exposed value is BAR value, and need to be offseted
-> >> to resource address.
-> >
-> > I'm not quite sure what you're saying here.  Are you saying that sparc
-> > is currently broken, and this patch fixes it?  If so, what exactly is
-> > broken?  Can you give a small example of an mmap that is currently
-> > broken?
-> >
-> >> Original pci_mmap_page_range() is taking PCI BAR value aka usr_address.
-> >>
-> >> Bjorn found out that it would be much simple to pass resource address
-> >> directly and avoid extra those __pci_mmap_make_offset.
-> >>
-> >> In this patch:
-> >> 1. in proc path: proc_bus_pci_mmap, try convert back to resource
-> >>    before calling pci_mmap_page_range
-> >> 2. in sysfs path: pci_mmap_resource will just offset with resource start.
-> >> 3. all pci_mmap_page_range will have vma->vm_pgoff with in resource
-> >>    range instead of BAR value.
-> >> 4. remove __pci_mmap_make_offset, as the checking is done
-> >>    in pci_mmap_fits().
-> >
-> > This is a pretty big patch.  It would help a lot to split it up.
+On Thu, Jun 09, 2016 at 01:20:23PM -0500, Bjorn Helgaas wrote:
+> From: Yinghai Lu <yinghai@kernel.org>
 > 
-> Looks like they are tight together after change api. vm_pgoff meaning changes.
+> The powerpc-specific __pci_mmap_set_pgprot() does two things:
 > 
-> I could split item 4 to another patch, but compiler could complain or
-> even refuse to
-> go on if static functions are defined but not used.
-
-Yeah, I was afraid they might be too tightly coupled to split up.
-Still, every little bit helps.
-
-> > I think the comment about "re-enabling the 2 lines below" is pointless
-> > because doing that would break applications, which I don't think we'll
-> > do.
-> >
-> > I propose the microblaze, powerpc, and sparc patches below, which
-> > remove simplify pci_resource_to_user() and clean up this comment.
+>   1) Disables write combining for I/O port space mappings
 > 
-> Agreed. Actually I have the change for sparc/PCI in patch 3
->    sparc/PCI: Use correct offset for bus address to resource
-> according to previous review.
-
-Sure enough, I see it there now.  I think it's easier to review when
-split out, so I'll keep it separate, since it's not actually dependent
-on the rest of the changes in "sparc/PCI: Use correct offset for bus
-address to resource".
-
-> Will drop related change in sparc/PCI: Use correct offset for bus
-> address to resource
+>      This only affects procfs mappings.  The pci_mmap_resource() sysfs path
+>      only requests write combining for resources with IORESOURCE_PREFETCH
+>      set, which doesn't include I/O resources.
 > 
-> and respin the whole patchset today.
+>      The only way to request write combining for I/O port space mappings
+>      was via the PCIIOC_WRITE_COMBINE ioctl and the proc_bus_pci_mmap()
+>      path, and we recently changed that path to ignore write combining for
+>      I/O, so this code in powerpc is no longer needed.
+> 
+>   2) Automatically enables write combining for mappings of prefetchable
+>      resources, even if not requested by the user
+> 
+>      Both procfs (via PCIIOC_MMAP_IS_MEM and PCIIOC_WRITE_COMBINE ioctls)
+>      and sysfs (via "resourceN_wc" files, which are created for resources
+>      with IORESOURCE_PREFETCH) provide ways for the user to map PCI memory
+>      space with write combining.
+> 
+>      Users that desire write combining should use one of those ways instead
+>      of relying on powerpc-specific behavior.
+> 
+> Remove the powerpc-specific __pci_mmap_set_pgprot().
+> 
+> The user-visible effect of this change is that users mapping prefetchable
+> PCI memory space via procfs without PCIIOC_WRITE_COMBINE or via sysfs
+> "resourceN" (not "resourceN_wc") will get regular uncacheable mappings
+> instead of the write combining mappings they used to get.
+> 
+> The new behavior matches the behavior on all other arches that support
+> write combining mapping.
 
-I added your acks and pushed the result to pci/resource.  I'll also
-post these formally on the list so they're easier to find.
+Powerpc folks, any thoughts on this?
 
-Bjorn
+It's currently on my pci/resource branch, and I plan to merge it for
+v4.8 if there are no objections.
+
+> [bhelgaas: changelog]
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  arch/powerpc/kernel/pci-common.c |   37 ++++---------------------------------
+>  1 file changed, 4 insertions(+), 33 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 0f7a60f..8c6beb0 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -356,36 +356,6 @@ static struct resource *__pci_mmap_make_offset(struct pci_dev *dev,
+>  }
+>  
+>  /*
+> - * Set vm_page_prot of VMA, as appropriate for this architecture, for a pci
+> - * device mapping.
+> - */
+> -static pgprot_t __pci_mmap_set_pgprot(struct pci_dev *dev, struct resource *rp,
+> -				      pgprot_t protection,
+> -				      enum pci_mmap_state mmap_state,
+> -				      int write_combine)
+> -{
+> -
+> -	/* Write combine is always 0 on non-memory space mappings. On
+> -	 * memory space, if the user didn't pass 1, we check for a
+> -	 * "prefetchable" resource. This is a bit hackish, but we use
+> -	 * this to workaround the inability of /sysfs to provide a write
+> -	 * combine bit
+> -	 */
+> -	if (mmap_state != pci_mmap_mem)
+> -		write_combine = 0;
+> -	else if (write_combine == 0) {
+> -		if (rp->flags & IORESOURCE_PREFETCH)
+> -			write_combine = 1;
+> -	}
+> -
+> -	/* XXX would be nice to have a way to ask for write-through */
+> -	if (write_combine)
+> -		return pgprot_noncached_wc(protection);
+> -	else
+> -		return pgprot_noncached(protection);
+> -}
+> -
+> -/*
+>   * This one is used by /dev/mem and fbdev who have no clue about the
+>   * PCI device, it tries to find the PCI device first and calls the
+>   * above routine
+> @@ -458,9 +428,10 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+>  		return -EINVAL;
+>  
+>  	vma->vm_pgoff = offset >> PAGE_SHIFT;
+> -	vma->vm_page_prot = __pci_mmap_set_pgprot(dev, rp,
+> -						  vma->vm_page_prot,
+> -						  mmap_state, write_combine);
+> +	if (write_combine)
+> +		vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
+> +	else
+> +		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+>  
+>  	ret = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
+>  			       vma->vm_end - vma->vm_start, vma->vm_page_prot);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
