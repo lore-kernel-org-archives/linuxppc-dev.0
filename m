@@ -1,30 +1,24 @@
-Return-Path: <dja@axtens.net>
+Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rW5WL2pjfzDqsV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 13:35:58 +1000 (AEST)
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rW5WK0nv9z9t1l
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 13:35:56 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id i123so2238634pfg.3
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 20:35:56 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/align: Use #ifdef __BIG_ENDIAN__ #else for
- REG_BYTE
-In-Reply-To: <6933845.bk2S1M4pvP@wuerfel>
-References: <1466080421-25188-1-git-send-email-mpe@ellerman.id.au>
- <6933845.bk2S1M4pvP@wuerfel>
-Date: Fri, 17 Jun 2016 13:35:35 +1000
-Message-ID: <8760t8mqrc.fsf@possimpible.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rW5jy5JJkzDqlg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 13:45:10 +1000 (AEST)
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 3rW5jy47sdz9t17
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 13:45:10 +1000 (AEST)
+Message-ID: <1466135110.4722.5.camel@neuling.org>
+Subject: Re: [PATCH] cxl: Make vPHB device node match adapter's
+From: Michael Neuling <mikey@neuling.org>
+To: Ian Munsie <imunsie@au1.ibm.com>, Frederic Barrat
+ <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 17 Jun 2016 13:45:10 +1000
+In-Reply-To: <1466027386-sup-9561@x230.ozlabs.ibm.com>
+References: <1466001736-3074-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ <1466027386-sup-9561@x230.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +28,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Thu, 2016-06-16 at 07:53 +1000, Ian Munsie wrote:
+> This could probably use a description in the commit message, perhaps
+> including output showing the before/after difference this makes to
+> lsvpd, but otherwise it looks fine to me.
+>=20
+> @Mikey - this look OK to you?
 
-> It would be better to fix the sparse compilation so the same endianess
-> is set that you get when calling gcc.
+Yeah I think this is a good idea.
 
-I will definitely work on a patch to sparse! I'd still like this or
-something like it to go in though, so we can keep working on reducing
-the sparse warning count while the sparse patch is in the works.
+IIRC, we had something like this really early on but hit some random issue
+and pulled it out before posting.
 
-Regards,
-Daniel
+Mikey
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJXY3AHAAoJEPC3R3P2I92F+HIP/198vbgGRGcFFjCZf3NiJOLr
-NF24JAakSSXabXbJ6UUUtBFJhvNeiFL2SnMBTuqbKcPeDqeJsSLgrRSWGXNknAmh
-f/B85fFH0k3C/XU7XryoAZTdoQI2mKQob81j9ksm8ZerPbsT10rODavIB0Me/erT
-HTMWLexjnj4rPRvwN3a6lVz9Gge0xd6cQxIHdM1YhCj/h3g9i8yFD0vqsE7JyT4w
-AuypdxMECR7BH5lVZQGvRmUEpNy7VAE44wIyEv/ESHVxHwrjdHxU8h6Z1imm5PSJ
-+nPY13iAxHrYEaTXmUqrkgJ5SXLar+1/FQqYNqMHcgNZpiQZOcbhK8NzNUL9odcb
-Io/605ZYMvvkyXWhDnOfrPS6D7m2M3Lfq5eRJ5Chz20Fveg04f6voYm2vyFaGlHU
-g7hZO1x4VBV1wD/VO6rqXifLpIGaxhqmGO5HLLA5punHxvzR3PE7ht+GXcGL6KLQ
-ZM7WnUYL6IKR5vAL0QIID9HO9InTRCw25C50jfmSKiq8oeLcqAid/IJWGR3yAy2r
-858ju4rd9WnJLzL4vkBCKPo7kOWfXSosAZGHiayx4+Z9ZoSXOYkGkScW8x8d4kw9
-qDQbN7TvXjRfJo2+26VE77DOFMZRDMLtU4OPzmPeCLh8FaI0bZZmB+PUstWyUhT3
-YCmjFc2QplwODhXE45Yo
-=ovZ/
------END PGP SIGNATURE-----
---=-=-=--
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+>=20
+> Excerpts from Frederic Barrat's message of 2016-06-15 16:42:16 +0200:
+> >=20
+> > Tested by cxlflash on bare-metal and powerVM.
+> >=20
+> > Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> > ---
+> > =C2=A0drivers/misc/cxl/vphb.c | 21 ++++++++++-----------
+> > =C2=A01 file changed, 10 insertions(+), 11 deletions(-)
+> >=20
+> > diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+> > index cdc7723..012b6aa 100644
+> > --- a/drivers/misc/cxl/vphb.c
+> > +++ b/drivers/misc/cxl/vphb.c
+> > @@ -208,20 +208,19 @@ static struct pci_controller_ops
+> > cxl_pci_controller_ops =3D
+> > =C2=A0
+> > =C2=A0int cxl_pci_vphb_add(struct cxl_afu *afu)
+> > =C2=A0{
+> > -=C2=A0=C2=A0=C2=A0=C2=A0struct pci_dev *phys_dev;
+> > -=C2=A0=C2=A0=C2=A0=C2=A0struct pci_controller *phb, *phys_phb;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0struct pci_controller *phb;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct device_node *vphb_dn;
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct device *parent;
+> > =C2=A0
+> > -=C2=A0=C2=A0=C2=A0=C2=A0if (cpu_has_feature(CPU_FTR_HVMODE)) {
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0phys_dev =3D to_pci_de=
+v(afu->adapter->dev.parent);
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0phys_phb =3D pci_bus_t=
+o_host(phys_dev->bus);
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0vphb_dn =3D phys_phb->=
+dn;
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0parent =3D &phys_dev->=
+dev;
+> > -=C2=A0=C2=A0=C2=A0=C2=A0} else {
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0vphb_dn =3D afu->adapt=
+er->dev.parent->of_node;
+> > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0parent =3D afu->adapte=
+r->dev.parent;
+> > -=C2=A0=C2=A0=C2=A0=C2=A0}
+> > +=C2=A0=C2=A0=C2=A0=C2=A0/* The parent device is the adapter. Reuse the=
+ device node of
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0* the adapter.
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0* We don't seem to care what device node=
+ is used for the vPHB,
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0* but tools such as lsvpd walk up the de=
+vice parents looking
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0* for a valid location code, so we might=
+ as well show devices
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0* attached to the adapter as being locat=
+ed on that adapter.
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0*/
+> > +=C2=A0=C2=A0=C2=A0=C2=A0parent =3D afu->adapter->dev.parent;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0vphb_dn =3D parent->of_node;
+> > =C2=A0
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* Alloc and setup PHB data structure */
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0phb =3D pcibios_alloc_controller(vphb_dn)=
+;
