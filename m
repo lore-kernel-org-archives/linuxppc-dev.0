@@ -1,26 +1,21 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rW9XX0xgZzDqsD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 16:37:16 +1000 (AEST)
-Date: Fri, 17 Jun 2016 08:37:07 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Yury Norov <ynorov@caviumnetworks.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
- Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] tools/perf: Fix the mask in regs_dump__printf
-Message-ID: <20160617063707.GA31475@krava>
-References: <1466140958-1928-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rWBV405drzDqtM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 17:20:12 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id us13so5274955pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 00:20:11 -0700 (PDT)
+Subject: Re: [Patch v2 1/2] powerpc: Send SIGBUS on unaligned copy and paste
+To: Chris Smart <chris@distroguy.com>, linuxppc-dev@lists.ozlabs.org
+References: <20160616233340.GA14449@distroguy.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <13e8530c-80d6-5475-f4f2-3a46e4a75a76@gmail.com>
+Date: Fri, 17 Jun 2016 17:20:05 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1466140958-1928-1-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <20160616233340.GA14449@distroguy.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 17, 2016 at 10:52:38AM +0530, Madhavan Srinivasan wrote:
-> When decoding the perf_regs mask in regs_dump__printf(),
-> we loop through the mask using find_first_bit and find_next_bit functions.
-> And mask is of type "u64". But "u64" is send as a "unsigned long *" to
-> lib functions along with sizeof().
+
+
+On 17/06/16 09:33, Chris Smart wrote:
+> Calling ISA 3.0 instructions copy, copy_first, paste and paste_last
+> generates an alignment fault when copying or pasting unaligned
+> data (128 byte). We catch this and send SIGBUS to the userspace
+> process that caused it.
 > 
-> While the exisitng code works fine in most of the case, when using a
-> 32bit perf on a 64bit kernel (Big Endian), we end up reading the wrong word
-> in the u64 mask. Patch to fix the mask in regs_dump__printf().
+> We do not emulate these because paste may contain additional metadata
+> when pasting to a co-processor and paste_last is the synchronisation
+> point for preceding copy/paste sequences.
 > 
-> Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
-> Cc: Yury Norov <ynorov@caviumnetworks.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-> Cc: Jiri Olsa <jolsa@kernel.org>
-> Cc: Adrian Hunter <adrian.hunter@intel.com>
-> Cc: Kan Liang <kan.liang@intel.com>
-> Cc: Wang Nan <wangnan0@huawei.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Thanks to Michael Neuling <mikey@neuling.org> for his help.
+> 
+> Signed-off-by: Chris Smart <chris@distroguy.com>
 > ---
->  tools/perf/util/session.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-> index 5214974e841a..2eaa42a4832a 100644
-> --- a/tools/perf/util/session.c
-> +++ b/tools/perf/util/session.c
-> @@ -940,8 +940,13 @@ static void branch_stack__printf(struct perf_sample *sample)
->  static void regs_dump__printf(u64 mask, u64 *regs)
->  {
->  	unsigned rid, i = 0;
-> +	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
->  
-> -	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
-> +	_mask[0] = mask & ULONG_MAX;
-> +	if (sizeof(mask) > sizeof(unsigned long))
-> +		_mask[1] = mask >> 32;
+> Changes since v1:
+> - define and use instruction for mask test
+> 
+> arch/powerpc/include/asm/ppc-opcode.h |  4 ++++
+> arch/powerpc/kernel/align.c           | 14 ++++++++++++++
+> 2 files changed, 18 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> index 1d035c1cc889..7921d3e5704d 100644
+> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -131,6 +131,8 @@
+> /* sorted alphabetically */
+> #define PPC_INST_BHRBE            0x7c00025c
+> #define PPC_INST_CLRBHRB        0x7c00035c
+> +#define PPC_INST_COPY            0x7c00060c
+> +#define PPC_INST_COPY_FIRST        0x7c20060c
+> #define PPC_INST_CP_ABORT        0x7c00068c
+> #define PPC_INST_DCBA            0x7c0005ec
+> #define PPC_INST_DCBA_MASK        0xfc0007fe
+> @@ -159,6 +161,8 @@
+> #define PPC_INST_MSGSNDP        0x7c00011c
+> #define PPC_INST_MTTMR            0x7c0003dc
+> #define PPC_INST_NOP            0x60000000
+> +#define PPC_INST_PASTE            0x7c00070c
+> +#define PPC_INST_PASTE_LAST        0x7c20070d
+> #define PPC_INST_POPCNTB        0x7c0000f4
+> #define PPC_INST_POPCNTB_MASK        0xfc0007fe
+> #define PPC_INST_POPCNTD        0x7c0003f4
+> diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
+> index 8e7cb8e2b21a..6e0a1f8495f2 100644
+> --- a/arch/powerpc/kernel/align.c
+> +++ b/arch/powerpc/kernel/align.c
+> @@ -875,6 +875,20 @@ int fix_alignment(struct pt_regs *regs)
+>         return emulate_vsx(addr, reg, areg, regs, flags, nb, elsize);
+>     }
+> #endif
 > +
+> +    /*
+> +     * ISA 3.0 (such as P9) copy, copy_first, paste and paste_last alignment
+> +     * check.
+> +     *
+> +     * Send a SIGBUS to the process that caused the fault.
+> +     *
+> +     * We do not emulate these because paste may contain additional metadata
+> +     * when pasting to a co-processor. Furthermore, paste_last is the
+> +     * synchronisation point for preceding copy/paste sequences.
+> +     */
+> +    if ((instruction & 0xfc0006fe) == PPC_INST_COPY)
+> +        return -EIO;
 
-I think we should do this earlier when reading the mask,
-not at the moment we just print it, like we do for other
-types.. maybe we could do this as an extra bit for
-perf_event__swap_ops[PERF_RECORD_SAMPLE] function
+Should this all be under cpu_has_feature(CPU_FTR_ARCH_300)?
 
-also there's print_sample_iregs in builtin-script.c that's
-most likely affected as well
-
-thanks,
-jirka
-
-> +	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
->  		u64 val = regs[i++];
->  
->  		printf(".... %-5s 0x%" PRIx64 "\n",
-> -- 
-> 1.9.1
-> 
+Balbir Singh.
