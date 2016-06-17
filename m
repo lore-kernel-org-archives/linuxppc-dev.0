@@ -1,56 +1,47 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rW7ML4q7lzDqtQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 14:59:10 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rW7MK65wbz9t2H
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 14:59:09 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5H4x4nO044175
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 00:59:08 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23ktnj96bc-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rW7tk334PzDqvL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 15:22:54 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5H5IngU132220
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 01:22:51 -0400
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [125.16.236.6])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23ktcahpkr-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 00:59:08 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 01:22:50 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 17 Jun 2016 14:59:05 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B25ED2BB0054
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 14:59:03 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5H4x3DL10944846
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 14:59:03 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5H4x31i013966
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 14:59:03 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- u5H4x3sr013960
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 14:59:03 +1000
-Received: from camb691.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 128F4A0223
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 14:59:03 +1000 (AEST)
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] powerpc: tm: Always reclaim in start_thread() for
- exec() class syscalls
-Date: Fri, 17 Jun 2016 14:58:34 +1000
-In-Reply-To: <20160617045834.22275-1-cyrilbur@gmail.com>
-References: <20160617045834.22275-1-cyrilbur@gmail.com>
-Message-Id: <20160617045834.22275-2-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Fri, 17 Jun 2016 10:52:47 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 61E07125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 10:55:18 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5H5Mjne62062616
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 10:52:45 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5H5Mfje023026
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 10:52:45 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Yury Norov <ynorov@caviumnetworks.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
+ Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] tools/perf: Fix the mask in regs_dump__printf
+Date: Fri, 17 Jun 2016 10:52:38 +0530
+Message-Id: <1466140958-1928-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,123 +51,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Userspace can quite legitimately perform an exec() syscall with a
-suspended transaction. exec() does not return to the old process,
-rather it load a new one and starts that, the expectation therefore is
-that the new process starts not in a transaction. Currently exec() is
-not treated any differently to any other syscall which creates
-problems.
+When decoding the perf_regs mask in regs_dump__printf(),
+we loop through the mask using find_first_bit and find_next_bit functions.
+And mask is of type "u64". But "u64" is send as a "unsigned long *" to
+lib functions along with sizeof().
 
-Firstly it could allow a new process to start with a suspended
-transaction for a binary that no longer exists. This means that the
-checkpointed state won't be valid and if the suspended transaction
-were ever to be resumed and subsequently aborted (a possibility which
-is exceedingly likely as exec()ing will likely doom the transaction)
-the new process will jump to invalid state.
+While the exisitng code works fine in most of the case, when using a
+32bit perf on a 64bit kernel (Big Endian), we end up reading the wrong word
+in the u64 mask. Patch to fix the mask in regs_dump__printf().
 
-Secondly the incorrect attempt to keep the transactional state while
-still zeroing state for the new process creates at least two TM Bad
-Things. The first triggers on the rfid to return to userspace as
-start_thread() has given the new process a 'clean' MSR but the suspend
-will still be set in the hardware MSR. The second TM Bad Thing
-triggers in __switch_to() as the processor is still transactionally
-suspended but __switch_to() wants to zero the TM sprs for the new
-process.
-
-This is an example of the outcome of calling exec() with a suspended
-transaction. Note the first 700 is likely the first TM bad thing
-decsribed earlier only the kernel can't report it as we've loaded
-userspace registers. c000000000009980 is the rfid in
-fast_exception_return()
-
-Bad kernel stack pointer 3fffcfa1a370 at c000000000009980
-Oops: Bad kernel stack pointer, sig: 6 [#1]
-SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in:
-CPU: 0 PID: 2006 Comm: tm-execed Not tainted
-4.6.0-rc3cyrilb769744c1efb74735f687b36ba6f97b5668e0f515 #1
-task: c0000000fbea6d80 ti: c00000003ffec000 task.ti: c0000000fb7ec000
-NIP: c000000000009980 LR: 0000000000000000 CTR: 0000000000000000
-REGS: c00000003ffefd40 TRAP: 0700   Not tainted
-(4.6.0-rc3cyrilb769744c1efb74735f687b36ba6f97b5668e0f515)
-MSR: 8000000300201031 <SF,ME,IR,DR,LE,TM[SE]>  CR: 00000000  XER: 00000000
-CFAR: c0000000000098b4 SOFTE: 0
-PACATMSCRATCH: b00000010000d033
-GPR00: 0000000000000000 00003fffcfa1a370 0000000000000000 0000000000000000
-GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR12: 00003fff966611c0 0000000000000000 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR28: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-NIP [c000000000009980] fast_exception_return+0xb0/0xb8
-LR [0000000000000000]           (null)
-Call Trace:
-Instruction dump:
-f84d0278 e9a100d8 7c7b03a6 e84101a0 7c4ff120 e8410170 7c5a03a6 e8010070
-e8410080 e8610088 e8810090 e8210078 <4c000024> 48000000 e8610178 88ed023b
----[ end trace 4d79afb454bb5313 ]---
-
-------------[ cut here ]------------
-Kernel BUG at c000000000043e80 [verbose debug info unavailable]
-Unexpected TM Bad Thing exception at c000000000043e80 (msr 0x201033)
-Oops: Unrecoverable exception, sig: 6 [#2]
-SMP NR_CPUS=2048 NUMA pSeries
-Modules linked in:
-CPU: 0 PID: 2006 Comm: tm-execed Tainted: G      D
-4.6.0-rc3cyrilb769744c1efb74735f687b36ba6f97b5668e0f515 #1
-task: c0000000fbea6d80 ti: c00000003ffec000 task.ti: c0000000fb7ec000
-NIP: c000000000043e80 LR: c000000000015a24 CTR: 0000000000000000
-REGS: c00000003ffef7e0 TRAP: 0700   Tainted: G      D
-(4.6.0-rc3cyrilb769744c1efb74735f687b36ba6f97b5668e0f515)
-MSR: 8000000300201033 <SF,ME,IR,DR,RI,LE,TM[SE]>  CR: 28002828  XER: 00000000
-CFAR: c000000000015a20 SOFTE: 0
-PACATMSCRATCH: b00000010000d033
-GPR00: 0000000000000000 c00000003ffefa60 c000000000db5500 c0000000fbead000
-GPR04: 8000000300001033 2222222222222222 2222222222222222 00000000ff160000
-GPR08: 0000000000000000 800000010000d033 c0000000fb7e3ea0 c00000000fe00004
-GPR12: 0000000000002200 c00000000fe00000 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 0000000000000000 c0000000fbea7410 00000000ff160000
-GPR24: c0000000ffe1f600 c0000000fbea8700 c0000000fbea8700 c0000000fbead000
-GPR28: c000000000e20198 c0000000fbea6d80 c0000000fbeab680 c0000000fbea6d80
-NIP [c000000000043e80] tm_restore_sprs+0xc/0x1c
-LR [c000000000015a24] __switch_to+0x1f4/0x420
-Call Trace:
-Instruction dump:
-7c800164 4e800020 7c0022a6 f80304a8 7c0222a6 f80304b0 7c0122a6 f80304b8
-4e800020 e80304a8 7c0023a6 e80304b0 <7c0223a6> e80304b8 7c0123a6 4e800020
----[ end trace 4d79afb454bb5314 ]---
-
-Fixes: bc2a940 ("powerpc: Hook in new transactional memory code")
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Kan Liang <kan.liang@intel.com>
+Cc: Wang Nan <wangnan0@huawei.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
-V2: Wrap the entire thing in #ifdef to avoid breaking 32bit builds.
+ tools/perf/util/session.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
- arch/powerpc/kernel/process.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index c5c3ae2..e9b1efd 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1513,6 +1513,16 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 		current->thread.regs = regs - 1;
- 	}
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 5214974e841a..2eaa42a4832a 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -940,8 +940,13 @@ static void branch_stack__printf(struct perf_sample *sample)
+ static void regs_dump__printf(u64 mask, u64 *regs)
+ {
+ 	unsigned rid, i = 0;
++	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/*
-+	 * Clear any transactional state, we're exec()ing. The cause is
-+	 * not important as there will never be a recheckpoint so it's not
-+	 * user visible.
-+	 */
-+	if (MSR_TM_SUSPENDED(mfmsr()))
-+		tm_reclaim_current(0);
-+#endif
+-	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
++	_mask[0] = mask & ULONG_MAX;
++	if (sizeof(mask) > sizeof(unsigned long))
++		_mask[1] = mask >> 32;
 +
- 	memset(regs->gpr, 0, sizeof(regs->gpr));
- 	regs->ctr = 0;
- 	regs->link = 0;
++	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs[i++];
+ 
+ 		printf(".... %-5s 0x%" PRIx64 "\n",
 -- 
-2.8.3
+1.9.1
