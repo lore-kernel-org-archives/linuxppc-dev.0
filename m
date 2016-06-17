@@ -1,21 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rWKtT4H61zDqJ8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 22:53:21 +1000 (AEST)
-In-Reply-To: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rWLKz0vgCzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 23:13:43 +1000 (AEST)
+In-Reply-To: <1465629495-17166-3-git-send-email-maddy@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Matt Evans <matt@ozlabs.org>, Daniel Borkmann <daniel@iogearbox.net>,
- Alexei Starovoitov <ast@fb.com>, Denis Kirjanov <kda@linux-powerpc.org>,
- Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [6/6] ppc: ebpf/jit: Implement JIT compiler for extended BPF
-Message-Id: <3rWKtT2tSrz9t2G@ozlabs.org>
-Date: Fri, 17 Jun 2016 22:53:21 +1000 (AEST)
+Cc: mikey@ozlabs.au.ibm.com, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [3/4] powerpc/perf: Power9 PMU support
+Message-Id: <3rWLKy6z15z9t2G@ozlabs.org>
+Date: Fri, 17 Jun 2016 23:13:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-07-06 at 13:32:23 UTC, "Naveen N. Rao" wrote:
-> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> new file mode 100644
-> index 0000000..954ff53
-> --- /dev/null
-> +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> @@ -0,0 +1,956 @@
-...
-> +
-> +static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
-> +{
-> +	int *p = area;
-> +
-> +	/* Fill whole space with trap instructions */
-> +	while (p < (int *)((char *)area + size))
-> +		*p++ = BREAKPOINT_INSTRUCTION;
-> +}
+On Sat, 2016-11-06 at 07:18:14 UTC, Madhavan Srinivasan wrote:
+> This patch adds base enablement for the power9 PMU.
 
-This breaks the build for some configs, presumably you're missing a header:
+This is almost line-for-line identical to the Power8 code, with the exception of
+some things you haven't sent yet because they're not ready.
 
-  arch/powerpc/net/bpf_jit_comp64.c:30:10: error: 'BREAKPOINT_INSTRUCTION' undeclared (first use in this function)
+Can you try and factor out some of the common bits please?
 
-http://kisskb.ellerman.id.au/kisskb/buildresult/12720611/
+Perhaps isa207-common.c ? But I don't really mind.
 
 cheers
