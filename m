@@ -1,45 +1,30 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
+Return-Path: <dja@axtens.net>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rW4rD5snlzDqsd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 13:05:32 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rW5WL2pjfzDqsV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 13:35:58 +1000 (AEST)
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rW4rD1m2bz9sdn
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 13:05:31 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5H33w06072415
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 23:05:30 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23kbtwb8rb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 23:05:30 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 17 Jun 2016 13:05:27 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BFE172BB0054
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 13:05:25 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5H35Pah9830830
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 13:05:25 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5H35Pk9014412
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 13:05:25 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/eeh: Fix invalid cached PE primary bus
-Date: Fri, 17 Jun 2016 13:05:11 +1000
-Message-Id: <1466132722-13512-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3rW5WK0nv9z9t1l
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Jun 2016 13:35:56 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id i123so2238634pfg.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Jun 2016 20:35:56 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/align: Use #ifdef __BIG_ENDIAN__ #else for
+ REG_BYTE
+In-Reply-To: <6933845.bk2S1M4pvP@wuerfel>
+References: <1466080421-25188-1-git-send-email-mpe@ellerman.id.au>
+ <6933845.bk2S1M4pvP@wuerfel>
+Date: Fri, 17 Jun 2016 13:35:35 +1000
+Message-ID: <8760t8mqrc.fsf@possimpible.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,51 +34,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PE primary bus cannot be got from its child devices when having
-full hotplug in error recovery. The PE primary bus is cached, which
-is done in commit <05ba75f84864> ("powerpc/eeh: Fix stale cached primary
-bus"). In eeh_reset_device(), the flag (EEH_PE_PRI_BUS) is cleared
-before the PCI hot remove. eeh_pe_bus_get() then returns NULL as the
-PE primary bus in pnv_eeh_reset() and it crashes the kernel eventually.
+--=-=-=
+Content-Type: text/plain
 
-This fixes the issue by clearing the flag (EEH_PE_PRI_BUS) before the
-PCI hot add. With it, the PowerNV EEH reset backend (pnv_eeh_reset())
-can get valid PE primary bus through eeh_pe_bus_get().
+> It would be better to fix the sparse compilation so the same endianess
+> is set that you get when calling gcc.
 
-Cc: stable@vger.kernel.org # v4.6+
-Fixes: 67086e32b564 ("powerpc/eeh: powerpc/eeh: Support error recovery for VF PE")
-Reported-by: Pridhiviraj Paidipeddi <ppaiddipe@in.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_driver.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+I will definitely work on a patch to sparse! I'd still like this or
+something like it to go in though, so we can keep working on reducing
+the sparse warning count while the sparse patch is in the works.
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 2714a3b..b5f73cb 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -642,7 +642,6 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		if (pe->type & EEH_PE_VF) {
- 			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
- 		} else {
--			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 			pci_lock_rescan_remove();
- 			pci_hp_remove_devices(bus);
- 			pci_unlock_rescan_remove();
-@@ -692,10 +691,12 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		 */
- 		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
- 		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
--		if (pe->type & EEH_PE_VF)
-+		if (pe->type & EEH_PE_VF) {
- 			eeh_add_virt_device(edev, NULL);
--		else
-+		} else {
-+			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 			pci_hp_add_devices(bus);
-+		}
- 	} else if (frozen_bus && rmv_data->removed) {
- 		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
- 		ssleep(5);
--- 
-2.1.0
+Regards,
+Daniel
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJXY3AHAAoJEPC3R3P2I92F+HIP/198vbgGRGcFFjCZf3NiJOLr
+NF24JAakSSXabXbJ6UUUtBFJhvNeiFL2SnMBTuqbKcPeDqeJsSLgrRSWGXNknAmh
+f/B85fFH0k3C/XU7XryoAZTdoQI2mKQob81j9ksm8ZerPbsT10rODavIB0Me/erT
+HTMWLexjnj4rPRvwN3a6lVz9Gge0xd6cQxIHdM1YhCj/h3g9i8yFD0vqsE7JyT4w
+AuypdxMECR7BH5lVZQGvRmUEpNy7VAE44wIyEv/ESHVxHwrjdHxU8h6Z1imm5PSJ
++nPY13iAxHrYEaTXmUqrkgJ5SXLar+1/FQqYNqMHcgNZpiQZOcbhK8NzNUL9odcb
+Io/605ZYMvvkyXWhDnOfrPS6D7m2M3Lfq5eRJ5Chz20Fveg04f6voYm2vyFaGlHU
+g7hZO1x4VBV1wD/VO6rqXifLpIGaxhqmGO5HLLA5punHxvzR3PE7ht+GXcGL6KLQ
+ZM7WnUYL6IKR5vAL0QIID9HO9InTRCw25C50jfmSKiq8oeLcqAid/IJWGR3yAy2r
+858ju4rd9WnJLzL4vkBCKPo7kOWfXSosAZGHiayx4+Z9ZoSXOYkGkScW8x8d4kw9
+qDQbN7TvXjRfJo2+26VE77DOFMZRDMLtU4OPzmPeCLh8FaI0bZZmB+PUstWyUhT3
+YCmjFc2QplwODhXE45Yo
+=ovZ/
+-----END PGP SIGNATURE-----
+--=-=-=--
