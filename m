@@ -1,26 +1,35 @@
-Return-Path: <yinghai@kernel.org>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-vk0-x236.google.com (mail-vk0-x236.google.com
+ [IPv6:2607:f8b0:400c:c05::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rWgw51zGBzDqlJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 12:25:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rWgy36RK8zDqmH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 12:27:39 +1000 (AEST)
+Received: by mail-vk0-x236.google.com with SMTP id d185so137744974vkg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 19:27:39 -0700 (PDT)
+MIME-Version: 1.0
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <20160617195237.GA10416@localhost>
+References: <20160609222552.6938-1-yinghai@kernel.org>
+ <20160617021555.GA21125@localhost>
+ <CAE9FiQVMxuo16MArLXjT8oaSGMce1G=evaWqeOaW-WeT_ju6Mw@mail.gmail.com>
+ <20160617195237.GA10416@localhost>
 From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+Date: Fri, 17 Jun 2016 19:27:36 -0700
+Message-ID: <CAE9FiQVF5eZzXHqe=VLW954LOSdZmD5eMT5w6nTwd-KpX1LX0w@mail.gmail.com>
+Subject: Re: [PATCH v12.update2 02/15] PCI: Let pci_mmap_page_range() take
+ resource address
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Khalid Aziz <khalid.aziz@oracle.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Yijing Wang <wangyijing@huawei.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v13 10/16] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit
- resource in OF parsing
-Date: Fri, 17 Jun 2016 19:24:55 -0700
-Message-Id: <20160618022501.15648-11-yinghai@kernel.org>
-In-Reply-To: <20160618022501.15648-1-yinghai@kernel.org>
-References: <20160618022501.15648-1-yinghai@kernel.org>
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, Khalid Aziz <khalid.aziz@oracle.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ linux-xtensa@linux-xtensa.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For device resource PREF bit setting under bridge 64-bit pref resource,
-we need to make sure only set PREF for 64bit resource.
+On Fri, Jun 17, 2016 at 12:52 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>>
+>> and respin the whole patchset today.
+>
+> I added your acks and pushed the result to pci/resource.  I'll also
+> post these formally on the list so they're easier to find.
 
-This patch set IORESOUCE_MEM_64 for 64bit resource during OF device resource
-flags parsing.
+Please review patchset v13 that is against your new pci/resource branch.
 
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Yijing Wang <wangyijing@huawei.com>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/pci_of_scan.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Thanks
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 719f225..476b8ac5 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
- 
- 	if (addr0 & 0x02000000) {
- 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
--		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
- 		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
-+		if (addr0 & 0x01000000)
-+			flags |= IORESOURCE_MEM_64
-+				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
- 		if (addr0 & 0x40000000)
- 			flags |= IORESOURCE_PREFETCH
- 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
--- 
-2.8.3
+Yinghai
