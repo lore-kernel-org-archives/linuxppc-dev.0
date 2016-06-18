@@ -1,35 +1,19 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-vk0-x236.google.com (mail-vk0-x236.google.com
- [IPv6:2607:f8b0:400c:c05::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rWgy36RK8zDqmH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 12:27:39 +1000 (AEST)
-Received: by mail-vk0-x236.google.com with SMTP id d185so137744974vkg.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 19:27:39 -0700 (PDT)
-MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <20160617195237.GA10416@localhost>
-References: <20160609222552.6938-1-yinghai@kernel.org>
- <20160617021555.GA21125@localhost>
- <CAE9FiQVMxuo16MArLXjT8oaSGMce1G=evaWqeOaW-WeT_ju6Mw@mail.gmail.com>
- <20160617195237.GA10416@localhost>
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Fri, 17 Jun 2016 19:27:36 -0700
-Message-ID: <CAE9FiQVF5eZzXHqe=VLW954LOSdZmD5eMT5w6nTwd-KpX1LX0w@mail.gmail.com>
-Subject: Re: [PATCH v12.update2 02/15] PCI: Let pci_mmap_page_range() take
- resource address
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+Return-Path: <weiyj_lk@163.com>
+Received: from m12-16.163.com (m12-16.163.com [220.181.12.16])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rWhtf6rzTzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 13:09:46 +1000 (AEST)
+From: weiyj_lk@163.com
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, Khalid Aziz <khalid.aziz@oracle.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- linux-xtensa@linux-xtensa.org
-Content-Type: text/plain; charset=UTF-8
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Wei Yongjun <yongjun_wei@trendmicro.com.cn>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ibmvnic: fix to use list_for_each_safe() when delete items
+Date: Sat, 18 Jun 2016 02:53:28 +0000
+Message-Id: <1466218408-20940-1-git-send-email-weiyj_lk@163.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,15 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 17, 2016 at 12:52 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
->>
->> and respin the whole patchset today.
->
-> I added your acks and pushed the result to pci/resource.  I'll also
-> post these formally on the list so they're easier to find.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Please review patchset v13 that is against your new pci/resource branch.
+Since we will remove items off the list using list_del() we need
+to use a safe version of the list_for_each() macro aptly named
+list_for_each_safe().
 
-Thanks
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Yinghai
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 864cb21..0b6a922 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -3141,14 +3141,14 @@ static void handle_request_ras_comp_num_rsp(union ibmvnic_crq *crq,
+ 
+ static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
+ {
+-	struct ibmvnic_inflight_cmd *inflight_cmd;
++	struct ibmvnic_inflight_cmd *inflight_cmd, *tmp1;
+ 	struct device *dev = &adapter->vdev->dev;
+-	struct ibmvnic_error_buff *error_buff;
++	struct ibmvnic_error_buff *error_buff, *tmp2;
+ 	unsigned long flags;
+ 	unsigned long flags2;
+ 
+ 	spin_lock_irqsave(&adapter->inflight_lock, flags);
+-	list_for_each_entry(inflight_cmd, &adapter->inflight, list) {
++	list_for_each_entry_safe(inflight_cmd, tmp1, &adapter->inflight, list) {
+ 		switch (inflight_cmd->crq.generic.cmd) {
+ 		case LOGIN:
+ 			dma_unmap_single(dev, adapter->login_buf_token,
+@@ -3165,8 +3165,8 @@ static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
+ 			break;
+ 		case REQUEST_ERROR_INFO:
+ 			spin_lock_irqsave(&adapter->error_list_lock, flags2);
+-			list_for_each_entry(error_buff, &adapter->errors,
+-					    list) {
++			list_for_each_entry_safe(error_buff, tmp2,
++						 &adapter->errors, list) {
+ 				dma_unmap_single(dev, error_buff->dma,
+ 						 error_buff->len,
+ 						 DMA_FROM_DEVICE);
