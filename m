@@ -1,26 +1,63 @@
-Return-Path: <cascardo@redhat.com>
+Return-Path: <dledford@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rWL393cGmzDqKQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2016 23:00:53 +1000 (AEST)
-Date: Fri, 17 Jun 2016 10:00:43 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Matt Evans <matt@ozlabs.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@fb.com>,
- Denis Kirjanov <kda@linux-powerpc.org>, Paul Mackerras <paulus@samba.org>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: [PATCH] ppc: Fix BPF JIT for ABIv2
-Message-ID: <20160617130042.GO3516@indiana.gru.redhat.com>
-References: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
- <3rWKtT2tSrz9t2G@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rWf1F24hNzDqhV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2016 11:00:16 +1000 (AEST)
+Subject: Re: [RFC 12/18] limits: track RLIMIT_MEMLOCK actual max
+To: Topi Miettinen <toiwoton@gmail.com>, linux-kernel@vger.kernel.org
+References: <1465847065-3577-1-git-send-email-toiwoton@gmail.com>
+ <1465847065-3577-13-git-send-email-toiwoton@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Alexander Graf <agraf@suse.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock
+ <hal.rosenstock@gmail.com>, Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Christian Benvenuti <benve@cisco.com>,
+ Dave Goodell <dgoodell@cisco.com>, Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Ingo Molnar
+ <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Konstantin Khlebnikov <koct9i@gmail.com>, Jiri Slaby <jslaby@suse.cz>,
+ Cyrill Gorcunov <gorcunov@openvz.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Nikhil Rao <nikhil.rao@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Michal Hocko <mhocko@suse.com>, Eric B Munson <emunson@akamai.com>,
+ Alexey Klimov <klimov.linux@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexander Kuleshov <kuleshovmail@gmail.com>, Oleg Nesterov
+ <oleg@redhat.com>, Chen Gang <gang.chen.5i5j@gmail.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC"
+ <kvm-ppc@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,
+ "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
+From: Doug Ledford <dledford@redhat.com>
+Message-ID: <3927ff64-d067-7f27-14ef-d1ab453c3cfb@redhat.com>
+Date: Fri, 17 Jun 2016 20:59:13 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3rWKtT2tSrz9t2G@ozlabs.org>
+In-Reply-To: <1465847065-3577-13-git-send-email-toiwoton@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="6WsKfN53rt9UP70qxGQSG9CoHGX0Sw6Wq"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,179 +67,215 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 17, 2016 at 10:53:21PM +1000, Michael Ellerman wrote:
-> On Tue, 2016-07-06 at 13:32:23 UTC, "Naveen N. Rao" wrote:
-> > diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> > new file mode 100644
-> > index 0000000..954ff53
-> > --- /dev/null
-> > +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> > @@ -0,0 +1,956 @@
-> ...
-> > +
-> > +static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
-> > +{
-> > +	int *p = area;
-> > +
-> > +	/* Fill whole space with trap instructions */
-> > +	while (p < (int *)((char *)area + size))
-> > +		*p++ = BREAKPOINT_INSTRUCTION;
-> > +}
-> 
-> This breaks the build for some configs, presumably you're missing a header:
-> 
->   arch/powerpc/net/bpf_jit_comp64.c:30:10: error: 'BREAKPOINT_INSTRUCTION' undeclared (first use in this function)
-> 
-> http://kisskb.ellerman.id.au/kisskb/buildresult/12720611/
-> 
-> cheers
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--6WsKfN53rt9UP70qxGQSG9CoHGX0Sw6Wq
+Content-Type: multipart/mixed; boundary="FJ9LmdXOk3jsSnbI0w6IN1wICkUXWh9uU"
+From: Doug Ledford <dledford@redhat.com>
+To: Topi Miettinen <toiwoton@gmail.com>, linux-kernel@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Alexander Graf <agraf@suse.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock
+ <hal.rosenstock@gmail.com>, Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Christian Benvenuti <benve@cisco.com>, Dave Goodell <dgoodell@cisco.com>,
+ Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>, Ingo Molnar
+ <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Konstantin Khlebnikov <koct9i@gmail.com>, Jiri Slaby <jslaby@suse.cz>,
+ Cyrill Gorcunov <gorcunov@openvz.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>, Nikhil Rao <nikhil.rao@intel.com>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Michal Hocko <mhocko@suse.com>, Eric B Munson <emunson@akamai.com>,
+ Alexey Klimov <klimov.linux@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexander Kuleshov <kuleshovmail@gmail.com>, Oleg Nesterov
+ <oleg@redhat.com>, Chen Gang <gang.chen.5i5j@gmail.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC"
+ <kvm-ppc@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,
+ "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
+Message-ID: <3927ff64-d067-7f27-14ef-d1ab453c3cfb@redhat.com>
+Subject: Re: [RFC 12/18] limits: track RLIMIT_MEMLOCK actual max
+References: <1465847065-3577-1-git-send-email-toiwoton@gmail.com>
+ <1465847065-3577-13-git-send-email-toiwoton@gmail.com>
+In-Reply-To: <1465847065-3577-13-git-send-email-toiwoton@gmail.com>
 
-Hi, Michael and Naveen.
+--FJ9LmdXOk3jsSnbI0w6IN1wICkUXWh9uU
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-I noticed independently that there is a problem with BPF JIT and ABIv2, and
-worked out the patch below before I noticed Naveen's patchset and the latest
-changes in ppc tree for a better way to check for ABI versions.
+On 6/13/2016 3:44 PM, Topi Miettinen wrote:
+> Track maximum size of locked memory, presented in /proc/self/limits.
 
-However, since the issue described below affect mainline and stable kernels,
-would you consider applying it before merging your two patchsets, so that we can
-more easily backport the fix?
+You should have probably Cc:ed everyone on the cover letter and probably
+patch 1 of this series.  This patch is hard to decipher without the
+additional context of those items.  However, that said, I think I see
+what you are doing.  But your wording of your comments below is bad:
 
-Thanks.
-Cascardo.
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index feb9bb7..d3f3c9f 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -3378,10 +3378,16 @@ static inline unsigned long rlimit_max(unsigned=
+ int limit)
+>  	return task_rlimit_max(current, limit);
+>  }
+> =20
+> +static inline void task_bump_rlimit(struct task_struct *tsk,
+> +				    unsigned int limit, unsigned long r)
+> +{
+> +	if (READ_ONCE(tsk->signal->rlim_curmax[limit]) < r)
+> +		tsk->signal->rlim_curmax[limit] =3D r;
+> +}
+> +
+>  static inline void bump_rlimit(unsigned int limit, unsigned long r)
+>  {
+> -	if (READ_ONCE(current->signal->rlim_curmax[limit]) < r)
+> -		current->signal->rlim_curmax[limit] =3D r;
+> +	return task_bump_rlimit(current, limit, r);
+>  }
+> =20
+>  #ifdef CONFIG_CPU_FREQ
+> diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
+> index 46ecce4..192001e 100644
+> --- a/kernel/bpf/syscall.c
+> +++ b/kernel/bpf/syscall.c
+> @@ -76,6 +76,9 @@ static int bpf_map_charge_memlock(struct bpf_map *map=
+)
+>  		return -EPERM;
+>  	}
+>  	map->user =3D user;
+> +	/* XXX resource limits apply per task, not per user */
+> +	bump_rlimit(RLIMIT_MEMLOCK, atomic_long_read(&user->locked_vm) <<
+> +		    PAGE_SHIFT);
 
----
->From a984dc02b6317a1d3a3c2302385adba5227be5bd Mon Sep 17 00:00:00 2001
-From: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-Date: Wed, 15 Jun 2016 13:22:12 -0300
-Subject: [PATCH] ppc: Fix BPF JIT for ABIv2
+No, these resource limits do not apply per task.  They are per user.
+However, you are doing maximum  usage accounting on a per-task basis by
+adding a new counter to the signal struct of the task.  Fine, but your
+comments need to reflect that instead of the confusing comment above.
+In addition, your function name is horrible for what you are doing.  A
+person reading this function will think that you are bumping the actual
+rlimit on the task, which is not what you are doing.  You are performing
+per-task accounting of MEMLOCK memory.  The actual permission checks are
+per-user, and the primary accounting is per-user.  So, really, this is
+just a nice little feature that provides a more granular per-task usage
+(but not control) so a user can see where their overall memlock memory
+is being used.  Fine.  I would reword the comment something like this:
 
-ABIv2 used for ppc64le does not use function descriptors. Without this patch,
-whenever BPF JIT is enabled, we get a crash as below.
+/* XXX resource is tracked and limit enforced on a per user basis,
+   but we track it on a per-task basis as well so users can identify
+   hogs of this resource, stats can be found in /proc/<pid>/limits */
 
-[root@ibm-p8-kvm-05-guest-02 ~]# echo 2 > /proc/sys/net/core/bpf_jit_enable
-[root@ibm-p8-kvm-05-guest-02 ~]# tcpdump -n -i eth0 tcp port 22
-device eth0 entered promiscuous mode
-Pass 1: shrink = 0, seen = 0x0
-Pass 2: shrink = 0, seen = 0x0
-flen=1 proglen=8 pass=3 image=d000000005bb9018 from=tcpdump pid=11387
-JIT code: 00000000: 00 00 60 38 20 00 80 4e
-Pass 1: shrink = 0, seen = 0x30000
-Pass 2: shrink = 0, seen = 0x30000
-flen=20 proglen=524 pass=3 image=d000000005bbd018 from=tcpdump pid=11387
-JIT code: 00000000: a6 02 08 7c 10 00 01 f8 70 ff c1 f9 78 ff e1 f9
-JIT code: 00000010: e1 fe 21 f8 7c 00 e3 80 78 00 e3 81 50 78 e7 7d
-JIT code: 00000020: c8 00 c3 e9 00 00 a0 38 00 c0 e0 3c c6 07 e7 78
-JIT code: 00000030: 08 00 e7 64 54 1b e7 60 a6 03 e8 7c 0c 00 c0 38
-JIT code: 00000040: 21 00 80 4e b0 01 80 41 00 00 00 60 dd 86 e0 38
-JIT code: 00000050: 01 00 e7 3c 40 38 04 7c 9c 00 82 40 00 00 00 60
-JIT code: 00000060: 00 c0 e0 3c c6 07 e7 78 08 00 e7 64 70 1b e7 60
-JIT code: 00000070: a6 03 e8 7c 14 00 c0 38 21 00 80 4e 78 01 80 41
-JIT code: 00000080: 00 00 00 60 06 00 04 28 68 01 82 40 00 00 00 60
-JIT code: 00000090: 00 c0 e0 3c c6 07 e7 78 08 00 e7 64 54 1b e7 60
-JIT code: 000000a0: a6 03 e8 7c 36 00 c0 38 21 00 80 4e 48 01 80 41
-JIT code: 000000b0: 00 00 00 60 16 00 04 28 2c 01 82 41 00 00 00 60
-JIT code: 000000c0: 00 c0 e0 3c c6 07 e7 78 08 00 e7 64 54 1b e7 60
-JIT code: 000000d0: a6 03 e8 7c 38 00 c0 38 21 00 80 4e 18 01 80 41
-JIT code: 000000e0: 00 00 00 60 16 00 04 28 fc 00 82 41 00 00 00 60
-JIT code: 000000f0: 00 01 00 48 00 08 04 28 f8 00 82 40 00 00 00 60
-JIT code: 00000100: 00 c0 e0 3c c6 07 e7 78 08 00 e7 64 70 1b e7 60
-JIT code: 00000110: a6 03 e8 7c 17 00 c0 38 21 00 80 4e d8 00 80 41
-JIT code: 00000120: 00 00 00 60 06 00 04 28 c8 00 82 40 00 00 00 60
-JIT code: 00000130: 00 c0 e0 3c c6 07 e7 78 08 00 e7 64 54 1b e7 60
-JIT code: 00000140: a6 03 e8 7c 14 00 c0 38 21 00 80 4e a8 00 80 41
-JIT code: 00000150: 00 00 00 60 ff 1f 87 70 98 00 82 40 00 00 00 60
-JIT code: 00000160: 00 c0 e0 3c c6 07 e7 78 08 00 e7 64 88 1b e7 60
-JIT code: 00000170: a6 03 e8 7c 0e 00 c0 38 21 00 80 4e 78 00 80 41
-JIT code: 00000180: 00 00 00 60 00 c0 e0 3c c6 07 e7 78 08 00 e7 64
-JIT code: 00000190: 4c 1b e7 60 a6 03 e8 7c 0e 00 c5 38 21 00 80 4e
-JIT code: 000001a0: 54 00 80 41 00 00 00 60 16 00 04 28 38 00 82 41
-JIT code: 000001b0: 00 00 00 60 00 c0 e0 3c c6 07 e7 78 08 00 e7 64
-JIT code: 000001c0: 4c 1b e7 60 a6 03 e8 7c 10 00 c5 38 21 00 80 4e
-JIT code: 000001d0: 24 00 80 41 00 00 00 60 16 00 04 28 14 00 82 40
-JIT code: 000001e0: 00 00 00 60 ff ff 60 38 01 00 63 3c 08 00 00 48
-JIT code: 000001f0: 00 00 60 38 20 01 21 38 10 00 01 e8 a6 03 08 7c
-JIT code: 00000200: 70 ff c1 e9 78 ff e1 e9 20 00 80 4e
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-Oops: Exception in kernel mode, sig: 4 [#1]
-SMP NR_CPUS=32 NUMA pSeries
-Modules linked in: virtio_balloon nfsd ip_tables x_tables autofs4 xfs libcrc32c virtio_console virtio_net virtio_pci virtio_ring virtio
-CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.7.0-rc3-00009-gdb06d75 #1
-task: c0000004a9254500 ti: c0000004bffe4000 task.ti: c0000004a9260000
-NIP: d000000005bbd000 LR: c0000000008bcad8 CTR: d000000005bbd000
-REGS: c0000004bffe76d0 TRAP: 0700   Not tainted  (4.7.0-rc3-00009-gdb06d75)
-MSR: 8000000000089033 <SF,EE,ME,IR,DR,RI,LE>  CR: 28002028  XER: 00000000
-CFAR: c0000000008bcad4 SOFTE: 1
-GPR00: c0000000008c18dc c0000004bffe7950 c000000000f19900 c0000004a9d98600
-GPR04: d000000005bbb028 000000000000005c c000000002977000 000000000000004e
-GPR08: 000000000000005c d000000005bbd000 0000000000000000 0000000000000700
-GPR12: d000000005bbd000 c00000000fff8400 c000000000f21c38 f0000000104a3ac0
-GPR16: 0000000000000000 c0000004a5b7e808 c000000002977831 c000000002977834
-GPR20: c000000000f23040 0000000000000001 000000000000dd86 0000000000000000
-GPR24: ffffffff80000000 000000000000005c c000000002977000 000000000000004e
-GPR28: c0000004a5ede28e c000000002977000 c000000002848000 c0000004a9d98600
-NIP [d000000005bbd000] 0xd000000005bbd000
-LR [c0000000008bcad8] run_filter+0x48/0x90
-Call Trace:
-[c0000004bffe7950] [c0000004bffe7980] 0xc0000004bffe7980 (unreliable)
-[c0000004bffe7970] [c0000000008c18dc] tpacket_rcv+0x13c/0x9d0
-[c0000004bffe7a60] [c0000000007f060c] __netif_receive_skb_core+0x22c/0xb00
-[c0000004bffe7b30] [c0000000007f3cfc] netif_receive_skb_internal+0x2c/0xc0
-[c0000004bffe7b70] [c0000000007f524c] napi_gro_receive+0x11c/0x220
-[c0000004bffe7bb0] [d0000000056e252c] virtnet_receive+0x2fc/0x940 [virtio_net]
-[c0000004bffe7cc0] [d0000000056e2ba0] virtnet_poll+0x30/0xf0 [virtio_net]
-[c0000004bffe7d00] [c0000000007f4878] net_rx_action+0x2d8/0x450
-[c0000004bffe7e10] [c0000000000ae464] __do_softirq+0x164/0x3d0
-[c0000004bffe7f00] [c0000000000aea68] irq_exit+0xc8/0x100
-[c0000004bffe7f20] [c000000000010a98] __do_irq+0x98/0x200
-[c0000004bffe7f90] [c000000000022274] call_do_irq+0x14/0x24
-[c0000004a9263a00] [c000000000010c94] do_IRQ+0x94/0x110
-[c0000004a9263a50] [c0000000000025d8] hardware_interrupt_common+0x158/0x180
---- interrupt: 501 at plpar_hcall_norets+0x1c/0x28
-    LR = check_and_cede_processor+0x2c/0x40
-[c0000004a9263d40] [c0000004a9263d90] 0xc0000004a9263d90 (unreliable)
-[c0000004a9263da0] [c000000000799b90] shared_cede_loop+0x60/0x170
-[c0000004a9263de0] [c0000000007974b4] cpuidle_enter_state+0xb4/0x380
-[c0000004a9263e40] [c0000000000f5f84] call_cpuidle+0x44/0x80
-[c0000004a9263e60] [c0000000000f64b0] cpu_startup_entry+0x380/0x450
-[c0000004a9263f20] [c00000000003de94] start_secondary+0x304/0x350
-[c0000004a9263f90] [c000000000008b6c] start_secondary_prolog+0x10/0x14
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
----[ end trace cc80130850d8e991 ]---
+And I would rename bump_rlimit and task_bump_rlimit to something like
+account_rlimit and task_account_rlimit.  Calling it bump just gives the
+wrong idea entirely on first read.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
----
- arch/powerpc/net/bpf_jit.h      | 2 +-
- arch/powerpc/net/bpf_jit_comp.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+>  	return 0;
+>  }
+> =20
+> @@ -601,6 +604,9 @@ static int bpf_prog_charge_memlock(struct bpf_prog =
+*prog)
+>  		return -EPERM;
+>  	}
+>  	prog->aux->user =3D user;
+> +	/* XXX resource limits apply per task, not per user */
+> +	bump_rlimit(RLIMIT_MEMLOCK, atomic_long_read(&user->locked_vm) <<
+> +		    PAGE_SHIFT);
+>  	return 0;
+>  }
 
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 889fd19..28b89ed 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -70,7 +70,7 @@ DECLARE_LOAD_FUNC(sk_load_half);
- DECLARE_LOAD_FUNC(sk_load_byte);
- DECLARE_LOAD_FUNC(sk_load_byte_msh);
- 
--#ifdef CONFIG_PPC64
-+#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF != 2)
- #define FUNCTION_DESCR_SIZE	24
- #else
- #define FUNCTION_DESCR_SIZE	0
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 2d66a84..035b887 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -664,7 +664,7 @@ void bpf_jit_compile(struct bpf_prog *fp)
- 
- 	if (image) {
- 		bpf_flush_icache(code_base, code_base + (proglen/4));
--#ifdef CONFIG_PPC64
-+#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF != 2)
- 		/* Function descriptor nastiness: Address + TOC */
- 		((u64 *)image)[0] = (u64)code_base;
- 		((u64 *)image)[1] = local_paca->kernel_toc;
--- 
-2.5.5
+> @@ -798,6 +802,9 @@ int user_shm_lock(size_t size, struct user_struct *=
+user)
+>  	get_uid(user);
+>  	user->locked_shm +=3D locked;
+>  	allowed =3D 1;
+> +
+> +	/* XXX resource limits apply per task, not per user */
+> +	bump_rlimit(RLIMIT_MEMLOCK, user->locked_shm << PAGE_SHIFT);
+>  out:
+>  	spin_unlock(&shmlock_user_lock);
+>  	return allowed;
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 0963e7f..4e683dd 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -2020,6 +2020,9 @@ static int acct_stack_growth(struct vm_area_struc=
+t *vma, unsigned long size, uns
+>  		return -ENOMEM;
+> =20
+>  	bump_rlimit(RLIMIT_STACK, actual_size);
+> +	if (vma->vm_flags & VM_LOCKED)
+> +		bump_rlimit(RLIMIT_MEMLOCK,
+> +			    (mm->locked_vm + grow) << PAGE_SHIFT);
+> =20
+>  	return 0;
+>  }
+> diff --git a/mm/mremap.c b/mm/mremap.c
+> index 1f157ad..ade3e13 100644
+> --- a/mm/mremap.c
+> +++ b/mm/mremap.c
+> @@ -394,6 +394,9 @@ static struct vm_area_struct *vma_to_resize(unsigne=
+d long addr,
+>  		*p =3D charged;
+>  	}
+> =20
+> +	if (vma->vm_flags & VM_LOCKED)
+> +		bump_rlimit(RLIMIT_MEMLOCK, (mm->locked_vm << PAGE_SHIFT) +
+> +			    new_len - old_len);
+>  	return vma;
+>  }
+> =20
+>=20
+
+
+--=20
+Doug Ledford <dledford@redhat.com>
+    GPG Key ID: 0E572FDD
+
+
+--FJ9LmdXOk3jsSnbI0w6IN1wICkUXWh9uU--
+
+--6WsKfN53rt9UP70qxGQSG9CoHGX0Sw6Wq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJXZJzhAAoJELgmozMOVy/dF44QAJwDqgSkgShvG1A4nZKeKF2A
+UHIMF2u+LvY1TMQHHx7wFxW+Pjq55yZvT5puQT7+cyqpv8EzuYq9KtmysYvHy731
+EYg213+tFFh7lgccQimkcMsVZHm/h7bIemTzZMVLO5DMD5+0T4WUfQf5i5y1bOta
+EBApW5hXSxlJgHe06ozOsjBhZhz2SxvtmeRxs8Zk/odbVJ9K9g5oyma2ixpSsDbK
+ghwycsYIuysKTZ9tRqhaDWjcTYbs71HDzPtDZPGql61+dWqyHYvb9919AfDIuyMx
+qLJLCuliJtwH5O0JFy+T8xmPhSCIFtVUFj4DTwwvuf1TdK3LSQrtkkZ6wYYPiEdg
+/CWh5PTppyICfCAz1gLg6WYAoi7ZwBfNPW8K6Aa8jGuUnTWMHr6XwaQXV0l5YZkF
+dST8PzU2tV1a+mMHbMaXWucUrzBygZ1k1xZ/BXNYUO9LAoGy55OJxl88IsTqJoZk
+XGoXtIBHWRViybRCjgIf3/KUNUdlHqp/vtCUstxj3iG1F/eoxHVuVBoDuJtt4QgN
+eawqW76OLizYoyVDC4uH5i1kzf+HNihE8hvBZvEwD9JHvf/kI/zAXEd30ummAQMS
+sgZW1LQMaLcyg8A+z7cyg8+MhHM79nJqhGmaGL/yTJ9CDs+HndqwyrjsXATOrkU7
+Rc5joC6vtw2XHW2v41Gq
+=NDfl
+-----END PGP SIGNATURE-----
+
+--6WsKfN53rt9UP70qxGQSG9CoHGX0Sw6Wq--
