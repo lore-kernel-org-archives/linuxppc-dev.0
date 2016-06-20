@@ -1,31 +1,26 @@
-Return-Path: <afd@ti.com>
-Subject: [PATCH] leds: Add no-op gpio_led_register_device when LED subsystem
- is disabled
-To: Jacek Anaszewski <j.anaszewski@samsung.com>
-References: <20160613200211.14790-1-afd@ti.com>
- <20160613200211.14790-13-afd@ti.com> <5760FA52.7010806@samsung.com>
- <57647DBD.2010406@ti.com> <57679E38.3080901@samsung.com>
-CC: Russell King <linux@armlinux.org.uk>, Miguel Ojeda Sandonis
- <miguel.ojeda.sandonis@gmail.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Sebastian Reichel <sre@kernel.org>, Wolfram Sang <wsa@the-dreams.de>,
- Richard Purdie <rpurdie@rpsys.net>, Rusty Russell <rusty@rustcorp.com.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Mauro Carvalho Chehab
- <mchehab@osg.samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- Lauro Ramos Venancio <lauro.venancio@openbossa.org>, Aloisio Almeida Jr
- <aloisio.almeida@openbossa.org>, Samuel Ortiz <sameo@linux.intel.com>, Ingo
- Molnar <mingo@kernel.org>,
- <linux-pwm@vger.kernel.org>, <lguest@lists.ozlabs.org>,
- <linux-wireless@vger.kernel.org>, <linux-mmc@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linux-gpio@vger.kernel.org>,
- <linux-i2c@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-leds@vger.kernel.org>, <linux-media@vger.kernel.org>
-From: "Andrew F. Davis" <afd@ti.com>
-Message-ID: <57686A94.2010704@ti.com>
-Date: Mon, 20 Jun 2016 17:13:40 -0500
-MIME-Version: 1.0
-In-Reply-To: <57679E38.3080901@samsung.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYS3H686TzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 09:38:19 +1000 (AEST)
+Message-ID: <1466465899.437.0.camel@ellerman.id.au>
+Subject: Re: [6/6] ppc: ebpf/jit: Implement JIT compiler for extended BPF
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, Matt Evans <matt@ozlabs.org>, Daniel Borkmann
+ <daniel@iogearbox.net>, Alexei Starovoitov <ast@fb.com>, Denis Kirjanov
+ <kda@linux-powerpc.org>, Paul Mackerras <paulus@samba.org>, "David S.
+ Miller" <davem@davemloft.net>, Ananth N Mavinakayanahalli
+ <ananth@in.ibm.com>
+Date: Tue, 21 Jun 2016 09:38:19 +1000
+In-Reply-To: <20160619173642.GB8886@naverao1-tp.localdomain>
+References: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+ <3rWKtT2tSrz9t2G@ozlabs.org>
+ <20160619173642.GB8886@naverao1-tp.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,36 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some systems use 'gpio_led_register_device' to make an in-memory copy of
-their LED device table so the original can be removed as .init.rodata.
-When the LED subsystem is not enabled source in the led directory is not
-built and so this function may be undefined. Fix this here.
+On Sun, 2016-06-19 at 23:06 +0530, Naveen N. Rao wrote:
+> On 2016/06/17 10:53PM, Michael Ellerman wrote:
+> > On Tue, 2016-07-06 at 13:32:23 UTC, "Naveen N. Rao" wrote:
+> > > diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> > > new file mode 100644
+> > > index 0000000..954ff53
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> > > @@ -0,0 +1,956 @@
+> > ...
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
----
- include/linux/leds.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+> > > +
+> > > +static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
+> > > +{
+> > > +	int *p = area;
+> > > +
+> > > +	/* Fill whole space with trap instructions */
+> > > +	while (p < (int *)((char *)area + size))
+> > > +		*p++ = BREAKPOINT_INSTRUCTION;
+> > > +}
+> > 
+> > This breaks the build for some configs, presumably you're missing a header:
+> > 
+> >   arch/powerpc/net/bpf_jit_comp64.c:30:10: error: 'BREAKPOINT_INSTRUCTION' undeclared (first use in this function)
+> > 
+> > http://kisskb.ellerman.id.au/kisskb/buildresult/12720611/
+> 
+> Oops. Yes, I should have caught that. I need to add:
+> 
+> #include <asm/kprobes.h>
+> 
+> in bpf_jit_comp64.c
+> 
+> Can you please check if it resolves the build error?
 
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index d2b1306..a4a3da6 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -386,8 +386,16 @@ struct gpio_led_platform_data {
-                                        unsigned long *delay_off);
- };
+Can you? :D
 
-+#ifdef CONFIG_NEW_LEDS
- struct platform_device *gpio_led_register_device(
-                int id, const struct gpio_led_platform_data *pdata);
-+#else
-+static inline struct platform_device *gpio_led_register_device(
-+               int id, const struct gpio_led_platform_data *pdata)
-+{
-+       return 0;
-+}
-+#endif
-
- enum cpu_led_event {
-        CPU_LED_IDLE_START,     /* CPU enters idle */
--- 
-2.9.0
+cheers
