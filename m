@@ -1,32 +1,46 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYC813jmGzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 23:56:33 +1000 (AEST)
-Received: from smtprelay.hostedemail.com (smtprelay0045.hostedemail.com
- [216.40.44.45])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rYC810Q8bz9sxb
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Jun 2016 23:56:32 +1000 (AEST)
-Date: Mon, 20 Jun 2016 09:56:21 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, karol
- herbst <karolherbst@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Pekka Paalanen  <ppaalanen@gmail.com>, Ingo Molnar
- <mingo@redhat.com>, Ben Skeggs  <bskeggs@redhat.com>, Yinghai Lu
- <yinghai@kernel.org>, koriakin@0x04.net
-Subject: Re: [PATCH] tracing: Expose CPU physical addresses (resource
- values) for PCI devices
-Message-ID: <20160620095621.6f188668@gandalf.local.home>
-In-Reply-To: <1466202203.24271.76.camel@au1.ibm.com>
-References: <20160511190657.5898.4248.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20160617175901.7bd90d14@gandalf.local.home>
- <1466202203.24271.76.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYCBN3RQjzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 23:58:36 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5KDn0o3039935
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 09:58:34 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23n2u637ea-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 09:58:34 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 20 Jun 2016 07:58:32 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3833D3E4004F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 07:58:29 -0600 (MDT)
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5KDwTh141287870
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 06:58:29 -0700
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 13F5F6E041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 07:58:29 -0600 (MDT)
+Received: from [9.41.92.173] (unknown [9.41.92.173])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP id ED9957A007
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 07:58:28 -0600 (MDT)
+To: linuxppc-dev@lists.ozlabs.org
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] powerpc/pseries: Dynamic associativity-lookup-arrays
+ updating
+Date: Mon, 20 Jun 2016 08:58:28 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5767F684.9090802@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,20 +50,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 18 Jun 2016 08:23:23 +1000
-Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
+The ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
+property used to track the associativity for LMBs assigned to a system
+may not contain all of the possible associativity arrays for the system
+at boot time. When a LMB is added to the system and its associativity
+array is not present in the lookup array we need to update the lookup
+array to contain the new associativity array.
 
-> On Fri, 2016-06-17 at 17:59 -0400, Steven Rostedt wrote:
-> > Sorry for the late reply, this patch got pushed down in my INBOX.
-> > 
-> > Could I get someone from PPC to review this patch, just to be safe?  
-> 
-> The patch makes sense, I can try getting somebody onto porting
-> mmiotrace one of these days.
-> 
+The first patch splits the code that creates a clone of a property into
+its own routine so this can be used for cloning any of the properties
+used during memory hotplug.
 
-OK, thanks!
+The second patch updates the associativity lookup code to dynamically
+add new associativity arrays to the lookup array if they are not
+present.
 
-I'll pull this into my for-next repo then.
+-Nathan
 
--- Steve
+ hotplug-memory.c |  131 ++++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 92 insertions(+), 39 deletions(-)
+ 
