@@ -1,28 +1,36 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYDSl3t1BzDq80
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 00:56:07 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id 187so14762594wmz.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 07:56:07 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Subject: Re: [PATCH 3/4] kvm/stats: Add provisioning for 64-bit vcpu statistics
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
- <1465982468-18833-3-git-send-email-sjitindarsingh@gmail.com>
- <20160620000852.GA20015@fergus.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, kvm@vger.kernel.org,
- agraf@suse.com, rkrcmar@redhat.com,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <b910e6d4-9933-ef4e-3e03-db5b7433ebe9@redhat.com>
-Date: Mon, 20 Jun 2016 16:56:00 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYFgd1c3hzDqCX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 01:50:36 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5KFmOf4077200
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 11:50:34 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23n2f0gcd4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 11:50:34 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Mon, 20 Jun 2016 09:50:33 -0600
+Subject: Re: [PATCH] ibmvnic: fix to use list_for_each_safe() when delete items
+To: weiyj_lk@163.com, John Allen <jallen@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <1466218408-20940-1-git-send-email-weiyj_lk@163.com>
+Cc: netdev@vger.kernel.org, Wei Yongjun <yongjun_wei@trendmicro.com.cn>,
+ linuxppc-dev@lists.ozlabs.org
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Mon, 20 Jun 2016 10:50:26 -0500
 MIME-Version: 1.0
-In-Reply-To: <20160620000852.GA20015@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <1466218408-20940-1-git-send-email-weiyj_lk@163.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <576810C2.6080208@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,157 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/17/2016 09:53 PM, weiyj_lk@163.com wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>
+> Since we will remove items off the list using list_del() we need
+> to use a safe version of the list_for_each() macro aptly named
+> list_for_each_safe().
+>
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> ---
+>  drivers/net/ethernet/ibm/ibmvnic.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+> index 864cb21..0b6a922 100644
+> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+> @@ -3141,14 +3141,14 @@ static void handle_request_ras_comp_num_rsp(union ibmvnic_crq *crq,
+>  
+>  static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
+>  {
+> -	struct ibmvnic_inflight_cmd *inflight_cmd;
+> +	struct ibmvnic_inflight_cmd *inflight_cmd, *tmp1;
+>  	struct device *dev = &adapter->vdev->dev;
+> -	struct ibmvnic_error_buff *error_buff;
+> +	struct ibmvnic_error_buff *error_buff, *tmp2;
+>  	unsigned long flags;
+>  	unsigned long flags2;
+>  
+>  	spin_lock_irqsave(&adapter->inflight_lock, flags);
+> -	list_for_each_entry(inflight_cmd, &adapter->inflight, list) {
+> +	list_for_each_entry_safe(inflight_cmd, tmp1, &adapter->inflight, list) {
+>  		switch (inflight_cmd->crq.generic.cmd) {
+>  		case LOGIN:
+>  			dma_unmap_single(dev, adapter->login_buf_token,
+> @@ -3165,8 +3165,8 @@ static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
+>  			break;
+>  		case REQUEST_ERROR_INFO:
+>  			spin_lock_irqsave(&adapter->error_list_lock, flags2);
+> -			list_for_each_entry(error_buff, &adapter->errors,
+> -					    list) {
+> +			list_for_each_entry_safe(error_buff, tmp2,
+> +						 &adapter->errors, list) {
+>  				dma_unmap_single(dev, error_buff->dma,
+>  						 error_buff->len,
+>  						 DMA_FROM_DEVICE);
+>
+Thanks!
 
-
-On 20/06/2016 02:08, Paul Mackerras wrote:
-> Paolo,
-> 
-> Can I have an ack for Suraj's patch below?  If it's OK with you,
-> I'll take his series through my tree.
-
-Yes, please do.
-
-Paolo
-
-> Thanks,
-> Paul.
-> 
-> On Wed, Jun 15, 2016 at 07:21:07PM +1000, Suraj Jitindar Singh wrote:
->> vcpus have statistics associated with them which can be viewed within the
->> debugfs. Currently it is assumed within the vcpu_stat_get() and
->> vcpu_stat_get_per_vm() functions that all of these statistics are
->> represented as 32-bit numbers. The next patch adds some 64-bit statistics,
->> so add provisioning for the display of 64-bit vcpu statistics.
->>
->> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
->> ---
->>  arch/powerpc/kvm/book3s.c |  1 +
->>  include/linux/kvm_host.h  |  1 +
->>  virt/kvm/kvm_main.c       | 60 +++++++++++++++++++++++++++++++++++++++++++----
->>  3 files changed, 58 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
->> index 47018fc..ed9132b 100644
->> --- a/arch/powerpc/kvm/book3s.c
->> +++ b/arch/powerpc/kvm/book3s.c
->> @@ -40,6 +40,7 @@
->>  #include "trace.h"
->>  
->>  #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
->> +#define VCPU_STAT_U64(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU_U64
->>  
->>  /* #define EXIT_DEBUG */
->>  
->> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
->> index 1c9c973..667b30e 100644
->> --- a/include/linux/kvm_host.h
->> +++ b/include/linux/kvm_host.h
->> @@ -991,6 +991,7 @@ static inline bool kvm_is_error_gpa(struct kvm *kvm, gpa_t gpa)
->>  enum kvm_stat_kind {
->>  	KVM_STAT_VM,
->>  	KVM_STAT_VCPU,
->> +	KVM_STAT_VCPU_U64,
->>  };
->>  
->>  struct kvm_stat_data {
->> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
->> index 02e98f3..ac47ffb 100644
->> --- a/virt/kvm/kvm_main.c
->> +++ b/virt/kvm/kvm_main.c
->> @@ -3566,6 +3566,20 @@ static int vcpu_stat_get_per_vm(void *data, u64 *val)
->>  	return 0;
->>  }
->>  
->> +static int vcpu_stat_u64_get_per_vm(void *data, u64 *val)
->> +{
->> +	int i;
->> +	struct kvm_stat_data *stat_data = (struct kvm_stat_data *)data;
->> +	struct kvm_vcpu *vcpu;
->> +
->> +	*val = 0;
->> +
->> +	kvm_for_each_vcpu(i, vcpu, stat_data->kvm)
->> +		*val += *(u64 *)((void *)vcpu + stat_data->offset);
->> +
->> +	return 0;
->> +}
->> +
->>  static int vcpu_stat_get_per_vm_open(struct inode *inode, struct file *file)
->>  {
->>  	__simple_attr_check_format("%llu\n", 0ull);
->> @@ -3573,6 +3587,13 @@ static int vcpu_stat_get_per_vm_open(struct inode *inode, struct file *file)
->>  				 NULL, "%llu\n");
->>  }
->>  
->> +static int vcpu_stat_u64_get_per_vm_open(struct inode *inode, struct file *file)
->> +{
->> +	__simple_attr_check_format("%llu\n", 0ull);
->> +	return kvm_debugfs_open(inode, file, vcpu_stat_u64_get_per_vm,
->> +				 NULL, "%llu\n");
->> +}
->> +
->>  static const struct file_operations vcpu_stat_get_per_vm_fops = {
->>  	.owner   = THIS_MODULE,
->>  	.open    = vcpu_stat_get_per_vm_open,
->> @@ -3582,9 +3603,19 @@ static const struct file_operations vcpu_stat_get_per_vm_fops = {
->>  	.llseek  = generic_file_llseek,
->>  };
->>  
->> +static const struct file_operations vcpu_stat_u64_get_per_vm_fops = {
->> +	.owner   = THIS_MODULE,
->> +	.open    = vcpu_stat_u64_get_per_vm_open,
->> +	.release = kvm_debugfs_release,
->> +	.read    = simple_attr_read,
->> +	.write   = simple_attr_write,
->> +	.llseek  = generic_file_llseek,
->> +};
->> +
->>  static const struct file_operations *stat_fops_per_vm[] = {
->> -	[KVM_STAT_VCPU] = &vcpu_stat_get_per_vm_fops,
->> -	[KVM_STAT_VM]   = &vm_stat_get_per_vm_fops,
->> +	[KVM_STAT_VCPU]		= &vcpu_stat_get_per_vm_fops,
->> +	[KVM_STAT_VCPU_U64]	= &vcpu_stat_u64_get_per_vm_fops,
->> +	[KVM_STAT_VM]		= &vm_stat_get_per_vm_fops,
->>  };
->>  
->>  static int vm_stat_get(void *_offset, u64 *val)
->> @@ -3627,9 +3658,30 @@ static int vcpu_stat_get(void *_offset, u64 *val)
->>  
->>  DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_fops, vcpu_stat_get, NULL, "%llu\n");
->>  
->> +static int vcpu_stat_u64_get(void *_offset, u64 *val)
->> +{
->> +	unsigned offset = (long)_offset;
->> +	struct kvm *kvm;
->> +	struct kvm_stat_data stat_tmp = {.offset = offset};
->> +	u64 tmp_val;
->> +
->> +	*val = 0;
->> +	spin_lock(&kvm_lock);
->> +	list_for_each_entry(kvm, &vm_list, vm_list) {
->> +		stat_tmp.kvm = kvm;
->> +		vcpu_stat_u64_get_per_vm((void *)&stat_tmp, &tmp_val);
->> +		*val += tmp_val;
->> +	}
->> +	spin_unlock(&kvm_lock);
->> +	return 0;
->> +}
->> +
->> +DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_u64_fops, vcpu_stat_u64_get, NULL, "%llu\n");
->> +
->>  static const struct file_operations *stat_fops[] = {
->> -	[KVM_STAT_VCPU] = &vcpu_stat_fops,
->> -	[KVM_STAT_VM]   = &vm_stat_fops,
->> +	[KVM_STAT_VCPU]		= &vcpu_stat_fops,
->> +	[KVM_STAT_VCPU_U64]	= &vcpu_stat_u64_fops,
->> +	[KVM_STAT_VM]		= &vm_stat_fops,
->>  };
->>  
->>  static int kvm_init_debug(void)
->> -- 
->> 2.5.5
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
