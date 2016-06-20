@@ -1,25 +1,32 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rY2GB33LwzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 17:16:17 +1000 (AEST)
-Received: by mail-yw0-x242.google.com with SMTP id i12so614559ywa.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 00:16:17 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1466292111.24271.89.camel@kernel.crashing.org>
-References: <1466274479-5650-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1466292111.24271.89.camel@kernel.crashing.org>
-Date: Mon, 20 Jun 2016 10:16:14 +0300
-Message-ID: <CAOJe8K2D3e6EKZr3JYubaC2_eryu94qvvhbZh=qP9pGy+ZJJdg@mail.gmail.com>
-Subject: Re: [PATCH V2] powerpc/mm: Don't do debug print before we do feature
- fixup
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <j.anaszewski@samsung.com>
+Message-id: <57679E38.3080901@samsung.com>
+Date: Mon, 20 Jun 2016 09:41:44 +0200
+From: Jacek Anaszewski <j.anaszewski@samsung.com>
+MIME-version: 1.0
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Russell King <linux@armlinux.org.uk>,
+ Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>,
+ Wolfram Sang <wsa@the-dreams.de>, Richard Purdie <rpurdie@rpsys.net>,
+ Rusty Russell <rusty@rustcorp.com.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>,
+ Lauro Ramos Venancio <lauro.venancio@openbossa.org>,
+ Aloisio Almeida Jr <aloisio.almeida@openbossa.org>,
+ Samuel Ortiz <sameo@linux.intel.com>, Ingo Molnar <mingo@kernel.org>,
+ linux-pwm@vger.kernel.org, lguest@lists.ozlabs.org,
+ linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+ linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-leds@vger.kernel.org, linux-media@vger.kernel.org
+Subject: Re: [PATCH 12/12] leds: Only descend into leds directory when
+ CONFIG_NEW_LEDS is set
+References: <20160613200211.14790-1-afd@ti.com>
+ <20160613200211.14790-13-afd@ti.com> <5760FA52.7010806@samsung.com>
+ <57647DBD.2010406@ti.com>
+In-reply-to: <57647DBD.2010406@ti.com>
+Content-type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +36,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/19/16, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Sat, 2016-06-18 at 23:57 +0530, Aneesh Kumar K.V wrote:
->> We use feature fixup in segment and page fault path and hence we should
->> not call any function that can cause either of these before we finish
->> feature fixup.
+On 06/18/2016 12:46 AM, Andrew F. Davis wrote:
+> On 06/15/2016 01:48 AM, Jacek Anaszewski wrote:
+>> Hi Andrew,
 >>
->> Calling into early debug routine can result in segment fault as updated
->> in
->> https://lkml.kernel.org/r/CAOJe8K2L8D1M_yZPmyiZ11JvJ+HAS0aFHOnsqaY=xLOnQTA3AA@mail.gmail.com
+>> Thanks for the patch.
 >>
->> Avoid the segment fault by removing the debug print. Also remove the
->> matching closing debug print at the end of the function.
+>> Please address the issue [1] raised by test bot and resubmit.
+>>
+>> Thanks,
+>> Jacek Anaszewski
+>>
+>> [1] https://lkml.org/lkml/2016/6/13/1091
+>>
 >
-> Please add a comment at the beginning of setup_system() explaining
-> the situation. IE, that until the fixups are done, not even debug
-> printfs can be used.
+> It looks like some systems use 'gpio_led_register_device' to make an
+> in-memory copy of their LED device table so the original can be removed
+> as .init.rodata. This doesn't necessarily depend on the LED subsystem
+> but it kind of seems useless when the rest of the subsystem is disabled.
 >
-Right, otherwise we'll hit the same issue in the future.
+> One solution could be to use a dummy 'gpio_led_register_device' when the
+> subsystem is not enabled.
 
-> It used to work though, the fact that we used 256M segment in that
-> case wasn't an issue, in part because btext only really existed on
-> machines that didn't have 1T segments. It was only ever going to be
-> a segment fault, the rest was bolted (early ioremap).
+It sounds good. Please add a no-op version of gpio_led_register_device()
+to include/leds.h, in a separate patch.
+
+Thanks,
+Jacek Anaszewski
+
+> Another is just to remove the five or so uses
+> of 'gpio_led_register_device' and have those systems register LED device
+> tables like other systems do.
 >
-> Ben.
+> If nether of these are acceptable then this patch can be dropped from
+> this series for now.
+>
+> Thanks,
+> Andrew
+>
+>> On 06/13/2016 10:02 PM, Andrew F. Davis wrote:
+>>> When CONFIG_NEW_LEDS is not set make will still descend into the leds
+>>> directory but nothing will be built. This produces unneeded build
+>>> artifacts and messages in addition to slowing the build. Fix this here.
+>>>
+>>> Signed-off-by: Andrew F. Davis <afd@ti.com>
+>>> ---
+>>>    drivers/Makefile | 2 +-
+>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/Makefile b/drivers/Makefile
+>>> index 567e32c..fa514d5 100644
+>>> --- a/drivers/Makefile
+>>> +++ b/drivers/Makefile
+>>> @@ -127,7 +127,7 @@ obj-$(CONFIG_CPU_FREQ)        += cpufreq/
+>>>    obj-$(CONFIG_CPU_IDLE)        += cpuidle/
+>>>    obj-$(CONFIG_MMC)        += mmc/
+>>>    obj-$(CONFIG_MEMSTICK)        += memstick/
+>>> -obj-y                += leds/
+>>> +obj-$(CONFIG_NEW_LEDS)        += leds/
+>>>    obj-$(CONFIG_INFINIBAND)    += infiniband/
+>>>    obj-$(CONFIG_SGI_SN)        += sn/
+>>>    obj-y                += firmware/
+>>>
+>>
+>>
 >
 >
