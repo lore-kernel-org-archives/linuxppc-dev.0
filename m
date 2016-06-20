@@ -1,23 +1,24 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rXvqT0bClzDqhf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 12:26:13 +1000 (AEST)
-Date: Mon, 20 Jun 2016 10:26:05 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v2 2/9] kexec_file: Generalize kexec_add_buffer.
-Message-ID: <20160620022605.GA3180@dhcp-128-65.nay.redhat.com>
-References: <1465916349-3398-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <16133071.BqvF7Se0c2@hactar>
- <20160617073523.GA5091@dhcp-128-65.nay.redhat.com>
- <12025213.W8oVnaovm1@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rXwjY2pjMzDqCX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 13:06:09 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id us13so9898394pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jun 2016 20:06:09 -0700 (PDT)
+Subject: Re: [Patch v2 1/2] powerpc: Send SIGBUS on unaligned copy and paste
+To: Chris Smart <chris@distroguy.com>
+References: <20160616233340.GA14449@distroguy.com>
+ <13e8530c-80d6-5475-f4f2-3a46e4a75a76@gmail.com>
+ <20160619234823.GA27442@distroguy.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <31502d44-4cee-8432-317a-dff14df8721c@gmail.com>
+Date: Mon, 20 Jun 2016 13:06:01 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <12025213.W8oVnaovm1@hactar>
+In-Reply-To: <20160619234823.GA27442@distroguy.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/16 at 05:51pm, Thiago Jung Bauermann wrote:
-> Am Freitag, 17 Juni 2016, 15:35:23 schrieb Dave Young:
-> > On 06/16/16 at 05:39pm, Thiago Jung Bauermann wrote:
-> > > Am Donnerstag, 16 Juni 2016, 09:58:53 schrieb Dave Young:
-> > > > On 06/15/16 at 01:21pm, Thiago Jung Bauermann wrote:
-> > > > > +int __weak arch_kexec_walk_mem(unsigned int image_type, bool
-> > > > > top_down,
-> > > > > +			       void *data, int (*func)(u64, u64, void *))
-> > > > > +{
-> > > > 
-> > > > top_down is also not used?
-> > > 
-> > > It's unused in the default implementation, but the powerpc implementation
-> > > in patch 8 uses it:
-> > Well, arch_kexec_walk_mem use kbuf as "data", you can even drop
-> > "image_type" since kbuf has all you want kbuf->image->type, and
-> > kbuf->top_down
-> > 
-> > int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
-> > 			       int (*func)(u64, u64, void *))
-> 
-> Sounds good to me, but I had to move struct kexec_buf from
-> kernel/kexec_internal.h to include/linux/kexec.h.
-> 
-> Here's the updated patch. What do you think?
-> 
-> []'s
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
-> 
-> 
->     kexec_file: Generalize kexec_add_buffer.
->     
->     Allow architectures to specify different memory walking functions for
->     kexec_add_buffer. Intel uses iomem to track reserved memory ranges,
->     but PowerPC uses the memblock subsystem.
->     
->     Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
->     Cc: Eric Biederman <ebiederm@xmission.com>
->     Cc: Dave Young <dyoung@redhat.com>
->     Cc: kexec@lists.infradead.org
->     Cc: linux-kernel@vger.kernel.org
-> 
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index e8acb2b43dd9..d8df01107ae2 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -201,6 +201,20 @@ struct kimage {
->  #endif
->  };
->  
-> +/*
-> + * Keeps track of buffer parameters as provided by caller for requesting
-> + * memory placement of buffer.
-> + */
-> +struct kexec_buf {
-> +	struct kimage *image;
-> +	unsigned long mem;
-> +	unsigned long memsz;
-> +	unsigned long buf_align;
-> +	unsigned long buf_min;
-> +	unsigned long buf_max;
-> +	bool top_down;		/* allocate from top of memory hole */
-> +};
-> +
 
-kexec_buf should go within #ifdef for kexec file like struct purgatory_info
 
-Other than that it looks good.
+On 20/06/16 09:48, Chris Smart wrote:
+> On Fri, Jun 17, 2016 at 05:20:05PM +1000, Balbir Singh wrote:
+>>
+>>
+>> On 17/06/16 09:33, Chris Smart wrote:
+> 
+> [snip]
+> 
+>>> +
+>>> +    /*
+>>> +     * ISA 3.0 (such as P9) copy, copy_first, paste and paste_last alignment
+>>> +     * check.
+>>> +     *
+>>> +     * Send a SIGBUS to the process that caused the fault.
+>>> +     *
+>>> +     * We do not emulate these because paste may contain additional metadata
+>>> +     * when pasting to a co-processor. Furthermore, paste_last is the
+>>> +     * synchronisation point for preceding copy/paste sequences.
+>>> +     */
+>>> +    if ((instruction & 0xfc0006fe) == PPC_INST_COPY)
+>>> +        return -EIO;
+>>
+>> Should this all be under cpu_has_feature(CPU_FTR_ARCH_300)?
+>>
+> 
+> I'm not sure we should or not. That instruction only exists on those
+> machines so is it worth adding an additional check when the next check
+> will fail anyway?
+> 
+> I guess it would reduce non ISA 3.0 machines to just a single check rather
+> than two, but increases ISO 3.0 machines to three.
+> 
 
-Thanks
-Dave
+Ideally we can do features and fixups, but that today works mostly for the
+assembly code we have. In this case we might get away by doing the if and "&",
+I would recommend adding a branch hint
+
+if (unlikely(...))
+
+Balbir Singh
