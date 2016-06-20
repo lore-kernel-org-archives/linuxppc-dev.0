@@ -1,43 +1,41 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rY6Mq0kMBzDq80
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 20:21:26 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYBxN4HfPzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 23:47:19 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5KAJ4B4090686
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 06:21:25 -0400
+ u5KDiCMq007313
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 09:47:16 -0400
 Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23n0mdpefc-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23n25vb080-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 06:21:24 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 09:47:16 -0400
 Received: from localhost
  by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 20 Jun 2016 04:21:24 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: unrecoverable exception on G5 with CONFIG_PPC_EARLY_DEBUG enabled
-In-Reply-To: <1466414623.27324.2.camel@ellerman.id.au>
-References: <CAOJe8K1S9-AjJ106rQJMmTg_5238RzKgjFb9dyGuDY5ddydkgQ@mail.gmail.com>
- <1465216025.2658.7.camel@ellerman.id.au>
- <CAOJe8K1bBf-J6ZJq+VfVv+CVcwGyff32beGL4kXaZBr5ZL9hmw@mail.gmail.com>
- <1466078830.19127.0.camel@ellerman.id.au>
- <CAOJe8K2L8D1M_yZPmyiZ11JvJ+HAS0aFHOnsqaY=xLOnQTA3AA@mail.gmail.com>
- <1466116390.24271.27.camel@kernel.crashing.org>
- <1466127964.12899.5.camel@ellerman.id.au>
- <87eg7u8li9.fsf@skywalker.in.ibm.com>
- <1466414623.27324.2.camel@ellerman.id.au>
-Date: Mon, 20 Jun 2016 15:51:18 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87a8igyxcx.fsf@skywalker.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Mon, 20 Jun 2016 07:47:15 -0600
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [PATCH 1/3] cxlflash: Fix to drain operations from previous reset
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1466034560-17864-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Mon, 20 Jun 2016 08:47:09 -0500
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1466034460-17797-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1466034560-17864-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Message-Id: <E601E96F-4C2F-48EF-BDFF-689114A05285@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,60 +45,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+> On Jun 15, 2016, at 6:49 PM, Uma Krishnan <ukrishn@linux.vnet.ibm.com> =
+wrote:
+>=20
+> From: "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+>=20
+> While running 'sg_reset -H' in a loop with a user-space application =
+active,
+> hit the following exception:
+>=20
+> cpu 0x2: Vector: 300 (Data Access)
+>    pc: : afu_attach+0x50/0x240 [cxlflash]
+>    lr: : cxlflash_afu_recover+0x3dc/0x7d0 [cxlflash]
+>    pid   =3D 20365, comm =3D run_block_fvt
+>=20
+> Linux version 4.5.0-491-26f710d+
+>=20
+> cxlflash_afu_recover+0x3dc/0x7d0 [cxlflash]
+> cxlflash_ioctl+0x5a8/0x6f0 [cxlflash]
+> scsi_ioctl+0x3b0/0x4c0
+> sd_ioctl+0x110/0x190
+> blkdev_ioctl+0x28c/0xc20
+> block_ioctl+0xa4/0xd0
+> do_vfs_ioctl+0xd8/0x8c0
+> SyS_ioctl+0xd4/0xf0
+> system_call+0x38/0xb4
+>=20
+> The problem here is that the problem space area is unmapped while the
+> application issues the DK_CXLFLASH_RECOVER_AFU ioctl.
+>=20
+> This is the order I observe:
+>=20
+> proc1				proc2
+> 1) sg_reset
+> 				2) ioctl(DK_CXLFLASH_RECOVER_AFU)
+> 3) sg_reset again
+>   causing a PSA unmap
+> 				4) continues RECOVER_AFU processing
+>=20
+> The resolution to this problem is to have the reset handler drain all
+> outstanding user space initiated ioctls before proceeding.  It is safe
+> to drain after the state has been changed to STATE_RESET. Also since
+> drain_ioctls() was static, it had to be moved up a bit to be before
+> cxlflash_eh_host_reset_handler().
+>=20
+> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 
-> On Sat, 2016-06-18 at 22:47 +0530, Aneesh Kumar K.V wrote:
->> Michael Ellerman <mpe@ellerman.id.au> writes:
->> > On Fri, 2016-06-17 at 08:33 +1000, Benjamin Herrenschmidt wrote:
->> > > On Thu, 2016-06-16 at 22:49 +0300, Denis Kirjanov wrote:
->> > > > -
->> > > > +BEGIN_MMU_FTR_SECTION
->> > > > +       b       2f
->> > > > +END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
->> > > >         andi.   r10,r12,MSR_RI  /* check for unrecoverable exception
->> > > > */
->> > > >         beq-    2f
->> > > 
->> > > Are we taking an SLB miss before we do the fixup maybe ?
->> > 
->> > Yeah that's the only explanation that makes any sense.
->> > 
->> > I think instead of patching down this low we should instead be redirecting SLB
->> > misses to unknown_exception() when radix is enabled. Aneesh?
->> 
->> The 2f branch ends up doing unrecoverable exception. Or are you
->> suggesting something else ?
->
-> I meant more like diverting to unknown_exception() higher up the call stack, but
-> that's complicated.
->
-> How about this? Denis does this work?
->
-> cheers
->
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 4c9440629128..8bcc1b457115 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1399,11 +1399,12 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
->  	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
->
->  	mtlr	r10
-> -BEGIN_MMU_FTR_SECTION
-> -	b	2f
-> -END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
->  	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
-> +BEGIN_MMU_FTR_SECTION
->  	beq-	2f
-> +FTR_SECTION_ELSE
-> +	b	2f
-> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
->
->  .machine	push
->  .machine	"power4"
-
-I sent a patch which should get this problem fixed.
-
-http://mid.gmane.org/1466274479-5650-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
-
--aneesh
+Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
