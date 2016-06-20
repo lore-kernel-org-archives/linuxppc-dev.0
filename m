@@ -1,24 +1,23 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rXzfp11rZzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 15:18:58 +1000 (AEST)
-Date: Mon, 20 Jun 2016 15:18:53 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rXzrV1PN1zDqCX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 15:27:22 +1000 (AEST)
+Date: Mon, 20 Jun 2016 15:25:13 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Cc: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- linuxppc-dev@ozlabs.org, pbonzini@redhat.com,
- mahesh@linux.vnet.ibm.com, david@gibson.dropbear.id.au,
- kvm@vger.kernel.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v3 2/2] KVM: PPC: Exit guest upon MCE when FWNMI
- capability is enabled
-Message-ID: <20160620051853.GA29366@fergus.ozlabs.ibm.com>
-References: <20160113070759.20248.86252.stgit@aravindap>
- <20160113070809.20248.80811.stgit@aravindap>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Cc: kvm-ppc@vger.kernel.org,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>, agraf@suse.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC PATCH 1/2] KVM: PPC: divide the ics lock into smaller ones
+ for each irq
+Message-ID: <20160620052513.GB29366@fergus.ozlabs.ibm.com>
+References: <1463381898.19947.6.camel@TP420>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160113070809.20248.80811.stgit@aravindap>
+In-Reply-To: <1463381898.19947.6.camel@TP420>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Aravinda,
+On Mon, May 16, 2016 at 02:58:18PM +0800, Li Zhong wrote:
+> This patch tries to use smaller locks for each irq in the ics, instead
+> of a lock at the ics level, to provide better scalability.
 
-On Wed, Jan 13, 2016 at 12:38:09PM +0530, Aravinda Prasad wrote:
-> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
-> exit reasons upon a machine check exception (MCE) in
-> the guest address space if the KVM_CAP_PPC_FWNMI
-> capability is enabled (instead of delivering 0x200
-> interrupt to guest). This enables QEMU to build error
-> log and deliver machine check exception to guest via
-> guest registered machine check handler.
-> 
-> This approach simplifies the delivering of machine
-> check exception to guest OS compared to the earlier
-> approach of KVM directly invoking 0x200 guest interrupt
-> vector. In the earlier approach QEMU was enhanced to
-> patch the 0x200 interrupt vector during boot. The
-> patched code at 0x200 issued a private hcall to pass
-> the control to QEMU to build the error log.
-> 
-> This design/approach is based on the feedback for the
-> QEMU patches to handle machine check exception. Details
-> of earlier approach of handling machine check exception
-> in QEMU and related discussions can be found at:
-> 
-> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
-> 
-> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+This looks like a worth-while thing to do.  Do you have any
+performance measurements to justify the change?  This will increase
+the size of struct kvmppc_ics by 4kB, so it would be useful to show
+the performance increase that justifies it.
 
-Are you in the process of doing a new version of this patch with the
-requested changes?
+Also, when you resend the patch, please make the patch description
+more definite - say "With this patch, we use" rather than "this patch
+tries to use", for instance.
 
+Regards,
 Paul.
