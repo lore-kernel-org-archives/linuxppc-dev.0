@@ -1,23 +1,24 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rXzrV1PN1zDqCX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rXzrV0n0szDq80
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 15:27:22 +1000 (AEST)
-Date: Mon, 20 Jun 2016 15:25:13 +1000
+Date: Mon, 20 Jun 2016 15:27:17 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: Li Zhong <zhong@linux.vnet.ibm.com>
 Cc: kvm-ppc@vger.kernel.org,
  PowerPC email list <linuxppc-dev@lists.ozlabs.org>, agraf@suse.com,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC PATCH 1/2] KVM: PPC: divide the ics lock into smaller ones
- for each irq
-Message-ID: <20160620052513.GB29366@fergus.ozlabs.ibm.com>
-References: <1463381898.19947.6.camel@TP420>
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Boqun Feng <boqun.feng@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 2/2] KVM: PPC: Don't take lock when check irq's
+ resend flag
+Message-ID: <20160620052717.GC29366@fergus.ozlabs.ibm.com>
+References: <1463381898.19947.6.camel@TP420> <1463382133.19947.10.camel@TP420>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1463381898.19947.6.camel@TP420>
+In-Reply-To: <1463382133.19947.10.camel@TP420>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,18 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 16, 2016 at 02:58:18PM +0800, Li Zhong wrote:
-> This patch tries to use smaller locks for each irq in the ics, instead
-> of a lock at the ics level, to provide better scalability.
+On Mon, May 16, 2016 at 03:02:13PM +0800, Li Zhong wrote:
+> It seems that we don't need to take the lock before evaluating irq's
+> resend flag. What needed is to make sure when we clear the ics's bit
+> in the icp's resend_map, we don't miss the resend flag of the irqs
+> that set the bit.
+> 
+> And seems this could be ordered through the barrier in test_and_clear_bit(),
+> and an newly added wmb when setting irq's resend flag, and icp's resend_map.
 
-This looks like a worth-while thing to do.  Do you have any
-performance measurements to justify the change?  This will increase
-the size of struct kvmppc_ics by 4kB, so it would be useful to show
-the performance increase that justifies it.
+This looks fine to me.  Is there a measurable performance improvement
+from this?  I understand it could be hard to measure.
 
-Also, when you resend the patch, please make the patch description
-more definite - say "With this patch, we use" rather than "this patch
-tries to use", for instance.
+Also, you could make the patch description more definite - just say
+that we don't need to take the lock, there's no need for "seems".
 
-Regards,
 Paul.
