@@ -3,27 +3,27 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYHZZ1vbNzDqCp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 03:16:20 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYHn83hp6zDqCq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 03:25:32 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5KH99JR095898
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 13:16:17 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23n0esm6hd-1
+ u5KHOW4j087406
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 13:25:29 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23n2fy2562-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 13:16:17 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 13:25:29 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Mon, 20 Jun 2016 13:16:16 -0400
+ Mon, 20 Jun 2016 11:25:29 -0600
 Content-Type: text/plain; charset=us-ascii
 Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH 2/3] cxlflash: Add device dependent flags
+Subject: Re: [PATCH 3/3] cxlflash: Shutdown notify support for CXL Flash cards
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1466034578-17914-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Mon, 20 Jun 2016 12:16:06 -0500
+In-Reply-To: <1466034597-17950-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Mon, 20 Jun 2016 12:25:21 -0500
 Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
@@ -33,9 +33,9 @@ Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
 References: <1466034460-17797-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1466034578-17914-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1466034597-17950-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Message-Id: <742D7B6C-4A3F-4B9D-81DF-B37278510DE9@linux.vnet.ibm.com>
+Message-Id: <36CC19DB-79CA-4D53-BE16-AE9B84F7AD71@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,17 +48,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > On Jun 15, 2016, at 6:49 PM, Uma Krishnan <ukrishn@linux.vnet.ibm.com> =
 wrote:
 >=20
-> Device dependent flags are needed to support functions that are
-> specific to a particular device.
+> Some CXL Flash cards need notification of device shutdown
+> in order to flush pending I/Os.
 >=20
-> One such case is - some CXL Flash cards need to be notified of
-> device shutdown. For other CXL devices, this feature does not prove
-> to be useful yet. Such distinct features need to be identified in
-> the driver to bypass or invoke specific functionality.
->=20
-> In this patch, a member 'flags' has been added to device dependent
-> values. These flags will be used and expanded in the future to
-> support various device specific functions.
+> A PCI notification hook for shutdown has been added where
+> the driver notifies the card and returns. When the device
+> is removed in the PCI remove path, notification code will
+> wait for shutdown processing to complete.
 >=20
 > Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
