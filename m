@@ -1,24 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rXzrV0n0szDq80
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 15:27:22 +1000 (AEST)
-Date: Mon, 20 Jun 2016 15:27:17 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Cc: kvm-ppc@vger.kernel.org,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>, agraf@suse.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Boqun Feng <boqun.feng@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 2/2] KVM: PPC: Don't take lock when check irq's
- resend flag
-Message-ID: <20160620052717.GC29366@fergus.ozlabs.ibm.com>
-References: <1463381898.19947.6.camel@TP420> <1463382133.19947.10.camel@TP420>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rY2GB33LwzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 17:16:17 +1000 (AEST)
+Received: by mail-yw0-x242.google.com with SMTP id i12so614559ywa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 00:16:17 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1463382133.19947.10.camel@TP420>
+In-Reply-To: <1466292111.24271.89.camel@kernel.crashing.org>
+References: <1466274479-5650-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1466292111.24271.89.camel@kernel.crashing.org>
+Date: Mon, 20 Jun 2016 10:16:14 +0300
+Message-ID: <CAOJe8K2D3e6EKZr3JYubaC2_eryu94qvvhbZh=qP9pGy+ZJJdg@mail.gmail.com>
+Subject: Re: [PATCH V2] powerpc/mm: Don't do debug print before we do feature
+ fixup
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 16, 2016 at 03:02:13PM +0800, Li Zhong wrote:
-> It seems that we don't need to take the lock before evaluating irq's
-> resend flag. What needed is to make sure when we clear the ics's bit
-> in the icp's resend_map, we don't miss the resend flag of the irqs
-> that set the bit.
-> 
-> And seems this could be ordered through the barrier in test_and_clear_bit(),
-> and an newly added wmb when setting irq's resend flag, and icp's resend_map.
+On 6/19/16, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Sat, 2016-06-18 at 23:57 +0530, Aneesh Kumar K.V wrote:
+>> We use feature fixup in segment and page fault path and hence we should
+>> not call any function that can cause either of these before we finish
+>> feature fixup.
+>>
+>> Calling into early debug routine can result in segment fault as updated
+>> in
+>> https://lkml.kernel.org/r/CAOJe8K2L8D1M_yZPmyiZ11JvJ+HAS0aFHOnsqaY=xLOnQTA3AA@mail.gmail.com
+>>
+>> Avoid the segment fault by removing the debug print. Also remove the
+>> matching closing debug print at the end of the function.
+>
+> Please add a comment at the beginning of setup_system() explaining
+> the situation. IE, that until the fixups are done, not even debug
+> printfs can be used.
+>
+Right, otherwise we'll hit the same issue in the future.
 
-This looks fine to me.  Is there a measurable performance improvement
-from this?  I understand it could be hard to measure.
-
-Also, you could make the patch description more definite - just say
-that we don't need to take the lock, there's no need for "seems".
-
-Paul.
+> It used to work though, the fact that we used 256M segment in that
+> case wasn't an issue, in part because btext only really existed on
+> machines that didn't have 1T segments. It was only ever going to be
+> a segment fault, the rest was bolted (early ioremap).
+>
+> Ben.
+>
+>
