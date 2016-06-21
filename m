@@ -2,9 +2,9 @@ Return-Path: <helgaas@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYW0B53wWzDr6r
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:50:50 +1000 (AEST)
-Date: Mon, 20 Jun 2016 20:50:45 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYW8V4QD5zDqCX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:58:02 +1000 (AEST)
+Date: Mon, 20 Jun 2016 20:57:53 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
@@ -14,14 +14,14 @@ Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
  corbet@lwn.net, warrier@linux.vnet.ibm.com,
  zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
  gwshan@linux.vnet.ibm.com
-Subject: Re: [RESEND PATCH v2 2/4] PCI: Do not Use IORESOURCE_STARTALIGN to
- identify bridge resources
-Message-ID: <20160621015045.GB30307@localhost>
+Subject: Re: [RESEND PATCH v2 3/4] PCI: Add a new option for
+ resource_alignment to reassign alignment
+Message-ID: <20160621015753.GC30307@localhost>
 References: <1464846411-16895-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1464846411-16895-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1464846411-16895-4-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1464846411-16895-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1464846411-16895-4-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +31,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 02, 2016 at 01:46:49PM +0800, Yongji Xie wrote:
-> Now we use the IORESOURCE_STARTALIGN to identify bridge resources
-> in __assign_resources_sorted(). That's quite fragile. We can't
-> make sure that the PCI devices' resources will not use
-> IORESOURCE_STARTALIGN any more.
-
-Can you explain this a little more?  I don't quite understand the
-problem.  Maybe you can give an example of the problem?
-
-> In this patch, we try to use a more robust way to identify
-> bridge resources.
+On Thu, Jun 02, 2016 at 01:46:50PM +0800, Yongji Xie wrote:
+> When using resource_alignment kernel parameter, the current
+> implement reassigns the alignment by changing resources' size
+> which can potentially break some drivers. For example, the driver
+> uses the size to locate some register whose length is related
+> to the size.
 > 
+> This patch adds a new option "noresize" for the parameter to
+> solve this problem.
+
+Why do we ever want to change the resource's size?  I understand that
+you want to change the resource's *alignment*, and that part makes
+sense.  But why change the *size*?  Changing the resource size doesn't
+change the hardware BAR size; it just means the struct resource will
+describe a region larger than what the BAR actually claims.  That
+unnecessarily wastes space after the BAR.
+
+This was a problem with the code even before your patch; I'm
+suggesting that if you have a way to change the alignment without
+changing the resource size, maybe we should do that all the time.
+Then you wouldn't need to add the "noresize" option.
+
 > Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 > ---
->  drivers/pci/setup-bus.c |    9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
+>  Documentation/kernel-parameters.txt |    5 ++++-
+>  drivers/pci/pci.c                   |   35 +++++++++++++++++++++++++----------
+>  2 files changed, 29 insertions(+), 11 deletions(-)
 > 
-> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-> index 55641a3..216ddbc 100644
-> --- a/drivers/pci/setup-bus.c
-> +++ b/drivers/pci/setup-bus.c
-> @@ -390,6 +390,7 @@ static void __assign_resources_sorted(struct list_head *head,
->  	struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
->  	unsigned long fail_type;
->  	resource_size_t add_align, align;
-> +	int index;
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 82b42c9..c4802f5 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -2997,13 +2997,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>  				window. The default value is 64 megabytes.
+>  		resource_alignment=
+>  				Format:
+> -				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
+> +				[<order of align>@][<domain>:]<bus>:<slot>.<func>
+> +				[:noresize][; ...]
+>  				Specifies alignment and device to reassign
+>  				aligned memory resources.
+>  				If <order of align> is not specified,
+>  				PAGE_SIZE is used as alignment.
+>  				PCI-PCI bridge can be specified, if resource
+>  				windows need to be expanded.
+> +				noresize: Don't change the resources' sizes when
+> +				reassigning alignment.
+>  		ecrc=		Enable/disable PCIe ECRC (transaction layer
+>  				end-to-end CRC checking).
+>  				bios: Use BIOS/firmware settings. This is the
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index a259394..3ee13e5 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -4748,11 +4748,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
+>  /**
+>   * pci_specified_resource_alignment - get resource alignment specified by user.
+>   * @dev: the PCI device to get
+> + * @resize: whether or not to change resources' size when reassigning alignment
+>   *
+>   * RETURNS: Resource alignment if it is specified.
+>   *          Zero if it is not specified.
+>   */
+> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+> +static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+> +		bool *resize)
+>  {
+>  	int seg, bus, slot, func, align_order, count;
+>  	resource_size_t align = 0;
+> @@ -4786,6 +4788,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>  			}
+>  		}
+>  		p += count;
+> +		if (!strncmp(p, ":noresize", 9)) {
+> +			*resize = false;
+> +			p += 9;
+> +		} else
+> +			*resize = true;
+>  		if (seg == pci_domain_nr(dev->bus) &&
+>  			bus == dev->bus->number &&
+>  			slot == PCI_SLOT(dev->devfn) &&
+> @@ -4818,11 +4825,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  {
+>  	int i;
+>  	struct resource *r;
+> +	bool resize = true;
+>  	resource_size_t align, size;
+>  	u16 command;
 >  
->  	/* Check if optional add_size is there */
->  	if (!realloc_head || list_empty(realloc_head))
-> @@ -410,11 +411,13 @@ static void __assign_resources_sorted(struct list_head *head,
+>  	/* check if specified PCI is target device to reassign */
+> -	align = pci_specified_resource_alignment(dev);
+> +	align = pci_specified_resource_alignment(dev, &resize);
+>  	if (!align)
+>  		return;
 >  
->  		/*
->  		 * There are two kinds of additional resources in the list:
-> -		 * 1. bridge resource  -- IORESOURCE_STARTALIGN
-> -		 * 2. SR-IOV resource   -- IORESOURCE_SIZEALIGN
-> +		 * 1. bridge resource
-> +		 * 2. SR-IOV resource
->  		 * Here just fix the additional alignment for bridge
->  		 */
-> -		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
-> +		index = dev_res->res - dev_res->dev->resource;
-> +		if (index < PCI_BRIDGE_RESOURCES ||
-> +			index > PCI_BRIDGE_RESOURCE_END)
-
-I think the code looks OK; at least, it seems to match the comment.
-I'd just like to understand the problem a little better.
-
+> @@ -4844,15 +4852,22 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  		if (!(r->flags & IORESOURCE_MEM))
 >  			continue;
->  
->  		add_align = get_res_add_align(realloc_head, dev_res->res);
+>  		size = resource_size(r);
+> -		if (size < align) {
+> -			size = align;
+> -			dev_info(&dev->dev,
+> -				"Rounding up size of resource #%d to %#llx.\n",
+> -				i, (unsigned long long)size);
+> +		if (resize) {
+> +			if (size < align) {
+> +				size = align;
+> +				dev_info(&dev->dev,
+> +					"Rounding up size of resource #%d to %#llx.\n",
+> +					i, (unsigned long long)size);
+> +			}
+> +			r->flags |= IORESOURCE_UNSET;
+> +			r->end = size - 1;
+> +			r->start = 0;
+> +		} else {
+> +			r->flags &= ~IORESOURCE_SIZEALIGN;
+> +			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
+> +			r->start = max(align, size);
+> +			r->end = r->start + size - 1;
+>  		}
+> -		r->flags |= IORESOURCE_UNSET;
+> -		r->end = size - 1;
+> -		r->start = 0;
+>  	}
+>  	/* Need to disable bridge's resource window,
+>  	 * to enable the kernel to reassign new resource
 > -- 
 > 1.7.9.5
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
