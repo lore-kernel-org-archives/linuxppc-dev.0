@@ -1,29 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYlX609CqzDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:15:50 +1000 (AEST)
-Message-ID: <1466507748.18876.3.camel@ellerman.id.au>
-Subject: Re: [PATCH] ppc: Fix BPF JIT for ABIv2
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Thadeu Lima de
- Souza Cascardo <cascardo@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Matt Evans <matt@ozlabs.org>, Daniel Borkmann
- <daniel@iogearbox.net>, Alexei Starovoitov <ast@fb.com>, Denis Kirjanov
- <kda@linux-powerpc.org>, Paul Mackerras <paulus@samba.org>, "David S.
- Miller" <davem@davemloft.net>, Ananth N Mavinakayanahalli
- <ananth@in.ibm.com>
-Date: Tue, 21 Jun 2016 21:15:48 +1000
-In-Reply-To: <20160621085807.GE8886@naverao1-tp.localdomain>
-References: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
- <3rWKtT2tSrz9t2G@ozlabs.org> <20160617130042.GO3516@indiana.gru.redhat.com>
- <20160619174914.GC8886@naverao1-tp.localdomain>
- <20160620185620.GD3516@indiana.gru.redhat.com>
- <20160621085807.GE8886@naverao1-tp.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <afd@ti.com>
+Subject: Re: [PATCH] leds: Add no-op gpio_led_register_device when LED
+ subsystem is disabled
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+References: <20160613200211.14790-1-afd@ti.com>
+ <20160613200211.14790-13-afd@ti.com> <5760FA52.7010806@samsung.com>
+ <57647DBD.2010406@ti.com> <57679E38.3080901@samsung.com>
+ <57686A94.2010704@ti.com> <5768E815.5080706@samsung.com>
+CC: Russell King <linux@armlinux.org.uk>, Miguel Ojeda Sandonis
+ <miguel.ojeda.sandonis@gmail.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Sebastian Reichel <sre@kernel.org>, Wolfram Sang <wsa@the-dreams.de>,
+ Richard Purdie <rpurdie@rpsys.net>, Rusty Russell <rusty@rustcorp.com.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Mauro Carvalho Chehab
+ <mchehab@osg.samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ Lauro Ramos Venancio <lauro.venancio@openbossa.org>, Aloisio Almeida Jr
+ <aloisio.almeida@openbossa.org>, Samuel Ortiz <sameo@linux.intel.com>, Ingo
+ Molnar <mingo@kernel.org>,
+ <linux-pwm@vger.kernel.org>, <lguest@lists.ozlabs.org>,
+ <linux-wireless@vger.kernel.org>, <linux-mmc@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-gpio@vger.kernel.org>,
+ <linux-i2c@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-leds@vger.kernel.org>, <linux-media@vger.kernel.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Message-ID: <5769297A.4050608@ti.com>
+Date: Tue, 21 Jun 2016 06:48:10 -0500
+MIME-Version: 1.0
+In-Reply-To: <5768E815.5080706@samsung.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,63 +36,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-21 at 14:28 +0530, Naveen N. Rao wrote:
-> On 2016/06/20 03:56PM, Thadeu Lima de Souza Cascardo wrote:
-> > On Sun, Jun 19, 2016 at 11:19:14PM +0530, Naveen N. Rao wrote:
-> > > On 2016/06/17 10:00AM, Thadeu Lima de Souza Cascardo wrote:
-> > > > 
-> > > > Hi, Michael and Naveen.
-> > > > 
-> > > > I noticed independently that there is a problem with BPF JIT and ABIv2, and
-> > > > worked out the patch below before I noticed Naveen's patchset and the latest
-> > > > changes in ppc tree for a better way to check for ABI versions.
-> > > > 
-> > > > However, since the issue described below affect mainline and stable kernels,
-> > > > would you consider applying it before merging your two patchsets, so that we can
-> > > > more easily backport the fix?
-> > > 
-> > > Hi Cascardo,
-> > > Given that this has been broken on ABIv2 since forever, I didn't bother 
-> > > fixing it. But, I can see why this would be a good thing to have for 
-> > > -stable and existing distros. However, while your patch below may fix 
-> > > the crash you're seeing on ppc64le, it is not sufficient -- you'll need 
-> > > changes in bpf_jit_asm.S as well.
-> > 
-> > Hi, Naveen.
-> > 
-> > Any tips on how to exercise possible issues there? Or what changes you think
-> > would be sufficient?
+On 06/21/2016 02:09 AM, Jacek Anaszewski wrote:
+> Hi Andrew,
 > 
-> The calling convention is different with ABIv2 and so we'll need changes 
-> in bpf_slow_path_common() and sk_negative_common().
-
-How big would those changes be? Do we know?
-
-How come no one reported this was broken previously? This is the first I've
-heard of it being broken.
-
-> However, rather than enabling classic JIT for ppc64le, are we better off 
-> just disabling it?
+> This patch doesn't apply, please rebase onto recent LED tree.
 > 
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -128,7 +128,7 @@ config PPC
->         select IRQ_FORCED_THREADING
->         select HAVE_RCU_TABLE_FREE if SMP
->         select HAVE_SYSCALL_TRACEPOINTS
-> -       select HAVE_CBPF_JIT
-> +       select HAVE_CBPF_JIT if CPU_BIG_ENDIAN
->         select HAVE_ARCH_JUMP_LABEL
->         select ARCH_HAVE_NMI_SAFE_CMPXCHG
->         select ARCH_HAS_GCOV_PROFILE_ALL
+> On 06/21/2016 12:13 AM, Andrew F. Davis wrote:
+>> Some systems use 'gpio_led_register_device' to make an in-memory copy of
+>> their LED device table so the original can be removed as .init.rodata.
+>> When the LED subsystem is not enabled source in the led directory is not
+>> built and so this function may be undefined. Fix this here.
+>>
+>> Signed-off-by: Andrew F. Davis <afd@ti.com>
+>> ---
+>>   include/linux/leds.h | 8 ++++++++
+>>   1 file changed, 8 insertions(+)
+>>
+>> diff --git a/include/linux/leds.h b/include/linux/leds.h
+>> index d2b1306..a4a3da6 100644
+>> --- a/include/linux/leds.h
+>> +++ b/include/linux/leds.h
+>> @@ -386,8 +386,16 @@ struct gpio_led_platform_data {
+>>                                          unsigned long *delay_off);
+> 
+> Currently there is some stuff here, and in fact it has been for
+> a long time.
+> 
+> Patch "[PATCH 12/12] leds: Only descend into leds directory when
+> CONFIG_NEW_LEDS is set" also doesn't apply.
+> What repository are you using?
+> 
+
+v4.7-rc4, it may not apply due to the surrounding lines being changed in
+the other patches which may not be applied to your tree. It is a single
+line change per patch so hopefully the merge conflict resolutions will
+be trivial.
+
+A better solution could have been getting an ack from each maintainer
+and having someone pull the whole series into one tree, but parts have
+already been picked so it may be a little late for that.
+
+>>   };
+>>
+>> +#ifdef CONFIG_NEW_LEDS
+>>   struct platform_device *gpio_led_register_device(
+>>                  int id, const struct gpio_led_platform_data *pdata);
+>> +#else
+>> +static inline struct platform_device *gpio_led_register_device(
+>> +               int id, const struct gpio_led_platform_data *pdata)
+>> +{
+>> +       return 0;
+>> +}
+>> +#endif
+>>
+>>   enum cpu_led_event {
+>>          CPU_LED_IDLE_START,     /* CPU enters idle */
+>>
 > 
 > 
-> Michael,
-> Let me know your thoughts on whether you intend to take this patch or 
-> Cascardo's patch for -stable before the eBPF patches. I can redo my 
-> patches accordingly.
-
-This patch sounds like the best option at the moment for something we can
-backport. Unless the changes to fix it are minimal.
-
-cheers
