@@ -1,50 +1,17 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYkcZ3831zDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 20:34:38 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5LAXgfP058698
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 06:34:36 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23q1qmd7nk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 06:34:36 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Tue, 21 Jun 2016 20:34:33 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 583652CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 20:34:32 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5LAYWkG23527540
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 20:34:32 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5LAYVQu009400
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 20:34:32 +1000
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- manoj <manoj@linux.vnet.ibm.com>
-Subject: Re: [v6,
- 1/2] cxl: Add mechanism for delivering AFU driver specific events
-In-Reply-To: <1466483778-sup-4320@x230.ozlabs.ibm.com>
-References: <1466086415-30586-1-git-send-email-felix@linux.vnet.ibm.com>
- <87k2hkgs6v.fsf@vajain21.in.ibm.com>
- <1466483778-sup-4320@x230.ozlabs.ibm.com>
-Date: Tue, 21 Jun 2016 16:04:22 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87eg7qg79t.fsf@vajain21.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYkfZ3D1GzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 20:36:22 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, kda@linux-powerpc.org
+Subject: [PATCH] powerpc: Fix faults caused by radix patching of SLB miss
+ handler
+Date: Tue, 21 Jun 2016 20:36:19 +1000
+Message-Id: <1466505379-15597-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,39 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ian,
+As part of the Radix MMU support we added some feature sections in the
+SLB miss handler. These are intended to catch the case that we
+incorrectly take an SLB miss when Radix is enabled, and instead of
+crashing weirdly they bail out to a well defined exit path and trigger
+an oops.
 
-Ian Munsie <imunsie@au1.ibm.com> writes:
+However the way they were written meant the bailout case was enabled by
+default until we did CPU feature patching.
 
-> Excerpts from Vaibhav Jain's message of 2016-06-20 14:20:16 +0530:
->> > +int cxl_unset_driver_ops(struct cxl_context *ctx)
->> > +{
->> > +    if (atomic_read(&ctx->afu_driver_events))
->> > +        return -EBUSY;
->> > +
->> > +    ctx->afu_driver_ops = NULL;
->> Need a write memory barrier so that afu_driver_ops isnt possibly called
->> after this store.
->
-> What situation do you think this will help? I haven't looked closely at
-> the last few iterations of this patch set, but if you're in a situation
-> where you might be racing with some code doing e.g.
->
-> if (ctx->afu_driver_ops)
-> 	ctx->afu_driver_ops->something();
->
-> You have a race with or without a memory barrier. Ideally you would just
-> have the caller guarantee that it will only call cxl_unset_driver_ops if
-> no further calls to afu_driver_ops is possible, otherwise you may need
-> locking here which would be far from ideal.
-Yes, agree that wmb wont save against the race condition mentioned and
-this is much better handled with locking. But imho having a wmb is still
-better compared to having no locking for this shared variable.
+On powermacs the early debug prints in setup_system() can cause an SLB
+miss, which happens before code patching, and so the SLB miss handler
+would incorrectly bailout and crash during boot.
 
->
-> What exactly is the use case for this API? I'd vote to drop it if we can
-> do without it.
-Agree with this. Functionality of this API can be merged with
-cxl_set_driver_ops when called with NULL arg for cxl_afu_driver_ops.
+Fix it by inverting the sense of the feature section, so that the code
+which is in place at boot is correct for the hash case. Once we
+determine we are using Radix - which will never happen on a powermac -
+only then do we patch in the bailout case which unconditionally jumps.
 
-~ Vaibhav
+Fixes: caca285e5ab4 ("powerpc/mm/radix: Use STD_MMU_64 to properly isolate hash related code")
+Reported-by: Denis Kirjanov <kda@linux-powerpc.org>
+Tested-by: Denis Kirjanov <kda@linux-powerpc.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4c9440629128..8bcc1b457115 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1399,11 +1399,12 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
+ 	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
+ 
+ 	mtlr	r10
+-BEGIN_MMU_FTR_SECTION
+-	b	2f
+-END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
+ 	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
++BEGIN_MMU_FTR_SECTION
+ 	beq-	2f
++FTR_SECTION_ELSE
++	b	2f
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
+ 
+ .machine	push
+ .machine	"power4"
+-- 
+2.5.0
