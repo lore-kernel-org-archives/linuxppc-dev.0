@@ -1,27 +1,33 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYW8V4QD5zDqCX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:58:02 +1000 (AEST)
-Date: Mon, 20 Jun 2016 20:57:53 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- corbet@lwn.net, warrier@linux.vnet.ibm.com,
- zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- gwshan@linux.vnet.ibm.com
-Subject: Re: [RESEND PATCH v2 3/4] PCI: Add a new option for
- resource_alignment to reassign alignment
-Message-ID: <20160621015753.GC30307@localhost>
-References: <1464846411-16895-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1464846411-16895-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYWW63N6jzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 12:14:10 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5L2Dv3G069512
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:14:07 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23n2fyg6v1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:14:07 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 20 Jun 2016 20:14:07 -0600
+Subject: Re: [PATCH] powerpc/pseries: Auto online hotplugged memory
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <5767F4D0.7070504@linux.vnet.ibm.com>
+ <1466470648.9938.0.camel@ellerman.id.au>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 20 Jun 2016 21:14:03 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1464846411-16895-4-git-send-email-xyjxie@linux.vnet.ibm.com>
+In-Reply-To: <1466470648.9938.0.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5768A2EB.5030808@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,136 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 02, 2016 at 01:46:50PM +0800, Yongji Xie wrote:
-> When using resource_alignment kernel parameter, the current
-> implement reassigns the alignment by changing resources' size
-> which can potentially break some drivers. For example, the driver
-> uses the size to locate some register whose length is related
-> to the size.
+On 06/20/2016 07:57 PM, Michael Ellerman wrote:
+> On Mon, 2016-06-20 at 08:51 -0500, Nathan Fontenot wrote:
 > 
-> This patch adds a new option "noresize" for the parameter to
-> solve this problem.
-
-Why do we ever want to change the resource's size?  I understand that
-you want to change the resource's *alignment*, and that part makes
-sense.  But why change the *size*?  Changing the resource size doesn't
-change the hardware BAR size; it just means the struct resource will
-describe a region larger than what the BAR actually claims.  That
-unnecessarily wastes space after the BAR.
-
-This was a problem with the code even before your patch; I'm
-suggesting that if you have a way to change the alignment without
-changing the resource size, maybe we should do that all the time.
-Then you wouldn't need to add the "noresize" option.
-
-> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-> ---
->  Documentation/kernel-parameters.txt |    5 ++++-
->  drivers/pci/pci.c                   |   35 +++++++++++++++++++++++++----------
->  2 files changed, 29 insertions(+), 11 deletions(-)
+>> Auto online hotplugged memory
+>>
+>> A recent update (commit id 31bc3858ea3) to the core mm hotplug code
+>> introduced the memhp_auto_online variable to allow for automatically
+>> onlining memory that is added.
+>>
+>> This patch update the pseries memory hotplug code to enable this so that
+>> any memory DLPAR added to the system is automatically onlined. The code
+>> to add the memory block for memory added from add_memory() is removed as
+>> this is not needed, the memory_add code does this.
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 82b42c9..c4802f5 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2997,13 +2997,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  				window. The default value is 64 megabytes.
->  		resource_alignment=
->  				Format:
-> -				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
-> +				[<order of align>@][<domain>:]<bus>:<slot>.<func>
-> +				[:noresize][; ...]
->  				Specifies alignment and device to reassign
->  				aligned memory resources.
->  				If <order of align> is not specified,
->  				PAGE_SIZE is used as alignment.
->  				PCI-PCI bridge can be specified, if resource
->  				windows need to be expanded.
-> +				noresize: Don't change the resources' sizes when
-> +				reassigning alignment.
->  		ecrc=		Enable/disable PCIe ECRC (transaction layer
->  				end-to-end CRC checking).
->  				bios: Use BIOS/firmware settings. This is the
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index a259394..3ee13e5 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -4748,11 +4748,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
->  /**
->   * pci_specified_resource_alignment - get resource alignment specified by user.
->   * @dev: the PCI device to get
-> + * @resize: whether or not to change resources' size when reassigning alignment
->   *
->   * RETURNS: Resource alignment if it is specified.
->   *          Zero if it is not specified.
->   */
-> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
-> +static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
-> +		bool *resize)
->  {
->  	int seg, bus, slot, func, align_order, count;
->  	resource_size_t align = 0;
-> @@ -4786,6 +4788,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
->  			}
->  		}
->  		p += count;
-> +		if (!strncmp(p, ":noresize", 9)) {
-> +			*resize = false;
-> +			p += 9;
-> +		} else
-> +			*resize = true;
->  		if (seg == pci_domain_nr(dev->bus) &&
->  			bus == dev->bus->number &&
->  			slot == PCI_SLOT(dev->devfn) &&
-> @@ -4818,11 +4825,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->  {
->  	int i;
->  	struct resource *r;
-> +	bool resize = true;
->  	resource_size_t align, size;
->  	u16 command;
->  
->  	/* check if specified PCI is target device to reassign */
-> -	align = pci_specified_resource_alignment(dev);
-> +	align = pci_specified_resource_alignment(dev, &resize);
->  	if (!align)
->  		return;
->  
-> @@ -4844,15 +4852,22 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->  		if (!(r->flags & IORESOURCE_MEM))
->  			continue;
->  		size = resource_size(r);
-> -		if (size < align) {
-> -			size = align;
-> -			dev_info(&dev->dev,
-> -				"Rounding up size of resource #%d to %#llx.\n",
-> -				i, (unsigned long long)size);
-> +		if (resize) {
-> +			if (size < align) {
-> +				size = align;
-> +				dev_info(&dev->dev,
-> +					"Rounding up size of resource #%d to %#llx.\n",
-> +					i, (unsigned long long)size);
-> +			}
-> +			r->flags |= IORESOURCE_UNSET;
-> +			r->end = size - 1;
-> +			r->start = 0;
-> +		} else {
-> +			r->flags &= ~IORESOURCE_SIZEALIGN;
-> +			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
-> +			r->start = max(align, size);
-> +			r->end = r->start + size - 1;
->  		}
-> -		r->flags |= IORESOURCE_UNSET;
-> -		r->end = size - 1;
-> -		r->start = 0;
->  	}
->  	/* Need to disable bridge's resource window,
->  	 * to enable the kernel to reassign new resource
-> -- 
-> 1.7.9.5
+> Is this a bug fix, or just a cleanup?
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Hmmm.. some cleanup and some new feature. The removal of the memblock_add()
+call is a cleanup and the setting of the memhp_auto_online variable is
+taking advantage of a feature I was not previously aware of.
+
+None of this is a bug fix.
+
+-Nathan
