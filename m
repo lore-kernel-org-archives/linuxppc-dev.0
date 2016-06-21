@@ -1,34 +1,40 @@
-Return-Path: <j.anaszewski@samsung.com>
-Message-id: <57693CE5.7050904@samsung.com>
-Date: Tue, 21 Jun 2016 15:11:01 +0200
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-MIME-version: 1.0
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Russell King <linux@armlinux.org.uk>,
- Miguel Ojeda Sandonis <miguel.ojeda.sandonis@gmail.com>,
- Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>,
- Wolfram Sang <wsa@the-dreams.de>, Richard Purdie <rpurdie@rpsys.net>,
- Rusty Russell <rusty@rustcorp.com.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Lauro Ramos Venancio <lauro.venancio@openbossa.org>,
- Aloisio Almeida Jr <aloisio.almeida@openbossa.org>,
- Samuel Ortiz <sameo@linux.intel.com>, Ingo Molnar <mingo@kernel.org>,
- linux-pwm@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
- linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-leds@vger.kernel.org, linux-media@vger.kernel.org
-Subject: Re: [PATCH] leds: Add no-op gpio_led_register_device when LED
- subsystem is disabled
-References: <20160613200211.14790-1-afd@ti.com>
- <20160613200211.14790-13-afd@ti.com> <5760FA52.7010806@samsung.com>
- <57647DBD.2010406@ti.com> <57679E38.3080901@samsung.com>
- <57686A94.2010704@ti.com> <5768E815.5080706@samsung.com>
- <5769297A.4050608@ti.com>
-In-reply-to: <5769297A.4050608@ti.com>
-Content-type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYpSF5zhwzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 23:27:41 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5LDO9ni005676
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 09:27:39 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23pe03k2at-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 09:27:39 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Tue, 21 Jun 2016 07:27:38 -0600
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [v6,
+ 1/2] cxl: Add mechanism for delivering AFU driver specific events
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <87eg7qg79t.fsf@vajain21.in.ibm.com>
+Date: Tue, 21 Jun 2016 08:27:34 -0500
+Cc: Ian Munsie <imunsie@au1.ibm.com>,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ mikey <mikey@neuling.org>, manoj <manoj@linux.vnet.ibm.com>
+References: <1466086415-30586-1-git-send-email-felix@linux.vnet.ibm.com>
+ <87k2hkgs6v.fsf@vajain21.in.ibm.com>
+ <1466483778-sup-4320@x230.ozlabs.ibm.com>
+ <87eg7qg79t.fsf@vajain21.in.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Message-Id: <2686A514-2808-4F08-8514-5E08B5D3608A@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,71 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/21/2016 01:48 PM, Andrew F. Davis wrote:
-> On 06/21/2016 02:09 AM, Jacek Anaszewski wrote:
->> Hi Andrew,
->>
->> This patch doesn't apply, please rebase onto recent LED tree.
->>
->> On 06/21/2016 12:13 AM, Andrew F. Davis wrote:
->>> Some systems use 'gpio_led_register_device' to make an in-memory copy of
->>> their LED device table so the original can be removed as .init.rodata.
->>> When the LED subsystem is not enabled source in the led directory is not
->>> built and so this function may be undefined. Fix this here.
->>>
->>> Signed-off-by: Andrew F. Davis <afd@ti.com>
->>> ---
->>>    include/linux/leds.h | 8 ++++++++
->>>    1 file changed, 8 insertions(+)
->>>
->>> diff --git a/include/linux/leds.h b/include/linux/leds.h
->>> index d2b1306..a4a3da6 100644
->>> --- a/include/linux/leds.h
->>> +++ b/include/linux/leds.h
->>> @@ -386,8 +386,16 @@ struct gpio_led_platform_data {
->>>                                           unsigned long *delay_off);
->>
->> Currently there is some stuff here, and in fact it has been for
->> a long time.
->>
->> Patch "[PATCH 12/12] leds: Only descend into leds directory when
->> CONFIG_NEW_LEDS is set" also doesn't apply.
->> What repository are you using?
->>
->
-> v4.7-rc4, it may not apply due to the surrounding lines being changed in
-> the other patches which may not be applied to your tree. It is a single
-> line change per patch so hopefully the merge conflict resolutions will
-> be trivial.
->
-> A better solution could have been getting an ack from each maintainer
-> and having someone pull the whole series into one tree, but parts have
-> already been picked so it may be a little late for that.
+> On Jun 21, 2016, at 5:34 AM, Vaibhav Jain <vaibhav@linux.vnet.ibm.com> =
+wrote:
+>=20
+> Hi Ian,
+>=20
+> Ian Munsie <imunsie@au1.ibm.com> writes:
+>=20
+>> Excerpts from Vaibhav Jain's message of 2016-06-20 14:20:16 +0530:
+>>=20
+>> What exactly is the use case for this API? I'd vote to drop it if we =
+can
+>> do without it.
+> Agree with this. Functionality of this API can be merged with
+> cxl_set_driver_ops when called with NULL arg for cxl_afu_driver_ops.
 
-OK, I resolved the issues and applied, thanks.
+Passing a NULL arg instead of calling an 'unset' API is fine with us.
 
->>>    };
->>>
->>> +#ifdef CONFIG_NEW_LEDS
->>>    struct platform_device *gpio_led_register_device(
->>>                   int id, const struct gpio_led_platform_data *pdata);
->>> +#else
->>> +static inline struct platform_device *gpio_led_register_device(
->>> +               int id, const struct gpio_led_platform_data *pdata)
->>> +{
->>> +       return 0;
->>> +}
->>> +#endif
->>>
->>>    enum cpu_led_event {
->>>           CPU_LED_IDLE_START,     /* CPU enters idle */
->>>
->>
->>
->
->
-
-
--- 
-Best regards,
-Jacek Anaszewski
+I'll add that for cxlflash, I can't envision a scenario where we'll =
+unset the
+driver ops for a context.
