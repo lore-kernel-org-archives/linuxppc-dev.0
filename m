@@ -2,16 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYTRV1JkBzDq66
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYTRV26ByzDqDR
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:40:54 +1000 (AEST)
-In-Reply-To: <1464020045-1385-1-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>, mikey <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org, Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
+In-Reply-To: <1462958539-25552-1-git-send-email-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: cxl: Update process element after allocating interrupts
-Message-Id: <3rYTRT2Cxyz9t18@ozlabs.org>
+Cc: linux-mm@kvack.org, Oliver O'Halloran <oohall@gmail.com>
+Subject: Re: [v2] powerpc/mm: Ensure "special" zones are empty
+Message-Id: <3rYTRT6gDSz9t0f@ozlabs.org>
 Date: Tue, 21 Jun 2016 10:40:53 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,38 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-23-05 at 16:14:05 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Wed, 2016-11-05 at 09:22:18 UTC, Oliver O'Halloran wrote:
+> The mm zone mechanism was traditionally used by arch specific code to
+> partition memory into allocation zones. However there are several zones
+> that are managed by the mm subsystem rather than the architecture. Most
+> architectures set the max PFN of these special zones to zero, however on
+> powerpc we set them to ~0ul. This, in conjunction with a bug in
+> free_area_init_nodes() results in all of system memory being placed in
+> ZONE_DEVICE when enabled. Device memory cannot be used for regular kernel
+> memory allocations so this will cause a kernel panic at boot. Given the
+> planned addition of more mm managed zones (ZONE_CMA) we should aim to be
+> consistent with every other architecture and set the max PFN for these
+> zones to zero.
 > 
-> In the kernel API, it is possible to attempt to allocate AFU interrupts
-> after already starting a context. Since the process element structure
-> used by the hardware is only filled out at the time the context is
-> started, it will not be updated with the interrupt numbers that have
-> just been allocated and therefore AFU interrupts will not work unless
-> they were allocated prior to starting the context.
-> 
-> This can present some difficulties as each CAPI enabled PCI device in
-> the kernel API has a default context, which may need to be started very
-> early to enable translations, potentially before interrupts can easily
-> be set up.
-> 
-> This patch makes the API more flexible to allow interrupts to be
-> allocated after a context has already been started and takes care of
-> updating the PE structure used by the hardware and notifying it to
-> discard any cached copy it may have.
-> 
-> The update is currently performed via a terminate/remove/add sequence.
-> This is necessary on some hardware such as the XSL that does not
-> properly support the update LLCMD.
-> 
-> Note that this is only supported on powernv at present - attempting to
-> perform this ordering on PowerVM will raise a warning.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> Cc: linux-mm@kvack.org
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/292841b09648ce7aee5df16ab7
+https://git.kernel.org/powerpc/c/3079abe555511031e2ba5d1e21
 
 cheers
