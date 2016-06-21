@@ -1,26 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chris@distroguy.com>
+Received: from mx-out03.mykolab.com (unknown [95.128.36.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYS3H686TzDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 09:38:19 +1000 (AEST)
-Message-ID: <1466465899.437.0.camel@ellerman.id.au>
-Subject: Re: [6/6] ppc: ebpf/jit: Implement JIT compiler for extended BPF
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Matt Evans <matt@ozlabs.org>, Daniel Borkmann
- <daniel@iogearbox.net>, Alexei Starovoitov <ast@fb.com>, Denis Kirjanov
- <kda@linux-powerpc.org>, Paul Mackerras <paulus@samba.org>, "David S.
- Miller" <davem@davemloft.net>, Ananth N Mavinakayanahalli
- <ananth@in.ibm.com>
-Date: Tue, 21 Jun 2016 09:38:19 +1000
-In-Reply-To: <20160619173642.GB8886@naverao1-tp.localdomain>
-References: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
- <3rWKtT2tSrz9t2G@ozlabs.org>
- <20160619173642.GB8886@naverao1-tp.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYTPm536CzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:39:23 +1000 (AEST)
+Received: from mx03.mykolab.com (mx03.mykolab.com [10.20.7.101])
+ by mx-out03.mykolab.com (Postfix) with ESMTPS id D978321906
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 02:39:16 +0200 (CEST)
+Date: Tue, 21 Jun 2016 10:39:10 +1000
+From: Chris Smart <chris@distroguy.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [Patch v2 1/2] powerpc: Send SIGBUS on unaligned copy and paste
+Message-ID: <20160621003909.GA11166@distroguy.com>
+References: <20160616233340.GA14449@distroguy.com>
+ <20160617040412.GC25170@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20160617040412.GC25170@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2016-06-19 at 23:06 +0530, Naveen N. Rao wrote:
-> On 2016/06/17 10:53PM, Michael Ellerman wrote:
-> > On Tue, 2016-07-06 at 13:32:23 UTC, "Naveen N. Rao" wrote:
-> > > diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> > > new file mode 100644
-> > > index 0000000..954ff53
-> > > --- /dev/null
-> > > +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> > > @@ -0,0 +1,956 @@
-> > ...
+On Thu, Jun 16, 2016 at 11:04:12PM -0500, Segher Boessenkool wrote:
+>On Fri, Jun 17, 2016 at 09:33:45AM +1000, Chris Smart wrote:
+>> +#define PPC_INST_COPY			0x7c00060c
+>> +#define PPC_INST_COPY_FIRST		0x7c20060c
+>
+>> +#define PPC_INST_PASTE			0x7c00070c
+>> +#define PPC_INST_PASTE_LAST		0x7c20070d
+>
+>That's not quite right I think.
+>
 
-> > > +
-> > > +static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
-> > > +{
-> > > +	int *p = area;
-> > > +
-> > > +	/* Fill whole space with trap instructions */
-> > > +	while (p < (int *)((char *)area + size))
-> > > +		*p++ = BREAKPOINT_INSTRUCTION;
-> > > +}
-> > 
-> > This breaks the build for some configs, presumably you're missing a header:
-> > 
-> >   arch/powerpc/net/bpf_jit_comp64.c:30:10: error: 'BREAKPOINT_INSTRUCTION' undeclared (first use in this function)
-> > 
-> > http://kisskb.ellerman.id.au/kisskb/buildresult/12720611/
-> 
-> Oops. Yes, I should have caught that. I need to add:
-> 
-> #include <asm/kprobes.h>
-> 
-> in bpf_jit_comp64.c
-> 
-> Can you please check if it resolves the build error?
+Hi Segher,
 
-Can you? :D
+Thanks for checking that for me, it's good to make sure it's correct.
 
-cheers
+Just to be sure, I've gone back and compared them all with the ISA. I
+think that the only one that differs is the paste_last. Am I missing
+something?
+
+>copy is       7c00060c mask fc2007fe (or ffe007fe)
+
+COPY = copy RA,RB,L (L=0)
+
+  31   //// L  RA    RB      774     /
+011111 0000 0 00000 00000 1100000110 0 = 0x7c00060c (instruction)
+111111 0000 1 00000 00000 1111111111 0 = 0xfc2007fe (specific mask)
+
+>copy_first is 7c20060c mask fc2007fe
+
+COPY_FIRST = copy RA,RB,L (L=1)
+If L=1, the instruction identifies the beginning of a move group.
+
+  31   //// L   RA   RB      774     /
+011111 0000 1 00000 00000 1100000110 0 = 0x7c20060c (instruction)
+111111 0000 1 00000 00000 1111111111 0 = 0xfc2007fe (specific mask)
+
+>paste is      7c00070c mask fc2007fe
+
+PASTE = paste RA,RB,L (L=0 Rc=0)
+
+  31   //// L  RA    RB      902     Rc
+011111 0000 0 00000 00000 1110000110 0 = 0x7c00070c (instruction)
+111111 0000 1 00000 00000 1111111111 1 = 0xfc2007ff (specific mask)
+
+>paste_last is 7c20070c mask fc2007fe
+>
+
+PASTE_LAST = paste. RA,RB,L (L=1 Rc=1)
+If L=1, the instruction identifies the end of a move group.
+If L≠Rc, the instruction form is invalid.
+
+  31   //// L  RA    RB      902     Rc
+011111 0000 1 00000 00000 1110000110 1 = 0x7c20070d (instruction)
+111111 0000 1 00000 00000 1111111111 1 = 0xfc2007ff (specific mask)
+
+>(this includes record form for paste; the low bit).
+>
+
+To make the test simple I use a combined copy, copy_first, paste and
+paste_last mask to compare just against copy. So that excluded:
+ - L
+ - bit 24 of 32
+ - Rc
+111111 0000 0 00000 00000 1101111111 0 = 0xfc0006fe
+
+Would it be better and more clear to check each instruction with its
+mask? Something like:
+
+#define PPC_INST_COPY_MASK 0xfc2007fe
+#define PPC_INST_PASTE_MASK 0xfc2007ff
+
+if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+	unsigned int masked_instruction = instruction & PPC_INST_COPY_MASK;
+
+	if (masked_instruction == PPC_INST_COPY || \
+			masked_instruction == PPC_INST_COPY_FIRST)
+		return -EIO;
+
+	masked_instruction = instruction & PPC_INST_PASTE_MASK;
+
+	if (masked_instruction == PPC_INST_PASTE || \
+			masked_instruction == PPC_INST_PASTE_LAST)
+		return -EIO;
+}
+
+Thanks!
+-c
