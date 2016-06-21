@@ -1,21 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYTRX2NxTzDqGh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYTRX6fpWzDqK5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:40:56 +1000 (AEST)
-In-Reply-To: <20160610035128.21087-1-boqun.feng@gmail.com>
-To: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1466080421-25188-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
- Will Deacon <will.deacon@arm.com>, Alexander Graf <agraf@suse.de>,
- Paul Mackerras <paulus@samba.org>,
- "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [v4] powerpc: spinlock: Fix spin_unlock_wait()
-Message-Id: <3rYTRV50CZz9t0w@ozlabs.org>
-Date: Tue, 21 Jun 2016 10:40:54 +1000 (AEST)
+Cc: dja@axtens.net
+Subject: Re: powerpc/align: Use #ifdef __BIG_ENDIAN__ #else for REG_BYTE
+Message-Id: <3rYTRX1Xsxz9t1f@ozlabs.org>
+Date: Tue, 21 Jun 2016 10:40:55 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-10-06 at 03:51:28 UTC, Boqun Feng wrote:
-> There is an ordering issue with spin_unlock_wait() on powerpc, because
-> the spin_lock primitive is an ACQUIRE and an ACQUIRE is only ordering
-> the load part of the operation with memory operations following it.
-...
+On Thu, 2016-16-06 at 12:33:41 UTC, Michael Ellerman wrote:
+> From: Daniel Axtens <dja@axtens.net>
 > 
-> Suggested-by: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-> Reviewed-by: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> [mpe: Inline the "nop" ll/sc loop and set EH=0, munge change log]
+> Sparse complains that it doesn't know what REG_BYTE is:
+> 
+>   arch/powerpc/kernel/align.c:313:29: error: undefined identifier 'REG_BYTE'
+> 
+> REG_BYTE is defined differently based on whether we're compiling for
+> LE, BE32 or BE64. Sparse apparently doesn't provide __BIG_ENDIAN__ or
+> __LITTLE_ENDIAN__, which means we get no definition.
+> 
+> Rather than check for __BIG_ENDIAN__ and then separately for
+> __LITTLE_ENDIAN__, just switch the #ifdef to check for __BIG_ENDIAN__
+> and then #else we define the little endian version. Technically that's
+> dicey because PDP_ENDIAN is also a possibility, but we already do it in
+> a lot of places so one more hardly matters.
+> 
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/6262db7c088bbfc26480d10144
+https://git.kernel.org/powerpc/c/a9650e9bc53239c30c39f77d9d
 
 cheers
