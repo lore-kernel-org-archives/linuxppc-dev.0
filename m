@@ -2,16 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYn6b2Bg8zDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 22:27:19 +1000 (AEST)
-In-Reply-To: <1465439470-15456-4-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, Jack Miller <jack@codezen.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYn6c3FK8zDqCX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 22:27:20 +1000 (AEST)
+In-Reply-To: <20160617052517.25322-1-ruscur@russell.cc>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, cyrilbur@gmail.com,
- anton@samba.org
-Subject: Re: [v7,3/3] powerpc: Load Monitor Register Tests
-Message-Id: <3rYn6b0Xbgz9t0N@ozlabs.org>
-Date: Tue, 21 Jun 2016 22:27:18 +1000 (AEST)
+Subject: Re: powerpc/pci: Fix SRIOV not building without EEH enabled
+Message-Id: <3rYn6c10Spz9t0Q@ozlabs.org>
+Date: Tue, 21 Jun 2016 22:27:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,19 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-09-06 at 02:31:10 UTC, Michael Neuling wrote:
-> From: Jack Miller <jack@codezen.org>
+On Fri, 2016-17-06 at 05:25:17 UTC, Russell Currey wrote:
+> On Book3E CPUs (and possibly other configs), it is possible to have SRIOV
+> (CONFIG_PCI_IOV) set without CONFIG_EEH.  The SRIOV code does not check
+> for this, and if EEH is disabled, pci_dn.c fails to build.
 > 
-> Adds two tests. One is a simple test to ensure that the new registers
-> LMRR and LMSER are properly maintained. The other actually uses the
-> existing EBB test infrastructure to test that LMRR and LMSER behave as
-> documented.
+> Fix this by gating the EEH-specific code in the SRIOV implementation
+> behind CONFIG_EEH.
 > 
-> Signed-off-by: Jack Miller <jack@codezen.org>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Fixes: 39218cd0 ("powerpc/eeh: EEH device for VF")
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/16c19a2e983346c547501795aa
+https://git.kernel.org/powerpc/c/fb36e90736938d50fdaa1be7af
 
 cheers
