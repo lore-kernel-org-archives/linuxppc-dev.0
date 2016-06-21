@@ -1,46 +1,25 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groug@kaod.org>
+Received: from 5.mo4.mail-out.ovh.net (5.mo4.mail-out.ovh.net [188.165.44.50])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYqSG0Q56zDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:12:45 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5LE96ro114307
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:12:43 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23n2crfr4r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:12:43 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 21 Jun 2016 10:12:42 -0400
-Date: Tue, 21 Jun 2016 19:42:31 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-team@fb.com
-Subject: Re: [PATCH 1/2] workqueue: Move wq_update_unbound_numa() to the
- beginning of CPU_ONLINE
-Reply-To: ego@linux.vnet.ibm.com
-References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
- <6b3c7059ec5d2d6157d23d619e4507692a42a5bd.1465311052.git.ego@linux.vnet.ibm.com>
- <20160615155350.GB24102@mtj.duckdns.org>
- <20160615192844.GA20301@in.ibm.com>
- <20160616193504.GB3262@mtj.duckdns.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYpyT5F42zDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 23:50:25 +1000 (AEST)
+Received: from player793.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 080E2FFB179
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:02:12 +0200 (CEST)
+Date: Tue, 21 Jun 2016 11:02:01 +0200
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, qemu-ppc@nongnu.org, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, Thomas Huth <thuth@redhat.com>
+Subject: Re: [Qemu-ppc] [PATCH v2] powerpc/pseries: start rtasd before PCI
+ probing
+Message-ID: <20160621110201.38d8711c@bahia.lan>
+In-Reply-To: <146602104462.23192.4267928292361711364.stgit@bahia.lan>
+References: <146602104462.23192.4267928292361711364.stgit@bahia.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160616193504.GB3262@mtj.duckdns.org>
-Message-Id: <20160621141231.GA30251@in.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,68 +29,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tejun,
-On Thu, Jun 16, 2016 at 03:35:04PM -0400, Tejun Heo wrote:
-> Hello,
-> 
-> So, the issue of the initial worker not having its affinity set
-> correctly wasn't caused by the order of the operations.  Reordering
-> just made set_cpus_allowed tried one more time late enough so that it
-> hides the race condition most of the time.  The problem is that
-> CPU_ONLINE callbacks are called while the cpu being onlined is online
-> but not active and select_fallback_rq() only considers active cpus, so
-> if a kthread gets scheduled in the meantime and it doesn't have any
-> cpu which is active in its allowed mask, it's allowed mask gets reset
-> to cpu_possible_mask.
-> 
-> Would something like the following make sense?
-> 
-> Thanks.
-> ------ 8< ------
-> Subject: [PATCH] sched: allow kthreads to fallback to online && !active cpus
-> 
-> During CPU hotplug, CPU_ONLINE callbacks are run while the CPU is
-> online but not active.  A CPU_ONLINE callback may create or bind a
-> kthread so that its cpus_allowed mask only allows the CPU which is
-> being brought online.  The kthread may start executing before the CPU
-> is made active and can end up in select_fallback_rq().
-> 
-> In such cases, the expected behavior is selecting the CPU which is
-> coming online; however, because select_fallback_rq() only chooses from
-> active CPUs, it determines that the task doesn't have any viable CPU
-> in its allowed mask and ends up overriding it to cpu_possible_mask.
-> 
-> CPU_ONLINE callbacks should be able to put kthreads on the CPU which
-> is coming online.  Update select_fallback_rq() so that it follows
-> cpu_online() rather than cpu_active() for kthreads.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Reported-by: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+On Wed, 15 Jun 2016 22:26:41 +0200
+Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
 
-Hi Tejun,
-
-This patch fixes the issue on POWER. I am able to see the worker
-threads of the unbound workqueues of the newly onlined node with this.
-
-Tested-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
+> A strange behaviour is observed when comparing PCI hotplug in QEMU, between
+> x86 and pseries. If you consider the following steps:
+> - start a VM
+> - add a PCI device via the QEMU monitor before the rtasd has started (for
+>   example starting the VM in paused state, or hotplug during FW or boot
+>   loader)
+> - resume the VM execution
+> 
+> The x86 kernel detects the PCI device, but the pseries one does not.
+> 
+> This happens because the rtasd kernel worker is currently started under
+> device_initcall, while PCI probing happens earlier under subsys_initcall.
+> 
+> As a consequence, if we have a pending RTAS event at boot time, a message
+> is printed and the event is dropped.
+> 
+> This patch moves all the initialization of rtasd to arch_initcall, which is
+> run before subsys_call: this way, logging_enabled is true when the RTAS
+> event pops up and it is not lost anymore.
+> 
+> The proc fs bits stay at device_initcall because they cannot be run before
+> fs_initcall.
+> 
+> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
 > ---
->  kernel/sched/core.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> v2: - avoid behaviour change: don't create the proc entry if early init failed
 > 
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 017d539..a12e3db 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -1536,7 +1536,9 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
->  	for (;;) {
->  		/* Any allowed, online CPU? */
->  		for_each_cpu(dest_cpu, tsk_cpus_allowed(p)) {
-> -			if (!cpu_active(dest_cpu))
-> +			if (!(p->flags & PF_KTHREAD) && !cpu_active(dest_cpu))
-> +				continue;
-> +			if (!cpu_online(dest_cpu))
->  				continue;
->  			goto out;
->  		}
+
+I forgot to mention that Thomas had sent a Tested-by for v1, which I think is
+still valid for v2.
+
+> Michael,
+> 
+> This was also tested under PowerVM: it doesn't fix anything there because the
+> HMC tells it won't honor DLPAR features as long as the RMC isn't here, which
+> happens later in the boot sequence. It hence seems impossible to have a pending
+> RTAS event at boot time.
+> 
+> It doesn't seem to break anything either, the kernel boots and hotplug works
+> okay once the RMC is up.
+> 
+> Cheers.
+> 
+> --
+> Greg
+> 
+> ---
+>  arch/powerpc/kernel/rtasd.c |   22 +++++++++++++++++-----
+>  1 file changed, 17 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> index e864b7c5884e..a26a02006576 100644
+> --- a/arch/powerpc/kernel/rtasd.c
+> +++ b/arch/powerpc/kernel/rtasd.c
+> @@ -526,10 +526,8 @@ void rtas_cancel_event_scan(void)
+>  }
+>  EXPORT_SYMBOL_GPL(rtas_cancel_event_scan);
+>  
+> -static int __init rtas_init(void)
+> +static int __init rtas_event_scan_init(void)
+>  {
+> -	struct proc_dir_entry *entry;
+> -
+>  	if (!machine_is(pseries) && !machine_is(chrp))
+>  		return 0;
+>  
+> @@ -562,13 +560,27 @@ static int __init rtas_init(void)
+>  		return -ENOMEM;
+>  	}
+>  
+> +	start_event_scan();
+> +
+> +	return 0;
+> +}
+> +arch_initcall(rtas_event_scan_init);
+> +
+> +static int __init rtas_init(void)
+> +{
+> +	struct proc_dir_entry *entry;
+> +
+> +	if (!machine_is(pseries) && !machine_is(chrp))
+> +		return 0;
+> +
+> +	if (!rtas_log_buf)
+> +		return -ENODEV;
+> +
+>  	entry = proc_create("powerpc/rtas/error_log", S_IRUSR, NULL,
+>  			    &proc_rtas_log_operations);
+>  	if (!entry)
+>  		printk(KERN_ERR "Failed to create error_log proc entry\n");
+>  
+> -	start_event_scan();
+> -
+>  	return 0;
+>  }
+>  __initcall(rtas_init);
+> 
 > 
