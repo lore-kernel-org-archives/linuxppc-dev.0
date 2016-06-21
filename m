@@ -1,31 +1,48 @@
-Return-Path: <cascardo@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYrDR02yczDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:47:34 +1000 (AEST)
-Date: Tue, 21 Jun 2016 11:47:26 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Matt Evans <matt@ozlabs.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@fb.com>,
- Denis Kirjanov <kda@linux-powerpc.org>, Paul Mackerras <paulus@samba.org>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH] ppc: Fix BPF JIT for ABIv2
-Message-ID: <20160621144725.GH3516@indiana.gru.redhat.com>
-References: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
- <3rWKtT2tSrz9t2G@ozlabs.org>
- <20160617130042.GO3516@indiana.gru.redhat.com>
- <20160619174914.GC8886@naverao1-tp.localdomain>
- <20160620185620.GD3516@indiana.gru.redhat.com>
- <20160621085807.GE8886@naverao1-tp.localdomain>
- <1466507748.18876.3.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1466507748.18876.3.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYrRB6DBQzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:54 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5LErke2139637
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:56:52 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23q794h9y8-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:56:52 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 22 Jun 2016 00:56:49 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AD0B22CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:46 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5LEuk7w6553944
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:46 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5LEujEv001838
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:46 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Yury Norov <ynorov@caviumnetworks.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
+ Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3] tools/perf: Fix the mask in regs_dump__printf and
+ print_sample_iregs
+Date: Tue, 21 Jun 2016 20:26:40 +0530
+Message-Id: <1466521000-11329-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,82 +52,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 21, 2016 at 09:15:48PM +1000, Michael Ellerman wrote:
-> On Tue, 2016-06-21 at 14:28 +0530, Naveen N. Rao wrote:
-> > On 2016/06/20 03:56PM, Thadeu Lima de Souza Cascardo wrote:
-> > > On Sun, Jun 19, 2016 at 11:19:14PM +0530, Naveen N. Rao wrote:
-> > > > On 2016/06/17 10:00AM, Thadeu Lima de Souza Cascardo wrote:
-> > > > > 
-> > > > > Hi, Michael and Naveen.
-> > > > > 
-> > > > > I noticed independently that there is a problem with BPF JIT and ABIv2, and
-> > > > > worked out the patch below before I noticed Naveen's patchset and the latest
-> > > > > changes in ppc tree for a better way to check for ABI versions.
-> > > > > 
-> > > > > However, since the issue described below affect mainline and stable kernels,
-> > > > > would you consider applying it before merging your two patchsets, so that we can
-> > > > > more easily backport the fix?
-> > > > 
-> > > > Hi Cascardo,
-> > > > Given that this has been broken on ABIv2 since forever, I didn't bother 
-> > > > fixing it. But, I can see why this would be a good thing to have for 
-> > > > -stable and existing distros. However, while your patch below may fix 
-> > > > the crash you're seeing on ppc64le, it is not sufficient -- you'll need 
-> > > > changes in bpf_jit_asm.S as well.
-> > > 
-> > > Hi, Naveen.
-> > > 
-> > > Any tips on how to exercise possible issues there? Or what changes you think
-> > > would be sufficient?
-> > 
-> > The calling convention is different with ABIv2 and so we'll need changes 
-> > in bpf_slow_path_common() and sk_negative_common().
-> 
-> How big would those changes be? Do we know?
-> 
-> How come no one reported this was broken previously? This is the first I've
-> heard of it being broken.
-> 
+When decoding the perf_regs mask in regs_dump__printf(),
+we loop through the mask using find_first_bit and find_next_bit functions.
+"mask" is of type "u64", but sent as a "unsigned long *" to
+lib functions along with sizeof().
 
-I just heard of it less than two weeks ago, and only could investigate it last
-week, when I realized mainline was also affected.
+While the exisitng code works fine in most of the case,
+the logic is broken when using a 32bit perf on a 64bit kernel (Big Endian).
+When reading u64 using (u32 *)(&val)[0], perf (lib/find_*_bit()) assumes it gets
+lower 32bits of u64 which is wrong. Proposed fix is to swap the words
+of the u64 to handle this case. This is _not_ endianess swap.
 
-It looks like the little-endian support for classic JIT were done before the
-conversion to ABIv2. And as JIT is disabled by default, no one seems to have
-exercised it.
+Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Kan Liang <kan.liang@intel.com>
+Cc: Wang Nan <wangnan0@huawei.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+Changelog v2:
+1)Moved the swap code to a common function
+2)Added more comments in the code
 
-> > However, rather than enabling classic JIT for ppc64le, are we better off 
-> > just disabling it?
-> > 
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -128,7 +128,7 @@ config PPC
-> >         select IRQ_FORCED_THREADING
-> >         select HAVE_RCU_TABLE_FREE if SMP
-> >         select HAVE_SYSCALL_TRACEPOINTS
-> > -       select HAVE_CBPF_JIT
-> > +       select HAVE_CBPF_JIT if CPU_BIG_ENDIAN
-> >         select HAVE_ARCH_JUMP_LABEL
-> >         select ARCH_HAVE_NMI_SAFE_CMPXCHG
-> >         select ARCH_HAS_GCOV_PROFILE_ALL
-> > 
-> > 
-> > Michael,
-> > Let me know your thoughts on whether you intend to take this patch or 
-> > Cascardo's patch for -stable before the eBPF patches. I can redo my 
-> > patches accordingly.
-> 
-> This patch sounds like the best option at the moment for something we can
-> backport. Unless the changes to fix it are minimal.
-> 
-> cheers
-> 
+Changelog v1:
+1)updated commit message and patch subject
+2)Add the fix to print_sample_iregs() in builtin-script.c
 
-With my patch only, I can run a minimal tcpdump tcp port 22 with success. It
-correctly filter packets. But as pointed out, slow paths may not be taken.
+ tools/include/linux/bitmap.h |  9 +++++++++
+ tools/perf/builtin-script.c  | 16 +++++++++++++++-
+ tools/perf/util/session.c    | 16 +++++++++++++++-
+ 3 files changed, 39 insertions(+), 2 deletions(-)
 
-I don't have strong opinions on what to apply to stable, just that it would be
-nice to have something for the crash before applying all the nice changes by
-Naveen.
-
-Cascardo.
+diff --git a/tools/include/linux/bitmap.h b/tools/include/linux/bitmap.h
+index 28f5493da491..79998b26eb04 100644
+--- a/tools/include/linux/bitmap.h
++++ b/tools/include/linux/bitmap.h
+@@ -2,6 +2,7 @@
+ #define _PERF_BITOPS_H
+ 
+ #include <string.h>
++#include <limits.h>
+ #include <linux/bitops.h>
+ 
+ #define DECLARE_BITMAP(name,bits) \
+@@ -22,6 +23,14 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
+ #define small_const_nbits(nbits) \
+ 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
+ 
++static inline void bitmap_from_u64(unsigned long *_mask, u64 mask)
++{
++	_mask[0] = mask & ULONG_MAX;
++
++	if (sizeof(mask) > sizeof(unsigned long))
++		_mask[1] = mask >> 32;
++}
++
+ static inline void bitmap_zero(unsigned long *dst, int nbits)
+ {
+ 	if (small_const_nbits(nbits))
+diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
+index e3ce2f34d3ad..73928310fd91 100644
+--- a/tools/perf/builtin-script.c
++++ b/tools/perf/builtin-script.c
+@@ -412,11 +412,25 @@ static void print_sample_iregs(struct perf_sample *sample,
+ 	struct regs_dump *regs = &sample->intr_regs;
+ 	uint64_t mask = attr->sample_regs_intr;
+ 	unsigned i = 0, r;
++	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
+ 
+ 	if (!regs)
+ 		return;
+ 
+-	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
++	/*
++	 * Since u64 is passed as 'unsigned long *', check
++	 * to see whether we need to swap words within u64.
++	 * Reason being, in 32 bit big endian userspace on a
++	 * 64bit kernel, 'unsigned long' is 32 bits.
++	 * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
++	 * we will get wrong value for the mask. This is what
++	 * find_first_bit() and find_next_bit() is doing.
++	 * Issue here is "(u32 *)(&val)[0]" gets upper 32 bits of u64,
++	 * but perf assumes it gets lower 32bits of u64. Hence the check
++	 * and swap.
++	 */
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(r, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs->regs[i++];
+ 		printf("%5s:0x%"PRIx64" ", perf_reg_name(r), val);
+ 	}
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 5214974e841a..1337b1c73f82 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -940,8 +940,22 @@ static void branch_stack__printf(struct perf_sample *sample)
+ static void regs_dump__printf(u64 mask, u64 *regs)
+ {
+ 	unsigned rid, i = 0;
++	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
+ 
+-	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
++	/*
++	 * Since u64 is passed as 'unsigned long *', check
++	 * to see whether we need to swap words within u64.
++	 * Reason being, in 32 bit big endian userspace on a
++	 * 64bit kernel, 'unsigned long' is 32 bits.
++	 * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
++	 * we will get wrong value for the mask. This is what
++	 * find_first_bit() and find_next_bit() is doing.
++	 * Issue here is "(u32 *)(&val)[0]" gets upper 32 bits of u64,
++	 * but perf assumes it gets lower 32bits of u64. Hence the check
++	 * and swap.
++	 */
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs[i++];
+ 
+ 		printf(".... %-5s 0x%" PRIx64 "\n",
+-- 
+1.9.1
