@@ -1,23 +1,26 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYV6j5GswzDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:11:25 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id ts6so107728pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 18:11:25 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/align: Use #ifdef __BIG_ENDIAN__ #else for
- REG_BYTE
-In-Reply-To: <7459954.Ax6T6W22CJ@wuerfel>
-References: <1466080421-25188-1-git-send-email-mpe@ellerman.id.au>
- <6933845.bk2S1M4pvP@wuerfel> <8760t8mqrc.fsf@possimpible.ozlabs.ibm.com>
- <7459954.Ax6T6W22CJ@wuerfel>
-Date: Tue, 21 Jun 2016 11:11:18 +1000
-Message-ID: <871t3rmjm1.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYVFl4YmvzDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:17:31 +1000 (AEST)
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] cxlflash: Shutdown notification and reset patch
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1466034460-17797-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Mon, 20 Jun 2016 21:17:19 -0400
+In-Reply-To: <1466034460-17797-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ (Uma Krishnan's message of "Wed, 15 Jun 2016 18:47:40 -0500")
+Message-ID: <yq1a8if5oio.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,26 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+>>>>> "Uma" == Uma Krishnan <ukrishn@linux.vnet.ibm.com> writes:
 
-> Something like the (untested) patch below, similar to how we
-> already handle the word size and how some other architectures
-> handle setting __BIG_ENDIAN__.
+Uma> This patch set contains support to notify CXL Flash devices of an
+Uma> impending shutdown and a fix to drain operations prior to a reset.
 
-I tested this by reverting Michael's patch and applying yours.
+Uma> This series is intended for 4.8 and is bisectable.
 
-Not only does it successfully fix the errors that patch fixes, it
-manages to clean up the following four errors as well:
+Applied to 4.8/scsi-queue.
 
-+/scratch/dja/linux/arch/powerpc/lib/sstep.c:371:32: error: cast from unknown type
-+/scratch/dja/linux/arch/powerpc/lib/sstep.c:371:59: error: using member 'word' in incomplete struct <unnamed>
-+/scratch/dja/linux/arch/powerpc/lib/sstep.c:411:32: error: cast from unknown type
-+/scratch/dja/linux/arch/powerpc/lib/sstep.c:411:59: error: using member 'word' in incomplete struct <unnamed>
-
-So:
-Tested-by: Daniel Axtens <dja@axtens.net>
-
-(I think the patch also needs your sign-off.)
-
-Regards,
-Daniel
+-- 
+Martin K. Petersen	Oracle Linux Engineering
