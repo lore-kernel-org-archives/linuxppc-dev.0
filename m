@@ -1,48 +1,34 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <htejun@gmail.com>
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYrRB6DBQzDq5c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:54 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5LErke2139637
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:56:52 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23q794h9y8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 10:56:52 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 22 Jun 2016 00:56:49 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id AD0B22CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:46 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5LEuk7w6553944
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:46 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5LEujEv001838
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 00:56:46 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Yury Norov <ynorov@caviumnetworks.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
- Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3] tools/perf: Fix the mask in regs_dump__printf and
- print_sample_iregs
-Date: Tue, 21 Jun 2016 20:26:40 +0530
-Message-Id: <1466521000-11329-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYsKP1jn8zDq5c
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 01:36:57 +1000 (AEST)
+Received: by mail-yw0-x242.google.com with SMTP id i12so2187793ywa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 08:36:57 -0700 (PDT)
+Date: Tue, 21 Jun 2016 11:36:51 -0400
+From: Tejun Heo <htejun@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-team@fb.com
+Subject: Re: [PATCH 1/2] workqueue: Move wq_update_unbound_numa() to the
+ beginning of CPU_ONLINE
+Message-ID: <20160621153651.GF3262@mtj.duckdns.org>
+References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
+ <6b3c7059ec5d2d6157d23d619e4507692a42a5bd.1465311052.git.ego@linux.vnet.ibm.com>
+ <20160615155350.GB24102@mtj.duckdns.org>
+ <20160615192844.GA20301@in.ibm.com>
+ <20160616193504.GB3262@mtj.duckdns.org>
+ <20160621141231.GA30251@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160621141231.GA30251@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,128 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When decoding the perf_regs mask in regs_dump__printf(),
-we loop through the mask using find_first_bit and find_next_bit functions.
-"mask" is of type "u64", but sent as a "unsigned long *" to
-lib functions along with sizeof().
+On Tue, Jun 21, 2016 at 07:42:31PM +0530, Gautham R Shenoy wrote:
+> > Subject: [PATCH] sched: allow kthreads to fallback to online && !active cpus
+> > 
+> > During CPU hotplug, CPU_ONLINE callbacks are run while the CPU is
+> > online but not active.  A CPU_ONLINE callback may create or bind a
+> > kthread so that its cpus_allowed mask only allows the CPU which is
+> > being brought online.  The kthread may start executing before the CPU
+> > is made active and can end up in select_fallback_rq().
+> > 
+> > In such cases, the expected behavior is selecting the CPU which is
+> > coming online; however, because select_fallback_rq() only chooses from
+> > active CPUs, it determines that the task doesn't have any viable CPU
+> > in its allowed mask and ends up overriding it to cpu_possible_mask.
+> > 
+> > CPU_ONLINE callbacks should be able to put kthreads on the CPU which
+> > is coming online.  Update select_fallback_rq() so that it follows
+> > cpu_online() rather than cpu_active() for kthreads.
+> > 
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
+> > Reported-by: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+> 
+> Hi Tejun,
+> 
+> This patch fixes the issue on POWER. I am able to see the worker
+> threads of the unbound workqueues of the newly onlined node with this.
+> 
+> Tested-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-While the exisitng code works fine in most of the case,
-the logic is broken when using a 32bit perf on a 64bit kernel (Big Endian).
-When reading u64 using (u32 *)(&val)[0], perf (lib/find_*_bit()) assumes it gets
-lower 32bits of u64 which is wrong. Proposed fix is to swap the words
-of the u64 to handle this case. This is _not_ endianess swap.
+Peter?
 
-Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Kan Liang <kan.liang@intel.com>
-Cc: Wang Nan <wangnan0@huawei.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
-Changelog v2:
-1)Moved the swap code to a common function
-2)Added more comments in the code
-
-Changelog v1:
-1)updated commit message and patch subject
-2)Add the fix to print_sample_iregs() in builtin-script.c
-
- tools/include/linux/bitmap.h |  9 +++++++++
- tools/perf/builtin-script.c  | 16 +++++++++++++++-
- tools/perf/util/session.c    | 16 +++++++++++++++-
- 3 files changed, 39 insertions(+), 2 deletions(-)
-
-diff --git a/tools/include/linux/bitmap.h b/tools/include/linux/bitmap.h
-index 28f5493da491..79998b26eb04 100644
---- a/tools/include/linux/bitmap.h
-+++ b/tools/include/linux/bitmap.h
-@@ -2,6 +2,7 @@
- #define _PERF_BITOPS_H
- 
- #include <string.h>
-+#include <limits.h>
- #include <linux/bitops.h>
- 
- #define DECLARE_BITMAP(name,bits) \
-@@ -22,6 +23,14 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
- #define small_const_nbits(nbits) \
- 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
- 
-+static inline void bitmap_from_u64(unsigned long *_mask, u64 mask)
-+{
-+	_mask[0] = mask & ULONG_MAX;
-+
-+	if (sizeof(mask) > sizeof(unsigned long))
-+		_mask[1] = mask >> 32;
-+}
-+
- static inline void bitmap_zero(unsigned long *dst, int nbits)
- {
- 	if (small_const_nbits(nbits))
-diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
-index e3ce2f34d3ad..73928310fd91 100644
---- a/tools/perf/builtin-script.c
-+++ b/tools/perf/builtin-script.c
-@@ -412,11 +412,25 @@ static void print_sample_iregs(struct perf_sample *sample,
- 	struct regs_dump *regs = &sample->intr_regs;
- 	uint64_t mask = attr->sample_regs_intr;
- 	unsigned i = 0, r;
-+	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
- 
- 	if (!regs)
- 		return;
- 
--	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
-+	/*
-+	 * Since u64 is passed as 'unsigned long *', check
-+	 * to see whether we need to swap words within u64.
-+	 * Reason being, in 32 bit big endian userspace on a
-+	 * 64bit kernel, 'unsigned long' is 32 bits.
-+	 * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
-+	 * we will get wrong value for the mask. This is what
-+	 * find_first_bit() and find_next_bit() is doing.
-+	 * Issue here is "(u32 *)(&val)[0]" gets upper 32 bits of u64,
-+	 * but perf assumes it gets lower 32bits of u64. Hence the check
-+	 * and swap.
-+	 */
-+	bitmap_from_u64(_mask, mask);
-+	for_each_set_bit(r, _mask, sizeof(mask) * 8) {
- 		u64 val = regs->regs[i++];
- 		printf("%5s:0x%"PRIx64" ", perf_reg_name(r), val);
- 	}
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 5214974e841a..1337b1c73f82 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -940,8 +940,22 @@ static void branch_stack__printf(struct perf_sample *sample)
- static void regs_dump__printf(u64 mask, u64 *regs)
- {
- 	unsigned rid, i = 0;
-+	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
- 
--	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
-+	/*
-+	 * Since u64 is passed as 'unsigned long *', check
-+	 * to see whether we need to swap words within u64.
-+	 * Reason being, in 32 bit big endian userspace on a
-+	 * 64bit kernel, 'unsigned long' is 32 bits.
-+	 * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
-+	 * we will get wrong value for the mask. This is what
-+	 * find_first_bit() and find_next_bit() is doing.
-+	 * Issue here is "(u32 *)(&val)[0]" gets upper 32 bits of u64,
-+	 * but perf assumes it gets lower 32bits of u64. Hence the check
-+	 * and swap.
-+	 */
-+	bitmap_from_u64(_mask, mask);
-+	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
- 		u64 val = regs[i++];
- 
- 		printf(".... %-5s 0x%" PRIx64 "\n",
 -- 
-1.9.1
+tejun
