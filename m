@@ -1,34 +1,34 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYVsW0sllzDqjr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:45:02 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5L1hXWc043679
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:45:00 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23n0et1vm0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYVsX11yRzDqlK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:45:03 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5L1hfhP130043
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:45:02 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23pe02wx2x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:45:00 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:45:02 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 20 Jun 2016 22:44:58 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 0EF73352006E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:44:39 -0400 (EDT)
+ Mon, 20 Jun 2016 22:44:59 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 83AD11DC006E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:44:49 -0400 (EDT)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5L1itBu29753666
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:44:55 -0300
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5L1iuGA9568578
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:44:56 -0300
 Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5L1isPe029970
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:44:55 -0300
+ u5L1iug4030000
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:44:56 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
@@ -37,12 +37,12 @@ Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
  Mimi Zohar <zohar@linux.vnet.ibm.com>,
  Eric Richter <erichte@linux.vnet.ibm.com>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH 2/6] powerpc: kexec_file: Add buffer hand-over support for the
- next kernel
-Date: Mon, 20 Jun 2016 22:44:32 -0300
+Subject: [PATCH 3/6] kexec_file: Allow skipping checksum calculation for some
+ segments.
+Date: Mon, 20 Jun 2016 22:44:33 -0300
 In-Reply-To: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1466473476-10104-3-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1466473476-10104-4-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,182 +52,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The buffer hand-over mechanism allows the currently running kernel to pass
-data to kernel that will be kexec'd via a kexec segment. The second kernel
-can check whether the previous kernel sent data and retrieve it.
+Adds checksum argument to kexec_add_buffer specifying whether the given
+segment should be part of the checksum calculation.
 
-This is the architecture-specific part.
+The next patch will add a way to update segments after a kimage is loaded.
+Segments that will be updated in this way should not be checksummed,
+otherwise they will cause the purgatory checksum verification to fail
+when the machine is rebooted.
+
+As a bonus, we don't need to special-case the purgatory segment anymore
+to avoid checksumming it.
+
+Adjust call sites for the new argument.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kexec.h       |  9 +++++
- arch/powerpc/kernel/kexec_elf_64.c     | 44 +++++++++++++++++++++++
- arch/powerpc/kernel/machine_kexec_64.c | 64 ++++++++++++++++++++++++++++++++++
- 3 files changed, 117 insertions(+)
+ arch/powerpc/kernel/kexec_elf_64.c |  6 +++---
+ arch/x86/kernel/crash.c            |  4 ++--
+ arch/x86/kernel/kexec-bzimage64.c  |  6 +++---
+ include/linux/kexec.h              |  7 +++++--
+ kernel/kexec_file.c                | 22 +++++++++++-----------
+ 5 files changed, 24 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index a46f5f45570c..9b1ff59bc188 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -55,6 +55,15 @@ typedef void (*crash_shutdown_t)(void);
- 
- #ifdef CONFIG_KEXEC
- 
-+#ifdef CONFIG_KEXEC_FILE
-+#define ARCH_HAS_KIMAGE_ARCH
-+
-+struct kimage_arch {
-+	phys_addr_t handover_buffer_addr;
-+	unsigned long handover_buffer_size;
-+};
-+#endif
-+
- /*
-  * This function is responsible for capturing register states if coming
-  * via panic or invoking dump using sysrq-trigger.
 diff --git a/arch/powerpc/kernel/kexec_elf_64.c b/arch/powerpc/kernel/kexec_elf_64.c
-index 4e71595300ed..5d2b7036fee7 100644
+index 5d2b7036fee7..abbad484d7b2 100644
 --- a/arch/powerpc/kernel/kexec_elf_64.c
 +++ b/arch/powerpc/kernel/kexec_elf_64.c
-@@ -96,6 +96,46 @@ static int elf64_probe(const char *buf, unsigned long len)
- 	return elf_check_arch(&ehdr)? 0 : -ENOEXEC;
- }
+@@ -311,7 +311,7 @@ static int elf_exec_load(struct kimage *image, struct elfhdr *ehdr,
+ 				       (char *) elf_info->buffer + phdr->p_offset,
+ 				       size, phdr->p_memsz, phdr->p_align,
+ 				       phdr->p_paddr + base, ppc64_rma_size,
+-				       false, &load_addr);
++				       false, true, &load_addr);
+ 		if (ret)
+ 			goto out;
  
-+static int setup_handover_buffer(struct kimage *image, void *fdt,
-+				 int chosen_node)
-+{
-+	int ret;
-+
-+	if (image->arch.handover_buffer_addr) {
-+		ret = fdt_setprop_u64(fdt, chosen_node,
-+				      "linux,kexec-handover-buffer-start",
-+				      image->arch.handover_buffer_addr);
-+		if (ret < 0) {
-+			pr_err("Error setting up the new device tree.\n");
-+			return -EINVAL;
-+		}
-+
-+		/* -end is the first address after the buffer. */
-+		ret = fdt_setprop_u64(fdt, chosen_node,
-+				      "linux,kexec-handover-buffer-end",
-+				      image->arch.handover_buffer_addr +
-+				      image->arch.handover_buffer_size);
-+		if (ret < 0) {
-+			pr_err("Error setting up the new device tree.\n");
-+			return -EINVAL;
-+		}
-+
-+		ret = fdt_add_mem_rsv(fdt, image->arch.handover_buffer_addr,
-+				      image->arch.handover_buffer_size);
-+		if (ret) {
-+			pr_err("Error reserving kexec handover buffer: %s\n",
-+			       fdt_strerror(ret));
-+			return -EINVAL;
-+		}
-+
-+		pr_debug("kexec handover buffer at 0x%llx, size = 0x%lx\n",
-+			 image->arch.handover_buffer_addr,
-+			 image->arch.handover_buffer_size);
-+	}
-+
-+	return 0;
-+}
-+
- static bool find_debug_console(void *fdt, int chosen_node)
- {
- 	int len;
-@@ -494,6 +534,10 @@ void *elf64_load(struct kimage *image, char *kernel_buf,
- 		}
- 	}
+@@ -487,7 +487,7 @@ void *elf64_load(struct kimage *image, char *kernel_buf,
+ 	if (initrd != NULL) {
+ 		ret = kexec_add_buffer(image, initrd, initrd_len, initrd_len,
+ 				       PAGE_SIZE, 0, ppc64_rma_size, false,
+-				       &initrd_load_addr);
++				       true, &initrd_load_addr);
+ 		if (ret)
+ 			goto out;
  
-+	ret = setup_handover_buffer(image, fdt, chosen_node);
-+	if (ret)
-+		goto out;
-+
- 	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
+@@ -564,7 +564,7 @@ void *elf64_load(struct kimage *image, char *kernel_buf,
+ 	fdt_pack(fdt);
+ 
+ 	ret = kexec_add_buffer(image, fdt, fdt_size, fdt_size, PAGE_SIZE, 0,
+-			       ppc64_rma_size, true, &fdt_load_addr);
++			       ppc64_rma_size, true, true, &fdt_load_addr);
+ 	if (ret)
+ 		goto out;
+ 
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 9ef978d69c22..c8b16f2ca321 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -643,7 +643,7 @@ int crash_load_segments(struct kimage *image)
+ 		 */
+ 		ret = kexec_add_buffer(image, (char *)&crash_zero_bytes,
+ 				       sizeof(crash_zero_bytes), src_sz,
+-				       PAGE_SIZE, 0, -1, 0,
++				       PAGE_SIZE, 0, -1, false, true,
+ 				       &image->arch.backup_load_addr);
+ 		if (ret)
+ 			return ret;
+@@ -660,7 +660,7 @@ int crash_load_segments(struct kimage *image)
+ 	image->arch.elf_headers_sz = elf_sz;
+ 
+ 	ret = kexec_add_buffer(image, (char *)elf_addr, elf_sz, elf_sz,
+-			ELF_CORE_HEADER_ALIGN, 0, -1, 0,
++			ELF_CORE_HEADER_ALIGN, 0, -1, false, true,
+ 			&image->arch.elf_load_addr);
  	if (ret) {
- 		pr_err("Error setting up the new device tree.\n");
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 43e8185ab6f7..c582abf726f5 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -19,6 +19,7 @@
- #include <linux/cpu.h>
- #include <linux/hardirq.h>
- #include <linux/memblock.h>
-+#include <linux/libfdt.h>
+ 		vfree((void *)image->arch.elf_headers);
+diff --git a/arch/x86/kernel/kexec-bzimage64.c b/arch/x86/kernel/kexec-bzimage64.c
+index f2356bda2b05..f9016be44da6 100644
+--- a/arch/x86/kernel/kexec-bzimage64.c
++++ b/arch/x86/kernel/kexec-bzimage64.c
+@@ -420,7 +420,7 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
  
- #include <asm/page.h>
- #include <asm/current.h>
-@@ -481,6 +482,69 @@ int arch_kimage_file_post_load_cleanup(struct kimage *image)
- 	return image->fops->cleanup(image->image_loader_data);
- }
+ 	ret = kexec_add_buffer(image, (char *)params, params_misc_sz,
+ 			       params_misc_sz, 16, MIN_BOOTPARAM_ADDR,
+-			       ULONG_MAX, 1, &bootparam_load_addr);
++			       ULONG_MAX, true, true, &bootparam_load_addr);
+ 	if (ret)
+ 		goto out_free_params;
+ 	pr_debug("Loaded boot_param, command line and misc at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
+@@ -434,7 +434,7 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
  
-+bool kexec_can_hand_over_buffer(void)
-+{
-+	return true;
-+}
+ 	ret = kexec_add_buffer(image, kernel_buf,
+ 			       kernel_bufsz, kernel_memsz, kernel_align,
+-			       MIN_KERNEL_LOAD_ADDR, ULONG_MAX, 1,
++			       MIN_KERNEL_LOAD_ADDR, ULONG_MAX, true, true,
+ 			       &kernel_load_addr);
+ 	if (ret)
+ 		goto out_free_params;
+@@ -446,7 +446,7 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
+ 	if (initrd) {
+ 		ret = kexec_add_buffer(image, initrd, initrd_len, initrd_len,
+ 				       PAGE_SIZE, MIN_INITRD_LOAD_ADDR,
+-				       ULONG_MAX, 1, &initrd_load_addr);
++				       ULONG_MAX, true, true, &initrd_load_addr);
+ 		if (ret)
+ 			goto out_free_params;
+ 
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index 72db95c623b3..131b1fc7820e 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -98,6 +98,9 @@ struct kexec_segment {
+ 	size_t bufsz;
+ 	unsigned long mem;
+ 	size_t memsz;
 +
-+int arch_kexec_add_handover_buffer(struct kimage *image,
-+				   unsigned long load_addr, unsigned long size)
-+{
-+	image->arch.handover_buffer_addr = load_addr;
-+	image->arch.handover_buffer_size = size;
-+
-+	return 0;
-+}
-+
-+int kexec_get_handover_buffer(void **addr, unsigned long *size)
-+{
-+	int chosen_node;
-+	int startsz, endsz;
-+	const void *startp, *endp;
-+	unsigned long start_addr, end_addr;
-+
-+	chosen_node = fdt_path_offset(initial_boot_params, "/chosen");
-+	if (chosen_node < 0) {
-+		pr_err("Malformed device tree: /chosen not found.\n");
-+		return -EINVAL;
-+	}
-+
-+	startp = of_get_flat_dt_prop(chosen_node,
-+				     "linux,kexec-handover-buffer-start",
-+				     &startsz);
-+	endp = of_get_flat_dt_prop(chosen_node,
-+				   "linux,kexec-handover-buffer-end",
-+				   &endsz);
-+	if (!startp || !endp) {
-+		pr_debug("kexec handover buffer not found in the device tree.\n");
-+		return -ENOENT;
-+	}
-+
-+	start_addr = of_read_number(startp, startsz/4);
-+	end_addr = of_read_number(endp, endsz/4);
-+
-+	*addr =  __va(start_addr);
-+	/* -end is the first address after the buffer. */
-+	*size = end_addr - start_addr;
-+
-+	pr_debug("kexec handover buffer at %p, size = %lu\n", *addr, *size);
-+
-+	return 0;
-+}
-+
-+int kexec_free_handover_buffer(void)
-+{
-+	int ret;
-+	void *addr;
-+	unsigned long size;
-+
-+	ret = kexec_get_handover_buffer(&addr, &size);
-+	if (ret)
-+		return ret;
-+
-+	return memblock_free((phys_addr_t) addr, size);
-+}
-+
- /**
-  * arch_kexec_walk_mem - call func(data) for each unreserved memory block
-  * @image_type:	kimage.type
++	/* Whether this segment is part of the checksum calculation. */
++	bool do_checksum;
+ };
+ 
+ #ifdef CONFIG_COMPAT
+@@ -217,7 +220,7 @@ int kexec_locate_mem_hole(struct kimage *image, unsigned long size,
+ extern int kexec_add_buffer(struct kimage *image, char *buffer,
+ 			    unsigned long bufsz, unsigned long memsz,
+ 			    unsigned long buf_align, unsigned long buf_min,
+-			    unsigned long buf_max, bool top_down,
++			    unsigned long buf_max, bool top_down, bool checksum,
+ 			    unsigned long *load_addr);
+ extern struct page *kimage_alloc_control_pages(struct kimage *image,
+ 						unsigned int order);
+@@ -334,7 +337,7 @@ int kexec_add_handover_buffer(struct kimage *image, void *buffer,
+ 			      unsigned long bufsz, unsigned long memsz,
+ 			      unsigned long buf_align, unsigned long buf_min,
+ 			      unsigned long buf_max, bool top_down,
+-			      unsigned long *load_addr);
++			      bool checksum, unsigned long *load_addr);
+ int __weak kexec_get_handover_buffer(void **addr, unsigned long *size);
+ int __weak kexec_free_handover_buffer(void);
+ #else
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index d6ba702654f5..3aa829a78f50 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -146,6 +146,7 @@ int __weak arch_kexec_add_handover_buffer(struct kimage *image,
+  * @buf_min:	Minimum address where buffer can be placed.
+  * @buf_max:	Maximum address where buffer can be placed.
+  * @top_down:	Find the highest available memory position for the buffer?
++ * @checksum:	Should this buffer checksum be verified by the purgatory?
+  * @load_addr:	On successful return, set to the physical memory address of the
+  * 		buffer in the next kernel.
+  *
+@@ -157,7 +158,7 @@ int kexec_add_handover_buffer(struct kimage *image, void *buffer,
+ 			      unsigned long bufsz, unsigned long memsz,
+ 			      unsigned long buf_align, unsigned long buf_min,
+ 			      unsigned long buf_max, bool top_down,
+-			      unsigned long *load_addr)
++			      bool checksum, unsigned long *load_addr)
+ {
+ 	int ret;
+ 
+@@ -165,7 +166,7 @@ int kexec_add_handover_buffer(struct kimage *image, void *buffer,
+ 		return -ENOTSUPP;
+ 
+ 	ret = kexec_add_buffer(image, buffer, bufsz, memsz, buf_align, buf_min,
+-			       buf_max, top_down, load_addr);
++			       buf_max, top_down, checksum, load_addr);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -590,7 +591,7 @@ int kexec_locate_mem_hole(struct kimage *image, unsigned long size,
+ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
+ 		     unsigned long memsz, unsigned long buf_align,
+ 		     unsigned long buf_min, unsigned long buf_max,
+-		     bool top_down, unsigned long *load_addr)
++		     bool top_down, bool checksum, unsigned long *load_addr)
+ {
+ 
+ 	struct kexec_segment *ksegment;
+@@ -630,6 +631,7 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
+ 	ksegment->bufsz = bufsz;
+ 	ksegment->mem = addr;
+ 	ksegment->memsz = size;
++	ksegment->do_checksum = checksum;
+ 	image->nr_segments++;
+ 	*load_addr = ksegment->mem;
+ 	return 0;
+@@ -645,7 +647,6 @@ static int kexec_calculate_store_digests(struct kimage *image)
+ 	char *digest;
+ 	void *zero_buf;
+ 	struct kexec_sha_region *sha_regions;
+-	struct purgatory_info *pi = &image->purgatory_info;
+ 
+ 	zero_buf = __va(page_to_pfn(ZERO_PAGE(0)) << PAGE_SHIFT);
+ 	zero_buf_sz = PAGE_SIZE;
+@@ -685,11 +686,7 @@ static int kexec_calculate_store_digests(struct kimage *image)
+ 		struct kexec_segment *ksegment;
+ 
+ 		ksegment = &image->segment[i];
+-		/*
+-		 * Skip purgatory as it will be modified once we put digest
+-		 * info in purgatory.
+-		 */
+-		if (ksegment->kbuf == pi->purgatory_buf)
++		if (!ksegment->do_checksum)
+ 			continue;
+ 
+ 		ret = crypto_shash_update(desc, ksegment->kbuf,
+@@ -866,9 +863,12 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
+ 	if (buf_align < bss_align)
+ 		buf_align = bss_align;
+ 
+-	/* Add buffer to segment list */
++	/*
++	 * Add buffer to segment list. Don't checksum the segment as
++	 * it will be modified once we put digest info in purgatory.
++	 */
+ 	ret = kexec_add_buffer(image, purgatory_buf, buf_sz, memsz,
+-				buf_align, min, max, top_down,
++				buf_align, min, max, top_down, false,
+ 				&pi->purgatory_load_addr);
+ 	if (ret)
+ 		goto out;
 -- 
 1.9.1
