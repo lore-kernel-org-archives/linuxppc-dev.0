@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYn6f20JzzDqFh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYn6f73djzDqGh
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 22:27:22 +1000 (AEST)
-In-Reply-To: <1466476556-12627-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1459455040-25671-1-git-send-email-bauerman@linux.vnet.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/powernv: Print correct PHB type names
-Message-Id: <3rYn6f00Ckz9sdg@ozlabs.org>
-Date: Tue, 21 Jun 2016 22:27:21 +1000 (AEST)
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: powerpc/kprobes: Remove kretprobe_trampoline_holder.
+Message-Id: <3rYn6f6Bhyz9t0V@ozlabs.org>
+Date: Tue, 21 Jun 2016 22:27:22 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,22 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-21-06 at 02:35:56 UTC, Gavin Shan wrote:
-> We're initializing "IODA1" and "IODA2" PHBs though they are IODA2
-> and NPU PHBs as below kernel log indicates.
+On Thu, 2016-31-03 at 20:10:40 UTC, Thiago Jung Bauermann wrote:
+> Fixes the following testsuite failure:
 > 
->    Initializing IODA1 OPAL PHB /pciex@3fffe40700000
->    Initializing IODA2 OPAL PHB /pciex@3fff000400000
+>   $ sudo ./perf test -v kallsyms
+>    1: vmlinux symtab matches kallsyms                          :
+>   --- start ---
+>   test child forked, pid 12489
+>   Using /proc/kcore for kernel object code
+>   Looking at the vmlinux_path (8 entries long)
+>   Using /boot/vmlinux for symbols
+>   0xc00000000003d300: diff name v: .kretprobe_trampoline_holder k: kretprobe_trampoline
+>   Maps only in vmlinux:
+>    c00000000086ca38-c000000000879b6c 87ca38 [kernel].text.unlikely
+>    c000000000879b6c-c000000000bf0000 889b6c [kernel].meminit.text
+>    c000000000bf0000-c000000000c53264 c00000 [kernel].init.text
+>    c000000000c53264-d000000004250000 c63264 [kernel].exit.text
+>    d000000004250000-d000000004450000 0 [libcrc32c]
+>    d000000004450000-d000000004620000 0 [xfs]
+>    d000000004620000-d000000004680000 0 [autofs4]
+>    d000000004680000-d0000000046e0000 0 [x_tables]
+>    d0000000046e0000-d000000004780000 0 [ip_tables]
+>    d000000004780000-d0000000047e0000 0 [rng_core]
+>    d0000000047e0000-ffffffffffffffff 0 [pseries_rng]
+>   Maps in vmlinux with a different name in kallsyms:
+>   Maps only in kallsyms:
+>    d000000000000000-f000000000000000 1000000000010000 [kernel.kallsyms]
+>    f000000000000000-ffffffffffffffff 3000000000010000 [kernel.kallsyms]
+>   test child finished with -1
+>   ---- end ----
+>   vmlinux symtab matches kallsyms: FAILED!
 > 
-> This fixes the PHB names. After it's applied, we get:
+> The problem is that the kretprobe_trampoline symbol looks like this:
 > 
->    Initializing IODA2 PHB (/pciex@3fffe40700000)
->    Initializing NPU PHB (/pciex@3fff000400000)
+>   $ eu-readelf -s /boot/vmlinux G kretprobe_trampoline
+>    2431: c000000001302368     24 NOTYPE  LOCAL  DEFAULT       37 kretprobe_trampoline_holder
+>    2432: c00000000003d300      8 FUNC    LOCAL  DEFAULT        1 .kretprobe_trampoline_holder
+>   97543: c00000000003d300      0 NOTYPE  GLOBAL DEFAULT        1 kretprobe_trampoline
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Its type is NOTYPE, and its size is 0, and this is a problem because
+> symbol-elf.c:dso__load_sym skips function symbols that are not STT_FUNC
+> or STT_GNU_IFUNC (this is determined by elf_sym__is_function). Even
+> if the type is changed to STT_FUNC, when dso__load_sym calls
+> symbols__fixup_duplicate, the kretprobe_trampoline symbol is dropped in
+> favour of .kretprobe_trampoline_holder because the latter has non-zero
+> size (as determined by choose_best_symbol).
+> 
+> With this patch, all vmlinux symbols match /proc/kallsyms and the
+> testcase passes.
+> 
+> Commit c1c355ce14c0 ("x86/kprobes: Get rid of
+> kretprobe_trampoline_holder()") gets rid of kretprobe_trampoline_holder
+> altogether on x86. This commit does the same on powerpc. This change
+> introduces no regressions on the perf and ftracetest testsuite results.
+> 
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9497a1c1c5b4de2a359b6d8648
+https://git.kernel.org/powerpc/c/61ed9cfb1b0951a3b4b98dd8bf
 
 cheers
