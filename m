@@ -1,47 +1,25 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rYVsZ28C6zDqm0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:45:06 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5L1hX9a057285
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:45:03 -0400
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23n25w01rw-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:45:03 -0400
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 20 Jun 2016 22:45:01 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id DA0301DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 21:44:52 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5L1j0pU13566242
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:45:00 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5L1ixmh030070
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 22:44:59 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- Eric Biederman <ebiederm@xmission.com>, Dave Young <dyoung@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Eric Richter <erichte@linux.vnet.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH 6/6] IMA: Demonstration code for kexec buffer passing.
-Date: Mon, 20 Jun 2016 22:44:36 -0300
-In-Reply-To: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1466473476-10104-7-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rYVsb0CjmzDqK5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 11:45:07 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id fg1so150460pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jun 2016 18:45:06 -0700 (PDT)
+Date: Tue, 21 Jun 2016 11:44:52 +1000
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [V3, 2/2] powerpc/drivers: Add driver for operator panel on FSP
+ machines
+Message-ID: <20160621114452.18326150@dyn253.ozlabs.ibm.com>
+In-Reply-To: <3rVfb32ZF6z9t0l@ozlabs.org>
+References: <1461826958-3925-2-git-send-email-sjitindarsingh@gmail.com>
+ <3rVfb32ZF6z9t0l@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,240 +29,437 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This shows how kernel code can use the kexec buffer passing mechanism
-to pass information to the next kernel.
+On Thu, 16 Jun 2016 20:22:39 +1000 (AEST)
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-This patch is not intended to be committed.
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
----
- include/linux/ima.h                   | 11 +++++
- kernel/kexec_file.c                   |  4 ++
- security/integrity/ima/ima.h          |  5 +++
- security/integrity/ima/ima_init.c     | 26 ++++++++++++
- security/integrity/ima/ima_template.c | 79 +++++++++++++++++++++++++++++++++++
- 5 files changed, 125 insertions(+)
-
-diff --git a/include/linux/ima.h b/include/linux/ima.h
-index 0eb7c2e7f0d6..96528d007139 100644
---- a/include/linux/ima.h
-+++ b/include/linux/ima.h
-@@ -11,6 +11,7 @@
- #define _LINUX_IMA_H
- 
- #include <linux/fs.h>
-+#include <linux/kexec.h>
- struct linux_binprm;
- 
- #ifdef CONFIG_IMA
-@@ -23,6 +24,10 @@ extern int ima_post_read_file(struct file *file, void *buf, loff_t size,
- 			      enum kernel_read_file_id id);
- extern void ima_post_path_mknod(struct dentry *dentry);
- 
-+#ifdef CONFIG_KEXEC_FILE
-+extern void ima_add_kexec_buffer(struct kimage *image);
-+#endif
-+
- #else
- static inline int ima_bprm_check(struct linux_binprm *bprm)
- {
-@@ -60,6 +65,12 @@ static inline void ima_post_path_mknod(struct dentry *dentry)
- 	return;
- }
- 
-+#ifdef CONFIG_KEXEC_FILE
-+static inline void ima_add_kexec_buffer(struct kimage *image)
-+{
-+}
-+#endif
-+
- #endif /* CONFIG_IMA */
- 
- #ifdef CONFIG_IMA_APPRAISE
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 79d09a7784d8..143c70d2ef1c 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -20,6 +20,7 @@
- #include <linux/mutex.h>
- #include <linux/list.h>
- #include <linux/fs.h>
-+#include <linux/ima.h>
- #include <crypto/hash.h>
- #include <crypto/sha.h>
- #include <linux/syscalls.h>
-@@ -261,6 +262,9 @@ kimage_file_prepare_segments(struct kimage *image, int kernel_fd, int initrd_fd,
- 		}
- 	}
- 
-+	/* IMA needs to pass the measurement list to the next kernel. */
-+	ima_add_kexec_buffer(image);
-+
- 	/* Call arch image load handlers */
- 	ldata = arch_kexec_kernel_image_load(image);
- 
-diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-index d3a939bf2781..940f68f3ccc9 100644
---- a/security/integrity/ima/ima.h
-+++ b/security/integrity/ima/ima.h
-@@ -101,6 +101,11 @@ struct ima_queue_entry {
- };
- extern struct list_head ima_measurements;	/* list of all measurements */
- 
-+#ifdef CONFIG_KEXEC_FILE
-+extern void *kexec_buffer;
-+extern size_t kexec_buffer_size;
-+#endif
-+
- /* Internal IMA function definitions */
- int ima_init(void);
- int ima_fs_init(void);
-diff --git a/security/integrity/ima/ima_init.c b/security/integrity/ima/ima_init.c
-index 5d679a685616..aaa2fc536ca4 100644
---- a/security/integrity/ima/ima_init.c
-+++ b/security/integrity/ima/ima_init.c
-@@ -21,6 +21,7 @@
- #include <linux/scatterlist.h>
- #include <linux/slab.h>
- #include <linux/err.h>
-+#include <linux/kexec.h>
- 
- #include "ima.h"
- 
-@@ -103,6 +104,29 @@ void __init ima_load_x509(void)
- }
- #endif
- 
-+#ifdef CONFIG_KEXEC_FILE
-+static void ima_load_kexec_buffer(void)
-+{
-+	int rc;
-+
-+	/* Fetch the buffer from the previous kernel, if any. */
-+	rc = kexec_get_handover_buffer(&kexec_buffer, &kexec_buffer_size);
-+	if (rc == 0) {
-+		/* Demonstrate that buffer handover works. */
-+		pr_err("kexec buffer contents: %s\n", (char *) kexec_buffer);
-+		pr_err("kexec buffer contents after update: %s\n",
-+		       (char *) kexec_buffer + 4 * PAGE_SIZE + 10);
-+
-+		kexec_free_handover_buffer();
-+	} else if (rc == -ENOENT)
-+		pr_debug("No kexec buffer from the previous kernel.\n");
-+	else
-+		pr_debug("Error restoring kexec buffer: %d\n", rc);
-+}
-+#else
-+static void ima_load_kexec_buffer(void) { }
-+#endif
-+
- int __init ima_init(void)
- {
- 	u8 pcr_i[TPM_DIGEST_SIZE];
-@@ -133,5 +157,7 @@ int __init ima_init(void)
- 
- 	ima_init_policy();
- 
-+	ima_load_kexec_buffer();
-+
- 	return ima_fs_init();
- }
-diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
-index febd12ed9b55..c5e81af8cb9c 100644
---- a/security/integrity/ima/ima_template.c
-+++ b/security/integrity/ima/ima_template.c
-@@ -15,6 +15,8 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/kexec.h>
-+#include <linux/reboot.h>
- #include "ima.h"
- #include "ima_template_lib.h"
- 
-@@ -182,6 +184,83 @@ static int template_desc_init_fields(const char *template_fmt,
- 	return 0;
- }
- 
-+#ifdef CONFIG_KEXEC_FILE
-+void *kexec_buffer = NULL;
-+size_t kexec_buffer_size = 0;
-+
-+/* Physical address of the measurement buffer in the next kernel. */
-+unsigned long kexec_buffer_load_addr = 0;
-+
-+/*
-+ * Called during reboot. IMA can add here new events that were generated after
-+ * the kexec image was loaded.
-+ */
-+static int ima_update_kexec_buffer(struct notifier_block *self,
-+				   unsigned long action, void *data)
-+{
-+	int ret;
-+
-+	if (!kexec_in_progress)
-+		return NOTIFY_OK;
-+
-+	/*
-+	 * Add content deep in the buffer to show that we can update
-+	 * all of it.
-+	 */
-+	strcpy(kexec_buffer + 4 * PAGE_SIZE + 10,
-+	       "Updated kexec buffer contents.");
-+
-+	ret = kexec_update_segment(kexec_buffer, kexec_buffer_size,
-+				   kexec_buffer_load_addr, kexec_buffer_size);
-+	if (ret)
-+		pr_err("Error updating kexec buffer: %d\n", ret);
-+
-+	return NOTIFY_OK;
-+}
-+
-+struct notifier_block update_buffer_nb = {
-+	.notifier_call = ima_update_kexec_buffer,
-+};
-+
-+/*
-+ * Called during kexec_file_load so that IMA can add a segment to the kexec
-+ * image with the measurement event log for the next kernel.
-+ */
-+void ima_add_kexec_buffer(struct kimage *image)
-+{
-+	int ret;
-+
-+	if (!kexec_can_hand_over_buffer())
-+		return;
-+
-+	/* Create a relatively big buffer, for testing. */
-+	kexec_buffer_size = 5 * PAGE_SIZE;
-+	kexec_buffer = kzalloc(kexec_buffer_size, GFP_KERNEL);
-+	if (!kexec_buffer) {
-+		pr_err("Not enough memory for the kexec measurement buffer.\n");
-+		return;
-+	}
-+
-+	/* Add some content for demonstration purposes. */
-+	strcpy(kexec_buffer, "Buffer contents at kexec load time.");
-+
-+	/* Ask not to checksum the segment, we may have to update it later. */
-+	ret = kexec_add_handover_buffer(image, kexec_buffer, kexec_buffer_size,
-+					kexec_buffer_size, PAGE_SIZE, 0,
-+					ULONG_MAX, true, false,
-+					&kexec_buffer_load_addr);
-+	if (ret) {
-+		pr_err("Error passing over kexec measurement buffer.\n");
-+		return;
-+	}
-+
-+	register_reboot_notifier(&update_buffer_nb);
-+
-+	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
-+		 kexec_buffer_load_addr);
-+}
-+#endif /* CONFIG_KEXEC_FILE */
-+
- struct ima_template_desc *ima_template_desc_current(void)
- {
- 	if (!ima_template)
--- 
-1.9.1
+> On Thu, 2016-28-04 at 07:02:38 UTC, Suraj Jitindar Singh wrote:
+> > Implement new character device driver to allow access from user
+> > space to the 2x16 character operator panel display present on IBM
+> > Power Systems machines with FSPs.  
+> 
+> I looked at this previously and somehow convinced myself it depended
+> on skiboot changes, but it seems it doesn't.
+> 
+> Some comments below ...
+> 
+> > This will allow status information to be presented on the display
+> > which is visible to a user.
+> > 
+> > The driver implements a 32 character buffer which a user can
+> > read/write  
+> 
+> It looks like "32" is actually just one possible size, it comes from
+> the device tree no?
+Correct, although it is kind of hard coded into skiboot at the moment. I
+will change the commit message to omit this.
+> 
+> > by accessing the device (/dev/oppanel). This buffer is then
+> > displayed on  
+> 
+> Are we sure "op_panel" wouldn't be better?
+Seems like that will cause less confusion, will change it.
+> 
+> > diff --git a/arch/powerpc/configs/powernv_defconfig
+> > b/arch/powerpc/configs/powernv_defconfig index 0450310..8f9f4ce
+> > 100644 --- a/arch/powerpc/configs/powernv_defconfig
+> > +++ b/arch/powerpc/configs/powernv_defconfig
+> > @@ -181,6 +181,7 @@ CONFIG_SERIAL_8250=y
+> >  CONFIG_SERIAL_8250_CONSOLE=y
+> >  CONFIG_SERIAL_JSM=m
+> >  CONFIG_VIRTIO_CONSOLE=m
+> > +CONFIG_IBM_OP_PANEL=m  
+> 
+> I think CONFIG_POWERNV_OP_PANEL would be a better name.
+I agree.
+> 
+> > diff --git a/arch/powerpc/include/asm/opal.h
+> > b/arch/powerpc/include/asm/opal.h index 9d86c66..b33e349 100644
+> > --- a/arch/powerpc/include/asm/opal.h
+> > +++ b/arch/powerpc/include/asm/opal.h
+> > @@ -178,6 +178,8 @@ int64_t opal_dump_ack(uint32_t dump_id);
+> >  int64_t opal_dump_resend_notification(void);
+> >  
+> >  int64_t opal_get_msg(uint64_t buffer, uint64_t size);
+> > +int64_t opal_write_oppanel_async(uint64_t token, oppanel_line_t
+> > *lines,
+> > +					uint64_t num_lines);  
+> 
+> I realise you're just following the skiboot code which uses
+> oppanel_line_t, but please don't do that in the kernel. Just use
+> struct oppanel_line directly.
+Struct oppanel_line is typedefed to oppanel_line_t in opal-api.h,
+so this should be oppanel_line_t or struct oppanel_line?
+> 
+> > diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+> > index d8a7579..a02c61b 100644
+> > --- a/drivers/char/Makefile
+> > +++ b/drivers/char/Makefile
+> > @@ -60,3 +60,4 @@ js-rtc-y = rtc.o
+> >  
+> >  obj-$(CONFIG_TILE_SROM)		+= tile-srom.o
+> >  obj-$(CONFIG_XILLYBUS)		+= xillybus/
+> > +obj-$(CONFIG_IBM_OP_PANEL)	+= op-panel-powernv.o  
+> 
+> I'd prefer powernv-op-panel.c, but up to you.
+This will align to the name of the config option, so will change
+to your recommendation
+> 
+> > diff --git a/drivers/char/op-panel-powernv.c
+> > b/drivers/char/op-panel-powernv.c new file mode 100644
+> > index 0000000..90b74b7
+> > --- /dev/null
+> > +++ b/drivers/char/op-panel-powernv.c
+> > @@ -0,0 +1,247 @@
+> > +/*
+> > + * OPAL Operator Panel Display Driver
+> > + *
+> > + * (C) Copyright IBM Corp. 2016
+> > + *
+> > + * Author: Suraj Jitindar Singh <sjitindarsingh@gmail.com>  
+> 
+> I'm not a fan of email addresses in C files, they just bit rot.
+> 
+> The preferred format is:
+> 
+>  * Copyright 2016, Suraj Jitindar Singh, IBM Corporation.
+> 
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > modify
+> > + * it under the terms of the GNU General Public License as
+> > published by
+> > + * the Free Software Foundation; either version 2 of the License,
+> > or
+> > + * (at your option) any later version.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.  
+> 
+> We don't need that paragraph in every file.
+> 
+Will update and remove these sections.
+> > + */
+> > +
+> > +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > +
+> > +#include <linux/init.h>
+> > +#include <linux/module.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/fs.h>
+> > +#include <linux/device.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/mutex.h>
+> > +#include <linux/of.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/miscdevice.h>
+> > +
+> > +#include <asm/opal.h>
+> > +#include <asm/opal-api.h>  
+> 
+> opal-api.h is sort of an implementation detail, you should just
+> include opal.h
+> 
+> > +/*
+> > + * This driver creates a character device (/dev/oppanel) which
+> > exposes the
+> > + * operator panel (2x16 character LCD display) on IBM Power
+> > Systems machines
+> > + * with FSPs.
+> > + * A 32 character buffer written to the device will be displayed
+> > on the
+> > + * operator panel.
+> > + */
+> > +
+> > +static DEFINE_MUTEX(oppanel_mutex);
+> > +
+> > +static oppanel_line_t	*oppanel_lines;
+> > +static char		*oppanel_data;
+> > +static u32		line_length, num_lines;  
+> 
+> You calculate (num_lines * line_length) a lot, that would probably be
+> worth storing as eg. "oppanel_size" or something.
+> 
+> > +
+> > +static loff_t oppanel_llseek(struct file *filp, loff_t offset, int
+> > whence) +{
+> > +	return fixed_size_llseek(filp, offset, whence, num_lines *
+> > +		line_length);  
+> 
+> I don't think you need to wrap that line?
+> 
+> > +}
+> > +
+> > +static ssize_t oppanel_read(struct file *filp, char __user
+> > *userbuf, size_t len,
+> > +		loff_t *f_pos)  
+> 
+> I prefer to align the second line unless the signature is
+> ridiculously wide:
+> 
+> static ssize_t oppanel_read(struct file *filp, char __user *userbuf,
+> size_t len, loff_t *f_pos)
+I agree with all of the above and will fix.
+> 
+> > +{
+> > +	return simple_read_from_buffer(userbuf, len, f_pos,
+> > oppanel_data,
+> > +		(num_lines * line_length));
+> > +}
+> > +
+> > +static int __op_panel_write(void)  
+> 
+> Can you think of a better name for this?
+__op_panel_update_display()?
+> 
+> > +{
+> > +	int rc, token;
+> > +	struct opal_msg msg;
+> > +
+> > +	token = opal_async_get_token_interruptible();
+> > +	if (token < 0) {
+> > +		if (token != -ERESTARTSYS)
+> > +			pr_err("Couldn't get OPAL async token
+> > [token=%d]\n",
+> > +				token);
+> > +		return token;
+> > +	}
+> > +
+> > +	rc = opal_write_oppanel_async(token, oppanel_lines, (u64)
+> > num_lines);  
+> 
+> I don't think you need the cast?
+I don't think so either
+> 
+> > +	switch (rc) {
+> > +	case OPAL_ASYNC_COMPLETION:
+> > +		rc = opal_async_wait_response(token, &msg);
+> > +		if (rc) {
+> > +			pr_err("Failed to wait for async response
+> > [rc=%d]\n",
+> > +				rc);
+> > +			goto out_token;
+> > +		}
+> > +		rc = be64_to_cpu(msg.params[1]);  
+> 
+> Is params[1] documented somewhere? Seems like a helper might be nice.
+This is documented in skiboot in doc/opal-api/opal-messages.txt
+I guess that would be a nice addition.
+> 
+> > +		if (rc != OPAL_SUCCESS) {
+> > +			pr_err("OPAL async call returned failed
+> > [rc=%d]\n", rc);
+> > +			goto out_token;  
+> 
+> You don't need the goto do you? You can just break?
+Yes
+> 
+> > +		}
+> > +	case OPAL_SUCCESS:
+> > +		break;
+> > +	default:
+> > +		pr_err("OPAL write op-panel call failed
+> > [rc=%d]\n", rc);  
+> 
+> This and the other pr_err()s should be ratelimited, or become
+> pr_debug().
+pr_debug makes sense I think.
+> 
+> > +	}
+> > +
+> > +out_token:
+> > +	opal_async_release_token(token);
+> > +	return rc;
+> > +}
+> > +
+> > +static ssize_t oppanel_write(struct file *filp, const char __user
+> > *userbuf,
+> > +		size_t len, loff_t *f_pos)
+> > +{
+> > +	ssize_t ret;
+> > +	loff_t f_pos_prev = *f_pos;
+> > +	int rc;
+> > +
+> > +	if (*f_pos >= (num_lines * line_length))
+> > +		return -EFBIG;
+> > +
+> > +	ret = simple_write_to_buffer(oppanel_data, (num_lines *
+> > +			line_length), f_pos, userbuf, len);  
+> 
+> AFAICS you never clear the buffer, so if I write "foobar" and then
+> call write again with "foo", I'll end up with "foobar" on the panel?
+> 
+> Should you clear the buffer when the first write comes in (f_pos ==
+> 0) ?
+This was an implementation decision, but I agree now that it makes more
+sense to clear the panel when writing at the start as it may not have
+been you who wrote to it initially.
+> 
+> > +	if (ret > 0) {
+> > +		rc = __op_panel_write();
+> > +		if (rc != OPAL_SUCCESS) {
+> > +			pr_err("OPAL call failed to write to op
+> > panel display [rc=%d]\n",
+> > +				rc);
+> > +			*f_pos = f_pos_prev;
+> > +			return -EIO;
+> > +		}
+> > +	}
+> > +	return ret;
+> > +}
+> > +
+> > +static int oppanel_open(struct inode *inode, struct file *filp)
+> > +{
+> > +	if (!mutex_trylock(&oppanel_mutex)) {
+> > +		pr_debug("Device Busy\n");
+> > +		return -EBUSY;
+> > +	}
+> > +	return 0;
+> > +}
+> > +
+> > +static int oppanel_release(struct inode *inode, struct file *filp)
+> > +{
+> > +	mutex_unlock(&oppanel_mutex);
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct file_operations oppanel_fops = {
+> > +	.owner		= THIS_MODULE,
+> > +	.llseek		= oppanel_llseek,
+> > +	.read		= oppanel_read,
+> > +	.write		= oppanel_write,
+> > +	.open		= oppanel_open,
+> > +	.release	= oppanel_release
+> > +};
+> > +
+> > +static struct miscdevice oppanel_dev = {
+> > +	.minor		= MISC_DYNAMIC_MINOR,
+> > +	.name		= "oppanel",
+> > +	.fops		= &oppanel_fops
+> > +};
+> > +
+> > +static int oppanel_probe(struct platform_device *pdev)
+> > +{
+> > +	int rc, i;
+> > +	struct device_node *dev_node = pdev->dev.of_node;  
+> 
+> dev_node should be called np.
+> 
+> > +	const u32 *length_val, *lines_val;  
+> 
+> My preference is reverse Christmas tree style:
+> 
+> 	const u32 *length_val, *lines_val;
+> 	struct device_node *np;
+> 	int rc, i;
+> 
+> 	np = pdev->dev.of_node;
+> 
+> > +
+> > +	if (strncmp(dev_node->name, "oppanel", 7)) {  
+> 
+> You are using a compatible check (via the match table) so you don't
+> need that check. Only checking the start of the name (7) would also
+> be wrong.
+> 
+> > +		pr_err("Operator panel not found\n");
+> > +		return -1;
+> > +	}
+> > +
+> > +	length_val = of_get_property(dev_node, "#length", NULL);
+> > +	if (!length_val) {
+> > +		pr_err("Operator panel length property not
+> > found\n");
+> > +		return -1;
+> > +	}
+> > +	line_length = be32_to_cpu(*length_val);  
+> 
+> Please use of_property_read_u32(), you shouldn't need any endian
+> conversions in this code.
+> 
+> > +	lines_val = of_get_property(dev_node, "#lines", NULL);
+> > +	if (!lines_val) {
+> > +		pr_err("Operator panel lines property not
+> > found\n");
+> > +		return -1;
+> > +	}
+> > +	num_lines = be32_to_cpu(*lines_val);  
+> 
+> Ditto.
+> 
+> > +	pr_debug("Operator panel found with %u lines of length
+> > %u\n",
+> > +			num_lines, line_length);  
+> 
+> pr_devel() would probably be even better (compiled out entirely).
+> 
+> > +	oppanel_data = kcalloc((num_lines * line_length),
+> > sizeof(char),
+> > +		GFP_KERNEL);
+> > +	if (!oppanel_data)
+> > +		return -ENOMEM;
+> > +
+> > +	oppanel_lines = kcalloc(num_lines, sizeof(oppanel_line_t),
+> > GFP_KERNEL);
+> > +	if (!oppanel_lines) {
+> > +		kfree(oppanel_data);
+> > +		return -ENOMEM;  
+> 
+> That should be:
+> 		rc = -ENOMEM;
+> 		goto free_oppanel;
+> 
+> > +	}
+> > +
+> > +	memset(oppanel_data, ' ', (num_lines * line_length));
+> > +	for (i = 0; i < num_lines; i++) {
+> > +		oppanel_lines[i].line_len = cpu_to_be64((u64)
+> > line_length);
+> > +		oppanel_lines[i].line = cpu_to_be64((u64)
+> > &oppanel_data[i *
+> > +						line_length]);  
+> 
+> We should be giving OPAL the real address of &oppanel_data[i *
+> line_length], which means you need to wrap it in __pa(). Unless
+> that's happening somewhere else I missed?
+> 
+> > +	}
+> > +
+> > +	mutex_init(&oppanel_mutex);  
+> 
+> AFAIK you don't need to do that because you used DEFINE_MUTEX() above?
+> 
+> > +	rc = misc_register(&oppanel_dev);
+> > +	if (rc) {
+> > +		pr_err("Failed to register as misc device\n");
+> > +		goto remove_mutex;
+> > +	}
+> > +
+> > +	pr_info("Device Successfully Initialised\n");  
+> 
+> We don't need a pr_info() on success.
+> 
+> > +	return 0;
+> > +
+> > +remove_mutex:
+> > +	mutex_destroy(&oppanel_mutex);
+> > +	kfree(oppanel_lines);
+> > +	kfree(oppanel_data);
+> > +	return rc;
+> > +}
+> > +
+> > +static int oppanel_remove(struct platform_device *pdev)
+> > +{
+> > +	misc_deregister(&oppanel_dev);
+> > +	mutex_destroy(&oppanel_mutex);
+> > +	kfree(oppanel_lines);
+> > +	kfree(oppanel_data);
+> > +	pr_info("Device Successfully Removed\n");  
+> 
+> Don't need the pr_info().
+> 
+> cheers
+I agree with all of the above and will fix up.
+Thanks
