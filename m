@@ -1,47 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZLX101VSzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 20:32:46 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5MATQcl019589
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 06:32:44 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23q1qnpxw5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 06:32:44 -0400
-Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 22 Jun 2016 16:02:41 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9714D125804F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 16:05:15 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5MAVqj228967060
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 16:01:52 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5MAWZp4020250
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 16:02:38 +0530
-Date: Wed, 22 Jun 2016 20:32:19 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] powerpc/pnv/pci: Fix incorrect PE reservation
- attempt on some 64-bit BARs
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1466580379.4089.27.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1466580379.4089.27.camel@kernel.crashing.org>
-Message-Id: <20160622103219.GA5978@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZLdp0bXzzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 20:37:50 +1000 (AEST)
+Message-ID: <1466591863.29871.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 6/6] ppc: ebpf/jit: Implement JIT compiler for extended BPF
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Cc: Matt Evans <matt@ozlabs.org>, Denis Kirjanov <kda@linux-powerpc.org>,
+ Paul Mackerras <paulus@samba.org>, Alexei Starovoitov <ast@fb.com>, Daniel
+ Borkmann <daniel@iogearbox.net>,  "David S. Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Date: Wed, 22 Jun 2016 20:37:43 +1000
+In-Reply-To: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+ <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,122 +29,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 22, 2016 at 05:26:19PM +1000, Benjamin Herrenschmidt wrote:
->The generic allocation code may sometimes decide to assign a prefetchable
->64-bit BAR to the M32 window. In fact it may also decide to allocate
->a 64-bit non-prefetchable BAR to the M64 one ! So using the resource
->flags as a test to decide which window was used for PE allocation is
->just wrong and leads to insane PE numbers.
->
->Instead, compare the addresses to figure it out.
->
->CC: stable@vger.kernel.org
->Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Tue, 2016-06-07 at 19:02 +0530, Naveen N. Rao wrote:
 
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> PPC64 eBPF JIT compiler.
+> 
+> Enable with:
+> echo 1 > /proc/sys/net/core/bpf_jit_enable
+> or
+> echo 2 > /proc/sys/net/core/bpf_jit_enable
+> 
+> ... to see the generated JIT code. This can further be processed with
+> tools/net/bpf_jit_disasm.
+> 
+> With CONFIG_TEST_BPF=m and 'modprobe test_bpf':
+> test_bpf: Summary: 305 PASSED, 0 FAILED, [297/297 JIT'ed]
+> 
+> ... on both ppc64 BE and LE.
+> 
+> The details of the approach are documented through various comments in
+> the code.
 
->---
->
->This is a pretty nasty bug, I'd like to have Gavin ack it first but
->then we should push it back to distros. I don't know yet *why* the
->generic code is eager to put my BARs into 32-bit space but that's
->irrelevant here, it's allowed to do that and we should do the right
->thing anyway.
->
+This is crashing for me on a Cell machine, not sure why at a glance:
 
-It's likely related the lost 64-bits flag in prefetchable window on
-root port. The similar issue was observed on CAPI adapter connected
-to RC directly on Garrison platform, which was fixed by commit d40160f
-("PHB3: Emulate root complex pref 64-bits window") in skiboot.
 
-pcibios_init
-pcibios_scan_phb
-pci_scan_child_bus	-> Scan root port
-pci_scan_bridge		-> Create bus behind root port
-pci_scan_child_bus	-> Scan devices on bus#1
-pcibios_fixup_bus
-pci_read_bridge_bases	-> Setup bridge windows of root port
-pci_read_bridge_mmio_pref
+test_bpf: #250 JMP_JSET_X: if (0x3 & 0xffffffff) return 1 jited:1 14 PASS
+test_bpf: #251 JMP_JA: Jump, gap, jump, ... jited:1 15 PASS
+test_bpf: #252 BPF_MAXINSNS: Maximum possible literals 
+Unable to handle kernel paging request for data at address 0xd000000007b20000
+Faulting instruction address: 0xc000000000667b6c
+cpu 0x0: Vector: 300 (Data Access) at [c0000007f83bf3a0]
+    pc: c000000000667b6c: .flush_icache_range+0x3c/0x84
+    lr: c000000000082354: .bpf_int_jit_compile+0x1fc/0x2c8
+    sp: c0000007f83bf620
+   msr: 900000000200b032
+   dar: d000000007b20000
+ dsisr: 40000000
+  current = 0xc0000007f8249580
+  paca    = 0xc00000000fff0000	 softe: 0	 irq_happened: 0x01
+    pid   = 1822, comm = insmod
+Linux version 4.7.0-rc3-00061-g007c99b9d8c1 (michael@ka3.ozlabs.ibm.com) (gcc version 6.1.0 (GCC) ) #3 SMP Wed Jun 22 19:22:23 AEST 2016
+enter ? for help
+[link register   ] c000000000082354 .bpf_int_jit_compile+0x1fc/0x2c8
+[c0000007f83bf620] c0000000000822fc .bpf_int_jit_compile+0x1a4/0x2c8 (unreliable)
+[c0000007f83bf700] c00000000013cda4 .bpf_prog_select_runtime+0x24/0x108
+[c0000007f83bf780] c000000000548918 .bpf_prepare_filter+0x9b0/0x9e8
+[c0000007f83bf830] c0000000005489d4 .bpf_prog_create+0x84/0xd0
+[c0000007f83bf8c0] d000000003b21158 .test_bpf_init+0x28c/0x83c [test_bpf]
+[c0000007f83bfa00] c00000000000a7b4 .do_one_initcall+0x5c/0x1c0
+[c0000007f83bfae0] c000000000669058 .do_init_module+0x80/0x21c
+[c0000007f83bfb80] c00000000011e3a0 .load_module+0x2028/0x23a8
+[c0000007f83bfd20] c00000000011e898 .SyS_init_module+0x178/0x1b0
+[c0000007f83bfe30] c000000000009220 system_call+0x38/0x110
+--- Exception: c01 (System Call) at 000000000ff5e0c4
+SP (ffde0960) is in userspace
+0:mon> r
+R00 = 000000000000c01c   R16 = 0000000000000000
+R01 = c0000007f83bf620   R17 = 00000000024000c0
+R02 = c00000000094ce00   R18 = 0000000000000000
+R03 = d000000007b10000   R19 = d000000003c32df0
+R04 = d000000007b40338   R20 = c00000000072b488
+R05 = 000000000000007f   R21 = d000000007b10000
+R06 = d000000007b20000   R22 = c00000000098184c
+R07 = 0000000000000080   R23 = 0000000000000000
+R08 = 0000000000000607   R24 = 00000000000300e0
+R09 = 0000000000000007   R25 = 000000000000c020
+R10 = c000000000861ee0   R26 = d000000007b10270
+R11 = c0000000006755f8   R27 = c0000007fe0e0000
+R12 = d000000007b10270   R28 = 0000000000002003
+R13 = c00000000fff0000   R29 = c0000007f83bf690
+R14 = d000000003c32d61   R30 = 0000000000000003
+R15 = 0000000000000000   R31 = d000000007ae0000
+pc  = c000000000667b6c .flush_icache_range+0x3c/0x84
+lr  = c000000000082354 .bpf_int_jit_compile+0x1fc/0x2c8
+msr = 900000000200b032   cr  = 44000248
+ctr = 0000000000000407   xer = 0000000020000000   trap =  300
+dar = d000000007b20000   dsisr = 40000000
+0:mon> S
+msr  = 9000000000001032  sprg0= 0000000000008001
+pvr  = 0000000000703000  sprg1= c00000000fff0000
+dec  = 000000009f2d8ba4  sprg2= c00000000fff0000
+sp   = c0000007f83bed30  sprg3= 0000000000000000
+toc  = c00000000094ce00  dar  = d000000007b20000
+0:mon> u
+SLB contents of cpu 0x0
+00 c000000008000000 0000af32f5079500 256M ESID=c00000000  VSID=    af32f5079 LLP:100 
+01 d000000008000000 0000836935091510 256M ESID=d00000000  VSID=    836935091 LLP:110 
+02 c0000007f8000000 0000b52186c20500 256M ESID=c0000007f  VSID=    b52186c20 LLP:100 
+03 c0000003f0000000 0000b224435e0500
+04 c0000007f0000000 0000b52186c20500
+05 c0000003f0000000 0000b224435e0500
+06 c0000007f0000000 0000b52186c20500
+07 c0000003f0000000 0000b224435e0500
+08 c0000007f0000000 0000b52186c20500
+09 c0000003f0000000 0000b224435e0500
+10 c0000007f0000000 0000b52186c20500
+11 c0000003f0000000 0000b224435e0500
+12 c0000007f0000000 0000b52186c20500
+13 c0000003f0000000 0000b224435e0500
+14 c0000007f0000000 0000b52186c20500
+15 c0000003f0000000 0000b224435e0500
+16 c0000007f0000000 0000b52186c20500
+17 c000000078000000 0000af86a8668500 256M ESID=c00000007  VSID=    af86a8668 LLP:100 
+18 c0000003f0000000 0000b224435e0500
+19 c0000007f0000000 0000b52186c20500
+20 c0000003f0000000 0000b224435e0500
+21 c0000007f0000000 0000b52186c20500
+22 c0000003f0000000 0000b224435e0500
+23 c0000007f0000000 0000b52186c20500
+24 c0000003f0000000 0000b224435e0500
+25 c0000007f0000000 0000b52186c20500
+26 c0000003f0000000 0000b224435e0500
+27 c0000007f0000000 0000b52186c20500
+28 c0000003f0000000 0000b224435e0500
+29 c0000007f0000000 0000b52186c20500
+30 c0000003f0000000 0000b224435e0500
+31 c0000007f0000000 0000b52186c20500
+32 c0000003f0000000 0000b224435e0500
+33 c0000007f0000000 0000b52186c20500
+34 c0000003f0000000 0000b224435e0500
+35 c0000007f0000000 0000b52186c20500
+36 c0000003f0000000 0000b224435e0500
+37 c0000007f0000000 0000b52186c20500
+38 c0000003f0000000 0000b224435e0500
+39 c0000007f0000000 0000b52186c20500
+40 c0000003f0000000 0000b224435e0500
+41 c0000007f0000000 0000b52186c20500
+42 c0000003f0000000 0000b224435e0500
+43 c0000007f0000000 0000b52186c20500
+44 c0000003f0000000 0000b224435e0500
+45 c0000007f0000000 0000b52186c20500
+46 c0000003f0000000 0000b224435e0500
+47 c0000007f0000000 0000b52186c20500
+48 c0000003f0000000 0000b224435e0500
+49 d000080088000000 00007e4fa575c510 256M ESID=d00008008  VSID=    7e4fa575c LLP:110 
+50 c0000007f0000000 0000b52186c20500
+51 c0000003f0000000 0000b224435e0500
+52 c0000007f0000000 0000b52186c20500
+53 c0000003f0000000 0000b224435e0500
+54 c0000007f0000000 0000b52186c20500
+55 c0000003f0000000 0000b224435e0500
+56 c0000007f0000000 0000b52186c20500
+57 c0000003f8000000 0000b224435e0500 256M ESID=c0000003f  VSID=    b224435e0 LLP:100 
+58 f000000008000000 00002bd5b50c1500 256M ESID=f00000000  VSID=    2bd5b50c1 LLP:100 
+59 c0000007f0000000 0000b52186c20500
+60 c0000003f0000000 0000b224435e0500
+61 c0000007f0000000 0000b52186c20500
+62 c0000003f0000000 0000b224435e0500
+63 c0000007f0000000 0000b52186c20500
+0:mon> 
 
-In pci_read_bridge_mmio_pref(), no prefetchable window (64bits+pref)
-is populated if bit PCI_PREF_RANGE_TYPE_64 (0x1) isn't set on PCI
-config register (PCI_PREF_MEMORY_BASE, 0x24). During the resource
-resizing and assigning stage in PCI core, all resources including
-64-bits prefetchable resources will be covered by 32-bits bridge
-window.
 
-Thanks,
-Gavin
 
-> arch/powerpc/platforms/powernv/pci-ioda.c | 27 +++++++++++++++++----------
-> 1 file changed, 17 insertions(+), 10 deletions(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index c6396b6..0321ba3 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -110,10 +110,16 @@ static int __init iommu_setup(char *str)
-> }
-> early_param("iommu", iommu_setup);
->
->-static inline bool pnv_pci_is_mem_pref_64(unsigned long flags)
->+static inline bool pnv_pci_is_mem_pref_64(struct pnv_phb *phb, struct resource *r)
-> {
->-	return ((flags & (IORESOURCE_MEM_64 | IORESOURCE_PREFETCH)) ==
->-		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
->+	/* WARNING: We cannot rely on the resource flags. The Linux PCI
->+	 * allocation code sometimes decides to put a 64-bit prefetchable
->+	 * BAR in the 32-bit window, so we have to compare the addresses.
->+	 *
->+	 * For simplicity we only test resource start.
->+	 */
->+	return (r->start >= phb->ioda.m64_base &&
->+		r->start < (phb->ioda.m64_base + phb->ioda.m64_size));
-> }
->
-> static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int pe_no)
->@@ -230,7 +236,7 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev *pdev,
-> 	sgsz = phb->ioda.m64_segsize;
-> 	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
-> 		r = &pdev->resource[i];
->-		if (!r->parent || !pnv_pci_is_mem_pref_64(r->flags))
->+		if (!r->parent || !pnv_pci_is_mem_pref_64(phb, r))
-> 			continue;
->
-> 		start = _ALIGN_DOWN(r->start - base, sgsz);
->@@ -3059,7 +3065,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
-> 		if (!res->flags || res->parent)
-> 			continue;
->-		if (!pnv_pci_is_mem_pref_64(res->flags)) {
->+		if (!pnv_pci_is_mem_pref_64(phb, res)) {
-> 			dev_warn(&pdev->dev, "Don't support SR-IOV with"
-> 					" non M64 VF BAR%d: %pR. \n",
-> 				 i, res);
->@@ -3154,8 +3160,7 @@ static void pnv_ioda_setup_pe_res(struct pnv_ioda_pe *pe,
-> 			region.start += phb->ioda.io_segsize;
-> 			index++;
-> 		}
->-	} else if ((res->flags & IORESOURCE_MEM) &&
->-		   !pnv_pci_is_mem_pref_64(res->flags)) {
->+	} else if ((res->flags & IORESOURCE_MEM) && !pnv_pci_is_mem_pref_64(phb, res)) {
-> 		region.start = res->start -
-> 			       phb->hose->mem_offset[0] -
-> 			       phb->ioda.m32_pci_base;
->@@ -3314,9 +3319,11 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
-> 		bridge = bridge->bus->self;
-> 	}
->
->-	/* We fail back to M32 if M64 isn't supported */
->-	if (phb->ioda.m64_segsize &&
->-	    pnv_pci_is_mem_pref_64(type))
->+	/* We fail back to M32 if M64 isn't supported. We enforce the M64
->+	 * alignment for any 64-bit resource, PCIe doesn't care and
->+	 * bridges only do 64-bit prefetchable anyway
->+	 */
->+	if (phb->ioda.m64_segsize && (type & IORESOURCE_MEM_64))
-> 		return phb->ioda.m64_segsize;
-> 	if (type & IORESOURCE_MEM)
-> 		return phb->ioda.m32_segsize;
->
->
+cheers
