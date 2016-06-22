@@ -1,19 +1,26 @@
-Return-Path: <weiyj_lk@163.com>
-Received: from m12-12.163.com (m12-12.163.com [220.181.12.12])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rZ82K6nSszDqFM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:39:51 +1000 (AEST)
-Subject: Re: [PATCH] ibmvnic: fix to use list_for_each_safe() when delete items
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-References: <1466218408-20940-1-git-send-email-weiyj_lk@163.com>
- <576810C2.6080208@linux.vnet.ibm.com> <576964CF.3040804@linux.vnet.ibm.com>
-Cc: John Allen <jallen@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linuxppc-dev@lists.ozlabs.org
-From: Wei Yongjun <weiyj_lk@163.com>
-Message-ID: <1c6c0e9c-ac79-5170-94dd-a5b9ebacb193@163.com>
-Date: Wed, 22 Jun 2016 10:23:30 +0800
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ83H2rs9zDqjb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:40:43 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id fg1so2589723pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 19:40:43 -0700 (PDT)
+Date: Wed, 22 Jun 2016 10:40:39 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Simon Guo <simonguo@linux.vnet.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RESEND][PATCH v2] powerpc: Export
+ thread_struct.used_vr/used_vsr to user space
+Message-ID: <20160622024039.GA4313@simonLocalRHEL7.x64>
+References: <20160406070012.GA11647@simonLocalRHEL7.x64>
+ <20160621063006.GA6367@simonLocalRHEL7.x64>
 MIME-Version: 1.0
-In-Reply-To: <576964CF.3040804@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160621063006.GA6367@simonLocalRHEL7.x64>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,92 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi  Thomas Falcon,
+On Tue, Jun 21, 2016 at 02:30:06PM +0800, Simon Guo wrote:
+> Hi Michael,
+> On Wed, Apr 06, 2016 at 03:00:12PM +0800, Simon Guo wrote:
+> > These 2 fields track whether user process has used Altivec/VSX
+> > registers or not. They are used by kernel to setup signal frame
+> > on user stack correctly regarding vector part.
+> > 
+> > CRIU(Checkpoint and Restore In User space) builds signal frame
+> > for restored process. It will need this export information to
+> > setup signal frame correctly. And CRIU will need to restore these
+> > 2 fields for the restored process.
+> > 
+> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> > Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> > ---
+> 
+> Just a kind reminder per our previous discussion.
+> If possible, please help pull this in during 4.8 merge window. Some CRIU work items are pending for it.
+> 
+> Have a nice day.
+> 
+> Thanks,
+> - Simon
 
-Thanks for found this. I will send new patch include your changes.
++ linuxppc-dev list
 
-Regards,
-Yongjun Wei
-
-On 06/22/2016 12:01 AM, Thomas Falcon wrote:
-> On 06/20/2016 10:50 AM, Thomas Falcon wrote:
->> On 06/17/2016 09:53 PM, weiyj_lk@163.com wrote:
->>> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->>>
->>> Since we will remove items off the list using list_del() we need
->>> to use a safe version of the list_for_each() macro aptly named
->>> list_for_each_safe().
->>>
->>> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->>> ---
->>>   drivers/net/ethernet/ibm/ibmvnic.c | 10 +++++-----
->>>   1 file changed, 5 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
->>> index 864cb21..0b6a922 100644
->>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
->>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
->>> @@ -3141,14 +3141,14 @@ static void handle_request_ras_comp_num_rsp(union ibmvnic_crq *crq,
->>>   
->>>   static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
->>>   {
->>> -	struct ibmvnic_inflight_cmd *inflight_cmd;
->>> +	struct ibmvnic_inflight_cmd *inflight_cmd, *tmp1;
->>>   	struct device *dev = &adapter->vdev->dev;
->>> -	struct ibmvnic_error_buff *error_buff;
->>> +	struct ibmvnic_error_buff *error_buff, *tmp2;
->>>   	unsigned long flags;
->>>   	unsigned long flags2;
->>>   
->>>   	spin_lock_irqsave(&adapter->inflight_lock, flags);
->>> -	list_for_each_entry(inflight_cmd, &adapter->inflight, list) {
->>> +	list_for_each_entry_safe(inflight_cmd, tmp1, &adapter->inflight, list) {
->>>   		switch (inflight_cmd->crq.generic.cmd) {
->>>   		case LOGIN:
->>>   			dma_unmap_single(dev, adapter->login_buf_token,
->>> @@ -3165,8 +3165,8 @@ static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
->>>   			break;
->>>   		case REQUEST_ERROR_INFO:
->>>   			spin_lock_irqsave(&adapter->error_list_lock, flags2);
->>> -			list_for_each_entry(error_buff, &adapter->errors,
->>> -					    list) {
->>> +			list_for_each_entry_safe(error_buff, tmp2,
->>> +						 &adapter->errors, list) {
->>>   				dma_unmap_single(dev, error_buff->dma,
->>>   						 error_buff->len,
->>>   						 DMA_FROM_DEVICE);
->>>
->> Thanks!
->>
->> Acked-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> Hello, I apologize for prematurely ack'ing this.  There is another situation where you could use list_for_each_entry_safe in the function handle_error_info_rsp.  Could you include this in your patch, please?
->
-> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-> index 864cb21..e9968d9 100644
-> --- a/drivers/net/ethernet/ibm/ibmvnic.c
-> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
-> @@ -2121,7 +2121,7 @@ static void handle_error_info_rsp(union ibmvnic_crq *crq,
->                                    struct ibmvnic_adapter *adapter)
->   {
->          struct device *dev = &adapter->vdev->dev;
-> -       struct ibmvnic_error_buff *error_buff;
-> +       struct ibmvnic_error_buff *error_buff, *tmp;
->          unsigned long flags;
->          bool found = false;
->          int i;
-> @@ -2133,7 +2133,7 @@ static void handle_error_info_rsp(union ibmvnic_crq *crq,
->          }
->   
->          spin_lock_irqsave(&adapter->error_list_lock, flags);
-> -       list_for_each_entry(error_buff, &adapter->errors, list)
-> +       list_for_each_entry_safe(error_buff, tmp, &adapter->errors, list)
->                  if (error_buff->error_id == crq->request_error_rsp.error_id) {
->                          found = true;
->                          list_del(&error_buff->list);
->
->>>
->>> _______________________________________________
->>> Linuxppc-dev mailing list
->>> Linuxppc-dev@lists.ozlabs.org
->>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+Thanks,
+- Simon (IBM LTC)
