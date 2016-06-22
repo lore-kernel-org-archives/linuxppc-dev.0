@@ -1,39 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ74t5PynzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:57:02 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rZ74t0x80z9t0J
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2016 11:57:01 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5M1rq5b129866
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2016 21:57:00 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23q6r3v7d4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2016 21:57:00 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Jun 2016 21:56:59 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kda@linux-powerpc.org
-Subject: Re: [PATCH] powerpc: Fix faults caused by radix patching of SLB miss
- handler
-In-Reply-To: <1466505379-15597-1-git-send-email-mpe@ellerman.id.au>
-References: <1466505379-15597-1-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 22 Jun 2016 07:26:54 +0530
+Return-Path: <weiyj_lk@163.com>
+Received: from m12-12.163.com (m12-12.163.com [220.181.12.12])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rZ82K6nSszDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:39:51 +1000 (AEST)
+Subject: Re: [PATCH] ibmvnic: fix to use list_for_each_safe() when delete items
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+References: <1466218408-20940-1-git-send-email-weiyj_lk@163.com>
+ <576810C2.6080208@linux.vnet.ibm.com> <576964CF.3040804@linux.vnet.ibm.com>
+Cc: John Allen <jallen@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+ Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linuxppc-dev@lists.ozlabs.org
+From: Wei Yongjun <weiyj_lk@163.com>
+Message-ID: <1c6c0e9c-ac79-5170-94dd-a5b9ebacb193@163.com>
+Date: Wed, 22 Jun 2016 10:23:30 +0800
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <871t3qyoih.fsf@skywalker.in.ibm.com>
+In-Reply-To: <576964CF.3040804@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,57 +23,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+Hi  Thomas Falcon,
 
-> As part of the Radix MMU support we added some feature sections in the
-> SLB miss handler. These are intended to catch the case that we
-> incorrectly take an SLB miss when Radix is enabled, and instead of
-> crashing weirdly they bail out to a well defined exit path and trigger
-> an oops.
->
-> However the way they were written meant the bailout case was enabled by
-> default until we did CPU feature patching.
->
-> On powermacs the early debug prints in setup_system() can cause an SLB
-> miss, which happens before code patching, and so the SLB miss handler
-> would incorrectly bailout and crash during boot.
->
-> Fix it by inverting the sense of the feature section, so that the code
-> which is in place at boot is correct for the hash case. Once we
-> determine we are using Radix - which will never happen on a powermac -
-> only then do we patch in the bailout case which unconditionally jumps.
->
-> Fixes: caca285e5ab4 ("powerpc/mm/radix: Use STD_MMU_64 to properly isolate hash related code")
-> Reported-by: Denis Kirjanov <kda@linux-powerpc.org>
-> Tested-by: Denis Kirjanov <kda@linux-powerpc.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Thanks for found this. I will send new patch include your changes.
 
+Regards,
+Yongjun Wei
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-> ---
->  arch/powerpc/kernel/exceptions-64s.S | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+On 06/22/2016 12:01 AM, Thomas Falcon wrote:
+> On 06/20/2016 10:50 AM, Thomas Falcon wrote:
+>> On 06/17/2016 09:53 PM, weiyj_lk@163.com wrote:
+>>> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>>>
+>>> Since we will remove items off the list using list_del() we need
+>>> to use a safe version of the list_for_each() macro aptly named
+>>> list_for_each_safe().
+>>>
+>>> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+>>> ---
+>>>   drivers/net/ethernet/ibm/ibmvnic.c | 10 +++++-----
+>>>   1 file changed, 5 insertions(+), 5 deletions(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+>>> index 864cb21..0b6a922 100644
+>>> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+>>> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+>>> @@ -3141,14 +3141,14 @@ static void handle_request_ras_comp_num_rsp(union ibmvnic_crq *crq,
+>>>   
+>>>   static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
+>>>   {
+>>> -	struct ibmvnic_inflight_cmd *inflight_cmd;
+>>> +	struct ibmvnic_inflight_cmd *inflight_cmd, *tmp1;
+>>>   	struct device *dev = &adapter->vdev->dev;
+>>> -	struct ibmvnic_error_buff *error_buff;
+>>> +	struct ibmvnic_error_buff *error_buff, *tmp2;
+>>>   	unsigned long flags;
+>>>   	unsigned long flags2;
+>>>   
+>>>   	spin_lock_irqsave(&adapter->inflight_lock, flags);
+>>> -	list_for_each_entry(inflight_cmd, &adapter->inflight, list) {
+>>> +	list_for_each_entry_safe(inflight_cmd, tmp1, &adapter->inflight, list) {
+>>>   		switch (inflight_cmd->crq.generic.cmd) {
+>>>   		case LOGIN:
+>>>   			dma_unmap_single(dev, adapter->login_buf_token,
+>>> @@ -3165,8 +3165,8 @@ static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
+>>>   			break;
+>>>   		case REQUEST_ERROR_INFO:
+>>>   			spin_lock_irqsave(&adapter->error_list_lock, flags2);
+>>> -			list_for_each_entry(error_buff, &adapter->errors,
+>>> -					    list) {
+>>> +			list_for_each_entry_safe(error_buff, tmp2,
+>>> +						 &adapter->errors, list) {
+>>>   				dma_unmap_single(dev, error_buff->dma,
+>>>   						 error_buff->len,
+>>>   						 DMA_FROM_DEVICE);
+>>>
+>> Thanks!
+>>
+>> Acked-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+> Hello, I apologize for prematurely ack'ing this.  There is another situation where you could use list_for_each_entry_safe in the function handle_error_info_rsp.  Could you include this in your patch, please?
 >
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 4c9440629128..8bcc1b457115 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1399,11 +1399,12 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
->  	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
+> diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+> index 864cb21..e9968d9 100644
+> --- a/drivers/net/ethernet/ibm/ibmvnic.c
+> +++ b/drivers/net/ethernet/ibm/ibmvnic.c
+> @@ -2121,7 +2121,7 @@ static void handle_error_info_rsp(union ibmvnic_crq *crq,
+>                                    struct ibmvnic_adapter *adapter)
+>   {
+>          struct device *dev = &adapter->vdev->dev;
+> -       struct ibmvnic_error_buff *error_buff;
+> +       struct ibmvnic_error_buff *error_buff, *tmp;
+>          unsigned long flags;
+>          bool found = false;
+>          int i;
+> @@ -2133,7 +2133,7 @@ static void handle_error_info_rsp(union ibmvnic_crq *crq,
+>          }
+>   
+>          spin_lock_irqsave(&adapter->error_list_lock, flags);
+> -       list_for_each_entry(error_buff, &adapter->errors, list)
+> +       list_for_each_entry_safe(error_buff, tmp, &adapter->errors, list)
+>                  if (error_buff->error_id == crq->request_error_rsp.error_id) {
+>                          found = true;
+>                          list_del(&error_buff->list);
 >
->  	mtlr	r10
-> -BEGIN_MMU_FTR_SECTION
-> -	b	2f
-> -END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
->  	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
-> +BEGIN_MMU_FTR_SECTION
->  	beq-	2f
-> +FTR_SECTION_ELSE
-> +	b	2f
-> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
+>>>
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@lists.ozlabs.org
+>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
->  .machine	push
->  .machine	"power4"
-> -- 
-> 2.5.0
