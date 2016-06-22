@@ -1,27 +1,47 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZfsf2QzszDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 08:49:10 +1000 (AEST)
-Received: by mail-wm0-x241.google.com with SMTP id r201so5733643wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:49:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZgnb2flxzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 09:30:41 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5MNJaME120538
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 19:30:38 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23q79696ct-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 19:30:38 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Wed, 22 Jun 2016 20:30:36 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 81BB51DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 19:30:26 -0400 (EDT)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5MNUXp84141294
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 20:30:33 -0300
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5MNUXYw017704
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 20:30:33 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Dave Young <dyoung@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH v3 2/9] kexec_file: Generalize kexec_add_buffer.
+Date: Wed, 22 Jun 2016 20:30:30 -0300
+In-Reply-To: <20160622102046.GC7752@dhcp-128-65.nay.redhat.com>
+References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <1466538521-31216-3-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20160622102046.GC7752@dhcp-128-65.nay.redhat.com>
 MIME-Version: 1.0
-Sender: rjwysocki@gmail.com
-In-Reply-To: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 23 Jun 2016 00:49:06 +0200
-Message-ID: <CAJZ5v0hEUHbA9mM4h21BBvh=tzeO5nc1nSi49qq4aN0+oRkQYA@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <3343161.EAM0BCreCn@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,103 +51,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 22, 2016 at 9:36 PM, Shreyas B. Prabhu
-<shreyas@linux.vnet.ibm.com> wrote:
-> Snooze is a poll idle state in powernv and pseries platforms. Snooze
-> has a timeout so that if a cpu stays in snooze for more than target
-> residency of the next available idle state, then it would exit thereby
-> giving chance to the cpuidle governor to re-evaluate and
-> promote the cpu to a deeper idle state. Therefore whenever snooze exits
-> due to this timeout, its last_residency will be target_residency of next
-> deeper state.
->
-> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-> changed the math around last_residency calculation. Specifically, while
-> converting last_residency value from nanoseconds to microseconds it does
-> right shift by 10. Due to this, in snooze timeout exit scenarios
-> last_residency calculated is roughly 2.3% less than target_residency of
-> next available state. This pattern is picked up get_typical_interval()
-> in the menu governor and therefore expected_interval in menu_select() is
-> frequently less than the target_residency of any state but snooze.
->
-> Due to this we are entering snooze at a higher rate, thereby affecting
-> the single thread performance.
-> Since the math around last_residency is not meant to be precise, fix this
-> issue setting snooze timeout to 105% of target_residency of next
-> available idle state.
->
-> This also adds comment around why snooze timeout is necessary.
+Am Mittwoch, 22 Juni 2016, 18:20:47 schrieb Dave Young:
+> The patch looks good, but could the subject be more specific?
+> 
+> For example just like the first sentence of the patch descriotion:
+> Allow architectures to specify their own memory walking function
 
-Daniel, any comments?
+Ok, What about this? I also changed the description to refer to x86 arch
+instead of Intel arch.
 
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
->  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
->  2 files changed, 27 insertions(+)
->
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index e12dc30..5835491 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
->                 cpuidle_state_table = powernv_states;
->                 /* Device tree can indicate more idle states */
->                 max_idle_state = powernv_add_idle_states();
-> +
-> +               /*
-> +                * Staying in snooze for a long period can degrade the
-> +                * perfomance of the sibling cpus. Set timeout for snooze such
-> +                * that if the cpu stays in snooze longer than target residency
-> +                * of the next available idle state then exit from snooze. This
-> +                * gives a chance to the cpuidle governor to re-evaluate and
-> +                * promote it to deeper idle states.
-> +                */
->                 if (max_idle_state > 1) {
->                         snooze_timeout_en = true;
->                         snooze_timeout = powernv_states[1].target_residency *
->                                          tb_ticks_per_usec;
-> +                       /*
-> +                        * Give a 5% margin since target residency related math
-> +                        * is not precise in cpuidle core.
-> +                        */
-> +                       snooze_timeout += snooze_timeout / 20;
->                 }
->         } else
->                 return -ENODEV;
-> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-> index 07135e0..22de841 100644
-> --- a/drivers/cpuidle/cpuidle-pseries.c
-> +++ b/drivers/cpuidle/cpuidle-pseries.c
-> @@ -250,10 +250,23 @@ static int pseries_idle_probe(void)
->         } else
->                 return -ENODEV;
->
-> +       /*
-> +        * Staying in snooze for a long period can degrade the
-> +        * perfomance of the sibling cpus. Set timeout for snooze such
-> +        * that if the cpu stays in snooze longer than target residency
-> +        * of the next available idle state then exit from snooze. This
-> +        * gives a chance to the cpuidle governor to re-evaluate and
-> +        * promote it to deeper idle states.
-> +        */
->         if (max_idle_state > 1) {
->                 snooze_timeout_en = true;
->                 snooze_timeout = cpuidle_state_table[1].target_residency *
->                                  tb_ticks_per_usec;
-> +               /*
-> +                * Give a 5% margin since target residency related math
-> +                * is not precise in cpuidle core.
-> +                */
-> +               snooze_timeout += snooze_timeout / 20;
->         }
->         return 0;
->  }
-> --
-> 2.1.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
+
+
+Subject: [PATCH 2/9] kexec_file: Allow arch-specific memory walking for
+ kexec_add_buffer
+
+Allow architectures to specify a different memory walking function for
+kexec_add_buffer. x86 uses iomem to track reserved memory ranges, but
+PowerPC uses the memblock subsystem.
+
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Dave Young <dyoung@redhat.com>
+Cc: kexec@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+---
+ include/linux/kexec.h   | 19 ++++++++++++++++++-
+ kernel/kexec_file.c     | 30 ++++++++++++++++++++++--------
+ kernel/kexec_internal.h | 14 --------------
+ 3 files changed, 40 insertions(+), 23 deletions(-)
+
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index e8acb2b43dd9..3d91bcfc180d 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -146,7 +146,24 @@ struct kexec_file_ops {
+ 	kexec_verify_sig_t *verify_sig;
+ #endif
+ };
+-#endif
++
++/*
++ * Keeps track of buffer parameters as provided by caller for requesting
++ * memory placement of buffer.
++ */
++struct kexec_buf {
++	struct kimage *image;
++	unsigned long mem;
++	unsigned long memsz;
++	unsigned long buf_align;
++	unsigned long buf_min;
++	unsigned long buf_max;
++	bool top_down;		/* allocate from top of memory hole */
++};
++
++int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
++			       int (*func)(u64, u64, void *));
++#endif /* CONFIG_KEXEC_FILE */
+ 
+ struct kimage {
+ 	kimage_entry_t head;
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index b6eec7527e9f..b1f1f6402518 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -428,6 +428,27 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
+ 	return locate_mem_hole_bottom_up(start, end, kbuf);
+ }
+ 
++/**
++ * arch_kexec_walk_mem - call func(data) on free memory regions
++ * @kbuf:	Context info for the search. Also passed to @func.
++ * @func:	Function to call for each memory region.
++ *
++ * Return: The memory walk will stop when func returns a non-zero value
++ * and that value will be returned. If all free regions are visited without
++ * func returning non-zero, then zero will be returned.
++ */
++int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
++			       int (*func)(u64, u64, void *))
++{
++	if (kbuf->image->type == KEXEC_TYPE_CRASH)
++		return walk_iomem_res_desc(crashk_res.desc,
++					   IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
++					   crashk_res.start, crashk_res.end,
++					   kbuf, func);
++	else
++		return walk_system_ram_res(0, ULONG_MAX, kbuf, func);
++}
++
+ /*
+  * Helper function for placing a buffer in a kexec segment. This assumes
+  * that kexec_mutex is held.
+@@ -472,14 +493,7 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
+ 	kbuf->top_down = top_down;
+ 
+ 	/* Walk the RAM ranges and allocate a suitable range for the buffer */
+-	if (image->type == KEXEC_TYPE_CRASH)
+-		ret = walk_iomem_res_desc(crashk_res.desc,
+-				IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+-				crashk_res.start, crashk_res.end, kbuf,
+-				locate_mem_hole_callback);
+-	else
+-		ret = walk_system_ram_res(0, -1, kbuf,
+-					  locate_mem_hole_callback);
++	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
+ 	if (ret != 1) {
+ 		/* A suitable memory range could not be found for buffer */
+ 		return -EADDRNOTAVAIL;
+diff --git a/kernel/kexec_internal.h b/kernel/kexec_internal.h
+index eefd5bf960c2..4cef7e4706b0 100644
+--- a/kernel/kexec_internal.h
++++ b/kernel/kexec_internal.h
+@@ -20,20 +20,6 @@ struct kexec_sha_region {
+ 	unsigned long len;
+ };
+ 
+-/*
+- * Keeps track of buffer parameters as provided by caller for requesting
+- * memory placement of buffer.
+- */
+-struct kexec_buf {
+-	struct kimage *image;
+-	unsigned long mem;
+-	unsigned long memsz;
+-	unsigned long buf_align;
+-	unsigned long buf_min;
+-	unsigned long buf_max;
+-	bool top_down;		/* allocate from top of memory hole */
+-};
+-
+ void kimage_file_post_load_cleanup(struct kimage *image);
+ #else /* CONFIG_KEXEC_FILE */
+ static inline void kimage_file_post_load_cleanup(struct kimage *image) { }
+-- 
+1.9.1
