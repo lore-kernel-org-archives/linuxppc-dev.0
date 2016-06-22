@@ -1,46 +1,48 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <intermediadc@hotmail.com>
+Received: from COL004-OMC1S9.hotmail.com (col004-omc1s9.hotmail.com
+ [65.55.34.19])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZZfw3KVlzDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 05:39:36 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5MJd8m7092867
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:39:34 -0400
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [125.16.236.7])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23q6qndsh1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:39:34 -0400
-Received: from localhost
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 23 Jun 2016 01:09:31 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 610EBE0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:13:12 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5MJdSg658130598
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:09:28 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5MJdOoE028772
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:09:27 +0530
-Date: Thu, 23 Jun 2016 01:09:11 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZbBx6KWrzDqRd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 06:03:53 +1000 (AEST)
+From: luigi burdo <intermediadc@hotmail.com>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, "Aneesh
+ Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Darren Stevens
+ <darren@stevens-zone.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <michaele@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
+ R.T.Dickinson <rtd@a-eon.com>, R.T.Dickinson <rtd2@xtra.co.nz>, Pat Wall
+ <pjwall@mac.com>, Pat Wall <pjwall@me.com>, "contact@a-eon.com"
+ <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>, luigi burdo
+ <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
+Subject: RE: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+Date: Wed, 22 Jun 2016 19:58:35 +0000
+Message-ID: <HE1PR01MB154874F9367CE088CC7202EEC82C0@HE1PR01MB1548.eurprd01.prod.exchangelabs.com>
+References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
+ <1463990507.3078.16.camel@kernel.crashing.org>
+ <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
+ <1464088614.3078.79.camel@kernel.crashing.org>
+ <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
+ <87d1obqxg9.fsf@skywalker.in.ibm.com>
+ <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
+ <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
+ <874m99uibc.fsf@skywalker.in.ibm.com>
+ <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
+ <1465174304.12265.0.camel@ellerman.id.au>
+ <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
+ <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
+ <87r3c71zs9.fsf@skywalker.in.ibm.com>
+ <d3753fa2-d88b-2e31-7d0d-d8952c29a12b@xenosoft.de>
+ <bab57839-0160-ae01-3cfb-6950067652c0@xenosoft.de>
+ <1465470910.31662.10.camel@ellerman.id.au>
+ <40816527-1be8-329c-2be0-86c39062c2e9@xenosoft.de>
+ <25BBCC66-53B2-4009-B2BA-CD1070EA71E9@xenosoft.de>
+ <1465805967.3022.14.camel@kernel.crashing.org>
+ <575EF6BE.6020208@xenosoft.de>,<576AE1D7.7090301@xenosoft.de>
+In-Reply-To: <576AE1D7.7090301@xenosoft.de>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>, ego@linux.vnet.ibm.com,
- mpe@ellerman.id.au, mikey@neuling.org, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org
-Subject: Re: cpuidle broken on mainline
-References: <20160623011655.62c610bd@kryten>
-In-Reply-To: <20160623011655.62c610bd@kryten>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <576AE95F.6050109@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,19 +52,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Christian, i think Darren patch override some memory region that on kernel.=
+org was different and this make the kernel patched run and work
 
-On 06/22/2016 08:46 PM, Anton Blanchard wrote:
-> Hi,
-> 
-> I was noticing some pretty big run to run variations on single threaded
-> benchmarks, and I've isolated it cpuidle issues. If I look at
-> the cpuidle tracepoint, I notice we only go into the snooze state.
-> 
-> Do we have any known bugs in cpuidle at the moment?
-> 
-I've posted a fix here-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-June/144726.html
+Luigi
+________________________________________
+Da: Christian Zigotzky [chzigotzky@xenosoft.de]
+Inviato: mercoled=EC 22 giugno 2016 21.07
+A: Benjamin Herrenschmidt; Michael Ellerman; Aneesh Kumar K.V; Darren Steve=
+ns; linuxppc-dev@lists.ozlabs.org; Michael Ellerman; Julian Margetson; Adri=
+an Cox; R.T.Dickinson; R.T.Dickinson; Pat Wall; Pat Wall; contact@a-eon.com=
+; Matthew Leaman; luigi burdo; Christian Zigotzky
+Oggetto: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
+
+Hi All,
+
+Please find attached Darren's patch. With this patch, the Nemo board
+boots. That means, the problematic source code is somewhere in this patch.
+Which file in this patch is responsible for starting the kernel?
 
 Thanks,
-Shreyas
+
+Christian
+
+On 13 June 2016 at 8:09 PM, Christian Zigotzky wrote:
+> Hi Ben,
+>
+> I could send you a patch but it doesn't work with the three PowerPC
+> commits. I think we have to fix the boot issue at first. After that we
+> can integrate the first patch for the Nemo board.
+>
+> Cheers,
+>
+> Christian
+>
+> On 13 June 2016 at 10:19 AM, Benjamin Herrenschmidt wrote:
+>> The right way to not have this problem anymore is to cleanup and
+>> submit your patches upstream so they don't break all the time :-)
+>>
+>> Cheers,
+>> Ben.
+>>
+>>
