@@ -1,34 +1,24 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
- [IPv6:2607:f8b0:400c:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZBXh6lK0zDqFM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 14:32:52 +1000 (AEST)
-Received: by mail-vk0-x244.google.com with SMTP id k2so5856957vkb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:32:52 -0700 (PDT)
-MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <20160618121752.GA22721@localhost>
-References: <20160618022501.15648-1-yinghai@kernel.org>
- <20160618022501.15648-2-yinghai@kernel.org>
- <20160618121752.GA22721@localhost>
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Tue, 21 Jun 2016 21:32:49 -0700
-Message-ID: <CAE9FiQXKVLWZaiD0CgSGEMN6c4g6GeCNGS=NE=gC-CEAymo1eQ@mail.gmail.com>
-Subject: Re: [PATCH v13 01/16] PCI: Let pci_mmap_page_range() take resource
- address
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, Khalid Aziz <khalid.aziz@oracle.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- linux-xtensa@linux-xtensa.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZCPD2rD9zDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:11:28 +1000 (AEST)
+Message-ID: <1466572287.8686.1.camel@neuling.org>
+Subject: Re: [PATCH v6 07/11] powerpc/powernv: set power_save func after the
+ idle states are initialized
+From: Michael Neuling <mikey@neuling.org>
+To: benh@au1.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ mpe@ellerman.id.au
+Cc: ego@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 22 Jun 2016 15:11:27 +1000
+In-Reply-To: <1466560468.4089.7.camel@au1.ibm.com>
+References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1465404871-5406-8-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1466560468.4089.7.camel@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,42 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 18, 2016 at 5:17 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Fri, Jun 17, 2016 at 07:24:46PM -0700, Yinghai Lu wrote:
->> In 8c05cd08a7 ("PCI: fix offset check for sysfs mmapped files"), try
->> to check exposed value with resource start/end in proc mmap path.
->>
->> |        start = vma->vm_pgoff;
->> |        size = ((pci_resource_len(pdev, resno) - 1) >> PAGE_SHIFT) + 1;
->> |        pci_start = (mmap_api == PCI_MMAP_PROCFS) ?
->> |                        pci_resource_start(pdev, resno) >> PAGE_SHIFT : 0;
->> |        if (start >= pci_start && start < pci_start + size &&
->> |                        start + nr <= pci_start + size)
->>
->> That breaks sparc that exposed value is BAR value, and need to be offseted
->> to resource address.
->
-> I asked this same question of the v12 patch, but I don't think you
-> answered it:
->
-> I'm not quite sure what you're saying here.  Are you saying that sparc
-> is currently broken, and this patch fixes it?  If so, what exactly is
-> broken?  Can you give a small example of an mmap that is currently
-> broken?
+On Wed, 2016-06-22 at 11:54 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2016-06-08 at 11:54 -0500, Shreyas B. Prabhu wrote:
+> >=20
+> > pnv_init_idle_states discovers supported idle states from the
+> > device tree and does the required initialization. Set power_save
+> > function pointer only after this initialization is done
+> >=20
+> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>=20
+> Please merge that one as-is now, no need to wait for the rest, as
+> otherwise pwoer9 crashes at boot. It doesn't need to wait for the
+> rest of the series.
 
-Yes, for sparc that path (proc mmap) is broken, but only according to
-code checking.
+Acked-by: Michael Neuling <mikey@neuling.org>
 
-The reason for the problem is not discovered is that seem all users
-(other than x86) are not
-use proc_mmap ?
+For the same reason. Without this we need powersave=3Doff on the cmdline on
+POWER9.
 
-vma->vm_pgoff is that code segment is User/BAR value >> PAGE_SHIFT.
-pci_start is resource->start >> PAGE_SHIFT.
+Mikey
 
-For sparc, resource start is different from BAR start aka pci bus address.
-pci bus address add offset to be the resource start.
-
-Thanks
-
-Yinghai
+>=20
+> Cheers,
+> Ben.
+>=20
+> >=20
+> > ---
+> > - No changes since v1
+> >=20
+> > =C2=A0arch/powerpc/platforms/powernv/idle.c=C2=A0=C2=A0| 3 +++
+> > =C2=A0arch/powerpc/platforms/powernv/setup.c | 2 +-
+> > =C2=A02 files changed, 4 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/arch/powerpc/platforms/powernv/idle.c
+> > b/arch/powerpc/platforms/powernv/idle.c
+> > index fcc8b68..fbb09fb 100644
+> > --- a/arch/powerpc/platforms/powernv/idle.c
+> > +++ b/arch/powerpc/platforms/powernv/idle.c
+> > @@ -285,6 +285,9 @@ static int __init pnv_init_idle_states(void)
+> > =C2=A0	}
+> > =C2=A0
+> > =C2=A0	pnv_alloc_idle_core_states();
+> > +
+> > +	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+> > +		ppc_md.power_save =3D power7_idle;
+> > =C2=A0out_free:
+> > =C2=A0	kfree(flags);
+> > =C2=A0out:
+> > diff --git a/arch/powerpc/platforms/powernv/setup.c
+> > b/arch/powerpc/platforms/powernv/setup.c
+> > index ee6430b..8492bbb 100644
+> > --- a/arch/powerpc/platforms/powernv/setup.c
+> > +++ b/arch/powerpc/platforms/powernv/setup.c
+> > @@ -315,7 +315,7 @@ define_machine(powernv) {
+> > =C2=A0	.get_proc_freq=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=3D pnv_get_proc_freq,
+> > =C2=A0	.progress		=3D pnv_progress,
+> > =C2=A0	.machine_shutdown	=3D pnv_shutdown,
+> > -	.power_save=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=3D power7_idle,
+> > +	.power_save=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=3D NULL,
+> > =C2=A0	.calibrate_decr		=3D generic_calibrate_decr,
+> > =C2=A0#ifdef CONFIG_KEXEC
+> > =C2=A0	.kexec_cpu_down		=3D pnv_kexec_cpu_down,
