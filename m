@@ -1,48 +1,39 @@
-Return-Path: <benh@au1.ibm.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ74t5PynzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:57:02 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ7280GlqzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:38 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5M1rs47037003
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:54:36 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23q9navyq1-1
+ by ozlabs.org (Postfix) with ESMTPS id 3rZ74t0x80z9t0J
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2016 11:57:01 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5M1rq5b129866
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2016 21:57:00 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23q6r3v7d4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:54:36 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2016 21:57:00 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 22 Jun 2016 11:54:33 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6CEE23578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:30 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5M1sU9B23331010
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:30 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5M1sTs5031151
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:30 +1000
-Subject: Re: [PATCH v6 07/11] powerpc/powernv: set power_save func after the
- idle states are initialized
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 22 Jun 2016 11:54:28 +1000
-In-Reply-To: <1465404871-5406-8-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1465404871-5406-8-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1466560468.4089.7.camel@au1.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 21 Jun 2016 21:56:59 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kda@linux-powerpc.org
+Subject: Re: [PATCH] powerpc: Fix faults caused by radix patching of SLB miss
+ handler
+In-Reply-To: <1466505379-15597-1-git-send-email-mpe@ellerman.id.au>
+References: <1466505379-15597-1-git-send-email-mpe@ellerman.id.au>
+Date: Wed, 22 Jun 2016 07:26:54 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <871t3qyoih.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,56 +43,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-06-08 at 11:54 -0500, Shreyas B. Prabhu wrote:
-> pnv_init_idle_states discovers supported idle states from the
-> device tree and does the required initialization. Set power_save
-> function pointer only after this initialization is done
-> 
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> As part of the Radix MMU support we added some feature sections in the
+> SLB miss handler. These are intended to catch the case that we
+> incorrectly take an SLB miss when Radix is enabled, and instead of
+> crashing weirdly they bail out to a well defined exit path and trigger
+> an oops.
+>
+> However the way they were written meant the bailout case was enabled by
+> default until we did CPU feature patching.
+>
+> On powermacs the early debug prints in setup_system() can cause an SLB
+> miss, which happens before code patching, and so the SLB miss handler
+> would incorrectly bailout and crash during boot.
+>
+> Fix it by inverting the sense of the feature section, so that the code
+> which is in place at boot is correct for the hash case. Once we
+> determine we are using Radix - which will never happen on a powermac -
+> only then do we patch in the bailout case which unconditionally jumps.
+>
+> Fixes: caca285e5ab4 ("powerpc/mm/radix: Use STD_MMU_64 to properly isolate hash related code")
+> Reported-by: Denis Kirjanov <kda@linux-powerpc.org>
+> Tested-by: Denis Kirjanov <kda@linux-powerpc.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Please merge that one as-is now, no need to wait for the rest, as
-otherwise pwoer9 crashes at boot. It doesn't need to wait for the
-rest of the series.
 
-Cheers,
-Ben.
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 > ---
-> - No changes since v1
-> 
->  arch/powerpc/platforms/powernv/idle.c  | 3 +++
->  arch/powerpc/platforms/powernv/setup.c | 2 +-
->  2 files changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/idle.c
-> b/arch/powerpc/platforms/powernv/idle.c
-> index fcc8b68..fbb09fb 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -285,6 +285,9 @@ static int __init pnv_init_idle_states(void)
->  	}
->  
->  	pnv_alloc_idle_core_states();
-> +
-> +	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
-> +		ppc_md.power_save = power7_idle;
->  out_free:
->  	kfree(flags);
->  out:
-> diff --git a/arch/powerpc/platforms/powernv/setup.c
-> b/arch/powerpc/platforms/powernv/setup.c
-> index ee6430b..8492bbb 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -315,7 +315,7 @@ define_machine(powernv) {
->  	.get_proc_freq          = pnv_get_proc_freq,
->  	.progress		= pnv_progress,
->  	.machine_shutdown	= pnv_shutdown,
-> -	.power_save             = power7_idle,
-> +	.power_save             = NULL,
->  	.calibrate_decr		= generic_calibrate_decr,
->  #ifdef CONFIG_KEXEC
->  	.kexec_cpu_down		= pnv_kexec_cpu_down,
+>  arch/powerpc/kernel/exceptions-64s.S | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index 4c9440629128..8bcc1b457115 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1399,11 +1399,12 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_RADIX)
+>  	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
+>
+>  	mtlr	r10
+> -BEGIN_MMU_FTR_SECTION
+> -	b	2f
+> -END_MMU_FTR_SECTION_IFSET(MMU_FTR_RADIX)
+>  	andi.	r10,r12,MSR_RI	/* check for unrecoverable exception */
+> +BEGIN_MMU_FTR_SECTION
+>  	beq-	2f
+> +FTR_SECTION_ELSE
+> +	b	2f
+> +ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
+>
+>  .machine	push
+>  .machine	"power4"
+> -- 
+> 2.5.0
