@@ -1,50 +1,37 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZVP92jcvzDqKj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 02:27:25 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5MGObA9084164
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:27:23 -0400
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [125.16.236.4])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23qq3k0xsq-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:27:22 -0400
-Received: from localhost
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 22 Jun 2016 21:57:18 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id CFF35125805F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:59:51 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5MGRFJ561472770
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:57:15 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5MGRCuP025474
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:57:15 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Matt Evans <matt@ozlabs.org>, Denis Kirjanov <kda@linux-powerpc.org>,
- Paul Mackerras <paulus@samba.org>, Alexei Starovoitov <ast@fb.com>,
- Daniel Borkmann <daniel@iogearbox.net>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
- Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-Subject: [PATCHv2 7/7] ppc: ebpf/jit: Implement JIT compiler for extended BPF
-Date: Wed, 22 Jun 2016 21:55:07 +0530
-In-Reply-To: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <d651ed66824f1fc480906730fbb609fdc7b8aa59.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZVSS480kzDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 02:30:16 +1000 (AEST)
+Date: Wed, 22 Jun 2016 11:30:11 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Jessica Yu <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
+Message-ID: <20160622163011.4fjwalehrzk4a32t@treble>
+References: <20160429212546.t26mvthtvh7543ff@treble>
+ <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
+ <20160429224112.kl3jlk7ccvfceg2r@treble>
+ <CALCETrUvRKYpF5MuhYuHSxd1QFnzSNKdXUQp+3to6rzKzQjQSw@mail.gmail.com>
+ <20160502135243.jkbnonaesv7zfios@treble>
+ <CALCETrWc5VFyo9tE5fQGKfijqCjguSSci71HSe58Z1_AL1ZHmQ@mail.gmail.com>
+ <20160519231546.yvtqz5wacxvykvn2@treble>
+ <CALCETrWkd1dtSZzrT1gj43frXPYEBFRhY-ToWoMSsdLOROMKcA@mail.gmail.com>
+ <20160524022805.sazm456jorfqvdr7@treble>
+ <CALCETrVNj2bscRZmSyzq4fMp5s3m0+KqpEFofv_uXsHF_na_=Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CALCETrVNj2bscRZmSyzq4fMp5s3m0+KqpEFofv_uXsHF_na_=Q@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,1554 +41,949 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PPC64 eBPF JIT compiler.
+On Mon, May 23, 2016 at 08:52:12PM -0700, Andy Lutomirski wrote:
+> On May 23, 2016 7:28 PM, "Josh Poimboeuf" <jpoimboe@redhat.com> wrote:
+> > > Maybe I'm coming around to liking this idea.
+> >
+> > Ok, good :-)
+> >
+> > > In an ideal world (DWARF support, high-quality unwinder, nice pretty
+> > > printer, etc), unwinding across a kernel exception would look like:
+> > >
+> > >  - some_func
+> > >  - some_other_func
+> > >  - do_page_fault
+> > >  - page_fault
+> > >
+> > > After page_fault, the next unwind step takes us to the faulting RIP
+> > > (faulting_func) and reports that all GPRs are known.  It should
+> > > probably learn this fact from DWARF if DWARF is available, instead of
+> > > directly decoding pt_regs, due to a few funny cases in which pt_regs
+> > > may be incomplete.  A nice pretty printer could now print all the
+> > > regs.
+> > >
+> > >  - faulting_func
+> > >  - etc.
+> > >
+> > > For this to work, we don't actually need the unwinder to explicitly
+> > > know where pt_regs is.
+> >
+> > That's true (but only for DWARF).
+> >
+> > > Food for thought, though: if user code does SYSENTER with TF set,
+> > > you'll end up with partial pt_regs.  There's nothing the kernel can do
+> > > about it.  DWARF will handle it without any fanfare, but I don't know
+> > > if it's going to cause trouble for you pre-DWARF.
+> >
+> > In this case it should see the stack pointer is past the pt_regs offset,
+> > so it would just report it as an empty stack.
+> 
+> OK
+> 
+> >
+> > > I'm also not sure it makes sense to apply this before the unwinder
+> > > that can consume it is ready.  Maybe, if it would be consistent with
+> > > your plans, it would make sense to rewrite the unwinder first, then
+> > > apply this and teach live patching to use the new unwinder, and *then*
+> > > add DWARF support?
+> >
+> > For the purposes of livepatch, the reliable unwinder needs to detect
+> > whether an interrupt/exception pt_regs frame exists on a sleeping task
+> > (or current).  This patch would allow us to do that.
+> >
+> > So my preferred order of doing things would be:
+> >
+> > 1) Brian Gerst's switch_to() cleanup and any related unwinder fixes
+> > 2) this patch for annotating pt_regs stack frames
+> > 3) reliable unwinder, similar to what I already posted, except it relies
+> >    on this patch instead of PF_PREEMPT_IRQ, and knows how to deal with
+> >    the new inactive task frame format of #1
+> > 4) livepatch consistency model which uses the reliable unwinder
+> > 5) rewrite unwinder, and port all users to the new interface
+> > 6) add DWARF unwinder
+> >
+> > 1-4 are pretty much already written, whereas 5 and 6 will take
+> > considerably more work.
+> 
+> Fair enough.
+> 
+> >
+> > > > +       /*
+> > > > +        * Create a stack frame for the saved pt_regs.  This allows frame
+> > > > +        * pointer based unwinders to find pt_regs on the stack.
+> > > > +        */
+> > > > +       .macro CREATE_PT_REGS_FRAME regs=%rsp
+> > > > +#ifdef CONFIG_FRAME_POINTER
+> > > > +       pushq   \regs
+> > > > +       pushq   $pt_regs+1
+> > >
+> > > Why the +1?
+> >
+> > Some unwinders like gdb are smart enough to report the function which
+> > contains the instruction *before* the return address.  Without the +1,
+> > they would show the wrong function.
+> 
+> Lovely.  Want to add a comment?
+> 
+> >
+> > > > +       pushq   %rbp
+> > > > +       movq    %rsp, %rbp
+> > > > +#endif
+> > > > +       .endm
+> > >
+> > > I keep wanting this to be only two pushes and to fudge rbp to make it
+> > > work, but I don't see a good way.  But let's call it
+> > > CREATE_NESTED_ENTRY_FRAME or something, and let's rename pt_regs to
+> > > nested_frame or similar.
+> >
+> > Or, if we aren't going to annotate syscall pt_regs, we could give it a
+> > more specific name.  CREATE_INTERRUPT_FRAME and interrupt_frame()?
+> 
+> CREATE_INTERRUPT_FRAME is confusing because it applies to idtentry,
+> too.  CREATE_PT_REGS_FRAME is probably fine.
+> 
+> > > > +
+> > > > +/* fake function which allows stack unwinders to detect pt_regs frames */
+> > > > +#ifdef CONFIG_FRAME_POINTER
+> > > > +ENTRY(pt_regs)
+> > > > +       nop
+> > > > +       nop
+> > > > +ENDPROC(pt_regs)
+> > > > +#endif /* CONFIG_FRAME_POINTER */
+> > >
+> > > Why is this two bytes long?  Is there some reason it has to be more
+> > > than one byte?
+> >
+> > Similar to above, this is related to the need to support various
+> > unwinders.  Whether the unwinder displays the ret_addr or the
+> > instruction preceding it, either way the instruction needs to be inside
+> > the function for the function to be reported.
+> 
+> OK.
 
-Enable with:
-echo 1 > /proc/sys/net/core/bpf_jit_enable
-or
-echo 2 > /proc/sys/net/core/bpf_jit_enable
+Andy,
 
-... to see the generated JIT code. This can further be processed with
-tools/net/bpf_jit_disasm.
+So I got a chance to look at this some more.  I'm thinking that to make
+this feature more consistently useful, we shouldn't only annotate
+pt_regs frames for calls to handlers; other calls should be annotated as
+well: preempt_schedule_irq, CALL_enter_from_user_mode,
+prepare_exit_to_usermode, SWAPGS, TRACE_IRQS_OFF, DISABLE_INTERRUPTS,
+etc.  That way, the unwinder will always be able to find pt_regs from an
+interrupt/exception, even if starting from one of these other calls.
 
-With CONFIG_TEST_BPF=m and 'modprobe test_bpf':
-test_bpf: Summary: 305 PASSED, 0 FAILED, [297/297 JIT'ed]
+But then, things get ugly.  You have to either setup and tear down the
+frame for every possible call, or do a higher-level setup/teardown
+across multiple calls, which invalidates several assumptions in the
+entry code about the location of pt_regs on the stack.
 
-... on both ppc64 BE and LE.
+Also problematic is that several of the macros (like TRACE_IRQS_IRETQ)
+make assumptions about the location of pt_regs.  And they're used by
+both syscall and interrupt code.  So if we didn't create a frame pointer
+header for syscalls, we'd basically need two versions of the macros: one
+for irqs/exceptions and one for syscalls.
 
-The details of the approach are documented through various comments in
-the code.
+So I think the cleanest way to handle this is to always allocate two
+extra registers on the stack in ALLOC_PT_GPREGS_ON_STACK.  Then all
+entry code can assume that pt_regs is at a constant location, and all
+the above problems go away.  Another benefit is that we'd only need two
+saves instead of three -- the pointer to pt_regs is no longer needed
+since pt_regs is always immediately after the frame header.
 
-Cc: Matt Evans <matt@ozlabs.org>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Alexei Starovoitov <ast@fb.com>
-Cc: Daniel Borkmann <daniel@iogearbox.net>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-Acked-by: Alexei Starovoitov <ast@kernel.org>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig                  |   3 +-
- arch/powerpc/include/asm/asm-compat.h |   2 +
- arch/powerpc/include/asm/ppc-opcode.h |  20 +-
- arch/powerpc/net/Makefile             |   4 +
- arch/powerpc/net/bpf_jit.h            |  53 +-
- arch/powerpc/net/bpf_jit64.h          | 102 ++++
- arch/powerpc/net/bpf_jit_asm64.S      | 180 +++++++
- arch/powerpc/net/bpf_jit_comp64.c     | 954 ++++++++++++++++++++++++++++++++++
- 8 files changed, 1315 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/net/bpf_jit64.h
- create mode 100644 arch/powerpc/net/bpf_jit_asm64.S
- create mode 100644 arch/powerpc/net/bpf_jit_comp64.c
+I worked up a patch to implement this -- see below.  It writes the frame
+pointer in all entry paths, including syscalls.  This helps keep the
+code simple.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0a9d439..ee82f9a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -128,7 +128,8 @@ config PPC
- 	select IRQ_FORCED_THREADING
- 	select HAVE_RCU_TABLE_FREE if SMP
- 	select HAVE_SYSCALL_TRACEPOINTS
--	select HAVE_CBPF_JIT if CPU_BIG_ENDIAN
-+	select HAVE_CBPF_JIT if !PPC64
-+	select HAVE_EBPF_JIT if PPC64
- 	select HAVE_ARCH_JUMP_LABEL
- 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
- 	select ARCH_HAS_GCOV_PROFILE_ALL
-diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-index dc85dcb..cee3aa0 100644
---- a/arch/powerpc/include/asm/asm-compat.h
-+++ b/arch/powerpc/include/asm/asm-compat.h
-@@ -36,11 +36,13 @@
- #define PPC_MIN_STKFRM	112
+The downside is a small performance penalty: with getppid()-in-a-loop on
+my laptop, the average syscall went from 52ns to 53ns, which is about a
+2% slowdown.  But I doubt it would be measurable in a real-world
+workload.
+
+It looks like about half the slowdown is due to the extra stack
+allocation (which presumably adds a little d-cache pressure on the stack
+memory) and the other half is due to the stack writes.
+
+I could remove the writes from the syscall path but it would only save
+about half a ns, and it would make the code less robust.  Plus it's nice
+to have the consistency of having *all* pt_regs frames annotated.
+
+Thoughts?
+
+----
+
+diff --git a/arch/x86/entry/calling.h b/arch/x86/entry/calling.h
+index 9a9e588..0f6ccfc 100644
+--- a/arch/x86/entry/calling.h
++++ b/arch/x86/entry/calling.h
+@@ -88,30 +88,69 @@ For 32-bit we have the following conventions - kernel is built with
+ #define RSP		19*8
+ #define SS		20*8
  
- #ifdef __BIG_ENDIAN__
-+#define LHZX_BE	stringify_in_c(lhzx)
- #define LWZX_BE	stringify_in_c(lwzx)
- #define LDX_BE	stringify_in_c(ldx)
- #define STWX_BE	stringify_in_c(stwx)
- #define STDX_BE	stringify_in_c(stdx)
- #else
-+#define LHZX_BE	stringify_in_c(lhbrx)
- #define LWZX_BE	stringify_in_c(lwbrx)
- #define LDX_BE	stringify_in_c(ldbrx)
- #define STWX_BE	stringify_in_c(stwbrx)
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index fd8d640..6a77d130 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -142,9 +142,11 @@
- #define PPC_INST_ISEL			0x7c00001e
- #define PPC_INST_ISEL_MASK		0xfc00003e
- #define PPC_INST_LDARX			0x7c0000a8
-+#define PPC_INST_STDCX			0x7c0001ad
- #define PPC_INST_LSWI			0x7c0004aa
- #define PPC_INST_LSWX			0x7c00042a
- #define PPC_INST_LWARX			0x7c000028
-+#define PPC_INST_STWCX			0x7c00012d
- #define PPC_INST_LWSYNC			0x7c2004ac
- #define PPC_INST_SYNC			0x7c0004ac
- #define PPC_INST_SYNC_MASK		0xfc0007fe
-@@ -211,8 +213,11 @@
- #define PPC_INST_LBZ			0x88000000
- #define PPC_INST_LD			0xe8000000
- #define PPC_INST_LHZ			0xa0000000
--#define PPC_INST_LHBRX			0x7c00062c
- #define PPC_INST_LWZ			0x80000000
-+#define PPC_INST_LHBRX			0x7c00062c
-+#define PPC_INST_LDBRX			0x7c000428
-+#define PPC_INST_STB			0x98000000
-+#define PPC_INST_STH			0xb0000000
- #define PPC_INST_STD			0xf8000000
- #define PPC_INST_STDU			0xf8000001
- #define PPC_INST_STW			0x90000000
-@@ -221,22 +226,34 @@
- #define PPC_INST_MTLR			0x7c0803a6
- #define PPC_INST_CMPWI			0x2c000000
- #define PPC_INST_CMPDI			0x2c200000
-+#define PPC_INST_CMPW			0x7c000000
-+#define PPC_INST_CMPD			0x7c200000
- #define PPC_INST_CMPLW			0x7c000040
-+#define PPC_INST_CMPLD			0x7c200040
- #define PPC_INST_CMPLWI			0x28000000
-+#define PPC_INST_CMPLDI			0x28200000
- #define PPC_INST_ADDI			0x38000000
- #define PPC_INST_ADDIS			0x3c000000
- #define PPC_INST_ADD			0x7c000214
- #define PPC_INST_SUB			0x7c000050
- #define PPC_INST_BLR			0x4e800020
- #define PPC_INST_BLRL			0x4e800021
-+#define PPC_INST_MULLD			0x7c0001d2
- #define PPC_INST_MULLW			0x7c0001d6
- #define PPC_INST_MULHWU			0x7c000016
- #define PPC_INST_MULLI			0x1c000000
- #define PPC_INST_DIVWU			0x7c000396
-+#define PPC_INST_DIVD			0x7c0003d2
- #define PPC_INST_RLWINM			0x54000000
-+#define PPC_INST_RLWIMI			0x50000000
-+#define PPC_INST_RLDICL			0x78000000
- #define PPC_INST_RLDICR			0x78000004
- #define PPC_INST_SLW			0x7c000030
-+#define PPC_INST_SLD			0x7c000036
- #define PPC_INST_SRW			0x7c000430
-+#define PPC_INST_SRD			0x7c000436
-+#define PPC_INST_SRAD			0x7c000634
-+#define PPC_INST_SRADI			0x7c000674
- #define PPC_INST_AND			0x7c000038
- #define PPC_INST_ANDDOT			0x7c000039
- #define PPC_INST_OR			0x7c000378
-@@ -247,6 +264,7 @@
- #define PPC_INST_XORI			0x68000000
- #define PPC_INST_XORIS			0x6c000000
- #define PPC_INST_NEG			0x7c0000d0
-+#define PPC_INST_EXTSW			0x7c0007b4
- #define PPC_INST_BRANCH			0x48000000
- #define PPC_INST_BRANCH_COND		0x40800000
- #define PPC_INST_LBZCIX			0x7c0006aa
-diff --git a/arch/powerpc/net/Makefile b/arch/powerpc/net/Makefile
-index 1306a58..c1ff16a 100644
---- a/arch/powerpc/net/Makefile
-+++ b/arch/powerpc/net/Makefile
-@@ -1,4 +1,8 @@
- #
- # Arch-specific network modules
- #
-+ifeq ($(CONFIG_PPC64),y)
-+obj-$(CONFIG_BPF_JIT) += bpf_jit_asm64.o bpf_jit_comp64.o
-+else
- obj-$(CONFIG_BPF_JIT) += bpf_jit_asm.o bpf_jit_comp.o
-+endif
-diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 313cfaf..d5301b6 100644
---- a/arch/powerpc/net/bpf_jit.h
-+++ b/arch/powerpc/net/bpf_jit.h
-@@ -2,6 +2,7 @@
-  * bpf_jit.h: BPF JIT compiler for PPC
-  *
-  * Copyright 2011 Matt Evans <matt@ozlabs.org>, IBM Corporation
-+ * 	     2016 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-@@ -13,7 +14,9 @@
+-#define SIZEOF_PTREGS	21*8
  
- #ifndef __ASSEMBLY__
- 
--#ifdef CONFIG_PPC64
-+#include <asm/types.h>
+-	.macro ALLOC_PT_GPREGS_ON_STACK addskip=0
+-	addq	$-(15*8+\addskip), %rsp
++#ifdef CONFIG_FRAME_POINTER
 +
-+#ifdef PPC64_ELF_ABI_v1
- #define FUNCTION_DESCR_SIZE	24
- #else
- #define FUNCTION_DESCR_SIZE	0
-@@ -52,6 +55,10 @@
- 				     ___PPC_RA(base) | IMM_L(i))
- #define PPC_STWU(r, base, i)	EMIT(PPC_INST_STWU | ___PPC_RS(r) |	      \
- 				     ___PPC_RA(base) | IMM_L(i))
-+#define PPC_STH(r, base, i)	EMIT(PPC_INST_STH | ___PPC_RS(r) |	      \
-+				     ___PPC_RA(base) | IMM_L(i))
-+#define PPC_STB(r, base, i)	EMIT(PPC_INST_STB | ___PPC_RS(r) |	      \
-+				     ___PPC_RA(base) | IMM_L(i))
- 
- #define PPC_LBZ(r, base, i)	EMIT(PPC_INST_LBZ | ___PPC_RT(r) |	      \
- 				     ___PPC_RA(base) | IMM_L(i))
-@@ -63,6 +70,19 @@
- 				     ___PPC_RA(base) | IMM_L(i))
- #define PPC_LHBRX(r, base, b)	EMIT(PPC_INST_LHBRX | ___PPC_RT(r) |	      \
- 				     ___PPC_RA(base) | ___PPC_RB(b))
-+#define PPC_LDBRX(r, base, b)	EMIT(PPC_INST_LDBRX | ___PPC_RT(r) |	      \
-+				     ___PPC_RA(base) | ___PPC_RB(b))
++#define PT_REGS_OFFSET 2*8
 +
-+#define PPC_BPF_LDARX(t, a, b, eh) EMIT(PPC_INST_LDARX | ___PPC_RT(t) |	      \
-+					___PPC_RA(a) | ___PPC_RB(b) |	      \
-+					__PPC_EH(eh))
-+#define PPC_BPF_LWARX(t, a, b, eh) EMIT(PPC_INST_LWARX | ___PPC_RT(t) |	      \
-+					___PPC_RA(a) | ___PPC_RB(b) |	      \
-+					__PPC_EH(eh))
-+#define PPC_BPF_STWCX(s, a, b)	EMIT(PPC_INST_STWCX | ___PPC_RS(s) |	      \
-+					___PPC_RA(a) | ___PPC_RB(b))
-+#define PPC_BPF_STDCX(s, a, b)	EMIT(PPC_INST_STDCX | ___PPC_RS(s) |	      \
-+					___PPC_RA(a) | ___PPC_RB(b))
- 
- #ifdef CONFIG_PPC64
- #define PPC_BPF_LL(r, base, i) do { PPC_LD(r, base, i); } while(0)
-@@ -76,14 +96,23 @@
- 
- #define PPC_CMPWI(a, i)		EMIT(PPC_INST_CMPWI | ___PPC_RA(a) | IMM_L(i))
- #define PPC_CMPDI(a, i)		EMIT(PPC_INST_CMPDI | ___PPC_RA(a) | IMM_L(i))
-+#define PPC_CMPW(a, b)		EMIT(PPC_INST_CMPW | ___PPC_RA(a) |	      \
-+					___PPC_RB(b))
-+#define PPC_CMPD(a, b)		EMIT(PPC_INST_CMPD | ___PPC_RA(a) |	      \
-+					___PPC_RB(b))
- #define PPC_CMPLWI(a, i)	EMIT(PPC_INST_CMPLWI | ___PPC_RA(a) | IMM_L(i))
-+#define PPC_CMPLDI(a, i)	EMIT(PPC_INST_CMPLDI | ___PPC_RA(a) | IMM_L(i))
- #define PPC_CMPLW(a, b)		EMIT(PPC_INST_CMPLW | ___PPC_RA(a) |	      \
- 					___PPC_RB(b))
-+#define PPC_CMPLD(a, b)		EMIT(PPC_INST_CMPLD | ___PPC_RA(a) |	      \
-+					___PPC_RB(b))
- 
- #define PPC_SUB(d, a, b)	EMIT(PPC_INST_SUB | ___PPC_RT(d) |	      \
- 				     ___PPC_RB(a) | ___PPC_RA(b))
- #define PPC_ADD(d, a, b)	EMIT(PPC_INST_ADD | ___PPC_RT(d) |	      \
- 				     ___PPC_RA(a) | ___PPC_RB(b))
-+#define PPC_MULD(d, a, b)	EMIT(PPC_INST_MULLD | ___PPC_RT(d) |	      \
-+				     ___PPC_RA(a) | ___PPC_RB(b))
- #define PPC_MULW(d, a, b)	EMIT(PPC_INST_MULLW | ___PPC_RT(d) |	      \
- 				     ___PPC_RA(a) | ___PPC_RB(b))
- #define PPC_MULHWU(d, a, b)	EMIT(PPC_INST_MULHWU | ___PPC_RT(d) |	      \
-@@ -92,6 +121,8 @@
- 				     ___PPC_RA(a) | IMM_L(i))
- #define PPC_DIVWU(d, a, b)	EMIT(PPC_INST_DIVWU | ___PPC_RT(d) |	      \
- 				     ___PPC_RA(a) | ___PPC_RB(b))
-+#define PPC_DIVD(d, a, b)	EMIT(PPC_INST_DIVD | ___PPC_RT(d) |	      \
-+				     ___PPC_RA(a) | ___PPC_RB(b))
- #define PPC_AND(d, a, b)	EMIT(PPC_INST_AND | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | ___PPC_RB(b))
- #define PPC_ANDI(d, a, i)	EMIT(PPC_INST_ANDI | ___PPC_RA(d) |	      \
-@@ -100,6 +131,7 @@
- 				     ___PPC_RS(a) | ___PPC_RB(b))
- #define PPC_OR(d, a, b)		EMIT(PPC_INST_OR | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | ___PPC_RB(b))
-+#define PPC_MR(d, a)		PPC_OR(d, a, a)
- #define PPC_ORI(d, a, i)	EMIT(PPC_INST_ORI | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | IMM_L(i))
- #define PPC_ORIS(d, a, i)	EMIT(PPC_INST_ORIS | ___PPC_RA(d) |	      \
-@@ -110,13 +142,30 @@
- 				     ___PPC_RS(a) | IMM_L(i))
- #define PPC_XORIS(d, a, i)	EMIT(PPC_INST_XORIS | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | IMM_L(i))
-+#define PPC_EXTSW(d, a)		EMIT(PPC_INST_EXTSW | ___PPC_RA(d) |	      \
-+				     ___PPC_RS(a))
- #define PPC_SLW(d, a, s)	EMIT(PPC_INST_SLW | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | ___PPC_RB(s))
-+#define PPC_SLD(d, a, s)	EMIT(PPC_INST_SLD | ___PPC_RA(d) |	      \
-+				     ___PPC_RS(a) | ___PPC_RB(s))
- #define PPC_SRW(d, a, s)	EMIT(PPC_INST_SRW | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | ___PPC_RB(s))
-+#define PPC_SRD(d, a, s)	EMIT(PPC_INST_SRD | ___PPC_RA(d) |	      \
-+				     ___PPC_RS(a) | ___PPC_RB(s))
-+#define PPC_SRAD(d, a, s)	EMIT(PPC_INST_SRAD | ___PPC_RA(d) |	      \
-+				     ___PPC_RS(a) | ___PPC_RB(s))
-+#define PPC_SRADI(d, a, i)	EMIT(PPC_INST_SRADI | ___PPC_RA(d) |	      \
-+				     ___PPC_RS(a) | __PPC_SH(i) |             \
-+				     (((i) & 0x20) >> 4))
- #define PPC_RLWINM(d, a, i, mb, me)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) | \
- 					___PPC_RS(a) | __PPC_SH(i) |	      \
- 					__PPC_MB(mb) | __PPC_ME(me))
-+#define PPC_RLWIMI(d, a, i, mb, me)	EMIT(PPC_INST_RLWIMI | ___PPC_RA(d) | \
-+					___PPC_RS(a) | __PPC_SH(i) |	      \
-+					__PPC_MB(mb) | __PPC_ME(me))
-+#define PPC_RLDICL(d, a, i, mb)		EMIT(PPC_INST_RLDICL | ___PPC_RA(d) | \
-+					___PPC_RS(a) | __PPC_SH(i) |	      \
-+					__PPC_MB64(mb) | (((i) & 0x20) >> 4))
- #define PPC_RLDICR(d, a, i, me)		EMIT(PPC_INST_RLDICR | ___PPC_RA(d) | \
- 					___PPC_RS(a) | __PPC_SH(i) |	      \
- 					__PPC_ME64(me) | (((i) & 0x20) >> 4))
-@@ -127,6 +176,8 @@
- #define PPC_SRWI(d, a, i)	PPC_RLWINM(d, a, 32-(i), i, 31)
- /* sldi = rldicr Rx, Ry, n, 63-n */
- #define PPC_SLDI(d, a, i)	PPC_RLDICR(d, a, i, 63-(i))
-+/* sldi = rldicl Rx, Ry, 64-n, n */
-+#define PPC_SRDI(d, a, i)	PPC_RLDICL(d, a, 64-(i), i)
- 
- #define PPC_NEG(d, a)		EMIT(PPC_INST_NEG | ___PPC_RT(d) | ___PPC_RA(a))
- 
-diff --git a/arch/powerpc/net/bpf_jit64.h b/arch/powerpc/net/bpf_jit64.h
-new file mode 100644
-index 0000000..5046d6f
---- /dev/null
-+++ b/arch/powerpc/net/bpf_jit64.h
-@@ -0,0 +1,102 @@
-+/*
-+ * bpf_jit64.h: BPF JIT compiler for PPC64
-+ *
-+ * Copyright 2016 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-+ *		  IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
-+#ifndef _BPF_JIT64_H
-+#define _BPF_JIT64_H
-+
-+#include "bpf_jit.h"
-+
-+/*
-+ * Stack layout:
-+ *
-+ *		[	prev sp		] <-------------
-+ *		[   nv gpr save area	] 8*8		|
-+ * fp (r31) -->	[   ebpf stack space	] 512		|
-+ *		[  local/tmp var space	] 16		|
-+ *		[     frame header	] 32/112	|
-+ * sp (r1) --->	[    stack pointer	] --------------
-+ */
-+
-+/* for bpf JIT code internal usage */
-+#define BPF_PPC_STACK_LOCALS	16
-+/* for gpr non volatile registers BPG_REG_6 to 10, plus skb cache registers */
-+#define BPF_PPC_STACK_SAVE	(8*8)
-+/* Ensure this is quadword aligned */
-+#define BPF_PPC_STACKFRAME	(STACK_FRAME_MIN_SIZE + BPF_PPC_STACK_LOCALS + \
-+				 MAX_BPF_STACK + BPF_PPC_STACK_SAVE)
-+
-+#ifndef __ASSEMBLY__
-+
-+/* BPF register usage */
-+#define SKB_HLEN_REG	(MAX_BPF_REG + 0)
-+#define SKB_DATA_REG	(MAX_BPF_REG + 1)
-+#define TMP_REG_1	(MAX_BPF_REG + 2)
-+#define TMP_REG_2	(MAX_BPF_REG + 3)
-+
-+/* BPF to ppc register mappings */
-+static const int b2p[] = {
-+	/* function return value */
-+	[BPF_REG_0] = 8,
-+	/* function arguments */
-+	[BPF_REG_1] = 3,
-+	[BPF_REG_2] = 4,
-+	[BPF_REG_3] = 5,
-+	[BPF_REG_4] = 6,
-+	[BPF_REG_5] = 7,
-+	/* non volatile registers */
-+	[BPF_REG_6] = 27,
-+	[BPF_REG_7] = 28,
-+	[BPF_REG_8] = 29,
-+	[BPF_REG_9] = 30,
-+	/* frame pointer aka BPF_REG_10 */
-+	[BPF_REG_FP] = 31,
-+	/* eBPF jit internal registers */
-+	[SKB_HLEN_REG] = 25,
-+	[SKB_DATA_REG] = 26,
-+	[TMP_REG_1] = 9,
-+	[TMP_REG_2] = 10
-+};
-+
-+/* Assembly helpers */
-+#define DECLARE_LOAD_FUNC(func)	u64 func(u64 r3, u64 r4);			\
-+				u64 func##_negative_offset(u64 r3, u64 r4);	\
-+				u64 func##_positive_offset(u64 r3, u64 r4);
-+
-+DECLARE_LOAD_FUNC(sk_load_word);
-+DECLARE_LOAD_FUNC(sk_load_half);
-+DECLARE_LOAD_FUNC(sk_load_byte);
-+
-+#define CHOOSE_LOAD_FUNC(imm, func)						\
-+			(imm < 0 ?						\
-+			(imm >= SKF_LL_OFF ? func##_negative_offset : func) :	\
-+			func##_positive_offset)
-+
-+#define SEEN_FUNC	0x1000 /* might call external helpers */
-+#define SEEN_STACK	0x2000 /* uses BPF stack */
-+#define SEEN_SKB	0x4000 /* uses sk_buff */
-+
-+struct codegen_context {
 +	/*
-+	 * This is used to track register usage as well
-+	 * as calls to external helpers.
-+	 * - register usage is tracked with corresponding
-+	 *   bits (r3-r10 and r25-r31)
-+	 * - rest of the bits can be used to track other
-+	 *   things -- for now, we use bits 16 to 23
-+	 *   encoded in SEEN_* macros above
++	 * Create an entry stack frame pointer header which corresponds to the
++	 * saved pt_regs.  This allows frame pointer based unwinders to find
++	 * pt_regs on the stack.  The frame pointer and the return address of a
++	 * fake function are stored immediately before the pt_regs.
 +	 */
-+	unsigned int seen;
-+	unsigned int idx;
-+};
++	.macro SAVE_ENTRY_FRAME_POINTER
++	movq	%rbp,			0*8(%rsp)
++	movq	$entry_frame_ret,	1*8(%rsp)
++	movq	%rsp, %rbp
++	.endm
 +
-+#endif /* !__ASSEMBLY__ */
++	.macro RESTORE_ENTRY_FRAME_POINTER
++	movq	(%rsp), %rbp
++	.endm
 +
-+#endif
-diff --git a/arch/powerpc/net/bpf_jit_asm64.S b/arch/powerpc/net/bpf_jit_asm64.S
-new file mode 100644
-index 0000000..7e4c514
---- /dev/null
-+++ b/arch/powerpc/net/bpf_jit_asm64.S
-@@ -0,0 +1,180 @@
-+/*
-+ * bpf_jit_asm64.S: Packet/header access helper functions
-+ * for PPC64 BPF compiler.
-+ *
-+ * Copyright 2016, Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-+ * 		   IBM Corporation
-+ *
-+ * Based on bpf_jit_asm.S by Matt Evans
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
++	.macro ALLOC_AND_SAVE_ENTRY_FRAME_POINTER
++	subq	$PT_REGS_OFFSET, %rsp
++	SAVE_ENTRY_FRAME_POINTER
++	.endm
 +
-+#include <asm/ppc_asm.h>
-+#include <asm/ptrace.h>
-+#include "bpf_jit64.h"
++#else /* !CONFIG_FRAME_POINTER */
 +
-+/*
-+ * All of these routines are called directly from generated code,
-+ * with the below register usage:
-+ * r27		skb pointer (ctx)
-+ * r25		skb header length
-+ * r26		skb->data pointer
-+ * r4		offset
-+ *
-+ * Result is passed back in:
-+ * r8		data read in host endian format (accumulator)
-+ *
-+ * r9 is used as a temporary register
-+ */
++#define PT_REGS_OFFSET 0
++#define SAVE_ENTRY_FRAME_POINTER
++#define RESTORE_ENTRY_FRAME_POINTER
++#define ALLOC_AND_SAVE_ENTRY_FRAME_POINTER
 +
-+#define r_skb	r27
-+#define r_hlen	r25
-+#define r_data	r26
-+#define r_off	r4
-+#define r_val	r8
-+#define r_tmp	r9
++#endif /* CONFIG_FRAME_POINTER */
 +
-+_GLOBAL_TOC(sk_load_word)
-+	cmpdi	r_off, 0
-+	blt	bpf_slow_path_word_neg
-+	b	sk_load_word_positive_offset
++#define PT_REGS_SIZE		21*8
++#define ENTRY_FRAME_SIZE	(PT_REGS_OFFSET+PT_REGS_SIZE)
 +
-+_GLOBAL_TOC(sk_load_word_positive_offset)
-+	/* Are we accessing past headlen? */
-+	subi	r_tmp, r_hlen, 4
-+	cmpd	r_tmp, r_off
-+	blt	bpf_slow_path_word
-+	/* Nope, just hitting the header.  cr0 here is eq or gt! */
-+	LWZX_BE	r_val, r_data, r_off
-+	blr	/* Return success, cr0 != LT */
++#define TI_FLAGS(rsp) ASM_THREAD_INFO(TI_flags, rsp, ENTRY_FRAME_SIZE)
++#define PT_REGS(reg) reg+PT_REGS_OFFSET(%rsp)
 +
-+_GLOBAL_TOC(sk_load_half)
-+	cmpdi	r_off, 0
-+	blt	bpf_slow_path_half_neg
-+	b	sk_load_half_positive_offset
++	.macro ALLOC_ENTRY_FRAME addskip=0
++	addq	$-(15*8+PT_REGS_OFFSET+\addskip), %rsp
+ 	.endm
+ 
+ 	.macro SAVE_C_REGS_HELPER offset=0 rax=1 rcx=1 r8910=1 r11=1
+ 	.if \r11
+-	movq %r11, 6*8+\offset(%rsp)
++	movq %r11, 6*8+PT_REGS_OFFSET+\offset(%rsp)
+ 	.endif
+ 	.if \r8910
+-	movq %r10, 7*8+\offset(%rsp)
+-	movq %r9,  8*8+\offset(%rsp)
+-	movq %r8,  9*8+\offset(%rsp)
++	movq %r10, 7*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %r9,  8*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %r8,  9*8+PT_REGS_OFFSET+\offset(%rsp)
+ 	.endif
+ 	.if \rax
+-	movq %rax, 10*8+\offset(%rsp)
++	movq %rax, 10*8+PT_REGS_OFFSET+\offset(%rsp)
+ 	.endif
+ 	.if \rcx
+-	movq %rcx, 11*8+\offset(%rsp)
++	movq %rcx, 11*8+PT_REGS_OFFSET+\offset(%rsp)
+ 	.endif
+-	movq %rdx, 12*8+\offset(%rsp)
+-	movq %rsi, 13*8+\offset(%rsp)
+-	movq %rdi, 14*8+\offset(%rsp)
++	movq %rdx, 12*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %rsi, 13*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %rdi, 14*8+PT_REGS_OFFSET+\offset(%rsp)
+ 	.endm
+ 	.macro SAVE_C_REGS offset=0
+ 	SAVE_C_REGS_HELPER \offset, 1, 1, 1, 1
+@@ -128,23 +167,39 @@ For 32-bit we have the following conventions - kernel is built with
+ 	.macro SAVE_C_REGS_EXCEPT_RAX_RCX_R11
+ 	SAVE_C_REGS_HELPER 0, 0, 0, 1, 0
+ 	.endm
++	.macro SAVE_C_REGS_EXCEPT_RAX
++	SAVE_C_REGS_HELPER rax=0
++	.endm
 +
-+_GLOBAL_TOC(sk_load_half_positive_offset)
-+	subi	r_tmp, r_hlen, 2
-+	cmpd	r_tmp, r_off
-+	blt	bpf_slow_path_half
-+	LHZX_BE	r_val, r_data, r_off
-+	blr
-+
-+_GLOBAL_TOC(sk_load_byte)
-+	cmpdi	r_off, 0
-+	blt	bpf_slow_path_byte_neg
-+	b	sk_load_byte_positive_offset
-+
-+_GLOBAL_TOC(sk_load_byte_positive_offset)
-+	cmpd	r_hlen, r_off
-+	ble	bpf_slow_path_byte
-+	lbzx	r_val, r_data, r_off
-+	blr
-+
-+/*
-+ * Call out to skb_copy_bits:
-+ * Allocate a new stack frame here to remain ABI-compliant in
-+ * stashing LR.
-+ */
-+#define bpf_slow_path_common(SIZE)					\
-+	mflr	r0;							\
-+	std	r0, PPC_LR_STKOFF(r1);					\
-+	stdu	r1, -(STACK_FRAME_MIN_SIZE + BPF_PPC_STACK_LOCALS)(r1);	\
-+	mr	r3, r_skb;						\
-+	/* r4 = r_off as passed */					\
-+	addi	r5, r1, STACK_FRAME_MIN_SIZE;				\
-+	li	r6, SIZE;						\
-+	bl	skb_copy_bits;						\
-+	nop;								\
-+	/* save r5 */							\
-+	addi	r5, r1, STACK_FRAME_MIN_SIZE;				\
-+	/* r3 = 0 on success */						\
-+	addi	r1, r1, STACK_FRAME_MIN_SIZE + BPF_PPC_STACK_LOCALS;	\
-+	ld	r0, PPC_LR_STKOFF(r1);					\
-+	mtlr	r0;							\
-+	cmpdi	r3, 0;							\
-+	blt	bpf_error;	/* cr0 = LT */
-+
-+bpf_slow_path_word:
-+	bpf_slow_path_common(4)
-+	/* Data value is on stack, and cr0 != LT */
-+	LWZX_BE	r_val, 0, r5
-+	blr
-+
-+bpf_slow_path_half:
-+	bpf_slow_path_common(2)
-+	LHZX_BE	r_val, 0, r5
-+	blr
-+
-+bpf_slow_path_byte:
-+	bpf_slow_path_common(1)
-+	lbzx	r_val, 0, r5
-+	blr
-+
-+/*
-+ * Call out to bpf_internal_load_pointer_neg_helper
-+ */
-+#define sk_negative_common(SIZE)				\
-+	mflr	r0;						\
-+	std	r0, PPC_LR_STKOFF(r1);				\
-+	stdu	r1, -STACK_FRAME_MIN_SIZE(r1);			\
-+	mr	r3, r_skb;					\
-+	/* r4 = r_off, as passed */				\
-+	li	r5, SIZE;					\
-+	bl	bpf_internal_load_pointer_neg_helper;		\
-+	nop;							\
-+	addi	r1, r1, STACK_FRAME_MIN_SIZE;			\
-+	ld	r0, PPC_LR_STKOFF(r1);				\
-+	mtlr	r0;						\
-+	/* R3 != 0 on success */				\
-+	cmpldi	r3, 0;						\
-+	beq	bpf_error_slow;	/* cr0 = EQ */
-+
-+bpf_slow_path_word_neg:
-+	lis     r_tmp, -32	/* SKF_LL_OFF */
-+	cmpd	r_off, r_tmp	/* addr < SKF_* */
-+	blt	bpf_error	/* cr0 = LT */
-+	b	sk_load_word_negative_offset
-+
-+_GLOBAL_TOC(sk_load_word_negative_offset)
-+	sk_negative_common(4)
-+	LWZX_BE	r_val, 0, r3
-+	blr
-+
-+bpf_slow_path_half_neg:
-+	lis     r_tmp, -32	/* SKF_LL_OFF */
-+	cmpd	r_off, r_tmp	/* addr < SKF_* */
-+	blt	bpf_error	/* cr0 = LT */
-+	b	sk_load_half_negative_offset
-+
-+_GLOBAL_TOC(sk_load_half_negative_offset)
-+	sk_negative_common(2)
-+	LHZX_BE	r_val, 0, r3
-+	blr
-+
-+bpf_slow_path_byte_neg:
-+	lis     r_tmp, -32	/* SKF_LL_OFF */
-+	cmpd	r_off, r_tmp	/* addr < SKF_* */
-+	blt	bpf_error	/* cr0 = LT */
-+	b	sk_load_byte_negative_offset
-+
-+_GLOBAL_TOC(sk_load_byte_negative_offset)
-+	sk_negative_common(1)
-+	lbzx	r_val, 0, r3
-+	blr
-+
-+bpf_error_slow:
-+	/* fabricate a cr0 = lt */
-+	li	r_tmp, -1
-+	cmpdi	r_tmp, 0
-+bpf_error:
-+	/*
-+	 * Entered with cr0 = lt
-+	 * Generated code will 'blt epilogue', returning 0.
-+	 */
-+	li	r_val, 0
-+	blr
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-new file mode 100644
-index 0000000..6073b78
---- /dev/null
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -0,0 +1,954 @@
-+/*
-+ * bpf_jit_comp64.c: eBPF JIT compiler
-+ *
-+ * Copyright 2016 Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-+ *		  IBM Corporation
-+ *
-+ * Based on the powerpc classic BPF JIT compiler by Matt Evans
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
-+#include <linux/moduleloader.h>
-+#include <asm/cacheflush.h>
-+#include <linux/netdevice.h>
-+#include <linux/filter.h>
-+#include <linux/if_vlan.h>
-+#include <asm/kprobes.h>
-+
-+#include "bpf_jit64.h"
-+
-+int bpf_jit_enable __read_mostly;
-+
-+static void bpf_jit_fill_ill_insns(void *area, unsigned int size)
-+{
-+	int *p = area;
-+
-+	/* Fill whole space with trap instructions */
-+	while (p < (int *)((char *)area + size))
-+		*p++ = BREAKPOINT_INSTRUCTION;
-+}
-+
-+static inline void bpf_flush_icache(void *start, void *end)
-+{
-+	smp_wmb();
-+	flush_icache_range((unsigned long)start, (unsigned long)end);
-+}
-+
-+static inline bool bpf_is_seen_register(struct codegen_context *ctx, int i)
-+{
-+	return (ctx->seen & (1 << (31 - b2p[i])));
-+}
-+
-+static inline void bpf_set_seen_register(struct codegen_context *ctx, int i)
-+{
-+	ctx->seen |= (1 << (31 - b2p[i]));
-+}
-+
-+static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
-+{
-+	/*
-+	 * We only need a stack frame if:
-+	 * - we call other functions (kernel helpers), or
-+	 * - the bpf program uses its stack area
-+	 * The latter condition is deduced from the usage of BPF_REG_FP
-+	 */
-+	return ctx->seen & SEEN_FUNC || bpf_is_seen_register(ctx, BPF_REG_FP);
-+}
-+
-+static void bpf_jit_emit_skb_loads(u32 *image, struct codegen_context *ctx)
-+{
-+	/*
-+	 * Load skb->len and skb->data_len
-+	 * r3 points to skb
-+	 */
-+	PPC_LWZ(b2p[SKB_HLEN_REG], 3, offsetof(struct sk_buff, len));
-+	PPC_LWZ(b2p[TMP_REG_1], 3, offsetof(struct sk_buff, data_len));
-+	/* header_len = len - data_len */
-+	PPC_SUB(b2p[SKB_HLEN_REG], b2p[SKB_HLEN_REG], b2p[TMP_REG_1]);
-+
-+	/* skb->data pointer */
-+	PPC_BPF_LL(b2p[SKB_DATA_REG], 3, offsetof(struct sk_buff, data));
-+}
-+
-+static void bpf_jit_emit_func_call(u32 *image, struct codegen_context *ctx, u64 func)
-+{
-+#ifdef PPC64_ELF_ABI_v1
-+	/* func points to the function descriptor */
-+	PPC_LI64(b2p[TMP_REG_2], func);
-+	/* Load actual entry point from function descriptor */
-+	PPC_BPF_LL(b2p[TMP_REG_1], b2p[TMP_REG_2], 0);
-+	/* ... and move it to LR */
-+	PPC_MTLR(b2p[TMP_REG_1]);
-+	/*
-+	 * Load TOC from function descriptor at offset 8.
-+	 * We can clobber r2 since we get called through a
-+	 * function pointer (so caller will save/restore r2)
-+	 * and since we don't use a TOC ourself.
-+	 */
-+	PPC_BPF_LL(2, b2p[TMP_REG_2], 8);
++	.macro SAVE_EXTRA_REGS offset=0 rbx=1
++	movq %r15, 0*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %r14, 1*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %r13, 2*8+PT_REGS_OFFSET+\offset(%rsp)
++	movq %r12, 3*8+PT_REGS_OFFSET+\offset(%rsp)
++#ifdef CONFIG_FRAME_POINTER
++	/* copy rbp value from entry frame header */
++	movq \offset(%rsp), %rbp
++	movq %rbp, 4*8+PT_REGS_OFFSET+\offset(%rsp)
++	leaq \offset(%rsp), %rbp
 +#else
-+	/* We can clobber r12 */
-+	PPC_FUNC_ADDR(12, func);
-+	PPC_MTLR(12);
++	movq %rbp, 4*8+PT_REGS_OFFSET+\offset(%rsp)
 +#endif
-+	PPC_BLRL();
-+}
++	.if \rbx
++	movq %rbx, 5*8+PT_REGS_OFFSET+\offset(%rsp)
++	.endif
++	.endm
+ 
+-	.macro SAVE_EXTRA_REGS offset=0
+-	movq %r15, 0*8+\offset(%rsp)
+-	movq %r14, 1*8+\offset(%rsp)
+-	movq %r13, 2*8+\offset(%rsp)
+-	movq %r12, 3*8+\offset(%rsp)
+-	movq %rbp, 4*8+\offset(%rsp)
+-	movq %rbx, 5*8+\offset(%rsp)
++	.macro SAVE_EXTRA_REGS_EXCEPT_RBX
++	SAVE_EXTRA_REGS rbx=0
+ 	.endm
+ 
+ 	.macro RESTORE_EXTRA_REGS offset=0
+-	movq 0*8+\offset(%rsp), %r15
+-	movq 1*8+\offset(%rsp), %r14
+-	movq 2*8+\offset(%rsp), %r13
+-	movq 3*8+\offset(%rsp), %r12
+-	movq 4*8+\offset(%rsp), %rbp
+-	movq 5*8+\offset(%rsp), %rbx
++	movq 0*8+PT_REGS_OFFSET+\offset(%rsp), %r15
++	movq 1*8+PT_REGS_OFFSET+\offset(%rsp), %r14
++	movq 2*8+PT_REGS_OFFSET+\offset(%rsp), %r13
++	movq 3*8+PT_REGS_OFFSET+\offset(%rsp), %r12
++	movq 4*8+PT_REGS_OFFSET+\offset(%rsp), %rbp
++	movq 5*8+PT_REGS_OFFSET+\offset(%rsp), %rbx
+ 	.endm
+ 
+ 	.macro ZERO_EXTRA_REGS
+@@ -158,24 +213,24 @@ For 32-bit we have the following conventions - kernel is built with
+ 
+ 	.macro RESTORE_C_REGS_HELPER rstor_rax=1, rstor_rcx=1, rstor_r11=1, rstor_r8910=1, rstor_rdx=1
+ 	.if \rstor_r11
+-	movq 6*8(%rsp), %r11
++	movq 6*8+PT_REGS_OFFSET(%rsp), %r11
+ 	.endif
+ 	.if \rstor_r8910
+-	movq 7*8(%rsp), %r10
+-	movq 8*8(%rsp), %r9
+-	movq 9*8(%rsp), %r8
++	movq 7*8+PT_REGS_OFFSET(%rsp), %r10
++	movq 8*8+PT_REGS_OFFSET(%rsp), %r9
++	movq 9*8+PT_REGS_OFFSET(%rsp), %r8
+ 	.endif
+ 	.if \rstor_rax
+-	movq 10*8(%rsp), %rax
++	movq 10*8+PT_REGS_OFFSET(%rsp), %rax
+ 	.endif
+ 	.if \rstor_rcx
+-	movq 11*8(%rsp), %rcx
++	movq 11*8+PT_REGS_OFFSET(%rsp), %rcx
+ 	.endif
+ 	.if \rstor_rdx
+-	movq 12*8(%rsp), %rdx
++	movq 12*8+PT_REGS_OFFSET(%rsp), %rdx
+ 	.endif
+-	movq 13*8(%rsp), %rsi
+-	movq 14*8(%rsp), %rdi
++	movq 13*8+PT_REGS_OFFSET(%rsp), %rsi
++	movq 14*8+PT_REGS_OFFSET(%rsp), %rdi
+ 	.endm
+ 	.macro RESTORE_C_REGS
+ 	RESTORE_C_REGS_HELPER 1,1,1,1,1
+@@ -193,8 +248,8 @@ For 32-bit we have the following conventions - kernel is built with
+ 	RESTORE_C_REGS_HELPER 1,0,0,1,1
+ 	.endm
+ 
+-	.macro REMOVE_PT_GPREGS_FROM_STACK addskip=0
+-	subq $-(15*8+\addskip), %rsp
++	.macro FREE_ENTRY_FRAME addskip=0
++	subq $-(15*8+PT_REGS_OFFSET+\addskip), %rsp
+ 	.endm
+ 
+ 	.macro icebp
+diff --git a/arch/x86/entry/entry_64.S b/arch/x86/entry/entry_64.S
+index 23e764c..ff92759 100644
+--- a/arch/x86/entry/entry_64.S
++++ b/arch/x86/entry/entry_64.S
+@@ -55,7 +55,7 @@ ENDPROC(native_usergs_sysret64)
+ 
+ .macro TRACE_IRQS_IRETQ
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-	bt	$9, EFLAGS(%rsp)		/* interrupts off? */
++	bt	$9, PT_REGS(EFLAGS)		/* interrupts off? */
+ 	jnc	1f
+ 	TRACE_IRQS_ON
+ 1:
+@@ -88,7 +88,7 @@ ENDPROC(native_usergs_sysret64)
+ .endm
+ 
+ .macro TRACE_IRQS_IRETQ_DEBUG
+-	bt	$9, EFLAGS(%rsp)		/* interrupts off? */
++	bt	$9, PT_REGS(EFLAGS)		/* interrupts off? */
+ 	jnc	1f
+ 	TRACE_IRQS_ON_DEBUG
+ 1:
+@@ -164,22 +164,17 @@ GLOBAL(entry_SYSCALL_64_after_swapgs)
+ 	pushq	$__USER_CS			/* pt_regs->cs */
+ 	pushq	%rcx				/* pt_regs->ip */
+ 	pushq	%rax				/* pt_regs->orig_ax */
+-	pushq	%rdi				/* pt_regs->di */
+-	pushq	%rsi				/* pt_regs->si */
+-	pushq	%rdx				/* pt_regs->dx */
+-	pushq	%rcx				/* pt_regs->cx */
+-	pushq	$-ENOSYS			/* pt_regs->ax */
+-	pushq	%r8				/* pt_regs->r8 */
+-	pushq	%r9				/* pt_regs->r9 */
+-	pushq	%r10				/* pt_regs->r10 */
+-	pushq	%r11				/* pt_regs->r11 */
+-	sub	$(6*8), %rsp			/* pt_regs->bp, bx, r12-15 not saved */
 +
-+static void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
-+{
-+	int i;
-+	bool new_stack_frame = bpf_has_stack_frame(ctx);
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
++	SAVE_C_REGS_EXCEPT_RAX
++	movq	$-ENOSYS, PT_REGS(RAX)
+ 
+ 	/*
+ 	 * If we need to do entry work or if we guess we'll need to do
+ 	 * exit work, go straight to the slow path.
+ 	 */
+-	testl	$_TIF_WORK_SYSCALL_ENTRY|_TIF_ALLWORK_MASK, ASM_THREAD_INFO(TI_flags, %rsp, SIZEOF_PTREGS)
++	testl	$_TIF_WORK_SYSCALL_ENTRY|_TIF_ALLWORK_MASK, TI_FLAGS(%rsp)
+ 	jnz	entry_SYSCALL64_slow_path
+ 
+ entry_SYSCALL_64_fastpath:
+@@ -207,7 +202,7 @@ entry_SYSCALL_64_fastpath:
+ 	call	*sys_call_table(, %rax, 8)
+ .Lentry_SYSCALL_64_after_fastpath_call:
+ 
+-	movq	%rax, RAX(%rsp)
++	movq	%rax, PT_REGS(RAX)
+ 1:
+ 
+ 	/*
+@@ -217,15 +212,16 @@ entry_SYSCALL_64_fastpath:
+ 	 */
+ 	DISABLE_INTERRUPTS(CLBR_NONE)
+ 	TRACE_IRQS_OFF
+-	testl	$_TIF_ALLWORK_MASK, ASM_THREAD_INFO(TI_flags, %rsp, SIZEOF_PTREGS)
++	testl	$_TIF_ALLWORK_MASK, TI_FLAGS(%rsp)
+ 	jnz	1f
+ 
+ 	LOCKDEP_SYS_EXIT
+ 	TRACE_IRQS_ON		/* user mode is traced as IRQs on */
+-	movq	RIP(%rsp), %rcx
+-	movq	EFLAGS(%rsp), %r11
++	movq	PT_REGS(RIP), %rcx
++	movq	PT_REGS(EFLAGS), %r11
+ 	RESTORE_C_REGS_EXCEPT_RCX_R11
+-	movq	RSP(%rsp), %rsp
++	RESTORE_ENTRY_FRAME_POINTER
++	movq	PT_REGS(RSP), %rsp
+ 	USERGS_SYSRET64
+ 
+ 1:
+@@ -237,14 +233,14 @@ entry_SYSCALL_64_fastpath:
+ 	TRACE_IRQS_ON
+ 	ENABLE_INTERRUPTS(CLBR_NONE)
+ 	SAVE_EXTRA_REGS
+-	movq	%rsp, %rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	call	syscall_return_slowpath	/* returns with IRQs disabled */
+ 	jmp	return_from_SYSCALL_64
+ 
+ entry_SYSCALL64_slow_path:
+ 	/* IRQs are off. */
+ 	SAVE_EXTRA_REGS
+-	movq	%rsp, %rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	call	do_syscall_64		/* returns with IRQs disabled */
+ 
+ return_from_SYSCALL_64:
+@@ -255,8 +251,8 @@ return_from_SYSCALL_64:
+ 	 * Try to use SYSRET instead of IRET if we're returning to
+ 	 * a completely clean 64-bit userspace context.
+ 	 */
+-	movq	RCX(%rsp), %rcx
+-	movq	RIP(%rsp), %r11
++	movq	PT_REGS(RCX), %rcx
++	movq	PT_REGS(RIP), %r11
+ 	cmpq	%rcx, %r11			/* RCX == RIP */
+ 	jne	opportunistic_sysret_failed
+ 
+@@ -283,8 +279,8 @@ return_from_SYSCALL_64:
+ 	cmpq	$__USER_CS, CS(%rsp)		/* CS must match SYSRET */
+ 	jne	opportunistic_sysret_failed
+ 
+-	movq	R11(%rsp), %r11
+-	cmpq	%r11, EFLAGS(%rsp)		/* R11 == RFLAGS */
++	movq	PT_REGS(R11), %r11
++	cmpq	%r11, PT_REGS(EFLAGS)		/* R11 == RFLAGS */
+ 	jne	opportunistic_sysret_failed
+ 
+ 	/*
+@@ -306,7 +302,7 @@ return_from_SYSCALL_64:
+ 
+ 	/* nothing to check for RSP */
+ 
+-	cmpq	$__USER_DS, SS(%rsp)		/* SS must match SYSRET */
++	cmpq	$__USER_DS, PT_REGS(SS)		/* SS must match SYSRET */
+ 	jne	opportunistic_sysret_failed
+ 
+ 	/*
+@@ -316,7 +312,7 @@ return_from_SYSCALL_64:
+ syscall_return_via_sysret:
+ 	/* rcx and r11 are already restored (see code above) */
+ 	RESTORE_C_REGS_EXCEPT_RCX_R11
+-	movq	RSP(%rsp), %rsp
++	movq	PT_REGS(RSP), %rsp
+ 	USERGS_SYSRET64
+ 
+ opportunistic_sysret_failed:
+@@ -408,6 +404,7 @@ END(__switch_to_asm)
+  * r12: kernel thread arg
+  */
+ ENTRY(ret_from_fork)
++	ALLOC_AND_SAVE_ENTRY_FRAME_POINTER
+ 	movq	%rax, %rdi
+ 	call	schedule_tail			/* rdi: 'prev' task parameter */
+ 
+@@ -415,7 +412,7 @@ ENTRY(ret_from_fork)
+ 	jnz	1f
+ 
+ 2:
+-	movq	%rsp, %rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	call	syscall_return_slowpath	/* returns with IRQs disabled */
+ 	TRACE_IRQS_ON			/* user mode is traced as IRQS on */
+ 	SWAPGS
+@@ -430,7 +427,7 @@ ENTRY(ret_from_fork)
+ 	 * calling do_execve().  Exit to userspace to complete the execve()
+ 	 * syscall.
+ 	 */
+-	movq	$0, RAX(%rsp)
++	movq	$0, PT_REGS(RAX)
+ 	jmp	2b
+ END(ret_from_fork)
+ 
+@@ -460,11 +457,12 @@ END(irq_entries_start)
+ /* 0(%rsp): ~(interrupt number) */
+ 	.macro interrupt func
+ 	cld
+-	ALLOC_PT_GPREGS_ON_STACK
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
+ 	SAVE_C_REGS
+ 	SAVE_EXTRA_REGS
+ 
+-	testb	$3, CS(%rsp)
++	testb	$3, PT_REGS(CS)
+ 	jz	1f
+ 
+ 	/*
+@@ -500,6 +498,7 @@ END(irq_entries_start)
+ 	/* We entered an interrupt context - irqs are off: */
+ 	TRACE_IRQS_OFF
+ 
++	addq	$PT_REGS_OFFSET, %rdi
+ 	call	\func	/* rdi points to pt_regs */
+ 	.endm
+ 
+@@ -521,12 +520,12 @@ ret_from_intr:
+ 	/* Restore saved previous stack */
+ 	popq	%rsp
+ 
+-	testb	$3, CS(%rsp)
++	testb	$3, PT_REGS(CS)
+ 	jz	retint_kernel
+ 
+ 	/* Interrupt came from user space */
+ GLOBAL(retint_user)
+-	mov	%rsp,%rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	call	prepare_exit_to_usermode
+ 	TRACE_IRQS_IRETQ
+ 	SWAPGS
+@@ -537,7 +536,7 @@ retint_kernel:
+ #ifdef CONFIG_PREEMPT
+ 	/* Interrupts are off */
+ 	/* Check if we need preemption */
+-	bt	$9, EFLAGS(%rsp)		/* were interrupts off? */
++	bt	$9, PT_REGS(EFLAGS)		/* were interrupts off? */
+ 	jnc	1f
+ 0:	cmpl	$0, PER_CPU_VAR(__preempt_count)
+ 	jnz	1f
+@@ -558,7 +557,7 @@ GLOBAL(restore_regs_and_iret)
+ 	RESTORE_EXTRA_REGS
+ restore_c_regs_and_iret:
+ 	RESTORE_C_REGS
+-	REMOVE_PT_GPREGS_FROM_STACK 8
++	FREE_ENTRY_FRAME 8
+ 	INTERRUPT_RETURN
+ 
+ ENTRY(native_iret)
+@@ -699,11 +698,12 @@ ENTRY(\sym)
+ 	pushq	$-1				/* ORIG_RAX: no syscall to restart */
+ 	.endif
+ 
+-	ALLOC_PT_GPREGS_ON_STACK
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
+ 
+ 	.if \paranoid
+ 	.if \paranoid == 1
+-	testb	$3, CS(%rsp)			/* If coming from userspace, switch stacks */
++	testb	$3, PT_REGS(CS)			/* If coming from userspace, switch stacks */
+ 	jnz	1f
+ 	.endif
+ 	call	paranoid_entry
+@@ -720,11 +720,11 @@ ENTRY(\sym)
+ 	.endif
+ 	.endif
+ 
+-	movq	%rsp, %rdi			/* pt_regs pointer */
++	leaq	PT_REGS_OFFSET(%rsp), %rdi	/* pt_regs pointer */
+ 
+ 	.if \has_error_code
+-	movq	ORIG_RAX(%rsp), %rsi		/* get error code */
+-	movq	$-1, ORIG_RAX(%rsp)		/* no syscall to restart */
++	movq	PT_REGS(ORIG_RAX), %rsi		/* get error code */
++	movq	$-1, PT_REGS(ORIG_RAX)		/* no syscall to restart */
+ 	.else
+ 	xorl	%esi, %esi			/* no error code */
+ 	.endif
+@@ -755,16 +755,15 @@ ENTRY(\sym)
+ 1:
+ 	call	error_entry
+ 
+-
+-	movq	%rsp, %rdi			/* pt_regs pointer */
+-	call	sync_regs
++	movq	%rsp, %rdi			/* stack frame + pt_regs */
++	call	sync_entry_frame
+ 	movq	%rax, %rsp			/* switch stack */
+ 
+-	movq	%rsp, %rdi			/* pt_regs pointer */
++	leaq	PT_REGS_OFFSET(%rsp), %rdi	/* pt_regs pointer */
+ 
+ 	.if \has_error_code
+-	movq	ORIG_RAX(%rsp), %rsi		/* get error code */
+-	movq	$-1, ORIG_RAX(%rsp)		/* no syscall to restart */
++	movq	PT_REGS(ORIG_RAX), %rsi		/* get error code */
++	movq	$-1, PT_REGS(ORIG_RAX)		/* no syscall to restart */
+ 	.else
+ 	xorl	%esi, %esi			/* no error code */
+ 	.endif
+@@ -922,7 +921,8 @@ ENTRY(xen_failsafe_callback)
+ 	movq	8(%rsp), %r11
+ 	addq	$0x30, %rsp
+ 	pushq	$-1 /* orig_ax = -1 => not a system call */
+-	ALLOC_PT_GPREGS_ON_STACK
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
+ 	SAVE_C_REGS
+ 	SAVE_EXTRA_REGS
+ 	jmp	error_exit
+@@ -1003,7 +1003,7 @@ paranoid_exit_no_swapgs:
+ paranoid_exit_restore:
+ 	RESTORE_EXTRA_REGS
+ 	RESTORE_C_REGS
+-	REMOVE_PT_GPREGS_FROM_STACK 8
++	FREE_ENTRY_FRAME 8
+ 	INTERRUPT_RETURN
+ END(paranoid_exit)
+ 
+@@ -1016,7 +1016,7 @@ ENTRY(error_entry)
+ 	SAVE_C_REGS 8
+ 	SAVE_EXTRA_REGS 8
+ 	xorl	%ebx, %ebx
+-	testb	$3, CS+8(%rsp)
++	testb	$3, CS+8+PT_REGS_OFFSET(%rsp)
+ 	jz	.Lerror_kernelspace
+ 
+ .Lerror_entry_from_usermode_swapgs:
+@@ -1049,12 +1049,12 @@ ENTRY(error_entry)
+ .Lerror_kernelspace:
+ 	incl	%ebx
+ 	leaq	native_irq_return_iret(%rip), %rcx
+-	cmpq	%rcx, RIP+8(%rsp)
++	cmpq	%rcx, RIP+8+PT_REGS_OFFSET(%rsp)
+ 	je	.Lerror_bad_iret
+ 	movl	%ecx, %eax			/* zero extend */
+-	cmpq	%rax, RIP+8(%rsp)
++	cmpq	%rax, RIP+8+PT_REGS_OFFSET(%rsp)
+ 	je	.Lbstep_iret
+-	cmpq	$.Lgs_change, RIP+8(%rsp)
++	cmpq	$.Lgs_change, RIP+8+PT_REGS_OFFSET(%rsp)
+ 	jne	.Lerror_entry_done
+ 
+ 	/*
+@@ -1066,7 +1066,7 @@ ENTRY(error_entry)
+ 
+ .Lbstep_iret:
+ 	/* Fix truncated RIP */
+-	movq	%rcx, RIP+8(%rsp)
++	movq	%rcx, RIP+8+PT_REGS_OFFSET(%rsp)
+ 	/* fall through */
+ 
+ .Lerror_bad_iret:
+@@ -1182,29 +1182,20 @@ ENTRY(nmi)
+ 	pushq	2*8(%rdx)	/* pt_regs->cs */
+ 	pushq	1*8(%rdx)	/* pt_regs->rip */
+ 	pushq   $-1		/* pt_regs->orig_ax */
+-	pushq   %rdi		/* pt_regs->di */
+-	pushq   %rsi		/* pt_regs->si */
+-	pushq   (%rdx)		/* pt_regs->dx */
+-	pushq   %rcx		/* pt_regs->cx */
+-	pushq   %rax		/* pt_regs->ax */
+-	pushq   %r8		/* pt_regs->r8 */
+-	pushq   %r9		/* pt_regs->r9 */
+-	pushq   %r10		/* pt_regs->r10 */
+-	pushq   %r11		/* pt_regs->r11 */
+-	pushq	%rbx		/* pt_regs->rbx */
+-	pushq	%rbp		/* pt_regs->rbp */
+-	pushq	%r12		/* pt_regs->r12 */
+-	pushq	%r13		/* pt_regs->r13 */
+-	pushq	%r14		/* pt_regs->r14 */
+-	pushq	%r15		/* pt_regs->r15 */
+ 
+-	/*
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
++	movq	(%rdx), %rdx
++	SAVE_C_REGS
++	SAVE_EXTRA_REGS
 +
-+	if (new_stack_frame) {
-+		/*
-+		 * We need a stack frame, but we don't necessarily need to
-+		 * save/restore LR unless we call other functions
-+		 */
-+		if (ctx->seen & SEEN_FUNC) {
-+			EMIT(PPC_INST_MFLR | __PPC_RT(R0));
-+			PPC_BPF_STL(0, 1, PPC_LR_STKOFF);
-+		}
++/*
+ 	 * At this point we no longer need to worry about stack damage
+ 	 * due to nesting -- we're on the normal thread stack and we're
+ 	 * done with the NMI stack.
+ 	 */
+ 
+-	movq	%rsp, %rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	movq	$-1, %rsi
+ 	call	do_nmi
+ 
+@@ -1214,6 +1205,7 @@ ENTRY(nmi)
+ 	 * do_nmi doesn't modify pt_regs.
+ 	 */
+ 	SWAPGS
++	RESTORE_ENTRY_FRAME_POINTER
+ 	jmp	restore_c_regs_and_iret
+ 
+ .Lnmi_from_kernel:
+@@ -1405,7 +1397,8 @@ end_repeat_nmi:
+ 	 * frame to point back to repeat_nmi.
+ 	 */
+ 	pushq	$-1				/* ORIG_RAX: no syscall to restart */
+-	ALLOC_PT_GPREGS_ON_STACK
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
+ 
+ 	/*
+ 	 * Use paranoid_entry to handle SWAPGS, but no need to use paranoid_exit
+@@ -1417,7 +1410,7 @@ end_repeat_nmi:
+ 	call	paranoid_entry
+ 
+ 	/* paranoidentry do_nmi, 0; without TRACE_IRQS_OFF */
+-	movq	%rsp, %rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	movq	$-1, %rsi
+ 	call	do_nmi
+ 
+@@ -1430,7 +1423,7 @@ nmi_restore:
+ 	RESTORE_C_REGS
+ 
+ 	/* Point RSP at the "iret" frame. */
+-	REMOVE_PT_GPREGS_FROM_STACK 6*8
++	FREE_ENTRY_FRAME 6*8
+ 
+ 	/*
+ 	 * Clear "NMI executing".  Set DF first so that we can easily
+@@ -1455,3 +1448,22 @@ ENTRY(ignore_sysret)
+ 	mov	$-ENOSYS, %eax
+ 	sysret
+ END(ignore_sysret)
 +
-+		PPC_BPF_STLU(1, 1, -BPF_PPC_STACKFRAME);
-+	}
++#ifdef CONFIG_FRAME_POINTER
++/*
++ * This is a fake function which allows stack unwinders to detect entry stack
++ * frames.  The entry_frame_ret return address is stored on the stack after the
++ * frame pointer, immediately before pt_regs.
++ *
++ * Some unwinders like gdb are smart enough to report the function which
++ * contains the instruction *before* the return address on the stack.  More
++ * primitive unwinders like the kernel's will report the function containing
++ * the return address itself.  So the address needs to be in the middle of the
++ * function in order to satisfy them both.
++ */
++ENTRY(entry_frame)
++	nop
++GLOBAL(entry_frame_ret)
++	nop
++ENDPROC(entry_frame)
++#endif /* CONFIG_FRAME_POINTER */
+diff --git a/arch/x86/entry/entry_64_compat.S b/arch/x86/entry/entry_64_compat.S
+index e1721da..31b4f63c 100644
+--- a/arch/x86/entry/entry_64_compat.S
++++ b/arch/x86/entry/entry_64_compat.S
+@@ -309,21 +309,16 @@ ENTRY(entry_INT80_compat)
+ 
+ 	/* Construct struct pt_regs on stack (iret frame is already on stack) */
+ 	pushq	%rax			/* pt_regs->orig_ax */
+-	pushq	%rdi			/* pt_regs->di */
+-	pushq	%rsi			/* pt_regs->si */
+-	pushq	%rdx			/* pt_regs->dx */
+-	pushq	%rcx			/* pt_regs->cx */
+-	pushq	$-ENOSYS		/* pt_regs->ax */
+-	pushq   $0			/* pt_regs->r8  = 0 */
+-	pushq   $0			/* pt_regs->r9  = 0 */
+-	pushq   $0			/* pt_regs->r10 = 0 */
+-	pushq   $0			/* pt_regs->r11 = 0 */
+-	pushq   %rbx                    /* pt_regs->rbx */
+-	pushq   %rbp                    /* pt_regs->rbp */
+-	pushq   %r12                    /* pt_regs->r12 */
+-	pushq   %r13                    /* pt_regs->r13 */
+-	pushq   %r14                    /* pt_regs->r14 */
+-	pushq   %r15                    /* pt_regs->r15 */
++	ALLOC_ENTRY_FRAME
++	SAVE_ENTRY_FRAME_POINTER
++	movq	$-ENOSYS, %rax
++	xorq	%r8, %r8
++	xorq	%r9, %r9
++	xorq	%r10, %r10
++	xorq	%r11, %r11
++	SAVE_C_REGS
++	SAVE_EXTRA_REGS
 +
-+	/*
-+	 * Back up non-volatile regs -- BPF registers 6-10
-+	 * If we haven't created our own stack frame, we save these
-+	 * in the protected zone below the previous stack frame
-+	 */
-+	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
-+		if (bpf_is_seen_register(ctx, i))
-+			PPC_BPF_STL(b2p[i], 1,
-+				(new_stack_frame ? BPF_PPC_STACKFRAME : 0) -
-+					(8 * (32 - b2p[i])));
+ 	cld
+ 
+ 	/*
+@@ -332,7 +327,7 @@ ENTRY(entry_INT80_compat)
+ 	 */
+ 	TRACE_IRQS_OFF
+ 
+-	movq	%rsp, %rdi
++	leaq	PT_REGS_OFFSET(%rsp), %rdi
+ 	call	do_int80_syscall_32
+ .Lsyscall_32_done:
+ 
+diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
+index c3496619..bba7ece 100644
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -70,7 +70,6 @@ dotraplinkage void do_segment_not_present(struct pt_regs *, long);
+ dotraplinkage void do_stack_segment(struct pt_regs *, long);
+ #ifdef CONFIG_X86_64
+ dotraplinkage void do_double_fault(struct pt_regs *, long);
+-asmlinkage struct pt_regs *sync_regs(struct pt_regs *);
+ #endif
+ dotraplinkage void do_general_protection(struct pt_regs *, long);
+ dotraplinkage void do_page_fault(struct pt_regs *, unsigned long);
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 5df831e..f3c7922 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -362,24 +362,15 @@ early_idt_handler_common:
+ 	incl early_recursion_flag(%rip)
+ 
+ 	/* The vector number is currently in the pt_regs->di slot. */
+-	pushq %rsi				/* pt_regs->si */
+-	movq 8(%rsp), %rsi			/* RSI = vector number */
+-	movq %rdi, 8(%rsp)			/* pt_regs->di = RDI */
+-	pushq %rdx				/* pt_regs->dx */
+-	pushq %rcx				/* pt_regs->cx */
+-	pushq %rax				/* pt_regs->ax */
+-	pushq %r8				/* pt_regs->r8 */
+-	pushq %r9				/* pt_regs->r9 */
+-	pushq %r10				/* pt_regs->r10 */
+-	pushq %r11				/* pt_regs->r11 */
+-	pushq %rbx				/* pt_regs->bx */
+-	pushq %rbp				/* pt_regs->bp */
+-	pushq %r12				/* pt_regs->r12 */
+-	pushq %r13				/* pt_regs->r13 */
+-	pushq %r14				/* pt_regs->r14 */
+-	pushq %r15				/* pt_regs->r15 */
+-
+-	cmpq $14,%rsi		/* Page fault? */
++	ALLOC_ENTRY_FRAME addskip=-8
++	SAVE_ENTRY_FRAME_POINTER
++	movq %rbx, PT_REGS(RBX)	/* save rbx */
++	movq PT_REGS(RDI), %rbx	/* rbx = vector number */
 +
-+	/*
-+	 * Save additional non-volatile regs if we cache skb
-+	 * Also, setup skb data
-+	 */
-+	if (ctx->seen & SEEN_SKB) {
-+		PPC_BPF_STL(b2p[SKB_HLEN_REG], 1,
-+			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_HLEN_REG])));
-+		PPC_BPF_STL(b2p[SKB_DATA_REG], 1,
-+			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_DATA_REG])));
-+		bpf_jit_emit_skb_loads(image, ctx);
-+	}
++	SAVE_C_REGS
++	SAVE_EXTRA_REGS_EXCEPT_RBX
 +
-+	/* Setup frame pointer to point to the bpf stack area */
-+	if (bpf_is_seen_register(ctx, BPF_REG_FP))
-+		PPC_ADDI(b2p[BPF_REG_FP], 1,
-+				BPF_PPC_STACKFRAME - BPF_PPC_STACK_SAVE);
-+}
++	cmpq $14, %rbx		/* page fault? */
+ 	jnz 10f
+ 	GET_CR2_INTO(%rdi)	/* Can clobber any volatile register if pv */
+ 	call early_make_pgtable
+@@ -387,7 +378,9 @@ early_idt_handler_common:
+ 	jz 20f			/* All good */
+ 
+ 10:
+-	movq %rsp,%rdi		/* RDI = pt_regs; RSI is already trapnr */
++	movq %rsp, %rdi
++	addq $PT_REGS_OFFSET, %rdi /* rdi = pt_regs */
++	movq %rbx, %rsi		   /* rsi = vector number */
+ 	call early_fixup_exception
+ 
+ 20:
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 00f03d8..6954e74 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -514,22 +514,34 @@ exit:
+ NOKPROBE_SYMBOL(do_int3);
+ 
+ #ifdef CONFIG_X86_64
 +
-+static void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
-+{
-+	int i;
-+	bool new_stack_frame = bpf_has_stack_frame(ctx);
-+
-+	/* Move result to r3 */
-+	PPC_MR(3, b2p[BPF_REG_0]);
-+
-+	/* Restore NVRs */
-+	for (i = BPF_REG_6; i <= BPF_REG_10; i++)
-+		if (bpf_is_seen_register(ctx, i))
-+			PPC_BPF_LL(b2p[i], 1,
-+				(new_stack_frame ? BPF_PPC_STACKFRAME : 0) -
-+					(8 * (32 - b2p[i])));
-+
-+	/* Restore non-volatile registers used for skb cache */
-+	if (ctx->seen & SEEN_SKB) {
-+		PPC_BPF_LL(b2p[SKB_HLEN_REG], 1,
-+			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_HLEN_REG])));
-+		PPC_BPF_LL(b2p[SKB_DATA_REG], 1,
-+			BPF_PPC_STACKFRAME - (8 * (32 - b2p[SKB_DATA_REG])));
-+	}
-+
-+	/* Tear down our stack frame */
-+	if (new_stack_frame) {
-+		PPC_ADDI(1, 1, BPF_PPC_STACKFRAME);
-+		if (ctx->seen & SEEN_FUNC) {
-+			PPC_BPF_LL(0, 1, PPC_LR_STKOFF);
-+			PPC_MTLR(0);
-+		}
-+	}
-+
-+	PPC_BLR();
-+}
-+
-+/* Assemble the body code between the prologue & epilogue */
-+static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
-+			      struct codegen_context *ctx,
-+			      u32 *addrs)
-+{
-+	const struct bpf_insn *insn = fp->insnsi;
-+	int flen = fp->len;
-+	int i;
-+
-+	/* Start of epilogue code - will only be valid 2nd pass onwards */
-+	u32 exit_addr = addrs[flen];
-+
-+	for (i = 0; i < flen; i++) {
-+		u32 code = insn[i].code;
-+		u32 dst_reg = b2p[insn[i].dst_reg];
-+		u32 src_reg = b2p[insn[i].src_reg];
-+		s16 off = insn[i].off;
-+		s32 imm = insn[i].imm;
-+		u64 imm64;
-+		u8 *func;
-+		u32 true_cond;
-+		int stack_local_off;
-+
-+		/*
-+		 * addrs[] maps a BPF bytecode address into a real offset from
-+		 * the start of the body code.
-+		 */
-+		addrs[i] = ctx->idx * 4;
-+
-+		/*
-+		 * As an optimization, we note down which non-volatile registers
-+		 * are used so that we can only save/restore those in our
-+		 * prologue and epilogue. We do this here regardless of whether
-+		 * the actual BPF instruction uses src/dst registers or not
-+		 * (for instance, BPF_CALL does not use them). The expectation
-+		 * is that those instructions will have src_reg/dst_reg set to
-+		 * 0. Even otherwise, we just lose some prologue/epilogue
-+		 * optimization but everything else should work without
-+		 * any issues.
-+		 */
-+		if (dst_reg >= 24 && dst_reg <= 31)
-+			bpf_set_seen_register(ctx, insn[i].dst_reg);
-+		if (src_reg >= 24 && src_reg <= 31)
-+			bpf_set_seen_register(ctx, insn[i].src_reg);
-+
-+		switch (code) {
-+		/*
-+		 * Arithmetic operations: ADD/SUB/MUL/DIV/MOD/NEG
-+		 */
-+		case BPF_ALU | BPF_ADD | BPF_X: /* (u32) dst += (u32) src */
-+		case BPF_ALU64 | BPF_ADD | BPF_X: /* dst += src */
-+			PPC_ADD(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_SUB | BPF_X: /* (u32) dst -= (u32) src */
-+		case BPF_ALU64 | BPF_SUB | BPF_X: /* dst -= src */
-+			PPC_SUB(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_ADD | BPF_K: /* (u32) dst += (u32) imm */
-+		case BPF_ALU | BPF_SUB | BPF_K: /* (u32) dst -= (u32) imm */
-+		case BPF_ALU64 | BPF_ADD | BPF_K: /* dst += imm */
-+		case BPF_ALU64 | BPF_SUB | BPF_K: /* dst -= imm */
-+			if (BPF_OP(code) == BPF_SUB)
-+				imm = -imm;
-+			if (imm) {
-+				if (imm >= -32768 && imm < 32768)
-+					PPC_ADDI(dst_reg, dst_reg, IMM_L(imm));
-+				else {
-+					PPC_LI32(b2p[TMP_REG_1], imm);
-+					PPC_ADD(dst_reg, dst_reg, b2p[TMP_REG_1]);
-+				}
-+			}
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_MUL | BPF_X: /* (u32) dst *= (u32) src */
-+		case BPF_ALU64 | BPF_MUL | BPF_X: /* dst *= src */
-+			if (BPF_CLASS(code) == BPF_ALU)
-+				PPC_MULW(dst_reg, dst_reg, src_reg);
-+			else
-+				PPC_MULD(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_MUL | BPF_K: /* (u32) dst *= (u32) imm */
-+		case BPF_ALU64 | BPF_MUL | BPF_K: /* dst *= imm */
-+			if (imm >= -32768 && imm < 32768)
-+				PPC_MULI(dst_reg, dst_reg, IMM_L(imm));
-+			else {
-+				PPC_LI32(b2p[TMP_REG_1], imm);
-+				if (BPF_CLASS(code) == BPF_ALU)
-+					PPC_MULW(dst_reg, dst_reg,
-+							b2p[TMP_REG_1]);
-+				else
-+					PPC_MULD(dst_reg, dst_reg,
-+							b2p[TMP_REG_1]);
-+			}
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_DIV | BPF_X: /* (u32) dst /= (u32) src */
-+		case BPF_ALU | BPF_MOD | BPF_X: /* (u32) dst %= (u32) src */
-+			PPC_CMPWI(src_reg, 0);
-+			PPC_BCC_SHORT(COND_NE, (ctx->idx * 4) + 12);
-+			PPC_LI(b2p[BPF_REG_0], 0);
-+			PPC_JMP(exit_addr);
-+			if (BPF_OP(code) == BPF_MOD) {
-+				PPC_DIVWU(b2p[TMP_REG_1], dst_reg, src_reg);
-+				PPC_MULW(b2p[TMP_REG_1], src_reg,
-+						b2p[TMP_REG_1]);
-+				PPC_SUB(dst_reg, dst_reg, b2p[TMP_REG_1]);
-+			} else
-+				PPC_DIVWU(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU64 | BPF_DIV | BPF_X: /* dst /= src */
-+		case BPF_ALU64 | BPF_MOD | BPF_X: /* dst %= src */
-+			PPC_CMPDI(src_reg, 0);
-+			PPC_BCC_SHORT(COND_NE, (ctx->idx * 4) + 12);
-+			PPC_LI(b2p[BPF_REG_0], 0);
-+			PPC_JMP(exit_addr);
-+			if (BPF_OP(code) == BPF_MOD) {
-+				PPC_DIVD(b2p[TMP_REG_1], dst_reg, src_reg);
-+				PPC_MULD(b2p[TMP_REG_1], src_reg,
-+						b2p[TMP_REG_1]);
-+				PPC_SUB(dst_reg, dst_reg, b2p[TMP_REG_1]);
-+			} else
-+				PPC_DIVD(dst_reg, dst_reg, src_reg);
-+			break;
-+		case BPF_ALU | BPF_MOD | BPF_K: /* (u32) dst %= (u32) imm */
-+		case BPF_ALU | BPF_DIV | BPF_K: /* (u32) dst /= (u32) imm */
-+		case BPF_ALU64 | BPF_MOD | BPF_K: /* dst %= imm */
-+		case BPF_ALU64 | BPF_DIV | BPF_K: /* dst /= imm */
-+			if (imm == 0)
-+				return -EINVAL;
-+			else if (imm == 1)
-+				goto bpf_alu32_trunc;
-+
-+			PPC_LI32(b2p[TMP_REG_1], imm);
-+			switch (BPF_CLASS(code)) {
-+			case BPF_ALU:
-+				if (BPF_OP(code) == BPF_MOD) {
-+					PPC_DIVWU(b2p[TMP_REG_2], dst_reg,
-+							b2p[TMP_REG_1]);
-+					PPC_MULW(b2p[TMP_REG_1],
-+							b2p[TMP_REG_1],
-+							b2p[TMP_REG_2]);
-+					PPC_SUB(dst_reg, dst_reg,
-+							b2p[TMP_REG_1]);
-+				} else
-+					PPC_DIVWU(dst_reg, dst_reg,
-+							b2p[TMP_REG_1]);
-+				break;
-+			case BPF_ALU64:
-+				if (BPF_OP(code) == BPF_MOD) {
-+					PPC_DIVD(b2p[TMP_REG_2], dst_reg,
-+							b2p[TMP_REG_1]);
-+					PPC_MULD(b2p[TMP_REG_1],
-+							b2p[TMP_REG_1],
-+							b2p[TMP_REG_2]);
-+					PPC_SUB(dst_reg, dst_reg,
-+							b2p[TMP_REG_1]);
-+				} else
-+					PPC_DIVD(dst_reg, dst_reg,
-+							b2p[TMP_REG_1]);
-+				break;
-+			}
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_NEG: /* (u32) dst = -dst */
-+		case BPF_ALU64 | BPF_NEG: /* dst = -dst */
-+			PPC_NEG(dst_reg, dst_reg);
-+			goto bpf_alu32_trunc;
-+
-+		/*
-+		 * Logical operations: AND/OR/XOR/[A]LSH/[A]RSH
-+		 */
-+		case BPF_ALU | BPF_AND | BPF_X: /* (u32) dst = dst & src */
-+		case BPF_ALU64 | BPF_AND | BPF_X: /* dst = dst & src */
-+			PPC_AND(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_AND | BPF_K: /* (u32) dst = dst & imm */
-+		case BPF_ALU64 | BPF_AND | BPF_K: /* dst = dst & imm */
-+			if (!IMM_H(imm))
-+				PPC_ANDI(dst_reg, dst_reg, IMM_L(imm));
-+			else {
-+				/* Sign-extended */
-+				PPC_LI32(b2p[TMP_REG_1], imm);
-+				PPC_AND(dst_reg, dst_reg, b2p[TMP_REG_1]);
-+			}
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_OR | BPF_X: /* dst = (u32) dst | (u32) src */
-+		case BPF_ALU64 | BPF_OR | BPF_X: /* dst = dst | src */
-+			PPC_OR(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_OR | BPF_K:/* dst = (u32) dst | (u32) imm */
-+		case BPF_ALU64 | BPF_OR | BPF_K:/* dst = dst | imm */
-+			if (imm < 0 && BPF_CLASS(code) == BPF_ALU64) {
-+				/* Sign-extended */
-+				PPC_LI32(b2p[TMP_REG_1], imm);
-+				PPC_OR(dst_reg, dst_reg, b2p[TMP_REG_1]);
-+			} else {
-+				if (IMM_L(imm))
-+					PPC_ORI(dst_reg, dst_reg, IMM_L(imm));
-+				if (IMM_H(imm))
-+					PPC_ORIS(dst_reg, dst_reg, IMM_H(imm));
-+			}
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_XOR | BPF_X: /* (u32) dst ^= src */
-+		case BPF_ALU64 | BPF_XOR | BPF_X: /* dst ^= src */
-+			PPC_XOR(dst_reg, dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_XOR | BPF_K: /* (u32) dst ^= (u32) imm */
-+		case BPF_ALU64 | BPF_XOR | BPF_K: /* dst ^= imm */
-+			if (imm < 0 && BPF_CLASS(code) == BPF_ALU64) {
-+				/* Sign-extended */
-+				PPC_LI32(b2p[TMP_REG_1], imm);
-+				PPC_XOR(dst_reg, dst_reg, b2p[TMP_REG_1]);
-+			} else {
-+				if (IMM_L(imm))
-+					PPC_XORI(dst_reg, dst_reg, IMM_L(imm));
-+				if (IMM_H(imm))
-+					PPC_XORIS(dst_reg, dst_reg, IMM_H(imm));
-+			}
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_LSH | BPF_X: /* (u32) dst <<= (u32) src */
-+			/* slw clears top 32 bits */
-+			PPC_SLW(dst_reg, dst_reg, src_reg);
-+			break;
-+		case BPF_ALU64 | BPF_LSH | BPF_X: /* dst <<= src; */
-+			PPC_SLD(dst_reg, dst_reg, src_reg);
-+			break;
-+		case BPF_ALU | BPF_LSH | BPF_K: /* (u32) dst <<== (u32) imm */
-+			/* with imm 0, we still need to clear top 32 bits */
-+			PPC_SLWI(dst_reg, dst_reg, imm);
-+			break;
-+		case BPF_ALU64 | BPF_LSH | BPF_K: /* dst <<== imm */
-+			if (imm != 0)
-+				PPC_SLDI(dst_reg, dst_reg, imm);
-+			break;
-+		case BPF_ALU | BPF_RSH | BPF_X: /* (u32) dst >>= (u32) src */
-+			PPC_SRW(dst_reg, dst_reg, src_reg);
-+			break;
-+		case BPF_ALU64 | BPF_RSH | BPF_X: /* dst >>= src */
-+			PPC_SRD(dst_reg, dst_reg, src_reg);
-+			break;
-+		case BPF_ALU | BPF_RSH | BPF_K: /* (u32) dst >>= (u32) imm */
-+			PPC_SRWI(dst_reg, dst_reg, imm);
-+			break;
-+		case BPF_ALU64 | BPF_RSH | BPF_K: /* dst >>= imm */
-+			if (imm != 0)
-+				PPC_SRDI(dst_reg, dst_reg, imm);
-+			break;
-+		case BPF_ALU64 | BPF_ARSH | BPF_X: /* (s64) dst >>= src */
-+			PPC_SRAD(dst_reg, dst_reg, src_reg);
-+			break;
-+		case BPF_ALU64 | BPF_ARSH | BPF_K: /* (s64) dst >>= imm */
-+			if (imm != 0)
-+				PPC_SRADI(dst_reg, dst_reg, imm);
-+			break;
-+
-+		/*
-+		 * MOV
-+		 */
-+		case BPF_ALU | BPF_MOV | BPF_X: /* (u32) dst = src */
-+		case BPF_ALU64 | BPF_MOV | BPF_X: /* dst = src */
-+			PPC_MR(dst_reg, src_reg);
-+			goto bpf_alu32_trunc;
-+		case BPF_ALU | BPF_MOV | BPF_K: /* (u32) dst = imm */
-+		case BPF_ALU64 | BPF_MOV | BPF_K: /* dst = (s64) imm */
-+			PPC_LI32(dst_reg, imm);
-+			if (imm < 0)
-+				goto bpf_alu32_trunc;
-+			break;
-+
-+bpf_alu32_trunc:
-+		/* Truncate to 32-bits */
-+		if (BPF_CLASS(code) == BPF_ALU)
-+			PPC_RLWINM(dst_reg, dst_reg, 0, 0, 31);
-+		break;
-+
-+		/*
-+		 * BPF_FROM_BE/LE
-+		 */
-+		case BPF_ALU | BPF_END | BPF_FROM_LE:
-+		case BPF_ALU | BPF_END | BPF_FROM_BE:
-+#ifdef __BIG_ENDIAN__
-+			if (BPF_SRC(code) == BPF_FROM_BE)
-+				goto emit_clear;
-+#else /* !__BIG_ENDIAN__ */
-+			if (BPF_SRC(code) == BPF_FROM_LE)
-+				goto emit_clear;
++struct entry_frame {
++#ifdef CONFIG_FRAME_POINTER
++	void *fp;
++	void *ret_addr;
 +#endif
-+			switch (imm) {
-+			case 16:
-+				/* Rotate 8 bits left & mask with 0x0000ff00 */
-+				PPC_RLWINM(b2p[TMP_REG_1], dst_reg, 8, 16, 23);
-+				/* Rotate 8 bits right & insert LSB to reg */
-+				PPC_RLWIMI(b2p[TMP_REG_1], dst_reg, 24, 24, 31);
-+				/* Move result back to dst_reg */
-+				PPC_MR(dst_reg, b2p[TMP_REG_1]);
-+				break;
-+			case 32:
-+				/*
-+				 * Rotate word left by 8 bits:
-+				 * 2 bytes are already in their final position
-+				 * -- byte 2 and 4 (of bytes 1, 2, 3 and 4)
-+				 */
-+				PPC_RLWINM(b2p[TMP_REG_1], dst_reg, 8, 0, 31);
-+				/* Rotate 24 bits and insert byte 1 */
-+				PPC_RLWIMI(b2p[TMP_REG_1], dst_reg, 24, 0, 7);
-+				/* Rotate 24 bits and insert byte 3 */
-+				PPC_RLWIMI(b2p[TMP_REG_1], dst_reg, 24, 16, 23);
-+				PPC_MR(dst_reg, b2p[TMP_REG_1]);
-+				break;
-+			case 64:
-+				/*
-+				 * Way easier and faster(?) to store the value
-+				 * into stack and then use ldbrx
-+				 *
-+				 * First, determine where in stack we can store
-+				 * this:
-+				 * - if we have allotted a stack frame, then we
-+				 *   will utilize the area set aside by
-+				 *   BPF_PPC_STACK_LOCALS
-+				 * - else, we use the area beneath the NV GPR
-+				 *   save area
-+				 *
-+				 * ctx->seen will be reliable in pass2, but
-+				 * the instructions generated will remain the
-+				 * same across all passes
-+				 */
-+				if (bpf_has_stack_frame(ctx))
-+					stack_local_off = STACK_FRAME_MIN_SIZE;
-+				else
-+					stack_local_off = -(BPF_PPC_STACK_SAVE + 8);
++	struct pt_regs regs;
++};
 +
-+				PPC_STD(dst_reg, 1, stack_local_off);
-+				PPC_ADDI(b2p[TMP_REG_1], 1, stack_local_off);
-+				PPC_LDBRX(dst_reg, 0, b2p[TMP_REG_1]);
-+				break;
-+			}
-+			break;
+ /*
+  * Help handler running on IST stack to switch off the IST stack if the
+  * interrupted code was in user mode. The actual stack switch is done in
+  * entry_64.S
+  */
+-asmlinkage __visible notrace struct pt_regs *sync_regs(struct pt_regs *eregs)
++asmlinkage __visible notrace
++struct entry_frame *sync_entry_frame(struct entry_frame *old)
+ {
+-	struct pt_regs *regs = task_pt_regs(current);
+-	*regs = *eregs;
+-	return regs;
++	struct entry_frame *new = container_of(task_pt_regs(current),
++					       struct entry_frame, regs);
 +
-+emit_clear:
-+			switch (imm) {
-+			case 16:
-+				/* zero-extend 16 bits into 64 bits */
-+				PPC_RLDICL(dst_reg, dst_reg, 0, 48);
-+				break;
-+			case 32:
-+				/* zero-extend 32 bits into 64 bits */
-+				PPC_RLDICL(dst_reg, dst_reg, 0, 32);
-+				break;
-+			case 64:
-+				/* nop */
-+				break;
-+			}
-+			break;
-+
-+		/*
-+		 * BPF_ST(X)
-+		 */
-+		case BPF_STX | BPF_MEM | BPF_B: /* *(u8 *)(dst + off) = src */
-+		case BPF_ST | BPF_MEM | BPF_B: /* *(u8 *)(dst + off) = imm */
-+			if (BPF_CLASS(code) == BPF_ST) {
-+				PPC_LI(b2p[TMP_REG_1], imm);
-+				src_reg = b2p[TMP_REG_1];
-+			}
-+			PPC_STB(src_reg, dst_reg, off);
-+			break;
-+		case BPF_STX | BPF_MEM | BPF_H: /* (u16 *)(dst + off) = src */
-+		case BPF_ST | BPF_MEM | BPF_H: /* (u16 *)(dst + off) = imm */
-+			if (BPF_CLASS(code) == BPF_ST) {
-+				PPC_LI(b2p[TMP_REG_1], imm);
-+				src_reg = b2p[TMP_REG_1];
-+			}
-+			PPC_STH(src_reg, dst_reg, off);
-+			break;
-+		case BPF_STX | BPF_MEM | BPF_W: /* *(u32 *)(dst + off) = src */
-+		case BPF_ST | BPF_MEM | BPF_W: /* *(u32 *)(dst + off) = imm */
-+			if (BPF_CLASS(code) == BPF_ST) {
-+				PPC_LI32(b2p[TMP_REG_1], imm);
-+				src_reg = b2p[TMP_REG_1];
-+			}
-+			PPC_STW(src_reg, dst_reg, off);
-+			break;
-+		case BPF_STX | BPF_MEM | BPF_DW: /* (u64 *)(dst + off) = src */
-+		case BPF_ST | BPF_MEM | BPF_DW: /* *(u64 *)(dst + off) = imm */
-+			if (BPF_CLASS(code) == BPF_ST) {
-+				PPC_LI32(b2p[TMP_REG_1], imm);
-+				src_reg = b2p[TMP_REG_1];
-+			}
-+			PPC_STD(src_reg, dst_reg, off);
-+			break;
-+
-+		/*
-+		 * BPF_STX XADD (atomic_add)
-+		 */
-+		/* *(u32 *)(dst + off) += src */
-+		case BPF_STX | BPF_XADD | BPF_W:
-+			/* Get EA into TMP_REG_1 */
-+			PPC_ADDI(b2p[TMP_REG_1], dst_reg, off);
-+			/* error if EA is not word-aligned */
-+			PPC_ANDI(b2p[TMP_REG_2], b2p[TMP_REG_1], 0x03);
-+			PPC_BCC_SHORT(COND_EQ, (ctx->idx * 4) + 12);
-+			PPC_LI(b2p[BPF_REG_0], 0);
-+			PPC_JMP(exit_addr);
-+			/* load value from memory into TMP_REG_2 */
-+			PPC_BPF_LWARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0);
-+			/* add value from src_reg into this */
-+			PPC_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg);
-+			/* store result back */
-+			PPC_BPF_STWCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]);
-+			/* we're done if this succeeded */
-+			PPC_BCC_SHORT(COND_EQ, (ctx->idx * 4) + (7*4));
-+			/* otherwise, let's try once more */
-+			PPC_BPF_LWARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0);
-+			PPC_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg);
-+			PPC_BPF_STWCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]);
-+			/* exit if the store was not successful */
-+			PPC_LI(b2p[BPF_REG_0], 0);
-+			PPC_BCC(COND_NE, exit_addr);
-+			break;
-+		/* *(u64 *)(dst + off) += src */
-+		case BPF_STX | BPF_XADD | BPF_DW:
-+			PPC_ADDI(b2p[TMP_REG_1], dst_reg, off);
-+			/* error if EA is not doubleword-aligned */
-+			PPC_ANDI(b2p[TMP_REG_2], b2p[TMP_REG_1], 0x07);
-+			PPC_BCC_SHORT(COND_EQ, (ctx->idx * 4) + (3*4));
-+			PPC_LI(b2p[BPF_REG_0], 0);
-+			PPC_JMP(exit_addr);
-+			PPC_BPF_LDARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0);
-+			PPC_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg);
-+			PPC_BPF_STDCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]);
-+			PPC_BCC_SHORT(COND_EQ, (ctx->idx * 4) + (7*4));
-+			PPC_BPF_LDARX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1], 0);
-+			PPC_ADD(b2p[TMP_REG_2], b2p[TMP_REG_2], src_reg);
-+			PPC_BPF_STDCX(b2p[TMP_REG_2], 0, b2p[TMP_REG_1]);
-+			PPC_LI(b2p[BPF_REG_0], 0);
-+			PPC_BCC(COND_NE, exit_addr);
-+			break;
-+
-+		/*
-+		 * BPF_LDX
-+		 */
-+		/* dst = *(u8 *)(ul) (src + off) */
-+		case BPF_LDX | BPF_MEM | BPF_B:
-+			PPC_LBZ(dst_reg, src_reg, off);
-+			break;
-+		/* dst = *(u16 *)(ul) (src + off) */
-+		case BPF_LDX | BPF_MEM | BPF_H:
-+			PPC_LHZ(dst_reg, src_reg, off);
-+			break;
-+		/* dst = *(u32 *)(ul) (src + off) */
-+		case BPF_LDX | BPF_MEM | BPF_W:
-+			PPC_LWZ(dst_reg, src_reg, off);
-+			break;
-+		/* dst = *(u64 *)(ul) (src + off) */
-+		case BPF_LDX | BPF_MEM | BPF_DW:
-+			PPC_LD(dst_reg, src_reg, off);
-+			break;
-+
-+		/*
-+		 * Doubleword load
-+		 * 16 byte instruction that uses two 'struct bpf_insn'
-+		 */
-+		case BPF_LD | BPF_IMM | BPF_DW: /* dst = (u64) imm */
-+			imm64 = ((u64)(u32) insn[i].imm) |
-+				    (((u64)(u32) insn[i+1].imm) << 32);
-+			/* Adjust for two bpf instructions */
-+			addrs[++i] = ctx->idx * 4;
-+			PPC_LI64(dst_reg, imm64);
-+			break;
-+
-+		/*
-+		 * Return/Exit
-+		 */
-+		case BPF_JMP | BPF_EXIT:
-+			/*
-+			 * If this isn't the very last instruction, branch to
-+			 * the epilogue. If we _are_ the last instruction,
-+			 * we'll just fall through to the epilogue.
-+			 */
-+			if (i != flen - 1)
-+				PPC_JMP(exit_addr);
-+			/* else fall through to the epilogue */
-+			break;
-+
-+		/*
-+		 * Call kernel helper
-+		 */
-+		case BPF_JMP | BPF_CALL:
-+			ctx->seen |= SEEN_FUNC;
-+			func = (u8 *) __bpf_call_base + imm;
-+
-+			/* Save skb pointer if we need to re-cache skb data */
-+			if (bpf_helper_changes_skb_data(func))
-+				PPC_BPF_STL(3, 1, STACK_FRAME_MIN_SIZE);
-+
-+			bpf_jit_emit_func_call(image, ctx, (u64)func);
-+
-+			/* move return value from r3 to BPF_REG_0 */
-+			PPC_MR(b2p[BPF_REG_0], 3);
-+
-+			/* refresh skb cache */
-+			if (bpf_helper_changes_skb_data(func)) {
-+				/* reload skb pointer to r3 */
-+				PPC_BPF_LL(3, 1, STACK_FRAME_MIN_SIZE);
-+				bpf_jit_emit_skb_loads(image, ctx);
-+			}
-+			break;
-+
-+		/*
-+		 * Jumps and branches
-+		 */
-+		case BPF_JMP | BPF_JA:
-+			PPC_JMP(addrs[i + 1 + off]);
-+			break;
-+
-+		case BPF_JMP | BPF_JGT | BPF_K:
-+		case BPF_JMP | BPF_JGT | BPF_X:
-+		case BPF_JMP | BPF_JSGT | BPF_K:
-+		case BPF_JMP | BPF_JSGT | BPF_X:
-+			true_cond = COND_GT;
-+			goto cond_branch;
-+		case BPF_JMP | BPF_JGE | BPF_K:
-+		case BPF_JMP | BPF_JGE | BPF_X:
-+		case BPF_JMP | BPF_JSGE | BPF_K:
-+		case BPF_JMP | BPF_JSGE | BPF_X:
-+			true_cond = COND_GE;
-+			goto cond_branch;
-+		case BPF_JMP | BPF_JEQ | BPF_K:
-+		case BPF_JMP | BPF_JEQ | BPF_X:
-+			true_cond = COND_EQ;
-+			goto cond_branch;
-+		case BPF_JMP | BPF_JNE | BPF_K:
-+		case BPF_JMP | BPF_JNE | BPF_X:
-+			true_cond = COND_NE;
-+			goto cond_branch;
-+		case BPF_JMP | BPF_JSET | BPF_K:
-+		case BPF_JMP | BPF_JSET | BPF_X:
-+			true_cond = COND_NE;
-+			/* Fall through */
-+
-+cond_branch:
-+			switch (code) {
-+			case BPF_JMP | BPF_JGT | BPF_X:
-+			case BPF_JMP | BPF_JGE | BPF_X:
-+			case BPF_JMP | BPF_JEQ | BPF_X:
-+			case BPF_JMP | BPF_JNE | BPF_X:
-+				/* unsigned comparison */
-+				PPC_CMPLD(dst_reg, src_reg);
-+				break;
-+			case BPF_JMP | BPF_JSGT | BPF_X:
-+			case BPF_JMP | BPF_JSGE | BPF_X:
-+				/* signed comparison */
-+				PPC_CMPD(dst_reg, src_reg);
-+				break;
-+			case BPF_JMP | BPF_JSET | BPF_X:
-+				PPC_AND_DOT(b2p[TMP_REG_1], dst_reg, src_reg);
-+				break;
-+			case BPF_JMP | BPF_JNE | BPF_K:
-+			case BPF_JMP | BPF_JEQ | BPF_K:
-+			case BPF_JMP | BPF_JGT | BPF_K:
-+			case BPF_JMP | BPF_JGE | BPF_K:
-+				/*
-+				 * Need sign-extended load, so only positive
-+				 * values can be used as imm in cmpldi
-+				 */
-+				if (imm >= 0 && imm < 32768)
-+					PPC_CMPLDI(dst_reg, imm);
-+				else {
-+					/* sign-extending load */
-+					PPC_LI32(b2p[TMP_REG_1], imm);
-+					/* ... but unsigned comparison */
-+					PPC_CMPLD(dst_reg, b2p[TMP_REG_1]);
-+				}
-+				break;
-+			case BPF_JMP | BPF_JSGT | BPF_K:
-+			case BPF_JMP | BPF_JSGE | BPF_K:
-+				/*
-+				 * signed comparison, so any 16-bit value
-+				 * can be used in cmpdi
-+				 */
-+				if (imm >= -32768 && imm < 32768)
-+					PPC_CMPDI(dst_reg, imm);
-+				else {
-+					PPC_LI32(b2p[TMP_REG_1], imm);
-+					PPC_CMPD(dst_reg, b2p[TMP_REG_1]);
-+				}
-+				break;
-+			case BPF_JMP | BPF_JSET | BPF_K:
-+				/* andi does not sign-extend the immediate */
-+				if (imm >= 0 && imm < 32768)
-+					/* PPC_ANDI is _only/always_ dot-form */
-+					PPC_ANDI(b2p[TMP_REG_1], dst_reg, imm);
-+				else {
-+					PPC_LI32(b2p[TMP_REG_1], imm);
-+					PPC_AND_DOT(b2p[TMP_REG_1], dst_reg,
-+						    b2p[TMP_REG_1]);
-+				}
-+				break;
-+			}
-+			PPC_BCC(true_cond, addrs[i + 1 + off]);
-+			break;
-+
-+		/*
-+		 * Loads from packet header/data
-+		 * Assume 32-bit input value in imm and X (src_reg)
-+		 */
-+
-+		/* Absolute loads */
-+		case BPF_LD | BPF_W | BPF_ABS:
-+			func = (u8 *)CHOOSE_LOAD_FUNC(imm, sk_load_word);
-+			goto common_load_abs;
-+		case BPF_LD | BPF_H | BPF_ABS:
-+			func = (u8 *)CHOOSE_LOAD_FUNC(imm, sk_load_half);
-+			goto common_load_abs;
-+		case BPF_LD | BPF_B | BPF_ABS:
-+			func = (u8 *)CHOOSE_LOAD_FUNC(imm, sk_load_byte);
-+common_load_abs:
-+			/*
-+			 * Load from [imm]
-+			 * Load into r4, which can just be passed onto
-+			 *  skb load helpers as the second parameter
-+			 */
-+			PPC_LI32(4, imm);
-+			goto common_load;
-+
-+		/* Indirect loads */
-+		case BPF_LD | BPF_W | BPF_IND:
-+			func = (u8 *)sk_load_word;
-+			goto common_load_ind;
-+		case BPF_LD | BPF_H | BPF_IND:
-+			func = (u8 *)sk_load_half;
-+			goto common_load_ind;
-+		case BPF_LD | BPF_B | BPF_IND:
-+			func = (u8 *)sk_load_byte;
-+common_load_ind:
-+			/*
-+			 * Load from [src_reg + imm]
-+			 * Treat src_reg as a 32-bit value
-+			 */
-+			PPC_EXTSW(4, src_reg);
-+			if (imm) {
-+				if (imm >= -32768 && imm < 32768)
-+					PPC_ADDI(4, 4, IMM_L(imm));
-+				else {
-+					PPC_LI32(b2p[TMP_REG_1], imm);
-+					PPC_ADD(4, 4, b2p[TMP_REG_1]);
-+				}
-+			}
-+
-+common_load:
-+			ctx->seen |= SEEN_SKB;
-+			ctx->seen |= SEEN_FUNC;
-+			bpf_jit_emit_func_call(image, ctx, (u64)func);
-+
-+			/*
-+			 * Helper returns 'lt' condition on error, and an
-+			 * appropriate return value in BPF_REG_0
-+			 */
-+			PPC_BCC(COND_LT, exit_addr);
-+			break;
-+
-+		/*
-+		 * TODO: Tail call
-+		 */
-+		case BPF_JMP | BPF_CALL | BPF_X:
-+
-+		default:
-+			/*
-+			 * The filter contains something cruel & unusual.
-+			 * We don't handle it, but also there shouldn't be
-+			 * anything missing from our list.
-+			 */
-+			pr_err_ratelimited("eBPF filter opcode %04x (@%d) unsupported\n",
-+					code, i);
-+			return -ENOTSUPP;
-+		}
-+	}
-+
-+	/* Set end-of-body-code address for exit. */
-+	addrs[i] = ctx->idx * 4;
-+
-+	return 0;
-+}
-+
-+void bpf_jit_compile(struct bpf_prog *fp) { }
-+
-+struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
-+{
-+	u32 proglen;
-+	u32 alloclen;
-+	u8 *image = NULL;
-+	u32 *code_base;
-+	u32 *addrs;
-+	struct codegen_context cgctx;
-+	int pass;
-+	int flen;
-+	struct bpf_binary_header *bpf_hdr;
-+
-+	if (!bpf_jit_enable)
-+		return fp;
-+
-+	flen = fp->len;
-+	addrs = kzalloc((flen+1) * sizeof(*addrs), GFP_KERNEL);
-+	if (addrs == NULL)
-+		return fp;
-+
-+	cgctx.idx = 0;
-+	cgctx.seen = 0;
-+	/* Scouting faux-generate pass 0 */
-+	if (bpf_jit_build_body(fp, 0, &cgctx, addrs))
-+		/* We hit something illegal or unsupported. */
-+		goto out;
-+
-+	/*
-+	 * Pretend to build prologue, given the features we've seen.  This will
-+	 * update ctgtx.idx as it pretends to output instructions, then we can
-+	 * calculate total size from idx.
-+	 */
-+	bpf_jit_build_prologue(0, &cgctx);
-+	bpf_jit_build_epilogue(0, &cgctx);
-+
-+	proglen = cgctx.idx * 4;
-+	alloclen = proglen + FUNCTION_DESCR_SIZE;
-+
-+	bpf_hdr = bpf_jit_binary_alloc(alloclen, &image, 4,
-+			bpf_jit_fill_ill_insns);
-+	if (!bpf_hdr)
-+		goto out;
-+
-+	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
-+
-+	/* Code generation passes 1-2 */
-+	for (pass = 1; pass < 3; pass++) {
-+		/* Now build the prologue, body code & epilogue for real. */
-+		cgctx.idx = 0;
-+		bpf_jit_build_prologue(code_base, &cgctx);
-+		bpf_jit_build_body(fp, code_base, &cgctx, addrs);
-+		bpf_jit_build_epilogue(code_base, &cgctx);
-+
-+		if (bpf_jit_enable > 1)
-+			pr_info("Pass %d: shrink = %d, seen = 0x%x\n", pass,
-+				proglen - (cgctx.idx * 4), cgctx.seen);
-+	}
-+
-+	if (bpf_jit_enable > 1)
-+		/*
-+		 * Note that we output the base address of the code_base
-+		 * rather than image, since opcodes are in code_base.
-+		 */
-+		bpf_jit_dump(flen, proglen, pass, code_base);
-+
-+	if (image) {
-+		bpf_flush_icache(bpf_hdr, image + alloclen);
-+#ifdef PPC64_ELF_ABI_v1
-+		/* Function descriptor nastiness: Address + TOC */
-+		((u64 *)image)[0] = (u64)code_base;
-+		((u64 *)image)[1] = local_paca->kernel_toc;
-+#endif
-+		fp->bpf_func = (void *)image;
-+		fp->jited = 1;
-+	}
-+
-+out:
-+	kfree(addrs);
-+	return fp;
-+}
-+
-+void bpf_jit_free(struct bpf_prog *fp)
-+{
-+	unsigned long addr = (unsigned long)fp->bpf_func & PAGE_MASK;
-+	struct bpf_binary_header *bpf_hdr = (void *)addr;
-+
-+	if (fp->jited)
-+		bpf_jit_binary_free(bpf_hdr);
-+
-+	bpf_prog_unlock_free(fp);
-+}
--- 
-2.8.2
++	*new = *old;
++	return new;
+ }
+-NOKPROBE_SYMBOL(sync_regs);
++NOKPROBE_SYMBOL(sync_entry_frame);
+ 
+ struct bad_iret_stack {
+ 	void *error_entry_ret;
+-	struct pt_regs regs;
++	struct entry_frame frame;
+ };
+ 
+ asmlinkage __visible notrace
+@@ -544,15 +556,15 @@ struct bad_iret_stack *fixup_bad_iret(struct bad_iret_stack *s)
+ 	 */
+ 	struct bad_iret_stack *new_stack =
+ 		container_of(task_pt_regs(current),
+-			     struct bad_iret_stack, regs);
++			     struct bad_iret_stack, frame.regs);
+ 
+ 	/* Copy the IRET target to the new stack. */
+-	memmove(&new_stack->regs.ip, (void *)s->regs.sp, 5*8);
++	memmove(&new_stack->frame.regs.ip, (void *)s->frame.regs.sp, 5*8);
+ 
+ 	/* Copy the remainder of the stack from the current stack. */
+-	memmove(new_stack, s, offsetof(struct bad_iret_stack, regs.ip));
++	memmove(new_stack, s, offsetof(struct bad_iret_stack, frame.regs.ip));
+ 
+-	BUG_ON(!user_mode(&new_stack->regs));
++	BUG_ON(!user_mode(&new_stack->frame.regs));
+ 	return new_stack;
+ }
+ NOKPROBE_SYMBOL(fixup_bad_iret);
