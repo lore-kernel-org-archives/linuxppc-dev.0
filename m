@@ -1,23 +1,48 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ6HD5NmjzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:20:56 +1000 (AEST)
-Date: Wed, 22 Jun 2016 09:20:46 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Eric Richter <erichte@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/6] kexec_file: Add buffer hand-over for the next kernel
-Message-ID: <20160622012046.GD2938@dhcp-128-65.nay.redhat.com>
-References: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ7280GlqzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:38 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5M1rs47037003
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:54:36 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23q9navyq1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:54:36 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Wed, 22 Jun 2016 11:54:33 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6CEE23578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:30 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5M1sU9B23331010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:30 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5M1sTs5031151
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:54:30 +1000
+Subject: Re: [PATCH v6 07/11] powerpc/powernv: set power_save func after the
+ idle states are initialized
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, linux-kernel@vger.kernel.org,
+ maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 22 Jun 2016 11:54:28 +1000
+In-Reply-To: <1465404871-5406-8-git-send-email-shreyas@linux.vnet.ibm.com>
+References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1465404871-5406-8-git-send-email-shreyas@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1466560468.4089.7.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,86 +52,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/20/16 at 10:44pm, Thiago Jung Bauermann wrote:
-> Hello,
+On Wed, 2016-06-08 at 11:54 -0500, Shreyas B. Prabhu wrote:
+> pnv_init_idle_states discovers supported idle states from the
+> device tree and does the required initialization. Set power_save
+> function pointer only after this initialization is done
 > 
-> This patch series implements a mechanism which allows the kernel to pass on
-> a buffer to the kernel that will be kexec'd. This buffer is passed as a
-> segment which is added to the kimage when it is being prepared by
-> kexec_file_load.
-> 
-> How the second kernel is informed of this buffer is architecture-specific.
-> On PowerPC, this is done via the device tree, by checking the properties
-> /chosen/linux,kexec-handover-buffer-start and
-> /chosen/linux,kexec-handover-buffer-end, which is analogous to how the
-> kernel finds the initrd.
-> 
-> This feature was implemented because the Integrity Measurement Architecture
-> subsystem needs to preserve its measurement list accross the kexec reboot.
-> This is so that IMA can implement trusted boot support on the OpenPower
-> platform, because on such systems an intermediary Linux instance running as
-> part of the firmware is used to boot the target operating system via kexec.
-> Using this mechanism, IMA on this intermediary instance can hand over to the
-> target OS the measurements of the components that were used to boot it.
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 
-We have CONFIG_KEXEC_VERIFY_SIG, why not verifying the kernel to be
-loaded instead?  I feel IMA should rebuild its measurement instead of
-passing it to another kernel. Kexec reboot is also a reboot. If we have
-to preserve something get from firmware we can do it, but other than
-that I think it sounds not a good idea.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> 
-> Because there could be additional measurement events between the
-> kexec_file_load call and the actual reboot, IMA needs a way to update the
-> buffer with those additional events before rebooting. One can minimize
-> the interval between the kexec_file_load and the reboot syscalls, but as
-> small as it can be, there is always the possibility that the measurement
-> list will be out of date at the time of reboot.
-> 
-> To address this issue, this patch series also introduces kexec_update_segment,
-> which allows a reboot notifier to change the contents of the image segment
-> during the reboot process.
-> 
-> There's one patch which makes kimage_load_normal_segment and
-> kexec_update_segment share code. It's not much code that they can share
-> though, so I'm not sure if it's worth including this patch.
-> 
-> The last patch is not intended to be merged, it just demonstrates how this
-> feature can be used.
-> 
-> This series applies on top of v2 of the "kexec_file_load implementation
-> for PowerPC" patch series at:
+Please merge that one as-is now, no need to wait for the rest, as
+otherwise pwoer9 crashes at boot. It doesn't need to wait for the
+rest of the series.
 
-The kexec_file_load patches should be addressed first, no?
+Cheers,
+Ben.
 
+> ---
+> - No changes since v1
 > 
-> http://lists.infradead.org/pipermail/kexec/2016-June/016078.html
+>  arch/powerpc/platforms/powernv/idle.c  | 3 +++
+>  arch/powerpc/platforms/powernv/setup.c | 2 +-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
 > 
-> Thiago Jung Bauermann (6):
->   kexec_file: Add buffer hand-over support for the next kernel
->   powerpc: kexec_file: Add buffer hand-over support for the next kernel
->   kexec_file: Allow skipping checksum calculation for some segments.
->   kexec_file: Add mechanism to update kexec segments.
->   kexec: Share logic to copy segment page contents.
->   IMA: Demonstration code for kexec buffer passing.
-> 
->  arch/powerpc/include/asm/kexec.h       |   9 ++
->  arch/powerpc/kernel/kexec_elf_64.c     |  50 +++++++-
->  arch/powerpc/kernel/machine_kexec_64.c |  64 ++++++++++
->  arch/x86/kernel/crash.c                |   4 +-
->  arch/x86/kernel/kexec-bzimage64.c      |   6 +-
->  include/linux/ima.h                    |  11 ++
->  include/linux/kexec.h                  |  47 +++++++-
->  kernel/kexec_core.c                    | 205 ++++++++++++++++++++++++++-------
->  kernel/kexec_file.c                    | 102 ++++++++++++++--
->  security/integrity/ima/ima.h           |   5 +
->  security/integrity/ima/ima_init.c      |  26 +++++
->  security/integrity/ima/ima_template.c  |  79 +++++++++++++
->  12 files changed, 547 insertions(+), 61 deletions(-)
-> 
-> -- 
-> 1.9.1
-> 
-
-Thanks
-Dave
+> diff --git a/arch/powerpc/platforms/powernv/idle.c
+> b/arch/powerpc/platforms/powernv/idle.c
+> index fcc8b68..fbb09fb 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -285,6 +285,9 @@ static int __init pnv_init_idle_states(void)
+>  	}
+>  
+>  	pnv_alloc_idle_core_states();
+> +
+> +	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+> +		ppc_md.power_save = power7_idle;
+>  out_free:
+>  	kfree(flags);
+>  out:
+> diff --git a/arch/powerpc/platforms/powernv/setup.c
+> b/arch/powerpc/platforms/powernv/setup.c
+> index ee6430b..8492bbb 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -315,7 +315,7 @@ define_machine(powernv) {
+>  	.get_proc_freq          = pnv_get_proc_freq,
+>  	.progress		= pnv_progress,
+>  	.machine_shutdown	= pnv_shutdown,
+> -	.power_save             = power7_idle,
+> +	.power_save             = NULL,
+>  	.calibrate_decr		= generic_calibrate_decr,
+>  #ifdef CONFIG_KEXEC
+>  	.kexec_cpu_down		= pnv_kexec_cpu_down,
