@@ -1,48 +1,27 @@
-Return-Path: <intermediadc@hotmail.com>
-Received: from COL004-OMC1S9.hotmail.com (col004-omc1s9.hotmail.com
- [65.55.34.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZbBx6KWrzDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 06:03:53 +1000 (AEST)
-From: luigi burdo <intermediadc@hotmail.com>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, "Aneesh
- Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Darren Stevens
- <darren@stevens-zone.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <michaele@au1.ibm.com>,
- Julian Margetson <runaway@candw.ms>, Adrian Cox <adrian@humboldt.co.uk>,
- R.T.Dickinson <rtd@a-eon.com>, R.T.Dickinson <rtd2@xtra.co.nz>, Pat Wall
- <pjwall@mac.com>, Pat Wall <pjwall@me.com>, "contact@a-eon.com"
- <contact@a-eon.com>, Matthew Leaman <matthew@a-eon.biz>, luigi burdo
- <intermediadc@hotmail.com>, Christian Zigotzky <info@xenosoft.de>
-Subject: RE: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
-Date: Wed, 22 Jun 2016 19:58:35 +0000
-Message-ID: <HE1PR01MB154874F9367CE088CC7202EEC82C0@HE1PR01MB1548.eurprd01.prod.exchangelabs.com>
-References: <8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de>
- <1463990507.3078.16.camel@kernel.crashing.org>
- <cff72fd8-3297-b61b-4ddc-8c491b565f80@xenosoft.de>
- <1464088614.3078.79.camel@kernel.crashing.org>
- <1298e1f6-beb7-5487-72a1-366ebd140c17@xenosoft.de>
- <87d1obqxg9.fsf@skywalker.in.ibm.com>
- <9690f9a4-70c7-8acc-42d0-779bcc93db52@xenosoft.de>
- <66397458-c40a-4e83-c5e5-0ba69fb48986@xenosoft.de>
- <874m99uibc.fsf@skywalker.in.ibm.com>
- <ab51f49d-fc8f-24ce-6763-c641b949971e@xenosoft.de>
- <1465174304.12265.0.camel@ellerman.id.au>
- <50194690-18ac-edfd-42cb-8f1cc96055c9@xenosoft.de>
- <484bd17c3f3.74dd55e@auth.smtp.1and1.co.uk>
- <87r3c71zs9.fsf@skywalker.in.ibm.com>
- <d3753fa2-d88b-2e31-7d0d-d8952c29a12b@xenosoft.de>
- <bab57839-0160-ae01-3cfb-6950067652c0@xenosoft.de>
- <1465470910.31662.10.camel@ellerman.id.au>
- <40816527-1be8-329c-2be0-86c39062c2e9@xenosoft.de>
- <25BBCC66-53B2-4009-B2BA-CD1070EA71E9@xenosoft.de>
- <1465805967.3022.14.camel@kernel.crashing.org>
- <575EF6BE.6020208@xenosoft.de>,<576AE1D7.7090301@xenosoft.de>
-In-Reply-To: <576AE1D7.7090301@xenosoft.de>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZfsf2QzszDqRd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 08:49:10 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id r201so5733643wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:49:10 -0700 (PDT)
 MIME-Version: 1.0
+Sender: rjwysocki@gmail.com
+In-Reply-To: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 23 Jun 2016 00:49:06 +0200
+Message-ID: <CAJZ5v0hEUHbA9mM4h21BBvh=tzeO5nc1nSi49qq4aN0+oRkQYA@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,45 +31,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian, i think Darren patch override some memory region that on kernel.=
-org was different and this make the kernel patched run and work
-
-Luigi
-________________________________________
-Da: Christian Zigotzky [chzigotzky@xenosoft.de]
-Inviato: mercoled=EC 22 giugno 2016 21.07
-A: Benjamin Herrenschmidt; Michael Ellerman; Aneesh Kumar K.V; Darren Steve=
-ns; linuxppc-dev@lists.ozlabs.org; Michael Ellerman; Julian Margetson; Adri=
-an Cox; R.T.Dickinson; R.T.Dickinson; Pat Wall; Pat Wall; contact@a-eon.com=
-; Matthew Leaman; luigi burdo; Christian Zigotzky
-Oggetto: Kernel 4.7: PAGE_GUARDED and _PAGE_NO_CACHE
-
-Hi All,
-
-Please find attached Darren's patch. With this patch, the Nemo board
-boots. That means, the problematic source code is somewhere in this patch.
-Which file in this patch is responsible for starting the kernel?
-
-Thanks,
-
-Christian
-
-On 13 June 2016 at 8:09 PM, Christian Zigotzky wrote:
-> Hi Ben,
+On Wed, Jun 22, 2016 at 9:36 PM, Shreyas B. Prabhu
+<shreyas@linux.vnet.ibm.com> wrote:
+> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+> has a timeout so that if a cpu stays in snooze for more than target
+> residency of the next available idle state, then it would exit thereby
+> giving chance to the cpuidle governor to re-evaluate and
+> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+> due to this timeout, its last_residency will be target_residency of next
+> deeper state.
 >
-> I could send you a patch but it doesn't work with the three PowerPC
-> commits. I think we have to fix the boot issue at first. After that we
-> can integrate the first patch for the Nemo board.
+> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+> changed the math around last_residency calculation. Specifically, while
+> converting last_residency value from nanoseconds to microseconds it does
+> right shift by 10. Due to this, in snooze timeout exit scenarios
+> last_residency calculated is roughly 2.3% less than target_residency of
+> next available state. This pattern is picked up get_typical_interval()
+> in the menu governor and therefore expected_interval in menu_select() is
+> frequently less than the target_residency of any state but snooze.
 >
-> Cheers,
+> Due to this we are entering snooze at a higher rate, thereby affecting
+> the single thread performance.
+> Since the math around last_residency is not meant to be precise, fix this
+> issue setting snooze timeout to 105% of target_residency of next
+> available idle state.
 >
-> Christian
+> This also adds comment around why snooze timeout is necessary.
+
+Daniel, any comments?
+
+> Reported-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
+>  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
+>  2 files changed, 27 insertions(+)
 >
-> On 13 June 2016 at 10:19 AM, Benjamin Herrenschmidt wrote:
->> The right way to not have this problem anymore is to cleanup and
->> submit your patches upstream so they don't break all the time :-)
->>
->> Cheers,
->> Ben.
->>
->>
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index e12dc30..5835491 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
+>                 cpuidle_state_table = powernv_states;
+>                 /* Device tree can indicate more idle states */
+>                 max_idle_state = powernv_add_idle_states();
+> +
+> +               /*
+> +                * Staying in snooze for a long period can degrade the
+> +                * perfomance of the sibling cpus. Set timeout for snooze such
+> +                * that if the cpu stays in snooze longer than target residency
+> +                * of the next available idle state then exit from snooze. This
+> +                * gives a chance to the cpuidle governor to re-evaluate and
+> +                * promote it to deeper idle states.
+> +                */
+>                 if (max_idle_state > 1) {
+>                         snooze_timeout_en = true;
+>                         snooze_timeout = powernv_states[1].target_residency *
+>                                          tb_ticks_per_usec;
+> +                       /*
+> +                        * Give a 5% margin since target residency related math
+> +                        * is not precise in cpuidle core.
+> +                        */
+> +                       snooze_timeout += snooze_timeout / 20;
+>                 }
+>         } else
+>                 return -ENODEV;
+> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+> index 07135e0..22de841 100644
+> --- a/drivers/cpuidle/cpuidle-pseries.c
+> +++ b/drivers/cpuidle/cpuidle-pseries.c
+> @@ -250,10 +250,23 @@ static int pseries_idle_probe(void)
+>         } else
+>                 return -ENODEV;
+>
+> +       /*
+> +        * Staying in snooze for a long period can degrade the
+> +        * perfomance of the sibling cpus. Set timeout for snooze such
+> +        * that if the cpu stays in snooze longer than target residency
+> +        * of the next available idle state then exit from snooze. This
+> +        * gives a chance to the cpuidle governor to re-evaluate and
+> +        * promote it to deeper idle states.
+> +        */
+>         if (max_idle_state > 1) {
+>                 snooze_timeout_en = true;
+>                 snooze_timeout = cpuidle_state_table[1].target_residency *
+>                                  tb_ticks_per_usec;
+> +               /*
+> +                * Give a 5% margin since target residency related math
+> +                * is not precise in cpuidle core.
+> +                */
+> +               snooze_timeout += snooze_timeout / 20;
+>         }
+>         return 0;
+>  }
+> --
+> 2.1.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
