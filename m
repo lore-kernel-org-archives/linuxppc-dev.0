@@ -1,27 +1,46 @@
-Return-Path: <cascardo@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZVwK3ptqzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 02:50:57 +1000 (AEST)
-Date: Wed, 22 Jun 2016 13:50:48 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- stable@vger.kernel.org, Matt Evans <matt@ozlabs.org>,
- Denis Kirjanov <kda@linux-powerpc.org>,
- Paul Mackerras <paulus@samba.org>, Alexei Starovoitov <ast@fb.com>,
- Daniel Borkmann <daniel@iogearbox.net>,
- "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCHv2 1/7] ppc bpf/jit: Disable classic BPF JIT on ppc64le
-Message-ID: <20160622165048.GB8660@indiana.gru.redhat.com>
-References: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
- <24a2db8c1ed97008426e8093bc83165a6a237d1c.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZWB82YfzzDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 03:02:55 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5MGsC4c064674
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 13:02:53 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23q1qp4ff4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 13:02:53 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Wed, 22 Jun 2016 14:02:51 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 96B0F1DC0081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 13:02:41 -0400 (EDT)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5MH2mq830540092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 14:02:48 -0300
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5MH2mFe016336
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 14:02:48 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/9] kexec_file_load implementation for PowerPC
+Date: Wed, 22 Jun 2016 14:02:45 -0300
+In-Reply-To: <20160622232946.793d6c04@350D>
+References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20160622232946.793d6c04@350D>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <24a2db8c1ed97008426e8093bc83165a6a237d1c.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <2895031.4C8tZ3BP2G@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +50,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 22, 2016 at 09:55:01PM +0530, Naveen N. Rao wrote:
-> Classic BPF JIT was never ported completely to work on little endian
-> powerpc. However, it can be enabled and will crash the system when used.
-> As such, disable use of BPF JIT on ppc64le.
+Hello Balbir,
 
-Thanks, Naveen.
+Am Mittwoch, 22 Juni 2016, 23:29:46 schrieb Balbir Singh:
+> On Tue, 21 Jun 2016 16:48:32 -0300
+> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
+> > This patch series implements the kexec_file_load system call on
+> > PowerPC.
+> > 
+> > This system call moves the reading of the kernel, initrd and the
+> > device tree from the userspace kexec tool to the kernel. This is
+> > needed if you want to do one or both of the following:
+> > 
+> > 1. only allow loading of signed kernels.
+> > 2. "measure" (i.e., record the hashes of) the kernel, initrd, kernel
+> > 
+> >    command line and other boot inputs for the Integrity Measurement
+> >    Architecture subsystem.
+> > 
+> > The above are the functions kexec already has built into
+> > kexec_file_load. Yesterday I posted a set of patches which allows a
+> > third feature:
+> > 
+> > 3. have IMA pass-on its event log (where integrity measurements are
+> > 
+> >    registered) accross kexec to the second kernel, so that the event
+> >    history is preserved.
+> 
+> OK.. and this is safe? Do both the kernels need to be signed by the
+> same certificate?
 
-Acked-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
+They don't. The integrity of the event log (assuming that is what you mean 
+by "this" in "this is safe") is guaranteed by the TPM device. Each event in 
+the measurement list extends a PCR and records its PCR value. It is 
+cryptographically guaranteed that if you replay the PCR extends recorded in 
+the event log and in the end of the process they match the current PCR 
+values in the TPM device, then that event log is correct.
 
-> 
-> Cc: stable@vger.kernel.org
-> Cc: Matt Evans <matt@ozlabs.org>
-> Cc: Denis Kirjanov <kda@linux-powerpc.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Alexei Starovoitov <ast@fb.com>
-> Cc: Daniel Borkmann <daniel@iogearbox.net>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-> Reported-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 01f7464..0a9d439 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -128,7 +128,7 @@ config PPC
->  	select IRQ_FORCED_THREADING
->  	select HAVE_RCU_TABLE_FREE if SMP
->  	select HAVE_SYSCALL_TRACEPOINTS
-> -	select HAVE_CBPF_JIT
-> +	select HAVE_CBPF_JIT if CPU_BIG_ENDIAN
->  	select HAVE_ARCH_JUMP_LABEL
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->  	select ARCH_HAS_GCOV_PROFILE_ALL
-> -- 
-> 2.8.2
-> 
+The kernel signature serves to ensure that you only run kernels from an 
+authorized provider. It doesn't play a role in integrity assurance, which 
+aims to verify that the machine is really running the code it says it is 
+running. As I understand it, at least. It's a bit subtle and I could be 
+missing something...
+
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
