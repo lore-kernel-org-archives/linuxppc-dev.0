@@ -1,31 +1,34 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
+ [IPv6:2607:f8b0:400c:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ9yZ2kq2zDqFb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 14:06:46 +1000 (AEST)
-Message-ID: <1466568405.19785.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] ppc: Fix BPF JIT for ABIv2
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexei Starovoitov <ast@fb.com>, Thadeu Lima de Souza Cascardo
- <cascardo@redhat.com>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, Matt Evans <matt@ozlabs.org>, Daniel Borkmann
- <daniel@iogearbox.net>, Denis Kirjanov <kda@linux-powerpc.org>, Paul
- Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Date: Wed, 22 Jun 2016 14:06:45 +1000
-In-Reply-To: <57696137.5020408@fb.com>
-References: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
- <3rWKtT2tSrz9t2G@ozlabs.org> <20160617130042.GO3516@indiana.gru.redhat.com>
- <20160619174914.GC8886@naverao1-tp.localdomain>
- <20160620185620.GD3516@indiana.gru.redhat.com>
- <20160621085807.GE8886@naverao1-tp.localdomain>
- <1466507748.18876.3.camel@ellerman.id.au>
- <20160621144725.GH3516@indiana.gru.redhat.com> <57696137.5020408@fb.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZBXh6lK0zDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 14:32:52 +1000 (AEST)
+Received: by mail-vk0-x244.google.com with SMTP id k2so5856957vkb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2016 21:32:52 -0700 (PDT)
+MIME-Version: 1.0
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <20160618121752.GA22721@localhost>
+References: <20160618022501.15648-1-yinghai@kernel.org>
+ <20160618022501.15648-2-yinghai@kernel.org>
+ <20160618121752.GA22721@localhost>
+From: Yinghai Lu <yinghai@kernel.org>
+Date: Tue, 21 Jun 2016 21:32:49 -0700
+Message-ID: <CAE9FiQXKVLWZaiD0CgSGEMN6c4g6GeCNGS=NE=gC-CEAymo1eQ@mail.gmail.com>
+Subject: Re: [PATCH v13 01/16] PCI: Let pci_mmap_page_range() take resource
+ address
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, Khalid Aziz <khalid.aziz@oracle.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ linux-xtensa@linux-xtensa.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-21 at 08:45 -0700, Alexei Starovoitov wrote:
-> On 6/21/16 7:47 AM, Thadeu Lima de Souza Cascardo wrote:
-> > > > 
-> > > > The calling convention is different with ABIv2 and so we'll need changes
-> > > > in bpf_slow_path_common() and sk_negative_common().
-> > > 
-> > > How big would those changes be? Do we know?
-> > > 
-> > > How come no one reported this was broken previously? This is the first I've
-> > > heard of it being broken.
-> > > 
-> > 
-> > I just heard of it less than two weeks ago, and only could investigate it last
-> > week, when I realized mainline was also affected.
-> > 
-> > It looks like the little-endian support for classic JIT were done before the
-> > conversion to ABIv2. And as JIT is disabled by default, no one seems to have
-> > exercised it.
-> 
-> it's not a surprise unfortunately. The JITs that were written before
-> test_bpf.ko was developed were missing corner cases. Typical tcpdump
-> would be fine, but fragmented packets, negative offsets and
-> out-out-bounds wouldn't be handled correctly.
-> I'd suggest to validate the stable backport with test_bpf as well.
- 
-OK thanks.
+On Sat, Jun 18, 2016 at 5:17 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Fri, Jun 17, 2016 at 07:24:46PM -0700, Yinghai Lu wrote:
+>> In 8c05cd08a7 ("PCI: fix offset check for sysfs mmapped files"), try
+>> to check exposed value with resource start/end in proc mmap path.
+>>
+>> |        start = vma->vm_pgoff;
+>> |        size = ((pci_resource_len(pdev, resno) - 1) >> PAGE_SHIFT) + 1;
+>> |        pci_start = (mmap_api == PCI_MMAP_PROCFS) ?
+>> |                        pci_resource_start(pdev, resno) >> PAGE_SHIFT : 0;
+>> |        if (start >= pci_start && start < pci_start + size &&
+>> |                        start + nr <= pci_start + size)
+>>
+>> That breaks sparc that exposed value is BAR value, and need to be offseted
+>> to resource address.
+>
+> I asked this same question of the v12 patch, but I don't think you
+> answered it:
+>
+> I'm not quite sure what you're saying here.  Are you saying that sparc
+> is currently broken, and this patch fixes it?  If so, what exactly is
+> broken?  Can you give a small example of an mmap that is currently
+> broken?
 
-I have been running seltests/net/test_bpf, but I realise now it doesn't enable
-the JIT.
+Yes, for sparc that path (proc mmap) is broken, but only according to
+code checking.
 
-cheers
+The reason for the problem is not discovered is that seem all users
+(other than x86) are not
+use proc_mmap ?
+
+vma->vm_pgoff is that code segment is User/BAR value >> PAGE_SHIFT.
+pci_start is resource->start >> PAGE_SHIFT.
+
+For sparc, resource start is different from BAR start aka pci bus address.
+pci bus address add offset to be the resource start.
+
+Thanks
+
+Yinghai
