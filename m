@@ -1,44 +1,23 @@
-Return-Path: <aravinda@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ0X81M00zDqFD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 07:01:44 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rZ0X74v9lz9t0J
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jun 2016 07:01:43 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5LKxLR0120427
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2016 17:01:41 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23qcxdgbk8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Jun 2016 17:01:41 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aravinda@linux.vnet.ibm.com>;
- Tue, 21 Jun 2016 15:01:39 -0600
-Date: Wed, 22 Jun 2016 02:31:27 +0530
-From: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZ6HD5NmjzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 11:20:56 +1000 (AEST)
+Date: Wed, 22 Jun 2016 09:20:46 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Eric Richter <erichte@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/6] kexec_file: Add buffer hand-over for the next kernel
+Message-ID: <20160622012046.GD2938@dhcp-128-65.nay.redhat.com>
+References: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@ozlabs.org>
-CC: gleb@kernel.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- linuxppc-dev@ozlabs.org, pbonzini@redhat.com,
- mahesh@linux.vnet.ibm.com, david@gibson.dropbear.id.au,
- kvm@vger.kernel.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v3 2/2] KVM: PPC: Exit guest upon MCE when FWNMI capability
- is enabled
-References: <20160113070759.20248.86252.stgit@aravindap>
- <20160113070809.20248.80811.stgit@aravindap>
- <20160620051853.GA29366@fergus.ozlabs.ibm.com>
-In-Reply-To: <20160620051853.GA29366@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Message-Id: <5769AB27.7040604@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1466473476-10104-1-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,50 +27,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On Monday 20 June 2016 10:48 AM, Paul Mackerras wrote:
-> Hi Aravinda,
+On 06/20/16 at 10:44pm, Thiago Jung Bauermann wrote:
+> Hello,
 > 
-> On Wed, Jan 13, 2016 at 12:38:09PM +0530, Aravinda Prasad wrote:
->> Enhance KVM to cause a guest exit with KVM_EXIT_NMI
->> exit reasons upon a machine check exception (MCE) in
->> the guest address space if the KVM_CAP_PPC_FWNMI
->> capability is enabled (instead of delivering 0x200
->> interrupt to guest). This enables QEMU to build error
->> log and deliver machine check exception to guest via
->> guest registered machine check handler.
->>
->> This approach simplifies the delivering of machine
->> check exception to guest OS compared to the earlier
->> approach of KVM directly invoking 0x200 guest interrupt
->> vector. In the earlier approach QEMU was enhanced to
->> patch the 0x200 interrupt vector during boot. The
->> patched code at 0x200 issued a private hcall to pass
->> the control to QEMU to build the error log.
->>
->> This design/approach is based on the feedback for the
->> QEMU patches to handle machine check exception. Details
->> of earlier approach of handling machine check exception
->> in QEMU and related discussions can be found at:
->>
->> https://lists.nongnu.org/archive/html/qemu-devel/2014-11/msg00813.html
->>
->> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+> This patch series implements a mechanism which allows the kernel to pass on
+> a buffer to the kernel that will be kexec'd. This buffer is passed as a
+> segment which is added to the kimage when it is being prepared by
+> kexec_file_load.
 > 
-> Are you in the process of doing a new version of this patch with the
-> requested changes?
+> How the second kernel is informed of this buffer is architecture-specific.
+> On PowerPC, this is done via the device tree, by checking the properties
+> /chosen/linux,kexec-handover-buffer-start and
+> /chosen/linux,kexec-handover-buffer-end, which is analogous to how the
+> kernel finds the initrd.
+> 
+> This feature was implemented because the Integrity Measurement Architecture
+> subsystem needs to preserve its measurement list accross the kexec reboot.
+> This is so that IMA can implement trusted boot support on the OpenPower
+> platform, because on such systems an intermediary Linux instance running as
+> part of the firmware is used to boot the target operating system via kexec.
+> Using this mechanism, IMA on this intermediary instance can hand over to the
+> target OS the measurements of the components that were used to boot it.
 
-Yes, I am working (intermittently) on the new version. But, not able to
-finish off and post it. Will complete it and post the new version.
-
-Regards,
-Aravinda
+We have CONFIG_KEXEC_VERIFY_SIG, why not verifying the kernel to be
+loaded instead?  I feel IMA should rebuild its measurement instead of
+passing it to another kernel. Kexec reboot is also a reboot. If we have
+to preserve something get from firmware we can do it, but other than
+that I think it sounds not a good idea.
 
 > 
-> Paul.
+> Because there could be additional measurement events between the
+> kexec_file_load call and the actual reboot, IMA needs a way to update the
+> buffer with those additional events before rebooting. One can minimize
+> the interval between the kexec_file_load and the reboot syscalls, but as
+> small as it can be, there is always the possibility that the measurement
+> list will be out of date at the time of reboot.
+> 
+> To address this issue, this patch series also introduces kexec_update_segment,
+> which allows a reboot notifier to change the contents of the image segment
+> during the reboot process.
+> 
+> There's one patch which makes kimage_load_normal_segment and
+> kexec_update_segment share code. It's not much code that they can share
+> though, so I'm not sure if it's worth including this patch.
+> 
+> The last patch is not intended to be merged, it just demonstrates how this
+> feature can be used.
+> 
+> This series applies on top of v2 of the "kexec_file_load implementation
+> for PowerPC" patch series at:
+
+The kexec_file_load patches should be addressed first, no?
+
+> 
+> http://lists.infradead.org/pipermail/kexec/2016-June/016078.html
+> 
+> Thiago Jung Bauermann (6):
+>   kexec_file: Add buffer hand-over support for the next kernel
+>   powerpc: kexec_file: Add buffer hand-over support for the next kernel
+>   kexec_file: Allow skipping checksum calculation for some segments.
+>   kexec_file: Add mechanism to update kexec segments.
+>   kexec: Share logic to copy segment page contents.
+>   IMA: Demonstration code for kexec buffer passing.
+> 
+>  arch/powerpc/include/asm/kexec.h       |   9 ++
+>  arch/powerpc/kernel/kexec_elf_64.c     |  50 +++++++-
+>  arch/powerpc/kernel/machine_kexec_64.c |  64 ++++++++++
+>  arch/x86/kernel/crash.c                |   4 +-
+>  arch/x86/kernel/kexec-bzimage64.c      |   6 +-
+>  include/linux/ima.h                    |  11 ++
+>  include/linux/kexec.h                  |  47 +++++++-
+>  kernel/kexec_core.c                    | 205 ++++++++++++++++++++++++++-------
+>  kernel/kexec_file.c                    | 102 ++++++++++++++--
+>  security/integrity/ima/ima.h           |   5 +
+>  security/integrity/ima/ima_init.c      |  26 +++++
+>  security/integrity/ima/ima_template.c  |  79 +++++++++++++
+>  12 files changed, 547 insertions(+), 61 deletions(-)
+> 
+> -- 
+> 1.9.1
 > 
 
--- 
-Regards,
-Aravinda
+Thanks
+Dave
