@@ -1,25 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Yuri.Norov@caviumnetworks.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0098.outbound.protection.outlook.com [65.55.169.98])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZLdp0bXzzDq66
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 20:37:50 +1000 (AEST)
-Message-ID: <1466591863.29871.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 6/6] ppc: ebpf/jit: Implement JIT compiler for extended BPF
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Cc: Matt Evans <matt@ozlabs.org>, Denis Kirjanov <kda@linux-powerpc.org>,
- Paul Mackerras <paulus@samba.org>, Alexei Starovoitov <ast@fb.com>, Daniel
- Borkmann <daniel@iogearbox.net>,  "David S. Miller" <davem@davemloft.net>,
- Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Date: Wed, 22 Jun 2016 20:37:43 +1000
-In-Reply-To: <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
- <908d3552b5eb240b28f70aee7c4c86e2b600aa02.1465304785.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZPCR6WD3zDq66
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 22:33:39 +1000 (AEST)
+Date: Wed, 22 Jun 2016 15:33:26 +0300
+From: Yury Norov <ynorov@caviumnetworks.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Peter
+ Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Arnaldo
+ Carvalho de Melo <acme@kernel.org>, Alexander Shishkin
+ <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, Adrian
+ Hunter <adrian.hunter@intel.com>, Kan Liang <kan.liang@intel.com>, Wang Nan
+ <wangnan0@huawei.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3] tools/perf: Fix the mask in regs_dump__printf and
+ print_sample_iregs
+Message-ID: <20160622123326.GA22429@yury-N73SV>
+References: <1466521000-11329-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160621153531.GA32361@yury-N73SV>
+ <11fbc51b-6560-bebb-0aff-c9f9c51fd176@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <11fbc51b-6560-bebb-0aff-c9f9c51fd176@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,155 +32,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-07 at 19:02 +0530, Naveen N. Rao wrote:
-
-> PPC64 eBPF JIT compiler.
+On Wed, Jun 22, 2016 at 09:20:43AM +0530, Madhavan Srinivasan wrote:
 > 
-> Enable with:
-> echo 1 > /proc/sys/net/core/bpf_jit_enable
-> or
-> echo 2 > /proc/sys/net/core/bpf_jit_enable
 > 
-> ... to see the generated JIT code. This can further be processed with
-> tools/net/bpf_jit_disasm.
+> On Tuesday 21 June 2016 09:05 PM, Yury Norov wrote:
+> > On Tue, Jun 21, 2016 at 08:26:40PM +0530, Madhavan Srinivasan wrote:
+> >> When decoding the perf_regs mask in regs_dump__printf(),
+> >> we loop through the mask using find_first_bit and find_next_bit functions.
+> >> "mask" is of type "u64", but sent as a "unsigned long *" to
+> >> lib functions along with sizeof().
+> >>
+> >> While the exisitng code works fine in most of the case,
+> >> the logic is broken when using a 32bit perf on a 64bit kernel (Big Endian).
+> >> When reading u64 using (u32 *)(&val)[0], perf (lib/find_*_bit()) assumes it gets
+> >> lower 32bits of u64 which is wrong. Proposed fix is to swap the words
+> >> of the u64 to handle this case. This is _not_ endianess swap.
+> >>
+> >> Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+> >> Cc: Yury Norov <ynorov@caviumnetworks.com>
+> >> Cc: Peter Zijlstra <peterz@infradead.org>
+> >> Cc: Ingo Molnar <mingo@redhat.com>
+> >> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+> >> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+> >> Cc: Jiri Olsa <jolsa@kernel.org>
+> >> Cc: Adrian Hunter <adrian.hunter@intel.com>
+> >> Cc: Kan Liang <kan.liang@intel.com>
+> >> Cc: Wang Nan <wangnan0@huawei.com>
+> >> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> >> ---
+> >> Changelog v2:
+> >> 1)Moved the swap code to a common function
+> >> 2)Added more comments in the code
+> >>
+> >> Changelog v1:
+> >> 1)updated commit message and patch subject
+> >> 2)Add the fix to print_sample_iregs() in builtin-script.c
+> >>
+> >>  tools/include/linux/bitmap.h |  9 +++++++++
+> > What about include/linux/bitmap.h? I think we'd place it there first.
 > 
-> With CONFIG_TEST_BPF=m and 'modprobe test_bpf':
-> test_bpf: Summary: 305 PASSED, 0 FAILED, [297/297 JIT'ed]
+> Wanted to handle that separately.
 > 
-> ... on both ppc64 BE and LE.
+> >
+> >>  tools/perf/builtin-script.c  | 16 +++++++++++++++-
+> >>  tools/perf/util/session.c    | 16 +++++++++++++++-
+> >>  3 files changed, 39 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/tools/include/linux/bitmap.h b/tools/include/linux/bitmap.h
+> >> index 28f5493da491..79998b26eb04 100644
+> >> --- a/tools/include/linux/bitmap.h
+> >> +++ b/tools/include/linux/bitmap.h
+> >> @@ -2,6 +2,7 @@
+> >>  #define _PERF_BITOPS_H
+> >>  
+> >>  #include <string.h>
+> >> +#include <limits.h>
+> >>  #include <linux/bitops.h>
+> >>  
+> >>  #define DECLARE_BITMAP(name,bits) \
+> >> @@ -22,6 +23,14 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
+> >>  #define small_const_nbits(nbits) \
+> >>  	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
+> >>  
+> >> +static inline void bitmap_from_u64(unsigned long *_mask, u64 mask)
+> > Inline is not required. Some people don't not like it. Underscored parameter in
 > 
-> The details of the approach are documented through various comments in
-> the code.
+> Not sure why you say that. IIUC we can avoid a function call overhead,
+> also rest of the functions in the file likes it.
 
-This is crashing for me on a Cell machine, not sure why at a glance:
+Documentation/CodingStyle, Chapter 15. 
 
+But I was wrong here for 3 reasons.
+1. Your function is exactly 3 lines of code;
+2. Condition is calculated at compile time;
+3. Code around uses inline, and your patch should not be exception.
 
-test_bpf: #250 JMP_JSET_X: if (0x3 & 0xffffffff) return 1 jited:1 14 PASS
-test_bpf: #251 JMP_JA: Jump, gap, jump, ... jited:1 15 PASS
-test_bpf: #252 BPF_MAXINSNS: Maximum possible literals 
-Unable to handle kernel paging request for data at address 0xd000000007b20000
-Faulting instruction address: 0xc000000000667b6c
-cpu 0x0: Vector: 300 (Data Access) at [c0000007f83bf3a0]
-    pc: c000000000667b6c: .flush_icache_range+0x3c/0x84
-    lr: c000000000082354: .bpf_int_jit_compile+0x1fc/0x2c8
-    sp: c0000007f83bf620
-   msr: 900000000200b032
-   dar: d000000007b20000
- dsisr: 40000000
-  current = 0xc0000007f8249580
-  paca    = 0xc00000000fff0000	 softe: 0	 irq_happened: 0x01
-    pid   = 1822, comm = insmod
-Linux version 4.7.0-rc3-00061-g007c99b9d8c1 (michael@ka3.ozlabs.ibm.com) (gcc version 6.1.0 (GCC) ) #3 SMP Wed Jun 22 19:22:23 AEST 2016
-enter ? for help
-[link register   ] c000000000082354 .bpf_int_jit_compile+0x1fc/0x2c8
-[c0000007f83bf620] c0000000000822fc .bpf_int_jit_compile+0x1a4/0x2c8 (unreliable)
-[c0000007f83bf700] c00000000013cda4 .bpf_prog_select_runtime+0x24/0x108
-[c0000007f83bf780] c000000000548918 .bpf_prepare_filter+0x9b0/0x9e8
-[c0000007f83bf830] c0000000005489d4 .bpf_prog_create+0x84/0xd0
-[c0000007f83bf8c0] d000000003b21158 .test_bpf_init+0x28c/0x83c [test_bpf]
-[c0000007f83bfa00] c00000000000a7b4 .do_one_initcall+0x5c/0x1c0
-[c0000007f83bfae0] c000000000669058 .do_init_module+0x80/0x21c
-[c0000007f83bfb80] c00000000011e3a0 .load_module+0x2028/0x23a8
-[c0000007f83bfd20] c00000000011e898 .SyS_init_module+0x178/0x1b0
-[c0000007f83bfe30] c000000000009220 system_call+0x38/0x110
---- Exception: c01 (System Call) at 000000000ff5e0c4
-SP (ffde0960) is in userspace
-0:mon> r
-R00 = 000000000000c01c   R16 = 0000000000000000
-R01 = c0000007f83bf620   R17 = 00000000024000c0
-R02 = c00000000094ce00   R18 = 0000000000000000
-R03 = d000000007b10000   R19 = d000000003c32df0
-R04 = d000000007b40338   R20 = c00000000072b488
-R05 = 000000000000007f   R21 = d000000007b10000
-R06 = d000000007b20000   R22 = c00000000098184c
-R07 = 0000000000000080   R23 = 0000000000000000
-R08 = 0000000000000607   R24 = 00000000000300e0
-R09 = 0000000000000007   R25 = 000000000000c020
-R10 = c000000000861ee0   R26 = d000000007b10270
-R11 = c0000000006755f8   R27 = c0000007fe0e0000
-R12 = d000000007b10270   R28 = 0000000000002003
-R13 = c00000000fff0000   R29 = c0000007f83bf690
-R14 = d000000003c32d61   R30 = 0000000000000003
-R15 = 0000000000000000   R31 = d000000007ae0000
-pc  = c000000000667b6c .flush_icache_range+0x3c/0x84
-lr  = c000000000082354 .bpf_int_jit_compile+0x1fc/0x2c8
-msr = 900000000200b032   cr  = 44000248
-ctr = 0000000000000407   xer = 0000000020000000   trap =  300
-dar = d000000007b20000   dsisr = 40000000
-0:mon> S
-msr  = 9000000000001032  sprg0= 0000000000008001
-pvr  = 0000000000703000  sprg1= c00000000fff0000
-dec  = 000000009f2d8ba4  sprg2= c00000000fff0000
-sp   = c0000007f83bed30  sprg3= 0000000000000000
-toc  = c00000000094ce00  dar  = d000000007b20000
-0:mon> u
-SLB contents of cpu 0x0
-00 c000000008000000 0000af32f5079500 256M ESID=c00000000  VSID=    af32f5079 LLP:100 
-01 d000000008000000 0000836935091510 256M ESID=d00000000  VSID=    836935091 LLP:110 
-02 c0000007f8000000 0000b52186c20500 256M ESID=c0000007f  VSID=    b52186c20 LLP:100 
-03 c0000003f0000000 0000b224435e0500
-04 c0000007f0000000 0000b52186c20500
-05 c0000003f0000000 0000b224435e0500
-06 c0000007f0000000 0000b52186c20500
-07 c0000003f0000000 0000b224435e0500
-08 c0000007f0000000 0000b52186c20500
-09 c0000003f0000000 0000b224435e0500
-10 c0000007f0000000 0000b52186c20500
-11 c0000003f0000000 0000b224435e0500
-12 c0000007f0000000 0000b52186c20500
-13 c0000003f0000000 0000b224435e0500
-14 c0000007f0000000 0000b52186c20500
-15 c0000003f0000000 0000b224435e0500
-16 c0000007f0000000 0000b52186c20500
-17 c000000078000000 0000af86a8668500 256M ESID=c00000007  VSID=    af86a8668 LLP:100 
-18 c0000003f0000000 0000b224435e0500
-19 c0000007f0000000 0000b52186c20500
-20 c0000003f0000000 0000b224435e0500
-21 c0000007f0000000 0000b52186c20500
-22 c0000003f0000000 0000b224435e0500
-23 c0000007f0000000 0000b52186c20500
-24 c0000003f0000000 0000b224435e0500
-25 c0000007f0000000 0000b52186c20500
-26 c0000003f0000000 0000b224435e0500
-27 c0000007f0000000 0000b52186c20500
-28 c0000003f0000000 0000b224435e0500
-29 c0000007f0000000 0000b52186c20500
-30 c0000003f0000000 0000b224435e0500
-31 c0000007f0000000 0000b52186c20500
-32 c0000003f0000000 0000b224435e0500
-33 c0000007f0000000 0000b52186c20500
-34 c0000003f0000000 0000b224435e0500
-35 c0000007f0000000 0000b52186c20500
-36 c0000003f0000000 0000b224435e0500
-37 c0000007f0000000 0000b52186c20500
-38 c0000003f0000000 0000b224435e0500
-39 c0000007f0000000 0000b52186c20500
-40 c0000003f0000000 0000b224435e0500
-41 c0000007f0000000 0000b52186c20500
-42 c0000003f0000000 0000b224435e0500
-43 c0000007f0000000 0000b52186c20500
-44 c0000003f0000000 0000b224435e0500
-45 c0000007f0000000 0000b52186c20500
-46 c0000003f0000000 0000b224435e0500
-47 c0000007f0000000 0000b52186c20500
-48 c0000003f0000000 0000b224435e0500
-49 d000080088000000 00007e4fa575c510 256M ESID=d00008008  VSID=    7e4fa575c LLP:110 
-50 c0000007f0000000 0000b52186c20500
-51 c0000003f0000000 0000b224435e0500
-52 c0000007f0000000 0000b52186c20500
-53 c0000003f0000000 0000b224435e0500
-54 c0000007f0000000 0000b52186c20500
-55 c0000003f0000000 0000b224435e0500
-56 c0000007f0000000 0000b52186c20500
-57 c0000003f8000000 0000b224435e0500 256M ESID=c0000003f  VSID=    b224435e0 LLP:100 
-58 f000000008000000 00002bd5b50c1500 256M ESID=f00000000  VSID=    2bd5b50c1 LLP:100 
-59 c0000007f0000000 0000b52186c20500
-60 c0000003f0000000 0000b224435e0500
-61 c0000007f0000000 0000b52186c20500
-62 c0000003f0000000 0000b224435e0500
-63 c0000007f0000000 0000b52186c20500
-0:mon> 
+Anyway, inline is only hint for GCC. And you cannot expect overhead
+elimination in every specific case. If you really need inline, use
+__always_inline directive.
 
-
-
-cheers
+> > function declaration is not the best idea as well. Try:
+> >         static void bitmap_from_u64(unsigned long *bitmap, u64 mask)
+> >
+> >> +{
+> >> +	_mask[0] = mask & ULONG_MAX;
+> >> +
+> >> +	if (sizeof(mask) > sizeof(unsigned long))
+> >> +		_mask[1] = mask >> 32;
+> >> +}
+> >> +
+> >>  static inline void bitmap_zero(unsigned long *dst, int nbits)
+> >>  {
+> >>  	if (small_const_nbits(nbits))
+> >> diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
+> >> index e3ce2f34d3ad..73928310fd91 100644
+> >> --- a/tools/perf/builtin-script.c
+> >> +++ b/tools/perf/builtin-script.c
+> >> @@ -412,11 +412,25 @@ static void print_sample_iregs(struct perf_sample *sample,
+> >>  	struct regs_dump *regs = &sample->intr_regs;
+> >>  	uint64_t mask = attr->sample_regs_intr;
+> >>  	unsigned i = 0, r;
+> >> +	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
+> > If we start with it, I think we'd hide declaration machinery as well:
+> >
+> > #define DECLARE_L64_BITMAP(__name) unsigned long __name[sizeof(u64)/sizeof(unsigned long)]
+> > or
+> > #define L64_BITMAP_SIZE (sizeof(u64)/sizeof(unsigned long))
+> >
+> > Or both :) Whatever you prefer.
+> 
+> ok
+> 
+> >
+> >>  
+> >>  	if (!regs)
+> >>  		return;
+> >>  
+> >> -	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
+> >> +	/*
+> >> +	 * Since u64 is passed as 'unsigned long *', check
+> >> +	 * to see whether we need to swap words within u64.
+> >> +	 * Reason being, in 32 bit big endian userspace on a
+> >> +	 * 64bit kernel, 'unsigned long' is 32 bits.
+> >> +	 * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
+> >> +	 * we will get wrong value for the mask. This is what
+> >> +	 * find_first_bit() and find_next_bit() is doing.
+> >> +	 * Issue here is "(u32 *)(&val)[0]" gets upper 32 bits of u64,
+> >> +	 * but perf assumes it gets lower 32bits of u64. Hence the check
+> >> +	 * and swap.
+> >> +	 */
+> >> +	bitmap_from_u64(_mask, mask);
+> >> +	for_each_set_bit(r, _mask, sizeof(mask) * 8) {
+> >>  		u64 val = regs->regs[i++];
+> >>  		printf("%5s:0x%"PRIx64" ", perf_reg_name(r), val);
+> >>  	}
+> >> diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+> >> index 5214974e841a..1337b1c73f82 100644
+> >> --- a/tools/perf/util/session.c
+> >> +++ b/tools/perf/util/session.c
+> >> @@ -940,8 +940,22 @@ static void branch_stack__printf(struct perf_sample *sample)
+> >>  static void regs_dump__printf(u64 mask, u64 *regs)
+> >>  {
+> >>  	unsigned rid, i = 0;
+> >> +	unsigned long _mask[sizeof(mask)/sizeof(unsigned long)];
+> >>  
+> >> -	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
+> >> +	/*
+> >> +	 * Since u64 is passed as 'unsigned long *', check
+> >> +	 * to see whether we need to swap words within u64.
+> >> +	 * Reason being, in 32 bit big endian userspace on a
+> >> +	 * 64bit kernel, 'unsigned long' is 32 bits.
+> >> +	 * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
+> >> +	 * we will get wrong value for the mask. This is what
+> >> +	 * find_first_bit() and find_next_bit() is doing.
+> >> +	 * Issue here is "(u32 *)(&val)[0]" gets upper 32 bits of u64,
+> >> +	 * but perf assumes it gets lower 32bits of u64. Hence the check
+> >> +	 * and swap.
+> >> +	 */
+> > Identical comments... I'd prefer to see it in commit message, or
+> > better in function description. For me it's pretty straightforward in
+> > understanding what happens here in-place without comments.
+> 
+> I would prefer the comments here. When reading/understanding
+> the code, we can avoid a jump to another file :).
+> 
+> Maddy
+> 
+> >> +	bitmap_from_u64(_mask, mask);
+> >> +	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
+> >>  		u64 val = regs[i++];
+> >>  
+> >>  		printf(".... %-5s 0x%" PRIx64 "\n",
+> >> -- 
+> >> 1.9.1
