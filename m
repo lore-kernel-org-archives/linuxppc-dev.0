@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZVP36fFbzDqMC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 02:27:19 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZVP53n9HzDqFh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 02:27:21 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5MGOdxT034823
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:27:18 -0400
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23qaeexhpp-1
+ u5MGOcPm146637
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:27:19 -0400
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23q6ym6sq1-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:27:18 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 12:27:19 -0400
 Received: from localhost
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
  Wed, 22 Jun 2016 21:57:15 +0530
 Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 34B62E005B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 22:00:56 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5DBD4E005B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 22:00:57 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5MGRC9Z25231426
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:57:12 +0530
+ u5MGRDP735913828
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:57:13 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5MGR9V7025395
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:57:12 +0530
+ u5MGRAYV025420
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 21:57:13 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
@@ -38,13 +38,13 @@ Cc: Matt Evans <matt@ozlabs.org>, Denis Kirjanov <kda@linux-powerpc.org>,
  "David S. Miller" <davem@davemloft.net>,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
  Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
-Subject: [PATCHv2 4/7] ppc: bpf/jit: Introduce rotate immediate instructions
-Date: Wed, 22 Jun 2016 21:55:04 +0530
+Subject: [PATCHv2 5/7] ppc: bpf/jit: A few cleanups
+Date: Wed, 22 Jun 2016 21:55:05 +0530
 In-Reply-To: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <8264e2692c8d0b2a019827e052cdda29c4ec2fbc.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <ee3c93787702660e4cb6b205ac276d57ce7a339b.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,10 +54,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since we will be using the rotate immediate instructions for extended
-BPF JIT, let's introduce macros for the same. And since the shift
-immediate operations use the rotate immediate instructions, let's redo
-those macros to use the newly introduced instructions.
+1. Per the ISA, ADDIS actually uses RT, rather than RS. Though
+the result is the same, make the usage clear.
+2. The multiply instruction used is a 32-bit multiply. Rename PPC_MUL()
+to PPC_MULW() to make the same clear.
+3. PPC_STW[U] take the entire 16-bit immediate value and do not require
+word-alignment, per the ISA. Change the macros to use IMM_L().
+4. A few white-space cleanups to satisfy checkpatch.pl.
 
 Cc: Matt Evans <matt@ozlabs.org>
 Cc: Denis Kirjanov <kda@linux-powerpc.org>
@@ -71,56 +74,98 @@ Cc: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
 Acked-by: Alexei Starovoitov <ast@kernel.org>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h |  2 ++
- arch/powerpc/net/bpf_jit.h            | 20 +++++++++++---------
- 2 files changed, 13 insertions(+), 9 deletions(-)
+ arch/powerpc/net/bpf_jit.h      | 13 +++++++------
+ arch/powerpc/net/bpf_jit_comp.c |  8 ++++----
+ 2 files changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 1d035c1..fd8d640 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -272,6 +272,8 @@
- #define __PPC_SH(s)	__PPC_WS(s)
- #define __PPC_MB(s)	(((s) & 0x1f) << 6)
- #define __PPC_ME(s)	(((s) & 0x1f) << 1)
-+#define __PPC_MB64(s)	(__PPC_MB(s) | ((s) & 0x20))
-+#define __PPC_ME64(s)	__PPC_MB64(s)
- #define __PPC_BI(s)	(((s) & 0x1f) << 16)
- #define __PPC_CT(t)	(((t) & 0x0f) << 21)
- 
 diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
-index 4c1e055..95d0e38 100644
+index 95d0e38..9041d3f 100644
 --- a/arch/powerpc/net/bpf_jit.h
 +++ b/arch/powerpc/net/bpf_jit.h
-@@ -210,18 +210,20 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
- 				     ___PPC_RS(a) | ___PPC_RB(s))
- #define PPC_SRW(d, a, s)	EMIT(PPC_INST_SRW | ___PPC_RA(d) |	      \
- 				     ___PPC_RS(a) | ___PPC_RB(s))
-+#define PPC_RLWINM(d, a, i, mb, me)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) | \
-+					___PPC_RS(a) | __PPC_SH(i) |	      \
-+					__PPC_MB(mb) | __PPC_ME(me))
-+#define PPC_RLDICR(d, a, i, me)		EMIT(PPC_INST_RLDICR | ___PPC_RA(d) | \
-+					___PPC_RS(a) | __PPC_SH(i) |	      \
-+					__PPC_ME64(me) | (((i) & 0x20) >> 4))
-+
- /* slwi = rlwinm Rx, Ry, n, 0, 31-n */
--#define PPC_SLWI(d, a, i)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) |	      \
--				     ___PPC_RS(a) | __PPC_SH(i) |	      \
--				     __PPC_MB(0) | __PPC_ME(31-(i)))
-+#define PPC_SLWI(d, a, i)	PPC_RLWINM(d, a, i, 0, 31-(i))
- /* srwi = rlwinm Rx, Ry, 32-n, n, 31 */
--#define PPC_SRWI(d, a, i)	EMIT(PPC_INST_RLWINM | ___PPC_RA(d) |	      \
--				     ___PPC_RS(a) | __PPC_SH(32-(i)) |	      \
--				     __PPC_MB(i) | __PPC_ME(31))
-+#define PPC_SRWI(d, a, i)	PPC_RLWINM(d, a, 32-(i), i, 31)
- /* sldi = rldicr Rx, Ry, n, 63-n */
--#define PPC_SLDI(d, a, i)	EMIT(PPC_INST_RLDICR | ___PPC_RA(d) |	      \
--				     ___PPC_RS(a) | __PPC_SH(i) |	      \
--				     __PPC_MB(63-(i)) | (((i) & 0x20) >> 4))
-+#define PPC_SLDI(d, a, i)	PPC_RLDICR(d, a, i, 63-(i))
-+
- #define PPC_NEG(d, a)		EMIT(PPC_INST_NEG | ___PPC_RT(d) | ___PPC_RA(a))
+@@ -83,7 +83,7 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+  */
+ #define IMM_H(i)		((uintptr_t)(i)>>16)
+ #define IMM_HA(i)		(((uintptr_t)(i)>>16) +			      \
+-				 (((uintptr_t)(i) & 0x8000) >> 15))
++					(((uintptr_t)(i) & 0x8000) >> 15))
+ #define IMM_L(i)		((uintptr_t)(i) & 0xffff)
  
- /* Long jump; (unconditional 'branch') */
+ #define PLANT_INSTR(d, idx, instr)					      \
+@@ -99,16 +99,16 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ #define PPC_MR(d, a)		PPC_OR(d, a, a)
+ #define PPC_LI(r, i)		PPC_ADDI(r, 0, i)
+ #define PPC_ADDIS(d, a, i)	EMIT(PPC_INST_ADDIS |			      \
+-				     ___PPC_RS(d) | ___PPC_RA(a) | IMM_L(i))
++				     ___PPC_RT(d) | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_LIS(r, i)		PPC_ADDIS(r, 0, i)
+ #define PPC_STD(r, base, i)	EMIT(PPC_INST_STD | ___PPC_RS(r) |	      \
+ 				     ___PPC_RA(base) | ((i) & 0xfffc))
+ #define PPC_STDU(r, base, i)	EMIT(PPC_INST_STDU | ___PPC_RS(r) |	      \
+ 				     ___PPC_RA(base) | ((i) & 0xfffc))
+ #define PPC_STW(r, base, i)	EMIT(PPC_INST_STW | ___PPC_RS(r) |	      \
+-				     ___PPC_RA(base) | ((i) & 0xfffc))
++				     ___PPC_RA(base) | IMM_L(i))
+ #define PPC_STWU(r, base, i)	EMIT(PPC_INST_STWU | ___PPC_RS(r) |	      \
+-				     ___PPC_RA(base) | ((i) & 0xfffc))
++				     ___PPC_RA(base) | IMM_L(i))
+ 
+ #define PPC_LBZ(r, base, i)	EMIT(PPC_INST_LBZ | ___PPC_RT(r) |	      \
+ 				     ___PPC_RA(base) | IMM_L(i))
+@@ -174,13 +174,14 @@ DECLARE_LOAD_FUNC(sk_load_byte_msh);
+ #define PPC_CMPWI(a, i)		EMIT(PPC_INST_CMPWI | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_CMPDI(a, i)		EMIT(PPC_INST_CMPDI | ___PPC_RA(a) | IMM_L(i))
+ #define PPC_CMPLWI(a, i)	EMIT(PPC_INST_CMPLWI | ___PPC_RA(a) | IMM_L(i))
+-#define PPC_CMPLW(a, b)		EMIT(PPC_INST_CMPLW | ___PPC_RA(a) | ___PPC_RB(b))
++#define PPC_CMPLW(a, b)		EMIT(PPC_INST_CMPLW | ___PPC_RA(a) |	      \
++					___PPC_RB(b))
+ 
+ #define PPC_SUB(d, a, b)	EMIT(PPC_INST_SUB | ___PPC_RT(d) |	      \
+ 				     ___PPC_RB(a) | ___PPC_RA(b))
+ #define PPC_ADD(d, a, b)	EMIT(PPC_INST_ADD | ___PPC_RT(d) |	      \
+ 				     ___PPC_RA(a) | ___PPC_RB(b))
+-#define PPC_MUL(d, a, b)	EMIT(PPC_INST_MULLW | ___PPC_RT(d) |	      \
++#define PPC_MULW(d, a, b)	EMIT(PPC_INST_MULLW | ___PPC_RT(d) |	      \
+ 				     ___PPC_RA(a) | ___PPC_RB(b))
+ #define PPC_MULHWU(d, a, b)	EMIT(PPC_INST_MULHWU | ___PPC_RT(d) |	      \
+ 				     ___PPC_RA(a) | ___PPC_RB(b))
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 2d66a84..6012aac 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -161,14 +161,14 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			break;
+ 		case BPF_ALU | BPF_MUL | BPF_X: /* A *= X; */
+ 			ctx->seen |= SEEN_XREG;
+-			PPC_MUL(r_A, r_A, r_X);
++			PPC_MULW(r_A, r_A, r_X);
+ 			break;
+ 		case BPF_ALU | BPF_MUL | BPF_K: /* A *= K */
+ 			if (K < 32768)
+ 				PPC_MULI(r_A, r_A, K);
+ 			else {
+ 				PPC_LI32(r_scratch1, K);
+-				PPC_MUL(r_A, r_A, r_scratch1);
++				PPC_MULW(r_A, r_A, r_scratch1);
+ 			}
+ 			break;
+ 		case BPF_ALU | BPF_MOD | BPF_X: /* A %= X; */
+@@ -184,7 +184,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			}
+ 			if (code == (BPF_ALU | BPF_MOD | BPF_X)) {
+ 				PPC_DIVWU(r_scratch1, r_A, r_X);
+-				PPC_MUL(r_scratch1, r_X, r_scratch1);
++				PPC_MULW(r_scratch1, r_X, r_scratch1);
+ 				PPC_SUB(r_A, r_A, r_scratch1);
+ 			} else {
+ 				PPC_DIVWU(r_A, r_A, r_X);
+@@ -193,7 +193,7 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 		case BPF_ALU | BPF_MOD | BPF_K: /* A %= K; */
+ 			PPC_LI32(r_scratch2, K);
+ 			PPC_DIVWU(r_scratch1, r_A, r_scratch2);
+-			PPC_MUL(r_scratch1, r_scratch2, r_scratch1);
++			PPC_MULW(r_scratch1, r_scratch2, r_scratch1);
+ 			PPC_SUB(r_A, r_A, r_scratch1);
+ 			break;
+ 		case BPF_ALU | BPF_DIV | BPF_K: /* A /= K */
 -- 
 2.8.2
