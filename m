@@ -2,17 +2,15 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZGM16y8TzDqFb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 17:24:45 +1000 (AEST)
-Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id u5M7OcjC013574
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 02:24:39 -0500
-Message-ID: <1466580277.4089.25.camel@kernel.crashing.org>
-Subject: [RFC/PATCH] powerpc/pci: Don't try to allocate resources that will
- be reassigned
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZGNz3Dn1zDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 17:26:27 +1000 (AEST)
+Message-ID: <1466580379.4089.27.camel@kernel.crashing.org>
+Subject: [PATCH 3/3] powerpc/pnv/pci: Fix incorrect PE reservation attempt
+ on some 64-bit BARs
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 22 Jun 2016 17:24:37 +1000
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Wed, 22 Jun 2016 17:26:19 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,33 +22,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we know we will reassign all resources, trying (and failing)
-to allocate them initially is fairly pointless and leads to a lot
-of scary messages in the kernel log
+The generic allocation code may sometimes decide to assign a prefetchable
+64-bit BAR to the M32 window. In fact it may also decide to allocate
+a 64-bit non-prefetchable BAR to the M64 one ! So using the resource
+flags as a test to decide which window was used for PE allocation is
+just wrong and leads to insane PE numbers.
 
+Instead, compare the addresses to figure it out.
+
+CC: stable@vger.kernel.org
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
---
-
-This one probably needs testing on a few platforms but I think it's
-correct ;-)
-
 ---
- arch/powerpc/kernel/pci-common.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index e723a32..2a67b16 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1360,9 +1360,9 @@ void __init pcibios_resource_survey(void)
- 	struct pci_bus *b;
+This is a pretty nasty bug, I'd like to have Gavin ack it first but
+then we should push it back to distros. I don't know yet *why* the
+generic code is eager to put my BARs into 32-bit space but that's
+irrelevant here, it's allowed to do that and we should do the right
+thing anyway.
+
+ arch/powerpc/platforms/powernv/pci-ioda.c | 27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index c6396b6..0321ba3 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -110,10 +110,16 @@ static int __init iommu_setup(char *str)
+ }
+ early_param("iommu", iommu_setup);
  
- 	/* Allocate and assign resources */
-+	list_for_each_entry(b, &pci_root_buses, node)
-+		pcibios_allocate_bus_resources(b);
- 	if (!pci_has_flag(PCI_REASSIGN_ALL_RSRC)) {
--		list_for_each_entry(b, &pci_root_buses, node)
--			pcibios_allocate_bus_resources(b);
- 		pcibios_allocate_resources(0);
- 		pcibios_allocate_resources(1);
+-static inline bool pnv_pci_is_mem_pref_64(unsigned long flags)
++static inline bool pnv_pci_is_mem_pref_64(struct pnv_phb *phb, struct resource *r)
+ {
+-	return ((flags & (IORESOURCE_MEM_64 | IORESOURCE_PREFETCH)) ==
+-		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
++	/* WARNING: We cannot rely on the resource flags. The Linux PCI
++	 * allocation code sometimes decides to put a 64-bit prefetchable
++	 * BAR in the 32-bit window, so we have to compare the addresses.
++	 *
++	 * For simplicity we only test resource start.
++	 */
++	return (r->start >= phb->ioda.m64_base &&
++		r->start < (phb->ioda.m64_base + phb->ioda.m64_size));
+ }
+ 
+ static struct pnv_ioda_pe *pnv_ioda_init_pe(struct pnv_phb *phb, int pe_no)
+@@ -230,7 +236,7 @@ static void pnv_ioda_reserve_dev_m64_pe(struct pci_dev *pdev,
+ 	sgsz = phb->ioda.m64_segsize;
+ 	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		r = &pdev->resource[i];
+-		if (!r->parent || !pnv_pci_is_mem_pref_64(r->flags))
++		if (!r->parent || !pnv_pci_is_mem_pref_64(phb, r))
+ 			continue;
+ 
+ 		start = _ALIGN_DOWN(r->start - base, sgsz);
+@@ -3059,7 +3065,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+ 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+ 		if (!res->flags || res->parent)
+ 			continue;
+-		if (!pnv_pci_is_mem_pref_64(res->flags)) {
++		if (!pnv_pci_is_mem_pref_64(phb, res)) {
+ 			dev_warn(&pdev->dev, "Don't support SR-IOV with"
+ 					" non M64 VF BAR%d: %pR. \n",
+ 				 i, res);
+@@ -3154,8 +3160,7 @@ static void pnv_ioda_setup_pe_res(struct pnv_ioda_pe *pe,
+ 			region.start += phb->ioda.io_segsize;
+ 			index++;
+ 		}
+-	} else if ((res->flags & IORESOURCE_MEM) &&
+-		   !pnv_pci_is_mem_pref_64(res->flags)) {
++	} else if ((res->flags & IORESOURCE_MEM) && !pnv_pci_is_mem_pref_64(phb, res)) {
+ 		region.start = res->start -
+ 			       phb->hose->mem_offset[0] -
+ 			       phb->ioda.m32_pci_base;
+@@ -3314,9 +3319,11 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ 		bridge = bridge->bus->self;
  	}
+ 
+-	/* We fail back to M32 if M64 isn't supported */
+-	if (phb->ioda.m64_segsize &&
+-	    pnv_pci_is_mem_pref_64(type))
++	/* We fail back to M32 if M64 isn't supported. We enforce the M64
++	 * alignment for any 64-bit resource, PCIe doesn't care and
++	 * bridges only do 64-bit prefetchable anyway
++	 */
++	if (phb->ioda.m64_segsize && (type & IORESOURCE_MEM_64))
+ 		return phb->ioda.m64_segsize;
+ 	if (type & IORESOURCE_MEM)
+ 		return phb->ioda.m32_segsize;
