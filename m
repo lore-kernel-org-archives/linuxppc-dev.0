@@ -1,24 +1,50 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZCPD2rD9zDqFM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:11:28 +1000 (AEST)
-Message-ID: <1466572287.8686.1.camel@neuling.org>
-Subject: Re: [PATCH v6 07/11] powerpc/powernv: set power_save func after the
- idle states are initialized
-From: Michael Neuling <mikey@neuling.org>
-To: benh@au1.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- mpe@ellerman.id.au
-Cc: ego@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 22 Jun 2016 15:11:27 +1000
-In-Reply-To: <1466560468.4089.7.camel@au1.ibm.com>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1465404871-5406-8-git-send-email-shreyas@linux.vnet.ibm.com>
- <1466560468.4089.7.camel@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZCTz5KhSzDqFM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 15:15:35 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5M5DfXb112433
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 01:15:32 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23qd1gkawe-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 01:15:32 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 21 Jun 2016 23:15:31 -0600
+Date: Wed, 22 Jun 2016 10:45:21 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Tejun Heo <htejun@gmail.com>, Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-team@fb.com
+Subject: Re: [PATCH 1/2] workqueue: Move wq_update_unbound_numa() to the
+ beginning of CPU_ONLINE
+Reply-To: ego@linux.vnet.ibm.com
+References: <cover.1465311052.git.ego@linux.vnet.ibm.com>
+ <6b3c7059ec5d2d6157d23d619e4507692a42a5bd.1465311052.git.ego@linux.vnet.ibm.com>
+ <20160615155350.GB24102@mtj.duckdns.org>
+ <20160615192844.GA20301@in.ibm.com>
+ <20160616193504.GB3262@mtj.duckdns.org>
+ <20160621141231.GA30251@in.ibm.com>
+ <20160621153651.GF3262@mtj.duckdns.org>
+ <20160621193709.GT30154@twins.programming.kicks-ass.net>
+ <20160621194356.GU3262@mtj.duckdns.org>
+ <20160621194719.GU30154@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160621194719.GU30154@twins.programming.kicks-ass.net>
+Message-Id: <20160622051521.GA21154@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +54,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-06-22 at 11:54 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2016-06-08 at 11:54 -0500, Shreyas B. Prabhu wrote:
-> >=20
-> > pnv_init_idle_states discovers supported idle states from the
-> > device tree and does the required initialization. Set power_save
-> > function pointer only after this initialization is done
-> >=20
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
-> Please merge that one as-is now, no need to wait for the rest, as
-> otherwise pwoer9 crashes at boot. It doesn't need to wait for the
-> rest of the series.
+On Tue, Jun 21, 2016 at 09:47:19PM +0200, Peter Zijlstra wrote:
+> On Tue, Jun 21, 2016 at 03:43:56PM -0400, Tejun Heo wrote:
+> > On Tue, Jun 21, 2016 at 09:37:09PM +0200, Peter Zijlstra wrote:
+> > > Hurm.. So I've applied it, just to get this issue sorted, but I'm not
+> > > entirely sure I like it.
+> > > 
+> > > I think I prefer ego's version because that makes it harder to get stuff
+> > > to run on !active,online cpus. I think we really want to be careful what
+> > > gets to run during that state.
+> > 
+> > The original patch just did set_cpus_allowed one more time late enough
+> > so that the target kthread (in most cases) doesn't have to go through
+> > fallback rq selection afterwards.  I don't know what the long term
+> > solution is but CPU_ONLINE callbacks should be able to bind kthreads
+> > to the new CPU one way or the other.
+> 
+> Fair enough; clearly I need to stare harder. In any case, patch is on
+> its way to sched/urgent.
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+Thanks Tejun, Peter!
+> 
 
-For the same reason. Without this we need powersave=3Doff on the cmdline on
-POWER9.
-
-Mikey
-
->=20
-> Cheers,
-> Ben.
->=20
-> >=20
-> > ---
-> > - No changes since v1
-> >=20
-> > =C2=A0arch/powerpc/platforms/powernv/idle.c=C2=A0=C2=A0| 3 +++
-> > =C2=A0arch/powerpc/platforms/powernv/setup.c | 2 +-
-> > =C2=A02 files changed, 4 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c
-> > b/arch/powerpc/platforms/powernv/idle.c
-> > index fcc8b68..fbb09fb 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -285,6 +285,9 @@ static int __init pnv_init_idle_states(void)
-> > =C2=A0	}
-> > =C2=A0
-> > =C2=A0	pnv_alloc_idle_core_states();
-> > +
-> > +	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
-> > +		ppc_md.power_save =3D power7_idle;
-> > =C2=A0out_free:
-> > =C2=A0	kfree(flags);
-> > =C2=A0out:
-> > diff --git a/arch/powerpc/platforms/powernv/setup.c
-> > b/arch/powerpc/platforms/powernv/setup.c
-> > index ee6430b..8492bbb 100644
-> > --- a/arch/powerpc/platforms/powernv/setup.c
-> > +++ b/arch/powerpc/platforms/powernv/setup.c
-> > @@ -315,7 +315,7 @@ define_machine(powernv) {
-> > =C2=A0	.get_proc_freq=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=3D pnv_get_proc_freq,
-> > =C2=A0	.progress		=3D pnv_progress,
-> > =C2=A0	.machine_shutdown	=3D pnv_shutdown,
-> > -	.power_save=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=3D power7_idle,
-> > +	.power_save=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=3D NULL,
-> > =C2=A0	.calibrate_decr		=3D generic_calibrate_decr,
-> > =C2=A0#ifdef CONFIG_KEXEC
-> > =C2=A0	.kexec_cpu_down		=3D pnv_kexec_cpu_down,
+--
+Regards
+gautham.
