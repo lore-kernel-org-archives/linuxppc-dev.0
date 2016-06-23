@@ -1,46 +1,48 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZq3m1xkYzDqhg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 14:58:27 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5N4rxL5003361
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 00:58:25 -0400
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23q6r5a549-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZq7H6PhDzDqhV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:01:31 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5N4xCIE144006
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:01:29 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23q796gg03-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 00:58:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:01:29 -0400
 Received: from localhost
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 23 Jun 2016 10:28:22 +0530
-Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 96B02E005E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:32:02 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5N4wI2K28639236
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:28:18 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5N4wFuQ019186
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:28:17 +0530
-Date: Thu, 23 Jun 2016 10:28:12 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Balbir Singh <bsingharora@gmail.com>, rjw@rjwysocki.net
-CC: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, anton@samba.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
-References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <576B23EB.7080903@gmail.com>
-In-Reply-To: <576B23EB.7080903@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <576B6C64.6060206@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 23 Jun 2016 15:01:26 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 565032BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:01:23 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5N51NHZ13042092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:01:23 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5N51Lr4020750
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:01:23 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Yury Norov <ynorov@caviumnetworks.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
+ Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v4] tools/perf: Fix the mask in regs_dump__printf and
+ print_sample_iregs
+Date: Thu, 23 Jun 2016 10:31:16 +0530
+Message-Id: <1466658076-22928-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,116 +52,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When decoding the perf_regs mask in regs_dump__printf(),
+we loop through the mask using find_first_bit and find_next_bit functions.
+"mask" is of type "u64", but sent as a "unsigned long *" to
+lib functions along with sizeof().
 
+While the exisitng code works fine in most of the case,
+the logic is broken when using a 32bit perf on a 64bit kernel (Big Endian).
+When reading u64 using (u32 *)(&val)[0], perf (lib/find_*_bit()) assumes it gets
+lower 32bits of u64 which is wrong. Proposed fix is to swap the words
+of the u64 to handle this case. This is _not_ endianess swap.
 
-On 06/23/2016 05:18 AM, Balbir Singh wrote:
-> 
-> 
-> On 23/06/16 05:36, Shreyas B. Prabhu wrote:
->> Snooze is a poll idle state in powernv and pseries platforms. Snooze
->> has a timeout so that if a cpu stays in snooze for more than target
->> residency of the next available idle state, then it would exit thereby
->> giving chance to the cpuidle governor to re-evaluate and
->> promote the cpu to a deeper idle state. Therefore whenever snooze exits
->> due to this timeout, its last_residency will be target_residency of next
->> deeper state.
->>
->> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
->> changed the math around last_residency calculation. Specifically, while
->> converting last_residency value from nanoseconds to microseconds it does
->> right shift by 10. Due to this, in snooze timeout exit scenarios
->> last_residency calculated is roughly 2.3% less than target_residency of
->> next available state. This pattern is picked up get_typical_interval()
->> in the menu governor and therefore expected_interval in menu_select() is
->> frequently less than the target_residency of any state but snooze.
->>
->> Due to this we are entering snooze at a higher rate, thereby affecting
->> the single thread performance.
->> Since the math around last_residency is not meant to be precise, fix this
->> issue setting snooze timeout to 105% of target_residency of next
->> available idle state.
->>
->> This also adds comment around why snooze timeout is necessary.
->>
->> Reported-by: Anton Blanchard <anton@samba.org>
->> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
->> ---
->>  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
->>  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
->>  2 files changed, 27 insertions(+)
->>
->> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
->> index e12dc30..5835491 100644
->> --- a/drivers/cpuidle/cpuidle-powernv.c
->> +++ b/drivers/cpuidle/cpuidle-powernv.c
->> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
->>  		cpuidle_state_table = powernv_states;
->>  		/* Device tree can indicate more idle states */
->>  		max_idle_state = powernv_add_idle_states();
->> +
->> +		/*
->> +		 * Staying in snooze for a long period can degrade the
->> +		 * perfomance of the sibling cpus. Set timeout for snooze such
->> +		 * that if the cpu stays in snooze longer than target residency
->> +		 * of the next available idle state then exit from snooze. This
->> +		 * gives a chance to the cpuidle governor to re-evaluate and
->> +		 * promote it to deeper idle states.
->> +		 */
->>  		if (max_idle_state > 1) {
->>  			snooze_timeout_en = true;
->>  			snooze_timeout = powernv_states[1].target_residency *
->>  					 tb_ticks_per_usec;
->> +			/*
->> +			 * Give a 5% margin since target residency related math
->> +			 * is not precise in cpuidle core.
->> +			 */
-> 
-> Is this due to the microsecond conversion mentioned above? It would be nice to
-> have it in the comment. Does
-> 
-> (powernv_states[1].target_residency + tb_ticks_per_usec) / tb_ticks_per_usec solve
-> your rounding issues, assuming the issue is really rounding or maybe it is due
-> to the shift by 10, could you please elaborate on what related math is not
-> precise? That would explain to me why I missed understanding your changes.
-> 
->> +			snooze_timeout += snooze_timeout / 20;
-> 
-> For now 5% is sufficient, but do you want to check to assert to check if
-> 
-> snooze_timeout (in microseconds) / tb_ticks_per_usec > powernv_states[i].target_residency?
-> 
+Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Kan Liang <kan.liang@intel.com>
+Cc: Wang Nan <wangnan0@huawei.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+Changelog v3:
+1)Moved the swap function to lib/bitmap.c
+2)Added a macro for declaration
+3)Added the comments
 
-This is not a rounding issue. As I mentioned in the commit message, this
-is because of the last_residency calculation in cpuidle.c.
-To elaborate, last residency calculation is done in the following way
-after commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with
-local_clock()") -
+Changelog v2:
+1)Moved the swap code to a common function
+2)Added more comments in the code
 
-cpuidle_enter_state()
-{
-	[...]
-	time_start = local_clock();
-	[enter idle state]
-	time_end = local_clock();
-	/*
-         * local_clock() returns the time in nanosecond, let's shift
-         * by 10 (divide by 1024) to have microsecond based time.
-         */
-        diff = (time_end - time_start) >> 10;
-	[...]
-	dev->last_residency = (int) diff;
-}
+Changelog v1:
+1)updated commit message and patch subject
+2)Add the fix to print_sample_iregs() in builtin-script.c
 
-Because of >>10 as opposed to /1000, last_residency is lesser by 2.3%
+ tools/include/linux/bitmap.h |  5 +++++
+ tools/lib/bitmap.c           | 18 ++++++++++++++++++
+ tools/perf/builtin-script.c  |  4 +++-
+ tools/perf/util/session.c    |  4 +++-
+ 4 files changed, 29 insertions(+), 2 deletions(-)
 
-In snooze timeout exit scenarios because of this, last_residency
-calculated is 2.3% less than target_residency of next available state.
-This affects get_typical_interval() in the menu governor and therefore
-expected_interval in menu_select() is frequently less than the
-target_residency of any state but snooze.
-
-
-I'll expand the comments as you suggested.
-
-Thanks,
-Shreyas
+diff --git a/tools/include/linux/bitmap.h b/tools/include/linux/bitmap.h
+index 28f5493da491..6be9a7ddcb03 100644
+--- a/tools/include/linux/bitmap.h
++++ b/tools/include/linux/bitmap.h
+@@ -2,14 +2,19 @@
+ #define _PERF_BITOPS_H
+ 
+ #include <string.h>
++#include <limits.h>
+ #include <linux/bitops.h>
+ 
+ #define DECLARE_BITMAP(name,bits) \
+ 	unsigned long name[BITS_TO_LONGS(bits)]
+ 
++#define DECLARE_U64_BITMAP(__name) \
++	unsigned long __name[sizeof(u64)/sizeof(unsigned long)]
++
+ int __bitmap_weight(const unsigned long *bitmap, int bits);
+ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
+ 		 const unsigned long *bitmap2, int bits);
++void bitmap_from_u64(unsigned long *dst, u64 mask);
+ 
+ #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
+ 
+diff --git a/tools/lib/bitmap.c b/tools/lib/bitmap.c
+index 0a1adc1111fd..464a0cc63e6a 100644
+--- a/tools/lib/bitmap.c
++++ b/tools/lib/bitmap.c
+@@ -29,3 +29,21 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
+ 	for (k = 0; k < nr; k++)
+ 		dst[k] = bitmap1[k] | bitmap2[k];
+ }
++
++/*
++ * bitmap_from_u64 - Check and swap words within u64.
++ *  @mask: source bitmap
++ *  @dst:  destination bitmap
++ *
++ * In 32 bit big endian userspace on a 64bit kernel, 'unsigned long' is 32 bits.
++ * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
++ * we will get wrong value for the mask. That is "(u32 *)(&val)[0]"
++ * gets upper 32 bits of u64, but perf may expect lower 32bits of u64.
++ */
++void bitmap_from_u64(unsigned long *dst, u64 mask)
++{
++	dst[0] = mask & ULONG_MAX;
++
++	if (sizeof(mask) > sizeof(unsigned long))
++		dst[1] = mask >> 32;
++}
+diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
+index e3ce2f34d3ad..1120ca117071 100644
+--- a/tools/perf/builtin-script.c
++++ b/tools/perf/builtin-script.c
+@@ -412,11 +412,13 @@ static void print_sample_iregs(struct perf_sample *sample,
+ 	struct regs_dump *regs = &sample->intr_regs;
+ 	uint64_t mask = attr->sample_regs_intr;
+ 	unsigned i = 0, r;
++	DECLARE_U64_BITMAP(_mask);
+ 
+ 	if (!regs)
+ 		return;
+ 
+-	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(r, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs->regs[i++];
+ 		printf("%5s:0x%"PRIx64" ", perf_reg_name(r), val);
+ 	}
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 5214974e841a..fab1f9c1e0f5 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -940,8 +940,10 @@ static void branch_stack__printf(struct perf_sample *sample)
+ static void regs_dump__printf(u64 mask, u64 *regs)
+ {
+ 	unsigned rid, i = 0;
++	DECLARE_U64_BITMAP(_mask);
+ 
+-	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
+ 		u64 val = regs[i++];
+ 
+ 		printf(".... %-5s 0x%" PRIx64 "\n",
+-- 
+1.9.1
