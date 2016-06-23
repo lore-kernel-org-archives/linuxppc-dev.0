@@ -1,41 +1,38 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-vk0-x22f.google.com (mail-vk0-x22f.google.com
- [IPv6:2607:f8b0:400c:c05::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rb6XR4jMvzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 02:35:51 +1000 (AEST)
-Received: by mail-vk0-x22f.google.com with SMTP id d185so114127135vkg.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 09:35:50 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20160623161950.ovwpvhq43tq35u7k@treble>
-References: <20160519231546.yvtqz5wacxvykvn2@treble>
- <CALCETrWkd1dtSZzrT1gj43frXPYEBFRhY-ToWoMSsdLOROMKcA@mail.gmail.com>
- <20160524022805.sazm456jorfqvdr7@treble>
- <CALCETrVNj2bscRZmSyzq4fMp5s3m0+KqpEFofv_uXsHF_na_=Q@mail.gmail.com>
- <20160622163011.4fjwalehrzk4a32t@treble>
- <CALCETrVJpFYi=x0nVWSVi3n40Xkig43Y5bRNOO2XNmUuC9Wt+g@mail.gmail.com>
- <20160622182245.4u72jgjg2khxracz@treble>
- <CALCETrXR9iMO1veHREumqTOvQuLYYQFH_=VRhQ6oXusXi+NFNg@mail.gmail.com>
- <20160622184042.br7ov37pl6eydr3y@treble>
- <CALCETrWQWhPnFai5_RkLDiNmaxcjVmaYDAGTzQL8fXien8ojSQ@mail.gmail.com>
- <20160623161950.ovwpvhq43tq35u7k@treble>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 23 Jun 2016 09:35:29 -0700
-Message-ID: <CALCETrWJ8fdttrM3ZwCgeBBzhJOPGc4PEHT8AZzc=eg7K69nfA@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Jessica Yu <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>,
- Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rb6ch3GDlzDq60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 02:39:31 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5NGYQhZ020718
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 12:39:29 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23ra2mebm3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 12:39:29 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Thu, 23 Jun 2016 12:39:29 -0400
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Scott Wood <scottwood@freescale.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/mm: update arch_{add,remove}_memory() for radix
+Date: Thu, 23 Jun 2016 11:39:22 -0500
+Message-Id: <1466699962-22412-1-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,79 +42,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 23, 2016 at 9:19 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> On Wed, Jun 22, 2016 at 12:17:25PM -0700, Andy Lutomirski wrote:
->> On Wed, Jun 22, 2016 at 11:40 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> > On Wed, Jun 22, 2016 at 11:26:21AM -0700, Andy Lutomirski wrote:
->> >> >
->> >> > So are you suggesting something like:
->> >> >
->> >> >         .macro ENTRY_CALL func pt_regs_offset=0
->> >> >         call \func
->> >> > 1:      .pushsection .entry_calls, "a"
->> >> >         .long 1b - .
->> >> >         .long \pt_regs_offset
->> >> >         .popsection
->> >> >         .endm
->> >> >
->> >> > and then change every call in the entry code to ENTRY_CALL?
->> >>
->> >> Yes, exactly, modulo whether the section name is good.  hpa is
->> >> probably the authority on that.
->> >
->> > Well, as you probably know, I don't really like peppering ENTRY_CALL
->> > everywhere. :-/
->>
->> Me neither.  But at least it's less constraining on the
->> already-fairly-hairy code.
->>
->> >
->> > Also I wonder how we could annotate the hypercalls, for example
->> > DISABLE_INTERRUPTS actually wraps the call in a push/pop pair.
->>
->> Oh, yuck.  But forcing all the DISABLE_INTERRUPTS and
->> ENABLE_INTERRUPTS invocations to be in frame pointer regions isn't so
->> great either.
->
-> Hm, I don't follow this statement.  Why not?  The more frame pointer
-> coverage, the better, especially if it doesn't add any additional
-> overhead.
+These functions are making direct calls to the hash table APIs,
+leading to a BUG() on systems using radix.
 
-Less flexibility, and it's IMO annoying to make the Xen case have
-extra constraints.  It also makes it very awkward or impossible to
-take advantage of the sti interrupt window, although admittedly that
-doesn't work on Xen either, so maybe that's moot.
+Switch them to the vmemmap_{create,remove}_mapping() wrappers, and
+move to the __meminit section.
 
->
->> DWARF solves this problem completely and IMO fairly cleanly.  Maybe we
->> should add your task flag and then consider removing it again when
->> DWARF happens.
->
-> I tend to doubt we'd be able to remove it later.  As you said before,
-> many embedded platforms probably won't be able to switch to DWARF, and
-> they'll want to do live patching too.
->
-> So which is the least-bad option?  To summarize:
->
->   1) task flag(s) for preemption and page faults
->
->   2) turn pt_regs into a stack frame
->
->   3) annotate all calls from entry code in a table
->
->   4) encode rbp on entry
->
-> They all have their issues, though I'm partial to #2.
->
-> Any more hare-brained ideas? :-)
+Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/mem.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-I'll try to take a closer look at #2 and see just how much I dislike
-all the stack frame munging.  Also, in principle, it's only the
-sleeping calls and the calls that make it into real (non-entry) kernel
-code that really want to be unwindable through this mechanism.
-
-FWIW, I don't care that much about preserving gdb's partial ability to
-unwind through pt_regs, especially because gdb really ought to be able
-to use DWARF, too.
-
---Andy
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 2fd57fa..80c6ee7 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -116,7 +116,7 @@ int memory_add_physaddr_to_nid(u64 start)
+ }
+ #endif
+ 
+-int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
++int __meminit arch_add_memory(int nid, u64 start, u64 size, bool for_device)
+ {
+ 	struct pglist_data *pgdata;
+ 	struct zone *zone;
+@@ -127,7 +127,7 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
+ 	pgdata = NODE_DATA(nid);
+ 
+ 	start = (unsigned long)__va(start);
+-	rc = create_section_mapping(start, start + size);
++	rc = vmemmap_create_mapping(start, size, __pa(start));
+ 	if (rc) {
+ 		pr_warning(
+ 			"Unable to create mapping for hot added memory 0x%llx..0x%llx: %d\n",
+@@ -143,7 +143,7 @@ int arch_add_memory(int nid, u64 start, u64 size, bool for_device)
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+-int arch_remove_memory(u64 start, u64 size)
++int __meminit arch_remove_memory(u64 start, u64 size)
+ {
+ 	unsigned long start_pfn = start >> PAGE_SHIFT;
+ 	unsigned long nr_pages = size >> PAGE_SHIFT;
+@@ -157,7 +157,7 @@ int arch_remove_memory(u64 start, u64 size)
+ 
+ 	/* Remove htab bolted mappings for this section of memory */
+ 	start = (unsigned long)__va(start);
+-	ret = remove_section_mapping(start, start + size);
++	vmemmap_remove_mapping(start, size);
+ 
+ 	/* Ensure all vmalloc mappings are flushed in case they also
+ 	 * hit that section of memory
+-- 
+1.8.3.1
