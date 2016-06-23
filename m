@@ -1,37 +1,44 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rb9614Mc0zDq60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 04:31:37 +1000 (AEST)
-Date: Thu, 23 Jun 2016 13:31:32 -0500
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Jessica Yu <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>, Miroslav Benes <mbenes@suse.cz>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-Message-ID: <20160623183132.oqtl6flnoqtilurs@treble>
-References: <20160524022805.sazm456jorfqvdr7@treble>
- <CALCETrVNj2bscRZmSyzq4fMp5s3m0+KqpEFofv_uXsHF_na_=Q@mail.gmail.com>
- <20160622163011.4fjwalehrzk4a32t@treble>
- <CALCETrVJpFYi=x0nVWSVi3n40Xkig43Y5bRNOO2XNmUuC9Wt+g@mail.gmail.com>
- <20160622182245.4u72jgjg2khxracz@treble>
- <CALCETrXR9iMO1veHREumqTOvQuLYYQFH_=VRhQ6oXusXi+NFNg@mail.gmail.com>
- <20160622184042.br7ov37pl6eydr3y@treble>
- <CALCETrWQWhPnFai5_RkLDiNmaxcjVmaYDAGTzQL8fXien8ojSQ@mail.gmail.com>
- <20160623161950.ovwpvhq43tq35u7k@treble>
- <CALCETrWJ8fdttrM3ZwCgeBBzhJOPGc4PEHT8AZzc=eg7K69nfA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbBZS3TYszDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 05:37:51 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5NJYard126162
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:37:48 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23rj7h91y3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:37:48 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Thu, 23 Jun 2016 13:37:48 -0600
+Date: Thu, 23 Jun 2016 14:37:39 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ Scott Wood <scottwood@freescale.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/mm: update arch_{add,remove}_memory() for radix
+References: <1466699962-22412-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <87mvmbygdb.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CALCETrWJ8fdttrM3ZwCgeBBzhJOPGc4PEHT8AZzc=eg7K69nfA@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <87mvmbygdb.fsf@skywalker.in.ibm.com>
+Message-Id: <20160623193739.GA19202@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +48,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 23, 2016 at 09:35:29AM -0700, Andy Lutomirski wrote:
-> > So which is the least-bad option?  To summarize:
-> >
-> >   1) task flag(s) for preemption and page faults
-> >
-> >   2) turn pt_regs into a stack frame
-> >
-> >   3) annotate all calls from entry code in a table
-> >
-> >   4) encode rbp on entry
-> >
-> > They all have their issues, though I'm partial to #2.
-> >
-> > Any more hare-brained ideas? :-)
-> 
-> I'll try to take a closer look at #2 and see just how much I dislike
-> all the stack frame munging.
+On Thu, Jun 23, 2016 at 10:47:20PM +0530, Aneesh Kumar K.V wrote:
+>Reza Arbab <arbab@linux.vnet.ibm.com> writes:
+>> These functions are making direct calls to the hash table APIs,
+>> leading to a BUG() on systems using radix.
+>>
+>> Switch them to the vmemmap_{create,remove}_mapping() wrappers, and
+>> move to the __meminit section.
+>
+>They are really not the same. They can possibly end up using different
+>base page size. Also vmemmap is available only with SPARSEMEM_VMEMMAP
+>enabled. Does hotplug depend on sparsemem vmemmap ?
 
-Ok.
+I'm not sure. Maybe it's best if I back up a step and explain what lead 
+me to this patch. During hotplug, you get
 
-> Also, in principle, it's only the
-> sleeping calls and the calls that make it into real (non-entry) kernel
-> code that really want to be unwindable through this mechanism.
+...
+	arch_add_memory
+		create_section_mapping
+			htab_bolt_mapping
+				BUG_ON(!ppc_md.hpte_insert);
 
-Yeah, that's true.  We could modify options 2 or 3 to be less absolute.
-Though I think that makes them more prone to future breakage.
+So it seemed to me that I needed a radix equivalent of 
+create_section_mapping().
 
-> FWIW, I don't care that much about preserving gdb's partial ability to
-> unwind through pt_regs, especially because gdb really ought to be able
-> to use DWARF, too.
+After some digging, I found hash__vmemmap_create_mapping() and 
+radix__vmemmap_create_mapping() did what I needed. I did not notice the 
+#ifdef SPARSEMEM_VMEMMAP around them.
 
-Hm, that's a good point.  I really don't know if there are any other
-external tools out there that would care.  Maybe we could try option 4
-and then see if anybody complains.
+Hotplug/remove are now working for me as far as I can tell, so I think
+the functional change in itself was correct. Hotplug may not depend on 
+sparsemem vmemmap, but we seem to need a radix create_section_mapping() 
+regardless.
+
+Could it be that the functions just need to be renamed 
+hash__create_mapping()/radix__create_mapping() and moved out of #ifdef 
+SPARSEMEM_VMEMMAP?
 
 -- 
-Josh
+Reza Arbab
