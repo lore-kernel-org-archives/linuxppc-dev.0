@@ -1,20 +1,21 @@
-Return-Path: <kirjanov@gmail.com>
-Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
- [IPv6:2607:f8b0:400c:c05::244])
+Return-Path: <oohall@gmail.com>
+Received: from mail-qk0-x22b.google.com (mail-qk0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c09::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZv7d2HkHzDqjr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 18:02:05 +1000 (AEST)
-Received: by mail-vk0-x244.google.com with SMTP id v188so12259956vkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:02:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZvYz3CDVzDqk3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 18:21:27 +1000 (AEST)
+Received: by mail-qk0-x22b.google.com with SMTP id a186so97914497qkf.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:21:27 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1466666639-10480-1-git-send-email-oohall@gmail.com>
+In-Reply-To: <CAHj3AV=V2s2ymM7Sg8TsmuqkopXmGjDceC0c=K1-_BuLQqPvEQ@mail.gmail.com>
 References: <1466666639-10480-1-git-send-email-oohall@gmail.com>
-From: Denis Kirjanov <kirjanov@gmail.com>
-Date: Thu, 23 Jun 2016 11:02:01 +0300
-Message-ID: <CAHj3AV=V2s2ymM7Sg8TsmuqkopXmGjDceC0c=K1-_BuLQqPvEQ@mail.gmail.com>
+ <CAHj3AV=V2s2ymM7Sg8TsmuqkopXmGjDceC0c=K1-_BuLQqPvEQ@mail.gmail.com>
+From: oliver <oohall@gmail.com>
+Date: Thu, 23 Jun 2016 18:21:23 +1000
+Message-ID: <CAOSf1CGEncYNgqi4gj0SK_v98mypcomgFgngbFjahSx3pnTccA@mail.gmail.com>
 Subject: Re: [PATCHv4] powerpc/timer - large decrementer support
-To: "Oliver O'Halloran" <oohall@gmail.com>
+To: Denis Kirjanov <kirjanov@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
  Jack Miller <jack@codezen.org>
 Content-Type: text/plain; charset=UTF-8
@@ -27,267 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/23/16, Oliver O'Halloran <oohall@gmail.com> wrote:
-> Power ISAv3 adds a large decrementer (LD) mode which increases the size
-> of the decrementer register. The size of the enlarged decrementer
-> register is between 32 and 64 bits with the exact size being dependent
-> on the implementation. When in LD mode, reads are sign extended to 64
-> bits and a decrementer exception is raised when the high bit is set (i.e
-> the value goes below zero). Writes however are truncated to the physical
-> register width so some care needs to be taken to ensure that the high
-> bit is not set when reloading the decrementer. This patch adds support
-> for using the LD inside the host kernel on processors that support it.
->
-> When LD mode is supported firmware will supply the ibm,dec-bits property
-> for CPU nodes to allow the kernel to determine the maximum decrementer
-> value. Enabling LD mode is a hypervisor privileged operation so the
-> kernel can only enable it manually when running in hypervisor mode.
-> Guest kernels that support LD mode can request it using the
-> "ibm,client-architecture-support" firmware call or some other platform
-> specific method. If this property is not supplied then the traditional
-> decrementer width of 32 bit is assumed and LD mode will not be enabled.
->
-> This patch was based on initial work by Jack Miller.
->
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> Cc: Michael Neuling <mikey@neuling.org>
-> Cc: Jack Miller <jack@codezen.org>
-> ---
->  arch/powerpc/include/asm/reg.h  |   1 +
->  arch/powerpc/include/asm/time.h |   6 +--
->  arch/powerpc/kernel/time.c      | 102
-> ++++++++++++++++++++++++++++++++++++----
->  3 files changed, 98 insertions(+), 11 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
-g.h
-> index a0948f40bc7b..12d970d64bb3 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -332,6 +332,7 @@
->  #define   LPCR_AIL_0	0x00000000	/* MMU off exception offset 0x0 */
->  #define   LPCR_AIL_3	0x01800000	/* MMU on exception offset 0xc00...4xxx =
-*/
->  #define   LPCR_ONL	0x00040000	/* online - PURR/SPURR count */
-> +#define   LPCR_LD	0x00020000	/* large decremeter */
->  #define   LPCR_PECE	0x0001f000	/* powersave exit cause enable */
->  #define     LPCR_PECEDP	0x00010000	/* directed priv dbells cause exit */
->  #define     LPCR_PECEDH	0x00008000	/* directed hyp dbells cause exit */
-> diff --git a/arch/powerpc/include/asm/time.h
-> b/arch/powerpc/include/asm/time.h
-> index 1092fdd7e737..09211640a0e0 100644
-> --- a/arch/powerpc/include/asm/time.h
-> +++ b/arch/powerpc/include/asm/time.h
-> @@ -146,7 +146,7 @@ static inline void set_tb(unsigned int upper, unsigne=
-d
-> int lower)
->   * in auto-reload mode.  The problem is PIT stops counting when it
->   * hits zero.  If it would wrap, we could use it just like a decrementer=
-.
->   */
-> -static inline unsigned int get_dec(void)
-> +static inline u64 get_dec(void)
->  {
->  #if defined(CONFIG_40x)
->  	return (mfspr(SPRN_PIT));
-> @@ -160,10 +160,10 @@ static inline unsigned int get_dec(void)
->   * in when the decrementer generates its interrupt: on the 1 to 0
->   * transition for Book E/4xx, but on the 0 to -1 transition for others.
->   */
-> -static inline void set_dec(int val)
-> +static inline void set_dec(u64 val)
->  {
->  #if defined(CONFIG_40x)
-> -	mtspr(SPRN_PIT, val);
-> +	mtspr(SPRN_PIT, (u32) val);
->  #else
->  #ifndef CONFIG_BOOKE
->  	--val;
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 7a482a7f4d8d..aa6d399d939b 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -97,7 +97,8 @@ static struct clocksource clocksource_timebase =3D {
->  	.read         =3D timebase_read,
->  };
->
-> -#define DECREMENTER_MAX	0x7fffffff
-> +#define DECREMENTER_DEFAULT_MAX 0x7FFFFFFF
-> +u64 decrementer_max =3D DECREMENTER_DEFAULT_MAX;
->
->  static int decrementer_set_next_event(unsigned long evt,
->  				      struct clock_event_device *dev);
-> @@ -505,8 +506,8 @@ static void __timer_interrupt(void)
->  		__this_cpu_inc(irq_stat.timer_irqs_event);
->  	} else {
->  		now =3D *next_tb - now;
-> -		if (now <=3D DECREMENTER_MAX)
-> -			set_dec((int)now);
-> +		if (now <=3D decrementer_max)
-> +			set_dec(now);
->  		/* We may have raced with new irq work */
->  		if (test_irq_work_pending())
->  			set_dec(1);
-> @@ -536,7 +537,7 @@ void timer_interrupt(struct pt_regs * regs)
->  	/* Ensure a positive value is written to the decrementer, or else
->  	 * some CPUs will continue to take decrementer exceptions.
->  	 */
-> -	set_dec(DECREMENTER_MAX);
-> +	set_dec(decrementer_max);
->
->  	/* Some implementations of hotplug will get timer interrupts while
->  	 * offline, just ignore these and we also need to set
-> @@ -584,9 +585,9 @@ static void generic_suspend_disable_irqs(void)
->  	 * with suspending.
->  	 */
->
-> -	set_dec(DECREMENTER_MAX);
-> +	set_dec(decrementer_max);
->  	local_irq_disable();
-> -	set_dec(DECREMENTER_MAX);
-> +	set_dec(decrementer_max);
->  }
->
->  static void generic_suspend_enable_irqs(void)
-> @@ -867,7 +868,7 @@ static int decrementer_set_next_event(unsigned long e=
-vt,
->
->  static int decrementer_shutdown(struct clock_event_device *dev)
->  {
-> -	decrementer_set_next_event(DECREMENTER_MAX, dev);
-> +	decrementer_set_next_event(decrementer_max, dev);
->  	return 0;
->  }
->
-> @@ -893,6 +894,84 @@ static void register_decrementer_clockevent(int cpu)
->  	clockevents_register_device(dec);
->  }
->
-> +static inline void check_large_decrementer(void)
-> +{
-> +	u64 readback;
-> +
-> +	mtspr(SPRN_DEC, decrementer_max);
-> +
-> +	/*
-> +	 * The decrementer's down counting will change the low bits. ORing with
-> +	 * the default max ensure they are set.
-> +	 */
-> +	readback =3D mfspr(SPRN_DEC) | DECREMENTER_DEFAULT_MAX;
-> +
-> +	/*
-> +	 * If we fail a readback test we need to reset decrementer_max to the
-> +	 * 32 bit maximum. If the CPU has the LD disabled for whatever reason
-> +	 * leaving it at a larger value would cause us to write into the high
-> +	 * bit when handling decrementer exceptions, triggering another.
-> +	 */
-> +
-> +	pr_warn("time_init: readback got %llx, dec_max: %llx\n", readback,
-> decrementer_max);
-> +
-> +	if (readback !=3D decrementer_max) {
-> +		decrementer_max =3D DECREMENTER_DEFAULT_MAX;
-> +
-> +		pr_warn("time_init: large decrementer readback test failed on CPU %d,
-> truncating to 32 bits\n",
-> +			smp_processor_id());
-> +	}
-> +}
-> +
-> +static void enable_large_decrementer(void)
-> +{
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return;
-> +
-> +	if (decrementer_max <=3D DECREMENTER_DEFAULT_MAX)
-> +		return;
-> +
-> +	/*
-> +	 * If we're running as the hypervisor we need to enable the LD manually
-> +	 * otherwise firmware should have done it for us.
-> +	 */
-> +	if (cpu_has_feature(CPU_FTR_HVMODE))
-> +		mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
-> +
-> +	check_large_decrementer();
-> +}
-> +
-> +static void __init set_decrementer_max(void)
-> +{
-> +	struct device_node *cpu;
-> +	const __be32 *fp;
-> +	u64 bits =3D 32;
-> +
-> +	/* Prior to ISAv3 the decrementer is always 32 bit */
-> +	if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +		return;
-> +
-> +	cpu =3D of_find_node_by_type(NULL, "cpu");
-> +	if (cpu)
-> +		fp =3D of_get_property(cpu, "ibm,dec-bits", NULL);
-> +
-> +	if (cpu && fp) {
-> +		bits =3D of_read_number(fp, 1);
-> +
-> +		if (bits > 64 || bits < 32) {
-> +			pr_warn("time_init: firmware supplied invalid ibm,dec-bits");
-> +			bits =3D 32;
-> +		}
-> +
-> +
-> +		/* calculate the signed maximum given this many bits */
-> +		decrementer_max =3D (1ul << (bits - 1)) - 1;
-> +	}
-> +
-> +	pr_info("time_init: %llu bit decrementer (max: %llx)\n",
-> +		bits, decrementer_max);
-> +}
-the call to of_node_put(cpu) is missing in the function.
+On Thu, Jun 23, 2016 at 6:02 PM, Denis Kirjanov <kirjanov@gmail.com> wrote:
+> On 6/23/16, Oliver O'Halloran <oohall@gmail.com> wrote:
+>> +static void __init set_decrementer_max(void)
+>> +{
+>> +     struct device_node *cpu;
+>> +     const __be32 *fp;
+>> +     u64 bits = 32;
+>> +
+>> +     /* Prior to ISAv3 the decrementer is always 32 bit */
+>> +     if (!cpu_has_feature(CPU_FTR_ARCH_300))
+>> +             return;
+>> +
+>> +     cpu = of_find_node_by_type(NULL, "cpu");
+>> +     if (cpu)
+>> +             fp = of_get_property(cpu, "ibm,dec-bits", NULL);
+>> +
+>> +     if (cpu && fp) {
+>> +             bits = of_read_number(fp, 1);
+>> +
+>> +             if (bits > 64 || bits < 32) {
+>> +                     pr_warn("time_init: firmware supplied invalid ibm,dec-bits");
+>> +                     bits = 32;
+>> +             }
+>> +
+>> +
+>> +             /* calculate the signed maximum given this many bits */
+>> +             decrementer_max = (1ul << (bits - 1)) - 1;
+>> +     }
+>> +
+>> +     pr_info("time_init: %llu bit decrementer (max: %llx)\n",
+>> +             bits, decrementer_max);
+>> +}
+> the call to of_node_put(cpu) is missing in the function.
 
-> +
->  static void __init init_decrementer_clockevent(void)
->  {
->  	int cpu =3D smp_processor_id();
-> @@ -900,7 +979,7 @@ static void __init init_decrementer_clockevent(void)
->  	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
->
->  	decrementer_clockevent.max_delta_ns =3D
-> -		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
-> +		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
->  	decrementer_clockevent.min_delta_ns =3D
->  		clockevent_delta2ns(2, &decrementer_clockevent);
->
-> @@ -909,6 +988,9 @@ static void __init init_decrementer_clockevent(void)
->
->  void secondary_cpu_time_init(void)
->  {
-> +	/* Enable and test the large decrementer for this cpu */
-> +	enable_large_decrementer();
-> +
->  	/* Start the decrementer on CPUs that have manual control
->  	 * such as BookE
->  	 */
-> @@ -974,6 +1056,10 @@ void __init time_init(void)
->  	vdso_data->tb_update_count =3D 0;
->  	vdso_data->tb_ticks_per_sec =3D tb_ticks_per_sec;
->
-> +	/* initialise and enable the large decrementer (if we have one) */
-> +	set_decrementer_max();
-> +	enable_large_decrementer();
-> +
->  	/* Start the decrementer on CPUs that have manual control
->  	 * such as BookE
->  	 */
-> --
-> 2.5.5
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
-
---=20
-Regards / Mit besten Gr=C3=BC=C3=9Fen,
-Denis
+Well spotted, thanks.
