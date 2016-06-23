@@ -1,24 +1,41 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <luto@amacapital.net>
+Received: from mail-vk0-x22f.google.com (mail-vk0-x22f.google.com
+ [IPv6:2607:f8b0:400c:c05::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZhP163rZzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 09:57:57 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id t190so5191069pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 16:57:57 -0700 (PDT)
-Subject: Re: [PATCH v3 0/9] kexec_file_load implementation for PowerPC
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <20160622232946.793d6c04@350D> <2895031.4C8tZ3BP2G@hactar>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <576B25FF.1010307@gmail.com>
-Date: Thu, 23 Jun 2016 09:57:51 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZhfP6h0fzDqWq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:09:33 +1000 (AEST)
+Received: by mail-vk0-x22f.google.com with SMTP id d185so84163736vkg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jun 2016 17:09:33 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2895031.4C8tZ3BP2G@hactar>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20160622163011.4fjwalehrzk4a32t@treble>
+References: <20160429212546.t26mvthtvh7543ff@treble>
+ <CALCETrV2wtsEZH-OEDDGzYK-s02EeCWq1MZsYbrdjfyrbU7ugw@mail.gmail.com>
+ <20160429224112.kl3jlk7ccvfceg2r@treble>
+ <CALCETrUvRKYpF5MuhYuHSxd1QFnzSNKdXUQp+3to6rzKzQjQSw@mail.gmail.com>
+ <20160502135243.jkbnonaesv7zfios@treble>
+ <CALCETrWc5VFyo9tE5fQGKfijqCjguSSci71HSe58Z1_AL1ZHmQ@mail.gmail.com>
+ <20160519231546.yvtqz5wacxvykvn2@treble>
+ <CALCETrWkd1dtSZzrT1gj43frXPYEBFRhY-ToWoMSsdLOROMKcA@mail.gmail.com>
+ <20160524022805.sazm456jorfqvdr7@treble>
+ <CALCETrVNj2bscRZmSyzq4fMp5s3m0+KqpEFofv_uXsHF_na_=Q@mail.gmail.com>
+ <20160622163011.4fjwalehrzk4a32t@treble>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Wed, 22 Jun 2016 17:09:11 -0700
+Message-ID: <CALCETrWs4TNWnVbT=3ksuLNZC_UoymSv8uQw7ynGtoO7-6gXjA@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ Jessica Yu <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Vojtech Pavlik <vojtech@suse.com>,
+ Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +45,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 23/06/16 03:02, Thiago Jung Bauermann wrote:
-> Hello Balbir,
+On Wed, Jun 22, 2016 at 9:30 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> Andy,
 >
-Hi Thiago
- 
->>> 3. have IMA pass-on its event log (where integrity measurements are
->>>
->>>    registered) accross kexec to the second kernel, so that the event
->>>    history is preserved.
->>
->> OK.. and this is safe? Do both the kernels need to be signed by the
->> same certificate?
-> 
-> They don't. The integrity of the event log (assuming that is what you mean 
-> by "this" in "this is safe") is guaranteed by the TPM device. Each event in 
-> the measurement list extends a PCR and records its PCR value. It is 
-> cryptographically guaranteed that if you replay the PCR extends recorded in 
-> the event log and in the end of the process they match the current PCR 
-> values in the TPM device, then that event log is correct.
+> So I got a chance to look at this some more.  I'm thinking that to make
+> this feature more consistently useful, we shouldn't only annotate
+> pt_regs frames for calls to handlers; other calls should be annotated as
+> well: preempt_schedule_irq, CALL_enter_from_user_mode,
+> prepare_exit_to_usermode, SWAPGS, TRACE_IRQS_OFF, DISABLE_INTERRUPTS,
+> etc.  That way, the unwinder will always be able to find pt_regs from an
+> interrupt/exception, even if starting from one of these other calls.
+>
+> But then, things get ugly.  You have to either setup and tear down the
+> frame for every possible call, or do a higher-level setup/teardown
+> across multiple calls, which invalidates several assumptions in the
+> entry code about the location of pt_regs on the stack.
+>
 
+Here's yet another harebrained idea.  Maybe it works better than my
+previous harebrained ideas :)
 
-What I meant was how does the new kernel know that the old kernel did not
-cheat while passing on the values? I presume because we trust that kernel
-via a signature.
+Your patch is already creating a somewhat nonstandard stack frame:
 
++       movq    %rbp,                   0*8(%rsp)
++       movq    $entry_frame_ret,       1*8(%rsp)
++       movq    %rsp, %rbp
 
-and
+It's kind of a normal stack frame, but rbp points at something odd,
+and to unwind it fully correctly, the unwinder needs to know about it.
 
-How do we know the new kernel is safe to load - I guess via a signature that
-the new kernel is signed with (assuming it is present in the key ring).
+What if we made it even more special, along the lines of:
 
-Balbir Singh
+leaq offset_to_ptregs(%rsp), %rbp
+xorq $-1, %rbp
+
+IOW, don't write anything to the stack at all, and just put a special
+value into RBP that says "the next frame is pt_regs at such-and-such
+address".  Do this once on entry and make sure to restore RBP (from
+pt_regs) on exit.  Now the unwinder can notice that RBP has the high
+bits clear *and* that the negation of it points to the stack, and it
+can figure out what's going on.
+
+What do you think?  Am I nuts or could this work?
+
+It had better not have much risk of breaking things worse than they
+currently are, given that current kernel allow user code to stick any
+value it likes into the very last element of the RBP chain.
+
+--Andy
