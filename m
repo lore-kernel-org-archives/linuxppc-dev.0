@@ -1,37 +1,46 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0098.outbound.protection.outlook.com [157.56.112.98])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZmSf6GYczDqhW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 13:01:21 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: Scott Wood <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, Qiang Zhao
- <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>, "Claudiu
- Manoil" <claudiu.manoil@freescale.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring
- <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li
- <leoyang.li@nxp.com>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>
-Subject: RE: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
-Date: Thu, 23 Jun 2016 02:46:10 +0000
-Message-ID: <AM2PR04MB0883C91467E26AF0D52DC2C8F82D0@AM2PR04MB0883.eurprd04.prod.outlook.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <5339448.D8rpq4ofAC@wuerfel> <1464832042.22191.23.camel@buserror.net>
- <3435609.s5m1DCsoNb@wuerfel> <1465609853.22191.151.camel@buserror.net>
-In-Reply-To: <1465609853.22191.151.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZq3m1xkYzDqhg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 14:58:27 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5N4rxL5003361
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 00:58:25 -0400
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [125.16.236.1])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23q6r5a549-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 00:58:25 -0400
+Received: from localhost
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Thu, 23 Jun 2016 10:28:22 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 96B02E005E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:32:02 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5N4wI2K28639236
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:28:18 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5N4wFuQ019186
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 10:28:17 +0530
+Date: Thu, 23 Jun 2016 10:28:12 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
+To: Balbir Singh <bsingharora@gmail.com>, rjw@rjwysocki.net
+CC: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
+References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <576B23EB.7080903@gmail.com>
+In-Reply-To: <576B23EB.7080903@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <576B6C64.6060206@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,132 +50,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgQXJuZCwNCg0KQ291bGQgeW91IGNvbW1lbnQgb24gdGhlc2U/DQpUaGFua3MuDQoNCg0KQmVz
-dCByZWdhcmRzLA0KWWFuZ2JvIEx1DQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiBGcm9tOiBTY290dCBXb29kIFttYWlsdG86b3NzQGJ1c2Vycm9yLm5ldF0NCj4gU2VudDogU2F0
-dXJkYXksIEp1bmUgMTEsIDIwMTYgOTo1MSBBTQ0KPiBUbzogQXJuZCBCZXJnbWFubjsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gQ2M6IE1hcmsgUnV0bGFuZDsgVWxmIEhhbnNzb247
-IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBpMmNAdmdlci5rZXJuZWwu
-b3JnOyBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnOyBRaWFuZyBaaGFvOyBSdXNzZWxsIEtpbmc7
-DQo+IEJodXBlc2ggU2hhcm1hOyBKb2VyZyBSb2VkZWw7IENsYXVkaXUgTWFub2lsOyBkZXZpY2V0
-cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gS3VtYXIgR2FsYTsgUm9iIEhlcnJpbmc7IFNhbnRvc2gg
-U2hpbGlta2FyOyBsaW51eC1hcm0tDQo+IGtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBuZXRk
-ZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gbW1jQHZnZXIua2VybmVsLm9yZzsgWGlhb2Jv
-IFhpZTsgWWFuZy1MZW8gTGk7IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiBmb3VuZGF0aW9uLm9yZzsg
-WWFuZ2JvIEx1DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi80XSBzb2M6IGZzbDogYWRkIEdVVFMg
-ZHJpdmVyIGZvciBRb3JJUSBwbGF0Zm9ybXMNCj4gDQo+IE9uIFRodSwgMjAxNi0wNi0wMiBhdCAx
-MDo0MyArMDIwMCwgQXJuZCBCZXJnbWFubiB3cm90ZToNCj4gPiBPbiBXZWRuZXNkYXksIEp1bmUg
-MSwgMjAxNiA4OjQ3OjIyIFBNIENFU1QgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+IE9uIE1vbiwg
-MjAxNi0wNS0zMCBhdCAxNToxNSArMDIwMCwgQXJuZCBCZXJnbWFubiB3cm90ZToNCj4gPiA+ID4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2ZzbC9ndXRzLmMgYi9kcml2ZXJzL3NvYy9mc2wvZ3V0
-cy5jIG5ldw0KPiA+ID4gPiBmaWxlIG1vZGUgMTAwNjQ0IGluZGV4IDAwMDAwMDAwMDAwMC4uMmYz
-MDY5OGY1YmNmDQo+ID4gPiA+IC0tLSAvZGV2L251bGwNCj4gPiA+ID4gKysrIGIvZHJpdmVycy9z
-b2MvZnNsL2d1dHMuYw0KPiA+ID4gPiBAQCAtMCwwICsxLDEzMCBAQA0KPiA+ID4gPiArLyoNCj4g
-PiA+ID4gKyAqIEZyZWVzY2FsZSBRb3JJUSBQbGF0Zm9ybXMgR1VUUyBEcml2ZXINCj4gPiA+ID4g
-KyAqDQo+ID4gPiA+ICsgKiBDb3B5cmlnaHQgKEMpIDIwMTYgRnJlZXNjYWxlIFNlbWljb25kdWN0
-b3IsIEluYy4NCj4gPiA+ID4gKyAqDQo+ID4gPiA+ICsgKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBz
-b2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yDQo+ID4gPiA+ICttb2RpZnkN
-Cj4gPiA+ID4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGlj
-IExpY2Vuc2UgYXMNCj4gPiA+ID4gK3B1Ymxpc2hlZCBieQ0KPiA+ID4gPiArICogdGhlIEZyZWUg
-U29mdHdhcmUgRm91bmRhdGlvbjsgZWl0aGVyIHZlcnNpb24gMiBvZiB0aGUgTGljZW5zZSwNCj4g
-PiA+ID4gK29yDQo+ID4gPiA+ICsgKiAoYXQgeW91ciBvcHRpb24pIGFueSBsYXRlciB2ZXJzaW9u
-Lg0KPiA+ID4gPiArICovDQo+ID4gPiA+ICsNCj4gPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9pby5o
-Pg0KPiA+ID4gPiArI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPiAjaW5jbHVkZSA8
-bGludXgvbW9kdWxlLmg+DQo+ID4gPiA+ICsjaW5jbHVkZSA8bGludXgvc2xhYi5oPiAjaW5jbHVk
-ZSA8bGludXgvb2ZfYWRkcmVzcy5oPiAjaW5jbHVkZQ0KPiA+ID4gPiArPGxpbnV4L29mX3BsYXRm
-b3JtLmg+ICNpbmNsdWRlIDxsaW51eC9zeXNfc29jLmg+DQo+ID4gPiA+ICsNCj4gPiA+ID4gKyNk
-ZWZpbmUgR1VUU19QVlIJMHgwYTANCj4gPiA+ID4gKyNkZWZpbmUgR1VUU19TVlIJMHgwYTQNCj4g
-PiA+ID4gKw0KPiA+ID4gPiArc3RydWN0IGd1dHMgew0KPiA+ID4gPiArCXZvaWQgX19pb21lbSAq
-cmVnczsNCj4gPiA+DQo+ID4gPiBXZSBhbHJlYWR5IGhhdmUgYSBzdHJ1Y3QgdG8gZGVmaW5lIGd1
-dHMuICBXaHkgYXJlIHlvdSBub3QgdXNpbmcgaXQ/DQo+ID4gPiBXaHkgZG8geW91IGNvbnNpZGVy
-IHVzaW5nIGl0IHRvIGJlICJhYnVzZSI/ICBXaGF0IGlmIHdlIHdhbnQgdG8gbW92ZQ0KPiA+ID4g
-bW9yZSBndXRzIGZ1bmN0aW9uYWxpdHkgaW50byB0aGlzIGRyaXZlcj8NCj4gPg0KPiA+IFRoaXMg
-c3RydWN0dXJlIHdhcyBpbiB0aGUgb3JpZ2luYWwgcGF0Y2gsIEkgbGVmdCBpdCBpbiB0aGVyZSwg
-b25seQ0KPiA+IHJlbW92ZWQgdGhlIGluY2x1c2lvbiBvZiB0aGUgcG93ZXJwYyBoZWFkZXIgZmls
-ZSwgd2hpY2ggc2VlbWVkIHRvIGJlDQo+ID4gbWlzcGxhY2VkLg0KPiANCj4gSSdtIG5vdCByZWZl
-cmluZyAic3RydWN0IGd1dHMiLiAgSSdtIHJlZmVycmluZyB0byBjaGFuZ2luZyAic3RydWN0DQo+
-IGNjc3JfZ3V0cyBfX2lvbWVtICpyZWdzIiBpbnRvICJ2b2lkIF9faW9tZW0gKnJlZ3MiLg0KPiAN
-Cj4gQW5kIGl0J3Mgbm90IGEgcG93ZXJwYyBoZWFkZXIgZmlsZS4NCj4gDQo+ID4gPiA+ICsvKg0K
-PiA+ID4gPiArICogVGFibGUgZm9yIG1hdGNoaW5nIGNvbXBhdGlibGUgc3RyaW5ncywgZm9yIGRl
-dmljZSB0cmVlDQo+ID4gPiA+ICsgKiBndXRzIG5vZGUsIGZvciBGcmVlc2NhbGUgUW9ySVEgU09D
-cy4NCj4gPiA+ID4gKyAqLw0KPiA+ID4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2Vf
-aWQgZnNsX2d1dHNfb2ZfbWF0Y2hbXSA9IHsNCj4gPiA+ID4gKwkvKiBGb3IgVDQgJiBCNCBTZXJp
-ZXMgU09DcyAqLw0KPiA+ID4gPiArCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWRldmljZS1j
-b25maWctMS4wIiwgLmRhdGEgPSAiVDQvQjQNCj4gPiA+ID4gc2VyaWVzIiB9LA0KPiA+ID4gW3Nu
-aXBdDQo+ID4gPiA+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtZGV2aWNlLWNvbmZpZy0y
-LjAiLCAuZGF0YSA9ICJQDQo+ID4gPiA+IHNlcmllcyINCj4gPiA+DQo+ID4gPiBBcyBub3RlZCBp
-biBteSBjb21tZW50IG9uIHBhdGNoIDMvNCwgdGhlc2UgZGVzY3JpcHRpb25zIGFyZSByZXZlcnNl
-ZC4NCj4gPiA+DQo+ID4gPiBUaGV5J3JlIGFsc28gaW5jb21wbGV0ZS4gIHQyMDgwIGhhcyBkZXZp
-Y2UgY29uZmlnIDIuMC4gIHQxMDQwIGlzDQo+ID4gPiBkZXNjcmliZWQgYXMNCj4gPiA+IDIuMCB0
-aG91Z2ggaXQgc2hvdWxkIHByb2JhYmx5IGJlIDIuMSAob3IgYmV0dGVyLCBkcm9wIHRoZSBnZW5l
-cmljDQo+ID4gPiBjb21wYXRpYmxlIGFsdG9nZXRoZXIpLg0KPiA+DQo+ID4gT2suIElkZWFsbHkg
-SSB0aGluayB3ZSdkIGV2ZW4gbG9vayB1cCB0aGUgc3BlY2lmaWMgU29DIG5hbWVzIGZyb20gdGhl
-DQo+ID4gU1ZDIHJhdGhlciB0aGFuIHRoZSBjb21wYXRpYmxlIHN0cmluZy4gSSBqdXN0IGRpZG4n
-dCBoYXZlIGEgZ29vZCBsaXN0DQo+ID4gZm9yIHRob3NlIHRvIHB1dCBpbiB0aGUgZHJpdmVyLg0K
-PiANCj4gVGhlIGxpc3QgaXMgaW4gYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21wYzg1eHguaCBi
-dXQgSSBkb24ndCBrbm93IHdoeSB3ZQ0KPiBuZWVkIHRvIGNvbnZlcnQgaXQgdG8gYSBzdHJpbmcg
-aW4gdGhlIGZpcnN0IHBsYWNlLg0KPiANCj4gPg0KPiA+ID4gPiArCS8qDQo+ID4gPiA+ICsJICog
-c3lzY29uIGRldmljZXMgZGVmYXVsdCB0byBsaXR0bGUtZW5kaWFuLCBidXQgb24gcG93ZXJwYyB3
-ZQ0KPiA+ID4gPiBoYXZlDQo+ID4gPiA+ICsJICogZXhpc3RpbmcgZGV2aWNlIHRyZWVzIHdpdGgg
-YmlnLWVuZGlhbiBtYXBzIGFuZCBhbiBhYnNlbnQNCj4gPiA+ID4gZW5kaWFuZXNzDQo+ID4gPiA+
-ICsJICogImJpZy1wcm9wZXJ0eSINCj4gPiA+ID4gKwkgKi8NCj4gPiA+ID4gKwlpZiAoIUlTX0VO
-QUJMRUQoQ09ORklHX1BPV0VSUEMpICYmDQo+ID4gPiA+ICsJICAgICFvZl9wcm9wZXJ0eV9yZWFk
-X2Jvb2woZGV2LT5vZl9ub2RlLCAiYmlnLWVuZGlhbiIpKQ0KPiA+ID4gPiArCQlndXRzLT5saXR0
-bGVfZW5kaWFuID0gdHJ1ZTsNCj4gPiA+DQo+ID4gPiBUaGlzIGlzIG5vdCBhIHN5c2NvbiBkZXZp
-Y2UgKFlhbmdibydzIHBhdGNoIHRvIGFkZCBhIGd1dHMgbm9kZSBvbg0KPiA+ID4gbHMyMDgwIGlz
-IHRoZSBvbmx5IGd1dHMgbm9kZSB0aGF0IHNheXMgInN5c2NvbiIsIGFuZCB0aGF0IHdhcyBhDQo+
-ID4gPiBsZWZ0b3ZlciBmcm9tIGVhcmxpZXIgcmV2aXNpb25zIGFuZCBzaG91bGQgcHJvYmFibHkg
-YmUgcmVtb3ZlZCkuDQo+ID4gPiBFdmVuIGlmIGl0IHdlcmUsIHdoZXJlIGlzIGl0IGRvY3VtZW50
-ZWQgdGhhdCBzeXNjb24gZGVmYXVsdHMgdG8NCj4gPiA+IGxpdHRsZS1lbmRpYW4/DQo+ID4NCj4g
-PiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcmVnbWFwL3JlZ21hcC50eHQNCj4g
-Pg0KPiA+IFdlIGhhZCBhIGxpdHRsZSBzY3Jld3VwIGhlcmUsIGJhc2ljYWxseSByZWdtYXAgKGFu
-ZCBieSBjb25zZXF1ZW5jZSwNCj4gPiBzeXNjb24pIGFsd2F5cyBkZWZhdWx0ZWQgdG8gbGl0dGxl
-LWVuZGlhbiB3YXkgYmVmb3JlIHRoYXQgd2FzDQo+ID4gZG9jdW1lbnRlZCwgc28gaXQncyB0b28g
-bGF0ZSB0byBjaGFuZ2UgaXQsDQo+IA0KPiBXaGF0IGNhdXNlcyBhIGRldmljZSBub2RlIHRvIGZh
-bGwgdW5kZXIgdGhlIGp1cmlzZGljdGlvbiBvZiByZWdtYXAudHh0Pw0KPiAgQWdhaW4sIHRoZXNl
-IG5vZGVzIGRvIG5vdCBjbGFpbSAic3lzY29uIiBjb21wYXRpYmlsaXR5Lg0KPiANCj4gPiBhbHRo
-b3VnaCBJIGFncmVlIGl0IHdvdWxkIGhhdmUgbWFkZSBzZW5zZSB0byBkb2N1bWVudCByZWdtYXAg
-dG8NCj4gPiBkZWZhdWx0IHRvIGJpZy1lbmRpYW4gb24gcG93ZXJwYy4NCj4gDQo+IFBsZWFzZSBk
-b24ndC4gIEl0J3MgZW5vdWdoIG9mIGEgbWVzcyBhcyBpczsgbm8gbmVlZCB0byBzdGFydCB0aHJv
-d2luZyBpbg0KPiBhcmNoaXRlY3R1cmUgaWZkZWZzLg0KPiANCj4gPiA+IERvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy9jb21tb24tcHJvcGVydGllcy50eHQgc2F5cyB0aGF0DQo+ID4g
-PiB0aGUgaW5kaXZpZHVhbCBiaW5kaW5nIHNwZWNpZmllcyB0aGUgZGVmYXVsdC4gIFRoZSBkZWZh
-dWx0IGZvciB0aGlzDQo+ID4gPiBub2RlIHNob3VsZCBiZSBiaWctZW5kaWFuIGJlY2F1c2UgdGhh
-dCdzIHdoYXQgZXhpc3RlZCBiZWZvcmUgdGhlcmUNCj4gPiA+IHdhcyBhIG5lZWQgdG8gZGVzY3Jp
-YmUgdGhlIGVuZGlhbm5lc3MuICBBbmQgd2UgbmVlZCBhbiB1cGRhdGUgdG8gdGhlDQo+ID4gPiBn
-dXRzIGJpbmRpbmcgdG8gc3BlY2lmeSB0aGF0Lg0KPiA+DQo+ID4gR29vZCBwb2ludC4gVGhpcyBw
-cm9hYmx5IG1lYW5zIHRoYXQgc3BlY2lmeWluZyBib3RoIHRoZSAiZ3V0cyIgYW5kDQo+ICJzeXNj
-b24iDQo+ID4gY29tcGF0aWJsZSBzdHJpbmdzIGltcGxpZXMgaGF2aW5nIHRvIGFsc28gc3BlY2lm
-eSB0aGUgZW5kaWFuZXNzDQo+ID4gZXhwbGljaXRseSBib3RoIHdheXMsIGJlY2F1c2Ugb3RoZXJ3
-aXNlIHdlIGJyZWFrIG9uZSBvZiB0aGUgdHdvDQo+IGJpbmRpbmdzLg0KPiANCj4gWWVzLCBidXQg
-dGhlIG5vZGUgc2hvdWxkIG9ubHkgc3BlY2lmeSAiZ3V0cyIuDQo+IA0KPiA+DQo+ID4gPiA+ICsN
-Cj4gPiA+ID4gKwlndXRzLT5yZWdzID0gZGV2bV9pb3JlbWFwX3Jlc291cmNlKGRldiwgMCk7DQo+
-ID4gPiA+ICsJaWYgKCFndXRzLT5yZWdzKSB7DQo+ID4gPiA+ICsJCXJldCA9IC1FTk9NRU07DQo+
-ID4gPiA+ICsJCWtmcmVlKGd1dHMpOw0KPiA+ID4gPiArCQlnb3RvIG91dDsNCj4gPiA+ID4gKwl9
-DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlmc2xfZ3V0c19pbml0KGRldiwgZ3V0cyk7DQo+ID4gPiA+
-ICsJcmV0ID0gMDsNCj4gPiA+ID4gK291dDoNCj4gPiA+ID4gKwlyZXR1cm4gcmV0Ow0KPiA+ID4g
-PiArfQ0KPiA+ID4gPiArDQo+ID4gPiA+ICtzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBm
-c2xfc29jX2d1dHMgPSB7DQo+ID4gPiA+ICsJLnByb2JlID0gZnNsX2d1dHNfcHJvYmUsDQo+ID4g
-PiA+ICsJLmRyaXZlci5vZl9tYXRjaF90YWJsZSA9IGZzbF9ndXRzX29mX21hdGNoLCB9Ow0KPiA+
-ID4gPiArDQo+ID4gPiA+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKGZzbF9zb2NfZ3V0cyk7DQo+
-ID4gPg0KPiA+ID4gQWdhaW4sIHRoaXMgbWVhbnMgdGhhdCB0aGUgaW5mb3JtYXRpb24gaXMgbm90
-IGF2YWlsYWJsZSBkdXJpbmcgZWFybHkNCj4gPiA+IGJvb3QsIHN1Y2ggYXMgaW4gdGhlIGNsb2Nr
-IGRyaXZlci4gIFRodXMgd2Ugd291bGQgbm90IGJlIGFibGUgdG8NCj4gPiA+IGNvbnZlcnQgY2xr
-IC1xb3JpcSdzIGRpcmVjdCBtZnNwcihTUFJOX1NWUikgaW50byBhbg0KPiA+ID4gc29jX2Rldmlj
-ZV9tYXRjaCgpIChvciBhbnl0aGluZyBlbHNlIHRoYXQgbWFrZXMgdXNlIG9mIHRoaXMgZmlsZSks
-DQo+ID4gPiBub3Igd291bGQgd2UgYmUgYWJsZSB0byBtb3ZlIGl0cyBhY2Nlc3Mgb2YgdGhlIGd1
-dHMgUkNXIHJlZ2lzdGVycw0KPiA+ID4gaW50byB0aGlzIGRyaXZlci4NCj4gPg0KPiA+IENvcnJl
-Y3QuIERvIHdlIGhhdmUgYSByZWFzb24gdG8gY29udmVydCB0aGUgbWZzcHIoKSB0aG91Z2g/IEkg
-ZG9uJ3QNCj4gPiByZWFsbHkgc2VlIGFuIGltcHJvdmVtZW50IG92ZXIgdGhlIGN1cnJlbnQgc3Rh
-dGUgaWYgd2UgZG8gdGhhdCwNCj4gDQo+IFRoZW4gc2hvdWxkIHdlIGRyb3AgdGhpcyBwYXRjaHNl
-dCBhbmQgcHV0IGEgc2ltaWxhciBQUEMgaWZkZWYgaW4NCj4gZHJpdmVycy9tbWMvaG9zdC9zZGhj
-aS1vZi1lc2RoYy5jPw0KPiANCj4gVGhlcmUncyBhbHNvIHRoZSBSQ1cgYWNjZXNzLiAgWW91IHNh
-aWQgaW4gdGhlIHBhdGNoIDQvNCBkaXNjdXNzaW9uIHRoYXQNCj4geW91IGRpIGRuJ3QgbGlrZSBh
-bnkgcmFuZG9tIGRyaXZlciBpb3JlbWFwcGluZyB0aGUgcmVnaXN0ZXJzLi4uDQo+IA0KPiA+IGFu
-ZCBmb3IgbmV3IGRldmljZXMNCj4gPiB0aGF0IG1pZ2h0IG5lZWQgdGhlIGVycmF0dW0gd29ya2Fy
-b3VuZCwgd2UgY291bGQgYWRkIGEgRFQgcHJvcGVydHkNCj4gPiB0aGF0IHdvdWxkIGJlIHByZWZl
-cnJlZCB0byBib3RoLg0KPiANCj4gSXQncyB1bmxpa2VseSB0aGF0IHdlIHdvdWxkIGtub3cgdGhl
-IGVycmF0dW0gZXhpc3RzIGF0IHRoZSB0aW1lIHRoZQ0KPiBkZXZpY2UgdHJlZSBpcyBjcmVhdGVk
-LiAgV2UgYWxzbyBnZW5lcmFsbHkgZG9uJ3QgaGF2ZSBzZXBhcmF0ZSBkZXZpY2UNCj4gdHJlZXMg
-Zm9yIGVhY2ggcmV2aXNpb24gb2YgYSBjaGlwIChhbmQgaWYgd2UgZGlkLCB3ZSdkIGhhdmUgdXNl
-cnMgdGhhdA0KPiB1c2UgdGhlIHdyb25nIG9uZSkuDQo+IA0KPiAtU2NvdHQNCg0K
+
+
+On 06/23/2016 05:18 AM, Balbir Singh wrote:
+> 
+> 
+> On 23/06/16 05:36, Shreyas B. Prabhu wrote:
+>> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+>> has a timeout so that if a cpu stays in snooze for more than target
+>> residency of the next available idle state, then it would exit thereby
+>> giving chance to the cpuidle governor to re-evaluate and
+>> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+>> due to this timeout, its last_residency will be target_residency of next
+>> deeper state.
+>>
+>> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+>> changed the math around last_residency calculation. Specifically, while
+>> converting last_residency value from nanoseconds to microseconds it does
+>> right shift by 10. Due to this, in snooze timeout exit scenarios
+>> last_residency calculated is roughly 2.3% less than target_residency of
+>> next available state. This pattern is picked up get_typical_interval()
+>> in the menu governor and therefore expected_interval in menu_select() is
+>> frequently less than the target_residency of any state but snooze.
+>>
+>> Due to this we are entering snooze at a higher rate, thereby affecting
+>> the single thread performance.
+>> Since the math around last_residency is not meant to be precise, fix this
+>> issue setting snooze timeout to 105% of target_residency of next
+>> available idle state.
+>>
+>> This also adds comment around why snooze timeout is necessary.
+>>
+>> Reported-by: Anton Blanchard <anton@samba.org>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
+>>  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
+>>  2 files changed, 27 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>> index e12dc30..5835491 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
+>>  		cpuidle_state_table = powernv_states;
+>>  		/* Device tree can indicate more idle states */
+>>  		max_idle_state = powernv_add_idle_states();
+>> +
+>> +		/*
+>> +		 * Staying in snooze for a long period can degrade the
+>> +		 * perfomance of the sibling cpus. Set timeout for snooze such
+>> +		 * that if the cpu stays in snooze longer than target residency
+>> +		 * of the next available idle state then exit from snooze. This
+>> +		 * gives a chance to the cpuidle governor to re-evaluate and
+>> +		 * promote it to deeper idle states.
+>> +		 */
+>>  		if (max_idle_state > 1) {
+>>  			snooze_timeout_en = true;
+>>  			snooze_timeout = powernv_states[1].target_residency *
+>>  					 tb_ticks_per_usec;
+>> +			/*
+>> +			 * Give a 5% margin since target residency related math
+>> +			 * is not precise in cpuidle core.
+>> +			 */
+> 
+> Is this due to the microsecond conversion mentioned above? It would be nice to
+> have it in the comment. Does
+> 
+> (powernv_states[1].target_residency + tb_ticks_per_usec) / tb_ticks_per_usec solve
+> your rounding issues, assuming the issue is really rounding or maybe it is due
+> to the shift by 10, could you please elaborate on what related math is not
+> precise? That would explain to me why I missed understanding your changes.
+> 
+>> +			snooze_timeout += snooze_timeout / 20;
+> 
+> For now 5% is sufficient, but do you want to check to assert to check if
+> 
+> snooze_timeout (in microseconds) / tb_ticks_per_usec > powernv_states[i].target_residency?
+> 
+
+This is not a rounding issue. As I mentioned in the commit message, this
+is because of the last_residency calculation in cpuidle.c.
+To elaborate, last residency calculation is done in the following way
+after commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with
+local_clock()") -
+
+cpuidle_enter_state()
+{
+	[...]
+	time_start = local_clock();
+	[enter idle state]
+	time_end = local_clock();
+	/*
+         * local_clock() returns the time in nanosecond, let's shift
+         * by 10 (divide by 1024) to have microsecond based time.
+         */
+        diff = (time_end - time_start) >> 10;
+	[...]
+	dev->last_residency = (int) diff;
+}
+
+Because of >>10 as opposed to /1000, last_residency is lesser by 2.3%
+
+In snooze timeout exit scenarios because of this, last_residency
+calculated is 2.3% less than target_residency of next available state.
+This affects get_typical_interval() in the menu governor and therefore
+expected_interval in menu_select() is frequently less than the
+target_residency of any state but snooze.
+
+
+I'll expand the comments as you suggested.
+
+Thanks,
+Shreyas
