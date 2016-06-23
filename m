@@ -1,24 +1,19 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-qk0-x22b.google.com (mail-qk0-x22b.google.com
- [IPv6:2607:f8b0:400d:c09::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZvYz3CDVzDqk3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 18:21:27 +1000 (AEST)
-Received: by mail-qk0-x22b.google.com with SMTP id a186so97914497qkf.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:21:27 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAHj3AV=V2s2ymM7Sg8TsmuqkopXmGjDceC0c=K1-_BuLQqPvEQ@mail.gmail.com>
-References: <1466666639-10480-1-git-send-email-oohall@gmail.com>
- <CAHj3AV=V2s2ymM7Sg8TsmuqkopXmGjDceC0c=K1-_BuLQqPvEQ@mail.gmail.com>
-From: oliver <oohall@gmail.com>
-Date: Thu, 23 Jun 2016 18:21:23 +1000
-Message-ID: <CAOSf1CGEncYNgqi4gj0SK_v98mypcomgFgngbFjahSx3pnTccA@mail.gmail.com>
-Subject: Re: [PATCHv4] powerpc/timer - large decrementer support
-To: Denis Kirjanov <kirjanov@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>,
- Jack Miller <jack@codezen.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZx0y480KzDqks
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 19:26:26 +1000 (AEST)
+In-Reply-To: <1466143320-8203-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm/hash: Don't add memory coherence if cache inhibited is
+ set
+Message-Id: <3rZx0y2mKxz9t0d@ozlabs.org>
+Date: Thu, 23 Jun 2016 19:26:26 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 23, 2016 at 6:02 PM, Denis Kirjanov <kirjanov@gmail.com> wrote:
-> On 6/23/16, Oliver O'Halloran <oohall@gmail.com> wrote:
->> +static void __init set_decrementer_max(void)
->> +{
->> +     struct device_node *cpu;
->> +     const __be32 *fp;
->> +     u64 bits = 32;
->> +
->> +     /* Prior to ISAv3 the decrementer is always 32 bit */
->> +     if (!cpu_has_feature(CPU_FTR_ARCH_300))
->> +             return;
->> +
->> +     cpu = of_find_node_by_type(NULL, "cpu");
->> +     if (cpu)
->> +             fp = of_get_property(cpu, "ibm,dec-bits", NULL);
->> +
->> +     if (cpu && fp) {
->> +             bits = of_read_number(fp, 1);
->> +
->> +             if (bits > 64 || bits < 32) {
->> +                     pr_warn("time_init: firmware supplied invalid ibm,dec-bits");
->> +                     bits = 32;
->> +             }
->> +
->> +
->> +             /* calculate the signed maximum given this many bits */
->> +             decrementer_max = (1ul << (bits - 1)) - 1;
->> +     }
->> +
->> +     pr_info("time_init: %llu bit decrementer (max: %llx)\n",
->> +             bits, decrementer_max);
->> +}
-> the call to of_node_put(cpu) is missing in the function.
+On Fri, 2016-17-06 at 06:02:00 UTC, "Aneesh Kumar K.V" wrote:
+> H_ENTER hcall handling in qemu had assumptions that a cache inhibited
+> hpte entry won't have memory conference set. Also older kernel
+> mentioned that some version of pHyp required this (the code removed
+> by the below commit says:
+> 
+>     /* Make pHyp happy */
+>     if ((rflags & _PAGE_NO_CACHE) && !(rflags & _PAGE_WRITETHRU))
+>             hpte_r &= ~HPTE_R_M;
+> 
+> But with older kernel we had some inconsistent memory conherence
+> mapping. We always enabled memory conherence in the page fault path and
+> removed memory conherence is _PAGE_NO_CACHE was set when we mapped the
+> page via htab_bolt_mapping. The commit mentioned below tried to
+> consolidate that by always enabling memory conherence. But as mentioned
+> above that breaks Qemu H_ENTER handling.
+> 
+> This patch update this such that we enable memory conherence only if
+> cache inhibited is not set and bring fault handling, lpar and bolt
+> mapping in sync.
+> 
+> Fixes: commit 30bda41aba4e("powerpc/mm: Drop WIMG in favour of new constant")
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Well spotted, thanks.
+Applied to powerpc fixes, thanks.
+
+https://git.kernel.org/powerpc/c/e568006b9d828403397668864d
+
+cheers
