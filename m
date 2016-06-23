@@ -1,41 +1,25 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-vk0-x234.google.com (mail-vk0-x234.google.com
- [IPv6:2607:f8b0:400c:c05::234])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbFlg0xRQzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 08:01:03 +1000 (AEST)
-Received: by mail-vk0-x234.google.com with SMTP id u64so126365230vkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:01:03 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbGT66npgzDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 08:33:30 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id ts6so7425780pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:33:30 -0700 (PDT)
+Subject: Re: [PATCH v3 0/9] kexec_file_load implementation for PowerPC
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <2895031.4C8tZ3BP2G@hactar> <576B25FF.1010307@gmail.com>
+ <1612090.Qxo4UiJulB@hactar>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <576C63B4.8060302@gmail.com>
+Date: Fri, 24 Jun 2016 08:33:24 +1000
 MIME-Version: 1.0
-In-Reply-To: <20160623204017.df22mljbrgpogeqp@treble>
-References: <CALCETrVNj2bscRZmSyzq4fMp5s3m0+KqpEFofv_uXsHF_na_=Q@mail.gmail.com>
- <20160622163011.4fjwalehrzk4a32t@treble>
- <CALCETrVJpFYi=x0nVWSVi3n40Xkig43Y5bRNOO2XNmUuC9Wt+g@mail.gmail.com>
- <20160622182245.4u72jgjg2khxracz@treble>
- <CALCETrXR9iMO1veHREumqTOvQuLYYQFH_=VRhQ6oXusXi+NFNg@mail.gmail.com>
- <20160622184042.br7ov37pl6eydr3y@treble>
- <CALCETrWQWhPnFai5_RkLDiNmaxcjVmaYDAGTzQL8fXien8ojSQ@mail.gmail.com>
- <20160623161950.ovwpvhq43tq35u7k@treble>
- <CALCETrWJ8fdttrM3ZwCgeBBzhJOPGc4PEHT8AZzc=eg7K69nfA@mail.gmail.com>
- <20160623183132.oqtl6flnoqtilurs@treble>
- <20160623204017.df22mljbrgpogeqp@treble>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Thu, 23 Jun 2016 15:00:40 -0700
-Message-ID: <CALCETrXq-uZvxZ4xxLWcHVKx4unjJTe=Gqh0V0rkLz+-6su4gg@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 05/18] sched: add task flag for preempt IRQ tracking
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Jiri Kosina <jikos@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- X86 ML <x86@kernel.org>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- live-patching@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
- Chris J Arges <chris.j.arges@canonical.com>,
- Jessica Yu <jeyu@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Petr Mladek <pmladek@suse.com>, Jiri Slaby <jslaby@suse.cz>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Vojtech Pavlik <vojtech@suse.com>,
- Miroslav Benes <mbenes@suse.cz>, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1612090.Qxo4UiJulB@hactar>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,85 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 23, 2016 at 1:40 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> On Thu, Jun 23, 2016 at 01:31:32PM -0500, Josh Poimboeuf wrote:
->> On Thu, Jun 23, 2016 at 09:35:29AM -0700, Andy Lutomirski wrote:
->> > > So which is the least-bad option?  To summarize:
->> > >
->> > >   1) task flag(s) for preemption and page faults
->> > >
->> > >   2) turn pt_regs into a stack frame
->> > >
->> > >   3) annotate all calls from entry code in a table
->> > >
->> > >   4) encode rbp on entry
->> > >
->> > > They all have their issues, though I'm partial to #2.
->> > >
->> > > Any more hare-brained ideas? :-)
->> >
->> > I'll try to take a closer look at #2 and see just how much I dislike
->> > all the stack frame munging.
->>
->> Ok.
->>
->> > Also, in principle, it's only the
->> > sleeping calls and the calls that make it into real (non-entry) kernel
->> > code that really want to be unwindable through this mechanism.
->>
->> Yeah, that's true.  We could modify options 2 or 3 to be less absolute.
->> Though I think that makes them more prone to future breakage.
->>
->> > FWIW, I don't care that much about preserving gdb's partial ability to
->> > unwind through pt_regs, especially because gdb really ought to be able
->> > to use DWARF, too.
->>
->> Hm, that's a good point.  I really don't know if there are any other
->> external tools out there that would care.  Maybe we could try option 4
->> and then see if anybody complains.
->
-> I'm starting to think hare-brained option 4 is the way to go.  Any
-> external tooling should really be relying on DWARF anyway.
->
-> Here's a sneak preview.  If this general approach looks ok to you, I'll
-> go ahead and port all the in-tree unwinders and post a proper patch.
->
-> Instead of using xor -1 on the pt_regs pointer, I just cleared the
-> high-order bit.  That makes the unwinding experience much more pleasant
-> for a human stack walker, and also ensures that anybody trying to
-> dereference it gets slapped with an oops, at least in the 48-bit address
-> space era.
->
-> diff --git a/arch/x86/entry/calling.h b/arch/x86/entry/calling.h
-> index 9a9e588..bf397426 100644
-> --- a/arch/x86/entry/calling.h
-> +++ b/arch/x86/entry/calling.h
-> @@ -201,6 +201,23 @@ For 32-bit we have the following conventions - kernel is built with
->         .byte 0xf1
->         .endm
->
-> +       /*
-> +        * This is a sneaky trick to help the unwinder find pt_regs on the
-> +        * stack.  The frame pointer is replaced with an encoded pointer to
-> +        * pt_regs.  The encoding is just a clearing of the highest-order bit,
-> +        * which makes it an invalid address and is also a signal to the
-> +        * unwinder that it's a pt_regs pointer in disguise.
-> +        *
-> +        * NOTE: This must be called *after* SAVE_EXTRA_REGS because it
-> +        * corrupts rbp.
-> +        */
-> +       .macro ENCODE_FRAME_POINTER ptregs_offset=0
-> +#ifdef CONFIG_FRAME_POINTER
-> +       leaq \ptregs_offset(%rsp), %rbp
-> +       btr $63, %rbp
-> +#endif
-> +       .endm
-> +
 
-Maybe optimize slightly:
 
-.ifeq \ptregs_offset
-mov %rsp, %rbp
-.else
-leaq \ptregs_offset(%rsp), %rbp
-.endif
+On 24/06/16 02:44, Thiago Jung Bauermann wrote:
+> Am Donnerstag, 23 Juni 2016, 09:57:51 schrieb Balbir Singh:
+>> On 23/06/16 03:02, Thiago Jung Bauermann wrote:
+>>>>> 3. have IMA pass-on its event log (where integrity measurements are
+>>>>>
+>>>>>    registered) accross kexec to the second kernel, so that the event
+>>>>>    history is preserved.
+>>>>
+>>>> OK.. and this is safe? Do both the kernels need to be signed by the
+>>>> same certificate?
+>>>
+>>> They don't. The integrity of the event log (assuming that is what you
+>>> mean by "this" in "this is safe") is guaranteed by the TPM device. Each
+>>> event in the measurement list extends a PCR and records its PCR value.
+>>> It is cryptographically guaranteed that if you replay the PCR extends
+>>> recorded in the event log and in the end of the process they match the
+>>> current PCR values in the TPM device, then that event log is correct.
+>>
+>> What I meant was how does the new kernel know that the old kernel did not
+>> cheat while passing on the values? I presume because we trust that kernel
+>> via a signature.
+> 
+> Sorry, I still don't understand your concern. What kind of cheating? Which 
+> values? If it's the values in the event log, there's no need to trust the 
+> old kernel. The new kernel knows that the old kernel didn't pass wrong 
+> measurement values in the event log because it can recalculate the PCR 
+> extend operations recorded in the log and compare the results of the replay 
+> with the current PCR values stored in the TPM device. If they match, then 
+> the event log is guaranteed to be correct. If they don't match, either the 
+> memory was corrupted somehow during the kexec process, or the old kernel 
+> tried to pass a falsified event log.
+> 
+
+Yep, get it/got it. My concern was anything using passed on the values should
+compare the results with the current PCR values.
+
+BTW, what do we gain by passing the values if we are relying on the PCR registers
+anyway, can't we directly read them off from there? Aren't we going to ready anyway
+to compare, what does passing the values gain?
+
+[snip]
+
+>> and
+>>
+>> How do we know the new kernel is safe to load - I guess via a signature
+>> that the new kernel is signed with (assuming it is present in the key
+>> ring).
+> 
+> Correct. That goal is met by signature verification, not by integrity 
+> assurance.
+> 
+> I'll note that even with both of my patch series there's still code missing 
+> for kernel signature verification in PowerPC. I believe there's not a file 
+> format defined yet for how to store a signature in a PowerPC kernel image.
+> 
+> Integrity assurance doesn't depend on kernel signature verification though. 
+> There's value in both my patch series even without kernel signature 
+> verification support. They're complementary features.
+>  
+
+Thanks for clarifying
+
+Balbir Singh.
