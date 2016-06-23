@@ -2,14 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZx0z3cc3zDqks
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZx0z73YszDqks
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 19:26:27 +1000 (AEST)
-In-Reply-To: <1466132722-13512-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <24a2db8c1ed97008426e8093bc83165a6a237d1c.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/eeh: Fix invalid cached PE primary bus
-Message-Id: <3rZx0z0vk1z9t17@ozlabs.org>
+Cc: Matt Evans <matt@ozlabs.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Alexei Starovoitov <ast@fb.com>, Denis Kirjanov <kda@linux-powerpc.org>,
+ Thadeu Lima de Souza Cascardo <cascardo@redhat.com>, stable@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCHv2,1/7] ppc bpf/jit: Disable classic BPF JIT on ppc64le
+Message-Id: <3rZx0z6BQqz9t1H@ozlabs.org>
 Date: Thu, 23 Jun 2016 19:26:27 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,24 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-17-06 at 03:05:11 UTC, Gavin Shan wrote:
-> The PE primary bus cannot be got from its child devices when having
-> full hotplug in error recovery. The PE primary bus is cached, which
-> is done in commit <05ba75f84864> ("powerpc/eeh: Fix stale cached primary
-> bus"). In eeh_reset_device(), the flag (EEH_PE_PRI_BUS) is cleared
-> before the PCI hot remove. eeh_pe_bus_get() then returns NULL as the
-> PE primary bus in pnv_eeh_reset() and it crashes the kernel eventually.
+On Wed, 2016-22-06 at 16:25:01 UTC, "Naveen N. Rao" wrote:
+> Classic BPF JIT was never ported completely to work on little endian
+> powerpc. However, it can be enabled and will crash the system when used.
+> As such, disable use of BPF JIT on ppc64le.
 > 
-> This fixes the issue by clearing the flag (EEH_PE_PRI_BUS) before the
-> PCI hot add. With it, the PowerNV EEH reset backend (pnv_eeh_reset())
-> can get valid PE primary bus through eeh_pe_bus_get().
-> 
-> Fixes: 67086e32b564 ("powerpc/eeh: powerpc/eeh: Support error recovery for VF PE")
-> Reported-by: Pridhiviraj Paidipeddi <ppaiddipe@in.ibm.com>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Reported-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Acked-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/a3aa256b7258b3d19f8b44557c
+https://git.kernel.org/powerpc/c/844e3be47693f92a108cb1fb3b
 
 cheers
