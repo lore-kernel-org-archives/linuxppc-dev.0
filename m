@@ -1,48 +1,19 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rZrBr14plzDqhV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:49:39 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5N5nATW104960
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:49:38 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23q6qnve8b-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 01:49:38 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 23 Jun 2016 15:49:35 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 586B02BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:49:33 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5N5nXI33408262
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:49:33 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5N5nVfa030679
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 15:49:33 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Yury Norov <ynorov@caviumnetworks.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
- Kan Liang <kan.liang@intel.com>, Wang Nan <wangnan0@huawei.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v5] tools/perf: Fix the mask in regs_dump__printf and
- print_sample_iregs
-Date: Thu, 23 Jun 2016 11:19:27 +0530
-Message-Id: <1466660967-2016-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rZtJ324nxzDqjb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 17:24:19 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id c74so6022967pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 00:24:19 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Oliver O'Halloran <oohall@gmail.com>, Balbir Singh <bsingharora@gmail.com>,
+ Michael Neuling <mikey@neuling.org>, Jack Miller <jack@codezen.org>
+Subject: [PATCHv4] powerpc/timer - large decrementer support
+Date: Thu, 23 Jun 2016 17:23:59 +1000
+Message-Id: <1466666639-10480-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,132 +23,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When decoding the perf_regs mask in regs_dump__printf(),
-we loop through the mask using find_first_bit and find_next_bit functions.
-"mask" is of type "u64", but sent as a "unsigned long *" to
-lib functions along with sizeof().
+Power ISAv3 adds a large decrementer (LD) mode which increases the size
+of the decrementer register. The size of the enlarged decrementer
+register is between 32 and 64 bits with the exact size being dependent
+on the implementation. When in LD mode, reads are sign extended to 64
+bits and a decrementer exception is raised when the high bit is set (i.e
+the value goes below zero). Writes however are truncated to the physical
+register width so some care needs to be taken to ensure that the high
+bit is not set when reloading the decrementer. This patch adds support
+for using the LD inside the host kernel on processors that support it.
 
-While the exisitng code works fine in most of the case,
-the logic is broken when using a 32bit perf on a 64bit kernel (Big Endian).
-When reading u64 using (u32 *)(&val)[0], perf (lib/find_*_bit()) assumes it gets
-lower 32bits of u64 which is wrong. Proposed fix is to swap the words
-of the u64 to handle this case. This is _not_ endianess swap.
+When LD mode is supported firmware will supply the ibm,dec-bits property
+for CPU nodes to allow the kernel to determine the maximum decrementer
+value. Enabling LD mode is a hypervisor privileged operation so the
+kernel can only enable it manually when running in hypervisor mode.
+Guest kernels that support LD mode can request it using the
+"ibm,client-architecture-support" firmware call or some other platform
+specific method. If this property is not supplied then the traditional
+decrementer width of 32 bit is assumed and LD mode will not be enabled.
 
-Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Kan Liang <kan.liang@intel.com>
-Cc: Wang Nan <wangnan0@huawei.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+This patch was based on initial work by Jack Miller.
+
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Jack Miller <jack@codezen.org>
 ---
-Changelog v4:
-1) Removed the new macro and resued the DECLARE_BITMAP
+ arch/powerpc/include/asm/reg.h  |   1 +
+ arch/powerpc/include/asm/time.h |   6 +--
+ arch/powerpc/kernel/time.c      | 102 ++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 98 insertions(+), 11 deletions(-)
 
-Changelog v3:
-1)Moved the swap function to lib/bitmap.c
-2)Added a macro for declaration
-3)Added the comments
-
-Changelog v2:
-1)Moved the swap code to a common function
-2)Added more comments in the code
-
-Changelog v1:
-1)updated commit message and patch subject
-2)Add the fix to print_sample_iregs() in builtin-script.c
-
- tools/include/linux/bitmap.h |  2 ++
- tools/lib/bitmap.c           | 18 ++++++++++++++++++
- tools/perf/builtin-script.c  |  4 +++-
- tools/perf/util/session.c    |  4 +++-
- 4 files changed, 26 insertions(+), 2 deletions(-)
-
-diff --git a/tools/include/linux/bitmap.h b/tools/include/linux/bitmap.h
-index 28f5493da491..5e98525387dc 100644
---- a/tools/include/linux/bitmap.h
-+++ b/tools/include/linux/bitmap.h
-@@ -2,6 +2,7 @@
- #define _PERF_BITOPS_H
- 
- #include <string.h>
-+#include <limits.h>
- #include <linux/bitops.h>
- 
- #define DECLARE_BITMAP(name,bits) \
-@@ -10,6 +11,7 @@
- int __bitmap_weight(const unsigned long *bitmap, int bits);
- void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
- 		 const unsigned long *bitmap2, int bits);
-+void bitmap_from_u64(unsigned long *dst, u64 mask);
- 
- #define BITMAP_FIRST_WORD_MASK(start) (~0UL << ((start) & (BITS_PER_LONG - 1)))
- 
-diff --git a/tools/lib/bitmap.c b/tools/lib/bitmap.c
-index 0a1adc1111fd..464a0cc63e6a 100644
---- a/tools/lib/bitmap.c
-+++ b/tools/lib/bitmap.c
-@@ -29,3 +29,21 @@ void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
- 	for (k = 0; k < nr; k++)
- 		dst[k] = bitmap1[k] | bitmap2[k];
- }
-+
-+/*
-+ * bitmap_from_u64 - Check and swap words within u64.
-+ *  @mask: source bitmap
-+ *  @dst:  destination bitmap
-+ *
-+ * In 32 bit big endian userspace on a 64bit kernel, 'unsigned long' is 32 bits.
-+ * When reading u64 using (u32 *)(&val)[0] and (u32 *)(&val)[1],
-+ * we will get wrong value for the mask. That is "(u32 *)(&val)[0]"
-+ * gets upper 32 bits of u64, but perf may expect lower 32bits of u64.
-+ */
-+void bitmap_from_u64(unsigned long *dst, u64 mask)
-+{
-+	dst[0] = mask & ULONG_MAX;
-+
-+	if (sizeof(mask) > sizeof(unsigned long))
-+		dst[1] = mask >> 32;
-+}
-diff --git a/tools/perf/builtin-script.c b/tools/perf/builtin-script.c
-index e3ce2f34d3ad..132a4bb70c31 100644
---- a/tools/perf/builtin-script.c
-+++ b/tools/perf/builtin-script.c
-@@ -412,11 +412,13 @@ static void print_sample_iregs(struct perf_sample *sample,
- 	struct regs_dump *regs = &sample->intr_regs;
- 	uint64_t mask = attr->sample_regs_intr;
- 	unsigned i = 0, r;
-+	DECLARE_BITMAP(_mask, 64);
- 
- 	if (!regs)
- 		return;
- 
--	for_each_set_bit(r, (unsigned long *) &mask, sizeof(mask) * 8) {
-+	bitmap_from_u64(_mask, mask);
-+	for_each_set_bit(r, _mask, sizeof(mask) * 8) {
- 		u64 val = regs->regs[i++];
- 		printf("%5s:0x%"PRIx64" ", perf_reg_name(r), val);
- 	}
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 5214974e841a..35722226bf13 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -940,8 +940,10 @@ static void branch_stack__printf(struct perf_sample *sample)
- static void regs_dump__printf(u64 mask, u64 *regs)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a0948f40bc7b..12d970d64bb3 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -332,6 +332,7 @@
+ #define   LPCR_AIL_0	0x00000000	/* MMU off exception offset 0x0 */
+ #define   LPCR_AIL_3	0x01800000	/* MMU on exception offset 0xc00...4xxx */
+ #define   LPCR_ONL	0x00040000	/* online - PURR/SPURR count */
++#define   LPCR_LD	0x00020000	/* large decremeter */
+ #define   LPCR_PECE	0x0001f000	/* powersave exit cause enable */
+ #define     LPCR_PECEDP	0x00010000	/* directed priv dbells cause exit */
+ #define     LPCR_PECEDH	0x00008000	/* directed hyp dbells cause exit */
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 1092fdd7e737..09211640a0e0 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -146,7 +146,7 @@ static inline void set_tb(unsigned int upper, unsigned int lower)
+  * in auto-reload mode.  The problem is PIT stops counting when it
+  * hits zero.  If it would wrap, we could use it just like a decrementer.
+  */
+-static inline unsigned int get_dec(void)
++static inline u64 get_dec(void)
  {
- 	unsigned rid, i = 0;
-+	DECLARE_BITMAP(_mask, 64);
+ #if defined(CONFIG_40x)
+ 	return (mfspr(SPRN_PIT));
+@@ -160,10 +160,10 @@ static inline unsigned int get_dec(void)
+  * in when the decrementer generates its interrupt: on the 1 to 0
+  * transition for Book E/4xx, but on the 0 to -1 transition for others.
+  */
+-static inline void set_dec(int val)
++static inline void set_dec(u64 val)
+ {
+ #if defined(CONFIG_40x)
+-	mtspr(SPRN_PIT, val);
++	mtspr(SPRN_PIT, (u32) val);
+ #else
+ #ifndef CONFIG_BOOKE
+ 	--val;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 7a482a7f4d8d..aa6d399d939b 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -97,7 +97,8 @@ static struct clocksource clocksource_timebase = {
+ 	.read         = timebase_read,
+ };
  
--	for_each_set_bit(rid, (unsigned long *) &mask, sizeof(mask) * 8) {
-+	bitmap_from_u64(_mask, mask);
-+	for_each_set_bit(rid, _mask, sizeof(mask) * 8) {
- 		u64 val = regs[i++];
+-#define DECREMENTER_MAX	0x7fffffff
++#define DECREMENTER_DEFAULT_MAX 0x7FFFFFFF
++u64 decrementer_max = DECREMENTER_DEFAULT_MAX;
  
- 		printf(".... %-5s 0x%" PRIx64 "\n",
+ static int decrementer_set_next_event(unsigned long evt,
+ 				      struct clock_event_device *dev);
+@@ -505,8 +506,8 @@ static void __timer_interrupt(void)
+ 		__this_cpu_inc(irq_stat.timer_irqs_event);
+ 	} else {
+ 		now = *next_tb - now;
+-		if (now <= DECREMENTER_MAX)
+-			set_dec((int)now);
++		if (now <= decrementer_max)
++			set_dec(now);
+ 		/* We may have raced with new irq work */
+ 		if (test_irq_work_pending())
+ 			set_dec(1);
+@@ -536,7 +537,7 @@ void timer_interrupt(struct pt_regs * regs)
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continue to take decrementer exceptions.
+ 	 */
+-	set_dec(DECREMENTER_MAX);
++	set_dec(decrementer_max);
+ 
+ 	/* Some implementations of hotplug will get timer interrupts while
+ 	 * offline, just ignore these and we also need to set
+@@ -584,9 +585,9 @@ static void generic_suspend_disable_irqs(void)
+ 	 * with suspending.
+ 	 */
+ 
+-	set_dec(DECREMENTER_MAX);
++	set_dec(decrementer_max);
+ 	local_irq_disable();
+-	set_dec(DECREMENTER_MAX);
++	set_dec(decrementer_max);
+ }
+ 
+ static void generic_suspend_enable_irqs(void)
+@@ -867,7 +868,7 @@ static int decrementer_set_next_event(unsigned long evt,
+ 
+ static int decrementer_shutdown(struct clock_event_device *dev)
+ {
+-	decrementer_set_next_event(DECREMENTER_MAX, dev);
++	decrementer_set_next_event(decrementer_max, dev);
+ 	return 0;
+ }
+ 
+@@ -893,6 +894,84 @@ static void register_decrementer_clockevent(int cpu)
+ 	clockevents_register_device(dec);
+ }
+ 
++static inline void check_large_decrementer(void)
++{
++	u64 readback;
++
++	mtspr(SPRN_DEC, decrementer_max);
++
++	/*
++	 * The decrementer's down counting will change the low bits. ORing with
++	 * the default max ensure they are set.
++	 */
++	readback = mfspr(SPRN_DEC) | DECREMENTER_DEFAULT_MAX;
++
++	/*
++	 * If we fail a readback test we need to reset decrementer_max to the
++	 * 32 bit maximum. If the CPU has the LD disabled for whatever reason
++	 * leaving it at a larger value would cause us to write into the high
++	 * bit when handling decrementer exceptions, triggering another.
++	 */
++
++	pr_warn("time_init: readback got %llx, dec_max: %llx\n", readback, decrementer_max);
++
++	if (readback != decrementer_max) {
++		decrementer_max = DECREMENTER_DEFAULT_MAX;
++
++		pr_warn("time_init: large decrementer readback test failed on CPU %d, truncating to 32 bits\n",
++			smp_processor_id());
++	}
++}
++
++static void enable_large_decrementer(void)
++{
++	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++		return;
++
++	if (decrementer_max <= DECREMENTER_DEFAULT_MAX)
++		return;
++
++	/*
++	 * If we're running as the hypervisor we need to enable the LD manually
++	 * otherwise firmware should have done it for us.
++	 */
++	if (cpu_has_feature(CPU_FTR_HVMODE))
++		mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_LD);
++
++	check_large_decrementer();
++}
++
++static void __init set_decrementer_max(void)
++{
++	struct device_node *cpu;
++	const __be32 *fp;
++	u64 bits = 32;
++
++	/* Prior to ISAv3 the decrementer is always 32 bit */
++	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++		return;
++
++	cpu = of_find_node_by_type(NULL, "cpu");
++	if (cpu)
++		fp = of_get_property(cpu, "ibm,dec-bits", NULL);
++
++	if (cpu && fp) {
++		bits = of_read_number(fp, 1);
++
++		if (bits > 64 || bits < 32) {
++			pr_warn("time_init: firmware supplied invalid ibm,dec-bits");
++			bits = 32;
++		}
++
++
++		/* calculate the signed maximum given this many bits */
++		decrementer_max = (1ul << (bits - 1)) - 1;
++	}
++
++	pr_info("time_init: %llu bit decrementer (max: %llx)\n",
++		bits, decrementer_max);
++}
++
+ static void __init init_decrementer_clockevent(void)
+ {
+ 	int cpu = smp_processor_id();
+@@ -900,7 +979,7 @@ static void __init init_decrementer_clockevent(void)
+ 	clockevents_calc_mult_shift(&decrementer_clockevent, ppc_tb_freq, 4);
+ 
+ 	decrementer_clockevent.max_delta_ns =
+-		clockevent_delta2ns(DECREMENTER_MAX, &decrementer_clockevent);
++		clockevent_delta2ns(decrementer_max, &decrementer_clockevent);
+ 	decrementer_clockevent.min_delta_ns =
+ 		clockevent_delta2ns(2, &decrementer_clockevent);
+ 
+@@ -909,6 +988,9 @@ static void __init init_decrementer_clockevent(void)
+ 
+ void secondary_cpu_time_init(void)
+ {
++	/* Enable and test the large decrementer for this cpu */
++	enable_large_decrementer();
++
+ 	/* Start the decrementer on CPUs that have manual control
+ 	 * such as BookE
+ 	 */
+@@ -974,6 +1056,10 @@ void __init time_init(void)
+ 	vdso_data->tb_update_count = 0;
+ 	vdso_data->tb_ticks_per_sec = tb_ticks_per_sec;
+ 
++	/* initialise and enable the large decrementer (if we have one) */
++	set_decrementer_max();
++	enable_large_decrementer();
++
+ 	/* Start the decrementer on CPUs that have manual control
+ 	 * such as BookE
+ 	 */
 -- 
-1.9.1
+2.5.5
