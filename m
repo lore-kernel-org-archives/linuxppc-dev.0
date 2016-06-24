@@ -1,44 +1,19 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbTQx4b94zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 16:47:21 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5O6i7Ys029952
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 02:47:19 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23rskwaeeg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 02:47:19 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Fri, 24 Jun 2016 07:47:17 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 88DAF219005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 07:46:45 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5O6lFbl9109924
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 06:47:15 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5O5lGvf018227
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 23:47:17 -0600
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbVdp1x4yzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 17:41:50 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id i123so8574322pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 00:41:50 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com, mpe@ellerman.id.au,
- imunsie@au1.ibm.com, mikey@neuling.org,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [RESEND v7,2/2] cxl: Add set and get private data to context struct
-Date: Fri, 24 Jun 2016 08:47:07 +0200
-Message-Id: <1466750827-3062-1-git-send-email-felix@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, Oliver O'Halloran <oohall@gmail.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>, stable@vger.kernel.org
+Subject: [PATCH] powerpc/boot: Add OPAL console to epapr wrappers
+Date: Fri, 24 Jun 2016 17:41:25 +1000
+Message-Id: <1466754085-8230-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,88 +23,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michael Neuling <mikey@neuling.org>
+This patch adds an OPAL console backend to the powerpc boot wrapper so
+that decompression failures inside the wrapper can be reported to the
+user. This is important since it typically indicates data corruption in
+the firmware and other nasty things.
 
-This provides AFU drivers a means to associate private data with a cxl
-context. This is particularly intended for make the new callbacks for
-driver specific events easier for AFU drivers to use, as they can easily
-get back to any private data structures they may use.
+Currently this only works when building a little endian kernel. When
+compiling a 64 bit BE kernel the wrapper is always build 32 bit to be
+compatible with some 32 bit firmwares. BE support will be added at a
+later date. Another limitation of this is that only the "raw" type of
+OPAL console is supported, however machines that provide a hvsi console
+also provide a raw console so this is not an issue in practice.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Actually-written-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org
 ---
-No changes since v1. Added Matt Ochs reviewed-by tag.
+ arch/powerpc/boot/Makefile  |  4 ++--
+ arch/powerpc/boot/ops.h     |  1 +
+ arch/powerpc/boot/ppc_asm.h |  4 ++++
+ arch/powerpc/boot/serial.c  |  2 ++
+ arch/powerpc/boot/types.h   | 12 ++++++++++++
+ 5 files changed, 21 insertions(+), 2 deletions(-)
 
- drivers/misc/cxl/api.c | 21 +++++++++++++++++++++
- drivers/misc/cxl/cxl.h |  3 +++
- include/misc/cxl.h     |  7 +++++++
- 3 files changed, 31 insertions(+)
-
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index dd1988e..271bf77 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -94,6 +94,27 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
- 	return 0;
- }
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 8fe78a3efc92..00cf88aa9a23 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -70,7 +70,7 @@ $(addprefix $(obj)/,$(zlib) cuboot-c2k.o gunzip_util.o main.o): \
+ libfdt       := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
+ libfdtheader := fdt.h libfdt.h libfdt_internal.h
+ 
+-$(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simpleboot.o epapr.o): \
++$(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simpleboot.o epapr.o opal.o): \
+ 	$(addprefix $(obj)/,$(libfdtheader))
+ 
+ src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
+@@ -78,7 +78,7 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c stdlib.c \
+ 		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
+-		uartlite.c mpc52xx-psc.c
++		uartlite.c mpc52xx-psc.c opal.c opal-calls.S
+ src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+ src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 5e75e1c5518e..e19b64ef977a 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -89,6 +89,7 @@ int mpsc_console_init(void *devp, struct serial_console_data *scdp);
+ int cpm_console_init(void *devp, struct serial_console_data *scdp);
+ int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp);
+ int uartlite_console_init(void *devp, struct serial_console_data *scdp);
++int opal_console_init(void *devp, struct serial_console_data *scdp);
+ void *simple_alloc_init(char *base, unsigned long heap_size,
+ 			unsigned long granularity, unsigned long max_allocs);
+ extern void flush_cache(void *, unsigned long);
+diff --git a/arch/powerpc/boot/ppc_asm.h b/arch/powerpc/boot/ppc_asm.h
+index 35ea60c1f070..b03373d8b386 100644
+--- a/arch/powerpc/boot/ppc_asm.h
++++ b/arch/powerpc/boot/ppc_asm.h
+@@ -61,6 +61,10 @@
+ 
+ #define SPRN_TBRL	268
+ #define SPRN_TBRU	269
++#define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
++#define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
++
++#define MSR_LE		0x0000000000000001
+ 
+ #define FIXUP_ENDIAN						   \
+ 	tdi   0, 0, 0x48; /* Reverse endian of b . + 8		*/ \
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+index 167ee9433de6..e04c1e4063ae 100644
+--- a/arch/powerpc/boot/serial.c
++++ b/arch/powerpc/boot/serial.c
+@@ -132,6 +132,8 @@ int serial_console_init(void)
+ 	else if (dt_is_compatible(devp, "xlnx,opb-uartlite-1.00.b") ||
+ 		 dt_is_compatible(devp, "xlnx,xps-uartlite-1.00.a"))
+ 		rc = uartlite_console_init(devp, &serial_cd);
++	else if (dt_is_compatible(devp, "ibm,opal-console-raw"))
++		rc = opal_console_init(devp, &serial_cd);
+ 
+ 	/* Add other serial console driver calls here */
+ 
+diff --git a/arch/powerpc/boot/types.h b/arch/powerpc/boot/types.h
+index 31393d17a9c1..cda474cd63c8 100644
+--- a/arch/powerpc/boot/types.h
++++ b/arch/powerpc/boot/types.h
+@@ -12,6 +12,18 @@ typedef short			s16;
+ typedef int			s32;
+ typedef long long		s64;
  
 +
-+int cxl_set_priv(struct cxl_context *ctx, void *priv)
-+{
-+	if (!ctx)
-+		return -EINVAL;
++/* required for opal-api.h */
++typedef u8  uint8_t;
++typedef u16 uint16_t;
++typedef u32 uint32_t;
++typedef u64 uint64_t;
++typedef s8  int8_t;
++typedef s16 int16_t;
++typedef s32 int32_t;
++typedef s64 int64_t;
 +
-+	ctx->priv = priv;
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cxl_set_priv);
-+
-+void *cxl_get_priv(struct cxl_context *ctx)
-+{
-+	if (!ctx)
-+		return ERR_PTR(-EINVAL);
-+
-+	return ctx->priv;
-+}
-+EXPORT_SYMBOL_GPL(cxl_get_priv);
-+
- int cxl_allocate_afu_irqs(struct cxl_context *ctx, int num)
- {
- 	int res;
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index b0027e6..1e56304 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -478,6 +478,9 @@ struct cxl_context {
- 	/* Only used in PR mode */
- 	u64 process_token;
- 
-+	/* driver private data */
-+	void *priv;
-+
- 	unsigned long *irq_bitmap; /* Accessed from IRQ context */
- 	struct cxl_irq_ranges irqs;
- 	struct list_head irq_names;
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index 17419f6..b6d040f 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -86,6 +86,13 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev);
- int cxl_release_context(struct cxl_context *ctx);
- 
- /*
-+ * Set and get private data associated with a context. Allows drivers to have a
-+ * back pointer to some useful structure.
-+ */
-+int cxl_set_priv(struct cxl_context *ctx, void *priv);
-+void *cxl_get_priv(struct cxl_context *ctx);
-+
-+/*
-  * Allocate AFU interrupts for this context. num=0 will allocate the default
-  * for this AFU as given in the AFU descriptor. This number doesn't include the
-  * interrupt 0 (CAIA defines AFU IRQ 0 for page faults). Each interrupt to be
+ #define min(x,y) ({ \
+ 	typeof(x) _x = (x);	\
+ 	typeof(y) _y = (y);	\
 -- 
-2.8.0
+2.5.5
