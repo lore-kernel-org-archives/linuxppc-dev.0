@@ -1,21 +1,42 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <akshay.adiga@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbdSD5SKRzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 22:49:00 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id av7so2822900pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 05:49:00 -0700 (PDT)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Oliver O'Halloran <oohall@gmail.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>, stable@vger.kernel.org
-Subject: [PATCH v2] powerpc/boot: Add OPAL console to epapr wrappers
-Date: Fri, 24 Jun 2016 22:48:01 +1000
-Message-Id: <1466772481-11424-1-git-send-email-oohall@gmail.com>
-In-Reply-To: <1466754085-8230-1-git-send-email-oohall@gmail.com>
-References: <1466754085-8230-1-git-send-email-oohall@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbg6J6YBWzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jun 2016 00:03:35 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5ODwv2S058054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 10:03:32 -0400
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23rskwrufy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 10:03:32 -0400
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Fri, 24 Jun 2016 19:33:29 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5F520125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:36:03 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5OE2auH1769802
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:32:36 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5OE3HW5022883
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:33:19 +0530
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Replacing pstate_id with frequency table
+ index
+Date: Fri, 24 Jun 2016 19:33:07 +0530
+Message-Id: <1466776987-19031-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,267 +46,281 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds an OPAL console backend to the powerpc boot wrapper so
-that decompression failures inside the wrapper can be reported to the
-user. This is important since it typically indicates data corruption in
-the firmware and other nasty things.
+Refactoring code to use frequency table index instead of pstate_id.
+This abstraction will make the code independent of the pstate values.
 
-Currently this only works when building a little endian kernel. When
-compiling a 64 bit BE kernel the wrapper is always build 32 bit to be
-compatible with some 32 bit firmwares. BE support will be added at a
-later date. Another limitation of this is that only the "raw" type of
-OPAL console is supported, however machines that provide a hvsi console
-also provide a raw console so this is not an issue in practice.
+- No functional changes
+- The highest frequency is at frequency table index 0 and the frequency
+  decreases as the index increases.
+- Macros get_index() and get_pstate() can be used for conversion between
+  pstate_id and index.
+- powernv_pstate_info now contains frequency table index to min, max and
+  nominal frequency (instead of pstate_ids)
 
-Actually-written-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 ---
- arch/powerpc/boot/Makefile     |  4 +-
- arch/powerpc/boot/opal-calls.S | 49 +++++++++++++++++++++++
- arch/powerpc/boot/opal.c       | 88 ++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/ops.h        |  1 +
- arch/powerpc/boot/ppc_asm.h    |  4 ++
- arch/powerpc/boot/serial.c     |  2 +
- arch/powerpc/boot/types.h      | 12 ++++++
- 7 files changed, 158 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/boot/opal-calls.S
- create mode 100644 arch/powerpc/boot/opal.c
+ drivers/cpufreq/powernv-cpufreq.c | 107 ++++++++++++++++++++++----------------
+ 1 file changed, 61 insertions(+), 46 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 8fe78a3efc92..00cf88aa9a23 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -70,7 +70,7 @@ $(addprefix $(obj)/,$(zlib) cuboot-c2k.o gunzip_util.o main.o): \
- libfdt       := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
- libfdtheader := fdt.h libfdt.h libfdt_internal.h
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b29c5c2..f6ce6f0 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -43,6 +43,7 @@
+ #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+ #define PMSR_MAX(x)		((x >> 32) & 0xFF)
  
--$(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simpleboot.o epapr.o): \
-+$(addprefix $(obj)/,$(libfdt) libfdt-wrapper.o simpleboot.o epapr.o opal.o): \
- 	$(addprefix $(obj)/,$(libfdtheader))
++
+ #define MAX_RAMP_DOWN_TIME				5120
+ /*
+  * On an idle system we want the global pstate to ramp-down from max value to
+@@ -124,20 +125,29 @@ static int nr_chips;
+ static DEFINE_PER_CPU(struct chip *, chip_info);
  
- src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
-@@ -78,7 +78,7 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c stdlib.c \
- 		oflib.c ofconsole.c cuboot.c mpsc.c cpm-serial.c \
--		uartlite.c mpc52xx-psc.c
-+		uartlite.c mpc52xx-psc.c opal.c opal-calls.S
- src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
- src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
-diff --git a/arch/powerpc/boot/opal-calls.S b/arch/powerpc/boot/opal-calls.S
-new file mode 100644
-index 000000000000..1f3c097e1552
---- /dev/null
-+++ b/arch/powerpc/boot/opal-calls.S
-@@ -0,0 +1,49 @@
-+#include "ppc_asm.h"
-+#include "../include/asm/opal-api.h"
-+
-+	.text
-+
-+#define OPAL_CALL(name, token)				\
-+	.globl name;					\
-+name:							\
-+	li	r0, token;				\
-+	b	opal_call;
-+
-+opal_call:
-+	mflr	r11
-+	std	r11,16(r1)
-+	mfcr	r12
-+	stw	r12,8(r1)
-+	mr	r13,r2
-+
-+	/* Set opal return address */
-+	ld	r11,opal_return@got(r2)
-+	mtlr	r11
-+	mfmsr	r12
-+
-+	/* switch to BE when we enter OPAL */
-+	li	r11,MSR_LE
-+	andc	r12,r12,r11
-+	mtspr	SPRN_HSRR1,r12
-+
-+	/* load the opal call entry point and base */
-+	ld	r11,opal@got(r2)
-+	ld	r12,8(r11)
-+	ld	r2,0(r11)
-+	mtspr	SPRN_HSRR0,r12
-+	hrfid
-+
-+opal_return:
-+	FIXUP_ENDIAN
-+	mr	r2,r13;
-+	lwz	r11,8(r1);
-+	ld	r12,16(r1)
-+	mtcr	r11;
-+	mtlr	r12
-+	blr
-+
-+OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
-+OPAL_CALL(opal_console_read,			OPAL_CONSOLE_READ);
-+OPAL_CALL(opal_console_write_buffer_space,	OPAL_CONSOLE_WRITE_BUFFER_SPACE);
-+OPAL_CALL(opal_poll_events,			OPAL_POLL_EVENTS);
-+OPAL_CALL(opal_console_flush,			OPAL_CONSOLE_FLUSH);
-diff --git a/arch/powerpc/boot/opal.c b/arch/powerpc/boot/opal.c
-new file mode 100644
-index 000000000000..d0f54443caa9
---- /dev/null
-+++ b/arch/powerpc/boot/opal.c
-@@ -0,0 +1,88 @@
-+#include "ops.h"
-+#include "stdio.h"
-+#include "io.h"
-+#include <libfdt.h>
-+#include "../include/asm/opal-api.h"
-+
-+/* Global OPAL struct used by opal-call.S */
-+struct opal {
-+	u64 base;
-+	u64 entry;
-+} opal;
-+
-+static u32 opal_con_id;
-+
-+int64_t opal_console_write(int64_t term_number, u64 *length, const u8 *buffer);
-+int64_t opal_console_read(int64_t term_number, uint64_t *length, u8 *buffer);
-+int64_t opal_console_write_buffer_space(uint64_t term_number, uint64_t *length);
-+int64_t opal_console_flush(uint64_t term_number);
-+int64_t opal_poll_events(uint64_t *outstanding_event_mask);
-+
-+static int opal_con_open(void)
-+{
-+	return 0;
+ /*
+- * Note: The set of pstates consists of contiguous integers, the
+- * smallest of which is indicated by powernv_pstate_info.min, the
+- * largest of which is indicated by powernv_pstate_info.max.
++ * Note: The set of pstates consists of contiguous integers,
++ *
++ * powernv_pstate_info stores the index of the frequency table
++ *  instead of pstate itself for each of the pstates referred
+  *
+  * The nominal pstate is the highest non-turbo pstate in this
+  * platform. This is indicated by powernv_pstate_info.nominal.
+  */
+ static struct powernv_pstate_info {
+-	int min;
+-	int max;
+-	int nominal;
+-	int nr_pstates;
++	unsigned int min;
++	unsigned int max;
++	unsigned int nominal;
++	unsigned int nr_pstates;
+ } powernv_pstate_info;
+ 
++/* Use following macros for conversions between pstate_id and index */
++static inline int get_pstate(unsigned int i) {
++	return powernv_freqs[i].driver_data;
++}
++static inline unsigned int get_index(int pstate) {
++	return abs(pstate - get_pstate(powernv_pstate_info.max));
 +}
 +
-+static void opal_con_putc(unsigned char c)
-+{
-+	int64_t rc;
-+	uint64_t olen, len;
-+
-+	do {
-+		rc = opal_console_write_buffer_space(opal_con_id, &olen);
-+		len = be64_to_cpu(olen);
-+		if (rc)
-+			return;
-+		opal_poll_events(NULL);
-+	} while (len < 1);
-+
-+
-+	olen = cpu_to_be64(1);
-+	opal_console_write(opal_con_id, &olen, &c);
-+}
-+
-+static void opal_con_close(void)
-+{
-+	opal_console_flush(opal_con_id);
-+}
-+
-+static void opal_init(void)
-+{
-+	void *opal_node;
-+
-+	opal_node = finddevice("/ibm,opal");
-+	if (!opal_node)
-+		return;
-+	if (getprop(opal_node, "opal-base-address", &opal.base, sizeof(u64)) < 0)
-+		return;
-+	opal.base = be64_to_cpu(opal.base);
-+	if (getprop(opal_node, "opal-entry-address", &opal.entry, sizeof(u64)) < 0)
-+		return;
-+	opal.entry = be64_to_cpu(opal.entry);
-+}
-+
-+#ifdef __powerpc64__
-+int opal_console_init(void *devp, struct serial_console_data *scdp)
-+{
-+	opal_init();
-+
-+	if (devp) {
-+		int n = getprop(devp, "reg", &opal_con_id, sizeof(u32));
-+		if (n != sizeof(u32))
-+			return -1;
-+		opal_con_id = be32_to_cpu(opal_con_id);
-+	} else
-+		opal_con_id = 0;
-+
-+	scdp->open = opal_con_open;
-+	scdp->putc = opal_con_putc;
-+	scdp->close = opal_con_close;
-+
-+	return 0;
-+}
-+#else
-+int opal_console_init(void *devp, struct serial_console_data *scdp)
-+{
-+	return -1;
-+}
-+#endif
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index 5e75e1c5518e..e19b64ef977a 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -89,6 +89,7 @@ int mpsc_console_init(void *devp, struct serial_console_data *scdp);
- int cpm_console_init(void *devp, struct serial_console_data *scdp);
- int mpc5200_psc_console_init(void *devp, struct serial_console_data *scdp);
- int uartlite_console_init(void *devp, struct serial_console_data *scdp);
-+int opal_console_init(void *devp, struct serial_console_data *scdp);
- void *simple_alloc_init(char *base, unsigned long heap_size,
- 			unsigned long granularity, unsigned long max_allocs);
- extern void flush_cache(void *, unsigned long);
-diff --git a/arch/powerpc/boot/ppc_asm.h b/arch/powerpc/boot/ppc_asm.h
-index 35ea60c1f070..b03373d8b386 100644
---- a/arch/powerpc/boot/ppc_asm.h
-+++ b/arch/powerpc/boot/ppc_asm.h
-@@ -61,6 +61,10 @@
+ static inline void reset_gpstates(struct cpufreq_policy *policy)
+ {
+ 	struct global_pstate_info *gpstates = policy->driver_data;
+@@ -208,23 +218,28 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
+ 	}
  
- #define SPRN_TBRL	268
- #define SPRN_TBRU	269
-+#define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
-+#define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
-+
-+#define MSR_LE		0x0000000000000001
++	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
+ 	for (i = 0; i < nr_pstates; i++) {
+ 		u32 id = be32_to_cpu(pstate_ids[i]);
+ 		u32 freq = be32_to_cpu(pstate_freqs[i]);
  
- #define FIXUP_ENDIAN						   \
- 	tdi   0, 0, 0x48; /* Reverse endian of b . + 8		*/ \
-diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
-index 167ee9433de6..e04c1e4063ae 100644
---- a/arch/powerpc/boot/serial.c
-+++ b/arch/powerpc/boot/serial.c
-@@ -132,6 +132,8 @@ int serial_console_init(void)
- 	else if (dt_is_compatible(devp, "xlnx,opb-uartlite-1.00.b") ||
- 		 dt_is_compatible(devp, "xlnx,xps-uartlite-1.00.a"))
- 		rc = uartlite_console_init(devp, &serial_cd);
-+	else if (dt_is_compatible(devp, "ibm,opal-console-raw"))
-+		rc = opal_console_init(devp, &serial_cd);
- 
- 	/* Add other serial console driver calls here */
- 
-diff --git a/arch/powerpc/boot/types.h b/arch/powerpc/boot/types.h
-index 31393d17a9c1..cda474cd63c8 100644
---- a/arch/powerpc/boot/types.h
-+++ b/arch/powerpc/boot/types.h
-@@ -12,6 +12,18 @@ typedef short			s16;
- typedef int			s32;
- typedef long long		s64;
- 
+-		pr_debug("PState id %d freq %d MHz\n", id, freq);
+ 		powernv_freqs[i].frequency = freq * 1000; /* kHz */
+ 		powernv_freqs[i].driver_data = id;
 +
-+/* required for opal-api.h */
-+typedef u8  uint8_t;
-+typedef u16 uint16_t;
-+typedef u32 uint32_t;
-+typedef u64 uint64_t;
-+typedef s8  int8_t;
-+typedef s16 int16_t;
-+typedef s32 int32_t;
-+typedef s64 int64_t;
++		if (id == pstate_max)
++			powernv_pstate_info.max = i;
++		else if (id == pstate_nominal)
++			powernv_pstate_info.nominal = i;
++		else if (id == pstate_min)
++			powernv_pstate_info.min = i;
+ 	}
 +
-+
- #define min(x,y) ({ \
- 	typeof(x) _x = (x);	\
- 	typeof(y) _y = (y);	\
++	pr_info("pstate_info: min %d nominal %d max %d\n",
++		powernv_pstate_info.min, powernv_pstate_info.nominal,
++		powernv_pstate_info.max);
+ 	/* End of list marker entry */
+ 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
+-
+-	powernv_pstate_info.min = pstate_min;
+-	powernv_pstate_info.max = pstate_max;
+-	powernv_pstate_info.nominal = pstate_nominal;
+-	powernv_pstate_info.nr_pstates = nr_pstates;
+-
+ 	return 0;
+ }
+ 
+@@ -233,15 +248,15 @@ static unsigned int pstate_id_to_freq(int pstate_id)
+ {
+ 	int i;
+ 
+-	i = powernv_pstate_info.max - pstate_id;
++	i = get_index(pstate_id);
+ 	if (i >= powernv_pstate_info.nr_pstates || i < 0) {
+ 		pr_warn("PState id %d outside of PState table, "
+ 			"reporting nominal id %d instead\n",
+ 			pstate_id, powernv_pstate_info.nominal);
+-		i = powernv_pstate_info.max - powernv_pstate_info.nominal;
++		i = powernv_pstate_info.nominal;
+ 	}
+ 
+-	return powernv_freqs[i].frequency;
++	return get_pstate(i);
+ }
+ 
+ /*
+@@ -252,7 +267,7 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
+ 					char *buf)
+ {
+ 	return sprintf(buf, "%u\n",
+-		pstate_id_to_freq(powernv_pstate_info.nominal));
++		get_pstate(powernv_pstate_info.nominal));
+ }
+ 
+ struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
+@@ -426,7 +441,7 @@ static void set_pstate(void *data)
+  */
+ static inline unsigned int get_nominal_index(void)
+ {
+-	return powernv_pstate_info.max - powernv_pstate_info.nominal;
++	return powernv_pstate_info.nominal;
+ }
+ 
+ static void powernv_cpufreq_throttle_check(void *data)
+@@ -434,20 +449,21 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 	struct chip *chip;
+ 	unsigned int cpu = smp_processor_id();
+ 	unsigned long pmsr;
+-	int pmsr_pmax;
++	int pmsr_pmax, pmsr_pmax_idx;
+ 
+ 	pmsr = get_pmspr(SPRN_PMSR);
+ 	chip = this_cpu_read(chip_info);
+ 
+ 	/* Check for Pmax Capping */
+ 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+-	if (pmsr_pmax != powernv_pstate_info.max) {
++	pmsr_pmax_idx = get_index(pmsr_pmax);
++	if (pmsr_pmax_idx != powernv_pstate_info.max) {
+ 		if (chip->throttled)
+ 			goto next;
+ 		chip->throttled = true;
+-		if (pmsr_pmax < powernv_pstate_info.nominal) {
+-			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+-				     cpu, chip->id, pmsr_pmax,
++		if (pmsr_pmax_idx > powernv_pstate_info.nominal) {
++			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d > %d)\n",
++				     cpu, chip->id, pmsr_pmax_idx,
+ 				     powernv_pstate_info.nominal);
+ 			chip->throttle_sub_turbo++;
+ 		} else {
+@@ -505,13 +521,13 @@ static inline int calc_global_pstate(unsigned int elapsed_time,
+ 	 * 5 seconds, then just scale it get the number pstates to be dropped.
+ 	 */
+ 	pstate_diff =  ((int)ramp_down_percent(elapsed_time) *
+-			(highest_lpstate - powernv_pstate_info.min)) / 100;
++			(powernv_pstate_info.min - highest_lpstate)) / 100;
+ 
+ 	/* Ensure that global pstate is >= to local pstate */
+-	if (highest_lpstate - pstate_diff < local_pstate)
++	if (highest_lpstate + pstate_diff >= local_pstate)
+ 		return local_pstate;
+ 	else
+-		return highest_lpstate - pstate_diff;
++		return highest_lpstate + pstate_diff;
+ }
+ 
+ static inline void  queue_gpstate_timer(struct global_pstate_info *gpstates)
+@@ -582,7 +598,6 @@ void gpstate_timer_handler(unsigned long data)
+ 	gpstates->last_lpstate = freq_data.pstate_id;
+ 
+ 	spin_unlock(&gpstates->gpstate_lock);
+-
+ 	/* Timer may get migrated to a different cpu on cpu hot unplug */
+ 	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+ }
+@@ -596,7 +611,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 					unsigned int new_index)
+ {
+ 	struct powernv_smp_call_data freq_data;
+-	unsigned int cur_msec, gpstate_id;
++	unsigned int cur_msec, gpstate_idx;
+ 	struct global_pstate_info *gpstates = policy->driver_data;
+ 
+ 	if (unlikely(rebooting) && new_index != get_nominal_index())
+@@ -608,15 +623,15 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 	cur_msec = jiffies_to_msecs(get_jiffies_64());
+ 
+ 	spin_lock(&gpstates->gpstate_lock);
+-	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
++	freq_data.pstate_id = get_pstate(new_index);
+ 
+ 	if (!gpstates->last_sampled_time) {
+-		gpstate_id = freq_data.pstate_id;
+-		gpstates->highest_lpstate = freq_data.pstate_id;
++		gpstate_idx = new_index;
++		gpstates->highest_lpstate = new_index;
+ 		goto gpstates_done;
+ 	}
+ 
+-	if (gpstates->last_gpstate > freq_data.pstate_id) {
++	if (gpstates->last_gpstate < new_index) {
+ 		gpstates->elapsed_time += cur_msec -
+ 						 gpstates->last_sampled_time;
+ 
+@@ -627,34 +642,34 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 		 */
+ 		if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+ 			reset_gpstates(policy);
+-			gpstates->highest_lpstate = freq_data.pstate_id;
+-			gpstate_id = freq_data.pstate_id;
++			gpstates->highest_lpstate = new_index;
++			gpstate_idx = new_index;
+ 		} else {
+ 		/* Elaspsed_time is less than 5 seconds, continue to rampdown */
+-			gpstate_id = calc_global_pstate(gpstates->elapsed_time,
+-							gpstates->highest_lpstate,
+-							freq_data.pstate_id);
++			gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
++							 gpstates->highest_lpstate,
++							 new_index);
+ 		}
+ 	} else {
+ 		reset_gpstates(policy);
+-		gpstates->highest_lpstate = freq_data.pstate_id;
+-		gpstate_id = freq_data.pstate_id;
++		gpstates->highest_lpstate = new_index;
++		gpstate_idx = new_index;
+ 	}
+ 
+ 	/*
+ 	 * If local pstate is equal to global pstate, rampdown is over
+ 	 * So timer is not required to be queued.
+ 	 */
+-	if (gpstate_id != freq_data.pstate_id)
++	if (gpstate_idx != new_index)
+ 		queue_gpstate_timer(gpstates);
+ 	else
+ 		del_timer_sync(&gpstates->timer);
+ 
+ gpstates_done:
+-	freq_data.gpstate_id = gpstate_id;
++	freq_data.gpstate_id = get_pstate(gpstate_idx);
+ 	gpstates->last_sampled_time = cur_msec;
+-	gpstates->last_gpstate = freq_data.gpstate_id;
+-	gpstates->last_lpstate = freq_data.pstate_id;
++	gpstates->last_gpstate = gpstate_idx;
++	gpstates->last_lpstate = new_index;
+ 
+ 	spin_unlock(&gpstates->gpstate_lock);
+ 
+@@ -847,8 +862,8 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ 	struct powernv_smp_call_data freq_data;
+ 	struct global_pstate_info *gpstates = policy->driver_data;
+ 
+-	freq_data.pstate_id = powernv_pstate_info.min;
+-	freq_data.gpstate_id = powernv_pstate_info.min;
++	freq_data.pstate_id = get_pstate(powernv_pstate_info.min);
++	freq_data.gpstate_id = get_pstate(powernv_pstate_info.min);
+ 	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
+ 	del_timer_sync(&gpstates->timer);
+ }
 -- 
-2.5.5
+2.7.0
