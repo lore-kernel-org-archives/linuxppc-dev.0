@@ -1,22 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wm0-x22c.google.com (mail-wm0-x22c.google.com
+ [IPv6:2a00:1450:400c:c09::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbYhb4X4tzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:59:27 +1000 (AEST)
-Date: Fri, 24 Jun 2016 19:59:23 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, kvm@vger.kernel.org,
- pbonzini@redhat.com, agraf@suse.com, rkrcmar@redhat.com
-Subject: Re: [PATCH 1/4] kvm/ppc/book3s_hv: Change vcore element
- runnable_threads from linked-list to array
-Message-ID: <20160624095923.GG26584@fergus.ozlabs.ibm.com>
-References: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbYqn017qzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 20:05:40 +1000 (AEST)
+Received: by mail-wm0-x22c.google.com with SMTP id a66so18553572wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 03:05:40 -0700 (PDT)
+Subject: Re: [PATCH v2] cpuidle: Fix last_residency division
+To: David Laight <David.Laight@ACULAB.COM>,
+ "'Shreyas B. Prabhu'" <shreyas@linux.vnet.ibm.com>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D5F4E3E66@AcuExch.aculab.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "anton@samba.org" <anton@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <576D05F0.6060900@linaro.org>
+Date: Fri, 24 Jun 2016 12:05:36 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4E3E66@AcuExch.aculab.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +31,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 15, 2016 at 07:21:05PM +1000, Suraj Jitindar Singh wrote:
-> The struct kvmppc_vcore is a structure used to store various information
-> about a virtual core for a kvm guest. The runnable_threads element of the
-> struct provides a list of all of the currently runnable vcpus on the core
-> (those in the KVMPPC_VCPU_RUNNABLE state). The previous implementation of
-> this list was a linked_list. The next patch requires that the list be able
-> to be iterated over without holding the vcore lock.
-> 
-> Reimplement the runnable_threads list in the kvmppc_vcore struct as an
-> array. Implement function to iterate over valid entries in the array and
-> update access sites accordingly.
-> 
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+On 06/24/2016 11:00 AM, David Laight wrote:
+> From: Shreyas B. Prabhu
+>> Sent: 24 June 2016 09:24
+>>
+>> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+>> has a timeout so that if a cpu stays in snooze for more than target
+>> residency of the next available idle state, then it would exit thereby
+>> giving chance to the cpuidle governor to re-evaluate and
+>> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+>> due to this timeout, its last_residency will be target_residency of next
+>> deeper state.
+>>
+>> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+>> changed the math around last_residency calculation. Specifically, while
+>> converting last_residency value from nanoseconds to microseconds it does
+>> right shift by 10. Due to this, in snooze timeout exit scenarios
+>> last_residency calculated is roughly 2.3% less than target_residency of
+>> next available state. This pattern is picked up get_typical_interval()
+>> in the menu governor and therefore expected_interval in menu_select() is
+>> frequently less than the target_residency of any state but snooze.
+>>
+>> Due to this we are entering snooze at a higher rate, thereby affecting
+>> the single thread performance.
+>>
+>> Fix this by replacing right shift by 10 with /1000 while calculating
+>> last_residency.
+>>
+>> Reported-by: Anton Blanchard <anton@samba.org>
+>> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+>> Changes in v2
+>> =============
+>>   - Fixing it in the cpuidle core code instead of driver code.
+>>
+>>   drivers/cpuidle/cpuidle.c | 6 +++---
+>>   1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index a4d0059..30d67a8 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -218,10 +218,10 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>>   		local_irq_enable();
+>>
+>>   	/*
+>> -	 * local_clock() returns the time in nanosecond, let's shift
+>> -	 * by 10 (divide by 1024) to have microsecond based time.
+>> +	 * local_clock() returns the time in nanosecond, let's
+>> +	 * divide by 1000 to have microsecond based time.
+>>   	 */
+>> -	diff = (time_end - time_start) >> 10;
+>> +	diff = (time_end - time_start) / 1000;
 
-Unfortunately I get a compile error when compiling for either a 32-bit
-powerpc config (e.g. pmac32_defconfig with KVM turned on) or a Book E
-config.  The error is:
+do_div ?
 
-In file included from /home/paulus/kernel/kvm/include/linux/kvm_host.h:36:0,
-                 from /home/paulus/kernel/kvm/arch/powerpc/kernel/asm-offsets.c:54:
-/home/paulus/kernel/kvm/arch/powerpc/include/asm/kvm_host.h:299:36: error: ‘MAX_SMT_THREADS’ undeclared here (not in a function)
-  struct kvm_vcpu *runnable_threads[MAX_SMT_THREADS];
-                                    ^
-/home/paulus/kernel/kvm/./Kbuild:81: recipe for target 'arch/powerpc/kernel/asm-offsets.s' failed
+>>   	if (diff > INT_MAX)
+>>   		diff = INT_MAX;
+>
+> The intent of the >> 10 was probably to avoid an expensive 64bit divide.
+> So maybe something like:
+> 	diff = time_end - time_start;
+> 	if (diff >= INT_MAX/2)
+> 		diff_32 = INT_MAX/2/1000;
+> 	else
+> 		diff_32 = diff;
+> 		diff_32 += diff_32 >> 6;
+> 		diff_32 >>= 10;
+> 	}
+>
+> Adding an extra 1/32 makes the division by be something slightly below 1000.
 
-You are using MAX_SMT_THREADS in kvm_host.h, but it is defined in
-kvm_book3s_asm.h, which gets included by asm-offsets.c after it
-include kvm_host.h.  I don't think we can just make kvm_host.h include
-book3s.h.  The best solution might be to move the definition of struct
-kvmppc_vcore to kvm_book3s.h.
 
-Paul.
+
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
