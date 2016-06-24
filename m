@@ -1,18 +1,17 @@
-Return-Path: <falilapha01@gmail.com>
-Received: from ns604-vm10.bullet.mail.ssk.yahoo.co.jp
- (ns604-vm10.bullet.mail.ssk.yahoo.co.jp [182.22.91.107])
- by lists.ozlabs.org (Postfix) with SMTP id 3rZcF80sYJzDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2016 06:50:51 +1000 (AEST)
-Message-ID: <104980.24279.qm@web101309.mail.kks.yahoo.co.jp>
-Sender: houki_souma@yahoo.co.jp
-Date: Thu, 23 Jun 2016 05:45:36 +0900 (JST)
-From: Fali Islapha <falilapha01@gmail.com>
-Reply-To: Fali Islapha <islaphafali@yahoo.com>
-Subject: Greetings From Mrs.Fali Islapha
-To: undisclosed recipients: ;
+Return-Path: <www@avo.ru>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbYbP1yzszDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:54:57 +1000 (AEST)
+Message-Id: <201606240952.u5NMeXjM028224@mail.avo.ru>
+Content-Type: multipart/alternative; boundary="===============0293798413=="
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="493520653-2088220305-1466628336=:24279"
+Subject: HELLO 
+To: Recipients <www@avo.ru>
+From: "Sue Peters" <www@avo.ru>
+Date: Fri, 24 Jun 2016 09:54:27 +0000
+Reply-To: pelusi1954@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---493520653-2088220305-1466628336=:24279
-Content-Type: text/plain; charset=iso-8859-1
+You will not see this in a MIME-aware mail reader.
+--===============0293798413==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Content-Description: Mail message body
 
-=A0=A0=A0=A0 =0AGreetings From Mrs.Fali Islapha=0A=0AGreetings=0A of peace =
-to you, I am Mrs.Fali Islapha a devoted Christian and now =0Aageing widow s=
-uffering from long time illness. I have a blood cancer and=0A right now I a=
-m admitted in a hospital here at Abidjan Cote Divoire. I =0Ahave some inher=
-ited fund from my late loving husband late Dr Davis =0AIslapha The amount o=
-f ten million five hundred thousand U.S dollars =0A($10,500,000) which he d=
-eposited with a Finance firm here and I need a =0Agood honest God fearing p=
-erson who can use these funds for God's work in=0A charity.=0A=0AI want thi=
-s fund to go for charity because I have no =0Achild to be the inheritor, 20=
-% out of the total fund will be for your =0Acompensation for doing this wor=
-k of God. I found your email address from=0A the internet and decide to con=
-tact you. Please if you would be able to =0Ause this fund for=0AFali Islaph=
-a: the glory of God kindly reply me.=0A=0A=0A=0AYour Sister In The Lord.=0A=
-Mrs.Fali Islapha.
---493520653-2088220305-1466628336=:24279
-Content-Type: text/html; charset=iso-8859-1
+I am Sue Peters, currently undergoing medical treatment for cancer Chronic =
+Myelogenous Leukemia (CML). I was married to Late Dr. Collins Peters who wo=
+rked with Woodside Petroleum Limited (Australia) for 23 years before he die=
+d in the year 2011.
+ Before my Husband died, we both made a deposit of a total sum US$9.8M in a=
+ Private Bank. Recently,My Doctor told me that I have a few month to live d=
+ue to cancer problem. Having known my condition I have decided to donate th=
+is fund to an honest Person for charitable cause.
+ My Attorney will issue you a Letter of Authority from Court naming you the=
+ original Beneficiary of these funds. Please assure me that you will act ac=
+cordingly as I stated herein.
+ Hoping to hear from you. =
+
+ In His Arms.
+ Sue Peters
+
+--===============0293798413==
+Content-Type: text/html; charset="iso-8859-1"
+MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Content-Description: Mail message body
 
-<html><body><div style=3D"color:; background-color:; font-family:MS PGothic=
-, sans-serif;font-size:12pt"><div>=0A=0A=0A=09=09=09 </div><div style=3D"co=
-lor:; background-color:; font-family:MS PGothic, sans-serif;font-size:12pt"=
-><div>&nbsp;&nbsp;&nbsp;&nbsp; <br>Greetings From Mrs.Fali Islapha<br><br>G=
-reetings=0A of peace to you, I am Mrs.Fali Islapha a devoted Christian and =
-now =0Aageing widow suffering from long time illness. I have a blood cancer=
- and=0A right now I am admitted in a hospital here at Abidjan Cote Divoire.=
- I =0Ahave some inherited fund from my late loving husband late Dr Davis =
-=0AIslapha The amount of ten million five hundred thousand U.S dollars =0A(=
-$10,500,000) which he deposited with a Finance firm here and I need a =0Ago=
-od honest God fearing person who can use these funds for God's work in=0A c=
-harity.<br><br>I want this fund to go for charity because I have no =0Achil=
-d to be the inheritor, 20% out of the total fund will be for your =0Acompen=
-sation for doing this work of God. I found your email address from=0A the i=
-nternet and decide to contact you. Please if you would be able to =0Ause th=
-is fund for<br>Fali Islapha: the glory of God kindly reply me.<br><br><br><=
-br>Your Sister In The Lord.<br>Mrs.Fali Islapha.</div></div></div></body></=
-html>
---493520653-2088220305-1466628336=:24279--
+<HTML><head><meta http-equiv=3D"Content-Type" content=3D"text/html; charset=
+=3Diso-8859-1"/></head><BODY><P>I am Sue Peters, currently undergoing medic=
+al treatment for cancer Chronic Myelogenous Leukemia (CML). I was married t=
+o Late Dr. Collins Peters who worked with Woodside Petroleum Limited (Austr=
+alia) for 23 years before he died in the year 2011.</P>
+<P>Before my Husband died, we both made a deposit of a total sum US$9.8M in=
+ a Private Bank. Recently,My Doctor told me that I have a few month to live=
+ due to cancer problem. Having known my condition I have decided to donate =
+this fund to an honest Person for charitable cause.</P>
+<P>My Attorney will issue you a Letter of Authority from Court naming you t=
+he original Beneficiary of these funds. Please assure me that you will act =
+accordingly as I stated herein.</P>
+<P>Hoping to hear from you. </P>
+<P>In His Arms.</P>
+<P>Sue Peters</P></BODY></HTML>
+--===============0293798413==--
