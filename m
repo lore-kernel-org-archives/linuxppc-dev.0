@@ -1,24 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbXRY24YXzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:03:03 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'Shreyas B. Prabhu'" <shreyas@linux.vnet.ibm.com>, "rjw@rjwysocki.net"
- <rjw@rjwysocki.net>
-CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "anton@samba.org"
- <anton@samba.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v2] cpuidle: Fix last_residency division
-Date: Fri, 24 Jun 2016 09:00:48 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4E3E66@AcuExch.aculab.com>
-References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbXtb5LxwzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:23:03 +1000 (AEST)
+Date: Fri, 24 Jun 2016 19:21:16 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, KVM <kvm@vger.kernel.org>,
+ KVM-PPC <kvm-ppc@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] Powernv: Remove the usage of PACAR1 from opal
+ wrappers
+Message-ID: <20160624092116.GD26584@fergus.ozlabs.ibm.com>
+References: <20160515041413.2280.747.stgit@mars>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160515041413.2280.747.stgit@mars>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogU2hyZXlhcyBCLiBQcmFiaHUNCj4gU2VudDogMjQgSnVuZSAyMDE2IDA5OjI0DQo+DQo+
-IFNub296ZSBpcyBhIHBvbGwgaWRsZSBzdGF0ZSBpbiBwb3dlcm52IGFuZCBwc2VyaWVzIHBsYXRm
-b3Jtcy4gU25vb3plDQo+IGhhcyBhIHRpbWVvdXQgc28gdGhhdCBpZiBhIGNwdSBzdGF5cyBpbiBz
-bm9vemUgZm9yIG1vcmUgdGhhbiB0YXJnZXQNCj4gcmVzaWRlbmN5IG9mIHRoZSBuZXh0IGF2YWls
-YWJsZSBpZGxlIHN0YXRlLCB0aGVuIGl0IHdvdWxkIGV4aXQgdGhlcmVieQ0KPiBnaXZpbmcgY2hh
-bmNlIHRvIHRoZSBjcHVpZGxlIGdvdmVybm9yIHRvIHJlLWV2YWx1YXRlIGFuZA0KPiBwcm9tb3Rl
-IHRoZSBjcHUgdG8gYSBkZWVwZXIgaWRsZSBzdGF0ZS4gVGhlcmVmb3JlIHdoZW5ldmVyIHNub296
-ZSBleGl0cw0KPiBkdWUgdG8gdGhpcyB0aW1lb3V0LCBpdHMgbGFzdF9yZXNpZGVuY3kgd2lsbCBi
-ZSB0YXJnZXRfcmVzaWRlbmN5IG9mIG5leHQNCj4gZGVlcGVyIHN0YXRlLg0KPiANCj4gY29tbWl0
-IGU5M2U1OWNlNWI4NSAoImNwdWlkbGU6IFJlcGxhY2Uga3RpbWVfZ2V0KCkgd2l0aCBsb2NhbF9j
-bG9jaygpIikNCj4gY2hhbmdlZCB0aGUgbWF0aCBhcm91bmQgbGFzdF9yZXNpZGVuY3kgY2FsY3Vs
-YXRpb24uIFNwZWNpZmljYWxseSwgd2hpbGUNCj4gY29udmVydGluZyBsYXN0X3Jlc2lkZW5jeSB2
-YWx1ZSBmcm9tIG5hbm9zZWNvbmRzIHRvIG1pY3Jvc2Vjb25kcyBpdCBkb2VzDQo+IHJpZ2h0IHNo
-aWZ0IGJ5IDEwLiBEdWUgdG8gdGhpcywgaW4gc25vb3plIHRpbWVvdXQgZXhpdCBzY2VuYXJpb3MN
-Cj4gbGFzdF9yZXNpZGVuY3kgY2FsY3VsYXRlZCBpcyByb3VnaGx5IDIuMyUgbGVzcyB0aGFuIHRh
-cmdldF9yZXNpZGVuY3kgb2YNCj4gbmV4dCBhdmFpbGFibGUgc3RhdGUuIFRoaXMgcGF0dGVybiBp
-cyBwaWNrZWQgdXAgZ2V0X3R5cGljYWxfaW50ZXJ2YWwoKQ0KPiBpbiB0aGUgbWVudSBnb3Zlcm5v
-ciBhbmQgdGhlcmVmb3JlIGV4cGVjdGVkX2ludGVydmFsIGluIG1lbnVfc2VsZWN0KCkgaXMNCj4g
-ZnJlcXVlbnRseSBsZXNzIHRoYW4gdGhlIHRhcmdldF9yZXNpZGVuY3kgb2YgYW55IHN0YXRlIGJ1
-dCBzbm9vemUuDQo+IA0KPiBEdWUgdG8gdGhpcyB3ZSBhcmUgZW50ZXJpbmcgc25vb3plIGF0IGEg
-aGlnaGVyIHJhdGUsIHRoZXJlYnkgYWZmZWN0aW5nDQo+IHRoZSBzaW5nbGUgdGhyZWFkIHBlcmZv
-cm1hbmNlLg0KPiANCj4gRml4IHRoaXMgYnkgcmVwbGFjaW5nIHJpZ2h0IHNoaWZ0IGJ5IDEwIHdp
-dGggLzEwMDAgd2hpbGUgY2FsY3VsYXRpbmcNCj4gbGFzdF9yZXNpZGVuY3kuDQo+IA0KPiBSZXBv
-cnRlZC1ieTogQW50b24gQmxhbmNoYXJkIDxhbnRvbkBzYW1iYS5vcmc+DQo+IEJpc2VjdGVkLWJ5
-OiBTaGlscGFzcmkgRyBCaGF0IDxzaGlscGEuYmhhdEBsaW51eC52bmV0LmlibS5jb20+DQo+IFNp
-Z25lZC1vZmYtYnk6IFNocmV5YXMgQi4gUHJhYmh1IDxzaHJleWFzQGxpbnV4LnZuZXQuaWJtLmNv
-bT4NCj4gLS0tDQo+IENoYW5nZXMgaW4gdjINCj4gPT09PT09PT09PT09PQ0KPiAgLSBGaXhpbmcg
-aXQgaW4gdGhlIGNwdWlkbGUgY29yZSBjb2RlIGluc3RlYWQgb2YgZHJpdmVyIGNvZGUuDQo+IA0K
-PiAgZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyB8IDYgKysrLS0tDQo+ICAxIGZpbGUgY2hhbmdl
-ZCwgMyBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMgYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jDQo+IGlu
-ZGV4IGE0ZDAwNTkuLjMwZDY3YTggMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvY3B1aWRsZS9jcHVp
-ZGxlLmMNCj4gKysrIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYw0KPiBAQCAtMjE4LDEwICsy
-MTgsMTAgQEAgaW50IGNwdWlkbGVfZW50ZXJfc3RhdGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpk
-ZXYsIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LA0KPiAgCQlsb2NhbF9pcnFfZW5hYmxlKCk7
-DQo+IA0KPiAgCS8qDQo+IC0JICogbG9jYWxfY2xvY2soKSByZXR1cm5zIHRoZSB0aW1lIGluIG5h
-bm9zZWNvbmQsIGxldCdzIHNoaWZ0DQo+IC0JICogYnkgMTAgKGRpdmlkZSBieSAxMDI0KSB0byBo
-YXZlIG1pY3Jvc2Vjb25kIGJhc2VkIHRpbWUuDQo+ICsJICogbG9jYWxfY2xvY2soKSByZXR1cm5z
-IHRoZSB0aW1lIGluIG5hbm9zZWNvbmQsIGxldCdzDQo+ICsJICogZGl2aWRlIGJ5IDEwMDAgdG8g
-aGF2ZSBtaWNyb3NlY29uZCBiYXNlZCB0aW1lLg0KPiAgCSAqLw0KPiAtCWRpZmYgPSAodGltZV9l
-bmQgLSB0aW1lX3N0YXJ0KSA+PiAxMDsNCj4gKwlkaWZmID0gKHRpbWVfZW5kIC0gdGltZV9zdGFy
-dCkgLyAxMDAwOw0KPiAgCWlmIChkaWZmID4gSU5UX01BWCkNCj4gIAkJZGlmZiA9IElOVF9NQVg7
-DQoNClRoZSBpbnRlbnQgb2YgdGhlID4+IDEwIHdhcyBwcm9iYWJseSB0byBhdm9pZCBhbiBleHBl
-bnNpdmUgNjRiaXQgZGl2aWRlLg0KU28gbWF5YmUgc29tZXRoaW5nIGxpa2U6DQoJZGlmZiA9IHRp
-bWVfZW5kIC0gdGltZV9zdGFydDsNCglpZiAoZGlmZiA+PSBJTlRfTUFYLzIpDQoJCWRpZmZfMzIg
-PSBJTlRfTUFYLzIvMTAwMDsNCgllbHNlDQoJCWRpZmZfMzIgPSBkaWZmOw0KCQlkaWZmXzMyICs9
-IGRpZmZfMzIgPj4gNjsNCgkJZGlmZl8zMiA+Pj0gMTA7DQoJfQ0KDQpBZGRpbmcgYW4gZXh0cmEg
-MS8zMiBtYWtlcyB0aGUgZGl2aXNpb24gYnkgYmUgc29tZXRoaW5nIHNsaWdodGx5IGJlbG93IDEw
-MDAuDQoNCglEYXZpZA0KDQo=
+On Sun, May 15, 2016 at 09:44:13AM +0530, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> OPAL_CALL wrapper code sticks the r1 (stack pointer) into PACAR1 purely
+> for debugging purpose only. The power7_wakeup* functions relies on stack
+> pointer saved in PACAR1. Any opal call made using opal wrapper (directly
+> or in-directly) before we fall through power7_wakeup*, then it ends up
+> replacing r1 in PACAR1(r13) leading to kernel panic. So far we don't see
+> any issues because we have never made any opal calls using OPAL wrapper
+> before power7_wakeup*. But the subsequent HMI patch would need to invoke
+> C calls during cpu wakeup/idle path that in-directly makes opal call using
+> opal wrapper. This patch facilitates the subsequent HMI patch by removing
+> usage of PACAR1 from opal call wrapper.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+Thanks, both patches applied to my kvm-ppc-next branch at
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git.
+
+Paul.
