@@ -1,31 +1,24 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.191])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbWZj5jH1zDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 18:24:12 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5O8J6mY097993
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 04:24:09 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23ruexac6w-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 04:24:09 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 24 Jun 2016 02:24:09 -0600
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net
-Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au,
- bsingharora@gmail.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpuidle: Fix last_residency division
-Date: Fri, 24 Jun 2016 03:23:58 -0500
-Message-Id: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbXRY24YXzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:03:03 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: "'Shreyas B. Prabhu'" <shreyas@linux.vnet.ibm.com>, "rjw@rjwysocki.net"
+ <rjw@rjwysocki.net>
+CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "anton@samba.org"
+ <anton@samba.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v2] cpuidle: Fix last_residency division
+Date: Fri, 24 Jun 2016 09:00:48 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4E3E66@AcuExch.aculab.com>
+References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,57 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Snooze is a poll idle state in powernv and pseries platforms. Snooze
-has a timeout so that if a cpu stays in snooze for more than target
-residency of the next available idle state, then it would exit thereby
-giving chance to the cpuidle governor to re-evaluate and
-promote the cpu to a deeper idle state. Therefore whenever snooze exits
-due to this timeout, its last_residency will be target_residency of next
-deeper state.
-
-commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-changed the math around last_residency calculation. Specifically, while
-converting last_residency value from nanoseconds to microseconds it does
-right shift by 10. Due to this, in snooze timeout exit scenarios
-last_residency calculated is roughly 2.3% less than target_residency of
-next available state. This pattern is picked up get_typical_interval()
-in the menu governor and therefore expected_interval in menu_select() is
-frequently less than the target_residency of any state but snooze.
-
-Due to this we are entering snooze at a higher rate, thereby affecting
-the single thread performance.
-
-Fix this by replacing right shift by 10 with /1000 while calculating
-last_residency.
-
-Reported-by: Anton Blanchard <anton@samba.org>
-Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
-Changes in v2
-=============
- - Fixing it in the cpuidle core code instead of driver code.
-
- drivers/cpuidle/cpuidle.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index a4d0059..30d67a8 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -218,10 +218,10 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 		local_irq_enable();
- 
- 	/*
--	 * local_clock() returns the time in nanosecond, let's shift
--	 * by 10 (divide by 1024) to have microsecond based time.
-+	 * local_clock() returns the time in nanosecond, let's
-+	 * divide by 1000 to have microsecond based time.
- 	 */
--	diff = (time_end - time_start) >> 10;
-+	diff = (time_end - time_start) / 1000;
- 	if (diff > INT_MAX)
- 		diff = INT_MAX;
- 
--- 
-2.1.4
+RnJvbTogU2hyZXlhcyBCLiBQcmFiaHUNCj4gU2VudDogMjQgSnVuZSAyMDE2IDA5OjI0DQo+DQo+
+IFNub296ZSBpcyBhIHBvbGwgaWRsZSBzdGF0ZSBpbiBwb3dlcm52IGFuZCBwc2VyaWVzIHBsYXRm
+b3Jtcy4gU25vb3plDQo+IGhhcyBhIHRpbWVvdXQgc28gdGhhdCBpZiBhIGNwdSBzdGF5cyBpbiBz
+bm9vemUgZm9yIG1vcmUgdGhhbiB0YXJnZXQNCj4gcmVzaWRlbmN5IG9mIHRoZSBuZXh0IGF2YWls
+YWJsZSBpZGxlIHN0YXRlLCB0aGVuIGl0IHdvdWxkIGV4aXQgdGhlcmVieQ0KPiBnaXZpbmcgY2hh
+bmNlIHRvIHRoZSBjcHVpZGxlIGdvdmVybm9yIHRvIHJlLWV2YWx1YXRlIGFuZA0KPiBwcm9tb3Rl
+IHRoZSBjcHUgdG8gYSBkZWVwZXIgaWRsZSBzdGF0ZS4gVGhlcmVmb3JlIHdoZW5ldmVyIHNub296
+ZSBleGl0cw0KPiBkdWUgdG8gdGhpcyB0aW1lb3V0LCBpdHMgbGFzdF9yZXNpZGVuY3kgd2lsbCBi
+ZSB0YXJnZXRfcmVzaWRlbmN5IG9mIG5leHQNCj4gZGVlcGVyIHN0YXRlLg0KPiANCj4gY29tbWl0
+IGU5M2U1OWNlNWI4NSAoImNwdWlkbGU6IFJlcGxhY2Uga3RpbWVfZ2V0KCkgd2l0aCBsb2NhbF9j
+bG9jaygpIikNCj4gY2hhbmdlZCB0aGUgbWF0aCBhcm91bmQgbGFzdF9yZXNpZGVuY3kgY2FsY3Vs
+YXRpb24uIFNwZWNpZmljYWxseSwgd2hpbGUNCj4gY29udmVydGluZyBsYXN0X3Jlc2lkZW5jeSB2
+YWx1ZSBmcm9tIG5hbm9zZWNvbmRzIHRvIG1pY3Jvc2Vjb25kcyBpdCBkb2VzDQo+IHJpZ2h0IHNo
+aWZ0IGJ5IDEwLiBEdWUgdG8gdGhpcywgaW4gc25vb3plIHRpbWVvdXQgZXhpdCBzY2VuYXJpb3MN
+Cj4gbGFzdF9yZXNpZGVuY3kgY2FsY3VsYXRlZCBpcyByb3VnaGx5IDIuMyUgbGVzcyB0aGFuIHRh
+cmdldF9yZXNpZGVuY3kgb2YNCj4gbmV4dCBhdmFpbGFibGUgc3RhdGUuIFRoaXMgcGF0dGVybiBp
+cyBwaWNrZWQgdXAgZ2V0X3R5cGljYWxfaW50ZXJ2YWwoKQ0KPiBpbiB0aGUgbWVudSBnb3Zlcm5v
+ciBhbmQgdGhlcmVmb3JlIGV4cGVjdGVkX2ludGVydmFsIGluIG1lbnVfc2VsZWN0KCkgaXMNCj4g
+ZnJlcXVlbnRseSBsZXNzIHRoYW4gdGhlIHRhcmdldF9yZXNpZGVuY3kgb2YgYW55IHN0YXRlIGJ1
+dCBzbm9vemUuDQo+IA0KPiBEdWUgdG8gdGhpcyB3ZSBhcmUgZW50ZXJpbmcgc25vb3plIGF0IGEg
+aGlnaGVyIHJhdGUsIHRoZXJlYnkgYWZmZWN0aW5nDQo+IHRoZSBzaW5nbGUgdGhyZWFkIHBlcmZv
+cm1hbmNlLg0KPiANCj4gRml4IHRoaXMgYnkgcmVwbGFjaW5nIHJpZ2h0IHNoaWZ0IGJ5IDEwIHdp
+dGggLzEwMDAgd2hpbGUgY2FsY3VsYXRpbmcNCj4gbGFzdF9yZXNpZGVuY3kuDQo+IA0KPiBSZXBv
+cnRlZC1ieTogQW50b24gQmxhbmNoYXJkIDxhbnRvbkBzYW1iYS5vcmc+DQo+IEJpc2VjdGVkLWJ5
+OiBTaGlscGFzcmkgRyBCaGF0IDxzaGlscGEuYmhhdEBsaW51eC52bmV0LmlibS5jb20+DQo+IFNp
+Z25lZC1vZmYtYnk6IFNocmV5YXMgQi4gUHJhYmh1IDxzaHJleWFzQGxpbnV4LnZuZXQuaWJtLmNv
+bT4NCj4gLS0tDQo+IENoYW5nZXMgaW4gdjINCj4gPT09PT09PT09PT09PQ0KPiAgLSBGaXhpbmcg
+aXQgaW4gdGhlIGNwdWlkbGUgY29yZSBjb2RlIGluc3RlYWQgb2YgZHJpdmVyIGNvZGUuDQo+IA0K
+PiAgZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyB8IDYgKysrLS0tDQo+ICAxIGZpbGUgY2hhbmdl
+ZCwgMyBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMgYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jDQo+IGlu
+ZGV4IGE0ZDAwNTkuLjMwZDY3YTggMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvY3B1aWRsZS9jcHVp
+ZGxlLmMNCj4gKysrIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYw0KPiBAQCAtMjE4LDEwICsy
+MTgsMTAgQEAgaW50IGNwdWlkbGVfZW50ZXJfc3RhdGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpk
+ZXYsIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LA0KPiAgCQlsb2NhbF9pcnFfZW5hYmxlKCk7
+DQo+IA0KPiAgCS8qDQo+IC0JICogbG9jYWxfY2xvY2soKSByZXR1cm5zIHRoZSB0aW1lIGluIG5h
+bm9zZWNvbmQsIGxldCdzIHNoaWZ0DQo+IC0JICogYnkgMTAgKGRpdmlkZSBieSAxMDI0KSB0byBo
+YXZlIG1pY3Jvc2Vjb25kIGJhc2VkIHRpbWUuDQo+ICsJICogbG9jYWxfY2xvY2soKSByZXR1cm5z
+IHRoZSB0aW1lIGluIG5hbm9zZWNvbmQsIGxldCdzDQo+ICsJICogZGl2aWRlIGJ5IDEwMDAgdG8g
+aGF2ZSBtaWNyb3NlY29uZCBiYXNlZCB0aW1lLg0KPiAgCSAqLw0KPiAtCWRpZmYgPSAodGltZV9l
+bmQgLSB0aW1lX3N0YXJ0KSA+PiAxMDsNCj4gKwlkaWZmID0gKHRpbWVfZW5kIC0gdGltZV9zdGFy
+dCkgLyAxMDAwOw0KPiAgCWlmIChkaWZmID4gSU5UX01BWCkNCj4gIAkJZGlmZiA9IElOVF9NQVg7
+DQoNClRoZSBpbnRlbnQgb2YgdGhlID4+IDEwIHdhcyBwcm9iYWJseSB0byBhdm9pZCBhbiBleHBl
+bnNpdmUgNjRiaXQgZGl2aWRlLg0KU28gbWF5YmUgc29tZXRoaW5nIGxpa2U6DQoJZGlmZiA9IHRp
+bWVfZW5kIC0gdGltZV9zdGFydDsNCglpZiAoZGlmZiA+PSBJTlRfTUFYLzIpDQoJCWRpZmZfMzIg
+PSBJTlRfTUFYLzIvMTAwMDsNCgllbHNlDQoJCWRpZmZfMzIgPSBkaWZmOw0KCQlkaWZmXzMyICs9
+IGRpZmZfMzIgPj4gNjsNCgkJZGlmZl8zMiA+Pj0gMTA7DQoJfQ0KDQpBZGRpbmcgYW4gZXh0cmEg
+MS8zMiBtYWtlcyB0aGUgZGl2aXNpb24gYnkgYmUgc29tZXRoaW5nIHNsaWdodGx5IGJlbG93IDEw
+MDAuDQoNCglEYXZpZA0KDQo=
