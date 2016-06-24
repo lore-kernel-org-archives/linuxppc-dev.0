@@ -1,22 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbRrT3fHYzDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 15:35:53 +1000 (AEST)
-Message-ID: <1466746547.11831.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pseries: Auto online hotplugged memory
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Morton
- <akpm@linux-foundation.org>
-Date: Fri, 24 Jun 2016 15:35:47 +1000
-In-Reply-To: <5768A2EB.5030808@linux.vnet.ibm.com>
-References: <5767F4D0.7070504@linux.vnet.ibm.com>
- <1466470648.9938.0.camel@ellerman.id.au>
- <5768A2EB.5030808@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rbSGC3gVFzDq5W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 15:54:43 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5O5s6LD114593
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 01:54:41 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23rmkj2gj3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 01:54:41 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 24 Jun 2016 15:54:38 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1B0F82BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 15:54:36 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5O5saiX5112132
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 15:54:36 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5O5sZiJ027690
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 15:54:35 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/eeh: fix pr_debug()s in eeh_cache.c
+Date: Fri, 24 Jun 2016 15:54:22 +1000
+Message-Id: <1466747662-9868-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +44,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-06-20 at 21:14 -0500, Nathan Fontenot wrote:
-> On 06/20/2016 07:57 PM, Michael Ellerman wrote:
-> > On Mon, 2016-06-20 at 08:51 -0500, Nathan Fontenot wrote:
-> > 
-> > > Auto online hotplugged memory
-> > > 
-> > > A recent update (commit id 31bc3858ea3) to the core mm hotplug code
-> > > introduced the memhp_auto_online variable to allow for automatically
-> > > onlining memory that is added.
-> > > 
-> > > This patch update the pseries memory hotplug code to enable this so that
-> > > any memory DLPAR added to the system is automatically onlined. The code
-> > > to add the memory block for memory added from add_memory() is removed as
-> > > this is not needed, the memory_add code does this.
-> > 
-> > Is this a bug fix, or just a cleanup?
-> 
-> Hmmm.. some cleanup and some new feature. The removal of the memblock_add()
-> call is a cleanup and the setting of the memhp_auto_online variable is
-> taking advantage of a feature I was not previously aware of.
+eeh_cache.c doesn't build cleanly with -DDEBUG when
+CONFIG_PHYS_ADDR_T_64BIT is set, as a couple of pr_debug()s use "%lx" for
+resource_size_t parameters.
 
-OK. Looking at usage of memhp_auto_online it's not clear to me that you're
-supposed to be setting it in arch code.
+Use "%pap" instead, as it's the correct format specifier for types deriving
+from phys_addr_t.
 
-eg. if I build my kernel with CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=n, I will
-expect it to not be onlined by default.
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: Russell Currey <ruscur@russell.cc>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh_cache.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Similarly if I boot with memhp_default_state=offline on the kernel command line.
-
-But this patch would then mean it is onlined by default. So that seems kind of
-confusing for users.
-
-I think instead we should be merging the bulk of this patch, but without the
-forced assignment to memhp_auto_online?
-
-cheers
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index ddbcfab..ceb81a4 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -114,9 +114,9 @@ static void eeh_addr_cache_print(struct pci_io_addr_cache *cache)
+ 	while (n) {
+ 		struct pci_io_addr_range *piar;
+ 		piar = rb_entry(n, struct pci_io_addr_range, rb_node);
+-		pr_debug("PCI: %s addr range %d [%lx-%lx]: %s\n",
++		pr_debug("PCI: %s addr range %d [%pap-%pap]: %s\n",
+ 		       (piar->flags & IORESOURCE_IO) ? "i/o" : "mem", cnt,
+-		       piar->addr_lo, piar->addr_hi, pci_name(piar->pcidev));
++		       &piar->addr_lo, &piar->addr_hi, pci_name(piar->pcidev));
+ 		cnt++;
+ 		n = rb_next(n);
+ 	}
+@@ -159,8 +159,8 @@ eeh_addr_cache_insert(struct pci_dev *dev, resource_size_t alo,
+ 	piar->flags = flags;
+ 
+ #ifdef DEBUG
+-	pr_debug("PIAR: insert range=[%lx:%lx] dev=%s\n",
+-	                  alo, ahi, pci_name(dev));
++	pr_debug("PIAR: insert range=[%pap:%pap] dev=%s\n",
++	                  &alo, &ahi, pci_name(dev));
+ #endif
+ 
+ 	rb_link_node(&piar->rb_node, parent, p);
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
