@@ -1,16 +1,11 @@
 Return-Path: <www@avo.ru>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rbYbP1yzszDq5W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2016 19:54:57 +1000 (AEST)
-Message-Id: <201606240952.u5NMeXjM028224@mail.avo.ru>
-Content-Type: multipart/alternative; boundary="===============0293798413=="
+Message-Id: <201606250513.u5OIJIHI007404@mail.avo.ru>
+Content-Type: multipart/alternative; boundary="===============1842223081=="
 MIME-Version: 1.0
 Subject: HELLO 
 To: Recipients <www@avo.ru>
 From: "Sue Peters" <www@avo.ru>
-Date: Fri, 24 Jun 2016 09:54:27 +0000
+Date: Sat, 25 Jun 2016 05:15:25 +0000
 Reply-To: pelusi1954@yahoo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,7 +17,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 You will not see this in a MIME-aware mail reader.
---===============0293798413==
+--===============1842223081==
 Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -44,7 +39,7 @@ cordingly as I stated herein.
  In His Arms.
  Sue Peters
 
---===============0293798413==
+--===============1842223081==
 Content-Type: text/html; charset="iso-8859-1"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -65,4 +60,4 @@ accordingly as I stated herein.</P>
 <P>Hoping to hear from you. </P>
 <P>In His Arms.</P>
 <P>Sue Peters</P></BODY></HTML>
---===============0293798413==--
+--===============1842223081==--
