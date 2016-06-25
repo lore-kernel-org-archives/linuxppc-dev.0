@@ -1,16 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rcDB92xQWzDqlb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jun 2016 21:53:53 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: <linuxppc-dev@ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix build break in fork.c when THREAD_SIZE < PAGE_SIZE
-Date: Sat, 25 Jun 2016 21:53:30 +1000
-Message-Id: <1466855610-20657-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rcKjP49tzzDqlb
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jun 2016 02:02:49 +1000 (AEST)
+Date: Sat, 25 Jun 2016 12:02:41 -0400 (EDT)
+Message-Id: <20160625.120241.1521209512436530662.davem@davemloft.net>
+To: weiyj_lk@163.com
+Cc: tlfalcon@linux.vnet.ibm.com, jallen@linux.vnet.ibm.com,
+ netdev@vger.kernel.org, yongjun_wei@trendmicro.com.cn,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] ibmvnic: fix to use list_for_each_safe() when
+ delete items
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <2db3a1f8-cafd-8fde-6223-2b2e3787d615@163.com>
+References: <576810C2.6080208@linux.vnet.ibm.com>
+ <576964CF.3040804@linux.vnet.ibm.com>
+ <2db3a1f8-cafd-8fde-6223-2b2e3787d615@163.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,50 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit b235beea9e99 ("Clarify naming of thread info/stack allocators")
-breaks the build on some powerpc configs, where THREAD_SIZE < PAGE_SIZE:
+From: Wei Yongjun <weiyj_lk@163.com>
+Date: Wed, 22 Jun 2016 10:51:46 +0800
 
-  kernel/fork.c:235:2: error: implicit declaration of function 'free_thread_stack'
-  kernel/fork.c:355:8: error: assignment from incompatible pointer type
-    stack = alloc_thread_stack_node(tsk, node);
-    ^
+> Since we will remove items off the list using list_del() we need
+> to use a safe version of the list_for_each() macro aptly named
+> list_for_each_safe().
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Fix it by renaming free_stack() to free_thread_stack(), and updating the
-return type of alloc_thread_stack_node().
-
-Fixes: b235beea9e99 ("Clarify naming of thread info/stack allocators")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- kernel/fork.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Hi Linus,
-
-I saw this after I'd sent my latest fixes pull request. So rather than
-retracting that pull request etc. I thought I'd just send this directly. I can
-put it in a branch on Monday if you prefer.
-
-cheers
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 37b9439b8c07..4a7ec0c6c88c 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -183,13 +183,13 @@ static inline void free_thread_stack(unsigned long *stack)
- # else
- static struct kmem_cache *thread_stack_cache;
- 
--static struct thread_info *alloc_thread_stack_node(struct task_struct *tsk,
-+static unsigned long *alloc_thread_stack_node(struct task_struct *tsk,
- 						  int node)
- {
- 	return kmem_cache_alloc_node(thread_stack_cache, THREADINFO_GFP, node);
- }
- 
--static void free_stack(unsigned long *stack)
-+static void free_thread_stack(unsigned long *stack)
- {
- 	kmem_cache_free(thread_stack_cache, stack);
- }
--- 
-2.5.0
+Your email client has corrupted the spacing in this patch, making
+it unusable.
