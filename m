@@ -1,44 +1,19 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rczmY4mNDzDqmf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 03:37:49 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5QHY1Cr029199
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jun 2016 13:37:48 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23sjufdp46-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jun 2016 13:37:48 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 27 Jun 2016 03:37:45 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 228FA3578052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 03:37:43 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5QHbheZ9109960
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 03:37:43 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5QHbgRT025885
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 03:37:42 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 6/6] powerpc/perf: Export Power9 generic and cache events to
- sysfs
-Date: Sun, 26 Jun 2016 23:07:09 +0530
-In-Reply-To: <1466962629-30692-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1466962629-30692-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1466962629-30692-6-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rd1Fm2zyczDqm9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 04:44:42 +1000 (AEST)
+From: Darren Stevens <darren@stevens-zone.net>
+To: linuxppc-dev@lists.ozlabs.org
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>, matthew@a-eon.com,
+ Pat Wall <pjwall@mac.com>, R.T.Dickinson <rtd2@xtra.co.nz>,
+ aperez@alexperez.com
+Date: Sun, 26 Jun 2016 18:42:11 +0100 (BST)
+Message-ID: <4863e2f8235.599ebfcf@auth.smtp.1and1.co.uk>
+Subject: Proposed: Patch to fix boot on PA6T
+MIME-Version: 1.0
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6d401b301879572c.5f"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,90 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Export the generic hardware and cache perf events for Power9 to sysfs,
-so users can determine the PMU event monitored.
+Warning: This is a message in MIME format. Your mail reader does
+not support MIME. Some parts of this message will be readable as
+plain text. To see the rest, you will need to upgrade your mail
+reader. Following are some URLs where you can find MIME-capable
+mail programs for common platforms:
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/power9-pmu.c | 59 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+  AmigaOS...........: http://yam.ch/
+  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
 
-diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index a2798b5915b9..788346303852 100644
---- a/arch/powerpc/perf/power9-pmu.c
-+++ b/arch/powerpc/perf/power9-pmu.c
-@@ -31,6 +31,64 @@ enum {
- #define POWER9_MMCRA_IFM2		0x0000000080000000UL
- #define POWER9_MMCRA_IFM3		0x00000000C0000000UL
+General information about MIME can be found at:
+http://en.wikipedia.org/wiki/MIME
+
+----=_BOUNDARY.6d401b301879572c.5f
+Content-Type: text/plain
+
+Hello All,
+
+    commit d6a9996e84ac4beb7713e9485f4563e100a9b03e
+    powerpc/mm: vmalloc abstraction in preparation for radix
+
+    This commit introduced variables for some linux kernel addresses that had
+before
+    been constants, unfortunately this stopped PaSemi PA6T systems(*) from
+booting as
+    they call ioremap to map SoC registers before the mmu is initialised. The
+attached
+    patch adds a hard-coded init of pci_io_base to the pas_init_early()
+function which
+    which allows the kernel to boot normally.
+
+    The value will be harmlessly set again once pci starts up.
+
+    (*) At the moment this has only been tested on an AmigaOneX1000, but I
+expect PaSemi
+    reference systems to have been affected in the same way.
+
+Kind regards
+Darren
+
+----=_BOUNDARY.6d401b301879572c.5f
+Content-Type: text/plain;
+	name="pa6t-bootfix.patch"
+Content-Disposition: attachment;
+	filename="pa6t-bootfix.patch";
+	size=643
+
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index d71b2c7..6b8d2ab 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -61,6 +61,7 @@ static struct mce_regs mce_regs[MAX_MCE_REGS];
+ static int num_mce_regs;
+ static int nmi_virq = NO_IRQ;
  
-+GENERIC_EVENT_ATTR(cpu-cycles,			PM_CYC);
-+GENERIC_EVENT_ATTR(stalled-cycles-frontend,	PM_ICT_NOSLOT_CYC);
-+GENERIC_EVENT_ATTR(stalled-cycles-backend,	PM_CMPLU_STALL);
-+GENERIC_EVENT_ATTR(instructions,		PM_INST_CMPL);
-+GENERIC_EVENT_ATTR(branch-instructions,		PM_BRU_CMPL);
-+GENERIC_EVENT_ATTR(branch-misses,		PM_BR_MPRED_CMPL);
-+GENERIC_EVENT_ATTR(cache-references,		PM_LD_REF_L1);
-+GENERIC_EVENT_ATTR(cache-misses,		PM_LD_MISS_L1_FIN);
++extern unsigned long pci_io_base;
+ 
+ static void pas_restart(char *cmd)
+ {
+@@ -341,6 +342,10 @@ out:
+ 
+ static void __init pas_init_early(void)
+ {
++	/* Initialise the IO pointer so we don't crash on boot */
 +
-+CACHE_EVENT_ATTR(L1-dcache-load-misses,		PM_LD_MISS_L1_FIN);
-+CACHE_EVENT_ATTR(L1-dcache-loads,		PM_LD_REF_L1);
-+CACHE_EVENT_ATTR(L1-dcache-prefetches,		PM_L1_PREF);
-+CACHE_EVENT_ATTR(L1-dcache-store-misses,	PM_ST_MISS_L1);
-+CACHE_EVENT_ATTR(L1-icache-load-misses,		PM_L1_ICACHE_MISS);
-+CACHE_EVENT_ATTR(L1-icache-loads,		PM_INST_FROM_L1);
-+CACHE_EVENT_ATTR(L1-icache-prefetches,		PM_IC_PREF_WRITE);
-+CACHE_EVENT_ATTR(LLC-load-misses,		PM_DATA_FROM_L3MISS);
-+CACHE_EVENT_ATTR(LLC-loads,			PM_DATA_FROM_L3);
-+CACHE_EVENT_ATTR(LLC-prefetches,		PM_L3_PREF_ALL);
-+CACHE_EVENT_ATTR(LLC-store-misses,		PM_L2_ST_MISS);
-+CACHE_EVENT_ATTR(LLC-stores,			PM_L2_ST);
-+CACHE_EVENT_ATTR(branch-load-misses,		PM_BR_MPRED_CMPL);
-+CACHE_EVENT_ATTR(branch-loads,			PM_BRU_CMPL);
-+CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
-+CACHE_EVENT_ATTR(iTLB-load-misses,		PM_ITLB_MISS);
++	pci_io_base = (H_KERN_VIRT_START + (H_KERN_VIRT_SIZE >> 1));
 +
-+static struct attribute *power9_events_attr[] = {
-+	GENERIC_EVENT_PTR(PM_CYC),
-+	GENERIC_EVENT_PTR(PM_ICT_NOSLOT_CYC),
-+	GENERIC_EVENT_PTR(PM_CMPLU_STALL),
-+	GENERIC_EVENT_PTR(PM_INST_CMPL),
-+	GENERIC_EVENT_PTR(PM_BRU_CMPL),
-+	GENERIC_EVENT_PTR(PM_BR_MPRED_CMPL),
-+	GENERIC_EVENT_PTR(PM_LD_REF_L1),
-+	GENERIC_EVENT_PTR(PM_LD_MISS_L1_FIN),
-+	CACHE_EVENT_PTR(PM_LD_MISS_L1_FIN),
-+	CACHE_EVENT_PTR(PM_LD_REF_L1),
-+	CACHE_EVENT_PTR(PM_L1_PREF),
-+	CACHE_EVENT_PTR(PM_ST_MISS_L1),
-+	CACHE_EVENT_PTR(PM_L1_ICACHE_MISS),
-+	CACHE_EVENT_PTR(PM_INST_FROM_L1),
-+	CACHE_EVENT_PTR(PM_IC_PREF_WRITE),
-+	CACHE_EVENT_PTR(PM_DATA_FROM_L3MISS),
-+	CACHE_EVENT_PTR(PM_DATA_FROM_L3),
-+	CACHE_EVENT_PTR(PM_L3_PREF_ALL),
-+	CACHE_EVENT_PTR(PM_L2_ST_MISS),
-+	CACHE_EVENT_PTR(PM_L2_ST),
-+	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
-+	CACHE_EVENT_PTR(PM_BRU_CMPL),
-+	CACHE_EVENT_PTR(PM_DTLB_MISS),
-+	CACHE_EVENT_PTR(PM_ITLB_MISS),
-+	NULL
-+};
-+
-+static struct attribute_group power9_pmu_events_group = {
-+	.name = "events",
-+	.attrs = power9_events_attr,
-+};
+ 	iommu_init_early_pasemi();
+ }
  
- PMU_FORMAT_ATTR(event,		"config:0-49");
- PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
-@@ -68,6 +126,7 @@ struct attribute_group power9_pmu_format_group = {
- 
- static const struct attribute_group *power9_pmu_attr_groups[] = {
- 	&power9_pmu_format_group,
-+	&power9_pmu_events_group,
- 	NULL,
- };
- 
--- 
-1.9.1
+
+
+----=_BOUNDARY.6d401b301879572c.5f--
