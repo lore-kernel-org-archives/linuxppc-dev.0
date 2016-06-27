@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSxW1vfGzDsRR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:32:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSxX5wH9zDsRq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:32:16 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 14/38] powerpc/pmac: Remove early allocation of the SMU
- command buffer
-Date: Mon, 27 Jun 2016 21:29:12 +1000
-Message-Id: <1467026976-7974-15-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 33/38] powerpc/64: Move the content of setup_system() to
+ setup_arch()
+Date: Mon, 27 Jun 2016 21:29:31 +1000
+Message-Id: <1467026976-7974-34-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,121 +21,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SMU command buffer needs to be allocated below 2G using memblock.
-
-In the past, this had to be done very early from the arch code as
-memblock wasn't available past that point. That is no longer the
-case though, smu_init() is called from setup_arch() when memblock
-is still functional these days. So move the allocation to the
-SMU driver itself.
+And kill setup_system()
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/smu.h          |  7 -------
- arch/powerpc/platforms/powermac/setup.c | 16 ----------------
- drivers/macintosh/smu.c                 |  9 ++++++++-
- 3 files changed, 8 insertions(+), 24 deletions(-)
+ arch/powerpc/kernel/head_64.S  |   5 +-
+ arch/powerpc/kernel/setup_64.c | 137 +++++++++++++++++++----------------------
+ 2 files changed, 64 insertions(+), 78 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/smu.h b/arch/powerpc/include/asm/smu.h
-index f280dd1..ddee470 100644
---- a/arch/powerpc/include/asm/smu.h
-+++ b/arch/powerpc/include/asm/smu.h
-@@ -471,13 +471,6 @@ extern int smu_get_rtc_time(struct rtc_time *time, int spinwait);
- extern int smu_set_rtc_time(struct rtc_time *time, int spinwait);
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 2d14774..3109d0c 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -941,7 +941,7 @@ start_here_multiplatform:
+ 	mtspr	SPRN_SRR1,r4
+ 	RFI
+ 	b	.	/* prevent speculative execution */
+-	
++
+ 	/* This is where all platforms converge execution */
  
- /*
-- * SMU command buffer absolute address, exported by pmac_setup,
-- * this is allocated very early during boot.
-- */
--extern unsigned long smu_cmdbuf_abs;
+ start_here_common:
+@@ -951,9 +951,6 @@ start_here_common:
+ 	/* Load the TOC (virtual address) */
+ 	ld	r2,PACATOC(r13)
+ 
+-	/* Do more system initializations in virtual mode */
+-	bl	setup_system
 -
--
+ 	/* Mark interrupts soft and hard disabled (they might be enabled
+ 	 * in the PACA when doing hotplug)
+ 	 */
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 29bbe8c..108035b 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -523,80 +523,6 @@ static __init void print_system_info(void)
+ 	pr_info("-----------------------------------------------------\n");
+ }
+ 
 -/*
-  * Kernel asynchronous i2c interface
-  */
- 
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 19de197..43d02c2 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -52,7 +52,6 @@
- #include <linux/suspend.h>
- #include <linux/of_device.h>
- #include <linux/of_platform.h>
--#include <linux/memblock.h>
- 
- #include <asm/reg.h>
- #include <asm/sections.h>
-@@ -97,11 +96,6 @@ int sccdbg;
- sys_ctrler_t sys_ctrler = SYS_CTRLER_UNKNOWN;
- EXPORT_SYMBOL(sys_ctrler);
- 
--#ifdef CONFIG_PMAC_SMU
--unsigned long smu_cmdbuf_abs;
--EXPORT_SYMBOL(smu_cmdbuf_abs);
+- * Do some initial setup of the system.  The parameters are those which 
+- * were passed in from the bootloader.
+- */
+-void __init setup_system(void)
+-{
+-	DBG(" -> setup_system()\n");
+-
+-	/*
+-	 * Unflatten the device-tree passed by prom_init or kexec
+-	 */
+-	unflatten_device_tree();
+-
+-	/*
+-	 * Fill the ppc64_caches & systemcfg structures with informations
+- 	 * retrieved from the device-tree.
+-	 */
+-	initialize_cache_info();
+-
+-#ifdef CONFIG_PPC_RTAS
+-	/*
+-	 * Initialize RTAS if available
+-	 */
+-	rtas_initialize();
+-#endif /* CONFIG_PPC_RTAS */
+-
+-	/*
+-	 * Check if we have an initrd provided via the device-tree
+-	 */
+-	check_for_initrd();
+-
+-	/* Probe the machine type */
+-	probe_machine();
+-
+- 	/*
+-	 * We can discover serial ports now since the above did setup the
+-	 * hash table management for us, thus ioremap works. We do that early
+-	 * so that further code can be debugged
+-	 */
+-	find_legacy_serial_ports();
+-
+-	/*
+-	 * Register early console
+-	 */
+-	register_early_udbg_console();
+-
+-	/*
+-	 * Initialize xmon
+-	 */
+-	xmon_setup();
+-
+-	smp_setup_cpu_maps();
+-	check_smt_enabled();
+-	setup_tlb_core_data();
+-
+-	/*
+-	 * Freescale Book3e parts spin in a loop provided by firmware,
+-	 * so smp_release_cpus() does nothing for them
+-	 */
+-#if defined(CONFIG_SMP)
+-	/* Release secondary cpus out of their spinloops at 0x60 now that
+-	 * we can map physical -> logical CPU ids
+-	 */
+-	smp_release_cpus();
 -#endif
 -
- static void pmac_show_cpuinfo(struct seq_file *m)
- {
- 	struct device_node *np;
-@@ -325,7 +319,6 @@ static void __init pmac_setup_arch(void)
-     defined(CONFIG_PPC64)
- 	pmac_nvram_init();
- #endif
--
- #ifdef CONFIG_PPC32
- #ifdef CONFIG_BLK_DEV_INITRD
- 	if (initrd_start)
-@@ -615,15 +608,6 @@ static int __init pmac_probe(void)
- 	DMA_MODE_WRITE = 2;
- #endif /* CONFIG_PPC32 */
- 
--#ifdef CONFIG_PMAC_SMU
--	/*
--	 * SMU based G5s need some memory below 2Gb, at least the current
--	 * driver needs that. We have to allocate it now. We allocate 4k
--	 * (1 small page) for now.
+-	/* Print various info about the machine that gave been gathered
+-	 * so far
 -	 */
--	smu_cmdbuf_abs = memblock_alloc_base(4096, 4096, 0x80000000UL);
--#endif /* CONFIG_PMAC_SMU */
+-	print_system_info();
 -
- 	pm_power_off = pmac_power_off;
- 
- 	return 1;
-diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-index d531f80..d6f72c8 100644
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -38,6 +38,7 @@
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #include <linux/slab.h>
-+#include <linux/memblock.h>
- 
- #include <asm/byteorder.h>
- #include <asm/io.h>
-@@ -99,6 +100,7 @@ static DEFINE_MUTEX(smu_mutex);
- static struct smu_device	*smu;
- static DEFINE_MUTEX(smu_part_access);
- static int smu_irq_inited;
-+static unsigned long smu_cmdbuf_abs;
- 
- static void smu_i2c_retry(unsigned long data);
- 
-@@ -479,8 +481,13 @@ int __init smu_init (void)
- 
- 	printk(KERN_INFO "SMU: Driver %s %s\n", VERSION, AUTHOR);
+-	DBG(" <- setup_system()\n");
+-}
+-
+ /* This returns the limit below which memory accesses to the linear
+  * mapping are guarnateed not to cause a TLB or SLB miss. This is
+  * used to allocate interrupt or emergency stacks for which our
+@@ -708,6 +634,69 @@ void __init setup_arch(char **cmdline_p)
+ {
+ 	*cmdline_p = boot_command_line;
  
 +	/*
-+	 * SMU based G5s need some memory below 2Gb. Thankfully this is
-+	 * called at a time where memblock is still available.
++	 * Unflatten the device-tree passed by prom_init or kexec
 +	 */
-+	smu_cmdbuf_abs = memblock_alloc_base(4096, 4096, 0x80000000UL);
- 	if (smu_cmdbuf_abs == 0) {
--		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
-+		printk(KERN_ERR "SMU: Command buffer allocation failed !\n");
- 		ret = -EINVAL;
- 		goto fail_np;
- 	}
++	unflatten_device_tree();
++
++	/*
++	 * Fill the ppc64_caches & systemcfg structures with informations
++ 	 * retrieved from the device-tree.
++	 */
++	initialize_cache_info();
++
++#ifdef CONFIG_PPC_RTAS
++	/*
++	 * Initialize RTAS if available
++	 */
++	rtas_initialize();
++#endif /* CONFIG_PPC_RTAS */
++
++	/*
++	 * Check if we have an initrd provided via the device-tree
++	 */
++	check_for_initrd();
++
++	/* Probe the machine type */
++	probe_machine();
++
++ 	/*
++	 * We can discover serial ports now since the above did setup the
++	 * hash table management for us, thus ioremap works. We do that early
++	 * so that further code can be debugged
++	 */
++	find_legacy_serial_ports();
++
++	/*
++	 * Register early console
++	 */
++	register_early_udbg_console();
++
++	/*
++	 * Initialize xmon
++	 */
++	xmon_setup();
++
++	smp_setup_cpu_maps();
++	check_smt_enabled();
++	setup_tlb_core_data();
++
++	/*
++	 * Freescale Book3e parts spin in a loop provided by firmware,
++	 * so smp_release_cpus() does nothing for them
++	 */
++#if defined(CONFIG_SMP)
++	/* Release secondary cpus out of their spinloops at 0x60 now that
++	 * we can map physical -> logical CPU ids
++	 */
++	smp_release_cpus();
++#endif
++
++	/* Print various info about the machine that gave been gathered
++	 * so far
++	 */
++	print_system_info();
++
+ 	/* Reserve large chunks of memory for use by CMA for KVM */
+ 	kvm_cma_reserve();
+ 
 -- 
 2.7.4
