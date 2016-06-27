@@ -1,21 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c00::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdG612XWGzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 14:23:53 +1000 (AEST)
-Date: Mon, 27 Jun 2016 14:23:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Mahesh
- Salgaonkar <mahesh@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
-Subject: linux-next: manual merge of the kvm-ppc-paulus tree with the
- powerpc tree
-Message-ID: <20160627142352.2c1ae65b@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdGDv5c0PzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 14:29:51 +1000 (AEST)
+Received: by mail-pf0-x22a.google.com with SMTP id i123so57662252pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jun 2016 21:29:50 -0700 (PDT)
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, steve.muckle@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V5 2/2] cpufreq: Reuse new freq-table helpers
+Date: Mon, 27 Jun 2016 09:59:34 +0530
+Message-Id: <29326603f17249f7636fc4ada43b96ad455fecbb.1467001203.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1467001203.git.viresh.kumar@linaro.org>
+References: <cover.1467001203.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1467001203.git.viresh.kumar@linaro.org>
+References: <cover.1467001203.git.viresh.kumar@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +30,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paul,
+This patch migrates few users of cpufreq tables to the new helpers that
+work on sorted freq-tables.
 
-Today's linux-next merge of the kvm-ppc-paulus tree got a conflict in:
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/acpi-cpufreq.c         | 14 ++++----------
+ drivers/cpufreq/amd_freq_sensitivity.c |  4 ++--
+ drivers/cpufreq/cpufreq_ondemand.c     |  6 ++----
+ drivers/cpufreq/powernv-cpufreq.c      |  3 +--
+ drivers/cpufreq/s5pv210-cpufreq.c      |  3 +--
+ 5 files changed, 10 insertions(+), 20 deletions(-)
 
-  arch/powerpc/kernel/traps.c
-
-between commit:
-
-  42f5b4cacd78 ("powerpc: Introduce asm-prototypes.h")
-
-from the powerpc tree and commit:
-
-  fd7bacbca47a ("KVM: PPC: Book3S HV: Fix TB corruption in guest exit path on HMI interrupt")
-
-from the kvm-ppc-paulus tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 32a15052f363..11c9a078e0fd 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -468,20 +468,14 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 	struct acpi_processor_performance *perf;
+ 	struct cpufreq_frequency_table *entry;
+-	unsigned int next_perf_state, next_freq, freq;
++	unsigned int next_perf_state, next_freq, index;
+ 
+ 	/*
+ 	 * Find the closest frequency above target_freq.
+-	 *
+-	 * The table is sorted in the reverse order with respect to the
+-	 * frequency and all of the entries are valid (see the initialization).
+ 	 */
+-	entry = policy->freq_table;
+-	do {
+-		entry++;
+-		freq = entry->frequency;
+-	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
+-	entry--;
++	index = cpufreq_table_find_index_dl(policy, target_freq);
++
++	entry = &policy->freq_table[index];
+ 	next_freq = entry->frequency;
+ 	next_perf_state = entry->driver_data;
+ 
+diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+index 6d5dc04c3a37..042023bbbf62 100644
+--- a/drivers/cpufreq/amd_freq_sensitivity.c
++++ b/drivers/cpufreq/amd_freq_sensitivity.c
+@@ -91,8 +91,8 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
+ 		else {
+ 			unsigned int index;
+ 
+-			index = cpufreq_frequency_table_target(policy,
+-				policy->cur - 1, CPUFREQ_RELATION_H);
++			index = cpufreq_table_find_index_h(policy,
++							   policy->cur - 1);
+ 			freq_next = policy->freq_table[index].frequency;
+ 		}
+ 
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 0c93cd9dee99..3a1f49f5f4c6 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -85,11 +85,9 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
+ 	freq_avg = freq_req - freq_reduc;
+ 
+ 	/* Find freq bounds for freq_avg in freq_table */
+-	index = cpufreq_frequency_table_target(policy, freq_avg,
+-					       CPUFREQ_RELATION_H);
++	index = cpufreq_table_find_index_h(policy, freq_avg);
+ 	freq_lo = freq_table[index].frequency;
+-	index = cpufreq_frequency_table_target(policy, freq_avg,
+-					       CPUFREQ_RELATION_L);
++	index = cpufreq_table_find_index_l(policy, freq_avg);
+ 	freq_hi = freq_table[index].frequency;
+ 
+ 	/* Find out how long we have to be in hi and lo freqs */
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b29c5c20c3a1..2a2920c4fdf9 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -760,8 +760,7 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
+ 		struct cpufreq_policy policy;
+ 
+ 		cpufreq_get_policy(&policy, cpu);
+-		index = cpufreq_frequency_table_target(&policy, policy.cur,
+-					       CPUFREQ_RELATION_C);
++		index = cpufreq_table_find_index_c(&policy, policy.cur);
+ 		powernv_cpufreq_target_index(&policy, index);
+ 		cpumask_andnot(&mask, &mask, policy.cpus);
+ 	}
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 4f4e9df9b7fc..9e07588ea9f5 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -246,8 +246,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 	new_freq = s5pv210_freq_table[index].frequency;
+ 
+ 	/* Finding current running level index */
+-	priv_index = cpufreq_frequency_table_target(policy, old_freq,
+-						    CPUFREQ_RELATION_H);
++	priv_index = cpufreq_table_find_index_h(policy, old_freq);
+ 
+ 	arm_volt = dvs_conf[index].arm_volt;
+ 	int_volt = dvs_conf[index].int_volt;
 -- 
-Cheers,
-Stephen Rothwell
-
-diff --cc arch/powerpc/kernel/traps.c
-index f7e2f2e318bd,9ec95daccad9..000000000000
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@@ -60,7 -60,7 +60,8 @@@
-  #include <asm/switch_to.h>
-  #include <asm/tm.h>
-  #include <asm/debug.h>
- +#include <asm/asm-prototypes.h>
-+ #include <asm/hmi.h>
-  #include <sysdev/fsl_pci.h>
-  
-  #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+2.7.4
