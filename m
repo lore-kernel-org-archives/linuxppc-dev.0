@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRZJ6Z8kzDqpD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:30:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRZL213rzDqpD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:30:34 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 12/38] powerpc: Move FW feature probing out of pseries probe()
-Date: Mon, 27 Jun 2016 21:29:10 +1000
-Message-Id: <1467026976-7974-13-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 13/38] powerpc: Put exception configuration in a common place
+Date: Mon, 27 Jun 2016 21:29:11 +1000
+Message-Id: <1467026976-7974-14-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,199 +20,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We move the function itself to pseries/firmware.c and call it along
-with almost all other flat device-tree parsers from early_init_devtree()
+The various calls to establish exception endianness and AIL are
+now done from a single point using already established CPU and FW
+feature bits to decide what to do.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/firmware.h       |  4 +++
- arch/powerpc/kernel/prom.c                |  6 +++++
- arch/powerpc/platforms/pseries/firmware.c | 44 +++++++++++++++++++++++++++++--
- arch/powerpc/platforms/pseries/pseries.h  |  5 ----
- arch/powerpc/platforms/pseries/setup.c    | 41 ----------------------------
- 5 files changed, 52 insertions(+), 48 deletions(-)
+ arch/powerpc/include/asm/opal.h        |  1 +
+ arch/powerpc/kernel/setup_64.c         | 68 +++++++++++++++++++++++++++-------
+ arch/powerpc/platforms/powernv/opal.c  | 13 +++----
+ arch/powerpc/platforms/pseries/setup.c | 29 ---------------
+ 4 files changed, 60 insertions(+), 51 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index b062924..ae0d457 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -126,6 +126,10 @@ extern int fwnmi_active;
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9d86c66..6135816 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -215,6 +215,7 @@ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+ 				   int depth, void *data);
+ extern int early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 				 const char *uname, int depth, void *data);
++extern void opal_configure_cores(void);
  
- extern unsigned int __start___fw_ftr_fixup, __stop___fw_ftr_fixup;
+ extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
+ extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index a641753..47a2706 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -69,6 +69,7 @@
+ #include <asm/kvm_ppc.h>
+ #include <asm/hugetlb.h>
+ #include <asm/livepatch.h>
++#include <asm/opal.h>
  
-+int pseries_probe_fw_features(unsigned long node,
-+			      const char *uname, int depth,
-+			      void *data);
-+
- #endif /* __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_FIRMWARE_H */
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 48434be..d10e786 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -57,6 +57,7 @@
- #include <asm/fadump.h>
- #include <asm/debug.h>
- #include <asm/epapr_hcalls.h>
-+#include <asm/firmware.h>
- 
- #include <mm/mmu_decl.h>
- 
-@@ -740,8 +741,13 @@ void __init early_init_devtree(void *params)
- 	/* Scan and build the list of machine check recoverable ranges */
- 	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
- #endif
-+
- 	epapr_paravirt_early_init();
- 
-+#ifdef CONFIG_PPC_PSERIES
-+	/* Now try to figure out if we are running on LPAR */
-+	of_scan_flat_dt(pseries_probe_fw_features, NULL);
-+#endif
- 	DBG(" <- early_init_devtree()\n");
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+@@ -205,21 +206,60 @@ static void fixup_boot_paca(void)
+ 	get_paca()->data_offset = 0;
  }
  
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 8c80588..d9a7f62 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -69,7 +69,8 @@ hypertas_fw_features_table[] = {
-  * device-tree/ibm,hypertas-functions.  Ultimately this functionality may
-  * be moved into prom.c prom_init().
-  */
--void __init fw_hypertas_feature_init(const char *hypertas, unsigned long len)
-+static void __init fw_hypertas_feature_init(const char *hypertas,
-+					    unsigned long len)
- {
- 	const char *s;
- 	int i;
-@@ -113,7 +114,7 @@ vec5_fw_features_table[] = {
- 	{FW_FEATURE_PRRN,		OV5_PRRN},
- };
- 
--void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
-+static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
- {
- 	unsigned int index, feat;
- 	int i;
-@@ -131,3 +132,42 @@ void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
- 
- 	pr_debug(" <- fw_vec5_feature_init()\n");
- }
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+
-+int __init pseries_probe_fw_features(unsigned long node,
-+				     const char *uname, int depth,
-+				     void *data)
++static void configure_exceptions(void)
 +{
-+	const char *prop;
-+	int len;
-+	static int hypertas_found;
-+	static int vec5_found;
++	/* Setup the trampolines from the lowmem exception vectors
++	 * to the kdump kernel when not using a relocatable kernel.
++	 */
++	setup_kdump_trampoline();
 +
-+	if (depth != 1)
-+		return 0;
++	/* Under a PAPR hypervisor, we need hypercalls */
++	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
++		long rc;
 +
-+	if (!strcmp(uname, "rtas") || !strcmp(uname, "rtas@0")) {
-+		prop = of_get_flat_dt_prop(node, "ibm,hypertas-functions",
-+					   &len);
-+		if (prop) {
-+			powerpc_firmware_features |= FW_FEATURE_LPAR;
-+			fw_hypertas_feature_init(prop, len);
++		/* Enable AIL */
++		rc = pSeries_enable_reloc_on_exc();
++		if (rc == H_P2) {
++			pr_info("Relocation on exceptions not supported\n");
++		} else if (rc != H_SUCCESS) {
++			pr_warn("Unable to enable relocation on exceptions: "
++				"%ld\n", rc);
 +		}
 +
-+		hypertas_found = 1;
++		/*
++		 * Tell the hypervisor that we want our exceptions to
++		 * be taken in little endian mode. If this fails we don't
++		 * want to use BUG() because it will trigger an exception.
++		 *
++		 * We don't call this for big endian as our calling convention
++		 * makes us always enter in BE, and the call may fail under
++		 * some circumstances with kdump.
++		 */
++#ifdef __LITTLE_ENDIAN__
++		rc = pseries_little_endian_exceptions();
++		if (rc) {
++			ppc_md.progress("H_SET_MODE LE exception fail", 0);
++			panic("Could not enable little endian exceptions");
++		}
++#endif
++	} else {
++		/* Set endian mode using OPAL */
++		if (firmware_has_feature(FW_FEATURE_OPAL))
++			opal_configure_cores();
++
++		/* Enable AIL if supported, and we are in hypervisor mode */
++		if (cpu_has_feature(CPU_FTR_HVMODE) &&
++		    cpu_has_feature(CPU_FTR_ARCH_207S)) {
++			unsigned long lpcr = mfspr(SPRN_LPCR);
++			mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
++		}
 +	}
-+
-+	if (!strcmp(uname, "chosen")) {
-+		prop = of_get_flat_dt_prop(node, "ibm,architecture-vec-5",
-+					   &len);
-+		if (prop)
-+			fw_vec5_feature_init(prop, len);
-+
-+		vec5_found = 1;
-+	}
-+
-+	return hypertas_found && vec5_found;
 +}
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 7aa83f0..58a89f9 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -20,11 +20,6 @@ extern void request_event_sources_irqs(struct device_node *np,
- 
- #include <linux/of.h>
- 
--extern void __init fw_hypertas_feature_init(const char *hypertas,
--					    unsigned long len);
--extern void __init fw_vec5_feature_init(const char *hypertas,
--					unsigned long len);
++
+ static void cpu_ready_for_interrupts(void)
+ {
+ 	/* Set IR and DR in PACA MSR */
+ 	get_paca()->kernel_msr = MSR_KERNEL;
 -
- struct pt_regs;
- 
- extern int pSeries_system_reset_exception(struct pt_regs *regs);
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 9883bc7..f1fe7aa 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -732,45 +732,6 @@ static void pseries_power_off(void)
- 	for (;;);
+-	/*
+-	 * Enable AIL if supported, and we are in hypervisor mode. If we are
+-	 * not in hypervisor mode, we enable relocation-on interrupts later
+-	 * in pSeries_setup_arch() using the H_SET_MODE hcall.
+-	 */
+-	if (cpu_has_feature(CPU_FTR_HVMODE) &&
+-	    cpu_has_feature(CPU_FTR_ARCH_207S)) {
+-		unsigned long lpcr = mfspr(SPRN_LPCR);
+-		mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
+-	}
  }
  
--/*
-- * Called very early, MMU is off, device-tree isn't unflattened
-- */
--
--static int __init pseries_probe_fw_features(unsigned long node,
--					    const char *uname, int depth,
--					    void *data)
--{
--	const char *prop;
--	int len;
--	static int hypertas_found;
--	static int vec5_found;
--
--	if (depth != 1)
--		return 0;
--
--	if (!strcmp(uname, "rtas") || !strcmp(uname, "rtas@0")) {
--		prop = of_get_flat_dt_prop(node, "ibm,hypertas-functions",
--					   &len);
--		if (prop) {
--			powerpc_firmware_features |= FW_FEATURE_LPAR;
--			fw_hypertas_feature_init(prop, len);
--		}
--
--		hypertas_found = 1;
--	}
--
--	if (!strcmp(uname, "chosen")) {
--		prop = of_get_flat_dt_prop(node, "ibm,architecture-vec-5",
--					   &len);
--		if (prop)
--			fw_vec5_feature_init(prop, len);
--
--		vec5_found = 1;
--	}
--
--	return hypertas_found && vec5_found;
--}
--
- static int __init pSeries_probe(void)
+ /*
+@@ -276,10 +316,10 @@ void __init early_setup(unsigned long dt_ptr)
+ 	/* Probe the machine type */
+ 	probe_machine();
+ 
+-	/* Setup the trampolines from the lowmem exception vectors
+-	 * to the kdump kernel when not using a relocatable kernel.
++	/* Configure exception handlers. This include setting up trampolines
++	 * if needed, setting exception endian mode, etc...
+ 	 */
+-	setup_kdump_trampoline();
++	configure_exceptions();
+ 
+ 	/* Initialize the hash table or TLB handling */
+ 	early_init_mmu();
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 0256d07..802f3b7 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -56,7 +56,7 @@ static DEFINE_SPINLOCK(opal_write_lock);
+ static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
+ static uint32_t opal_heartbeat;
+ 
+-static void opal_reinit_cores(void)
++void opal_configure_cores(void)
  {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -790,8 +751,6 @@ static int __init pSeries_probe(void)
+ 	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
+ 	 *
+@@ -69,6 +69,10 @@ static void opal_reinit_cores(void)
+ #else
+ 	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
+ #endif
++
++	/* Restore some bits */
++	if (cur_cpu_spec->cpu_restore)
++		cur_cpu_spec->cpu_restore();
+ }
+ 
+ int __init early_init_dt_scan_opal(unsigned long node,
+@@ -105,13 +109,6 @@ int __init early_init_dt_scan_opal(unsigned long node,
+ 		panic("OPAL != V3 detected, no longer supported.\n");
+ 	}
+ 
+-	/* Reinit all cores with the right endian */
+-	opal_reinit_cores();
+-
+-	/* Restore some bits */
+-	if (cur_cpu_spec->cpu_restore)
+-		cur_cpu_spec->cpu_restore();
+-
+ 	return 1;
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index f1fe7aa..6dc91a4 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -537,18 +537,6 @@ static void __init pSeries_setup_arch(void)
+ 	}
+ 
+ 	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
+-
+-	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+-		long rc;
+-
+-		rc = pSeries_enable_reloc_on_exc();
+-		if (rc == H_P2) {
+-			pr_info("Relocation on exceptions not supported\n");
+-		} else if (rc != H_SUCCESS) {
+-			pr_warn("Unable to enable relocation on exceptions: "
+-				"%ld\n", rc);
+-		}
+-	}
+ }
+ 
+ static int __init pSeries_init_panel(void)
+@@ -751,23 +739,6 @@ static int __init pSeries_probe(void)
  
  	pr_debug("pSeries detected, looking for LPAR capability...\n");
  
--	/* Now try to figure out if we are running on LPAR */
--	of_scan_flat_dt(pseries_probe_fw_features, NULL);
- 
- #ifdef __LITTLE_ENDIAN__
- 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+-
+-#ifdef __LITTLE_ENDIAN__
+-	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+-		long rc;
+-		/*
+-		 * Tell the hypervisor that we want our exceptions to
+-		 * be taken in little endian mode. If this fails we don't
+-		 * want to use BUG() because it will trigger an exception.
+-		 */
+-		rc = pseries_little_endian_exceptions();
+-		if (rc) {
+-			ppc_md.progress("H_SET_MODE LE exception fail", 0);
+-			panic("Could not enable little endian exceptions");
+-		}
+-	}
+-#endif
+-
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		hpte_init_lpar();
+ 	else
 -- 
 2.7.4
