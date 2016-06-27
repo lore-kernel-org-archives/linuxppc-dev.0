@@ -2,15 +2,24 @@ Return-Path: <dyoung@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rddCb3SzczDqmF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 04:44:57 +1000 (AEST)
-Date: Tue, 28 Jun 2016 02:44:46 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdgM72RCVzDqmG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:21:38 +1000 (AEST)
+Date: Mon, 27 Jun 2016 16:21:25 -0400
 From: Dave Young <dyoung@redhat.com>
 To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org
-Message-ID: <20160627184446.GB5876@dhcp-128-65.nay.redhat.com>
+Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, vgoyal@redhat.com,
+ Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH v3 3/9] kexec_file: Factor out kexec_locate_mem_hole from
+ kexec_add_buffer.
+Message-ID: <20160627202125.GA9230@dhcp-128-65.nay.redhat.com>
+References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <4923900.bfxGnX6mM2@hactar>
+ <20160627161948.GA5876@dhcp-128-65.nay.redhat.com>
+ <5428891.iJNV8CI1We@hactar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5428891.iJNV8CI1We@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,14 +29,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vgoyal@redhat.com
-	linux-kernel@vger.kernel.org,
-	Eric Biederman <ebiederm@xmission.com>
-Bcc: ruyang@redhat.com
-Subject: Re: [PATCH v3 3/9] kexec_file: Factor out kexec_locate_mem_hole from
- kexec_add_buffer.
-Reply-To: 
-In-Reply-To: <5428891.iJNV8CI1We@hactar>
+Please ignore previous reply, I mistakenly send a broken mail without
+subject, sorry about it. Resend the reply here.
 
 On 06/27/16 at 01:37pm, Thiago Jung Bauermann wrote:
 > Am Dienstag, 28 Juni 2016, 00:19:48 schrieb Dave Young:
@@ -50,7 +53,7 @@ I think we did not meaning to do this, considering kdump we have only
 one crashkernel region for searching (crashk_res) so it is fine.
 For kexec maybe changing the walking function to accept top_down is
 reasonable.
-
+ 
 Ccing Vivek see if he can remember something..
 
 > 
@@ -67,11 +70,3 @@ Ccing Vivek see if he can remember something..
 > Thiago Jung Bauermann
 > IBM Linux Technology Center
 > 
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
-
-Thanks
-Dave
