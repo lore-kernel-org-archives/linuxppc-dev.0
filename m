@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRYk3FyMzDqmr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:30:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRYn0c2czDqmS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:30:04 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 06/38] powerpc: Move 64-bit feature fixup earlier
-Date: Mon, 27 Jun 2016 21:29:04 +1000
-Message-Id: <1467026976-7974-7-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 07/38] powerpc: Move 64-bit memory reserves to setup_arch()
+Date: Mon, 27 Jun 2016 21:29:05 +1000
+Message-Id: <1467026976-7974-8-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,39 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make it part of early_setup() as we really want the feature fixups
-to be applied before we turn on the MMU since they can have an impact
-on the various assembly path related to MMU management and interrupts.
-
-This makes 64-bit match what 32-bit does.
+There is really no need to do them that early, early_setup() runs
+before MMU is on, we should do the strict minimum there to get the
+MMU going.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_64.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/setup_64.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 996bed2..e79cf1b 100644
+index e79cf1b..bcc95ac 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -286,6 +286,9 @@ void __init early_setup(unsigned long dt_ptr)
- 	/* Initialize the hash table or TLB handling */
- 	early_init_mmu();
- 
-+	/* Apply all the dynamic patching */
-+	apply_feature_fixups();
-+
- 	/*
- 	 * At this point, we can let interrupts switch to virtual mode
- 	 * (the MMU has been setup), so adjust the MSR in the PACA to
-@@ -468,8 +471,6 @@ void __init setup_system(void)
- {
- 	DBG(" -> setup_system()\n");
- 
--	apply_feature_fixups();
--
- 	/*
- 	 * Unflatten the device-tree passed by prom_init or kexec
+@@ -296,16 +296,6 @@ void __init early_setup(unsigned long dt_ptr)
  	 */
+ 	cpu_ready_for_interrupts();
+ 
+-	/* Reserve large chunks of memory for use by CMA for KVM */
+-	kvm_cma_reserve();
+-
+-	/*
+-	 * Reserve any gigantic pages requested on the command line.
+-	 * memblock needs to have been initialized by the time this is
+-	 * called since this will reserve memory.
+-	 */
+-	reserve_hugetlb_gpages();
+-
+ 	DBG(" <- early_setup()\n");
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
+@@ -688,6 +678,17 @@ void __init setup_arch(char **cmdline_p)
+ 	dcache_bsize = ppc64_caches.dline_size;
+ 	icache_bsize = ppc64_caches.iline_size;
+ 
++
++	/* Reserve large chunks of memory for use by CMA for KVM */
++	kvm_cma_reserve();
++
++	/*
++	 * Reserve any gigantic pages requested on the command line.
++	 * memblock needs to have been initialized by the time this is
++	 * called since this will reserve memory.
++	 */
++	reserve_hugetlb_gpages();
++
+ 	if (ppc_md.panic)
+ 		setup_panic();
+ 
+@@ -712,7 +713,6 @@ void __init setup_arch(char **cmdline_p)
+ #ifdef CONFIG_DUMMY_CONSOLE
+ 	conswitchp = &dummy_con;
+ #endif
+-
+ 	if (ppc_md.setup_arch)
+ 		ppc_md.setup_arch();
+ 
 -- 
 2.7.4
