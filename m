@@ -1,27 +1,24 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdX6J0mvGzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 00:55:04 +1000 (AEST)
-Received: by mail-it0-x244.google.com with SMTP id f6so10477219ith.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 07:55:04 -0700 (PDT)
-Date: Mon, 27 Jun 2016 22:58:32 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- paulmck@linux.vnet.ibm.com, peterz@infradead.org, mingo@redhat.com,
- mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
- Waiman.Long@hpe.com, will.deacon@arm.com, dave@stgolabs.net
-Subject: Re: [PATCH 2/3] powerpc/spinlock: support vcpu preempted check
-Message-ID: <20160627145832.GB19108@insomnia>
-References: <1467049290-32359-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1467049290-32359-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdZ0K1fHdzDqRd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 02:20:01 +1000 (AEST)
+Date: Tue, 28 Jun 2016 00:19:48 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH v3 3/9] kexec_file: Factor out kexec_locate_mem_hole from
+ kexec_add_buffer.
+Message-ID: <20160627161948.GA5876@dhcp-128-65.nay.redhat.com>
+References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ <20160623023052.GB12575@dhcp-128-11.nay.redhat.com>
+ <2090497645.1524307.1466660647378.JavaMail.zimbra@redhat.com>
+ <4923900.bfxGnX6mM2@hactar>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="2B/JsCI69OhZNC5r"
-In-Reply-To: <1467049290-32359-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4923900.bfxGnX6mM2@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,115 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/23/16 at 12:37pm, Thiago Jung Bauermann wrote:
+> Am Donnerstag, 23 Juni 2016, 01:44:07 schrieb Dave Young:
+> > Hmm, hold on. For declaring a struct in a header file, comment should be
+> > just after each fields, like below, your format is for a function instead:
+> > struct pci_slot {
+> >         struct pci_bus *bus;            /* The bus this slot is on */
+> >         struct list_head list;          /* node in list of slots on this
+> > bus */ struct hotplug_slot *hotplug;   /* Hotplug info (migrate over
+> > time) */ unsigned char number;           /* PCI_SLOT(pci_dev->devfn) */
+> > struct kobject kobj;
+> > };
+> 
+> The comment style you mention above is not extractable documentation. The 
+> style I used is what is described in section "kernel-doc for structs, 
+> unions, enums, and typedefs" in Documentation/kernel-doc-nano-HOWTO.txt.
 
---2B/JsCI69OhZNC5r
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You are right and I was wrong!
 
-Hi Xinhui,
+>  
+> > BTW, what is @size? there's no size field in kexec_buf. I think it is not
+> > necessary to add these comment, they are easy to understand. If you really
+> > want, please rewrite them correctly, for example "image" description is
+> > wrong. It is not only for searching memory only, top_down description is
+> > also bad.
+> 
+> Sorry, I moved these comments from kexec_locate_mem_hole but forgot to 
+> rename the parameters to what they are called in struct kexec_buf. @size 
+> should have been @memsz (other fields also have wrong names, I'll fix them 
+> as well). The image description is correct in the context of where struct 
+> kexec_buf is used and explains what it will be used for in the function 
+> taking kexec_buf as an argument. It is not meant as a general description of 
+> the purpose of struct kimage. What is bad about the description of top_down?
 
-On Mon, Jun 27, 2016 at 01:41:29PM -0400, Pan Xinhui wrote:
-> This is to fix some holder preemption issues. Spinning at one
-> vcpu which is preempted is meaningless.
->=20
-> Kernel need such interfaces, So lets support it.
->=20
-> We also should suooprt both the shared and dedicated mode.
-> So add lppaca_dedicated_proc macro in lppaca.h
->=20
-> Suggested-by: Boqun Feng <boqun.feng@gmail.com>
-> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/lppaca.h   |  6 ++++++
->  arch/powerpc/include/asm/spinlock.h | 15 +++++++++++++++
->  2 files changed, 21 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm=
-/lppaca.h
-> index d0a2a2f..0a263d3 100644
-> --- a/arch/powerpc/include/asm/lppaca.h
-> +++ b/arch/powerpc/include/asm/lppaca.h
-> @@ -111,12 +111,18 @@ extern struct lppaca lppaca[];
->   * we will have to transition to something better.
->   */
->  #define LPPACA_OLD_SHARED_PROC		2
-> +#define LPPACA_OLD_DEDICATED_PROC      (1 << 6)
-> =20
+It is not clear enough to me, I personally think the original one in
+source code is better:
+/* allocate from top of memory hole */
 
-I think you should describe a little bit about the magic number here,
-i.e. what document/specification says this should work, and how this
-works.
+> 
+> I decided to add these comments because struct kexec_buf is now part of the 
+> kernel API for kexec. kernel-doc-nano-HOWTO.txt says:
+> 
+> > We definitely need kernel-doc formatted documentation for functions
+> > that are exported to loadable modules using EXPORT_SYMBOL.
+> > 
+> > We also look to provide kernel-doc formatted documentation for
+> > functions externally visible to other kernel files (not marked
+> > "static").
+> > 
+> > We also recommend providing kernel-doc formatted documentation
+> > for private (file "static") routines, for consistency of kernel
+> > source code layout.  But this is lower priority and at the
+> > discretion of the MAINTAINER of that kernel source file.
+> 
+> If you think they are not necessary or just add clutter I can leave them 
+> out.
 
->  static inline bool lppaca_shared_proc(struct lppaca *l)
->  {
->  	return !!(l->__old_status & LPPACA_OLD_SHARED_PROC);
->  }
-> =20
-> +static inline bool lppaca_dedicated_proc(struct lppaca *l)
-> +{
-> +	return !!(l->__old_status & LPPACA_OLD_DEDICATED_PROC);
-> +}
-> +
->  /*
->   * SLB shadow buffer structure as defined in the PAPR.  The save_area
->   * contains adjacent ESID and VSID pairs for each shadowed SLB.  The
-> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/a=
-sm/spinlock.h
-> index 523673d..ae938ee 100644
-> --- a/arch/powerpc/include/asm/spinlock.h
-> +++ b/arch/powerpc/include/asm/spinlock.h
-> @@ -52,6 +52,21 @@
->  #define SYNC_IO
->  #endif
-> =20
-> +/* For fixing some spinning issues in a guest.
-> + * kernel would check if vcpu is preempted during a spin loop.
-> + * we support that.
-> + */
-> +#define arch_vcpu_is_preempted arch_vcpu_is_preempted
-> +static inline bool arch_vcpu_is_preempted(int cpu)
+I'm fine with either way.
 
-This function should be guarded by #ifdef PPC_PSERIES .. #endif, right?
-Because if the kernel is not compiled with guest support,
-vcpu_is_preempted() should always be false, right?
-
-> +{
-> +	struct lppaca *lp =3D &lppaca_of(cpu);
-> +
-> +	if (unlikely(!(lppaca_shared_proc(lp) ||
-> +			lppaca_dedicated_proc(lp))))
-
-Do you want to detect whether we are running in a guest(ie. pseries
-kernel) here? Then I wonder whether "machine_is(pseries)" works here.
-
-Regards,
-Boqun
-
-> +		return false;
-> +	return !!(be32_to_cpu(lp->yield_count) & 1);
-> +}
-> +
->  static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
->  {
->  	return lock.slock =3D=3D 0;
-> --=20
-> 2.4.11
->=20
-
---2B/JsCI69OhZNC5r
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXcT8NAAoJEEl56MO1B/q4cyEH/0BwiD9WX4WAWHrOYPnQZX3R
-yWOklVosPly6PYigYSlnJlX1l+/OatBRFOQXknr1J7hKa6eacAPigvOv7tH8pI8o
-MWaThUKZq7DGPiwPxvrJyfIKhk38930xEYYrMFT3mFbO00/FCb8lg71qr+EXsGsU
-kelg6U1STVyGkW03sOSFVfMZIxxQibKjUmAb6ypjc19cSCBfv4lxf4K12OW8HiCm
-zSzl2h2jVBp/k5TZu4p251DbL0di38i+0I+uA7PETEpQFeZXaCKHllS2nTUa1x60
-4zsL+nlJqBsoTCzpr8uOXjI73EwOOt27g3mzTsh8sHRl4OeF1OHZV/ldK6BimFc=
-=29fm
------END PGP SIGNATURE-----
-
---2B/JsCI69OhZNC5r--
+THanks
+Dave
