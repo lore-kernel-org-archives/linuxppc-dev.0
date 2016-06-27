@@ -1,24 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRLp0bvszDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:20:34 +1000 (AEST)
-Message-ID: <1467026427.29808.4.camel@ellerman.id.au>
-Subject: Re: powerpc/fadump: trivial fix of spelling mistake, clean up message
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joe Perches <joe@perches.com>, Colin Ian King
- <colin.king@canonical.com>,  Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Jiri Kosina
- <trivial@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Andrew
- Morton <akpm@linux-foundation.org>,  linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Date: Mon, 27 Jun 2016 21:20:27 +1000
-In-Reply-To: <1467024695.1847.87.camel@perches.com>
-References: <3rcf3g63Wnz9s5Q@ozlabs.org> <5771021E.3050305@canonical.com>
- <1467024695.1847.87.camel@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRYS6XFvzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:29:48 +1000 (AEST)
+Received: from pasglop.au.ibm.com (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id u5RBTgqa021158
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 06:29:43 -0500
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 00/38] Reorganize setup code and merge 32 and 64-bit
+ setup_arch()
+Date: Mon, 27 Jun 2016 21:28:58 +1000
+Message-Id: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,27 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-06-27 at 03:51 -0700, Joe Perches wrote:
-> On Mon, 2016-06-27 at 11:38 +0100, Colin Ian King wrote:
-> > On 26/06/16 05:19, Michael Ellerman wrote:
-> > > On Fri, 2016-24-06 at 17:43:00 UTC, Colin King wrote:
-> > > > trivial fix to spelling mistake "rgistration" and minor clean up
-> > > > of the printk error message
-> > > Can you also:
-> > >  - use pr_err()
-> > >  - unsplit the message, ie. keep the string all on one line.
-> > I can unsplit the string, but checkpatch will complain about that, so
-> > I'm not sure if that's preferred or not.
-> > 
-> > WARNING: line over 80 characters
-> 
-> If the statement is wrapped after the format,
-> then checkpatch shouldn't complain.
-> 
-> 	pr_err("Failed to invalidate firmware-assisted dump registration. Unexpected error (%d).\n",
-> 	       rc);
+This series reorganizes the setup code, moving probe_machine() later than
+when it's currently done, and sync'ing 32-bit and 64-bit enough to merge
+their implementations of setup_arch(). We get rid of ppc64 setup_system()
+which is subsumed by the new setup_arch().
 
-But that's not actually any more readable, so just ignore checkpatch in this
-case IMHO. It's a guide, not the gospel.
+Note: The first 2 patches should go separately. The first one is a pre
+requisite for the ppc32 move of probe_machine(). The second one a general
+bug fix for recent kernels which I included here so my test kernels
+could build.
 
-cheers
+I test built all ppc64 platforms and the STD_MMU ppc32 ones. I test
+booted pseries and powermac in qemu.
