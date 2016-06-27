@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSxS1Hn2zDsQs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:32:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSxT4SP8zDsRg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:32:13 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 32/38] powerpc/64: Move setting of {i,
- d}cache_bsize to initialize_cache_info()
-Date: Mon, 27 Jun 2016 21:29:30 +1000
-Message-Id: <1467026976-7974-33-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 09/38] powerpc: Update obsolete comments in setup_32.c about
+ entry conditions
+Date: Mon, 27 Jun 2016 21:29:07 +1000
+Message-Id: <1467026976-7974-10-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,44 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Also remove the completely osbolete comment. We *do* look in the
-device-tree.
+early_init() is called in-place before kernel relocation and using
+whatever MMU setup exists at the point the kernel is entered.
+
+machine_init() is called after relocation and after some initial
+mapping of PAGE_OFFSET has been established (typically using BATs
+on 6xx/7xx/7xxx processors or some form of bolted TLB on others).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_64.c | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/setup_32.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 8c8f440..29bbe8c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -484,6 +484,10 @@ static void __init initialize_cache_info(void)
- 		}
- 	}
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 34e61d68..3f0aca2 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -61,9 +61,7 @@ int icache_bsize;
+ int ucache_bsize;
  
-+	/* For use by binfmt_elf */
-+	dcache_bsize = ppc64_caches.dline_size;
-+	icache_bsize = ppc64_caches.iline_size;
-+
- 	DBG(" <- initialize_cache_info()\n");
- }
+ /*
+- * We're called here very early in the boot.  We determine the machine
+- * type and call the appropriate low-level setup functions.
+- *  -- Cort <cort@fsmlabs.com>
++ * We're called here very early in the boot.
+  *
+  * Note that the kernel may be running at an address which is different
+  * from the address that it was linked at, so we must use RELOC/PTRRELOC
+@@ -91,6 +89,10 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
  
-@@ -704,15 +708,6 @@ void __init setup_arch(char **cmdline_p)
- {
- 	*cmdline_p = boot_command_line;
  
--	/*
--	 * Set cache line size based on type of cpu as a default.
--	 * Systems with OF can look in the properties on the cpu node(s)
--	 * for a possibly more accurate value.
--	 */
--	dcache_bsize = ppc64_caches.dline_size;
--	icache_bsize = ppc64_caches.iline_size;
--
--
- 	/* Reserve large chunks of memory for use by CMA for KVM */
- 	kvm_cma_reserve();
- 
+ /*
++ * This is run before start_kernel(), the kernel has been relocated
++ * and we are running with enough of the MMU enabled to have our
++ * proper kernel virtual addresses
++ *
+  * Find out what kind of machine we're on and save any data we need
+  * from the early boot process (devtree is copied on pmac by prom_init()).
+  * This is called very early on the boot process, after a minimal
 -- 
 2.7.4
