@@ -1,22 +1,23 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <colin.king@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdNRS1PJ5zDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 19:09:24 +1000 (AEST)
-Date: Mon, 27 Jun 2016 11:04:03 +0200
-From: Anatolij Gustschin <agust@denx.de>
-To: David Binderman <linuxdev.baldrick@gmail.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, dcb314@hotmail.com
-Subject: Re: arch/powerpc/platforms/512x/clock-commonclk.c:824: wrong %
- specifier ?
-Message-ID: <20160627110403.7f7151d0@crub>
-In-Reply-To: <CAMzoamZPL6ZPFq_DA2T2sk=LE+ax3OMP7BgcyjiXz82ro8dMWQ@mail.gmail.com>
-References: <CAMzoamZPL6ZPFq_DA2T2sk=LE+ax3OMP7BgcyjiXz82ro8dMWQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdQQc1fNWzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 20:38:47 +1000 (AEST)
+Subject: Re: powerpc/fadump: trivial fix of spelling mistake, clean up message
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Jiri Kosina <trivial@kernel.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+References: <3rcf3g63Wnz9s5Q@ozlabs.org>
+Cc: linux-kernel@vger.kernel.org
+From: Colin Ian King <colin.king@canonical.com>
+Message-ID: <5771021E.3050305@canonical.com>
+Date: Mon, 27 Jun 2016 11:38:22 +0100
+MIME-Version: 1.0
+In-Reply-To: <3rcf3g63Wnz9s5Q@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 27 Jun 2016 08:59:42 +0100
-David Binderman linuxdev.baldrick@gmail.com wrote:
-...
->linux-4.7-rc5/arch/powerpc/platforms/512x/clock-commonclk.c:824]:
->(warning) %d in format string (no. 1) requires 'int' but the argument
->type is 'size_t {aka unsigned long}'.
+On 26/06/16 05:19, Michael Ellerman wrote:
+> On Fri, 2016-24-06 at 17:43:00 UTC, Colin King wrote:
+>> From: Colin Ian King <colin.king@canonical.com>
+>>
+>> trivial fix to spelling mistake "rgistration" and minor clean up
+>> of the printk error message
+> 
+> Can you also:
+>  - use pr_err()
+>  - unsplit the message, ie. keep the string all on one line.
 
-mpc512x is 32-bit arch, size_t is unsigned int if you build 32-bit
-kernel.
+I can unsplit the string, but checkpatch will complain about that, so
+I'm not sure if that's preferred or not.
 
-thanks,
+WARNING: line over 80 characters
 
-Anatolij
+Colin
