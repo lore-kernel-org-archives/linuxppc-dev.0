@@ -1,19 +1,19 @@
 Return-Path: <linuxdev.baldrick@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdLv60S6xzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 17:59:46 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id f6so9320678ith.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 00:59:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdM0T6yx8zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 18:04:25 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id t74so22605468ioi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 01:04:25 -0700 (PDT)
 MIME-Version: 1.0
 From: David Binderman <linuxdev.baldrick@gmail.com>
-Date: Mon, 27 Jun 2016 08:59:42 +0100
-Message-ID: <CAMzoamZPL6ZPFq_DA2T2sk=LE+ax3OMP7BgcyjiXz82ro8dMWQ@mail.gmail.com>
-Subject: arch/powerpc/platforms/512x/clock-commonclk.c:824: wrong % specifier ?
-To: agust@denx.de, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+Date: Mon, 27 Jun 2016 09:04:23 +0100
+Message-ID: <CAMzoama3BkAfxqzEt2khiPOcKxkOP1JVSx5UcCwWvGJLGrzLtA@mail.gmail.com>
+Subject: arch/powerpc/xmon/dis-asm.h: 2 * wrong specifiers ?
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dcb314@hotmail.com
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,14 +27,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hello there,
 
-linux-4.7-rc5/arch/powerpc/platforms/512x/clock-commonclk.c:824]:
-(warning) %d in format string (no. 1) requires 'int' but the argument
-type is 'size_t {aka unsigned long}'.
+linux-4.7-rc5/arch/powerpc/xmon/dis-asm.h:20]: (warning) %x in format
+string (no. 1) requires 'unsigned int' but the argument type is
+'unsigned long'.
+[linux-4.7-rc5/arch/powerpc/xmon/dis-asm.h:26]: (warning) %x in format
+string (no. 1) requires 'unsigned int' but the argument type is
+'unsigned long'.
 
 Source code is
 
-        snprintf(name, sizeof(name), "psc%d", mclk_idx);
+static inline int print_insn_powerpc(unsigned long insn, unsigned long memaddr)
+{
+    printf("%.8x", insn);
+    return 0;
+}
 
+static inline int print_insn_spu(unsigned long insn, unsigned long memaddr)
+{
+    printf("%.8x", insn);
+    return 0;
+}
 
 Regards
 
