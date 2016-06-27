@@ -1,22 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSpf1JqVzDqxw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSpf5PjKzDqyB
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:26:18 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rdSpd2Qz3z9t1M
+ by ozlabs.org (Postfix) with ESMTPS id 3rdSpf0YDkz9t1d
  for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2016 22:26:17 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 12/17] powerpc/powernv: set power_save func after the idle
- states are initialized
-Date: Mon, 27 Jun 2016 22:25:28 +1000
-Message-Id: <1467030333-31435-13-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 14/17] powerpc/powernv/pci: Check status of a PHB before using
+ it
+Date: Mon, 27 Jun 2016 22:25:30 +1000
+Message-Id: <1467030333-31435-15-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467030333-31435-1-git-send-email-benh@kernel.crashing.org>
 References: <1467030333-31435-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,46 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+If the firmware encounters an error (internal or HW) during initialization
+of a PHB, it might leave the device-node in the tree but mark it disabled
+using the "status" property. We should check it.
 
-pnv_init_idle_states discovers supported idle states from the
-device tree and does the required initialization. Set power_save
-function pointer only after this initialization is done
-
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/idle.c  | 3 +++
- arch/powerpc/platforms/powernv/setup.c | 2 +-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index fcc8b68..fbb09fb 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -285,6 +285,9 @@ static int __init pnv_init_idle_states(void)
- 	}
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index b674a38..9d59eeb 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3442,6 +3442,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	void *aux;
+ 	long rc;
  
- 	pnv_alloc_idle_core_states();
++	if (!of_device_is_available(np))
++		return;
 +
-+	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
-+		ppc_md.power_save = power7_idle;
- out_free:
- 	kfree(flags);
- out:
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index ee6430b..8492bbb 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -315,7 +315,7 @@ define_machine(powernv) {
- 	.get_proc_freq          = pnv_get_proc_freq,
- 	.progress		= pnv_progress,
- 	.machine_shutdown	= pnv_shutdown,
--	.power_save             = power7_idle,
-+	.power_save             = NULL,
- 	.calibrate_decr		= generic_calibrate_decr,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
+ 	pr_info("Initializing IODA%d OPAL PHB %s\n", ioda_type, np->full_name);
+ 
+ 	prop64 = of_get_property(np, "ibm,opal-phbid", NULL);
 -- 
 2.7.4
