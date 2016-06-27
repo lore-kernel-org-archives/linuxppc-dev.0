@@ -2,16 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSxX5wH9zDsRq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:32:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSxc043tzDsRr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:32:19 +1000 (AEST)
+Message-ID: <1467027880.20278.74.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc/boot: Add OPAL console to epapr wrappers
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 33/38] powerpc/64: Move the content of setup_system() to
- setup_arch()
-Date: Mon, 27 Jun 2016 21:29:31 +1000
-Message-Id: <1467026976-7974-34-git-send-email-benh@kernel.crashing.org>
-In-Reply-To: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
-References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
+To: oliver <oohall@gmail.com>, Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 27 Jun 2016 21:44:40 +1000
+In-Reply-To: <CAOSf1CHP-PFf2nthzuPkUGZ5hcrSr2idGHDSc5XfZct7F4f7Jw@mail.gmail.com>
+References: <1466754085-8230-1-git-send-email-oohall@gmail.com>
+ <1466772481-11424-1-git-send-email-oohall@gmail.com>
+ <87shvzcklm.fsf@linux.vnet.ibm.com>
+ <CAOSf1CHP-PFf2nthzuPkUGZ5hcrSr2idGHDSc5XfZct7F4f7Jw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,191 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And kill setup_system()
+On Mon, 2016-06-27 at 16:51 +1000, oliver wrote:
+> None of this is useful to us since we get most of this information
+> from skiboot, but I'm not sure that's true for other platforms. The
+> kernel boot log is fairly noisy as-is so we don't gain much from
+> trimming. At the very least the other messages provide sanity checks
+> that we've exited firmware and/or the bootloader without issues. I'll
+> look at changing the returned error messages though, "invalid block
+> type" is a pretty error useless you already know what you're looking
+> for.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/head_64.S  |   5 +-
- arch/powerpc/kernel/setup_64.c | 137 +++++++++++++++++++----------------------
- 2 files changed, 64 insertions(+), 78 deletions(-)
+Right also if you crash in the kernel itself and these are your last
+messages, knowing where the kernel was expanded can be useful.
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 2d14774..3109d0c 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -941,7 +941,7 @@ start_here_multiplatform:
- 	mtspr	SPRN_SRR1,r4
- 	RFI
- 	b	.	/* prevent speculative execution */
--	
-+
- 	/* This is where all platforms converge execution */
- 
- start_here_common:
-@@ -951,9 +951,6 @@ start_here_common:
- 	/* Load the TOC (virtual address) */
- 	ld	r2,PACATOC(r13)
- 
--	/* Do more system initializations in virtual mode */
--	bl	setup_system
--
- 	/* Mark interrupts soft and hard disabled (they might be enabled
- 	 * in the PACA when doing hotplug)
- 	 */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 29bbe8c..108035b 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -523,80 +523,6 @@ static __init void print_system_info(void)
- 	pr_info("-----------------------------------------------------\n");
- }
- 
--/*
-- * Do some initial setup of the system.  The parameters are those which 
-- * were passed in from the bootloader.
-- */
--void __init setup_system(void)
--{
--	DBG(" -> setup_system()\n");
--
--	/*
--	 * Unflatten the device-tree passed by prom_init or kexec
--	 */
--	unflatten_device_tree();
--
--	/*
--	 * Fill the ppc64_caches & systemcfg structures with informations
-- 	 * retrieved from the device-tree.
--	 */
--	initialize_cache_info();
--
--#ifdef CONFIG_PPC_RTAS
--	/*
--	 * Initialize RTAS if available
--	 */
--	rtas_initialize();
--#endif /* CONFIG_PPC_RTAS */
--
--	/*
--	 * Check if we have an initrd provided via the device-tree
--	 */
--	check_for_initrd();
--
--	/* Probe the machine type */
--	probe_machine();
--
-- 	/*
--	 * We can discover serial ports now since the above did setup the
--	 * hash table management for us, thus ioremap works. We do that early
--	 * so that further code can be debugged
--	 */
--	find_legacy_serial_ports();
--
--	/*
--	 * Register early console
--	 */
--	register_early_udbg_console();
--
--	/*
--	 * Initialize xmon
--	 */
--	xmon_setup();
--
--	smp_setup_cpu_maps();
--	check_smt_enabled();
--	setup_tlb_core_data();
--
--	/*
--	 * Freescale Book3e parts spin in a loop provided by firmware,
--	 * so smp_release_cpus() does nothing for them
--	 */
--#if defined(CONFIG_SMP)
--	/* Release secondary cpus out of their spinloops at 0x60 now that
--	 * we can map physical -> logical CPU ids
--	 */
--	smp_release_cpus();
--#endif
--
--	/* Print various info about the machine that gave been gathered
--	 * so far
--	 */
--	print_system_info();
--
--	DBG(" <- setup_system()\n");
--}
--
- /* This returns the limit below which memory accesses to the linear
-  * mapping are guarnateed not to cause a TLB or SLB miss. This is
-  * used to allocate interrupt or emergency stacks for which our
-@@ -708,6 +634,69 @@ void __init setup_arch(char **cmdline_p)
- {
- 	*cmdline_p = boot_command_line;
- 
-+	/*
-+	 * Unflatten the device-tree passed by prom_init or kexec
-+	 */
-+	unflatten_device_tree();
-+
-+	/*
-+	 * Fill the ppc64_caches & systemcfg structures with informations
-+ 	 * retrieved from the device-tree.
-+	 */
-+	initialize_cache_info();
-+
-+#ifdef CONFIG_PPC_RTAS
-+	/*
-+	 * Initialize RTAS if available
-+	 */
-+	rtas_initialize();
-+#endif /* CONFIG_PPC_RTAS */
-+
-+	/*
-+	 * Check if we have an initrd provided via the device-tree
-+	 */
-+	check_for_initrd();
-+
-+	/* Probe the machine type */
-+	probe_machine();
-+
-+ 	/*
-+	 * We can discover serial ports now since the above did setup the
-+	 * hash table management for us, thus ioremap works. We do that early
-+	 * so that further code can be debugged
-+	 */
-+	find_legacy_serial_ports();
-+
-+	/*
-+	 * Register early console
-+	 */
-+	register_early_udbg_console();
-+
-+	/*
-+	 * Initialize xmon
-+	 */
-+	xmon_setup();
-+
-+	smp_setup_cpu_maps();
-+	check_smt_enabled();
-+	setup_tlb_core_data();
-+
-+	/*
-+	 * Freescale Book3e parts spin in a loop provided by firmware,
-+	 * so smp_release_cpus() does nothing for them
-+	 */
-+#if defined(CONFIG_SMP)
-+	/* Release secondary cpus out of their spinloops at 0x60 now that
-+	 * we can map physical -> logical CPU ids
-+	 */
-+	smp_release_cpus();
-+#endif
-+
-+	/* Print various info about the machine that gave been gathered
-+	 * so far
-+	 */
-+	print_system_info();
-+
- 	/* Reserve large chunks of memory for use by CMA for KVM */
- 	kvm_cma_reserve();
- 
--- 
-2.7.4
+Cheers,
+Ben.
