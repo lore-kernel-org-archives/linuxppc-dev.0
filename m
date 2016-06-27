@@ -1,21 +1,34 @@
-Return-Path: <weiyj_lk@163.com>
-Received: from m12-15.163.com (m12-15.163.com [220.181.12.15])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rdTK64yF9zDsSb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:49:14 +1000 (AEST)
-From: weiyj_lk@163.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>
-Cc: Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Subject: [PATCH v2] ibmvnic: fix to use list_for_each_safe() when delete items
-Date: Mon, 27 Jun 2016 20:48:53 +0800
-Message-Id: <1467031733-13137-1-git-send-email-weiyj_lk@163.com>
-In-Reply-To: <20160625.120241.1521209512436530662.davem@davemloft.net>
-References: <20160625.120241.1521209512436530662.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdVW92pmGzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 23:43:01 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5RDYDTu029102
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 09:42:59 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23sjug9vyd-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 09:42:59 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Mon, 27 Jun 2016 07:42:58 -0600
+From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org, mingo@redhat.com,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ Waiman.Long@hpe.com, boqun.feng@gmail.com, will.deacon@arm.com,
+ dave@stgolabs.net, Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] kernel/sched: introduce vcpu preempted check interface
+Date: Mon, 27 Jun 2016 13:41:28 -0400
+In-Reply-To: <1467049290-32359-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+References: <1467049290-32359-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1467049290-32359-2-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,65 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+this supports to fix lock holder preempted issue which run as a guest
 
-Since we will remove items off the list using list_del() we need
-to use a safe version of the list_for_each() macro aptly named
-list_for_each_safe().
+for kernel users, we could use bool vcpu_is_preempted(int cpu) to detech
+if one vcpu is preempted or not.
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+The default implementation is a macrodefined by false. So compiler can
+wrap it out if arch dose not support such vcpu pteempted check.
+
+archs can implement it by define arch_vcpu_is_preempted().
+
+Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ include/linux/sched.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 864cb21..ecdb685 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -2121,7 +2121,7 @@ static void handle_error_info_rsp(union ibmvnic_crq *crq,
- 				  struct ibmvnic_adapter *adapter)
- {
- 	struct device *dev = &adapter->vdev->dev;
--	struct ibmvnic_error_buff *error_buff;
-+	struct ibmvnic_error_buff *error_buff, *tmp;
- 	unsigned long flags;
- 	bool found = false;
- 	int i;
-@@ -2133,7 +2133,7 @@ static void handle_error_info_rsp(union ibmvnic_crq *crq,
- 	}
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 6e42ada..dc0a9c3 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -3293,6 +3293,15 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
  
- 	spin_lock_irqsave(&adapter->error_list_lock, flags);
--	list_for_each_entry(error_buff, &adapter->errors, list)
-+	list_for_each_entry_safe(error_buff, tmp, &adapter->errors, list)
- 		if (error_buff->error_id == crq->request_error_rsp.error_id) {
- 			found = true;
- 			list_del(&error_buff->list);
-@@ -3141,14 +3141,14 @@ static void handle_request_ras_comp_num_rsp(union ibmvnic_crq *crq,
+ #endif /* CONFIG_SMP */
  
- static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
- {
--	struct ibmvnic_inflight_cmd *inflight_cmd;
-+	struct ibmvnic_inflight_cmd *inflight_cmd, *tmp1;
- 	struct device *dev = &adapter->vdev->dev;
--	struct ibmvnic_error_buff *error_buff;
-+	struct ibmvnic_error_buff *error_buff, *tmp2;
- 	unsigned long flags;
- 	unsigned long flags2;
++#ifdef arch_vcpu_is_preempted
++static inline bool vcpu_is_preempted(int cpu)
++{
++	return arch_vcpu_is_preempted(cpu);
++}
++#else
++#define vcpu_is_preempted(cpu)	false
++#endif
++
+ extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
+ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
  
- 	spin_lock_irqsave(&adapter->inflight_lock, flags);
--	list_for_each_entry(inflight_cmd, &adapter->inflight, list) {
-+	list_for_each_entry_safe(inflight_cmd, tmp1, &adapter->inflight, list) {
- 		switch (inflight_cmd->crq.generic.cmd) {
- 		case LOGIN:
- 			dma_unmap_single(dev, adapter->login_buf_token,
-@@ -3165,8 +3165,8 @@ static void ibmvnic_free_inflight(struct ibmvnic_adapter *adapter)
- 			break;
- 		case REQUEST_ERROR_INFO:
- 			spin_lock_irqsave(&adapter->error_list_lock, flags2);
--			list_for_each_entry(error_buff, &adapter->errors,
--					    list) {
-+			list_for_each_entry_safe(error_buff, tmp2,
-+						 &adapter->errors, list) {
- 				dma_unmap_single(dev, error_buff->dma,
- 						 error_buff->len,
- 						 DMA_FROM_DEVICE);
+-- 
+2.4.11
