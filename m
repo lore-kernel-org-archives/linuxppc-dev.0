@@ -1,47 +1,16 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdcjg3jSyzDqmD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 04:22:29 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5RIJSpC066307
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 14:22:26 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23sp507ath-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 14:22:26 -0400
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 27 Jun 2016 15:22:24 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 4CD471DC0074
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 14:22:14 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5RIMLQ035848236
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 15:22:21 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5RIML11020798
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 15:22:21 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Geoff Levand <geoff@infradead.org>,
- James Morse <james.morseatarm.com@hactar>, kexec@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v20 14/14] Documentation: dt: usable-memory and elfcorehdr
- nodes for arm64 kexec
-Date: Mon, 27 Jun 2016 15:22:18 -0300
-In-Reply-To: <e212cd53fdf9d09923408eb906fe0228d22432a9.1466702804.git.geoff@infradead.org>
-References: <cover.1466702804.git.geoff@infradead.org>
- <e212cd53fdf9d09923408eb906fe0228d22432a9.1466702804.git.geoff@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rddCb3SzczDqmF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 04:44:57 +1000 (AEST)
+Date: Tue, 28 Jun 2016 02:44:46 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org
+Message-ID: <20160627184446.GB5876@dhcp-128-65.nay.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <9127562.8x2DzY0I6N@hactar>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,29 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+vgoyal@redhat.com
+	linux-kernel@vger.kernel.org,
+	Eric Biederman <ebiederm@xmission.com>
+Bcc: ruyang@redhat.com
+Subject: Re: [PATCH v3 3/9] kexec_file: Factor out kexec_locate_mem_hole from
+ kexec_add_buffer.
+Reply-To: 
+In-Reply-To: <5428891.iJNV8CI1We@hactar>
 
-Am Donnerstag, 23 Juni 2016, 17:54:49 schrieb Geoff Levand:
-> +linux,usable-memory
-> +-------------------
-> +
-> +This property is set on PowerPC and arm64 by kexec-tools during kdump
-> +to tell the crash kernel the base address of its reserved area of memory,
-> and +the size. e.g.
-> +
-> +/ {
-> +	chosen {
-> +		linux,usable-memory = <0x9 0xf0000000 0x0 0x10000000>;
-> +	};
-> +};
+On 06/27/16 at 01:37pm, Thiago Jung Bauermann wrote:
+> Am Dienstag, 28 Juni 2016, 00:19:48 schrieb Dave Young:
+> > On 06/23/16 at 12:37pm, Thiago Jung Bauermann wrote:
+> > > Am Donnerstag, 23 Juni 2016, 01:44:07 schrieb Dave Young:
+> > > What is bad about the description of top_down?
+> > It is not clear enough to me, I personally think the original one in
+> > source code is better:
+> > /* allocate from top of memory hole */
+> 
+> Actually I realized there's some discrepancy in how the x86 code uses 
+> top_down and how I need it to work in powerpc. This may be what is confusing 
+> about my comment and the existing comment.
+> 
+> x86 always walks memory from bottom to top but if top_down is true, in each 
+> memory region it will allocate the memory hole in the highest address within 
+> that region. I don't know why it is done that way, though.
 
-On powerpc, linux,usable-memory isn't in /chosen. It is put by kexec-tools 
-in each /memory node and has the same format as the reg property. During 
-early boot, the kernel goes through the /memory nodes to find usable memory 
-and for each node, if there's a linux,usable-memory property it will use it 
-instead of the reg property to find the ranges of memory it can use (see 
-early_init_dt_scan_memory in drivers/of/fdt.c).
+I think we did not meaning to do this, considering kdump we have only
+one crashkernel region for searching (crashk_res) so it is fine.
+For kexec maybe changing the walking function to accept top_down is
+reasonable.
 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Ccing Vivek see if he can remember something..
+
+> 
+> On powerpc, the memory walk itself should be from top to bottom, as well as 
+> the memory hole allocation within each memory region.
+> 
+> Should I add a separate top_down argument to kexec_locate_mem_hole to 
+> control if the memory walk should be from top to bottom, and then the 
+> bottom_up member of struct kexec_buf controls where inside each memory 
+> region the memory hole will be allocated?
+> 
+> -- 
+> []'s
+> Thiago Jung Bauermann
+> IBM Linux Technology Center
+> 
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+
+Thanks
+Dave
