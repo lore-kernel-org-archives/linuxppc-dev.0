@@ -1,25 +1,21 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.20])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdgM72RCVzDqmG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:21:38 +1000 (AEST)
-Date: Mon, 27 Jun 2016 16:21:25 -0400
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, vgoyal@redhat.com,
- Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v3 3/9] kexec_file: Factor out kexec_locate_mem_hole from
- kexec_add_buffer.
-Message-ID: <20160627202125.GA9230@dhcp-128-65.nay.redhat.com>
-References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <4923900.bfxGnX6mM2@hactar>
- <20160627161948.GA5876@dhcp-128-65.nay.redhat.com>
- <5428891.iJNV8CI1We@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdgxD1krYzDqmH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:47:43 +1000 (AEST)
+Subject: Re: [PATCH 29/38] powerpc: Move 32-bit probe() machine to later in
+ the boot process
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
+ <1467026976-7974-30-git-send-email-benh@kernel.crashing.org>
+From: Gerhard Pircher <gerhard_pircher@gmx.net>
+Message-ID: <32078f2a-4e8d-3ac4-f4f6-30563bf7e601@gmx.net>
+Date: Mon, 27 Jun 2016 22:42:18 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5428891.iJNV8CI1We@hactar>
+In-Reply-To: <1467026976-7974-30-git-send-email-benh@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Please ignore previous reply, I mistakenly send a broken mail without
-subject, sorry about it. Resend the reply here.
+Am 2016-06-27 um 13:29 schrieb Benjamin Herrenschmidt:
+> This converts all the 32-bit platforms to use the expanded device-tree
+> which is a pretty mechanical change. Unlike 64-bit, the 32-bit kernel
+> didn't rely on platform initializations to setup the MMU since it
+> sets it up entirely before probe_machine() so the move has comparatively
+> less consequences though it's a bigger patch.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On 06/27/16 at 01:37pm, Thiago Jung Bauermann wrote:
-> Am Dienstag, 28 Juni 2016, 00:19:48 schrieb Dave Young:
-> > On 06/23/16 at 12:37pm, Thiago Jung Bauermann wrote:
-> > > Am Donnerstag, 23 Juni 2016, 01:44:07 schrieb Dave Young:
-> > > What is bad about the description of top_down?
-> > It is not clear enough to me, I personally think the original one in
-> > source code is better:
-> > /* allocate from top of memory hole */
-> 
-> Actually I realized there's some discrepancy in how the x86 code uses 
-> top_down and how I need it to work in powerpc. This may be what is confusing 
-> about my comment and the existing comment.
-> 
-> x86 always walks memory from bottom to top but if top_down is true, in each 
-> memory region it will allocate the memory hole in the highest address within 
-> that region. I don't know why it is done that way, though.
+[...]
 
-I think we did not meaning to do this, considering kdump we have only
-one crashkernel region for searching (crashk_res) so it is fine.
-For kexec maybe changing the walking function to accept top_down is
-reasonable.
- 
-Ccing Vivek see if he can remember something..
+> diff --git a/arch/powerpc/platforms/amigaone/setup.c b/arch/powerpc/platforms/amigaone/setup.c
+> index 2fe1204..a030d3b 100644
+> --- a/arch/powerpc/platforms/amigaone/setup.c
+> +++ b/arch/powerpc/platforms/amigaone/setup.c
+> @@ -143,9 +143,7 @@ void amigaone_restart(char *cmd)
+>  
+>  static int __init amigaone_probe(void)
+>  {
+> -	unsigned long root = of_get_flat_dt_root();
+> -
+> -	if (of_flat_dt_is_compatible(root, "eyetech,amigaone")) {
+> +	if (of_machine_is_compatible("eyetech,amigaone")) {
+>  		/*
+>  		 * Coherent memory access cause complete system lockup! Thus
+>  		 * disable this CPU feature, even if the CPU needs it.
+This patch series reminds me of a long-standing issue with the
+AmigaOne platform code, which would have to clear the coherence
+(M) flag for every memory mapping to avoid lockups (especially
+on G4 CPUs) - as you can read in the comment below your patch
+above.
 
-> 
-> On powerpc, the memory walk itself should be from top to bottom, as well as 
-> the memory hole allocation within each memory region.
-> 
-> Should I add a separate top_down argument to kexec_locate_mem_hole to 
-> control if the memory walk should be from top to bottom, and then the 
-> bottom_up member of struct kexec_buf controls where inside each memory 
-> region the memory hole will be allocated?
-> 
-> -- 
-> []'s
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
-> 
+Now the follow-up code in amigaone/setup.c to clear the
+corresponding CPU feature flag is essentially dead code (it used
+to work with a second call of do_feature_fixups() before the
+handling of the CPU_FTR_NEED_COHERENT flag was changed/inverted
+somewhere around v2.6.30). Also it doesn't seem to fix all
+deadlocks, as e.g. KVM virtual machines can still inject memory
+mappings with the M flag set AFAICT.
+
+Now I wonder, if there is a reasonably clean way to clear the M
+flag in all hardware page table and BAT entries without defacing
+generic kernel code too much. Any ideas?
+
+BR,
+Gerhard
