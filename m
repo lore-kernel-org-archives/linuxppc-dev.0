@@ -2,13 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRYn0c2czDqmS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:30:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdRZD0lBfzDqmf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:30:27 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/38] powerpc: Move 64-bit memory reserves to setup_arch()
-Date: Mon, 27 Jun 2016 21:29:05 +1000
-Message-Id: <1467026976-7974-8-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 08/38] powerpc: Move epapr_paravirt_early_init() to
+ early_init_devtree()
+Date: Mon, 27 Jun 2016 21:29:06 +1000
+Message-Id: <1467026976-7974-9-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,61 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is really no need to do them that early, early_setup() runs
-before MMU is on, we should do the strict minimum there to get the
-MMU going.
+The function is called by both 32-bit and 64-bit early setup right
+after early_init_devtree(). All it does is run yet another early
+DT parser which is precisely what early_init_devtree() is about,
+so move it in there.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_64.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/prom.c     | 2 ++
+ arch/powerpc/kernel/setup_32.c | 3 ---
+ arch/powerpc/kernel/setup_64.c | 3 ---
+ 3 files changed, 2 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 946e34f..48434be 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -56,6 +56,7 @@
+ #include <asm/opal.h>
+ #include <asm/fadump.h>
+ #include <asm/debug.h>
++#include <asm/epapr_hcalls.h>
+ 
+ #include <mm/mmu_decl.h>
+ 
+@@ -739,6 +740,7 @@ void __init early_init_devtree(void *params)
+ 	/* Scan and build the list of machine check recoverable ranges */
+ 	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
+ #endif
++	epapr_paravirt_early_init();
+ 
+ 	DBG(" <- early_init_devtree()\n");
+ }
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 3d06fab..34e61d68 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -37,7 +37,6 @@
+ #include <asm/serial.h>
+ #include <asm/udbg.h>
+ #include <asm/mmu_context.h>
+-#include <asm/epapr_hcalls.h>
+ #include <asm/code-patching.h>
+ 
+ #define DBG(fmt...)
+@@ -110,8 +109,6 @@ notrace void __init machine_init(u64 dt_ptr)
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
+ 
+-	epapr_paravirt_early_init();
+-
+ 	early_init_mmu();
+ 
+ 	probe_machine();
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index e79cf1b..bcc95ac 100644
+index bcc95ac..e1b2e6f 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -296,16 +296,6 @@ void __init early_setup(unsigned long dt_ptr)
+@@ -68,7 +68,6 @@
+ #include <asm/code-patching.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/hugetlb.h>
+-#include <asm/epapr_hcalls.h>
+ #include <asm/livepatch.h>
+ 
+ #ifdef DEBUG
+@@ -270,8 +269,6 @@ void __init early_setup(unsigned long dt_ptr)
  	 */
- 	cpu_ready_for_interrupts();
+ 	early_init_devtree(__va(dt_ptr));
  
--	/* Reserve large chunks of memory for use by CMA for KVM */
--	kvm_cma_reserve();
+-	epapr_paravirt_early_init();
 -
--	/*
--	 * Reserve any gigantic pages requested on the command line.
--	 * memblock needs to have been initialized by the time this is
--	 * called since this will reserve memory.
--	 */
--	reserve_hugetlb_gpages();
--
- 	DBG(" <- early_setup()\n");
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
-@@ -688,6 +678,17 @@ void __init setup_arch(char **cmdline_p)
- 	dcache_bsize = ppc64_caches.dline_size;
- 	icache_bsize = ppc64_caches.iline_size;
- 
-+
-+	/* Reserve large chunks of memory for use by CMA for KVM */
-+	kvm_cma_reserve();
-+
-+	/*
-+	 * Reserve any gigantic pages requested on the command line.
-+	 * memblock needs to have been initialized by the time this is
-+	 * called since this will reserve memory.
-+	 */
-+	reserve_hugetlb_gpages();
-+
- 	if (ppc_md.panic)
- 		setup_panic();
- 
-@@ -712,7 +713,6 @@ void __init setup_arch(char **cmdline_p)
- #ifdef CONFIG_DUMMY_CONSOLE
- 	conswitchp = &dummy_con;
- #endif
--
- 	if (ppc_md.setup_arch)
- 		ppc_md.setup_arch();
- 
+ 	/* Now we know the logical id of our boot cpu, setup the paca. */
+ 	setup_paca(&paca[boot_cpuid]);
+ 	fixup_boot_paca();
 -- 
 2.7.4
