@@ -1,19 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSp92KYgzDqrR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:25:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdSpD5dcjzDqv7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 22:25:56 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rdSp80vH9z9t1M
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2016 22:25:51 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rdSpD0sgPz9t1M
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Jun 2016 22:25:55 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/17] powerpc/xics: Add ICP OPAL backend
-Date: Mon, 27 Jun 2016 22:25:20 +1000
-Message-Id: <1467030333-31435-5-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 05/17] powerpc/powernv: Add IODA3 PHB type
+Date: Mon, 27 Jun 2016 22:25:21 +1000
+Message-Id: <1467030333-31435-6-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467030333-31435-1-git-send-email-benh@kernel.crashing.org>
 References: <1467030333-31435-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,221 +25,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a new XICS backend that uses OPAL calls, which can be
-used when we don't have native support for the platform interrupt
-controller.
+For now, mostly treat it as IODA2
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/xics.h        |   8 +-
- arch/powerpc/sysdev/xics/Makefile      |   2 +-
- arch/powerpc/sysdev/xics/icp-opal.c    | 144 +++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/xics/xics-common.c |   5 +-
- 4 files changed, 156 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/sysdev/xics/icp-opal.c
+ arch/powerpc/platforms/powernv/pci-ioda.c | 15 +++++++++++----
+ arch/powerpc/platforms/powernv/pci.c      |  4 ++++
+ arch/powerpc/platforms/powernv/pci.h      |  2 ++
+ 3 files changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/xics.h b/arch/powerpc/include/asm/xics.h
-index 04ef3ae..a30d845 100644
---- a/arch/powerpc/include/asm/xics.h
-+++ b/arch/powerpc/include/asm/xics.h
-@@ -42,6 +42,12 @@ extern int icp_hv_init(void);
- static inline int icp_hv_init(void) { return -ENODEV; }
- #endif
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3a5ea82..341a9db 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -408,7 +408,8 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 	const u32 *r;
+ 	u64 pci_addr;
  
-+#ifdef CONFIG_PPC_POWERNV
-+extern int icp_opal_init(void);
-+#else
-+static inline int icp_opal_init(void) { return -ENODEV; }
-+#endif
-+
- /* ICP ops */
- struct icp_ops {
- 	unsigned int (*get_irq)(void);
-@@ -135,7 +141,7 @@ static inline void xics_set_base_cppr(unsigned char cppr)
- static inline unsigned char xics_cppr_top(void)
- {
- 	struct xics_cppr *os_cppr = this_cpu_ptr(&xics_cppr);
--	
-+
- 	return os_cppr->stack[os_cppr->index];
+-	if (phb->type != PNV_PHB_IODA1 && phb->type != PNV_PHB_IODA2) {
++	if (phb->type != PNV_PHB_IODA1 && phb->type != PNV_PHB_IODA2 &&
++	    phb->type != PNV_PHB_IODA3) {
+ 		pr_info("  Not support M64 window\n");
+ 		return;
+ 	}
+@@ -1419,7 +1420,7 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+ 	/* Release VF PEs */
+ 	pnv_ioda_release_vf_PE(pdev);
+ 
+-	if (phb->type == PNV_PHB_IODA2) {
++	if (phb->type == PNV_PHB_IODA2 || phb->type == PNV_PHB_IODA3) {
+ 		if (!pdn->m64_single_mode)
+ 			pnv_pci_vf_resource_shift(pdev, -*pdn->pe_num_map);
+ 
+@@ -1515,7 +1516,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+ 	phb = hose->private_data;
+ 	pdn = pci_get_pdn(pdev);
+ 
+-	if (phb->type == PNV_PHB_IODA2) {
++	if (phb->type == PNV_PHB_IODA2 || phb->type == PNV_PHB_IODA3) {
+ 		if (!pdn->vfs_expanded) {
+ 			dev_info(&pdev->dev, "don't support this SRIOV device"
+ 				" with non 64bit-prefetchable IOV BAR\n");
+@@ -2717,7 +2718,8 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
+ 		 */
+ 		if (phb->type == PNV_PHB_IODA1) {
+ 			pnv_pci_ioda1_setup_dma_pe(phb, pe);
+-		} else if (phb->type == PNV_PHB_IODA2) {
++		} else if (phb->type == PNV_PHB_IODA2 ||
++			   phb->type == PNV_PHB_IODA3) {
+ 			pe_info(pe, "Assign DMA32 space\n");
+ 			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+ 		} else if (phb->type == PNV_PHB_NPU) {
+@@ -3621,6 +3623,11 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 		hose->mem_resources[1].flags = 0;
  }
  
-diff --git a/arch/powerpc/sysdev/xics/Makefile b/arch/powerpc/sysdev/xics/Makefile
-index c606aa8..5d7f5a6 100644
---- a/arch/powerpc/sysdev/xics/Makefile
-+++ b/arch/powerpc/sysdev/xics/Makefile
-@@ -4,4 +4,4 @@ obj-y				+= xics-common.o
- obj-$(CONFIG_PPC_ICP_NATIVE)	+= icp-native.o
- obj-$(CONFIG_PPC_ICP_HV)	+= icp-hv.o
- obj-$(CONFIG_PPC_ICS_RTAS)	+= ics-rtas.o
--obj-$(CONFIG_PPC_POWERNV)	+= ics-opal.o
-+obj-$(CONFIG_PPC_POWERNV)	+= ics-opal.o icp-opal.o
-diff --git a/arch/powerpc/sysdev/xics/icp-opal.c b/arch/powerpc/sysdev/xics/icp-opal.c
-new file mode 100644
-index 0000000..eb484e9
---- /dev/null
-+++ b/arch/powerpc/sysdev/xics/icp-opal.c
-@@ -0,0 +1,144 @@
-+/*
-+ * Copyright 2011 IBM Corporation.
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ *
-+ */
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/irq.h>
-+#include <linux/smp.h>
-+#include <linux/interrupt.h>
-+#include <linux/cpu.h>
-+#include <linux/of.h>
-+
-+#include <asm/smp.h>
-+#include <asm/irq.h>
-+#include <asm/errno.h>
-+#include <asm/xics.h>
-+#include <asm/io.h>
-+#include <asm/opal.h>
-+
-+static void icp_opal_teardown_cpu(void)
++void __init pnv_pci_init_ioda3_phb(struct device_node *np)
 +{
-+	int cpu = smp_processor_id();
-+
-+	/* Clear any pending IPI */
-+	opal_int_set_mfrr(cpu, 0xff);
++	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_IODA3);
 +}
 +
-+static void icp_opal_flush_ipi(void)
-+{
-+	/* We take the ipi irq but and never return so we
-+	 * need to EOI the IPI, but want to leave our priority 0
-+	 *
-+	 * should we check all the other interrupts too?
-+	 * should we be flagging idle loop instead?
-+	 * or creating some task to be scheduled?
-+	 */
+ void __init pnv_pci_init_ioda2_phb(struct device_node *np)
+ {
+ 	pnv_pci_init_ioda_phb(np, 0, PNV_PHB_IODA2);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 1d92bd9..517a789 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -815,6 +815,10 @@ void __init pnv_pci_init(void)
+ 	for_each_compatible_node(np, NULL, "ibm,ioda2-phb")
+ 		pnv_pci_init_ioda2_phb(np);
+ 
++	/* Look for ioda3 built-in PHB4's */
++	for_each_compatible_node(np, NULL, "ibm,ioda3-phb")
++		pnv_pci_init_ioda3_phb(np);
 +
-+	opal_int_eoi((0x00 << 24) | XICS_IPI);
-+}
-+
-+static unsigned int icp_opal_get_irq(void)
-+{
-+	unsigned int xirr;
-+	unsigned int vec;
-+	unsigned int irq;
-+	int64_t rc;
-+
-+	rc = opal_int_get_xirr(&xirr, false);
-+	if (rc < 0)
-+		return NO_IRQ;
-+	xirr = be32_to_cpu(xirr);
-+	vec = xirr & 0x00ffffff;
-+	if (vec == XICS_IRQ_SPURIOUS)
-+		return NO_IRQ;
-+
-+	irq = irq_find_mapping(xics_host, vec);
-+	if (likely(irq != NO_IRQ)) {
-+		xics_push_cppr(vec);
-+		return irq;
-+	}
-+
-+	/* We don't have a linux mapping, so have rtas mask it. */
-+	xics_mask_unknown_vec(vec);
-+
-+	/* We might learn about it later, so EOI it */
-+	opal_int_eoi(xirr);
-+
-+	return NO_IRQ;
-+}
-+
-+static void icp_opal_set_cpu_priority(unsigned char cppr)
-+{
-+	xics_set_base_cppr(cppr);
-+	opal_int_set_cppr(cppr);
-+	iosync();
-+}
-+
-+static void icp_opal_eoi(struct irq_data *d)
-+{
-+	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
-+	int64_t rc;
-+
-+	iosync();
-+	rc = opal_int_eoi((xics_pop_cppr() << 24) | hw_irq);
-+
-+	/* EOI tells us whether there are more interrupts to fetch.
-+	 *
-+	 * Some HW implementations might not be able to send us another
-+	 * external interrupt in that case, so we force a replay.
-+	 */
-+	if (rc > 0)
-+		force_external_irq_replay();
-+}
-+
-+#ifdef CONFIG_SMP
-+
-+static void icp_opal_cause_ipi(int cpu, unsigned long data)
-+{
-+	opal_int_set_mfrr(cpu, IPI_PRIORITY);
-+}
-+
-+static irqreturn_t icp_opal_ipi_action(int irq, void *dev_id)
-+{
-+	int cpu = smp_processor_id();
-+
-+	opal_int_set_mfrr(cpu, 0xff);
-+
-+	return smp_ipi_demux();
-+}
-+
-+#endif /* CONFIG_SMP */
-+
-+static const struct icp_ops icp_opal_ops = {
-+	.get_irq	= icp_opal_get_irq,
-+	.eoi		= icp_opal_eoi,
-+	.set_priority	= icp_opal_set_cpu_priority,
-+	.teardown_cpu	= icp_opal_teardown_cpu,
-+	.flush_ipi	= icp_opal_flush_ipi,
-+#ifdef CONFIG_SMP
-+	.ipi_action	= icp_opal_ipi_action,
-+	.cause_ipi	= icp_opal_cause_ipi,
-+#endif
-+};
-+
-+int icp_opal_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "ibm,opal-intc");
-+	if (!np)
-+		return -ENODEV;
-+
-+	icp_ops = &icp_opal_ops;
-+
-+	printk("XICS: Using OPAL ICP fallbacks\n");
-+
-+	return 0;
-+}
-+
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 47e43b7..a795a5f 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -404,8 +404,11 @@ void __init xics_init(void)
- 	/* Fist locate ICP */
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		rc = icp_hv_init();
--	if (rc < 0)
-+	if (rc < 0) {
- 		rc = icp_native_init();
-+		if (rc == -ENODEV)
-+		    rc = icp_opal_init();
-+	}
- 	if (rc < 0) {
- 		pr_warning("XICS: Cannot find a Presentation Controller !\n");
- 		return;
+ 	/* Look for NPU PHBs */
+ 	for_each_compatible_node(np, NULL, "ibm,ioda2-npu-phb")
+ 		pnv_pci_init_npu_phb(np);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 7dee25e..772ad41 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -7,6 +7,7 @@ enum pnv_phb_type {
+ 	PNV_PHB_IODA1	= 0,
+ 	PNV_PHB_IODA2	= 1,
+ 	PNV_PHB_NPU	= 2,
++	PNV_PHB_IODA3	= 3,
+ };
+ 
+ /* Precise PHB model for error management */
+@@ -202,6 +203,7 @@ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 				      u64 dma_offset, unsigned page_shift);
+ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
++extern void pnv_pci_init_ioda3_phb(struct device_node *np);
+ extern void pnv_pci_init_npu_phb(struct device_node *np);
+ extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 					__be64 *startp, __be64 *endp, bool rm);
 -- 
 2.7.4
