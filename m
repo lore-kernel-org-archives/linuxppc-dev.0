@@ -1,49 +1,24 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rds4m0LK9zDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 13:39:51 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5S3cvhE092921
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 23:39:50 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23sn8vqp84-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 23:39:49 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Tue, 28 Jun 2016 13:39:47 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 392D13578053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 13:39:45 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5S3djsn57147524
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 13:39:45 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5S3dh5c028207
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 13:39:45 +1000
-Date: Tue, 28 Jun 2016 11:39:18 +0800
-From: xinhui <xinhui.pan@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Boqun Feng <boqun.feng@gmail.com>
-CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- paulmck@linux.vnet.ibm.com, peterz@infradead.org, mingo@redhat.com,
- mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
- Waiman.Long@hpe.com, will.deacon@arm.com, dave@stgolabs.net
-Subject: Re: [PATCH 2/3] powerpc/spinlock: support vcpu preempted check
-References: <1467049290-32359-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1467049290-32359-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160627145832.GB19108@insomnia>
-In-Reply-To: <20160627145832.GB19108@insomnia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Message-Id: <5771F166.5060604@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdsD845qHzDqRd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 13:46:16 +1000 (AEST)
+Message-ID: <1467085570.32607.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries: Auto online hotplugged memory
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Morton
+ <akpm@linux-foundation.org>
+Date: Tue, 28 Jun 2016 13:46:10 +1000
+In-Reply-To: <57713AFD.5040801@linux.vnet.ibm.com>
+References: <5767F4D0.7070504@linux.vnet.ibm.com>
+ <1466470648.9938.0.camel@ellerman.id.au>
+ <5768A2EB.5030808@linux.vnet.ibm.com>
+ <1466746547.11831.2.camel@ellerman.id.au>
+ <57713AFD.5040801@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,103 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2016-06-27 at 09:41 -0500, Nathan Fontenot wrote:
+> On 06/24/2016 12:35 AM, Michael Ellerman wrote:
+> > On Mon, 2016-06-20 at 21:14 -0500, Nathan Fontenot wrote:
+> > > On 06/20/2016 07:57 PM, Michael Ellerman wrote:
+> > > > On Mon, 2016-06-20 at 08:51 -0500, Nathan Fontenot wrote:
+> > > > 
+> > > > > Auto online hotplugged memory
+> > > > > 
+> > > > > A recent update (commit id 31bc3858ea3) to the core mm hotplug code
+> > > > > introduced the memhp_auto_online variable to allow for automatically
+> > > > > onlining memory that is added.
+> > > > > 
+> > > > > This patch update the pseries memory hotplug code to enable this so that
+> > > > > any memory DLPAR added to the system is automatically onlined. The code
+> > > > > to add the memory block for memory added from add_memory() is removed as
+> > > > > this is not needed, the memory_add code does this.
+> > > > 
+> > > > Is this a bug fix, or just a cleanup?
+> > > 
+> > > Hmmm.. some cleanup and some new feature. The removal of the memblock_add()
+> > > call is a cleanup and the setting of the memhp_auto_online variable is
+> > > taking advantage of a feature I was not previously aware of.
+> > 
+> > OK. Looking at usage of memhp_auto_online it's not clear to me that you're
+> > supposed to be setting it in arch code.
+> > 
+> > eg. if I build my kernel with CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=n, I will
+> > expect it to not be onlined by default.
+> > 
+> > Similarly if I boot with memhp_default_state=offline on the kernel command line.
+> > 
+> > But this patch would then mean it is onlined by default. So that seems kind of
+> > confusing for users.
+> 
+> Yes, but we already online memory when it is DLPAR added to the system. This has
+> always been the default behavior for pseries. I was using the memhp_auto_online
+> setting so that the memory will be added as part of the memory_add call instead
+> of having to online the memory as a separate step in the pseries code.
+> 
+> In other words, I am not changing the existing behavior of pseries code. 
 
+Yep, that's good.
 
-On 2016年06月27日 22:58, Boqun Feng wrote:
-> Hi Xinhui,
->
-> On Mon, Jun 27, 2016 at 01:41:29PM -0400, Pan Xinhui wrote:
->> This is to fix some holder preemption issues. Spinning at one
->> vcpu which is preempted is meaningless.
->>
->> Kernel need such interfaces, So lets support it.
->>
->> We also should suooprt both the shared and dedicated mode.
->> So add lppaca_dedicated_proc macro in lppaca.h
->>
->> Suggested-by: Boqun Feng <boqun.feng@gmail.com>
->> Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/include/asm/lppaca.h   |  6 ++++++
->>   arch/powerpc/include/asm/spinlock.h | 15 +++++++++++++++
->>   2 files changed, 21 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/lppaca.h b/arch/powerpc/include/asm/lppaca.h
->> index d0a2a2f..0a263d3 100644
->> --- a/arch/powerpc/include/asm/lppaca.h
->> +++ b/arch/powerpc/include/asm/lppaca.h
->> @@ -111,12 +111,18 @@ extern struct lppaca lppaca[];
->>    * we will have to transition to something better.
->>    */
->>   #define LPPACA_OLD_SHARED_PROC		2
->> +#define LPPACA_OLD_DEDICATED_PROC      (1 << 6)
->>
->
-> I think you should describe a little bit about the magic number here,
-right.
+What's not good is giving the user an option and then ignoring it.
 
-> i.e. what document/specification says this should work, and how this
-> works.
->
-yep, I need add some comments here. for example, this bit is firmware reserved...
-thanks, will do that.
+> Perhaps something a bit different? I could save and restore the memhp_auto_online
+> setting across the call to memory_add, or perhpas ther should be an
+> add_memory_and_online() variant of the add_memory() call that always onlines memory.
+ 
+No I think we should just honor the setting.
 
->>   static inline bool lppaca_shared_proc(struct lppaca *l)
->>   {
->>   	return !!(l->__old_status & LPPACA_OLD_SHARED_PROC);
->>   }
->>
->> +static inline bool lppaca_dedicated_proc(struct lppaca *l)
->> +{
->> +	return !!(l->__old_status & LPPACA_OLD_DEDICATED_PROC);
->> +}
->> +
->>   /*
->>    * SLB shadow buffer structure as defined in the PAPR.  The save_area
->>    * contains adjacent ESID and VSID pairs for each shadowed SLB.  The
->> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
->> index 523673d..ae938ee 100644
->> --- a/arch/powerpc/include/asm/spinlock.h
->> +++ b/arch/powerpc/include/asm/spinlock.h
->> @@ -52,6 +52,21 @@
->>   #define SYNC_IO
->>   #endif
->>
->> +/* For fixing some spinning issues in a guest.
->> + * kernel would check if vcpu is preempted during a spin loop.
->> + * we support that.
->> + */
->> +#define arch_vcpu_is_preempted arch_vcpu_is_preempted
->> +static inline bool arch_vcpu_is_preempted(int cpu)
->
-> This function should be guarded by #ifdef PPC_PSERIES .. #endif, right?
-> Because if the kernel is not compiled with guest support,
-> vcpu_is_preempted() should always be false, right?
->
-oh, I forgot that. thanks for pointing it out.
+To retain the existing behavour on pseries we just set CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=y
+in the pseries defconfig.
 
->> +{
->> +	struct lppaca *lp = &lppaca_of(cpu);
->> +
->> +	if (unlikely(!(lppaca_shared_proc(lp) ||
->> +			lppaca_dedicated_proc(lp))))
->
-> Do you want to detect whether we are running in a guest(ie. pseries
-> kernel) here? Then I wonder whether "machine_is(pseries)" works here.
->
-I tried as you said yesterday. but .h file has dependencies.
-As you said, if we add #ifdef PPC_PSERIES, this is not a big problem. only powernv will be affected as they are built into same kernel img.
+That way users can control the behaviour, which is good, and all the existing
+documentation applies equally to powerpc as other arches. If we do something
+different, like force onlining it, then we need to go and update all the docs to
+say "memhp_auto_online - ignored on powerpc".
 
-> Regards,
-> Boqun
->
->> +		return false;
->> +	return !!(be32_to_cpu(lp->yield_count) & 1);
->> +}
->> +
->>   static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
->>   {
->>   	return lock.slock == 0;
->> --
->> 2.4.11
->>
+cheers
