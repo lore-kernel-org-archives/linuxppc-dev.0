@@ -2,20 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdsX62DD2zDqmL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 14:00:06 +1000 (AEST)
-Message-ID: <1467086399.32607.5.camel@ellerman.id.au>
-Subject: Re: [PATCH v20 14/14] Documentation: dt: usable-memory and
- elfcorehdr nodes for arm64 kexec
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdsjP50dhzDqmQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 14:08:09 +1000 (AEST)
+Message-ID: <1467086888.32607.9.camel@ellerman.id.au>
+Subject: Re: arch/powerpc/xmon/dis-asm.h: 2 * wrong specifiers ?
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, Geoff Levand
- <geoff@infradead.org>, James Morse <james.morseatarm.com@hactar>,
- kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 28 Jun 2016 13:59:59 +1000
-In-Reply-To: <9127562.8x2DzY0I6N@hactar>
-References: <cover.1466702804.git.geoff@infradead.org>
- <e212cd53fdf9d09923408eb906fe0228d22432a9.1466702804.git.geoff@infradead.org>
- <9127562.8x2DzY0I6N@hactar>
+To: David Binderman <linuxdev.baldrick@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, dcb314@hotmail.com
+Date: Tue, 28 Jun 2016 14:08:08 +1000
+In-Reply-To: <CAMzoama3BkAfxqzEt2khiPOcKxkOP1JVSx5UcCwWvGJLGrzLtA@mail.gmail.com>
+References: <CAMzoama3BkAfxqzEt2khiPOcKxkOP1JVSx5UcCwWvGJLGrzLtA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,32 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-06-27 at 15:22 -0300, Thiago Jung Bauermann wrote:
-> Am Donnerstag, 23 Juni 2016, 17:54:49 schrieb Geoff Levand:
-> > +linux,usable-memory
-> > +-------------------
-> > +
-> > +This property is set on PowerPC and arm64 by kexec-tools during kdump
-> > +to tell the crash kernel the base address of its reserved area of memory,
-> > and +the size. e.g.
-> > +
-> > +/ {
-> > +	chosen {
-> > +		linux,usable-memory = <0x9 0xf0000000 0x0 0x10000000>;
-> > +	};
-> > +};
+On Mon, 2016-06-27 at 09:04 +0100, David Binderman wrote:
+
+> Hello there,
 > 
-> On powerpc, linux,usable-memory isn't in /chosen. It is put by kexec-tools 
-> in each /memory node and has the same format as the reg property. During 
-> early boot, the kernel goes through the /memory nodes to find usable memory 
-> and for each node, if there's a linux,usable-memory property it will use it 
-> instead of the reg property to find the ranges of memory it can use (see 
-> early_init_dt_scan_memory in drivers/of/fdt.c).
+> linux-4.7-rc5/arch/powerpc/xmon/dis-asm.h:20]: (warning) %x in format
+> string (no. 1) requires 'unsigned int' but the argument type is
+> 'unsigned long'.
+> [linux-4.7-rc5/arch/powerpc/xmon/dis-asm.h:26]: (warning) %x in format
+> string (no. 1) requires 'unsigned int' but the argument type is
+> 'unsigned long'.
 
-Yep that sounds right to me.
+What config / toolchain are you using? I've never seen these.
 
-Added in:
+Oh, I see, with CONFIG_XMON_DISASSEMBLY=n.
 
-ba7594852f4e ("[PATCH] powerpc: Add support for "linux,usable-memory" on memory nodes")
+> static inline int print_insn_powerpc(unsigned long insn, unsigned long memaddr)
+> {
+>     printf("%.8x", insn);
+>     return 0;
+> }
+
+Send me a patch to cast insn to unsigned int?
 
 cheers
