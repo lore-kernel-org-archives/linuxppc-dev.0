@@ -1,25 +1,39 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.191])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rf9jx1HKSzDqrj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 02:09:40 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Ravi Bangoria' <ravi.bangoria@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "acme@kernel.org" <acme@kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-CC: "ananth@in.ibm.com" <ananth@in.ibm.com>, "naveen.n.rao@linux.vnet.ibm.com"
- <naveen.n.rao@linux.vnet.ibm.com>, "dja@axtens.net" <dja@axtens.net>
-Subject: RE: [PATCH 3/4] perf annotate: add powerpc support
-Date: Tue, 28 Jun 2016 16:07:10 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4E67FA@AcuExch.aculab.com>
-References: <1467113807-29571-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467113807-29571-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-In-Reply-To: <1467113807-29571-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rfBC35ZqHzDqqZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 02:31:26 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5SGTFFB112246
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 12:31:24 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23sm9fbjm3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 12:31:24 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 28 Jun 2016 10:31:23 -0600
+Subject: Re: [PATCH] powerpc/pseries: Auto online hotplugged memory
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <5767F4D0.7070504@linux.vnet.ibm.com>
+ <1466470648.9938.0.camel@ellerman.id.au>
+ <5768A2EB.5030808@linux.vnet.ibm.com>
+ <1466746547.11831.2.camel@ellerman.id.au>
+ <57713AFD.5040801@linux.vnet.ibm.com>
+ <1467085570.32607.1.camel@ellerman.id.au>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 28 Jun 2016 11:31:16 -0500
 MIME-Version: 1.0
+In-Reply-To: <1467085570.32607.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5772A654.6090801@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +43,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogUmF2aSBCYW5nb3JpYQ0KPiBTZW50OiAyOCBKdW5lIDIwMTYgMTI6MzcNCj4gDQo+IFBv
-d2VycGMgaGFzIGxvbmcgbGlzdCBvZiBicmFuY2ggaW5zdHJ1Y3Rpb25zIGFuZCBoYXJkY29kaW5n
-IHRoZW0gaW4gdGFibGUNCj4gYXBwZWFycyB0byBiZSBlcnJvci1wcm9uZS4gU28sIGFkZCBuZXcg
-ZnVuY3Rpb24gdG8gZmluZCBpbnN0cnVjdGlvbg0KPiBpbnN0ZWFkIG9mIGNyZWF0aW5nIHRhYmxl
-Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTogTmF2ZWVuIE4uIFJhbyA8bmF2ZWVuLm4ucmFvQGxpbnV4
-LnZuZXQuaWJtLmNvbT4NCj4gU2lnbmVkLW9mZi1ieTogUmF2aSBCYW5nb3JpYSA8cmF2aS5iYW5n
-b3JpYUBsaW51eC52bmV0LmlibS5jb20+DQo+IC0tLQ0KPiAgdG9vbHMvcGVyZi91dGlsL2Fubm90
-YXRlLmMgfCA2NCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-DQo+ICAxIGZpbGUgY2hhbmdlZCwgNjQgaW5zZXJ0aW9ucygrKQ0KPiANCj4gZGlmZiAtLWdpdCBh
-L3Rvb2xzL3BlcmYvdXRpbC9hbm5vdGF0ZS5jIGIvdG9vbHMvcGVyZi91dGlsL2Fubm90YXRlLmMN
-Cj4gaW5kZXggMzZhNTgyNS4uOTZjNjYxMCAxMDA2NDQNCj4gLS0tIGEvdG9vbHMvcGVyZi91dGls
-L2Fubm90YXRlLmMNCj4gKysrIGIvdG9vbHMvcGVyZi91dGlsL2Fubm90YXRlLmMNCj4gQEAgLTQ3
-Niw2ICs0NzYsNjggQEAgc3RhdGljIGludCBpbnNfX2NtcChjb25zdCB2b2lkICphLCBjb25zdCB2
-b2lkICpiKQ0KPiAgCXJldHVybiBzdHJjbXAoaWEtPm5hbWUsIGliLT5uYW1lKTsNCj4gIH0NCj4g
-DQo+ICtzdGF0aWMgc3RydWN0IGlucyAqaW5zX19maW5kX3Bvd2VycGMoY29uc3QgY2hhciAqbmFt
-ZSkNCg0KSXQgd291bGQgYmUgYmV0dGVyIGlmIHRoZSBmdW5jdGlvbiBuYW1lIGluY2x1ZGUgJ2Jy
-YW5jaCcuDQoNCj4gK3sNCj4gKwlpbnQgaTsNCj4gKwlzdHJ1Y3QgaW5zICppbnM7DQo+ICsNCj4g
-KwlpbnMgPSB6YWxsb2Moc2l6ZW9mKHN0cnVjdCBpbnMpKTsNCj4gKwlpZiAoIWlucykNCj4gKwkJ
-cmV0dXJuIE5VTEw7DQo+ICsNCj4gKwlpbnMtPm5hbWUgPSBzdHJkdXAobmFtZSk7DQo+ICsJaWYg
-KCFpbnMtPm5hbWUpDQo+ICsJCXJldHVybiBOVUxMOw0KDQoJWW91IGxlYWsgJ2lucycgaGVyZS4N
-Cg0KPiArDQo+ICsJaWYgKG5hbWVbMF0gPT0gJ2InKSB7DQo+ICsJCS8qIGJyYW5jaCBpbnN0cnVj
-dGlvbnMgKi8NCj4gKwkJaW5zLT5vcHMgPSAmanVtcF9vcHM7DQo+ICsNCj4gKwkJLyoNCj4gKwkJ
-ICogLSBGZXcgc3RhcnQgd2l0aCAnYicsIGJ1dCBhcmVuJ3QgYnJhbmNoIGluc3RydWN0aW9ucy4N
-Cj4gKwkJICogLSBMZXQncyBhbHNvIGlnbm9yZSBpbnN0cnVjdGlvbnMgaW52b2x2aW5nICdjdHIn
-IGFuZA0KPiArCQkgKiAgICd0YXInIHNpbmNlIHRhcmdldCBicmFuY2ggYWRkcmVzc2VzIGZvciB0
-aG9zZSBjYW4ndA0KPiArCQkgKiAgIGJlIGRldGVybWluZWQgc3RhdGljYWxseS4NCj4gKwkJICov
-DQo+ICsJCWlmICghc3RybmNtcChuYW1lLCAiYmNkIiwgMykgICB8fA0KPiArCQkgICAgIXN0cm5j
-bXAobmFtZSwgImJyaW5jIiwgNSkgfHwNCj4gKwkJICAgICFzdHJuY21wKG5hbWUsICJicGVyIiwg
-NCkgIHx8DQo+ICsJCSAgICBzdHJzdHIobmFtZSwgImN0ciIpICAgICAgICB8fA0KPiArCQkgICAg
-c3Ryc3RyKG5hbWUsICJ0YXIiKSkNCj4gKwkJCXJldHVybiBOVUxMOw0KDQoJTW9yZSBpbXBvcnRh
-bnRseSB5b3UgbGVhayAnaW5zJyBhbmQgJ2lucy0+bmFtZScgaGVyZS4NCglBbmQgb24gb3RoZXIg
-cGF0aHMgYmVsb3cuDQoNCi4uLg0KDQoJRGF2aWQNCg0K
+On 06/27/2016 10:46 PM, Michael Ellerman wrote:
+> On Mon, 2016-06-27 at 09:41 -0500, Nathan Fontenot wrote:
+>> On 06/24/2016 12:35 AM, Michael Ellerman wrote:
+>>> On Mon, 2016-06-20 at 21:14 -0500, Nathan Fontenot wrote:
+>>>> On 06/20/2016 07:57 PM, Michael Ellerman wrote:
+>>>>> On Mon, 2016-06-20 at 08:51 -0500, Nathan Fontenot wrote:
+>>>>>
+>>>>>> Auto online hotplugged memory
+>>>>>>
+>>>>>> A recent update (commit id 31bc3858ea3) to the core mm hotplug code
+>>>>>> introduced the memhp_auto_online variable to allow for automatically
+>>>>>> onlining memory that is added.
+>>>>>>
+>>>>>> This patch update the pseries memory hotplug code to enable this so that
+>>>>>> any memory DLPAR added to the system is automatically onlined. The code
+>>>>>> to add the memory block for memory added from add_memory() is removed as
+>>>>>> this is not needed, the memory_add code does this.
+>>>>>
+>>>>> Is this a bug fix, or just a cleanup?
+>>>>
+>>>> Hmmm.. some cleanup and some new feature. The removal of the memblock_add()
+>>>> call is a cleanup and the setting of the memhp_auto_online variable is
+>>>> taking advantage of a feature I was not previously aware of.
+>>>
+>>> OK. Looking at usage of memhp_auto_online it's not clear to me that you're
+>>> supposed to be setting it in arch code.
+>>>
+>>> eg. if I build my kernel with CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=n, I will
+>>> expect it to not be onlined by default.
+>>>
+>>> Similarly if I boot with memhp_default_state=offline on the kernel command line.
+>>>
+>>> But this patch would then mean it is onlined by default. So that seems kind of
+>>> confusing for users.
+>>
+>> Yes, but we already online memory when it is DLPAR added to the system. This has
+>> always been the default behavior for pseries. I was using the memhp_auto_online
+>> setting so that the memory will be added as part of the memory_add call instead
+>> of having to online the memory as a separate step in the pseries code.
+>>
+>> In other words, I am not changing the existing behavior of pseries code. 
+> 
+> Yep, that's good.
+> 
+> What's not good is giving the user an option and then ignoring it.
+
+True, I just trying to preserve existing behavior.
+
+> 
+>> Perhaps something a bit different? I could save and restore the memhp_auto_online
+>> setting across the call to memory_add, or perhpas ther should be an
+>> add_memory_and_online() variant of the add_memory() call that always onlines memory.
+>  
+> No I think we should just honor the setting.
+> 
+> To retain the existing behavour on pseries we just set CONFIG_MEMORY_HOTPLUG_DEFAULT_ONLINE=y
+> in the pseries defconfig.
+> 
+> That way users can control the behaviour, which is good, and all the existing
+> documentation applies equally to powerpc as other arches. If we do something
+> different, like force onlining it, then we need to go and update all the docs to
+> say "memhp_auto_online - ignored on powerpc".
+> 
+
+Sounds good, I'll send a new patch to set the config option for pseries and update
+the dlpar memory add code accordingly.
+
+Thanks,
+-Nathan
