@@ -1,23 +1,23 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rf2VL4FN3zDqrK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 20:44:10 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5SAcwwc107061
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:44:08 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rf2VN5BRszDqs1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 20:44:12 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5SAcwoO100765
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:44:11 -0400
 Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23skk0n7e5-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23sp42b5ey-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:44:07 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 06:44:10 -0400
 Received: from localhost
  by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Tue, 28 Jun 2016 04:44:06 -0600
+ Tue, 28 Jun 2016 04:44:10 -0600
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org
@@ -26,11 +26,12 @@ Cc: peterz@infradead.org, mingo@redhat.com, mpe@ellerman.id.au,
  waiman.long@hpe.com, will.deacon@arm.com, boqun.feng@gmail.com,
  dave@stgolabs.net, schwidefsky@de.ibm.com,
  Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v2 2/4] powerpc/spinlock: support vcpu preempted check
-Date: Tue, 28 Jun 2016 10:43:09 -0400
+Subject: [PATCH v2 4/4] kernel/locking: Drop the overload of {mutex,
+ rwsem}_spin_on_owner
+Date: Tue, 28 Jun 2016 10:43:11 -0400
 In-Reply-To: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1467124991-13164-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Message-Id: <1467124991-13164-5-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +41,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is to fix some lock holder preemption issues. Some other locks
-implementation do a spin loop before acquiring the lock itself. Currently
-kernel has an interface of bool vcpu_is_preempted(int cpu). It take the cpu
-as parameter and return true if the cpu is preempted. Then kernel can break
-the spin loops upon on the retval of vcpu_is_preempted.
+An over-committed guest with more vCPUs than pCPUs has a heavy overload in
+the two spin_on_owner. This blames on the lock holder preemption issue.
 
-As kernel has used this interface, So lets support it.
+Kernel has an interface bool vcpu_is_preempted(int cpu) to see if a vCPU is
+currently running or not. So break the spin loops on true condition.
 
-Only pSeries need supoort it. And the fact is powerNV are built into same
-kernel image with pSeries. So we need return false if we are runnig as
-powerNV. The another fact is that lppaca->yiled_count keeps zero on
-powerNV. So we can just skip the machine type.
+test-case:
+perf record -a perf bench sched messaging -g 400 -p && perf report
 
-Suggested-by: Boqun Feng <boqun.feng@gmail.com>
-Suggested-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+before patch:
+20.68%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner
+ 8.45%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
+ 4.12%  sched-messaging  [kernel.vmlinux]  [k] system_call
+ 3.01%  sched-messaging  [kernel.vmlinux]  [k] system_call_common
+ 2.83%  sched-messaging  [kernel.vmlinux]  [k] copypage_power7
+ 2.64%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
+ 2.00%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
+
+after patch:
+ 9.99%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
+ 5.28%  sched-messaging  [unknown]         [H] 0xc0000000000768e0
+ 4.27%  sched-messaging  [kernel.vmlinux]  [k] __copy_tofrom_user_power7
+ 3.77%  sched-messaging  [kernel.vmlinux]  [k] copypage_power7
+ 3.24%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
+ 3.02%  sched-messaging  [kernel.vmlinux]  [k] system_call
+ 2.69%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
+
 Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/spinlock.h | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ kernel/locking/mutex.c      | 15 +++++++++++++--
+ kernel/locking/rwsem-xadd.c | 16 +++++++++++++---
+ 2 files changed, 26 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 523673d..3ac9fcb 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -52,6 +52,24 @@
- #define SYNC_IO
- #endif
+diff --git a/kernel/locking/mutex.c b/kernel/locking/mutex.c
+index 79d2d76..ef0451b2 100644
+--- a/kernel/locking/mutex.c
++++ b/kernel/locking/mutex.c
+@@ -236,7 +236,13 @@ bool mutex_spin_on_owner(struct mutex *lock, struct task_struct *owner)
+ 		 */
+ 		barrier();
  
-+/*
-+ * This support kernel to check if one cpu is preempted or not.
-+ * Then we can fix some lock holder preemption issue.
-+ */
-+#ifdef CONFIG_PPC_PSERIES
-+#define vcpu_is_preempted vcpu_is_preempted
-+static inline bool vcpu_is_preempted(int cpu)
-+{
-+	/*
-+	 * pSeries and powerNV can be built into same kernel image. In
-+	 * principle we need return false directly if we are running as
-+	 * powerNV. However the yield_count is always zero on powerNV, So
-+	 * skip such machine type check
-+	 */
-+	return !!(be32_to_cpu(lppaca_of(cpu).yield_count) & 1);
-+}
-+#endif
+-		if (!owner->on_cpu || need_resched()) {
++		/*
++		 * Use vcpu_is_preempted to detech lock holder preemption issue
++		 * and break. vcpu_is_preempted is a macro defined by false if
++		 * arch does not support vcpu preempted check,
++		 */
++		if (!owner->on_cpu || need_resched() ||
++				vcpu_is_preempted(task_cpu(owner))) {
+ 			ret = false;
+ 			break;
+ 		}
+@@ -261,8 +267,13 @@ static inline int mutex_can_spin_on_owner(struct mutex *lock)
+ 
+ 	rcu_read_lock();
+ 	owner = READ_ONCE(lock->owner);
 +
- static __always_inline int arch_spin_value_unlocked(arch_spinlock_t lock)
- {
- 	return lock.slock == 0;
++	/*
++	 * As lock holder preemption issue, we both skip spinning if task not
++	 * on cpu or its cpu is preempted
++	 */
+ 	if (owner)
+-		retval = owner->on_cpu;
++		retval = owner->on_cpu && !vcpu_is_preempted(task_cpu(owner));
+ 	rcu_read_unlock();
+ 	/*
+ 	 * if lock->owner is not set, the mutex owner may have just acquired
+diff --git a/kernel/locking/rwsem-xadd.c b/kernel/locking/rwsem-xadd.c
+index 09e30c6..828ca7c 100644
+--- a/kernel/locking/rwsem-xadd.c
++++ b/kernel/locking/rwsem-xadd.c
+@@ -319,7 +319,11 @@ static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
+ 		goto done;
+ 	}
+ 
+-	ret = owner->on_cpu;
++	/*
++	 * As lock holder preemption issue, we both skip spinning if task not
++	 * on cpu or its cpu is preempted
++	 */
++	ret = owner->on_cpu && !vcpu_is_preempted(task_cpu(owner));
+ done:
+ 	rcu_read_unlock();
+ 	return ret;
+@@ -340,8 +344,14 @@ bool rwsem_spin_on_owner(struct rw_semaphore *sem, struct task_struct *owner)
+ 		 */
+ 		barrier();
+ 
+-		/* abort spinning when need_resched or owner is not running */
+-		if (!owner->on_cpu || need_resched()) {
++		/*
++		 * abort spinning when need_resched or owner is not running or
++		 * owner's cpu is preempted. vcpu_is_preempted is a macro
++		 * defined by false if arch does not support vcpu preempted
++		 * check
++		 */
++		if (!owner->on_cpu || need_resched() ||
++				vcpu_is_preempted(task_cpu(owner))) {
+ 			rcu_read_unlock();
+ 			return false;
+ 		}
 -- 
 2.4.11
