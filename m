@@ -1,28 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rdtgk2qXszDqmv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 14:51:46 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rdtgh45LRz9s9c
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jun 2016 14:51:44 +1000 (AEST)
-Message-ID: <1467084912.20278.117.camel@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] tty/hvc: Use opal irqchip interface if available
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>, Alistair Popple
- <alistair@popple.id.au>
-Date: Tue, 28 Jun 2016 13:35:12 +1000
-In-Reply-To: <1467084869.20278.116.camel@kernel.crashing.org>
-References: <20160628031139.12500-1-sam@mendozajonas.com>
- <20160628031139.12500-2-sam@mendozajonas.com>
- <1467084869.20278.116.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rdts75qnBzDqmw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 14:59:55 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id u25so1033209iou.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2016 21:59:54 -0700 (PDT)
+Date: Tue, 28 Jun 2016 13:03:56 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: xinhui <xinhui.pan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ paulmck@linux.vnet.ibm.com, peterz@infradead.org, mingo@redhat.com,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ Waiman.Long@hpe.com, will.deacon@arm.com, dave@stgolabs.net
+Subject: Re: [PATCH 2/3] powerpc/spinlock: support vcpu preempted check
+Message-ID: <20160628050356.GA25008@insomnia>
+References: <1467049290-32359-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1467049290-32359-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20160627145832.GB19108@insomnia>
+ <5771F166.5060604@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+In-Reply-To: <5771F166.5060604@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,77 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-28 at 13:34 +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2016-06-28 at 13:11 +1000, Samuel Mendoza-Jonas wrote:
-> > Update the hvc driver to use the OPAL irqchip if made available by
-> > the
-> > running firmware. If it is not present, the driver falls back to
-> > the
-> > existing OPAL event number.
-> 
-> One thing that worries me a bit with the original transition to using
-> an interrupt from the old OPAL callback is that when passed an
-> interrupt,
-> the HVC thread assumes interrupts work reliably and thus stops
-> polling.
 
-Note to Greg: This patch is fine, this is a reflexion about a change
-that was already done.
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> However, not all platforms have a functional serial interrupt. For
-> example rhesus doesn't. In fact we don't always know when we build
-> the device-tree whether the serial interrupt will work or not.
-> 
-> Now we might be saved by the OPAL heartbeat ... we do call
-> opal_poll_events regularily there. But I'd like you to verify it
-> by disabling the LPC interrupt for example on an openpower machine
-> and see how the console beahves.
-> 
-> Cheers,
-> Ben.
->  
-> 
-> > Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-> > Cc: <stable@vger.kernel.org> # 4.1.x-
-> > ---
-> >  drivers/tty/hvc/hvc_opal.c | 12 +++++++++++-
-> >  1 file changed, 11 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/tty/hvc/hvc_opal.c
-> > b/drivers/tty/hvc/hvc_opal.c
-> > index b7cd0ae..8c53f5b 100644
-> > --- a/drivers/tty/hvc/hvc_opal.c
-> > +++ b/drivers/tty/hvc/hvc_opal.c
-> > @@ -170,6 +170,8 @@ static int hvc_opal_probe(struct
-> > platform_device *dev)
-> >  	hv_protocol_t proto;
-> >  	unsigned int termno, irq, boot = 0;
-> >  	const __be32 *reg;
-> > +	u32 prop;
-> > +	int rc;
-> >  
-> >  	if (of_device_is_compatible(dev->dev.of_node, "ibm,opal-
-> > console-raw")) {
-> >  		proto = HV_PROTOCOL_RAW;
-> > @@ -214,7 +216,15 @@ static int hvc_opal_probe(struct
-> > platform_device *dev)
-> >  		dev->dev.of_node->full_name,
-> >  		boot ? " (boot console)" : "");
-> >  
-> > -	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-> > +	rc = of_property_read_u32(dev->dev.of_node, "interrupts",
-> > &prop);
-> > +	if (rc) {
-> > +		pr_info("hvc%d: No interrupts property, using OPAL
-> > event\n",
-> > +				termno);
-> > +		irq =
-> > opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-> > +	} else {
-> > +		irq = irq_of_parse_and_map(dev->dev.of_node, 0);
-> > +	}
-> > +
-> >  	if (!irq) {
-> >  		pr_err("hvc_opal: Unable to map interrupt for
-> > device %s\n",
-> >  			dev->dev.of_node->full_name);
+On Tue, Jun 28, 2016 at 11:39:18AM +0800, xinhui wrote:
+[snip]
+> > > +{
+> > > +	struct lppaca *lp =3D &lppaca_of(cpu);
+> > > +
+> > > +	if (unlikely(!(lppaca_shared_proc(lp) ||
+> > > +			lppaca_dedicated_proc(lp))))
+> >=20
+> > Do you want to detect whether we are running in a guest(ie. pseries
+> > kernel) here? Then I wonder whether "machine_is(pseries)" works here.
+> >=20
+> I tried as you said yesterday. but .h file has dependencies.
+> As you said, if we add #ifdef PPC_PSERIES, this is not a big problem. onl=
+y powernv will be affected as they are built into same kernel img.
+>=20
+
+I never said this it not a big problem ;-)
+
+The problem here is that we only need to detect the vcpu preemption in
+a guest, and there could be several ways we can detect whether the
+kernel is running in a guest. It's worthwhile to try find the best one
+for this. Besides, it's really better that you can make sure we are
+runing out of options before you introduce something like
+lppaca_dedicated_proc().
+
+I have a feeling that yield_count is non-zero only if we are running in
+a guest, if so, we can use this and save several loads. But surely we
+need the confirmation from ppc maintainers.
+
+Regards,
+Boqun
+
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXcgU0AAoJEEl56MO1B/q4voUH/0utHA4GYk3lIrSQ8PYSSzJd
+QZN8FExYQPtTo0pghf2CIPmwhrq/GSh30iLC6M22vS9mL3+Jx9tuenxuAiyHJPt8
++ZydEhQHyrX54ewMc2MF9elwZ0yqnrfznFrTOwwA9CoisRbj8yh1OZJnnR47GmnK
+qBMBpypSIg4JPAV8ZnXx+MDjAFrrUkcSTieVAhEDD1ZevHT9EOgItFSXceW6O7A0
+bHIqIoMOmXj5Lvo2PmupTIzSjN0vXEc8r6W9OLjNqwZd9v4wETgmoCkbZWREy3eN
+HgTbbhoUoA9kziPtKagziq0+XpvLwKgPEV/8rpuNbETwCUJ4NzJt84tsZrkhwFg=
+=Rahy
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--
