@@ -1,19 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rf39X629jzDqxK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 21:14:40 +1000 (AEST)
-Message-ID: <1467112469.20278.123.camel@kernel.crashing.org>
-Subject: Re: [PATCH 06/38] powerpc: Move 64-bit feature fixup earlier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 28 Jun 2016 21:14:29 +1000
-In-Reply-To: <87a8i560ak.fsf@skywalker.in.ibm.com>
-References: <1467026976-7974-1-git-send-email-benh@kernel.crashing.org>
- <1467026976-7974-7-git-send-email-benh@kernel.crashing.org>
- <87a8i560ak.fsf@skywalker.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rf3Jy5lkjzDqnY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2016 21:21:06 +1000 (AEST)
+Message-ID: <1467112865.16036.4.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/mm: update arch_{add,remove}_memory() for radix
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Dan Williams <dan.j.williams@intel.com>, Balbir Singh
+ <bsingharora@gmail.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>, David
+ Gibson <david@gibson.dropbear.id.au>, Vasant Hegde
+ <hegdevasant@linux.vnet.ibm.com>,  Scott Wood <scottwood@freescale.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Tue, 28 Jun 2016 21:21:05 +1000
+In-Reply-To: <20160623193739.GA19202@arbab-laptop.austin.ibm.com>
+References: <1466699962-22412-1-git-send-email-arbab@linux.vnet.ibm.com>
+ <87mvmbygdb.fsf@skywalker.in.ibm.com>
+ <20160623193739.GA19202@arbab-laptop.austin.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,29 +33,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-06-28 at 16:35 +0530, Aneesh Kumar K.V wrote:
-> Why not move it immediately after we finish all the device tress
-> scan.
-
-Do you need it in early_init_mmu ? The important thing is to have it
-done before we *turn on* the MMU but yeah, there's no big deal
-moving it even further up I think..
-
-> ie,
->         early_init_devtree(__va(dt_ptr));
+On Thu, 2016-06-23 at 14:37 -0500, Reza Arbab wrote:
+> On Thu, Jun 23, 2016 at 10:47:20PM +0530, Aneesh Kumar K.V wrote:
+> > Reza Arbab <arbab@linux.vnet.ibm.com> writes:
+> > > These functions are making direct calls to the hash table APIs,
+> > > leading to a BUG() on systems using radix.
+> > > 
+> > > Switch them to the vmemmap_{create,remove}_mapping() wrappers, and
+> > > move to the __meminit section.
+> > 
+> > They are really not the same. They can possibly end up using different
+> > base page size. Also vmemmap is available only with SPARSEMEM_VMEMMAP
+> > enabled. Does hotplug depend on sparsemem vmemmap ?
 > 
->         epapr_paravirt_early_init();
+> I'm not sure. Maybe it's best if I back up a step and explain what lead 
+> me to this patch. During hotplug, you get
 > 
->   +      apply_feature_fixups();
->         /* Now we know the logical id of our boot cpu, setup the
-> paca. */
->         setup_paca(&paca[boot_cpuid]);
->         fixup_boot_paca();
+> ...
+> 	arch_add_memory
+> 		create_section_mapping
+> 			htab_bolt_mapping
+> 				BUG_ON(!ppc_md.hpte_insert);
 > 
-> Also with a comment explaining why we can't move it further up ?
+> So it seemed to me that I needed a radix equivalent of 
+> create_section_mapping().
+> 
+> After some digging, I found hash__vmemmap_create_mapping() and 
+> radix__vmemmap_create_mapping() did what I needed. I did not notice the 
+> #ifdef SPARSEMEM_VMEMMAP around them.
 
-Yup, adding some comments about the why things are done in that order
-would be good, I'll improve that
+I think that's more by luck than design. The vmemmap routines use
+mmu_vmemmap_psize which is probably but not definitely the same as
+mmu_linear_psize.
 
-Cheers,
-Ben.
+> Could it be that the functions just need to be renamed 
+> hash__create_mapping()/radix__create_mapping() and moved out of #ifdef 
+> SPARSEMEM_VMEMMAP?
+
+No, you need to use mmu_linear_psize for the hotplug case.
+
+But you can probably factor out a common routine that both cases use, and hide
+the hash vs radix check in that.
+
+And probably send me a patch to make MEMORY_HOTPLUG depend on !RADIX for v4.7?
+
+cheers
