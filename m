@@ -1,15 +1,44 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rfgkX4yyhzDqvn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 21:41:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: cyrilbur@gmail.com
-Subject: [PATCH v2] selftests/powerpc: exec() with suspended transaction
-Date: Wed, 29 Jun 2016 21:41:51 +1000
-Message-Id: <1467200511-19033-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rfhVl1BnYzDqvp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 22:16:45 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5TCG7es063176
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 08:16:43 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23v09pj55g-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 08:16:42 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 29 Jun 2016 22:16:40 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id CC8913578053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 22:16:37 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5TCGbSb7471394
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 22:16:37 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5TCGbbS027624
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 22:16:37 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, mikey <mikey@neuling.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ Huy Nguyen <huyn@mellanox.com>
+Cc: Ian Munsie <imunsie@au1.ibm.com>
+Subject: [PATCH 1/2] cxl: Fix allowing bogus AFU descriptors with 0 maximum
+ processes
+Date: Wed, 29 Jun 2016 22:16:25 +1000
+Message-Id: <1467202586-13412-1-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,195 +48,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cyril Bur <cyrilbur@gmail.com>
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Perform an exec() class syscall with a suspended transaction.
+If the AFU descriptor of an AFU directed AFU indicates that it supports
+0 maximum processes, we will accept that value and attempt to use it.
+The SPA will still be allocated (with 2 pages due to another minor bug
+and room for 958 processes), and when a context is allocated we will
+pass the value of 0 to idr_alloc as the maximum. However, idr_alloc will
+treat that as meaning no maximum and will allocate a context number and
+we return a valid context.
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-[mpe: Fix build errors, use a single binary for the test]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Conceivably, this could lead to a buffer overflow of the SPA if more
+than 958 contexts were allocated, however this is mitigated by the fact
+that there are no known AFUs in the wild with a bogus AFU descriptor
+like this, and that only the root user is allowed to flash an AFU image
+to a card.
 
-Selftest updates
+Add a check when validating the AFU descriptor to reject any with 0
+maximum processes.
+
+We do still allow a dedicated process only AFU to indicate that it
+supports 0 contexts even though that is forbidden in the architecture,
+as in that case we ignore the value and use 1 instead. This is just on
+the off-chance that such a dedicated process AFU may exist (not that I
+am aware of any), since their developers are less likely to have cared
+about this value at all.
+
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- tools/testing/selftests/powerpc/tm/.gitignore   |  1 +
- tools/testing/selftests/powerpc/tm/Makefile     |  7 ++-
- tools/testing/selftests/powerpc/tm/tm-exec.c    | 70 +++++++++++++++++++++++++
- tools/testing/selftests/powerpc/tm/tm-syscall.c | 15 ------
- tools/testing/selftests/powerpc/tm/tm.h         | 23 +++++++-
- 5 files changed, 98 insertions(+), 18 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-exec.c
+ drivers/misc/cxl/pci.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
-index bb942db845bf..82c0a9ce6e74 100644
---- a/tools/testing/selftests/powerpc/tm/.gitignore
-+++ b/tools/testing/selftests/powerpc/tm/.gitignore
-@@ -6,3 +6,4 @@ tm-vmxcopy
- tm-fork
- tm-tar
- tm-tmspr
-+tm-exec
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index d0505dbd22d5..9d301d785d9e 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,11 +1,14 @@
--TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack tm-vmxcopy tm-fork tm-tar tm-tmspr
-+TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
-+	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 648817a..58d7d821 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -775,6 +775,21 @@ static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
+ 		}
+ 	}
  
- all: $(TEST_PROGS)
- 
- $(TEST_PROGS): ../harness.c ../utils.c
- 
-+CFLAGS += -mhtm
++	if ((afu->modes_supported & ~CXL_MODE_DEDICATED) && afu->max_procs_virtualised == 0) {
++		/*
++		 * We could also check this for the dedicated process model
++		 * since the architecture indicates it should be set to 1, but
++		 * in that case we ignore the value and I'd rather not risk
++		 * breaking any existing dedicated process AFUs that left it as
++		 * 0 (not that I'm aware of any). It is clearly an error for an
++		 * AFU directed AFU to set this to 0, and would have previously
++		 * triggered a bug resulting in the maximum not being enforced
++		 * at all since idr_alloc treats 0 as no maximum.
++		 */
++		dev_err(&afu->dev, "AFU does not support any processes\n");
++		return -EINVAL;
++	}
 +
- tm-syscall: tm-syscall-asm.S
--tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
-+tm-syscall: CFLAGS += -I../../../../../usr/include
- tm-tmspr: CFLAGS += -pthread
- 
- include ../../lib.mk
-diff --git a/tools/testing/selftests/powerpc/tm/tm-exec.c b/tools/testing/selftests/powerpc/tm/tm-exec.c
-new file mode 100644
-index 000000000000..3d27fa0ece04
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-exec.c
-@@ -0,0 +1,70 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ * Syscalls can be performed provided the transactions are suspended.
-+ * The exec() class of syscall is unique as a new process is loaded.
-+ *
-+ * It makes little sense for after an exec() call for the previously
-+ * suspended transaction to still exist.
-+ */
-+
-+#define _GNU_SOURCE
-+#include <errno.h>
-+#include <inttypes.h>
-+#include <libgen.h>
-+#include <pthread.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+#include "tm.h"
-+
-+static char *path;
-+
-+static int test_exec(void)
-+{
-+	SKIP_IF(!have_htm());
-+
-+	asm __volatile__(
-+		"tbegin.;"
-+		"blt    1f; "
-+		"tsuspend.;"
-+		"1: ;"
-+		: : : "memory");
-+
-+	execl(path, "tm-exec", "--child", NULL);
-+
-+	/* Shouldn't get here */
-+	perror("execl() failed");
-+	return 1;
-+}
-+
-+static int after_exec(void)
-+{
-+	asm __volatile__(
-+		"tbegin.;"
-+		"blt    1f;"
-+		"tsuspend.;"
-+		"1: ;"
-+		: : : "memory");
-+
-+	FAIL_IF(failure_is_nesting());
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	path = argv[0];
-+
-+	if (argc > 1 && strcmp(argv[1], "--child") == 0)
-+		return after_exec();
-+
-+	return test_harness(test_exec, "tm_exec");
-+}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c b/tools/testing/selftests/powerpc/tm/tm-syscall.c
-index 60560cb20e38..454b965a2db3 100644
---- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-syscall.c
-@@ -27,21 +27,6 @@ unsigned retries = 0;
- #define TEST_DURATION 10 /* seconds */
- #define TM_RETRIES 100
- 
--long failure_code(void)
--{
--	return __builtin_get_texasru() >> 24;
--}
--
--bool failure_is_persistent(void)
--{
--	return (failure_code() & TM_CAUSE_PERSISTENT) == TM_CAUSE_PERSISTENT;
--}
--
--bool failure_is_syscall(void)
--{
--	return (failure_code() & TM_CAUSE_SYSCALL) == TM_CAUSE_SYSCALL;
--}
--
- pid_t getppid_tm(bool suspend)
- {
- 	int i;
-diff --git a/tools/testing/selftests/powerpc/tm/tm.h b/tools/testing/selftests/powerpc/tm/tm.h
-index 24144b25772c..60318bad7d7a 100644
---- a/tools/testing/selftests/powerpc/tm/tm.h
-+++ b/tools/testing/selftests/powerpc/tm/tm.h
-@@ -6,8 +6,9 @@
- #ifndef _SELFTESTS_POWERPC_TM_TM_H
- #define _SELFTESTS_POWERPC_TM_TM_H
- 
--#include <stdbool.h>
-+#include <asm/tm.h>
- #include <asm/cputable.h>
-+#include <stdbool.h>
- 
- #include "../utils.h"
- 
-@@ -31,4 +32,24 @@ static inline bool have_htm_nosc(void)
- #endif
+ 	return 0;
  }
  
-+static inline long failure_code(void)
-+{
-+	return __builtin_get_texasru() >> 24;
-+}
-+
-+static inline bool failure_is_persistent(void)
-+{
-+	return (failure_code() & TM_CAUSE_PERSISTENT) == TM_CAUSE_PERSISTENT;
-+}
-+
-+static inline bool failure_is_syscall(void)
-+{
-+	return (failure_code() & TM_CAUSE_SYSCALL) == TM_CAUSE_SYSCALL;
-+}
-+
-+static inline bool failure_is_nesting(void)
-+{
-+	return (__builtin_get_texasru() & 0x400000);
-+}
-+
- #endif /* _SELFTESTS_POWERPC_TM_TM_H */
 -- 
-2.5.0
+2.8.1
