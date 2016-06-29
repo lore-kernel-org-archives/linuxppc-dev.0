@@ -1,39 +1,45 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rfqW12h0wzDqvY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 03:32:28 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id i123so5022987pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 10:32:28 -0700 (PDT)
-Date: Wed, 29 Jun 2016 10:32:23 -0700
-From: Brian Norris <computersforpeace@gmail.com>
-To: Raghav Dogra <raghav.dogra@nxp.com>
-Cc: Leo Li <pku.leo@gmail.com>,
- Boris Brezillon <boris.brezillon@free-electrons.com>,
- Yang-Leo Li <leoyang.li@nxp.com>,
- Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
- Scott Wood <oss@buserror.net>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Raghav Dogra <raghav@freescale.com>,
- Jaiprakash Singh <b44839@freescale.com>
-Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-Message-ID: <20160629173223.GA47625@google.com>
-References: <20160406175254.GC5243@localhost>
- <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
- <20160408024507.69fb4fc1@bbrezillon>
- <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
- <20160525223412.086e45e9@bbrezillon>
- <CADRPPNSeQsOZZ9XRR4BOfZvewoB9RoEy0KzPrRzoDm21LtacnQ@mail.gmail.com>
- <20160527224401.4b776ad4@bbrezillon>
- <20160527211247.GA123214@google.com>
- <CADRPPNR5NXuug7Nig=s8be0yEOB4RKg9zj53t00fdSffo5s72A@mail.gmail.com>
- <DB4PR04MB346C1FA9FCC3906B906E7C589230@DB4PR04MB346.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DB4PR04MB346C1FA9FCC3906B906E7C589230@DB4PR04MB346.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rfrRq33SRzDqxv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 04:14:47 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5TIBHNt046821
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 14:14:45 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23uwt7vgsk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 14:14:45 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Wed, 29 Jun 2016 15:14:42 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 302591DC006E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 14:14:31 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5TIEcjh12976446
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 15:14:38 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5TIEb6i014387
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 15:14:38 -0300
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, imunsie@au1.ibm.com, gwshan@linux.vnet.ibm.com
+Cc: linux-pci@vger.kernel.org, paulus@samba.org, mikey@neuling.org,
+ andrew.donnellan@au1.ibm.com, bhelgaas@google.com,
+ gpiccoli@linux.vnet.ibm.com, frederic.barrat@fr.ibm.com,
+ mrochs@linux.vnet.ibm.com
+Subject: [PATCH v7] powerpc/pci: Assign fixed PHB number based on device-tree
+ properties
+Date: Wed, 29 Jun 2016 15:14:22 -0300
+Message-Id: <1467224062-9173-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,67 +49,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The domain/PHB field of PCI addresses has its value obtained from a
+global variable, incremented each time a new domain (represented by
+struct pci_controller) is added on the system. The domain addition
+process happens during boot or due to PHB hotplug add.
 
-On Wed, Jun 29, 2016 at 02:53:03PM +0000, Raghav Dogra wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Leo Li [mailto:pku.leo@gmail.com]
-> > Sent: Saturday, May 28, 2016 3:34 AM
+As recent kernels are using predictable naming for network interfaces,
+the network stack is more tied to PCI naming. This can be a problem in
+hotplug scenarios, because PCI addresses will change if devices are
+removed and then re-added. This situation seems unusual, but it can
+happen if a user wants to replace a NIC without rebooting the machine,
+for example.
 
-1 month delay? So much for the rush...
+This patch changes the way PCI domain values are generated: now, we use
+device-tree properties to assign fixed PHB numbers to PCI addresses
+when available (meaning pSeries and PowerNV cases). We also use a bitmap
+to allow dynamic PHB numbering when device-tree properties are not
+used. This bitmap keeps track of used PHB numbers and if a PHB is
+released (by hotplug operations for example), it allows the reuse of
+this PHB number, avoiding PCI address to change in case of device remove
+and re-add soon after. No functional changes were introduced.
 
-> > To: Brian Norris <computersforpeace@gmail.com>; Raghav Dogra
-> > <raghav.dogra@nxp.com>
-> > Cc: Boris Brezillon <boris.brezillon@free-electrons.com>; Yang-Leo Li
-> > <leoyang.li@nxp.com>; Prabhakar Kushwaha
-> > <prabhakar.kushwaha@nxp.com>; Scott Wood <oss@buserror.net>; linux-
-> > mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
-> > Raghav Dogra <raghav@freescale.com>; Jaiprakash Singh
-> > <b44839@freescale.com>
-> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
-> > 
-> > On Fri, May 27, 2016 at 4:12 PM, Brian Norris
-> > <computersforpeace@gmail.com> wrote:
-> > > On Fri, May 27, 2016 at 10:44:01PM +0200, Boris Brezillon wrote:
-> > >> On Fri, 27 May 2016 15:15:00 -0500
-> > >> Leo Li <pku.leo@gmail.com> wrote:
-> > >> >
-> > >> > The pull request does have patch "mtd/ifc: Add support for IFC
-> > >> > controller version 2.0", but it doesn't have another patch
-> > >> > "driver/memory: Update dependency of IFC for
-> > >> > Layerscape"(https://patchwork.ozlabs.org/patch/557389/) needed to
-> > >> > make the driver selectable on new hardware.
-> > >
-[...]
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+v7:
+    * Removed the goto as per Michael's suggestion;
 
-> > >> BTW, in the patch description you say you're only modifying a Kconfig
-> > >> dependency, but you're actually doing more than that: you're removing
-> > >> an asm header inclusion and manually include several other headers
-> > >> (which I guess were previously included by asm/prom.h).
-> > >
-> > > Please resend this patch with a more complete commit description; I'd
-> > > like it to get actual review (and time in linux-next) before it gets
-> > > merged, so at best, it'll wait a few -rc's. I also suspect the patch
-> > > isn't optimal. I believe Scott has suggested [1] that we didn't need
-> > > the FSL_SOC dependency on the LBC driver. I think IFC looks like a
-> > > similar case?
-> 
-> Hi Brian,
-> 
-> The patch being talked about does not add a FSL_SOC dependency on the IFC driver.
-> It uses a generic ARCH_LAYERSCAPE macro to enable IFC. This should be Ok? 
+    * Changed of_property_read_u32_array() to of_property_read_u32_index(),
+as per Gavin's suggestion. This way, we end up using buid_low as the index
+of PHB in pSeries, which is expected but was not being achieved in v6,
+as per my mistake.
 
-Maybe... but if we know that this driver doesn't actually have an
-FSL_SOC dependency, and the FSL maintainers don't really want it in the
-first place, then a simpler patch is to just remove the FSL_SOC
-dependency, rather than making the deps more complicated.
+    * Didn't remove machine check for pSeries on "reg" property lookup.
+It's worthy to keep it, since almost every platform (if not all of them)
+contain the "reg" property on PHB node in device-tree, but only in
+pSeries we're 100% sure it can be used as the PHB unique identifier.
+Since the patch has a dynamic PHB numbering mechanism, the other platforms
+won't have trouble with it.
 
-But anyway, if you resend with the comments addresses (e.g., better
-commit description), then we can consider applying it. If the FSL folks
-have nothing to contribute here, then I don't see why we wouldn't take
-your patch.
+ arch/powerpc/kernel/pci-common.c | 53 +++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 50 insertions(+), 3 deletions(-)
 
-Regards,
-Brian
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0f7a60f..c87545b 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -41,11 +41,18 @@
+ #include <asm/ppc-pci.h>
+ #include <asm/eeh.h>
+ 
++/* hose_spinlock protects accesses to the the phb_bitmap. */
+ static DEFINE_SPINLOCK(hose_spinlock);
+ LIST_HEAD(hose_list);
+ 
+-/* XXX kill that some day ... */
+-static int global_phb_number;		/* Global phb counter */
++/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
++#define MAX_PHBS 0x10000
++
++/*
++ * For dynamic PHB numbering: used/free PHBs tracking bitmap.
++ * Accesses to this bitmap should be protected by hose_spinlock.
++ */
++static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+ 
+ /* ISA Memory physical address */
+ resource_size_t isa_mem_base;
+@@ -64,6 +71,41 @@ struct dma_map_ops *get_pci_dma_ops(void)
+ }
+ EXPORT_SYMBOL(get_pci_dma_ops);
+ 
++/*
++ * This function should run under locking protection, specifically
++ * hose_spinlock.
++ */
++static int get_phb_number(struct device_node *dn)
++{
++	u64 prop;
++	int ret, phb_id = -1;
++
++	/*
++	 * Try fixed PHB numbering first, by checking archs and reading
++	 * the respective device-tree properties. Firstly, try PowerNV by
++	 * reading "ibm,opal-phbid", only present in OPAL environment.
++	 */
++	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
++	if (ret && machine_is(pseries))
++		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
++	if (!ret)
++		phb_id = (int)(prop & (MAX_PHBS - 1));
++
++	/* We need to be sure to not use the same PHB number twice. */
++	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
++		return phb_id;
++
++	/*
++	 * If not pSeries nor PowerNV, or if fixed PHB numbering tried to add
++	 * the same PHB number twice, then fallback to dynamic PHB numbering.
++	 */
++	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
++	BUG_ON(phb_id >= MAX_PHBS);
++	set_bit(phb_id, phb_bitmap);
++
++	return phb_id;
++}
++
+ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ {
+ 	struct pci_controller *phb;
+@@ -72,7 +114,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ 	if (phb == NULL)
+ 		return NULL;
+ 	spin_lock(&hose_spinlock);
+-	phb->global_number = global_phb_number++;
++	phb->global_number = get_phb_number(dev);
+ 	list_add_tail(&phb->list_node, &hose_list);
+ 	spin_unlock(&hose_spinlock);
+ 	phb->dn = dev;
+@@ -94,6 +136,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+ void pcibios_free_controller(struct pci_controller *phb)
+ {
+ 	spin_lock(&hose_spinlock);
++
++	/* Clear bit of phb_bitmap to allow reuse of this PHB number. */
++	if (phb->global_number < MAX_PHBS)
++		clear_bit(phb->global_number, phb_bitmap);
++
+ 	list_del(&phb->list_node);
+ 	spin_unlock(&hose_spinlock);
+ 
+-- 
+2.1.0
