@@ -1,47 +1,39 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rfqFM6YDNzDqww
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 03:20:39 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5THIogv060368
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 13:20:37 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23v097vugx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 13:20:37 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 29 Jun 2016 13:20:36 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id EF0BD6E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 13:20:12 -0400 (EDT)
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5THKXd68716650
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 17:20:33 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 29B9F12403D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 13:20:31 -0400 (EDT)
-Received: from [9.41.92.173] (unknown [9.41.92.173])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP id D49E6124037
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 13:20:30 -0400 (EDT)
-Subject: [PATCH v2 2/2] powerpc/pseries: Remove call to memblock_add()
-To: linuxppc-dev@lists.ozlabs.org
-References: <5774027B.6070708@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 29 Jun 2016 12:20:30 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rfqW12h0wzDqvY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 03:32:28 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id i123so5022987pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 10:32:28 -0700 (PDT)
+Date: Wed, 29 Jun 2016 10:32:23 -0700
+From: Brian Norris <computersforpeace@gmail.com>
+To: Raghav Dogra <raghav.dogra@nxp.com>
+Cc: Leo Li <pku.leo@gmail.com>,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ Yang-Leo Li <leoyang.li@nxp.com>,
+ Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>,
+ Scott Wood <oss@buserror.net>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Raghav Dogra <raghav@freescale.com>,
+ Jaiprakash Singh <b44839@freescale.com>
+Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+Message-ID: <20160629173223.GA47625@google.com>
+References: <20160406175254.GC5243@localhost>
+ <AM2PR04MB0770036256E58407BD045C5A8F9F0@AM2PR04MB0770.eurprd04.prod.outlook.com>
+ <20160408024507.69fb4fc1@bbrezillon>
+ <CADRPPNRXj_00GF-h_5yHtKPMU=U1C8PXQLZqEVzQvJZobmM7dg@mail.gmail.com>
+ <20160525223412.086e45e9@bbrezillon>
+ <CADRPPNSeQsOZZ9XRR4BOfZvewoB9RoEy0KzPrRzoDm21LtacnQ@mail.gmail.com>
+ <20160527224401.4b776ad4@bbrezillon>
+ <20160527211247.GA123214@google.com>
+ <CADRPPNR5NXuug7Nig=s8be0yEOB4RKg9zj53t00fdSffo5s72A@mail.gmail.com>
+ <DB4PR04MB346C1FA9FCC3906B906E7C589230@DB4PR04MB346.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <5774027B.6070708@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <5774035E.3080403@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DB4PR04MB346C1FA9FCC3906B906E7C589230@DB4PR04MB346.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,74 +43,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The call to memblock_add is not needed, this is already done by
-memory_add(). This patch removes this call which shrinks
-dlpar_add_lmb_memory() enough that it can be merged into dlpar_add_lmb().
+Hi,
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-memory.c |   37 ++++++-----------------
- 1 file changed, 10 insertions(+), 27 deletions(-)
+On Wed, Jun 29, 2016 at 02:53:03PM +0000, Raghav Dogra wrote:
+> 
+> 
+> > -----Original Message-----
+> > From: Leo Li [mailto:pku.leo@gmail.com]
+> > Sent: Saturday, May 28, 2016 3:34 AM
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 076cd7e..43c8691 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -533,36 +533,11 @@ static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
- 
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
--static int dlpar_add_lmb_memory(struct of_drconf_cell *lmb)
-+static int dlpar_add_lmb(struct of_drconf_cell *lmb)
- {
- 	unsigned long block_sz;
- 	int nid, rc;
- 
--	block_sz = memory_block_size_bytes();
--
--	/* Find the node id for this address */
--	nid = memory_add_physaddr_to_nid(lmb->base_addr);
--
--	/* Add the memory */
--	rc = add_memory(nid, lmb->base_addr, block_sz);
--	if (rc)
--		return rc;
--
--	/* Register this block of memory */
--	rc = memblock_add(lmb->base_addr, block_sz);
--	if (rc) {
--		remove_memory(nid, lmb->base_addr, block_sz);
--		return rc;
--	}
--
--	lmb->flags |= DRCONF_MEM_ASSIGNED;
--	return 0;
--}
--
--static int dlpar_add_lmb(struct of_drconf_cell *lmb)
--{
--	int rc;
--
- 	if (lmb->flags & DRCONF_MEM_ASSIGNED)
- 		return -EINVAL;
- 
-@@ -578,10 +553,18 @@ static int dlpar_add_lmb(struct of_drconf_cell *lmb)
- 		return rc;
- 	}
- 
--	rc = dlpar_add_lmb_memory(lmb);
-+	block_sz = memory_block_size_bytes();
-+
-+	/* Find the node id for this address */
-+	nid = memory_add_physaddr_to_nid(lmb->base_addr);
-+
-+	/* Add the memory */
-+	rc = add_memory(nid, lmb->base_addr, block_sz);
- 	if (rc) {
- 		dlpar_remove_device_tree_lmb(lmb);
- 		dlpar_release_drc(lmb->drc_index);
-+	} else {
-+		lmb->flags |= DRCONF_MEM_ASSIGNED;
- 	}
- 
- 	return rc;
+1 month delay? So much for the rush...
+
+> > To: Brian Norris <computersforpeace@gmail.com>; Raghav Dogra
+> > <raghav.dogra@nxp.com>
+> > Cc: Boris Brezillon <boris.brezillon@free-electrons.com>; Yang-Leo Li
+> > <leoyang.li@nxp.com>; Prabhakar Kushwaha
+> > <prabhakar.kushwaha@nxp.com>; Scott Wood <oss@buserror.net>; linux-
+> > mtd@lists.infradead.org; linuxppc-dev <linuxppc-dev@lists.ozlabs.org>;
+> > Raghav Dogra <raghav@freescale.com>; Jaiprakash Singh
+> > <b44839@freescale.com>
+> > Subject: Re: [PATCH][v3] mtd/ifc: Add support for IFC controller version 2.0
+> > 
+> > On Fri, May 27, 2016 at 4:12 PM, Brian Norris
+> > <computersforpeace@gmail.com> wrote:
+> > > On Fri, May 27, 2016 at 10:44:01PM +0200, Boris Brezillon wrote:
+> > >> On Fri, 27 May 2016 15:15:00 -0500
+> > >> Leo Li <pku.leo@gmail.com> wrote:
+> > >> >
+> > >> > The pull request does have patch "mtd/ifc: Add support for IFC
+> > >> > controller version 2.0", but it doesn't have another patch
+> > >> > "driver/memory: Update dependency of IFC for
+> > >> > Layerscape"(https://patchwork.ozlabs.org/patch/557389/) needed to
+> > >> > make the driver selectable on new hardware.
+> > >
+[...]
+
+> > >> BTW, in the patch description you say you're only modifying a Kconfig
+> > >> dependency, but you're actually doing more than that: you're removing
+> > >> an asm header inclusion and manually include several other headers
+> > >> (which I guess were previously included by asm/prom.h).
+> > >
+> > > Please resend this patch with a more complete commit description; I'd
+> > > like it to get actual review (and time in linux-next) before it gets
+> > > merged, so at best, it'll wait a few -rc's. I also suspect the patch
+> > > isn't optimal. I believe Scott has suggested [1] that we didn't need
+> > > the FSL_SOC dependency on the LBC driver. I think IFC looks like a
+> > > similar case?
+> 
+> Hi Brian,
+> 
+> The patch being talked about does not add a FSL_SOC dependency on the IFC driver.
+> It uses a generic ARCH_LAYERSCAPE macro to enable IFC. This should be Ok? 
+
+Maybe... but if we know that this driver doesn't actually have an
+FSL_SOC dependency, and the FSL maintainers don't really want it in the
+first place, then a simpler patch is to just remove the FSL_SOC
+dependency, rather than making the deps more complicated.
+
+But anyway, if you resend with the comments addresses (e.g., better
+commit description), then we can consider applying it. If the FSL folks
+have nothing to contribute here, then I don't see why we wouldn't take
+your patch.
+
+Regards,
+Brian
