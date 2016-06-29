@@ -1,28 +1,43 @@
-Return-Path: <yuantian.tang@nxp.com>
-Received: from emea01-db3-obe.outbound.protection.outlook.com
- (mail-db3on0089.outbound.protection.outlook.com [157.55.234.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rfYyN5p3YzDqpZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 17:21:48 +1000 (AEST)
-From: Yuantian Tang <yuantian.tang@nxp.com>
-To: Scott Wood <oss@buserror.net>, Russell King <linux@armlinux.org.uk>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J.
- Wysocki" <rjw@rjwysocki.net>
-CC: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li
- <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
- parent clocks
-Date: Wed, 29 Jun 2016 05:50:26 +0000
-Message-ID: <DBXPR04MB49546917495DA33834B05D7F0230@DBXPR04MB495.eurprd04.prod.outlook.com>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
-In-Reply-To: <1466058085-19353-1-git-send-email-oss@buserror.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rfg8v3XjkzDqv8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 21:16:14 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5TBEB0v059092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 07:16:11 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23utc8ybs7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 07:16:11 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Wed, 29 Jun 2016 21:16:08 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BF95A2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 21:16:05 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5TBG58i11665784
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 21:16:05 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5TBG4La030026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 21:16:05 +1000
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, acme@kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: anton@ozlabs.org, mpe@ellerman.id.au, ananth@in.ibm.com, dja@axtens.net,
+ naveen.n.rao@linux.vnet.ibm.com, ravi.bangoria@linux.vnet.ibm.com,
+ David.Laight@ACULAB.COM
+Subject: [PATCH v2 0/4] perf annotate: Enable cross arch annotate
+Date: Wed, 29 Jun 2016 16:45:54 +0530
+Message-Id: <1467198958-9195-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,134 +47,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Perf can currently only support code navigation (branches and calls) in
+annotate when run on the same architecture where perf.data was recorded.
+But cross arch annotate is not supported.
 
-This patch is acked by clock maintainer. If no comments from anyone else, w=
-e will merge it in next week.
+This patchset enables cross arch annotate. Currently I've used x86
+and arm instructions which are already available and adding support
+for powerpc as well. Adding support for other arch will be easy.
 
-Thanks,
-Yuantian
+I've created this patch on top of acme/perf/core. And tested it with
+x86 and powerpc only.
 
-> -----Original Message-----
-> From: Scott Wood [mailto:oss@buserror.net]
-> Sent: Thursday, June 16, 2016 2:21 PM
-> To: Russell King <linux@armlinux.org.uk>; Michael Turquette
-> <mturquette@baylibre.com>; Stephen Boyd <sboyd@codeaurora.org>;
-> Viresh Kumar <viresh.kumar@linaro.org>; Rafael J. Wysocki
-> <rjw@rjwysocki.net>
-> Cc: linux-clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; Yuantian Tang <yuantian.tang@nxp.com>; Yang-Leo Li
-> <leoyang.li@nxp.com>; Xiaofeng Ren <xiaofeng.ren@nxp.com>; Scott Wood
-> <scottwood@freescale.com>
-> Subject: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
-> parent clocks
->=20
-> From: Scott Wood <scottwood@freescale.com>
->=20
-> Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
-> __clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
-> true provider API versions that operate on struct clk_hw.
->=20
-> qoriq-cpufreq needs these functions in order to determine the options it =
-has
-> for calling clk_set_parent() and thus populate the cpufreq table, so revi=
-ve
-> them as legitimate consumer APIs.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> v2: Add missing 'static inline' to stub functions.
->=20
-> v3: no changes
->=20
->  drivers/clk/clk.c   | 19 +++++++++++++++++++
->  include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
->  2 files changed, 50 insertions(+)
->=20
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c index d584004..d61a3fe=
- 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)  }
-> EXPORT_SYMBOL_GPL(__clk_get_hw);
->=20
-> +unsigned int clk_get_num_parents(struct clk *clk) {
-> +	return !clk ? 0 : clk->core->num_parents; }
-> +EXPORT_SYMBOL_GPL(clk_get_num_parents);
-> +
->  unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)  {
->  	return hw->core->num_parents;
-> @@ -358,6 +364,19 @@ static struct clk_core
-> *clk_core_get_parent_by_index(struct clk_core *core,
->  	return core->parents[index];
->  }
->=20
-> +struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int
-> +index) {
-> +	struct clk_core *parent;
-> +
-> +	if (!clk)
-> +		return NULL;
-> +
-> +	parent =3D clk_core_get_parent_by_index(clk->core, index);
-> +
-> +	return !parent ? NULL : parent->hw->clk; }
-> +EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
-> +
->  struct clk_hw *
->  clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
-> { diff --git a/include/linux/clk.h b/include/linux/clk.h index 0df4a51..a=
-cd115f
-> 100644
-> --- a/include/linux/clk.h
-> +++ b/include/linux/clk.h
-> @@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk *pare=
-nt);
-> struct clk *clk_get_parent(struct clk *clk);
->=20
->  /**
-> + * clk_get_parent_by_index - get a possible parent clock by index
-> + * @clk: clock source
-> + * @index: index into the array of possible parents of this clock
-> + *
-> + * Returns struct clk corresponding to the requested possible
-> + * parent clock source, or NULL.
-> + */
-> +struct clk *clk_get_parent_by_index(struct clk *clk,
-> +				    unsigned int index);
-> +
-> +/**
-> + * clk_get_num_parents - get number of possible parents
-> + * @clk: clock source
-> + *
-> + * Returns the number of possible parents of this clock,
-> + * which can then be enumerated using clk_get_parent_by_index().
-> + */
-> +unsigned int clk_get_num_parents(struct clk *clk);
-> +
-> +/**
->   * clk_get_sys - get a clock based upon the device name
->   * @dev_id: device name
->   * @con_id: connection ID
-> @@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk =
-*clk)
->  	return NULL;
->  }
->=20
-> +static inline struct clk *clk_get_parent_by_index(struct clk *clk,
-> +						  unsigned int index)
-> +{
-> +	return NULL;
-> +}
-> +
-> +static inline unsigned int clk_get_num_parents(struct clk *clk) {
-> +	return 0;
-> +}
-> +
->  #endif
->=20
->  /* clk_prepare_enable helps cases using clk_enable in non-atomic context=
-.
-> */
-> --
-> 2.5.0
+Example:
+
+  Record on powerpc:
+  $ ./perf record -a
+
+  Report -> Annotate on x86:
+  $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
+
+Changes in v2:
+  - Corrected few memory leaks.
+  - Created Dynamic list for powerpc to optimize memory consumption
+
+Naveen N. Rao (1):
+  perf annotate: add powerpc support
+
+Ravi Bangoria (3):
+  perf: Utility function to fetch arch
+  perf annotate: Enable cross arch annotate
+  perf: Define macro for arch names
+
+ tools/perf/arch/common.c           |  36 +++---
+ tools/perf/arch/common.h           |  11 ++
+ tools/perf/builtin-top.c           |   2 +-
+ tools/perf/ui/browsers/annotate.c  |   3 +-
+ tools/perf/ui/gtk/annotate.c       |   2 +-
+ tools/perf/util/annotate.c         | 255 ++++++++++++++++++++++++++++++-------
+ tools/perf/util/annotate.h         |   5 +-
+ tools/perf/util/evsel.c            |   7 +
+ tools/perf/util/evsel.h            |   2 +
+ tools/perf/util/unwind-libunwind.c |   4 +-
+ 10 files changed, 255 insertions(+), 72 deletions(-)
+
+--
+2.5.5
