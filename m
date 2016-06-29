@@ -1,41 +1,47 @@
-Return-Path: <simonguo@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rfbKG51PYzDqvm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 18:23:14 +1000 (AEST)
+Return-Path: <shreyas@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rfbKG1D56z9t0j
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2016 18:23:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rfc7V6qdXzDqvn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 18:59:48 +1000 (AEST)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5T8F42B096482
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2016 04:23:11 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23uwt78ku4-1
+ u5T8xYVN058039
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 04:59:45 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23uwt79t38-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2016 04:23:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 04:59:45 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <simonguo@linux.vnet.ibm.com>;
- Wed, 29 Jun 2016 04:23:10 -0400
-Date: Tue, 28 Jun 2016 11:53:13 +0800
-From: Simon Guo <simonguo@linux.vnet.ibm.com>
-To: Cyril Bur <cyrilbur@gmail.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@ozlabs.org, mikey@neuling.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to
- store live registers
-References: <20160608040036.13064-1-cyrilbur@gmail.com>
- <20160608040036.13064-4-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Wed, 29 Jun 2016 18:59:43 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B9F162BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 18:59:40 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5T8xesX6750510
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 18:59:40 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5T8xdIX024241
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 18:59:40 +1000
+Date: Wed, 29 Jun 2016 14:29:36 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160608040036.13064-4-cyrilbur@gmail.com>
-Message-Id: <20160628035313.GB15160@simonLocalRHEL7.x64>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net
+CC: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
+ mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM,
+ arnd@arndb.de, Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v3] cpuidle: Fix last_residency division
+References: <1467183971-12327-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <57737AA1.7050201@linaro.org>
+In-Reply-To: <57737AA1.7050201@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <57738DF8.3000909@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +51,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi Cyril,
 
-On Wed, Jun 08, 2016 at 02:00:34PM +1000, Cyril Bur wrote:
-> @@ -1108,11 +1084,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
->  	 */
->  	save_sprs(&prev->thread);
->  
-> -	__switch_to_tm(prev);
-> -
->  	/* Save FPU, Altivec, VSX and SPE state */
->  	giveup_all(prev);
->  
-> +	__switch_to_tm(prev);
-> +
+>>
+>> +/*
+>> + * Used for calculating last_residency in usec. Optimized for case
+>> + * where last_residency in nsecs is < INT_MAX/2 by using faster
+>> + * approximation. Approximated value has less than 1% error.
+>> + */
+>> +static inline int convert_nsec_to_usec(u64 nsec)
+>> +{
+>> +    if (likely(nsec < INT_MAX / 2)) {
+> 
+> UINT_MAX ?
 
-There should be a bug.
-giveup_all() will clear MSR[FP] bit. 
-__switch_to_tm() reads that bit to decide whether the FP 
-register needs to be flushed to thread_struct.
-=== tm_reclaim() (invoked by __switch_to_tm)========================
-        andi.   r0, r4, MSR_FP
-        beq     dont_backup_fp
+I don't think I can use UINT_MAX here since usec += usec >> 5 can
+overflow. Also using INT_MAX / 2 instead of INT_MAX since potentially
+usec += usec >> 5 can be negative and usec >> 10 will retain the sign bit.
 
-        addi    r7, r3, THREAD_CKFPSTATE
-        SAVE_32FPRS_VSRS(0, R6, R7)     /* r6 scratch, r7 transact fp
-state */
-
-        mffs    fr0
-        stfd    fr0,FPSTATE_FPSCR(r7)
-
-dont_backup_fp:
-=============================
-
-But now the __switch_to_tm() is moved behind giveup_all().
-So __switch_to_tm() loses MSR[FP] and cannot decide whether saving ckpt FPU or not.
-
-The same applies to VMX/VSX.
+> 
+>> +        int usec = (int)nsec;
+>> +
+>> +        usec += usec >> 5;
+>> +        usec = usec >> 10;
+>> +        return usec;
+>> +    } else {
+>> +        u64 usec = div_u64(nsec, 1000);
+>> +
+>> +        if (usec > INT_MAX)
+>> +            usec = INT_MAX;
+>> +        return (int)usec;
+>> +    }
+>> +}
+> 
 
 Thanks,
-- Simon
+Shreyas
