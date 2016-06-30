@@ -1,47 +1,31 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rfyxg19YwzDqlg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 09:07:32 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5TMwtt9143413
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 19:07:29 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23uuhuafex-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 19:07:29 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 30 Jun 2016 09:07:26 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1F2A02CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 09:07:25 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5TN7PkW3277100
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 09:07:25 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5TN7OkS014203
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 09:07:24 +1000
-Subject: Re: [PATCH 2/2] cxl: Fix allocating a minimum of 2 pages for the SPA
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-References: <1467202586-13412-1-git-send-email-imunsie@au.ibm.com>
- <1467202586-13412-2-git-send-email-imunsie@au.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 30 Jun 2016 09:07:23 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rg2806760zDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:31:44 +1000 (AEST)
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rg28022KPz9sD5
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Jun 2016 11:31:43 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id av7so5754298pac.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jun 2016 18:31:43 -0700 (PDT)
+Date: Thu, 30 Jun 2016 11:31:33 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Simon Guo <simonguo@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@ozlabs.org, mikey@neuling.org, Anshuman
+ Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to
+ store live registers
+Message-ID: <20160630113133.09444a5c@camb691>
+In-Reply-To: <20160628035313.GB15160@simonLocalRHEL7.x64>
+References: <20160608040036.13064-1-cyrilbur@gmail.com>
+ <20160608040036.13064-4-cyrilbur@gmail.com>
+ <20160628035313.GB15160@simonLocalRHEL7.x64>
 MIME-Version: 1.0
-In-Reply-To: <1467202586-13412-2-git-send-email-imunsie@au.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <efa17cbb-f889-e705-7944-f716039ba41c@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,28 +35,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/06/16 22:16, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> The Scheduled Process Area is allocated dynamically with enough pages to
-> fit at least as many processes as the AFU descriptor indicated. Since
-> the calculation is non-trivial, it does this by calculating how many
-> processes could fit in an allocation of a given order, and increasing
-> that order until it can fit enough processes or hits the maximum
-> supported size.
->
-> Currently, it will start this search using a SPA of 2 pages instead of
-> 1. This can waste a page of memory if the AFU's maximum number of
-> supported processes was small enough to fit in one page.
->
-> Fix the algorithm to start the search at 1 page.
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+On Tue, 28 Jun 2016 11:53:13 +0800
+Simon Guo <simonguo@linux.vnet.ibm.com> wrote:
 
-Makes sense.
+> hi Cyril,
+> 
+> On Wed, Jun 08, 2016 at 02:00:34PM +1000, Cyril Bur wrote:
+> > @@ -1108,11 +1084,11 @@ struct task_struct *__switch_to(struct task_struct *prev,
+> >  	 */
+> >  	save_sprs(&prev->thread);
+> >  
+> > -	__switch_to_tm(prev);
+> > -
+> >  	/* Save FPU, Altivec, VSX and SPE state */
+> >  	giveup_all(prev);
+> >  
+> > +	__switch_to_tm(prev);
+> > +  
+> 
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Hi Simon,
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+> There should be a bug.
+> giveup_all() will clear MSR[FP] bit. 
+> __switch_to_tm() reads that bit to decide whether the FP 
+> register needs to be flushed to thread_struct.
+> === tm_reclaim() (invoked by __switch_to_tm)========================
+>         andi.   r0, r4, MSR_FP
+>         beq     dont_backup_fp
+> 
+>         addi    r7, r3, THREAD_CKFPSTATE
+>         SAVE_32FPRS_VSRS(0, R6, R7)     /* r6 scratch, r7 transact fp
+> state */
+> 
+>         mffs    fr0
+>         stfd    fr0,FPSTATE_FPSCR(r7)
+> 
+> dont_backup_fp:
+> =============================
+> 
+> But now the __switch_to_tm() is moved behind giveup_all().
+> So __switch_to_tm() loses MSR[FP] and cannot decide whether saving ckpt FPU or not.
+> 
+
+Good catch! Yes it looks that way indeed. I thought I had a test to catch this
+because this is the big risk here but upon reflection it looks like I don't
+(mostly because it seems a condition to catch that is hard to craft).
+
+I'll add a test and a fix.
+
+Thanks.
+
+Cyril
+
+> The same applies to VMX/VSX.
+
+Yeah.
+
+> 
+> Thanks,
+> - Simon
+> 
