@@ -1,21 +1,31 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0088.outbound.protection.outlook.com [65.55.169.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rg4XH2NNdzDrSg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 13:19:27 +1000 (AEST)
-From: Jia Hongtao <hongtao.jia@nxp.com>
-To: <edubezval@gmail.com>, <rui.zhang@intel.com>, <robh+dt@kernel.org>,
- <galak@codeaurora.org>, <scott.wood@nxp.com>, <shawnguo@kernel.org>
-CC: <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>, <hongtao.jia@nxp.com>
-Subject: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
-Date: Thu, 30 Jun 2016 11:08:38 +0800
-Message-ID: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rg4j61d05zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 13:27:05 +1000 (AEST)
+Date: Thu, 30 Jun 2016 11:26:28 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Fam Zheng <famz@redhat.com>
+Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
+ "Ed L. Cashin" <ed.cashin@acm.org>, Jiri Kosina <jikos@kernel.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Shaohua Li <shli@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Keith Busch <keith.busch@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-block@vger.kernel.org, virtualization@lists.linux-foundation.org,
+ linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+ Christoph Hellwig <hch@infradead.org>, famz@redhat.com
+Subject: Re: [PATCH v2 02/12] genhd: Honor gen_uevent and add disk_gen_uevents
+Message-ID: <201606301124.3nwuTwiP%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/mixed; boundary="4Ckj6UjgE2iN1+kY"
+In-Reply-To: <20160630015953.6888-3-famz@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,390 +35,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver add thermal management support by enabling TMU (Thermal
-Monitoring Unit) on QorIQ platform.
 
-It's based on thermal of framework:
-- Trip points defined in device tree.
-- Cpufreq as cooling device registered in qoriq cpufreq driver.
+--4Ckj6UjgE2iN1+kY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+Hi,
+
+[auto build test WARNING on block/for-next]
+[also build test WARNING on v4.7-rc5]
+[cannot apply to next-20160629]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Fam-Zheng/gendisk-Generate-uevent-after-attribute-available/20160630-100720
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/axboe/linux-block.git for-next
+reproduce: make htmldocs
+
+All warnings (new ones prefixed by >>):
+
+   lib/crc32.c:148: warning: No description found for parameter 'tab)[256]'
+   lib/crc32.c:148: warning: Excess function parameter 'tab' description in 'crc32_le_generic'
+   lib/crc32.c:293: warning: No description found for parameter 'tab)[256]'
+   lib/crc32.c:293: warning: Excess function parameter 'tab' description in 'crc32_be_generic'
+   lib/crc32.c:1: warning: no structured comments found
+   mm/memory.c:2881: warning: No description found for parameter 'old'
+>> block/genhd.c:575: warning: No description found for parameter 'disk'
+>> block/genhd.c:575: warning: No description found for parameter 'disk'
+
+vim +/disk +575 block/genhd.c
+
+   559		blkdev_put(bdev, FMODE_READ);
+   560	
+   561	exit:
+   562		/* announce disk after possible partitions are created */
+   563		dev_set_uevent_suppress(ddev, 0);
+   564		if (gen_uevent)
+   565			disk_gen_uevents(disk);
+   566	}
+   567	
+   568	/**
+   569	 * disk_gen_uevents
+   570	 * @disk - the disk to generate uevent
+   571	 *
+   572	 * Generate KOBJ_ADD uevents on the disk and partitions.
+   573	 */
+   574	void disk_gen_uevents(struct gendisk *disk)
+ > 575	{
+   576		struct device *ddev = disk_to_dev(disk);
+   577		struct disk_part_iter piter;
+   578		struct hd_struct *part;
+   579	
+   580		kobject_uevent(&ddev->kobj, KOBJ_ADD);
+   581	
+   582		/* announce possible partitions */
+   583		disk_part_iter_init(&piter, disk, 0);
+
 ---
-Changes of V2:
-* Add HAS_IOMEM dependency to fix build error on UM
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
- drivers/thermal/Kconfig         |  10 ++
- drivers/thermal/Makefile        |   1 +
- drivers/thermal/qoriq_thermal.c | 328 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 339 insertions(+)
- create mode 100644 drivers/thermal/qoriq_thermal.c
+--4Ckj6UjgE2iN1+kY
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 2d702ca..56ef30d 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -195,6 +195,16 @@ config IMX_THERMAL
- 	  cpufreq is used as the cooling device to throttle CPUs when the
- 	  passive trip is crossed.
+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
 
-+config QORIQ_THERMAL
-+	tristate "QorIQ Thermal Monitoring Unit"
-+	depends on THERMAL_OF
-+	depends on HAS_IOMEM
-+	help
-+	  Support for Thermal Monitoring Unit (TMU) found on QorIQ platforms.
-+	  It supports one critical trip point and one passive trip point. The
-+	  cpufreq is used as the cooling device to throttle CPUs when the
-+	  passive trip is crossed.
-+
- config SPEAR_THERMAL
- 	tristate "SPEAr thermal sensor driver"
- 	depends on PLAT_SPEAR || COMPILE_TEST
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 10b07c1..6662232 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
- obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
-+obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
- obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-new file mode 100644
-index 0000000..644ba52
---- /dev/null
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -0,0 +1,328 @@
-+/*
-+ * Copyright 2016 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/thermal.h>
-+
-+#include "thermal_core.h"
-+
-+#define SITES_MAX	16
-+
-+/*
-+ * QorIQ TMU Registers
-+ */
-+struct qoriq_tmu_site_regs {
-+	u32 tritsr;		/* Immediate Temperature Site Register */
-+	u32 tratsr;		/* Average Temperature Site Register */
-+	u8 res0[0x8];
-+};
-+
-+struct qoriq_tmu_regs {
-+	u32 tmr;		/* Mode Register */
-+#define TMR_DISABLE	0x0
-+#define TMR_ME		0x80000000
-+#define TMR_ALPF	0x0c000000
-+	u32 tsr;		/* Status Register */
-+	u32 tmtmir;		/* Temperature measurement interval Register */
-+#define TMTMIR_DEFAULT	0x0000000f
-+	u8 res0[0x14];
-+	u32 tier;		/* Interrupt Enable Register */
-+#define TIER_DISABLE	0x0
-+	u32 tidr;		/* Interrupt Detect Register */
-+	u32 tiscr;		/* Interrupt Site Capture Register */
-+	u32 ticscr;		/* Interrupt Critical Site Capture Register */
-+	u8 res1[0x10];
-+	u32 tmhtcrh;		/* High Temperature Capture Register */
-+	u32 tmhtcrl;		/* Low Temperature Capture Register */
-+	u8 res2[0x8];
-+	u32 tmhtitr;		/* High Temperature Immediate Threshold */
-+	u32 tmhtatr;		/* High Temperature Average Threshold */
-+	u32 tmhtactr;	/* High Temperature Average Crit Threshold */
-+	u8 res3[0x24];
-+	u32 ttcfgr;		/* Temperature Configuration Register */
-+	u32 tscfgr;		/* Sensor Configuration Register */
-+	u8 res4[0x78];
-+	struct qoriq_tmu_site_regs site[SITES_MAX];
-+	u8 res5[0x9f8];
-+	u32 ipbrr0;		/* IP Block Revision Register 0 */
-+	u32 ipbrr1;		/* IP Block Revision Register 1 */
-+	u8 res6[0x310];
-+	u32 ttr0cr;		/* Temperature Range 0 Control Register */
-+	u32 ttr1cr;		/* Temperature Range 1 Control Register */
-+	u32 ttr2cr;		/* Temperature Range 2 Control Register */
-+	u32 ttr3cr;		/* Temperature Range 3 Control Register */
-+};
-+
-+/*
-+ * Thermal zone data
-+ */
-+struct qoriq_tmu_data {
-+	struct thermal_zone_device *tz;
-+	struct qoriq_tmu_regs __iomem *regs;
-+	int sensor_id;
-+	bool little_endian;
-+};
-+
-+static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
-+{
-+	if (p->little_endian)
-+		iowrite32(val, addr);
-+	else
-+		iowrite32be(val, addr);
-+}
-+
-+static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
-+{
-+	if (p->little_endian)
-+		return ioread32(addr);
-+	else
-+		return ioread32be(addr);
-+}
-+
-+static int tmu_get_temp(void *p, int *temp)
-+{
-+	u32 val;
-+	struct qoriq_tmu_data *data = p;
-+
-+	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
-+	*temp = (val & 0xff) * 1000;
-+
-+	return 0;
-+}
-+
-+static int qoriq_tmu_get_sensor_id(void)
-+{
-+	int ret, id;
-+	struct of_phandle_args sensor_specs;
-+	struct device_node *np, *sensor_np;
-+
-+	np = of_find_node_by_name(NULL, "thermal-zones");
-+	if (!np)
-+		return -ENODEV;
-+
-+	sensor_np = of_get_next_child(np, NULL);
-+	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
-+			"#thermal-sensor-cells",
-+			0, &sensor_specs);
-+	if (ret) {
-+		of_node_put(np);
-+		of_node_put(sensor_np);
-+		return ret;
-+	}
-+
-+	if (sensor_specs.args_count >= 1) {
-+		id = sensor_specs.args[0];
-+		WARN(sensor_specs.args_count > 1,
-+				"%s: too many cells in sensor specifier %d\n",
-+				sensor_specs.np->name, sensor_specs.args_count);
-+	} else {
-+		id = 0;
-+	}
-+
-+	of_node_put(np);
-+	of_node_put(sensor_np);
-+
-+	return id;
-+}
-+
-+static int qoriq_tmu_calibration(struct platform_device *pdev)
-+{
-+	int i, val, len;
-+	u32 range[4];
-+	const u32 *calibration;
-+	struct device_node *np = pdev->dev.of_node;
-+	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+
-+	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
-+		dev_err(&pdev->dev, "missing calibration range.\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Init temperature range registers */
-+	tmu_write(data, range[0], &data->regs->ttr0cr);
-+	tmu_write(data, range[1], &data->regs->ttr1cr);
-+	tmu_write(data, range[2], &data->regs->ttr2cr);
-+	tmu_write(data, range[3], &data->regs->ttr3cr);
-+
-+	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
-+	if (calibration == NULL || len % 8) {
-+		dev_err(&pdev->dev, "invalid calibration data.\n");
-+		return -ENODEV;
-+	}
-+
-+	for (i = 0; i < len; i += 8, calibration += 2) {
-+		val = of_read_number(calibration, 1);
-+		tmu_write(data, val, &data->regs->ttcfgr);
-+		val = of_read_number(calibration + 1, 1);
-+		tmu_write(data, val, &data->regs->tscfgr);
-+	}
-+
-+	return 0;
-+}
-+
-+static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
-+{
-+	/* Disable interrupt, using polling instead */
-+	tmu_write(data, TIER_DISABLE, &data->regs->tier);
-+
-+	/* Set update_interval */
-+	tmu_write(data, TMTMIR_DEFAULT, &data->regs->tmtmir);
-+
-+	/* Disable monitoring */
-+	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
-+}
-+
-+static struct thermal_zone_of_device_ops tmu_tz_ops = {
-+	.get_temp = tmu_get_temp,
-+};
-+
-+static int qoriq_tmu_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	const struct thermal_trip *trip;
-+	struct qoriq_tmu_data *data;
-+	struct device_node *np = pdev->dev.of_node;
-+	u32 site = 0;
-+
-+	if (!np) {
-+		dev_err(&pdev->dev, "Device OF-Node is NULL");
-+		return -ENODEV;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-+			    GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	data->little_endian = of_property_read_bool(np, "little-endian");
-+
-+	data->sensor_id = qoriq_tmu_get_sensor_id();
-+	if (data->sensor_id < 0) {
-+		dev_err(&pdev->dev, "Failed to get sensor id\n");
-+		ret = -ENODEV;
-+		goto err_iomap;
-+	}
-+
-+	data->regs = of_iomap(np, 0);
-+	if (!data->regs) {
-+		dev_err(&pdev->dev, "Failed to get memory region\n");
-+		ret = -ENODEV;
-+		goto err_iomap;
-+	}
-+
-+	qoriq_tmu_init_device(data);	/* TMU initialization */
-+
-+	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-+	if (ret < 0)
-+		goto err_tmu;
-+
-+	data->tz = thermal_zone_of_sensor_register(&pdev->dev, data->sensor_id,
-+				data, &tmu_tz_ops);
-+	if (IS_ERR(data->tz)) {
-+		ret = PTR_ERR(data->tz);
-+		dev_err(&pdev->dev,
-+			"Failed to register thermal zone device %d\n", ret);
-+		goto err_tmu;
-+	}
-+
-+	trip = of_thermal_get_trip_points(data->tz);
-+
-+	/* Enable monitoring */
-+	site |= 0x1 << (15 - data->sensor_id);
-+	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
-+
-+	return 0;
-+
-+err_tmu:
-+	iounmap(data->regs);
-+
-+err_iomap:
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return ret;
-+}
-+
-+static int qoriq_tmu_remove(struct platform_device *pdev)
-+{
-+	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
-+
-+	/* Disable monitoring */
-+	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
-+
-+	iounmap(data->regs);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int qoriq_tmu_suspend(struct device *dev)
-+{
-+	u32 tmr;
-+	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-+
-+	/* Disable monitoring */
-+	tmr = tmu_read(data, &data->regs->tmr);
-+	tmr &= ~TMR_ME;
-+	tmu_write(data, tmr, &data->regs->tmr);
-+
-+	return 0;
-+}
-+
-+static int qoriq_tmu_resume(struct device *dev)
-+{
-+	u32 tmr;
-+	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-+
-+	/* Enable monitoring */
-+	tmr = tmu_read(data, &data->regs->tmr);
-+	tmr |= TMR_ME;
-+	tmu_write(data, tmr, &data->regs->tmr);
-+
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-+			 qoriq_tmu_suspend, qoriq_tmu_resume);
-+
-+static const struct of_device_id qoriq_tmu_match[] = {
-+	{ .compatible = "fsl,qoriq-tmu", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
-+
-+static struct platform_driver qoriq_tmu = {
-+	.driver	= {
-+		.name		= "qoriq_thermal",
-+		.pm		= &qoriq_tmu_pm_ops,
-+		.of_match_table	= qoriq_tmu_match,
-+	},
-+	.probe	= qoriq_tmu_probe,
-+	.remove	= qoriq_tmu_remove,
-+};
-+module_platform_driver(qoriq_tmu);
-+
-+MODULE_AUTHOR("Jia Hongtao <hongtao.jia@nxp.com>");
-+MODULE_DESCRIPTION("QorIQ Thermal Monitoring Unit driver");
-+MODULE_LICENSE("GPL v2");
---
-2.1.0.27.g96db324
+--4Ckj6UjgE2iN1+kY--
