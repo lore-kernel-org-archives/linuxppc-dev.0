@@ -1,47 +1,50 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgGcS3ysSzDqnH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:44 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5UArX9n128537
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 06:53:42 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23uvafhk9h-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgGtC05BNzDqm9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 21:05:38 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u5UAwiDb112801
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:05:36 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23uuhuw1mc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 06:53:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:05:35 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 30 Jun 2016 20:53:39 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6C6093578053
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:28 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5UArSqw3539290
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:28 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5UArRs0007449
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:28 +1000
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
-Cc: bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH v3 7/7] PCI: Add a macro to set default alignment for all PCI
- devices
-Date: Thu, 30 Jun 2016 18:53:13 +0800
-In-Reply-To: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-References: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1467283993-3185-8-git-send-email-xyjxie@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 30 Jun 2016 12:05:33 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 21AFC1B08077
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:06:47 +0100 (BST)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5UB5V5858458190
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:05:31 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5UB5UL4012772
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:05:31 -0400
+Subject: Re: [PATCH 2/2] cxl: Workaround XSL bug that does not clear the RA
+ bit after a reset
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>,
+ Huy Nguyen <huyn@mellanox.com>
+References: <1467226286-28547-1-git-send-email-imunsie@au.ibm.com>
+ <1467226286-28547-2-git-send-email-imunsie@au.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Thu, 30 Jun 2016 13:05:30 +0200
+MIME-Version: 1.0
+In-Reply-To: <1467226286-28547-2-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <5774FCFA.4030009@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,52 +54,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we can use something like "pci=resource_alignment=*:*:*.*:noresize"
-to enforce the alignment of all MMIO BARs to be at least PAGE_SIZE so
-that we can passthrough sub-page(size < PAGE_SIZE) BARs to guest in
-VFIO module.
 
-But sometimes we may want to enable this feature by default on
-some platforms such as PowerNV platform which would easily see those
-sub-page BARs because of its 64K page. To achieve that, we add a
-macro PCIBIOS_DEFAULT_ALIGNMENT to set default alignment for all
-PCI devices and define it on PowerNV platform.
 
-Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pci.h |    4 ++++
- drivers/pci/pci.c              |    4 ++++
- 2 files changed, 8 insertions(+)
+Le 29/06/2016 20:51, Ian Munsie a écrit :
+> From: Ian Munsie <imunsie@au1.ibm.com>
+>
+> An issue was noted in our debug logs where the XSL would leave the RA
+> bit asserted after an AFU reset operation, which would effectively
+> prevent further AFU reset operations from working.
+>
+> Workaround the issue by clearing the RA bit with an MMIO write if it is
+> still asserted after any AFU control operation.
+>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index a6f3ac0..b0d76b8 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -28,6 +28,10 @@
- #define PCIBIOS_MIN_IO		0x1000
- #define PCIBIOS_MIN_MEM		0x10000000
- 
-+#ifdef CONFIG_PPC_POWERNV
-+#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
-+#endif
-+
- struct pci_dev;
- 
- /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 2e15ac8..dde0cce 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4761,6 +4761,10 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
- 	char *p;
- 	bool invalid = false;
- 
-+#ifdef PCIBIOS_DEFAULT_ALIGNMENT
-+	align = PCIBIOS_DEFAULT_ALIGNMENT;
-+	*resize = false;
-+#endif
- 	spin_lock(&resource_alignment_lock);
- 	p = resource_alignment_param;
- 	if (pci_has_flag(PCI_PROBE_ONLY)) {
--- 
-1.7.9.5
+
+OK, should be safe and valid even on non-xsl hardware.
+
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+   Fred
