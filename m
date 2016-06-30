@@ -1,26 +1,32 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-io0-x241.google.com (mail-io0-x241.google.com
- [IPv6:2607:f8b0:4001:c06::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0113.outbound.protection.outlook.com [157.56.112.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rg9Pw6YrjzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:59:15 +1000 (AEST)
-Received: by mail-io0-x241.google.com with SMTP id s63so7287915ioi.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2016 23:59:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rg9tL2FCgzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 17:20:26 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Yuantian Tang <yuantian.tang@nxp.com>, "Rafael J. Wysocki"
+ <rjw@rjwysocki.net>
+CC: Scott Wood <oss@buserror.net>, Russell King <linux@armlinux.org.uk>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li
+ <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>, Scott Wood
+ <scottwood@freescale.com>
+Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
+ parent clocks
+Date: Thu, 30 Jun 2016 05:46:42 +0000
+Message-ID: <DB5PR0401MB1928B6A4F1049592292D348C91240@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <1466058085-19353-1-git-send-email-oss@buserror.net>
+ <2091721.Cm4CVR1ptK@vostro.rjw.lan>
+ <DBXPR04MB4958B5147DAA4F05BED4884F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
+ <2040199.AxgevOCPID@vostro.rjw.lan>
+ <DBXPR04MB4951CA4EFB4FB5A2BDE7542F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <4867f9385a2.1e1ca6c1@auth.smtp.1and1.co.uk>
-References: <4867f9385a2.1e1ca6c1@auth.smtp.1and1.co.uk>
-From: Olof Johansson <olof@lixom.net>
-Date: Wed, 29 Jun 2016 23:59:13 -0700
-Message-ID: <CAOesGMgvNY8YBeyT3uMfD5XyQbhv0ucFtC8EVHS7gwrTmTNzGw@mail.gmail.com>
-Subject: Re: [PATCH v2 RFC] pasemi: Fix boot failure on 4.7-rc1
-To: Darren Stevens <darren@stevens-zone.net>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Pat Wall <pjwall@mac.com>,
- Alex Perez <aperez@alexperez.com>, matthew@a-eon.com,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +36,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Wed, Jun 29, 2016 at 1:06 PM, Darren Stevens <darren@stevens-zone.net> wrote:
->
->     Commit:d6a9996e84ac4beb7713e9485f4563e100a9b03e (powerpc/mm:
->     vmalloc abstraction in preparation for radix) turned kernel memory
->     and IO addresses from #defined constants to variables initialised
->     at runtime.
->
->     On PA6T systems the setup_arch machine call initialises the onboard
->     PCI-e root-ports, and uses pci_io_base to do this, which is now before
->     its value has been set resulting in a panic right after 'booting
->     linux via __start()'
-
-I don't see the panic here on a Chitra, at least not on recent -next.
-
-What config are you building with when you see this?
-
-Please cc me on PA Semi related patches if you want my attention. I
-still have hardware, in fact I boot every -next release on it through
-automation.
-
-
-
--Olof
+On 06/29/2016 10:02 PM, Yuantian Tang wrote:=0A=
+>> -----Original Message-----=0A=
+>> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]=0A=
+>> Sent: Thursday, June 30, 2016 10:24 AM=0A=
+>> To: Yuantian Tang <yuantian.tang@nxp.com>=0A=
+>> Cc: Scott Wood <oss@buserror.net>; Russell King <linux@armlinux.org.uk>;=
+=0A=
+>> Michael Turquette <mturquette@baylibre.com>; Stephen Boyd=0A=
+>> <sboyd@codeaurora.org>; Viresh Kumar <viresh.kumar@linaro.org>; linux-=
+=0A=
+>> clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-=0A=
+>> dev@lists.ozlabs.org; Yang-Leo Li <leoyang.li@nxp.com>; Xiaofeng Ren=0A=
+>> <xiaofeng.ren@nxp.com>; Scott Wood <scottwood@freescale.com>=0A=
+>> Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possi=
+ble=0A=
+>> parent clocks=0A=
+>>=0A=
+>> On Thursday, June 30, 2016 01:47:09 AM Yuantian Tang wrote:=0A=
+>>>> -----Original Message-----=0A=
+>>>> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]=0A=
+>>>> Sent: Thursday, June 30, 2016 9:47 AM=0A=
+>>>> To: Yuantian Tang <yuantian.tang@nxp.com>=0A=
+>>>> Cc: Scott Wood <oss@buserror.net>; Russell King=0A=
+>>>> <linux@armlinux.org.uk>; Michael Turquette=0A=
+>>>> <mturquette@baylibre.com>; Stephen Boyd <sboyd@codeaurora.org>;=0A=
+>>>> Viresh Kumar <viresh.kumar@linaro.org>; linux- clk@vger.kernel.org;=0A=
+>>>> linux-pm@vger.kernel.org; linuxppc- dev@lists.ozlabs.org; Yang-Leo=0A=
+>>>> Li <leoyang.li@nxp.com>; Xiaofeng Ren <xiaofeng.ren@nxp.com>; Scott=0A=
+>>>> Wood <scottwood@freescale.com>=0A=
+>>>> Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering=0A=
+>>>> possible parent clocks=0A=
+>>>>=0A=
+>>>> On Wednesday, June 29, 2016 05:50:26 AM Yuantian Tang wrote:=0A=
+>>>>> Hi,=0A=
+>>>>>=0A=
+>>>>> This patch is acked by clock maintainer. If no comments from=0A=
+>>>>> anyone else,=0A=
+>>>> we will merge it in next week.=0A=
+>>>>=0A=
+>>>> There is a cpufreq commit depending on it.  Are you going to handle=0A=
+>>>> that one too?=0A=
+>>>>=0A=
+>>> That one has been acked by cpufreq maintainer. You can get this from=0A=
+>> patch comments.=0A=
+>>=0A=
+>> I know that it has been ACKed.=0A=
+>>=0A=
+>> My question is whether or not you are going to apply it along the [1/2].=
+=0A=
+>>=0A=
+>> If not, it will have to be deferred until the [1/2] is merged and then a=
+pplied=0A=
+>> which may not be desirable.=0A=
+>>=0A=
+> I hope we can apply both at same time. Seems Scott has a few concerns.=0A=
+> =0A=
+> What you think about this patch? Can you apply it?=0A=
+> If you have applied this patch, then I can push CPUfreq maintainer to app=
+ly another one which will be delayed.=0A=
+=0A=
+My only concern was getting an ack for this patch (1/2) -- did I miss it=0A=
+somewhere?=0A=
+=0A=
+-Scott=0A=
+=0A=
