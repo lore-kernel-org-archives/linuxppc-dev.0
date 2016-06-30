@@ -1,49 +1,43 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rg75r4rLszDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 15:15:12 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rg8QP4dF1zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:14:36 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5U5EJHK145485
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 01:15:09 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23uuhujqqx-1
+ u5U6ECM9010916
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 02:14:35 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23usub94q5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 01:15:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 02:14:34 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 30 Jun 2016 15:15:07 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 209862CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 15:15:04 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5U5F31S11993494
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 15:15:03 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5U5F3GM001405
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 15:15:03 +1000
-Subject: Re: [PATCH] cxl: Fix NULL pointer dereference on kernel contexts with
- no AFU interrupts
-To: Michael Ellerman <mpe@ellerman.id.au>, Ian Munsie <imunsie@au1.ibm.com>,
- mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-References: <1467226517-29098-1-git-send-email-imunsie@au.ibm.com>
- <ac33c4a3-544f-2917-1cd7-14c62f176522@au1.ibm.com>
- <1467262824.7296.3.camel@ellerman.id.au>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 30 Jun 2016 15:15:02 +1000
-MIME-Version: 1.0
-In-Reply-To: <1467262824.7296.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <e17203b8-0662-e110-f6f6-ab41617db45a@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Thu, 30 Jun 2016 16:14:31 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 528552CE8046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:14:29 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5U6ET9C11272648
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:14:29 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5U6ESsX022240
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:14:29 +1000
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, acme@kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: anton@ozlabs.org, mpe@ellerman.id.au, ananth@in.ibm.com, dja@axtens.net,
+ naveen.n.rao@linux.vnet.ibm.com, ravi.bangoria@linux.vnet.ibm.com,
+ David.Laight@ACULAB.COM
+Subject: [PATCH v3 0/4]  perf annotate: Enable cross arch annotate
+Date: Thu, 30 Jun 2016 11:44:18 +0530
+Message-Id: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,30 +47,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30/06/16 15:00, Michael Ellerman wrote:
-> On Thu, 2016-06-30 at 08:28 +1000, Andrew Donnellan wrote:
->> On 30/06/16 04:55, Ian Munsie wrote:
->>>
->>> From: Ian Munsie <imunsie@au1.ibm.com>
->>>
->>> If a kernel context is initialised and does not have any AFU interrupts
->>> allocated it will cause a NULL pointer dereference when the context is
->>> detached since the irq_names list will not have been initialised.
->>>
->>> Move the initialisation of the irq_names list into the cxl_context_init
->>> routine so that it will be valid for the entire lifetime of the context
->>> and will not cause a NULL pointer dereference.
->>>
->>> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
->
->> As it's nice having your machine not crash on every shutdown...
->
-> Fixes: ????
+Perf can currently only support code navigation (branches and calls) in
+annotate when run on the same architecture where perf.data was recorded.
+But cross arch annotate is not supported.
 
-Ian can correct me if I'm wrong, but I suspect this doesn't affect 
-cxlflash (the only current user of the cxl kernel API) - this issue was 
-hit while working on CAPI support for mlx5.
+This patchset enables cross arch annotate. Currently I've used x86
+and arm instructions which are already available and adding support
+for powerpc as well. Adding support for other arch will be easy.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+I've created this patch on top of acme/perf/core. And tested it with
+x86 and powerpc only.
+
+Example:
+
+  Record on powerpc:
+  $ ./perf record -a
+
+  Report -> Annotate on x86:
+  $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
+
+Changes in v3:
+  - Optimized patch that enables annotate on powerpc
+  - Corrected one memory leak
+
+v2 link: https://lkml.org/lkml/2016/6/29/278
+
+Naveen N. Rao (1):
+  perf annotate: add powerpc support
+
+Ravi Bangoria (4):
+  perf: Utility function to fetch arch
+  perf annotate: Enable cross arch annotate
+  perf: Define macro for normalized arch names
+
+ tools/perf/arch/common.c           |  36 ++---
+ tools/perf/arch/common.h           |  11 ++
+ tools/perf/builtin-top.c           |   2 +-
+ tools/perf/ui/browsers/annotate.c  |   3 +-
+ tools/perf/ui/gtk/annotate.c       |   2 +-
+ tools/perf/util/annotate.c         | 260 ++++++++++++++++++++++++++++++-------
+ tools/perf/util/annotate.h         |   5 +-
+ tools/perf/util/evsel.c            |   7 +
+ tools/perf/util/evsel.h            |   2 +
+ tools/perf/util/unwind-libunwind.c |   4 +-
+ 10 files changed, 260 insertions(+), 72 deletions(-)
+
+--
+2.5.5
