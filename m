@@ -1,47 +1,50 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgPBC1B4NzDrF8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 01:49:54 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgPBS6M8kzDrJC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 01:50:08 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5UFjCPd003001
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:49:51 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23uw5rjcmd-1
+ u5UFj8iw087731
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:50:06 -0400
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23vvccxkvu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:49:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:50:06 -0400
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 30 Jun 2016 12:49:49 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 808A01DC0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:49:39 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5UFnlNM33161554
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:49:47 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5UFnkFO024214
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:49:46 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v3 2/9] kexec_file: Generalize kexec_add_buffer.
-Date: Thu, 30 Jun 2016 12:49:44 -0300
-In-Reply-To: <20160630150700.GA3058@dhcp-128-65.nay.redhat.com>
-References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1994502.0E8c14rYFh@hactar>
- <20160630150700.GA3058@dhcp-128-65.nay.redhat.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Thu, 30 Jun 2016 16:50:04 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 56AFC1B08067
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:51:17 +0100 (BST)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5UFo1gH8388964
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 15:50:01 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5UFo1N4008058
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 09:50:01 -0600
+Subject: Re: [PATCH 1/2] cxl: Fix bug where AFU disable operation had no effect
+To: Ian Munsie <imunsie@au1.ibm.com>
+References: <1467226286-28547-1-git-send-email-imunsie@au.ibm.com>
+ <57752A8A.1020501@linux.vnet.ibm.com>
+ <1467298239-sup-4306@x230.ozlabs.ibm.com>
+Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Huy Nguyen <huyn@mellanox.com>,
+ Frederic Barrat <frederic.barrat@fr.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Thu, 30 Jun 2016 17:50:00 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1866019.1p7Z0CLUZh@hactar>
+In-Reply-To: <1467298239-sup-4306@x230.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <57753FA8.1080306@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,57 +54,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Donnerstag, 30 Juni 2016, 11:07:00 schrieb Dave Young:
-> On 06/29/16 at 06:18pm, Thiago Jung Bauermann wrote:
-> > Am Mittwoch, 29 Juni 2016, 15:47:51 schrieb Dave Young:
-> > > On 06/28/16 at 07:18pm, Thiago Jung Bauermann wrote:
-> > > > +/**
-> > > > + * struct kexec_buf - parameters for finding a place for a buffer
-> > > > in
-> > > > memory + * @image:   kexec image in which memory to search.
-> > > > + * @mem:     On return will have address of the buffer in memory.
-> > > > + * @memsz:   Size for the buffer in memory.
-> > > > + * @buf_align:       Minimum alignment needed.
-> > > > + * @buf_min: The buffer can't be placed below this address.
-> > > > + * @buf_max: The buffer can't be placed above this address.
-> > > > + * @top_down:        Allocate from top of memory.
-> > > > + */
-> > > > +struct kexec_buf {
-> > > > +     struct kimage *image;
-> > > > +     unsigned long mem;
-> > > > +     unsigned long memsz;
-> > > > +     unsigned long buf_align;
-> > > > +     unsigned long buf_min;
-> > > > +     unsigned long buf_max;
-> > > > +     bool top_down;
-> > > > +};
-> > > 
-> > > Rethink about the first patch, you dropped the user buffer in
-> > > kexec_buf
-> > > But later your passing IMA digests buffer patchset may need use it.
-> > > 
-> > > So keep it in kexec_buf should be better.
-> > 
-> > I'm not following. The IMA buffer patchset doesn't use
-> > kexec_locate_mem_hole nor struct kexec_buf.
-> 
-> It does not use kexec_locate_mem_hole, but the buffer being passed is
-> very similar to a kexec_buf struct, no?
 
-If what you're saying is that the arguments passed to 
-kexec_add_handover_buffer in the IMA buffer patchset are very similar to the 
-arguments passed to kexec_add_buffer then yes, it's true.
 
-> So you may refactor kexec_add_buffer and your new function to pass only
-> kimage and a kbuf, it will be better than passing all those arguments
-> separately.
+Le 30/06/2016 17:32, Ian Munsie a écrit :
+>> For dedicated mode, the CAIA recommends an explicit reset of the AFU
+>> >(section 2.1.1).
+> True, I had forgotten that procedure was added to the document before it
+> was made public - I'll update the comment and resend.
+>
 
-To be honest I think struct kexec_buf is an implementation detail inside 
-kexec_locate_mem_hole, made necessary because the callback functions it uses 
-need to access its arguments. Callers of kexec_locate_mem_hole, 
-kexec_add_handover_buffer and kexec_add_buffer shouldn't need to know it 
-exists.
+Actually, my point was that for dedicated mode, we shouldn't have the 
+"if" and always reset. It's only for dedicated mode, so it wouldn't 
+impact cx4 and we would stay CAIA-compliant. If one day, there's a xsl 
+with a dedicated mode AFU, they are expected to follow the spec.
 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+   Fred
