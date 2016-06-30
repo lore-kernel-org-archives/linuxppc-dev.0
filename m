@@ -1,32 +1,32 @@
 Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgMRh0yzJzDqp3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 00:31:27 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgMWV5gsRzDqq5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 00:34:46 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5UETNTe082548
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 10:31:25 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23utcaf5pp-1
+ u5UEYaHJ045804
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 10:34:44 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23usubskqj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 10:31:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 10:34:44 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 30 Jun 2016 08:31:19 -0600
+ Thu, 30 Jun 2016 10:34:33 -0400
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: rjw@rjwysocki.net
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au,
  bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de,
  nicolas.pitre@linaro.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle: Fix last_residency division
-Date: Thu, 30 Jun 2016 09:27:24 -0500
-Message-Id: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v4] cpuidle: Fix last_residency division
+Date: Thu, 30 Jun 2016 09:34:13 -0500
+Message-Id: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
