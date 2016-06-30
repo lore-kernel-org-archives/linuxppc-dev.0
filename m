@@ -1,19 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgJv93N62zDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:36:37 +1000 (AEST)
-In-Reply-To: <1466687034-15350-1-git-send-email-felix@linux.vnet.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgJvB4Sz8zDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:36:38 +1000 (AEST)
+In-Reply-To: <1467171519-19882-1-git-send-email-sjitindarsingh@gmail.com>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
  linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com,
- imunsie@au1.ibm.com, Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: Re: [v7,
- 1/2] cxl: Add mechanism for delivering AFU driver specific events
-Message-Id: <3rgJv92lNSz9syB@ozlabs.org>
-Date: Thu, 30 Jun 2016 22:36:37 +1000 (AEST)
+Cc: robh@kernel.org, arnd@arndb.de, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, paulus@samba.org, sjitindarsingh@gmail.com
+Subject: Re: [V5,
+ 1/3] devicetree/bindings: Add binding for operator panel on FSP
+ machines
+Message-Id: <3rgJvB3kh5z9t0G@ozlabs.org>
+Date: Thu, 30 Jun 2016 22:36:38 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-23-06 at 13:03:53 UTC, Philippe Bergheaud wrote:
-> This adds an afu_driver_ops structure with fetch_event() and
-> event_delivered() callbacks. An AFU driver such as cxlflash can fill
-> this out and associate it with a context to enable passing custom AFU
-> specific events to userspace.
-...
+On Wed, 2016-29-06 at 03:38:37 UTC, Suraj Jitindar Singh wrote:
+> Add a binding to Documentation/devicetree/bindings/powerpc/opal
+> (oppanel-opal.txt) for the operator panel which is present on IBM
+> Power Systems machines with FSPs.
 > 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Acked-by: Rob Herring <robh@kernel.org>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b810253bd9342f863a86ec7dff
+https://git.kernel.org/powerpc/c/1ae88fd54c3ac31f68f91e37f7
 
 cheers
