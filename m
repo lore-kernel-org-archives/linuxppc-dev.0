@@ -1,50 +1,43 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgGtC05BNzDqm9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 21:05:38 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgHmX3YljzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 21:45:48 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5UAwiDb112801
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:05:36 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23uuhuw1mc-1
+ u5UBiEER018194
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:45:45 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23v09qt4cg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:05:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:45:45 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Thu, 30 Jun 2016 12:05:33 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 21AFC1B08077
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:06:47 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5UB5V5858458190
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:05:31 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5UB5UL4012772
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:05:31 -0400
-Subject: Re: [PATCH 2/2] cxl: Workaround XSL bug that does not clear the RA
- bit after a reset
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <frederic.barrat@fr.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-References: <1467226286-28547-1-git-send-email-imunsie@au.ibm.com>
- <1467226286-28547-2-git-send-email-imunsie@au.ibm.com>
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Thu, 30 Jun 2016 13:05:30 +0200
-MIME-Version: 1.0
-In-Reply-To: <1467226286-28547-2-git-send-email-imunsie@au.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <5774FCFA.4030009@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Thu, 30 Jun 2016 12:45:43 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id CB2B817D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:47:00 +0100 (BST)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5UBjeBL18153738
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 11:45:40 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5UBjdtW014490
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 05:45:39 -0600
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, imunsie@au1.ibm.com, mikey@neuling.org,
+ tgrobeck@us.ibm.com, Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: [PATCH] cxl: Ignore CAPI adapters misplaced in switched slots
+Date: Thu, 30 Jun 2016 13:45:37 +0200
+Message-Id: <1467287137-25366-1-git-send-email-felix@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,24 +47,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+One should not attempt to switch a PHB into CAPI mode if there is
+a switch between the PHB and the adapter. This patch modifies the
+cxl driver to ignore CAPI adapters misplaced in switched slots.
 
+Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+---
+This patch fixes Bz 142217.
 
-Le 29/06/2016 20:51, Ian Munsie a écrit :
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> An issue was noted in our debug logs where the XSL would leave the RA
-> bit asserted after an AFU reset operation, which would effectively
-> prevent further AFU reset operations from working.
->
-> Workaround the issue by clearing the RA bit with an MMIO write if it is
-> still asserted after any AFU control operation.
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+ drivers/misc/cxl/pci.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-
-OK, should be safe and valid even on non-xsl hardware.
-
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-   Fred
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index a08fcc8..2f978ed 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1280,6 +1280,30 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
+ 	device_unregister(&adapter->dev);
+ }
+ 
++#define CXL_MAX_PCIEX_PARENT 2
++
++static int cxl_slot_is_switched(struct pci_dev *dev)
++{
++	struct device_node *np;
++	int depth = 0;
++	const __be32 *prop;
++
++	if (!(np = pci_device_to_OF_node(dev))) {
++		pr_err("cxl: np = NULL\n");
++		return -ENODEV;
++	}
++	of_node_get(np);
++	while (np) {
++		np = of_get_next_parent(np);
++		prop = of_get_property(np, "device_type", NULL);
++		if (!prop || strcmp((char *)prop, "pciex"))
++			break;
++		depth++;
++	}
++	of_node_put(np);
++	return (depth > CXL_MAX_PCIEX_PARENT);
++}
++
+ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ {
+ 	struct cxl *adapter;
+@@ -1291,6 +1315,11 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 		return -ENODEV;
+ 	}
+ 
++	if (cxl_slot_is_switched(dev)) {
++		dev_dbg(&dev->dev, "cxl_init_adapter: Ignoring switched slot device\n");
++		return -ENODEV;
++	}
++
+ 	if (cxl_verbose)
+ 		dump_cxl_config_space(dev);
+ 
+-- 
+2.8.0
