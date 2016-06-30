@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgGcQ4lbHzDqmN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgGcS3ysSzDqnH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:44 +1000 (AEST)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5UArXcq128477
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 06:53:40 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23uvafhk4c-1
+ u5UArX9n128537
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 06:53:42 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23uvafhk9h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 06:53:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 06:53:42 -0400
 Received: from localhost
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Thu, 30 Jun 2016 16:23:26 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6F27FE0060
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:27:12 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5UArCWQ8454440
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:23:12 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5UArFo3003667
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:23:18 +0530
+ Thu, 30 Jun 2016 20:53:39 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6C6093578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:28 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u5UArSqw3539290
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:28 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u5UArRs0007449
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 20:53:28 +1000
 From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org
@@ -36,11 +36,12 @@ Cc: bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
  nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH v3 2/7] PCI: Ignore enforced alignment to VF BARs
-Date: Thu, 30 Jun 2016 18:53:08 +0800
+Subject: [PATCH v3 7/7] PCI: Add a macro to set default alignment for all PCI
+ devices
+Date: Thu, 30 Jun 2016 18:53:13 +0800
 In-Reply-To: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
 References: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
-Message-Id: <1467283993-3185-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+Message-Id: <1467283993-3185-8-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,32 +51,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VF BARs are read-only zeroes according to SRIOV spec,
-the normal way(writing BARs) of allocating resources wouldn't
-be applied to VFs. The VFs' resources would be allocated
-when we enable SR-IOV capability. So we should not try to
-reassign alignment after we enable VFs. It's meaningless
-and will release the allocated resources which leads to a bug.
+Now we can use something like "pci=resource_alignment=*:*:*.*:noresize"
+to enforce the alignment of all MMIO BARs to be at least PAGE_SIZE so
+that we can passthrough sub-page(size < PAGE_SIZE) BARs to guest in
+VFIO module.
+
+But sometimes we may want to enable this feature by default on
+some platforms such as PowerNV platform which would easily see those
+sub-page BARs because of its 64K page. To achieve that, we add a
+macro PCIBIOS_DEFAULT_ALIGNMENT to set default alignment for all
+PCI devices and define it on PowerNV platform.
 
 Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 ---
- drivers/pci/pci.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/include/asm/pci.h |    4 ++++
+ drivers/pci/pci.c              |    4 ++++
+ 2 files changed, 8 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index a6f3ac0..b0d76b8 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -28,6 +28,10 @@
+ #define PCIBIOS_MIN_IO		0x1000
+ #define PCIBIOS_MIN_MEM		0x10000000
+ 
++#ifdef CONFIG_PPC_POWERNV
++#define PCIBIOS_DEFAULT_ALIGNMENT	PAGE_SIZE
++#endif
++
+ struct pci_dev;
+ 
+ /* Values for the `which' argument to sys_pciconfig_iobase syscall.  */
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index be8f72c..6ae02de 100644
+index 2e15ac8..dde0cce 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -4822,6 +4822,10 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
- 	resource_size_t align, size;
- 	u16 command;
+@@ -4761,6 +4761,10 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+ 	char *p;
+ 	bool invalid = false;
  
-+	/* We should never try to reassign VF's alignment */
-+	if (dev->is_virtfn)
-+		return;
-+
- 	/* check if specified PCI is target device to reassign */
- 	align = pci_specified_resource_alignment(dev);
- 	if (!align)
++#ifdef PCIBIOS_DEFAULT_ALIGNMENT
++	align = PCIBIOS_DEFAULT_ALIGNMENT;
++	*resize = false;
++#endif
+ 	spin_lock(&resource_alignment_lock);
+ 	p = resource_alignment_param;
+ 	if (pci_has_flag(PCI_PROBE_ONLY)) {
 -- 
 1.7.9.5
