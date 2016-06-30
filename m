@@ -1,28 +1,29 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
- [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 3rg3Ck3yNCzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:20:02 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Yuantian Tang <yuantian.tang@nxp.com>
-Cc: Scott Wood <oss@buserror.net>, Russell King <linux@armlinux.org.uk>,
- Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
- parent clocks
-Date: Thu, 30 Jun 2016 04:24:29 +0200
-Message-ID: <2040199.AxgevOCPID@vostro.rjw.lan>
-In-Reply-To: <DBXPR04MB4958B5147DAA4F05BED4884F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <2091721.Cm4CVR1ptK@vostro.rjw.lan>
- <DBXPR04MB4958B5147DAA4F05BED4884F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <famz@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rg2mr4MMRzDqmd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:00:12 +1000 (AEST)
+From: Fam Zheng <famz@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
+ "Ed L. Cashin" <ed.cashin@acm.org>, Jiri Kosina <jikos@kernel.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>,
+ Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+ Shaohua Li <shli@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Keith Busch <keith.busch@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-block@vger.kernel.org, virtualization@lists.linux-foundation.org,
+ linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
+ Christoph Hellwig <hch@infradead.org>, famz@redhat.com
+Subject: [PATCH v2 00/12] gendisk: Generate uevent after attribute available
+Date: Thu, 30 Jun 2016 09:59:41 +0800
+Message-Id: <20160630015953.6888-1-famz@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +33,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, June 30, 2016 01:47:09 AM Yuantian Tang wrote:
-> > -----Original Message-----
-> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
-> > Sent: Thursday, June 30, 2016 9:47 AM
-> > To: Yuantian Tang <yuantian.tang@nxp.com>
-> > Cc: Scott Wood <oss@buserror.net>; Russell King <linux@armlinux.org.uk>;
-> > Michael Turquette <mturquette@baylibre.com>; Stephen Boyd
-> > <sboyd@codeaurora.org>; Viresh Kumar <viresh.kumar@linaro.org>; linux-
-> > clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org; Yang-Leo Li <leoyang.li@nxp.com>; Xiaofeng Ren
-> > <xiaofeng.ren@nxp.com>; Scott Wood <scottwood@freescale.com>
-> > Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
-> > parent clocks
-> > 
-> > On Wednesday, June 29, 2016 05:50:26 AM Yuantian Tang wrote:
-> > > Hi,
-> > >
-> > > This patch is acked by clock maintainer. If no comments from anyone else,
-> > we will merge it in next week.
-> > 
-> > There is a cpufreq commit depending on it.  Are you going to handle that one
-> > too?
-> > 
-> That one has been acked by cpufreq maintainer. You can get this from patch comments.
+The race condition is noticed between disk_add() and disk attributes, on
+virtio-blk hotplug.
 
-I know that it has been ACKed.
+Userspace listens to the KOBJ_ADD uevent generated in add_disk(). At that
+point we haven't created the serial attribute file, therefore depending
+on how fast udev reacts, the /dev/disk/by-id/ entry doesn't always get
+created.
 
-My question is whether or not you are going to apply it along the [1/2].
+As pointed out by Christoph Hellwig in the specific fix [1], virtio-blk is not
+the only driver that suffers from this, so we cannot count on every driver to
+send events manually. Moreover as suggested in uevent documentation, it is
+advised to defer the KOBJ_ADD event until all attributes are ready:
 
-If not, it will have to be deferred until the [1/2] is merged and then applied
-which may not be desirable.
+Documentation/kobject.txt:
+> Use the KOBJ_ADD action for when the kobject is first added to the kernel.
+> This should be done only after any attributes or children of the kobject
+> have been initialized properly, as userspace will instantly start to look
+> for them when this call happens.
 
-Thanks,
-Rafael
+Unfortunately it seems impossible to fix this generally without touching the
+offending callers.  The approach I'm proposing here is adding a flag to
+suppress uevent in add_disk(), which is patch 1, then in later patches, convert
+any caller to only trigger the uevent when attributes are added.
+
+[1] https://lkml.org/lkml/2016/6/28/550
+
+Fam Zheng (12):
+  genhd: Add "gen_uevent" parameter to add_disk
+  genhd: Honor gen_uevent and add disk_gen_uevents
+  virtio-blk: Generate uevent after attribute available
+  axonrom: Generate uevent after attribute available
+  aoeblk: Generate uevent after attribute available
+  mtip32xx: Generate uevent after attribute available
+  pktcdvd: Generate uevent after attribute available
+  zram: Generate uevent after attribute available
+  md: Generate uevent after attribute available
+  mmc: Generate uevent after attribute available
+  mtd: Generate uevent after attribute available
+  nvme: Generate uevent after attribute available
+
+ arch/m68k/emu/nfblock.c                     |  2 +-
+ arch/powerpc/sysdev/axonram.c               |  3 ++-
+ arch/um/drivers/ubd_kern.c                  |  2 +-
+ arch/xtensa/platforms/iss/simdisk.c         |  2 +-
+ block/genhd.c                               | 26 +++++++++++++++++++++-----
+ drivers/block/DAC960.c                      |  2 +-
+ drivers/block/amiflop.c                     |  2 +-
+ drivers/block/aoe/aoeblk.c                  |  3 ++-
+ drivers/block/ataflop.c                     |  2 +-
+ drivers/block/brd.c                         |  4 ++--
+ drivers/block/cciss.c                       |  2 +-
+ drivers/block/drbd/drbd_main.c              |  2 +-
+ drivers/block/floppy.c                      |  2 +-
+ drivers/block/hd.c                          |  2 +-
+ drivers/block/loop.c                        |  2 +-
+ drivers/block/mg_disk.c                     |  2 +-
+ drivers/block/mtip32xx/mtip32xx.c           |  3 ++-
+ drivers/block/nbd.c                         |  2 +-
+ drivers/block/null_blk.c                    |  2 +-
+ drivers/block/osdblk.c                      |  2 +-
+ drivers/block/paride/pcd.c                  |  2 +-
+ drivers/block/paride/pd.c                   |  2 +-
+ drivers/block/paride/pf.c                   |  2 +-
+ drivers/block/pktcdvd.c                     |  4 +++-
+ drivers/block/ps3disk.c                     |  2 +-
+ drivers/block/ps3vram.c                     |  2 +-
+ drivers/block/rbd.c                         |  2 +-
+ drivers/block/rsxx/dev.c                    |  2 +-
+ drivers/block/skd_main.c                    |  2 +-
+ drivers/block/sunvdc.c                      |  2 +-
+ drivers/block/swim.c                        |  2 +-
+ drivers/block/swim3.c                       |  2 +-
+ drivers/block/sx8.c                         |  2 +-
+ drivers/block/umem.c                        |  2 +-
+ drivers/block/virtio_blk.c                  |  3 ++-
+ drivers/block/xen-blkfront.c                |  2 +-
+ drivers/block/xsysace.c                     |  2 +-
+ drivers/block/z2ram.c                       |  2 +-
+ drivers/block/zram/zram_drv.c               |  3 ++-
+ drivers/cdrom/gdrom.c                       |  2 +-
+ drivers/ide/ide-cd.c                        |  2 +-
+ drivers/ide/ide-gd.c                        |  2 +-
+ drivers/lightnvm/core.c                     |  2 +-
+ drivers/md/bcache/super.c                   |  4 ++--
+ drivers/md/dm.c                             |  2 +-
+ drivers/md/md.c                             |  3 ++-
+ drivers/memstick/core/ms_block.c            |  2 +-
+ drivers/memstick/core/mspro_block.c         |  2 +-
+ drivers/mmc/card/block.c                    |  3 ++-
+ drivers/mtd/mtd_blkdevs.c                   |  3 ++-
+ drivers/mtd/ubi/block.c                     |  2 +-
+ drivers/nvdimm/blk.c                        |  2 +-
+ drivers/nvdimm/btt.c                        |  2 +-
+ drivers/nvdimm/pmem.c                       |  2 +-
+ drivers/nvme/host/core.c                    |  3 ++-
+ drivers/s390/block/dasd_genhd.c             |  2 +-
+ drivers/s390/block/dcssblk.c                |  2 +-
+ drivers/s390/block/scm_blk.c                |  2 +-
+ drivers/s390/block/xpram.c                  |  2 +-
+ drivers/sbus/char/jsflash.c                 |  2 +-
+ drivers/scsi/sd.c                           |  2 +-
+ drivers/scsi/sr.c                           |  2 +-
+ drivers/staging/lustre/lustre/llite/lloop.c |  2 +-
+ include/linux/genhd.h                       |  3 ++-
+ 64 files changed, 98 insertions(+), 70 deletions(-)
+
+-- 
+2.9.0
