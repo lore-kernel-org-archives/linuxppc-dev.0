@@ -1,37 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andreas.ziegler@fau.de>
+Received: from mx-rz-1.rrze.uni-erlangen.de (mx-rz-1.rrze.uni-erlangen.de
+ [IPv6:2001:638:a000:1025::14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgCYs1b6HzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 18:36:17 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5U8YJpH091165
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 04:36:15 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23v09r4ua3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 04:36:15 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 30 Jun 2016 02:36:13 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Olof Johansson <olof@lixom.net>, Darren Stevens <darren@stevens-zone.net>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Pat Wall <pjwall@mac.com>,
- Alex Perez <aperez@alexperez.com>, matthew@a-eon.com,
- "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: [PATCH v2 RFC] pasemi: Fix boot failure on 4.7-rc1
-In-Reply-To: <CAOesGMgvNY8YBeyT3uMfD5XyQbhv0ucFtC8EVHS7gwrTmTNzGw@mail.gmail.com>
-References: <4867f9385a2.1e1ca6c1@auth.smtp.1and1.co.uk>
- <CAOesGMgvNY8YBeyT3uMfD5XyQbhv0ucFtC8EVHS7gwrTmTNzGw@mail.gmail.com>
-Date: Thu, 30 Jun 2016 14:06:03 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgDPB63dHzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 19:13:50 +1000 (AEST)
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+From: Andreas Ziegler <andreas.ziegler@fau.de>
+Subject: Re: [PATCHv2 0/7] eBPF JIT for PPC64
+In-Reply-To: <cover.1466612260.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-ID: <5774E0FC.7010407@fau.de>
+Date: Thu, 30 Jun 2016 11:06:04 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87mvm33wgc.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,34 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Olof Johansson <olof@lixom.net> writes:
+Hi Naveen,
 
-> Hi,
->
-> On Wed, Jun 29, 2016 at 1:06 PM, Darren Stevens <darren@stevens-zone.net> wrote:
->>
->>     Commit:d6a9996e84ac4beb7713e9485f4563e100a9b03e (powerpc/mm:
->>     vmalloc abstraction in preparation for radix) turned kernel memory
->>     and IO addresses from #defined constants to variables initialised
->>     at runtime.
->>
->>     On PA6T systems the setup_arch machine call initialises the onboard
->>     PCI-e root-ports, and uses pci_io_base to do this, which is now before
->>     its value has been set resulting in a panic right after 'booting
->>     linux via __start()'
->
-> I don't see the panic here on a Chitra, at least not on recent -next.
->
-> What config are you building with when you see this?
->
-> Please cc me on PA Semi related patches if you want my attention. I
-> still have hardware, in fact I boot every -next release on it through
-> automation.
->
+this patchset makes a change to arch/powerpc/net/Makefile in order to only
+compile the previously existing bpf_jit_comp.c if !CONFIG_PPC64, and use
+bpf_jit_comp64.c if CONFIG_PPC64 is enabled.
 
-You can find more details in the below thread.
+Inside arch/powerpc/net/bpf_jit_comp.c, however, there is still an #ifdef
+CONFIG_PPC64 block at line 667 (linux-next of today, i.e., next-20160630):
 
-https://lkml.kernel.org/r/8B4C4AB7-5C17-4992-935A-361153472793@xenosoft.de
+  #ifdef CONFIG_PPC64
+                  /* Function descriptor nastiness: Address + TOC */
+                  ((u64 *)image)[0] = (u64)code_base;
+                  ((u64 *)image)[1] = local_paca->kernel_toc;
+  #endif
 
+>From my understanding of the code, this #ifdef can now be removed, as there is
+no way the file could be compiled with CONFIG_PPC64 enabled. Is this correct?
 
--aneesh
+Best regards,
+
+Andreas
