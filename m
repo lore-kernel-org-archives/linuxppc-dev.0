@@ -1,13 +1,12 @@
-Return-Path: <BATV+bbffa7db79d372be7ab8+4694+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <famz@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rg8gN4wdXzDrHx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:25:52 +1000 (AEST)
-Date: Wed, 29 Jun 2016 23:24:42 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Fam Zheng <famz@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rg8v93yhMzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 16:36:05 +1000 (AEST)
+Date: Thu, 30 Jun 2016 14:35:54 +0800
+From: Fam Zheng <famz@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
 Cc: linux-kernel@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
@@ -26,11 +25,12 @@ Cc: linux-kernel@vger.kernel.org,
  dan.j.williams@intel.com
 Subject: Re: [PATCH v2 00/12] gendisk: Generate uevent after attribute
  available
-Message-ID: <20160630062442.GA19761@infradead.org>
+Message-ID: <20160630063554.GE23296@ad.usersys.redhat.com>
 References: <20160630015953.6888-1-famz@redhat.com>
+ <20160630062442.GA19761@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160630015953.6888-1-famz@redhat.com>
+In-Reply-To: <20160630062442.GA19761@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,18 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 30, 2016 at 09:59:41AM +0800, Fam Zheng wrote:
-> Documentation/kobject.txt:
-> > Use the KOBJ_ADD action for when the kobject is first added to the kernel.
-> > This should be done only after any attributes or children of the kobject
-> > have been initialized properly, as userspace will instantly start to look
-> > for them when this call happens.
+On Wed, 06/29 23:24, Christoph Hellwig wrote:
+> On Thu, Jun 30, 2016 at 09:59:41AM +0800, Fam Zheng wrote:
+> > Documentation/kobject.txt:
+> > > Use the KOBJ_ADD action for when the kobject is first added to the kernel.
+> > > This should be done only after any attributes or children of the kobject
+> > > have been initialized properly, as userspace will instantly start to look
+> > > for them when this call happens.
+> > 
+> > Unfortunately it seems impossible to fix this generally without touching the
+> > offending callers.  The approach I'm proposing here is adding a flag to
+> > suppress uevent in add_disk(), which is patch 1, then in later patches, convert
+> > any caller to only trigger the uevent when attributes are added.
 > 
-> Unfortunately it seems impossible to fix this generally without touching the
-> offending callers.  The approach I'm proposing here is adding a flag to
-> suppress uevent in add_disk(), which is patch 1, then in later patches, convert
-> any caller to only trigger the uevent when attributes are added.
+> We (or rather Dan) is touching most add_disk callers anyway for the
+> driverfs_dev removal.  Let's just pass the array of attributes to
+> a disk_add variant and solve the issue for real.
 
-We (or rather Dan) is touching most add_disk callers anyway for the
-driverfs_dev removal.  Let's just pass the array of attributes to
-a disk_add variant and solve the issue for real.
+I thought about that. Its usage is more compact compared to this series, but is
+also more code and less flexible IMO.  For example, we need at least two
+variants, for attribute_group and device_attribute separately, right?
+
+Fam
