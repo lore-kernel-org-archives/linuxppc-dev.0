@@ -2,8 +2,8 @@ Return-Path: <famz@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rg2nJ6pqWzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:00:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rg2nR4k1GzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 12:00:43 +1000 (AEST)
 From: Fam Zheng <famz@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -21,9 +21,9 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
  linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
  Christoph Hellwig <hch@infradead.org>, famz@redhat.com
-Subject: [PATCH v2 04/12] axonrom: Generate uevent after attribute available
-Date: Thu, 30 Jun 2016 09:59:45 +0800
-Message-Id: <20160630015953.6888-5-famz@redhat.com>
+Subject: [PATCH v2 05/12] aoeblk: Generate uevent after attribute available
+Date: Thu, 30 Jun 2016 09:59:46 +0800
+Message-Id: <20160630015953.6888-6-famz@redhat.com>
 In-Reply-To: <20160630015953.6888-1-famz@redhat.com>
 References: <20160630015953.6888-1-famz@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,29 +41,24 @@ disk_gen_uevents interface.
 
 Signed-off-by: Fam Zheng <famz@redhat.com>
 ---
- arch/powerpc/sysdev/axonram.c | 3 ++-
+ drivers/block/aoe/aoeblk.c | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index 4efd69b..27e7175 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -238,7 +238,7 @@ static int axon_ram_probe(struct platform_device *device)
- 	set_capacity(bank->disk, bank->size >> AXON_RAM_SECTOR_SHIFT);
- 	blk_queue_make_request(bank->disk->queue, axon_ram_make_request);
- 	blk_queue_logical_block_size(bank->disk->queue, AXON_RAM_SECTOR_SIZE);
--	add_disk(bank->disk, true);
-+	add_disk(bank->disk, false);
+diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+index e91c5f1..f0cf4d6 100644
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -417,9 +417,10 @@ aoeblk_gdalloc(void *vp)
  
- 	bank->irq_id = irq_of_parse_and_map(device->dev.of_node, 0);
- 	if (bank->irq_id == NO_IRQ) {
-@@ -262,6 +262,7 @@ static int axon_ram_probe(struct platform_device *device)
- 		rc = -EFAULT;
- 		goto failed;
- 	}
-+	disk_gen_uevents(bank->disk);
+ 	spin_unlock_irqrestore(&d->lock, flags);
  
- 	azfs_minor += bank->disk->minors;
+-	add_disk(gd, true);
++	add_disk(gd, false);
+ 	aoedisk_add_sysfs(d);
+ 	aoedisk_add_debugfs(d);
++	disk_gen_uevents(gd);
  
+ 	spin_lock_irqsave(&d->lock, flags);
+ 	WARN_ON(!(d->flags & DEVFL_GD_NOW));
 -- 
 2.9.0
