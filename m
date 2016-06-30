@@ -1,47 +1,24 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
+ [IPv6:2a00:1450:400c:c09::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgMYV0n1xzDr23
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 00:36:29 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u5UEYaee070419
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 10:36:28 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23v09rh6bf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 10:36:27 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 00:36:23 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1065C2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 00:36:22 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u5UEaMU414876880
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 00:36:22 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u5UEaLs1006869
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 00:36:21 +1000
-Date: Thu, 30 Jun 2016 20:06:18 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgN1w4Px0zDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 00:57:40 +1000 (AEST)
+Received: by mail-wm0-x229.google.com with SMTP id f126so225479626wma.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 07:57:39 -0700 (PDT)
+Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
+References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
+ mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM,
+ arnd@arndb.de, nicolas.pitre@linaro.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <5775335E.2040003@linaro.org>
+Date: Thu, 30 Jun 2016 16:57:34 +0200
 MIME-Version: 1.0
-To: rjw@rjwysocki.net
-CC: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au,
- bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de,
- nicolas.pitre@linaro.org
-Subject: Re: [PATCH] cpuidle: Fix last_residency division
-References: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <57752E62.5030909@linux.vnet.ibm.com>
+In-Reply-To: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,11 +28,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Please ignore this mail. I have resent this post using the correct
-version number. Sorry for the noise.
-
-
-On 06/30/2016 07:57 PM, Shreyas B. Prabhu wrote:
+On 06/30/2016 04:34 PM, Shreyas B. Prabhu wrote:
 > Snooze is a poll idle state in powernv and pseries platforms. Snooze
 > has a timeout so that if a cpu stays in snooze for more than target
 > residency of the next available idle state, then it would exit thereby
@@ -63,7 +36,7 @@ On 06/30/2016 07:57 PM, Shreyas B. Prabhu wrote:
 > promote the cpu to a deeper idle state. Therefore whenever snooze exits
 > due to this timeout, its last_residency will be target_residency of next
 > deeper state.
-> 
+>
 > commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
 > changed the math around last_residency calculation. Specifically, while
 > converting last_residency value from nanoseconds to microseconds it does
@@ -72,12 +45,12 @@ On 06/30/2016 07:57 PM, Shreyas B. Prabhu wrote:
 > next available state. This pattern is picked up get_typical_interval()
 > in the menu governor and therefore expected_interval in menu_select() is
 > frequently less than the target_residency of any state but snooze.
-> 
+>
 > Due to this we are entering snooze at a higher rate, thereby affecting
 > the single thread performance.
-> 
+>
 > Fix this by using a better approximation for division by 1000.
-> 
+>
 > Reported-by: Anton Blanchard <anton@samba.org>
 > Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 > Suggested-by David Laight <david.laight@aculab.com>
@@ -85,15 +58,121 @@ On 06/30/2016 07:57 PM, Shreyas B. Prabhu wrote:
 > ---
 > Changes in v4
 > =============
->  - Increasing the threshold upto which approximation can be used.
->  - Removed explicit cast. Instead added a comment saying why cast
->    is safe.
-> 
+>   - Increasing the threshold upto which approximation can be used.
+>   - Removed explicit cast. Instead added a comment saying why cast
+>     is safe.
+>
 > Changes in v3
 > =============
->  - Using approximation suggested by David
-> 
+>   - Using approximation suggested by David
+>
 > Changes in v2
 > =============
->  - Fixing it in the cpuidle core code instead of driver code.
-> 
+>   - Fixing it in the cpuidle core code instead of driver code.
+>
+>   drivers/cpuidle/cpuidle.c | 11 +++--------
+>   drivers/cpuidle/cpuidle.h | 38 ++++++++++++++++++++++++++++++++++++++
+>   2 files changed, 41 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a4d0059..f55ad01 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -174,7 +174,6 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>   	struct cpuidle_state *target_state = &drv->states[index];
+>   	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+>   	u64 time_start, time_end;
+> -	s64 diff;
+>
+>   	/*
+>   	 * Tell the time framework to switch to a broadcast timer because our
+> @@ -218,14 +217,10 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>   		local_irq_enable();
+>
+>   	/*
+> -	 * local_clock() returns the time in nanosecond, let's shift
+> -	 * by 10 (divide by 1024) to have microsecond based time.
+> +	 * local_clock() returns the time in nanoseconds, convert it to
+> +	 * microsecond based time.
+>   	 */
+> -	diff = (time_end - time_start) >> 10;
+> -	if (diff > INT_MAX)
+> -		diff = INT_MAX;
+> -
+> -	dev->last_residency = (int) diff;
+> +	dev->last_residency = convert_nsec_to_usec(time_end - time_start);
+>
+>   	if (entered_state >= 0) {
+>   		/* Update cpuidle counters */
+> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+> index f87f399..a027b35 100644
+> --- a/drivers/cpuidle/cpuidle.h
+> +++ b/drivers/cpuidle/cpuidle.h
+> @@ -68,4 +68,42 @@ static inline void cpuidle_coupled_unregister_device(struct cpuidle_device *dev)
+>   }
+>   #endif
+>
+> +/*
+> + * To ensure that there is no overflow while approximation
+> + * for dividing val by 1000, we must respect -
+> + * val + (val >> 5) <= 0xFFFFFFFF
+> + * val + val/32 <= 0xFFFFFFFF
+> + * val <= (0xFFFFFFFF * 32) / 33
+> + * val <= 0xF83E0F82
+> + * Hence the threshold for val below which we can use the
+> + * approximation is 0xF83E0F82
+> + */
+> +#define DIV_APPROXIMATION_THRESHOLD 0xF83E0F82UL
+> +
+> +/*
+> + * Used for calculating last_residency in usec. Optimized for case
+> + * where last_residency in nsecs is < DIV_APPROXIMATION_THRESHOLD
+> + * Approximated value has less than 1% error.
+> + */
+> +static inline int convert_nsec_to_usec(u64 nsec)
+> +{
+> +	if (likely(nsec < DIV_APPROXIMATION_THRESHOLD)) {
+> +		u32 usec = nsec;
+> +
+> +		usec += usec >> 5;
+> +		usec = usec >> 10;
+> +
+> +		/* Can safely cast to int since usec is < INT_MAX */
+> +		return usec;
+> +	} else {
+> +		u64 usec = div_u64(nsec, 1000);
+> +
+> +		if (usec > INT_MAX)
+> +			usec = INT_MAX;
+> +
+> +		/* Can safely cast to int since usec is < INT_MAX */
+> +		return usec;
+> +	}
+> +}
+
+
+What bothers me with this division is the benefit of adding an extra 
+ultra optimized division by 1000 in cpuidle.h while we have already 
+ktime_divns which is optimized in ktime.h.
+
+Why not:
+
+ts = ns_to_ktime(local_clock());
+
+...
+
+te = ns_to_ktime(local_clock());
+
+
+diff = ktime_us_delta(te, ts);
+
+
+
+
+
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
