@@ -1,19 +1,50 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rglK81Cj4zDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 15:27:08 +1000 (AEST)
-Date: Fri, 1 Jul 2016 15:27:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Colin Ian King
- <colin.king@canonical.com>
-Subject: linux-next: build failure after merge of the powerpc tree
-Message-ID: <20160701152707.444e03b4@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rglKS1pZdzDqn5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 15:27:24 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u615NwjA067875
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 01:27:22 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23wajemd5x-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 01:27:22 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Fri, 1 Jul 2016 15:27:19 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4A55C2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 15:27:17 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u615RH9P22348004
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 15:27:17 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u615RGqW021443
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 15:27:17 +1000
+Subject: Re: [PATCH v3 2/7] PCI: Ignore enforced alignment to VF BARs
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1467283993-3185-3-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <20160701003959.GB15147@gwshan>
+Cc: nikunj@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ linux-doc@vger.kernel.org, aik@ozlabs.ru, linux-pci@vger.kernel.org,
+ corbet@lwn.net, linux-kernel@vger.kernel.org,
+ warrier@linux.vnet.ibm.com, alex.williamson@redhat.com,
+ paulus@samba.org, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Date: Fri, 1 Jul 2016 13:27:17 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20160701003959.GB15147@gwshan>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <21112bd7-d343-46b6-1df1-b20cc1c1b24e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +54,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Gavin,
 
-After merging the powerpc tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+On 2016/7/1 8:39, Gavin Shan wrote:
 
-arch/powerpc/kernel/fadump.c: In function 'fadump_invalidate_dump':
-arch/powerpc/kernel/fadump.c:1014:2: error: expected ';' before '}' token
-  }
-  ^
+> On Thu, Jun 30, 2016 at 06:53:08PM +0800, Yongji Xie wrote:
+>> VF BARs are read-only zeroes according to SRIOV spec,
+>> the normal way(writing BARs) of allocating resources wouldn't
+>> be applied to VFs. The VFs' resources would be allocated
+>> when we enable SR-IOV capability. So we should not try to
+>> reassign alignment after we enable VFs. It's meaningless
+>> and will release the allocated resources which leads to a bug.
+>>
+>> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+>> ---
+>> drivers/pci/pci.c |    4 ++++
+>> 1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index be8f72c..6ae02de 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -4822,6 +4822,10 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>> 	resource_size_t align, size;
+>> 	u16 command;
+>>
+>> +	/* We should never try to reassign VF's alignment */
+>> +	if (dev->is_virtfn)
+>> +		return;
+>> +
+> Yongji, I think it's correct to ignore VF's BARs. Another concern is:
+> it's safe to apply alignment to PF's IOV BARs? Lets have an extreme
+> example here: one PF has 16 VFs; each VF has only one 1KB. It means
+> the only PF IOV BAR is 16KB. I don't see how it works after expanding
+> it to 64KB which is the page size. It might be not a problem on PowerNV
+> platform, but potentially a issue on x86?
 
-Caused by commit
+Seems like the alignment would not be applied to IOV BARs because
+pci_reassigndev_resource_alignment() will be called before
+sriov_init().
 
-  4a03749f140c ("powerpc/fadump: Trivial fix of spelling mistake, clean up message")
-
-I have added this fix patch for today:
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 1 Jul 2016 15:19:34 +1000
-Subject: [PATCH] powerpc/fadump: add missing semicolon
-
-Fixes: 4a03749f140c ("powerpc/fadump: Trivial fix of spelling mistake, clean up message")
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/fadump.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index f0664860753e..b3a663333d36 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1010,7 +1010,7 @@ static int fadump_invalidate_dump(struct fadump_mem_struct *fdm)
- 
- 	if (rc) {
- 		pr_err("Failed to invalidate firmware-assisted dump registration. Unexpected error (%d).\n", rc);
--		return rc
-+		return rc;
- 	}
- 	fw_dump.dump_active = 0;
- 	fdm_active = NULL;
--- 
-2.8.1
-
--- 
-Cheers,
-Stephen Rothwell
+Thanks,
+Yongji
