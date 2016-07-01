@@ -1,52 +1,30 @@
-Return-Path: <xyjxie@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgnDk1XmyzDqmF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 16:53:25 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u616rLSE022345
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 02:53:24 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23wj3kjmbf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 02:53:23 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 16:53:17 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7F5E32CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 16:53:15 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u616rF6M10617202
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 16:53:15 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u616rEfn030611
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 16:53:15 +1000
-Subject: Re: [PATCH v3 4/7] PCI: Add a new option for resource_alignment to
- reassign alignment
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
- <1467283993-3185-5-git-send-email-xyjxie@linux.vnet.ibm.com>
- <20160701022503.GA6739@gwshan>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com
-From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-Date: Fri, 1 Jul 2016 14:53:16 +0800
-MIME-Version: 1.0
-In-Reply-To: <20160701022503.GA6739@gwshan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <83859fc2-1c49-0f13-e91d-f0f5e3da7c5e@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgnHk3yZHzDqmF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 16:56:02 +1000 (AEST)
+Message-ID: <1467356146.32358.32.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Scott Wood <scott.wood@nxp.com>
+Cc: Yuantian Tang <yuantian.tang@nxp.com>, Russell King
+ <linux@armlinux.org.uk>,  Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar
+ <viresh.kumar@linaro.org>,  "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng
+ Ren <xiaofeng.ren@nxp.com>
+Date: Fri, 01 Jul 2016 01:55:46 -0500
+In-Reply-To: <3794032.AoZL3DhM7U@vostro.rjw.lan>
+References: <1466058085-19353-1-git-send-email-oss@buserror.net>
+ <DBXPR04MB4951CA4EFB4FB5A2BDE7542F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
+ <DB5PR0401MB1928B6A4F1049592292D348C91240@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <3794032.AoZL3DhM7U@vostro.rjw.lan>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
+ parent clocks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,128 +34,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Gavin,
+On Thu, 2016-06-30 at 15:29 +0200, Rafael J. Wysocki wrote:
+> On Thursday, June 30, 2016 05:46:42 AM Scott Wood wrote:
+> > 
+> > On 06/29/2016 10:02 PM, Yuantian Tang wrote:
+> > > 
+> > > > 
+> > > > -----Original Message-----
+> > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > > Sent: Thursday, June 30, 2016 10:24 AM
+> > > > To: Yuantian Tang <yuantian.tang@nxp.com>
+> > > > Cc: Scott Wood <oss@buserror.net>; Russell King <linux@armlinux.org.uk
+> > > > >;
+> > > > Michael Turquette <mturquette@baylibre.com>; Stephen Boyd
+> > > > <sboyd@codeaurora.org>; Viresh Kumar <viresh.kumar@linaro.org>; linux-
+> > > > clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
+> > > > dev@lists.ozlabs.org; Yang-Leo Li <leoyang.li@nxp.com>; Xiaofeng Ren
+> > > > <xiaofeng.ren@nxp.com>; Scott Wood <scottwood@freescale.com>
+> > > > Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering
+> > > > possible
+> > > > parent clocks
+> > > > 
+> > > > On Thursday, June 30, 2016 01:47:09 AM Yuantian Tang wrote:
+> > > > > 
+> > > > > > 
+> > > > > > -----Original Message-----
+> > > > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > > > > Sent: Thursday, June 30, 2016 9:47 AM
+> > > > > > To: Yuantian Tang <yuantian.tang@nxp.com>
+> > > > > > Cc: Scott Wood <oss@buserror.net>; Russell King
+> > > > > > <linux@armlinux.org.uk>; Michael Turquette
+> > > > > > <mturquette@baylibre.com>; Stephen Boyd <sboyd@codeaurora.org>;
+> > > > > > Viresh Kumar <viresh.kumar@linaro.org>; linux- clk@vger.kernel.org
+> > > > > > ;
+> > > > > > linux-pm@vger.kernel.org; linuxppc- dev@lists.ozlabs.org; Yang-Leo
+> > > > > > Li <leoyang.li@nxp.com>; Xiaofeng Ren <xiaofeng.ren@nxp.com>;
+> > > > > > Scott
+> > > > > > Wood <scottwood@freescale.com>
+> > > > > > Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering
+> > > > > > possible parent clocks
+> > > > > > 
+> > > > > > On Wednesday, June 29, 2016 05:50:26 AM Yuantian Tang wrote:
+> > > > > > > 
+> > > > > > > Hi,
+> > > > > > > 
+> > > > > > > This patch is acked by clock maintainer. If no comments from
+> > > > > > > anyone else,
+> > > > > > we will merge it in next week.
+> > > > > > 
+> > > > > > There is a cpufreq commit depending on it.  Are you going to
+> > > > > > handle
+> > > > > > that one too?
+> > > > > > 
+> > > > > That one has been acked by cpufreq maintainer. You can get this from
+> > > > patch comments.
+> > > > 
+> > > > I know that it has been ACKed.
+> > > > 
+> > > > My question is whether or not you are going to apply it along the
+> > > > [1/2].
+> > > > 
+> > > > If not, it will have to be deferred until the [1/2] is merged and then
+> > > > applied
+> > > > which may not be desirable.
+> > > > 
+> > > I hope we can apply both at same time. Seems Scott has a few concerns.
+> > > 
+> > > What you think about this patch? Can you apply it?
+> > > If you have applied this patch, then I can push CPUfreq maintainer to
+> > > apply another one which will be delayed.
+> > My only concern was getting an ack for this patch (1/2) -- did I miss it
+> > somewhere?
+> OK, so who's going to apply the series?
 
-On 2016/7/1 10:25, Gavin Shan wrote:
+Ideally it should go via the cpufreq tree.
 
-> On Thu, Jun 30, 2016 at 06:53:10PM +0800, Yongji Xie wrote:
->> When using resource_alignment kernel parameter, the current
->> implement reassigns the alignment by changing resources' size
->> which can potentially break some drivers. For example, the driver
->> uses the size to locate some register whose length is related
->> to the size.
->>
->> This patch adds a new option "noresize" for the parameter to
->> solve this problem.
->>
->> Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->
->> ---
->> Documentation/kernel-parameters.txt |    5 ++++-
->> drivers/pci/pci.c                   |   35 +++++++++++++++++++++++++----------
->> 2 files changed, 29 insertions(+), 11 deletions(-)
->>
->> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->> index 82b42c9..c4802f5 100644
->> --- a/Documentation/kernel-parameters.txt
->> +++ b/Documentation/kernel-parameters.txt
->> @@ -2997,13 +2997,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->> 				window. The default value is 64 megabytes.
->> 		resource_alignment=
->> 				Format:
->> -				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
->> +				[<order of align>@][<domain>:]<bus>:<slot>.<func>
->> +				[:noresize][; ...]
->> 				Specifies alignment and device to reassign
->> 				aligned memory resources.
->> 				If <order of align> is not specified,
->> 				PAGE_SIZE is used as alignment.
->> 				PCI-PCI bridge can be specified, if resource
->> 				windows need to be expanded.
->> +				noresize: Don't change the resources' sizes when
->> +				reassigning alignment.
->> 		ecrc=		Enable/disable PCIe ECRC (transaction layer
->> 				end-to-end CRC checking).
->> 				bios: Use BIOS/firmware settings. This is the
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index 6241cfc..1d80a94 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -4748,11 +4748,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
->> /**
->>   * pci_specified_resource_alignment - get resource alignment specified by user.
->>   * @dev: the PCI device to get
->> + * @resize: whether or not to change resources' size when reassigning alignment
->>   *
->>   * RETURNS: Resource alignment if it is specified.
->>   *          Zero if it is not specified.
->>   */
->> -static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
->> +static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
->> +		bool *resize)
->> {
->> 	int seg, bus, slot, func, align_order, count;
->> 	resource_size_t align = 0;
->> @@ -4787,6 +4789,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
->> 			}
->> 		}
->> 		p += count;
->> +		if (!strncmp(p, ":noresize", 9)) {
->> +			*resize = false;
->> +			p += 9;
->> +		} else
->> +			*resize = true;
->> 		if (seg == pci_domain_nr(dev->bus) &&
->> 			bus == dev->bus->number &&
->> 			slot == PCI_SLOT(dev->devfn) &&
->> @@ -4819,6 +4826,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->> {
->> 	int i;
->> 	struct resource *r;
->> +	bool resize = true;
->> 	resource_size_t align, size;
->>
->> 	/* We should never try to reassign VF's alignment */
->> @@ -4826,7 +4834,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->> 		return;
->>
->> 	/* check if specified PCI is target device to reassign */
->> -	align = pci_specified_resource_alignment(dev);
->> +	align = pci_specified_resource_alignment(dev, &resize);
->> 	if (!align)
->> 		return;
->>
->> @@ -4848,15 +4856,22 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
->> 			continue;
->> 		}
->> 		size = resource_size(r);
->> -		if (size < align) {
->> -			size = align;
->> -			dev_info(&dev->dev,
->> -				"Rounding up size of resource #%d to %#llx.\n",
->> -				i, (unsigned long long)size);
->> +		if (resize) {
->> +			if (size < align) {
->> +				size = align;
->> +				dev_info(&dev->dev,
->> +					"Rounding up size of resource #%d to %#llx.\n",
->> +					i, (unsigned long long)size);
->> +			}
->> +			r->flags |= IORESOURCE_UNSET;
->> +			r->end = size - 1;
->> +			r->start = 0;
->> +		} else {
->> +			r->flags &= ~IORESOURCE_SIZEALIGN;
->> +			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
-> 			f->flags |= (IORESOURCE_STARTALIGN | IORESOURCE_UNSET);
->
-> Yongji, one quick question - when IORESOURCE_UNSET is cleared? If it's not
-> cleared, is there any unexpected side effects? Thanks.
-
-PCI core will clear this flag in pci_assign_resource() when the BAR
-has been assigned properly. If it's not cleared, the driver will fail in
-binding the device because pci_enable_resources() will check this flag.
-
-Thanks,
-Yongji
+-Scott
