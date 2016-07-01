@@ -1,45 +1,52 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgf320b1dzDq5d
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 11:29:34 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id n132so20545367qka.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 18:29:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rggHH1mByzDqhC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:25:15 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u612JCBM136421
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:25:12 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23wbbb6kuy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:25:12 -0400
+Received: from localhost
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 1 Jul 2016 12:25:08 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 538322CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:25:05 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u612P5FE7012686
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:25:05 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u612P4nU022668
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:25:05 +1000
+Date: Fri, 1 Jul 2016 12:25:03 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 4/7] PCI: Add a new option for resource_alignment to
+ reassign alignment
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1467283993-3185-5-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <20160701010113.GB10122@ad.usersys.redhat.com>
-References: <20160630015953.6888-1-famz@redhat.com>
- <20160630062442.GA19761@infradead.org>
- <20160630063554.GE23296@ad.usersys.redhat.com>
- <20160630063839.GA17205@infradead.org>
- <20160701010113.GB10122@ad.usersys.redhat.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 30 Jun 2016 18:29:31 -0700
-Message-ID: <CAA9_cmeb99S+UoZ7A-4HHmT_rFRgnSaBX=YszEk8+4_=n9cOnA@mail.gmail.com>
-Subject: Re: [PATCH v2 00/12] gendisk: Generate uevent after attribute
- available
-To: Fam Zheng <famz@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
- "Ed L. Cashin" <ed.cashin@acm.org>,
- Jiri Kosina <jikos@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>,
- Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Shaohua Li <shli@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
- David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- Keith Busch <keith.busch@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-block@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linux-raid <linux-raid@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467283993-3185-5-git-send-email-xyjxie@linux.vnet.ibm.com>
+Message-Id: <20160701022503.GA6739@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,33 +56,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 30, 2016 at 6:01 PM, Fam Zheng <famz@redhat.com> wrote:
-> On Wed, 06/29 23:38, Christoph Hellwig wrote:
->> On Thu, Jun 30, 2016 at 02:35:54PM +0800, Fam Zheng wrote:
->> > also more code and less flexible IMO.  For example, we need at least two
->> > variants, for attribute_group and device_attribute separately, right?
->>
->> Yes, or maybe just a calling convention that just passes both.
+On Thu, Jun 30, 2016 at 06:53:10PM +0800, Yongji Xie wrote:
+>When using resource_alignment kernel parameter, the current
+>implement reassigns the alignment by changing resources' size
+>which can potentially break some drivers. For example, the driver
+>uses the size to locate some register whose length is related
+>to the size.
 >
-> OK, I can look into that, but I'm not sure about the error handling. Currently
-> add_disk returns void, do you have any plan on that too? should I change it in
-> v3 (to at least return the attribute creation failure)?
+>This patch adds a new option "noresize" for the parameter to
+>solve this problem.
+>
+>Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 
-I think we should only support a "groups" interface to
-device_add_disk() and convert all the drivers that currently do
-device_create_file() after add_disk() to pass in a group list instead.
-That way we follow the expectation that the only way to get an
-attribute for a device to show up before KOBJ_ADD, is to define a
-group:
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
->From Documentation/driver-model/device.txt:
-    As explained in Documentation/kobject.txt, device attributes must be be
-    created before the KOBJ_ADD uevent is generated. The only way to realize
-    that is by defining an attribute group.
+>---
+> Documentation/kernel-parameters.txt |    5 ++++-
+> drivers/pci/pci.c                   |   35 +++++++++++++++++++++++++----------
+> 2 files changed, 29 insertions(+), 11 deletions(-)
+>
+>diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>index 82b42c9..c4802f5 100644
+>--- a/Documentation/kernel-parameters.txt
+>+++ b/Documentation/kernel-parameters.txt
+>@@ -2997,13 +2997,16 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+> 				window. The default value is 64 megabytes.
+> 		resource_alignment=
+> 				Format:
+>-				[<order of align>@][<domain>:]<bus>:<slot>.<func>[; ...]
+>+				[<order of align>@][<domain>:]<bus>:<slot>.<func>
+>+				[:noresize][; ...]
+> 				Specifies alignment and device to reassign
+> 				aligned memory resources.
+> 				If <order of align> is not specified,
+> 				PAGE_SIZE is used as alignment.
+> 				PCI-PCI bridge can be specified, if resource
+> 				windows need to be expanded.
+>+				noresize: Don't change the resources' sizes when
+>+				reassigning alignment.
+> 		ecrc=		Enable/disable PCIe ECRC (transaction layer
+> 				end-to-end CRC checking).
+> 				bios: Use BIOS/firmware settings. This is the
+>diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>index 6241cfc..1d80a94 100644
+>--- a/drivers/pci/pci.c
+>+++ b/drivers/pci/pci.c
+>@@ -4748,11 +4748,13 @@ static DEFINE_SPINLOCK(resource_alignment_lock);
+> /**
+>  * pci_specified_resource_alignment - get resource alignment specified by user.
+>  * @dev: the PCI device to get
+>+ * @resize: whether or not to change resources' size when reassigning alignment
+>  *
+>  * RETURNS: Resource alignment if it is specified.
+>  *          Zero if it is not specified.
+>  */
+>-static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+>+static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
+>+		bool *resize)
+> {
+> 	int seg, bus, slot, func, align_order, count;
+> 	resource_size_t align = 0;
+>@@ -4787,6 +4789,11 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
+> 			}
+> 		}
+> 		p += count;
+>+		if (!strncmp(p, ":noresize", 9)) {
+>+			*resize = false;
+>+			p += 9;
+>+		} else
+>+			*resize = true;
+> 		if (seg == pci_domain_nr(dev->bus) &&
+> 			bus == dev->bus->number &&
+> 			slot == PCI_SLOT(dev->devfn) &&
+>@@ -4819,6 +4826,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+> {
+> 	int i;
+> 	struct resource *r;
+>+	bool resize = true;
+> 	resource_size_t align, size;
+>
+> 	/* We should never try to reassign VF's alignment */
+>@@ -4826,7 +4834,7 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+> 		return;
+>
+> 	/* check if specified PCI is target device to reassign */
+>-	align = pci_specified_resource_alignment(dev);
+>+	align = pci_specified_resource_alignment(dev, &resize);
+> 	if (!align)
+> 		return;
+>
+>@@ -4848,15 +4856,22 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+> 			continue;
+> 		}
+> 		size = resource_size(r);
+>-		if (size < align) {
+>-			size = align;
+>-			dev_info(&dev->dev,
+>-				"Rounding up size of resource #%d to %#llx.\n",
+>-				i, (unsigned long long)size);
+>+		if (resize) {
+>+			if (size < align) {
+>+				size = align;
+>+				dev_info(&dev->dev,
+>+					"Rounding up size of resource #%d to %#llx.\n",
+>+					i, (unsigned long long)size);
+>+			}
+>+			r->flags |= IORESOURCE_UNSET;
+>+			r->end = size - 1;
+>+			r->start = 0;
+>+		} else {
+>+			r->flags &= ~IORESOURCE_SIZEALIGN;
+>+			r->flags |= IORESOURCE_STARTALIGN | IORESOURCE_UNSET;
 
-Let's defer the return value fixing for now.
+			f->flags |= (IORESOURCE_STARTALIGN | IORESOURCE_UNSET);
 
-You can find the pending device_add_disk() patches in the nvdimm
-patchwork starting with "block: introduce device_add_disk()"
+Yongji, one quick question - when IORESOURCE_UNSET is cleared? If it's not
+cleared, is there any unexpected side effects? Thanks.
 
-https://patchwork.kernel.org/project/linux-nvdimm/list/
+>+			r->start = max(align, size);
+>+			r->end = r->start + size - 1;
+> 		}
+>-		r->flags |= IORESOURCE_UNSET;
+>-		r->end = size - 1;
+>-		r->start = 0;
+> 	}
+> 	/* Need to disable bridge's resource window,
+> 	 * to enable the kernel to reassign new resource
+
+Thanks,
+Gavin
