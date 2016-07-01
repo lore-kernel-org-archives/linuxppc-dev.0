@@ -1,48 +1,36 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rh1462hhQzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2016 01:46:44 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u61Fi0wt136494
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 11:46:41 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23wajf7ce7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rh1hz4SmqzDql7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2016 02:15:15 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u61GEjdM066628
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:15:12 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23w76pxy7y-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 11:46:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 12:15:12 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 12:46:38 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 53E6D3520070
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 11:46:17 -0400 (EDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u61FkYxm13762948
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:46:34 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u61FkYNX032141
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:46:34 -0300
+ Fri, 1 Jul 2016 13:15:10 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: kexec@lists.infradead.org
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>, ebiederm@xmission.com,
- dyoung@redhat.com, bhe@redhat.com, vgoyal@redhat.com,
- will.deacon@arm.com, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC] arm64: kexec_file_load support
-Date: Fri, 01 Jul 2016 12:46:31 -0300
-In-Reply-To: <20160701051111.GL20774@linaro.org>
-References: <20160701051111.GL20774@linaro.org>
+To: Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@lists.ozlabs.org
+Cc: petitboot@lists.ozlabs.org, "George C. Wilson" <ltcgcw@us.ibm.com>,
+ Dave Heller <hellerda@linux.vnet.ibm.com>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: device tree passing feature
+Date: Fri, 01 Jul 2016 13:15:06 -0300
+In-Reply-To: <1467337581.5491.15.camel@mendozajonas.com>
+References: <5378248.F712oD97Cs@hactar>
+ <1467337581.5491.15.camel@mendozajonas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Message-Id: <3300473.zhbeG65qgA@hactar>
+Message-Id: <2289227.FYhGr4BFNM@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,62 +40,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Freitag, 01 Juli 2016, 14:11:12 schrieb AKASHI Takahiro:
-> I'm not sure whether there is any demand for kexec_file_load
-> support on arm64, but anyhow I'm working on this and now
-> my early prototype code does work fine.
+Hi Samuel,
 
-It is necessary if you want to support loading only signed kernels, and also 
-if you want IMA to measure the kernel in its event log.
+Thanks for your response.
 
-> There is, however, one essential issue:
-> While arm64 kernel requires a device tree blob to be set up
-> correctly at boot time, the current system call API doesn't
-> have this parameter.
->     int kexec_file_load(int kernel_fd, int initrd_fd,
->                         unsigned long cmdline_len, const char
-> *cmdline_ptr, unsigned long flags);
+Am Freitag, 01 Juli 2016, 11:46:21 schrieb Samuel Mendoza-Jonas:
+> On Thu, 2016-06-30 at 11:27 -0300, Thiago Jung Bauermann wrote:
+> > I have a question about the petitboot feature which allows the user to
+> > specify a device tree blob to pass to the target OS being loaded. What
+> > is
+> > the use case for it? Is it a debugging and development aid, or do you
+> > expect it be useful in a production environment?
 > 
-> Should we invent a new system call, like kexec_file_load2,
-> and, if so, what kind of interface would be desired?
+> Passing the dtb isn't really a Petitboot feature, rather part of how
+> kexec works for PowerPC and ARM. Petitboot may make modifications to, or
+> replace the dtb, but the method via with the target kernel obtains its
+> device-tree is kexec. So I suspect you would have to say it is mandatory
+> for production.
 
-I'm facing the same issue on powerpc. What I'm doing is taking the device 
-tree that was used to boot the current kernel and modifying it as necessary 
-to pass it to the next kernel.
+Right. I already have a working kexec_file_load implementation [1], and what 
+I'm doing in my patch set is taking the device tree that was used to boot 
+the current kernel and modifying it as necessary to pass it to the next 
+kernel.
 
-I agree that it would be better if we could have a system call where a 
-custom device tree could be passed. One suggestion is:
+My question is: is there any need in a production environment for userspace 
+to provide a different device tree for the next kernel, or can the currently 
+running kernel always use the device tree that it received when it was 
+booted?
 
+So one new piece of information for me is that Petitboot makes modifications 
+to the dtb. Does it do that only if the system administrator provided a 
+custom dtb (either via the boot options screen or a configuration file), or 
+can it change/replace the dtb even if the system administrator didn't 
+provide a custom dtb? Which modifications does Petitboot make?
 
-kexec_file_load2(int fds[], int fd_types[], int nr_fds,
-		 unsigned long cmdline_len, const char *cmdline_ptr,
-		unsigned long flags);
+> > I ask this because I'm implementing the kexec_file_load system call for
+> > powerpc, and given its prototype:
+> > 
+> > long kexec_file_load(int kernel_fd, int initrd_fd, unsigned long
+> > cmdline_len, const char *cmdline_ptr, unsigned long flags)
+> > 
+> > It wouldn't be very straightforward to allow the caller to specify a
+> > device tree blob, so I have to ask how necessary such a feature is.
+> 
+> Yep, I think the problem is kexec_file_load was first implemented with a
+> focus on x86 where this isn't an issue, and now we need to consider what
+> to do :)
 
-Where fds is an array with nr_fds file descriptors and fd_types is an array 
-specifying what each fd in fds is. So for example, if fds[i] is the kernel, 
-then fd_types[i] would have the value KEXEC_FILE_KERNEL_FD. If fds[i] is the 
-device tree blob, fd_types[i], would have the value KEXEC_FILE_DTB and so 
-on. That way, the syscall can be extended for an arbitrary number and types 
-of segments that have to be loaded, just like kexec_load.
+Yes, that's true. I was able to make it work on powerpc even with that x86 
+bias, but now I'm wondering if that's enough or not.
 
-Another option is to have a struct:
+> We are definitely going to need a way to pass the device-tree to the
+> target kernel - whether we do that by changing the prototype for
+> kexec_file_load() PowerPC and ARM, or by dealing with it some other way
+> I'm not sure.
 
-kexec_file_load2(struct kexec_file_params *params, unsigned long params_sz);
+Do you say definitely because the kexec'd kernel needs to be passed a device 
+tree, or is it because userspace needs to have some control over the device 
+tree that the kexec'd kernel receives?
 
-Where:
+> Sounds like the start of a interesting conversation on the
+> linuxppc-dev list :)
 
-struct kexec_file_params {
-	int version;	/* allows struct to be extended in the future */
-	int fds[];
-	int fd_types[];
-	int nr_fds;
-	unsigned long cmdline_len;
-	const char *cmdline_ptr;
-	unsigned long flags;
-};
+Indeed. :-) I'm copying linuxppc-dev here just in case.
 
-This is even more flexible.
+A conversation about this just started in the kexec mailing list (I'm 
+copying the linuxppc-dev mailing list in my response as well):
+
+https://lists.infradead.org/pipermail/kexec/2016-July/016279.html
 
 []'s
 Thiago Jung Bauermann
 IBM Linux Technology Center
+
+
+[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-June/144658.html
