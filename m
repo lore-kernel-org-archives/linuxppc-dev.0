@@ -1,45 +1,52 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rggSk5tT1zDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:33:26 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rggV24Z0mzDqps
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:34:34 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u612SXmJ075361
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:33:24 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23uwnpbf6t-1
+ u612Xwit010323
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:34:32 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23w62f20h4-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:33:24 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 22:34:31 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Fri, 1 Jul 2016 12:33:19 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 1 Jul 2016 12:34:28 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 190DC3578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:33:17 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D890F2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:34:24 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u612XHBu21495928
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:33:17 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u612XG6f018777
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:33:16 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Huy Nguyen <huyn@mellanox.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH] powerpc/fadump: Fix compile error due to missing semicolon
-Date: Fri,  1 Jul 2016 12:31:48 +1000
-In-Reply-To: <1467025661-1410-1-git-send-email-colin.king@canonical.com>
-References: <1467025661-1410-1-git-send-email-colin.king@canonical.com>
+ u612YOWZ15204526
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:34:24 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u612YO5d028281
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:34:24 +1000
+Date: Fri, 1 Jul 2016 12:34:23 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ bhelgaas@google.com, alex.williamson@redhat.com, aik@ozlabs.ru,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ corbet@lwn.net, warrier@linux.vnet.ibm.com, zhong@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 5/7] PCI: Do not use IORESOURCE_STARTALIGN to identify
+ bridge resources
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1467283993-3185-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+ <1467283993-3185-6-git-send-email-xyjxie@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <1467340308-720-1-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467283993-3185-6-git-send-email-xyjxie@linux.vnet.ibm.com>
+Message-Id: <20160701023423.GB6739@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,34 +56,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+On Thu, Jun 30, 2016 at 06:53:11PM +0800, Yongji Xie wrote:
+>Now we use the IORESOURCE_STARTALIGN to identify bridge resources
+>in __assign_resources_sorted(). That's quite fragile. We may also
+>set flag IORESOURCE_STARTALIGN for SR-IOV resources in some cases,
+>for example, using the option "noresize" of parameter
+>"pci=resource_alignment".
+>
+>In this patch, we try to use a more robust way to identify
+>bridge resources.
+>
+>Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 
-The commit "powerpc/fadump: trivial fix of spelling mistake, clean up
-message" removed a semicolon causing the following compile failure:
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-arch/powerpc/kernel/fadump.c: In function ‘fadump_invalidate_dump’:
-arch/powerpc/kernel/fadump.c:1014:2: error: expected ‘;’ before ‘}’ token
-  }
-  ^
+Yongji, I think this doesn't have to be part of this series, meaning
+it can be sent or merged separately.
 
-Reported-by: Huy Nguyen <huyn@mellanox.com>
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
- arch/powerpc/kernel/fadump.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>---
+> drivers/pci/setup-bus.c |    9 ++++++---
+> 1 file changed, 6 insertions(+), 3 deletions(-)
+>
+>diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+>index 55641a3..216ddbc 100644
+>--- a/drivers/pci/setup-bus.c
+>+++ b/drivers/pci/setup-bus.c
+>@@ -390,6 +390,7 @@ static void __assign_resources_sorted(struct list_head *head,
+> 	struct pci_dev_resource *dev_res, *tmp_res, *dev_res2;
+> 	unsigned long fail_type;
+> 	resource_size_t add_align, align;
+>+	int index;
+>
+> 	/* Check if optional add_size is there */
+> 	if (!realloc_head || list_empty(realloc_head))
+>@@ -410,11 +411,13 @@ static void __assign_resources_sorted(struct list_head *head,
+>
+> 		/*
+> 		 * There are two kinds of additional resources in the list:
+>-		 * 1. bridge resource  -- IORESOURCE_STARTALIGN
+>-		 * 2. SR-IOV resource   -- IORESOURCE_SIZEALIGN
+>+		 * 1. bridge resource
+>+		 * 2. SR-IOV resource
+> 		 * Here just fix the additional alignment for bridge
+> 		 */
+>-		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
+>+		index = dev_res->res - dev_res->dev->resource;
+>+		if (index < PCI_BRIDGE_RESOURCES ||
+>+			index > PCI_BRIDGE_RESOURCE_END)
+> 			continue;
+>
+> 		add_align = get_res_add_align(realloc_head, dev_res->res);
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index f066486..b3a6633 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -1010,7 +1010,7 @@ static int fadump_invalidate_dump(struct fadump_mem_struct *fdm)
- 
- 	if (rc) {
- 		pr_err("Failed to invalidate firmware-assisted dump registration. Unexpected error (%d).\n", rc);
--		return rc
-+		return rc;
- 	}
- 	fw_dump.dump_active = 0;
- 	fdm_active = NULL;
--- 
-2.8.1
+Thanks,
+Gavin
