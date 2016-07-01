@@ -1,47 +1,22 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <colin.king@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgqvj668XzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 18:53:53 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u618nFV1090824
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 04:53:52 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23wajet4bc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 04:53:51 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 09:53:49 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2062217D805F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 09:55:08 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u618rkRE3604912
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 08:53:46 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u617rmuu000377
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 01:53:49 -0600
-Subject: Re: [PATCH] cxl: Ignore CAPI adapters misplaced in switched slots
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgr2M4R2PzDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 18:59:39 +1000 (AEST)
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-References: <1467287137-25366-1-git-send-email-felix@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, imunsie@au1.ibm.com, tgrobeck@us.ibm.com
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 1 Jul 2016 10:53:45 +0200
+References: <20160701152707.444e03b4@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Colin Ian King <colin.king@canonical.com>
+Message-ID: <577630DB.9070401@canonical.com>
+Date: Fri, 1 Jul 2016 09:59:07 +0100
 MIME-Version: 1.0
-In-Reply-To: <1467287137-25366-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57762F99.3080904@linux.vnet.ibm.com>
+In-Reply-To: <20160701152707.444e03b4@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,17 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Salut Philippe,
+On 01/07/16 06:27, Stephen Rothwell wrote:
+> Hi all,
+> 
+> After merging the powerpc tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> arch/powerpc/kernel/fadump.c: In function 'fadump_invalidate_dump':
+> arch/powerpc/kernel/fadump.c:1014:2: error: expected ';' before '}' token
+>   }
+>   ^
+> 
+> Caused by commit
+> 
+>   4a03749f140c ("powerpc/fadump: Trivial fix of spelling mistake, clean up message")
+> 
+> I have added this fix patch for today:
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Fri, 1 Jul 2016 15:19:34 +1000
+> Subject: [PATCH] powerpc/fadump: add missing semicolon
+> 
+> Fixes: 4a03749f140c ("powerpc/fadump: Trivial fix of spelling mistake, clean up message")
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/kernel/fadump.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index f0664860753e..b3a663333d36 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -1010,7 +1010,7 @@ static int fadump_invalidate_dump(struct fadump_mem_struct *fdm)
+>  
+>  	if (rc) {
+>  		pr_err("Failed to invalidate firmware-assisted dump registration. Unexpected error (%d).\n", rc);
+> -		return rc
+> +		return rc;
+>  	}
+>  	fw_dump.dump_active = 0;
+>  	fdm_active = NULL;
+> 
 
-Le 30/06/2016 13:45, Philippe Bergheaud a écrit :
-> +	if (cxl_slot_is_switched(dev)) {
-> +		dev_dbg(&dev->dev, "cxl_init_adapter: Ignoring switched slot device\n");
-> +		return -ENODEV;
-> +	}
-
-
-I think it would be useful for the user who has inserted the card in the 
-wrong slot to be notified, i.e. raise the level of the message. 
-Otherwise he would be wondering why the card is not recognized.
-
-   Fred
+Apologies for that. Thanks for fixing it up.
