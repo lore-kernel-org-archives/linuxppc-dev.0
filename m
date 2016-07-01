@@ -1,38 +1,47 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgqgy6nsdzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 18:43:41 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgqvj668XzDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 18:53:53 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u618dE8X086185
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 04:43:39 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23wh52yc22-1
+ u618nFV1090824
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 04:53:52 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23wajet4bc-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 04:43:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 04:53:51 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 02:43:39 -0600
-Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- acme@kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267714.7296.6.camel@ellerman.id.au>
-Cc: anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
- naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Fri, 1 Jul 2016 14:13:22 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Fri, 1 Jul 2016 09:53:49 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2062217D805F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 09:55:08 +0100 (BST)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u618rkRE3604912
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 08:53:46 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u617rmuu000377
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 01:53:49 -0600
+Subject: Re: [PATCH] cxl: Ignore CAPI adapters misplaced in switched slots
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1467287137-25366-1-git-send-email-felix@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, imunsie@au1.ibm.com, tgrobeck@us.ibm.com
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Fri, 1 Jul 2016 10:53:45 +0200
 MIME-Version: 1.0
-In-Reply-To: <1467267714.7296.6.camel@ellerman.id.au>
+In-Reply-To: <1467287137-25366-1-git-send-email-felix@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57762D2A.9040103@linux.vnet.ibm.com>
+Message-Id: <57762F99.3080904@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,64 +51,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Michael for your suggestion.
+Salut Philippe,
 
-On Thursday 30 June 2016 11:51 AM, Michael Ellerman wrote:
-> On Thu, 2016-06-30 at 11:44 +0530, Ravi Bangoria wrote:
->> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
->> index 36a5825..b87eac7 100644
->> --- a/tools/perf/util/annotate.c
->> +++ b/tools/perf/util/annotate.c
->> @@ -476,6 +481,125 @@ static int ins__cmp(const void *a, const void *b)
-> ...
->> +
->> +static struct ins *ins__find_powerpc(const char *name)
->> +{
->> +	int i;
->> +	struct ins *ins;
->> +	struct ins_ops *ops;
->> +	static struct instructions_powerpc head;
->> +	static bool list_initialized;
->> +
->> +	/*
->> +	 * - Interested only if instruction starts with 'b'.
->> +	 * - Few start with 'b', but aren't branch instructions.
->> +	 * - Let's also ignore instructions involving 'ctr' and
->> +	 *   'tar' since target branch addresses for those can't
->> +	 *   be determined statically.
->> +	 */
->> +	if (name[0] != 'b'             ||
->> +	    !strncmp(name, "bcd", 3)   ||
->> +	    !strncmp(name, "brinc", 5) ||
->> +	    !strncmp(name, "bper", 4)  ||
->> +	    strstr(name, "ctr")        ||
->> +	    strstr(name, "tar"))
->> +		return NULL;
-> It would be good if 'bctr' was at least recognised as a branch, even if we
-> can't determine the target. They are very common.
+Le 30/06/2016 13:45, Philippe Bergheaud a écrit :
+> +	if (cxl_slot_is_switched(dev)) {
+> +		dev_dbg(&dev->dev, "cxl_init_adapter: Ignoring switched slot device\n");
+> +		return -ENODEV;
+> +	}
 
-We can not show arrow for this since we don't know the target location.
-can you please suggest how you intends perf to display bctr?
 
-bctr can be classified into two variants -- 'bctr' and 'bctrl'.
+I think it would be useful for the user who has inserted the card in the 
+wrong slot to be notified, i.e. raise the level of the message. 
+Otherwise he would be wondering why the card is not recognized.
 
-'bctr' will be considered as jump instruction but jump__parse() won't
-be able to find any target location and hence it will set target to
-UINT64_MAX which transform 'bctr' to 'bctr UINT64_MAX'. This
-looks misleading.
-
-bctrl will be considered as call instruction but call_parse() won't
-be able to find any target function and hence it won't show any
-navigation arrow for this instruction. Which is same as filter it
-beforehand.
-
-> It doesn't look like we have the opcode handy here? Could we get it somehow?
-> That would make this a *lot* more robust.
-
-objdump prints machine code, but I don't know how difficult that would
-be to parse to get opcode.
-
--Ravi
-
-> cheers
->
+   Fred
