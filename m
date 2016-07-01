@@ -1,32 +1,45 @@
-Return-Path: <ed.cashin@acm.org>
-Received: from gproxy5-pub.mail.unifiedlayer.com
- (gproxy5-pub.mail.unifiedlayer.com [67.222.38.55])
- by lists.ozlabs.org (Postfix) with SMTP id 3rgdLd0RfFzDqhC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 10:58:00 +1000 (AEST)
-Subject: Re: [PATCH v2 05/12] aoeblk: Generate uevent after attribute available
-To: Fam Zheng <famz@redhat.com>, linux-kernel@vger.kernel.org
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgf320b1dzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 11:29:34 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id n132so20545367qka.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2016 18:29:33 -0700 (PDT)
+MIME-Version: 1.0
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <20160701010113.GB10122@ad.usersys.redhat.com>
 References: <20160630015953.6888-1-famz@redhat.com>
- <20160630015953.6888-6-famz@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Jens Axboe <axboe@kernel.dk>, Jiri Kosina <jikos@kernel.org>,
- "Michael S. Tsirkin" <mst@redhat.com>, Minchan Kim <minchan@kernel.org>,
- Nitin Gupta <ngupta@vflare.org>,
+ <20160630062442.GA19761@infradead.org>
+ <20160630063554.GE23296@ad.usersys.redhat.com>
+ <20160630063839.GA17205@infradead.org>
+ <20160701010113.GB10122@ad.usersys.redhat.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Thu, 30 Jun 2016 18:29:31 -0700
+Message-ID: <CAA9_cmeb99S+UoZ7A-4HHmT_rFRgnSaBX=YszEk8+4_=n9cOnA@mail.gmail.com>
+Subject: Re: [PATCH v2 00/12] gendisk: Generate uevent after attribute
+ available
+To: Fam Zheng <famz@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
+ "Ed L. Cashin" <ed.cashin@acm.org>,
+ Jiri Kosina <jikos@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>,
+ Minchan Kim <minchan@kernel.org>, Nitin Gupta <ngupta@vflare.org>,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
  Shaohua Li <shli@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
  David Woodhouse <dwmw2@infradead.org>,
  Brian Norris <computersforpeace@gmail.com>,
- Keith Busch <keith.busch@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Keith Busch <keith.busch@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linux-block@vger.kernel.org, virtualization@lists.linux-foundation.org,
- linux-raid@vger.kernel.org, linux-mmc@vger.kernel.org,
- linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org,
- Christoph Hellwig <hch@infradead.org>
-From: Ed Cashin <ed.cashin@acm.org>
-Message-ID: <5775C009.3010000@acm.org>
-Date: Thu, 30 Jun 2016 20:57:45 -0400
-MIME-Version: 1.0
-In-Reply-To: <20160630015953.6888-6-famz@redhat.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ linux-raid <linux-raid@vger.kernel.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ linux-mtd@lists.infradead.org, linux-nvme@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,12 +49,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2016 09:59 PM, Fam Zheng wrote:
-> It is documented that KOBJ_ADD should be generated after the object's
-> attributes and children are ready.  We can achieve this with the new
-> disk_gen_uevents interface.
+On Thu, Jun 30, 2016 at 6:01 PM, Fam Zheng <famz@redhat.com> wrote:
+> On Wed, 06/29 23:38, Christoph Hellwig wrote:
+>> On Thu, Jun 30, 2016 at 02:35:54PM +0800, Fam Zheng wrote:
+>> > also more code and less flexible IMO.  For example, we need at least two
+>> > variants, for attribute_group and device_attribute separately, right?
+>>
+>> Yes, or maybe just a calling convention that just passes both.
+>
+> OK, I can look into that, but I'm not sure about the error handling. Currently
+> add_disk returns void, do you have any plan on that too? should I change it in
+> v3 (to at least return the attribute creation failure)?
 
-Looks like an improvement, thanks!
+I think we should only support a "groups" interface to
+device_add_disk() and convert all the drivers that currently do
+device_create_file() after add_disk() to pass in a group list instead.
+That way we follow the expectation that the only way to get an
+attribute for a device to show up before KOBJ_ADD, is to define a
+group:
 
--- 
-   Ed
+>From Documentation/driver-model/device.txt:
+    As explained in Documentation/kobject.txt, device attributes must be be
+    created before the KOBJ_ADD uevent is generated. The only way to realize
+    that is by defining an attribute group.
+
+Let's defer the return value fixing for now.
+
+You can find the pending device_add_disk() patches in the nvdimm
+patchwork starting with "block: introduce device_add_disk()"
+
+https://patchwork.kernel.org/project/linux-nvdimm/list/
