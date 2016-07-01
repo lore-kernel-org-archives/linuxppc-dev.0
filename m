@@ -1,22 +1,22 @@
-Return-Path: <colin.king@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgr2M4R2PzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 18:59:39 +1000 (AEST)
-Subject: Re: linux-next: build failure after merge of the powerpc tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <20160701152707.444e03b4@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-From: Colin Ian King <colin.king@canonical.com>
-Message-ID: <577630DB.9070401@canonical.com>
-Date: Fri, 1 Jul 2016 09:59:07 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgrmH41CkzDql7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 19:32:31 +1000 (AEST)
+Date: Fri, 1 Jul 2016 17:32:09 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Anton Blanchard <anton@ozlabs.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
+Subject: Re: [PATCH 2/2] crypto: powerpc: Add POWER8 optimised crc32c
+Message-ID: <20160701093209.GC13424@gondor.apana.org.au>
+References: <1467325185-21091-1-git-send-email-anton@ozlabs.org>
+ <1467325185-21091-2-git-send-email-anton@ozlabs.org>
 MIME-Version: 1.0
-In-Reply-To: <20160701152707.444e03b4@canb.auug.org.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467325185-21091-2-git-send-email-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/07/16 06:27, Stephen Rothwell wrote:
-> Hi all,
+On Fri, Jul 01, 2016 at 08:19:45AM +1000, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> After merging the powerpc tree, today's linux-next build (powerpc
-> allyesconfig) failed like this:
+> Use the vector polynomial multiply-sum instructions in POWER8 to
+> speed up crc32c.
 > 
-> arch/powerpc/kernel/fadump.c: In function 'fadump_invalidate_dump':
-> arch/powerpc/kernel/fadump.c:1014:2: error: expected ';' before '}' token
->   }
->   ^
+> This is just over 41x faster than the slice-by-8 method that it
+> replaces. Measurements on a 4.1 GHz POWER8 show it sustaining
+> 52 GiB/sec.
 > 
-> Caused by commit
+> A simple btrfs write performance test:
 > 
->   4a03749f140c ("powerpc/fadump: Trivial fix of spelling mistake, clean up message")
+>     dd if=/dev/zero of=/mnt/tmpfile bs=1M count=4096
+>     sync
 > 
-> I have added this fix patch for today:
+> is over 3.7x faster.
 > 
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Fri, 1 Jul 2016 15:19:34 +1000
-> Subject: [PATCH] powerpc/fadump: add missing semicolon
-> 
-> Fixes: 4a03749f140c ("powerpc/fadump: Trivial fix of spelling mistake, clean up message")
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/kernel/fadump.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index f0664860753e..b3a663333d36 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -1010,7 +1010,7 @@ static int fadump_invalidate_dump(struct fadump_mem_struct *fdm)
->  
->  	if (rc) {
->  		pr_err("Failed to invalidate firmware-assisted dump registration. Unexpected error (%d).\n", rc);
-> -		return rc
-> +		return rc;
->  	}
->  	fw_dump.dump_active = 0;
->  	fdm_active = NULL;
-> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Apologies for that. Thanks for fixing it up.
+Looks good to me.  Where do you want this patch to go Anton?
+
+Thanks,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
