@@ -1,44 +1,28 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgvRQ1hBfzDql5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 21:33:06 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u61BNeC7042464
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 07:33:03 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23w76pnnhn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 07:33:02 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 12:33:01 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id AA33E17D8056
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 12:34:20 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u61BWxZx59965668
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 11:32:59 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u61BWwjB003298
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 07:32:59 -0400
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, imunsie@au1.ibm.com, mikey@neuling.org,
- tgrobeck@us.ibm.com, fbarrat@linux.vnet.ibm.com,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [PATCH v2] cxl: Ignore CAPI adapters misplaced in switched slots
-Date: Fri,  1 Jul 2016 13:32:52 +0200
-Message-Id: <1467372772-9422-1-git-send-email-felix@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgwy04dGPzDqhC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 22:41:12 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id c74so10019217pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 05:41:12 -0700 (PDT)
+Message-ID: <1467376873.12509.1.camel@gmail.com>
+Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
+From: Balbir Singh <bsingharora@gmail.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre
+ <nicolas.pitre@linaro.org>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
+ mpe@ellerman.id.au, David.Laight@ACULAB.COM, arnd@arndb.de
+Date: Fri, 01 Jul 2016 22:41:13 +1000
+In-Reply-To: <577624A3.2000406@linaro.org>
+References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <5775335E.2040003@linaro.org>
+ <alpine.LFD.2.20.1606301132350.12094@knanqh.ubzr>
+ <577624A3.2000406@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,67 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-One should not attempt to switch a PHB into CAPI mode if there is
-a switch between the PHB and the adapter. This patch modifies the
-cxl driver to ignore CAPI adapters misplaced in switched slots.
+On Fri, 2016-07-01 at 10:06 +0200, Daniel Lezcano wrote:
+> On 06/30/2016 05:37 PM, Nicolas Pitre wrote:
+> > 
+> > On Thu, 30 Jun 2016, Daniel Lezcano wrote:
+> [ ... ]
+> 
+> > 
+> > > 
+> > > > 
+> > > > +	if (likely(nsec < DIV_APPROXIMATION_THRESHOLD)) {
+> > > > +		u32 usec = nsec;
+> > > > +
+> > > > +		usec += usec >> 5;
+> > > > +		usec = usec >> 10;
+> > > > +
+> > > > +		/* Can safely cast to int since usec is < INT_MAX */
+> > > > +		return usec;
+> > > > +	} else {
+> > > > +		u64 usec = div_u64(nsec, 1000);
+> > > > +
+> > > > +		if (usec > INT_MAX)
+> > > > +			usec = INT_MAX;
+> > > > +
+> > > > +		/* Can safely cast to int since usec is < INT_MAX */
+> > > > +		return usec;
+> > > > +	}
+> > > > +}
+> > > 
+> > > What bothers me with this division is the benefit of adding an extra ultra
+> > > optimized division by 1000 in cpuidle.h while we have already ktime_divns
+> > > which is optimized in ktime.h.
+> > It is "optimized" but still much heavier than what is presented above as
+> > it provides maximum precision.
+> > 
+> > It all depends on how important the performance gain from the original
+> > shift by 10 was in the first place.
+> Actually the original shift was there because it was convenient as a 
+> simple ~div1000 operation. But against all odds, the approximation 
+> introduced a regression on a very specific use case on PowerPC.
+> 
+> We are not in the hot path and I think we can live with a ktime_divns 
+> without problem. That would simplify the fix I believe.
+> 
 
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
----
-This patch fixes Bz 142217.
+I would tend to agree with this and there are better ways to do
+multiplicative inverses if we care
 
-Changes since v1:
-  - As suggested by Fred, tell user that CAPI adapter is misplaced
-    s/dev_dbg/dev_info/
-
- drivers/misc/cxl/pci.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index a08fcc8..0d69eac 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1280,6 +1280,30 @@ static void cxl_pci_remove_adapter(struct cxl *adapter)
- 	device_unregister(&adapter->dev);
- }
- 
-+#define CXL_MAX_PCIEX_PARENT 2
-+
-+static int cxl_slot_is_switched(struct pci_dev *dev)
-+{
-+	struct device_node *np;
-+	int depth = 0;
-+	const __be32 *prop;
-+
-+	if (!(np = pci_device_to_OF_node(dev))) {
-+		pr_err("cxl: np = NULL\n");
-+		return -ENODEV;
-+	}
-+	of_node_get(np);
-+	while (np) {
-+		np = of_get_next_parent(np);
-+		prop = of_get_property(np, "device_type", NULL);
-+		if (!prop || strcmp((char *)prop, "pciex"))
-+			break;
-+		depth++;
-+	}
-+	of_node_put(np);
-+	return (depth > CXL_MAX_PCIEX_PARENT);
-+}
-+
- static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- {
- 	struct cxl *adapter;
-@@ -1291,6 +1315,11 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 		return -ENODEV;
- 	}
- 
-+	if (cxl_slot_is_switched(dev)) {
-+		dev_info(&dev->dev, "Ignoring card on incompatible PCI slot\n");
-+		return -ENODEV;
-+	}
-+
- 	if (cxl_verbose)
- 		dump_cxl_config_space(dev);
- 
--- 
-2.8.0
+Balbir Singh.
