@@ -1,47 +1,31 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgzB01ssbzDqhC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2016 00:21:43 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rgzFB4Vx6zDqhC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2016 00:24:30 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u61EIuW5044052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 10:21:41 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23wbbbu20w-1
+ u61EIu4I105427
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 10:24:28 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23wag0w1q0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 10:21:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 10:24:28 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Fri, 1 Jul 2016 15:21:39 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 17EB2219005F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 15:21:06 +0100 (BST)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u61ELaVa48955584
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 14:21:36 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u61ELXhq021285
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 08:21:35 -0600
-Subject: Re: [PATCH v2] cxl: Ignore CAPI adapters misplaced in switched slots
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1467372772-9422-1-git-send-email-felix@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, tgrobeck@us.ibm.com, imunsie@au1.ibm.com
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Fri, 1 Jul 2016 16:21:30 +0200
-MIME-Version: 1.0
-In-Reply-To: <1467372772-9422-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57767C6A.6090408@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Fri, 1 Jul 2016 10:24:26 -0400
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ daniel.lezcano@linaro.org, nicolas.pitre@linaro.org, bsingharora@gmail.com,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v5] cpuidle: Fix last_residency division
+Date: Fri,  1 Jul 2016 09:24:14 -0500
+Message-Id: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,21 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Snooze is a poll idle state in powernv and pseries platforms. Snooze
+has a timeout so that if a cpu stays in snooze for more than target
+residency of the next available idle state, then it would exit thereby
+giving chance to the cpuidle governor to re-evaluate and
+promote the cpu to a deeper idle state. Therefore whenever snooze exits
+due to this timeout, its last_residency will be target_residency of next
+deeper state.
 
+commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+changed the math around last_residency calculation. Specifically, while
+converting last_residency value from nanoseconds to microseconds it does
+right shift by 10. Due to this, in snooze timeout exit scenarios
+last_residency calculated is roughly 2.3% less than target_residency of
+next available state. This pattern is picked up get_typical_interval()
+in the menu governor and therefore expected_interval in menu_select() is
+frequently less than the target_residency of any state but snooze.
 
-Le 01/07/2016 13:32, Philippe Bergheaud a écrit :
-> One should not attempt to switch a PHB into CAPI mode if there is
-> a switch between the PHB and the adapter. This patch modifies the
-> cxl driver to ignore CAPI adapters misplaced in switched slots.
->
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
-> This patch fixes Bz 142217.
->
-> Changes since v1:
->    - As suggested by Fred, tell user that CAPI adapter is misplaced
->      s/dev_dbg/dev_info/
+Due to this we are entering snooze at a higher rate, thereby affecting
+the single thread performance.
 
-Thanks!
+Fix this by using precise division via ktime_us_delta.
 
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Reported-by: Anton Blanchard <anton@samba.org>
+Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+---
+Changes in v5
+=============
+ - Replacing approximation division with ktime_us_delta.
+
+Changes in v4
+=============
+ - Increasing the threshold upto which approximation can be used.
+ - Removed explicit cast. Instead added a comment saying why cast
+   is safe.
+
+Changes in v3
+=============
+ - Using approximation suggested by David
+
+Changes in v2
+=============
+ - Fixing it in the cpuidle core code instead of driver code.
+
+ drivers/cpuidle/cpuidle.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index a4d0059..c73207a 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -173,7 +173,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+-	u64 time_start, time_end;
++	ktime_t time_start, time_end;
+ 	s64 diff;
+ 
+ 	/*
+@@ -195,13 +195,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	sched_idle_set_state(target_state);
+ 
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+-	time_start = local_clock();
++	time_start = ns_to_ktime(local_clock());
+ 
+ 	stop_critical_timings();
+ 	entered_state = target_state->enter(dev, drv, index);
+ 	start_critical_timings();
+ 
+-	time_end = local_clock();
++	time_end = ns_to_ktime(local_clock());
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
+ 	/* The cpu is no longer idle or about to enter idle. */
+@@ -217,11 +217,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	if (!cpuidle_state_is_coupled(drv, index))
+ 		local_irq_enable();
+ 
+-	/*
+-	 * local_clock() returns the time in nanosecond, let's shift
+-	 * by 10 (divide by 1024) to have microsecond based time.
+-	 */
+-	diff = (time_end - time_start) >> 10;
++	diff = ktime_us_delta(time_end, time_start);
+ 	if (diff > INT_MAX)
+ 		diff = INT_MAX;
+ 
+-- 
+2.1.4
