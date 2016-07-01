@@ -1,23 +1,48 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wm0-x232.google.com (mail-wm0-x232.google.com
- [IPv6:2a00:1450:400c:c09::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rgzQ24BthzDqhC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2016 00:32:10 +1000 (AEST)
-Received: by mail-wm0-x232.google.com with SMTP id a66so31995643wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 07:32:10 -0700 (PDT)
-Subject: Re: [PATCH v5] cpuidle: Fix last_residency division
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
-References: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- nicolas.pitre@linaro.org, bsingharora@gmail.com
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <57767EE6.4080108@linaro.org>
-Date: Fri, 1 Jul 2016 16:32:06 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rh1462hhQzDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2016 01:46:44 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u61Fi0wt136494
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 11:46:41 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23wajf7ce7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2016 11:46:41 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Fri, 1 Jul 2016 12:46:38 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 53E6D3520070
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2016 11:46:17 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u61FkYxm13762948
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:46:34 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u61FkYNX032141
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jul 2016 12:46:34 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: kexec@lists.infradead.org
+Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>, ebiederm@xmission.com,
+ dyoung@redhat.com, bhe@redhat.com, vgoyal@redhat.com,
+ will.deacon@arm.com, catalin.marinas@arm.com,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC] arm64: kexec_file_load support
+Date: Fri, 01 Jul 2016 12:46:31 -0300
+In-Reply-To: <20160701051111.GL20774@linaro.org>
+References: <20160701051111.GL20774@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <3300473.zhbeG65qgA@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +52,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/01/2016 04:24 PM, Shreyas B. Prabhu wrote:
-> Snooze is a poll idle state in powernv and pseries platforms. Snooze
-> has a timeout so that if a cpu stays in snooze for more than target
-> residency of the next available idle state, then it would exit thereby
-> giving chance to the cpuidle governor to re-evaluate and
-> promote the cpu to a deeper idle state. Therefore whenever snooze exits
-> due to this timeout, its last_residency will be target_residency of next
-> deeper state.
->
-> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-> changed the math around last_residency calculation. Specifically, while
-> converting last_residency value from nanoseconds to microseconds it does
-> right shift by 10. Due to this, in snooze timeout exit scenarios
-> last_residency calculated is roughly 2.3% less than target_residency of
-> next available state. This pattern is picked up get_typical_interval()
-> in the menu governor and therefore expected_interval in menu_select() is
-> frequently less than the target_residency of any state but snooze.
->
-> Due to this we are entering snooze at a higher rate, thereby affecting
-> the single thread performance.
->
-> Fix this by using precise division via ktime_us_delta.
->
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
+Am Freitag, 01 Juli 2016, 14:11:12 schrieb AKASHI Takahiro:
+> I'm not sure whether there is any demand for kexec_file_load
+> support on arm64, but anyhow I'm working on this and now
+> my early prototype code does work fine.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+It is necessary if you want to support loading only signed kernels, and also 
+if you want IMA to measure the kernel in its event log.
+
+> There is, however, one essential issue:
+> While arm64 kernel requires a device tree blob to be set up
+> correctly at boot time, the current system call API doesn't
+> have this parameter.
+>     int kexec_file_load(int kernel_fd, int initrd_fd,
+>                         unsigned long cmdline_len, const char
+> *cmdline_ptr, unsigned long flags);
+> 
+> Should we invent a new system call, like kexec_file_load2,
+> and, if so, what kind of interface would be desired?
+
+I'm facing the same issue on powerpc. What I'm doing is taking the device 
+tree that was used to boot the current kernel and modifying it as necessary 
+to pass it to the next kernel.
+
+I agree that it would be better if we could have a system call where a 
+custom device tree could be passed. One suggestion is:
 
 
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+kexec_file_load2(int fds[], int fd_types[], int nr_fds,
+		 unsigned long cmdline_len, const char *cmdline_ptr,
+		unsigned long flags);
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Where fds is an array with nr_fds file descriptors and fd_types is an array 
+specifying what each fd in fds is. So for example, if fds[i] is the kernel, 
+then fd_types[i] would have the value KEXEC_FILE_KERNEL_FD. If fds[i] is the 
+device tree blob, fd_types[i], would have the value KEXEC_FILE_DTB and so 
+on. That way, the syscall can be extended for an arbitrary number and types 
+of segments that have to be loaded, just like kexec_load.
+
+Another option is to have a struct:
+
+kexec_file_load2(struct kexec_file_params *params, unsigned long params_sz);
+
+Where:
+
+struct kexec_file_params {
+	int version;	/* allows struct to be extended in the future */
+	int fds[];
+	int fd_types[];
+	int nr_fds;
+	unsigned long cmdline_len;
+	const char *cmdline_ptr;
+	unsigned long flags;
+};
+
+This is even more flexible.
+
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
