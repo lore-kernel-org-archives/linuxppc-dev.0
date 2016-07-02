@@ -1,45 +1,19 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fedora@leemhuis.info>
+Received: from basicbox7.server-home.net (basicbox7.server-home.net
+ [195.137.212.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjHzZ2fxQzDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 04:02:18 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u63HxGF5030019
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 14:02:15 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23x7ru6h26-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jul 2016 14:02:15 -0400
-Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 4 Jul 2016 04:02:12 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CB6FC2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 04:02:09 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u63I292e3473832
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 04:02:09 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u63I28Ml022499
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 04:02:09 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Yury Norov <ynorov@caviumnetworks.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Jiri Olsa <jolsa@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] perf/core: Fix the mask in perf_output_sample_regs
-Date: Sun,  3 Jul 2016 23:31:58 +0530
-Message-Id: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rhkYP6QKvzDqnG
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2016 05:56:09 +1000 (AEST)
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Linux 4.7: Reported regressions as of Saturday, 2016-07-02
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Message-ID: <098e9823-c83e-2c82-5fcf-fb562eb80158@leemhuis.info>
+Date: Sat, 2 Jul 2016 21:47:34 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,85 +23,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When decoding the perf_regs mask in perf_output_sample_regs(),
-we loop through the mask using find_first_bit and find_next_bit functions.
-While the exisitng code works fine in most of the case,
-the logic is broken for 32bit kernel (Big Endian).
-When reading u64 mask using (u32 *)(&val)[0], find_*_bit() assumes it gets
-lower 32bits of u64 but instead gets upper 32bits which is wrong.
-Proposed fix is to swap the words of the u64 to handle this case.
-This is _not_ endianness swap.
+Hi! Here is my fourth regression report for Linux 4.7; a day earlier then usual.
+It has 14 entries;
+ * 2 of them are new
+ * 9 regressions (not included here) were fixed since the last report(¹)
+ * 1 made it to the list after last Sunday (thx for telling me about it Kalle!),
+   but was fixed before I compiled this one
+ * 2 turned out to not be regressions at all
+ * 1 was a duplicate
 
-Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Yury Norov <ynorov@caviumnetworks.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- include/linux/bitmap.h |  2 ++
- kernel/events/core.c   |  4 +++-
- lib/bitmap.c           | 19 +++++++++++++++++++
- 3 files changed, 24 insertions(+), 1 deletion(-)
+Fixes for 4 of the regression in this report are heading towards mainline. 
+One of the remaining regressions is likely fixed already. 
 
-diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
-index e9b0b9ab07e5..d95b422db183 100644
---- a/include/linux/bitmap.h
-+++ b/include/linux/bitmap.h
-@@ -188,6 +188,8 @@ extern int bitmap_print_to_pagebuf(bool list, char *buf,
- #define small_const_nbits(nbits) \
- 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
- 
-+extern void bitmap_from_u64(unsigned long *dst, u64 mask);
-+
- static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
- {
- 	if (small_const_nbits(nbits))
-diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 9c51ec3f0f44..613fec95ea4c 100644
---- a/kernel/events/core.c
-+++ b/kernel/events/core.c
-@@ -5205,8 +5205,10 @@ perf_output_sample_regs(struct perf_output_handle *handle,
- 			struct pt_regs *regs, u64 mask)
- {
- 	int bit;
-+	DECLARE_BITMAP(_mask, 64);
- 
--	for_each_set_bit(bit, (const unsigned long *) &mask,
-+	bitmap_from_u64(_mask, mask);
-+	for_each_set_bit(bit, _mask,
- 			 sizeof(mask) * BITS_PER_BYTE) {
- 		u64 val;
- 
-diff --git a/lib/bitmap.c b/lib/bitmap.c
-index c66da508cbf7..522f1b4c6078 100644
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -1170,3 +1170,22 @@ void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int n
- }
- EXPORT_SYMBOL(bitmap_copy_le);
- #endif
-+
-+/*
-+ * bitmap_from_u64 - Check and swap words within u64.
-+ *  @mask: source bitmap
-+ *  @dst:  destination bitmap
-+ *
-+ * In 32bit Big Endian kernel, when using (u32 *)(&val)[*]
-+ * to read u64 mask, we will get wrong word.
-+ * That is "(u32 *)(&val)[0]" gets upper 32 bits,
-+ * but expected could be lower 32bits of u64.
-+ */
-+void bitmap_from_u64(unsigned long *dst, u64 mask)
-+{
-+	dst[0] = mask & ULONG_MAX;
-+
-+	if (sizeof(mask) > sizeof(unsigned long))
-+		dst[1] = mask >> 32;
-+}
-+EXPORT_SYMBOL(bitmap_from_u64);
--- 
-1.9.1
+Please let me know if a regression is missing in the list; or if
+there is something on the list which shouldn't be there.
+
+HTH, CU, Thorsten
+
+(¹) previous reports can be found at
+http://thread.gmane.org/gmane.linux.kernel/2241805
+http://thread.gmane.org/gmane.linux.kernel/2247804
+http://thread.gmane.org/gmane.linux.kernel/2253623
+
+----
+Desc: Bad flicker on skylake HQD due to code in the 4.7 merge window
+Repo: 2016-05-30 http://thread.gmane.org/gmane.linux.kernel/2230377
+Stat: 2016-06-23 http://thread.gmane.org/gmane.linux.kernel/2230377/focus=158274
+Note: vswing issue, maybe primary a Firmware problem; nevertheless a regression; nothing happened for a week, so poked list
+
+Desc: 795ae7a0de: pixz.throughput -9.1% regression
+Repo: 2016-06-02 http://thread.gmane.org/gmane.linux.kernel/2233056/
+Stat: 2016-06-22 http://thread.gmane.org/gmane.linux.kernel/2233056/focus=2251134
+Note: hannes still can't reproduce; stalled, until reporter posts results from more tests
+
+Desc: RadeonSI get a huge performance dip with used with the nine state tracker
+Repo: 2016-06-04 https://bugzilla.kernel.org/show_bug.cgi?id=119631
+Stat: 2016-06-20 https://bugzilla.kernel.org/show_bug.cgi?id=119631#c14
+Note: poked bugzilla, as it looked stalled
+
+Desc: BUG: unable to handle kernel NULL pointer dereference […] qla24xx_process_response_queue+0x49/0x4b0 [qla2xxx]
+Repo: 2016-06-14 https://bugzilla.kernel.org/show_bug.cgi?id=120201
+Stat: 2016-06-30 http://thread.gmane.org/gmane.linux.kernel/2257008/focus=2257139 http://thread.gmane.org/gmane.linux.kernel/2247804/focus=2252004 http://thread.gmane.org/gmane.linux.kernel/2257008/focus=2257139
+Note: Patch which fixes the problem (at least afaics) was posted on 2016-06-30
+
+Desc: Performance drop 30-40% for SPECjbb2005 and SPECjvm2008 benchmarks
+Repo: 2016-06-16 https://bugzilla.kernel.org/show_bug.cgi?id=120481
+Stat: 2016-06-25 https://bugzilla.kernel.org/show_bug.cgi?id=120481#c15 http://thread.gmane.org/gmane.linux.kernel/2245977/focus=2253079
+Note: solution heading upstream (made it from sched/urgent to tip 7dd4912594daf769a46744848b05bd5bc6d62469 ea1dc6fc6242f991656e35e2ed3d90ec1cd13418 )
+
+Desc: performance drop on SFC interface around 30 %
+Repo: 2016-06-17 https://bugzilla.kernel.org/show_bug.cgi?id=120461
+Stat: 2016-07-01 https://bugzilla.kernel.org/show_bug.cgi?id=120461#c12
+Note: poked bugzilla, as it looked stalled
+
+Desc: System hang when plug/un-plug USB 3.1 key via thunderbolt port on Dell XPS 13
+Repo: 2016-06-14 https://bugzilla.kernel.org/show_bug.cgi?id=120241
+Stat: 2016-07-02 https://bugzilla.kernel.org/show_bug.cgi?id=120241#c7
+Note: wip
+
+Desc: lk 4.7 regression: EDAC, amd64_edac: Drop pci_register_driver() use
+Repo: 2016-06-15 http://thread.gmane.org/gmane.linux.kernel/2245115/
+Stat: 2016-07-01 (private mail) http://thread.gmane.org/gmane.linux.kernel/2246008/focus=2246009
+Note: solution heading upstream (solution in tip: 1ead852dd88779eda12cb09cc894a03d9abfe1ec )
+
+Desc: regression in 8250 uart driver
+Repo: 2016-06-14 http://thread.gmane.org/gmane.linux.kernel/2243130/focus=2243653
+Stat: 2016-07-02 http://thread.gmane.org/gmane.linux.kernel/2243130/focus=2258232
+Note: andy has it still on his todo list, but something else has a higher priority
+
+Desc: sound disappeared, ACPI/PCI/IRQ related
+Repo: 2016-06-20 http://thread.gmane.org/gmane.linux.kernel/2247930/
+Stat: 2016-06-30 http://thread.gmane.org/gmane.linux.kernel/2247930/focus=2256773 http://thread.gmane.org/gmane.linux.acpi.devel/85281/focus=20097
+Note: Rafael queued fix
+
+Desc: Multi-thread udp 4.7 regression, bisected to 71d8c47fc653; performance decreased or complete failure with a test
+Repo: 2016-06-27 http://thread.gmane.org/gmane.linux.network/418861/focus=418908
+Stat: 2016-06-27 http://thread.gmane.org/gmane.linux.network/418861/focus=418908
+Note: poke someone on Monday, looks it fel of the radar
+
+Desc: kmemcheck: Caught 64-bit read from uninitialized memory; iptables/nf_register_net_hooks
+Repo: 2016-06-19 https://bugzilla.kernel.org/show_bug.cgi?id=120651
+Stat: 2016-07-02 
+Note: told reporter how to contact the relevant developers
+
+Desc: Rename file corruption due to VFS-Changes?
+Repo: 2016-06-16 http://thread.gmane.org/gmane.linux.kernel/2245402/
+Stat: 2016-06-22 http://thread.gmane.org/gmane.linux.kernel/2245402/focus=2250254
+Note: issue likely fixed in mainline by 9f541801 + e7d6ef979; see also: http://thread.gmane.org/gmane.linux.kernel/2231928/focus=76124
+
+Desc: UBSAN splat in drivers/acpi/acpica/dsutils.c:641:16
+Repo: 2016-06-15 https://bugzilla.kernel.org/show_bug.cgi?id=120351
+Stat: 2016-06-22 https://bugzilla.kernel.org/show_bug.cgi?id=120411#c3
+Note: wonder if this is important enough to investigate further; related, similar bugs: https://bugzilla.kernel.org/show_bug.cgi?id=120411 https://bugzilla.kernel.org/show_bug.cgi?id=120391 https://bugzilla.kernel.org/show_bug.cgi?id=120371 https://bugzilla.kernel.org/show_bug.cgi?id=120361 Not sure which of them are regressions
