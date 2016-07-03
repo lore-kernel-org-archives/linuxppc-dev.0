@@ -1,20 +1,50 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rhqV46XbPzDqnK
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2016 09:38:36 +1000 (AEST)
-Message-ID: <1467502701.25625.1.camel@ellerman.id.au>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.7-5 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: cyrilbur@gmail.com, darren@stevens-zone.net, gwshan@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Michael
- Neuling <mikey@neuling.org>
-Date: Sun, 03 Jul 2016 09:38:21 +1000
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-8xoIaRlAKXzlwTusTSNZ"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rhzgw5WWqzDqnK
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2016 15:47:40 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u635i1vb007248
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 01:47:38 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23xa4axxvw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jul 2016 01:47:38 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sun, 3 Jul 2016 15:47:35 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id EF20B2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2016 15:47:33 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u635lXPF62914620
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 15:47:33 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u635lXUW018425
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 15:47:33 +1000
+Date: Sun, 3 Jul 2016 15:47:32 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, imunsie@au1.ibm.com,
+ gwshan@linux.vnet.ibm.com, linux-pci@vger.kernel.org, paulus@samba.org,
+ mikey@neuling.org, andrew.donnellan@au1.ibm.com, bhelgaas@google.com,
+ frederic.barrat@fr.ibm.com, mrochs@linux.vnet.ibm.com
+Subject: Re: [PATCH v7] powerpc/pci: Assign fixed PHB number based on
+ device-tree properties
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1467224062-9173-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467224062-9173-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Message-Id: <20160703054732.GA20271@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,97 +54,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jun 29, 2016 at 03:14:22PM -0300, Guilherme G. Piccoli wrote:
+>The domain/PHB field of PCI addresses has its value obtained from a
+>global variable, incremented each time a new domain (represented by
+>struct pci_controller) is added on the system. The domain addition
+>process happens during boot or due to PHB hotplug add.
+>
+>As recent kernels are using predictable naming for network interfaces,
+>the network stack is more tied to PCI naming. This can be a problem in
+>hotplug scenarios, because PCI addresses will change if devices are
+>removed and then re-added. This situation seems unusual, but it can
+>happen if a user wants to replace a NIC without rebooting the machine,
+>for example.
+>
+>This patch changes the way PCI domain values are generated: now, we use
+>device-tree properties to assign fixed PHB numbers to PCI addresses
+>when available (meaning pSeries and PowerNV cases). We also use a bitmap
+>to allow dynamic PHB numbering when device-tree properties are not
+>used. This bitmap keeps track of used PHB numbers and if a PHB is
+>released (by hotplug operations for example), it allows the reuse of
+>this PHB number, avoiding PCI address to change in case of device remove
+>and re-add soon after. No functional changes were introduced.
+>
+>Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
 
---=-8xoIaRlAKXzlwTusTSNZ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Guilherme, thanks for keeping improving it. If Michael needs:
 
-Hi Linus,
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Please pull some more powerpc fixes for 4.7:
-
-The following changes since commit 844e3be47693f92a108cb1fb3b0606bf25e9c7a6=
-:
-
-=C2=A0 powerpc/bpf/jit: Disable classic BPF JIT on ppc64le (2016-06-23 10:3=
-5:31 +1000)
-
-are available in the git repository at:
-
-=C2=A0 git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags=
-/powerpc-4.7-5
-
-for you to fetch changes up to bfa37087aa04e45f56c41142dfceecb79b8e6ef9:
-
-=C2=A0 powerpc: Initialise pci_io_base as early as possible (2016-06-30 16:=
-52:29 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.7 #5
-
-=C2=A0- tm: Always reclaim in start_thread() for exec() class syscalls from=
- Cyril Bur
-=C2=A0- tm: Avoid SLB faults in treclaim/trecheckpoint when RI=3D0 from Mic=
-hael Neuling
-=C2=A0- eeh: Fix wrong argument passed to eeh_rmv_device() from Gavin Shan
-=C2=A0- Initialise pci_io_base as early as possible from Darren Stevens
-
-----------------------------------------------------------------
-Cyril Bur (1):
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/tm: Always reclaim in start_thr=
-ead() for exec() class syscalls
-
-Darren Stevens (1):
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc: Initialise pci_io_base as earl=
-y as possible
-
-Gavin Shan (1):
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/eeh: Fix wrong argument passed =
-to eeh_rmv_device()
-
-Michael Neuling (1):
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc/tm: Avoid SLB faults in treclai=
-m/trecheckpoint when RI=3D0
-
-=C2=A0arch/powerpc/include/asm/book3s/64/pgtable.h |=C2=A0=C2=A01 +
-=C2=A0arch/powerpc/kernel/eeh_driver.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A02 +-
-=C2=A0arch/powerpc/kernel/pci_64.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=
-=A01 -
-=C2=A0arch/powerpc/kernel/process.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 10 +++++
-=C2=A0arch/powerpc/kernel/tm.S=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0| 61 ++++++++++++++++++++--------
-=C2=A0arch/powerpc/mm/hash_utils_64.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A04 ++
-=C2=A0arch/powerpc/mm/pgtable-radix.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A05 +++
-=C2=A07 files changed, 65 insertions(+), 19 deletions(-)
-
-
---=-8xoIaRlAKXzlwTusTSNZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJXeFBtAAoJEFHr6jzI4aWA4AQP/AyXKriU7Vx24rW2HiWDVogZ
-UVtMAw2kZIFxgaB9gmp6Bof35oi9ejLMN4q2zy+9c2/4Q+bj6iserAvcw7buzCN/
-xqK5X8S250FWw7dMJ2/G54DKWDi4G7CbiG50tTS5JPmav9bqee6sP1F9bXxcIP8Y
-z3M2ml67FTWpVCTKcjObj9ROSvngxEuLjxStojdDlO+WCtNvhlp4WjqIWxd1cCVm
-8KozYmk6rkHO2rzojsPEQeyxxwKfjg0CgtwQi7+xoeL5vwOUyRhM44Nm5pgCEgdD
-QSCUV0cx+yuMUALwybymkyQ8qId31AtX2ZqZ2PZqzq3zzt1eZJF/WzDxASw/2hKf
-CgFLdZFjegBmW9J6Jkl8vUzFGqj+APtKKdsk12fG6sxAao/9nY2tVp1pCJ7JG1Kp
-HqGNVaGa+cM2vEIz+6ryISAiKiY41YOcc/iTGYHWvo+3HzPL5hPgWFXl4QKyIGAD
-2AXfK0E8FF/a0Fytustl55b3kY0U6SqB466GV9XPr3zX94aftQGWCc00quWHYEeo
-DfbIhz0Rd+kWHEPG++DjjmPfp4kKgBws5NHe+MB9xMsGsEHqlczdPKmYgNFZKFbz
-2P+iM6nDeSsQqXDu67YbzYFya6IrL32PNedh+dDjxuwwi5puNHIIvVMzMAAXZc5K
-2TVVl93XcnMXPVeXcckt
-=xs+I
------END PGP SIGNATURE-----
-
---=-8xoIaRlAKXzlwTusTSNZ--
+>---
+>v7:
+>    * Removed the goto as per Michael's suggestion;
+>
+>    * Changed of_property_read_u32_array() to of_property_read_u32_index(),
+>as per Gavin's suggestion. This way, we end up using buid_low as the index
+>of PHB in pSeries, which is expected but was not being achieved in v6,
+>as per my mistake.
+>
+>    * Didn't remove machine check for pSeries on "reg" property lookup.
+>It's worthy to keep it, since almost every platform (if not all of them)
+>contain the "reg" property on PHB node in device-tree, but only in
+>pSeries we're 100% sure it can be used as the PHB unique identifier.
+>Since the patch has a dynamic PHB numbering mechanism, the other platforms
+>won't have trouble with it.
+>
+> arch/powerpc/kernel/pci-common.c | 53 +++++++++++++++++++++++++++++++++++++---
+> 1 file changed, 50 insertions(+), 3 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>index 0f7a60f..c87545b 100644
+>--- a/arch/powerpc/kernel/pci-common.c
+>+++ b/arch/powerpc/kernel/pci-common.c
+>@@ -41,11 +41,18 @@
+> #include <asm/ppc-pci.h>
+> #include <asm/eeh.h>
+>
+>+/* hose_spinlock protects accesses to the the phb_bitmap. */
+> static DEFINE_SPINLOCK(hose_spinlock);
+> LIST_HEAD(hose_list);
+>
+>-/* XXX kill that some day ... */
+>-static int global_phb_number;		/* Global phb counter */
+>+/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
+>+#define MAX_PHBS 0x10000
+>+
+>+/*
+>+ * For dynamic PHB numbering: used/free PHBs tracking bitmap.
+>+ * Accesses to this bitmap should be protected by hose_spinlock.
+>+ */
+>+static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
+>
+> /* ISA Memory physical address */
+> resource_size_t isa_mem_base;
+>@@ -64,6 +71,41 @@ struct dma_map_ops *get_pci_dma_ops(void)
+> }
+> EXPORT_SYMBOL(get_pci_dma_ops);
+>
+>+/*
+>+ * This function should run under locking protection, specifically
+>+ * hose_spinlock.
+>+ */
+>+static int get_phb_number(struct device_node *dn)
+>+{
+>+	u64 prop;
+>+	int ret, phb_id = -1;
+>+
+>+	/*
+>+	 * Try fixed PHB numbering first, by checking archs and reading
+>+	 * the respective device-tree properties. Firstly, try PowerNV by
+>+	 * reading "ibm,opal-phbid", only present in OPAL environment.
+>+	 */
+>+	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
+>+	if (ret && machine_is(pseries))
+>+		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
+>+	if (!ret)
+>+		phb_id = (int)(prop & (MAX_PHBS - 1));
+>+
+>+	/* We need to be sure to not use the same PHB number twice. */
+>+	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
+>+		return phb_id;
+>+
+>+	/*
+>+	 * If not pSeries nor PowerNV, or if fixed PHB numbering tried to add
+>+	 * the same PHB number twice, then fallback to dynamic PHB numbering.
+>+	 */
+>+	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
+>+	BUG_ON(phb_id >= MAX_PHBS);
+>+	set_bit(phb_id, phb_bitmap);
+>+
+>+	return phb_id;
+>+}
+>+
+> struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+> {
+> 	struct pci_controller *phb;
+>@@ -72,7 +114,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+> 	if (phb == NULL)
+> 		return NULL;
+> 	spin_lock(&hose_spinlock);
+>-	phb->global_number = global_phb_number++;
+>+	phb->global_number = get_phb_number(dev);
+> 	list_add_tail(&phb->list_node, &hose_list);
+> 	spin_unlock(&hose_spinlock);
+> 	phb->dn = dev;
+>@@ -94,6 +136,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
+> void pcibios_free_controller(struct pci_controller *phb)
+> {
+> 	spin_lock(&hose_spinlock);
+>+
+>+	/* Clear bit of phb_bitmap to allow reuse of this PHB number. */
+>+	if (phb->global_number < MAX_PHBS)
+>+		clear_bit(phb->global_number, phb_bitmap);
+>+
+> 	list_del(&phb->list_node);
+> 	spin_unlock(&hose_spinlock);
+>
+>-- 
+>2.1.0
+>
