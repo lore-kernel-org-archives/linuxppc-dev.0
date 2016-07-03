@@ -1,50 +1,45 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rhzgw5WWqzDqnK
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2016 15:47:40 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u635i1vb007248
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 01:47:38 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23xa4axxvw-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjHzZ2fxQzDqRd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 04:02:18 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u63HxGF5030019
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 14:02:15 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23x7ru6h26-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jul 2016 01:47:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jul 2016 14:02:15 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sun, 3 Jul 2016 15:47:35 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id EF20B2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2016 15:47:33 +1000 (EST)
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 4 Jul 2016 04:02:12 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CB6FC2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 04:02:09 +1000 (EST)
 Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u635lXPF62914620
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 15:47:33 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u63I292e3473832
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 04:02:09 +1000
 Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
  by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u635lXUW018425
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jul 2016 15:47:33 +1000
-Date: Sun, 3 Jul 2016 15:47:32 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, imunsie@au1.ibm.com,
- gwshan@linux.vnet.ibm.com, linux-pci@vger.kernel.org, paulus@samba.org,
- mikey@neuling.org, andrew.donnellan@au1.ibm.com, bhelgaas@google.com,
- frederic.barrat@fr.ibm.com, mrochs@linux.vnet.ibm.com
-Subject: Re: [PATCH v7] powerpc/pci: Assign fixed PHB number based on
- device-tree properties
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1467224062-9173-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467224062-9173-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-Message-Id: <20160703054732.GA20271@gwshan>
+ u63I28Ml022499
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 04:02:09 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Yury Norov <ynorov@caviumnetworks.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] perf/core: Fix the mask in perf_output_sample_regs
+Date: Sun,  3 Jul 2016 23:31:58 +0530
+Message-Id: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,143 +49,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 29, 2016 at 03:14:22PM -0300, Guilherme G. Piccoli wrote:
->The domain/PHB field of PCI addresses has its value obtained from a
->global variable, incremented each time a new domain (represented by
->struct pci_controller) is added on the system. The domain addition
->process happens during boot or due to PHB hotplug add.
->
->As recent kernels are using predictable naming for network interfaces,
->the network stack is more tied to PCI naming. This can be a problem in
->hotplug scenarios, because PCI addresses will change if devices are
->removed and then re-added. This situation seems unusual, but it can
->happen if a user wants to replace a NIC without rebooting the machine,
->for example.
->
->This patch changes the way PCI domain values are generated: now, we use
->device-tree properties to assign fixed PHB numbers to PCI addresses
->when available (meaning pSeries and PowerNV cases). We also use a bitmap
->to allow dynamic PHB numbering when device-tree properties are not
->used. This bitmap keeps track of used PHB numbers and if a PHB is
->released (by hotplug operations for example), it allows the reuse of
->this PHB number, avoiding PCI address to change in case of device remove
->and re-add soon after. No functional changes were introduced.
->
->Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
+When decoding the perf_regs mask in perf_output_sample_regs(),
+we loop through the mask using find_first_bit and find_next_bit functions.
+While the exisitng code works fine in most of the case,
+the logic is broken for 32bit kernel (Big Endian).
+When reading u64 mask using (u32 *)(&val)[0], find_*_bit() assumes it gets
+lower 32bits of u64 but instead gets upper 32bits which is wrong.
+Proposed fix is to swap the words of the u64 to handle this case.
+This is _not_ endianness swap.
 
-Guilherme, thanks for keeping improving it. If Michael needs:
+Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ include/linux/bitmap.h |  2 ++
+ kernel/events/core.c   |  4 +++-
+ lib/bitmap.c           | 19 +++++++++++++++++++
+ 3 files changed, 24 insertions(+), 1 deletion(-)
 
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
->---
->v7:
->    * Removed the goto as per Michael's suggestion;
->
->    * Changed of_property_read_u32_array() to of_property_read_u32_index(),
->as per Gavin's suggestion. This way, we end up using buid_low as the index
->of PHB in pSeries, which is expected but was not being achieved in v6,
->as per my mistake.
->
->    * Didn't remove machine check for pSeries on "reg" property lookup.
->It's worthy to keep it, since almost every platform (if not all of them)
->contain the "reg" property on PHB node in device-tree, but only in
->pSeries we're 100% sure it can be used as the PHB unique identifier.
->Since the patch has a dynamic PHB numbering mechanism, the other platforms
->won't have trouble with it.
->
-> arch/powerpc/kernel/pci-common.c | 53 +++++++++++++++++++++++++++++++++++++---
-> 1 file changed, 50 insertions(+), 3 deletions(-)
->
->diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->index 0f7a60f..c87545b 100644
->--- a/arch/powerpc/kernel/pci-common.c
->+++ b/arch/powerpc/kernel/pci-common.c
->@@ -41,11 +41,18 @@
-> #include <asm/ppc-pci.h>
-> #include <asm/eeh.h>
->
->+/* hose_spinlock protects accesses to the the phb_bitmap. */
-> static DEFINE_SPINLOCK(hose_spinlock);
-> LIST_HEAD(hose_list);
->
->-/* XXX kill that some day ... */
->-static int global_phb_number;		/* Global phb counter */
->+/* For dynamic PHB numbering on get_phb_number(): max number of PHBs. */
->+#define MAX_PHBS 0x10000
->+
->+/*
->+ * For dynamic PHB numbering: used/free PHBs tracking bitmap.
->+ * Accesses to this bitmap should be protected by hose_spinlock.
->+ */
->+static DECLARE_BITMAP(phb_bitmap, MAX_PHBS);
->
-> /* ISA Memory physical address */
-> resource_size_t isa_mem_base;
->@@ -64,6 +71,41 @@ struct dma_map_ops *get_pci_dma_ops(void)
-> }
-> EXPORT_SYMBOL(get_pci_dma_ops);
->
->+/*
->+ * This function should run under locking protection, specifically
->+ * hose_spinlock.
->+ */
->+static int get_phb_number(struct device_node *dn)
->+{
->+	u64 prop;
->+	int ret, phb_id = -1;
->+
->+	/*
->+	 * Try fixed PHB numbering first, by checking archs and reading
->+	 * the respective device-tree properties. Firstly, try PowerNV by
->+	 * reading "ibm,opal-phbid", only present in OPAL environment.
->+	 */
->+	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
->+	if (ret && machine_is(pseries))
->+		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
->+	if (!ret)
->+		phb_id = (int)(prop & (MAX_PHBS - 1));
->+
->+	/* We need to be sure to not use the same PHB number twice. */
->+	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
->+		return phb_id;
->+
->+	/*
->+	 * If not pSeries nor PowerNV, or if fixed PHB numbering tried to add
->+	 * the same PHB number twice, then fallback to dynamic PHB numbering.
->+	 */
->+	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
->+	BUG_ON(phb_id >= MAX_PHBS);
->+	set_bit(phb_id, phb_bitmap);
->+
->+	return phb_id;
->+}
->+
-> struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
-> {
-> 	struct pci_controller *phb;
->@@ -72,7 +114,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
-> 	if (phb == NULL)
-> 		return NULL;
-> 	spin_lock(&hose_spinlock);
->-	phb->global_number = global_phb_number++;
->+	phb->global_number = get_phb_number(dev);
-> 	list_add_tail(&phb->list_node, &hose_list);
-> 	spin_unlock(&hose_spinlock);
-> 	phb->dn = dev;
->@@ -94,6 +136,11 @@ EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
-> void pcibios_free_controller(struct pci_controller *phb)
-> {
-> 	spin_lock(&hose_spinlock);
->+
->+	/* Clear bit of phb_bitmap to allow reuse of this PHB number. */
->+	if (phb->global_number < MAX_PHBS)
->+		clear_bit(phb->global_number, phb_bitmap);
->+
-> 	list_del(&phb->list_node);
-> 	spin_unlock(&hose_spinlock);
->
->-- 
->2.1.0
->
+diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+index e9b0b9ab07e5..d95b422db183 100644
+--- a/include/linux/bitmap.h
++++ b/include/linux/bitmap.h
+@@ -188,6 +188,8 @@ extern int bitmap_print_to_pagebuf(bool list, char *buf,
+ #define small_const_nbits(nbits) \
+ 	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
+ 
++extern void bitmap_from_u64(unsigned long *dst, u64 mask);
++
+ static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
+ {
+ 	if (small_const_nbits(nbits))
+diff --git a/kernel/events/core.c b/kernel/events/core.c
+index 9c51ec3f0f44..613fec95ea4c 100644
+--- a/kernel/events/core.c
++++ b/kernel/events/core.c
+@@ -5205,8 +5205,10 @@ perf_output_sample_regs(struct perf_output_handle *handle,
+ 			struct pt_regs *regs, u64 mask)
+ {
+ 	int bit;
++	DECLARE_BITMAP(_mask, 64);
+ 
+-	for_each_set_bit(bit, (const unsigned long *) &mask,
++	bitmap_from_u64(_mask, mask);
++	for_each_set_bit(bit, _mask,
+ 			 sizeof(mask) * BITS_PER_BYTE) {
+ 		u64 val;
+ 
+diff --git a/lib/bitmap.c b/lib/bitmap.c
+index c66da508cbf7..522f1b4c6078 100644
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -1170,3 +1170,22 @@ void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int n
+ }
+ EXPORT_SYMBOL(bitmap_copy_le);
+ #endif
++
++/*
++ * bitmap_from_u64 - Check and swap words within u64.
++ *  @mask: source bitmap
++ *  @dst:  destination bitmap
++ *
++ * In 32bit Big Endian kernel, when using (u32 *)(&val)[*]
++ * to read u64 mask, we will get wrong word.
++ * That is "(u32 *)(&val)[0]" gets upper 32 bits,
++ * but expected could be lower 32bits of u64.
++ */
++void bitmap_from_u64(unsigned long *dst, u64 mask)
++{
++	dst[0] = mask & ULONG_MAX;
++
++	if (sizeof(mask) > sizeof(unsigned long))
++		dst[1] = mask >> 32;
++}
++EXPORT_SYMBOL(bitmap_from_u64);
+-- 
+1.9.1
