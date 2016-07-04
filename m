@@ -3,44 +3,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjnl959TLzDqpD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:23:17 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjnlD52qTzDqpD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:23:19 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u64DIdiU023586
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 09:23:16 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23x6gj1s7a-1
+ u64DIfNM038661
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 09:23:18 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23x9ppwsbv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 09:23:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 09:23:17 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 4 Jul 2016 23:23:12 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 448682BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:23:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u64DN9hX7078320
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:23:09 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u64DN8wr009619
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:23:09 +1000
+ Mon, 4 Jul 2016 23:23:15 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C49582BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:23:11 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u64DNBDW1048912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:23:11 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u64DNBh7018359
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:23:11 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [PATCH 02/14] cxl: Add cxl_slot_is_supported API
-Date: Mon,  4 Jul 2016 23:22:00 +1000
+Cc: Ian Munsie <imunsie@au1.ibm.com>
+Subject: [PATCH 04/14] cxl: Move cxl_afu_get / cxl_afu_put to base
+Date: Mon,  4 Jul 2016 23:22:02 +1000
 In-Reply-To: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
 References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
-Message-Id: <1467638532-9250-3-git-send-email-imunsie@au.ibm.com>
+Message-Id: <1467638532-9250-5-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,103 +51,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This extends the check that the adapter is in a CAPI capable slot so
-that it may be called by external users in the kernel API. This will be
-used by the upcoming Mellanox CX4 support, which needs to know ahead of
-time if the card can be switched to cxl mode so that it can leave it in
-PCI mode if it is not.
+The Mellanox CX4 uses a model where the AFU is one physical function of
+the device, and is used by other peer physical functions of the same
+device. This will require those other devices to grab a reference on the
+AFU when they are initialised to make sure that it does not go away
+during their lifetime.
 
-This API takes a parameter to check if CAPP DMA mode is supported, which
-it currently only allows on P8NVL systems, since that mode currently has
-issues accessing memory < 4GB on P8, and we cannot realistically avoid
-that.
+Move the AFU refcount functions to base.c so they can be called from
+the PHB code.
 
-This API does not currently check if a CAPP unit is available (i.e. not
-already assigned to another PHB) on P8. Doing so would be racy since it
-is assigned on a first come first serve basis, and so long as CAPP DMA
-mode is not supported on P8 we don't need this, since the only
-anticipated user of this API requires CAPP DMA mode.
-
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/pci.c | 37 +++++++++++++++++++++++++++++++++++++
- include/misc/cxl.h     | 15 +++++++++++++++
- 2 files changed, 52 insertions(+)
+ drivers/misc/cxl/base.c | 13 +++++++++++++
+ drivers/misc/cxl/cxl.h  | 12 ------------
+ include/misc/cxl-base.h |  4 ++++
+ 3 files changed, 17 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 3a5f980..9530280 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1426,6 +1426,43 @@ static int cxl_slot_is_switched(struct pci_dev *dev)
- 	return (depth > CXL_MAX_PCIEX_PARENT);
+diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
+index 9b90ec6..c35a52f 100644
+--- a/drivers/misc/cxl/base.c
++++ b/drivers/misc/cxl/base.c
+@@ -54,6 +54,19 @@ static inline void cxl_calls_put(struct cxl_calls *calls) { }
+ 
+ #endif /* CONFIG_CXL_MODULE */
+ 
++/* AFU refcount management */
++struct cxl_afu *cxl_afu_get(struct cxl_afu *afu)
++{
++	return (get_device(&afu->dev) == NULL) ? NULL : afu;
++}
++EXPORT_SYMBOL_GPL(cxl_afu_get);
++
++void cxl_afu_put(struct cxl_afu *afu)
++{
++	put_device(&afu->dev);
++}
++EXPORT_SYMBOL_GPL(cxl_afu_put);
++
+ void cxl_slbia(struct mm_struct *mm)
+ {
+ 	struct cxl_calls *calls;
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index aafffa8..9e2621e 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -428,18 +428,6 @@ struct cxl_afu {
+ 	bool enabled;
+ };
+ 
+-/* AFU refcount management */
+-static inline struct cxl_afu *cxl_afu_get(struct cxl_afu *afu)
+-{
+-
+-	return (get_device(&afu->dev) == NULL) ? NULL : afu;
+-}
+-
+-static inline void  cxl_afu_put(struct cxl_afu *afu)
+-{
+-	put_device(&afu->dev);
+-}
+-
+ 
+ struct cxl_irq_name {
+ 	struct list_head list;
+diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
+index 5ae9625..f53808f 100644
+--- a/include/misc/cxl-base.h
++++ b/include/misc/cxl-base.h
+@@ -36,11 +36,15 @@ static inline void cxl_ctx_put(void)
+        atomic_dec(&cxl_use_count);
  }
  
-+bool cxl_slot_is_supported(struct pci_dev *dev, int flags)
-+{
-+	if (!cpu_has_feature(CPU_FTR_HVMODE))
-+		return false;
-+
-+	if ((flags & CXL_SLOT_FLAG_DMA) && (!pvr_version_is(PVR_POWER8NVL))) {
-+		/*
-+		 * CAPP DMA mode is technically supported on regular P8, but
-+		 * will EEH if the card attempts to acccess memory < 4GB, which
-+		 * we cannot realistically avoid. We might be able to work
-+		 * around the issue, but until then return unsupported:
-+		 */
-+		return false;
-+	}
-+
-+	if (cxl_slot_is_switched(dev))
-+		return false;
-+
-+	/*
-+	 * XXX: This gets a little tricky on regular P8 (not POWER8NVL) since
-+	 * the CAPP can be connected to PHB 0, 1 or 2 on a first come first
-+	 * served basis, which is racy to check from here. If we need to
-+	 * support this in future we might need to consider having this
-+	 * function effectively reserve it ahead of time.
-+	 *
-+	 * Currently, the only user of this API is the Mellanox CX4, which is
-+	 * only supported on P8NVL due to the above mentioned limitation of
-+	 * CAPP DMA mode and therefore does not need to worry about thi. If the
-+	 * issue with CAPP DMA mode is later worked around on P8 we might need
-+	 * to revisit this.
-+	 */
-+
-+	return true;
-+}
-+EXPORT_SYMBOL_GPL(cxl_slot_is_supported);
-+
-+
- static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- {
- 	struct cxl *adapter;
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index b6d040f..dd9eebb 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -24,6 +24,21 @@
-  * generic PCI API. This API is agnostic to the actual AFU.
-  */
++struct cxl_afu *cxl_afu_get(struct cxl_afu *afu);
++void cxl_afu_put(struct cxl_afu *afu);
+ void cxl_slbia(struct mm_struct *mm);
  
-+#define CXL_SLOT_FLAG_DMA 0x1
-+
-+/*
-+ * Checks if the given card is in a cxl capable slot. Pass CXL_SLOT_FLAG_DMA if
-+ * the card requires CAPP DMA mode to also check if the system supports it.
-+ * This is intended to be used by bi-modal devices to determine if they can use
-+ * cxl mode or if they should continue running in PCI mode.
-+ *
-+ * Note that this only checks if the slot is cxl capable - it does not
-+ * currently check if the CAPP is currently available for chips where it can be
-+ * assigned to different PHBs on a first come first serve basis (i.e. P8)
-+ */
-+bool cxl_slot_is_supported(struct pci_dev *dev, int flags);
-+
-+
- /* Get the AFU associated with a pci_dev */
- struct cxl_afu *cxl_pci_to_afu(struct pci_dev *dev);
+ #else /* CONFIG_CXL_BASE */
  
+ static inline bool cxl_ctx_in_use(void) { return false; }
++static inline struct cxl_afu *cxl_afu_get(struct cxl_afu *afu) { return NULL; }
++static inline void cxl_afu_put(struct cxl_afu *afu) {}
+ static inline void cxl_slbia(struct mm_struct *mm) {}
+ 
+ #endif /* CONFIG_CXL_BASE */
 -- 
 2.8.1
