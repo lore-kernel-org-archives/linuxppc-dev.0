@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Yuri.Norov@caviumnetworks.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0060.outbound.protection.outlook.com [104.47.36.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjfMZ3hCKzDr3c
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 17:50:50 +1000 (AEST)
-Message-ID: <1467618640.13965.3.camel@kernel.crashing.org>
-Subject: Re: powerpc/opal: Wake up kopald polling thread before waiting for
- events
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org
-Date: Mon, 04 Jul 2016 17:50:40 +1000
-In-Reply-To: <3rjc8Z6nDPz9sXx@ozlabs.org>
-References: <3rjc8Z6nDPz9sXx@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjgkt1JgNzDqFD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 18:52:37 +1000 (AEST)
+Date: Mon, 4 Jul 2016 10:19:06 +0300
+From: Yury Norov <ynorov@caviumnetworks.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, "Peter
+ Zijlstra" <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Arnaldo
+ Carvalho de Melo" <acme@kernel.org>, Alexander Shishkin
+ <alexander.shishkin@linux.intel.com>, Jiri Olsa <jolsa@kernel.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>
+Subject: Re: [PATCH] perf/core: Fix the mask in perf_output_sample_regs
+Message-ID: <20160704071906.GA9901@yury-N73SV>
+References: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-07-04 at 16:11 +1000, Michael Ellerman wrote:
-> On Mon, 2016-04-07 at 04:51:44 UTC, Benjamin Herrenschmidt wrote:
-> > On some environments (prototype machines, some simulators, etc...)
-> > there is no functional interrupt source to signal completion, so
-> > we rely on the fairly slow OPAL heartbeat.
-> > 
-> > In a number of cases, the calls complete very quickly or even
-> > immediately. We've observed that it helps a lot to wakeup the OPAL
-> > heartbeat thread before waiting for event in those cases, it will
-> > call OPAL immediately to collect completions for anything that
-> > finished fast enough.
+On Sun, Jul 03, 2016 at 11:31:58PM +0530, Madhavan Srinivasan wrote:
+> When decoding the perf_regs mask in perf_output_sample_regs(),
+> we loop through the mask using find_first_bit and find_next_bit functions.
+> While the exisitng code works fine in most of the case,
+> the logic is broken for 32bit kernel (Big Endian).
+> When reading u64 mask using (u32 *)(&val)[0], find_*_bit() assumes it gets
+> lower 32bits of u64 but instead gets upper 32bits which is wrong.
+> Proposed fix is to swap the words of the u64 to handle this case.
+> This is _not_ endianness swap.
+
+
+In fact, it's broken for 32-bit LE as well if mask is zero and next
+word on stack is not zero. The rest is OK.
+
+Reviewed-by: Yury Norov <ynorov@caviumnetworks.com>
+
 > 
-> Any performance/jitter impact on normal systems?
-
-Not that I can think of.
-
-Cheers,
-Ben.
+> Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+> Cc: Yury Norov <ynorov@caviumnetworks.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+> Cc: Jiri Olsa <jolsa@kernel.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  include/linux/bitmap.h |  2 ++
+>  kernel/events/core.c   |  4 +++-
+>  lib/bitmap.c           | 19 +++++++++++++++++++
+>  3 files changed, 24 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+> index e9b0b9ab07e5..d95b422db183 100644
+> --- a/include/linux/bitmap.h
+> +++ b/include/linux/bitmap.h
+> @@ -188,6 +188,8 @@ extern int bitmap_print_to_pagebuf(bool list, char *buf,
+>  #define small_const_nbits(nbits) \
+>  	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
+>  
+> +extern void bitmap_from_u64(unsigned long *dst, u64 mask);
+> +
+>  static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
+>  {
+>  	if (small_const_nbits(nbits))
+> diff --git a/kernel/events/core.c b/kernel/events/core.c
+> index 9c51ec3f0f44..613fec95ea4c 100644
+> --- a/kernel/events/core.c
+> +++ b/kernel/events/core.c
+> @@ -5205,8 +5205,10 @@ perf_output_sample_regs(struct perf_output_handle *handle,
+>  			struct pt_regs *regs, u64 mask)
+>  {
+>  	int bit;
+> +	DECLARE_BITMAP(_mask, 64);
+>  
+> -	for_each_set_bit(bit, (const unsigned long *) &mask,
+> +	bitmap_from_u64(_mask, mask);
+> +	for_each_set_bit(bit, _mask,
+>  			 sizeof(mask) * BITS_PER_BYTE) {
+>  		u64 val;
+>  
+> diff --git a/lib/bitmap.c b/lib/bitmap.c
+> index c66da508cbf7..522f1b4c6078 100644
+> --- a/lib/bitmap.c
+> +++ b/lib/bitmap.c
+> @@ -1170,3 +1170,22 @@ void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int n
+>  }
+>  EXPORT_SYMBOL(bitmap_copy_le);
+>  #endif
+> +
+> +/*
+> + * bitmap_from_u64 - Check and swap words within u64.
+> + *  @mask: source bitmap
+> + *  @dst:  destination bitmap
+> + *
+> + * In 32bit Big Endian kernel, when using (u32 *)(&val)[*]
+> + * to read u64 mask, we will get wrong word.
+> + * That is "(u32 *)(&val)[0]" gets upper 32 bits,
+> + * but expected could be lower 32bits of u64.
+> + */
+> +void bitmap_from_u64(unsigned long *dst, u64 mask)
+> +{
+> +	dst[0] = mask & ULONG_MAX;
+> +
+> +	if (sizeof(mask) > sizeof(unsigned long))
+> +		dst[1] = mask >> 32;
+> +}
+> +EXPORT_SYMBOL(bitmap_from_u64);
+> -- 
+> 1.9.1
