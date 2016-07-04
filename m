@@ -1,18 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjZP31vrNzDqFD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 14:51:50 +1000 (AEST)
-Message-ID: <1467607904.13965.1.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc/opal: Wake up kopald polling thread before waiting
- for events
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjZZ60tTXzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 14:59:42 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id ts6so14935637pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jul 2016 21:59:42 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/mm: Add a parameter to disable 1TB segs
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <1467593044-10600-1-git-send-email-oohall@gmail.com>
 Cc: mikey@neuling.org
-Date: Mon, 04 Jul 2016 14:51:44 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <39027e13-4fc0-9e84-0004-5401a40fd955@gmail.com>
+Date: Mon, 4 Jul 2016 14:59:35 +1000
+MIME-Version: 1.0
+In-Reply-To: <1467593044-10600-1-git-send-email-oohall@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,98 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some environments (prototype machines, some simulators, etc...)
-there is no functional interrupt source to signal completion, so
-we rely on the fairly slow OPAL heartbeat.
 
-In a number of cases, the calls complete very quickly or even
-immediately. We've observed that it helps a lot to wakeup the OPAL
-heartbeat thread before waiting for event in those cases, it will
-call OPAL immediately to collect completions for anything that
-finished fast enough.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/opal.h             |  2 ++
- arch/powerpc/platforms/powernv/opal-async.c |  5 +++++
- arch/powerpc/platforms/powernv/opal.c       | 12 ++++++++++--
- 3 files changed, 17 insertions(+), 2 deletions(-)
+On 04/07/16 10:44, Oliver O'Halloran wrote:
+> This patch adds the kernel command line parameter "no_tb_segs" which
+> forces the kernel to use 256MB rather than 1TB segments. Forcing the use
+> of 256MB segments makes it considerably easier to test code that depends
+> on an SLB miss occurring.
+> 
+> Suggested-by: Michael Neuling <mikey@neuling.org>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+>  arch/powerpc/mm/hash_utils_64.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index 5b22ba0b58bc..6da1a9d18e15 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -321,6 +321,15 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+>  	return ret;
+>  }
+>  
+> +static bool no_tb_segs = false;
+> +
+> +static int __init parse_no_tb_segs(char *p)
+> +{
+> +	no_tb_segs = true;
+> +	return 0;
+> +}
+> +early_param("no_tb_segs", parse_no_tb_segs);
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 6135816..0c76bc0 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -277,6 +277,8 @@ extern int opal_error_code(int rc);
- 
- ssize_t opal_msglog_copy(char *to, loff_t pos, size_t count);
- 
-+void opal_wake_poller(void);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_OPAL_H */
-diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
-index bdc8c0c..83bebee 100644
---- a/arch/powerpc/platforms/powernv/opal-async.c
-+++ b/arch/powerpc/platforms/powernv/opal-async.c
-@@ -117,6 +117,11 @@ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
- 		return -EINVAL;
- 	}
- 
-+	/* Wakeup the poller before we wait for events to speed things
-+	 * up on platforms or simulators where the interrupts aren't
-+	 * functional.
-+	 */
-+	opal_wake_poller();
- 	wait_event(opal_async_wait, test_bit(token, opal_async_complete_map));
- 	memcpy(msg, &opal_async_responses[token], sizeof(*msg));
- 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 802f3b7..7f13302 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -55,6 +55,7 @@ struct device_node *opal_node;
- static DEFINE_SPINLOCK(opal_write_lock);
- static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
- static uint32_t opal_heartbeat;
-+static struct task_struct *kopald_tsk;
- 
- void opal_configure_cores(void)
- {
-@@ -650,6 +651,7 @@ static void opal_i2c_create_devs(void)
- 
- static int kopald(void *unused)
- {
-+	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
- 	__be64 events;
- 
- 	set_freezable();
-@@ -657,12 +659,18 @@ static int kopald(void *unused)
- 		try_to_freeze();
- 		opal_poll_events(&events);
- 		opal_handle_events(be64_to_cpu(events));
--		msleep_interruptible(opal_heartbeat);
-+		schedule_timeout_interruptible(timeout);
- 	} while (!kthread_should_stop());
- 
- 	return 0;
- }
- 
-+void opal_wake_poller(void)
-+{
-+	if (kopald_tsk)
-+		wake_up_process(kopald_tsk);
-+}
-+
- static void opal_init_heartbeat(void)
- {
- 	/* Old firwmware, we assume the HVC heartbeat is sufficient */
-@@ -671,7 +679,7 @@ static void opal_init_heartbeat(void)
- 		opal_heartbeat = 0;
- 
- 	if (opal_heartbeat)
--		kthread_run(kopald, NULL, "kopald");
-+		kopald_tsk = kthread_run(kopald, NULL, "kopald");
- }
- 
- static int __init opal_init(void)
+
+Please update Documentation/kernel-paramaters.txt as well and document the use case and the
+fact that this for debugging. 
+
+> +
+>  static int __init htab_dt_scan_seg_sizes(unsigned long node,
+>  					 const char *uname, int depth,
+>  					 void *data)
+> @@ -339,6 +348,12 @@ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+>  	for (; size >= 4; size -= 4, ++prop) {
+>  		if (be32_to_cpu(prop[0]) == 40) {
+>  			DBG("1T segment support detected\n");
+> +
+> +			if (no_tb_segs) {
+> +				DBG("Forcing 256MB segments\n");
+> +				break;
+> +			}
+> +
+>  			cur_cpu_spec->mmu_features |= MMU_FTR_1T_SEGMENT;
+>  			return 1;
+>  		}
+> 
+
+Otherwise
+
+Acked-by: Balbir Singh <bsingharora@gmail.com>
+
+Balbir
