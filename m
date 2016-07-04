@@ -1,23 +1,23 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::8])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjdC40bmMzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 16:58:23 +1000 (AEST)
-Subject: [v2,RFC] pasemi: Fix boot failure on 4.7-rc1
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
-References: <3rjbjg4fyfz9sXx@ozlabs.org>
-Cc: Pat Wall <pjwall@mac.com>, aperez@alexperez.com, matthew@a-eon.com,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <b48a3917-0fdb-0a04-51d3-5aa0e054af44@xenosoft.de>
-Date: Mon, 4 Jul 2016 08:58:08 +0200
-MIME-Version: 1.0
-In-Reply-To: <3rjbjg4fyfz9sXx@ozlabs.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjdSL1MhyzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 17:09:54 +1000 (AEST)
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rjdSK16sXz9s5J
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 Jul 2016 17:09:52 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id us13so15157829pab.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 04 Jul 2016 00:09:52 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: Daniel Axtens <dja@axtens.net>
+Subject: [PATCH 1/6] powerpc/kvm: Clarify __user annotations
+Date: Mon,  4 Jul 2016 17:09:37 +1000
+Message-Id: <1467616182-30886-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Many thanks!
+kvmppc_h_put_tce_indirect labels a u64 pointer as __user. It also
+labelled the u64 where get_user puts the result as __user. This isn't
+a pointer and so doesn't need to be labelled __user.
 
-- Christian
+Split the u64 value definition onto a new line to make it clear that
+it doesn't get the annotation.
 
-On 04 July 2016 at 07:51 AM, Michael Ellerman wrote:
-> On Wed, 2016-29-06 at 20:06:28 UTC, Darren Stevens wrote:
->> Commit:d6a9996e84ac4beb7713e9485f4563e100a9b03e (powerpc/mm:
->>      vmalloc abstraction in preparation for radix) turned kernel memory
->>      and IO addresses from #defined constants to variables initialised
->>      at runtime.
->>      
->>      On PA6T systems the setup_arch machine call initialises the onboard
->>      PCI-e root-ports, and uses pci_io_base to do this, which is now before
->>      its value has been set resulting in a panic right after 'booting
->>      linux via __start()'
->>
->>      Move the pci_io_base initialisation to the same place as vmalloc
->>      ranges are set (hash__early_init_mmu()/radix__early_init_mmu())
->>      
->>      Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
->>      Signed-off-by: Darren Stevens <darren@stevens-zone.net>
->> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Applied to powerpc fixes, thanks.
->
-> https://git.kernel.org/powerpc/c/bfa37087aa04e45f56c41142df
->
-> cheers
->
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ arch/powerpc/kvm/book3s_64_vio.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 18cf6d1f8174..c379ff5a4438 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -242,7 +242,8 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret = H_SUCCESS, idx;
+ 	unsigned long entry, ua = 0;
+-	u64 __user *tces, tce;
++	u64 __user *tces;
++	u64 tce;
+ 
+ 	stt = kvmppc_find_table(vcpu, liobn);
+ 	if (!stt)
+-- 
+2.1.4
