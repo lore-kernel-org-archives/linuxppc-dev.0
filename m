@@ -1,19 +1,18 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjQbD6TkJzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 09:00:08 +1000 (AEST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linux-kernel@vger.kernel.org>
-CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Ian Munsie
- <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] cxl: make base more explicitly non-modular
-Date: Sun, 3 Jul 2016 16:31:53 -0400
-Message-ID: <20160703203153.6155-1-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjSvX5SJnzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 10:44:24 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id us13so14427228pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jul 2016 17:44:24 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, mpe@ellerman.id.au, Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH] powerpc/mm: Add a parameter to disable 1TB segs
+Date: Mon,  4 Jul 2016 10:44:04 +1000
+Message-Id: <1467593044-10600-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Kconfig/Makefile currently controlling compilation of this code is:
+This patch adds the kernel command line parameter "no_tb_segs" which
+forces the kernel to use 256MB rather than 1TB segments. Forcing the use
+of 256MB segments makes it considerably easier to test code that depends
+on an SLB miss occurring.
 
-drivers/misc/cxl/Kconfig:config CXL_BASE
-drivers/misc/cxl/Kconfig:       bool
-
-drivers/misc/cxl/Makefile:obj-$(CONFIG_CXL_BASE)          += base.o
-
-...meaning that it currently is not being built as a module by anyone.
-
-Lets convert the one module_init into device_initcall so that
-when reading the driver it more clear that it is builtin-only.
-
-Since module_init translates to device_initcall in the non-modular
-case, the init ordering remains unchanged with this commit.
-
-We don't replace module.h with init.h since the file is doing
-other modular stuff (module_get/put) even though it is built-in.
-
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Suggested-by: Michael Neuling <mikey@neuling.org>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 ---
- drivers/misc/cxl/base.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index 9b90ec6c07cd..e6f49aca0035 100644
---- a/drivers/misc/cxl/base.c
-+++ b/drivers/misc/cxl/base.c
-@@ -114,5 +114,4 @@ static int __init cxl_base_init(void)
- 	pr_devel("Found %d cxl device(s)\n", count);
- 	return 0;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 5b22ba0b58bc..6da1a9d18e15 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -321,6 +321,15 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+ 	return ret;
  }
--
--module_init(cxl_base_init);
-+device_initcall(cxl_base_init);
+ 
++static bool no_tb_segs = false;
++
++static int __init parse_no_tb_segs(char *p)
++{
++	no_tb_segs = true;
++	return 0;
++}
++early_param("no_tb_segs", parse_no_tb_segs);
++
+ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+ 					 const char *uname, int depth,
+ 					 void *data)
+@@ -339,6 +348,12 @@ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+ 	for (; size >= 4; size -= 4, ++prop) {
+ 		if (be32_to_cpu(prop[0]) == 40) {
+ 			DBG("1T segment support detected\n");
++
++			if (no_tb_segs) {
++				DBG("Forcing 256MB segments\n");
++				break;
++			}
++
+ 			cur_cpu_spec->mmu_features |= MMU_FTR_1T_SEGMENT;
+ 			return 1;
+ 		}
 -- 
-2.8.4
+2.5.5
