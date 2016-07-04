@@ -3,44 +3,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjnkh41cSzDqpb
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:22:52 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u64DIecu069659
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 09:22:50 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23x9rkmyhk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjnkj3J0SzDqpg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:22:53 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u64DIeXX057974
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 09:22:51 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23x9mcwb3m-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 09:22:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 09:22:51 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 4 Jul 2016 23:22:46 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6E4372CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:22:43 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u64DMhAS4522282
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:22:43 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u64DMgiF001179
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:22:43 +1000
+ Mon, 4 Jul 2016 23:22:48 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5C10E2CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 23:22:45 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u64DMjO113369612
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:22:45 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u64DMigq009291
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 23:22:45 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
 Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH 05/14] cxl: Allow a default context to be associated with an
- external pci_dev
-Date: Mon,  4 Jul 2016 23:22:03 +1000
+Subject: [PATCH 06/14] powerpc/powernv: Add support for the cxl kernel api on
+ the real phb
+Date: Mon,  4 Jul 2016 23:22:04 +1000
 In-Reply-To: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
 References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
-Message-Id: <1467638532-9250-6-git-send-email-imunsie@au.ibm.com>
+Message-Id: <1467638532-9250-7-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,209 +52,279 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-The cxl kernel API has a concept of a default context associated with
-each PCI device under the virtual PHB. The Mellanox CX4 will also use
-the cxl kernel API, but it does not use a virtual PHB - rather, the AFU
-appears as a physical function as a peer to the networking functions.
+This adds support for the peer model of the cxl kernel api to the
+PowerNV PHB, and exports APIs to enable the mode, check if a PCI device
+is attached to a PHB in this mode, and to set and get the peer AFU for
+this mode.
 
-In order to allow the kernel API to work with those networking
-functions, we will need to associate a default context with them as
-well. To this end, refactor the corresponding code to do this in vphb.c
-and export it so that it can be called from the PHB code.
+The cxl driver will enable this mode for supported cards by calling
+pnv_cxl_enable_phb_kernel_api(). This will set a flag in the PHB to note
+that this mode is enabled, and switch out it's controller_ops for the
+cxl version.
+
+The cxl version of the controller_ops struct implements it's own
+versions of the enable_device_hook and release_device to handle
+refcounting on the peer AFU and to allocate a default context for the
+device.
+
+Once enabled, the cxl kernel API may not be disabled on a PHB. Currently
+there is no safe way to disable cxl mode short of a reboot, so until
+that changes there is no reason to support the disable path.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/base.c | 35 +++++++++++++++++++++++++++++++++++
- drivers/misc/cxl/cxl.h  |  6 ++++++
- drivers/misc/cxl/main.c |  2 ++
- drivers/misc/cxl/vphb.c | 37 +++++++++++++++++++++++--------------
- include/misc/cxl-base.h |  6 ++++++
- 5 files changed, 72 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/pnv-pci.h        |   7 ++
+ arch/powerpc/platforms/powernv/pci-cxl.c  | 112 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |  22 +++++-
+ arch/powerpc/platforms/powernv/pci.h      |  16 +++++
+ 4 files changed, 154 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index c35a52f..af20b34 100644
---- a/drivers/misc/cxl/base.c
-+++ b/drivers/misc/cxl/base.c
-@@ -106,6 +106,41 @@ int cxl_update_properties(struct device_node *dn,
- }
- EXPORT_SYMBOL_GPL(cxl_update_properties);
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index 791db1b..c47097f 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -38,6 +38,13 @@ int pnv_cxl_alloc_hwirq_ranges(struct cxl_irq_ranges *irqs,
+ 			       struct pci_dev *dev, int num);
+ void pnv_cxl_release_hwirq_ranges(struct cxl_irq_ranges *irqs,
+ 				  struct pci_dev *dev);
++
++/* Support for the cxl kernel api on the real PHB (instead of vPHB) */
++int pnv_cxl_enable_phb_kernel_api(struct pci_controller *hose, bool enable);
++bool pnv_pci_on_cxl_phb(struct pci_dev *dev);
++struct cxl_afu *pnv_cxl_phb_to_afu(struct pci_controller *hose);
++void pnv_cxl_phb_set_peer_afu(struct pci_dev *dev, struct cxl_afu *afu);
++
+ #endif
  
+ #endif
+diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
+index ea8171f..2f386f5 100644
+--- a/arch/powerpc/platforms/powernv/pci-cxl.c
++++ b/arch/powerpc/platforms/powernv/pci-cxl.c
+@@ -7,8 +7,11 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
++#include <linux/module.h>
++#include <asm/pci-bridge.h>
+ #include <asm/pnv-pci.h>
+ #include <asm/opal.h>
++#include <misc/cxl.h>
+ 
+ #include "pci.h"
+ 
+@@ -161,3 +164,112 @@ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ 	return 0;
+ }
+ EXPORT_SYMBOL(pnv_cxl_ioda_msi_setup);
++
 +/*
-+ * API calls into the driver that may be called from the PHB code and must be
-+ * built in.
++ * Sets flags and switches the controller ops to enable the cxl kernel api.
++ * Original the cxl kernel API operated on a virtual PHB, but certain cards
++ * such as the Mellanox CX4 use a peer model instead and for these cards the
++ * cxl kernel api will operate on the real PHB.
 + */
-+bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu)
++int pnv_cxl_enable_phb_kernel_api(struct pci_controller *hose, bool enable)
 +{
-+	bool ret;
-+	struct cxl_calls *calls;
++	struct pnv_phb *phb = hose->private_data;
++	struct module *cxl_module;
 +
-+	calls = cxl_calls_get();
-+	if (!calls)
-+		return false;
-+
-+	ret = calls->cxl_pci_associate_default_context(dev, afu);
-+
-+	cxl_calls_put(calls);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cxl_pci_associate_default_context);
-+
-+void cxl_pci_disable_device(struct pci_dev *dev)
-+{
-+	struct cxl_calls *calls;
-+
-+	calls = cxl_calls_get();
-+	if (!calls)
-+		return;
-+
-+	calls->cxl_pci_disable_device(dev);
-+
-+	cxl_calls_put(calls);
-+}
-+EXPORT_SYMBOL_GPL(cxl_pci_disable_device);
-+
- static int __init cxl_base_init(void)
- {
- 	struct device_node *np = NULL;
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 9e2621e..c94b54f 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -707,9 +707,15 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
- ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
- 				loff_t off, size_t count);
- 
-+/* Internal functions wrapped in cxl_base to allow PHB to call them */
-+bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
-+void _cxl_pci_disable_device(struct pci_dev *dev);
- 
- struct cxl_calls {
- 	void (*cxl_slbia)(struct mm_struct *mm);
-+	bool (*cxl_pci_associate_default_context)(struct pci_dev *dev, struct cxl_afu *afu);
-+	void (*cxl_pci_disable_device)(struct pci_dev *dev);
-+
- 	struct module *owner;
- };
- int register_cxl_calls(struct cxl_calls *calls);
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index ae68c32..4e5474b 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -110,6 +110,8 @@ static inline void cxl_slbia_core(struct mm_struct *mm)
- 
- static struct cxl_calls cxl_calls = {
- 	.cxl_slbia = cxl_slbia_core,
-+	.cxl_pci_associate_default_context = _cxl_pci_associate_default_context,
-+	.cxl_pci_disable_device = _cxl_pci_disable_device,
- 	.owner = THIS_MODULE,
- };
- 
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index 012b6aa..c5b9c201 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -40,11 +40,28 @@ static void cxl_teardown_msi_irqs(struct pci_dev *pdev)
- 	 */
- }
- 
-+bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu)
-+{
-+	struct cxl_context *ctx;
++	if (!enable) {
++		/*
++		 * Once cxl mode is enabled on the PHB, there is currently no
++		 * known safe method to disable it again, and trying risks a
++		 * checkstop. If we can find a way to safely disable cxl mode
++		 * in the future we can revisit this, but for now the only sane
++		 * thing to do is to refuse to disable cxl mode:
++		 */
++		return -EPERM;
++	}
 +
 +	/*
-+	 * Allocate a context to do cxl things too. This is used for interrupts
-+	 * in the peer model using a real phb, and if we eventually do DMA ops
-+	 * in the virtual phb, we'll need a default context to attach them to.
++	 * Hold a reference to the cxl module since several PHB operations now
++	 * depend on it, and it would be insane to allow it to be removed so
++	 * long as we are in this mode (and since we can't safely disable this
++	 * mode once enabled...).
 +	 */
-+	ctx = cxl_dev_context_init(dev);
-+	if (!ctx)
-+		return false;
-+	dev->dev.archdata.cxl_ctx = ctx;
++	mutex_lock(&module_mutex);
++	cxl_module = find_module("cxl");
++	if (cxl_module)
++		__module_get(cxl_module);
++	mutex_unlock(&module_mutex);
++	if (!cxl_module)
++		return -ENODEV;
 +
-+	return (cxl_ops->afu_check_and_enable(afu) == 0);
++	phb->flags |= PNV_PHB_FLAG_CXL;
++	hose->controller_ops = pnv_cxl_cx4_ioda_controller_ops;
++
++	return 0;
 +}
-+/* exported via cxl_base */
++EXPORT_SYMBOL(pnv_cxl_enable_phb_kernel_api);
 +
- static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
++bool pnv_pci_on_cxl_phb(struct pci_dev *dev)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++
++	return !!(phb->flags & PNV_PHB_FLAG_CXL);
++}
++EXPORT_SYMBOL(pnv_pci_on_cxl_phb);
++
++struct cxl_afu *pnv_cxl_phb_to_afu(struct pci_controller *hose)
++{
++	struct pnv_phb *phb = hose->private_data;
++
++	return (struct cxl_afu *)phb->cxl_afu;
++}
++EXPORT_SYMBOL_GPL(pnv_cxl_phb_to_afu);
++
++void pnv_cxl_phb_set_peer_afu(struct pci_dev *dev, struct cxl_afu *afu)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++
++	phb->cxl_afu = afu;
++}
++EXPORT_SYMBOL_GPL(pnv_cxl_phb_set_peer_afu);
++
++bool pnv_cxl_enable_device_hook(struct pci_dev *dev)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct cxl_afu *afu = phb->cxl_afu;
++
++	if (!pnv_pci_enable_device_hook(dev))
++		return false;
++
++	/* No special handling for cxl function: */
++	if (PCI_FUNC(dev->devfn) == 0)
++		return true;
++
++	if (!afu) {
++		dev_WARN(&dev->dev, "Attempted to enable function > 0 on CXL PHB without a peer AFU\n");
++		return false;
++	}
++
++	dev_info(&dev->dev, "Enabling function on CXL enabled PHB with peer AFU\n");
++
++	/* Make sure the peer AFU can't go away while this device is active */
++	cxl_afu_get(afu);
++
++	return cxl_pci_associate_default_context(dev, afu);
++}
++
++void pnv_cxl_disable_device(struct pci_dev *dev)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct cxl_afu *afu = phb->cxl_afu;
++
++	/* No special handling for cxl function: */
++	if (PCI_FUNC(dev->devfn) == 0)
++		return;
++
++	cxl_pci_disable_device(dev);
++	cxl_afu_put(afu);
++}
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index e0d8103..467085f 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3222,7 +3222,7 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+ /* Prevent enabling devices for which we couldn't properly
+  * assign a PE
+  */
+-static bool pnv_pci_enable_device_hook(struct pci_dev *dev)
++bool pnv_pci_enable_device_hook(struct pci_dev *dev)
  {
- 	struct pci_controller *phb;
- 	struct cxl_afu *afu;
--	struct cxl_context *ctx;
- 
- 	phb = pci_bus_to_host(dev->bus);
- 	afu = (struct cxl_afu *)phb->private_data;
-@@ -57,19 +74,10 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
- 	set_dma_ops(&dev->dev, &dma_direct_ops);
- 	set_dma_offset(&dev->dev, PAGE_OFFSET);
- 
--	/*
--	 * Allocate a context to do cxl things too.  If we eventually do real
--	 * DMA ops, we'll need a default context to attach them to
--	 */
--	ctx = cxl_dev_context_init(dev);
--	if (!ctx)
--		return false;
--	dev->dev.archdata.cxl_ctx = ctx;
--
--	return (cxl_ops->afu_check_and_enable(afu) == 0);
-+	return _cxl_pci_associate_default_context(dev, afu);
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+ 	struct pnv_phb *phb = hose->private_data;
+@@ -3396,7 +3396,7 @@ static void pnv_ioda_release_pe(struct pnv_ioda_pe *pe)
+ 	pnv_ioda_free_pe(pe);
  }
  
--static void cxl_pci_disable_device(struct pci_dev *dev)
-+void _cxl_pci_disable_device(struct pci_dev *dev)
+-static void pnv_pci_release_device(struct pci_dev *pdev)
++void pnv_pci_release_device(struct pci_dev *pdev)
  {
- 	struct cxl_context *ctx = cxl_get_context(dev);
- 
-@@ -82,6 +90,7 @@ static void cxl_pci_disable_device(struct pci_dev *dev)
- 		cxl_release_context(ctx);
- 	}
+ 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+ 	struct pnv_phb *phb = hose->private_data;
+@@ -3423,7 +3423,7 @@ static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+ 		       OPAL_ASSERT_RESET);
  }
-+/* exported via cxl_base */
  
- static resource_size_t cxl_pci_window_alignment(struct pci_bus *bus,
- 						unsigned long type)
-@@ -197,8 +206,8 @@ static struct pci_controller_ops cxl_pci_controller_ops =
- {
- 	.probe_mode = cxl_pci_probe_mode,
- 	.enable_device_hook = cxl_pci_enable_device_hook,
--	.disable_device = cxl_pci_disable_device,
--	.release_device = cxl_pci_disable_device,
-+	.disable_device = _cxl_pci_disable_device,
-+	.release_device = _cxl_pci_disable_device,
- 	.window_alignment = cxl_pci_window_alignment,
- 	.reset_secondary_bus = cxl_pci_reset_secondary_bus,
- 	.setup_msi_irqs = cxl_setup_msi_irqs,
-diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
-index f53808f..bb7e629 100644
---- a/include/misc/cxl-base.h
-+++ b/include/misc/cxl-base.h
-@@ -10,6 +10,8 @@
- #ifndef _MISC_CXL_BASE_H
- #define _MISC_CXL_BASE_H
+-static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
++const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+ 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+ 	.dma_bus_setup		= pnv_pci_dma_bus_setup,
+ #ifdef CONFIG_PCI_MSI
+@@ -3461,6 +3461,22 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+ 	.shutdown		= pnv_pci_ioda_shutdown,
+ };
  
-+#include <misc/cxl.h>
++#ifdef CONFIG_CXL_BASE
++const struct pci_controller_ops pnv_cxl_cx4_ioda_controller_ops = {
++	.dma_dev_setup		= pnv_pci_dma_dev_setup,
++	.dma_bus_setup		= pnv_pci_dma_bus_setup,
++	.enable_device_hook	= pnv_cxl_enable_device_hook,
++	.disable_device		= pnv_cxl_disable_device,
++	.release_device		= pnv_pci_release_device,
++	.window_alignment	= pnv_pci_window_alignment,
++	.setup_bridge		= pnv_pci_setup_bridge,
++	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
++	.dma_set_mask		= pnv_pci_ioda_dma_set_mask,
++	.dma_get_required_mask	= pnv_pci_ioda_dma_get_required_mask,
++	.shutdown		= pnv_pci_ioda_shutdown,
++};
++#endif
 +
- #ifdef CONFIG_CXL_BASE
+ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 					 u64 hub_id, int ioda_type)
+ {
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 49c2997..4d003dc 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -76,6 +76,7 @@ struct pnv_ioda_pe {
+ };
  
- #define CXL_IRQ_RANGES 4
-@@ -39,6 +41,8 @@ static inline void cxl_ctx_put(void)
- struct cxl_afu *cxl_afu_get(struct cxl_afu *afu);
- void cxl_afu_put(struct cxl_afu *afu);
- void cxl_slbia(struct mm_struct *mm);
-+bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
-+void cxl_pci_disable_device(struct pci_dev *dev);
+ #define PNV_PHB_FLAG_EEH	(1 << 0)
++#define PNV_PHB_FLAG_CXL	(1 << 1) /* Real PHB supporting the cxl kernel API */
  
- #else /* CONFIG_CXL_BASE */
+ struct pnv_phb {
+ 	struct pci_controller	*hose;
+@@ -177,6 +178,9 @@ struct pnv_phb {
+ 		struct OpalIoP7IOCErrorData 	hub_diag;
+ 	} diag;
  
-@@ -46,6 +50,8 @@ static inline bool cxl_ctx_in_use(void) { return false; }
- static inline struct cxl_afu *cxl_afu_get(struct cxl_afu *afu) { return NULL; }
- static inline void cxl_afu_put(struct cxl_afu *afu) {}
- static inline void cxl_slbia(struct mm_struct *mm) {}
-+static inline bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu) { return false; }
-+static inline void cxl_pci_disable_device(struct pci_dev *dev) {}
++#ifdef CONFIG_CXL_BASE
++	struct cxl_afu *cxl_afu;
++#endif
+ };
  
- #endif /* CONFIG_CXL_BASE */
+ extern struct pci_ops pnv_pci_ops;
+@@ -218,6 +222,8 @@ extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+ extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+ extern struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev);
+ extern void pnv_set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq);
++extern bool pnv_pci_enable_device_hook(struct pci_dev *dev);
++extern void pnv_pci_release_device(struct pci_dev *pdev);
  
+ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 			    const char *fmt, ...);
+@@ -238,4 +244,14 @@ extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+ extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+ extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
+ 
++
++/* cxl functions */
++extern bool pnv_cxl_enable_device_hook(struct pci_dev *dev);
++extern void pnv_cxl_disable_device(struct pci_dev *dev);
++
++
++/* phb ops (cxl switches these when enabling the kernel api on the phb) */
++extern const struct pci_controller_ops pnv_cxl_cx4_ioda_controller_ops;
++extern const struct pci_controller_ops pnv_pci_ioda_controller_ops;
++
+ #endif /* __POWERNV_PCI_H */
 -- 
 2.8.1
