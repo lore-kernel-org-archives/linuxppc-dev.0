@@ -1,20 +1,16 @@
-Return-Path: <sam@mendozajonas.com>
-Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjXgL5JwCzDqnw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 13:34:06 +1000 (AEST)
-Message-ID: <1467602804.1910.6.camel@mendozajonas.com>
-Subject: Re: device tree passing feature
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: petitboot@lists.ozlabs.org, "George C. Wilson" <ltcgcw@us.ibm.com>, Dave
- Heller <hellerda@linux.vnet.ibm.com>, Mimi Zohar <zohar@linux.vnet.ibm.com>
-Date: Mon, 04 Jul 2016 13:26:44 +1000
-In-Reply-To: <2289227.FYhGr4BFNM@hactar>
-References: <5378248.F712oD97Cs@hactar>
- <1467337581.5491.15.camel@mendozajonas.com> <2289227.FYhGr4BFNM@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rjZP31vrNzDqFD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 14:51:50 +1000 (AEST)
+Message-ID: <1467607904.13965.1.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/opal: Wake up kopald polling thread before waiting
+ for events
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org
+Date: Mon, 04 Jul 2016 14:51:44 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,100 +22,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-07-01 at 13:15 -0300, Thiago Jung Bauermann wrote:
-> Hi Samuel,
-> 
-> Thanks for your response.
-> 
-> Am Freitag, 01 Juli 2016, 11:46:21 schrieb Samuel Mendoza-Jonas:
-> > On Thu, 2016-06-30 at 11:27 -0300, Thiago Jung Bauermann wrote:
-> > > I have a question about the petitboot feature which allows the user to
-> > > specify a device tree blob to pass to the target OS being loaded. What
-> > > is
-> > > the use case for it? Is it a debugging and development aid, or do you
-> > > expect it be useful in a production environment?
-> > 
-> > Passing the dtb isn't really a Petitboot feature, rather part of how
-> > kexec works for PowerPC and ARM. Petitboot may make modifications to, or
-> > replace the dtb, but the method via with the target kernel obtains its
-> > device-tree is kexec. So I suspect you would have to say it is mandatory
-> > for production.
-> 
-> Right. I already have a working kexec_file_load implementation [1], and what 
-> I'm doing in my patch set is taking the device tree that was used to boot 
-> the current kernel and modifying it as necessary to pass it to the next 
-> kernel.
+On some environments (prototype machines, some simulators, etc...)
+there is no functional interrupt source to signal completion, so
+we rely on the fairly slow OPAL heartbeat.
 
-Ah ok - I skimmed over the series but didn't notice that, great!
+In a number of cases, the calls complete very quickly or even
+immediately. We've observed that it helps a lot to wakeup the OPAL
+heartbeat thread before waiting for event in those cases, it will
+call OPAL immediately to collect completions for anything that
+finished fast enough.
 
-> 
-> My question is: is there any need in a production environment for userspace 
-> to provide a different device tree for the next kernel, or can the currently 
-> running kernel always use the device tree that it received when it was 
-> booted?
->
-> So one new piece of information for me is that Petitboot makes modifications 
-> to the dtb. Does it do that only if the system administrator provided a 
-> custom dtb (either via the boot options screen or a configuration file), or 
-> can it change/replace the dtb even if the system administrator didn't 
-> provide a custom dtb? Which modifications does Petitboot make?
-> 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/opal.h             |  2 ++
+ arch/powerpc/platforms/powernv/opal-async.c |  5 +++++
+ arch/powerpc/platforms/powernv/opal.c       | 12 ++++++++++--
+ 3 files changed, 17 insertions(+), 2 deletions(-)
 
-For the next kernel it's sufficient just to have the device-tree, but
-Petitboot does make modifications to it to help the next kernel in
-certain ways, for example:
-	- Sorting the device-tree properly if
-firmware hasn't done so
-	- Setting framebuffer information on
-OpenPOWER machines
-	- Setting the primary stdout for the next
-kernel
-
-These aren't required for *booting*, but a number of people might start shouting if they go away.
-
-> > > I ask this because I'm implementing the kexec_file_load system call for
-> > > powerpc, and given its prototype:
-> > > 
-> > > long kexec_file_load(int kernel_fd, int initrd_fd, unsigned long
-> > > cmdline_len, const char *cmdline_ptr, unsigned long flags)
-> > > 
-> > > It wouldn't be very straightforward to allow the caller to specify a
-> > > device tree blob, so I have to ask how necessary such a feature is.
-> > 
-> > Yep, I think the problem is kexec_file_load was first implemented with a
-> > focus on x86 where this isn't an issue, and now we need to consider what
-> > to do :)
-> 
-> Yes, that's true. I was able to make it work on powerpc even with that x86 
-> bias, but now I'm wondering if that's enough or not.
-> 
-> > We are definitely going to need a way to pass the device-tree to the
-> > target kernel - whether we do that by changing the prototype for
-> > kexec_file_load() PowerPC and ARM, or by dealing with it some other way
-> > I'm not sure.
-> 
-> Do you say definitely because the kexec'd kernel needs to be passed a device 
-> tree, or is it because userspace needs to have some control over the device 
-> tree that the kexec'd kernel receives?
-
-As above the 'definitely' comes from the kexec'd kernel needing to be
-passed a device-tree, as well as some updates made by userspace.
-
-> 
-> > Sounds like the start of a interesting conversation on the
-> > linuxppc-dev list :)
-> 
-> Indeed. :-) I'm copying linuxppc-dev here just in case.
-> 
-> A conversation about this just started in the kexec mailing list (I'm 
-> copying the linuxppc-dev mailing list in my response as well):
-> 
-> https://lists.infradead.org/pipermail/kexec/2016-July/016279.html
-> 
-> []'s
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
-> 
-> 
-> [1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-June/144658.html
-> 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 6135816..0c76bc0 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -277,6 +277,8 @@ extern int opal_error_code(int rc);
+ 
+ ssize_t opal_msglog_copy(char *to, loff_t pos, size_t count);
+ 
++void opal_wake_poller(void);
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_OPAL_H */
+diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
+index bdc8c0c..83bebee 100644
+--- a/arch/powerpc/platforms/powernv/opal-async.c
++++ b/arch/powerpc/platforms/powernv/opal-async.c
+@@ -117,6 +117,11 @@ int opal_async_wait_response(uint64_t token, struct opal_msg *msg)
+ 		return -EINVAL;
+ 	}
+ 
++	/* Wakeup the poller before we wait for events to speed things
++	 * up on platforms or simulators where the interrupts aren't
++	 * functional.
++	 */
++	opal_wake_poller();
+ 	wait_event(opal_async_wait, test_bit(token, opal_async_complete_map));
+ 	memcpy(msg, &opal_async_responses[token], sizeof(*msg));
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 802f3b7..7f13302 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -55,6 +55,7 @@ struct device_node *opal_node;
+ static DEFINE_SPINLOCK(opal_write_lock);
+ static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
+ static uint32_t opal_heartbeat;
++static struct task_struct *kopald_tsk;
+ 
+ void opal_configure_cores(void)
+ {
+@@ -650,6 +651,7 @@ static void opal_i2c_create_devs(void)
+ 
+ static int kopald(void *unused)
+ {
++	unsigned long timeout = msecs_to_jiffies(opal_heartbeat) + 1;
+ 	__be64 events;
+ 
+ 	set_freezable();
+@@ -657,12 +659,18 @@ static int kopald(void *unused)
+ 		try_to_freeze();
+ 		opal_poll_events(&events);
+ 		opal_handle_events(be64_to_cpu(events));
+-		msleep_interruptible(opal_heartbeat);
++		schedule_timeout_interruptible(timeout);
+ 	} while (!kthread_should_stop());
+ 
+ 	return 0;
+ }
+ 
++void opal_wake_poller(void)
++{
++	if (kopald_tsk)
++		wake_up_process(kopald_tsk);
++}
++
+ static void opal_init_heartbeat(void)
+ {
+ 	/* Old firwmware, we assume the HVC heartbeat is sufficient */
+@@ -671,7 +679,7 @@ static void opal_init_heartbeat(void)
+ 		opal_heartbeat = 0;
+ 
+ 	if (opal_heartbeat)
+-		kthread_run(kopald, NULL, "kopald");
++		kopald_tsk = kthread_run(kopald, NULL, "kopald");
+ }
+ 
+ static int __init opal_init(void)
