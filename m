@@ -1,47 +1,24 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rjtgV6VHpzDqnw
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 03:05:26 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u64H4Vp6114464
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 13:05:23 -0400
-Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23x9rkuefh-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 13:05:23 -0400
-Received: from localhost
- by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 4 Jul 2016 18:05:22 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2C3801B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 18:06:37 +0100 (BST)
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
- [9.149.37.216])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u64H5JUj5308880
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 17:05:19 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u64H5I81006606
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 11:05:19 -0600
-Subject: Re: [PATCH v2] cxl: Refine slice error debug messages
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1467644856-762-1-git-send-email-felix@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, imunsie@au1.ibm.com, mikey@neuling.org
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 4 Jul 2016 19:05:17 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rk27W5FxHzDqpF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 08:41:43 +1000 (AEST)
+Date: Mon, 4 Jul 2016 19:41:36 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Yury Norov <ynorov@caviumnetworks.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] perf/core: Fix the mask in perf_output_sample_regs
+Message-ID: <20160704224136.GY5324@kernel.org>
+References: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160704071906.GA9901@yury-N73SV>
 MIME-Version: 1.0
-In-Reply-To: <1467644856-762-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <577A974D.3000404@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160704071906.GA9901@yury-N73SV>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,15 +28,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Em Mon, Jul 04, 2016 at 10:19:06AM +0300, Yury Norov escreveu:
+> On Sun, Jul 03, 2016 at 11:31:58PM +0530, Madhavan Srinivasan wrote:
+> > When decoding the perf_regs mask in perf_output_sample_regs(),
+> > we loop through the mask using find_first_bit and find_next_bit functions.
+> > While the exisitng code works fine in most of the case,
+> > the logic is broken for 32bit kernel (Big Endian).
+> > When reading u64 mask using (u32 *)(&val)[0], find_*_bit() assumes it gets
+> > lower 32bits of u64 but instead gets upper 32bits which is wrong.
+> > Proposed fix is to swap the words of the u64 to handle this case.
+> > This is _not_ endianness swap.
+> 
+> 
+> In fact, it's broken for 32-bit LE as well if mask is zero and next
+> word on stack is not zero. The rest is OK.
+> 
+> Reviewed-by: Yury Norov <ynorov@caviumnetworks.com>
 
+Waiting a bit for more acks, as IIRC several other people had comments
+on this patch, ok?
 
-Le 04/07/2016 17:07, Philippe Bergheaud a écrit :
-> Signed-off-by: Philippe Bergheaud<felix@linux.vnet.ibm.com>
-> ---
-> Changes since v1:
->    - Rebased on Ian's patch
->      "cxl: Abstract the differences between the PSL and XSL"
-
-Thanks!
-
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+- Arnaldo
+ 
+> > 
+> > Suggested-by: Yury Norov <ynorov@caviumnetworks.com>
+> > Cc: Yury Norov <ynorov@caviumnetworks.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+> > Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+> > Cc: Jiri Olsa <jolsa@kernel.org>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> > ---
+> >  include/linux/bitmap.h |  2 ++
+> >  kernel/events/core.c   |  4 +++-
+> >  lib/bitmap.c           | 19 +++++++++++++++++++
+> >  3 files changed, 24 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/include/linux/bitmap.h b/include/linux/bitmap.h
+> > index e9b0b9ab07e5..d95b422db183 100644
+> > --- a/include/linux/bitmap.h
+> > +++ b/include/linux/bitmap.h
+> > @@ -188,6 +188,8 @@ extern int bitmap_print_to_pagebuf(bool list, char *buf,
+> >  #define small_const_nbits(nbits) \
+> >  	(__builtin_constant_p(nbits) && (nbits) <= BITS_PER_LONG)
+> >  
+> > +extern void bitmap_from_u64(unsigned long *dst, u64 mask);
+> > +
+> >  static inline void bitmap_zero(unsigned long *dst, unsigned int nbits)
+> >  {
+> >  	if (small_const_nbits(nbits))
+> > diff --git a/kernel/events/core.c b/kernel/events/core.c
+> > index 9c51ec3f0f44..613fec95ea4c 100644
+> > --- a/kernel/events/core.c
+> > +++ b/kernel/events/core.c
+> > @@ -5205,8 +5205,10 @@ perf_output_sample_regs(struct perf_output_handle *handle,
+> >  			struct pt_regs *regs, u64 mask)
+> >  {
+> >  	int bit;
+> > +	DECLARE_BITMAP(_mask, 64);
+> >  
+> > -	for_each_set_bit(bit, (const unsigned long *) &mask,
+> > +	bitmap_from_u64(_mask, mask);
+> > +	for_each_set_bit(bit, _mask,
+> >  			 sizeof(mask) * BITS_PER_BYTE) {
+> >  		u64 val;
+> >  
+> > diff --git a/lib/bitmap.c b/lib/bitmap.c
+> > index c66da508cbf7..522f1b4c6078 100644
+> > --- a/lib/bitmap.c
+> > +++ b/lib/bitmap.c
+> > @@ -1170,3 +1170,22 @@ void bitmap_copy_le(unsigned long *dst, const unsigned long *src, unsigned int n
+> >  }
+> >  EXPORT_SYMBOL(bitmap_copy_le);
+> >  #endif
+> > +
+> > +/*
+> > + * bitmap_from_u64 - Check and swap words within u64.
+> > + *  @mask: source bitmap
+> > + *  @dst:  destination bitmap
+> > + *
+> > + * In 32bit Big Endian kernel, when using (u32 *)(&val)[*]
+> > + * to read u64 mask, we will get wrong word.
+> > + * That is "(u32 *)(&val)[0]" gets upper 32 bits,
+> > + * but expected could be lower 32bits of u64.
+> > + */
+> > +void bitmap_from_u64(unsigned long *dst, u64 mask)
+> > +{
+> > +	dst[0] = mask & ULONG_MAX;
+> > +
+> > +	if (sizeof(mask) > sizeof(unsigned long))
+> > +		dst[1] = mask >> 32;
+> > +}
+> > +EXPORT_SYMBOL(bitmap_from_u64);
+> > -- 
+> > 1.9.1
