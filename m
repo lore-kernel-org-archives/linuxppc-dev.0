@@ -1,48 +1,20 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rk2Kf5gx3zDqpF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 08:50:30 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u64MiG12079315
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 18:50:28 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23x9mdaegb-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 18:50:27 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 4 Jul 2016 19:50:25 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 47D381DC006D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2016 18:50:14 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u64MoL4W15728966
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 19:50:21 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u64MoLLx029092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 19:50:21 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>
-Cc: kexec@lists.infradead.org, ebiederm@xmission.com, dyoung@redhat.com,
- bhe@redhat.com, vgoyal@redhat.com, will.deacon@arm.com,
- catalin.marinas@arm.com, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC] arm64: kexec_file_load support
-Date: Mon, 04 Jul 2016 19:50:19 -0300
-In-Reply-To: <20160704065814.GO20774@linaro.org>
-References: <20160701051111.GL20774@linaro.org> <3300473.zhbeG65qgA@hactar>
- <20160704065814.GO20774@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <5766907.oiVi8ABPsz@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rk3ff1qd5zDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 09:50:18 +1000 (AEST)
+Message-ID: <1467676217.30027.15.camel@neuling.org>
+Subject: Re: [PATCH v2] cxl: Refine slice error debug messages
+From: Michael Neuling <mikey@neuling.org>
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, imunsie@au1.ibm.com, fbarrat@linux.vnet.ibm.com
+Date: Tue, 05 Jul 2016 09:50:17 +1000
+In-Reply-To: <1467644856-762-1-git-send-email-felix@linux.vnet.ibm.com>
+References: <1467644856-762-1-git-send-email-felix@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,78 +24,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+This needs a description. =C2=A0How are you "refining it?
 
-Am Montag, 04 Juli 2016, 15:58:15 schrieb AKASHI Takahiro:
-> On Fri, Jul 01, 2016 at 12:46:31PM -0300, Thiago Jung Bauermann wrote:
-> > I agree that it would be better if we could have a system call where a
-> 
-> > custom device tree could be passed. One suggestion is:
-> For powerpc, you might be able to use dtbImage instead of Image
-> without changing the kernel interfaces.
+Mikey
 
-That works for custom kernels, but for signed kernels from a distro, I 
-believe that's not an option.
 
-> > kexec_file_load2(int fds[], int fd_types[], int nr_fds,
-> > 
-> > 		 unsigned long cmdline_len, const char *cmdline_ptr,
-> > 		
-> > 		unsigned long flags);
-> 
-> You don't want to simply add one more argument, i.e. dtb_fd, don't you.
-
-I'm just trying to avoid having to add another argument later if we find out 
-someone is loading another segment that we didn't know about. :-)
-
-The older kexec_load system call allows passing an arbitrary number of 
-segments (sort of, currently capped at 16) to the kernel, so my suggestions 
-preserve that feature.
-
-If people think that adding another argument for dtb_fd is enough, I won't 
-mind.
-
-> I prefer a slightly-simpler interface:
->         struct kexec_file_fd {
->                 enum kexec_file_type;
->                 int fd;
->         }
-> 
->         int kexec_file_load2(struct kexec_file_fd[], int nr_fds, int
-> flags);
-
-I like this one.
-
-> Or if you want to keep the compatibility with the existing system call,
-> 
->         int kexec_file_load(int kernel_fd, int initrd_fd,
->                         unsigned long cmdline_len, const char
-> *cmdline_ptr, unsigned long flags,
->                         int struct kexec_file_fd[], int nr_fds);
-> 
-> Here SYSCALL_DEFINE7() have to be defined, and I'm not sure that we will
-> not have a problem in adding a system call with more than 6 arguments.
-
-That's very clever. We can do what you suggest above or even just add dtb_fd 
-with SYSCALL_DEFINE6. Either option would be good.
-
-> > Where fds is an array with nr_fds file descriptors and fd_types is an
-> > array specifying what each fd in fds is. So for example, if fds[i] is
-> > the kernel, then fd_types[i] would have the value KEXEC_FILE_KERNEL_FD.
-> > If fds[i] is the device tree blob, fd_types[i], would have the value
-> > KEXEC_FILE_DTB and so on. That way, the syscall can be extended for an
-> > arbitrary number and types of segments that have to be loaded, just
-> > like kexec_load.
-> > 
-> > Another option is to have a struct:
-> > 
-> > kexec_file_load2(struct kexec_file_params *params, unsigned long
-> > params_sz);
-> Wow, we can add any number of new parameters with this interface.
-
-Yeah, maybe it's a bit too much.
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+On Mon, 2016-07-04 at 17:07 +0200, Philippe Bergheaud wrote:
+> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> ---
+> Changes since v1:
+> =C2=A0 - Rebased on Ian's patch
+> =C2=A0=C2=A0=C2=A0=C2=A0"cxl: Abstract the differences between the PSL an=
+d XSL"
+>=20
+> =C2=A0drivers/misc/cxl/cxl.h=C2=A0=C2=A0=C2=A0=C2=A0| 15 +++++++++++++++
+> =C2=A0drivers/misc/cxl/guest.c=C2=A0=C2=A0|=C2=A0=C2=A09 ++++++---
+> =C2=A0drivers/misc/cxl/irq.c=C2=A0=C2=A0=C2=A0=C2=A0| 29 ++++++++++++++++=
++++++++++++++
+> =C2=A0drivers/misc/cxl/native.c | 12 +++++++-----
+> =C2=A04 files changed, 57 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index 7745252..d928a8c 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -188,6 +188,18 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=3D
+> {0x0A0};
+> =C2=A0#define CXL_PSL_ID_An_F	(1ull << (63-31))
+> =C2=A0#define CXL_PSL_ID_An_L	(1ull << (63-30))
+> =C2=A0
+> +/****** CXL_PSL_SERR_An
+> ****************************************************/
+> +#define CXL_PSL_SERR_An_afuto	(1ull << (63-0))
+> +#define CXL_PSL_SERR_An_afudis	(1ull << (63-1))
+> +#define CXL_PSL_SERR_An_afuov	(1ull << (63-2))
+> +#define CXL_PSL_SERR_An_badsrc	(1ull << (63-3))
+> +#define CXL_PSL_SERR_An_badctx	(1ull << (63-4))
+> +#define CXL_PSL_SERR_An_llcmdis	(1ull << (63-5))
+> +#define CXL_PSL_SERR_An_llcmdto	(1ull << (63-6))
+> +#define CXL_PSL_SERR_An_afupar	(1ull << (63-7))
+> +#define CXL_PSL_SERR_An_afudup	(1ull << (63-8))
+> +#define CXL_PSL_SERR_An_AE	(1ull << (63-30))
+> +
+> =C2=A0/****** CXL_PSL_SCNTL_An
+> ****************************************************/
+> =C2=A0#define CXL_PSL_SCNTL_An_CR=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0(0x1ull << (63-15))
+> =C2=A0/* Programming Modes: */
+> @@ -905,4 +917,7 @@ extern const struct cxl_backend_ops *cxl_ops;
+> =C2=A0
+> =C2=A0/* check if the given pci_dev is on the the cxl vphb bus */
+> =C2=A0bool cxl_pci_is_vphb_device(struct pci_dev *dev);
+> +
+> +/* decode AFU error bits in the PSL register PSL_SERR_An */
+> +void cxl_afu_decode_psl_serr(struct cxl_afu *afu, u64 serr);
+> =C2=A0#endif
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index bc8d0b9..d516d0a 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -196,15 +196,18 @@ static irqreturn_t guest_slice_irq_err(int irq,
+> void *data)
+> =C2=A0{
+> =C2=A0	struct cxl_afu *afu =3D data;
+> =C2=A0	int rc;
+> -	u64 serr;
+> +	u64 serr, afu_error, dsisr;
+> =C2=A0
+> -	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
+> =C2=A0	rc =3D cxl_h_get_fn_error_interrupt(afu->guest->handle, &serr);
+> =C2=A0	if (rc) {
+> =C2=A0		dev_crit(&afu->dev, "Couldn't read PSL_SERR_An: %d\n",
+> rc);
+> =C2=A0		return IRQ_HANDLED;
+> =C2=A0	}
+> -	dev_crit(&afu->dev, "PSL_SERR_An: 0x%.16llx\n", serr);
+> +	afu_error =3D cxl_p2n_read(afu, CXL_AFU_ERR_An);
+> +	dsisr =3D cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+> +	cxl_afu_decode_psl_serr(afu, serr);
+> +	dev_crit(&afu->dev, "AFU_ERR_An: 0x%.16llx\n", afu_error);
+> +	dev_crit(&afu->dev, "PSL_DSISR_An: 0x%.16llx\n", dsisr);
+> =C2=A0
+> =C2=A0	rc =3D cxl_h_ack_fn_error_interrupt(afu->guest->handle, serr);
+> =C2=A0	if (rc)
+> diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+> index 8def455..40fffe4 100644
+> --- a/drivers/misc/cxl/irq.c
+> +++ b/drivers/misc/cxl/irq.c
+> @@ -374,3 +374,32 @@ void afu_release_irqs(struct cxl_context *ctx, void
+> *cookie)
+> =C2=A0
+> =C2=A0	ctx->irq_count =3D 0;
+> =C2=A0}
+> +
+> +void cxl_afu_decode_psl_serr(struct cxl_afu *afu, u64 serr)
+> +{
+> +	dev_crit(&afu->dev,
+> +		=C2=A0"PSL Slice error received. Check AFU for root
+> cause.\n");
+> +	dev_crit(&afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
+> +	if (serr & CXL_PSL_SERR_An_afuto)
+> +		dev_crit(&afu->dev, "AFU MMIO Timeout\n");
+> +	if (serr & CXL_PSL_SERR_An_afudis)
+> +		dev_crit(&afu->dev,
+> +			=C2=A0"MMIO targeted Accelerator that was not
+> enabled\n");
+> +	if (serr & CXL_PSL_SERR_An_afuov)
+> +		dev_crit(&afu->dev, "AFU CTAG Overflow\n");
+> +	if (serr & CXL_PSL_SERR_An_badsrc)
+> +		dev_crit(&afu->dev, "Bad Interrupt Source\n");
+> +	if (serr & CXL_PSL_SERR_An_badctx)
+> +		dev_crit(&afu->dev, "Bad Context Handle\n");
+> +	if (serr & CXL_PSL_SERR_An_llcmdis)
+> +		dev_crit(&afu->dev, "LLCMD to Disabled AFU\n");
+> +	if (serr & CXL_PSL_SERR_An_llcmdto)
+> +		dev_crit(&afu->dev, "LLCMD Timeout to AFU\n");
+> +	if (serr & CXL_PSL_SERR_An_afupar)
+> +		dev_crit(&afu->dev, "AFU MMIO Parity Error\n");
+> +	if (serr & CXL_PSL_SERR_An_afudup)
+> +		dev_crit(&afu->dev, "AFU MMIO Duplicate CTAG Error\n");
+> +	if (serr & CXL_PSL_SERR_An_AE)
+> +		dev_crit(&afu->dev,
+> +			=C2=A0"AFU asserted JDONE with JERROR in AFU Directed
+> Mode\n");
+> +}
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index d867326..c4d8815 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -767,7 +767,7 @@ void cxl_native_psl_irq_dump_regs(struct cxl_context
+> *ctx)
+> =C2=A0	dev_crit(&ctx->afu->dev, "PSL_FIR2: 0x%016llx\n", fir2);
+> =C2=A0	if (ctx->afu->adapter->native->sl_ops->register_serr_irq) {
+> =C2=A0		serr =3D cxl_p1n_read(ctx->afu, CXL_PSL_SERR_An);
+> -		dev_crit(&ctx->afu->dev, "PSL_SERR_An: 0x%016llx\n",
+> serr);
+> +		cxl_afu_decode_psl_serr(ctx->afu, serr);
+> =C2=A0	}
+> =C2=A0	dev_crit(&ctx->afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n",
+> fir_slice);
+> =C2=A0	dev_crit(&ctx->afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n",
+> afu_debug);
+> @@ -861,21 +861,23 @@ void native_irq_wait(struct cxl_context *ctx)
+> =C2=A0static irqreturn_t native_slice_irq_err(int irq, void *data)
+> =C2=A0{
+> =C2=A0	struct cxl_afu *afu =3D data;
+> -	u64 fir_slice, errstat, serr, afu_debug;
+> +	u64 fir_slice, errstat, serr, afu_debug, afu_error, dsisr;
+> =C2=A0
+> =C2=A0	/*
+> =C2=A0	=C2=A0* slice err interrupt is only used with full PSL (no XSL)
+> =C2=A0	=C2=A0*/
+> -	WARN(irq, "CXL SLICE ERROR interrupt %i\n", irq);
+> -
+> =C2=A0	serr =3D cxl_p1n_read(afu, CXL_PSL_SERR_An);
+> =C2=A0	fir_slice =3D cxl_p1n_read(afu, CXL_PSL_FIR_SLICE_An);
+> =C2=A0	errstat =3D cxl_p2n_read(afu, CXL_PSL_ErrStat_An);
+> =C2=A0	afu_debug =3D cxl_p1n_read(afu, CXL_AFU_DEBUG_An);
+> -	dev_crit(&afu->dev, "PSL_SERR_An: 0x%016llx\n", serr);
+> +	afu_error =3D cxl_p2n_read(afu, CXL_AFU_ERR_An);
+> +	dsisr =3D cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+> +	cxl_afu_decode_psl_serr(afu, serr);
+> =C2=A0	dev_crit(&afu->dev, "PSL_FIR_SLICE_An: 0x%016llx\n", fir_slice);
+> =C2=A0	dev_crit(&afu->dev, "CXL_PSL_ErrStat_An: 0x%016llx\n", errstat);
+> =C2=A0	dev_crit(&afu->dev, "CXL_PSL_AFU_DEBUG_An: 0x%016llx\n",
+> afu_debug);
+> +	dev_crit(&afu->dev, "AFU_ERR_An: 0x%.16llx\n", afu_error);
+> +	dev_crit(&afu->dev, "PSL_DSISR_An: 0x%.16llx\n", dsisr);
+> =C2=A0
+> =C2=A0	cxl_p1n_write(afu, CXL_PSL_SERR_An, serr);
+> =C2=A0
