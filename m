@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFP3yLdzDrpH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFQ6tgLzDrpX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:26 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkCFN5brPz9ryQ
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:24 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkCFQ1cfCz9ryQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:25 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 23/41] powerpc: Ensure that ppc_md is empty before probing for
- machine type
-Date: Tue,  5 Jul 2016 15:03:59 +1000
-Message-Id: <1467695057-12431-24-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 34/41] powerpc/32: Move cache info inits to a separate function
+Date: Tue,  5 Jul 2016 15:04:10 +1000
+Message-Id: <1467695057-12431-35-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,42 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anything in there will be overwritten, so it helps catching nasty
-bugs if we check that it's indeed full of NULL's before we do so.
+Matches 64-bit. Also move the call to the same spot as ppc64
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup-common.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/powerpc/kernel/setup_32.c | 27 ++++++++++++++++-----------
+ 1 file changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 2a3564c..7e85fac 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -575,6 +575,7 @@ void probe_machine(void)
- {
- 	extern struct machdep_calls __machine_desc_start;
- 	extern struct machdep_calls __machine_desc_end;
-+	unsigned int i;
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 22347e87..5457911 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -248,6 +248,21 @@ static void setup_power_save(void)
+ #endif
+ }
  
- 	/*
- 	 * Iterate all ppc_md structures until we find the proper
-@@ -582,6 +583,16 @@ void probe_machine(void)
- 	 */
- 	DBG("Probing machine type ...\n");
- 
-+	/* Check ppc_md is empty, if not we have a bug, ie, we setup an
-+	 * entry before probe_machine() which will be overwritten
++static __init void initialize_cache_info(void)
++{
++	/*
++	 * Set cache line size based on type of cpu as a default.
++	 * Systems with OF can look in the properties on the cpu node(s)
++	 * for a possibly more accurate value.
 +	 */
-+	for (i = 0; i < (sizeof(ppc_md) / sizeof(void *)); i++) {
-+		if (((void **)&ppc_md)[i]) {
-+			printk(KERN_ERR "Entry %d in ppc_md non empty before"
-+			       " machine probe !\n", i);
-+		}
-+	}
++	dcache_bsize = cur_cpu_spec->dcache_bsize;
++	icache_bsize = cur_cpu_spec->icache_bsize;
++	ucache_bsize = 0;
++	if (cpu_has_feature(CPU_FTR_UNIFIED_ID_CACHE))
++		ucache_bsize = icache_bsize = dcache_bsize;
++}
 +
- 	for (machine_id = &__machine_desc_start;
- 	     machine_id < &__machine_desc_end;
- 	     machine_id++) {
++
+ /* Warning, IO base is not yet inited */
+ void __init setup_arch(char **cmdline_p)
+ {
+@@ -257,6 +272,7 @@ void __init setup_arch(char **cmdline_p)
+ 	loops_per_jiffy = 500000000 / HZ;
+ 
+ 	unflatten_device_tree();
++	initialize_cache_info();
+ 	check_for_initrd();
+ 
+ 	probe_machine();
+@@ -272,17 +288,6 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	xmon_setup();
+ 
+-	/*
+-	 * Set cache line size based on type of cpu as a default.
+-	 * Systems with OF can look in the properties on the cpu node(s)
+-	 * for a possibly more accurate value.
+-	 */
+-	dcache_bsize = cur_cpu_spec->dcache_bsize;
+-	icache_bsize = cur_cpu_spec->icache_bsize;
+-	ucache_bsize = 0;
+-	if (cpu_has_feature(CPU_FTR_UNIFIED_ID_CACHE))
+-		ucache_bsize = icache_bsize = dcache_bsize;
+-
+ 	if (ppc_md.panic)
+ 		setup_panic();
+ 
 -- 
 2.7.4
