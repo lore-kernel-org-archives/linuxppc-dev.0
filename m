@@ -1,19 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCJ24nLKzDrYq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:34:42 +1000 (AEST)
-In-Reply-To: <20160628031139.12500-1-sam@mendozajonas.com>
-To: Sam Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCQx1gLGzDrRm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:40:41 +1000 (AEST)
+In-Reply-To: <20160406070012.GA11647@simonLocalRHEL7.x64>
+To: Simon Guo <wei.guo.simon@gmail.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>,
- Alistair Popple <alistair@popple.id.au>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Subject: Re: [1/2] tty/hvc: Use IRQF_SHARED for OPAL hvc consoles
-Message-Id: <3rkCJ22Wwpz9sBl@ozlabs.org>
-Date: Tue,  5 Jul 2016 15:34:42 +1000 (AEST)
+Cc: Kees Cook <keescook@chromium.org>, Simon Guo <wei.guo.simon@gmail.com>,
+ Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
+ Simon Guo <simonguo@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RESEND,
+ v2] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-Id: <3rkCQx0jldz9sBl@ozlabs.org>
+Date: Tue,  5 Jul 2016 15:40:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-28-06 at 03:11:38 UTC, Sam Mendoza-Jonas wrote:
-> Commit 2def86a7200c
-> ("hvc: Convert to using interrupts instead of opal events")
-> enabled the use of interrupts in the hvc_driver for OPAL platforms.
-> However on machines with more than one hvc console, any console after
-> the first will fail to register an interrupt handler in
-> notifier_add_irq() since all consoles share the same IRQ number but do
-> not set the IRQF_SHARED flag:
+On Wed, 2016-06-04 at 07:00:12 UTC, Simon Guo wrote:
+> These 2 fields track whether user process has used Altivec/VSX
+> registers or not. They are used by kernel to setup signal frame
+> on user stack correctly regarding vector part.
 > 
-> [   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
-> 00000000 (hvc_console)
-> [   51.180010] hvc_open: request_irq failed with rc -16.
+> CRIU(Checkpoint and Restore In User space) builds signal frame
+> for restored process. It will need this export information to
+> setup signal frame correctly. And CRIU will need to restore these
+> 2 fields for the restored process.
 > 
-> This error propagates up to hvc_open() and the console is closed, but
-> OPAL will still generate interrupts that are not handled, leading to
-> rcu_sched stall warnings.
+> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 > 
-> Set IRQF_SHARED when calling request_irq, allowing additional consoles
-> to start properly. This is only set for consoles handled by
-> hvc_opal_probe(), leaving other types unaffected.
-> 
-> Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+> diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+> index 8036b38..d5afe95 100644
+> --- a/arch/powerpc/include/uapi/asm/ptrace.h
+> +++ b/arch/powerpc/include/uapi/asm/ptrace.h
+> @@ -176,6 +176,17 @@ struct pt_regs {
+>  #define PTRACE_GETREGS64	  0x16
+>  #define PTRACE_SETREGS64	  0x17
+>  
+> +/*
+> + * Get or set some register used bit.
+> + * The flags will be saved in a 32 bit data.
+> + * Currently it is only used for VR/VSR usage.
+> + */
+> +#define PTRACE_GET_REGS_USAGE	  0x1e
+> +#define PTRACE_SET_REGS_USAGE	  0x1f
+> +
+> +#define PTRACE_REGS_USAGE_VR_BIT  0x00000001
+> +#define PTRACE_REGS_USAGE_VSR_BIT 0x00000002
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
+It looks like you just made up this new ptrace ABI ?
 
-Greg I'm assuming you'll take this unless you tell me otherwise.
+Or is it used on other arches ? (no AFAICS)
+
+How do other arches handle this ?
+
+I'm a bit wary of adding new ptrace ABIs.
+
+If we do want to do this, I'd at least think the mask should be u64, to give us
+more capacity to add new registers.
 
 cheers
