@@ -3,42 +3,45 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkByb1mLfzDrGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:35 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u655JWQQ005909
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 01:19:32 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23x9mdhvpd-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkByj4zwZzDr0w
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:41 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u655JUpe095536
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 01:19:39 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23x9t11p0e-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:19:32 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:19:39 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Tue, 5 Jul 2016 15:19:28 +1000
+ Tue, 5 Jul 2016 15:19:35 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 32FCB2BB005E
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1FF692CE805C
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:26 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u655JQQu22544538
+ u655JQpd22544536
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u655JPA4025011
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u655JPYA016617
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:25 +1000
 From: Sam Bobroff <sam.bobroff@au1.ibm.com>
 To: david@gibson.dropbear.id.au
 Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
  agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
  qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/3] Rework spapr: Better handling of ibm, pa-features TM bit
-Date: Tue,  5 Jul 2016 15:19:21 +1000
-In-Reply-To: <20160608022602.GU9226@voom.fritz.box>
+Subject: [PATCH 3/3] spapr: Set ibm, pa-features HTM from KVM_CAP_PPC_HTM
+Date: Tue,  5 Jul 2016 15:19:24 +1000
+In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
 References: <20160608022602.GU9226@voom.fritz.box>
-Message-Id: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+ <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+References: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+Message-Id: <92f09cf433b816a88d94adc50cd9cb89b94131a3.1467695915.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,57 +51,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Advertise HTM support in ibm, pa-features if KVM indicates support when
+queried via a new capability (KVM_CAP_PPC_HTM).
 
-Hi David,
+If KVM returns false for the capability (which may indicate that the
+host kernel doesn't support the capability itself) attempt to
+determine availability using a fallback method based on KVM being
+KVM-HV and HTM being available to the QEMU process.
 
-Anton asked me to have a look at this, so here is an attempt at a
-re-implementation of his: "spapr: Better handling of ibm, pa-features TM bit"
-addressing your comments and those from Paul Mackerras.  I've broken the
-patch into one to unconditionally disable the HTM bit in pa-features and a
-second one to set it conditionally based on a (new) KVM capability. It requires
-a small patch to KVM to support the capability, presumably something like this:
+Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+---
+ hw/ppc/spapr.c       |  3 ++-
+ target-ppc/kvm.c     | 27 +++++++++++++++++++++++++++
+ target-ppc/kvm_ppc.h |  6 ++++++
+ 3 files changed, 35 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 02416fe..4a8ddab 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -588,6 +588,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-                r = 1;
-                break;
- #endif
-+       case KVM_CAP_PPC_HTM:
-+               r = cpu_has_feature(CPU_FTR_TM);
-+               break;
-        default:
-                r = 0;
-                break;
-
-Adding a new capability requires changing linux/kvm.h but I believe we can
-avoid incrementing KVM_API_VERSION at this stage since kernels that don't yet
-support it will simply return false. However, due to the ambiguity of that
-result I've included Anton's initial fallback approach to be used in that case.
-Once the API version is incremented (and support for the capability is
-guaranteed) the ambiguity would be gone and we should be able to remove the
-fallback. As long as that happens before KVM PR supports HTM, this should
-address Paul's concern about using the PVINFO capability to discover KVM-HV.
-
-Note: I'm not sure how to handle the change to linux/kvm.h, I've included the
-patch here because it's needed to compile, but I suspect it needs to go via the
-kernel. Let's see if this part looks good first.
-
-Note also: I've changed TM to HTM where possible in an attempt to be consistent.
-
-
-Sam Bobroff (3):
-  spapr: Disable ibm, pa-features HTM bit
-  Add KVM_CAP_PPC_HTM to linux/kvm.h
-  spapr: Set ibm, pa-features HTM from KVM_CAP_PPC_HTM
-
- hw/ppc/spapr.c            |  3 ++-
- linux-headers/linux/kvm.h |  1 +
- target-ppc/kvm.c          | 27 +++++++++++++++++++++++++++
- target-ppc/kvm_ppc.h      |  6 ++++++
- 4 files changed, 36 insertions(+), 1 deletion(-)
-
+diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
+index 704aae7..e229532 100644
+--- a/hw/ppc/spapr.c
++++ b/hw/ppc/spapr.c
+@@ -606,6 +606,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
+     uint32_t tbfreq = kvm_enabled() ? kvmppc_get_tbfreq()
+         : SPAPR_TIMEBASE_FREQ;
+     uint32_t cpufreq = kvm_enabled() ? kvmppc_get_clockfreq() : 1000000000;
++    uint8_t htm = (kvm_enabled() && kvmppc_get_htm_support(env)) ? 0x80 : 0x00;
+     uint32_t page_sizes_prop[64];
+     size_t page_sizes_prop_size;
+     uint32_t vcpus_per_socket = smp_threads * smp_cores;
+@@ -635,7 +636,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
+         0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
+         0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+         0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
+-        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
++        0x80, 0x00, 0x80, 0x00, 0x00 | htm, 0x00 };
+     uint8_t *pa_features;
+     size_t pa_size;
+ 
+diff --git a/target-ppc/kvm.c b/target-ppc/kvm.c
+index 884d564..f94ce3b 100644
+--- a/target-ppc/kvm.c
++++ b/target-ppc/kvm.c
+@@ -20,6 +20,7 @@
+ #include <sys/vfs.h>
+ 
+ #include <linux/kvm.h>
++#include "elf.h"
+ 
+ #include "qemu-common.h"
+ #include "qemu/error-report.h"
+@@ -1976,6 +1977,32 @@ uint32_t kvmppc_get_dfp(void)
+     return kvmppc_read_int_cpu_dt("ibm,dfp");
+ }
+ 
++bool kvmppc_get_htm_support(CPUPPCState *env)
++{
++    PowerPCCPU *cpu = ppc_env_get_cpu(env);
++    CPUState *cs = CPU(cpu);
++
++
++    if (kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_HTM)) {
++        return true;
++    }
++    /*
++     * Fallback test for host kernels that don't yet support KVM_CAP_PPC_HTM.
++     * This will be unnecessary when KVM_API_VERSION is incremented (to 13 or
++     * above) because that will remove the ambiguity between the host kernel
++     * lacking support for KVM_CAP_PPC_HTM and it having support but reporting
++     * HTM as unavailable (both of which return 0, above).
++     */
++    if (kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINFO)) {
++        /* Assume this means PR KVM, so no TM. */
++        return false;
++    } else {
++        /* Assume this means HV KVM, propagate whatever host userspace sees. */
++        unsigned long hwcap2 = qemu_getauxval(AT_HWCAP2);
++        return !!(hwcap2 & PPC_FEATURE2_HAS_HTM);
++    }
++}
++
+ static int kvmppc_get_pvinfo(CPUPPCState *env, struct kvm_ppc_pvinfo *pvinfo)
+  {
+      PowerPCCPU *cpu = ppc_env_get_cpu(env);
+diff --git a/target-ppc/kvm_ppc.h b/target-ppc/kvm_ppc.h
+index 20bfb59..b01c717 100644
+--- a/target-ppc/kvm_ppc.h
++++ b/target-ppc/kvm_ppc.h
+@@ -17,6 +17,7 @@ uint32_t kvmppc_get_tbfreq(void);
+ uint64_t kvmppc_get_clockfreq(void);
+ uint32_t kvmppc_get_vmx(void);
+ uint32_t kvmppc_get_dfp(void);
++bool kvmppc_get_htm_support(CPUPPCState *env);
+ bool kvmppc_get_host_model(char **buf);
+ bool kvmppc_get_host_serial(char **buf);
+ int kvmppc_get_hasidle(CPUPPCState *env);
+@@ -90,6 +91,11 @@ static inline uint32_t kvmppc_get_dfp(void)
+     return 0;
+ }
+ 
++static inline bool kvmppc_get_htm_support(KVMState *kvm_state)
++{
++    return false;
++}
++
+ static inline int kvmppc_get_hasidle(CPUPPCState *env)
+ {
+     return 0;
 -- 
 2.1.0
