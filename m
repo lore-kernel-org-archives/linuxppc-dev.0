@@ -2,18 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkQkt3YbVzDqrN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 00:10:14 +1000 (AEST)
-In-Reply-To: <1457472378-22274-1-git-send-email-linux@rasmusvillemoes.dk>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkQkv4wcQzDqrL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 00:10:15 +1000 (AEST)
+In-Reply-To: <1448495149-25024-1-git-send-email-anton@samba.org>
+To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
+ paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linux-kernel@vger.kernel.org
-Subject: Re: powerpc/pseries: fix error return value in cmm_mem_going_offline
-Message-Id: <3rkQkt2qMHz9t0T@ozlabs.org>
-Date: Wed,  6 Jul 2016 00:10:14 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Avoid -maltivec when using clang integrated assembler
+Message-Id: <3rkQkv1Bsqz9t1G@ozlabs.org>
+Date: Wed,  6 Jul 2016 00:10:15 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-03 at 21:26:17 UTC, Rasmus Villemoes wrote:
-> cmm_mem_going_offline is (only) called from cmm_memory_cb(), which
-> sends the return value through notifier_from_errno(). The latter
-> expects 0 or -errno (notifier_to_errno(notifier_from_errno(x)) is 0
-> for any x >= 0, so passing a positive value cannot make sense). Hence
-> negate ENOMEM.
+On Wed, 2015-25-11 at 23:45:49 UTC, Anton Blanchard wrote:
+> Check the assembler supports -maltivec by wrapping it with
+> call as-option.
 > 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e2be23712a9c8e3710c9e2684a
+https://git.kernel.org/powerpc/c/9ddf0075f9184f1e1dabf7bfea
 
 cheers
