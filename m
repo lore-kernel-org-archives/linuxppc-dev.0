@@ -1,26 +1,41 @@
-Return-Path: <sam@mendozajonas.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkD1v5WqzzDsl8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 16:07:31 +1000 (AEST)
-Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkD1t3v4vz9sdn
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 16:07:30 +1000 (AEST)
-Message-ID: <1467698844.1951.4.camel@mendozajonas.com>
-Subject: Re: [2/2] tty/hvc: Use opal irqchip interface if available
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>, Alistair Popple
- <alistair@popple.id.au>
-Date: Tue, 05 Jul 2016 16:07:24 +1000
-In-Reply-To: <3rkCDZ1WWTz9sBc@ozlabs.org>
-References: <3rkCDZ1WWTz9sBc@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkDB15pknzDwKC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 16:14:33 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u656EThe037827
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 02:14:32 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23xa52ass2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 02:14:31 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 5 Jul 2016 16:14:24 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1D1232CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 16:14:21 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u656EKBV11665826
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 16:14:21 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u656EKOl001484
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 16:14:20 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, oss@buserror.net, geoff@infradead.org
+Subject: [PATCH 1/3] powerpc/ps3: fix typo in comment reference to
+ CONFIG_PS3_REPOSITORY_WRITE
+Date: Tue,  5 Jul 2016 16:12:33 +1000
+Message-Id: <1467699155-19108-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +45,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-07-05 at 15:31 +1000, Michael Ellerman wrote:
-> On Tue, 2016-28-06 at 03:11:39 UTC, Sam Mendoza-Jonas wrote:
-> > diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-> > index b7cd0ae..8c53f5b 100644
-> > --- a/drivers/tty/hvc/hvc_opal.c
-> > +++ b/drivers/tty/hvc/hvc_opal.c
-> > @@ -214,7 +216,15 @@ static int hvc_opal_probe(struct platform_device *dev)
-> >  		dev->dev.of_node->full_name,
-> >  		boot ? " (boot console)" : "");
-> >  
-> > -	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-> > +	rc = of_property_read_u32(dev->dev.of_node, "interrupts", &prop);
-> > +	if (rc) {
-> > +		pr_info("hvc%d: No interrupts property, using OPAL event\n",
-> > +				termno);
-> > +		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-> > +	} else {
-> > +		irq = irq_of_parse_and_map(dev->dev.of_node, 0);
-> > +	}
-> 
-> That seems a bit backward.
-> 
-> Shouldn't we try irq_of_parse_and_map() and if that fails, then we go back to
-> opal_event_request() ?
-> 
-> cheers
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ arch/powerpc/platforms/ps3/repository.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I was unsure for a minute so I double checked this;
-of_property_read_u32() returns of_property_read_u32_array(), which
-returns 0 on success, unlike a bunch of other of_property helpers.
-
-So if the 'interrupts' property does exist we get 0, and try
-irq_of_parse_and_map(). But are you suggesting we try
-irq_of_parse_and_map() regardless and then fall back to
-opal_event_request()?
-
-Cheers,
-Sam
+diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
+index bfccdc7..814a7ea 100644
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -1198,7 +1198,7 @@ int ps3_repository_delete_highmem_info(unsigned int region_index)
+ 	return result ? -1 : 0;
+ }
+ 
+-#endif /* defined(CONFIG_PS3_WRITE_REPOSITORY) */
++#endif /* defined(CONFIG_PS3_REPOSITORY_WRITE) */
+ 
+ #if defined(DEBUG)
+ 
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
