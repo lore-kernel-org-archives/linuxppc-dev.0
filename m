@@ -1,39 +1,18 @@
-Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rk5s43qfszDqpM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:29:28 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u651TQWu013344
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 21:29:26 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23x9s2dqcu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 21:29:26 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
- Mon, 4 Jul 2016 19:29:25 -0600
-Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
-To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- acme@kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267714.7296.6.camel@ellerman.id.au>
- <57762D2A.9040103@linux.vnet.ibm.com>
-Cc: anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
- naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Date: Tue, 5 Jul 2016 06:58:55 +0530
-MIME-Version: 1.0
-In-Reply-To: <57762D2A.9040103@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <577B0D57.3080702@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rk69f4LZWzDqpH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:43:50 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id ib6so948474pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 18:43:50 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, mpe@ellerman.id.au, Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH v2] powerpc/mm: Add a parameter to disable 1TB segs
+Date: Tue,  5 Jul 2016 11:43:21 +1000
+Message-Id: <1467683001-32280-1-git-send-email-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,84 +22,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+This patch adds the kernel command line parameter "no_tb_segs" which
+forces the kernel to use 256MB rather than 1TB segments. Forcing the use
+of 256MB segments makes it considerably easier to test code that depends
+on an SLB miss occurring.
 
-On Friday 01 July 2016 02:13 PM, Ravi Bangoria wrote:
-> Thanks Michael for your suggestion.
->
-> On Thursday 30 June 2016 11:51 AM, Michael Ellerman wrote:
->> On Thu, 2016-06-30 at 11:44 +0530, Ravi Bangoria wrote:
->>> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
->>> index 36a5825..b87eac7 100644
->>> --- a/tools/perf/util/annotate.c
->>> +++ b/tools/perf/util/annotate.c
->>> @@ -476,6 +481,125 @@ static int ins__cmp(const void *a, const void *b)
->> ...
->>> +
->>> +static struct ins *ins__find_powerpc(const char *name)
->>> +{
->>> +    int i;
->>> +    struct ins *ins;
->>> +    struct ins_ops *ops;
->>> +    static struct instructions_powerpc head;
->>> +    static bool list_initialized;
->>> +
->>> +    /*
->>> +     * - Interested only if instruction starts with 'b'.
->>> +     * - Few start with 'b', but aren't branch instructions.
->>> +     * - Let's also ignore instructions involving 'ctr' and
->>> +     *   'tar' since target branch addresses for those can't
->>> +     *   be determined statically.
->>> +     */
->>> +    if (name[0] != 'b'             ||
->>> +        !strncmp(name, "bcd", 3)   ||
->>> +        !strncmp(name, "brinc", 5) ||
->>> +        !strncmp(name, "bper", 4)  ||
->>> +        strstr(name, "ctr")        ||
->>> +        strstr(name, "tar"))
->>> +        return NULL;
->> It would be good if 'bctr' was at least recognised as a branch, even 
->> if we
->> can't determine the target. They are very common.
->
-> We can not show arrow for this since we don't know the target location.
-> can you please suggest how you intends perf to display bctr?
->
-> bctr can be classified into two variants -- 'bctr' and 'bctrl'.
->
-> 'bctr' will be considered as jump instruction but jump__parse() won't
-> be able to find any target location and hence it will set target to
-> UINT64_MAX which transform 'bctr' to 'bctr UINT64_MAX'. This
-> looks misleading.
->
-> bctrl will be considered as call instruction but call_parse() won't
-> be able to find any target function and hence it won't show any
-> navigation arrow for this instruction. Which is same as filter it
-> beforehand.
->
->> It doesn't look like we have the opcode handy here? Could we get it 
->> somehow?
->> That would make this a *lot* more robust.
->
-> objdump prints machine code, but I don't know how difficult that would
-> be to parse to get opcode.
+Suggested-by: Michael Neuling <mikey@neuling.org>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+Changes in from v1:
+	Renamed parameter from "no_tb_segs" to "disable_1tb_segments"
+	Added kernel-parameters.txt entry
 
-Perf uses  --no-show-raw with objdump and hence objdump output does not
-show opcodes. So change in current  objdump output may requires changes
-in current parsing logic. Additionally I need to change tui as well to show
-opcodes. This looks quite more work.
+ Documentation/kernel-parameters.txt |  6 ++++++
+ arch/powerpc/mm/hash_utils_64.c     | 15 +++++++++++++++
+ 2 files changed, 21 insertions(+)
 
-And this patchset is about enabling annotate for cross arch. So if you 
-really
-need opcode with perf anotate, can we do it separately?
-
-Please let me know your thoughts.
-
--Ravi
-
->
-> -Ravi
->
->> cheers
->>
->
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 4640ea2dce9b..3be08fda82dd 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -920,6 +920,12 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 	dhash_entries=	[KNL]
+ 			Set number of hash buckets for dentry cache.
+ 
++	disable_1tb_segments [PPC]
++			Disables the use of 1TB hash page table segments. This
++			causes the kernel to fall back to 256MB segments which
++			can be useful when debugging issues that require an SLB
++			miss to occur.
++
+ 	disable=	[IPV6]
+ 			See Documentation/networking/ipv6.txt.
+ 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 5b22ba0b58bc..7e6d38e01645 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -321,6 +321,15 @@ int htab_remove_mapping(unsigned long vstart, unsigned long vend,
+ 	return ret;
+ }
+ 
++static bool disable_1tb_segments = false;
++
++static int __init parse_disable_1tb_segments(char *p)
++{
++	disable_1tb_segments = true;
++	return 0;
++}
++early_param("disable_1tb_segments", parse_disable_1tb_segments);
++
+ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+ 					 const char *uname, int depth,
+ 					 void *data)
+@@ -339,6 +348,12 @@ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+ 	for (; size >= 4; size -= 4, ++prop) {
+ 		if (be32_to_cpu(prop[0]) == 40) {
+ 			DBG("1T segment support detected\n");
++
++			if (disable_1tb_segments) {
++				DBG("1T segments disabled by command line\n");
++				break;
++			}
++
+ 			cur_cpu_spec->mmu_features |= MMU_FTR_1T_SEGMENT;
+ 			return 1;
+ 		}
+-- 
+2.5.5
