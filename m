@@ -1,22 +1,44 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkS9F0VnMzDqry
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 01:14:41 +1000 (AEST)
-Date: Tue, 5 Jul 2016 23:14:15 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Anton Blanchard <anton@ozlabs.org>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 2/2] crypto: powerpc: Add POWER8 optimised crc32c
-Message-ID: <20160705151415.GA8117@gondor.apana.org.au>
-References: <1467325185-21091-1-git-send-email-anton@ozlabs.org>
- <1467325185-21091-2-git-send-email-anton@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467325185-21091-2-git-send-email-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkdml1LgmzDqvK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 08:27:34 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u65MJDsd049111
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 18:27:33 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 240ndwgd7j-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 18:27:32 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 6 Jul 2016 08:27:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 026C22CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 08:27:28 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u65MRRWV6291940
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 08:27:27 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u65MRRfL012821
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 08:27:27 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
+ fbarrat <fbarrat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] cxl: Refine slice error debug messages
+In-reply-to: <1467716886-20991-1-git-send-email-felix@linux.vnet.ibm.com>
+References: <1467716886-20991-1-git-send-email-felix@linux.vnet.ibm.com>
+Date: Wed, 06 Jul 2016 08:27:25 +1000
+Message-Id: <1467757634-sup-7161@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +48,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 01, 2016 at 08:19:45AM +1000, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
-> 
-> Use the vector polynomial multiply-sum instructions in POWER8 to
-> speed up crc32c.
-> 
-> This is just over 41x faster than the slice-by-8 method that it
-> replaces. Measurements on a 4.1 GHz POWER8 show it sustaining
-> 52 GiB/sec.
-> 
-> A simple btrfs write performance test:
-> 
->     dd if=/dev/zero of=/mnt/tmpfile bs=1M count=4096
->     sync
-> 
-> is over 3.7x faster.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-
-Both patches applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
