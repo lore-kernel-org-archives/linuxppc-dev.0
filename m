@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFN0G4nzDshr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFP3yLdzDrpH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:25 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkCFM2G2yz9ryQ
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:23 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkCFN5brPz9ryQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:24 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 20/41] powerpc/mm/hash64: Don't test for machine type to
- detect HEA special case
-Date: Tue,  5 Jul 2016 15:03:56 +1000
-Message-Id: <1467695057-12431-21-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 23/41] powerpc: Ensure that ppc_md is empty before probing for
+ machine type
+Date: Tue,  5 Jul 2016 15:03:59 +1000
+Message-Id: <1467695057-12431-24-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,37 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead, check for FW_FEATURE_SPLPAR. This should be roughtly equivalent
-as all pseries machiens that can have an HEA also support SPLPAR and
-no other machine type does.
+Anything in there will be overwritten, so it helps catching nasty
+bugs if we check that it's indeed full of NULL's before we do so.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/mm/hash_utils_64.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index a261e44..8ccb0b1 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -508,7 +508,8 @@ static bool might_have_hea(void)
- 	 * we will never see an HEA ethernet device.
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 2a3564c..7e85fac 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -575,6 +575,7 @@ void probe_machine(void)
+ {
+ 	extern struct machdep_calls __machine_desc_start;
+ 	extern struct machdep_calls __machine_desc_end;
++	unsigned int i;
+ 
+ 	/*
+ 	 * Iterate all ppc_md structures until we find the proper
+@@ -582,6 +583,16 @@ void probe_machine(void)
  	 */
- #ifdef CONFIG_IBMEBUS
--	return !cpu_has_feature(CPU_FTR_ARCH_207S);
-+	return !cpu_has_feature(CPU_FTR_ARCH_207S) &&
-+		!firmware_has_feature(FW_FEATURE_SPLPAR);
- #else
- 	return false;
- #endif
-@@ -574,7 +575,7 @@ found:
- 			 * would stop us accessing the HEA ethernet. So if we
- 			 * have the chance of ever seeing one, stay at 4k.
- 			 */
--			if (!might_have_hea() || !machine_is(pseries))
-+			if (!might_have_hea())
- 				mmu_io_psize = MMU_PAGE_64K;
- 		} else
- 			mmu_ci_restrictions = 1;
+ 	DBG("Probing machine type ...\n");
+ 
++	/* Check ppc_md is empty, if not we have a bug, ie, we setup an
++	 * entry before probe_machine() which will be overwritten
++	 */
++	for (i = 0; i < (sizeof(ppc_md) / sizeof(void *)); i++) {
++		if (((void **)&ppc_md)[i]) {
++			printk(KERN_ERR "Entry %d in ppc_md non empty before"
++			       " machine probe !\n", i);
++		}
++	}
++
+ 	for (machine_id = &__machine_desc_start;
+ 	     machine_id < &__machine_desc_end;
+ 	     machine_id++) {
 -- 
 2.7.4
