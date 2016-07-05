@@ -1,47 +1,19 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkByj4zwZzDr0w
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:41 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u655JUpe095536
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 01:19:39 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0b-001b2d01.pphosted.com with ESMTP id 23x9t11p0e-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:19:39 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Tue, 5 Jul 2016 15:19:35 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1FF692CE805C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:26 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u655JQpd22544536
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u655JPYA016617
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:25 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: david@gibson.dropbear.id.au
-Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
- agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
- qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] spapr: Set ibm, pa-features HTM from KVM_CAP_PPC_HTM
-Date: Tue,  5 Jul 2016 15:19:24 +1000
-In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
-References: <20160608022602.GU9226@voom.fritz.box>
- <cover.1467695915.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
-References: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
-Message-Id: <92f09cf433b816a88d94adc50cd9cb89b94131a3.1467695915.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCDZ3XQSzDqtp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:31:42 +1000 (AEST)
+In-Reply-To: <20160628031139.12500-2-sam@mendozajonas.com>
+To: Sam Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>,
+ Alistair Popple <alistair@popple.id.au>,
+ Samuel Mendoza-Jonas <sam@mendozajonas.com>
+Subject: Re: [2/2] tty/hvc: Use opal irqchip interface if available
+Message-Id: <3rkCDZ1WWTz9sBc@ozlabs.org>
+Date: Tue,  5 Jul 2016 15:31:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,110 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Advertise HTM support in ibm, pa-features if KVM indicates support when
-queried via a new capability (KVM_CAP_PPC_HTM).
+On Tue, 2016-28-06 at 03:11:39 UTC, Sam Mendoza-Jonas wrote:
+> diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
+> index b7cd0ae..8c53f5b 100644
+> --- a/drivers/tty/hvc/hvc_opal.c
+> +++ b/drivers/tty/hvc/hvc_opal.c
+> @@ -214,7 +216,15 @@ static int hvc_opal_probe(struct platform_device *dev)
+>  		dev->dev.of_node->full_name,
+>  		boot ? " (boot console)" : "");
+>  
+> -	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
+> +	rc = of_property_read_u32(dev->dev.of_node, "interrupts", &prop);
+> +	if (rc) {
+> +		pr_info("hvc%d: No interrupts property, using OPAL event\n",
+> +				termno);
+> +		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
+> +	} else {
+> +		irq = irq_of_parse_and_map(dev->dev.of_node, 0);
+> +	}
 
-If KVM returns false for the capability (which may indicate that the
-host kernel doesn't support the capability itself) attempt to
-determine availability using a fallback method based on KVM being
-KVM-HV and HTM being available to the QEMU process.
+That seems a bit backward.
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- hw/ppc/spapr.c       |  3 ++-
- target-ppc/kvm.c     | 27 +++++++++++++++++++++++++++
- target-ppc/kvm_ppc.h |  6 ++++++
- 3 files changed, 35 insertions(+), 1 deletion(-)
+Shouldn't we try irq_of_parse_and_map() and if that fails, then we go back to
+opal_event_request() ?
 
-diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-index 704aae7..e229532 100644
---- a/hw/ppc/spapr.c
-+++ b/hw/ppc/spapr.c
-@@ -606,6 +606,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
-     uint32_t tbfreq = kvm_enabled() ? kvmppc_get_tbfreq()
-         : SPAPR_TIMEBASE_FREQ;
-     uint32_t cpufreq = kvm_enabled() ? kvmppc_get_clockfreq() : 1000000000;
-+    uint8_t htm = (kvm_enabled() && kvmppc_get_htm_support(env)) ? 0x80 : 0x00;
-     uint32_t page_sizes_prop[64];
-     size_t page_sizes_prop_size;
-     uint32_t vcpus_per_socket = smp_threads * smp_cores;
-@@ -635,7 +636,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
-         0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
-         0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
-         0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
--        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
-+        0x80, 0x00, 0x80, 0x00, 0x00 | htm, 0x00 };
-     uint8_t *pa_features;
-     size_t pa_size;
- 
-diff --git a/target-ppc/kvm.c b/target-ppc/kvm.c
-index 884d564..f94ce3b 100644
---- a/target-ppc/kvm.c
-+++ b/target-ppc/kvm.c
-@@ -20,6 +20,7 @@
- #include <sys/vfs.h>
- 
- #include <linux/kvm.h>
-+#include "elf.h"
- 
- #include "qemu-common.h"
- #include "qemu/error-report.h"
-@@ -1976,6 +1977,32 @@ uint32_t kvmppc_get_dfp(void)
-     return kvmppc_read_int_cpu_dt("ibm,dfp");
- }
- 
-+bool kvmppc_get_htm_support(CPUPPCState *env)
-+{
-+    PowerPCCPU *cpu = ppc_env_get_cpu(env);
-+    CPUState *cs = CPU(cpu);
-+
-+
-+    if (kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_HTM)) {
-+        return true;
-+    }
-+    /*
-+     * Fallback test for host kernels that don't yet support KVM_CAP_PPC_HTM.
-+     * This will be unnecessary when KVM_API_VERSION is incremented (to 13 or
-+     * above) because that will remove the ambiguity between the host kernel
-+     * lacking support for KVM_CAP_PPC_HTM and it having support but reporting
-+     * HTM as unavailable (both of which return 0, above).
-+     */
-+    if (kvm_vm_check_extension(cs->kvm_state, KVM_CAP_PPC_GET_PVINFO)) {
-+        /* Assume this means PR KVM, so no TM. */
-+        return false;
-+    } else {
-+        /* Assume this means HV KVM, propagate whatever host userspace sees. */
-+        unsigned long hwcap2 = qemu_getauxval(AT_HWCAP2);
-+        return !!(hwcap2 & PPC_FEATURE2_HAS_HTM);
-+    }
-+}
-+
- static int kvmppc_get_pvinfo(CPUPPCState *env, struct kvm_ppc_pvinfo *pvinfo)
-  {
-      PowerPCCPU *cpu = ppc_env_get_cpu(env);
-diff --git a/target-ppc/kvm_ppc.h b/target-ppc/kvm_ppc.h
-index 20bfb59..b01c717 100644
---- a/target-ppc/kvm_ppc.h
-+++ b/target-ppc/kvm_ppc.h
-@@ -17,6 +17,7 @@ uint32_t kvmppc_get_tbfreq(void);
- uint64_t kvmppc_get_clockfreq(void);
- uint32_t kvmppc_get_vmx(void);
- uint32_t kvmppc_get_dfp(void);
-+bool kvmppc_get_htm_support(CPUPPCState *env);
- bool kvmppc_get_host_model(char **buf);
- bool kvmppc_get_host_serial(char **buf);
- int kvmppc_get_hasidle(CPUPPCState *env);
-@@ -90,6 +91,11 @@ static inline uint32_t kvmppc_get_dfp(void)
-     return 0;
- }
- 
-+static inline bool kvmppc_get_htm_support(KVMState *kvm_state)
-+{
-+    return false;
-+}
-+
- static inline int kvmppc_get_hasidle(CPUPPCState *env)
- {
-     return 0;
--- 
-2.1.0
+cheers
