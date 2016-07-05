@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFY4kB1zDrpb
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFb1QkNzDrpf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:35 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkCFX6Wwfz9ryQ
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:32 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkCFZ2tK3z9ryQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:34 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 33/41] powerpc/64: Move the content of setup_system() to
- setup_arch()
-Date: Tue,  5 Jul 2016 15:04:09 +1000
-Message-Id: <1467695057-12431-34-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 12/41] powerpc: Move FW feature probing out of pseries probe()
+Date: Tue,  5 Jul 2016 15:03:48 +1000
+Message-Id: <1467695057-12431-13-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,191 +25,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And kill setup_system()
+We move the function itself to pseries/firmware.c and call it along
+with almost all other flat device-tree parsers from early_init_devtree()
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/head_64.S  |   5 +-
- arch/powerpc/kernel/setup_64.c | 137 +++++++++++++++++++----------------------
- 2 files changed, 64 insertions(+), 78 deletions(-)
+ arch/powerpc/include/asm/firmware.h       |  4 +++
+ arch/powerpc/kernel/prom.c                |  6 +++++
+ arch/powerpc/platforms/pseries/firmware.c | 44 +++++++++++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/pseries.h  |  5 ----
+ arch/powerpc/platforms/pseries/setup.c    | 41 ----------------------------
+ 5 files changed, 52 insertions(+), 48 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 2d14774..3109d0c 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -941,7 +941,7 @@ start_here_multiplatform:
- 	mtspr	SPRN_SRR1,r4
- 	RFI
- 	b	.	/* prevent speculative execution */
--	
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index b062924..ae0d457 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -126,6 +126,10 @@ extern int fwnmi_active;
+ 
+ extern unsigned int __start___fw_ftr_fixup, __stop___fw_ftr_fixup;
+ 
++int pseries_probe_fw_features(unsigned long node,
++			      const char *uname, int depth,
++			      void *data);
 +
- 	/* This is where all platforms converge execution */
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_FIRMWARE_H */
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 48434be..d10e786 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -57,6 +57,7 @@
+ #include <asm/fadump.h>
+ #include <asm/debug.h>
+ #include <asm/epapr_hcalls.h>
++#include <asm/firmware.h>
  
- start_here_common:
-@@ -951,9 +951,6 @@ start_here_common:
- 	/* Load the TOC (virtual address) */
- 	ld	r2,PACATOC(r13)
+ #include <mm/mmu_decl.h>
  
--	/* Do more system initializations in virtual mode */
--	bl	setup_system
+@@ -740,8 +741,13 @@ void __init early_init_devtree(void *params)
+ 	/* Scan and build the list of machine check recoverable ranges */
+ 	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
+ #endif
++
+ 	epapr_paravirt_early_init();
+ 
++#ifdef CONFIG_PPC_PSERIES
++	/* Now try to figure out if we are running on LPAR */
++	of_scan_flat_dt(pseries_probe_fw_features, NULL);
++#endif
+ 	DBG(" <- early_init_devtree()\n");
+ }
+ 
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 8c80588..d9a7f62 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -69,7 +69,8 @@ hypertas_fw_features_table[] = {
+  * device-tree/ibm,hypertas-functions.  Ultimately this functionality may
+  * be moved into prom.c prom_init().
+  */
+-void __init fw_hypertas_feature_init(const char *hypertas, unsigned long len)
++static void __init fw_hypertas_feature_init(const char *hypertas,
++					    unsigned long len)
+ {
+ 	const char *s;
+ 	int i;
+@@ -113,7 +114,7 @@ vec5_fw_features_table[] = {
+ 	{FW_FEATURE_PRRN,		OV5_PRRN},
+ };
+ 
+-void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
++static void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+ {
+ 	unsigned int index, feat;
+ 	int i;
+@@ -131,3 +132,42 @@ void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
+ 
+ 	pr_debug(" <- fw_vec5_feature_init()\n");
+ }
++
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++
++int __init pseries_probe_fw_features(unsigned long node,
++				     const char *uname, int depth,
++				     void *data)
++{
++	const char *prop;
++	int len;
++	static int hypertas_found;
++	static int vec5_found;
++
++	if (depth != 1)
++		return 0;
++
++	if (!strcmp(uname, "rtas") || !strcmp(uname, "rtas@0")) {
++		prop = of_get_flat_dt_prop(node, "ibm,hypertas-functions",
++					   &len);
++		if (prop) {
++			powerpc_firmware_features |= FW_FEATURE_LPAR;
++			fw_hypertas_feature_init(prop, len);
++		}
++
++		hypertas_found = 1;
++	}
++
++	if (!strcmp(uname, "chosen")) {
++		prop = of_get_flat_dt_prop(node, "ibm,architecture-vec-5",
++					   &len);
++		if (prop)
++			fw_vec5_feature_init(prop, len);
++
++		vec5_found = 1;
++	}
++
++	return hypertas_found && vec5_found;
++}
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 7aa83f0..58a89f9 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -20,11 +20,6 @@ extern void request_event_sources_irqs(struct device_node *np,
+ 
+ #include <linux/of.h>
+ 
+-extern void __init fw_hypertas_feature_init(const char *hypertas,
+-					    unsigned long len);
+-extern void __init fw_vec5_feature_init(const char *hypertas,
+-					unsigned long len);
 -
- 	/* Mark interrupts soft and hard disabled (they might be enabled
- 	 * in the PACA when doing hotplug)
- 	 */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 16e9ce7..8ee24dc 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -510,80 +510,6 @@ static __init void print_system_info(void)
- 	pr_info("-----------------------------------------------------\n");
+ struct pt_regs;
+ 
+ extern int pSeries_system_reset_exception(struct pt_regs *regs);
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 9883bc7..f1fe7aa 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -732,45 +732,6 @@ static void pseries_power_off(void)
+ 	for (;;);
  }
  
 -/*
-- * Do some initial setup of the system.  The parameters are those which 
-- * were passed in from the bootloader.
+- * Called very early, MMU is off, device-tree isn't unflattened
 - */
--void __init setup_system(void)
+-
+-static int __init pseries_probe_fw_features(unsigned long node,
+-					    const char *uname, int depth,
+-					    void *data)
 -{
--	DBG(" -> setup_system()\n");
+-	const char *prop;
+-	int len;
+-	static int hypertas_found;
+-	static int vec5_found;
 -
--	/*
--	 * Unflatten the device-tree passed by prom_init or kexec
--	 */
--	unflatten_device_tree();
+-	if (depth != 1)
+-		return 0;
 -
--	/*
--	 * Fill the ppc64_caches & systemcfg structures with informations
-- 	 * retrieved from the device-tree.
--	 */
--	initialize_cache_info();
+-	if (!strcmp(uname, "rtas") || !strcmp(uname, "rtas@0")) {
+-		prop = of_get_flat_dt_prop(node, "ibm,hypertas-functions",
+-					   &len);
+-		if (prop) {
+-			powerpc_firmware_features |= FW_FEATURE_LPAR;
+-			fw_hypertas_feature_init(prop, len);
+-		}
 -
--#ifdef CONFIG_PPC_RTAS
--	/*
--	 * Initialize RTAS if available
--	 */
--	rtas_initialize();
--#endif /* CONFIG_PPC_RTAS */
+-		hypertas_found = 1;
+-	}
 -
--	/*
--	 * Check if we have an initrd provided via the device-tree
--	 */
--	check_for_initrd();
+-	if (!strcmp(uname, "chosen")) {
+-		prop = of_get_flat_dt_prop(node, "ibm,architecture-vec-5",
+-					   &len);
+-		if (prop)
+-			fw_vec5_feature_init(prop, len);
 -
--	/* Probe the machine type */
--	probe_machine();
+-		vec5_found = 1;
+-	}
 -
-- 	/*
--	 * We can discover serial ports now since the above did setup the
--	 * hash table management for us, thus ioremap works. We do that early
--	 * so that further code can be debugged
--	 */
--	find_legacy_serial_ports();
--
--	/*
--	 * Register early console
--	 */
--	register_early_udbg_console();
--
--	/*
--	 * Initialize xmon
--	 */
--	xmon_setup();
--
--	smp_setup_cpu_maps();
--	check_smt_enabled();
--	setup_tlb_core_data();
--
--	/*
--	 * Freescale Book3e parts spin in a loop provided by firmware,
--	 * so smp_release_cpus() does nothing for them
--	 */
--#if defined(CONFIG_SMP)
--	/* Release secondary cpus out of their spinloops at 0x60 now that
--	 * we can map physical -> logical CPU ids
--	 */
--	smp_release_cpus();
--#endif
--
--	/* Print various info about the machine that gave been gathered
--	 * so far
--	 */
--	print_system_info();
--
--	DBG(" <- setup_system()\n");
+-	return hypertas_found && vec5_found;
 -}
 -
- /* This returns the limit below which memory accesses to the linear
-  * mapping are guarnateed not to cause a TLB or SLB miss. This is
-  * used to allocate interrupt or emergency stacks for which our
-@@ -695,6 +621,69 @@ void __init setup_arch(char **cmdline_p)
+ static int __init pSeries_probe(void)
  {
- 	*cmdline_p = boot_command_line;
+ 	unsigned long root = of_get_flat_dt_root();
+@@ -790,8 +751,6 @@ static int __init pSeries_probe(void)
  
-+	/*
-+	 * Unflatten the device-tree passed by prom_init or kexec
-+	 */
-+	unflatten_device_tree();
-+
-+	/*
-+	 * Fill the ppc64_caches & systemcfg structures with informations
-+ 	 * retrieved from the device-tree.
-+	 */
-+	initialize_cache_info();
-+
-+#ifdef CONFIG_PPC_RTAS
-+	/*
-+	 * Initialize RTAS if available
-+	 */
-+	rtas_initialize();
-+#endif /* CONFIG_PPC_RTAS */
-+
-+	/*
-+	 * Check if we have an initrd provided via the device-tree
-+	 */
-+	check_for_initrd();
-+
-+	/* Probe the machine type */
-+	probe_machine();
-+
-+ 	/*
-+	 * We can discover serial ports now since the above did setup the
-+	 * hash table management for us, thus ioremap works. We do that early
-+	 * so that further code can be debugged
-+	 */
-+	find_legacy_serial_ports();
-+
-+	/*
-+	 * Register early console
-+	 */
-+	register_early_udbg_console();
-+
-+	/*
-+	 * Initialize xmon
-+	 */
-+	xmon_setup();
-+
-+	smp_setup_cpu_maps();
-+	check_smt_enabled();
-+	setup_tlb_core_data();
-+
-+	/*
-+	 * Freescale Book3e parts spin in a loop provided by firmware,
-+	 * so smp_release_cpus() does nothing for them
-+	 */
-+#if defined(CONFIG_SMP)
-+	/* Release secondary cpus out of their spinloops at 0x60 now that
-+	 * we can map physical -> logical CPU ids
-+	 */
-+	smp_release_cpus();
-+#endif
-+
-+	/* Print various info about the machine that gave been gathered
-+	 * so far
-+	 */
-+	print_system_info();
-+
- 	/* Reserve large chunks of memory for use by CMA for KVM */
- 	kvm_cma_reserve();
+ 	pr_debug("pSeries detected, looking for LPAR capability...\n");
  
+-	/* Now try to figure out if we are running on LPAR */
+-	of_scan_flat_dt(pseries_probe_fw_features, NULL);
+ 
+ #ifdef __LITTLE_ENDIAN__
+ 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
 -- 
 2.7.4
