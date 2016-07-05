@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkQks0MyhzDqrR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkQks4gHgzDqtW
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 00:10:13 +1000 (AEST)
-In-Reply-To: <1467297277-12494-1-git-send-email-oohall@gmail.com>
-To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1458282993-6371-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, stable@vger.kernel.org
-Subject: Re: [v3] powerpc/boot: Add OPAL console to epapr wrappers
-Message-Id: <3rkQkr52fFz9sdn@ozlabs.org>
-Date: Wed,  6 Jul 2016 00:10:12 +1000 (AEST)
+Subject: Re: powerpc/rtas: fix array overrun in ppc_rtas() syscall
+Message-Id: <3rkQks3yQtz9sBc@ozlabs.org>
+Date: Wed,  6 Jul 2016 00:10:13 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-30-06 at 14:34:37 UTC, Oliver O'Halloran wrote:
-> This patch adds an OPAL console backend to the powerpc boot wrapper so
-> that decompression failures inside the wrapper can be reported to the
-> user. This is important since it typically indicates data corruption in
-> the firmware and other nasty things.
+On Fri, 2016-18-03 at 06:36:33 UTC, Andrew Donnellan wrote:
+> If ppc_rtas() is called with args.nargs == 16 and args.nret == 0, args.rets
+> is set to point to &args.args[16], which is beyond the end of the args.args
+> array. This results in a minor read overrun of the array when we check the
+> first return code (which, per PAPR, is a required output of all RTAS calls)
+> to see if there's been a hardware error.
 > 
-> Currently this only works when building a little endian kernel. When
-> compiling a 64 bit BE kernel the wrapper is always build 32 bit to be
-> compatible with some 32 bit firmwares. BE support will be added at a
-> later date. Another limitation of this is that only the "raw" type of
-> OPAL console is supported, however machines that provide a hvsi console
-> also provide a raw console so this is not an issue in practice.
+> Change the nargs/nret check to ensure nargs is <= 15, allowing room for the
+> status code. Users shouldn't be calling with nret == 0, but there's no real
+> harm if they do, so we don't stop them.
 > 
-> Actually-written-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/656ad58ef19e2a763fa5c938b2
+https://git.kernel.org/powerpc/c/a9862c7440f191439a51f77233
 
 cheers
