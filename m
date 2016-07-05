@@ -1,22 +1,47 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBwr4RWkzDrDn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:18:04 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, kexec@lists.infradead.org,
- Eric Biederman <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [v2,1/2] refactor code parsing size based on memory range
-In-Reply-To: <52b513d4-16a2-ca16-975e-a755b7a5ea8d@linux.vnet.ibm.com>
-References: <3rbRd54y9Vz9t0p@ozlabs.org>
- <52b513d4-16a2-ca16-975e-a755b7a5ea8d@linux.vnet.ibm.com>
-Date: Tue, 05 Jul 2016 15:18:01 +1000
-Message-ID: <87twg4br3q.fsf@@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkByZ46fqzDrGv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:34 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u655JTuO027751
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 01:19:32 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23yfe958yv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:19:31 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Tue, 5 Jul 2016 15:19:28 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5D4CB2BB005F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:26 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u655JQk99109904
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u655JPAP025010
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: david@gibson.dropbear.id.au
+Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
+ agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
+ qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] spapr: Disable ibm, pa-features HTM bit
+Date: Tue,  5 Jul 2016 15:19:22 +1000
+In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+References: <20160608022602.GU9226@voom.fritz.box>
+ <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+References: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+Message-Id: <17cc8e9fb2ab41356e207c6a14d5987754fa4da8.1467695915.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,105 +51,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There are a few issues with our handling of the ibm,pa-features
+HTM bit:
 
-> On 06/24/2016 10:56 AM, Michael Ellerman wrote:
->> On Wed, 2016-22-06 at 19:25:26 UTC, Hari Bathini wrote:
-...
-> While the code is moved to kernel/params.c file, there is no change in logic
-> for crashkernel parameter parsing as the moved code is invoked with function
-> calls at appropriate places.
+- We don't support transactional memory in PR KVM, so don't tell
+  the OS that we do.
 
-Are you sure that's true?
+- In full emulation we have a minimal implementation of HTM that always
+  fails, so for performance reasons lets not tell the OS that we
+  support it either.
 
-The old code would return -EINVAL from parse_crashkernel_mem() for any
-error, regardless of whether it had already parsed some of the string.
+- In HV KVM mode, we should mirror the host HTM enabled state by
+  checking a KVM capability or looking at the AT_HWCAP2 bit.
 
-eg:
+For now unconditionally disable it by removing HTM from the
+pa-features bits.  It will be re-enabled in a subsequent patch
+specifically for HV KVM.
 
->>> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
->>> index 56b3ed0..d43f5cc 100644
->>> --- a/kernel/kexec_core.c
->>> +++ b/kernel/kexec_core.c
->>> @@ -1083,59 +1083,9 @@ static int __init parse_crashkernel_mem(char *cmdline,
->>>   	char *cur = cmdline, *tmp;
->>>   
->>>   	/* for each entry of the comma-separated list */
->>> -	do {
->>> -		unsigned long long start, end = ULLONG_MAX, size;
->>> -
->>> -		/* get the start of the range */
->>> -		start = memparse(cur, &tmp);
->>> -		if (cur == tmp) {
->>> -			pr_warn("crashkernel: Memory value expected\n");
->>> -			return -EINVAL;
->>> -		}
->>> -		cur = tmp;
->>> -		if (*cur != '-') {
->>> -			pr_warn("crashkernel: '-' expected\n");
->>> -			return -EINVAL;
->>> -		}
->>> -		cur++;
->>> -
->>> -		/* if no ':' is here, than we read the end */
->>> -		if (*cur != ':') {
->>> -			end = memparse(cur, &tmp);
->>> -			if (cur == tmp) {
->>> -				pr_warn("crashkernel: Memory value expected\n");
->>> -				return -EINVAL;
->>> -			}
+Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+---
+ hw/ppc/spapr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-So eg, if I give it "128M-foo" it will modify cur, and then error out here ^
-
-You've changed that to:
-
->>> +	*crash_size = parse_mem_range_size("crashkernel", &cur, system_ram);
->>> +	if (cur == cmdline)
->>> +		return -EINVAL;
-
-Which only returns EINVAL if cur is not modified at all.
-
-And looking below:
-
->>> diff --git a/kernel/params.c b/kernel/params.c
->>> index a6d6149..84e40ae 100644
->>> --- a/kernel/params.c
->>> +++ b/kernel/params.c
-...
->>> +unsigned long long __init parse_mem_range_size(const char *param,
->>> +					       char **str,
->>> +					       unsigned long long system_ram)
->>> +{
->>> +	char *cur = *str, *tmp;
->>> +	unsigned long long mem_size = 0;
->>> +
->>> +	/* for each entry of the comma-separated list */
->>> +	do {
->>> +		unsigned long long start, end = ULLONG_MAX, size;
->>> +
->>> +		/* get the start of the range */
->>> +		start = memparse(cur, &tmp);
->>> +		if (cur == tmp) {
->>> +			printk(KERN_INFO "%s: Memory value expected\n", param);
->>> +			return mem_size;
->>> +		}
->>> +		cur = tmp;
->>> +		if (*cur != '-') {
->>> +			printk(KERN_INFO "%s: '-' expected\n", param);
->>> +			return mem_size;
->>> +		}
->>> +		cur++;
->>> +
->>> +		/* if no ':' is here, than we read the end */
->>> +		if (*cur != ':') {
->>> +			end = memparse(cur, &tmp);
->>> +			if (cur == tmp) {
->>> +				printk(KERN_INFO "%s: Memory value expected\n",
->>> +					param);
->>> +				return mem_size;
-
-If we error out here for example, we have modified cur, so the code above
-*won't* return EINVAL.
-
-Which looks like a behaviour change to me?
-
-cheers
+diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
+index 78ebd9e..704aae7 100644
+--- a/hw/ppc/spapr.c
++++ b/hw/ppc/spapr.c
+@@ -635,7 +635,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
+         0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
+         0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
+         0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
+-        0x80, 0x00, 0x80, 0x00, 0x80, 0x00 };
++        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
+     uint8_t *pa_features;
+     size_t pa_size;
+ 
+-- 
+2.1.0
