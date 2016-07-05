@@ -1,10 +1,10 @@
 Return-Path: <qiang.zhao@nxp.com>
 Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0065.outbound.protection.outlook.com [104.47.2.65])
+ (mail-db5eur01on0081.outbound.protection.outlook.com [104.47.2.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkN506ZDzzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 22:10:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkPCw1kwQzDqps
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 23:01:46 +1000 (AEST)
 From: Qiang Zhao <qiang.zhao@nxp.com>
 To: Jason Cooper <jason@lakedaemon.net>
 CC: "oss@buserror.net" <oss@buserror.net>, "tglx@linutronix.de"
@@ -12,13 +12,12 @@ CC: "oss@buserror.net" <oss@buserror.net>, "tglx@linutronix.de"
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Xiaobo Xie
  <xiaobo.xie@nxp.com>
-Subject: RE: [PATCH 2/2] qe/ic: refactor qe_ic to simplify
-Date: Tue, 5 Jul 2016 07:38:49 +0000
-Message-ID: <AM3PR04MB1185882FDBB659CD433F9EBB91390@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Subject: RE: [PATCH 1/2] qe/ic: move qe_ic_init from platforms to irqchip
+Date: Tue, 5 Jul 2016 07:27:21 +0000
+Message-ID: <AM3PR04MB1185048AB3BBC592F105E8C391390@AM3PR04MB1185.eurprd04.prod.outlook.com>
 References: <1467683219-29326-1-git-send-email-qiang.zhao@nxp.com>
- <1467683219-29326-2-git-send-email-qiang.zhao@nxp.com>
- <20160705035100.GB3348@io.lakedaemon.net>
-In-Reply-To: <20160705035100.GB3348@io.lakedaemon.net>
+ <20160705031836.GA3348@io.lakedaemon.net>
+In-Reply-To: <20160705031836.GA3348@io.lakedaemon.net>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,209 +29,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/2016 11:51 AM, Jason Cooper <jason@lakedaemon.net> wrote:
-
+On 07/05/2016 11:19 AM, Jason Cooper <jason@lakedaemon.net> wrote:
 > -----Original Message-----
 > From: Jason Cooper [mailto:jason@lakedaemon.net]
-> Sent: Tuesday, July 05, 2016 11:51 AM
+> Sent: Tuesday, July 05, 2016 11:19 AM
 > To: Qiang Zhao <qiang.zhao@nxp.com>
 > Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com; linuxppc-
 > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo Xie
 > <xiaobo.xie@nxp.com>
-> Subject: Re: [PATCH 2/2] qe/ic: refactor qe_ic to simplify
+> Subject: Re: [PATCH 1/2] qe/ic: move qe_ic_init from platforms to irqchip
 >=20
 > Hi Zhao Qiang,
 >=20
-> Same comment as previous patch regarding the subject line.
+> Please reword your subject line to conform to the standard in irqchip (si=
+nce
+> that's where the code is added).  Also, please adjust the subject line to=
+ express
+> *why* the change is being made.
 >=20
-> On Tue, Jul 05, 2016 at 09:46:59AM +0800, Zhao Qiang wrote:
-> > there are init_qe_ic_sysfs and qeic_of_init, refactor them.
+> On Tue, Jul 05, 2016 at 09:46:58AM +0800, Zhao Qiang wrote:
+> > The codes of qe_ic_init in platforms are redundant, move them to qe_ic
+> > under irqchip
 >=20
-> Same comment from previous patch about commit log.
+> This needs to be a lot more clear.  How is backwards compatibility preser=
+ved?
+> Why is lookup by type "qeic" dropped?  In short, please explain everythin=
+g that
+> looks funny so we don't have to guess.
+
+Thank you for your review and feedback.
+
 >=20
-> >
 > > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 > > ---
-> >  drivers/irqchip/qe_ic.c    | 83 +++++++++++++++++++++++++-------------=
------
-> ---
-> >  include/soc/fsl/qe/qe_ic.h |  7 ----
-> >  2 files changed, 45 insertions(+), 45 deletions(-)
+> >  arch/powerpc/platforms/83xx/misc.c            | 15 ---------------
+> >  arch/powerpc/platforms/85xx/corenet_generic.c |  9 ---------
+> >  arch/powerpc/platforms/85xx/mpc85xx_mds.c     | 14 --------------
+> >  arch/powerpc/platforms/85xx/mpc85xx_rdb.c     | 16 ----------------
+> >  arch/powerpc/platforms/85xx/twr_p102x.c       | 14 --------------
+> >  drivers/irqchip/qe_ic.c                       | 14 ++++++++++++++
+> >  6 files changed, 14 insertions(+), 68 deletions(-)
 > >
-> > diff --git a/drivers/irqchip/qe_ic.c b/drivers/irqchip/qe_ic.c index
-> > f7f9a81..46652c0 100644
-> > --- a/drivers/irqchip/qe_ic.c
-> > +++ b/drivers/irqchip/qe_ic.c
-> > @@ -317,27 +317,35 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_=
-ic)
-> >  	return irq_linear_revmap(qe_ic->irqhost, irq);  }
+> > diff --git a/arch/powerpc/platforms/83xx/misc.c
+> > b/arch/powerpc/platforms/83xx/misc.c
+> > index 7e923ca..9431fc7 100644
+> > --- a/arch/powerpc/platforms/83xx/misc.c
+> > +++ b/arch/powerpc/platforms/83xx/misc.c
+> > @@ -93,24 +93,9 @@ void __init mpc83xx_ipic_init_IRQ(void)  }
 > >
-> > -void __init qe_ic_init(struct device_node *node, unsigned int flags,
-> > -		       void (*low_handler)(struct irq_desc *desc),
-> > -		       void (*high_handler)(struct irq_desc *desc))
-> > +static int __init qe_ic_init(unsigned int flags)
-> >  {
-> > +	struct device_node *node;
-> >  	struct qe_ic *qe_ic;
-> >  	struct resource res;
-> > -	u32 temp =3D 0, ret, high_active =3D 0;
-> > +	u32 temp =3D 0, high_active =3D 0;
-> > +	int ret =3D 0;
-> > +
-> > +	node =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-> > +	if (!node)
-> > +		return -ENODEV;
-> >
-> >  	ret =3D of_address_to_resource(node, 0, &res);
-> > -	if (ret)
-> > -		return;
-> > +	if (ret) {
-> > +		ret =3D -ENODEV;
-> > +		goto err_put_node;
-> > +	}
-> >
-> >  	qe_ic =3D kzalloc(sizeof(*qe_ic), GFP_KERNEL);
-> > -	if (qe_ic =3D=3D NULL)
-> > -		return;
-> > +	if (qe_ic =3D=3D NULL) {
-> > +		ret =3D -ENOMEM;
-> > +		goto err_put_node;
-> > +	}
-> >
-> >  	qe_ic->irqhost =3D irq_domain_add_linear(node, NR_QE_IC_INTS,
-> >  					       &qe_ic_host_ops, qe_ic);
-> >  	if (qe_ic->irqhost =3D=3D NULL) {
-> > -		kfree(qe_ic);
-> > -		return;
-> > +		ret =3D -ENOMEM;
-> > +		goto err_free_qe_ic;
-> >  	}
-> >
-> >  	qe_ic->regs =3D ioremap(res.start, resource_size(&res)); @@ -348,9
-> > +356,9 @@ void __init qe_ic_init(struct device_node *node, unsigned int
-> flags,
-> >  	qe_ic->virq_low =3D irq_of_parse_and_map(node, 1);
-> >
-> >  	if (qe_ic->virq_low =3D=3D NO_IRQ) {
-> > -		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
-> > -		kfree(qe_ic);
-> > -		return;
-> > +		pr_err("Failed to map QE_IC low IRQ\n");
-> > +		ret =3D -ENOMEM;
-> > +		goto err_domain_remove;
-> >  	}
-> >
-> >  	/* default priority scheme is grouped. If spread mode is    */
-> > @@ -377,13 +385,23 @@ void __init qe_ic_init(struct device_node *node,
-> unsigned int flags,
-> >  	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
-> >
-> >  	irq_set_handler_data(qe_ic->virq_low, qe_ic);
-> > -	irq_set_chained_handler(qe_ic->virq_low, low_handler);
-> > +	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
-> >
-> >  	if (qe_ic->virq_high !=3D NO_IRQ &&
-> >  			qe_ic->virq_high !=3D qe_ic->virq_low) {
-> >  		irq_set_handler_data(qe_ic->virq_high, qe_ic);
-> > -		irq_set_chained_handler(qe_ic->virq_high, high_handler);
-> > +		irq_set_chained_handler(qe_ic->virq_high,
-> > +					qe_ic_cascade_high_mpic);
-> >  	}
-> > +	return ret;
->=20
-> of_node_put(node)?  Explicitly return success?
-
-Yes, thank you very much!
-
->=20
-> > +
-> > +err_domain_remove:
-> > +	irq_domain_remove(qe_ic->irqhost);
-> > +err_free_qe_ic:
-> > +	kfree(qe_ic);
-> > +err_put_node:
-> > +	of_node_put(node);
-> > +	return ret;
-> >  }
-> >
-> >  void qe_ic_set_highest_priority(unsigned int virq, int high) @@
-> > -490,37 +508,26 @@ static struct device device_qe_ic =3D {
-> >  	.bus =3D &qe_ic_subsys,
-> >  };
-> >
-> > -static int __init init_qe_ic_sysfs(void)
-> > +static int __init init_qe_ic(void)
-> >  {
-> > -	int rc;
-> > +	int ret;
-> >
-> > -	printk(KERN_DEBUG "Registering qe_ic with sysfs...\n");
-> > +	ret =3D qe_ic_init(0);
->=20
-> Sorry, build machine is down atm.  How was qe_ic_init() called previously=
-?  Is
-> that removed?
-
-Sorry, I don't understand, could you please explain?
-
->=20
-> > +	if (ret)
-> > +		return ret;
-> >
-> > -	rc =3D subsys_system_register(&qe_ic_subsys, NULL);
-> > -	if (rc) {
-> > -		printk(KERN_ERR "Failed registering qe_ic sys class\n");
-> > +	ret =3D subsys_system_register(&qe_ic_subsys, NULL);
-> > +	if (ret) {
-> > +		pr_err("Failed registering qe_ic sys class\n");
-> >  		return -ENODEV;
-> >  	}
-> > -	rc =3D device_register(&device_qe_ic);
-> > -	if (rc) {
-> > -		printk(KERN_ERR "Failed registering qe_ic sys device\n");
-> > +	ret =3D device_register(&device_qe_ic);
-> > +	if (ret) {
-> > +		pr_err("Failed registering qe_ic sys device\n");
-> >  		return -ENODEV;
-> >  	}
-> > -	return 0;
-> > -}
-> >
-> > -static int __init qeic_of_init(void)
-> > -{
+> >  #ifdef CONFIG_QUICC_ENGINE
+> > -void __init mpc83xx_qe_init_IRQ(void) -{
 > > -	struct device_node *np;
+> > -
+> > -	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> > -	if (!np) {
+> > -		np =3D of_find_node_by_type(NULL, "qeic");
+> > -		if (!np)
+> > -			return;
+> > -	}
+>=20
+> This block isn't preserved in the irqchip driver.  Why not?
+
+I grep qeic in arch/powerpc/boot/dts/*, doesn't find which board use qeic a=
+s type.
+
+>=20
+> > -	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
+> > -	of_node_put(np);
+> > -}
+> > -
+> >  void __init mpc83xx_ipic_and_qe_init_IRQ(void)
+> >  {
+> >  	mpc83xx_ipic_init_IRQ();
+> > -	mpc83xx_qe_init_IRQ();
+> >  }
+> >  #endif /* CONFIG_QUICC_ENGINE */
+> >
+> > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c
+> > b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > index a2b0bc8..526fc2b 100644
+> > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > @@ -41,8 +41,6 @@ void __init corenet_gen_pic_init(void)
+> >  	unsigned int flags =3D MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
+> >  		MPIC_NO_RESET;
+> >
+> > -	struct device_node *np;
+> > -
+> >  	if (ppc_md.get_irq =3D=3D mpic_get_coreint_irq)
+> >  		flags |=3D MPIC_ENABLE_COREINT;
+> >
+> > @@ -50,13 +48,6 @@ void __init corenet_gen_pic_init(void)
+> >  	BUG_ON(mpic =3D=3D NULL);
+> >
+> >  	mpic_init(mpic);
 > > -
 > > -	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
 > > -	if (np) {
 > > -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-> > -			   qe_ic_cascade_high_mpic);
+> > -				qe_ic_cascade_high_mpic);
 > > -		of_node_put(np);
 > > -	}
+> >  }
+> >
+> >  /*
+> > diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > index f61cbe2..7ae4901 100644
+> > --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> > @@ -279,20 +279,6 @@ static void __init mpc85xx_mds_qeic_init(void)
+> >  		of_node_put(np);
+> >  		return;
+> >  	}
+> > -
+> > -	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> > -	if (!np) {
+> > -		np =3D of_find_node_by_type(NULL, "qeic");
+> > -		if (!np)
+> > -			return;
+> > -	}
+> > -
+> > -	if (machine_is(p1021_mds))
+> > -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> > -				qe_ic_cascade_high_mpic);
+> > -	else
+> > -		qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
+>=20
+> This block is also not preserved.  Nor explained in the commit log.  Is i=
+t really ok
+> to drop it?  If so, why?
+
+on non-p1021_mds mpc85xx_mds boards(mpc8568 and mpc8569).
+The qeic has the same interrupt number for low and high. So use qe_ic_casca=
+de_muxed_mpic for this situation.
+
+        qeic: interrupt-controller@80 {
+                interrupt-controller;
+                compatible =3D "fsl,qe-ic";
+                #address-cells =3D <0>;
+                #interrupt-cells =3D <1>;
+                reg =3D <0x80 0x80>;
+                interrupts =3D <46 2 0 0 46 2 0 0>; //high:30 low:30
+                interrupt-parent =3D <&mpic>;
+        };
+
+In qe_ic_init, the code(as below) can handle this situation.
+If " qe_ic->virq_high !=3D qe_ic->virq_low ", then set chaned handler for h=
+igh handler.
+
+        if (qe_ic->virq_high !=3D NO_IRQ &&
+                        qe_ic->virq_high !=3D qe_ic->virq_low) {
+                irq_set_handler_data(qe_ic->virq_high, qe_ic);
+                irq_set_chained_handler(qe_ic->virq_high, high_handler);
+        }=20
+
+>=20
+> > -	of_node_put(np);
+> >  }
+> >  #else
+> >  static void __init mpc85xx_mds_qe_init(void) { } diff --git
+> > a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> > b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> > index 3f4dad1..779f54f 100644
+> > --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> > +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+> > @@ -49,10 +49,6 @@ void __init mpc85xx_rdb_pic_init(void)
+> >  	struct mpic *mpic;
+> >  	unsigned long root =3D of_get_flat_dt_root();
+> >
+> > -#ifdef CONFIG_QUICC_ENGINE
+> > -	struct device_node *np;
+> > -#endif
+> > -
+> >  	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
+> >  		mpic =3D mpic_alloc(NULL, 0, MPIC_NO_RESET |
+> >  			MPIC_BIG_ENDIAN |
+> > @@ -67,18 +63,6 @@ void __init mpc85xx_rdb_pic_init(void)
+> >
+> >  	BUG_ON(mpic =3D=3D NULL);
+> >  	mpic_init(mpic);
+> > -
+> > -#ifdef CONFIG_QUICC_ENGINE
+> > -	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> > -	if (np) {
+> > -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> > -				qe_ic_cascade_high_mpic);
+> > -		of_node_put(np);
+> > -
+> > -	} else
+> > -		pr_err("%s: Could not find qe-ic node\n", __func__);
+> > -#endif
+> > -
+> >  }
+> >
+> >  /*
+> > diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c
+> > b/arch/powerpc/platforms/85xx/twr_p102x.c
+> > index 71bc255..603e244 100644
+> > --- a/arch/powerpc/platforms/85xx/twr_p102x.c
+> > +++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+> > @@ -35,26 +35,12 @@ static void __init twr_p1025_pic_init(void)  {
+> >  	struct mpic *mpic;
+> >
+> > -#ifdef CONFIG_QUICC_ENGINE
+> > -	struct device_node *np;
+> > -#endif
+> > -
+> >  	mpic =3D mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
+> >  			MPIC_SINGLE_DEST_CPU,
+> >  			0, 256, " OpenPIC  ");
+> >
+> >  	BUG_ON(mpic =3D=3D NULL);
+> >  	mpic_init(mpic);
+> > -
+> > -#ifdef CONFIG_QUICC_ENGINE
+> > -	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> > -	if (np) {
+> > -		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> > -				qe_ic_cascade_high_mpic);
+> > -		of_node_put(np);
+> > -	} else
+> > -		pr_err("Could not find qe-ic node\n");
+> > -#endif
+> >  }
+> >
+> >  /*
+> >
+> ************************************************************
+> **********
+> > ** diff --git a/drivers/irqchip/qe_ic.c b/drivers/irqchip/qe_ic.c
+> > index ec2ca86..f7f9a81 100644
+> > --- a/drivers/irqchip/qe_ic.c
+> > +++ b/drivers/irqchip/qe_ic.c
+> > @@ -509,4 +509,18 @@ static int __init init_qe_ic_sysfs(void)
 > >  	return 0;
 > >  }
 > >
-> > -subsys_initcall(qeic_of_init);
-> > -subsys_initcall(init_qe_ic_sysfs);
-> > +subsys_initcall(init_qe_ic);
-> > diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
-> > index 1e155ca..6113699 100644
-> > --- a/include/soc/fsl/qe/qe_ic.h
-> > +++ b/include/soc/fsl/qe/qe_ic.h
-> > @@ -58,16 +58,9 @@ enum qe_ic_grp_id {  };
-> >
-> >  #ifdef CONFIG_QUICC_ENGINE
-> > -void qe_ic_init(struct device_node *node, unsigned int flags,
-> > -		void (*low_handler)(struct irq_desc *desc),
-> > -		void (*high_handler)(struct irq_desc *desc));
-> >  unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic);  unsigned int
-> > qe_ic_get_high_irq(struct qe_ic *qe_ic);  #else -static inline void
-> > qe_ic_init(struct device_node *node, unsigned int flags,
-> > -		void (*low_handler)(struct irq_desc *desc),
-> > -		void (*high_handler)(struct irq_desc *desc))
-> > -{}
-> >  static inline unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)  {
-> > return 0; }  static inline unsigned int qe_ic_get_high_irq(struct
-> > qe_ic *qe_ic)
+> > +static int __init qeic_of_init(void)
+> > +{
+> > +	struct device_node *np;
+> > +
+> > +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> > +	if (np) {
+> > +		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+> > +			   qe_ic_cascade_high_mpic);
+> > +		of_node_put(np);
+> > +	}
+> > +	return 0;
+> > +}
+> > +
+> > +subsys_initcall(qeic_of_init);
+> >  subsys_initcall(init_qe_ic_sysfs);
+>=20
+> Was this tested on systems with dtbs containing type "qeic" but missing "=
+fsl,qe-
+> ic"?  What about non-p1021_mds mpc85xx_mds boards?
+
+In kernel, there are no boards containing type "qeic" in dtb.
 
 -Zhao Qiang
 BR
