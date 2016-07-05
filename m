@@ -1,28 +1,26 @@
 Return-Path: <takahiro.akashi@linaro.org>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
+Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
+ [IPv6:2607:f8b0:400e:c00::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkGV61FLGzDqsQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 17:58:36 +1000 (AEST)
-Received: by mail-pf0-x234.google.com with SMTP id t190so68020667pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 00:58:36 -0700 (PDT)
-Date: Tue, 5 Jul 2016 17:03:57 +0900
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkGZ30r8HzDqsQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 18:02:03 +1000 (AEST)
+Received: by mail-pf0-x236.google.com with SMTP id i123so67945188pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:02:03 -0700 (PDT)
+Date: Tue, 5 Jul 2016 17:07:23 +0900
 From: AKASHI Takahiro <takahiro.akashi@linaro.org>
-To: Dave Young <dyoung@redhat.com>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- kexec@lists.infradead.org, ebiederm@xmission.com, bhe@redhat.com,
- vgoyal@redhat.com, will.deacon@arm.com, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: kexec@lists.infradead.org, ebiederm@xmission.com, dyoung@redhat.com,
+ bhe@redhat.com, vgoyal@redhat.com, will.deacon@arm.com,
+ catalin.marinas@arm.com, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [RFC] arm64: kexec_file_load support
-Message-ID: <20160705080355.GQ20774@linaro.org>
+Message-ID: <20160705080722.GR20774@linaro.org>
 References: <20160701051111.GL20774@linaro.org> <3300473.zhbeG65qgA@hactar>
- <20160704065814.GO20774@linaro.org>
- <20160705012556.GC8190@dhcp-128-65.nay.redhat.com>
+ <20160704065814.GO20774@linaro.org> <5766907.oiVi8ABPsz@hactar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-2022-jp
-In-Reply-To: <20160705012556.GC8190@dhcp-128-65.nay.redhat.com>
+In-Reply-To: <5766907.oiVi8ABPsz@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,131 +30,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Dave,
-
-On Tue, Jul 05, 2016 at 09:25:56AM +0800, Dave Young wrote:
-> On 07/04/16 at 03:58pm, AKASHI Takahiro wrote:
-> > Hi,
-> > 
+On Mon, Jul 04, 2016 at 07:50:19PM -0300, Thiago Jung Bauermann wrote:
+> Hello,
+> 
+> Am Montag, 04 Juli 2016, 15:58:15 schrieb AKASHI Takahiro:
 > > On Fri, Jul 01, 2016 at 12:46:31PM -0300, Thiago Jung Bauermann wrote:
-> > > Am Freitag, 01 Juli 2016, 14:11:12 schrieb AKASHI Takahiro:
-> > > > I'm not sure whether there is any demand for kexec_file_load
-> > > > support on arm64, but anyhow I'm working on this and now
-> > > > my early prototype code does work fine.
-> > > 
-> > > It is necessary if you want to support loading only signed kernels, and also 
-> > > if you want IMA to measure the kernel in its event log.
-> > > 
-> > > > There is, however, one essential issue:
-> > > > While arm64 kernel requires a device tree blob to be set up
-> > > > correctly at boot time, the current system call API doesn't
-> > > > have this parameter.
-> > > >     int kexec_file_load(int kernel_fd, int initrd_fd,
-> > > >                         unsigned long cmdline_len, const char
-> > > > *cmdline_ptr, unsigned long flags);
-> > > > 
-> > > > Should we invent a new system call, like kexec_file_load2,
-> > > > and, if so, what kind of interface would be desired?
-> > > 
-> > > I'm facing the same issue on powerpc. What I'm doing is taking the device 
-> > > tree that was used to boot the current kernel and modifying it as necessary 
-> > > to pass it to the next kernel.
+> > > I agree that it would be better if we could have a system call where a
 > > 
-> > That is exactly what I do.
-> > 
-> > > I agree that it would be better if we could have a system call where a 
 > > > custom device tree could be passed. One suggestion is:
-> > 
 > > For powerpc, you might be able to use dtbImage instead of Image
 > > without changing the kernel interfaces.
-> > > 
+> 
+> That works for custom kernels, but for signed kernels from a distro, I 
+> believe that's not an option.
+> 
 > > > kexec_file_load2(int fds[], int fd_types[], int nr_fds,
+> > > 
 > > > 		 unsigned long cmdline_len, const char *cmdline_ptr,
+> > > 		
 > > > 		unsigned long flags);
 > > 
 > > You don't want to simply add one more argument, i.e. dtb_fd, don't you.
-> > 
+> 
+> I'm just trying to avoid having to add another argument later if we find out 
+> someone is loading another segment that we didn't know about. :-)
+> 
+> The older kexec_load system call allows passing an arbitrary number of 
+> segments (sort of, currently capped at 16) to the kernel, so my suggestions 
+> preserve that feature.
+> 
+> If people think that adding another argument for dtb_fd is enough, I won't 
+> mind.
+
+That is the question :)
+As far as I look though existing arch code, there will be no extra
+parameters (segments) required other than dtb.
+
+Thanks,
+-Takahiro AKASHI
+
 > > I prefer a slightly-simpler interface:
 > >         struct kexec_file_fd {
 > >                 enum kexec_file_type;
 > >                 int fd;
 > >         }
 > > 
-> >         int kexec_file_load2(struct kexec_file_fd[], int nr_fds, int flags);
-> > 
+> >         int kexec_file_load2(struct kexec_file_fd[], int nr_fds, int
+> > flags);
+> 
+> I like this one.
+> 
 > > Or if you want to keep the compatibility with the existing system call,
 > > 
 > >         int kexec_file_load(int kernel_fd, int initrd_fd,
-> >                         unsigned long cmdline_len, const char *cmdline_ptr,
-> >                         unsigned long flags,
+> >                         unsigned long cmdline_len, const char
+> > *cmdline_ptr, unsigned long flags,
 > >                         int struct kexec_file_fd[], int nr_fds);
 > > 
-> > Here SYSCALL_DEFINE7() have to be defined, and I'm not sure that we will not
-> > have a problem in adding a system call with more than 6 arguments.
-> > 
-> > > Where fds is an array with nr_fds file descriptors and fd_types is an array 
-> > > specifying what each fd in fds is. So for example, if fds[i] is the kernel, 
-> > > then fd_types[i] would have the value KEXEC_FILE_KERNEL_FD. If fds[i] is the 
-> > > device tree blob, fd_types[i], would have the value KEXEC_FILE_DTB and so 
-> > > on. That way, the syscall can be extended for an arbitrary number and types 
-> > > of segments that have to be loaded, just like kexec_load.
+> > Here SYSCALL_DEFINE7() have to be defined, and I'm not sure that we will
+> > not have a problem in adding a system call with more than 6 arguments.
+> 
+> That's very clever. We can do what you suggest above or even just add dtb_fd 
+> with SYSCALL_DEFINE6. Either option would be good.
+> 
+> > > Where fds is an array with nr_fds file descriptors and fd_types is an
+> > > array specifying what each fd in fds is. So for example, if fds[i] is
+> > > the kernel, then fd_types[i] would have the value KEXEC_FILE_KERNEL_FD.
+> > > If fds[i] is the device tree blob, fd_types[i], would have the value
+> > > KEXEC_FILE_DTB and so on. That way, the syscall can be extended for an
+> > > arbitrary number and types of segments that have to be loaded, just
+> > > like kexec_load.
 > > > 
 > > > Another option is to have a struct:
 > > > 
-> > > kexec_file_load2(struct kexec_file_params *params, unsigned long params_sz);
-> > 
+> > > kexec_file_load2(struct kexec_file_params *params, unsigned long
+> > > params_sz);
 > > Wow, we can add any number of new parameters with this interface.
-> > 
-> > Thanks,
-> > -Takahiro AKASHI
-> > 
-> > > Where:
-> > > 
-> > > struct kexec_file_params {
-> > > 	int version;	/* allows struct to be extended in the future */
-> > > 	int fds[];
-> > > 	int fd_types[];
-> > > 	int nr_fds;
-> > > 	unsigned long cmdline_len;
-> > > 	const char *cmdline_ptr;
-> > > 	unsigned long flags;
-> > > };
-> > > 
-> > > This is even more flexible.
 > 
-> I would like to vote for this one, and use kexec_file_fd fds[] in the struct 
-
-If we take this approach, we'd better take "flags" out of struct,
-and my preference would be:
-
-        enum kexec_file_type {
-                KEXEC_FILE_TYPE_KERNEL;
-                KEXEC_FILE_TYPE_INITRD;
-                KEXEC_FILE_TYPE_DTB;
-        }
-
-        struct kexec_file_fd {
-                enum kexec_file_type;
-                int fd;
-        }
-
-        sturct kexec_file_params {
-                int version;
-                unsigned char *cmdline;
-                unsigned long cmdline_len;
-                int nr_fds;
-                struct kexec_file_fd fds[0];
-        }
-
-        int kexec_file_load2(int kernel_fd, unsigned long flags,
-                                sturct kexec_file_params extra);
-
-So we don't have to retrieve extra if KEXEC_FILE_UNLOAD
-(or kernel_fd < 0?),
-and only once retrieve extra if extra != NULL && nr_fds == 0.
-
-Thanks,
--Takahiro AKASHI
-
-> Thanks
-> Dave
+> Yeah, maybe it's a bit too much.
+> 
+> -- 
+> []'s
+> Thiago Jung Bauermann
+> IBM Linux Technology Center
+> 
