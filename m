@@ -1,19 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBdV0td5zDqr5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:04:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBdb6zBjzDqpb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:04:51 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkBdR2GnKz9sXy
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:04:42 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkBdX3q4qz9s9G
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:04:47 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/41] powerpc/prom_init: PTRRELOC is not needed
-Date: Tue,  5 Jul 2016 15:03:39 +1000
-Message-Id: <1467695057-12431-4-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 08/41] powerpc: Move epapr_paravirt_early_init() to
+ early_init_devtree()
+Date: Tue,  5 Jul 2016 15:03:44 +1000
+Message-Id: <1467695057-12431-9-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,27 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There's one line of code still using PTRRELOC in prom_init, it
-shouldn't be necessary since that code is relocatable. Take it
-out.
+The function is called by both 32-bit and 64-bit early setup right
+after early_init_devtree(). All it does is run yet another early
+DT parser which is precisely what early_init_devtree() is about,
+so move it in there.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/prom_init.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/prom.c     | 2 ++
+ arch/powerpc/kernel/setup_32.c | 3 ---
+ arch/powerpc/kernel/setup_64.c | 3 ---
+ 3 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 6ee4b72..54e450c 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1980,7 +1980,7 @@ static void __init prom_check_displays(void)
- 				break;
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 946e34f..48434be 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -56,6 +56,7 @@
+ #include <asm/opal.h>
+ #include <asm/fadump.h>
+ #include <asm/debug.h>
++#include <asm/epapr_hcalls.h>
  
- #ifdef CONFIG_LOGO_LINUX_CLUT224
--		clut = PTRRELOC(logo_linux_clut224.clut);
-+		clut = logo_linux_clut224.clut;
- 		for (i = 0; i < logo_linux_clut224.clutsize; i++, clut += 3)
- 			if (prom_set_color(ih, i + 32, clut[0], clut[1],
- 					   clut[2]) != 0)
+ #include <mm/mmu_decl.h>
+ 
+@@ -739,6 +740,7 @@ void __init early_init_devtree(void *params)
+ 	/* Scan and build the list of machine check recoverable ranges */
+ 	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
+ #endif
++	epapr_paravirt_early_init();
+ 
+ 	DBG(" <- early_init_devtree()\n");
+ }
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 3d06fab..34e61d68 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -37,7 +37,6 @@
+ #include <asm/serial.h>
+ #include <asm/udbg.h>
+ #include <asm/mmu_context.h>
+-#include <asm/epapr_hcalls.h>
+ #include <asm/code-patching.h>
+ 
+ #define DBG(fmt...)
+@@ -110,8 +109,6 @@ notrace void __init machine_init(u64 dt_ptr)
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
+ 
+-	epapr_paravirt_early_init();
+-
+ 	early_init_mmu();
+ 
+ 	probe_machine();
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index bcc95ac..e1b2e6f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -68,7 +68,6 @@
+ #include <asm/code-patching.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/hugetlb.h>
+-#include <asm/epapr_hcalls.h>
+ #include <asm/livepatch.h>
+ 
+ #ifdef DEBUG
+@@ -270,8 +269,6 @@ void __init early_setup(unsigned long dt_ptr)
+ 	 */
+ 	early_init_devtree(__va(dt_ptr));
+ 
+-	epapr_paravirt_early_init();
+-
+ 	/* Now we know the logical id of our boot cpu, setup the paca. */
+ 	setup_paca(&paca[boot_cpuid]);
+ 	fixup_boot_paca();
 -- 
 2.7.4
