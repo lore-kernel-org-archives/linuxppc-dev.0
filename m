@@ -2,15 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkQks4gHgzDqtW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 00:10:13 +1000 (AEST)
-In-Reply-To: <1458282993-6371-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkQkt3YbVzDqrN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 00:10:14 +1000 (AEST)
+In-Reply-To: <1457472378-22274-1-git-send-email-linux@rasmusvillemoes.dk>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/rtas: fix array overrun in ppc_rtas() syscall
-Message-Id: <3rkQks3yQtz9sBc@ozlabs.org>
-Date: Wed,  6 Jul 2016 00:10:13 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linux-kernel@vger.kernel.org
+Subject: Re: powerpc/pseries: fix error return value in cmm_mem_going_offline
+Message-Id: <3rkQkt2qMHz9t0T@ozlabs.org>
+Date: Wed,  6 Jul 2016 00:10:14 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-18-03 at 06:36:33 UTC, Andrew Donnellan wrote:
-> If ppc_rtas() is called with args.nargs == 16 and args.nret == 0, args.rets
-> is set to point to &args.args[16], which is beyond the end of the args.args
-> array. This results in a minor read overrun of the array when we check the
-> first return code (which, per PAPR, is a required output of all RTAS calls)
-> to see if there's been a hardware error.
+On Tue, 2016-08-03 at 21:26:17 UTC, Rasmus Villemoes wrote:
+> cmm_mem_going_offline is (only) called from cmm_memory_cb(), which
+> sends the return value through notifier_from_errno(). The latter
+> expects 0 or -errno (notifier_to_errno(notifier_from_errno(x)) is 0
+> for any x >= 0, so passing a positive value cannot make sense). Hence
+> negate ENOMEM.
 > 
-> Change the nargs/nret check to ensure nargs is <= 15, allowing room for the
-> status code. Users shouldn't be calling with nret == 0, but there's no real
-> harm if they do, so we don't stop them.
-> 
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a9862c7440f191439a51f77233
+https://git.kernel.org/powerpc/c/e2be23712a9c8e3710c9e2684a
 
 cheers
