@@ -1,20 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFL4B1gzDshr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFN0G4nzDshr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:24 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkCFK6NhGz9ryQ
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:21 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkCFM2G2yz9ryQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:23 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/41] powerpc: Add comment explaining the purpose of
- setup_kdump_trampoline()
-Date: Tue,  5 Jul 2016 15:03:46 +1000
-Message-Id: <1467695057-12431-11-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 20/41] powerpc/mm/hash64: Don't test for machine type to
+ detect HEA special case
+Date: Tue,  5 Jul 2016 15:03:56 +1000
+Message-Id: <1467695057-12431-21-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,34 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anything in early_setup() needs to be justified to be there, in
-this case, we need the trampolines before we can take exceptions
-and thus before we turn on the MMU.
-
-Also remove a pretty meaningless and misplaced debug message
+Instead, check for FW_FEATURE_SPLPAR. This should be roughtly equivalent
+as all pseries machiens that can have an HEA also support SPLPAR and
+no other machine type does.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_64.c | 5 +++--
+ arch/powerpc/mm/hash_utils_64.c | 5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index e1b2e6f..a641753 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -276,10 +276,11 @@ void __init early_setup(unsigned long dt_ptr)
- 	/* Probe the machine type */
- 	probe_machine();
- 
-+	/* Setup the trampolines from the lowmem exception vectors
-+	 * to the kdump kernel when not using a relocatable kernel.
-+	 */
- 	setup_kdump_trampoline();
- 
--	DBG("Found, Initializing memory management...\n");
--
- 	/* Initialize the hash table or TLB handling */
- 	early_init_mmu();
- 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index a261e44..8ccb0b1 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -508,7 +508,8 @@ static bool might_have_hea(void)
+ 	 * we will never see an HEA ethernet device.
+ 	 */
+ #ifdef CONFIG_IBMEBUS
+-	return !cpu_has_feature(CPU_FTR_ARCH_207S);
++	return !cpu_has_feature(CPU_FTR_ARCH_207S) &&
++		!firmware_has_feature(FW_FEATURE_SPLPAR);
+ #else
+ 	return false;
+ #endif
+@@ -574,7 +575,7 @@ found:
+ 			 * would stop us accessing the HEA ethernet. So if we
+ 			 * have the chance of ever seeing one, stay at 4k.
+ 			 */
+-			if (!might_have_hea() || !machine_is(pseries))
++			if (!might_have_hea())
+ 				mmu_io_psize = MMU_PAGE_64K;
+ 		} else
+ 			mmu_ci_restrictions = 1;
 -- 
 2.7.4
