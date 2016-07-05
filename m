@@ -1,19 +1,22 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCDZ3XQSzDqtp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:31:42 +1000 (AEST)
-In-Reply-To: <20160628031139.12500-2-sam@mendozajonas.com>
-To: Sam Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>,
- Alistair Popple <alistair@popple.id.au>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Subject: Re: [2/2] tty/hvc: Use opal irqchip interface if available
-Message-Id: <3rkCDZ1WWTz9sBc@ozlabs.org>
-Date: Tue,  5 Jul 2016 15:31:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFH55vYzDrVq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:19 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkCFH0CZ5z9ryQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:18 +1000 (AEST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 27/41] powerpc/85xx/mpc85xx_ds: Don't use the flat device-tree
+ after boot
+Date: Tue,  5 Jul 2016 15:04:03 +1000
+Message-Id: <1467695057-12431-28-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
+References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-28-06 at 03:11:39 UTC, Sam Mendoza-Jonas wrote:
-> diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-> index b7cd0ae..8c53f5b 100644
-> --- a/drivers/tty/hvc/hvc_opal.c
-> +++ b/drivers/tty/hvc/hvc_opal.c
-> @@ -214,7 +216,15 @@ static int hvc_opal_probe(struct platform_device *dev)
->  		dev->dev.of_node->full_name,
->  		boot ? " (boot console)" : "");
->  
-> -	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-> +	rc = of_property_read_u32(dev->dev.of_node, "interrupts", &prop);
-> +	if (rc) {
-> +		pr_info("hvc%d: No interrupts property, using OPAL event\n",
-> +				termno);
-> +		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-> +	} else {
-> +		irq = irq_of_parse_and_map(dev->dev.of_node, 0);
-> +	}
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-That seems a bit backward.
-
-Shouldn't we try irq_of_parse_and_map() and if that fails, then we go back to
-opal_event_request() ?
-
-cheers
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index f858306..64a7e8c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -66,9 +66,7 @@ void __init mpc85xx_ds_pic_init(void)
+ 	struct device_node *cascade_node = NULL;
+ 	int cascade_irq;
+ #endif
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS-CAMP")) {
++	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP")) {
+ 		mpic = mpic_alloc(NULL, 0,
+ 			MPIC_NO_RESET |
+ 			MPIC_BIG_ENDIAN |
+-- 
+2.7.4
