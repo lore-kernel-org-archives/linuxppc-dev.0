@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFQ6tgLzDrpX
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCFS2q6MzDrKG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:32:28 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkCFQ1cfCz9ryQ
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:25 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkCFR4mJHz9ryQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:32:27 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 34/41] powerpc/32: Move cache info inits to a separate function
-Date: Tue,  5 Jul 2016 15:04:10 +1000
-Message-Id: <1467695057-12431-35-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 16/41] powerpc/pasemi: Remove IOBMAP allocation from platform
+ probe()
+Date: Tue,  5 Jul 2016 15:03:52 +1000
+Message-Id: <1467695057-12431-17-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,64 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matches 64-bit. Also move the call to the same spot as ppc64
+These days, memblocks is available later, so we can just allocate it
+as part of iob_init.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_32.c | 27 ++++++++++++++++-----------
- 1 file changed, 16 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/pasemi/iommu.c  | 15 +++++----------
+ arch/powerpc/platforms/pasemi/pasemi.h |  1 -
+ arch/powerpc/platforms/pasemi/setup.c  |  2 --
+ 3 files changed, 5 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 22347e87..5457911 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -248,6 +248,21 @@ static void setup_power_save(void)
- #endif
+diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
+index c929644..43dd3fb 100644
+--- a/arch/powerpc/platforms/pasemi/iommu.c
++++ b/arch/powerpc/platforms/pasemi/iommu.c
+@@ -202,6 +202,11 @@ int __init iob_init(struct device_node *dn)
+ 
+ 	pr_debug(" -> %s\n", __func__);
+ 
++	/* For 2G space, 8x64 pages (2^21 bytes) is max total l2 size */
++	iob_l2_base = (u32 *)__va(memblock_alloc_base(1UL<<21, 1UL<<21, 0x80000000));
++
++	printk(KERN_INFO "IOBMAP L2 allocated at: %p\n", iob_l2_base);
++
+ 	/* Allocate a spare page to map all invalid IOTLB pages. */
+ 	tmp = memblock_alloc(IOBMAP_PAGE_SIZE, IOBMAP_PAGE_SIZE);
+ 	if (!tmp)
+@@ -260,13 +265,3 @@ void __init iommu_init_early_pasemi(void)
+ 	set_pci_dma_ops(&dma_iommu_ops);
  }
  
-+static __init void initialize_cache_info(void)
-+{
-+	/*
-+	 * Set cache line size based on type of cpu as a default.
-+	 * Systems with OF can look in the properties on the cpu node(s)
-+	 * for a possibly more accurate value.
-+	 */
-+	dcache_bsize = cur_cpu_spec->dcache_bsize;
-+	icache_bsize = cur_cpu_spec->icache_bsize;
-+	ucache_bsize = 0;
-+	if (cpu_has_feature(CPU_FTR_UNIFIED_ID_CACHE))
-+		ucache_bsize = icache_bsize = dcache_bsize;
-+}
-+
-+
- /* Warning, IO base is not yet inited */
- void __init setup_arch(char **cmdline_p)
- {
-@@ -257,6 +272,7 @@ void __init setup_arch(char **cmdline_p)
- 	loops_per_jiffy = 500000000 / HZ;
- 
- 	unflatten_device_tree();
-+	initialize_cache_info();
- 	check_for_initrd();
- 
- 	probe_machine();
-@@ -272,17 +288,6 @@ void __init setup_arch(char **cmdline_p)
- 
- 	xmon_setup();
- 
--	/*
--	 * Set cache line size based on type of cpu as a default.
--	 * Systems with OF can look in the properties on the cpu node(s)
--	 * for a possibly more accurate value.
--	 */
--	dcache_bsize = cur_cpu_spec->dcache_bsize;
--	icache_bsize = cur_cpu_spec->icache_bsize;
--	ucache_bsize = 0;
--	if (cpu_has_feature(CPU_FTR_UNIFIED_ID_CACHE))
--		ucache_bsize = icache_bsize = dcache_bsize;
+-void __init alloc_iobmap_l2(void)
+-{
+-#ifndef CONFIG_PPC_PASEMI_IOMMU
+-	return;
+-#endif
+-	/* For 2G space, 8x64 pages (2^21 bytes) is max total l2 size */
+-	iob_l2_base = (u32 *)__va(memblock_alloc_base(1UL<<21, 1UL<<21, 0x80000000));
 -
- 	if (ppc_md.panic)
- 		setup_panic();
+-	printk(KERN_INFO "IOBMAP L2 allocated at: %p\n", iob_l2_base);
+-}
+diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
+index 11f230a..74cbcb3 100644
+--- a/arch/powerpc/platforms/pasemi/pasemi.h
++++ b/arch/powerpc/platforms/pasemi/pasemi.h
+@@ -8,7 +8,6 @@ extern void pas_pci_dma_dev_setup(struct pci_dev *dev);
+ 
+ extern void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset);
+ 
+-extern void __init alloc_iobmap_l2(void);
+ extern void __init pasemi_map_registers(void);
+ 
+ /* Power savings modes, implemented in asm */
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index 7605bc6..9a881be 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -426,8 +426,6 @@ static int __init pas_probe(void)
+ 	    !of_flat_dt_is_compatible(root, "pasemi,pwrficient"))
+ 		return 0;
+ 
+-	alloc_iobmap_l2();
+-
+ 	return 1;
+ }
  
 -- 
 2.7.4
