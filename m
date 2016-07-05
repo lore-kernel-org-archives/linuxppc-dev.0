@@ -1,24 +1,39 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rk5nB6x8XzDqpJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:26:06 +1000 (AEST)
-Date: Tue, 5 Jul 2016 09:25:56 +0800
-From: Dave Young <dyoung@redhat.com>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- kexec@lists.infradead.org, ebiederm@xmission.com, bhe@redhat.com,
- vgoyal@redhat.com, will.deacon@arm.com, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC] arm64: kexec_file_load support
-Message-ID: <20160705012556.GC8190@dhcp-128-65.nay.redhat.com>
-References: <20160701051111.GL20774@linaro.org> <3300473.zhbeG65qgA@hactar>
- <20160704065814.GO20774@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rk5s43qfszDqpM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:29:28 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u651TQWu013344
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 21:29:26 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23x9s2dqcu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 21:29:26 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Mon, 4 Jul 2016 19:29:25 -0600
+Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ acme@kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1467267714.7296.6.camel@ellerman.id.au>
+ <57762D2A.9040103@linux.vnet.ibm.com>
+Cc: anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
+ naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Tue, 5 Jul 2016 06:58:55 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160704065814.GO20774@linaro.org>
+In-Reply-To: <57762D2A.9040103@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <577B0D57.3080702@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,96 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/04/16 at 03:58pm, AKASHI Takahiro wrote:
-> Hi,
-> 
-> On Fri, Jul 01, 2016 at 12:46:31PM -0300, Thiago Jung Bauermann wrote:
-> > Am Freitag, 01 Juli 2016, 14:11:12 schrieb AKASHI Takahiro:
-> > > I'm not sure whether there is any demand for kexec_file_load
-> > > support on arm64, but anyhow I'm working on this and now
-> > > my early prototype code does work fine.
-> > 
-> > It is necessary if you want to support loading only signed kernels, and also 
-> > if you want IMA to measure the kernel in its event log.
-> > 
-> > > There is, however, one essential issue:
-> > > While arm64 kernel requires a device tree blob to be set up
-> > > correctly at boot time, the current system call API doesn't
-> > > have this parameter.
-> > >     int kexec_file_load(int kernel_fd, int initrd_fd,
-> > >                         unsigned long cmdline_len, const char
-> > > *cmdline_ptr, unsigned long flags);
-> > > 
-> > > Should we invent a new system call, like kexec_file_load2,
-> > > and, if so, what kind of interface would be desired?
-> > 
-> > I'm facing the same issue on powerpc. What I'm doing is taking the device 
-> > tree that was used to boot the current kernel and modifying it as necessary 
-> > to pass it to the next kernel.
-> 
-> That is exactly what I do.
-> 
-> > I agree that it would be better if we could have a system call where a 
-> > custom device tree could be passed. One suggestion is:
-> 
-> For powerpc, you might be able to use dtbImage instead of Image
-> without changing the kernel interfaces.
-> > 
-> > kexec_file_load2(int fds[], int fd_types[], int nr_fds,
-> > 		 unsigned long cmdline_len, const char *cmdline_ptr,
-> > 		unsigned long flags);
-> 
-> You don't want to simply add one more argument, i.e. dtb_fd, don't you.
-> 
-> I prefer a slightly-simpler interface:
->         struct kexec_file_fd {
->                 enum kexec_file_type;
->                 int fd;
->         }
-> 
->         int kexec_file_load2(struct kexec_file_fd[], int nr_fds, int flags);
-> 
-> Or if you want to keep the compatibility with the existing system call,
-> 
->         int kexec_file_load(int kernel_fd, int initrd_fd,
->                         unsigned long cmdline_len, const char *cmdline_ptr,
->                         unsigned long flags,
->                         int struct kexec_file_fd[], int nr_fds);
-> 
-> Here SYSCALL_DEFINE7() have to be defined, and I'm not sure that we will not
-> have a problem in adding a system call with more than 6 arguments.
-> 
-> > Where fds is an array with nr_fds file descriptors and fd_types is an array 
-> > specifying what each fd in fds is. So for example, if fds[i] is the kernel, 
-> > then fd_types[i] would have the value KEXEC_FILE_KERNEL_FD. If fds[i] is the 
-> > device tree blob, fd_types[i], would have the value KEXEC_FILE_DTB and so 
-> > on. That way, the syscall can be extended for an arbitrary number and types 
-> > of segments that have to be loaded, just like kexec_load.
-> > 
-> > Another option is to have a struct:
-> > 
-> > kexec_file_load2(struct kexec_file_params *params, unsigned long params_sz);
-> 
-> Wow, we can add any number of new parameters with this interface.
-> 
-> Thanks,
-> -Takahiro AKASHI
-> 
-> > Where:
-> > 
-> > struct kexec_file_params {
-> > 	int version;	/* allows struct to be extended in the future */
-> > 	int fds[];
-> > 	int fd_types[];
-> > 	int nr_fds;
-> > 	unsigned long cmdline_len;
-> > 	const char *cmdline_ptr;
-> > 	unsigned long flags;
-> > };
-> > 
-> > This is even more flexible.
+Hi Michael,
 
-I would like to vote for this one, and use kexec_file_fd fds[] in the struct 
- 
-Thanks
-Dave
+On Friday 01 July 2016 02:13 PM, Ravi Bangoria wrote:
+> Thanks Michael for your suggestion.
+>
+> On Thursday 30 June 2016 11:51 AM, Michael Ellerman wrote:
+>> On Thu, 2016-06-30 at 11:44 +0530, Ravi Bangoria wrote:
+>>> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
+>>> index 36a5825..b87eac7 100644
+>>> --- a/tools/perf/util/annotate.c
+>>> +++ b/tools/perf/util/annotate.c
+>>> @@ -476,6 +481,125 @@ static int ins__cmp(const void *a, const void *b)
+>> ...
+>>> +
+>>> +static struct ins *ins__find_powerpc(const char *name)
+>>> +{
+>>> +    int i;
+>>> +    struct ins *ins;
+>>> +    struct ins_ops *ops;
+>>> +    static struct instructions_powerpc head;
+>>> +    static bool list_initialized;
+>>> +
+>>> +    /*
+>>> +     * - Interested only if instruction starts with 'b'.
+>>> +     * - Few start with 'b', but aren't branch instructions.
+>>> +     * - Let's also ignore instructions involving 'ctr' and
+>>> +     *   'tar' since target branch addresses for those can't
+>>> +     *   be determined statically.
+>>> +     */
+>>> +    if (name[0] != 'b'             ||
+>>> +        !strncmp(name, "bcd", 3)   ||
+>>> +        !strncmp(name, "brinc", 5) ||
+>>> +        !strncmp(name, "bper", 4)  ||
+>>> +        strstr(name, "ctr")        ||
+>>> +        strstr(name, "tar"))
+>>> +        return NULL;
+>> It would be good if 'bctr' was at least recognised as a branch, even 
+>> if we
+>> can't determine the target. They are very common.
+>
+> We can not show arrow for this since we don't know the target location.
+> can you please suggest how you intends perf to display bctr?
+>
+> bctr can be classified into two variants -- 'bctr' and 'bctrl'.
+>
+> 'bctr' will be considered as jump instruction but jump__parse() won't
+> be able to find any target location and hence it will set target to
+> UINT64_MAX which transform 'bctr' to 'bctr UINT64_MAX'. This
+> looks misleading.
+>
+> bctrl will be considered as call instruction but call_parse() won't
+> be able to find any target function and hence it won't show any
+> navigation arrow for this instruction. Which is same as filter it
+> beforehand.
+>
+>> It doesn't look like we have the opcode handy here? Could we get it 
+>> somehow?
+>> That would make this a *lot* more robust.
+>
+> objdump prints machine code, but I don't know how difficult that would
+> be to parse to get opcode.
+
+Perf uses  --no-show-raw with objdump and hence objdump output does not
+show opcodes. So change in current  objdump output may requires changes
+in current parsing logic. Additionally I need to change tui as well to show
+opcodes. This looks quite more work.
+
+And this patchset is about enabling annotate for cross arch. So if you 
+really
+need opcode with perf anotate, can we do it separately?
+
+Please let me know your thoughts.
+
+-Ravi
+
+>
+> -Ravi
+>
+>> cheers
+>>
+>
