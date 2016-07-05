@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBjP3mDgzDrB9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:08:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBjR6hTpzDqxm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:08:11 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkBjN613Yz9s9Z
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:08:08 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkBjR1qf1z9s9Z
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:08:11 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 36/41] powerpc: Re-order setup_panic()
-Date: Tue,  5 Jul 2016 15:07:49 +1000
-Message-Id: <1467695274-14667-36-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 37/41] powerpc/64: Make a few boot functions __init
+Date: Tue,  5 Jul 2016 15:07:50 +1000
+Message-Id: <1467695274-14667-37-git-send-email-benh@kernel.crashing.org>
+In-Reply-To: <1467695274-14667-36-git-send-email-benh@kernel.crashing.org>
+References: <1467695274-14667-36-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,74 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do it right after probe_machine() since it's about testing ppc_md,
-and put the test in the common code.
-
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup-common.c | 2 ++
- arch/powerpc/kernel/setup_32.c     | 5 ++---
- arch/powerpc/kernel/setup_64.c     | 5 ++---
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/setup_64.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 7e85fac..d0256a3 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -687,6 +687,8 @@ static struct notifier_block ppc_panic_block = {
- 
- void __init setup_panic(void)
- {
-+	if (!ppc_md.panic)
-+		return;
- 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
- }
- 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 58674b6..6247a3a 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -277,6 +277,8 @@ void __init setup_arch(char **cmdline_p)
- 
- 	probe_machine();
- 
-+	setup_panic();
-+
- 	setup_power_save();
- 
- 	find_legacy_serial_ports();
-@@ -288,9 +290,6 @@ void __init setup_arch(char **cmdline_p)
- 
- 	xmon_setup();
- 
--	if (ppc_md.panic)
--		setup_panic();
--
- 	init_mm.start_code = (unsigned long)_stext;
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 46faafe..bb1b65e 100644
+index bb1b65e..46787d9 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -647,6 +647,8 @@ void __init setup_arch(char **cmdline_p)
- 	/* Probe the machine type */
- 	probe_machine();
+@@ -198,7 +198,7 @@ early_param("smt-enabled", early_smt_enabled);
+ #endif /* CONFIG_SMP */
  
-+	setup_panic();
-+
-  	/*
- 	 * We can discover serial ports now since the above did setup the
- 	 * hash table management for us, thus ioremap works. We do that early
-@@ -695,9 +697,6 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- 	reserve_hugetlb_gpages();
+ /** Fix up paca fields required for the boot cpu */
+-static void fixup_boot_paca(void)
++static void __init fixup_boot_paca(void)
+ {
+ 	/* The boot cpu is started */
+ 	get_paca()->cpu_start = 1;
+@@ -206,7 +206,7 @@ static void fixup_boot_paca(void)
+ 	get_paca()->data_offset = 0;
+ }
  
--	if (ppc_md.panic)
--		setup_panic();
--
- 	klp_init_thread_info(&init_thread_info);
- 
- 	init_mm.start_code = (unsigned long)_stext;
+-static void configure_exceptions(void)
++static void __init configure_exceptions(void)
+ {
+ 	/* Setup the trampolines from the lowmem exception vectors
+ 	 * to the kdump kernel when not using a relocatable kernel.
+@@ -515,7 +515,7 @@ static __init void print_system_info(void)
+  * used to allocate interrupt or emergency stacks for which our
+  * exception entry path doesn't deal with being interrupted.
+  */
+-static u64 safe_stack_limit(void)
++static __init u64 safe_stack_limit(void)
+ {
+ #ifdef CONFIG_PPC_BOOK3E
+ 	/* Freescale BookE bolts the entire linear mapping */
 -- 
 2.7.4
