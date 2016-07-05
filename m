@@ -1,22 +1,50 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rk56C2fCHzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 10:55:46 +1000 (AEST)
-Date: Tue, 5 Jul 2016 08:55:37 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v3 2/9] kexec_file: Generalize kexec_add_buffer.
-Message-ID: <20160705005537.GA8190@dhcp-128-65.nay.redhat.com>
-References: <1466538521-31216-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <20160701183602.GA4553@dhcp-128-65.nay.redhat.com>
- <3789971.1TYeJNg8TK@hactar> <1923446.CtvhM7vr7E@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rk5P068nJzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:08:35 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u65151H2130363
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 21:08:33 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 23x77xfu94-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 21:08:32 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 5 Jul 2016 11:08:29 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6BF5B3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:08:28 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6518SAj11534834
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 11:08:28 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6518RHf003886
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 11:08:28 +1000
+Subject: Re: [PATCH 12/14] PCI/hotplug: pnv_php: export symbols and move
+ struct types needed by cxl
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
+References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-13-git-send-email-imunsie@au.ibm.com>
+ <20160705000347.GA6557@gwshan>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ Huy Nguyen <huyn@mellanox.com>, linuxppc-dev@lists.ozlabs.org
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 5 Jul 2016 11:08:25 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1923446.CtvhM7vr7E@hactar>
+In-Reply-To: <20160705000347.GA6557@gwshan>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <df5d692d-64b1-d6a2-07bc-26774cbd8a1b@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,142 +54,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/01/16 at 05:31pm, Thiago Jung Bauermann wrote:
-> Am Freitag, 01 Juli 2016, 17:02:23 schrieb Thiago Jung Bauermann:
-> > Am Freitag, 01 Juli 2016, 14:36:02 schrieb Dave Young:
-> > > On 07/01/16 at 02:51pm, Thiago Jung Bauermann wrote:
-> > > > Am Donnerstag, 30 Juni 2016, 17:43:57 schrieb Dave Young:
-> > > > > On 06/30/16 at 01:42pm, Thiago Jung Bauermann wrote:
-> > > > > > Am Donnerstag, 30 Juni 2016, 12:49:44 schrieb Thiago Jung Bauermann:
-> > > > I understand that this is all somewhat subjective, so if you still
-> > > > disagree with my points I can provide a patch set implementing the
-> > > > change above.
-> > > 
-> > > I still feel it should be changed if more callbacks being introduced,
-> > > though you can regard it is internal api, like above comment we do not
-> > > need to assign them seperately, the member values can be assigned
-> > > from the beginning.
-> > 
-> > Ok, I'll implement the changes and submit a v4. Thanks for your review.
-> 
-> Sorry for creating more email traffic, but it'll be better if I ask this 
-> before I change all other places in the code. Is the code below what you
-> have in mind?
+On 05/07/16 10:03, Gavin Shan wrote:
+> Andrew/Ian, it seems HOTPLUG_PCI_POWERNV_BASE isn't defined and we needn't it.
 
-Thanks for the update, almost except a nitpick :)
+Argh, thanks for picking that up! I removed that option and all its 
+occurrences in the code based on your earlier private feedback but 
+forgot to drop this.
 
-> 
-> In particular, this version doesn't do the memset(&buf, 0, sizeof(buf))
-> that the previous code I sent earlier did. Is that ok?
-> 
-> @@ -643,13 +632,14 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
->  				  unsigned long max, int top_down)
->  {
->  	struct purgatory_info *pi = &image->purgatory_info;
-> -	unsigned long align, buf_align, bss_align, buf_sz, bss_sz, bss_pad;
-> -	unsigned long memsz, entry, load_addr, curr_load_addr, bss_addr, offset;
-> +	unsigned long align, bss_align, bss_sz, bss_pad;
-> +	unsigned long entry, load_addr, curr_load_addr, bss_addr, offset;
->  	unsigned char *buf_addr, *src;
->  	int i, ret = 0, entry_sidx = -1;
->  	const Elf_Shdr *sechdrs_c;
->  	Elf_Shdr *sechdrs = NULL;
-> -	void *purgatory_buf = NULL;
-> +	struct kexec_buf buf = { .image = image, .buf_min = min,
-> +				.buf_max = max, .top_down = top_down };
->  
->  	/*
->  	 * sechdrs_c points to section headers in purgatory and are read
-> @@ -715,9 +705,9 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
->  	}
->  
->  	/* Determine how much memory is needed to load relocatable object. */
-> -	buf_align = 1;
-> +	buf.buf_align = 1;
->  	bss_align = 1;
-> -	buf_sz = 0;
-> +	buf.bufsz = 0;
->  	bss_sz = 0;
+Will fix in V2.
 
-Above chunk can go to the initializatioin of struct kexec buf ealier.
-
->  
->  	for (i = 0; i < pi->ehdr->e_shnum; i++) {
-> @@ -726,10 +716,10 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
->  
->  		align = sechdrs[i].sh_addralign;
->  		if (sechdrs[i].sh_type != SHT_NOBITS) {
-> -			if (buf_align < align)
-> -				buf_align = align;
-> -			buf_sz = ALIGN(buf_sz, align);
-> -			buf_sz += sechdrs[i].sh_size;
-> +			if (buf.buf_align < align)
-> +				buf.buf_align = align;
-> +			buf.bufsz = ALIGN(buf.bufsz, align);
-> +			buf.bufsz += sechdrs[i].sh_size;
->  		} else {
->  			/* bss section */
->  			if (bss_align < align)
-> @@ -741,32 +731,31 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
->  
->  	/* Determine the bss padding required to align bss properly */
->  	bss_pad = 0;
-> -	if (buf_sz & (bss_align - 1))
-> -		bss_pad = bss_align - (buf_sz & (bss_align - 1));
-> +	if (buf.bufsz & (bss_align - 1))
-> +		bss_pad = bss_align - (buf.bufsz & (bss_align - 1));
->  
-> -	memsz = buf_sz + bss_pad + bss_sz;
-> +	buf.memsz = buf.bufsz + bss_pad + bss_sz;
->  
->  	/* Allocate buffer for purgatory */
-> -	purgatory_buf = vzalloc(buf_sz);
-> -	if (!purgatory_buf) {
-> +	buf.buffer = vzalloc(buf.bufsz);
-> +	if (!buf.buffer) {
->  		ret = -ENOMEM;
->  		goto out;
->  	}
->  
-> -	if (buf_align < bss_align)
-> -		buf_align = bss_align;
-> +	if (buf.buf_align < bss_align)
-> +		buf.buf_align = bss_align;
->  
->  	/* Add buffer to segment list */
-> -	ret = kexec_add_buffer(image, purgatory_buf, buf_sz, memsz,
-> -				buf_align, min, max, top_down,
-> -				&pi->purgatory_load_addr);
-> +	ret = kexec_add_buffer(&buf);
->  	if (ret)
->  		goto out;
-> +	pi->purgatory_load_addr = buf.mem;
->  
->  	/* Load SHF_ALLOC sections */
-> -	buf_addr = purgatory_buf;
-> +	buf_addr = buf.buffer;
->  	load_addr = curr_load_addr = pi->purgatory_load_addr;
-> -	bss_addr = load_addr + buf_sz + bss_pad;
-> +	bss_addr = load_addr + buf.bufsz + bss_pad;
->  
->  	for (i = 0; i < pi->ehdr->e_shnum; i++) {
->  		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-> @@ -812,11 +801,11 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
->  	 * Used later to identify which section is purgatory and skip it
->  	 * from checksumming.
->  	 */
-> -	pi->purgatory_buf = purgatory_buf;
-> +	pi->purgatory_buf = buf.buffer;
->  	return ret;
->  out:
->  	vfree(sechdrs);
-> -	vfree(purgatory_buf);
-> +	vfree(buf.buffer);
->  	return ret;
->  }
->  
-> 
-> []'s
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
-> 
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
