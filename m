@@ -1,21 +1,47 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rk6RB0XDszDqpJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 11:55:34 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH V2] powerpc/mm: Add validation for platform reserved
- memory ranges
-In-Reply-To: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1457344559-2505-1-git-send-email-khandual@linux.vnet.ibm.com>
-Date: Tue, 05 Jul 2016 11:55:31 +1000
-Message-ID: <87zipwetm4.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rk6mc3sLXzDqpH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 12:10:40 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6529sWb106880
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jul 2016 22:10:38 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23x6gjjrag-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2016 22:10:38 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 5 Jul 2016 12:10:35 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E19B82BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 12:10:34 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u652AYpr29294774
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 12:10:34 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u652AY9l022994
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 12:10:34 +1000
+Subject: Re: [PATCH 04/14] cxl: Move cxl_afu_get / cxl_afu_put to base
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
+References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-5-git-send-email-imunsie@au.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 5 Jul 2016 12:10:33 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1467638532-9250-5-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <e3a60bb2-6235-6d95-5fb5-d10c1903d503@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,106 +51,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+On 04/07/16 23:22, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
+>
+> The Mellanox CX4 uses a model where the AFU is one physical function of
+> the device, and is used by other peer physical functions of the same
+> device. This will require those other devices to grab a reference on the
+> AFU when they are initialised to make sure that it does not go away
+> during their lifetime.
+>
+> Move the AFU refcount functions to base.c so they can be called from
+> the PHB code.
+>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
-> For partition running on PHYP, there can be a adjunct partition
-> which shares the virtual address range with the operating system.
-> Virtual address ranges which can be used by the adjunct partition
-> are communicated with virtual device node of the device tree with
-> a property known as "ibm,reserved-virtual-addresses". This patch
-> introduces a new function named 'validate_reserved_va_range' which
-> is called  during initialization to validate that these reserved
-> virtual address ranges do not overlap with the address ranges used
-> by the kernel for all supported memory contexts. This helps prevent
-> the possibility of getting return codes similar to H_RESOURCE for
-> H_PROTECT hcalls for conflicting HPTE entries.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Have you tested this? The endian conversions look wrong to me.
-
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index ba59d59..b47f667 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -1564,3 +1564,80 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
->  	/* Finally limit subsequent allocations */
->  	memblock_set_current_limit(ppc64_rma_size);
->  }
-> +
-> +/*
-> + * PAPR says that each reserved virtual address range record
-> + * contains three be32 elements which is of toal 12 bytes.
-> + * First two be32 elements contain the abbreviated virtual
-> + * address (high order 32 bits and low order 32 bits that
-> + * generate the abbreviated virtual address of 64 bits which
-> + * need to be concatenated with 24 bits of 0 at the end) and
-> + * the third be32 element contains the size of the reserved
-> + * virtual address range as number of consecutive 4K pages.
-> + */
-> +struct reserved_va_record {
-> +	__be32	high_addr;
-> +	__be32	low_addr;
-> +	__be32	nr_pages_4K;
-> +};
-
-Here you define those fields as __be32.
-
-> +/*
-> + * Linux uses 65 bits (CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-> + * of virtual address. As reserved virtual address comes in
-> + * as an abbreviated form (64 bits) from the device tree, we
-> + * will use a partial address bit mask (65 >> 24) to match it
-> + * for simplicity.
-> + */
-> +#define RVA_LESS_BITS		24
-> +#define LINUX_VA_BITS		(CONTEXT_BITS + ESID_BITS + SID_SHIFT)
-> +#define PARTIAL_LINUX_VA_MASK	((1ULL << (LINUX_VA_BITS - RVA_LESS_BITS)) - 1)
-> +
-> +static int __init validate_reserved_va_range(void)
-> +{
-> +	struct reserved_va_record rva;
-> +	struct device_node *np;
-> +	int records, ret, i;
-> +	__be64 vaddr;
-> +
-> +	np = of_find_node_by_name(NULL, "vdevice");
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	records = of_property_count_elems_of_size(np,
-> +			"ibm,reserved-virtual-addresses",
-> +				sizeof(struct reserved_va_record));
-> +	if (records < 0)
-> +		return records;
-> +
-> +	for (i = 0; i < records; i++) {
-> +		ret = of_property_read_u32_index(np,
-> +			"ibm,reserved-virtual-addresses",
-> +				3 * i, &rva.high_addr);
-
-But then here you use of_property_read_u32_index(), which does the
-endian conversion (to CPU endian) for you.
-
-> +		ret = of_property_read_u32_index(np,
-> +			"ibm,reserved-virtual-addresses",
-> +				3 * i + 1, &rva.low_addr);
-
-> +		ret = of_property_read_u32_index(np,
-> +			"ibm,reserved-virtual-addresses",
-> +				3 * i + 2, &rva.nr_pages_4K);
-
-So now all the values in rva are CPU endian.
-
-> +		vaddr =  rva.high_addr;
-> +		vaddr =  (vaddr << 32) | rva.low_addr;
-> +		if (vaddr & cpu_to_be64(~PARTIAL_LINUX_VA_MASK))
-> +			continue;
-
-But then here you do the comparison against a __be64 value.
-
-I know I told you to use "properly endian-annotated struct", but you
-stil need to use the right conversions in the right places.
-
-I think the best option is to use of_property_read_u32_array() and just
-read the three 32 values into a CPU endian struct.
-
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
