@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBff14mwzDqwj
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:05:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkBfh1mSwzDqxW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:05:48 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rkBfb4bVrz9s9Z
- for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:05:42 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkBfd3lHyz9ssM
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 15:05:44 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 35/41] powerpc: Re-order the call to smp_setup_cpu_maps()
-Date: Tue,  5 Jul 2016 15:04:11 +1000
-Message-Id: <1467695057-12431-36-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 36/41] powerpc: Re-order setup_panic()
+Date: Tue,  5 Jul 2016 15:04:12 +1000
+Message-Id: <1467695057-12431-37-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,52 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It makes more sense to do it before intializing xmon() as xmon might
-use the info in there. We do want to register the console early
-though in case we want some functioning printk's in the cpu map setup.
+Do it right after probe_machine() since it's about testing ppc_md,
+and put the test in the common code.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/setup_32.c | 4 ++--
- arch/powerpc/kernel/setup_64.c | 3 ++-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 2 ++
+ arch/powerpc/kernel/setup_32.c     | 5 ++---
+ arch/powerpc/kernel/setup_64.c     | 5 ++---
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 7e85fac..d0256a3 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -687,6 +687,8 @@ static struct notifier_block ppc_panic_block = {
+ 
+ void __init setup_panic(void)
+ {
++	if (!ppc_md.panic)
++		return;
+ 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
+ }
+ 
 diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 5457911..58674b6 100644
+index 58674b6..6247a3a 100644
 --- a/arch/powerpc/kernel/setup_32.c
 +++ b/arch/powerpc/kernel/setup_32.c
-@@ -281,11 +281,11 @@ void __init setup_arch(char **cmdline_p)
+@@ -277,6 +277,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	probe_machine();
+ 
++	setup_panic();
++
+ 	setup_power_save();
  
  	find_legacy_serial_ports();
+@@ -288,9 +290,6 @@ void __init setup_arch(char **cmdline_p)
  
--	smp_setup_cpu_maps();
--
- 	/* Register early console */
- 	register_early_udbg_console();
- 
-+	smp_setup_cpu_maps();
-+
  	xmon_setup();
  
- 	if (ppc_md.panic)
+-	if (ppc_md.panic)
+-		setup_panic();
+-
+ 	init_mm.start_code = (unsigned long)_stext;
+ 	init_mm.end_code = (unsigned long) _etext;
+ 	init_mm.end_data = (unsigned long) _edata;
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 8ee24dc..46faafe 100644
+index 46faafe..bb1b65e 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -659,12 +659,13 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- 	register_early_udbg_console();
+@@ -647,6 +647,8 @@ void __init setup_arch(char **cmdline_p)
+ 	/* Probe the machine type */
+ 	probe_machine();
  
-+	smp_setup_cpu_maps();
++	setup_panic();
 +
- 	/*
- 	 * Initialize xmon
+  	/*
+ 	 * We can discover serial ports now since the above did setup the
+ 	 * hash table management for us, thus ioremap works. We do that early
+@@ -695,9 +697,6 @@ void __init setup_arch(char **cmdline_p)
  	 */
- 	xmon_setup();
+ 	reserve_hugetlb_gpages();
  
--	smp_setup_cpu_maps();
- 	check_smt_enabled();
- 	setup_tlb_core_data();
+-	if (ppc_md.panic)
+-		setup_panic();
+-
+ 	klp_init_thread_info(&init_thread_info);
  
+ 	init_mm.start_code = (unsigned long)_stext;
 -- 
 2.7.4
