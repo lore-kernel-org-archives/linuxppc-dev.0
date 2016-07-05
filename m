@@ -1,23 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
+Return-Path: <sam@mendozajonas.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkCwk1PVCzDrnR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 16:03:02 +1000 (AEST)
-Date: Tue, 5 Jul 2016 15:51:33 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
- agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
- qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] spapr: Disable ibm, pa-features HTM bit
-Message-ID: <20160705055132.GK2251@voom.fritz.box>
-References: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
- <17cc8e9fb2ab41356e207c6a14d5987754fa4da8.1467695915.git.sam.bobroff@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="n83H03bbH672hrlY"
-In-Reply-To: <17cc8e9fb2ab41356e207c6a14d5987754fa4da8.1467695915.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkD1v5WqzzDsl8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 16:07:31 +1000 (AEST)
+Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rkD1t3v4vz9sdn
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Jul 2016 16:07:30 +1000 (AEST)
+Message-ID: <1467698844.1951.4.camel@mendozajonas.com>
+Subject: Re: [2/2] tty/hvc: Use opal irqchip interface if available
+From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>, Alistair Popple
+ <alistair@popple.id.au>
+Date: Tue, 05 Jul 2016 16:07:24 +1000
+In-Reply-To: <3rkCDZ1WWTz9sBc@ozlabs.org>
+References: <3rkCDZ1WWTz9sBc@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2016-07-05 at 15:31 +1000, Michael Ellerman wrote:
+> On Tue, 2016-28-06 at 03:11:39 UTC, Sam Mendoza-Jonas wrote:
+> > diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
+> > index b7cd0ae..8c53f5b 100644
+> > --- a/drivers/tty/hvc/hvc_opal.c
+> > +++ b/drivers/tty/hvc/hvc_opal.c
+> > @@ -214,7 +216,15 @@ static int hvc_opal_probe(struct platform_device *dev)
+> >  		dev->dev.of_node->full_name,
+> >  		boot ? " (boot console)" : "");
+> >  
+> > -	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
+> > +	rc = of_property_read_u32(dev->dev.of_node, "interrupts", &prop);
+> > +	if (rc) {
+> > +		pr_info("hvc%d: No interrupts property, using OPAL event\n",
+> > +				termno);
+> > +		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
+> > +	} else {
+> > +		irq = irq_of_parse_and_map(dev->dev.of_node, 0);
+> > +	}
+> 
+> That seems a bit backward.
+> 
+> Shouldn't we try irq_of_parse_and_map() and if that fails, then we go back to
+> opal_event_request() ?
+> 
+> cheers
 
---n83H03bbH672hrlY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I was unsure for a minute so I double checked this;
+of_property_read_u32() returns of_property_read_u32_array(), which
+returns 0 on success, unlike a bunch of other of_property helpers.
 
-On Tue, Jul 05, 2016 at 03:19:22PM +1000, Sam Bobroff wrote:
-> There are a few issues with our handling of the ibm,pa-features
-> HTM bit:
->=20
-> - We don't support transactional memory in PR KVM, so don't tell
->   the OS that we do.
->=20
-> - In full emulation we have a minimal implementation of HTM that always
->   fails, so for performance reasons lets not tell the OS that we
->   support it either.
->=20
-> - In HV KVM mode, we should mirror the host HTM enabled state by
->   checking a KVM capability or looking at the AT_HWCAP2 bit.
->=20
-> For now unconditionally disable it by removing HTM from the
-> pa-features bits.  It will be re-enabled in a subsequent patch
-> specifically for HV KVM.
->=20
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+So if the 'interrupts' property does exist we get 0, and try
+irq_of_parse_and_map(). But are you suggesting we try
+irq_of_parse_and_map() regardless and then fall back to
+opal_event_request()?
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-I'll hold off on merging until the rest of the series is ready, though.
-
-> ---
->  hw/ppc/spapr.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-> index 78ebd9e..704aae7 100644
-> --- a/hw/ppc/spapr.c
-> +++ b/hw/ppc/spapr.c
-> @@ -635,7 +635,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void =
-*fdt, int offset,
->          0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
->          0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
->          0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
-> -        0x80, 0x00, 0x80, 0x00, 0x80, 0x00 };
-> +        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
->      uint8_t *pa_features;
->      size_t pa_size;
-> =20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---n83H03bbH672hrlY
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXe0rkAAoJEGw4ysog2bOS57gQAMrxyrXxJR5s9YH/CS+E/4cp
-q3Nj+Nhbu4Onat8i4bYGhuHdJ8Bqcl27IwvloefG0zvXjuvvZeUXPd69iSvhOQFq
-6Nt3U2GSwIRywONFq4jomWqnpWR+0kfx6AWhvFIpMF934V5pvm4ihv9OHJYHV/Y5
-K0xU3Mg3HS4SZu6fmDoXsk8WWWbz/VWf2gWHnv3RIdUzqcff1pHA8n3g2F1NJVkC
-CTei8Y+kPfcZtqbqdoOCSrBPL/t4zmo4KJ+QtAACsiZiZP7v9XHhLa1Y5HjJjouL
-hyjww0CvpRJhZRuUhOXAV5WrHqFdwzVzyKWwmA3IX0ItHwU1udJjfEBpFn/Hipsy
-Azjci+C4dlgOL9304eisnwhXPr9I8SQPbbP8f2tc6IMrrBk2bhUuzxpbk8Mu2Wf1
-kPX722xSJezqsL10rj+8WZ4ZISPTSx/Kgvz7mpmACxOJSrux7XCY64OOIIFuQZsy
-CAsKMelSGIudM7cnwP46ggZFCeC9/T8zCvcSMj8T+Qll67J+cF6vHuW/fy3O/7K3
-QpNFGY0asOncajiLhDW4Dk83Wy6Ig95laAXs2PyPaDnfhvPQPmjS9PyNQibz3IZ/
-tZhBAE2IyDx7y5cVhyzdDyh/wSsOkhfkCMSwv5A9iiHEqtthBPc1eFkAxhGOMe35
-tgTf4AqQkXiKks+qE8xP
-=Xz6R
------END PGP SIGNATURE-----
-
---n83H03bbH672hrlY--
+Cheers,
+Sam
