@@ -1,47 +1,47 @@
 Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkByZ46fqzDrGv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkByZ6sy2zDrQB
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:34 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u655JTuO027751
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 01:19:32 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 23yfe958yv-1
+ u655JUiG123296
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 01:19:33 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 23xa4csygn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:19:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 01:19:32 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Tue, 5 Jul 2016 15:19:28 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5D4CB2BB005F
+ Tue, 5 Jul 2016 15:19:29 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 21C692CE805D
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2016 15:19:26 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u655JQk99109904
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u655JPFk60096644
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u655JPAP025010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:26 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u655JPg9016614
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 15:19:25 +1000
 From: Sam Bobroff <sam.bobroff@au1.ibm.com>
 To: david@gibson.dropbear.id.au
 Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
  agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
  qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] spapr: Disable ibm, pa-features HTM bit
-Date: Tue,  5 Jul 2016 15:19:22 +1000
+Subject: [PATCH 2/3] Add KVM_CAP_PPC_HTM to linux/kvm.h
+Date: Tue,  5 Jul 2016 15:19:23 +1000
 In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
 References: <20160608022602.GU9226@voom.fritz.box>
  <cover.1467695915.git.sam.bobroff@au1.ibm.com>
 In-Reply-To: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
 References: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
-Message-Id: <17cc8e9fb2ab41356e207c6a14d5987754fa4da8.1467695915.git.sam.bobroff@au1.ibm.com>
+Message-Id: <d2e391d1e0e381276ee2bff8e59d872c4b3bd2b5.1467695915.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,40 +51,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are a few issues with our handling of the ibm,pa-features
-HTM bit:
-
-- We don't support transactional memory in PR KVM, so don't tell
-  the OS that we do.
-
-- In full emulation we have a minimal implementation of HTM that always
-  fails, so for performance reasons lets not tell the OS that we
-  support it either.
-
-- In HV KVM mode, we should mirror the host HTM enabled state by
-  checking a KVM capability or looking at the AT_HWCAP2 bit.
-
-For now unconditionally disable it by removing HTM from the
-pa-features bits.  It will be re-enabled in a subsequent patch
-specifically for HV KVM.
-
 Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 ---
- hw/ppc/spapr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ linux-headers/linux/kvm.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-index 78ebd9e..704aae7 100644
---- a/hw/ppc/spapr.c
-+++ b/hw/ppc/spapr.c
-@@ -635,7 +635,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void *fdt, int offset,
-         0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
-         0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
-         0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
--        0x80, 0x00, 0x80, 0x00, 0x80, 0x00 };
-+        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
-     uint8_t *pa_features;
-     size_t pa_size;
+diff --git a/linux-headers/linux/kvm.h b/linux-headers/linux/kvm.h
+index e60e21b..37cb3e8 100644
+--- a/linux-headers/linux/kvm.h
++++ b/linux-headers/linux/kvm.h
+@@ -866,6 +866,7 @@ struct kvm_ppc_smmu_info {
+ #define KVM_CAP_ARM_PMU_V3 126
+ #define KVM_CAP_VCPU_ATTRIBUTES 127
+ #define KVM_CAP_MAX_VCPU_ID 128
++#define KVM_CAP_PPC_HTM 129
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
  
 -- 
 2.1.0
