@@ -1,54 +1,25 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkpRx3lFlzDqyK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:58:37 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u664n6L8091234
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 00:58:35 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 240nf1rqsg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 00:58:35 -0400
-Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Wed, 6 Jul 2016 14:58:32 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1F3E03578060
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:58:30 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u664wU7c5898594
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 14:58:30 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u664wS2u005394
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 14:58:29 +1000
-Date: Wed, 06 Jul 2016 12:58:11 +0800
-From: xinhui <xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkpfT3Jl9zDqsQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 15:07:45 +1000 (AEST)
+Date: Wed, 6 Jul 2016 15:09:34 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
+ agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
+ qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/3] Add KVM_CAP_PPC_HTM to linux/kvm.h
+Message-ID: <20160706050934.GU2251@voom.fritz.box>
+References: <cover.1467695915.git.sam.bobroff@au1.ibm.com>
+ <d2e391d1e0e381276ee2bff8e59d872c4b3bd2b5.1467695915.git.sam.bobroff@au1.ibm.com>
+ <20160705060558.GL2251@voom.fritz.box>
+ <20160706044152.GA5662@tungsten.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Wanpeng Li <kernellwp@gmail.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org,
- linux-s390 <linux-s390@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- mpe@ellerman.id.au, Paul Mackerras <paulus@samba.org>,
- benh@kernel.crashing.org, Paul McKenney <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hpe.com>, will.deacon@arm.com,
- boqun.feng@gmail.com, Davidlohr Bueso <dave@stgolabs.net>,
- schwidefsky@de.ibm.com
-Subject: Re: [PATCH v2 2/4] powerpc/spinlock: support vcpu preempted check
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <1467124991-13164-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <CANRm+CxQMSrg69p2Xey829Mz4Au9YCai+4JD17i9urdbj0VgkQ@mail.gmail.com>
-In-Reply-To: <CANRm+CxQMSrg69p2Xey829Mz4Au9YCai+4JD17i9urdbj0VgkQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <577C8FE3.3010208@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="qgEfXXHyyarqcYJd"
+In-Reply-To: <20160706044152.GA5662@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,35 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, wanpeng
 
-On 2016年07月05日 17:57, Wanpeng Li wrote:
-> Hi Xinhui,
-> 2016-06-28 22:43 GMT+08:00 Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>:
->> This is to fix some lock holder preemption issues. Some other locks
->> implementation do a spin loop before acquiring the lock itself. Currently
->> kernel has an interface of bool vcpu_is_preempted(int cpu). It take the cpu
->> as parameter and return true if the cpu is preempted. Then kernel can break
->> the spin loops upon on the retval of vcpu_is_preempted.
->>
->> As kernel has used this interface, So lets support it.
->>
->> Only pSeries need supoort it. And the fact is powerNV are built into same
->> kernel image with pSeries. So we need return false if we are runnig as
->> powerNV. The another fact is that lppaca->yiled_count keeps zero on
->> powerNV. So we can just skip the machine type.
->
-> Lock holder vCPU preemption can be detected by hardware pSeries or
-> paravirt method?
->
-There is one shard struct between kernel and powerVM/KVM. And we read the yield_count of this struct to detect if one vcpu is running or not.
-SO it's easy for ppc to implement such interface. Note that yield_count is set by powerVM/KVM.
-and only pSeries can run a guest for now. :)
+--qgEfXXHyyarqcYJd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I also review x86 related code, looks like we need add one hyer-call to get such vcpu preemption info?
+On Wed, Jul 06, 2016 at 02:41:52PM +1000, Sam Bobroff wrote:
+> On Tue, Jul 05, 2016 at 04:05:58PM +1000, David Gibson wrote:
+> > On Tue, Jul 05, 2016 at 03:19:23PM +1000, Sam Bobroff wrote:
+> > > Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> >=20
+> > Ok, so the usual procedure for updates to linux-headers is this:
+> >    1. Get the change merged on the kernel side
+> >=20
+> >    2. Use scripts/update-linux-headers.sh to update the whole
+> >       linux-headers subtree to the new kernel version
+> >=20
+> >    3. Submit the patch - make sure to include the commit id of the
+> >       kernel you updated to in the qemu commit message
+>=20
+> Thanks,
+>=20
+> Do you think we're at the point with this patch set that I should start
+> progressing the kernel side change now?
 
-thanks
-xinui
-> Regards,
-> Wanpeng Li
->
+Yes.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--qgEfXXHyyarqcYJd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXfJKOAAoJEGw4ysog2bOS26QQAKS51qQnq4d9F9kSWLceVWGZ
+EUehh6JsNoNupsbM9bNXhgUGSOUXKGqnI4KqMOf12qK0YW6TiUiJaU5uRZUb8+xC
+kP5a2EAKdyXZfvM9ZuqSVV3T3/PaM2DMp82BLkFi7qoLUyo8Dnp/H/eelmxh+jvf
+o01dKXHs2ciOvpxi9VW8q5Hhj0/ZinqvysZ/FZU8XqvF7u1Lk8VN9IkjSpWY32GD
+kISRJG2rQP4N3aNPhZq2HNbd078rFarpKsisdwZ5v5hqsASqyxR/7Y50iUBi1eV8
+onxo/7NP1N1K0++DtdtsUZ9T+dX7Fy6AUjd+GtkbzqqC6mrw2Y86C5Qey61ePjSW
+rObhgz2EO+XE+kfSxHTQeOP/k7knOtwdOwBvsW7jERKs8VvH0v8UOaC9Lv1Ev48J
+fibhtR3XyDiyqCQH2+10jUK28JHRRqFQM5zM8JYMN04UNlIBKpVoyIOaUHAjpB6q
+D+SNeYjpCVO9HXSThyfgtBk1BeAPi1s0QYTiDP4ozIpkoQR7opQJoMm5rtBC1SAy
+5nNZc7/MUnoa9aXDoZr7CrIoMQXBeGQxedTNvF8Yjduj1NXXHpCKVnBSoFww8vaY
+vl5buopBABggfmSCSoBmaHX08xDFZskmOE/O3CskXZAN9qAsl/8ZDCrfk7HWNMGg
+seAr5XHJGPvchfdpEqMP
+=NWLY
+-----END PGP SIGNATURE-----
+
+--qgEfXXHyyarqcYJd--
