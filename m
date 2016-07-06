@@ -1,10 +1,10 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0065.outbound.protection.outlook.com [104.47.40.65])
+Received: from NAM01-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam01on0067.outbound.protection.outlook.com [104.47.32.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkr5J1TjbzDqxM
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 16:12:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkr5R6qflzDr05
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 16:12:43 +1000 (AEST)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <oss@buserror.net>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
  <marc.zyngier@arm.com>
@@ -12,8 +12,10 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
 Subject: [PATCH v2 1/2] irqchip/qeic: merge qeic init code from platforms to a
  common function
-Date: Wed, 6 Jul 2016 14:01:38 +0800
-Message-ID: <1467784901-11615-1-git-send-email-qiang.zhao@nxp.com>
+Date: Wed, 6 Jul 2016 14:01:39 +0800
+Message-ID: <1467784901-11615-2-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1467784901-11615-1-git-send-email-qiang.zhao@nxp.com>
+References: <1467784901-11615-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,10 +40,6 @@ if "low interrupt == high interrupt"
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
-Changes for v2:
-	- modify subject and commit msg
-	- add check for qeic by type
-
  arch/powerpc/platforms/83xx/misc.c            | 15 ---------------
  arch/powerpc/platforms/85xx/corenet_generic.c |  9 ---------
  arch/powerpc/platforms/85xx/mpc85xx_mds.c     | 14 --------------
