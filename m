@@ -1,11 +1,11 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlFhC5bQtzDr41
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlFhC6mgtzDr4t
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 08:25:47 +1000 (AEST)
-Received: by mail-pf0-x234.google.com with SMTP id h14so132278pfe.1
+Received: by mail-pa0-x231.google.com with SMTP id b13so143728pat.0
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 15:25:47 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
@@ -32,9 +32,9 @@ Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
  linux-arch@vger.kernel.org, linux-mm@kvack.org,
  kernel-hardening@lists.openwall.com
-Subject: [PATCH 2/9] x86/uaccess: Enable hardened usercopy
-Date: Wed,  6 Jul 2016 15:25:21 -0700
-Message-Id: <1467843928-29351-3-git-send-email-keescook@chromium.org>
+Subject: [PATCH 5/9] ia64/uaccess: Enable hardened usercopy
+Date: Wed,  6 Jul 2016 15:25:24 -0700
+Message-Id: <1467843928-29351-6-git-send-email-keescook@chromium.org>
 In-Reply-To: <1467843928-29351-1-git-send-email-keescook@chromium.org>
 References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,107 +46,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enables CONFIG_HARDENED_USERCOPY checks on x86. This is done both in
-copy_*_user() and __copy_*_user() because copy_*_user() actually calls
-down to _copy_*_user() and not __copy_*_user().
+Enables CONFIG_HARDENED_USERCOPY checks on ia64.
 
 Based on code from PaX and grsecurity.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/x86/Kconfig                  |  2 ++
- arch/x86/include/asm/uaccess.h    | 10 ++++++----
- arch/x86/include/asm/uaccess_32.h |  2 ++
- arch/x86/include/asm/uaccess_64.h |  2 ++
- 4 files changed, 12 insertions(+), 4 deletions(-)
+ arch/ia64/Kconfig               |  1 +
+ arch/ia64/include/asm/uaccess.h | 18 +++++++++++++++---
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 0a7b885964ba..2a66b73a996d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -80,11 +80,13 @@ config X86
- 	select HAVE_ALIGNED_STRUCT_PAGE		if SLUB
- 	select HAVE_AOUT			if X86_32
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index f80758cb7157..32a87ef516a0 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -53,6 +53,7 @@ config IA64
+ 	select MODULES_USE_ELF_RELA
+ 	select ARCH_USE_CMPXCHG_LOCKREF
  	select HAVE_ARCH_AUDITSYSCALL
 +	select HAVE_ARCH_HARDENED_USERCOPY
- 	select HAVE_ARCH_HUGE_VMAP		if X86_64 || X86_PAE
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KASAN			if X86_64 && SPARSEMEM_VMEMMAP
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_KMEMCHECK
-+	select HAVE_ARCH_LINEAR_KERNEL_MAPPING	if X86_64
- 	select HAVE_ARCH_MMAP_RND_BITS		if MMU
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if MMU && COMPAT
- 	select HAVE_ARCH_SECCOMP_FILTER
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 2982387ba817..aa9cc58409c6 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -742,9 +742,10 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
- 	 * case, and do only runtime checking for non-constant sizes.
- 	 */
- 
--	if (likely(sz < 0 || sz >= n))
-+	if (likely(sz < 0 || sz >= n)) {
-+		check_object_size(to, n, false);
- 		n = _copy_from_user(to, from, n);
--	else if(__builtin_constant_p(n))
-+	} else if(__builtin_constant_p(n))
- 		copy_from_user_overflow();
- 	else
- 		__copy_from_user_overflow(sz, n);
-@@ -762,9 +763,10 @@ copy_to_user(void __user *to, const void *from, unsigned long n)
- 	might_fault();
- 
- 	/* See the comment in copy_from_user() above. */
--	if (likely(sz < 0 || sz >= n))
-+	if (likely(sz < 0 || sz >= n)) {
-+		check_object_size(from, n, true);
- 		n = _copy_to_user(to, from, n);
--	else if(__builtin_constant_p(n))
-+	} else if(__builtin_constant_p(n))
- 		copy_to_user_overflow();
- 	else
- 		__copy_to_user_overflow(sz, n);
-diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
-index 4b32da24faaf..7d3bdd1ed697 100644
---- a/arch/x86/include/asm/uaccess_32.h
-+++ b/arch/x86/include/asm/uaccess_32.h
-@@ -37,6 +37,7 @@ unsigned long __must_check __copy_from_user_ll_nocache_nozero
- static __always_inline unsigned long __must_check
- __copy_to_user_inatomic(void __user *to, const void *from, unsigned long n)
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+diff --git a/arch/ia64/include/asm/uaccess.h b/arch/ia64/include/asm/uaccess.h
+index 2189d5ddc1ee..465c70982f40 100644
+--- a/arch/ia64/include/asm/uaccess.h
++++ b/arch/ia64/include/asm/uaccess.h
+@@ -241,12 +241,18 @@ extern unsigned long __must_check __copy_user (void __user *to, const void __use
+ static inline unsigned long
+ __copy_to_user (void __user *to, const void *from, unsigned long count)
  {
-+	check_object_size(from, n, true);
- 	return __copy_to_user_ll(to, from, n);
++	if (!__builtin_constant_p(count))
++		check_object_size(from, count, true);
++
+ 	return __copy_user(to, (__force void __user *) from, count);
  }
  
-@@ -95,6 +96,7 @@ static __always_inline unsigned long
- __copy_from_user(void *to, const void __user *from, unsigned long n)
+ static inline unsigned long
+ __copy_from_user (void *to, const void __user *from, unsigned long count)
  {
- 	might_fault();
-+	check_object_size(to, n, false);
- 	if (__builtin_constant_p(n)) {
- 		unsigned long ret;
++	if (!__builtin_constant_p(count))
++		check_object_size(to, count, false);
++
+ 	return __copy_user((__force void __user *) to, from, count);
+ }
  
-diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
-index 2eac2aa3e37f..673059a109fe 100644
---- a/arch/x86/include/asm/uaccess_64.h
-+++ b/arch/x86/include/asm/uaccess_64.h
-@@ -54,6 +54,7 @@ int __copy_from_user_nocheck(void *dst, const void __user *src, unsigned size)
- {
- 	int ret = 0;
+@@ -258,8 +264,11 @@ __copy_from_user (void *to, const void __user *from, unsigned long count)
+ 	const void *__cu_from = (from);							\
+ 	long __cu_len = (n);								\
+ 											\
+-	if (__access_ok(__cu_to, __cu_len, get_fs()))					\
+-		__cu_len = __copy_user(__cu_to, (__force void __user *) __cu_from, __cu_len);	\
++	if (__access_ok(__cu_to, __cu_len, get_fs())) {					\
++		if (!__builtin_constant_p(n))						\
++			check_object_size(__cu_from, __cu_len, true);			\
++		__cu_len = __copy_user(__cu_to, (__force void __user *)  __cu_from, __cu_len);	\
++	}										\
+ 	__cu_len;									\
+ })
  
-+	check_object_size(dst, size, false);
- 	if (!__builtin_constant_p(size))
- 		return copy_user_generic(dst, (__force void *)src, size);
- 	switch (size) {
-@@ -119,6 +120,7 @@ int __copy_to_user_nocheck(void __user *dst, const void *src, unsigned size)
- {
- 	int ret = 0;
+@@ -270,8 +279,11 @@ __copy_from_user (void *to, const void __user *from, unsigned long count)
+ 	long __cu_len = (n);								\
+ 											\
+ 	__chk_user_ptr(__cu_from);							\
+-	if (__access_ok(__cu_from, __cu_len, get_fs()))					\
++	if (__access_ok(__cu_from, __cu_len, get_fs())) {				\
++		if (!__builtin_constant_p(n))						\
++			check_object_size(__cu_to, __cu_len, false);			\
+ 		__cu_len = __copy_user((__force void __user *) __cu_to, __cu_from, __cu_len);	\
++	}										\
+ 	__cu_len;									\
+ })
  
-+	check_object_size(src, size, true);
- 	if (!__builtin_constant_p(size))
- 		return copy_user_generic((__force void *)dst, src, size);
- 	switch (size) {
 -- 
 2.7.4
