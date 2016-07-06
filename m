@@ -1,16 +1,54 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkpRc3k38zDqwY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:58:20 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: paulus@samba.org, cyrilbur@gmail.com, mikey@neuling.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/tm: Fix stack pointer corruption in __tm_recheckpoint
-Date: Wed,  6 Jul 2016 14:58:06 +1000
-Message-Id: <1467781086-21125-1-git-send-email-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkpRx3lFlzDqyK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:58:37 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u664n6L8091234
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 00:58:35 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 240nf1rqsg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 00:58:35 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Wed, 6 Jul 2016 14:58:32 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1F3E03578060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:58:30 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u664wU7c5898594
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 14:58:30 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u664wS2u005394
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 14:58:29 +1000
+Date: Wed, 06 Jul 2016 12:58:11 +0800
+From: xinhui <xinhui.pan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Wanpeng Li <kernellwp@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ mpe@ellerman.id.au, Paul Mackerras <paulus@samba.org>,
+ benh@kernel.crashing.org, Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hpe.com>, will.deacon@arm.com,
+ boqun.feng@gmail.com, Davidlohr Bueso <dave@stgolabs.net>,
+ schwidefsky@de.ibm.com
+Subject: Re: [PATCH v2 2/4] powerpc/spinlock: support vcpu preempted check
+References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1467124991-13164-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <CANRm+CxQMSrg69p2Xey829Mz4Au9YCai+4JD17i9urdbj0VgkQ@mail.gmail.com>
+In-Reply-To: <CANRm+CxQMSrg69p2Xey829Mz4Au9YCai+4JD17i9urdbj0VgkQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <577C8FE3.3010208@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,79 +58,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the start of __tm_recheckpoint we save the kernel stack pointer
-(r1) in SPRG SCRATCH0 (SPRG2) so that we can restore it after the
-trecheckpoint.
+Hi, wanpeng
 
-Unfortunately, the same SPRG is used in the SLB miss handler.  If an
-SLB miss is taken between the save and restore of r1 to the SPRG, the
-SPRG is changed and hence r1 is also corrupted.  We can end up with
-the following crash when we start using r1 again after the restore
-from the SPRG:
+On 2016年07月05日 17:57, Wanpeng Li wrote:
+> Hi Xinhui,
+> 2016-06-28 22:43 GMT+08:00 Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>:
+>> This is to fix some lock holder preemption issues. Some other locks
+>> implementation do a spin loop before acquiring the lock itself. Currently
+>> kernel has an interface of bool vcpu_is_preempted(int cpu). It take the cpu
+>> as parameter and return true if the cpu is preempted. Then kernel can break
+>> the spin loops upon on the retval of vcpu_is_preempted.
+>>
+>> As kernel has used this interface, So lets support it.
+>>
+>> Only pSeries need supoort it. And the fact is powerNV are built into same
+>> kernel image with pSeries. So we need return false if we are runnig as
+>> powerNV. The another fact is that lppaca->yiled_count keeps zero on
+>> powerNV. So we can just skip the machine type.
+>
+> Lock holder vCPU preemption can be detected by hardware pSeries or
+> paravirt method?
+>
+There is one shard struct between kernel and powerVM/KVM. And we read the yield_count of this struct to detect if one vcpu is running or not.
+SO it's easy for ppc to implement such interface. Note that yield_count is set by powerVM/KVM.
+and only pSeries can run a guest for now. :)
 
-  Oops: Bad kernel stack pointer, sig: 6 [#1]
-  SMP NR_CPUS=2048 NUMA pSeries
-   kernel:NMI watcModules linked in:h af_packet(E) dm_mod(E) <snipped>
-  Supported: Yes, External
-  CPU: 658 PID: 143777 Comm: htm_demo Tainted: G            EL   X 4.4.13-0-default #1
-  task: c0000b56993a7810 ti: c00000000cfec000 task.ti: c0000b56993bc000
-  NIP: c00000000004f188 LR: 00000000100040b8 CTR: 0000000010002570
-  REGS: c00000000cfefd40 TRAP: 0300   Tainted: G            EL   X  (4.4.13-0-default)
-  MSR: 8000000300001033 <SF,ME,IR,DR,RI,LE>  CR: 02000424  XER: 20000000
-  CFAR: c000000000008468 DAR: 00003ffd84e66880 DSISR: 40000000 SOFTE: 0
-  PACATMSCRATCH: 00003ffbc865e680
-  GPR00: fffffffcfabc4268 00003ffd84e667a0 00000000100d8c38 000000030544bb80
-  GPR04: 0000000000000002 00000000100cf200 0000000000000449 00000000100cf100
-  GPR08: 000000000000c350 0000000000002569 0000000000002569 00000000100d6c30
-  GPR12: 00000000100d6c28 c00000000e6a6b00 00003ffd84660000 0000000000000000
-  GPR16: 0000000000000003 0000000000000449 0000000010002570 0000010009684f20
-  GPR20: 0000000000800000 00003ffd84e5f110 00003ffd84e5f7a0 00000000100d0f40
-  GPR24: 0000000000000000 0000000000000000 0000000000000000 00003ffff0673f50
-  GPR28: 00003ffd84e5e960 00000000003d0f00 00003ffd84e667a0 00003ffd84e5e680
-  NIP [c00000000004f188] restore_gprs+0x110/0x17c
-  LR [00000000100040b8] 0x100040b8
-  Call Trace:
-  Instruction dump:
-  f8a1fff0 e8e700a8 38a00000 7ca10164 e8a1fff8 e821fff0 7c0007dd 7c421378
-  7db142a6 7c3242a6 38800002 7c810164 <e9c100e0> e9e100e8 ea0100f0 ea2100f8
-  ---[ end trace 36596a45d92144a4 ]---
+I also review x86 related code, looks like we need add one hyer-call to get such vcpu preemption info?
 
-We hit this on large memory machines (> 2TB) but it can also be hit on
-smaller machines when 1TB segments are disabled.
-
-To hit this, you also need to be virtualised to ensure SLBs are
-periodically removed by the hypervisor.
-
-This patches moves the saving of r1 to the SPRG to the region where we
-are guaranteed not to take any further SLB misses.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Acked-by: Cyril Bur <cyrilbur@gmail.com>
-CC: stable@vger.kernel.org	# v3.9+
----
- arch/powerpc/kernel/tm.S | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index b7019b5..298afcf 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -338,8 +338,6 @@ _GLOBAL(__tm_recheckpoint)
- 	 */
- 	subi	r7, r7, STACK_FRAME_OVERHEAD
- 
--	SET_SCRATCH0(r1)
--
- 	mfmsr	r6
- 	/* R4 = original MSR to indicate whether thread used FP/Vector etc. */
- 
-@@ -468,6 +466,7 @@ restore_gprs:
- 	 * until we turn MSR RI back on.
- 	 */
- 
-+	SET_SCRATCH0(r1)
- 	ld	r5, -8(r1)
- 	ld	r1, -16(r1)
- 
--- 
-2.7.4
+thanks
+xinui
+> Regards,
+> Wanpeng Li
+>
