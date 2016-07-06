@@ -1,25 +1,59 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <xinhui.pan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkxKQ1p0dzDqyy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 20:08:26 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, acme@kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
- naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
-In-Reply-To: <57762D2A.9040103@linux.vnet.ibm.com>
-References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267714.7296.6.camel@ellerman.id.au>
- <57762D2A.9040103@linux.vnet.ibm.com>
-Date: Wed, 06 Jul 2016 20:08:24 +1000
-Message-ID: <87vb0j84fb.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkxYf5RZhzDr07
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 20:19:02 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u66AIwGY146347
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 06:19:00 -0400
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 240nm9974q-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 06:18:59 -0400
+Received: from localhost
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
+ Wed, 6 Jul 2016 15:48:51 +0530
+Received: from d28relay10.in.ibm.com (d28relay10.in.ibm.com [9.184.220.161])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id D190DE0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 15:52:45 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay10.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u66AInva29491254
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 15:48:49 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u66AIhtL014458
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 15:48:49 +0530
+Date: Wed, 06 Jul 2016 18:18:27 +0800
+From: xinhui <xinhui.pan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Wanpeng Li <kernellwp@gmail.com>, Peter Zijlstra <peterz@infradead.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, mpe@ellerman.id.au,
+ Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hpe.com>, will.deacon@arm.com,
+ boqun.feng@gmail.com, Davidlohr Bueso <dave@stgolabs.net>,
+ schwidefsky@de.ibm.com, Paolo Bonzini <pbonzini@redhat.com>,
+ kvm <kvm@vger.kernel.org>
+Subject: Re: [PATCH v2 2/4] powerpc/spinlock: support vcpu preempted check
+References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1467124991-13164-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <CANRm+CxQMSrg69p2Xey829Mz4Au9YCai+4JD17i9urdbj0VgkQ@mail.gmail.com>
+ <577C8FE3.3010208@linux.vnet.ibm.com>
+ <CANRm+CySutzEYQuCaeqyLKKVPPcFDFT94UsNaYWo8fU43VsSig@mail.gmail.com>
+ <20160706075814.GF30921@twins.programming.kicks-ass.net>
+ <CANRm+Cz5-XGDTNkZ_RcoX+gxF_+JDpUB6OB+ECOQcScuaeKfGA@mail.gmail.com>
+In-Reply-To: <CANRm+Cz5-XGDTNkZ_RcoX+gxF_+JDpUB6OB+ECOQcScuaeKfGA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <577CDAF3.4030401@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,91 +63,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-> On Thursday 30 June 2016 11:51 AM, Michael Ellerman wrote:
->> On Thu, 2016-06-30 at 11:44 +0530, Ravi Bangoria wrote:
->>> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
->>> index 36a5825..b87eac7 100644
->>> --- a/tools/perf/util/annotate.c
->>> +++ b/tools/perf/util/annotate.c
->>> @@ -476,6 +481,125 @@ static int ins__cmp(const void *a, const void *b)
->> ...
->>> +
->>> +static struct ins *ins__find_powerpc(const char *name)
->>> +{
->>> +	int i;
->>> +	struct ins *ins;
->>> +	struct ins_ops *ops;
->>> +	static struct instructions_powerpc head;
->>> +	static bool list_initialized;
->>> +
->>> +	/*
->>> +	 * - Interested only if instruction starts with 'b'.
->>> +	 * - Few start with 'b', but aren't branch instructions.
->>> +	 * - Let's also ignore instructions involving 'ctr' and
->>> +	 *   'tar' since target branch addresses for those can't
->>> +	 *   be determined statically.
->>> +	 */
->>> +	if (name[0] != 'b'             ||
->>> +	    !strncmp(name, "bcd", 3)   ||
->>> +	    !strncmp(name, "brinc", 5) ||
->>> +	    !strncmp(name, "bper", 4)  ||
->>> +	    strstr(name, "ctr")        ||
->>> +	    strstr(name, "tar"))
->>> +		return NULL;
->> It would be good if 'bctr' was at least recognised as a branch, even if we
->> can't determine the target. They are very common.
+On 2016年07月06日 16:32, Wanpeng Li wrote:
+> 2016-07-06 15:58 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
+>> On Wed, Jul 06, 2016 at 02:46:34PM +0800, Wanpeng Li wrote:
+>>>> SO it's easy for ppc to implement such interface. Note that yield_count is
+>>>> set by powerVM/KVM.
+>>>> and only pSeries can run a guest for now. :)
+>>>>
+>>>> I also review x86 related code, looks like we need add one hyer-call to get
+>>>> such vcpu preemption info?
+>>>
+>>> There is no such stuff to record lock holder in x86 kvm, maybe we
+>>> don't need to depend on PLE handler algorithm to guess it if we can
+>>> know lock holder vCPU directly.
+>>
+>> x86/kvm has vcpu->preempted to indicate if a vcpu is currently preempted
+>> or not. I'm just not sure if that is visible to the guest or how to make
+>> it so.
 >
-> We can not show arrow for this since we don't know the target location.
-> can you please suggest how you intends perf to display bctr?
-
-Yeah I understand you can't show an arrow.
-
-I guess it could just be an unterminated arrow? But I'm not sure if
-that's easy to do with the way the UI is constructed. eg. something
-like:
-
-    ld      r12,0(r12)
-    mtctr   r12
-    bctrl	------------------>
-    ld      r3,-32704(r2)
-
-But that's just an idea.
-
-> bctr can be classified into two variants -- 'bctr' and 'bctrl'.
+> Yeah, I miss it. I can be the volunteer to do it if there is any idea,
+> ping Paolo. :)
 >
-> 'bctr' will be considered as jump instruction but jump__parse() won't
-> be able to find any target location and hence it will set target to
-> UINT64_MAX which transform 'bctr' to 'bctr UINT64_MAX'. This
-> looks misleading.
+glad to know that. :)
 
-Agreed.
 
-> bctrl will be considered as call instruction but call_parse() won't
-> be able to find any target function and hence it won't show any
-> navigation arrow for this instruction. Which is same as filter it
-> beforehand.
-
-OK.
-
-Maybe what I'm asking for is an enhancement and can be done later.
-
->> It doesn't look like we have the opcode handy here? Could we get it somehow?
->> That would make this a *lot* more robust.
+> Regards,
+> Wanpeng Li
 >
-> objdump prints machine code, but I don't know how difficult that would
-> be to parse to get opcode.
-
-Normal objdump -d output includes the opcode, eg:
-
-c00000000000886c:       2c 2c 00 00     cmpdi   r12,0
-                        ^^^^^^^^^^^
-
-The only thing you need to know is the endian and you can reconstruct
-the raw instruction.
-
-Then you can just decode the opcode, see how we do it in the kernel with
-eg. instr_is_relative_branch().
-
-cheers
