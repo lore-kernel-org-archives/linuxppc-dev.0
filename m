@@ -1,14 +1,40 @@
-Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
-Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.20.48])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rl9z75K2zzDqyp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 05:38:26 +1000 (AEST)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: scottwood@freescale.com
-Cc: qiang.zhao@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] Remove lots of IS_ERR_VALUE abuses.
-Date: Thu,  7 Jul 2016 01:08:22 +0530
-Message-Id: <1467833902-6201-1-git-send-email-arvind.yadav.cs@gmail.com>
+Return-Path: <keescook@chromium.org>
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlFh91xwqzDr4b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 08:25:45 +1000 (AEST)
+Received: by mail-pa0-x230.google.com with SMTP id bz2so129113pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 15:25:45 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: linux-kernel@vger.kernel.org
+Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Subject: [PATCH 0/9] mm: Hardened usercopy
+Date: Wed,  6 Jul 2016 15:25:19 -0700
+Message-Id: <1467843928-29351-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,67 +44,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    Most users of IS_ERR_VALUE() in the kernel are wrong, as they
-    pass an 'int' into a function that takes an 'unsigned long'
-    argument. This happens to work because the type is sign-extended
-    on 64-bit architectures before it gets converted into an
-    unsigned type.
+Hi,
 
-    However, anything that passes an 'unsigned short' or 'unsigned int'
-    argument into IS_ERR_VALUE() is guaranteed to be broken, as are
-    8-bit integers and types that are wider than 'unsigned long'.
+This is a start of the mainline port of PAX_USERCOPY[1]. After I started
+writing tests (now in lkdtm in -next) for Casey's earlier port[2], I
+kept tweaking things further and further until I ended up with a whole
+new patch series. To that end, I took Rik's feedback and made a number
+of other changes and clean-ups as well.
 
-    Andrzej Hajda has already fixed a lot of the worst abusers that
-    were causing actual bugs, but it would be nice to prevent any
-    users that are not passing 'unsigned long' arguments.
+Based on my understanding, PAX_USERCOPY was designed to catch a few
+classes of flaws around the use of copy_to_user()/copy_from_user(). These
+changes don't touch get_user() and put_user(), since these operate on
+constant sized lengths, and tend to be much less vulnerable. There
+are effectively three distinct protections in the whole series,
+each of which I've given a separate CONFIG, though this patch set is
+only the first of the three intended protections. (Generally speaking,
+PAX_USERCOPY covers what I'm calling CONFIG_HARDENED_USERCOPY (this) and
+CONFIG_HARDENED_USERCOPY_WHITELIST (future), and PAX_USERCOPY_SLABS covers
+CONFIG_HARDENED_USERCOPY_SPLIT_KMALLOC (future).)
 
-    This patch changes all users of IS_ERR_VALUE() that I could find
-    on 32-bit ARM randconfig builds and x86 allmodconfig. For the
-    moment, this doesn't change the definition of IS_ERR_VALUE()
-    because there are probably still architecture specific users
-    elsewhere.
+This series, which adds CONFIG_HARDENED_USERCOPY, checks that objects
+being copied to/from userspace meet certain criteria:
+- if address is a heap object, the size must not exceed the object's
+  allocated size. (This will catch all kinds of heap overflow flaws.)
+- if address range is in the current process stack, it must be within the
+  current stack frame (if such checking is possible) or at least entirely
+  within the current process's stack. (This could catch large lengths that
+  would have extended beyond the current process stack, or overflows if
+  their length extends back into the original stack.)
+- if the address range is part of kernel data, rodata, or bss, allow it.
+- if address range is page-allocated, that it doesn't span multiple
+  allocations.
+- if address is within the kernel text, reject it.
+- everything else is accepted
 
-    Almost all the warnings I got are for files that are better off
-    using 'if (err)' or 'if (err < 0)'.
-    The only legitimate user I could find that we get a warning for
-    is the (32-bit only) freescale QE UCC Fast API.
+The patches in the series are:
+- The core copy_to/from_user() checks, without the slab object checks:
+	1- mm: Hardened usercopy
+- Per-arch enablement of the protection:
+	2- x86/uaccess: Enable hardened usercopy
+	3- ARM: uaccess: Enable hardened usercopy
+	4- arm64/uaccess: Enable hardened usercopy
+	5- ia64/uaccess: Enable hardened usercopy
+	6- powerpc/uaccess: Enable hardened usercopy
+	7- sparc/uaccess: Enable hardened usercopy
+- The heap allocator implementation of object size checking:
+	8- mm: SLAB hardened usercopy support
+	9- mm: SLUB hardened usercopy support
 
-    I was using this definition for testing:
+Some notes:
 
-     #define IS_ERR_VALUE(x) ((unsigned long*)NULL == (typeof (x)*)NULL && \
-      unlikely((unsigned long long)(x) >= (unsigned long long)(typeof(x))-MAX_ERRNO))
+- This is expected to apply on top of -next which contains fixes for the
+  position of _etext on both arm and arm64.
 
-    which ends up making all 16-bit or wider types work correctly with
-    the most plausible interpretation of what IS_ERR_VALUE() was supposed
-    to return according to its users, but also causes a compile-time
-    warning for any users that do not pass an 'unsigned long' argument.
+- I couldn't detect a measurable performance change with these features
+  enabled. Kernel build times were unchanged, hackbench was unchanged,
+  etc. I think we could flip this to "on by default" at some point.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/soc/fsl/qe/ucc_fast.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+- The SLOB support extracted from grsecurity seems entirely broken. I
+  have no idea what's going on there, I spent my time testing SLAB and
+  SLUB. Having someone else look at SLOB would be nice, but this series
+  doesn't depend on it.
 
-diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-index a768931..7cc783c 100644
---- a/drivers/soc/fsl/qe/ucc_fast.c
-+++ b/drivers/soc/fsl/qe/ucc_fast.c
-@@ -268,7 +268,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 	/* Allocate memory for Tx Virtual Fifo */
- 	uccf->ucc_fast_tx_virtual_fifo_base_offset =
- 	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
--	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
-+	if (uccf->ucc_fast_tx_virtual_fifo_base_offset < 0) {
- 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
- 			__func__);
- 		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
-@@ -281,7 +281,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 		qe_muram_alloc(uf_info->urfs +
- 			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
- 			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
--	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
-+	if (uccf->ucc_fast_rx_virtual_fifo_base_offset < 0) {
- 		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
- 			__func__);
- 		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
--- 
-1.9.1
+Additional features that would be nice, but aren't blocking this series:
+
+- Needs more architecture support for stack frame checking (only x86 now).
+
+
+Thanks!
+
+-Kees
+
+[1] https://grsecurity.net/download.php "grsecurity - test kernel patch"
+[2] http://www.openwall.com/lists/kernel-hardening/2016/05/19/5
