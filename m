@@ -1,24 +1,28 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkyZw0693zDqxv
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 21:05:12 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id dx3so4168637pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 04:05:11 -0700 (PDT)
-Message-ID: <1467803125.9143.3.camel@gmail.com>
-Subject: Re: [PATCH 1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
-From: Balbir Singh <bsingharora@gmail.com>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, agraf@suse.de,
- kvm-ppc@vger.kernel.org,  qemu-devel@nongnu.org, paulus@samba.org,
- david@gibson.dropbear.id.au
-Date: Wed, 06 Jul 2016 21:05:25 +1000
-In-Reply-To: <741e7a7860e055603a311bcc6051bd88fdad1215.1467785081.git.sam.bobroff@au1.ibm.com>
-References: <741e7a7860e055603a311bcc6051bd88fdad1215.1467785081.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkzpD2B4DzDr06
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 22:00:04 +1000 (AEST)
+Date: Wed, 6 Jul 2016 13:59:54 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, linux-s390@vger.kernel.org,
+ dave@stgolabs.net, mpe@ellerman.id.au, boqun.feng@gmail.com,
+ will.deacon@arm.com, linux-kernel@vger.kernel.org,
+ waiman.long@hpe.com, virtualization@lists.linux-foundation.org,
+ mingo@redhat.com, paulus@samba.org, benh@kernel.crashing.org,
+ schwidefsky@de.ibm.com, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
+Message-ID: <20160706115954.GK30921@twins.programming.kicks-ass.net>
+References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20160706065255.GH30909@twins.programming.kicks-ass.net>
+ <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-07-06 at 16:05 +1000, Sam Bobroff wrote:
-> Introduce a new KVM capability, KVM_CAP_PPC_HTM, that can be queried to
-> determine if a PowerPC KVM guest should use HTM (Hardware Transactional
-> Memory).
-> 
-> This will be used by QEMU to populate the pa-features bits in the
-> guest's device tree.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
-> ---
+On Wed, Jul 06, 2016 at 12:44:58PM +0200, Paolo Bonzini wrote:
+> > Paolo, could you help out with an (x86) KVM interface for this?
+> 
+> If it's just for spin loops, you can check if the version field in the
+> steal time structure has changed.
 
-Makes sense
+That would require remembering the old value, no?
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+That would work with a previous interface proposal, see:
 
->  
+  http://lkml.kernel.org/r/1466937715-6683-2-git-send-email-xinhui.pan@linux.vnet.ibm.com
+
+the vcpu_get_yield_count() thing would match that I think.
+
+However the current proposal:
+
+  http://lkml.kernel.org/r/1467124991-13164-2-git-send-email-xinhui.pan@linux.vnet.ibm.com
+
+dropped that in favour of only vcpu_is_preempted(), which requires being
+able to tell if a (remote) vcpu is currently running or not, which iirc,
+isn't possible with the steal time sequence count.
