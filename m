@@ -1,30 +1,37 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <kernellwp@gmail.com>
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rktvg662NzDqy7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 18:19:27 +1000 (AEST)
-Date: Wed, 6 Jul 2016 10:19:20 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Juergen Gross <jgross@suse.com>
-Cc: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org,
- linux-s390@vger.kernel.org, mingo@redhat.com, mpe@ellerman.id.au,
- paulus@samba.org, benh@kernel.crashing.org,
- paulmck@linux.vnet.ibm.com, waiman.long@hpe.com,
- will.deacon@arm.com, boqun.feng@gmail.com, dave@stgolabs.net,
- schwidefsky@de.ibm.com, pbonzini@redhat.com,
- xen-devel-request@lists.xenproject.org
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-Message-ID: <20160706081920.GG30921@twins.programming.kicks-ass.net>
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <577CB786.8000902@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkvBK5PwgzDqyf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 18:32:09 +1000 (AEST)
+Received: by mail-oi0-x241.google.com with SMTP id w141so31308432oia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 01:32:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <577CB786.8000902@suse.com>
+In-Reply-To: <20160706075814.GF30921@twins.programming.kicks-ass.net>
+References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <1467124991-13164-3-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <CANRm+CxQMSrg69p2Xey829Mz4Au9YCai+4JD17i9urdbj0VgkQ@mail.gmail.com>
+ <577C8FE3.3010208@linux.vnet.ibm.com>
+ <CANRm+CySutzEYQuCaeqyLKKVPPcFDFT94UsNaYWo8fU43VsSig@mail.gmail.com>
+ <20160706075814.GF30921@twins.programming.kicks-ass.net>
+From: Wanpeng Li <kernellwp@gmail.com>
+Date: Wed, 6 Jul 2016 16:32:07 +0800
+Message-ID: <CANRm+Cz5-XGDTNkZ_RcoX+gxF_+JDpUB6OB+ECOQcScuaeKfGA@mail.gmail.com>
+Subject: Re: [PATCH v2 2/4] powerpc/spinlock: support vcpu preempted check
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: xinhui <xinhui.pan@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, virtualization@lists.linux-foundation.org,
+ linux-s390 <linux-s390@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ mpe@ellerman.id.au,
+ Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, Waiman Long <waiman.long@hpe.com>,
+ will.deacon@arm.com,
+ boqun.feng@gmail.com, Davidlohr Bueso <dave@stgolabs.net>,
+ schwidefsky@de.ibm.com,
+ Paolo Bonzini <pbonzini@redhat.com>, kvm <kvm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 06, 2016 at 09:47:18AM +0200, Juergen Gross wrote:
-> On 06/07/16 08:52, Peter Zijlstra wrote:
+2016-07-06 15:58 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
+> On Wed, Jul 06, 2016 at 02:46:34PM +0800, Wanpeng Li wrote:
+>> > SO it's easy for ppc to implement such interface. Note that yield_count is
+>> > set by powerVM/KVM.
+>> > and only pSeries can run a guest for now. :)
+>> >
+>> > I also review x86 related code, looks like we need add one hyer-call to get
+>> > such vcpu preemption info?
+>>
+>> There is no such stuff to record lock holder in x86 kvm, maybe we
+>> don't need to depend on PLE handler algorithm to guess it if we can
+>> know lock holder vCPU directly.
+>
+> x86/kvm has vcpu->preempted to indicate if a vcpu is currently preempted
+> or not. I'm just not sure if that is visible to the guest or how to make
+> it so.
 
-> > Paolo, could you help out with an (x86) KVM interface for this?
-> 
-> Xen support of this interface should be rather easy. Could you please
-> Cc: xen-devel-request@lists.xenproject.org in the next version?
+Yeah, I miss it. I can be the volunteer to do it if there is any idea,
+ping Paolo. :)
 
-So meta question; aren't all you virt people looking at the regular
-virtualization list? Or should we really dig out all the various
-hypervisor lists and Cc them?
+Regards,
+Wanpeng Li
