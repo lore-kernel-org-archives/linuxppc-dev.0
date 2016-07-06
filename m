@@ -1,22 +1,14 @@
-Return-Path: <jbaron@akamai.com>
-Received: from prod-mail-xrelay05.akamai.com (prod-mail-xrelay05.akamai.com
- [23.79.238.179])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rlDv62xxmzDr3L
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 07:50:09 +1000 (AEST)
-From: Jason Baron <jbaron@akamai.com>
-To: akpm@linux-foundation.org
-Cc: joe@perches.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/7] powerpc: add explicit #include <asm/asm-compat.h> for
- jump label
-Date: Wed,  6 Jul 2016 17:42:30 -0400
-Message-Id: <564720c5328edd53c9d56db325be7215440eec3e.1467837322.git.jbaron@akamai.com>
-In-Reply-To: <cover.1467837322.git.jbaron@akamai.com>
-References: <cover.1467837322.git.jbaron@akamai.com>
-In-Reply-To: <cover.1467837322.git.jbaron@akamai.com>
-References: <cover.1467837322.git.jbaron@akamai.com>
+Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
+Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.20.48])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rl9g24sjgzDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 05:24:29 +1000 (AEST)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: leoli@freescale.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] Remove lots of IS_ERR_VALUE abuses.
+Date: Thu,  7 Jul 2016 00:47:43 +0530
+Message-Id: <1467832663-5653-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +18,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The stringify_in_c() macro may not be included. Make the dependency
-explicit.
+    Most users of IS_ERR_VALUE() in the kernel are wrong, as they
+    pass an 'int' into a function that takes an 'unsigned long'
+    argument. This happens to work because the type is sign-extended
+    on 64-bit architectures before it gets converted into an
+    unsigned type.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Jason Baron <jbaron@akamai.com>
+    However, anything that passes an 'unsigned short' or 'unsigned int'
+    argument into IS_ERR_VALUE() is guaranteed to be broken, as are
+    8-bit integers and types that are wider than 'unsigned long'.
+
+    Andrzej Hajda has already fixed a lot of the worst abusers that
+    were causing actual bugs, but it would be nice to prevent any
+    users that are not passing 'unsigned long' arguments.
+
+    This patch changes all users of IS_ERR_VALUE() that I could find
+    on 32-bit ARM randconfig builds and x86 allmodconfig. For the
+    moment, this doesn't change the definition of IS_ERR_VALUE()
+    because there are probably still architecture specific users
+    elsewhere.
+
+    Almost all the warnings I got are for files that are better off
+    using 'if (err)' or 'if (err < 0)'.
+    The only legitimate user I could find that we get a warning for
+    is the (32-bit only) freescale gigabit ethernet driver.
+
+    I was using this definition for testing:
+
+     #define IS_ERR_VALUE(x) ((unsigned long*)NULL == (typeof (x)*)NULL && \
+      unlikely((unsigned long long)(x) >= (unsigned long long)(typeof(x))-MAX_ERRNO))
+
+    which ends up making all 16-bit or wider types work correctly with
+    the most plausible interpretation of what IS_ERR_VALUE() was supposed
+    to return according to its users, but also causes a compile-time
+    warning for any users that do not pass an 'unsigned long' argument.
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- arch/powerpc/include/asm/jump_label.h | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/freescale/ucc_geth.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/jump_label.h b/arch/powerpc/include/asm/jump_label.h
-index 47e155f15433..9af103a23975 100644
---- a/arch/powerpc/include/asm/jump_label.h
-+++ b/arch/powerpc/include/asm/jump_label.h
-@@ -14,6 +14,7 @@
- #include <linux/types.h>
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 5bf1ade..c1ead2c 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -289,7 +289,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
+ 		else {
+ 			init_enet_offset =
+ 			    qe_muram_alloc(thread_size, thread_alignment);
+-			if (IS_ERR_VALUE(init_enet_offset)) {
++			if (init_enet_offset < 0) {
+ 				if (netif_msg_ifup(ugeth))
+ 					pr_err("Can not allocate DPRAM memory\n");
+ 				qe_put_snum((u8) snum);
+@@ -2234,7 +2234,7 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
+ 			ugeth->tx_bd_ring_offset[j] =
+ 			    qe_muram_alloc(length,
+ 					   UCC_GETH_TX_BD_RING_ALIGNMENT);
+-			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
++			if (!ugeth->tx_bd_ring_offset[j])
+ 				ugeth->p_tx_bd_ring[j] =
+ 				    (u8 __iomem *) qe_muram_addr(ugeth->
+ 							 tx_bd_ring_offset[j]);
+@@ -2311,7 +2311,7 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
+ 			ugeth->rx_bd_ring_offset[j] =
+ 			    qe_muram_alloc(length,
+ 					   UCC_GETH_RX_BD_RING_ALIGNMENT);
+-			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
++			if (!ugeth->rx_bd_ring_offset[j])
+ 				ugeth->p_rx_bd_ring[j] =
+ 				    (u8 __iomem *) qe_muram_addr(ugeth->
+ 							 rx_bd_ring_offset[j]);
+@@ -2521,7 +2521,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	ugeth->tx_glbl_pram_offset =
+ 	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
+ 			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
++	if (ugeth->tx_glbl_pram_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
+ 		return -ENOMEM;
+@@ -2541,7 +2541,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			   sizeof(struct ucc_geth_thread_data_tx) +
+ 			   32 * (numThreadsTxNumerical == 1),
+ 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
++	if (ugeth->thread_dat_tx_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
+ 		return -ENOMEM;
+@@ -2568,7 +2568,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	    qe_muram_alloc(ug_info->numQueuesTx *
+ 			   sizeof(struct ucc_geth_send_queue_qd),
+ 			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
++	if (ugeth->send_q_mem_reg_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
+ 		return -ENOMEM;
+@@ -2609,7 +2609,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		ugeth->scheduler_offset =
+ 		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
+ 				   UCC_GETH_SCHEDULER_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
++		if (ugeth->scheduler_offset < 0) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
+ 			return -ENOMEM;
+@@ -2656,7 +2656,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		    qe_muram_alloc(sizeof
+ 				   (struct ucc_geth_tx_firmware_statistics_pram),
+ 				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
++		if (ugeth->tx_fw_statistics_pram_offset < 0) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
+ 			return -ENOMEM;
+@@ -2693,7 +2693,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	ugeth->rx_glbl_pram_offset =
+ 	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
+ 			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
++	if (ugeth->rx_glbl_pram_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
+ 		return -ENOMEM;
+@@ -2712,7 +2712,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	    qe_muram_alloc(numThreadsRxNumerical *
+ 			   sizeof(struct ucc_geth_thread_data_rx),
+ 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
++	if (ugeth->thread_dat_rx_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
+ 		return -ENOMEM;
+@@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		    qe_muram_alloc(sizeof
+ 				   (struct ucc_geth_rx_firmware_statistics_pram),
+ 				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
++		if (ugeth->rx_fw_statistics_pram_offset < 0) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
+ 			return -ENOMEM;
+@@ -2753,7 +2753,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	    qe_muram_alloc(ug_info->numQueuesRx *
+ 			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
+ 			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
++	if (ugeth->rx_irq_coalescing_tbl_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
+ 		return -ENOMEM;
+@@ -2819,7 +2819,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
+ 			    sizeof(struct ucc_geth_rx_prefetched_bds)),
+ 			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
++	if (ugeth->rx_bd_qs_tbl_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
+ 		return -ENOMEM;
+@@ -2905,7 +2905,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		ugeth->exf_glbl_param_offset =
+ 		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
+ 		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
++		if (ugeth->exf_glbl_param_offset < 0) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
+ 			return -ENOMEM;
+@@ -3039,7 +3039,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
  
- #include <asm/feature-fixups.h>
-+#include <asm/asm-compat.h>
- 
- #define JUMP_ENTRY_TYPE		stringify_in_c(FTR_ENTRY_LONG)
- #define JUMP_LABEL_NOP_SIZE	4
+ 	/* Allocate InitEnet command parameter structure */
+ 	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
+-	if (IS_ERR_VALUE(init_enet_pram_offset)) {
++	if (init_enet_pram_offset < 0) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_init_enet_pram\n");
+ 		return -ENOMEM;
 -- 
-2.6.1
+1.9.1
