@@ -1,44 +1,27 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0071.outbound.protection.outlook.com [104.47.2.71])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkdml1LgmzDqvK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 08:27:34 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u65MJDsd049111
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 18:27:33 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 240ndwgd7j-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 18:27:32 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 6 Jul 2016 08:27:30 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 026C22CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 08:27:28 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u65MRRWV6291940
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 08:27:27 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u65MRRfL012821
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 08:27:27 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, mikey <mikey@neuling.org>,
- fbarrat <fbarrat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3] cxl: Refine slice error debug messages
-In-reply-to: <1467716886-20991-1-git-send-email-felix@linux.vnet.ibm.com>
-References: <1467716886-20991-1-git-send-email-felix@linux.vnet.ibm.com>
-Date: Wed, 06 Jul 2016 08:27:25 +1000
-Message-Id: <1467757634-sup-7161@x230.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkjtQ3GWkzDqsm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 11:32:45 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Jason Cooper <jason@lakedaemon.net>
+CC: "oss@buserror.net" <oss@buserror.net>, "tglx@linutronix.de"
+ <tglx@linutronix.de>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Xiaobo Xie
+ <xiaobo.xie@nxp.com>
+Subject: RE: [PATCH 1/2] qe/ic: move qe_ic_init from platforms to irqchip
+Date: Wed, 6 Jul 2016 01:18:19 +0000
+Message-ID: <AM3PR04MB11856C2FE266ABB99F3A99E0913A0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1467683219-29326-1-git-send-email-qiang.zhao@nxp.com>
+ <20160705031836.GA3348@io.lakedaemon.net>
+ <AM3PR04MB1185048AB3BBC592F105E8C391390@AM3PR04MB1185.eurprd04.prod.outlook.com>
+ <20160705142143.GD3348@io.lakedaemon.net>
+In-Reply-To: <20160705142143.GD3348@io.lakedaemon.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,4 +31,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+On 07/05/2016 11:19 AM, Jason Cooper <jason@lakedaemon.net> wrote:
+
+> -----Original Message-----
+> From: Jason Cooper [mailto:jason@lakedaemon.net]
+> Sent: Tuesday, July 05, 2016 10:22 PM
+> To: Qiang Zhao <qiang.zhao@nxp.com>
+> Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo Xie
+> <xiaobo.xie@nxp.com>
+> Subject: Re: [PATCH 1/2] qe/ic: move qe_ic_init from platforms to irqchip
+>=20
+> On Tue, Jul 05, 2016 at 07:27:21AM +0000, Qiang Zhao wrote:
+> > On 07/05/2016 11:19 AM, Jason Cooper <jason@lakedaemon.net> wrote:
+> > > -----Original Message-----
+> > > From: Jason Cooper [mailto:jason@lakedaemon.net]
+> > > Sent: Tuesday, July 05, 2016 11:19 AM
+> > > To: Qiang Zhao <qiang.zhao@nxp.com>
+> > > Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com;
+> > > linuxppc- dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo
+> > > Xie <xiaobo.xie@nxp.com>
+> > > Subject: Re: [PATCH 1/2] qe/ic: move qe_ic_init from platforms to
+> > > > diff --git a/arch/powerpc/platforms/83xx/misc.c
+> > > > b/arch/powerpc/platforms/83xx/misc.c
+> > > > index 7e923ca..9431fc7 100644
+> > > > --- a/arch/powerpc/platforms/83xx/misc.c
+> > > > +++ b/arch/powerpc/platforms/83xx/misc.c
+> > > > @@ -93,24 +93,9 @@ void __init mpc83xx_ipic_init_IRQ(void)  }
+> > > >
+> > > >  #ifdef CONFIG_QUICC_ENGINE
+> > > > -void __init mpc83xx_qe_init_IRQ(void) -{
+> > > > -	struct device_node *np;
+> > > > -
+> > > > -	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+> > > > -	if (!np) {
+> > > > -		np =3D of_find_node_by_type(NULL, "qeic");
+> > > > -		if (!np)
+> > > > -			return;
+> > > > -	}
+> > >
+> > > This block isn't preserved in the irqchip driver.  Why not?
+> >
+> > I grep qeic in arch/powerpc/boot/dts/*, doesn't find which board use qe=
+ic as
+> type.
+>=20
+> Unfortunately, checking powerpc/boot/dts/* isn't sufficient for confirmin=
+g we
+> aren't going to break backwards compatibility with boards *in the field*.
+>=20
+> Please take a look at:
+>=20
+>   d4fb5ebd83c70 powerpc/83xx: consolidate init_IRQ functions
+>   8159df72d43e2 83xx: add support for the kmeter1 board.
+>=20
+> Perhaps one or two of the authors is still around and can say why that ch=
+eck is
+> there and if it's ok to remove it.
+>=20
+> Or, we could just play it safe and keep the check.
+>=20
+
+Ok, I will add this check in next version.
+
+Thanks
+-Zhao Qiang
