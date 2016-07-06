@@ -1,48 +1,16 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkp5816bvzDqwr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:42:19 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u664chlw077258
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 00:42:17 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 240ndngbfg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 00:42:17 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 6 Jul 2016 14:42:14 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7C0C73578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:42:11 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u664gBUt66322490
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 14:42:11 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u664gAcs004717
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 14:42:11 +1000
-Subject: Re: [PATCH 11/14] cxl: Workaround PE=0 hardware limitation in
- Mellanox CX4
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
-References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
- <1467638532-9250-12-git-send-email-imunsie@au.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 6 Jul 2016 14:42:10 +1000
-MIME-Version: 1.0
-In-Reply-To: <1467638532-9250-12-git-send-email-imunsie@au.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <0d931e16-5160-1d0a-c42b-af13be323a77@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkpRc3k38zDqwY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 14:58:20 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: paulus@samba.org, cyrilbur@gmail.com, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/tm: Fix stack pointer corruption in __tm_recheckpoint
+Date: Wed,  6 Jul 2016 14:58:06 +1000
+Message-Id: <1467781086-21125-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,29 +20,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/07/16 23:22, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> The CX4 card cannot cope with a context with PE=0 due to a hardware
-> limitation, resulting in:
->
-> [   34.166577] command failed, status limits exceeded(0x8), syndrome 0x5a7939
-> [   34.166580] mlx5_core 0000:01:00.1: Failed allocating uar, aborting
->
-> Since the kernel API allocates a default context very early during
-> device init that will almost certainly get Process Element ID 0 there is
-> no easy way for us to extend the API to allow the Mellanox to inform us
-> of this limitation ahead of time.
->
-> Instead, work around the issue by extending the XSL structure to include
-> a minimum PE to allocate. Although the bug is not in the XSL, it is the
-> easiest place to work around this limitation given that the CX4 is
-> currently the only card that uses an XSL.
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+At the start of __tm_recheckpoint we save the kernel stack pointer
+(r1) in SPRG SCRATCH0 (SPRG2) so that we can restore it after the
+trecheckpoint.
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Unfortunately, the same SPRG is used in the SLB miss handler.  If an
+SLB miss is taken between the save and restore of r1 to the SPRG, the
+SPRG is changed and hence r1 is also corrupted.  We can end up with
+the following crash when we start using r1 again after the restore
+from the SPRG:
 
+  Oops: Bad kernel stack pointer, sig: 6 [#1]
+  SMP NR_CPUS=2048 NUMA pSeries
+   kernel:NMI watcModules linked in:h af_packet(E) dm_mod(E) <snipped>
+  Supported: Yes, External
+  CPU: 658 PID: 143777 Comm: htm_demo Tainted: G            EL   X 4.4.13-0-default #1
+  task: c0000b56993a7810 ti: c00000000cfec000 task.ti: c0000b56993bc000
+  NIP: c00000000004f188 LR: 00000000100040b8 CTR: 0000000010002570
+  REGS: c00000000cfefd40 TRAP: 0300   Tainted: G            EL   X  (4.4.13-0-default)
+  MSR: 8000000300001033 <SF,ME,IR,DR,RI,LE>  CR: 02000424  XER: 20000000
+  CFAR: c000000000008468 DAR: 00003ffd84e66880 DSISR: 40000000 SOFTE: 0
+  PACATMSCRATCH: 00003ffbc865e680
+  GPR00: fffffffcfabc4268 00003ffd84e667a0 00000000100d8c38 000000030544bb80
+  GPR04: 0000000000000002 00000000100cf200 0000000000000449 00000000100cf100
+  GPR08: 000000000000c350 0000000000002569 0000000000002569 00000000100d6c30
+  GPR12: 00000000100d6c28 c00000000e6a6b00 00003ffd84660000 0000000000000000
+  GPR16: 0000000000000003 0000000000000449 0000000010002570 0000010009684f20
+  GPR20: 0000000000800000 00003ffd84e5f110 00003ffd84e5f7a0 00000000100d0f40
+  GPR24: 0000000000000000 0000000000000000 0000000000000000 00003ffff0673f50
+  GPR28: 00003ffd84e5e960 00000000003d0f00 00003ffd84e667a0 00003ffd84e5e680
+  NIP [c00000000004f188] restore_gprs+0x110/0x17c
+  LR [00000000100040b8] 0x100040b8
+  Call Trace:
+  Instruction dump:
+  f8a1fff0 e8e700a8 38a00000 7ca10164 e8a1fff8 e821fff0 7c0007dd 7c421378
+  7db142a6 7c3242a6 38800002 7c810164 <e9c100e0> e9e100e8 ea0100f0 ea2100f8
+  ---[ end trace 36596a45d92144a4 ]---
+
+We hit this on large memory machines (> 2TB) but it can also be hit on
+smaller machines when 1TB segments are disabled.
+
+To hit this, you also need to be virtualised to ensure SLBs are
+periodically removed by the hypervisor.
+
+This patches moves the saving of r1 to the SPRG to the region where we
+are guaranteed not to take any further SLB misses.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Acked-by: Cyril Bur <cyrilbur@gmail.com>
+CC: stable@vger.kernel.org	# v3.9+
+---
+ arch/powerpc/kernel/tm.S | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index b7019b5..298afcf 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -338,8 +338,6 @@ _GLOBAL(__tm_recheckpoint)
+ 	 */
+ 	subi	r7, r7, STACK_FRAME_OVERHEAD
+ 
+-	SET_SCRATCH0(r1)
+-
+ 	mfmsr	r6
+ 	/* R4 = original MSR to indicate whether thread used FP/Vector etc. */
+ 
+@@ -468,6 +466,7 @@ restore_gprs:
+ 	 * until we turn MSR RI back on.
+ 	 */
+ 
++	SET_SCRATCH0(r1)
+ 	ld	r5, -8(r1)
+ 	ld	r1, -16(r1)
+ 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.7.4
