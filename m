@@ -1,39 +1,50 @@
-Return-Path: <jallen@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rl5330MnNzDr0y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 01:56:31 +1000 (AEST)
+Return-Path: <fbarrat@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rl53225Ccz9sD9
- for <linuxppc-dev@ozlabs.org>; Thu,  7 Jul 2016 01:56:28 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rl5kf4QWrzDr15
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 02:27:22 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u66Fsueo053034
- for <linuxppc-dev@ozlabs.org>; Wed, 6 Jul 2016 11:56:26 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 240nk9wtkg-1
+ u66GOFhS018167
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 12:27:19 -0400
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 240nf2f522-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 06 Jul 2016 11:56:26 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 12:27:19 -0400
 Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <jallen@linux.vnet.ibm.com>;
- Wed, 6 Jul 2016 11:56:25 -0400
-Subject: Re: [PATCH 0/3] powerpc/pseries: Add pseries hotplug queue and
- PowerVM/PowerKVM use cases
-To: linuxppc-dev@ozlabs.org, nfont@linux.vnet.ibm.com, mpe@ellerman.id.au
-References: <20160706154142.19739.90609.stgit@ltcbrazos2-lp13.aus.stglabs.ibm.com>
-Cc: mdroth@linux.vnet.ibm.com
-From: John Allen <jallen@linux.vnet.ibm.com>
-Date: Wed, 6 Jul 2016 10:56:55 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Wed, 6 Jul 2016 17:27:17 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3E74C17D8062
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 17:28:38 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u66GREjp16449814
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 16:27:14 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u66GRDrx013613
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 10:27:14 -0600
+Subject: Re: [PATCH 01/14] powerpc/powernv: Split cxl code out into a separate
+ file
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
+References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-2-git-send-email-imunsie@au.ibm.com>
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Date: Wed, 6 Jul 2016 18:27:11 +0200
 MIME-Version: 1.0
-In-Reply-To: <20160706154142.19739.90609.stgit@ltcbrazos2-lp13.aus.stglabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <789e6fbb-8e6b-06b8-ba75-9e7ac4cfb5f4@linux.vnet.ibm.com>
+In-Reply-To: <1467638532-9250-2-git-send-email-imunsie@au.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <577D315F.8060705@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +54,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I forgot to run this series through checkpatch before sending. Looks like there
-are some various whitespace errors. Will fix these and send with v2 after any
-comments on the patches.
 
-On 07/06/2016 10:44 AM, John Allen wrote:
-> This series introduces a new workqueue for handling hotplug events. On
-> PowerKVM guests, this provides a work deferral mechanism to avoid
-> processing hotplug events in interrupt context. On PowerVM lpars, this
-> will be used to ensure that hotplug events initiated from the HMC and
-> from PRRN events are handled and serialized properly.
-> 
-> ---
-> 
-> John Allen (3):
->       powerpc/pseries: Add pseries hotplug workqueue
->       powerpc/pseries: Add support for hotplug interrupt source
->       powerpc/pseries: Use kernel hotplug queue for PowerVM hotplug events
-> 
-> 
->  arch/powerpc/platforms/pseries/dlpar.c   |   57 +++++++++++++++++++++++++++++-
->  arch/powerpc/platforms/pseries/pseries.h |    2 +
->  arch/powerpc/platforms/pseries/ras.c     |   38 ++++++++++++++++++++
->  3 files changed, 96 insertions(+), 1 deletion(-)
-> 
-> --
-> John Allen
-> 
+
+Le 04/07/2016 15:21, Ian Munsie a écrit :
+> From: Ian Munsie <imunsie@au1.ibm.com>
+>
+> The support for using the Mellanox CX4 in cxl mode will require
+> additions to the PHB code. In preparation for this, move the existing
+> cxl code out of pci-ioda.c into a separate pci-cxl.c file to keep things
+> more organised.
+>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+
+
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
