@@ -1,34 +1,17 @@
-Return-Path: <kernellwp@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkzzR1wrfzDr0L
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 22:08:03 +1000 (AEST)
-Received: by mail-oi0-x243.google.com with SMTP id s17so31933107oih.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 05:08:03 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
-From: Wanpeng Li <kernellwp@gmail.com>
-Date: Wed, 6 Jul 2016 20:08:00 +0800
-Message-ID: <CANRm+CwXLsNrC59g6tZk=U+T0Scn_O=b60NPESJXU6uaP7-AsA@mail.gmail.com>
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- mpe@ellerman.id.au, boqun.feng@gmail.com, will.deacon@arm.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Waiman Long <waiman.long@hpe.com>,
- virtualization@lists.linux-foundation.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
- schwidefsky@de.ibm.com,
- Paul McKenney <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- kvm <kvm@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rl0Pk1ZY5zDr0Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 22:27:22 +1000 (AEST)
+In-Reply-To: <1467781086-21125-1-git-send-email-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, paulus@samba.org,
+ cyrilbur@gmail.com
+Subject: Re: powerpc/tm: Fix stack pointer corruption in __tm_recheckpoint
+Message-Id: <3rl0Pk0bDhz9snm@ozlabs.org>
+Date: Wed,  6 Jul 2016 22:27:21 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2016-07-06 18:44 GMT+08:00 Paolo Bonzini <pbonzini@redhat.com>:
->
->
-> On 06/07/2016 08:52, Peter Zijlstra wrote:
->> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
->>> change fomr v1:
->>>      a simplier definition of default vcpu_is_preempted
->>>      skip mahcine type check on ppc, and add config. remove dedicated macro.
->>>      add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner.
->>>      add more comments
->>>      thanks boqun and Peter's suggestion.
->>>
->>> This patch set aims to fix lock holder preemption issues.
->>>
->>> test-case:
->>> perf record -a perf bench sched messaging -g 400 -p && perf report
->>>
->>> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
->>> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->>>  5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->>>  3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->>>  3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->>>  3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->>>  2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
->>>
->>> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
->>> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
->>> These spin_on_onwer variant also cause rcu stall before we apply this patch set
->>>
->>
->> Paolo, could you help out with an (x86) KVM interface for this?
->
-> If it's just for spin loops, you can check if the version field in the
-> steal time structure has changed.
+On Wed, 2016-06-07 at 04:58:06 UTC, Michael Neuling wrote:
+> At the start of __tm_recheckpoint we save the kernel stack pointer
+> (r1) in SPRG SCRATCH0 (SPRG2) so that we can restore it after the
+> trecheckpoint.
+...
+> 
+> This patches moves the saving of r1 to the SPRG to the region where we
+> are guaranteed not to take any further SLB misses.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Acked-by: Cyril Bur <cyrilbur@gmail.com>
+> Cc: stable@vger.kernel.org # v3.9+
 
-Steal time will not be updated until ahead of next vmentry except
-wrmsr MSR_KVM_STEAL_TIME. So it can't represent it is preempted
-currently, right?
+Applied to powerpc fixes, thanks.
 
-Regards,
-Wanpeng Li
+https://git.kernel.org/powerpc/c/eb584b3ee4d317cf7e0068bec0
+
+cheers
