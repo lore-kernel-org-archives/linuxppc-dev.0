@@ -3,46 +3,47 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkmpx6QJhzDqvK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 13:44:56 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkn3S2R9hzDqvK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 13:55:48 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u663d8mZ040770
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 23:44:54 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 240n49fr6n-1
+ u663sUdN141226
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jul 2016 23:55:45 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 240nf1qa37-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 23:44:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jul 2016 23:55:45 -0400
 Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 6 Jul 2016 13:44:52 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0D93E3578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 13:44:49 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u663imtX1573132
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 13:44:48 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u663im7k003690
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 13:44:48 +1000
-Subject: Re: [PATCH 01/14] powerpc/powernv: Split cxl code out into a separate
- file
+ Wed, 6 Jul 2016 13:55:43 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 077BB3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 13:55:41 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u663tfct10027336
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 13:55:41 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u663teKT029833
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 13:55:40 +1000
+Subject: Re: [PATCH 14/14] cxl: Add cxl_check_and_switch_mode() API to switch
+ bi-modal cards
 To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
  Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
 References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
- <1467638532-9250-2-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-15-git-send-email-imunsie@au.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 6 Jul 2016 13:44:47 +1000
+Date: Wed, 6 Jul 2016 13:55:39 +1000
 MIME-Version: 1.0
-In-Reply-To: <1467638532-9250-2-git-send-email-imunsie@au.ibm.com>
+In-Reply-To: <1467638532-9250-15-git-send-email-imunsie@au.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <c70cdeaf-e8b0-d2c7-6eed-4d252bf9103b@au1.ibm.com>
+Message-Id: <df2f8c9f-94dd-44a2-fa89-e3fc7f35449b@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,25 +53,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/07/16 23:21, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
->
-> The support for using the Mellanox CX4 in cxl mode will require
-> additions to the PHB code. In preparation for this, move the existing
-> cxl code out of pci-ioda.c into a separate pci-cxl.c file to keep things
-> more organised.
->
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+On 04/07/16 23:22, Ian Munsie wrote:
+> +static int setup_cxl_protocol_area(struct pci_dev *dev)
+> +{
+> +	u8 val;
+> +	int rc;
+> +	int vsec = find_cxl_vsec(dev);
+> +
+> +	if (!vsec) {
+> +		dev_info(&dev->dev, "CXL VSEC not found\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	rc = CXL_READ_VSEC_MODE_CONTROL(dev, vsec, &val);
+> +	if (rc) {
+> +		dev_err(&dev->dev, "Failed to read current mode control: %i\n", rc);
+> +		return rc;
+> +	}
+> +
+> +	if (!(val & CXL_VSEC_PROTOCOL_ENABLE)) {
+> +		dev_err(&dev->dev, "Card not in CAPI mode!\n");
+> +		return -EIO;
+> +	}
+> +
+> +	/* Still configure the protocol area for single mode cards */
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
-> +++ b/arch/powerpc/platforms/powernv/pci-cxl.c
-> @@ -0,0 +1,163 @@
-> +/*
-> + * Copyright 2015 IBM Corp.
-
-If you end up spinning a V2 of this, could probably put "2015, 2016" on 
-there.
+This comment is extraneous and will be dropped in V2.
 
 -- 
 Andrew Donnellan              OzLabs, ADL Canberra
