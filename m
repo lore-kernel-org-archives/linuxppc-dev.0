@@ -1,50 +1,25 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rkxGs73hbzDqyy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 20:06:13 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u66A4CKG086431
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 06:06:11 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 240ndx1d6m-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 06:06:11 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Wed, 6 Jul 2016 20:06:09 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B91F42BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 20:06:07 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u66A67iX10617152
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 20:06:07 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u66A66qq012013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 20:06:07 +1000
-Date: Wed, 06 Jul 2016 18:05:58 +0800
-From: xinhui <xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rkxKQ1p0dzDqyy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2016 20:08:26 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, acme@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
+ naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
+In-Reply-To: <57762D2A.9040103@linux.vnet.ibm.com>
+References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1467267714.7296.6.camel@ellerman.id.au>
+ <57762D2A.9040103@linux.vnet.ibm.com>
+Date: Wed, 06 Jul 2016 20:08:24 +1000
+Message-ID: <87vb0j84fb.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- mingo@redhat.com, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com,
- waiman.long@hpe.com, will.deacon@arm.com, boqun.feng@gmail.com,
- dave@stgolabs.net, schwidefsky@de.ibm.com, pbonzini@redhat.com
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
-In-Reply-To: <20160706065255.GH30909@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Message-Id: <577CD806.8000008@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,56 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-
-On 2016年07月06日 14:52, Peter Zijlstra wrote:
-> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
->> change fomr v1:
->> 	a simplier definition of default vcpu_is_preempted
->> 	skip mahcine type check on ppc, and add config. remove dedicated macro.
->> 	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner.
->> 	add more comments
->> 	thanks boqun and Peter's suggestion.
->>
->> This patch set aims to fix lock holder preemption issues.
->>
->> test-case:
->> perf record -a perf bench sched messaging -g 400 -p && perf report
->>
->> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
->> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->>   5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->>   3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->>   3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->>   3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->>   2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
->>
->> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
->> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
->> These spin_on_onwer variant also cause rcu stall before we apply this patch set
->>
+> On Thursday 30 June 2016 11:51 AM, Michael Ellerman wrote:
+>> On Thu, 2016-06-30 at 11:44 +0530, Ravi Bangoria wrote:
+>>> diff --git a/tools/perf/util/annotate.c b/tools/perf/util/annotate.c
+>>> index 36a5825..b87eac7 100644
+>>> --- a/tools/perf/util/annotate.c
+>>> +++ b/tools/perf/util/annotate.c
+>>> @@ -476,6 +481,125 @@ static int ins__cmp(const void *a, const void *b)
+>> ...
+>>> +
+>>> +static struct ins *ins__find_powerpc(const char *name)
+>>> +{
+>>> +	int i;
+>>> +	struct ins *ins;
+>>> +	struct ins_ops *ops;
+>>> +	static struct instructions_powerpc head;
+>>> +	static bool list_initialized;
+>>> +
+>>> +	/*
+>>> +	 * - Interested only if instruction starts with 'b'.
+>>> +	 * - Few start with 'b', but aren't branch instructions.
+>>> +	 * - Let's also ignore instructions involving 'ctr' and
+>>> +	 *   'tar' since target branch addresses for those can't
+>>> +	 *   be determined statically.
+>>> +	 */
+>>> +	if (name[0] != 'b'             ||
+>>> +	    !strncmp(name, "bcd", 3)   ||
+>>> +	    !strncmp(name, "brinc", 5) ||
+>>> +	    !strncmp(name, "bper", 4)  ||
+>>> +	    strstr(name, "ctr")        ||
+>>> +	    strstr(name, "tar"))
+>>> +		return NULL;
+>> It would be good if 'bctr' was at least recognised as a branch, even if we
+>> can't determine the target. They are very common.
 >
-> Paolo, could you help out with an (x86) KVM interface for this?
->
-> Waiman, could you see if you can utilize this to get rid of the
-> SPIN_THRESHOLD in qspinlock_paravirt?
->
-hmm. maybe something like below. wait_node can go into pv_wait() earlier as soon as the prev cpu is preempted.
-but for the wait_head, as qspinlock does not record the lock_holder correctly(thanks to lock stealing), vcpu preemption check might get wrong results.
+> We can not show arrow for this since we don't know the target location.
+> can you please suggest how you intends perf to display bctr?
 
-Waiman, I have used one hash table to keep the lock holder in my ppc implementation patch. I think we could do something similar in generic code?
+Yeah I understand you can't show an arrow.
 
-diff --git a/kernel/locking/qspinlock_paravirt.h b/kernel/locking/qspinlock_paravirt.h
-index 74c4a86..40560e8 100644
---- a/kernel/locking/qspinlock_paravirt.h
-+++ b/kernel/locking/qspinlock_paravirt.h
-@@ -312,7 +312,8 @@ pv_wait_early(struct pv_node *prev, int loop)
-         if ((loop & PV_PREV_CHECK_MASK) != 0)
-                 return false;
-  
--       return READ_ONCE(prev->state) != vcpu_running;
-+       return READ_ONCE(prev->state) != vcpu_running ||
-+                               vcpu_is_preempted(prev->cpu);
-  }
-  
-  /*
+I guess it could just be an unterminated arrow? But I'm not sure if
+that's easy to do with the way the UI is constructed. eg. something
+like:
+
+    ld      r12,0(r12)
+    mtctr   r12
+    bctrl	------------------>
+    ld      r3,-32704(r2)
+
+But that's just an idea.
+
+> bctr can be classified into two variants -- 'bctr' and 'bctrl'.
+>
+> 'bctr' will be considered as jump instruction but jump__parse() won't
+> be able to find any target location and hence it will set target to
+> UINT64_MAX which transform 'bctr' to 'bctr UINT64_MAX'. This
+> looks misleading.
+
+Agreed.
+
+> bctrl will be considered as call instruction but call_parse() won't
+> be able to find any target function and hence it won't show any
+> navigation arrow for this instruction. Which is same as filter it
+> beforehand.
+
+OK.
+
+Maybe what I'm asking for is an enhancement and can be done later.
+
+>> It doesn't look like we have the opcode handy here? Could we get it somehow?
+>> That would make this a *lot* more robust.
+>
+> objdump prints machine code, but I don't know how difficult that would
+> be to parse to get opcode.
+
+Normal objdump -d output includes the opcode, eg:
+
+c00000000000886c:       2c 2c 00 00     cmpdi   r12,0
+                        ^^^^^^^^^^^
+
+The only thing you need to know is the endian and you can reconstruct
+the raw instruction.
+
+Then you can just decode the opcode, see how we do it in the kernel with
+eg. instr_is_relative_branch().
+
+cheers
