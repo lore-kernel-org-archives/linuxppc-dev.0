@@ -1,20 +1,23 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0064.outbound.protection.outlook.com [104.47.33.64])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlLdr4xRSzDr2g
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 12:09:03 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <oss@buserror.net>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
- <marc.zyngier@arm.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
-Subject: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-Date: Thu, 7 Jul 2016 09:23:55 +0800
-Message-ID: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlM3d1j6jzDqqZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 12:27:57 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id 66so447101pfy.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 19:27:57 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: mpe@ellerman.id.au
+Cc: Simon Guo <wei.guo.simon@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
+ Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: [PATCH v3] powerpc: Export thread_struct.used_vr/used_vsr to user
+ space
+Date: Thu,  7 Jul 2016 10:27:29 +0800
+Message-Id: <1467858449-3406-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +27,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The driver stays the same.
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+These 2 fields track whether user process has used Altivec/VSX
+registers or not. They are used by kernel to setup signal frame
+on user stack correctly regarding vector part.
+
+CRIU(Checkpoint and Restore In User space) builds signal frame
+for restored process. It will need this export information to
+setup signal frame correctly. And CRIU will need to restore these
+2 fields for the restored process.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Rashmica Gupta <rashmicy@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+--
+
+v2 -> v3:
+- enlarge reg_usage from 32 to 64 bits
+- prefix ptrace API with PPC_
+
+v1 -> v2:
+- minor change for coding style
 ---
-Changes for v2:
-	- modify the subject and commit msg
+ arch/powerpc/include/uapi/asm/ptrace.h | 11 ++++++++++
+ arch/powerpc/kernel/ptrace.c           | 39 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/ptrace32.c         |  2 ++
+ 3 files changed, 52 insertions(+)
 
- drivers/irqchip/Makefile                | 1 +
- drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0
- drivers/{soc/fsl/qe => irqchip}/qe_ic.h | 0
- drivers/soc/fsl/qe/Makefile             | 2 +-
- 4 files changed, 2 insertions(+), 1 deletion(-)
- rename drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)
- rename drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
-
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 38853a1..cef999d 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -69,3 +69,4 @@ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
- obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
- obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
-+obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/qe_ic.c
-similarity index 100%
-rename from drivers/soc/fsl/qe/qe_ic.c
-rename to drivers/irqchip/qe_ic.c
-diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/irqchip/qe_ic.h
-similarity index 100%
-rename from drivers/soc/fsl/qe/qe_ic.h
-rename to drivers/irqchip/qe_ic.h
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index 2031d38..51e4726 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
- obj-$(CONFIG_CPM)	+= qe_common.o
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index 8036b38..b357677 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -176,6 +176,17 @@ struct pt_regs {
+ #define PTRACE_GETREGS64	  0x16
+ #define PTRACE_SETREGS64	  0x17
+ 
++/*
++ * Get or set some register used bit.
++ * The flags will be saved in a 64 bit data.
++ * Currently it is only used for VR/VSR usage.
++ */
++#define PPC_PTRACE_GET_REGS_USAGE	  0x97
++#define PPC_PTRACE_SET_REGS_USAGE	  0x96
++
++#define PPC_PTRACE_REGS_USAGE_VR_BIT  0x01UL
++#define PPC_PTRACE_REGS_USAGE_VSR_BIT 0x02UL
++
+ /* Calls to trace a 64bit program from a 32bit program */
+ #define PPC_PTRACE_PEEKTEXT_3264 0x95
+ #define PPC_PTRACE_PEEKDATA_3264 0x94
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index a9aa2a5..d1431bb 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -3018,6 +3018,45 @@ long arch_ptrace(struct task_struct *child, long request,
+ 					     REGSET_SPE, 0, 35 * sizeof(u32),
+ 					     datavp);
+ #endif
++	case PPC_PTRACE_GET_REGS_USAGE:
++		{
++			u64 *u64_datap = (u64 *)datavp;
++			u64 reg_usage = 0;
++
++			if (addr != sizeof(u64))
++				return -EINVAL;
++
++#ifdef CONFIG_ALTIVEC
++			if (child->thread.used_vr)
++				reg_usage |= PPC_PTRACE_REGS_USAGE_VR_BIT;
++#endif
++#ifdef CONFIG_VSX
++			if (child->thread.used_vsr)
++				reg_usage |= PPC_PTRACE_REGS_USAGE_VSR_BIT;
++#endif
++			return put_user(reg_usage, u64_datap);
++		}
++	case PPC_PTRACE_SET_REGS_USAGE:
++		{
++			u64 *u64_datap = (u64 *)datavp;
++			u64 reg_usage = 0;
++
++			if (addr != sizeof(u64))
++				return -EINVAL;
++
++			ret = get_user(reg_usage, u64_datap);
++			if (ret)
++				return ret;
++#ifdef CONFIG_ALTIVEC
++			child->thread.used_vr =
++				!!(reg_usage & PPC_PTRACE_REGS_USAGE_VR_BIT);
++#endif
++#ifdef CONFIG_VSX
++			child->thread.used_vsr =
++				!!(reg_usage & PPC_PTRACE_REGS_USAGE_VSR_BIT);
++#endif
++			break;
++		}
+ 
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+index f52b7db..3aaa773 100644
+--- a/arch/powerpc/kernel/ptrace32.c
++++ b/arch/powerpc/kernel/ptrace32.c
+@@ -305,6 +305,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
+ 	case PPC_PTRACE_GETHWDBGINFO:
+ 	case PPC_PTRACE_SETHWDEBUG:
+ 	case PPC_PTRACE_DELHWDEBUG:
++	case PPC_PTRACE_GET_REGS_USAGE:
++	case PPC_PTRACE_SET_REGS_USAGE:
+ 		ret = arch_ptrace(child, request, addr, data);
+ 		break;
+ 
 -- 
-2.1.0.27.g96db324
+1.8.3.1
