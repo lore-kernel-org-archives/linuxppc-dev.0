@@ -1,15 +1,24 @@
-Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
-Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.17.148])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rlmZy6BPVzDr3X
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:38:02 +1000 (AEST)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: leoli@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] Need proper type casting before assignment,
- Remove compilation Warning.
-Date: Fri,  8 Jul 2016 00:07:54 +0530
-Message-Id: <1467916674-8418-1-git-send-email-arvind.yadav.cs@gmail.com>
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlmm66nv2zDqvq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:45:58 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id 66so2479350pfy.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 11:45:58 -0700 (PDT)
+Subject: Re: Removing lots of IS_ERR_VALUE abuses and compilation warning.
+To: Guenter Roeck <linux@roeck-us.net>
+References: <1467907214-5783-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <20160707171759.GA7615@roeck-us.net>
+Cc: leoli@freescale.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: arvind Yadav <arvind.yadav.cs@gmail.com>
+Message-ID: <577EA361.80000@gmail.com>
+Date: Fri, 8 Jul 2016 00:15:53 +0530
+MIME-Version: 1.0
+In-Reply-To: <20160707171759.GA7615@roeck-us.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,233 +28,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
--Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
-assigned in ucc_fast_tx_virtual_fifo_base_offset and
-ucc_fast_rx_virtual_fifo_base_offset. These variable are 'unsigned int'.
-So before assginment need a proper type casting.
+Yes, You are right,
 
--Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
-into a function that takes an 'unsigned long' argument.This happens
-to work because the type is sign-extended on 64-bit architectures
-before it gets converted into an unsigned type.
+-Now Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying 
+to assigned in member of this structure 'ucc_geth_private' . This 
+structure variable are 'unsigned int'. So before assignment need a 
+proper type casting.
 
--Passing an 'unsigned short' or 'unsigned int'argument into
-IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
-and types that are wider than 'unsigned long'.
+-Passing value in IS_ERR_VALUE() is wrong. So this is also need a proper 
+type casting before passing an argument.
 
--Any user will get compilation warning for that do not pass an
-unsigned long' argument.
+      ugeth->tx_bd_ring_offset[j] =
+-    qe_muram_alloc(length,
++    (u32)qe_muram_alloc(length, UCC_GETH_RX_BD_RING_ALIGNMENT);
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 71 +++++++++++++++++--------------
- 1 file changed, 38 insertions(+), 33 deletions(-)
+-        if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
++                       if (!IS_ERR_VALUE((unsigned 
+long)ugeth->rx_bd_ring_offset[j]))
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 5bf1ade..a5086b2 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -273,7 +273,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
- 				  unsigned int risc,
- 				  int skip_page_for_first_entry)
- {
--	u32 init_enet_offset;
-+	unsigned long init_enet_offset;
- 	u8 i;
- 	int snum;
- 
-@@ -297,8 +297,8 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
- 			}
- 		}
- 		*(p_start++) =
--		    ((u8) snum << ENET_INIT_PARAM_SNUM_SHIFT) | init_enet_offset
--		    | risc;
-+			((u8)snum << ENET_INIT_PARAM_SNUM_SHIFT)
-+			| (u32)init_enet_offset | risc;
- 	}
- 
- 	return 0;
-@@ -2232,9 +2232,10 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
- 					align) & ~(align - 1));
- 		} else if (uf_info->bd_mem_part == MEM_PART_MURAM) {
- 			ugeth->tx_bd_ring_offset[j] =
--			    qe_muram_alloc(length,
-+			    (u32)qe_muram_alloc(length,
- 					   UCC_GETH_TX_BD_RING_ALIGNMENT);
--			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
-+			if (!IS_ERR_VALUE(
-+				(unsigned long)ugeth->tx_bd_ring_offset[j]))
- 				ugeth->p_tx_bd_ring[j] =
- 				    (u8 __iomem *) qe_muram_addr(ugeth->
- 							 tx_bd_ring_offset[j]);
-@@ -2309,9 +2310,10 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
- 					align) & ~(align - 1));
- 		} else if (uf_info->bd_mem_part == MEM_PART_MURAM) {
- 			ugeth->rx_bd_ring_offset[j] =
--			    qe_muram_alloc(length,
-+			    (u32)qe_muram_alloc(length,
- 					   UCC_GETH_RX_BD_RING_ALIGNMENT);
--			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
-+			if (!IS_ERR_VALUE(
-+				(unsigned long)ugeth->rx_bd_ring_offset[j]))
- 				ugeth->p_rx_bd_ring[j] =
- 				    (u8 __iomem *) qe_muram_addr(ugeth->
- 							 rx_bd_ring_offset[j]);
-@@ -2367,7 +2369,8 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	struct ucc_geth __iomem *ug_regs;
- 	int ret_val = -EINVAL;
- 	u32 remoder = UCC_GETH_REMODER_INIT;
--	u32 init_enet_pram_offset, cecr_subblock, command;
-+	u32 cecr_subblock, command;
-+	unsigned long init_enet_pram_offset;
- 	u32 ifstat, i, j, size, l2qt, l3qt;
- 	u16 temoder = UCC_GETH_TEMODER_INIT;
- 	u16 test;
-@@ -2519,9 +2522,9 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* Tx global PRAM */
- 	/* Allocate global tx parameter RAM page */
- 	ugeth->tx_glbl_pram_offset =
--	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
-+	    (u32)qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
- 			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
-+	if (IS_ERR_VALUE((unsigned long)ugeth->tx_glbl_pram_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
- 		return -ENOMEM;
-@@ -2537,11 +2540,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* TQPTR */
- 	/* Size varies with number of Tx threads */
- 	ugeth->thread_dat_tx_offset =
--	    qe_muram_alloc(numThreadsTxNumerical *
-+	   (u32)qe_muram_alloc(numThreadsTxNumerical *
- 			   sizeof(struct ucc_geth_thread_data_tx) +
- 			   32 * (numThreadsTxNumerical == 1),
- 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
-+	if (IS_ERR_VALUE((unsigned long)ugeth->thread_dat_tx_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
- 		return -ENOMEM;
-@@ -2565,10 +2568,10 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* SQPTR */
- 	/* Size varies with number of Tx queues */
- 	ugeth->send_q_mem_reg_offset =
--	    qe_muram_alloc(ug_info->numQueuesTx *
--			   sizeof(struct ucc_geth_send_queue_qd),
-+	    (u32)qe_muram_alloc(ug_info->numQueuesTx
-+			   * sizeof(struct ucc_geth_send_queue_qd),
- 			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
-+	if (IS_ERR_VALUE((unsigned long)ugeth->send_q_mem_reg_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
- 		return -ENOMEM;
-@@ -2607,9 +2610,9 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->numQueuesTx > 1) {
- 	/* scheduler exists only if more than 1 tx queue */
- 		ugeth->scheduler_offset =
--		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
-+		    (u32)qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
- 				   UCC_GETH_SCHEDULER_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
-+		if (IS_ERR_VALUE((unsigned long)ugeth->scheduler_offset)) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
- 			return -ENOMEM;
-@@ -2653,10 +2656,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->
- 	    statisticsMode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_TX) {
- 		ugeth->tx_fw_statistics_pram_offset =
--		    qe_muram_alloc(sizeof
-+		    (u32)qe_muram_alloc(sizeof
- 				   (struct ucc_geth_tx_firmware_statistics_pram),
- 				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
-+		if (IS_ERR_VALUE(
-+			(unsigned long)ugeth->tx_fw_statistics_pram_offset)) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
- 			return -ENOMEM;
-@@ -2691,9 +2695,9 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* Rx global PRAM */
- 	/* Allocate global rx parameter RAM page */
- 	ugeth->rx_glbl_pram_offset =
--	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
-+	    (u32)qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
- 			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
-+	if (IS_ERR_VALUE((unsigned long)ugeth->rx_glbl_pram_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
- 		return -ENOMEM;
-@@ -2709,10 +2713,10 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* RQPTR */
- 	/* Size varies with number of Rx threads */
- 	ugeth->thread_dat_rx_offset =
--	    qe_muram_alloc(numThreadsRxNumerical *
-+	    (u32)qe_muram_alloc(numThreadsRxNumerical *
- 			   sizeof(struct ucc_geth_thread_data_rx),
- 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
-+	if (IS_ERR_VALUE((unsigned long)ugeth->thread_dat_rx_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
- 		return -ENOMEM;
-@@ -2730,10 +2734,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->
- 	    statisticsMode & UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_RX) {
- 		ugeth->rx_fw_statistics_pram_offset =
--		    qe_muram_alloc(sizeof
-+		    (u32)qe_muram_alloc(sizeof
- 				   (struct ucc_geth_rx_firmware_statistics_pram),
- 				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
-+		if (IS_ERR_VALUE(
-+			(unsigned long)ugeth->rx_fw_statistics_pram_offset)) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
- 			return -ENOMEM;
-@@ -2750,10 +2755,10 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 
- 	/* Size varies with number of Rx queues */
- 	ugeth->rx_irq_coalescing_tbl_offset =
--	    qe_muram_alloc(ug_info->numQueuesRx *
--			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
--			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
-+	    (u32)qe_muram_alloc(ug_info->numQueuesRx
-+			* sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
-+			* + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
-+	if (IS_ERR_VALUE((unsigned long)ugeth->rx_irq_coalescing_tbl_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
- 		return -ENOMEM;
-@@ -2815,11 +2820,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	/* RBDQPTR */
- 	/* Size varies with number of Rx queues */
- 	ugeth->rx_bd_qs_tbl_offset =
--	    qe_muram_alloc(ug_info->numQueuesRx *
-+	    (u32)qe_muram_alloc(ug_info->numQueuesRx *
- 			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
- 			    sizeof(struct ucc_geth_rx_prefetched_bds)),
- 			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
-+	if (IS_ERR_VALUE((unsigned long)ugeth->rx_bd_qs_tbl_offset)) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
- 		return -ENOMEM;
-@@ -2903,9 +2908,9 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		/* Allocate memory for extended filtering Mode Global
- 		Parameters */
- 		ugeth->exf_glbl_param_offset =
--		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
-+		    (u32)qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
- 		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
-+		if (IS_ERR_VALUE((unsigned long)ugeth->exf_glbl_param_offset)) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
- 			return -ENOMEM;
--- 
-1.9.1
+
+
+I have done the changes and re-submitted anther patch, Please review It.
+
+Thanks,
+Arvind
+
+On Thursday 07 July 2016 10:47 PM, Guenter Roeck wrote:
+> On Thu, Jul 07, 2016 at 09:30:14PM +0530, Arvind Yadav wrote:
+>> Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
+>> into a function that takes an 'unsigned long' argument.This happens
+>> to work because the type is sign-extended on 64-bit architectures
+>> before it gets converted into an unsigned type.
+>>
+>> Passing an 'unsigned short' or 'unsigned int'argument into
+>> IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
+>> and types that are wider than 'unsigned long'.
+>>
+>> Any user will get compilation warning for that do not pass an
+>> unsigned long' argument.
+>>
+>> Commit '287980e49f; - This change is alreday fixes lots of other
+>> Worst abusers
+>>
+>> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+>> ---
+>>   drivers/net/ethernet/freescale/ucc_geth.c | 30 +++++++++++++++---------------
+>>   1 file changed, 15 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+>> index 5bf1ade..c1ead2c 100644
+>> --- a/drivers/net/ethernet/freescale/ucc_geth.c
+>> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
+>> @@ -289,7 +289,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
+>>   		else {
+>>   			init_enet_offset =
+>>   			    qe_muram_alloc(thread_size, thread_alignment);
+>> -			if (IS_ERR_VALUE(init_enet_offset)) {
+>> +			if (init_enet_offset < 0) {
+> init_enet_offset is defined as u32 and thus never < 0.
+>
+>>   				if (netif_msg_ifup(ugeth))
+>>   					pr_err("Can not allocate DPRAM memory\n");
+>>   				qe_put_snum((u8) snum);
+>> @@ -2234,7 +2234,7 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
+>>   			ugeth->tx_bd_ring_offset[j] =
+>>   			    qe_muram_alloc(length,
+>>   					   UCC_GETH_TX_BD_RING_ALIGNMENT);
+>> -			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
+>> +			if (!ugeth->tx_bd_ring_offset[j])
+> qe_muram_alloc() returns a pointer or offset, not 0, if there is no error,
+> meaning this change breaks the driver.
+>
+>>   				ugeth->p_tx_bd_ring[j] =
+>>   				    (u8 __iomem *) qe_muram_addr(ugeth->
+>>   							 tx_bd_ring_offset[j]);
+>> @@ -2311,7 +2311,7 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
+>>   			ugeth->rx_bd_ring_offset[j] =
+>>   			    qe_muram_alloc(length,
+>>   					   UCC_GETH_RX_BD_RING_ALIGNMENT);
+>> -			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
+>> +			if (!ugeth->rx_bd_ring_offset[j])
+> Same here.
+>
+>>   				ugeth->p_rx_bd_ring[j] =
+>>   				    (u8 __iomem *) qe_muram_addr(ugeth->
+>>   							 rx_bd_ring_offset[j]);
+>> @@ -2521,7 +2521,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   	ugeth->tx_glbl_pram_offset =
+>>   	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
+>>   			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
+>> +	if (ugeth->tx_glbl_pram_offset < 0) {
+> tx_glbl_pram_offset is u32 and thus never < 0.
+>
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
+>>   		return -ENOMEM;
+>> @@ -2541,7 +2541,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   			   sizeof(struct ucc_geth_thread_data_tx) +
+>>   			   32 * (numThreadsTxNumerical == 1),
+>>   			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
+>> +	if (ugeth->thread_dat_tx_offset < 0) {
+> thread_dat_tx_offset is u32 and thus never < 0.
+>
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
+>>   		return -ENOMEM;
+>> @@ -2568,7 +2568,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   	    qe_muram_alloc(ug_info->numQueuesTx *
+>>   			   sizeof(struct ucc_geth_send_queue_qd),
+>>   			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
+>> +	if (ugeth->send_q_mem_reg_offset < 0) {
+> send_q_mem_reg_offset is u32 and thus never < 0.
+>
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
+>>   		return -ENOMEM;
+>> @@ -2609,7 +2609,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   		ugeth->scheduler_offset =
+>>   		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
+>>   				   UCC_GETH_SCHEDULER_ALIGNMENT);
+>> -		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
+>> +		if (ugeth->scheduler_offset < 0) {
+> scheduler_offset is u32 and thus never < 0.
+>
+> Giving up here.
+>
+> I now looked at two of your patches. In both, you introduce bugs instead of
+> fixing them. Worse, in this case the driver is no longer functional after your
+> patch is applied. Please be more careful.
+>
+> Thanks,
+> Guenter
+>
+>>   			if (netif_msg_ifup(ugeth))
+>>   				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
+>>   			return -ENOMEM;
+>> @@ -2656,7 +2656,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   		    qe_muram_alloc(sizeof
+>>   				   (struct ucc_geth_tx_firmware_statistics_pram),
+>>   				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
+>> -		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
+>> +		if (ugeth->tx_fw_statistics_pram_offset < 0) {
+>>   			if (netif_msg_ifup(ugeth))
+>>   				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
+>>   			return -ENOMEM;
+>> @@ -2693,7 +2693,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   	ugeth->rx_glbl_pram_offset =
+>>   	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
+>>   			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
+>> +	if (ugeth->rx_glbl_pram_offset < 0) {
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
+>>   		return -ENOMEM;
+>> @@ -2712,7 +2712,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   	    qe_muram_alloc(numThreadsRxNumerical *
+>>   			   sizeof(struct ucc_geth_thread_data_rx),
+>>   			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
+>> +	if (ugeth->thread_dat_rx_offset < 0) {
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
+>>   		return -ENOMEM;
+>> @@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   		    qe_muram_alloc(sizeof
+>>   				   (struct ucc_geth_rx_firmware_statistics_pram),
+>>   				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
+>> -		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
+>> +		if (ugeth->rx_fw_statistics_pram_offset < 0) {
+>>   			if (netif_msg_ifup(ugeth))
+>>   				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
+>>   			return -ENOMEM;
+>> @@ -2753,7 +2753,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   	    qe_muram_alloc(ug_info->numQueuesRx *
+>>   			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
+>>   			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
+>> +	if (ugeth->rx_irq_coalescing_tbl_offset < 0) {
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
+>>   		return -ENOMEM;
+>> @@ -2819,7 +2819,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
+>>   			    sizeof(struct ucc_geth_rx_prefetched_bds)),
+>>   			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
+>> -	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
+>> +	if (ugeth->rx_bd_qs_tbl_offset < 0) {
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
+>>   		return -ENOMEM;
+>> @@ -2905,7 +2905,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   		ugeth->exf_glbl_param_offset =
+>>   		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
+>>   		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
+>> -		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
+>> +		if (ugeth->exf_glbl_param_offset < 0) {
+>>   			if (netif_msg_ifup(ugeth))
+>>   				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
+>>   			return -ENOMEM;
+>> @@ -3039,7 +3039,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>>   
+>>   	/* Allocate InitEnet command parameter structure */
+>>   	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
+>> -	if (IS_ERR_VALUE(init_enet_pram_offset)) {
+>> +	if (init_enet_pram_offset < 0) {
+>>   		if (netif_msg_ifup(ugeth))
+>>   			pr_err("Can not allocate DPRAM memory for p_init_enet_pram\n");
+>>   		return -ENOMEM;
