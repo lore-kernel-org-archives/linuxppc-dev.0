@@ -1,23 +1,23 @@
 Return-Path: <keescook@google.com>
-Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
- [IPv6:2a00:1450:400c:c09::22b])
+Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
+ [IPv6:2a00:1450:400c:c09::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlkrN34L7zDr2b
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 03:19:32 +1000 (AEST)
-Received: by mail-wm0-x22b.google.com with SMTP id a66so40216903wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 10:19:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlkz90QGCzDqxQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 03:25:24 +1000 (AEST)
+Received: by mail-wm0-x22d.google.com with SMTP id f126so219138543wma.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 10:25:24 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <20160707100717.GB8306@leverpostej>
+In-Reply-To: <20160707053710.GH2118@tarshish>
 References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-5-git-send-email-keescook@chromium.org>
- <20160707100717.GB8306@leverpostej>
+ <1467843928-29351-2-git-send-email-keescook@chromium.org>
+ <20160707053710.GH2118@tarshish>
 From: Kees Cook <keescook@chromium.org>
-Date: Thu, 7 Jul 2016 13:19:26 -0400
-Message-ID: <CAGXu5jLeH2KL+FVi7mxBF5oH2-zMfwSY=2ReJOL4JYsQuJKy6Q@mail.gmail.com>
-Subject: Re: [PATCH 4/9] arm64/uaccess: Enable hardened usercopy
-To: Mark Rutland <mark.rutland@arm.com>
+Date: Thu, 7 Jul 2016 13:25:21 -0400
+Message-ID: <CAGXu5jJV4ZQp4VQ44SPQ49RxXpFXzx6d233A3+_Ka7txYHmuMw@mail.gmail.com>
+Subject: Re: [PATCH 1/9] mm: Hardened usercopy
+To: Baruch Siach <baruch@tkos.co.il>
 Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
  "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
@@ -51,35 +51,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 7, 2016 at 6:07 AM, Mark Rutland <mark.rutland@arm.com> wrote:
-> Hi,
+On Thu, Jul 7, 2016 at 1:37 AM, Baruch Siach <baruch@tkos.co.il> wrote:
+> Hi Kees,
 >
-> On Wed, Jul 06, 2016 at 03:25:23PM -0700, Kees Cook wrote:
->> Enables CONFIG_HARDENED_USERCOPY checks on arm64. As done by KASAN in -next,
->> renames the low-level functions to __arch_copy_*_user() so a static inline
->> can do additional work before the copy.
+> On Wed, Jul 06, 2016 at 03:25:20PM -0700, Kees Cook wrote:
+>> +#ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
 >
-> The checks themselves look fine, but as with the KASAN checks, it seems
-> a shame that this logic is duplicated per arch, integrated in subtly
-> different ways.
+> Should be CONFIG_HARDENED_USERCOPY to match the slab/slub implementation
+> condition.
 >
-> Can we not __arch prefix all the arch uaccess helpers, and place
-> kasan_check_*() and check_object_size() calls in generic wrappers?
->
-> If we're going to update all the arch uaccess helpers anyway, doing that
-> would make it easier to fix things up, or to add new checks in future.
+>> +const char *__check_heap_object(const void *ptr, unsigned long n,
+>> +                             struct page *page);
+>> +#else
+>> +static inline const char *__check_heap_object(const void *ptr,
+>> +                                           unsigned long n,
+>> +                                           struct page *page)
+>> +{
+>> +     return NULL;
+>> +}
+>> +#endif
 
-Yeah, I totally agree, and my work on the next step of this hardening
-will require something like this to separate the "check" logic from
-the "copy" logic, as I want to introduce a set of constant-sized
-copy_*_user helpers.
+Hmm, I think what I have is correct: if the allocator supports the
+heap object checking, it defines __check_heap_object as existing via
+CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR. If usercopy checking is done
+at all is controlled by CONFIG_HARDENED_USERCOPY.
 
-Though currently x86 poses a weird problem in this regard (they have
-separate code paths for copy_* and __copy*, but I think it's actually
-a harmless(?) mistake.
-
-For now, I'd like to leave this as-is, and then do the copy_* cleanup,
-then do step 2 (slab whitelisting).
+I.e. you can have the other usercopy checks even if your allocator
+doesn't support object size checking.
 
 -Kees
 
