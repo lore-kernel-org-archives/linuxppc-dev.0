@@ -1,23 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0057.outbound.protection.outlook.com [104.47.2.57])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlPxR1tVJzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 14:37:47 +1000 (AEST)
-Date: Thu, 7 Jul 2016 14:38:08 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: anton@au1.ibm.com, mikey@neuling.org, aik@ozlabs.ru, mpe@ellerman.id.au,
- agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org,
- qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/3] spapr: Disable ibm, pa-features HTM bit
-Message-ID: <20160707043808.GP14675@voom.fritz.box>
-References: <cover.1467783317.git.sam.bobroff@au1.ibm.com>
- <70a13eeab01913de030d9848aaea04a6acea37b4.1467783317.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlR6f5b8mzDqx9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 15:30:49 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Daniel Walker <danielwa@cisco.com>, Raghav Dogra <raghav.dogra@nxp.com>,
+ Brian Norris <computersforpeace@gmail.com>, Jaiprakash Singh
+ <b44839@freescale.com>, Scott Wood <scottwood@freescale.com>, Lijun Pan
+ <Lijun.Pan@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "xe-kernel@external.cisco.com"
+ <xe-kernel@external.cisco.com>
+Subject: Re: t1040 IFC flash driver Extended Chip Select
+Date: Thu, 7 Jul 2016 00:57:13 +0000
+Message-ID: <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <577D68B8.8020305@cisco.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="iq/fWD14IMVFWBCD"
-In-Reply-To: <70a13eeab01913de030d9848aaea04a6acea37b4.1467783317.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,81 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---iq/fWD14IMVFWBCD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jul 06, 2016 at 03:35:21PM +1000, Sam Bobroff wrote:
-> There are a few issues with our handling of the ibm,pa-features
-> HTM bit:
->=20
-> - We don't support transactional memory in PR KVM, so don't tell
->   the OS that we do.
->=20
-> - In full emulation we have a minimal implementation of HTM that always
->   fails, so for performance reasons lets not tell the OS that we
->   support it either.
->=20
-> - In HV KVM mode, we should mirror the host HTM enabled state by
->   checking a KVM capability or looking at the AT_HWCAP2 bit.
->=20
-> For now unconditionally disable it by removing HTM from the
-> pa-features bits.  It will be re-enabled in a subsequent patch
-> specifically for HV KVM.
->=20
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-But I won't merge it until the rest of the series is ready to go.
-
-
-> ---
->  hw/ppc/spapr.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/hw/ppc/spapr.c b/hw/ppc/spapr.c
-> index 78ebd9e..704aae7 100644
-> --- a/hw/ppc/spapr.c
-> +++ b/hw/ppc/spapr.c
-> @@ -635,7 +635,7 @@ static void spapr_populate_cpu_dt(CPUState *cs, void =
-*fdt, int offset,
->          0xf6, 0x1f, 0xc7, 0xc0, 0x80, 0xf0,
->          0x80, 0x00, 0x00, 0x00, 0x00, 0x00,
->          0x00, 0x00, 0x00, 0x00, 0x80, 0x00,
-> -        0x80, 0x00, 0x80, 0x00, 0x80, 0x00 };
-> +        0x80, 0x00, 0x80, 0x00, 0x00, 0x00 };
->      uint8_t *pa_features;
->      size_t pa_size;
-> =20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---iq/fWD14IMVFWBCD
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXfdywAAoJEGw4ysog2bOSbeYP/jVhIbvouYvtuudyx5rRhxBG
-Yw44vSnjFCeWhg/HV1nbe3/XJ/E8Hi80mrJhwg+X9wkDHW1kpjOTLALCiooUoMng
-AMV9E7lvK8cOyCnDpKlYFr0mr3kMqTd3RIAHBpTHefFNpC3XgfAtZqDklHkAjssg
-p4J49IaPfJ+PyKDVB+vQ+0af0rs75BlhTDFHvt8qgcn7F35rP7cUpuBZwxSda0tj
-bTy0VIsYnvpDvpxApwNSy6SoX7VUv/jIKwYAiK5Re3M7vqeSmslTK+jb3Qr/cvRU
-EmJyMLua3P+F8tmkLUam3hmhOBlY9hOIcrt/J0+ge6vUod7atjPkNtjSAi/+0SEb
-TtfYG/zcfnVXwLwofgrVQ941TIGUSNUZA0InTzqkjRyLXbwLRn1vqskfGqqs4T8/
-kxkcGfmjjbK0R8DWOIPqj7d8ORw0pItvsdMGMKtuXrrQM4oAv0X6NnqLy7xdYqjU
-dhlFXlJqqVlesi+ysOMNKS0UrOu4moaWyFPfRmuZUSwJNlHqoS6WZoJMT/xfavjr
-QkqKFaF3XMasU2BUIZTNXWBrUZ9XJG6U2Ov54yzkki6KPtD5TFmBPW8YfRsLBMnC
-neOFoCQBs6Jkt68WwhNh46mvC4WLesimEklQrl3hRPuhA/YAEdHsjpnBb9Cu2j5+
-J25zvOHoaHPccyMAd2Ma
-=JCS5
------END PGP SIGNATURE-----
-
---iq/fWD14IMVFWBCD--
+On 07/06/2016 03:23 PM, Daniel Walker wrote:=0A=
+> Hi,=0A=
+> =0A=
+> We are using the t1040 platform, and we have found that we need to =0A=
+> populate this register. In the Technical Reference Manual it's =0A=
+> description is section 24.3.2. This option appears in the driver, but it =
+=0A=
+> doesn't appears to be used anyplace.=0A=
+=0A=
+I'm not sure what you mean by "in the driver".  U-boot sets these registers=
+.=0A=
+=0A=
+> We we're considered adding something to the device tree to allow =0A=
+> populating this value, but I'm wondering if any of you have specific =0A=
+> considerations on how this is done. Or maybe it's not needed at all, and =
+=0A=
+> we're just missing something.=0A=
+> =0A=
+> (not a good patch, just an example.)=0A=
+> =0A=
+> diff --git =0A=
+> a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt =0A=
+> b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt=0A=
+> index 89427b0..b506001 100644=0A=
+> --- a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt=0A=
+> +++ b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt=0A=
+> @@ -24,6 +24,8 @@ Properties:=0A=
+>   - ranges : Each range corresponds to a single chipselect, and covers=0A=
+>              the entire access window as configured.=0A=
+> =0A=
+> +- cspr_ext : This value sets the extended chip select for all banks.=0A=
+=0A=
+I see no reason to put this here.  Boot software should be setting the=0A=
+chipselect registers, and if for some reason you don't want to do that,=0A=
+you could just translate the address through ranges to find the value to=0A=
+write.  Why would you have the binding assume it's the same for all banks?=
+=0A=
+=0A=
+The information that is missing from the device tree, that currently=0A=
+must come from boot software programming the registers, is the various=0A=
+attributes that get programmed in CSPR/CSOR.=0A=
+=0A=
+-Scott=0A=
+=0A=
