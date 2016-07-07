@@ -1,37 +1,19 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlZdM6sXTzDr41
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 21:09:27 +1000 (AEST)
-Date: Thu, 7 Jul 2016 13:09:21 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wanpeng Li <kernellwp@gmail.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>, mpe@ellerman.id.au,
- boqun.feng@gmail.com, will.deacon@arm.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Waiman Long <waiman.long@hpe.com>,
- virtualization@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- benh@kernel.crashing.org, schwidefsky@de.ibm.com,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm <kvm@vger.kernel.org>
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-Message-ID: <20160707110921.GI30927@twins.programming.kicks-ass.net>
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
- <CANRm+CwXLsNrC59g6tZk=U+T0Scn_O=b60NPESJXU6uaP7-AsA@mail.gmail.com>
- <8e8edf1b-b64b-3c44-b580-b9271663844c@redhat.com>
- <CANRm+Cz1Ncxm7g0ophT+ijUmqnmTq9VwCZau3wMS56Vkm2+7fQ@mail.gmail.com>
- <20160707094215.GT30921@twins.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160707094215.GT30921@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlZmP4rXVzDqpJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 21:15:33 +1000 (AEST)
+In-Reply-To: <1467877776-5618-1-git-send-email-wei.guo.simon@gmail.com>
+To: Simon Guo <wei.guo.simon@gmail.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Kees Cook <keescook@chromium.org>, Simon Guo <wei.guo.simon@gmail.com>,
+ Rashmica Gupta <rashmicy@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-Id: <3rlZmP39HNz9sXR@ozlabs.org>
+Date: Thu,  7 Jul 2016 21:15:33 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,15 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 07, 2016 at 11:42:15AM +0200, Peter Zijlstra wrote:
-> I suspect you want something like so; except this has holes in.
+On Thu, 2016-07-07 at 07:49:36 UTC, Simon Guo wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> We clear KVM_ST_PAD_PREEMPT before disabling preemption and we set it
-> after enabling it, this means that if we get preempted in between, the
-> vcpu is reported as running even though it very much is not.
-> 
-> Fixing that requires much larger surgery.
+> These 2 fields track whether user process has used Altivec/VSX
+> registers or not. They are used by kernel to setup signal frame
+> on user stack correctly regarding vector part.
 
-Note that this same hole is already a 'problem' for steal time
-accounting. The thread can accrue further delays (iow steal time) after
-we've called record_steal_time(). These delays will go unaccounted.
+I still dislike this. It's just exporting internal kernel state, which I know is
+the point.
+
+And I'd still like to know why we're the only arch that needs to do this.
+
+I'm not saying I won't merge it, but I'd like to understand it better first.
+
+> CRIU(Checkpoint and Restore In User space) builds signal frame
+> for restored process. It will need this export information to
+> setup signal frame correctly. And CRIU will need to restore these
+> 2 fields for the restored process.
+
+I don't really know how CRIU works, but ..
+
+Does the kernel write a sigframe for the process that's being checkpointed? If
+so can't you infer the state of the bits based on what was written?
+
+Alternately, when restoring, can you setup the sigframe with the Altivec/VSX
+fields populated, and the kernel will then load them, regardless of whether
+they were actually used or not prior to the checkpoint?
+
+cheers
