@@ -1,40 +1,36 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rlYFy4cCczDqyS
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 20:07:33 +1000 (AEST)
-Date: Thu, 7 Jul 2016 11:07:18 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
- kernel-hardening@lists.openwall.com,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
- Christoph Lameter <cl@linux.com>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PaX Team <pageexec@freemail.hu>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>,
- Vitaly Wool <vitalywool@gmail.com>, David Rientjes <rientjes@google.com>,
- Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- Brad Spengler <spender@grsecurity.net>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Pekka Enberg <penberg@kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 4/9] arm64/uaccess: Enable hardened usercopy
-Message-ID: <20160707100717.GB8306@leverpostej>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-5-git-send-email-keescook@chromium.org>
+Return-Path: <yangbo.lu@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30065.outbound.protection.outlook.com [40.107.3.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlYHm4tR3zDqyZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 20:09:08 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: Scott Wood <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, Qiang Zhao
+ <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>, "Claudiu
+ Manoil" <claudiu.manoil@freescale.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob Herring
+ <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li
+ <leoyang.li@nxp.com>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>
+Subject: RE: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
+Date: Thu, 7 Jul 2016 02:35:33 +0000
+Message-ID: <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ <5339448.D8rpq4ofAC@wuerfel> <1464832042.22191.23.camel@buserror.net>
+ <3435609.s5m1DCsoNb@wuerfel> <1465609853.22191.151.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467843928-29351-5-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,149 +40,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Wed, Jul 06, 2016 at 03:25:23PM -0700, Kees Cook wrote:
-> Enables CONFIG_HARDENED_USERCOPY checks on arm64. As done by KASAN in -next,
-> renames the low-level functions to __arch_copy_*_user() so a static inline
-> can do additional work before the copy.
-
-The checks themselves look fine, but as with the KASAN checks, it seems
-a shame that this logic is duplicated per arch, integrated in subtly
-different ways.
-
-Can we not __arch prefix all the arch uaccess helpers, and place
-kasan_check_*() and check_object_size() calls in generic wrappers?
-
-If we're going to update all the arch uaccess helpers anyway, doing that
-would make it easier to fix things up, or to add new checks in future.
-
-Thanks,
-Mark.
-
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  arch/arm64/Kconfig               |  2 ++
->  arch/arm64/include/asm/uaccess.h | 18 ++++++++++++++++--
->  arch/arm64/kernel/arm64ksyms.c   |  4 ++--
->  arch/arm64/lib/copy_from_user.S  |  4 ++--
->  arch/arm64/lib/copy_to_user.S    |  4 ++--
->  5 files changed, 24 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index 5a0a691d4220..b771cd97f74b 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -51,10 +51,12 @@ config ARM64
->  	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
->  	select HAVE_ARCH_AUDITSYSCALL
->  	select HAVE_ARCH_BITREVERSE
-> +	select HAVE_ARCH_HARDENED_USERCOPY
->  	select HAVE_ARCH_HUGE_VMAP
->  	select HAVE_ARCH_JUMP_LABEL
->  	select HAVE_ARCH_KASAN if SPARSEMEM_VMEMMAP && !(ARM64_16K_PAGES && ARM64_VA_BITS_48)
->  	select HAVE_ARCH_KGDB
-> +	select HAVE_ARCH_LINEAR_KERNEL_MAPPING
->  	select HAVE_ARCH_MMAP_RND_BITS
->  	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
->  	select HAVE_ARCH_SECCOMP_FILTER
-> diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
-> index 9e397a542756..6d0f86300936 100644
-> --- a/arch/arm64/include/asm/uaccess.h
-> +++ b/arch/arm64/include/asm/uaccess.h
-> @@ -256,11 +256,25 @@ do {									\
->  		-EFAULT;						\
->  })
->  
-> -extern unsigned long __must_check __copy_from_user(void *to, const void __user *from, unsigned long n);
-> -extern unsigned long __must_check __copy_to_user(void __user *to, const void *from, unsigned long n);
-> +extern unsigned long __must_check __arch_copy_from_user(void *to, const void __user *from, unsigned long n);
-> +extern unsigned long __must_check __arch_copy_to_user(void __user *to, const void *from, unsigned long n);
->  extern unsigned long __must_check __copy_in_user(void __user *to, const void __user *from, unsigned long n);
->  extern unsigned long __must_check __clear_user(void __user *addr, unsigned long n);
->  
-> +static inline unsigned long __must_check
-> +__copy_from_user(void *to, const void __user *from, unsigned long n)
-> +{
-> +	check_object_size(to, n, false);
-> +	return __arch_copy_from_user(to, from, n);
-> +}
-> +
-> +static inline unsigned long __must_check
-> +__copy_to_user(void __user *to, const void *from, unsigned long n)
-> +{
-> +	check_object_size(from, n, true);
-> +	return __arch_copy_to_user(to, from, n);
-> +}
-> +
->  static inline unsigned long __must_check copy_from_user(void *to, const void __user *from, unsigned long n)
->  {
->  	if (access_ok(VERIFY_READ, from, n))
-> diff --git a/arch/arm64/kernel/arm64ksyms.c b/arch/arm64/kernel/arm64ksyms.c
-> index 678f30b05a45..2dc44406a7ad 100644
-> --- a/arch/arm64/kernel/arm64ksyms.c
-> +++ b/arch/arm64/kernel/arm64ksyms.c
-> @@ -34,8 +34,8 @@ EXPORT_SYMBOL(copy_page);
->  EXPORT_SYMBOL(clear_page);
->  
->  	/* user mem (segment) */
-> -EXPORT_SYMBOL(__copy_from_user);
-> -EXPORT_SYMBOL(__copy_to_user);
-> +EXPORT_SYMBOL(__arch_copy_from_user);
-> +EXPORT_SYMBOL(__arch_copy_to_user);
->  EXPORT_SYMBOL(__clear_user);
->  EXPORT_SYMBOL(__copy_in_user);
->  
-> diff --git a/arch/arm64/lib/copy_from_user.S b/arch/arm64/lib/copy_from_user.S
-> index 17e8306dca29..0b90497d4424 100644
-> --- a/arch/arm64/lib/copy_from_user.S
-> +++ b/arch/arm64/lib/copy_from_user.S
-> @@ -66,7 +66,7 @@
->  	.endm
->  
->  end	.req	x5
-> -ENTRY(__copy_from_user)
-> +ENTRY(__arch_copy_from_user)
->  ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(0)), ARM64_ALT_PAN_NOT_UAO, \
->  	    CONFIG_ARM64_PAN)
->  	add	end, x0, x2
-> @@ -75,7 +75,7 @@ ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(1)), ARM64_ALT_PAN_NOT_UAO, \
->  	    CONFIG_ARM64_PAN)
->  	mov	x0, #0				// Nothing to copy
->  	ret
-> -ENDPROC(__copy_from_user)
-> +ENDPROC(__arch_copy_from_user)
->  
->  	.section .fixup,"ax"
->  	.align	2
-> diff --git a/arch/arm64/lib/copy_to_user.S b/arch/arm64/lib/copy_to_user.S
-> index 21faae60f988..7a7efe255034 100644
-> --- a/arch/arm64/lib/copy_to_user.S
-> +++ b/arch/arm64/lib/copy_to_user.S
-> @@ -65,7 +65,7 @@
->  	.endm
->  
->  end	.req	x5
-> -ENTRY(__copy_to_user)
-> +ENTRY(__arch_copy_to_user)
->  ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(0)), ARM64_ALT_PAN_NOT_UAO, \
->  	    CONFIG_ARM64_PAN)
->  	add	end, x0, x2
-> @@ -74,7 +74,7 @@ ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(1)), ARM64_ALT_PAN_NOT_UAO, \
->  	    CONFIG_ARM64_PAN)
->  	mov	x0, #0
->  	ret
-> -ENDPROC(__copy_to_user)
-> +ENDPROC(__arch_copy_to_user)
->  
->  	.section .fixup,"ax"
->  	.align	2
-> -- 
-> 2.7.4
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+SGkgQXJuZCwNCg0KQ291bGQgeW91IHJlcGx5IHdoZW4geW91IHNlZSB0aGUgZW1haWw/DQpJZiB5
+b3VyIG1ldGhvZCBkb2VzbuKAmXQgcmVzb2x2ZSB0aGUgcHJvYmxlbSwgd2Ugc3RpbGwgd2FudCB0
+byB1c2Ugb3VyIG9sZCBwYXRjaHNldC4NCg0KVGhpcyBndXRzIGRyaXZlciBoYWQgYmVlbiBkaXNj
+dXNzZWQgYWJvdXQgb25lIHllYXIgYW5kIGJsb2NrZWQgbWFueSB3b3JrYXJvdW5kIHVwc3RyZWFt
+Lg0KU28gcGxlYXNlIGhlbHAgdG8gcmV2aWV3IGFuZCBjb21tZW50IHNvb24uDQoNClRoYW5rcyBh
+IGxvdC4NCg0KDQpCZXN0IHJlZ2FyZHMsDQpZYW5nYm8gTHUNCg0KPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQ0KPiBGcm9tOiBZYW5nYm8gTHUNCj4gU2VudDogVGh1cnNkYXksIEp1bmUgMjMs
+IDIwMTYgMTA6NDYgQU0NCj4gVG86ICdTY290dCBXb29kJzsgQXJuZCBCZXJnbWFubjsgbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gQ2M6IE1hcmsgUnV0bGFuZDsgVWxmIEhhbnNzb247
+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBpMmNAdmdlci5rZXJuZWwu
+b3JnOyBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnOyBRaWFuZyBaaGFvOyBSdXNzZWxsIEtpbmc7
+DQo+IEJodXBlc2ggU2hhcm1hOyBKb2VyZyBSb2VkZWw7IENsYXVkaXUgTWFub2lsOyBkZXZpY2V0
+cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gS3VtYXIgR2FsYTsgUm9iIEhlcnJpbmc7IFNhbnRvc2gg
+U2hpbGlta2FyOyBsaW51eC1hcm0tDQo+IGtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBuZXRk
+ZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gbW1jQHZnZXIua2VybmVsLm9yZzsgWGlhb2Jv
+IFhpZTsgWWFuZy1MZW8gTGk7IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiBmb3VuZGF0aW9uLm9yZw0K
+PiBTdWJqZWN0OiBSRTogW1BBVENIIDIvNF0gc29jOiBmc2w6IGFkZCBHVVRTIGRyaXZlciBmb3Ig
+UW9ySVEgcGxhdGZvcm1zDQo+IA0KPiBIaSBBcm5kLA0KPiANCj4gQ291bGQgeW91IGNvbW1lbnQg
+b24gdGhlc2U/DQo+IFRoYW5rcy4NCj4gDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+IFlhbmdibyBM
+dQ0KPiANCj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBTY290
+dCBXb29kIFttYWlsdG86b3NzQGJ1c2Vycm9yLm5ldF0NCj4gPiBTZW50OiBTYXR1cmRheSwgSnVu
+ZSAxMSwgMjAxNiA5OjUxIEFNDQo+ID4gVG86IEFybmQgQmVyZ21hbm47IGxpbnV4cHBjLWRldkBs
+aXN0cy5vemxhYnMub3JnDQo+ID4gQ2M6IE1hcmsgUnV0bGFuZDsgVWxmIEhhbnNzb247IGxpbnV4
+LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiA+IGkyY0B2Z2VyLmtlcm5lbC5vcmc7
+IGxpbnV4LWNsa0B2Z2VyLmtlcm5lbC5vcmc7IFFpYW5nIFpoYW87IFJ1c3NlbGwNCj4gPiBLaW5n
+OyBCaHVwZXNoIFNoYXJtYTsgSm9lcmcgUm9lZGVsOyBDbGF1ZGl1IE1hbm9pbDsNCj4gPiBkZXZp
+Y2V0cmVlQHZnZXIua2VybmVsLm9yZzsgS3VtYXIgR2FsYTsgUm9iIEhlcnJpbmc7IFNhbnRvc2gN
+Cj4gPiBTaGlsaW1rYXI7IGxpbnV4LWFybS0ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+
+ID4gbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgtIG1tY0B2Z2VyLmtlcm5lbC5vcmc7IFhp
+YW9ibyBYaWU7DQo+ID4gWWFuZy1MZW8gTGk7IGlvbW11QGxpc3RzLmxpbnV4LSBmb3VuZGF0aW9u
+Lm9yZzsgWWFuZ2JvIEx1DQo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzRdIHNvYzogZnNsOiBh
+ZGQgR1VUUyBkcml2ZXIgZm9yIFFvcklRIHBsYXRmb3Jtcw0KPiA+DQo+ID4gT24gVGh1LCAyMDE2
+LTA2LTAyIGF0IDEwOjQzICswMjAwLCBBcm5kIEJlcmdtYW5uIHdyb3RlOg0KPiA+ID4gT24gV2Vk
+bmVzZGF5LCBKdW5lIDEsIDIwMTYgODo0NzoyMiBQTSBDRVNUIFNjb3R0IFdvb2Qgd3JvdGU6DQo+
+ID4gPiA+IE9uIE1vbiwgMjAxNi0wNS0zMCBhdCAxNToxNSArMDIwMCwgQXJuZCBCZXJnbWFubiB3
+cm90ZToNCj4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zb2MvZnNsL2d1dHMuYyBiL2Ry
+aXZlcnMvc29jL2ZzbC9ndXRzLmMgbmV3DQo+ID4gPiA+ID4gZmlsZSBtb2RlIDEwMDY0NCBpbmRl
+eCAwMDAwMDAwMDAwMDAuLjJmMzA2OThmNWJjZg0KPiA+ID4gPiA+IC0tLSAvZGV2L251bGwNCj4g
+PiA+ID4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvZ3V0cy5jDQo+ID4gPiA+ID4gQEAgLTAsMCAr
+MSwxMzAgQEANCj4gPiA+ID4gPiArLyoNCj4gPiA+ID4gPiArICogRnJlZXNjYWxlIFFvcklRIFBs
+YXRmb3JtcyBHVVRTIERyaXZlcg0KPiA+ID4gPiA+ICsgKg0KPiA+ID4gPiA+ICsgKiBDb3B5cmln
+aHQgKEMpIDIwMTYgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IsIEluYy4NCj4gPiA+ID4gPiArICoN
+Cj4gPiA+ID4gPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVk
+aXN0cmlidXRlIGl0DQo+ID4gPiA+ID4gK2FuZC9vciBtb2RpZnkNCj4gPiA+ID4gPiArICogaXQg
+dW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhcw0KPiA+
+ID4gPiA+ICtwdWJsaXNoZWQgYnkNCj4gPiA+ID4gPiArICogdGhlIEZyZWUgU29mdHdhcmUgRm91
+bmRhdGlvbjsgZWl0aGVyIHZlcnNpb24gMiBvZiB0aGUNCj4gPiA+ID4gPiArTGljZW5zZSwgb3IN
+Cj4gPiA+ID4gPiArICogKGF0IHlvdXIgb3B0aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi4NCj4gPiA+
+ID4gPiArICovDQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICsjaW5jbHVkZSA8bGludXgvaW8uaD4N
+Cj4gPiA+ID4gPiArI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPiAjaW5jbHVkZSA8
+bGludXgvbW9kdWxlLmg+DQo+ID4gPiA+ID4gKyNpbmNsdWRlIDxsaW51eC9zbGFiLmg+ICNpbmNs
+dWRlIDxsaW51eC9vZl9hZGRyZXNzLmg+ICNpbmNsdWRlDQo+ID4gPiA+ID4gKzxsaW51eC9vZl9w
+bGF0Zm9ybS5oPiAjaW5jbHVkZSA8bGludXgvc3lzX3NvYy5oPg0KPiA+ID4gPiA+ICsNCj4gPiA+
+ID4gPiArI2RlZmluZSBHVVRTX1BWUgkweDBhMA0KPiA+ID4gPiA+ICsjZGVmaW5lIEdVVFNfU1ZS
+CTB4MGE0DQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICtzdHJ1Y3QgZ3V0cyB7DQo+ID4gPiA+ID4g
+Kwl2b2lkIF9faW9tZW0gKnJlZ3M7DQo+ID4gPiA+DQo+ID4gPiA+IFdlIGFscmVhZHkgaGF2ZSBh
+IHN0cnVjdCB0byBkZWZpbmUgZ3V0cy4gIFdoeSBhcmUgeW91IG5vdCB1c2luZyBpdD8NCj4gPiA+
+ID4gV2h5IGRvIHlvdSBjb25zaWRlciB1c2luZyBpdCB0byBiZSAiYWJ1c2UiPyAgV2hhdCBpZiB3
+ZSB3YW50IHRvDQo+ID4gPiA+IG1vdmUgbW9yZSBndXRzIGZ1bmN0aW9uYWxpdHkgaW50byB0aGlz
+IGRyaXZlcj8NCj4gPiA+DQo+ID4gPiBUaGlzIHN0cnVjdHVyZSB3YXMgaW4gdGhlIG9yaWdpbmFs
+IHBhdGNoLCBJIGxlZnQgaXQgaW4gdGhlcmUsIG9ubHkNCj4gPiA+IHJlbW92ZWQgdGhlIGluY2x1
+c2lvbiBvZiB0aGUgcG93ZXJwYyBoZWFkZXIgZmlsZSwgd2hpY2ggc2VlbWVkIHRvIGJlDQo+ID4g
+PiBtaXNwbGFjZWQuDQo+ID4NCj4gPiBJJ20gbm90IHJlZmVyaW5nICJzdHJ1Y3QgZ3V0cyIuICBJ
+J20gcmVmZXJyaW5nIHRvIGNoYW5naW5nICJzdHJ1Y3QNCj4gPiBjY3NyX2d1dHMgX19pb21lbSAq
+cmVncyIgaW50byAidm9pZCBfX2lvbWVtICpyZWdzIi4NCj4gPg0KPiA+IEFuZCBpdCdzIG5vdCBh
+IHBvd2VycGMgaGVhZGVyIGZpbGUuDQo+ID4NCj4gPiA+ID4gPiArLyoNCj4gPiA+ID4gPiArICog
+VGFibGUgZm9yIG1hdGNoaW5nIGNvbXBhdGlibGUgc3RyaW5ncywgZm9yIGRldmljZSB0cmVlDQo+
+ID4gPiA+ID4gKyAqIGd1dHMgbm9kZSwgZm9yIEZyZWVzY2FsZSBRb3JJUSBTT0NzLg0KPiA+ID4g
+PiA+ICsgKi8NCj4gPiA+ID4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgZnNs
+X2d1dHNfb2ZfbWF0Y2hbXSA9IHsNCj4gPiA+ID4gPiArCS8qIEZvciBUNCAmIEI0IFNlcmllcyBT
+T0NzICovDQo+ID4gPiA+ID4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxxb3JpcS1kZXZpY2UtY29u
+ZmlnLTEuMCIsIC5kYXRhID0gIlQ0L0I0DQo+ID4gPiA+ID4gc2VyaWVzIiB9LA0KPiA+ID4gPiBb
+c25pcF0NCj4gPiA+ID4gPiArCXsgLmNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLWRldmljZS1jb25m
+aWctMi4wIiwgLmRhdGEgPSAiUA0KPiA+ID4gPiA+IHNlcmllcyINCj4gPiA+ID4NCj4gPiA+ID4g
+QXMgbm90ZWQgaW4gbXkgY29tbWVudCBvbiBwYXRjaCAzLzQsIHRoZXNlIGRlc2NyaXB0aW9ucyBh
+cmUNCj4gcmV2ZXJzZWQuDQo+ID4gPiA+DQo+ID4gPiA+IFRoZXkncmUgYWxzbyBpbmNvbXBsZXRl
+LiAgdDIwODAgaGFzIGRldmljZSBjb25maWcgMi4wLiAgdDEwNDAgaXMNCj4gPiA+ID4gZGVzY3Jp
+YmVkIGFzDQo+ID4gPiA+IDIuMCB0aG91Z2ggaXQgc2hvdWxkIHByb2JhYmx5IGJlIDIuMSAob3Ig
+YmV0dGVyLCBkcm9wIHRoZSBnZW5lcmljDQo+ID4gPiA+IGNvbXBhdGlibGUgYWx0b2dldGhlciku
+DQo+ID4gPg0KPiA+ID4gT2suIElkZWFsbHkgSSB0aGluayB3ZSdkIGV2ZW4gbG9vayB1cCB0aGUg
+c3BlY2lmaWMgU29DIG5hbWVzIGZyb20NCj4gPiA+IHRoZSBTVkMgcmF0aGVyIHRoYW4gdGhlIGNv
+bXBhdGlibGUgc3RyaW5nLiBJIGp1c3QgZGlkbid0IGhhdmUgYSBnb29kDQo+ID4gPiBsaXN0IGZv
+ciB0aG9zZSB0byBwdXQgaW4gdGhlIGRyaXZlci4NCj4gPg0KPiA+IFRoZSBsaXN0IGlzIGluIGFy
+Y2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tcGM4NXh4LmggYnV0IEkgZG9uJ3Qga25vdyB3aHkNCj4g
+PiB3ZSBuZWVkIHRvIGNvbnZlcnQgaXQgdG8gYSBzdHJpbmcgaW4gdGhlIGZpcnN0IHBsYWNlLg0K
+PiA+DQo+ID4gPg0KPiA+ID4gPiA+ICsJLyoNCj4gPiA+ID4gPiArCSAqIHN5c2NvbiBkZXZpY2Vz
+IGRlZmF1bHQgdG8gbGl0dGxlLWVuZGlhbiwgYnV0IG9uIHBvd2VycGMgd2UNCj4gPiA+ID4gPiBo
+YXZlDQo+ID4gPiA+ID4gKwkgKiBleGlzdGluZyBkZXZpY2UgdHJlZXMgd2l0aCBiaWctZW5kaWFu
+IG1hcHMgYW5kIGFuIGFic2VudA0KPiA+ID4gPiA+IGVuZGlhbmVzcw0KPiA+ID4gPiA+ICsJICog
+ImJpZy1wcm9wZXJ0eSINCj4gPiA+ID4gPiArCSAqLw0KPiA+ID4gPiA+ICsJaWYgKCFJU19FTkFC
+TEVEKENPTkZJR19QT1dFUlBDKSAmJg0KPiA+ID4gPiA+ICsJICAgICFvZl9wcm9wZXJ0eV9yZWFk
+X2Jvb2woZGV2LT5vZl9ub2RlLCAiYmlnLWVuZGlhbiIpKQ0KPiA+ID4gPiA+ICsJCWd1dHMtPmxp
+dHRsZV9lbmRpYW4gPSB0cnVlOw0KPiA+ID4gPg0KPiA+ID4gPiBUaGlzIGlzIG5vdCBhIHN5c2Nv
+biBkZXZpY2UgKFlhbmdibydzIHBhdGNoIHRvIGFkZCBhIGd1dHMgbm9kZSBvbg0KPiA+ID4gPiBs
+czIwODAgaXMgdGhlIG9ubHkgZ3V0cyBub2RlIHRoYXQgc2F5cyAic3lzY29uIiwgYW5kIHRoYXQg
+d2FzIGENCj4gPiA+ID4gbGVmdG92ZXIgZnJvbSBlYXJsaWVyIHJldmlzaW9ucyBhbmQgc2hvdWxk
+IHByb2JhYmx5IGJlIHJlbW92ZWQpLg0KPiA+ID4gPiBFdmVuIGlmIGl0IHdlcmUsIHdoZXJlIGlz
+IGl0IGRvY3VtZW50ZWQgdGhhdCBzeXNjb24gZGVmYXVsdHMgdG8NCj4gPiA+ID4gbGl0dGxlLWVu
+ZGlhbj8NCj4gPiA+DQo+ID4gPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcmVn
+bWFwL3JlZ21hcC50eHQNCj4gPiA+DQo+ID4gPiBXZSBoYWQgYSBsaXR0bGUgc2NyZXd1cCBoZXJl
+LCBiYXNpY2FsbHkgcmVnbWFwIChhbmQgYnkgY29uc2VxdWVuY2UsDQo+ID4gPiBzeXNjb24pIGFs
+d2F5cyBkZWZhdWx0ZWQgdG8gbGl0dGxlLWVuZGlhbiB3YXkgYmVmb3JlIHRoYXQgd2FzDQo+ID4g
+PiBkb2N1bWVudGVkLCBzbyBpdCdzIHRvbyBsYXRlIHRvIGNoYW5nZSBpdCwNCj4gPg0KPiA+IFdo
+YXQgY2F1c2VzIGEgZGV2aWNlIG5vZGUgdG8gZmFsbCB1bmRlciB0aGUganVyaXNkaWN0aW9uIG9m
+IHJlZ21hcC50eHQ/DQo+ID4gIEFnYWluLCB0aGVzZSBub2RlcyBkbyBub3QgY2xhaW0gInN5c2Nv
+biIgY29tcGF0aWJpbGl0eS4NCj4gPg0KPiA+ID4gYWx0aG91Z2ggSSBhZ3JlZSBpdCB3b3VsZCBo
+YXZlIG1hZGUgc2Vuc2UgdG8gZG9jdW1lbnQgcmVnbWFwIHRvDQo+ID4gPiBkZWZhdWx0IHRvIGJp
+Zy1lbmRpYW4gb24gcG93ZXJwYy4NCj4gPg0KPiA+IFBsZWFzZSBkb24ndC4gIEl0J3MgZW5vdWdo
+IG9mIGEgbWVzcyBhcyBpczsgbm8gbmVlZCB0byBzdGFydCB0aHJvd2luZw0KPiA+IGluIGFyY2hp
+dGVjdHVyZSBpZmRlZnMuDQo+ID4NCj4gPiA+ID4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL2NvbW1vbi1wcm9wZXJ0aWVzLnR4dCBzYXlzIHRoYXQNCj4gPiA+ID4gdGhlIGluZGl2
+aWR1YWwgYmluZGluZyBzcGVjaWZpZXMgdGhlIGRlZmF1bHQuICBUaGUgZGVmYXVsdCBmb3INCj4g
+PiA+ID4gdGhpcyBub2RlIHNob3VsZCBiZSBiaWctZW5kaWFuIGJlY2F1c2UgdGhhdCdzIHdoYXQg
+ZXhpc3RlZCBiZWZvcmUNCj4gPiA+ID4gdGhlcmUgd2FzIGEgbmVlZCB0byBkZXNjcmliZSB0aGUg
+ZW5kaWFubmVzcy4gIEFuZCB3ZSBuZWVkIGFuDQo+ID4gPiA+IHVwZGF0ZSB0byB0aGUgZ3V0cyBi
+aW5kaW5nIHRvIHNwZWNpZnkgdGhhdC4NCj4gPiA+DQo+ID4gPiBHb29kIHBvaW50LiBUaGlzIHBy
+b2FibHkgbWVhbnMgdGhhdCBzcGVjaWZ5aW5nIGJvdGggdGhlICJndXRzIiBhbmQNCj4gPiAic3lz
+Y29uIg0KPiA+ID4gY29tcGF0aWJsZSBzdHJpbmdzIGltcGxpZXMgaGF2aW5nIHRvIGFsc28gc3Bl
+Y2lmeSB0aGUgZW5kaWFuZXNzDQo+ID4gPiBleHBsaWNpdGx5IGJvdGggd2F5cywgYmVjYXVzZSBv
+dGhlcndpc2Ugd2UgYnJlYWsgb25lIG9mIHRoZSB0d28NCj4gPiBiaW5kaW5ncy4NCj4gPg0KPiA+
+IFllcywgYnV0IHRoZSBub2RlIHNob3VsZCBvbmx5IHNwZWNpZnkgImd1dHMiLg0KPiA+DQo+ID4g
+Pg0KPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiArCWd1dHMtPnJlZ3MgPSBkZXZtX2lvcmVtYXBfcmVz
+b3VyY2UoZGV2LCAwKTsNCj4gPiA+ID4gPiArCWlmICghZ3V0cy0+cmVncykgew0KPiA+ID4gPiA+
+ICsJCXJldCA9IC1FTk9NRU07DQo+ID4gPiA+ID4gKwkJa2ZyZWUoZ3V0cyk7DQo+ID4gPiA+ID4g
+KwkJZ290byBvdXQ7DQo+ID4gPiA+ID4gKwl9DQo+ID4gPiA+ID4gKw0KPiA+ID4gPiA+ICsJZnNs
+X2d1dHNfaW5pdChkZXYsIGd1dHMpOw0KPiA+ID4gPiA+ICsJcmV0ID0gMDsNCj4gPiA+ID4gPiAr
+b3V0Og0KPiA+ID4gPiA+ICsJcmV0dXJuIHJldDsNCj4gPiA+ID4gPiArfQ0KPiA+ID4gPiA+ICsN
+Cj4gPiA+ID4gPiArc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgZnNsX3NvY19ndXRzID0g
+ew0KPiA+ID4gPiA+ICsJLnByb2JlID0gZnNsX2d1dHNfcHJvYmUsDQo+ID4gPiA+ID4gKwkuZHJp
+dmVyLm9mX21hdGNoX3RhYmxlID0gZnNsX2d1dHNfb2ZfbWF0Y2gsIH07DQo+ID4gPiA+ID4gKw0K
+PiA+ID4gPiA+ICttb2R1bGVfcGxhdGZvcm1fZHJpdmVyKGZzbF9zb2NfZ3V0cyk7DQo+ID4gPiA+
+DQo+ID4gPiA+IEFnYWluLCB0aGlzIG1lYW5zIHRoYXQgdGhlIGluZm9ybWF0aW9uIGlzIG5vdCBh
+dmFpbGFibGUgZHVyaW5nDQo+ID4gPiA+IGVhcmx5IGJvb3QsIHN1Y2ggYXMgaW4gdGhlIGNsb2Nr
+IGRyaXZlci4gIFRodXMgd2Ugd291bGQgbm90IGJlDQo+ID4gPiA+IGFibGUgdG8gY29udmVydCBj
+bGsgLXFvcmlxJ3MgZGlyZWN0IG1mc3ByKFNQUk5fU1ZSKSBpbnRvIGFuDQo+ID4gPiA+IHNvY19k
+ZXZpY2VfbWF0Y2goKSAob3IgYW55dGhpbmcgZWxzZSB0aGF0IG1ha2VzIHVzZSBvZiB0aGlzIGZp
+bGUpLA0KPiA+ID4gPiBub3Igd291bGQgd2UgYmUgYWJsZSB0byBtb3ZlIGl0cyBhY2Nlc3Mgb2Yg
+dGhlIGd1dHMgUkNXIHJlZ2lzdGVycw0KPiA+ID4gPiBpbnRvIHRoaXMgZHJpdmVyLg0KPiA+ID4N
+Cj4gPiA+IENvcnJlY3QuIERvIHdlIGhhdmUgYSByZWFzb24gdG8gY29udmVydCB0aGUgbWZzcHIo
+KSB0aG91Z2g/IEkgZG9uJ3QNCj4gPiA+IHJlYWxseSBzZWUgYW4gaW1wcm92ZW1lbnQgb3ZlciB0
+aGUgY3VycmVudCBzdGF0ZSBpZiB3ZSBkbyB0aGF0LA0KPiA+DQo+ID4gVGhlbiBzaG91bGQgd2Ug
+ZHJvcCB0aGlzIHBhdGNoc2V0IGFuZCBwdXQgYSBzaW1pbGFyIFBQQyBpZmRlZiBpbg0KPiA+IGRy
+aXZlcnMvbW1jL2hvc3Qvc2RoY2ktb2YtZXNkaGMuYz8NCj4gPg0KPiA+IFRoZXJlJ3MgYWxzbyB0
+aGUgUkNXIGFjY2Vzcy4gIFlvdSBzYWlkIGluIHRoZSBwYXRjaCA0LzQgZGlzY3Vzc2lvbg0KPiA+
+IHRoYXQgeW91IGRpIGRuJ3QgbGlrZSBhbnkgcmFuZG9tIGRyaXZlciBpb3JlbWFwcGluZyB0aGUg
+cmVnaXN0ZXJzLi4uDQo+ID4NCj4gPiA+IGFuZCBmb3IgbmV3IGRldmljZXMNCj4gPiA+IHRoYXQg
+bWlnaHQgbmVlZCB0aGUgZXJyYXR1bSB3b3JrYXJvdW5kLCB3ZSBjb3VsZCBhZGQgYSBEVCBwcm9w
+ZXJ0eQ0KPiA+ID4gdGhhdCB3b3VsZCBiZSBwcmVmZXJyZWQgdG8gYm90aC4NCj4gPg0KPiA+IEl0
+J3MgdW5saWtlbHkgdGhhdCB3ZSB3b3VsZCBrbm93IHRoZSBlcnJhdHVtIGV4aXN0cyBhdCB0aGUg
+dGltZSB0aGUNCj4gPiBkZXZpY2UgdHJlZSBpcyBjcmVhdGVkLiAgV2UgYWxzbyBnZW5lcmFsbHkg
+ZG9uJ3QgaGF2ZSBzZXBhcmF0ZSBkZXZpY2UNCj4gPiB0cmVlcyBmb3IgZWFjaCByZXZpc2lvbiBv
+ZiBhIGNoaXAgKGFuZCBpZiB3ZSBkaWQsIHdlJ2QgaGF2ZSB1c2VycyB0aGF0DQo+ID4gdXNlIHRo
+ZSB3cm9uZyBvbmUpLg0KPiA+DQo+ID4gLVNjb3R0DQoNCg==
