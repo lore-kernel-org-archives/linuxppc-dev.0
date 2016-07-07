@@ -1,42 +1,49 @@
-Return-Path: <baruch@tkos.co.il>
-Received: from mx.tkos.co.il (guitar.tcltek.co.il [192.115.133.116])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlRPQ1tWxzDqxF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 15:43:38 +1000 (AEST)
-Date: Thu, 7 Jul 2016 08:37:10 +0300
-From: Baruch Siach <baruch@tkos.co.il>
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
- kernel-hardening@lists.openwall.com,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
- Christoph Lameter <cl@linux.com>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PaX Team <pageexec@freemail.hu>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>,
- Vitaly Wool <vitalywool@gmail.com>, David Rientjes <rientjes@google.com>,
- Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- Brad Spengler <spender@grsecurity.net>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Pekka Enberg <penberg@kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/9] mm: Hardened usercopy
-Message-ID: <20160707053710.GH2118@tarshish>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-2-git-send-email-keescook@chromium.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467843928-29351-2-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlRp1492CzDqxH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 16:01:29 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u675xEpp109967
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 02:01:27 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xkcrqa-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 02:01:26 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Thu, 7 Jul 2016 16:01:24 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4DB203578057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 16:01:21 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6761LA07471588
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:01:21 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6761KiB024165
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:01:21 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Huy Nguyen <huyn@mellanox.com>
+Subject: Re: [PATCH 08/14] cxl: Add kernel APIs to get & set the max irqs per
+ context
+In-reply-to: <577D49E4.2030803@linux.vnet.ibm.com>
+References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-9-git-send-email-imunsie@au.ibm.com>
+ <577D49E4.2030803@linux.vnet.ibm.com>
+Date: Thu, 07 Jul 2016 16:00:48 +1000
+Message-Id: <1467871047-sup-8682@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,28 +53,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kees,
+Excerpts from Frederic Barrat's message of 2016-07-06 20:11:48 +0200:
+> 
+> Le 04/07/2016 15:22, Ian Munsie a écrit :
+> > From: Ian Munsie <imunsie@au1.ibm.com>
+> >
+> > These APIs will be used by the Mellanox CX4 support. While they function
+> > standalone to configure existing behaviour, their primary purpose is to
+> > allow the Mellanox driver to inform the cxl driver of a hardware
+> > limitation, which will be used in a future patch.
+> >
+> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> 
+> Any way to add a check that the "set max" API is called before the 
+> interrupts are allocated?
 
-On Wed, Jul 06, 2016 at 03:25:20PM -0700, Kees Cook wrote:
-> +#ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
+I don't think there is any real need - if the set max API has not been
+called then we use the maximum number of interrupts possible on the PHB,
+which is the correct thing to do if we don't need the workaround. We
+could try adding a WARN in the set max API if interrupts have previously
+been allocated, but realistically - if a driver developer needs to use
+this they already know it and will be testing for it.
 
-Should be CONFIG_HARDENED_USERCOPY to match the slab/slub implementation 
-condition.
-
-> +const char *__check_heap_object(const void *ptr, unsigned long n,
-> +				struct page *page);
-> +#else
-> +static inline const char *__check_heap_object(const void *ptr,
-> +					      unsigned long n,
-> +					      struct page *page)
-> +{
-> +	return NULL;
-> +}
-> +#endif
-
-baruch
-
--- 
-     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
+Cheers,
+-Ian
