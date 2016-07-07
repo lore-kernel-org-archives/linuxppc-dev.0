@@ -1,25 +1,31 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0041.outbound.protection.outlook.com [104.47.2.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlzwN46NXzDqpk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 13:08:52 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id us13so3283614pab.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 20:08:52 -0700 (PDT)
-Subject: Re: [RFC/PATCH 3/4] powerpc/64/kexec: Copy image with MMU off when
- possible
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <1467779707.13965.103.camel@kernel.crashing.org>
-Cc: Anton Blanchard <anton@au1.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <f1887661-e287-2235-ab72-0d2abdce7dfa@gmail.com>
-Date: Fri, 8 Jul 2016 13:08:44 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlzyZ3r6YzDqrN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 13:10:46 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Daniel Walker <danielwa@cisco.com>, Raghav Dogra <raghav.dogra@nxp.com>,
+ Brian Norris <computersforpeace@gmail.com>, Jaiprakash Singh
+ <b44839@freescale.com>, Scott Wood <scottwood@freescale.com>, Lijun Pan
+ <Lijun.Pan@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "xe-kernel@external.cisco.com"
+ <xe-kernel@external.cisco.com>
+Subject: Re: t1040 IFC flash driver Extended Chip Select
+Date: Thu, 7 Jul 2016 21:59:16 +0000
+Message-ID: <DB5PR0401MB192848637D543D8B95B6092D913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <577D68B8.8020305@cisco.com>
+ <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <577E79D4.1010709@cisco.com>
+ <DB5PR0401MB1928CD680EFFD3A1712AA9F6913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <577EB10B.7010601@cisco.com>
+ <DB5PR0401MB1928FF35ABE36D8E07BAA079913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <577EC0FC.8020304@cisco.com>
+ <DB5PR0401MB1928FBF1769BCE0DE0E3E503913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <577ECE6C.3000100@cisco.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1467779707.13965.103.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,28 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 06/07/16 14:35, Benjamin Herrenschmidt wrote:
-> Currently we turn the MMU off after copying the image, and we make
-> sure there is no overlap between the hash table and the target pages
-> in that case.
-> 
-> That doesn't work for Radix however. In that case, the page tables
-> are scattered and we can't really enforce that the target of the
-> image isn't overlapping one of them.
-> 
-> So instead, let's turn the MMU off before copying the image in radix
-> mode. Thankfully, in radix mode, even under a hypervisor, we know we
-> don't have the same kind of RMA limitations that hash mode has.
-> 
-> While at it, also turn the MMU off early when using hash in non-LPAR
-> mode, that way we can get rid of the collision check completely.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> Currently only compile tested
-
-This makes sense
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+On 07/07/2016 04:49 PM, Daniel Walker wrote:=0A=
+> On 07/07/2016 02:23 PM, Scott Wood wrote:=0A=
+>>=0A=
+>> I suspect that add the usage of cspr_ext into the driver would fix the=
+=0A=
+>> issue we have. It reads like you would find that acceptable ?=0A=
+>> What specifically is the problem you're having?  Is it that CSPR_EXT is=
+=0A=
+>> not getting written to, and thus the device does not appear at the=0A=
+>> address that it should?=0A=
+>>=0A=
+>> Or is the driver matching incorrectly?  The only way the driver's lack=
+=0A=
+>> of using CSPR_EXT to match would be a problem would be if you have=0A=
+>> multiple chipselects with the same address in the lower 32 bits, and=0A=
+>> only CSPR_EXT distinguishing them.  Since you proposed a device tree=0A=
+>> binding that assumes all devices have the same CSPR_EXT, I doubt that's=
+=0A=
+>> the case, so I doubt adding CSPR_EXT matching to the driver will solve=
+=0A=
+>> your problem.=0A=
+>>=0A=
+>> -Scott=0A=
+>>=0A=
+> =0A=
+> I didn't do the debug on this. From my perspective it's either flash =0A=
+> works, or it doesn't work. We need the code below for it to work,=0A=
+=0A=
+Adding CSPR_EXT matching to the driver will not accomplish the same=0A=
+thing as that code.=0A=
+=0A=
+-Scott=0A=
+=0A=
