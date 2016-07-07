@@ -1,19 +1,39 @@
-Return-Path: <claudiu.manoil@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0088.outbound.protection.outlook.com [104.47.36.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <riel@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rljhY0FhtzDrF7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:27:40 +1000 (AEST)
-From: Claudiu Manoil <claudiu.manoil@nxp.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <scottwood@freescale.com>
-Subject: [PATCH, RESEND,
- v2] powerpc/85xx: Don't report SRAM to L2 cache fallback as error
-Date: Thu, 7 Jul 2016 15:49:02 +0300
-Message-ID: <1467895742-7955-1-git-send-email-claudiu.manoil@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rljsV73fgzDr84
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:35:26 +1000 (AEST)
+Message-ID: <1467909317.13253.17.camel@redhat.com>
+Subject: Re: [PATCH 1/9] mm: Hardened usercopy
+From: Rik van Riel <riel@redhat.com>
+To: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org
+Cc: Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell
+ King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
+ <ard.biesheuvel@linaro.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Tony
+ Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, "David S.
+ Miller" <davem@davemloft.net>, x86@kernel.org, Christoph Lameter
+ <cl@linux.com>, Pekka Enberg <penberg@kernel.org>, David Rientjes
+ <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>, Borislav
+ Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Jan Kara
+ <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli
+ <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
+ <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Date: Thu, 07 Jul 2016 12:35:17 -0400
+In-Reply-To: <1467843928-29351-2-git-send-email-keescook@chromium.org>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <1467843928-29351-2-git-send-email-keescook@chromium.org>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-A8whchtqc1mx2jHwm8hg"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +43,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the SRAM region parameters are missing the SRAM driver
-probing exits and the L2 region is configured as L2 cache
-entirely.  This is the expected default behaviour, so it
-makes no sense to report it as an error.
 
-Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
----
-v2: drop info print
+--=-A8whchtqc1mx2jHwm8hg
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+On Wed, 2016-07-06 at 15:25 -0700, Kees Cook wrote:
+>=C2=A0
+> +	/* Allow kernel rodata region (if not marked as Reserved).
+> */
+> +	if (ptr >=3D (const void *)__start_rodata &&
+> +	=C2=A0=C2=A0=C2=A0=C2=A0end <=3D (const void *)__end_rodata)
+> +		return NULL;
+>=20
+One comment here.
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index 861cebf..c27058e 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -90,12 +90,8 @@ static int mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
- 	}
- 	l2cache_size = *prop;
- 
--	if (get_cache_sram_params(&sram_params)) {
--		dev_err(&dev->dev,
--			"Entire L2 as cache, provide valid sram offset and size\n");
--		return -EINVAL;
--	}
--
-+	if (get_cache_sram_params(&sram_params))
-+		return 0; /* fall back to L2 cache only */
- 
- 	rem = l2cache_size % sram_params.sram_size;
- 	ways = LOCK_WAYS_FULL * sram_params.sram_size / l2cache_size;
--- 
-1.7.11.7
+__check_object_size gets "to_user" as an argument.
+
+It may make sense to pass that to check_heap_object, and
+only allow copy_to_user from rodata, never copy_from_user,
+since that section should be read only.
+
+> +void __check_object_size(const void *ptr, unsigned long n, bool
+> to_user)
+> +{
+>=C2=A0
+
+--=20
+
+All Rights Reversed.
+--=-A8whchtqc1mx2jHwm8hg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXfoTFAAoJEM553pKExN6DSm8H/03wOEjAiET+COdQLbDEWApC
+bEAOboYqibBhVsPZ557+S9y/UClhKOdBwA+nOKYw7ftj8gZZibkVBFbel7NV+s24
+GHC3R1i1kGYK2YQflr2F2HGe1a8L1AWV7XuuxoBxqxP53zMrb9kAR3+vxRiz/bLc
+nd4uQ1VhgPHOn1Ny6SSO6Ss6kM3wrsJw0+b2LS6erOUeA0IV7Wi01AMaRvLYiARR
+yQEeIwn+lsENGCUMK/RGyiOJCW0m8FV6DrjtG3crG2CUtbjFnpMo225PrdOJMcBh
+p5XyisW8AiGPrKm3ykxzNhPbOtP+2r8fVGgcUv7apHt+oORVNmVeEO1mP/yJATo=
+=SHUM
+-----END PGP SIGNATURE-----
+
+--=-A8whchtqc1mx2jHwm8hg--
