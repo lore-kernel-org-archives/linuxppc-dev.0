@@ -1,37 +1,37 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlqMG44DrzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 06:43:06 +1000 (AEST)
-Message-ID: <1467924174.32358.69.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Arnd Bergmann <arnd@arndb.de>, Yangbo Lu <yangbo.lu@nxp.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Mark
- Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, Qiang Zhao
- <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>,  Joerg Roedel <joro@8bytes.org>, Claudiu
- Manoil <claudiu.manoil@freescale.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob
- Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org"
- <linux-mmc@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li
- <leoyang.li@nxp.com>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>
-Date: Thu, 07 Jul 2016 15:42:54 -0500
-In-Reply-To: <4094106.qfxJu3tJbO@wuerfel>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <1465609853.22191.151.camel@buserror.net>
- <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <4094106.qfxJu3tJbO@wuerfel>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlqSK5WS2zDr32
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 06:47:29 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u67KivkI033033
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:47:27 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xkbc4v-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 16:47:27 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Thu, 7 Jul 2016 16:47:26 -0400
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
+ ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Subject: [PATCH v7 00/11] powerpc/powernv/cpuidle: Add support for POWER ISA
+ v3 idle states
+Date: Fri,  8 Jul 2016 02:17:01 +0530
+Message-Id: <1467924432-29003-1-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,25 +41,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-07-07 at 10:30 +0200, Arnd Bergmann wrote:
-> On Thursday, July 7, 2016 2:35:33 AM CEST Yangbo Lu wrote:
-> > 
-> > Hi Arnd,
-> > 
-> > Could you reply when you see the email?
-> > If your method doesn’t resolve the problem, we still want to use our old
-> > patchset.
-> > 
-> > This guts driver had been discussed about one year and blocked many
-> > workaround upstream.
-> > So please help to review and comment soon.
-> > 
-> I don't really see how more discussion is going to help us here. I think
-> I've made it pretty clear that I don't want to see another platform
-> specific way to read an SoC revision and I've even sent a proof-of-concept
-> patch to show how the interface can work, now it's up to you to fit the
-> guts hardware into that and send a new patch series.
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-In which relevant maintainership capacity are you NACKing it?
+This patch series adds support for this new mechanism.
 
--Scott
+Patches 1-6 are cleanups and code movement.
+Patch 7 adds platform specific support for stop and psscr handling.
+Patch 8 and 9 are minor cleanup in cpuidle driver.
+Patch 10 adds cpuidle driver support.
+Patch 11 makes offlined cpu use deepest stop state.
+
+Note: Documentation for the device tree bindings is posted here-
+http://patchwork.ozlabs.org/patch/629125/
+
+Changes in v7
+=============
+ - File renamed to idle_book3s.S instead of idle_power_common.S
+ - Comment changes
+ - power_stop0, power_stop renamed to power9_idle and power_idle_stop
+ - PSSCR template is now a macro instead of storing in paca
+ - power9_idle in C file instead of assembly
+ - Fixed TOC related bug
+ - Handling subcore within FTR section
+ - Functions in idle.c reordered and broken into multiple functions
+ - calling __restore_cpu_power8/9 via cur_cpu_spec->cpu_restore 
+ - Added a minor patch with minor cleanups in cpuidle-powernv.c . This
+   was mainly to make the existing code consistent with the review
+   comments for new code
+ - Using stack for variables while probing for idle states instead of
+   kzalloc/kcalloc
+
+Changes in v6
+=============
+ - Restore new POWER ISA v3 SPRS when waking up from deep idle
+
+Changes in v5
+=============
+ - Use generic cpuidle constant CPUIDLE_NAME_LEN
+ - Fix return code handling for of_property_read_string_array
+ - Use DT flags to determine if are using stop instruction, instead of
+   cpu_has_feature
+ - Removed uncessary cast with names
+ - &stop_loop -> stop_loop
+ - Added POWERNV_THRESHOLD_LATENCY_NS to filter out idle states with high latency
+
+Changes in v4
+=============
+ - Added a patch to use PNV_THREAD_WINKLE macro while requesting for winkle
+ - Moved power7_powersave_common rename to more appropriate patch
+ - renaming power7_enter_nap_mode to pnv_enter_arch207_idle_mode
+ - Added PSSCR layout to Patch 7's commit message
+ - Improved / Fixed comments
+ - Fixed whitespace error in paca.h
+ - Using MAX_POSSIBLE_STOP_STATE macro instead of hardcoding 0xF has
+   max possible stop state
+
+Changes in v3
+=============
+ - Rebased on powerpc-next
+ - Dropping patch 1 since we are not adding a new file for P9 idle support
+ - Improved comments in multiple places
+ - Moved GET_PACA from power7_restore_hyp_resource to System Reset
+ - Instead of moving few functions from idle_power7 to idle_power_common,
+   renaming idle_power7.S to idle_power_common.S
+ - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+ - Dropped earlier patch 5 which moved few macros from idle_power_common to
+   asm/cpuidle.h. 
+ - Added a patch to rename reusable power7_* idle functions to pnv_*
+ - Added new patch that creates abstraction for saving SPRs before
+   entering deep idle states
+ - Instead of introducing new file idle_power_stop.S, P9 idle support
+   is added to idle_power_common.S using CPU_FTR sections.
+ - Fixed r4 reg clobbering in power_stop0
+
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+
+Shreyas B. Prabhu (11):
+  powerpc/powernv: Use PNV_THREAD_WINKLE macro while requesting for
+    winkle
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Rename idle_power7.S to idle_book3s.S
+  powerpc/powernv: Rename reusable idle functions to hardware agnostic
+    names
+  powerpc/powernv: Make pnv_powersave_common more generic
+  powerpc/powernv: abstraction for saving SPRs before entering deep idle
+    states
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Use CPUIDLE_STATE_MAX instead of
+    MAX_POWERNV_IDLE_STATES
+  cpuidle/powernv: cleanup powernv_add_idle_states
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |   2 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   2 +
+ arch/powerpc/include/asm/reg.h            |  10 +
+ arch/powerpc/kernel/Makefile              |   2 +-
+ arch/powerpc/kernel/exceptions-64s.S      |  30 +-
+ arch/powerpc/kernel/idle_book3s.S         | 664 ++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/idle_power7.S         | 515 -----------------------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     | 185 +++++++--
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  99 ++++-
+ 15 files changed, 940 insertions(+), 595 deletions(-)
+ create mode 100644 arch/powerpc/kernel/idle_book3s.S
+ delete mode 100644 arch/powerpc/kernel/idle_power7.S
+
+-- 
+2.4.11
