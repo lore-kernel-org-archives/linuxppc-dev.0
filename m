@@ -1,14 +1,24 @@
-Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
-Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.17.148])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rlhvn0bHlzDr0V
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 01:52:21 +1000 (AEST)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: leoli@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] Removing lots of IS_ERR_VALUE abuses and compilation warning.
-Date: Thu,  7 Jul 2016 21:22:15 +0530
-Message-Id: <1467906735-4710-1-git-send-email-arvind.yadav.cs@gmail.com>
+Return-Path: <danielwa@cisco.com>
+Received: from rcdn-iport-6.cisco.com (rcdn-iport-6.cisco.com [173.37.86.77])
+ (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlj3Q6YbczDr0V
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 01:58:58 +1000 (AEST)
+Subject: Re: t1040 IFC flash driver Extended Chip Select
+To: Scott Wood <scott.wood@nxp.com>, Raghav Dogra <raghav.dogra@nxp.com>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Jaiprakash Singh <b44839@freescale.com>, Scott Wood
+ <scottwood@freescale.com>, Lijun Pan <Lijun.Pan@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "xe-kernel@external.cisco.com" <xe-kernel@external.cisco.com>
+References: <577D68B8.8020305@cisco.com>
+ <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+From: Daniel Walker <danielwa@cisco.com>
+Message-ID: <577E79D4.1010709@cisco.com>
+Date: Thu, 7 Jul 2016 08:48:36 -0700
+MIME-Version: 1.0
+In-Reply-To: <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,165 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    Passing value in IS_ERR_VALUE() is wrong, as they
-    pass an 'int' into a function that takes an 'unsigned long'
-    argument. This happens to work because the type is sign-extended
-    on 64-bit architectures before it gets converted into an
-    unsigned type.
+On 07/06/2016 05:57 PM, Scott Wood wrote:
+> On 07/06/2016 03:23 PM, Daniel Walker wrote:
+>> Hi,
+>>
+>> We are using the t1040 platform, and we have found that we need to
+>> populate this register. In the Technical Reference Manual it's
+>> description is section 24.3.2. This option appears in the driver, but it
+>> doesn't appears to be used anyplace.
+> I'm not sure what you mean by "in the driver".  U-boot sets these registers.
 
-    Passing an 'unsigned short' or 'unsigned int'
-    argument into IS_ERR_VALUE() is guaranteed to be broken, as are
-    8-bit integers and types that are wider than 'unsigned long'.
+My hardware doesn't use u-boot , and it doesn't set these values. 
+However, there are other reasons to have this. For example, you use 
+u-boot but it's got a defect which sets the values incorrectly. You may 
+not be able to update your bootloader on a shipped product.
 
-    Any user will get compilation warning for that do not pass an
-    'unsigned long' argument.
+>
+>> We we're considered adding something to the device tree to allow
+>> populating this value, but I'm wondering if any of you have specific
+>> considerations on how this is done. Or maybe it's not needed at all, and
+>> we're just missing something.
+>>
+>> (not a good patch, just an example.)
+>>
+>> diff --git
+>> a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+>> b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+>> index 89427b0..b506001 100644
+>> --- a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+>> +++ b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+>> @@ -24,6 +24,8 @@ Properties:
+>>    - ranges : Each range corresponds to a single chipselect, and covers
+>>               the entire access window as configured.
+>>
+>> +- cspr_ext : This value sets the extended chip select for all banks.
+> I see no reason to put this here.  Boot software should be setting the
+> chipselect registers, and if for some reason you don't want to do that,
+> you could just translate the address through ranges to find the value to
+> write.  Why would you have the binding assume it's the same for all banks?
 
-    Commit '287980e49f; - This change is alreday fixes lots of other
-    worst abusers.
+It was only an example, to start the conversation. I don't understand 
+what you mean by translating the address thru ranges?
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+>
+> The information that is missing from the device tree, that currently
+> must come from boot software programming the registers, is the various
+> attributes that get programmed in CSPR/CSOR.
+>
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 5bf1ade..c1ead2c 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -289,7 +289,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
- 		else {
- 			init_enet_offset =
- 			    qe_muram_alloc(thread_size, thread_alignment);
--			if (IS_ERR_VALUE(init_enet_offset)) {
-+			if (init_enet_offset < 0) {
- 				if (netif_msg_ifup(ugeth))
- 					pr_err("Can not allocate DPRAM memory\n");
- 				qe_put_snum((u8) snum);
-@@ -2234,7 +2234,7 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
- 			ugeth->tx_bd_ring_offset[j] =
- 			    qe_muram_alloc(length,
- 					   UCC_GETH_TX_BD_RING_ALIGNMENT);
--			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
-+			if (!ugeth->tx_bd_ring_offset[j])
- 				ugeth->p_tx_bd_ring[j] =
- 				    (u8 __iomem *) qe_muram_addr(ugeth->
- 							 tx_bd_ring_offset[j]);
-@@ -2311,7 +2311,7 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
- 			ugeth->rx_bd_ring_offset[j] =
- 			    qe_muram_alloc(length,
- 					   UCC_GETH_RX_BD_RING_ALIGNMENT);
--			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
-+			if (!ugeth->rx_bd_ring_offset[j])
- 				ugeth->p_rx_bd_ring[j] =
- 				    (u8 __iomem *) qe_muram_addr(ugeth->
- 							 rx_bd_ring_offset[j]);
-@@ -2521,7 +2521,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	ugeth->tx_glbl_pram_offset =
- 	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
- 			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
-+	if (ugeth->tx_glbl_pram_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
- 		return -ENOMEM;
-@@ -2541,7 +2541,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			   sizeof(struct ucc_geth_thread_data_tx) +
- 			   32 * (numThreadsTxNumerical == 1),
- 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
-+	if (ugeth->thread_dat_tx_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
- 		return -ENOMEM;
-@@ -2568,7 +2568,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	    qe_muram_alloc(ug_info->numQueuesTx *
- 			   sizeof(struct ucc_geth_send_queue_qd),
- 			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
-+	if (ugeth->send_q_mem_reg_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
- 		return -ENOMEM;
-@@ -2609,7 +2609,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		ugeth->scheduler_offset =
- 		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
- 				   UCC_GETH_SCHEDULER_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
-+		if (ugeth->scheduler_offset < 0) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
- 			return -ENOMEM;
-@@ -2656,7 +2656,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		    qe_muram_alloc(sizeof
- 				   (struct ucc_geth_tx_firmware_statistics_pram),
- 				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
-+		if (ugeth->tx_fw_statistics_pram_offset < 0) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
- 			return -ENOMEM;
-@@ -2693,7 +2693,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	ugeth->rx_glbl_pram_offset =
- 	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
- 			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
-+	if (ugeth->rx_glbl_pram_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
- 		return -ENOMEM;
-@@ -2712,7 +2712,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	    qe_muram_alloc(numThreadsRxNumerical *
- 			   sizeof(struct ucc_geth_thread_data_rx),
- 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
-+	if (ugeth->thread_dat_rx_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
- 		return -ENOMEM;
-@@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		    qe_muram_alloc(sizeof
- 				   (struct ucc_geth_rx_firmware_statistics_pram),
- 				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
-+		if (ugeth->rx_fw_statistics_pram_offset < 0) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
- 			return -ENOMEM;
-@@ -2753,7 +2753,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	    qe_muram_alloc(ug_info->numQueuesRx *
- 			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
- 			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
-+	if (ugeth->rx_irq_coalescing_tbl_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
- 		return -ENOMEM;
-@@ -2819,7 +2819,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
- 			    sizeof(struct ucc_geth_rx_prefetched_bds)),
- 			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
--	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
-+	if (ugeth->rx_bd_qs_tbl_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
- 		return -ENOMEM;
-@@ -2905,7 +2905,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 		ugeth->exf_glbl_param_offset =
- 		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
- 		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
--		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
-+		if (ugeth->exf_glbl_param_offset < 0) {
- 			if (netif_msg_ifup(ugeth))
- 				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
- 			return -ENOMEM;
-@@ -3039,7 +3039,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 
- 	/* Allocate InitEnet command parameter structure */
- 	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
--	if (IS_ERR_VALUE(init_enet_pram_offset)) {
-+	if (init_enet_pram_offset < 0) {
- 		if (netif_msg_ifup(ugeth))
- 			pr_err("Can not allocate DPRAM memory for p_init_enet_pram\n");
- 		return -ENOMEM;
--- 
-1.9.1
+Like I said mine doesn't do this, so it's required that it be set in an 
+alternative way. The only alternative we have currently is adding some 
+code to manually set the values but it's not ideal (and not upstreamable).
+
+Daniel
