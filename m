@@ -1,27 +1,20 @@
-Return-Path: <takahiro.akashi@linaro.org>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from NAM01-BN3-obe.outbound.protection.outlook.com
+ (mail-bn3nam01on0064.outbound.protection.outlook.com [104.47.33.64])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlLKd4qwdzDr0f
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 11:55:01 +1000 (AEST)
-Received: by mail-pa0-x22a.google.com with SMTP id uj8so1539409pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 18:55:01 -0700 (PDT)
-Date: Thu, 7 Jul 2016 11:00:25 +0900
-From: AKASHI Takahiro <takahiro.akashi@linaro.org>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: kexec@lists.infradead.org, catalin.marinas@arm.com, will.deacon@arm.com,
- geoff@infradead.org, james.morse@arm.com,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v21 8/8] Documentation: dt: usable-memory and elfcorehdr
- nodes for arm64 kexec
-Message-ID: <20160707020025.GY20774@linaro.org>
-References: <20160706075226.27609-1-takahiro.akashi@linaro.org>
- <20160706075226.27609-9-takahiro.akashi@linaro.org>
- <6483018.WWW2TSJB10@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlLdr4xRSzDr2g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 12:09:03 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <oss@buserror.net>, <tglx@linutronix.de>, <jason@lakedaemon.net>,
+ <marc.zyngier@arm.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+Date: Thu, 7 Jul 2016 09:23:55 +0800
+Message-ID: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-In-Reply-To: <6483018.WWW2TSJB10@hactar>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 06, 2016 at 04:29:18PM -0300, Thiago Jung Bauermann wrote:
-> Hi,
-> 
-> Am Mittwoch, 06 Juli 2016, 16:52:26 schrieb AKASHI Takahiro:
-> > +linux,usable-memory
-> > +-------------------
-> > +
-> > +This property is set on PowerPC and arm64 by kexec-tools during kdump
-> > +to tell the crash kernel the base address of its reserved area of memory,
-> > and +the size. e.g.
-> > +
-> > +/ {
-> > +	chosen {
-> > +		linux,usable-memory = <0x9 0xf0000000 0x0 0x10000000>;
-> > +	};
-> > +};
-> 
-> Again, this description is wrong for PowerPC. See messages from myself and 
-> Michael Ellerman:
-> 
-> https://lists.infradead.org/pipermail/kexec/2016-June/016250.html
-> 
-> https://lists.infradead.org/pipermail/kexec/2016-June/016253.html
+The driver stays the same.
 
-Oops, I must have missed your previous comments. Apologies.
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+Changes for v2:
+	- modify the subject and commit msg
 
-Yes, I know that, and I used to implement the same functionality before.
-It did work for dtb-based systems, but not for UEFI(ACPI)-based systems
-because UEFI doesn't export memory regions information via a device tree,
-but rather via ACPI table. So "/memory" node won't appear.
-So I went back with "mem=" command line approach, and later this "/chosen/"
-approach.
+ drivers/irqchip/Makefile                | 1 +
+ drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0
+ drivers/{soc/fsl/qe => irqchip}/qe_ic.h | 0
+ drivers/soc/fsl/qe/Makefile             | 2 +-
+ 4 files changed, 2 insertions(+), 1 deletion(-)
+ rename drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)
+ rename drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
 
-> IMHO, it would be simpler if ARM used linux,usable-memory in the same way 
-> that PowerPC does, for consistency.
-
-Well, this property won't conflict with per-"/memory" ones
-if we take it that the former, if present, supersedes the latter.
-Sophistic?
-What about changing the name to usable-memory-limit?
-(I know that you have another one, "memory-limit" though.)
-
-Again, I would like to defer to arm64 maintainers.
-
-Thanks,
--Takahiro AKASHI
-
-> -- 
-> []'s
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
-> 
+diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+index 38853a1..cef999d 100644
+--- a/drivers/irqchip/Makefile
++++ b/drivers/irqchip/Makefile
+@@ -69,3 +69,4 @@ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
+ obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
+ obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+ obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
++obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
+diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/qe_ic.c
+similarity index 100%
+rename from drivers/soc/fsl/qe/qe_ic.c
+rename to drivers/irqchip/qe_ic.c
+diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/irqchip/qe_ic.h
+similarity index 100%
+rename from drivers/soc/fsl/qe/qe_ic.h
+rename to drivers/irqchip/qe_ic.h
+diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+index 2031d38..51e4726 100644
+--- a/drivers/soc/fsl/qe/Makefile
++++ b/drivers/soc/fsl/qe/Makefile
+@@ -1,7 +1,7 @@
+ #
+ # Makefile for the linux ppc-specific parts of QE
+ #
+-obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
++obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
+ obj-$(CONFIG_CPM)	+= qe_common.o
+ obj-$(CONFIG_UCC)	+= ucc.o
+ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+-- 
+2.1.0.27.g96db324
