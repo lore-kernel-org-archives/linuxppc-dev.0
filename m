@@ -1,23 +1,46 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <akshay.adiga@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlM3d1j6jzDqqZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 12:27:57 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id 66so447101pfy.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 19:27:57 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: mpe@ellerman.id.au
-Cc: Simon Guo <wei.guo.simon@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
- Rashmica Gupta <rashmicy@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: [PATCH v3] powerpc: Export thread_struct.used_vr/used_vsr to user
- space
-Date: Thu,  7 Jul 2016 10:27:29 +0800
-Message-Id: <1467858449-3406-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlPNB5663zDqx9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 14:12:25 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u67496Jo020167
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 00:12:23 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xm2f8c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 00:12:22 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Thu, 7 Jul 2016 14:12:20 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D205E2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 14:12:16 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u674CG2i4456936
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 14:12:16 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u674CG5L021376
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 14:12:16 +1000
+Subject: Re: [PATCH v2] cpufreq: powernv: Replacing pstate_id with frequency
+ table index
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1467267787-2622-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Cc: ego@linux.vnet.ibm.com
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Date: Thu, 7 Jul 2016 09:42:12 +0530
+MIME-Version: 1.0
+In-Reply-To: <1467267787-2622-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <577DD69C.2050005@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,124 +50,421 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
 
-These 2 fields track whether user process has used Altivec/VSX
-registers or not. They are used by kernel to setup signal frame
-on user stack correctly regarding vector part.
 
-CRIU(Checkpoint and Restore In User space) builds signal frame
-for restored process. It will need this export information to
-setup signal frame correctly. And CRIU will need to restore these
-2 fields for the restored process.
+On 06/30/2016 11:53 AM, Akshay Adiga wrote:
+> Refactoring code to use frequency table index instead of pstate_id.
+> This abstraction will make the code independent of the pstate values.
+>
+> - No functional changes
+> - The highest frequency is at frequency table index 0 and the frequency
+>    decreases as the index increases.
+> - Macros pstates_to_idx() and idx_to_pstate() can be used for conversion
+>    between pstate_id and index.
+> - powernv_pstate_info now contains frequency table index to min, max and
+>    nominal frequency (instead of pstate_ids)
+> - global_pstate_info new stores index values instead pstate ids.
+> - variables renamed as *_idx which now store index instead of pstate
+>
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+> Changes from v1:
+>    - changed macro names from get_pstate()/ get_index() to
+> idx_to_pstate()/ pstate_to_idx()
+>    - Renamed variables that store index instead of pstate_id to *_idx
+>    - Retained previous printk's
+>
+> v1 : http://marc.info/?l=linux-pm&m=146677701501225&w=1
+>
+>   drivers/cpufreq/powernv-cpufreq.c | 177 ++++++++++++++++++++++----------------
+>   1 file changed, 102 insertions(+), 75 deletions(-)
+>
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index b29c5c2..72c91d8 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -64,12 +64,14 @@
+>   /**
+>    * struct global_pstate_info -	Per policy data structure to maintain history of
+>    *				global pstates
+> - * @highest_lpstate:		The local pstate from which we are ramping down
+> + * @highest_lpstate_idx:	The local pstate index from which we are
+> + *				ramping down
+>    * @elapsed_time:		Time in ms spent in ramping down from
+> - *				highest_lpstate
+> + *				highest_lpstate_idx
+>    * @last_sampled_time:		Time from boot in ms when global pstates were
+>    *				last set
+> - * @last_lpstate,last_gpstate:	Last set values for local and global pstates
+> + * @last_lpstate_idx,		Last set value of local pstate and global
+> + * last_gpstate_idx		pstate in terms of cpufreq table index
+>    * @timer:			Is used for ramping down if cpu goes idle for
+>    *				a long time with global pstate held high
+>    * @gpstate_lock:		A spinlock to maintain synchronization between
+> @@ -77,11 +79,11 @@
+>    *				governer's target_index calls
+>    */
+>   struct global_pstate_info {
+> -	int highest_lpstate;
+> +	int highest_lpstate_idx;
+>   	unsigned int elapsed_time;
+>   	unsigned int last_sampled_time;
+> -	int last_lpstate;
+> -	int last_gpstate;
+> +	int last_lpstate_idx;
+> +	int last_gpstate_idx;
+>   	spinlock_t gpstate_lock;
+>   	struct timer_list timer;
+>   };
+> @@ -124,29 +126,47 @@ static int nr_chips;
+>   static DEFINE_PER_CPU(struct chip *, chip_info);
+>   
+>   /*
+> - * Note: The set of pstates consists of contiguous integers, the
+> - * smallest of which is indicated by powernv_pstate_info.min, the
+> - * largest of which is indicated by powernv_pstate_info.max.
+> + * Note:
+> + * The set of pstates consists of contiguous integers.
+> + * powernv_pstate_info stores the index of the frequency table for
+> + * max, min and nominal frequencies. It also stores number of
+> + * available frequencies.
+>    *
+> - * The nominal pstate is the highest non-turbo pstate in this
+> - * platform. This is indicated by powernv_pstate_info.nominal.
+> + * powernv_pstate_info.nominal indicates the index to the highest
+> + * non-turbo frequency.
+>    */
+>   static struct powernv_pstate_info {
+> -	int min;
+> -	int max;
+> -	int nominal;
+> -	int nr_pstates;
+> +	unsigned int min;
+> +	unsigned int max;
+> +	unsigned int nominal;
+> +	unsigned int nr_pstates;
+>   } powernv_pstate_info;
+>   
+> +/* Use following macros for conversions between pstate_id and index */
+> +static inline int idx_to_pstate(unsigned int i)
+> +{
+> +	return powernv_freqs[i].driver_data;
+> +}
+> +
+> +static inline unsigned int pstate_to_idx(int pstate)
+> +{
+> +	/*
+> +	 * abs() is deliberately used so that is works with
+> +	 * both monotonically increasing and decreasing
+> +	 * pstate values
+> +	 */
+> +	return abs(pstate - idx_to_pstate(powernv_pstate_info.max));
+> +}
+> +
+>   static inline void reset_gpstates(struct cpufreq_policy *policy)
+>   {
+>   	struct global_pstate_info *gpstates = policy->driver_data;
+>   
+> -	gpstates->highest_lpstate = 0;
+> +	gpstates->highest_lpstate_idx = 0;
+>   	gpstates->elapsed_time = 0;
+>   	gpstates->last_sampled_time = 0;
+> -	gpstates->last_lpstate = 0;
+> -	gpstates->last_gpstate = 0;
+> +	gpstates->last_lpstate_idx = 0;
+> +	gpstates->last_gpstate_idx = 0;
+>   }
+>   
+>   /*
+> @@ -156,9 +176,10 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+>   static int init_powernv_pstates(void)
+>   {
+>   	struct device_node *power_mgt;
+> -	int i, pstate_min, pstate_max, pstate_nominal, nr_pstates = 0;
+> +	int i, nr_pstates = 0;
+>   	const __be32 *pstate_ids, *pstate_freqs;
+>   	u32 len_ids, len_freqs;
+> +	u32 pstate_min, pstate_max, pstate_nominal;
+>   
+>   	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+>   	if (!power_mgt) {
+> @@ -208,6 +229,7 @@ static int init_powernv_pstates(void)
+>   		return -ENODEV;
+>   	}
+>   
+> +	powernv_pstate_info.nr_pstates = nr_pstates;
+>   	pr_debug("NR PStates %d\n", nr_pstates);
+>   	for (i = 0; i < nr_pstates; i++) {
+>   		u32 id = be32_to_cpu(pstate_ids[i]);
+> @@ -216,15 +238,17 @@ static int init_powernv_pstates(void)
+>   		pr_debug("PState id %d freq %d MHz\n", id, freq);
+>   		powernv_freqs[i].frequency = freq * 1000; /* kHz */
+>   		powernv_freqs[i].driver_data = id;
+> +
+> +		if (id == pstate_max)
+> +			powernv_pstate_info.max = i;
+> +		else if (id == pstate_nominal)
+> +			powernv_pstate_info.nominal = i;
+> +		else if (id == pstate_min)
+> +			powernv_pstate_info.min = i;
+>   	}
+> +
+>   	/* End of list marker entry */
+>   	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
+> -
+> -	powernv_pstate_info.min = pstate_min;
+> -	powernv_pstate_info.max = pstate_max;
+> -	powernv_pstate_info.nominal = pstate_nominal;
+> -	powernv_pstate_info.nr_pstates = nr_pstates;
+> -
+>   	return 0;
+>   }
+>   
+> @@ -233,12 +257,12 @@ static unsigned int pstate_id_to_freq(int pstate_id)
+>   {
+>   	int i;
+>   
+> -	i = powernv_pstate_info.max - pstate_id;
+> +	i = pstate_to_idx(pstate_id);
+>   	if (i >= powernv_pstate_info.nr_pstates || i < 0) {
+>   		pr_warn("PState id %d outside of PState table, "
+>   			"reporting nominal id %d instead\n",
+> -			pstate_id, powernv_pstate_info.nominal);
+> -		i = powernv_pstate_info.max - powernv_pstate_info.nominal;
+> +			pstate_id, idx_to_pstate(powernv_pstate_info.nominal));
+> +		i = powernv_pstate_info.nominal;
+>   	}
+>   
+>   	return powernv_freqs[i].frequency;
+> @@ -252,7 +276,7 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
+>   					char *buf)
+>   {
+>   	return sprintf(buf, "%u\n",
+> -		pstate_id_to_freq(powernv_pstate_info.nominal));
+> +		powernv_freqs[powernv_pstate_info.nominal].frequency);
+>   }
+>   
+>   struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
+> @@ -426,7 +450,7 @@ static void set_pstate(void *data)
+>    */
+>   static inline unsigned int get_nominal_index(void)
+>   {
+> -	return powernv_pstate_info.max - powernv_pstate_info.nominal;
+> +	return powernv_pstate_info.nominal;
+>   }
+>   
+>   static void powernv_cpufreq_throttle_check(void *data)
+> @@ -435,20 +459,22 @@ static void powernv_cpufreq_throttle_check(void *data)
+>   	unsigned int cpu = smp_processor_id();
+>   	unsigned long pmsr;
+>   	int pmsr_pmax;
+> +	unsigned int pmsr_pmax_idx;
+>   
+>   	pmsr = get_pmspr(SPRN_PMSR);
+>   	chip = this_cpu_read(chip_info);
+>   
+>   	/* Check for Pmax Capping */
+>   	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+> -	if (pmsr_pmax != powernv_pstate_info.max) {
+> +	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
+> +	if (pmsr_pmax_idx != powernv_pstate_info.max) {
+>   		if (chip->throttled)
+>   			goto next;
+>   		chip->throttled = true;
+> -		if (pmsr_pmax < powernv_pstate_info.nominal) {
+> -			pr_warn_once("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+> +		if (pmsr_pmax_idx > powernv_pstate_info.nominal) {
+> +			pr_warn_once("CPU %d on Chip %u has Pmax(%d) reduced below nominal frequency(%d)\n",
+>   				     cpu, chip->id, pmsr_pmax,
+> -				     powernv_pstate_info.nominal);
+> +				     idx_to_pstate(powernv_pstate_info.nominal));
+>   			chip->throttle_sub_turbo++;
+>   		} else {
+>   			chip->throttle_turbo++;
+> @@ -484,34 +510,35 @@ next:
+>   
+>   /**
+>    * calc_global_pstate - Calculate global pstate
+> - * @elapsed_time:	Elapsed time in milliseconds
+> - * @local_pstate:	New local pstate
+> - * @highest_lpstate:	pstate from which its ramping down
+> + * @elapsed_time:		Elapsed time in milliseconds
+> + * @local_pstate_idx:		New local pstate
+> + * @highest_lpstate_idx:	pstate from which its ramping down
+>    *
+>    * Finds the appropriate global pstate based on the pstate from which its
+>    * ramping down and the time elapsed in ramping down. It follows a quadratic
+>    * equation which ensures that it reaches ramping down to pmin in 5sec.
+>    */
+>   static inline int calc_global_pstate(unsigned int elapsed_time,
+> -				     int highest_lpstate, int local_pstate)
+> +				     int highest_lpstate_idx,
+> +				     int local_pstate_idx)
+>   {
+> -	int pstate_diff;
+> +	int index_diff;
+>   
+>   	/*
+>   	 * Using ramp_down_percent we get the percentage of rampdown
+>   	 * that we are expecting to be dropping. Difference between
+> -	 * highest_lpstate and powernv_pstate_info.min will give a absolute
+> +	 * highest_lpstate_idx and powernv_pstate_info.min will give a absolute
+>   	 * number of how many pstates we will drop eventually by the end of
+>   	 * 5 seconds, then just scale it get the number pstates to be dropped.
+>   	 */
+> -	pstate_diff =  ((int)ramp_down_percent(elapsed_time) *
+> -			(highest_lpstate - powernv_pstate_info.min)) / 100;
+> +	index_diff =  ((int)ramp_down_percent(elapsed_time) *
+> +			(powernv_pstate_info.min - highest_lpstate_idx)) / 100;
+>   
+>   	/* Ensure that global pstate is >= to local pstate */
+> -	if (highest_lpstate - pstate_diff < local_pstate)
+> -		return local_pstate;
+> +	if (highest_lpstate_idx + index_diff >= local_pstate_idx)
+> +		return local_pstate_idx;
+>   	else
+> -		return highest_lpstate - pstate_diff;
+> +		return highest_lpstate_idx + index_diff;
+>   }
+>   
+>   static inline void  queue_gpstate_timer(struct global_pstate_info *gpstates)
+> @@ -547,7 +574,7 @@ void gpstate_timer_handler(unsigned long data)
+>   {
+>   	struct cpufreq_policy *policy = (struct cpufreq_policy *)data;
+>   	struct global_pstate_info *gpstates = policy->driver_data;
+> -	int gpstate_id;
+> +	int gpstate_idx;
+>   	unsigned int time_diff = jiffies_to_msecs(jiffies)
+>   					- gpstates->last_sampled_time;
+>   	struct powernv_smp_call_data freq_data;
+> @@ -557,29 +584,29 @@ void gpstate_timer_handler(unsigned long data)
+>   
+>   	gpstates->last_sampled_time += time_diff;
+>   	gpstates->elapsed_time += time_diff;
+> -	freq_data.pstate_id = gpstates->last_lpstate;
+> +	freq_data.pstate_id = idx_to_pstate(gpstates->last_lpstate_idx);
+>   
+> -	if ((gpstates->last_gpstate == freq_data.pstate_id) ||
+> +	if ((gpstates->last_gpstate_idx == gpstates->last_lpstate_idx) ||
+>   	    (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME)) {
+> -		gpstate_id = freq_data.pstate_id;
+> +		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
+>   		reset_gpstates(policy);
+> -		gpstates->highest_lpstate = freq_data.pstate_id;
+> +		gpstates->highest_lpstate_idx = gpstate_idx;
+>   	} else {
+> -		gpstate_id = calc_global_pstate(gpstates->elapsed_time,
+> -						gpstates->highest_lpstate,
+> -						freq_data.pstate_id);
+> +		gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
+> +						 gpstates->highest_lpstate_idx,
+> +						 freq_data.pstate_id);
+>   	}
+>   
+>   	/*
+>   	 * If local pstate is equal to global pstate, rampdown is over
+>   	 * So timer is not required to be queued.
+>   	 */
+> -	if (gpstate_id != freq_data.pstate_id)
+> +	if (gpstate_idx != gpstates->last_lpstate_idx)
+>   		queue_gpstate_timer(gpstates);
+>   
+> -	freq_data.gpstate_id = gpstate_id;
+> -	gpstates->last_gpstate = freq_data.gpstate_id;
+> -	gpstates->last_lpstate = freq_data.pstate_id;
+> +	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
+> +	gpstates->last_gpstate_idx = pstate_to_idx(freq_data.gpstate_id);
+> +	gpstates->last_lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+>   
+>   	spin_unlock(&gpstates->gpstate_lock);
+>   
+> @@ -596,7 +623,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>   					unsigned int new_index)
+>   {
+>   	struct powernv_smp_call_data freq_data;
+> -	unsigned int cur_msec, gpstate_id;
+> +	unsigned int cur_msec, gpstate_idx;
+>   	struct global_pstate_info *gpstates = policy->driver_data;
+>   
+>   	if (unlikely(rebooting) && new_index != get_nominal_index())
+> @@ -608,15 +635,15 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>   	cur_msec = jiffies_to_msecs(get_jiffies_64());
+>   
+>   	spin_lock(&gpstates->gpstate_lock);
+> -	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+> +	freq_data.pstate_id = idx_to_pstate(new_index);
+>   
+>   	if (!gpstates->last_sampled_time) {
+> -		gpstate_id = freq_data.pstate_id;
+> -		gpstates->highest_lpstate = freq_data.pstate_id;
+> +		gpstate_idx = new_index;
+> +		gpstates->highest_lpstate_idx = new_index;
+>   		goto gpstates_done;
+>   	}
+>   
+> -	if (gpstates->last_gpstate > freq_data.pstate_id) {
+> +	if (gpstates->last_gpstate_idx < new_index) {
+>   		gpstates->elapsed_time += cur_msec -
+>   						 gpstates->last_sampled_time;
+>   
+> @@ -627,34 +654,34 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>   		 */
+>   		if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+>   			reset_gpstates(policy);
+> -			gpstates->highest_lpstate = freq_data.pstate_id;
+> -			gpstate_id = freq_data.pstate_id;
+> +			gpstates->highest_lpstate_idx = new_index;
+> +			gpstate_idx = new_index;
+>   		} else {
+>   		/* Elaspsed_time is less than 5 seconds, continue to rampdown */
+> -			gpstate_id = calc_global_pstate(gpstates->elapsed_time,
+> -							gpstates->highest_lpstate,
+> -							freq_data.pstate_id);
+> +			gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
+> +							 gpstates->highest_lpstate_idx,
+> +							 new_index);
+>   		}
+>   	} else {
+>   		reset_gpstates(policy);
+> -		gpstates->highest_lpstate = freq_data.pstate_id;
+> -		gpstate_id = freq_data.pstate_id;
+> +		gpstates->highest_lpstate_idx = new_index;
+> +		gpstate_idx = new_index;
+>   	}
+>   
+>   	/*
+>   	 * If local pstate is equal to global pstate, rampdown is over
+>   	 * So timer is not required to be queued.
+>   	 */
+> -	if (gpstate_id != freq_data.pstate_id)
+> +	if (gpstate_idx != new_index)
+>   		queue_gpstate_timer(gpstates);
+>   	else
+>   		del_timer_sync(&gpstates->timer);
+>   
+>   gpstates_done:
+> -	freq_data.gpstate_id = gpstate_id;
+> +	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
+>   	gpstates->last_sampled_time = cur_msec;
+> -	gpstates->last_gpstate = freq_data.gpstate_id;
+> -	gpstates->last_lpstate = freq_data.pstate_id;
+> +	gpstates->last_gpstate_idx = gpstate_idx;
+> +	gpstates->last_lpstate_idx = new_index;
+>   
+>   	spin_unlock(&gpstates->gpstate_lock);
+>   
+> @@ -847,8 +874,8 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+>   	struct powernv_smp_call_data freq_data;
+>   	struct global_pstate_info *gpstates = policy->driver_data;
+>   
+> -	freq_data.pstate_id = powernv_pstate_info.min;
+> -	freq_data.gpstate_id = powernv_pstate_info.min;
+> +	freq_data.pstate_id = idx_to_pstate(powernv_pstate_info.min);
+> +	freq_data.gpstate_id = idx_to_pstate(powernv_pstate_info.min);
+>   	smp_call_function_single(policy->cpu, set_pstate, &freq_data, 1);
+>   	del_timer_sync(&gpstates->timer);
+>   }
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Rashmica Gupta <rashmicy@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
---
-
-v2 -> v3:
-- enlarge reg_usage from 32 to 64 bits
-- prefix ptrace API with PPC_
-
-v1 -> v2:
-- minor change for coding style
----
- arch/powerpc/include/uapi/asm/ptrace.h | 11 ++++++++++
- arch/powerpc/kernel/ptrace.c           | 39 ++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/ptrace32.c         |  2 ++
- 3 files changed, 52 insertions(+)
-
-diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
-index 8036b38..b357677 100644
---- a/arch/powerpc/include/uapi/asm/ptrace.h
-+++ b/arch/powerpc/include/uapi/asm/ptrace.h
-@@ -176,6 +176,17 @@ struct pt_regs {
- #define PTRACE_GETREGS64	  0x16
- #define PTRACE_SETREGS64	  0x17
- 
-+/*
-+ * Get or set some register used bit.
-+ * The flags will be saved in a 64 bit data.
-+ * Currently it is only used for VR/VSR usage.
-+ */
-+#define PPC_PTRACE_GET_REGS_USAGE	  0x97
-+#define PPC_PTRACE_SET_REGS_USAGE	  0x96
-+
-+#define PPC_PTRACE_REGS_USAGE_VR_BIT  0x01UL
-+#define PPC_PTRACE_REGS_USAGE_VSR_BIT 0x02UL
-+
- /* Calls to trace a 64bit program from a 32bit program */
- #define PPC_PTRACE_PEEKTEXT_3264 0x95
- #define PPC_PTRACE_PEEKDATA_3264 0x94
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index a9aa2a5..d1431bb 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -3018,6 +3018,45 @@ long arch_ptrace(struct task_struct *child, long request,
- 					     REGSET_SPE, 0, 35 * sizeof(u32),
- 					     datavp);
- #endif
-+	case PPC_PTRACE_GET_REGS_USAGE:
-+		{
-+			u64 *u64_datap = (u64 *)datavp;
-+			u64 reg_usage = 0;
-+
-+			if (addr != sizeof(u64))
-+				return -EINVAL;
-+
-+#ifdef CONFIG_ALTIVEC
-+			if (child->thread.used_vr)
-+				reg_usage |= PPC_PTRACE_REGS_USAGE_VR_BIT;
-+#endif
-+#ifdef CONFIG_VSX
-+			if (child->thread.used_vsr)
-+				reg_usage |= PPC_PTRACE_REGS_USAGE_VSR_BIT;
-+#endif
-+			return put_user(reg_usage, u64_datap);
-+		}
-+	case PPC_PTRACE_SET_REGS_USAGE:
-+		{
-+			u64 *u64_datap = (u64 *)datavp;
-+			u64 reg_usage = 0;
-+
-+			if (addr != sizeof(u64))
-+				return -EINVAL;
-+
-+			ret = get_user(reg_usage, u64_datap);
-+			if (ret)
-+				return ret;
-+#ifdef CONFIG_ALTIVEC
-+			child->thread.used_vr =
-+				!!(reg_usage & PPC_PTRACE_REGS_USAGE_VR_BIT);
-+#endif
-+#ifdef CONFIG_VSX
-+			child->thread.used_vsr =
-+				!!(reg_usage & PPC_PTRACE_REGS_USAGE_VSR_BIT);
-+#endif
-+			break;
-+		}
- 
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
-diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
-index f52b7db..3aaa773 100644
---- a/arch/powerpc/kernel/ptrace32.c
-+++ b/arch/powerpc/kernel/ptrace32.c
-@@ -305,6 +305,8 @@ long compat_arch_ptrace(struct task_struct *child, compat_long_t request,
- 	case PPC_PTRACE_GETHWDBGINFO:
- 	case PPC_PTRACE_SETHWDEBUG:
- 	case PPC_PTRACE_DELHWDEBUG:
-+	case PPC_PTRACE_GET_REGS_USAGE:
-+	case PPC_PTRACE_SET_REGS_USAGE:
- 		ret = arch_ptrace(child, request, addr, data);
- 		break;
- 
--- 
-1.8.3.1
+Hi Viresh,
+Any comments on this patch ?
