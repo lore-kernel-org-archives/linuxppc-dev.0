@@ -1,42 +1,22 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
- [IPv6:2607:f8b0:400e:c00::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlFhD68CLzDr41
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 08:25:48 +1000 (AEST)
-Received: by mail-pf0-x236.google.com with SMTP id c2so121525pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 15:25:48 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: linux-kernel@vger.kernel.org
-Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- x86@kernel.org, Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Subject: [PATCH 9/9] mm: SLUB hardened usercopy support
-Date: Wed,  6 Jul 2016 15:25:28 -0700
-Message-Id: <1467843928-29351-10-git-send-email-keescook@chromium.org>
-In-Reply-To: <1467843928-29351-1-git-send-email-keescook@chromium.org>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlJKW3cdQzDr4P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 10:24:47 +1000 (AEST)
+Date: Thu, 7 Jul 2016 10:07:37 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, aik@ozlabs.ru, mpe@ellerman.id.au,
+ agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org
+Subject: Re: [PATCH 1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
+Message-ID: <20160707000737.GB2615@voom.fritz.box>
+References: <741e7a7860e055603a311bcc6051bd88fdad1215.1467785081.git.sam.bobroff@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="xXmbgvnjoT4axfJE"
+In-Reply-To: <741e7a7860e055603a311bcc6051bd88fdad1215.1467785081.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,66 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
-SLUB allocator to catch any copies that may span objects.
 
-Based on code from PaX and grsecurity.
+--xXmbgvnjoT4axfJE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- init/Kconfig |  1 +
- mm/slub.c    | 27 +++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+On Wed, Jul 06, 2016 at 04:05:54PM +1000, Sam Bobroff wrote:
+> Introduce a new KVM capability, KVM_CAP_PPC_HTM, that can be queried to
+> determine if a PowerPC KVM guest should use HTM (Hardware Transactional
+> Memory).
+>=20
+> This will be used by QEMU to populate the pa-features bits in the
+> guest's device tree.
+>=20
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 798c2020ee7c..1c4711819dfd 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1765,6 +1765,7 @@ config SLAB
- 
- config SLUB
- 	bool "SLUB (Unqueued Allocator)"
-+	select HAVE_HARDENED_USERCOPY_ALLOCATOR
- 	help
- 	   SLUB is a slab allocator that minimizes cache line usage
- 	   instead of managing queues of cached objects (SLAB approach).
-diff --git a/mm/slub.c b/mm/slub.c
-index 825ff4505336..0c8ace04f075 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -3614,6 +3614,33 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
- EXPORT_SYMBOL(__kmalloc_node);
- #endif
- 
-+#ifdef CONFIG_HARDENED_USERCOPY
-+/*
-+ * Rejects objects that are incorrectly sized.
-+ *
-+ * Returns NULL if check passes, otherwise const char * to name of cache
-+ * to indicate an error.
-+ */
-+const char *__check_heap_object(const void *ptr, unsigned long n,
-+				struct page *page)
-+{
-+	struct kmem_cache *s;
-+	unsigned long offset;
-+
-+	/* Find object. */
-+	s = page->slab_cache;
-+
-+	/* Find offset within object. */
-+	offset = (ptr - page_address(page)) % s->size;
-+
-+	/* Allow address range falling entirely within object size. */
-+	if (offset <= s->object_size && n <= s->object_size - offset)
-+		return NULL;
-+
-+	return s->name;
-+}
-+#endif /* CONFIG_HARDENED_USERCOPY */
-+
- static size_t __ksize(const void *object)
- {
- 	struct page *page;
--- 
-2.7.4
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+> ---
+>=20
+>  arch/powerpc/kvm/powerpc.c | 4 ++++
+>  include/uapi/linux/kvm.h   | 1 +
+>  2 files changed, 5 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 02416fe..06d79bc 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -588,6 +588,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lo=
+ng ext)
+>  		r =3D 1;
+>  		break;
+>  #endif
+> +	case KVM_CAP_PPC_HTM:
+> +		r =3D cpu_has_feature(CPU_FTR_TM)
+> +		    && is_kvmppc_hv_enabled(kvm);
+> +		break;
+>  	default:
+>  		r =3D 0;
+>  		break;
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 05ebf47..f421d0e 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -866,6 +866,7 @@ struct kvm_ppc_smmu_info {
+>  #define KVM_CAP_ARM_PMU_V3 126
+>  #define KVM_CAP_VCPU_ATTRIBUTES 127
+>  #define KVM_CAP_MAX_VCPU_ID 128
+> +#define KVM_CAP_PPC_HTM 129
+> =20
+>  #ifdef KVM_CAP_IRQ_ROUTING
+> =20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--xXmbgvnjoT4axfJE
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXfZ1JAAoJEGw4ysog2bOSJ2gP/R2X9SCYvYWeTjmY7jNpsQ/k
+HF5jWIC6qTLxsihMdSwRiazcABAAq1RbTj0tH8FY1ycHxbW/KT/HXlohtUGSLsHn
+2BHZlemVX3q8E4/0SVxEBIlAxMYhCewxS3TGI5IhcEpwFC4tN5tYgHnwelqX8nMK
+UWHzN5tiAzmnsLGxb2ddXDjstW7Wm0iceTzcI8kd3UWp14NFboS42iY7KKj/QVh3
+sDh4zqOFwygT2bwbZjQV+MnhI8aVwxTUdpLbKttivGO6gElUDpFbjXSvPeXsYDNL
+026K0CRltF3WyubvMbx+ve+dLjI7s6MNU0LQ+bq4ZTmgNKAF2SpDfPo4aN2WcfOk
+3/cLHViO4LGSIQayF++W+nQ4Wv8Sgp80+nPps9tDfOKRueg8xrIzDi0QMUAIkH1b
+o/K1eG1svm9Pa5Y+aWnGUPXpvZiEK3294YcXQ/PR+T906qDf9jbaAXWcExFYkvcG
+V8ieRXbNXGzMaApzokCNAVLkxwEatiUUZHPBn6wjevOoWvDQWiHr1vt1veb6RUjz
+J30w7HCH9BqCOhpAuFrs5yWR/w+kawtSI2mvO+qKoO0YZ8nclXQyqm+yDpknPmuR
+ayaMlsgAQSL9USbsUUNmveJIaFM6ZyjC4JwczDNiaIjluylHIur9ju14HRIoubCr
+R7lpsbXKOGbig7vd+hql
+=Y8IA
+-----END PGP SIGNATURE-----
+
+--xXmbgvnjoT4axfJE--
