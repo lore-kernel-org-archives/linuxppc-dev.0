@@ -1,26 +1,37 @@
-Return-Path: <danielwa@cisco.com>
-Received: from rcdn-iport-3.cisco.com (rcdn-iport-3.cisco.com [173.37.86.74])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlp3Q4DDCzDr3T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 05:44:18 +1000 (AEST)
-Subject: Re: t1040 IFC flash driver Extended Chip Select
-To: Scott Wood <scott.wood@nxp.com>, Raghav Dogra <raghav.dogra@nxp.com>,
- Brian Norris <computersforpeace@gmail.com>,
- Jaiprakash Singh <b44839@freescale.com>, Scott Wood
- <scottwood@freescale.com>, Lijun Pan <Lijun.Pan@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "xe-kernel@external.cisco.com" <xe-kernel@external.cisco.com>
-References: <577D68B8.8020305@cisco.com>
- <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577E79D4.1010709@cisco.com>
- <DB5PR0401MB1928CD680EFFD3A1712AA9F6913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-From: Daniel Walker <danielwa@cisco.com>
-Message-ID: <577EB10B.7010601@cisco.com>
-Date: Thu, 7 Jul 2016 12:44:11 -0700
-MIME-Version: 1.0
-In-Reply-To: <DB5PR0401MB1928CD680EFFD3A1712AA9F6913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlqMG44DrzDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 06:43:06 +1000 (AEST)
+Message-ID: <1467924174.32358.69.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Arnd Bergmann <arnd@arndb.de>, Yangbo Lu <yangbo.lu@nxp.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Mark
+ Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, Qiang Zhao
+ <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>, Bhupesh Sharma
+ <bhupesh.sharma@freescale.com>,  Joerg Roedel <joro@8bytes.org>, Claudiu
+ Manoil <claudiu.manoil@freescale.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, Kumar Gala <galak@codeaurora.org>, Rob
+ Herring <robh+dt@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linux-mmc@vger.kernel.org"
+ <linux-mmc@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li
+ <leoyang.li@nxp.com>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>
+Date: Thu, 07 Jul 2016 15:42:54 -0500
+In-Reply-To: <4094106.qfxJu3tJbO@wuerfel>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ <1465609853.22191.151.camel@buserror.net>
+ <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+ <4094106.qfxJu3tJbO@wuerfel>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,85 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/2016 12:26 PM, Scott Wood wrote:
-> On 07/07/2016 10:48 AM, Daniel Walker wrote:
->> On 07/06/2016 05:57 PM, Scott Wood wrote:
->>> On 07/06/2016 03:23 PM, Daniel Walker wrote:
->>>> Hi,
->>>>
->>>> We are using the t1040 platform, and we have found that we need to
->>>> populate this register. In the Technical Reference Manual it's
->>>> description is section 24.3.2. This option appears in the driver, but it
->>>> doesn't appears to be used anyplace.
->>> I'm not sure what you mean by "in the driver".  U-boot sets these registers.
->> My hardware doesn't use u-boot , and it doesn't set these values.
->> However, there are other reasons to have this. For example, you use
->> u-boot but it's got a defect which sets the values incorrectly. You may
->> not be able to update your bootloader on a shipped product.
-> How did you get to the point of shipping a product with this wrong?  Did
-> previous software versions not use IFC?
+On Thu, 2016-07-07 at 10:30 +0200, Arnd Bergmann wrote:
+> On Thursday, July 7, 2016 2:35:33 AM CEST Yangbo Lu wrote:
+> > 
+> > Hi Arnd,
+> > 
+> > Could you reply when you see the email?
+> > If your method doesn’t resolve the problem, we still want to use our old
+> > patchset.
+> > 
+> > This guts driver had been discussed about one year and blocked many
+> > workaround upstream.
+> > So please help to review and comment soon.
+> > 
+> I don't really see how more discussion is going to help us here. I think
+> I've made it pretty clear that I don't want to see another platform
+> specific way to read an SoC revision and I've even sent a proof-of-concept
+> patch to show how the interface can work, now it's up to you to fit the
+> guts hardware into that and send a new patch series.
 
-I don't know the details .. We have a hack in place to set the values in 
-the kernel, but I don't see that as acceptable.
+In which relevant maintainership capacity are you NACKing it?
 
->
-> We could have the Linux driver initialize things, but as I said, the
-> missing piece from the device tree isn't this register, it's the attributes.
->
-> What else does/doesn't your loader do?  Does it set up a LAW that covers
-> IFC?  You only put this one register here -- does your loader set up
-> CSPR/CSOR?  If it's just this one register that was overlooked, and you
-> can't update the bootloader, simplest may be to just have your board's
-> platform code write it.
-
-I don't know those details .. I can say that cspr_ext is the only thing 
-we need to get IFC working, the only thing we have found.
-
-It seems natual that if cspr is in the device tree, you would also want 
-cspr_ext because both are used to identify the device. The fact that 
-it's missing to me is strange. As I said in my prior email, even if 
-uboot sets those, you could have cases when it's wrong. Why would I not 
-be able to simply change the device tree to correct it ?
-
-
->>>> We we're considered adding something to the device tree to allow
->>>> populating this value, but I'm wondering if any of you have specific
->>>> considerations on how this is done. Or maybe it's not needed at all, and
->>>> we're just missing something.
->>>>
->>>> (not a good patch, just an example.)
->>>>
->>>> diff --git
->>>> a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
->>>> b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
->>>> index 89427b0..b506001 100644
->>>> --- a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
->>>> +++ b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
->>>> @@ -24,6 +24,8 @@ Properties:
->>>>     - ranges : Each range corresponds to a single chipselect, and covers
->>>>                the entire access window as configured.
->>>>
->>>> +- cspr_ext : This value sets the extended chip select for all banks.
->>> I see no reason to put this here.  Boot software should be setting the
->>> chipselect registers, and if for some reason you don't want to do that,
->>> you could just translate the address through ranges to find the value to
->>> write.  Why would you have the binding assume it's the same for all banks?
->> It was only an example, to start the conversation. I don't understand
->> what you mean by translating the address thru ranges?
-> of_address_to_resource()
->
->>> The information that is missing from the device tree, that currently
->>> must come from boot software programming the registers, is the various
->>> attributes that get programmed in CSPR/CSOR.
->>>
->> Like I said mine doesn't do this, so it's required that it be set in an
->> alternative way. The only alternative we have currently is adding some
->> code to manually set the values but it's not ideal (and not upstreamable).
-> I wouldn't have a problem merging code in a platform board file that
-> writes a single register that a hard-to-update bootloader forgot to write.
-
-I can submit it to you, but I would much prefer a general solution that 
-others can use without having to create board files. Our goal has been 
-to reduce board files as much as possible, do you not agree with that?
-
-Daniel
+-Scott
