@@ -1,48 +1,45 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
+ [IPv6:2a00:1450:400c:c09::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlmn12MBdzDr4b
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:46:45 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u67Ii66I114977
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 14:46:43 -0400
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xn7hf6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 14:46:42 -0400
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 7 Jul 2016 15:46:40 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 1DF2D1DC006F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 14:46:30 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u67IkbSt12911102
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 15:46:37 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u67Ikboe032410
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 15:46:37 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>
-Cc: kexec@lists.infradead.org, catalin.marinas@arm.com, will.deacon@arm.com,
- geoff@infradead.org, james.morse@arm.com,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v21 8/8] Documentation: dt: usable-memory and elfcorehdr
- nodes for arm64 kexec
-Date: Thu, 07 Jul 2016 15:46:35 -0300
-In-Reply-To: <20160707020025.GY20774@linaro.org>
-References: <20160706075226.27609-1-takahiro.akashi@linaro.org>
- <6483018.WWW2TSJB10@hactar> <20160707020025.GY20774@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlmzs69QvzDr2b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:56:09 +1000 (AEST)
+Received: by mail-wm0-x233.google.com with SMTP id k123so2249801wme.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 11:56:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1629887.9vk1SlhCGj@hactar>
+Sender: keescook@google.com
+In-Reply-To: <577ddc18.d351190a.1fa54.ffffbe79SMTPIN_ADDED_BROKEN@mx.google.com>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <1467843928-29351-10-git-send-email-keescook@chromium.org>
+ <577ddc18.d351190a.1fa54.ffffbe79SMTPIN_ADDED_BROKEN@mx.google.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Thu, 7 Jul 2016 14:56:02 -0400
+Message-ID: <CAGXu5jJbmLD-zPzJodM0=imuj-=w_s8RGP=vwtGuhmXJjQjuSw@mail.gmail.com>
+Subject: Re: [kernel-hardening] Re: [PATCH 9/9] mm: SLUB hardened usercopy
+ support
+To: "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>,
+ Borislav Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Laura Abbott <labbott@fedoraproject.org>,
+ lin <ux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,63 +49,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Donnerstag, 07 Juli 2016, 11:00:25 schrieb AKASHI Takahiro:
-> On Wed, Jul 06, 2016 at 04:29:18PM -0300, Thiago Jung Bauermann wrote:
-> > Hi,
-> > 
-> > Am Mittwoch, 06 Juli 2016, 16:52:26 schrieb AKASHI Takahiro:
-> > > +linux,usable-memory
-> > > +-------------------
-> > > +
-> > > +This property is set on PowerPC and arm64 by kexec-tools during kdump
-> > > +to tell the crash kernel the base address of its reserved area of
-> > > memory, and +the size. e.g.
-> > > +
-> > > +/ {
-> > > +	chosen {
-> > > +		linux,usable-memory = <0x9 0xf0000000 0x0 0x10000000>;
-> > > +	};
-> > > +};
-> > 
-> > Again, this description is wrong for PowerPC. See messages from myself
-> > and Michael Ellerman:
-> > 
-> > https://lists.infradead.org/pipermail/kexec/2016-June/016250.html
-> > 
-> > https://lists.infradead.org/pipermail/kexec/2016-June/016253.html
-> 
-> Oops, I must have missed your previous comments. Apologies.
+On Thu, Jul 7, 2016 at 12:35 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Kees Cook <keescook@chromium.org> writes:
+>
+>> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
+>> SLUB allocator to catch any copies that may span objects.
+>>
+>> Based on code from PaX and grsecurity.
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>
+>> diff --git a/mm/slub.c b/mm/slub.c
+>> index 825ff4505336..0c8ace04f075 100644
+>> --- a/mm/slub.c
+>> +++ b/mm/slub.c
+>> @@ -3614,6 +3614,33 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+>>  EXPORT_SYMBOL(__kmalloc_node);
+>>  #endif
+>>
+>> +#ifdef CONFIG_HARDENED_USERCOPY
+>> +/*
+>> + * Rejects objects that are incorrectly sized.
+>> + *
+>> + * Returns NULL if check passes, otherwise const char * to name of cache
+>> + * to indicate an error.
+>> + */
+>> +const char *__check_heap_object(const void *ptr, unsigned long n,
+>> +                             struct page *page)
+>> +{
+>> +     struct kmem_cache *s;
+>> +     unsigned long offset;
+>> +
+>> +     /* Find object. */
+>> +     s = page->slab_cache;
+>> +
+>> +     /* Find offset within object. */
+>> +     offset = (ptr - page_address(page)) % s->size;
+>> +
+>> +     /* Allow address range falling entirely within object size. */
+>> +     if (offset <= s->object_size && n <= s->object_size - offset)
+>> +             return NULL;
+>> +
+>> +     return s->name;
+>> +}
+>
+> I gave this a quick spin on powerpc, it blew up immediately :)
 
-No problem.
+Wheee :) This series is rather easy to test: blows up REALLY quickly
+if it's wrong. ;)
 
-> Yes, I know that, and I used to implement the same functionality before.
-> It did work for dtb-based systems, but not for UEFI(ACPI)-based systems
-> because UEFI doesn't export memory regions information via a device tree,
-> but rather via ACPI table. So "/memory" node won't appear.
-> So I went back with "mem=" command line approach, and later this
-> "/chosen/" approach.
+FWIW, -next also has a bunch of additional lkdtm tests for the various
+protections and directions.
 
-Ah, I didn't realize there could be dtb and UEFI systems.
+>
+>   Brought up 16 CPUs
+>   usercopy: kernel memory overwrite attempt detected to c0000001fe023868 (kmalloc-16) (9 bytes)
+>   CPU: 8 PID: 103 Comm: kdevtmpfs Not tainted 4.7.0-rc3-00098-g09d9556ae5d1 #55
+>   Call Trace:
+>   [c0000001fa0cfb40] [c0000000009bdbe8] dump_stack+0xb0/0xf0 (unreliable)
+>   [c0000001fa0cfb80] [c00000000029cf44] __check_object_size+0x74/0x320
+>   [c0000001fa0cfc00] [c00000000005d4d0] copy_from_user+0x60/0xd4
+>   [c0000001fa0cfc40] [c00000000022b6cc] memdup_user+0x5c/0xf0
+>   [c0000001fa0cfc80] [c00000000022b90c] strndup_user+0x7c/0x110
+>   [c0000001fa0cfcc0] [c0000000002d6c28] SyS_mount+0x58/0x180
+>   [c0000001fa0cfd10] [c0000000005ee908] devtmpfsd+0x98/0x210
+>   [c0000001fa0cfd80] [c0000000000df810] kthread+0x110/0x130
+>   [c0000001fa0cfe30] [c0000000000095e8] ret_from_kernel_thread+0x5c/0x74
+>
+> SLUB tracing says:
+>
+>   TRACE kmalloc-16 alloc 0xc0000001fe023868 inuse=186 fp=0x          (null)
+>
+> Which is not 16-byte aligned, which seems to be caused by the red zone?
+> The following patch fixes it for me, but I don't know SLUB enough to say
+> if it's always correct.
+>
+>
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 0c8ace04f075..66191ea4545a 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -3630,6 +3630,9 @@ const char *__check_heap_object(const void *ptr, unsigned long n,
+>         /* Find object. */
+>         s = page->slab_cache;
+>
+> +       /* Subtract red zone if enabled */
+> +       ptr = restore_red_left(s, ptr);
+> +
 
-> > IMHO, it would be simpler if ARM used linux,usable-memory in the same
-> > way
-> > that PowerPC does, for consistency.
-> 
-> Well, this property won't conflict with per-"/memory" ones
-> if we take it that the former, if present, supersedes the latter.
-> Sophistic?
-> What about changing the name to usable-memory-limit?
-> (I know that you have another one, "memory-limit" though.)
-> 
-> Again, I would like to defer to arm64 maintainers.
+Ah, interesting. Just to make sure: you've built with
+CONFIG_SLUB_DEBUG and either CONFIG_SLUB_DEBUG_ON or booted with
+either slub_debug or slub_debug=z ?
 
-My personal opinion is that having a property with a different name would be 
-less confusing, but it's not a strong opinion.
+Thanks for the slub fix!
 
-I would suggest calling it usable-memory-range, but I'm fine with whatever 
-is decided by the maintainers.
+I wonder if this code should be using size_from_object() instead of s->size?
+
+(It looks like slab is already handling this via the obj_offset() call.)
+
+-Kees
+
+>         /* Find offset within object. */
+>         offset = (ptr - page_address(page)) % s->size;
+>
+> cheers
+
+
 
 -- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Kees Cook
+Chrome OS & Brillo Security
