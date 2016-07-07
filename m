@@ -1,53 +1,37 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlVmL3msczDql5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:15:14 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6788jqC080774
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 04:15:12 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xm17vk-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 04:15:11 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 7 Jul 2016 18:15:09 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id ACC663578053
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:15:07 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u678F7n666977988
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 18:15:07 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u678F7Nr006467
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 18:15:07 +1000
-Subject: Re: [PATCH 14/14] cxl: Add cxl_check_and_switch_mode() API to switch
- bi-modal cards
-To: Ian Munsie <imunsie@au1.ibm.com>
-References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
- <1467638532-9250-15-git-send-email-imunsie@au.ibm.com>
- <577D533E.4030605@linux.vnet.ibm.com>
- <23e62784-d67a-1e08-ed60-99a50a15b249@au1.ibm.com>
- <1467872513-sup-7704@x230.ozlabs.ibm.com>
- <8ae21f63-a17e-5b57-3a9a-1c38eae358ed@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, Huy Nguyen
- <huyn@mellanox.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 7 Jul 2016 18:15:06 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlW3K5kGLzDqy2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:28:12 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: Scott Wood <oss@buserror.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>,
+ Santosh Shilimkar <ssantosh@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li <leoyang.li@nxp.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
+Subject: Re: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
+Date: Thu, 07 Jul 2016 10:30:29 +0200
+Message-ID: <4094106.qfxJu3tJbO@wuerfel>
+In-Reply-To: <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ <1465609853.22191.151.camel@buserror.net>
+ <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <8ae21f63-a17e-5b57-3a9a-1c38eae358ed@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <48b96bd7-70fa-3169-ea1f-7ca66b69e41a@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,37 +41,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/16 16:44, Andrew Donnellan wrote:
-> We can match the vendor, device ID *and* class code - unfortunately
-> there isn't a macro for this, which makes it a little bit less
-> aesthetically pleasing, but I'm pretty sure this works.
+On Thursday, July 7, 2016 2:35:33 AM CEST Yangbo Lu wrote:
+> Hi Arnd,
+>=20
+> Could you reply when you see the email?
+> If your method doesn=E2=80=99t resolve the problem, we still want to use =
+our old patchset.
+>=20
+> This guts driver had been discussed about one year and blocked many worka=
+round upstream.
+> So please help to review and comment soon.
+>=20
 
-Something like the below, which works fine:
+I don't really see how more discussion is going to help us here. I think
+I've made it pretty clear that I don't want to see another platform
+specific way to read an SoC revision and I've even sent a proof-of-concept
+patch to show how the interface can work, now it's up to you to fit the
+guts hardware into that and send a new patch series.
 
-/*
-  * Matches a given PCI vendor ID and device ID, but only for class 12
-  * (processing accelerators). Useful for bi-modal cards, such as the
-  * Mellanox ConnectX-4, which keep the same vendor/device ID
-  * post-mode-switch.
-  */
-#define PCI_DEVICE_ACCEL(vend, dev) \
-	.vendor = (vend), .device = (dev), \
-	.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID, \
-	.class = 0x120000, .class_mask = 0xff0000
-
-static const struct pci_device_id cxl_pci_tbl[] = {
-	/* FPGA devices */
-	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0477), },
-	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
-	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
-	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
-	/* Mellanox ConnectX-4 */
-	{ PCI_DEVICE_ACCEL(PCI_VENDOR_ID_MELLANOX, 0x1013), },
-	{ }
-};
-MODULE_DEVICE_TABLE(pci, cxl_pci_tbl);
-
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+	Arnd
