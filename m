@@ -1,47 +1,46 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rljc61HLzzDr0r
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:23:49 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u67FxLfV107328
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 12:23:47 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rljc73lNHzDqq1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:23:51 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u67FxMEX097491
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 12:23:49 -0400
 Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2415xmtdpd-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xk3agt-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 12:23:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 12:23:49 -0400
 Received: from localhost
  by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 7 Jul 2016 13:23:45 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 4ACA3352005F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 12:23:25 -0400 (EDT)
+ Thu, 7 Jul 2016 13:23:46 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id A1180352006C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 12:23:26 -0400 (EDT)
 Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u67GNgaO13042076
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 13:23:42 -0300
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u67GNixV34144586
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 13:23:44 -0300
 Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
  by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u67GNgPl003694
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 13:23:42 -0300
+ u67GNhIi003767
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 13:23:44 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Eric Biederman <ebiederm@xmission.com>, Dave Young <dyoung@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Subject: [PATCH v4 2/9] kexec_file: Change kexec_add_buffer to take kexec_buf
- as argument.
-Date: Thu,  7 Jul 2016 13:23:28 -0300
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Torsten Duwe <duwe@suse.de>
+Subject: [PATCH v4 5/9] powerpc: Generalize elf64_apply_relocate_add.
+Date: Thu,  7 Jul 2016 13:23:31 -0300
 In-Reply-To: <1467908615-18952-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1467908615-18952-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1467908615-18952-3-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1467908615-18952-6-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,420 +50,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adapt all callers to the new function prototype.
+When apply_relocate_add is called, modules are already loaded at their
+final location in memory so Elf64_Shdr.sh_addr can be used for accessing
+the section contents as well as the base address for relocations.
 
-In addition, change the type of kexec_buf.buffer from char * to void *.
-There is no particular reason for it to be a char *, and the change
-allows us to get rid of 3 existing casts to char * in the code.
+This is not the case for kexec's purgatory, because it will only be
+copied to its final location right before being executed. Therefore,
+it needs to be relocated while it is still in a temporary buffer. In
+this case, Elf64_Shdr.sh_addr can't be used to access the sections'
+contents.
+
+This patch allows elf64_apply_relocate_add to be used when the ELF
+binary is not yet at its final location by adding an addr_base argument
+to specify the address at which the section will be loaded, and rela,
+loc_base and syms_base to point to the sections' contents.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Eric Biederman <ebiederm@xmission.com>
-Cc: Dave Young <dyoung@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Torsten Duwe <duwe@suse.de>
 ---
- arch/x86/kernel/crash.c           | 37 ++++++++--------
- arch/x86/kernel/kexec-bzimage64.c | 48 +++++++++++----------
- include/linux/kexec.h             |  8 +---
- kernel/kexec_file.c               | 88 ++++++++++++++++++---------------------
- 4 files changed, 87 insertions(+), 94 deletions(-)
+ arch/powerpc/include/asm/elf_util.h |  6 ++--
+ arch/powerpc/kernel/elf_util_64.c   | 63 +++++++++++++++++++++++++------------
+ arch/powerpc/kernel/module_64.c     | 17 ++++++++--
+ 3 files changed, 61 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 9ef978d69c22..dc026ea361dc 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -615,9 +615,9 @@ static int determine_backup_region(u64 start, u64 end, void *arg)
- 
- int crash_load_segments(struct kimage *image)
- {
--	unsigned long src_start, src_sz, elf_sz;
--	void *elf_addr;
- 	int ret;
-+	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
-+				  .buf_max = ULONG_MAX, .top_down = false };
- 
- 	/*
- 	 * Determine and load a segment for backup area. First 640K RAM
-@@ -631,43 +631,44 @@ int crash_load_segments(struct kimage *image)
- 	if (ret < 0)
- 		return ret;
- 
--	src_start = image->arch.backup_src_start;
--	src_sz = image->arch.backup_src_sz;
--
- 	/* Add backup segment. */
--	if (src_sz) {
-+	if (image->arch.backup_src_sz) {
-+		kbuf.buffer = &crash_zero_bytes;
-+		kbuf.bufsz = sizeof(crash_zero_bytes);
-+		kbuf.memsz = image->arch.backup_src_sz;
-+		kbuf.buf_align = PAGE_SIZE;
- 		/*
- 		 * Ideally there is no source for backup segment. This is
- 		 * copied in purgatory after crash. Just add a zero filled
- 		 * segment for now to make sure checksum logic works fine.
- 		 */
--		ret = kexec_add_buffer(image, (char *)&crash_zero_bytes,
--				       sizeof(crash_zero_bytes), src_sz,
--				       PAGE_SIZE, 0, -1, 0,
--				       &image->arch.backup_load_addr);
-+		ret = kexec_add_buffer(&kbuf);
- 		if (ret)
- 			return ret;
-+		image->arch.backup_load_addr = kbuf.mem;
- 		pr_debug("Loaded backup region at 0x%lx backup_start=0x%lx memsz=0x%lx\n",
--			 image->arch.backup_load_addr, src_start, src_sz);
-+			 image->arch.backup_load_addr,
-+			 image->arch.backup_src_start, kbuf.memsz);
- 	}
- 
- 	/* Prepare elf headers and add a segment */
--	ret = prepare_elf_headers(image, &elf_addr, &elf_sz);
-+	ret = prepare_elf_headers(image, &kbuf.buffer, &kbuf.bufsz);
- 	if (ret)
- 		return ret;
- 
--	image->arch.elf_headers = elf_addr;
--	image->arch.elf_headers_sz = elf_sz;
-+	image->arch.elf_headers = kbuf.buffer;
-+	image->arch.elf_headers_sz = kbuf.bufsz;
- 
--	ret = kexec_add_buffer(image, (char *)elf_addr, elf_sz, elf_sz,
--			ELF_CORE_HEADER_ALIGN, 0, -1, 0,
--			&image->arch.elf_load_addr);
-+	kbuf.memsz = kbuf.bufsz;
-+	kbuf.buf_align = ELF_CORE_HEADER_ALIGN;
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret) {
- 		vfree((void *)image->arch.elf_headers);
- 		return ret;
- 	}
-+	image->arch.elf_load_addr = kbuf.mem;
- 	pr_debug("Loaded ELF headers at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
--		 image->arch.elf_load_addr, elf_sz, elf_sz);
-+		 image->arch.elf_load_addr, kbuf.bufsz, kbuf.bufsz);
- 
- 	return ret;
- }
-diff --git a/arch/x86/kernel/kexec-bzimage64.c b/arch/x86/kernel/kexec-bzimage64.c
-index f2356bda2b05..4b3a75329fb6 100644
---- a/arch/x86/kernel/kexec-bzimage64.c
-+++ b/arch/x86/kernel/kexec-bzimage64.c
-@@ -331,17 +331,17 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
- 
- 	struct setup_header *header;
- 	int setup_sects, kern16_size, ret = 0;
--	unsigned long setup_header_size, params_cmdline_sz, params_misc_sz;
-+	unsigned long setup_header_size, params_cmdline_sz;
- 	struct boot_params *params;
- 	unsigned long bootparam_load_addr, kernel_load_addr, initrd_load_addr;
- 	unsigned long purgatory_load_addr;
--	unsigned long kernel_bufsz, kernel_memsz, kernel_align;
--	char *kernel_buf;
- 	struct bzimage64_data *ldata;
- 	struct kexec_entry64_regs regs64;
- 	void *stack;
- 	unsigned int setup_hdr_offset = offsetof(struct boot_params, hdr);
- 	unsigned int efi_map_offset, efi_map_sz, efi_setup_data_offset;
-+	struct kexec_buf kbuf = { .image = image, .buf_max = ULONG_MAX,
-+				  .top_down = true };
- 
- 	header = (struct setup_header *)(kernel + setup_hdr_offset);
- 	setup_sects = header->setup_sects;
-@@ -402,11 +402,11 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
- 	params_cmdline_sz = sizeof(struct boot_params) + cmdline_len +
- 				MAX_ELFCOREHDR_STR_LEN;
- 	params_cmdline_sz = ALIGN(params_cmdline_sz, 16);
--	params_misc_sz = params_cmdline_sz + efi_map_sz +
-+	kbuf.bufsz = params_cmdline_sz + efi_map_sz +
- 				sizeof(struct setup_data) +
- 				sizeof(struct efi_setup_data);
- 
--	params = kzalloc(params_misc_sz, GFP_KERNEL);
-+	params = kzalloc(kbuf.bufsz, GFP_KERNEL);
- 	if (!params)
- 		return ERR_PTR(-ENOMEM);
- 	efi_map_offset = params_cmdline_sz;
-@@ -418,37 +418,41 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
- 	/* Is there a limit on setup header size? */
- 	memcpy(&params->hdr, (kernel + setup_hdr_offset), setup_header_size);
- 
--	ret = kexec_add_buffer(image, (char *)params, params_misc_sz,
--			       params_misc_sz, 16, MIN_BOOTPARAM_ADDR,
--			       ULONG_MAX, 1, &bootparam_load_addr);
-+	kbuf.buffer = params;
-+	kbuf.memsz = kbuf.bufsz;
-+	kbuf.buf_align = 16;
-+	kbuf.buf_min = MIN_BOOTPARAM_ADDR;
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out_free_params;
-+	bootparam_load_addr = kbuf.mem;
- 	pr_debug("Loaded boot_param, command line and misc at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
--		 bootparam_load_addr, params_misc_sz, params_misc_sz);
-+		 bootparam_load_addr, kbuf.bufsz, kbuf.bufsz);
- 
- 	/* Load kernel */
--	kernel_buf = kernel + kern16_size;
--	kernel_bufsz =  kernel_len - kern16_size;
--	kernel_memsz = PAGE_ALIGN(header->init_size);
--	kernel_align = header->kernel_alignment;
--
--	ret = kexec_add_buffer(image, kernel_buf,
--			       kernel_bufsz, kernel_memsz, kernel_align,
--			       MIN_KERNEL_LOAD_ADDR, ULONG_MAX, 1,
--			       &kernel_load_addr);
-+	kbuf.buffer = kernel + kern16_size;
-+	kbuf.bufsz =  kernel_len - kern16_size;
-+	kbuf.memsz = PAGE_ALIGN(header->init_size);
-+	kbuf.buf_align = header->kernel_alignment;
-+	kbuf.buf_min = MIN_KERNEL_LOAD_ADDR;
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out_free_params;
-+	kernel_load_addr = kbuf.mem;
- 
- 	pr_debug("Loaded 64bit kernel at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
--		 kernel_load_addr, kernel_memsz, kernel_memsz);
-+		 kernel_load_addr, kbuf.bufsz, kbuf.memsz);
- 
- 	/* Load initrd high */
- 	if (initrd) {
--		ret = kexec_add_buffer(image, initrd, initrd_len, initrd_len,
--				       PAGE_SIZE, MIN_INITRD_LOAD_ADDR,
--				       ULONG_MAX, 1, &initrd_load_addr);
-+		kbuf.buffer = initrd;
-+		kbuf.bufsz = kbuf.memsz = initrd_len;
-+		kbuf.buf_align = PAGE_SIZE;
-+		kbuf.buf_min = MIN_INITRD_LOAD_ADDR;
-+		ret = kexec_add_buffer(&kbuf);
- 		if (ret)
- 			goto out_free_params;
-+		initrd_load_addr = kbuf.mem;
- 
- 		pr_debug("Loaded initrd at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
- 				initrd_load_addr, initrd_len, initrd_len);
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 2549a99a748c..ff5fa7707bd7 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -161,7 +161,7 @@ struct kexec_file_ops {
-  */
- struct kexec_buf {
- 	struct kimage *image;
--	char *buffer;
-+	void *buffer;
- 	unsigned long bufsz;
- 	unsigned long mem;
- 	unsigned long memsz;
-@@ -173,6 +173,7 @@ struct kexec_buf {
- 
- int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
- 			       int (*func)(u64, u64, void *));
-+extern int kexec_add_buffer(struct kexec_buf *kbuf);
- #endif /* CONFIG_KEXEC_FILE */
- 
- struct kimage {
-@@ -237,11 +238,6 @@ extern asmlinkage long sys_kexec_load(unsigned long entry,
- 					struct kexec_segment __user *segments,
- 					unsigned long flags);
- extern int kernel_kexec(void);
--extern int kexec_add_buffer(struct kimage *image, char *buffer,
--			    unsigned long bufsz, unsigned long memsz,
--			    unsigned long buf_align, unsigned long buf_min,
--			    unsigned long buf_max, bool top_down,
--			    unsigned long *load_addr);
- extern struct page *kimage_alloc_control_pages(struct kimage *image,
- 						unsigned int order);
- extern int kexec_load_purgatory(struct kimage *image, unsigned long min,
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 9c0c565a08db..82ccfc4ee97e 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -449,25 +449,27 @@ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
- 		return walk_system_ram_res(0, ULONG_MAX, kbuf, func);
+diff --git a/arch/powerpc/include/asm/elf_util.h b/arch/powerpc/include/asm/elf_util.h
+index 37372559fe62..a012ba03282d 100644
+--- a/arch/powerpc/include/asm/elf_util.h
++++ b/arch/powerpc/include/asm/elf_util.h
+@@ -64,7 +64,9 @@ static inline unsigned long my_r2(const struct elf_info *elf_info)
  }
  
--/*
-- * Helper function for placing a buffer in a kexec segment. This assumes
-- * that kexec_mutex is held.
-+/**
-+ * kexec_add_buffer - place a buffer in a kexec segment
-+ * @kbuf:	Buffer contents and memory parameters.
+ int elf64_apply_relocate_add(const struct elf_info *elf_info,
+-			     const char *strtab, unsigned int symindex,
+-			     unsigned int relsec, const char *obj_name);
++			     const char *strtab, const Elf64_Rela *rela,
++			     unsigned int num_rela, void *syms_base,
++			     void *loc_base, Elf64_Addr addr_base,
++			     const char *obj_name);
+ 
+ #endif /* _ASM_POWERPC_ELF_UTIL_H */
+diff --git a/arch/powerpc/kernel/elf_util_64.c b/arch/powerpc/kernel/elf_util_64.c
+index decad2c34f38..8e5d400ac9f2 100644
+--- a/arch/powerpc/kernel/elf_util_64.c
++++ b/arch/powerpc/kernel/elf_util_64.c
+@@ -69,33 +69,56 @@ static void squash_toc_save_inst(const char *name, unsigned long addr) { }
+  * elf64_apply_relocate_add - apply 64 bit RELA relocations
+  * @elf_info:		Support information for the ELF binary being relocated.
+  * @strtab:		String table for the associated symbol table.
+- * @symindex:		Section header index for the associated symbol table.
+- * @relsec:		Section header index for the relocations to apply.
++ * @rela:		Contents of the section with the relocations to apply.
++ * @num_rela:		Number of relocation entries in the section.
++ * @syms_base:		Contents of the associated symbol table.
++ * @loc_base:		Contents of the section to which relocations apply.
++ * @addr_base:		The address where the section will be loaded in memory.
+  * @obj_name:		The name of the ELF binary, for information messages.
 + *
-+ * This function assumes that kexec_mutex is held.
-+ * On successful return, @kbuf->mem will have the physical address of
-+ * the buffer in memory.
-+ *
-+ * Return: 0 on success, negative errno on error.
++ * Applies RELA relocations to an ELF file already at its final location
++ * in memory (in which case loc_base == addr_base), or still in a temporary
++ * buffer.
   */
--int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
--		     unsigned long memsz, unsigned long buf_align,
--		     unsigned long buf_min, unsigned long buf_max,
--		     bool top_down, unsigned long *load_addr)
-+int kexec_add_buffer(struct kexec_buf *kbuf)
+ int elf64_apply_relocate_add(const struct elf_info *elf_info,
+-			     const char *strtab, unsigned int symindex,
+-			     unsigned int relsec, const char *obj_name)
++			     const char *strtab, const Elf64_Rela *rela,
++			     unsigned int num_rela, void *syms_base,
++			     void *loc_base, Elf64_Addr addr_base,
++			     const char *obj_name)
  {
+ 	unsigned int i;
+-	Elf64_Shdr *sechdrs = elf_info->sechdrs;
+-	Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
+-	Elf64_Sym *sym;
+ 	unsigned long *location;
++	unsigned long address;
+ 	unsigned long value;
++	const char *name;
++	Elf64_Sym *sym;
++
++	for (i = 0; i < num_rela; i++) {
++		/*
++		 * rels[i].r_offset contains the byte offset from the beginning
++		 * of section to the storage unit affected.
++		 *
++		 * This is the location to update in the temporary buffer where
++		 * the section is currently loaded. The section will finally
++		 * be loaded to a different address later, pointed to by
++		 * addr_base.
++		 */
++		location = loc_base + rela[i].r_offset;
++
++		/* Final address of the location. */
++		address = addr_base + rela[i].r_offset;
  
- 	struct kexec_segment *ksegment;
--	struct kexec_buf buf, *kbuf;
- 	int ret;
++		/* This is the symbol the relocation is referring to. */
++		sym = (Elf64_Sym *) syms_base + ELF64_R_SYM(rela[i].r_info);
  
- 	/* Currently adding segment this way is allowed only in file mode */
--	if (!image->file_mode)
-+	if (!kbuf->image->file_mode)
- 		return -EINVAL;
+-	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
+-		/* This is where to make the change */
+-		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
+-			+ rela[i].r_offset;
+-		/* This is the symbol it is referring to */
+-		sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
+-			+ ELF64_R_SYM(rela[i].r_info);
++		if (sym->st_name)
++			name = strtab + sym->st_name;
++		else
++			name = "<unnamed symbol>";
  
--	if (image->nr_segments >= KEXEC_SEGMENT_MAX)
-+	if (kbuf->image->nr_segments >= KEXEC_SEGMENT_MAX)
- 		return -EINVAL;
+ 		pr_debug("RELOC at %p: %li-type as %s (0x%lx) + %li\n",
+ 		       location, (long)ELF64_R_TYPE(rela[i].r_info),
+-		       strtab + sym->st_name, (unsigned long)sym->st_value,
++		       name, (unsigned long)sym->st_value,
+ 		       (long)rela[i].r_addend);
  
- 	/*
-@@ -477,22 +479,14 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
- 	 * logic goes through list of segments to make sure there are
- 	 * no destination overlaps.
- 	 */
--	if (!list_empty(&image->control_pages)) {
-+	if (!list_empty(&kbuf->image->control_pages)) {
- 		WARN_ON(1);
- 		return -EINVAL;
- 	}
+ 		/* `Everything is relative'. */
+@@ -187,7 +210,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
+ 				value += local_entry_offset(sym);
  
--	memset(&buf, 0, sizeof(struct kexec_buf));
--	kbuf = &buf;
--	kbuf->image = image;
--	kbuf->buffer = buffer;
--	kbuf->bufsz = bufsz;
--
--	kbuf->memsz = ALIGN(memsz, PAGE_SIZE);
--	kbuf->buf_align = max(buf_align, PAGE_SIZE);
--	kbuf->buf_min = buf_min;
--	kbuf->buf_max = buf_max;
--	kbuf->top_down = top_down;
-+	/* Ensure minimum alignment needed for segments. */
-+	kbuf->memsz = ALIGN(kbuf->memsz, PAGE_SIZE);
-+	kbuf->buf_align = max(kbuf->buf_align, PAGE_SIZE);
+ 			/* Convert value to relative */
+-			value -= (unsigned long)location;
++			value -= address;
+ 			if (value + 0x2000000 > 0x3ffffff || (value & 3) != 0){
+ 				pr_err("%s: REL24 %li out of range!\n",
+ 				       obj_name, (long int)value);
+@@ -202,7 +225,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
  
- 	/* Walk the RAM ranges and allocate a suitable range for the buffer */
- 	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
-@@ -502,13 +496,12 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
- 	}
+ 		case R_PPC64_REL64:
+ 			/* 64 bits relative (used by features fixups) */
+-			*location = value - (unsigned long)location;
++			*location = value - address;
+ 			break;
  
- 	/* Found a suitable memory range */
--	ksegment = &image->segment[image->nr_segments];
-+	ksegment = &kbuf->image->segment[kbuf->image->nr_segments];
- 	ksegment->kbuf = kbuf->buffer;
- 	ksegment->bufsz = kbuf->bufsz;
- 	ksegment->mem = kbuf->mem;
- 	ksegment->memsz = kbuf->memsz;
--	image->nr_segments++;
--	*load_addr = ksegment->mem;
-+	kbuf->image->nr_segments++;
- 	return 0;
+ 		case R_PPC64_TOCSAVE:
+@@ -218,7 +241,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
+ 			 * Optimize ELFv2 large code model entry point if
+ 			 * the TOC is within 2GB range of current location.
+ 			 */
+-			value = my_r2(elf_info) - (unsigned long)location;
++			value = my_r2(elf_info) - address;
+ 			if (value + 0x80008000 > 0xffffffff)
+ 				break;
+ 			/*
+@@ -242,7 +265,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
+ 
+ 		case R_PPC64_REL16_HA:
+ 			/* Subtract location pointer */
+-			value -= (unsigned long)location;
++			value -= address;
+ 			value = ((value + 0x8000) >> 16);
+ 			*((uint16_t *) location)
+ 				= (*((uint16_t *) location) & ~0xffff)
+@@ -251,7 +274,7 @@ int elf64_apply_relocate_add(const struct elf_info *elf_info,
+ 
+ 		case R_PPC64_REL16_LO:
+ 			/* Subtract location pointer */
+-			value -= (unsigned long)location;
++			value -= address;
+ 			*((uint16_t *) location)
+ 				= (*((uint16_t *) location) & ~0xffff)
+ 				| (value & 0xffff);
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index f2b25b4f9066..7f3b17bcac05 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -438,16 +438,26 @@ int restore_r2(u32 *instruction, const char *obj_name)
+ 	return 1;
  }
  
-@@ -630,13 +623,15 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 				  unsigned long max, int top_down)
++/*
++ * When this function is called, the module is already at its final location in
++ * memory, so Elf64_Shdr.sh_addr can be used for accessing the section
++ * contents as well as the base address for relocations.
++ */
+ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		       const char *strtab,
+ 		       unsigned int symindex,
+ 		       unsigned int relsec,
+ 		       struct module *me)
  {
- 	struct purgatory_info *pi = &image->purgatory_info;
--	unsigned long align, buf_align, bss_align, buf_sz, bss_sz, bss_pad;
--	unsigned long memsz, entry, load_addr, curr_load_addr, bss_addr, offset;
-+	unsigned long align, bss_align, bss_sz, bss_pad;
-+	unsigned long entry, load_addr, curr_load_addr, bss_addr, offset;
- 	unsigned char *buf_addr, *src;
- 	int i, ret = 0, entry_sidx = -1;
- 	const Elf_Shdr *sechdrs_c;
- 	Elf_Shdr *sechdrs = NULL;
--	void *purgatory_buf = NULL;
-+	struct kexec_buf kbuf = { .image = image, .bufsz = 0, .buf_align = 1,
-+				  .buf_min = min, .buf_max = max,
-+				  .top_down = top_down };
++	Elf64_Shdr *rel_section = &sechdrs[relsec];
++	void *syms_base = (void *) sechdrs[symindex].sh_addr;
++	Elf64_Addr addr_base = sechdrs[rel_section->sh_info].sh_addr;
++	const Elf64_Rela *rela = (const Elf64_Rela *) rel_section->sh_addr;
++	unsigned int num_rela = rel_section->sh_size / sizeof(Elf64_Rela);
+ 	Elf64_Sym *sym;
  
- 	/*
- 	 * sechdrs_c points to section headers in purgatory and are read
-@@ -702,9 +697,7 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
+ 	pr_debug("Applying ADD relocate section %u to %u\n", relsec,
+-	       sechdrs[relsec].sh_info);
++		 rel_section->sh_info);
+ 
+ 	/* First time we're called, we can fix up .TOC. */
+ 	if (!me->arch.toc_fixed) {
+@@ -459,8 +469,9 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		me->arch.toc_fixed = true;
  	}
  
- 	/* Determine how much memory is needed to load relocatable object. */
--	buf_align = 1;
- 	bss_align = 1;
--	buf_sz = 0;
- 	bss_sz = 0;
- 
- 	for (i = 0; i < pi->ehdr->e_shnum; i++) {
-@@ -713,10 +706,10 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 
- 		align = sechdrs[i].sh_addralign;
- 		if (sechdrs[i].sh_type != SHT_NOBITS) {
--			if (buf_align < align)
--				buf_align = align;
--			buf_sz = ALIGN(buf_sz, align);
--			buf_sz += sechdrs[i].sh_size;
-+			if (kbuf.buf_align < align)
-+				kbuf.buf_align = align;
-+			kbuf.bufsz = ALIGN(kbuf.bufsz, align);
-+			kbuf.bufsz += sechdrs[i].sh_size;
- 		} else {
- 			/* bss section */
- 			if (bss_align < align)
-@@ -728,32 +721,31 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 
- 	/* Determine the bss padding required to align bss properly */
- 	bss_pad = 0;
--	if (buf_sz & (bss_align - 1))
--		bss_pad = bss_align - (buf_sz & (bss_align - 1));
-+	if (kbuf.bufsz & (bss_align - 1))
-+		bss_pad = bss_align - (kbuf.bufsz & (bss_align - 1));
- 
--	memsz = buf_sz + bss_pad + bss_sz;
-+	kbuf.memsz = kbuf.bufsz + bss_pad + bss_sz;
- 
- 	/* Allocate buffer for purgatory */
--	purgatory_buf = vzalloc(buf_sz);
--	if (!purgatory_buf) {
-+	kbuf.buffer = vzalloc(kbuf.bufsz);
-+	if (!kbuf.buffer) {
- 		ret = -ENOMEM;
- 		goto out;
- 	}
- 
--	if (buf_align < bss_align)
--		buf_align = bss_align;
-+	if (kbuf.buf_align < bss_align)
-+		kbuf.buf_align = bss_align;
- 
- 	/* Add buffer to segment list */
--	ret = kexec_add_buffer(image, purgatory_buf, buf_sz, memsz,
--				buf_align, min, max, top_down,
--				&pi->purgatory_load_addr);
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out;
-+	pi->purgatory_load_addr = kbuf.mem;
- 
- 	/* Load SHF_ALLOC sections */
--	buf_addr = purgatory_buf;
-+	buf_addr = kbuf.buffer;
- 	load_addr = curr_load_addr = pi->purgatory_load_addr;
--	bss_addr = load_addr + buf_sz + bss_pad;
-+	bss_addr = load_addr + kbuf.bufsz + bss_pad;
- 
- 	for (i = 0; i < pi->ehdr->e_shnum; i++) {
- 		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-@@ -799,11 +791,11 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 	 * Used later to identify which section is purgatory and skip it
- 	 * from checksumming.
- 	 */
--	pi->purgatory_buf = purgatory_buf;
-+	pi->purgatory_buf = kbuf.buffer;
- 	return ret;
- out:
- 	vfree(sechdrs);
--	vfree(purgatory_buf);
-+	vfree(kbuf.buffer);
- 	return ret;
+-	return elf64_apply_relocate_add(&me->arch.elf_info, strtab, symindex,
+-					relsec, me->name);
++	return elf64_apply_relocate_add(&me->arch.elf_info, strtab, rela,
++					num_rela, syms_base, (void *) addr_base,
++					addr_base, me->name);
  }
  
+ #ifdef CONFIG_DYNAMIC_FTRACE
 -- 
 1.9.1
