@@ -1,35 +1,18 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlVRs4rCbzDqxx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:00:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlVb71SdzzDqxx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:07:14 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
- Jan Kara <jack@suse.cz>, kernel-hardening@lists.openwall.com,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- linux-mm@kvack.org, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, Andrea Arcangeli <aarcange@redhat.com>,
- linux-arch@vger.kernel.org, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- PaX Team <pageexec@freemail.hu>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Rik van Riel <riel@redhat.com>, David Rientjes <rientjes@google.com>,
- Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- Brad Spengler <spender@grsecurity.net>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Pekka Enberg <penberg@kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/9] mm: Hardened usercopy
-Date: Thu, 07 Jul 2016 10:01:36 +0200
-Message-ID: <3418914.byvl8Wuxlf@wuerfel>
-In-Reply-To: <1467843928-29351-2-git-send-email-keescook@chromium.org>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-2-git-send-email-keescook@chromium.org>
+Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>, leoli@freescale.com,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove lots of IS_ERR_VALUE abuses.
+Date: Thu, 07 Jul 2016 10:10:14 +0200
+Message-ID: <5371430.pWs0YMj39t@wuerfel>
+In-Reply-To: <1467832663-5653-1-git-send-email-arvind.yadav.cs@gmail.com>
+References: <1467832663-5653-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,79 +24,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, July 6, 2016 3:25:20 PM CEST Kees Cook wrote:
-> This is the start of porting PAX_USERCOPY into the mainline kernel. This
-> is the first set of features, controlled by CONFIG_HARDENED_USERCOPY. The
-> work is based on code by PaX Team and Brad Spengler, and an earlier port
-> from Casey Schaufler. Additional non-slab page tests are from Rik van Riel.
+On Thursday, July 7, 2016 12:47:43 AM CEST Arvind Yadav wrote:
+>     Most users of IS_ERR_VALUE() in the kernel are wrong, as they
+>     pass an 'int' into a function that takes an 'unsigned long'
+>     argument. This happens to work because the type is sign-extended
+>     on 64-bit architectures before it gets converted into an
+>     unsigned type.
 > 
-> This patch contains the logic for validating several conditions when
-> performing copy_to_user() and copy_from_user() on the kernel object
-> being copied to/from:
-> - address range doesn't wrap around
-> - address range isn't NULL or zero-allocated (with a non-zero copy size)
-> - if on the slab allocator:
->   - object size must be less than or equal to copy size (when check is
->     implemented in the allocator, which appear in subsequent patches)
-> - otherwise, object must not span page allocations
-> - if on the stack
->   - object must not extend before/after the current process task
->   - object must be contained by the current stack frame (when there is
->     arch/build support for identifying stack frames)
-> - object must not overlap with kernel text
+>     However, anything that passes an 'unsigned short' or 'unsigned int'
+>     argument into IS_ERR_VALUE() is guaranteed to be broken, as are
+>     8-bit integers and types that are wider than 'unsigned long'.
 > 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+>     Andrzej Hajda has already fixed a lot of the worst abusers that
+>     were causing actual bugs, but it would be nice to prevent any
+>     users that are not passing 'unsigned long' arguments.
+> 
+>     This patch changes all users of IS_ERR_VALUE() that I could find
+>     on 32-bit ARM randconfig builds and x86 allmodconfig. For the
+>     moment, this doesn't change the definition of IS_ERR_VALUE()
+>     because there are probably still architecture specific users
+>     elsewhere.
+> 
+>     Almost all the warnings I got are for files that are better off
+>     using 'if (err)' or 'if (err < 0)'.
+>     The only legitimate user I could find that we get a warning for
+>     is the (32-bit only) freescale gigabit ethernet driver.
+> 
+>     I was using this definition for testing:
+> 
+>      #define IS_ERR_VALUE(x) ((unsigned long*)NULL == (typeof (x)*)NULL && \
+>       unlikely((unsigned long long)(x) >= (unsigned long long)(typeof(x))-MAX_ERRNO))
+> 
+>     which ends up making all 16-bit or wider types work correctly with
+>     the most plausible interpretation of what IS_ERR_VALUE() was supposed
+>     to return according to its users, but also causes a compile-time
+>     warning for any users that do not pass an 'unsigned long' argument.
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-Nice!
+The above is my changelog text for commit 287980e49f, but it's not my patch.
 
-I have a few further thoughts, most of which have probably been
-considered before:
-
-> +static inline const char *check_bogus_address(const void *ptr, unsigned long n)
-> +{
-> +	/* Reject if object wraps past end of memory. */
-> +	if (ptr + n < ptr)
-> +		return "<wrapped address>";
-> +
-> +	/* Reject if NULL or ZERO-allocation. */
-> +	if (ZERO_OR_NULL_PTR(ptr))
-> +		return "<null>";
-> +
-> +	return NULL;
-> +}
-
-This checks against address (void*)16, but I guess on most architectures the
-lowest possible kernel address is much higher. While there may not be much
-that to exploit if the expected kernel address points to userland, forbidding
-any obviously incorrect address that is outside of the kernel may be easier.
-
-Even on architectures like s390 that start the kernel memory at (void *)0x0,
-the lowest address to which we may want to do a copy_to_user would be much
-higher than (void*)0x16.
-
-> +
-> +	/* Allow kernel rodata region (if not marked as Reserved). */
-> +	if (ptr >= (const void *)__start_rodata &&
-> +	    end <= (const void *)__end_rodata)
-> +		return NULL;
-
-Should we explicitly forbid writing to rodata, or is it enough to
-rely on page protection here?
-
-> +	/* Allow kernel bss region (if not marked as Reserved). */
-> +	if (ptr >= (const void *)__bss_start &&
-> +	    end <= (const void *)__bss_stop)
-> +		return NULL;
-
-accesses to .data/.rodata/.bss are probably not performance critical,
-so we could go further here and check the kallsyms table to ensure
-that we are not spanning multiple symbols here.
-
-For stuff that is performance critical, should there be a way to
-opt out of the checks, or do we assume it already uses functions
-that avoid the checks? I looked at the file and network I/O path
-briefly and they seem to use kmap_atomic() to get to the user pages
-at least in some of the common cases (but I may well be missing
-important ones).
+Your changes look fine, but reusing my description there seems wrong.
+Can you add a new description and just point to my commit instead?
 
 	Arnd
+
+>  drivers/net/ethernet/freescale/ucc_geth.c | 30 +++++++++++++++---------------
+>  1 file changed, 15 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+> index 5bf1ade..c1ead2c 100644
+> --- a/drivers/net/ethernet/freescale/ucc_geth.c
+> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
+> @@ -289,7 +289,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
+>  		else {
+>  			init_enet_offset =
+>  			    qe_muram_alloc(thread_size, thread_alignment);
+> -			if (IS_ERR_VALUE(init_enet_offset)) {
+> +			if (init_enet_offset < 0) {
+>  				if (netif_msg_ifup(ugeth))
+>  					pr_err("Can not allocate DPRAM memory\n");
+>  				qe_put_snum((u8) snum);
+> @@ -2234,7 +2234,7 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
+>  			ugeth->tx_bd_ring_offset[j] =
+>  			    qe_muram_alloc(length,
+>  					   UCC_GETH_TX_BD_RING_ALIGNMENT);
+> -			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
+> +			if (!ugeth->tx_bd_ring_offset[j])
+>  				ugeth->p_tx_bd_ring[j] =
+>  				    (u8 __iomem *) qe_muram_addr(ugeth->
+>  							 tx_bd_ring_offset[j]);
+> @@ -2311,7 +2311,7 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
+>  			ugeth->rx_bd_ring_offset[j] =
+>  			    qe_muram_alloc(length,
+>  					   UCC_GETH_RX_BD_RING_ALIGNMENT);
+> -			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
+> +			if (!ugeth->rx_bd_ring_offset[j])
+>  				ugeth->p_rx_bd_ring[j] =
+>  				    (u8 __iomem *) qe_muram_addr(ugeth->
+>  							 rx_bd_ring_offset[j]);
+> @@ -2521,7 +2521,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  	ugeth->tx_glbl_pram_offset =
+>  	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
+>  			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
+> +	if (ugeth->tx_glbl_pram_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
+>  		return -ENOMEM;
+> @@ -2541,7 +2541,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  			   sizeof(struct ucc_geth_thread_data_tx) +
+>  			   32 * (numThreadsTxNumerical == 1),
+>  			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
+> +	if (ugeth->thread_dat_tx_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
+>  		return -ENOMEM;
+> @@ -2568,7 +2568,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  	    qe_muram_alloc(ug_info->numQueuesTx *
+>  			   sizeof(struct ucc_geth_send_queue_qd),
+>  			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
+> +	if (ugeth->send_q_mem_reg_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
+>  		return -ENOMEM;
+> @@ -2609,7 +2609,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  		ugeth->scheduler_offset =
+>  		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
+>  				   UCC_GETH_SCHEDULER_ALIGNMENT);
+> -		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
+> +		if (ugeth->scheduler_offset < 0) {
+>  			if (netif_msg_ifup(ugeth))
+>  				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
+>  			return -ENOMEM;
+> @@ -2656,7 +2656,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  		    qe_muram_alloc(sizeof
+>  				   (struct ucc_geth_tx_firmware_statistics_pram),
+>  				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
+> -		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
+> +		if (ugeth->tx_fw_statistics_pram_offset < 0) {
+>  			if (netif_msg_ifup(ugeth))
+>  				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
+>  			return -ENOMEM;
+> @@ -2693,7 +2693,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  	ugeth->rx_glbl_pram_offset =
+>  	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
+>  			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
+> +	if (ugeth->rx_glbl_pram_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
+>  		return -ENOMEM;
+> @@ -2712,7 +2712,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  	    qe_muram_alloc(numThreadsRxNumerical *
+>  			   sizeof(struct ucc_geth_thread_data_rx),
+>  			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
+> +	if (ugeth->thread_dat_rx_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
+>  		return -ENOMEM;
+> @@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  		    qe_muram_alloc(sizeof
+>  				   (struct ucc_geth_rx_firmware_statistics_pram),
+>  				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
+> -		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
+> +		if (ugeth->rx_fw_statistics_pram_offset < 0) {
+>  			if (netif_msg_ifup(ugeth))
+>  				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
+>  			return -ENOMEM;
+> @@ -2753,7 +2753,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  	    qe_muram_alloc(ug_info->numQueuesRx *
+>  			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
+>  			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
+> +	if (ugeth->rx_irq_coalescing_tbl_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
+>  		return -ENOMEM;
+> @@ -2819,7 +2819,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
+>  			    sizeof(struct ucc_geth_rx_prefetched_bds)),
+>  			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
+> -	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
+> +	if (ugeth->rx_bd_qs_tbl_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
+>  		return -ENOMEM;
+> @@ -2905,7 +2905,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  		ugeth->exf_glbl_param_offset =
+>  		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
+>  		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
+> -		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
+> +		if (ugeth->exf_glbl_param_offset < 0) {
+>  			if (netif_msg_ifup(ugeth))
+>  				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
+>  			return -ENOMEM;
+> @@ -3039,7 +3039,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+>  
+>  	/* Allocate InitEnet command parameter structure */
+>  	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
+> -	if (IS_ERR_VALUE(init_enet_pram_offset)) {
+> +	if (init_enet_pram_offset < 0) {
+>  		if (netif_msg_ifup(ugeth))
+>  			pr_err("Can not allocate DPRAM memory for p_init_enet_pram\n");
+>  		return -ENOMEM;
+> 
