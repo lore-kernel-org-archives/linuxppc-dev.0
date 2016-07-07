@@ -1,50 +1,29 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mturquette@baylibre.com>
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlKWr08h5zDr3l
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 11:18:47 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u671E55t033654
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jul 2016 21:18:45 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xj69aj-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 21:18:45 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 7 Jul 2016 11:18:43 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D78DA2BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 11:18:39 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u671Id619372094
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 11:18:39 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u671IdGD028769
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 11:18:39 +1000
-Subject: Re: [PATCH 14/14] cxl: Add cxl_check_and_switch_mode() API to switch
- bi-modal cards
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Huy Nguyen <huyn@mellanox.com>
-References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
- <1467638532-9250-15-git-send-email-imunsie@au.ibm.com>
- <577D533E.4030605@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 7 Jul 2016 11:18:37 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlKnD1X8SzDr2Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 11:30:23 +1000 (AEST)
+Received: by mail-pf0-x234.google.com with SMTP id h14so1261802pfe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 18:30:23 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <577D533E.4030605@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <23e62784-d67a-1e08-ed60-99a50a15b249@au1.ibm.com>
+To: Scott Wood <oss@buserror.net>, "Russell King" <linux@armlinux.org.uk>,
+ "Stephen Boyd" <sboyd@codeaurora.org>,
+ "Viresh Kumar" <viresh.kumar@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Michael Turquette <mturquette@baylibre.com>
+In-Reply-To: <1466058085-19353-2-git-send-email-oss@buserror.net>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com,
+ xiaofeng.ren@nxp.com, "Scott Wood" <scottwood@freescale.com>
+References: <1466058085-19353-1-git-send-email-oss@buserror.net>
+ <1466058085-19353-2-git-send-email-oss@buserror.net>
+Message-ID: <146785501714.73491.8643317356949121718@resonance>
+Subject: Re: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock implementation
+ details
+Date: Wed, 06 Jul 2016 18:30:17 -0700
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,136 +33,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for the review Fred!
+Quoting Scott Wood (2016-06-15 23:21:25)
+> -static struct device_node *cpu_to_clk_node(int cpu)
+> +static struct clk *cpu_to_clk(int cpu)
+>  {
+> -       struct device_node *np, *clk_np;
+> +       struct device_node *np;
+> +       struct clk *clk;
+>  =
 
-On 07/07/16 04:51, Frederic Barrat wrote:
->> +    rc = CXL_READ_VSEC_MODE_CONTROL(dev, switch_work->vsec, &val);
->> +    if (rc) {
->> +        dev_err(&bus->dev, "cxl: Failed to read CAPI mode control:
->> %i\n", rc);
->> +        pci_dev_put(dev);
->> +        goto err_free_work;
->> +    }
->> +    devfn = dev->devfn;
->> +    pci_dev_put(dev);
->
-> This is to balance the 'get' done in cxl_check_and_switch_mode(), right?
-> A comment wouldn't hurt. I think we're missing the 'put' on the first
-> error path above (!bridge).
+>         if (!cpu_present(cpu))
+>                 return NULL;
+> @@ -112,37 +80,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
+>         if (!np)
+>                 return NULL;
+>  =
 
-Yep, it's to balance the pci_dev_get() in cxl_check_and_switch_mode() - 
-you're right, a comment to that effect wouldn't hurt.
+> -       clk_np =3D of_parse_phandle(np, "clocks", 0);
+> -       if (!clk_np)
+> -               return NULL;
+> -
+> +       clk =3D of_clk_get(np, 0);
 
-You're also right about the error path. Will fix in V2.
+Why not use devm_clk_get here?
 
-> I was half-expecting to see a new entry in the cxl_pci_tbl pci ID table
-> for the Mellanox entry, but no such thing. By what magic is cxl_probe()
-> called after the switch? Because of the device class?
+> @@ -221,17 +180,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_po=
+licy *policy)
+>                 goto err_nomem2;
+>         }
+>  =
 
-It matches against the class, as function 0 of the device after reset 
-comes up as a class 1200 processing accelerator.
+> -       pnode =3D of_parse_phandle(np, "clocks", 0);
+> -       if (!pnode) {
+> -               pr_err("%s: could not get clock information\n", __func__);
+> -               goto err_nomem2;
+> -       }
+> +       count =3D clk_get_num_parents(policy->clk);
 
-Perhaps we should be a bit more explicit though...
+We already have of_clk_get_parent_count. This is found in
+clk-provider.h, which doesn't fit perfectly here since the cpufreq
+driver is not a clock provider, but instead a consumer.
 
-> Out of curiosity, could you tell me what the 3rd pci function looks like
-> (vendor ID, device ID, ....)?
+> @@ -240,23 +194,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_po=
+licy *policy)
+>                 goto err_pclk;
+>         }
+>  =
 
-Before:
+> -       if (fmask)
+> -               mask =3D fmask[get_cpu_physical_id(cpu)];
+> -       else
+> -               mask =3D 0x0;
+> -
+>         for (i =3D 0; i < count; i++) {
+> -               clk =3D of_clk_get(pnode, i);
+> +               clk =3D clk_get_parent_by_index(policy->clk, i);
+>                 data->pclk[i] =3D clk;
+>                 freq =3D clk_get_rate(clk);
+> -               /*
+> -                * the clock is valid if its frequency is not masked
+> -                * and large than minimum allowed frequency.
+> -                */
+> -               if (freq < min_cpufreq || (mask & (1 << i)))
+> -                       table[i].frequency =3D CPUFREQ_ENTRY_INVALID;
+> -               else
+> -                       table[i].frequency =3D freq / 1000;
+> +               table[i].frequency =3D freq / 1000;
 
-root@io163:~# lspci -vnn
-0000:00:00.0 PCI bridge [0604]: IBM Device [1014:03dc] (prog-if 00 
-[Normal decode])
-         Flags: fast devsel
-         Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
-         I/O behind bridge: 00000000-00000fff
-         Capabilities: [40] Power Management version 3
-         Capabilities: [48] Express Root Port (Slot-), MSI 00
-         Capabilities: [100] Advanced Error Reporting
-         Capabilities: [148] #19
+Hmm, so you change cpu clock rate by selecting different clock sources
+from a cpu clock mux, right? I wonder if you can just have a child mux
+clock that selects parents from .set_rate (via a .determine_rate
+callback)? Then you could just call clk_set_rate() on your cpu mux clock
+and maybe skip most of the stuff this driver does?
 
-0000:01:00.0 Infiniband controller [0207]: Mellanox Technologies MT27700 
-Family [ConnectX-4] [15b3:1013]
-         Subsystem: IBM Device [1014:04f4]
-         Flags: fast devsel, IRQ 502
-         Memory at 200000000000 (64-bit, prefetchable) [disabled] [size=32M]
-         Capabilities: [60] Express Endpoint, MSI 00
-         Capabilities: [48] Vital Product Data
-         Capabilities: [9c] MSI-X: Enable- Count=128 Masked-
-         Capabilities: [c0] Vendor Specific Information: Len=18 <?>
-         Capabilities: [40] Power Management version 3
-         Capabilities: [100] Device Serial Number ba-da-ce-55-de-ad-ca-fe
-         Capabilities: [160] Vendor Specific Information: ID=1280 Rev=0 
-Len=080 <?>
-         Capabilities: [240] #19
-
-0000:01:00.1 Infiniband controller [0207]: Mellanox Technologies MT27700 
-Family [ConnectX-4] [15b3:1013]
-         Subsystem: IBM Device [1014:04f4]
-         Flags: fast devsel, IRQ 502
-         Memory at 200002000000 (64-bit, prefetchable) [disabled] [size=32M]
-         Capabilities: [60] Express Endpoint, MSI 00
-         Capabilities: [48] Vital Product Data
-         Capabilities: [9c] MSI-X: Enable- Count=128 Masked-
-         Capabilities: [40] Power Management version 3
-         Capabilities: [100] Device Serial Number ba-da-ce-55-de-ad-ca-fe
-
-After:
-
-root@io163:~# lspci -vnn
-0000:00:00.0 PCI bridge [0604]: IBM Device [1014:03dc] (prog-if 00 
-[Normal decode])
-         Flags: bus master, fast devsel, latency 0
-         Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
-         I/O behind bridge: 00000000-00000fff
-         Capabilities: [40] Power Management version 3
-         Capabilities: [48] Express Root Port (Slot-), MSI 00
-         Capabilities: [100] Advanced Error Reporting
-         Capabilities: [148] #19
-
-0000:01:00.0 Processing accelerators [1200]: Mellanox Technologies 
-MT27700 Family [ConnectX-4] [15b3:1013]
-         Subsystem: IBM Device [1014:04f4]
-         Physical Slot: Slot3
-         Flags: bus master, fast devsel, latency 0, IRQ 502
-         Memory at 200004000000 (64-bit, prefetchable) [size=128K]
-         Memory at 200004020000 (64-bit, prefetchable) [size=128K]
-         Memory at <ignored> (64-bit, prefetchable) [size=256T]
-         Capabilities: [60] Express Endpoint, MSI 00
-         Capabilities: [48] Vital Product Data
-         Capabilities: [9c] MSI-X: Enable- Count=128 Masked-
-         Capabilities: [100] Device Serial Number ba-da-ce-55-de-ad-ca-fe
-         Capabilities: [160] Vendor Specific Information: ID=1280 Rev=0 
-Len=080 <?>
-         Kernel driver in use: cxl-pci
-
-0000:01:00.1 Infiniband controller [0207]: Mellanox Technologies MT27700 
-Family [ConnectX-4] [15b3:1013]
-         Subsystem: IBM Device [1014:04f4]
-         Physical Slot: Slot3
-         Flags: bus master, fast devsel, latency 0, IRQ 502
-         Memory at 200000000000 (64-bit, prefetchable) [size=32M]
-         Capabilities: [60] Express Endpoint, MSI 00
-         Capabilities: [48] Vital Product Data
-         Capabilities: [9c] MSI-X: Enable+ Count=128 Masked-
-         Capabilities: [40] Power Management version 3
-         Capabilities: [100] Device Serial Number ba-da-ce-55-de-ad-ca-fe
-         Kernel driver in use: mlx5_core
-
-0000:01:00.2 Infiniband controller [0207]: Mellanox Technologies MT27700 
-Family [ConnectX-4] [15b3:1013]
-         Subsystem: IBM Device [1014:04f4]
-         Physical Slot: Slot3
-         Flags: bus master, fast devsel, latency 0, IRQ 502
-         Memory at 200002000000 (64-bit, prefetchable) [size=32M]
-         Capabilities: [60] Express Endpoint, MSI 00
-         Capabilities: [48] Vital Product Data
-         Capabilities: [9c] MSI-X: Enable+ Count=128 Masked-
-         Capabilities: [40] Power Management version 3
-         Capabilities: [100] Device Serial Number ba-da-ce-55-de-ad-ca-fe
-         Kernel driver in use: mlx5_core
-
-Andrew
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Regards,
+Mike
