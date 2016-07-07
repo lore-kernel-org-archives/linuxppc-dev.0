@@ -1,36 +1,40 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlXj51mh9zDqyR
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 19:42:33 +1000 (AEST)
-Date: Thu, 7 Jul 2016 11:42:15 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wanpeng Li <kernellwp@gmail.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>, mpe@ellerman.id.au,
- boqun.feng@gmail.com, will.deacon@arm.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Waiman Long <waiman.long@hpe.com>,
- virtualization@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- benh@kernel.crashing.org, schwidefsky@de.ibm.com,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm <kvm@vger.kernel.org>
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-Message-ID: <20160707094215.GT30921@twins.programming.kicks-ass.net>
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
- <CANRm+CwXLsNrC59g6tZk=U+T0Scn_O=b60NPESJXU6uaP7-AsA@mail.gmail.com>
- <8e8edf1b-b64b-3c44-b580-b9271663844c@redhat.com>
- <CANRm+Cz1Ncxm7g0ophT+ijUmqnmTq9VwCZau3wMS56Vkm2+7fQ@mail.gmail.com>
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rlYFy4cCczDqyS
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 20:07:33 +1000 (AEST)
+Date: Thu, 7 Jul 2016 11:07:18 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+ kernel-hardening@lists.openwall.com,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PaX Team <pageexec@freemail.hu>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>,
+ Vitaly Wool <vitalywool@gmail.com>, David Rientjes <rientjes@google.com>,
+ Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ Brad Spengler <spender@grsecurity.net>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Pekka Enberg <penberg@kernel.org>,
+ Casey Schaufler <casey@schaufler-ca.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 4/9] arm64/uaccess: Enable hardened usercopy
+Message-ID: <20160707100717.GB8306@leverpostej>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <1467843928-29351-5-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CANRm+Cz1Ncxm7g0ophT+ijUmqnmTq9VwCZau3wMS56Vkm2+7fQ@mail.gmail.com>
+In-Reply-To: <1467843928-29351-5-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,116 +44,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 07, 2016 at 04:48:05PM +0800, Wanpeng Li wrote:
-> 2016-07-06 20:28 GMT+08:00 Paolo Bonzini <pbonzini@redhat.com>:
-> > Hmm, you're right.  We can use bit 0 of struct kvm_steal_time's flags to
-> > indicate that pad[0] is a "VCPU preempted" field; if pad[0] is 1, the
-> > VCPU has been scheduled out since the last time the guest reset the bit.
-> >  The guest can use an xchg to test-and-clear it.  The bit can be
-> > accessed at any time, independent of the version field.
+Hi,
+
+On Wed, Jul 06, 2016 at 03:25:23PM -0700, Kees Cook wrote:
+> Enables CONFIG_HARDENED_USERCOPY checks on arm64. As done by KASAN in -next,
+> renames the low-level functions to __arch_copy_*_user() so a static inline
+> can do additional work before the copy.
+
+The checks themselves look fine, but as with the KASAN checks, it seems
+a shame that this logic is duplicated per arch, integrated in subtly
+different ways.
+
+Can we not __arch prefix all the arch uaccess helpers, and place
+kasan_check_*() and check_object_size() calls in generic wrappers?
+
+If we're going to update all the arch uaccess helpers anyway, doing that
+would make it easier to fix things up, or to add new checks in future.
+
+Thanks,
+Mark.
+
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> ---
+>  arch/arm64/Kconfig               |  2 ++
+>  arch/arm64/include/asm/uaccess.h | 18 ++++++++++++++++--
+>  arch/arm64/kernel/arm64ksyms.c   |  4 ++--
+>  arch/arm64/lib/copy_from_user.S  |  4 ++--
+>  arch/arm64/lib/copy_to_user.S    |  4 ++--
+>  5 files changed, 24 insertions(+), 8 deletions(-)
 > 
-> If one vCPU is preempted, and guest check it several times before this
-> vCPU is scheded in, then the first time we can get "vCPU is
-> preempted", however, since the field is cleared, the second time we
-> will get "vCPU is running".
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 5a0a691d4220..b771cd97f74b 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -51,10 +51,12 @@ config ARM64
+>  	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+>  	select HAVE_ARCH_AUDITSYSCALL
+>  	select HAVE_ARCH_BITREVERSE
+> +	select HAVE_ARCH_HARDENED_USERCOPY
+>  	select HAVE_ARCH_HUGE_VMAP
+>  	select HAVE_ARCH_JUMP_LABEL
+>  	select HAVE_ARCH_KASAN if SPARSEMEM_VMEMMAP && !(ARM64_16K_PAGES && ARM64_VA_BITS_48)
+>  	select HAVE_ARCH_KGDB
+> +	select HAVE_ARCH_LINEAR_KERNEL_MAPPING
+>  	select HAVE_ARCH_MMAP_RND_BITS
+>  	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
+>  	select HAVE_ARCH_SECCOMP_FILTER
+> diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
+> index 9e397a542756..6d0f86300936 100644
+> --- a/arch/arm64/include/asm/uaccess.h
+> +++ b/arch/arm64/include/asm/uaccess.h
+> @@ -256,11 +256,25 @@ do {									\
+>  		-EFAULT;						\
+>  })
+>  
+> -extern unsigned long __must_check __copy_from_user(void *to, const void __user *from, unsigned long n);
+> -extern unsigned long __must_check __copy_to_user(void __user *to, const void *from, unsigned long n);
+> +extern unsigned long __must_check __arch_copy_from_user(void *to, const void __user *from, unsigned long n);
+> +extern unsigned long __must_check __arch_copy_to_user(void __user *to, const void *from, unsigned long n);
+>  extern unsigned long __must_check __copy_in_user(void __user *to, const void __user *from, unsigned long n);
+>  extern unsigned long __must_check __clear_user(void __user *addr, unsigned long n);
+>  
+> +static inline unsigned long __must_check
+> +__copy_from_user(void *to, const void __user *from, unsigned long n)
+> +{
+> +	check_object_size(to, n, false);
+> +	return __arch_copy_from_user(to, from, n);
+> +}
+> +
+> +static inline unsigned long __must_check
+> +__copy_to_user(void __user *to, const void *from, unsigned long n)
+> +{
+> +	check_object_size(from, n, true);
+> +	return __arch_copy_to_user(to, from, n);
+> +}
+> +
+>  static inline unsigned long __must_check copy_from_user(void *to, const void __user *from, unsigned long n)
+>  {
+>  	if (access_ok(VERIFY_READ, from, n))
+> diff --git a/arch/arm64/kernel/arm64ksyms.c b/arch/arm64/kernel/arm64ksyms.c
+> index 678f30b05a45..2dc44406a7ad 100644
+> --- a/arch/arm64/kernel/arm64ksyms.c
+> +++ b/arch/arm64/kernel/arm64ksyms.c
+> @@ -34,8 +34,8 @@ EXPORT_SYMBOL(copy_page);
+>  EXPORT_SYMBOL(clear_page);
+>  
+>  	/* user mem (segment) */
+> -EXPORT_SYMBOL(__copy_from_user);
+> -EXPORT_SYMBOL(__copy_to_user);
+> +EXPORT_SYMBOL(__arch_copy_from_user);
+> +EXPORT_SYMBOL(__arch_copy_to_user);
+>  EXPORT_SYMBOL(__clear_user);
+>  EXPORT_SYMBOL(__copy_in_user);
+>  
+> diff --git a/arch/arm64/lib/copy_from_user.S b/arch/arm64/lib/copy_from_user.S
+> index 17e8306dca29..0b90497d4424 100644
+> --- a/arch/arm64/lib/copy_from_user.S
+> +++ b/arch/arm64/lib/copy_from_user.S
+> @@ -66,7 +66,7 @@
+>  	.endm
+>  
+>  end	.req	x5
+> -ENTRY(__copy_from_user)
+> +ENTRY(__arch_copy_from_user)
+>  ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(0)), ARM64_ALT_PAN_NOT_UAO, \
+>  	    CONFIG_ARM64_PAN)
+>  	add	end, x0, x2
+> @@ -75,7 +75,7 @@ ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(1)), ARM64_ALT_PAN_NOT_UAO, \
+>  	    CONFIG_ARM64_PAN)
+>  	mov	x0, #0				// Nothing to copy
+>  	ret
+> -ENDPROC(__copy_from_user)
+> +ENDPROC(__arch_copy_from_user)
+>  
+>  	.section .fixup,"ax"
+>  	.align	2
+> diff --git a/arch/arm64/lib/copy_to_user.S b/arch/arm64/lib/copy_to_user.S
+> index 21faae60f988..7a7efe255034 100644
+> --- a/arch/arm64/lib/copy_to_user.S
+> +++ b/arch/arm64/lib/copy_to_user.S
+> @@ -65,7 +65,7 @@
+>  	.endm
+>  
+>  end	.req	x5
+> -ENTRY(__copy_to_user)
+> +ENTRY(__arch_copy_to_user)
+>  ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(0)), ARM64_ALT_PAN_NOT_UAO, \
+>  	    CONFIG_ARM64_PAN)
+>  	add	end, x0, x2
+> @@ -74,7 +74,7 @@ ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(1)), ARM64_ALT_PAN_NOT_UAO, \
+>  	    CONFIG_ARM64_PAN)
+>  	mov	x0, #0
+>  	ret
+> -ENDPROC(__copy_to_user)
+> +ENDPROC(__arch_copy_to_user)
+>  
+>  	.section .fixup,"ax"
+>  	.align	2
+> -- 
+> 2.7.4
 > 
-> Do you mean we should call record_steal_time() in both kvm_sched_in()
-> and kvm_sched_out() to record this field? Btw, if we should keep both
-> vcpu->preempted and kvm_steal_time's "vCPU preempted" field present
-> simultaneous?
-
-I suspect you want something like so; except this has holes in.
-
-We clear KVM_ST_PAD_PREEMPT before disabling preemption and we set it
-after enabling it, this means that if we get preempted in between, the
-vcpu is reported as running even though it very much is not.
-
-Fixing that requires much larger surgery.
-
----
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index b2766723c951..117270df43b6 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1997,8 +1997,29 @@ static void kvmclock_reset(struct kvm_vcpu *vcpu)
- 	vcpu->arch.pv_time_enabled = false;
- }
- 
-+static void update_steal_time_preempt(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_steal_time *st;
-+
-+	if (!(vcpu->arch.st.msr_val & KVM_MSR_ENABLED))
-+		return;
-+
-+	if (unlikely(kvm_read_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
-+		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time))))
-+		return;
-+
-+	st = &vcpu->arch.st.steal;
-+
-+	st->pad[KVM_ST_PAD_PREEMPT] = 1; /* we've stopped running */
-+
-+	kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
-+		st, sizeof(struct kvm_steal_time));
-+}
-+
- static void record_steal_time(struct kvm_vcpu *vcpu)
- {
-+	struct kvm_steal_time *st;
-+
- 	if (!(vcpu->arch.st.msr_val & KVM_MSR_ENABLED))
- 		return;
- 
-@@ -2006,29 +2027,34 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
- 		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time))))
- 		return;
- 
--	if (vcpu->arch.st.steal.version & 1)
--		vcpu->arch.st.steal.version += 1;  /* first time write, random junk */
-+	st = &vcpu->arch.st.steal;
-+
-+	if (st->version & 1) {
-+		st->flags = KVM_ST_FLAG_PREEMPT;
-+		st->version += 1;  /* first time write, random junk */
-+	}
- 
--	vcpu->arch.st.steal.version += 1;
-+	st->version += 1;
- 
- 	kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
--		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time));
-+		st, sizeof(struct kvm_steal_time));
- 
- 	smp_wmb();
- 
--	vcpu->arch.st.steal.steal += current->sched_info.run_delay -
-+	st->steal += current->sched_info.run_delay -
- 		vcpu->arch.st.last_steal;
- 	vcpu->arch.st.last_steal = current->sched_info.run_delay;
-+	st->pad[KVM_ST_PAD_PREEMPT] = 0; /* we're about to start running */
- 
- 	kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
--		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time));
-+		st, sizeof(struct kvm_steal_time));
- 
- 	smp_wmb();
- 
--	vcpu->arch.st.steal.version += 1;
-+	st->version += 1;
- 
- 	kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
--		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time));
-+		st, sizeof(struct kvm_steal_time));
- }
- 
- int kvm_set_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
-@@ -6693,6 +6719,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 
- 	preempt_enable();
- 
-+	update_steal_time_preempt(vcpu);
-+
- 	vcpu->srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
- 
- 	/*
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
