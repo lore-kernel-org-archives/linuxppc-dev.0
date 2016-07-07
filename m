@@ -1,34 +1,34 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlSPQ3y0tzDqxv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 16:28:42 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u676O9e2103202
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 02:28:40 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xmdtyq-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlSW06jJhzDqxv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 16:33:32 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u676T5aj038199
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 02:33:29 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2415xm5nfh-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 02:28:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 02:33:29 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 7 Jul 2016 16:28:38 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3CA762CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 16:28:34 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u676SYa5262596
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:28:34 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u676SXC9004289
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:28:33 +1000
+ Thu, 7 Jul 2016 16:33:26 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D06F02CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 16:33:23 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u676XNEr8389012
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:33:23 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u676XNYK025059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 16:33:23 +1000
 Content-Type: text/plain; charset=UTF-8
 From: Ian Munsie <imunsie@au1.ibm.com>
 To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
@@ -36,14 +36,14 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Huy Nguyen <huyn@mellanox.com>
-Subject: Re: [PATCH 06/14] powerpc/powernv: Add support for the cxl kernel api
- on the real phb
-In-reply-to: <577D420A.9060806@linux.vnet.ibm.com>
+Subject: Re: [PATCH 07/14] cxl: Add support for using the kernel API with a
+ real PHB
+In-reply-to: <577D4E51.4040108@linux.vnet.ibm.com>
 References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
- <1467638532-9250-7-git-send-email-imunsie@au.ibm.com>
- <577D420A.9060806@linux.vnet.ibm.com>
-Date: Thu, 07 Jul 2016 16:28:32 +1000
-Message-Id: <1467872875-sup-9587@x230.ozlabs.ibm.com>
+ <1467638532-9250-8-git-send-email-imunsie@au.ibm.com>
+ <577D4E51.4040108@linux.vnet.ibm.com>
+Date: Thu, 07 Jul 2016 16:32:51 +1000
+Message-Id: <1467872962-sup-9472@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,28 +53,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Frederic Barrat's message of 2016-07-06 19:38:18 +0200:
+Excerpts from Frederic Barrat's message of 2016-07-06 20:30:41 +0200:
 > 
-> > +    /* No special handling for cxl function: */
-> > +    if (PCI_FUNC(dev->devfn) == 0)
-> > +        return true;
+> > @@ -1572,6 +1575,9 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+> >            */
+> >           for (i = 0; i < adapter->slices; i++) {
+> >               afu = adapter->afu[i];
+> > +            /* Only participate in EEH if we are on a virtual PHB */
+> > +            if (afu->phb == NULL)
+> > +                return PCI_ERS_RESULT_NONE;
+> >               cxl_vphb_error_detected(afu, state);
+> >           }
 > 
-> I believe that is the first time we're getting a hint of the black magic 
-> which is going to occur when the card is switched to cxl mode and the 
-> appearance of a new pci function. I think a general comment explaining 
-> it is needed somewhere. In this patch or a later one. Also "peer model" 
-> is used several times in the commit messages, though it's not clear to 
-> the novice what it really means.
 > 
-> At this point of the review, I was a bit overwhelmed by all the new 
-> APIs, wondering how everything would end up working together. By the 
-> last patch, it's understandable, but a few extra comments would help.
-> For the vPHB model, pretty much all the relevant code is in one file, 
-> which helps grabbing the full picture. But here it's spread between the 
-> phb platform code and the cxl driver.
-> 
->    Fred
+> Sorry, I had my notes out of order, something is bugging me here. Don't 
+> we always define afu->phb, though for Mellanox (or if there's no config 
+> record in the general case), we don't have any devices attached to it?
 
-Ok, will see what I can to to clarify this.
+I think you're right. I'll change the vPHB code to skip it if there are
+no configuration records.
 
+> Which raises the question of the handling of slot_reset and resume 
+> callbacks...
+
+We aren't going to support EEH (at least not yet) - the vPHB model makes
+this (relatively) easy since we can notify the AFU drivers when we get
+notified, but in the peer model it will be the real PHB notifying us and
+the networking drivers. If we do end up supporting that, it will come
+later.
+
+Cheers,
 -Ian
