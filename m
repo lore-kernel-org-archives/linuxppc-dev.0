@@ -1,23 +1,42 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0057.outbound.protection.outlook.com [104.47.2.57])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <baruch@tkos.co.il>
+Received: from mx.tkos.co.il (guitar.tcltek.co.il [192.115.133.116])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlR6f5b8mzDqx9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 15:30:49 +1000 (AEST)
-From: Scott Wood <scott.wood@nxp.com>
-To: Daniel Walker <danielwa@cisco.com>, Raghav Dogra <raghav.dogra@nxp.com>,
- Brian Norris <computersforpeace@gmail.com>, Jaiprakash Singh
- <b44839@freescale.com>, Scott Wood <scottwood@freescale.com>, Lijun Pan
- <Lijun.Pan@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "xe-kernel@external.cisco.com"
- <xe-kernel@external.cisco.com>
-Subject: Re: t1040 IFC flash driver Extended Chip Select
-Date: Thu, 7 Jul 2016 00:57:13 +0000
-Message-ID: <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <577D68B8.8020305@cisco.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlRPQ1tWxzDqxF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 15:43:38 +1000 (AEST)
+Date: Thu, 7 Jul 2016 08:37:10 +0300
+From: Baruch Siach <baruch@tkos.co.il>
+To: Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+ kernel-hardening@lists.openwall.com,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, linux-arch@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PaX Team <pageexec@freemail.hu>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>,
+ Vitaly Wool <vitalywool@gmail.com>, David Rientjes <rientjes@google.com>,
+ Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ Brad Spengler <spender@grsecurity.net>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Pekka Enberg <penberg@kernel.org>,
+ Casey Schaufler <casey@schaufler-ca.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 1/9] mm: Hardened usercopy
+Message-ID: <20160707053710.GH2118@tarshish>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <1467843928-29351-2-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467843928-29351-2-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +46,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/06/2016 03:23 PM, Daniel Walker wrote:=0A=
-> Hi,=0A=
-> =0A=
-> We are using the t1040 platform, and we have found that we need to =0A=
-> populate this register. In the Technical Reference Manual it's =0A=
-> description is section 24.3.2. This option appears in the driver, but it =
-=0A=
-> doesn't appears to be used anyplace.=0A=
-=0A=
-I'm not sure what you mean by "in the driver".  U-boot sets these registers=
-.=0A=
-=0A=
-> We we're considered adding something to the device tree to allow =0A=
-> populating this value, but I'm wondering if any of you have specific =0A=
-> considerations on how this is done. Or maybe it's not needed at all, and =
-=0A=
-> we're just missing something.=0A=
-> =0A=
-> (not a good patch, just an example.)=0A=
-> =0A=
-> diff --git =0A=
-> a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt =0A=
-> b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt=0A=
-> index 89427b0..b506001 100644=0A=
-> --- a/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt=0A=
-> +++ b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt=0A=
-> @@ -24,6 +24,8 @@ Properties:=0A=
->   - ranges : Each range corresponds to a single chipselect, and covers=0A=
->              the entire access window as configured.=0A=
-> =0A=
-> +- cspr_ext : This value sets the extended chip select for all banks.=0A=
-=0A=
-I see no reason to put this here.  Boot software should be setting the=0A=
-chipselect registers, and if for some reason you don't want to do that,=0A=
-you could just translate the address through ranges to find the value to=0A=
-write.  Why would you have the binding assume it's the same for all banks?=
-=0A=
-=0A=
-The information that is missing from the device tree, that currently=0A=
-must come from boot software programming the registers, is the various=0A=
-attributes that get programmed in CSPR/CSOR.=0A=
-=0A=
--Scott=0A=
-=0A=
+Hi Kees,
+
+On Wed, Jul 06, 2016 at 03:25:20PM -0700, Kees Cook wrote:
+> +#ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
+
+Should be CONFIG_HARDENED_USERCOPY to match the slab/slub implementation 
+condition.
+
+> +const char *__check_heap_object(const void *ptr, unsigned long n,
+> +				struct page *page);
+> +#else
+> +static inline const char *__check_heap_object(const void *ptr,
+> +					      unsigned long n,
+> +					      struct page *page)
+> +{
+> +	return NULL;
+> +}
+> +#endif
+
+baruch
+
+-- 
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
