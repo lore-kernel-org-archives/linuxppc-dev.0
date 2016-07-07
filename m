@@ -1,37 +1,36 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kernellwp@gmail.com>
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlW3K5kGLzDqy2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:28:12 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Yangbo Lu <yangbo.lu@nxp.com>
-Cc: Scott Wood <oss@buserror.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- Qiang Zhao <qiang.zhao@nxp.com>, Russell King <linux@arm.linux.org.uk>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>,
- Santosh Shilimkar <ssantosh@kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Xiaobo Xie <xiaobo.xie@nxp.com>, Yang-Leo Li <leoyang.li@nxp.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
-Subject: Re: [PATCH 2/4] soc: fsl: add GUTS driver for QorIQ platforms
-Date: Thu, 07 Jul 2016 10:30:29 +0200
-Message-ID: <4094106.qfxJu3tJbO@wuerfel>
-In-Reply-To: <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <1465609853.22191.151.camel@buserror.net>
- <HE1PR04MB0889646206BFAD68046F3473F83B0@HE1PR04MB0889.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlWVJ1D3zzDqyB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:48:08 +1000 (AEST)
+Received: by mail-oi0-x244.google.com with SMTP id s17so1617269oih.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 01:48:08 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <8e8edf1b-b64b-3c44-b580-b9271663844c@redhat.com>
+References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20160706065255.GH30909@twins.programming.kicks-ass.net>
+ <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
+ <CANRm+CwXLsNrC59g6tZk=U+T0Scn_O=b60NPESJXU6uaP7-AsA@mail.gmail.com>
+ <8e8edf1b-b64b-3c44-b580-b9271663844c@redhat.com>
+From: Wanpeng Li <kernellwp@gmail.com>
+Date: Thu, 7 Jul 2016 16:48:05 +0800
+Message-ID: <CANRm+Cz1Ncxm7g0ophT+ijUmqnmTq9VwCZau3wMS56Vkm2+7fQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
+ linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ mpe@ellerman.id.au, boqun.feng@gmail.com, will.deacon@arm.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Waiman Long <waiman.long@hpe.com>,
+ virtualization@lists.linux-foundation.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+ schwidefsky@de.ibm.com,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm <kvm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,22 +40,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, July 7, 2016 2:35:33 AM CEST Yangbo Lu wrote:
-> Hi Arnd,
->=20
-> Could you reply when you see the email?
-> If your method doesn=E2=80=99t resolve the problem, we still want to use =
-our old patchset.
->=20
-> This guts driver had been discussed about one year and blocked many worka=
-round upstream.
-> So please help to review and comment soon.
->=20
+2016-07-06 20:28 GMT+08:00 Paolo Bonzini <pbonzini@redhat.com>:
+>
+>
+> On 06/07/2016 14:08, Wanpeng Li wrote:
+>> 2016-07-06 18:44 GMT+08:00 Paolo Bonzini <pbonzini@redhat.com>:
+>>>
+>>>
+>>> On 06/07/2016 08:52, Peter Zijlstra wrote:
+>>>> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
+>>>>> change fomr v1:
+>>>>>      a simplier definition of default vcpu_is_preempted
+>>>>>      skip mahcine type check on ppc, and add config. remove dedicated macro.
+>>>>>      add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner.
+>>>>>      add more comments
+>>>>>      thanks boqun and Peter's suggestion.
+>>>>>
+>>>>> This patch set aims to fix lock holder preemption issues.
+>>>>>
+>>>>> test-case:
+>>>>> perf record -a perf bench sched messaging -g 400 -p && perf report
+>>>>>
+>>>>> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
+>>>>> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
+>>>>>  5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
+>>>>>  3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
+>>>>>  3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
+>>>>>  3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
+>>>>>  2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
+>>>>>
+>>>>> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
+>>>>> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
+>>>>> These spin_on_onwer variant also cause rcu stall before we apply this patch set
+>>>>
+>>>> Paolo, could you help out with an (x86) KVM interface for this?
+>>>
+>>> If it's just for spin loops, you can check if the version field in the
+>>> steal time structure has changed.
+>>
+>> Steal time will not be updated until ahead of next vmentry except
+>> wrmsr MSR_KVM_STEAL_TIME. So it can't represent it is preempted
+>> currently, right?
+>
+> Hmm, you're right.  We can use bit 0 of struct kvm_steal_time's flags to
+> indicate that pad[0] is a "VCPU preempted" field; if pad[0] is 1, the
+> VCPU has been scheduled out since the last time the guest reset the bit.
+>  The guest can use an xchg to test-and-clear it.  The bit can be
+> accessed at any time, independent of the version field.
 
-I don't really see how more discussion is going to help us here. I think
-I've made it pretty clear that I don't want to see another platform
-specific way to read an SoC revision and I've even sent a proof-of-concept
-patch to show how the interface can work, now it's up to you to fit the
-guts hardware into that and send a new patch series.
+If one vCPU is preempted, and guest check it several times before this
+vCPU is scheded in, then the first time we can get "vCPU is
+preempted", however, since the field is cleared, the second time we
+will get "vCPU is running".
 
-	Arnd
+Do you mean we should call record_steal_time() in both kvm_sched_in()
+and kvm_sched_out() to record this field? Btw, if we should keep both
+vcpu->preempted and kvm_steal_time's "vCPU preempted" field present
+simultaneous?
+
+Regards,
+Wanpeng Li
