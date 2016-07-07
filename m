@@ -1,37 +1,19 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlZvC4YYszDqsx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 21:21:27 +1000 (AEST)
-Date: Thu, 7 Jul 2016 13:21:21 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wanpeng Li <kernellwp@gmail.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Davidlohr Bueso <dave@stgolabs.net>, mpe@ellerman.id.au,
- boqun.feng@gmail.com, will.deacon@arm.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Waiman Long <waiman.long@hpe.com>,
- virtualization@lists.linux-foundation.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- benh@kernel.crashing.org, schwidefsky@de.ibm.com,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm <kvm@vger.kernel.org>
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-Message-ID: <20160707112121.GJ30927@twins.programming.kicks-ass.net>
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <14a24854-9787-e4a1-c9a8-76eba4e97301@redhat.com>
- <CANRm+CwXLsNrC59g6tZk=U+T0Scn_O=b60NPESJXU6uaP7-AsA@mail.gmail.com>
- <8e8edf1b-b64b-3c44-b580-b9271663844c@redhat.com>
- <CANRm+Cz1Ncxm7g0ophT+ijUmqnmTq9VwCZau3wMS56Vkm2+7fQ@mail.gmail.com>
- <20160707094215.GT30921@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlcbx6gyMzDqyh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 22:38:21 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 02/41] drm: Fix broken use of _PAGE_NO_CACHE on powerpc
+In-Reply-To: <1467695057-12431-3-git-send-email-benh@kernel.crashing.org>
+References: <1467695057-12431-1-git-send-email-benh@kernel.crashing.org>
+ <1467695057-12431-3-git-send-email-benh@kernel.crashing.org>
+Date: Thu, 07 Jul 2016 22:38:17 +1000
+Message-ID: <87inwhoc7a.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160707094215.GT30921@twins.programming.kicks-ass.net>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,28 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 07, 2016 at 11:42:15AM +0200, Peter Zijlstra wrote:
-> +static void update_steal_time_preempt(struct kvm_vcpu *vcpu)
-> +{
-> +	struct kvm_steal_time *st;
-> +
-> +	if (!(vcpu->arch.st.msr_val & KVM_MSR_ENABLED))
-> +		return;
-> +
-> +	if (unlikely(kvm_read_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
-> +		&vcpu->arch.st.steal, sizeof(struct kvm_steal_time))))
-> +		return;
-> +
-> +	st = &vcpu->arch.st.steal;
-> +
-> +	st->pad[KVM_ST_PAD_PREEMPT] = 1; /* we've stopped running */
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-So maybe have this be:
+> That constant no longer exist. Use the proper accessor instead
 
-	... = kvm_vcpu_running();
+I still see it?
 
-That avoids marking the vcpu preempted when we do hlt and such.
+  arch/powerpc/include/asm/book3s/32/hash.h:#define _PAGE_NO_CACHE	0x020	/* I: cache inhibit */
+  arch/powerpc/include/asm/book3s/64/pgtable.h:#define _PAGE_NO_CACHE		_PAGE_TOLERANT
+  arch/powerpc/include/asm/nohash/32/pte-44x.h:#define _PAGE_NO_CACHE	0x00000400		/* H: I bit */
+  arch/powerpc/include/asm/nohash/32/pte-8xx.h:#define _PAGE_NO_CACHE	0x0002	/* I: cache inhibit */
+  arch/powerpc/include/asm/nohash/32/pte-fsl-booke.h:#define _PAGE_NO_CACHE	0x00200	/* H: I bit */
+  arch/powerpc/include/asm/nohash/pte-book3e.h:#define _PAGE_NO_CACHE	0x400000 /* I: cache inhibit */
 
-> +	kvm_write_guest_cached(vcpu->kvm, &vcpu->arch.st.stime,
-> +		st, sizeof(struct kvm_steal_time));
-> +}
+Do you mean it doesn't exist in some cases? Or pgprot_noncached_wc() is
+just better?
+
+Also this should probably at least get Cc'ed to the DRM folks.
+
+cheers
