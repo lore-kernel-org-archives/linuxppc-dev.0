@@ -1,39 +1,15 @@
-Return-Path: <riel@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rljsV73fgzDr84
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:35:26 +1000 (AEST)
-Message-ID: <1467909317.13253.17.camel@redhat.com>
-Subject: Re: [PATCH 1/9] mm: Hardened usercopy
-From: Rik van Riel <riel@redhat.com>
-To: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org
-Cc: Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>, Russell
- King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Tony
- Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, "David S.
- Miller" <davem@davemloft.net>, x86@kernel.org, Christoph Lameter
- <cl@linux.com>, Pekka Enberg <penberg@kernel.org>, David Rientjes
- <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton
- <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>, Borislav
- Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Jan Kara
- <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli
- <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
- <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Date: Thu, 07 Jul 2016 12:35:17 -0400
-In-Reply-To: <1467843928-29351-2-git-send-email-keescook@chromium.org>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-2-git-send-email-keescook@chromium.org>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-A8whchtqc1mx2jHwm8hg"
-Mime-Version: 1.0
+Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
+Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.17.148])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rlkRK0QD2zDqyq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 03:01:16 +1000 (AEST)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: scottwood@freescale.com
+Cc: qiang.zhao@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] Need proper type casting before assignment,
+ Remove compilation Warning.
+Date: Thu,  7 Jul 2016 22:31:11 +0530
+Message-Id: <1467910871-6371-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,50 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+-Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
+assigned in ucc_fast_tx_virtual_fifo_base_offset and
+ucc_fast_rx_virtual_fifo_base_offset. These variable are 'unsigned int'.
+So before assginment need a proper type casting.
 
---=-A8whchtqc1mx2jHwm8hg
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+-Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
+into a function that takes an 'unsigned long' argument.This happens
+to work because the type is sign-extended on 64-bit architectures
+before it gets converted into an unsigned type.
 
-On Wed, 2016-07-06 at 15:25 -0700, Kees Cook wrote:
->=C2=A0
-> +	/* Allow kernel rodata region (if not marked as Reserved).
-> */
-> +	if (ptr >=3D (const void *)__start_rodata &&
-> +	=C2=A0=C2=A0=C2=A0=C2=A0end <=3D (const void *)__end_rodata)
-> +		return NULL;
->=20
-One comment here.
+-Passing an 'unsigned short' or 'unsigned int'argument into
+IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
+and types that are wider than 'unsigned long'.
 
-__check_object_size gets "to_user" as an argument.
+-Any user will get compilation warning for that do not pass an
+unsigned long' argument.
 
-It may make sense to pass that to check_heap_object, and
-only allow copy_to_user from rodata, never copy_from_user,
-since that section should be read only.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/soc/fsl/qe/ucc_fast.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-> +void __check_object_size(const void *ptr, unsigned long n, bool
-> to_user)
-> +{
->=C2=A0
-
---=20
-
-All Rights Reversed.
---=-A8whchtqc1mx2jHwm8hg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXfoTFAAoJEM553pKExN6DSm8H/03wOEjAiET+COdQLbDEWApC
-bEAOboYqibBhVsPZ557+S9y/UClhKOdBwA+nOKYw7ftj8gZZibkVBFbel7NV+s24
-GHC3R1i1kGYK2YQflr2F2HGe1a8L1AWV7XuuxoBxqxP53zMrb9kAR3+vxRiz/bLc
-nd4uQ1VhgPHOn1Ny6SSO6Ss6kM3wrsJw0+b2LS6erOUeA0IV7Wi01AMaRvLYiARR
-yQEeIwn+lsENGCUMK/RGyiOJCW0m8FV6DrjtG3crG2CUtbjFnpMo225PrdOJMcBh
-p5XyisW8AiGPrKm3ykxzNhPbOtP+2r8fVGgcUv7apHt+oORVNmVeEO1mP/yJATo=
-=SHUM
------END PGP SIGNATURE-----
-
---=-A8whchtqc1mx2jHwm8hg--
+diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
+index a768931..98eed25 100644
+--- a/drivers/soc/fsl/qe/ucc_fast.c
++++ b/drivers/soc/fsl/qe/ucc_fast.c
+@@ -267,8 +267,10 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 
+ 	/* Allocate memory for Tx Virtual Fifo */
+ 	uccf->ucc_fast_tx_virtual_fifo_base_offset =
+-	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+-	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
++		(unsigned int)qe_muram_alloc(uf_info->utfs,
++				UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
++	if (IS_ERR_VALUE(
++		(unsigned long)uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
+ 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
+ 			__func__);
+ 		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
+@@ -278,10 +280,11 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 
+ 	/* Allocate memory for Rx Virtual Fifo */
+ 	uccf->ucc_fast_rx_virtual_fifo_base_offset =
+-		qe_muram_alloc(uf_info->urfs +
++		(unsigned int)qe_muram_alloc(uf_info->urfs +
+ 			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
+ 			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+-	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
++	if (IS_ERR_VALUE(
++		(unsigned long)uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
+ 		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
+ 			__func__);
+ 		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
+-- 
+1.9.1
