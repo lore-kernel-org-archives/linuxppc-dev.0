@@ -1,43 +1,53 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlVfL22kdzDqxx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:10:02 +1000 (AEST)
-Date: Thu, 7 Jul 2016 09:42:17 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Kees Cook <keescook@chromium.org>
-cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- x86@kernel.org, Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Subject: Re: [PATCH 1/9] mm: Hardened usercopy
-In-Reply-To: <1467843928-29351-2-git-send-email-keescook@chromium.org>
-Message-ID: <alpine.DEB.2.11.1607070938430.4083@nanos>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-2-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlVmL3msczDql5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:15:14 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6788jqC080774
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 04:15:12 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xm17vk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 04:15:11 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 7 Jul 2016 18:15:09 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id ACC663578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 18:15:07 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u678F7n666977988
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 18:15:07 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u678F7Nr006467
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 18:15:07 +1000
+Subject: Re: [PATCH 14/14] cxl: Add cxl_check_and_switch_mode() API to switch
+ bi-modal cards
+To: Ian Munsie <imunsie@au1.ibm.com>
+References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-15-git-send-email-imunsie@au.ibm.com>
+ <577D533E.4030605@linux.vnet.ibm.com>
+ <23e62784-d67a-1e08-ed60-99a50a15b249@au1.ibm.com>
+ <1467872513-sup-7704@x230.ozlabs.ibm.com>
+ <8ae21f63-a17e-5b57-3a9a-1c38eae358ed@au1.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>, Huy Nguyen
+ <huyn@mellanox.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 7 Jul 2016 18:15:06 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <8ae21f63-a17e-5b57-3a9a-1c38eae358ed@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <48b96bd7-70fa-3169-ea1f-7ca66b69e41a@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,59 +57,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Jul 2016, Kees Cook wrote:
-> +
-> +#if defined(CONFIG_FRAME_POINTER) && defined(CONFIG_X86)
-> +	const void *frame = NULL;
-> +	const void *oldframe;
-> +#endif
+On 07/07/16 16:44, Andrew Donnellan wrote:
+> We can match the vendor, device ID *and* class code - unfortunately
+> there isn't a macro for this, which makes it a little bit less
+> aesthetically pleasing, but I'm pretty sure this works.
 
-That's ugly
+Something like the below, which works fine:
 
-> +
-> +	/* Object is not on the stack at all. */
-> +	if (obj + len <= stack || stackend <= obj)
-> +		return 0;
-> +
-> +	/*
-> +	 * Reject: object partially overlaps the stack (passing the
-> +	 * the check above means at least one end is within the stack,
-> +	 * so if this check fails, the other end is outside the stack).
-> +	 */
-> +	if (obj < stack || stackend < obj + len)
-> +		return -1;
-> +
-> +#if defined(CONFIG_FRAME_POINTER) && defined(CONFIG_X86)
-> +	oldframe = __builtin_frame_address(1);
-> +	if (oldframe)
-> +		frame = __builtin_frame_address(2);
-> +	/*
-> +	 * low ----------------------------------------------> high
-> +	 * [saved bp][saved ip][args][local vars][saved bp][saved ip]
-> +	 *		     ^----------------^
-> +	 *             allow copies only within here
-> +	 */
-> +	while (stack <= frame && frame < stackend) {
-> +		/*
-> +		 * If obj + len extends past the last frame, this
-> +		 * check won't pass and the next frame will be 0,
-> +		 * causing us to bail out and correctly report
-> +		 * the copy as invalid.
-> +		 */
-> +		if (obj + len <= frame)
-> +			return obj >= oldframe + 2 * sizeof(void *) ? 2 : -1;
-> +		oldframe = frame;
-> +		frame = *(const void * const *)frame;
-> +	}
-> +	return -1;
-> +#else
-> +	return 1;
-> +#endif
+/*
+  * Matches a given PCI vendor ID and device ID, but only for class 12
+  * (processing accelerators). Useful for bi-modal cards, such as the
+  * Mellanox ConnectX-4, which keep the same vendor/device ID
+  * post-mode-switch.
+  */
+#define PCI_DEVICE_ACCEL(vend, dev) \
+	.vendor = (vend), .device = (dev), \
+	.subvendor = PCI_ANY_ID, .subdevice = PCI_ANY_ID, \
+	.class = 0x120000, .class_mask = 0xff0000
 
-I'd rather make that a weak function returning 1 which can be replaced by
-x86 for CONFIG_FRAME_POINTER=y. That also allows other architectures to
-implement their specific frame checks.
+static const struct pci_device_id cxl_pci_tbl[] = {
+	/* FPGA devices */
+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0477), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0601), },
+	/* Mellanox ConnectX-4 */
+	{ PCI_DEVICE_ACCEL(PCI_VENDOR_ID_MELLANOX, 0x1013), },
+	{ }
+};
+MODULE_DEVICE_TABLE(pci, cxl_pci_tbl);
 
-Thanks,
 
-	tglx
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
