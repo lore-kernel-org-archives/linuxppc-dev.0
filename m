@@ -1,24 +1,48 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlmm66nv2zDqvq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:45:58 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id 66so2479350pfy.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 11:45:58 -0700 (PDT)
-Subject: Re: Removing lots of IS_ERR_VALUE abuses and compilation warning.
-To: Guenter Roeck <linux@roeck-us.net>
-References: <1467907214-5783-1-git-send-email-arvind.yadav.cs@gmail.com>
- <20160707171759.GA7615@roeck-us.net>
-Cc: leoli@freescale.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: arvind Yadav <arvind.yadav.cs@gmail.com>
-Message-ID: <577EA361.80000@gmail.com>
-Date: Fri, 8 Jul 2016 00:15:53 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlmn12MBdzDr4b
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:46:45 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u67Ii66I114977
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 14:46:43 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xn7hf6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 14:46:42 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 7 Jul 2016 15:46:40 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 1DF2D1DC006F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 14:46:30 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u67IkbSt12911102
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 15:46:37 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u67Ikboe032410
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 15:46:37 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Cc: kexec@lists.infradead.org, catalin.marinas@arm.com, will.deacon@arm.com,
+ geoff@infradead.org, james.morse@arm.com,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v21 8/8] Documentation: dt: usable-memory and elfcorehdr
+ nodes for arm64 kexec
+Date: Thu, 07 Jul 2016 15:46:35 -0300
+In-Reply-To: <20160707020025.GY20774@linaro.org>
+References: <20160706075226.27609-1-takahiro.akashi@linaro.org>
+ <6483018.WWW2TSJB10@hactar> <20160707020025.GY20774@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <20160707171759.GA7615@roeck-us.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <1629887.9vk1SlhCGj@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,213 +52,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yes, You are right,
+Am Donnerstag, 07 Juli 2016, 11:00:25 schrieb AKASHI Takahiro:
+> On Wed, Jul 06, 2016 at 04:29:18PM -0300, Thiago Jung Bauermann wrote:
+> > Hi,
+> > 
+> > Am Mittwoch, 06 Juli 2016, 16:52:26 schrieb AKASHI Takahiro:
+> > > +linux,usable-memory
+> > > +-------------------
+> > > +
+> > > +This property is set on PowerPC and arm64 by kexec-tools during kdump
+> > > +to tell the crash kernel the base address of its reserved area of
+> > > memory, and +the size. e.g.
+> > > +
+> > > +/ {
+> > > +	chosen {
+> > > +		linux,usable-memory = <0x9 0xf0000000 0x0 0x10000000>;
+> > > +	};
+> > > +};
+> > 
+> > Again, this description is wrong for PowerPC. See messages from myself
+> > and Michael Ellerman:
+> > 
+> > https://lists.infradead.org/pipermail/kexec/2016-June/016250.html
+> > 
+> > https://lists.infradead.org/pipermail/kexec/2016-June/016253.html
+> 
+> Oops, I must have missed your previous comments. Apologies.
 
--Now Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying 
-to assigned in member of this structure 'ucc_geth_private' . This 
-structure variable are 'unsigned int'. So before assignment need a 
-proper type casting.
+No problem.
 
--Passing value in IS_ERR_VALUE() is wrong. So this is also need a proper 
-type casting before passing an argument.
+> Yes, I know that, and I used to implement the same functionality before.
+> It did work for dtb-based systems, but not for UEFI(ACPI)-based systems
+> because UEFI doesn't export memory regions information via a device tree,
+> but rather via ACPI table. So "/memory" node won't appear.
+> So I went back with "mem=" command line approach, and later this
+> "/chosen/" approach.
 
-      ugeth->tx_bd_ring_offset[j] =
--    qe_muram_alloc(length,
-+    (u32)qe_muram_alloc(length, UCC_GETH_RX_BD_RING_ALIGNMENT);
+Ah, I didn't realize there could be dtb and UEFI systems.
 
--        if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
-+                       if (!IS_ERR_VALUE((unsigned 
-long)ugeth->rx_bd_ring_offset[j]))
+> > IMHO, it would be simpler if ARM used linux,usable-memory in the same
+> > way
+> > that PowerPC does, for consistency.
+> 
+> Well, this property won't conflict with per-"/memory" ones
+> if we take it that the former, if present, supersedes the latter.
+> Sophistic?
+> What about changing the name to usable-memory-limit?
+> (I know that you have another one, "memory-limit" though.)
+> 
+> Again, I would like to defer to arm64 maintainers.
 
+My personal opinion is that having a property with a different name would be 
+less confusing, but it's not a strong opinion.
 
+I would suggest calling it usable-memory-range, but I'm fine with whatever 
+is decided by the maintainers.
 
-I have done the changes and re-submitted anther patch, Please review It.
-
-Thanks,
-Arvind
-
-On Thursday 07 July 2016 10:47 PM, Guenter Roeck wrote:
-> On Thu, Jul 07, 2016 at 09:30:14PM +0530, Arvind Yadav wrote:
->> Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
->> into a function that takes an 'unsigned long' argument.This happens
->> to work because the type is sign-extended on 64-bit architectures
->> before it gets converted into an unsigned type.
->>
->> Passing an 'unsigned short' or 'unsigned int'argument into
->> IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
->> and types that are wider than 'unsigned long'.
->>
->> Any user will get compilation warning for that do not pass an
->> unsigned long' argument.
->>
->> Commit '287980e49f; - This change is alreday fixes lots of other
->> Worst abusers
->>
->> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
->> ---
->>   drivers/net/ethernet/freescale/ucc_geth.c | 30 +++++++++++++++---------------
->>   1 file changed, 15 insertions(+), 15 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
->> index 5bf1ade..c1ead2c 100644
->> --- a/drivers/net/ethernet/freescale/ucc_geth.c
->> +++ b/drivers/net/ethernet/freescale/ucc_geth.c
->> @@ -289,7 +289,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
->>   		else {
->>   			init_enet_offset =
->>   			    qe_muram_alloc(thread_size, thread_alignment);
->> -			if (IS_ERR_VALUE(init_enet_offset)) {
->> +			if (init_enet_offset < 0) {
-> init_enet_offset is defined as u32 and thus never < 0.
->
->>   				if (netif_msg_ifup(ugeth))
->>   					pr_err("Can not allocate DPRAM memory\n");
->>   				qe_put_snum((u8) snum);
->> @@ -2234,7 +2234,7 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
->>   			ugeth->tx_bd_ring_offset[j] =
->>   			    qe_muram_alloc(length,
->>   					   UCC_GETH_TX_BD_RING_ALIGNMENT);
->> -			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
->> +			if (!ugeth->tx_bd_ring_offset[j])
-> qe_muram_alloc() returns a pointer or offset, not 0, if there is no error,
-> meaning this change breaks the driver.
->
->>   				ugeth->p_tx_bd_ring[j] =
->>   				    (u8 __iomem *) qe_muram_addr(ugeth->
->>   							 tx_bd_ring_offset[j]);
->> @@ -2311,7 +2311,7 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
->>   			ugeth->rx_bd_ring_offset[j] =
->>   			    qe_muram_alloc(length,
->>   					   UCC_GETH_RX_BD_RING_ALIGNMENT);
->> -			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
->> +			if (!ugeth->rx_bd_ring_offset[j])
-> Same here.
->
->>   				ugeth->p_rx_bd_ring[j] =
->>   				    (u8 __iomem *) qe_muram_addr(ugeth->
->>   							 rx_bd_ring_offset[j]);
->> @@ -2521,7 +2521,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   	ugeth->tx_glbl_pram_offset =
->>   	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
->>   			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
->> +	if (ugeth->tx_glbl_pram_offset < 0) {
-> tx_glbl_pram_offset is u32 and thus never < 0.
->
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
->>   		return -ENOMEM;
->> @@ -2541,7 +2541,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   			   sizeof(struct ucc_geth_thread_data_tx) +
->>   			   32 * (numThreadsTxNumerical == 1),
->>   			   UCC_GETH_THREAD_DATA_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
->> +	if (ugeth->thread_dat_tx_offset < 0) {
-> thread_dat_tx_offset is u32 and thus never < 0.
->
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
->>   		return -ENOMEM;
->> @@ -2568,7 +2568,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   	    qe_muram_alloc(ug_info->numQueuesTx *
->>   			   sizeof(struct ucc_geth_send_queue_qd),
->>   			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
->> +	if (ugeth->send_q_mem_reg_offset < 0) {
-> send_q_mem_reg_offset is u32 and thus never < 0.
->
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
->>   		return -ENOMEM;
->> @@ -2609,7 +2609,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   		ugeth->scheduler_offset =
->>   		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
->>   				   UCC_GETH_SCHEDULER_ALIGNMENT);
->> -		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
->> +		if (ugeth->scheduler_offset < 0) {
-> scheduler_offset is u32 and thus never < 0.
->
-> Giving up here.
->
-> I now looked at two of your patches. In both, you introduce bugs instead of
-> fixing them. Worse, in this case the driver is no longer functional after your
-> patch is applied. Please be more careful.
->
-> Thanks,
-> Guenter
->
->>   			if (netif_msg_ifup(ugeth))
->>   				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
->>   			return -ENOMEM;
->> @@ -2656,7 +2656,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   		    qe_muram_alloc(sizeof
->>   				   (struct ucc_geth_tx_firmware_statistics_pram),
->>   				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
->> -		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
->> +		if (ugeth->tx_fw_statistics_pram_offset < 0) {
->>   			if (netif_msg_ifup(ugeth))
->>   				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
->>   			return -ENOMEM;
->> @@ -2693,7 +2693,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   	ugeth->rx_glbl_pram_offset =
->>   	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
->>   			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
->> +	if (ugeth->rx_glbl_pram_offset < 0) {
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
->>   		return -ENOMEM;
->> @@ -2712,7 +2712,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   	    qe_muram_alloc(numThreadsRxNumerical *
->>   			   sizeof(struct ucc_geth_thread_data_rx),
->>   			   UCC_GETH_THREAD_DATA_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
->> +	if (ugeth->thread_dat_rx_offset < 0) {
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
->>   		return -ENOMEM;
->> @@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   		    qe_muram_alloc(sizeof
->>   				   (struct ucc_geth_rx_firmware_statistics_pram),
->>   				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
->> -		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
->> +		if (ugeth->rx_fw_statistics_pram_offset < 0) {
->>   			if (netif_msg_ifup(ugeth))
->>   				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
->>   			return -ENOMEM;
->> @@ -2753,7 +2753,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   	    qe_muram_alloc(ug_info->numQueuesRx *
->>   			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
->>   			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
->> +	if (ugeth->rx_irq_coalescing_tbl_offset < 0) {
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
->>   		return -ENOMEM;
->> @@ -2819,7 +2819,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
->>   			    sizeof(struct ucc_geth_rx_prefetched_bds)),
->>   			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
->> -	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
->> +	if (ugeth->rx_bd_qs_tbl_offset < 0) {
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
->>   		return -ENOMEM;
->> @@ -2905,7 +2905,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   		ugeth->exf_glbl_param_offset =
->>   		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
->>   		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
->> -		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
->> +		if (ugeth->exf_glbl_param_offset < 0) {
->>   			if (netif_msg_ifup(ugeth))
->>   				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
->>   			return -ENOMEM;
->> @@ -3039,7 +3039,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
->>   
->>   	/* Allocate InitEnet command parameter structure */
->>   	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
->> -	if (IS_ERR_VALUE(init_enet_pram_offset)) {
->> +	if (init_enet_pram_offset < 0) {
->>   		if (netif_msg_ifup(ugeth))
->>   			pr_err("Can not allocate DPRAM memory for p_init_enet_pram\n");
->>   		return -ENOMEM;
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
