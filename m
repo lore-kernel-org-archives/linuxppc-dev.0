@@ -1,46 +1,27 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
- [IPv6:2a00:1450:400c:c09::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <groug@kaod.org>
+Received: from 1.mo69.mail-out.ovh.net (1.mo69.mail-out.ovh.net
+ [178.33.251.173])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rllKn6KrFzDr0j
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 03:41:33 +1000 (AEST)
-Received: by mail-wm0-x229.google.com with SMTP id z126so157503580wme.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 10:41:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rllrX4T9bzDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 04:04:43 +1000 (AEST)
+Received: from player779.ha.ovh.net (b9.ovh.net [213.186.33.59])
+ by mo69.mail-out.ovh.net (Postfix) with ESMTP id 05E85100CC2B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 19:26:17 +0200 (CEST)
+Date: Thu, 7 Jul 2016 19:26:07 +0200
+From: Greg Kurz <groug@kaod.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Thomas Huth <thuth@redhat.com>, linux-kernel@vger.kernel.org, Paul
+ Mackerras <paulus@samba.org>, qemu-ppc@nongnu.org,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [Qemu-ppc] [PATCH v2] powerpc/pseries: start rtasd before PCI
+ probing
+Message-ID: <20160707192607.7820a67e@bahia.lan>
+In-Reply-To: <20160621110201.38d8711c@bahia.lan>
+References: <146602104462.23192.4267928292361711364.stgit@bahia.lan>
+ <20160621110201.38d8711c@bahia.lan>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1467909317.13253.17.camel@redhat.com>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-2-git-send-email-keescook@chromium.org>
- <1467909317.13253.17.camel@redhat.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 7 Jul 2016 13:41:30 -0400
-Message-ID: <CAGXu5j+zxyPEfswD-03TDhuzxaG6itKsoc6-15rMuE+Sz3booA@mail.gmail.com>
-Subject: Re: [PATCH 1/9] mm: Hardened usercopy
-To: Rik van Riel <riel@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
- Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Mathias Krause <minipli@googlemail.com>,
- Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>, Laura Abbott <labbott@fedoraproject.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,44 +31,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 7, 2016 at 12:35 PM, Rik van Riel <riel@redhat.com> wrote:
-> On Wed, 2016-07-06 at 15:25 -0700, Kees Cook wrote:
->>
->> +     /* Allow kernel rodata region (if not marked as Reserved).
->> */
->> +     if (ptr >= (const void *)__start_rodata &&
->> +         end <= (const void *)__end_rodata)
->> +             return NULL;
->>
-> One comment here.
->
-> __check_object_size gets "to_user" as an argument.
->
-> It may make sense to pass that to check_heap_object, and
-> only allow copy_to_user from rodata, never copy_from_user,
-> since that section should be read only.
+Ping ?
 
-Well, that's two votes for this extra check, but I'm still not sure
-since it may already be allowed by the Reserved check, but I can
-reorder things to _reject_ on rodata writes before the Reserved check,
-etc.
+On Tue, 21 Jun 2016 11:02:01 +0200
+Greg Kurz <groug@kaod.org> wrote:
 
-I'll see what could work here...
-
--Kees
-
->
->> +void __check_object_size(const void *ptr, unsigned long n, bool
->> to_user)
->> +{
->>
->
-> --
->
-> All Rights Reversed.
-
-
-
--- 
-Kees Cook
-Chrome OS & Brillo Security
+> On Wed, 15 Jun 2016 22:26:41 +0200
+> Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
+> 
+> > A strange behaviour is observed when comparing PCI hotplug in QEMU, between
+> > x86 and pseries. If you consider the following steps:
+> > - start a VM
+> > - add a PCI device via the QEMU monitor before the rtasd has started (for
+> >   example starting the VM in paused state, or hotplug during FW or boot
+> >   loader)
+> > - resume the VM execution
+> > 
+> > The x86 kernel detects the PCI device, but the pseries one does not.
+> > 
+> > This happens because the rtasd kernel worker is currently started under
+> > device_initcall, while PCI probing happens earlier under subsys_initcall.
+> > 
+> > As a consequence, if we have a pending RTAS event at boot time, a message
+> > is printed and the event is dropped.
+> > 
+> > This patch moves all the initialization of rtasd to arch_initcall, which is
+> > run before subsys_call: this way, logging_enabled is true when the RTAS
+> > event pops up and it is not lost anymore.
+> > 
+> > The proc fs bits stay at device_initcall because they cannot be run before
+> > fs_initcall.
+> > 
+> > Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> > ---
+> > v2: - avoid behaviour change: don't create the proc entry if early init failed
+> >   
+> 
+> I forgot to mention that Thomas had sent a Tested-by for v1, which I think is
+> still valid for v2.
+> 
+> > Michael,
+> > 
+> > This was also tested under PowerVM: it doesn't fix anything there because the
+> > HMC tells it won't honor DLPAR features as long as the RMC isn't here, which
+> > happens later in the boot sequence. It hence seems impossible to have a pending
+> > RTAS event at boot time.
+> > 
+> > It doesn't seem to break anything either, the kernel boots and hotplug works
+> > okay once the RMC is up.
+> > 
+> > Cheers.
+> > 
+> > --
+> > Greg
+> > 
+> > ---
+> >  arch/powerpc/kernel/rtasd.c |   22 +++++++++++++++++-----
+> >  1 file changed, 17 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> > index e864b7c5884e..a26a02006576 100644
+> > --- a/arch/powerpc/kernel/rtasd.c
+> > +++ b/arch/powerpc/kernel/rtasd.c
+> > @@ -526,10 +526,8 @@ void rtas_cancel_event_scan(void)
+> >  }
+> >  EXPORT_SYMBOL_GPL(rtas_cancel_event_scan);
+> >  
+> > -static int __init rtas_init(void)
+> > +static int __init rtas_event_scan_init(void)
+> >  {
+> > -	struct proc_dir_entry *entry;
+> > -
+> >  	if (!machine_is(pseries) && !machine_is(chrp))
+> >  		return 0;
+> >  
+> > @@ -562,13 +560,27 @@ static int __init rtas_init(void)
+> >  		return -ENOMEM;
+> >  	}
+> >  
+> > +	start_event_scan();
+> > +
+> > +	return 0;
+> > +}
+> > +arch_initcall(rtas_event_scan_init);
+> > +
+> > +static int __init rtas_init(void)
+> > +{
+> > +	struct proc_dir_entry *entry;
+> > +
+> > +	if (!machine_is(pseries) && !machine_is(chrp))
+> > +		return 0;
+> > +
+> > +	if (!rtas_log_buf)
+> > +		return -ENODEV;
+> > +
+> >  	entry = proc_create("powerpc/rtas/error_log", S_IRUSR, NULL,
+> >  			    &proc_rtas_log_operations);
+> >  	if (!entry)
+> >  		printk(KERN_ERR "Failed to create error_log proc entry\n");
+> >  
+> > -	start_event_scan();
+> > -
+> >  	return 0;
+> >  }
+> >  __initcall(rtas_init);
+> > 
+> >   
+> 
+> 
