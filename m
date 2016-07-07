@@ -1,29 +1,27 @@
-Return-Path: <mturquette@baylibre.com>
-Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
- [IPv6:2607:f8b0:400e:c00::234])
+Return-Path: <takahiro.akashi@linaro.org>
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlKnD1X8SzDr2Y
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 11:30:23 +1000 (AEST)
-Received: by mail-pf0-x234.google.com with SMTP id h14so1261802pfe.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 18:30:23 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlLKd4qwdzDr0f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2016 11:55:01 +1000 (AEST)
+Received: by mail-pa0-x22a.google.com with SMTP id uj8so1539409pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2016 18:55:01 -0700 (PDT)
+Date: Thu, 7 Jul 2016 11:00:25 +0900
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: kexec@lists.infradead.org, catalin.marinas@arm.com, will.deacon@arm.com,
+ geoff@infradead.org, james.morse@arm.com,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v21 8/8] Documentation: dt: usable-memory and elfcorehdr
+ nodes for arm64 kexec
+Message-ID: <20160707020025.GY20774@linaro.org>
+References: <20160706075226.27609-1-takahiro.akashi@linaro.org>
+ <20160706075226.27609-9-takahiro.akashi@linaro.org>
+ <6483018.WWW2TSJB10@hactar>
 MIME-Version: 1.0
-To: Scott Wood <oss@buserror.net>, "Russell King" <linux@armlinux.org.uk>,
- "Stephen Boyd" <sboyd@codeaurora.org>,
- "Viresh Kumar" <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>
-From: Michael Turquette <mturquette@baylibre.com>
-In-Reply-To: <1466058085-19353-2-git-send-email-oss@buserror.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com,
- xiaofeng.ren@nxp.com, "Scott Wood" <scottwood@freescale.com>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <1466058085-19353-2-git-send-email-oss@buserror.net>
-Message-ID: <146785501714.73491.8643317356949121718@resonance>
-Subject: Re: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock implementation
- details
-Date: Wed, 06 Jul 2016 18:30:17 -0700
+Content-Type: text/plain; charset=iso-2022-jp
+In-Reply-To: <6483018.WWW2TSJB10@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,78 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Scott Wood (2016-06-15 23:21:25)
-> -static struct device_node *cpu_to_clk_node(int cpu)
-> +static struct clk *cpu_to_clk(int cpu)
->  {
-> -       struct device_node *np, *clk_np;
-> +       struct device_node *np;
-> +       struct clk *clk;
->  =
+On Wed, Jul 06, 2016 at 04:29:18PM -0300, Thiago Jung Bauermann wrote:
+> Hi,
+> 
+> Am Mittwoch, 06 Juli 2016, 16:52:26 schrieb AKASHI Takahiro:
+> > +linux,usable-memory
+> > +-------------------
+> > +
+> > +This property is set on PowerPC and arm64 by kexec-tools during kdump
+> > +to tell the crash kernel the base address of its reserved area of memory,
+> > and +the size. e.g.
+> > +
+> > +/ {
+> > +	chosen {
+> > +		linux,usable-memory = <0x9 0xf0000000 0x0 0x10000000>;
+> > +	};
+> > +};
+> 
+> Again, this description is wrong for PowerPC. See messages from myself and 
+> Michael Ellerman:
+> 
+> https://lists.infradead.org/pipermail/kexec/2016-June/016250.html
+> 
+> https://lists.infradead.org/pipermail/kexec/2016-June/016253.html
 
->         if (!cpu_present(cpu))
->                 return NULL;
-> @@ -112,37 +80,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
->         if (!np)
->                 return NULL;
->  =
+Oops, I must have missed your previous comments. Apologies.
 
-> -       clk_np =3D of_parse_phandle(np, "clocks", 0);
-> -       if (!clk_np)
-> -               return NULL;
-> -
-> +       clk =3D of_clk_get(np, 0);
+Yes, I know that, and I used to implement the same functionality before.
+It did work for dtb-based systems, but not for UEFI(ACPI)-based systems
+because UEFI doesn't export memory regions information via a device tree,
+but rather via ACPI table. So "/memory" node won't appear.
+So I went back with "mem=" command line approach, and later this "/chosen/"
+approach.
 
-Why not use devm_clk_get here?
+> IMHO, it would be simpler if ARM used linux,usable-memory in the same way 
+> that PowerPC does, for consistency.
 
-> @@ -221,17 +180,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_po=
-licy *policy)
->                 goto err_nomem2;
->         }
->  =
+Well, this property won't conflict with per-"/memory" ones
+if we take it that the former, if present, supersedes the latter.
+Sophistic?
+What about changing the name to usable-memory-limit?
+(I know that you have another one, "memory-limit" though.)
 
-> -       pnode =3D of_parse_phandle(np, "clocks", 0);
-> -       if (!pnode) {
-> -               pr_err("%s: could not get clock information\n", __func__);
-> -               goto err_nomem2;
-> -       }
-> +       count =3D clk_get_num_parents(policy->clk);
+Again, I would like to defer to arm64 maintainers.
 
-We already have of_clk_get_parent_count. This is found in
-clk-provider.h, which doesn't fit perfectly here since the cpufreq
-driver is not a clock provider, but instead a consumer.
+Thanks,
+-Takahiro AKASHI
 
-> @@ -240,23 +194,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_po=
-licy *policy)
->                 goto err_pclk;
->         }
->  =
-
-> -       if (fmask)
-> -               mask =3D fmask[get_cpu_physical_id(cpu)];
-> -       else
-> -               mask =3D 0x0;
-> -
->         for (i =3D 0; i < count; i++) {
-> -               clk =3D of_clk_get(pnode, i);
-> +               clk =3D clk_get_parent_by_index(policy->clk, i);
->                 data->pclk[i] =3D clk;
->                 freq =3D clk_get_rate(clk);
-> -               /*
-> -                * the clock is valid if its frequency is not masked
-> -                * and large than minimum allowed frequency.
-> -                */
-> -               if (freq < min_cpufreq || (mask & (1 << i)))
-> -                       table[i].frequency =3D CPUFREQ_ENTRY_INVALID;
-> -               else
-> -                       table[i].frequency =3D freq / 1000;
-> +               table[i].frequency =3D freq / 1000;
-
-Hmm, so you change cpu clock rate by selecting different clock sources
-from a cpu clock mux, right? I wonder if you can just have a child mux
-clock that selects parents from .set_rate (via a .determine_rate
-callback)? Then you could just call clk_set_rate() on your cpu mux clock
-and maybe skip most of the stuff this driver does?
-
-Regards,
-Mike
+> -- 
+> []'s
+> Thiago Jung Bauermann
+> IBM Linux Technology Center
+> 
