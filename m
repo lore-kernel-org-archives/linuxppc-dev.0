@@ -1,22 +1,33 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from outbound1a.ore.mailhop.org (outbound1a.ore.mailhop.org
- [54.213.22.21])
+Return-Path: <jallen@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlg0G1Ld9zDqyg
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 00:26:05 +1000 (AEST)
-Date: Thu, 7 Jul 2016 14:24:58 +0000
-From: Jason Cooper <jason@lakedaemon.net>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: oss@buserror.net, tglx@linutronix.de, marc.zyngier@arm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- xiaobo.xie@nxp.com
-Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-Message-ID: <20160707142458.GN3348@io.lakedaemon.net>
-References: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlghC5DLMzDr0W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 00:57:15 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u67Es93D111528
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jul 2016 10:57:13 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xmymf4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 10:57:13 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.vnet.ibm.com>;
+ Thu, 7 Jul 2016 08:57:12 -0600
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Roth <mdroth@linux.vnet.ibm.com>
+From: John Allen <jallen@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] powerpc/pseries: Add pseries hotplug queue and
+ PowerVM/PowerKVM use cases
+Date: Thu, 7 Jul 2016 09:57:31 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4cf3edf2-fc24-5989-ae5d-b451a2323cf2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Zhao Qiang,
+This series introduces a new workqueue for handling hotplug events. On
+PowerKVM guests, this provides a work deferral mechanism to avoid
+processing hotplug events in interrupt context. On PowerVM lpars, this
+will be used to ensure that hotplug events initiated from the HMC and
+from PRRN events are handled and serialized properly.
 
-On Thu, Jul 07, 2016 at 09:23:55AM +0800, Zhao Qiang wrote:
-> The driver stays the same.
-> 
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> ---
-> Changes for v2:
-> 	- modify the subject and commit msg
-> 
->  drivers/irqchip/Makefile                | 1 +
->  drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0
->  drivers/{soc/fsl/qe => irqchip}/qe_ic.h | 0
->  drivers/soc/fsl/qe/Makefile             | 2 +-
->  4 files changed, 2 insertions(+), 1 deletion(-)
->  rename drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)
->  rename drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
+---
 
-Please merge the include file into the C file and rename to follow the
-naming convention in drivers/irqchip/.  e.g. irq-qeic.c or irq-qe_ic.c.
+John Allen (3):
+      powerpc/pseries: Add pseries hotplug workqueue
+      powerpc/pseries: Add support for hotplug interrupt source
+      powerpc/pseries: Use kernel hotplug queue for PowerVM hotplug events
 
-Once you have that, please resend the entire series with this as the
-first patch.
 
-thx,
+ arch/powerpc/platforms/pseries/dlpar.c   |   57 +++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/pseries/pseries.h |    2 +
+ arch/powerpc/platforms/pseries/ras.c     |   38 ++++++++++++++++++++
+ 3 files changed, 96 insertions(+), 1 deletion(-)
 
-Jason.
+--
+John Allen
