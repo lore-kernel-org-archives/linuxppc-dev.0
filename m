@@ -1,20 +1,19 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <claudiu.manoil@nxp.com>
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0088.outbound.protection.outlook.com [104.47.36.88])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rljcd3DXYzDr3T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:24:17 +1000 (AEST)
-Date: Thu, 7 Jul 2016 08:51:02 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: scottwood@freescale.com, qiang.zhao@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: Remove lots of IS_ERR_VALUE abuses and compilation warning.
-Message-ID: <20160707155102.GA5107@roeck-us.net>
-References: <1467905249-3990-1-git-send-email-arvind.yadav.cs@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rljhY0FhtzDrF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 02:27:40 +1000 (AEST)
+From: Claudiu Manoil <claudiu.manoil@nxp.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: <scottwood@freescale.com>
+Subject: [PATCH, RESEND,
+ v2] powerpc/85xx: Don't report SRAM to L2 cache fallback as error
+Date: Thu, 7 Jul 2016 15:49:02 +0300
+Message-ID: <1467895742-7955-1-git-send-email-claudiu.manoil@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467905249-3990-1-git-send-email-arvind.yadav.cs@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,75 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 07, 2016 at 08:57:29PM +0530, Arvind Yadav wrote:
-> Passing value in IS_ERR_VALUE() is wrong, as they
->     pass an 'int' into a function that takes an 'unsigned long'
->     argument. This happens to work because the type is sign-extended
->     on 64-bit architectures before it gets converted into an
->     unsigned type.
-> 
->     Passing an 'unsigned short' or 'unsigned int'
->     argument into IS_ERR_VALUE() is guaranteed to be broken, as are
->     8-bit integers and types that are wider than 'unsigned long'.
-> 
->     Any user will get compilation warning for that do not pass an
->     'unsigned long' argument.
-> 
->     Commit '287980e49f; - This change is alreday fixes lots of other
->     worst abusers.
-> 
-Couple of generic comments:
+If the SRAM region parameters are missing the SRAM driver
+probing exits and the L2 region is configured as L2 cache
+entirely.  This is the expected default behaviour, so it
+makes no sense to report it as an error.
 
-- Your patch subject lines don't include the affected drivers/modules.
-  As such, most of them will be ignored because maintainers won't realize
-  that you are talking with them. Some may ask you to resubmit with proper
-  subject lines.
-  Commit 287980e49f is different; it addresses the problem in several
-  drivers in a single commit.
-- If you patch a single file, I think it would be better to adjust the
-  description accordingly. In this patch, the offending variable type is
-  u32. The patch description is therefore misleading; the code here simply does
-  not work.
-- When you resubmit a patch, you don't include a version, not a change log.
-  This means additional work for maintainers, who have to figure out which
-  patch to apply.
+Signed-off-by: Claudiu Manoil <claudiu.manoil@nxp.com>
+---
+v2: drop info print
 
-Specific comment:
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-The allocator in question returns -ENOMEM in an unsigned long. This is assigned
-to u32. A proper fix would be to assign the return value to an unsigned
-long and to use IS_ER_VALUE() to check if it reports an error, and to only
-assign it to ucc_fast_rx_virtual_fifo_base_offset if there was no error.
-
-Also, unless I am missing something - since ucc_fast_rx_virtual_fifo_base_offset
-is defined as u32, it is somewhat unlikely that it is ever < 0.
-
-Guenter
-
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
->  drivers/soc/fsl/qe/ucc_fast.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-> index a768931..7cc783c 100644
-> --- a/drivers/soc/fsl/qe/ucc_fast.c
-> +++ b/drivers/soc/fsl/qe/ucc_fast.c
-> @@ -268,7 +268,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
->  	/* Allocate memory for Tx Virtual Fifo */
->  	uccf->ucc_fast_tx_virtual_fifo_base_offset =
->  	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> -	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
-> +	if (uccf->ucc_fast_tx_virtual_fifo_base_offset < 0) {
->  		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
->  			__func__);
->  		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
-> @@ -281,7 +281,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
->  		qe_muram_alloc(uf_info->urfs +
->  			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
->  			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> -	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
-> +	if (uccf->ucc_fast_rx_virtual_fifo_base_offset < 0) {
->  		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
->  			__func__);
->  		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
+diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+index 861cebf..c27058e 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
++++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+@@ -90,12 +90,8 @@ static int mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
+ 	}
+ 	l2cache_size = *prop;
+ 
+-	if (get_cache_sram_params(&sram_params)) {
+-		dev_err(&dev->dev,
+-			"Entire L2 as cache, provide valid sram offset and size\n");
+-		return -EINVAL;
+-	}
+-
++	if (get_cache_sram_params(&sram_params))
++		return 0; /* fall back to L2 cache only */
+ 
+ 	rem = l2cache_size % sram_params.sram_size;
+ 	ways = LOCK_WAYS_FULL * sram_params.sram_size / l2cache_size;
+-- 
+1.7.11.7
