@@ -1,27 +1,48 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm74q0wLjzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 18:31:39 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, acme@kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
- naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
-In-Reply-To: <577F31D9.4050808@linux.vnet.ibm.com>
-References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
- <1467267714.7296.6.camel@ellerman.id.au>
- <57762D2A.9040103@linux.vnet.ibm.com>
- <87vb0j84fb.fsf@@concordia.ellerman.id.au>
- <577F31D9.4050808@linux.vnet.ibm.com>
-Date: Fri, 08 Jul 2016 18:31:38 +1000
-Message-ID: <87zipsmsyd.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm7QG3ZWnzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 18:46:45 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id m2so3986125qtd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 01:46:45 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Fri, 8 Jul 2016 10:46:39 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
+ Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 0/9] mm: Hardened usercopy
+Message-ID: <20160708084639.GA4562@gmail.com>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467843928-29351-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +52,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
 
-> On Wednesday 06 July 2016 03:38 PM, Michael Ellerman wrote:
->
-> I've sent v4 which enables annotate for bctr' instructions.
->
-> for 'bctr', it will show down arrow(indicate jump) and 'bctrl' will show
-> right arrow(indicate call). But no navigation options will be provided.
-> By pressing Enter key on that, message will be shown that like
-> "Invalid target"
+* Kees Cook <keescook@chromium.org> wrote:
 
-Great thanks.
+> - I couldn't detect a measurable performance change with these features
+>   enabled. Kernel build times were unchanged, hackbench was unchanged,
+>   etc. I think we could flip this to "on by default" at some point.
 
->>>> It doesn't look like we have the opcode handy here? Could we get it somehow?
->>>> That would make this a *lot* more robust.
->>> objdump prints machine code, but I don't know how difficult that would
->>> be to parse to get opcode.
->> Normal objdump -d output includes the opcode, eg:
->>
->> c00000000000886c:       2c 2c 00 00     cmpdi   r12,0
->>                          ^^^^^^^^^^^
->>
->> The only thing you need to know is the endian and you can reconstruct
->> the raw instruction.
->>
->> Then you can just decode the opcode, see how we do it in the kernel with
->> eg. instr_is_relative_branch().
->
-> I'm sorry. I was thinking that you wants to show opcodes with perf
-> annotate. But you were asking to use opcode instead of parsing
-> instructions.
+Could you please try to find some syscall workload that does many small user 
+copies and thus excercises this code path aggressively?
 
-Yeah.
+If that measurement works out fine then I'd prefer to enable these security checks 
+by default.
 
-> This looks like rewrite parsing code. I don't know whether there is any
-> library already available for this which we can directly use. I'm thinking
-> about this.
+Thaks,
 
-OK don't worry about it for now. We should get this merged for starters
-and we can always improve it later.
-
-cheers
+	Ingo
