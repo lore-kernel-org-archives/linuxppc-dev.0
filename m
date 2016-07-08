@@ -1,19 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YP21xVzDrFL
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YQ3m3MzDrJw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:46 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rm4YN0Bqvz9s5Q
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:43 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rm4YP3hW0z9s5Q
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:45 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/14] powerpc/opal: Add real mode call wrappers
-Date: Fri,  8 Jul 2016 16:37:11 +1000
-Message-Id: <1467959838-6900-7-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 08/14] powerpc/powernv/pci: Rename TCE invalidation calls
+Date: Fri,  8 Jul 2016 16:37:12 +1000
+Message-Id: <1467959838-6900-8-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 References: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,230 +25,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the old generic opal_call_realmode() with proper per-call
-wrappers similar to the normal ones and convert callers.
+The TCE invalidation functions are fairly implementation specific,
+and while the IODA specs more/less describe the register, in practice
+various implementation workarounds may be required. So name the
+functions after the target PHB.
+
+Note today and for the foreseeable future, there's a 1:1 relationship
+between an IODA version and a PHB implementation. There exist another
+variant of IODA1 (Torrent) but we never supported in with OPAL and
+never will.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/opal-api.h            | 10 +++-
- arch/powerpc/include/asm/opal.h                |  6 +++
- arch/powerpc/kernel/idle_power7.S              | 16 ++-----
- arch/powerpc/platforms/powernv/opal-wrappers.S | 63 +++++++++++++-------------
- 4 files changed, 51 insertions(+), 44 deletions(-)
+ arch/powerpc/platforms/powernv/npu-dma.c  |  8 +++----
+ arch/powerpc/platforms/powernv/pci-ioda.c | 36 +++++++++++++++----------------
+ arch/powerpc/platforms/powernv/pci.h      |  4 +---
+ 3 files changed, 23 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 170ba0c..273f7b3 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -166,7 +166,8 @@
- #define	OPAL_INT_SET_CPPR			123
- #define OPAL_INT_EOI				124
- #define OPAL_INT_SET_MFRR			125
--#define OPAL_LAST				125
-+#define OPAL_PCI_TCE_KILL			126
-+#define OPAL_LAST				126
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 0459e10..4383a5f 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -180,7 +180,7 @@ long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ 		pe_err(npe, "Failed to configure TCE table, err %lld\n", rc);
+ 		return rc;
+ 	}
+-	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
++	pnv_pci_phb3_tce_invalidate_entire(phb, false);
  
- /* Device tree flags */
+ 	/* Add the table to the list so its TCE cache will get invalidated */
+ 	pnv_pci_link_table_and_group(phb->hose->node, num,
+@@ -204,7 +204,7 @@ long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num)
+ 		pe_err(npe, "Unmapping failed, ret = %lld\n", rc);
+ 		return rc;
+ 	}
+-	pnv_pci_ioda2_tce_invalidate_entire(phb, false);
++	pnv_pci_phb3_tce_invalidate_entire(phb, false);
  
-@@ -912,6 +913,13 @@ enum {
- 	OPAL_REBOOT_PLATFORM_ERROR	= 1,
+ 	pnv_pci_unlink_table_and_group(npe->table_group.tables[num],
+ 			&npe->table_group);
+@@ -270,7 +270,7 @@ static int pnv_npu_dma_set_bypass(struct pnv_ioda_pe *npe)
+ 			0 /* bypass base */, top);
+ 
+ 	if (rc == OPAL_SUCCESS)
+-		pnv_pci_ioda2_tce_invalidate_entire(phb, false);
++		pnv_pci_phb3_tce_invalidate_entire(phb, false);
+ 
+ 	return rc;
+ }
+@@ -334,7 +334,7 @@ void pnv_npu_take_ownership(struct pnv_ioda_pe *npe)
+ 		pe_err(npe, "Failed to disable bypass, err %lld\n", rc);
+ 		return;
+ 	}
+-	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
++	pnv_pci_phb3_tce_invalidate_entire(npe->phb, false);
+ }
+ 
+ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 092b2e6..afb1c5e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1727,7 +1727,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+ 	}
+ }
+ 
+-static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
++static void pnv_pci_p7ioc_tce_invalidate(struct iommu_table *tbl,
+ 		unsigned long index, unsigned long npages, bool rm)
+ {
+ 	struct iommu_table_group_link *tgl = list_first_entry_or_null(
+@@ -1788,7 +1788,7 @@ static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
+ 			attrs);
+ 
+ 	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
+-		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
++		pnv_pci_p7ioc_tce_invalidate(tbl, index, npages, false);
+ 
+ 	return ret;
+ }
+@@ -1801,7 +1801,7 @@ static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
+ 
+ 	if (!ret && (tbl->it_type &
+ 			(TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE)))
+-		pnv_pci_ioda1_tce_invalidate(tbl, index, 1, false);
++		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, false);
+ 
+ 	return ret;
+ }
+@@ -1813,7 +1813,7 @@ static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
+ 	pnv_tce_free(tbl, index, npages);
+ 
+ 	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+-		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
++		pnv_pci_p7ioc_tce_invalidate(tbl, index, npages, false);
+ }
+ 
+ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+@@ -1825,13 +1825,13 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+ 	.get = pnv_tce_get,
  };
  
-+/* Argument to OPAL_PCI_TCE_KILL */
-+enum {
-+	OPAL_PCI_TCE_KILL_PAGES,
-+	OPAL_PCI_TCE_KILL_PE,
-+	OPAL_PCI_TCE_KILL_ALL,
-+};
-+
- #endif /* __ASSEMBLY__ */
+-#define TCE_KILL_INVAL_ALL  PPC_BIT(0)
+-#define TCE_KILL_INVAL_PE   PPC_BIT(1)
+-#define TCE_KILL_INVAL_TCE  PPC_BIT(2)
++#define PHB3_TCE_KILL_INVAL_ALL		PPC_BIT(0)
++#define PHB3_TCE_KILL_INVAL_PE		PPC_BIT(1)
++#define PHB3_TCE_KILL_INVAL_ONE		PPC_BIT(2)
  
- #endif /* __OPAL_API_H */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 42f0c95..8edf8d4 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -222,6 +222,12 @@ int64_t opal_int_get_xirr(uint32_t *out_xirr, bool just_poll);
- int64_t opal_int_set_cppr(uint8_t cppr);
- int64_t opal_int_eoi(uint32_t xirr);
- int64_t opal_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
-+int64_t opal_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
-+			  uint32_t pe_num, uint32_t tce_size,
-+			  uint64_t dma_addr, uint32_t npages);
-+int64_t opal_rm_pci_tce_kill(uint64_t phb_id, uint32_t kill_type,
-+			     uint32_t pe_num, uint32_t tce_size,
-+			     uint64_t dma_addr, uint32_t npages);
+-void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
++void pnv_pci_phb3_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
+ {
+-	const unsigned long val = TCE_KILL_INVAL_ALL;
++	const unsigned long val = PHB3_TCE_KILL_INVAL_ALL;
  
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 470ceeb..c93f825 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -196,8 +196,7 @@ fastsleep_workaround_at_entry:
- 	/* Fast sleep workaround */
- 	li	r3,1
- 	li	r4,1
--	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
--	bl	opal_call_realmode
-+	bl	opal_rm_config_cpu_idle_state
+ 	mb(); /* Ensure previous TCE table stores are visible */
+ 	if (rm)
+@@ -1842,10 +1842,10 @@ void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm)
+ 		__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
+ }
  
- 	/* Clear Lock bit */
- 	li	r0,0
-@@ -270,8 +269,7 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
- 	ld	r2,PACATOC(r13);					\
- 	ld	r1,PACAR1(r13);						\
- 	std	r3,ORIG_GPR3(r1);	/* Save original r3 */		\
--	li	r0,OPAL_HANDLE_HMI;	/* Pass opal token argument*/	\
--	bl	opal_call_realmode;					\
-+	bl	opal_rm_handle_hmi;					\
- 	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
- 20:	nop;
+-static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
++static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+ {
+ 	/* 01xb - invalidate TCEs that match the specified PE# */
+-	unsigned long val = TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
++	unsigned long val = PHB3_TCE_KILL_INVAL_PE | (pe->pe_number & 0xFF);
+ 	struct pnv_phb *phb = pe->phb;
  
-@@ -284,7 +282,7 @@ _GLOBAL(power7_wakeup_tb_loss)
- 	 * and they are restored before switching to the process context. Hence
- 	 * until they are restored, they are free to be used.
- 	 *
--	 * Save SRR1 in a NVGPR as it might be clobbered in opal_call_realmode
-+	 * Save SRR1 in a NVGPR as it might be clobbered in opal call
- 	 * (called in CHECK_HMI_INTERRUPT). SRR1 is required to determine the
- 	 * wakeup reason if we branch to kvm_start_guest.
- 	 */
-@@ -378,10 +376,7 @@ timebase_resync:
- 	 * set in exceptions-64s.S */
- 	ble	cr3,clear_lock
- 	/* Time base re-sync */
--	li	r0,OPAL_RESYNC_TIMEBASE
--	bl	opal_call_realmode;
--	/* TODO: Check r3 for failure */
--
-+	bl	opal_rm_resync_timebase;
- 	/*
- 	 * If waking up from sleep, per core state is not lost, skip to
- 	 * clear_lock.
-@@ -469,8 +464,7 @@ hypervisor_state_restored:
- fastsleep_workaround_at_exit:
- 	li	r3,1
- 	li	r4,0
--	li	r0,OPAL_CONFIG_CPU_IDLE_STATE
--	bl	opal_call_realmode
-+	bl	opal_rm_config_cpu_idle_state
- 	b	timebase_resync
+ 	if (!phb->ioda.tce_inval_reg)
+@@ -1855,14 +1855,14 @@ static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+ 	__raw_writeq(cpu_to_be64(val), phb->ioda.tce_inval_reg);
+ }
  
- /*
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index c7764f9..cf928bb 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -59,7 +59,7 @@ END_FTR_SECTION(0, 1);						\
- #define OPAL_CALL(name, token)		\
-  _GLOBAL_TOC(name);			\
- 	mflr	r0;			\
--	std	r0,16(r1);		\
-+	std	r0,PPC_LR_STKOFF(r1);	\
- 	li	r0,token;		\
- 	OPAL_BRANCH(opal_tracepoint_entry) \
- 	mfcr	r12;			\
-@@ -92,7 +92,7 @@ opal_return:
- 	FIXUP_ENDIAN
- 	ld	r2,PACATOC(r13);
- 	lwz	r4,8(r1);
--	ld	r5,16(r1);
-+	ld	r5,PPC_LR_STKOFF(r1);
- 	ld	r6,PACASAVEDMSR(r13);
- 	mtspr	SPRN_SRR0,r5;
- 	mtspr	SPRN_SRR1,r6;
-@@ -157,43 +157,37 @@ opal_tracepoint_return:
- 	blr
- #endif
+-static void pnv_pci_ioda2_do_tce_invalidate(unsigned pe_number, bool rm,
++static void pnv_pci_phb3_tce_invalidate(unsigned pe_number, bool rm,
+ 		__be64 __iomem *invalidate, unsigned shift,
+ 		unsigned long index, unsigned long npages)
+ {
+ 	unsigned long start, end, inc;
  
--/*
-- * Make opal call in realmode. This is a generic function to be called
-- * from realmode. It handles endianness.
-- *
-- * r13 - paca pointer
-- * r1  - stack pointer
-- * r0  - opal token
-- */
--_GLOBAL(opal_call_realmode)
--	mflr	r12
--	std	r12,PPC_LR_STKOFF(r1)
--	ld	r2,PACATOC(r13)
--	/* Set opal return address */
--	LOAD_REG_ADDR(r12,return_from_opal_call)
--	mtlr	r12
--
--	mfmsr	r12
--#ifdef __LITTLE_ENDIAN__
--	/* Handle endian-ness */
--	li	r11,MSR_LE
--	andc	r12,r12,r11
--#endif
--	mtspr	SPRN_HSRR1,r12
--	LOAD_REG_ADDR(r11,opal)
--	ld	r12,8(r11)
--	ld	r2,0(r11)
--	mtspr	SPRN_HSRR0,r12
-+#define OPAL_CALL_REAL(name, token)			\
-+ _GLOBAL_TOC(name);					\
-+	mflr	r0;					\
-+	std	r0,PPC_LR_STKOFF(r1);			\
-+	li	r0,token;				\
-+	mfcr	r12;					\
-+	stw	r12,8(r1);				\
-+							\
-+	/* Set opal return address */			\
-+	LOAD_REG_ADDR(r11, opal_return_realmode);	\
-+	mtlr	r11;					\
-+	mfmsr	r12;					\
-+	li	r11,MSR_LE;				\
-+	andc	r12,r12,r11;				\
-+	mtspr	SPRN_HSRR1,r12;				\
-+	LOAD_REG_ADDR(r11,opal);			\
-+	ld	r12,8(r11);				\
-+	ld	r2,0(r11);				\
-+	mtspr	SPRN_HSRR0,r12;				\
- 	hrfid
+ 	/* We'll invalidate DMA address in PE scope */
+-	start = TCE_KILL_INVAL_TCE;
++	start = PHB3_TCE_KILL_INVAL_ONE;
+ 	start |= (pe_number & 0xFF);
+ 	end = start;
  
--return_from_opal_call:
--#ifdef __LITTLE_ENDIAN__
-+opal_return_realmode:
- 	FIXUP_ENDIAN
--#endif
-+	ld	r2,PACATOC(r13);
-+	lwz	r11,8(r1);
- 	ld	r12,PPC_LR_STKOFF(r1)
-+	mtcr	r11;
- 	mtlr	r12
- 	blr
+@@ -1899,10 +1899,10 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+ 			 * per TCE entry so we have to invalidate
+ 			 * the entire cache for it.
+ 			 */
+-			pnv_pci_ioda2_tce_invalidate_entire(pe->phb, rm);
++			pnv_pci_phb3_tce_invalidate_entire(pe->phb, rm);
+ 			continue;
+ 		}
+-		pnv_pci_ioda2_do_tce_invalidate(pe->pe_number, rm,
++		pnv_pci_phb3_tce_invalidate(pe->pe_number, rm,
+ 			invalidate, tbl->it_page_shift,
+ 			index, npages);
+ 	}
+@@ -2178,7 +2178,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
  
-+
- OPAL_CALL(opal_invalid_call,			OPAL_INVALID_CALL);
- OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
- OPAL_CALL(opal_console_read,			OPAL_CONSOLE_READ);
-@@ -271,6 +265,7 @@ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
- OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
- OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
- OPAL_CALL(opal_resync_timebase,			OPAL_RESYNC_TIMEBASE);
-+OPAL_CALL_REAL(opal_rm_resync_timebase,		OPAL_RESYNC_TIMEBASE);
- OPAL_CALL(opal_check_token,			OPAL_CHECK_TOKEN);
- OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
- OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
-@@ -286,7 +281,9 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
- OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
- OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
-+OPAL_CALL_REAL(opal_rm_handle_hmi,		OPAL_HANDLE_HMI);
- OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
-+OPAL_CALL_REAL(opal_rm_config_cpu_idle_state,	OPAL_CONFIG_CPU_IDLE_STATE);
- OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-@@ -311,3 +308,5 @@ OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
- OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
- OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
- OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
-+OPAL_CALL(opal_pci_tce_kill,			OPAL_PCI_TCE_KILL);
-+OPAL_CALL_REAL(opal_rm_pci_tce_kill,		OPAL_PCI_TCE_KILL);
+ 	pnv_pci_link_table_and_group(phb->hose->node, num,
+ 			tbl, &pe->table_group);
+-	pnv_pci_ioda2_tce_invalidate_pe(pe);
++	pnv_pci_phb3_tce_invalidate_pe(pe);
+ 
+ 	return 0;
+ }
+@@ -2322,7 +2322,7 @@ static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
+ 	if (ret)
+ 		pe_warn(pe, "Unmapping failed, ret = %ld\n", ret);
+ 	else
+-		pnv_pci_ioda2_tce_invalidate_pe(pe);
++		pnv_pci_phb3_tce_invalidate_pe(pe);
+ 
+ 	pnv_pci_unlink_table_and_group(table_group->tables[num], table_group);
+ 
+@@ -3447,7 +3447,7 @@ static void pnv_pci_ioda1_release_pe_dma(struct pnv_ioda_pe *pe)
+ 	if (rc != OPAL_SUCCESS)
+ 		return;
+ 
+-	pnv_pci_ioda1_tce_invalidate(tbl, tbl->it_offset, tbl->it_size, false);
++	pnv_pci_p7ioc_tce_invalidate(tbl, tbl->it_offset, tbl->it_size, false);
+ 	if (pe->table_group.group) {
+ 		iommu_group_put(pe->table_group.group);
+ 		WARN_ON(pe->table_group.group);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 3a97990..8666471 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -203,8 +203,6 @@ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+ extern void pnv_pci_init_npu_phb(struct device_node *np);
+-extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+-					__be64 *startp, __be64 *endp, bool rm);
+ extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
+ extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
+ 
+@@ -224,7 +222,7 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 
+ /* Nvlink functions */
+ extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+-extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
++extern void pnv_pci_phb3_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
+ extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+ extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ 		struct iommu_table *tbl);
 -- 
 2.7.4
