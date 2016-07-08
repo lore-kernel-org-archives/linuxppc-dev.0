@@ -1,34 +1,25 @@
-Return-Path: <danielwa@cisco.com>
-Received: from rcdn-iport-6.cisco.com (rcdn-iport-6.cisco.com [173.37.86.77])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0053.outbound.protection.outlook.com [104.47.2.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlvTR3nV4zDr1l
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 09:48:42 +1000 (AEST)
-Subject: Re: t1040 IFC flash driver Extended Chip Select
-To: Scott Wood <scott.wood@nxp.com>, Raghav Dogra <raghav.dogra@nxp.com>,
- Brian Norris <computersforpeace@gmail.com>,
- Jaiprakash Singh <b44839@freescale.com>, Scott Wood
- <scottwood@freescale.com>, Lijun Pan <Lijun.Pan@freescale.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rlxwk4ZjPzDr3y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 11:39:01 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Jason Cooper <jason@lakedaemon.net>
+CC: "oss@buserror.net" <oss@buserror.net>, "tglx@linutronix.de"
+ <tglx@linutronix.de>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "xe-kernel@external.cisco.com" <xe-kernel@external.cisco.com>
-References: <577D68B8.8020305@cisco.com>
- <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577E79D4.1010709@cisco.com>
- <DB5PR0401MB1928CD680EFFD3A1712AA9F6913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EB10B.7010601@cisco.com>
- <DB5PR0401MB1928FF35ABE36D8E07BAA079913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EC0FC.8020304@cisco.com>
- <DB5PR0401MB1928FBF1769BCE0DE0E3E503913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577ECE6C.3000100@cisco.com>
- <DB5PR0401MB192848637D543D8B95B6092D913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577ED12C.30105@cisco.com>
- <DB5PR0401MB1928F9E528E4873AC7C17F6F913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-From: Daniel Walker <danielwa@cisco.com>
-Message-ID: <577EEA56.3070300@cisco.com>
-Date: Thu, 7 Jul 2016 16:48:38 -0700
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Xiaobo Xie
+ <xiaobo.xie@nxp.com>
+Subject: RE: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+Date: Fri, 8 Jul 2016 01:04:42 +0000
+Message-ID: <AM3PR04MB11852A1ADDDA8E68D92CBEE3913C0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
+ <20160707142458.GN3348@io.lakedaemon.net>
+In-Reply-To: <20160707142458.GN3348@io.lakedaemon.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <DB5PR0401MB1928F9E528E4873AC7C17F6F913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/2016 03:37 PM, Scott Wood wrote:
-> On 07/07/2016 05:01 PM, Daniel Walker wrote:
->> On 07/07/2016 02:59 PM, Scott Wood wrote:
->>> On 07/07/2016 04:49 PM, Daniel Walker wrote:
->>>> On 07/07/2016 02:23 PM, Scott Wood wrote:
->>>>> I suspect that add the usage of cspr_ext into the driver would fix the
->>>>> issue we have. It reads like you would find that acceptable ?
->>>>> What specifically is the problem you're having?  Is it that CSPR_EXT is
->>>>> not getting written to, and thus the device does not appear at the
->>>>> address that it should?
->>>>>
->>>>> Or is the driver matching incorrectly?  The only way the driver's lack
->>>>> of using CSPR_EXT to match would be a problem would be if you have
->>>>> multiple chipselects with the same address in the lower 32 bits, and
->>>>> only CSPR_EXT distinguishing them.  Since you proposed a device tree
->>>>> binding that assumes all devices have the same CSPR_EXT, I doubt that's
->>>>> the case, so I doubt adding CSPR_EXT matching to the driver will solve
->>>>> your problem.
->>>>>
->>>>> -Scott
->>>>>
->>>> I didn't do the debug on this. From my perspective it's either flash
->>>> works, or it doesn't work. We need the code below for it to work,
->>> Adding CSPR_EXT matching to the driver will not accomplish the same
->>> thing as that code.
->>>
->> So from u-boot perspective, the values in the device tree under "ranges"
->> or parts of it, are place into the cspr and cspr_ext ? Is that how it's
->> suppose to work ?
-> U-Boot writes values that are hardcoded in the board config header.
-> These values (as well as the area covered by the IFC LAW) need to match
-> the address in the device tree, but U-Boot doesn't get them from the
-> device tree.
+On Thu, Jul 07, 2016 at 10:25PM , Jason Cooper <jason@lakedaemon.net> wrote=
+:
+> -----Original Message-----
+> From: Jason Cooper [mailto:jason@lakedaemon.net]
+> Sent: Thursday, July 07, 2016 10:25 PM
+> To: Qiang Zhao <qiang.zhao@nxp.com>
+> Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo Xie
+> <xiaobo.xie@nxp.com>
+> Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/f=
+sl/qe
+>=20
+> Hi Zhao Qiang,
+>=20
+> On Thu, Jul 07, 2016 at 09:23:55AM +0800, Zhao Qiang wrote:
+> > The driver stays the same.
+> >
+> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > ---
+> > Changes for v2:
+> > 	- modify the subject and commit msg
+> >
+> >  drivers/irqchip/Makefile                | 1 +
+> >  drivers/{soc/fsl/qe =3D> irqchip}/qe_ic.c | 0  drivers/{soc/fsl/qe =3D=
 >
+> > irqchip}/qe_ic.h | 0
+> >  drivers/soc/fsl/qe/Makefile             | 2 +-
+> >  4 files changed, 2 insertions(+), 1 deletion(-)  rename
+> > drivers/{soc/fsl/qe =3D> irqchip}/qe_ic.c (100%)  rename
+> > drivers/{soc/fsl/qe =3D> irqchip}/qe_ic.h (100%)
+>=20
+> Please merge the include file into the C file and rename to follow the na=
+ming
+> convention in drivers/irqchip/.  e.g. irq-qeic.c or irq-qe_ic.c.
+>=20
+> Once you have that, please resend the entire series with this as the firs=
+t patch.
+>=20
 
-I was suggesting the values it writes are the same as the ones inside 
-the device tree. So we could have both csrp and csrp_ext written from 
-the driver and the values would
-come from the ranges property.
+OK, I will modify the next version.=20
 
-Daniel
+-Zhao Qiang
+BR
