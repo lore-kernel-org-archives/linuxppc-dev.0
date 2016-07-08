@@ -1,31 +1,16 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0041.outbound.protection.outlook.com [104.47.2.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rlzyZ3r6YzDqrN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 13:10:46 +1000 (AEST)
-From: Scott Wood <scott.wood@nxp.com>
-To: Daniel Walker <danielwa@cisco.com>, Raghav Dogra <raghav.dogra@nxp.com>,
- Brian Norris <computersforpeace@gmail.com>, Jaiprakash Singh
- <b44839@freescale.com>, Scott Wood <scottwood@freescale.com>, Lijun Pan
- <Lijun.Pan@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "xe-kernel@external.cisco.com"
- <xe-kernel@external.cisco.com>
-Subject: Re: t1040 IFC flash driver Extended Chip Select
-Date: Thu, 7 Jul 2016 21:59:16 +0000
-Message-ID: <DB5PR0401MB192848637D543D8B95B6092D913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <577D68B8.8020305@cisco.com>
- <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577E79D4.1010709@cisco.com>
- <DB5PR0401MB1928CD680EFFD3A1712AA9F6913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EB10B.7010601@cisco.com>
- <DB5PR0401MB1928FF35ABE36D8E07BAA079913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EC0FC.8020304@cisco.com>
- <DB5PR0401MB1928FBF1769BCE0DE0E3E503913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577ECE6C.3000100@cisco.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm01k3bh4zDqpk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 13:13:30 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	mikey@neuling.org
+Subject: [PATCH] powerpc: Add MTD_BLOCK to powernv_defconfig
+Date: Fri,  8 Jul 2016 13:13:15 +1000
+Message-Id: <1467947595-21322-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,36 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/2016 04:49 PM, Daniel Walker wrote:=0A=
-> On 07/07/2016 02:23 PM, Scott Wood wrote:=0A=
->>=0A=
->> I suspect that add the usage of cspr_ext into the driver would fix the=
-=0A=
->> issue we have. It reads like you would find that acceptable ?=0A=
->> What specifically is the problem you're having?  Is it that CSPR_EXT is=
-=0A=
->> not getting written to, and thus the device does not appear at the=0A=
->> address that it should?=0A=
->>=0A=
->> Or is the driver matching incorrectly?  The only way the driver's lack=
-=0A=
->> of using CSPR_EXT to match would be a problem would be if you have=0A=
->> multiple chipselects with the same address in the lower 32 bits, and=0A=
->> only CSPR_EXT distinguishing them.  Since you proposed a device tree=0A=
->> binding that assumes all devices have the same CSPR_EXT, I doubt that's=
-=0A=
->> the case, so I doubt adding CSPR_EXT matching to the driver will solve=
-=0A=
->> your problem.=0A=
->>=0A=
->> -Scott=0A=
->>=0A=
-> =0A=
-> I didn't do the debug on this. From my perspective it's either flash =0A=
-> works, or it doesn't work. We need the code below for it to work,=0A=
-=0A=
-Adding CSPR_EXT matching to the driver will not accomplish the same=0A=
-thing as that code.=0A=
-=0A=
--Scott=0A=
-=0A=
+This is so we can use the powernv_flash mtd driver as an block
+device.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/configs/powernv_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index 959d32b..c357458 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -80,6 +80,7 @@ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
++CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_POWERNV_FLASH=y
+ CONFIG_PARPORT=m
+ CONFIG_PARPORT_PC=m
+-- 
+2.7.4
