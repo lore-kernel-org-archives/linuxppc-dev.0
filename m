@@ -1,28 +1,22 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rmRrX3JfqzDqpQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 07:07:08 +1000 (AEST)
-Message-ID: <1468012014.32358.74.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Michael Turquette <mturquette@baylibre.com>, Russell King
- <linux@armlinux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar
- <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com,
- xiaofeng.ren@nxp.com
-Date: Fri, 08 Jul 2016 16:06:54 -0500
-In-Reply-To: <146794477678.73491.8244253339435407853@resonance>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <1466058085-19353-2-git-send-email-oss@buserror.net>
- <146785501714.73491.8643317356949121718@resonance>
- <1467864803.32358.63.camel@buserror.net>
- <146794477678.73491.8244253339435407853@resonance>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock
- implementation details
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rmSgZ1fGWzDqpQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 07:44:26 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id us13so8823060pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 14:44:26 -0700 (PDT)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: scottwood@freescale.com
+Cc: qiang.zhao@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux@roeck-us.net
+Subject: [PATCH v1] Specific requirement of type casting for 64-bit
+ architectures.
+Date: Sat,  9 Jul 2016 03:14:02 +0530
+Message-Id: <1468014242-13939-1-git-send-email-arvind.yadav.cs@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-07-07 at 19:26 -0700, Michael Turquette wrote:
-> Quoting Scott Wood (2016-07-06 21:13:23)
-> > 
-> > On Wed, 2016-07-06 at 18:30 -0700, Michael Turquette wrote:
-> > > 
-> > > Quoting Scott Wood (2016-06-15 23:21:25)
-> > > > 
-> > > > 
-> > > > -static struct device_node *cpu_to_clk_node(int cpu)
-> > > > +static struct clk *cpu_to_clk(int cpu)
-> > > >  {
-> > > > -       struct device_node *np, *clk_np;
-> > > > +       struct device_node *np;
-> > > > +       struct clk *clk;
-> > > >  
-> > > >         if (!cpu_present(cpu))
-> > > >                 return NULL;
-> > > > @@ -112,37 +80,28 @@ static struct device_node *cpu_to_clk_node(int
-> > > > cpu)
-> > > >         if (!np)
-> > > >                 return NULL;
-> > > >  
-> > > > -       clk_np = of_parse_phandle(np, "clocks", 0);
-> > > > -       if (!clk_np)
-> > > > -               return NULL;
-> > > > -
-> > > > +       clk = of_clk_get(np, 0);
-> > > Why not use devm_clk_get here?
-> > devm_clk_get() is a wrapper around clk_get() which is not the same as
-> > of_clk_get().  What device would you pass to devm_clk_get(), and what name
-> > would you pass?
-> I'm fuzzy on whether or not you get a struct device from a cpufreq
-> driver. If so, then that would be the one to use. I would hope that
-> cpufreq drivers model cpus as devices, but I'm really not sure without
-> looking into the code.
+-Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
+assigned in ucc_fast_tx_virtual_fifo_base_offset and
+ucc_fast_rx_virtual_fifo_base_offset. It will work on 32-bit architectures
+But data can be loss on 64-bit architectures if 'qe_muram_alloc' will
+return greater then MAX value of 'unsigned int'.
 
-It's not the cpufreq code that provides it, but get_cpu_device() could be
-used.
+-Passing value in IS_ERR_VALUE() is wrong, as they pass an 'unsigned int'
+into a function, It will through this compilation warning.
 
-Do you have any comments on the first patch of this set?
+"
+ include/linux/err.h:21:49: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+ #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
+                                                 ^
+ include/linux/compiler.h:170:42: note: in definition of macro ‘unlikely’
+ # define unlikely(x) __builtin_expect(!!(x), 0)
+"
 
--Scott
+-Most users of IS_ERR_VALUE() in the kernel are wrong, as they
+pass an 'unsigned int' into a function that takes an 'unsigned long'
+argument. This happens to work because the type is sign-extended
+on 64-bit architectures before it gets converted into an
+unsigned type.
+
+However, anything that passes an 'unsigned short' or 'unsigned int'
+argument into IS_ERR_VALUE() is guaranteed to be broken, as are
+8-bit integers and types that are wider than 'unsigned long'.
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/soc/fsl/qe/ucc_fast.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
+index a768931..208b198 100644
+--- a/drivers/soc/fsl/qe/ucc_fast.c
++++ b/drivers/soc/fsl/qe/ucc_fast.c
+@@ -141,6 +141,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	struct ucc_fast __iomem *uf_regs;
+ 	u32 gumr;
+ 	int ret;
++	unsigned long ret_muram;
+ 
+ 	if (!uf_info)
+ 		return -EINVAL;
+@@ -265,28 +266,34 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	gumr |= uf_info->mode;
+ 	out_be32(&uf_regs->gumr, gumr);
+ 
+-	/* Allocate memory for Tx Virtual Fifo */
+-	uccf->ucc_fast_tx_virtual_fifo_base_offset =
+-	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+-	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
++	ret_muram =
++		qe_muram_alloc(uf_info->utfs,
++			UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
++
++	if (IS_ERR_VALUE(ret_muram)) {
+ 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
+ 			__func__);
+ 		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
+ 		ucc_fast_free(uccf);
+ 		return -ENOMEM;
++	} else {
++		/* Allocate memory for Tx Virtual Fifo */
++		uccf->ucc_fast_tx_virtual_fifo_base_offset = (u32)ret_muram;
+ 	}
+ 
+-	/* Allocate memory for Rx Virtual Fifo */
+-	uccf->ucc_fast_rx_virtual_fifo_base_offset =
++	ret_muram =
+ 		qe_muram_alloc(uf_info->urfs +
+ 			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
+ 			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+-	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
++	if (IS_ERR_VALUE(ret_muram)) {
+ 		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
+ 			__func__);
+ 		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
+ 		ucc_fast_free(uccf);
+ 		return -ENOMEM;
++	} else {
++		/* Allocate memory for Rx Virtual Fifo */
++		uccf->ucc_fast_rx_virtual_fifo_base_offset = (u32)ret_muram;
+ 	}
+ 
+ 	/* Set Virtual Fifo registers */
+-- 
+1.9.1
