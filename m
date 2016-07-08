@@ -1,20 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YV5XzTzDrG0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YX13SLzDrG3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:52 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rm4YT5NWWz9s5Q
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:49 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rm4YW38cZz9s5Q
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:51 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 11/14] powerpc/powernv/pci: Fallback to OPAL for TCE
- invalidations
-Date: Fri,  8 Jul 2016 16:37:15 +1000
-Message-Id: <1467959838-6900-11-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 12/14] powerpc/powernv/pci: Use the device-tree to get
+ available range of M64's
+Date: Fri,  8 Jul 2016 16:37:16 +1000
+Message-Id: <1467959838-6900-12-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 References: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,71 +26,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we don't find registers for the PHB or don't know the model
-specific invalidation method, use OPAL calls instead.
+M64's are the configurable 64-bit windows that cover the 64-bit MMIO
+space. We used to hard code 16 windows. Newer chips might have a
+variable number and might need to reserve some as well (for example
+on PHB4/POWER9, M32 and M64 are actually unified and we use M64#0
+to map the 32-bit space).
+
+So newer OPALs will provide a property we can use to know what range
+of windows is available. The property is named so that it can
+eventually support multiple ranges but we only use the first one for
+now.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 33 +++++++++++++++++++++++++++----
- 1 file changed, 29 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 49 +++++++++++++++++++++++++++----
+ 1 file changed, 43 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index ac4a432..32c7e1e 100644
+index 32c7e1e..b48c130 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1867,6 +1867,17 @@ static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+@@ -197,9 +197,6 @@ static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+ 		goto fail;
  	}
- }
  
-+static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
-+{
-+	struct pnv_phb *phb = pe->phb;
-+
-+	if (phb->model == PNV_PHB_MODEL_PHB3 && phb->regs)
-+		pnv_pci_phb3_tce_invalidate_pe(pe);
-+	else
-+		opal_pci_tce_kill(phb->opal_id, OPAL_PCI_TCE_KILL_PE,
-+				  pe->pe_number, 0, 0, 0);
-+}
-+
- static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
- 		unsigned long index, unsigned long npages, bool rm)
- {
-@@ -1875,17 +1886,31 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
- 	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
- 		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
- 				struct pnv_ioda_pe, table_group);
--		if (pe->phb->type == PNV_PHB_NPU) {
-+		struct pnv_phb *phb = pe->phb;
-+		unsigned int shift = tbl->it_page_shift;
-+
-+		if (phb->type == PNV_PHB_NPU) {
- 			/*
- 			 * The NVLink hardware does not support TCE kill
- 			 * per TCE entry so we have to invalidate
- 			 * the entire cache for it.
- 			 */
--			pnv_pci_phb3_tce_invalidate_entire(pe->phb, rm);
-+			pnv_pci_phb3_tce_invalidate_entire(phb, rm);
- 			continue;
- 		}
--		pnv_pci_phb3_tce_invalidate(pe, rm, tbl->it_page_shift,
--					    index, npages);
-+		if (phb->model == PNV_PHB_MODEL_PHB3 && phb->regs)
-+			pnv_pci_phb3_tce_invalidate(pe, rm, shift,
-+						    index, npages);
-+		else if (rm)
-+			opal_rm_pci_tce_kill(phb->opal_id,
-+					     OPAL_PCI_TCE_KILL_PAGES,
-+					     pe->pe_number, 1u << shift,
-+					     index << shift, npages);
-+		else
-+			opal_pci_tce_kill(phb->opal_id,
-+					  OPAL_PCI_TCE_KILL_PAGES,
-+					  pe->pe_number, 1u << shift,
-+					  index << shift, npages);
+-	/* Mark the M64 BAR assigned */
+-	set_bit(phb->ioda.m64_bar_idx, &phb->ioda.m64_bar_alloc);
+-
+ 	/*
+ 	 * Exclude the segments for reserved and root bus PE, which
+ 	 * are first or last two PEs.
+@@ -410,6 +407,7 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 	struct pci_controller *hose = phb->hose;
+ 	struct device_node *dn = hose->dn;
+ 	struct resource *res;
++	u32 m64_range[2], i;
+ 	const u32 *r;
+ 	u64 pci_addr;
+ 
+@@ -430,6 +428,29 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 		return;
  	}
- }
  
++	/* Find the available M64 BAR range and pickup the last one for
++	 * covering the whole 64-bits space. We support only one range.
++	 */
++	if (of_property_read_u32_array(dn, "ibm,opal-available-m64-ranges",
++				       m64_range, 2)) {
++		/* In absence of the property, assume 0..15 */
++		m64_range[0] = 0;
++		m64_range[1] = 16;
++	}
++	/* We only support 64 bits in our allocator */
++	if (m64_range[1] > 63) {
++		pr_warn("%s: Limiting M64 range to 63 (from %d) on PHB#%x\n",
++			__func__, m64_range[1], phb->hose->global_number);
++		m64_range[1] = 63;
++	}
++	/* Empty range, no m64 */
++	if (m64_range[1] <= m64_range[0]) {
++		pr_warn("%s: M64 empty, disabling M64 usage on PHB#%x\n",
++			__func__, phb->hose->global_number);
++		return;
++	}
++
++	/* Configure M64 informations */
+ 	res = &hose->mem_resources[1];
+ 	res->name = dn->full_name;
+ 	res->start = of_translate_address(dn, r + 2);
+@@ -442,11 +463,27 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 	phb->ioda.m64_segsize = phb->ioda.m64_size / phb->ioda.total_pe_num;
+ 	phb->ioda.m64_base = pci_addr;
+ 
+-	pr_info(" MEM64 0x%016llx..0x%016llx -> 0x%016llx\n",
+-			res->start, res->end, pci_addr);
++	/* This lines up nicely with the display from processing OF ranges */
++	pr_info(" MEM 0x%016llx..0x%016llx -> 0x%016llx (M64 #%d..%d)\n",
++		res->start, res->end, pci_addr, m64_range[0],
++		m64_range[0] + m64_range[1] - 1);
++
++	/* Mark all M64 used up by default */
++	phb->ioda.m64_bar_alloc = (unsigned long)-1;
+ 
+ 	/* Use last M64 BAR to cover M64 window */
+-	phb->ioda.m64_bar_idx = 15;
++	m64_range[1]--;
++	phb->ioda.m64_bar_idx = m64_range[0] + m64_range[1];
++
++	pr_info(" Using M64 #%d as default window\n", phb->ioda.m64_bar_idx);
++
++	/* Mark remaining ones free */
++	for (i = m64_range[0]; i < m64_range[1]; i++)
++		clear_bit(i, &phb->ioda.m64_bar_alloc);
++
++	/* Setup init functions for M64 based on IODA version, IODA3 uses
++	 * the IODA2 code
++	 */
+ 	if (phb->type == PNV_PHB_IODA1)
+ 		phb->init_m64 = pnv_ioda1_init_m64;
+ 	else
 -- 
 2.7.4
