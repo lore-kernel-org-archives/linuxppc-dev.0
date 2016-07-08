@@ -3,37 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4C0118mzDr2h
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:21:47 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4C32BMrzDr6d
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:21:51 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u686A2WA006254
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 02:21:46 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xnrtcb-1
+ u686A0kH095067
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 02:21:49 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xn8ed8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 02:21:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 02:21:49 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 8 Jul 2016 02:21:45 -0400
+ Fri, 8 Jul 2016 02:21:47 -0400
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
  ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Rob Herring <robh+dt@kernel.org>,
- Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org
-Subject: [PATCH v8 10/11] cpuidle/powernv: Add support for POWER ISA v3 idle
- states
-Date: Fri,  8 Jul 2016 11:50:52 +0530
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v8 11/11] powerpc/powernv: Use deepest stop state when cpu is
+ offlined
+Date: Fri,  8 Jul 2016 11:50:53 +0530
 In-Reply-To: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
 References: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Message-Id: <1467958853-35841-11-git-send-email-shreyas@linux.vnet.ibm.com>
+Message-Id: <1467958853-35841-12-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,172 +39,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER ISA v3 defines a new idle processor core mechanism. In summary,
- a) new instruction named stop is added.
- b) new per thread SPR named PSSCR is added which controls the behavior
-	of stop instruction.
+If hardware supports stop state, use the deepest stop state when
+the cpu is offlined.
 
-Supported idle states and value to be written to PSSCR register to enter
-any idle state is exposed via ibm,cpu-idle-state-names and
-ibm,cpu-idle-state-psscr respectively. To enter an idle state,
-platform provided power_stop() needs to be invoked with the appropriate
-PSSCR value.
-
-This patch adds support for this new mechanism in cpuidle powernv driver.
-
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org
 Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 ---
-Note: Documentation for the device tree bindings is posted here-
-http://patchwork.ozlabs.org/patch/629125/
+- No changes since v1
 
-Changes in v8
-=============
- - Fix a copy paste mistake while reading ibm,cpu-idle-state-names 
+ arch/powerpc/platforms/powernv/idle.c    | 15 +++++++++++++--
+ arch/powerpc/platforms/powernv/powernv.h |  1 +
+ arch/powerpc/platforms/powernv/smp.c     |  4 +++-
+ 3 files changed, 17 insertions(+), 3 deletions(-)
 
-Changes in v7
-=============
- - Using stack instead kzalloc/kcalloc 
-
-Changes in v5
-=============
- - Use generic cpuidle constant CPUIDLE_NAME_LEN
- - Fix return code handling for of_property_read_string_array
- - Use DT flags to determine if are using stop instruction, instead of
-   cpu_has_feature
- - Removed uncessary cast with names
- - &stop_loop -> stop_loop
- - Added POWERNV_THRESHOLD_LATENCY_NS to filter out idle states with high latency
-
- drivers/cpuidle/cpuidle-powernv.c | 61 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 600bbe1..f7ca891 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -20,6 +20,8 @@
- #include <asm/opal.h>
- #include <asm/runlatch.h>
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 8219e22..479c256 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -253,6 +253,11 @@ static void power9_idle(void)
+ u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
  
-+#define POWERNV_THRESHOLD_LATENCY_NS 200000
-+
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
- 	.owner            = THIS_MODULE,
-@@ -27,6 +29,9 @@ struct cpuidle_driver powernv_idle_driver = {
- 
- static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
-+
-+static u64 stop_psscr_table[CPUIDLE_STATE_MAX];
-+
- static u64 snooze_timeout;
- static bool snooze_timeout_en;
- 
-@@ -91,6 +96,17 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 	return index;
- }
- #endif
-+
-+static int stop_loop(struct cpuidle_device *dev,
-+		     struct cpuidle_driver *drv,
-+		     int index)
-+{
-+	ppc64_runlatch_off();
-+	power9_idle_stop(stop_psscr_table[index]);
-+	ppc64_runlatch_on();
-+	return index;
-+}
-+
  /*
-  * States for dedicated partition case.
-  */
-@@ -169,6 +185,8 @@ static int powernv_add_idle_states(void)
- 	u32 latency_ns[CPUIDLE_STATE_MAX];
- 	u32 residency_ns[CPUIDLE_STATE_MAX];
- 	u32 flags[CPUIDLE_STATE_MAX];
-+	u64 psscr_val[CPUIDLE_STATE_MAX];
-+	const char *names[CPUIDLE_STATE_MAX];
- 	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
-@@ -207,11 +225,34 @@ static int powernv_add_idle_states(void)
- 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latencies-ns in DT\n");
- 		goto out;
++ * Deepest stop idle state. Used when a cpu is offlined
++ */
++u64 pnv_deepest_stop_state;
++
++/*
+  * Power ISA 3.0 idle initialization.
+  *
+  * POWER ISA 3.0 defines a new SPR Processor stop Status and Control
+@@ -314,8 +319,11 @@ static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
  	}
-+	if (of_property_read_string_array(power_mgt,
-+		"ibm,cpu-idle-state-names", names, dt_idle_states) < 0) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
-+		goto out;
-+	}
-+
-+	/*
-+	 * If the idle states use stop instruction, probe for psscr values
-+	 * which are necessary to specify required stop level.
-+	 */
-+	if (flags[0] & (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP))
-+		if (of_property_read_u64_array(power_mgt,
-+		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
-+			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-+			goto out;
-+		}
  
- 	rc = of_property_read_u32_array(power_mgt,
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
- 
+ 	/*
+-	 * Set pnv_first_deep_stop_state to the first stop level
+-	 * to cause hypervisor state loss
++	 * Set pnv_first_deep_stop_state and pnv_deepest_stop_state.
++	 * pnv_first_deep_stop_state should be set to the first stop
++	 * level to cause hypervisor state loss.
++	 * pnv_deepest_stop_state should be set to the deepest stop
++	 * stop state.
+ 	 */
+ 	pnv_first_deep_stop_state = MAX_STOP_STATE;
  	for (i = 0; i < dt_idle_states; i++) {
-+		/*
-+		 * If an idle state has exit latency beyond
-+		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
-+		 * in cpu-idle.
-+		 */
-+		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
-+			continue;
- 
- 		/*
- 		 * Cpuidle accepts exit_latency and target_residency in us.
-@@ -224,6 +265,16 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = nap_loop;
-+		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
-+				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-+			strncpy(powernv_states[nr_idle_states].name,
-+				names[i], CPUIDLE_NAME_LEN);
-+			strncpy(powernv_states[nr_idle_states].desc,
-+				names[i], CPUIDLE_NAME_LEN);
-+			powernv_states[nr_idle_states].flags = 0;
+@@ -324,6 +332,9 @@ static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
+ 		if ((flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) &&
+ 		     (pnv_first_deep_stop_state > psscr_rl))
+ 			pnv_first_deep_stop_state = psscr_rl;
 +
-+			powernv_states[nr_idle_states].enter = stop_loop;
-+			stop_psscr_table[nr_idle_states] = psscr_val[i];
- 		}
++		if (pnv_deepest_stop_state < psscr_rl)
++			pnv_deepest_stop_state = psscr_rl;
+ 	}
  
- 		/*
-@@ -239,6 +290,16 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = fastsleep_loop;
-+		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
-+				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-+			strncpy(powernv_states[nr_idle_states].name,
-+				names[i], CPUIDLE_NAME_LEN);
-+			strncpy(powernv_states[nr_idle_states].desc,
-+				names[i], CPUIDLE_NAME_LEN);
-+
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
-+			powernv_states[nr_idle_states].enter = stop_loop;
-+			stop_psscr_table[nr_idle_states] = psscr_val[i];
- 		}
+ out:
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 6dbc0a1..da7c843 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -18,6 +18,7 @@ static inline void pnv_pci_shutdown(void) { }
  #endif
- 		powernv_states[nr_idle_states].exit_latency =
+ 
+ extern u32 pnv_get_supported_cpuidle_states(void);
++extern u64 pnv_deepest_stop_state;
+ 
+ extern void pnv_lpc_init(void);
+ 
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index ad7b1a3..c789258 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -182,7 +182,9 @@ static void pnv_smp_cpu_kill_self(void)
+ 
+ 		ppc64_runlatch_off();
+ 
+-		if (idle_states & OPAL_PM_WINKLE_ENABLED)
++		if (cpu_has_feature(CPU_FTR_ARCH_300))
++			srr1 = power9_idle_stop(pnv_deepest_stop_state);
++		else if (idle_states & OPAL_PM_WINKLE_ENABLED)
+ 			srr1 = power7_winkle();
+ 		else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
+ 				(idle_states & OPAL_PM_SLEEP_ENABLED_ER1))
 -- 
 2.4.11
