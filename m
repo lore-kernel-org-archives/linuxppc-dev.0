@@ -1,50 +1,21 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rmHS85KlmzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 00:48:55 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u68Ei5Ou038935
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 10:48:53 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2415xnymx2-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 10:48:52 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 8 Jul 2016 11:48:50 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 68B5F352005F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 10:48:30 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u68EmmLO3391712
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 11:48:48 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u68Eml6c009442
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 11:48:47 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>, kexec@lists.infradead.org,
- ebiederm@xmission.com, bhe@redhat.com, vgoyal@redhat.com,
- will.deacon@arm.com, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC] arm64: kexec_file_load support
-Date: Fri, 08 Jul 2016 11:48:44 -0300
-In-Reply-To: <20160707061245.GA18459@dhcp-128-65.nay.redhat.com>
-References: <20160701051111.GL20774@linaro.org>
- <20160705080355.GQ20774@linaro.org>
- <20160707061245.GA18459@dhcp-128-65.nay.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rmJSD4MDgzDqm9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 01:34:04 +1000 (AEST)
+Date: Fri, 8 Jul 2016 08:33:48 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: scottwood@freescale.com, qiang.zhao@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: Need proper type casting before assignment, Remove compilation
+ Warning.
+Message-ID: <20160708153348.GA21592@roeck-us.net>
+References: <1467910871-6371-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <11139482.zLvCKVycQr@hactar>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467910871-6371-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,31 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Donnerstag, 07 Juli 2016, 14:12:45 schrieb Dave Young:
-> If so maybe change a bit from your precious mentioned 7 args proposal like
-> below?
-> 
-> struct kexec_file_fd {
-> 	enum kexec_file_type;
-> 	int fd;
-> }
-> 
-> struct kexec_fdset {
-> 	int nr_fd;
-> 	struct kexec_file_fd fd[0];
-> }
-> 
-> int kexec_file_load(int kernel_fd, int initrd_fd,
-> 		    unsigned long cmdline_len, const char *cmdline_ptr,
-> 		    unsigned long flags, struct kexec_fdset *extra_fds);
+On Thu, Jul 07, 2016 at 10:31:11PM +0530, Arvind Yadav wrote:
+> -Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
+> assigned in ucc_fast_tx_virtual_fifo_base_offset and
+> ucc_fast_rx_virtual_fifo_base_offset. These variable are 'unsigned int'.
+> So before assginment need a proper type casting.
 
+Are they ? In the upstream kernel, they seem to be "u32".
 
-Is there a way for the kernel to distinguish whether the process passed 5 or 
-6 arguments? How can it know whether extra_fds is a valid argument or just 
-garbage? I think we have to define a new flag KEXEC_FILE_EXTRA_FDS so that 
-the process can signal that it is using the new interface.
+> 
+> -Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
+> into a function that takes an 'unsigned long' argument.This happens
+> to work because the type is sign-extended on 64-bit architectures
+> before it gets converted into an unsigned type.
+> 
+Not really sure I understand if/how this applies to the patch in question.
+I don't see an int passed to IS_ERR_VALUE(), I only see u32.
 
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> -Passing an 'unsigned short' or 'unsigned int'argument into
+> IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
+> and types that are wider than 'unsigned long'.
+> 
+What does this have to do with this patch ?
+
+> -Any user will get compilation warning for that do not pass an
+> unsigned long' argument.
+> 
+Sure, but that doesn't mean that typecasting the parameter to unsigned long
+does any good (other than hiding the real bug).
+
+Your subject line still does not list the affected subsystem and/or driver.
+Documentation/SubmittingPatches might give some hints about proper subject
+lines, and looking at other patches applied to the same file(s) might help
+as well.
+
+Also, if you want someone to review your patches, it helps to Cc: that
+someone.
+
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> ---
+>  drivers/soc/fsl/qe/ucc_fast.c | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
+> index a768931..98eed25 100644
+> --- a/drivers/soc/fsl/qe/ucc_fast.c
+> +++ b/drivers/soc/fsl/qe/ucc_fast.c
+> @@ -267,8 +267,10 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+>  
+>  	/* Allocate memory for Tx Virtual Fifo */
+>  	uccf->ucc_fast_tx_virtual_fifo_base_offset =
+> -	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+> -	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
+> +		(unsigned int)qe_muram_alloc(uf_info->utfs,
+
+I don't see the point of this typecast.
+
+> +				UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+> +	if (IS_ERR_VALUE(
+> +		(unsigned long)uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
+
+If sizeof(u32) == sizeof(unsigned long), this patch does not have an effect.
+If sizeof(u32) < sizeof(unsigned long), it does not change anything, and the
+resulting code is as wrong as it was before.
+
+>  		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
+>  			__func__);
+>  		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
+> @@ -278,10 +280,11 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+>  
+>  	/* Allocate memory for Rx Virtual Fifo */
+>  	uccf->ucc_fast_rx_virtual_fifo_base_offset =
+> -		qe_muram_alloc(uf_info->urfs +
+> +		(unsigned int)qe_muram_alloc(uf_info->urfs +
+>  			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
+>  			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+> -	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
+> +	if (IS_ERR_VALUE(
+> +		(unsigned long)uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
+>  		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
+>  			__func__);
+>  		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
