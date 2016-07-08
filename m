@@ -1,40 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm38C46LnzDr5j
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 15:34:19 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Jan Kara <jack@suse.cz>, "kernel-hardening\@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Linux-MM <linux-mm@kvack.org>, sparclinux <sparclinux@vger.kernel.org>,
- linux-ia64@vger.kernel.org, Christoph Lameter <cl@linux.com>,
- Andrea Arcangeli <aarcange@redhat.com>, "x86\@kernel.org" <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Dmitry Vyukov <dvyukov@google.com>,
- David Rientjes <rientjes@google.com>, PaX Team <pageexec@freemail.hu>,
- Mathias Krause <minipli@googlemail.com>,
- linux-arch <linux-arch@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
- Brad Spengler <spender@grsecurity.net>, Andy Lutomirski <luto@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linux-arm-kernel\@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Laura Abbott <labbott@fedoraproject.org>, Tony Luck <tony.luck@intel.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, LKML <linux-kernel@vger.ker
- nel.org>, Fenghua Yu <fenghua.yu@intel.com>, Pekka Enberg <penberg@kernel.org>,
- Casey Schaufler <casey@schaufler-ca.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/9] mm: Hardened usercopy
-In-Reply-To: <CAGXu5jLyBfqXJKxohHiZgztRVrFyqwbta1W_Dw6KyyGM3LzshQ@mail.gmail.com>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <1467843928-29351-2-git-send-email-keescook@chromium.org>
- <3418914.byvl8Wuxlf@wuerfel>
- <CAGXu5jLyBfqXJKxohHiZgztRVrFyqwbta1W_Dw6KyyGM3LzshQ@mail.gmail.com>
-Date: Fri, 08 Jul 2016 15:34:19 +1000
-Message-ID: <8760sgofqc.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm3Fk3bsDzDqpk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 15:39:06 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id ib6so4065909pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jul 2016 22:39:06 -0700 (PDT)
+Date: Fri, 8 Jul 2016 13:39:01 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>
+Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-ID: <20160708053901.GA6489@simonLocalRHEL7.x64>
+References: <3rlZmP39HNz9sXR@ozlabs.org> <577E5534.70300@linux.vnet.ibm.com>
+ <1467897678.27157.45.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467897678.27157.45.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,23 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
+On Thu, Jul 07, 2016 at 11:21:18PM +1000, Benjamin Herrenschmidt wrote:
+> I think the right fix is that if a restore_sigcontext() has the MSR bits set,
+> it should set the corresponding used_* flag.
+> 
+> Or is there a reason why that won't work ?
 
-> On Thu, Jul 7, 2016 at 4:01 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->> On Wednesday, July 6, 2016 3:25:20 PM CEST Kees Cook wrote:
->>> +
->>> +     /* Allow kernel rodata region (if not marked as Reserved). */
->>> +     if (ptr >= (const void *)__start_rodata &&
->>> +         end <= (const void *)__end_rodata)
->>> +             return NULL;
->>
->> Should we explicitly forbid writing to rodata, or is it enough to
->> rely on page protection here?
->
-> Hm, interesting. That's a very small check to add. My knee-jerk is to
-> just leave it up to page protection. I'm on the fence. :)
+That sounds reaonable to me.
+I will prepare a patch based on that.
 
-There are platforms that don't have page protection, so it would be nice
-if they could at least opt-in to checking for it here.
+Michael, Ben, Laurent,
+Thanks the discussion and proposal.
 
-cheers
+- Simon
