@@ -2,24 +2,34 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm95v12jhzDqpN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 20:02:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm9Tr2L7RzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 20:20:00 +1000 (AEST)
+Date: Fri, 08 Jul 2016 20:19:58 +1000
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
- Rashmica Gupta <rashmicy@gmail.com>, cyrilbur@gmail.com <cyrilbur@gmail.com>
-Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
-In-Reply-To: <1467898167.27157.47.camel@kernel.crashing.org>
-References: <3rlZmP39HNz9sXR@ozlabs.org> <577E5534.70300@linux.vnet.ibm.com>
- <1467897678.27157.45.camel@kernel.crashing.org>
- <1467898167.27157.47.camel@kernel.crashing.org>
-Date: Fri, 08 Jul 2016 20:02:42 +1000
-Message-ID: <871t34xxa5.fsf@@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Kees Cook <keescook@chromium.org>, "kernel-hardening\@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>
+Cc: Jan Kara <jack@suse.cz>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Linux-MM <linux-mm@kvack.org>,
+ sparclinux <sparclinux@vger.kernel.org>, linux-ia64@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ linux-arch <linux-arch@vger.kernel.org>, "x86\@kernel.org" <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, PaX Team <pageexec@freemail.hu>,
+ Borislav Petkov <bp@suse.de>, lin <ux-arm-kernel@lists.infradead.org>,
+ Mathias Krause <minipli@googlemail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Rik van Riel <riel@redhat.com>, David Rientjes <rientjes@google.com>,
+ Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ Brad Spengler <spender@grsecurity.net>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ Casey Schauf
+ ler <casey@schaufler-ca.com>, Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
+Subject: Re: [kernel-hardening] Re: [PATCH 9/9] mm: SLUB hardened usercopy
+ support
+In-Reply-To: <CAGXu5jJbmLD-zPzJodM0=imuj-=w_s8RGP=vwtGuhmXJjQjuSw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,128 +38,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Message-Id: <577f7e55.4668420a.84f17.5cb9SMTPIN_ADDED_MISSING@mx.google.com>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> On Thu, 2016-07-07 at 23:21 +1000, Benjamin Herrenschmidt wrote:
->>=C2=A0
->> I think the right fix is that if a restore_sigcontext() has the MSR
->> bits set,
->> it should set the corresponding used_* flag.
+Kees Cook <keescook@chromium.org> writes:
+> On Thu, Jul 7, 2016 at 12:35 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> I gave this a quick spin on powerpc, it blew up immediately :)
 >
-> Something like this:
+> Wheee :) This series is rather easy to test: blows up REALLY quickly
+> if it's wrong. ;)
+
+Better than subtle race conditions which is the usual :)
+
+>> diff --git a/mm/slub.c b/mm/slub.c
+>> index 0c8ace04f075..66191ea4545a 100644
+>> --- a/mm/slub.c
+>> +++ b/mm/slub.c
+>> @@ -3630,6 +3630,9 @@ const char *__check_heap_object(const void *ptr, unsigned long n,
+>>         /* Find object. */
+>>         s = page->slab_cache;
+>>
+>> +       /* Subtract red zone if enabled */
+>> +       ptr = restore_red_left(s, ptr);
+>> +
 >
-> (totally untested)
+> Ah, interesting. Just to make sure: you've built with
+> CONFIG_SLUB_DEBUG and either CONFIG_SLUB_DEBUG_ON or booted with
+> either slub_debug or slub_debug=z ?
 
-Simon/Laurent, can you guys test this and let me know if it works for
-your usecase.
+Yeah built with CONFIG_SLUB_DEBUG_ON, and booted with and without slub_debug
+options.
 
-Cyril, can you give this a review, you've been touching this code the
-most lately.
+> Thanks for the slub fix!
+>
+> I wonder if this code should be using size_from_object() instead of s->size?
+
+Hmm, not sure. Who's SLUB maintainer? :)
+
+I was modelling it on the logic in check_valid_pointer(), which also does the
+restore_red_left(), and then checks for % s->size:
+
+static inline int check_valid_pointer(struct kmem_cache *s,
+				struct page *page, void *object)
+{
+	void *base;
+
+	if (!object)
+		return 1;
+
+	base = page_address(page);
+	object = restore_red_left(s, object);
+	if (object < base || object >= base + page->objects * s->size ||
+		(object - base) % s->size) {
+		return 0;
+	}
+
+	return 1;
+}
 
 cheers
-
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal=
-_32.c
-> index b6aa378..1bf074e 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -698,6 +698,7 @@ static long restore_user_regs(struct pt_regs *regs,
->  		if (__copy_from_user(&current->thread.vr_state, &sr->mc_vregs,
->  				     sizeof(sr->mc_vregs)))
->  			return 1;
-> +		current->thread.used_vr =3D true;
->  	} else if (current->thread.used_vr)
->  		memset(&current->thread.vr_state, 0,
->  		       ELF_NVRREG * sizeof(vector128));
-> @@ -724,6 +725,7 @@ static long restore_user_regs(struct pt_regs *regs,
->  		 */
->  		if (copy_vsx_from_user(current, &sr->mc_vsregs))
->  			return 1;
-> +		current->thread.used_vsr =3D true;
->  	} else if (current->thread.used_vsr)
->  		for (i =3D 0; i < 32 ; i++)
->  			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] =3D 0;
-> @@ -743,6 +745,7 @@ static long restore_user_regs(struct pt_regs *regs,
->  		if (__copy_from_user(current->thread.evr, &sr->mc_vregs,
->  				     ELF_NEVRREG * sizeof(u32)))
->  			return 1;
-> +		current->thread.used_spe =3D true;
->  	} else if (current->thread.used_spe)
->  		memset(current->thread.evr, 0, ELF_NEVRREG * sizeof(u32));
->=20=20
-> @@ -799,6 +802,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
->  				     &tm_sr->mc_vregs,
->  				     sizeof(sr->mc_vregs)))
->  			return 1;
-> +		current->thread.used_vr =3D true;
->  	} else if (current->thread.used_vr) {
->  		memset(&current->thread.vr_state, 0,
->  		       ELF_NVRREG * sizeof(vector128));
-> @@ -832,6 +836,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
->  		if (copy_vsx_from_user(current, &sr->mc_vsregs) ||
->  		    copy_transact_vsx_from_user(current, &tm_sr->mc_vsregs))
->  			return 1;
-> +		current->thread.used_vsr =3D true;
->  	} else if (current->thread.used_vsr)
->  		for (i =3D 0; i < 32 ; i++) {
->  			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] =3D 0;
-> @@ -848,6 +853,7 @@ static long restore_tm_user_regs(struct pt_regs *regs,
->  		if (__copy_from_user(current->thread.evr, &sr->mc_vregs,
->  				     ELF_NEVRREG * sizeof(u32)))
->  			return 1;
-> +		current->thread.used_spe =3D true;
->  	} else if (current->thread.used_spe)
->  		memset(current->thread.evr, 0, ELF_NEVRREG * sizeof(u32));
->=20=20
-> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal=
-_64.c
-> index 2552079..8704269 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -363,9 +363,11 @@ static long restore_sigcontext(struct pt_regs *regs,=
- sigset_t *set, int sig,
->  	if (v_regs && !access_ok(VERIFY_READ, v_regs, 34 * sizeof(vector128)))
->  		return -EFAULT;
->  	/* Copy 33 vec registers (vr0..31 and vscr) from the stack */
-> -	if (v_regs !=3D NULL && (msr & MSR_VEC) !=3D 0)
-> +	if (v_regs !=3D NULL && (msr & MSR_VEC) !=3D 0) {
->  		err |=3D __copy_from_user(&current->thread.vr_state, v_regs,
->  					33 * sizeof(vector128));
-> +		current->thread.used_vr =3D true;
-> +	}
->  	else if (current->thread.used_vr)
->  		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
->  	/* Always get VRSAVE back */
-> @@ -385,9 +387,10 @@ static long restore_sigcontext(struct pt_regs *regs,=
- sigset_t *set, int sig,
->  	 * buffer for formatting, then into the taskstruct.
->  	 */
->  	v_regs +=3D ELF_NVRREG;
-> -	if ((msr & MSR_VSX) !=3D 0)
-> +	if ((msr & MSR_VSX) !=3D 0) {
->  		err |=3D copy_vsx_from_user(current, v_regs);
-> -	else
-> +		current->thread.used_vsr =3D true;
-> +	} else
->  		for (i =3D 0; i < 32 ; i++)
->  			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] =3D 0;
->  #endif
-> @@ -482,6 +485,7 @@ static long restore_tm_sigcontexts(struct pt_regs *re=
-gs,
->  					33 * sizeof(vector128));
->  		err |=3D __copy_from_user(&current->thread.transact_vr, tm_v_regs,
->  					33 * sizeof(vector128));
-> +		current->thread.used_vr =3D true;
->  	}
->  	else if (current->thread.used_vr) {
->  		memset(&current->thread.vr_state, 0, 33 * sizeof(vector128));
-> @@ -515,6 +519,7 @@ static long restore_tm_sigcontexts(struct pt_regs *re=
-gs,
->  		tm_v_regs +=3D ELF_NVRREG;
->  		err |=3D copy_vsx_from_user(current, v_regs);
->  		err |=3D copy_transact_vsx_from_user(current, tm_v_regs);
-> +		current->thread.used_vsr =3D true;
->  	} else {
->  		for (i =3D 0; i < 32 ; i++) {
->  			current->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] =3D 0;
