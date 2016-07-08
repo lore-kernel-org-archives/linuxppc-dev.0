@@ -3,35 +3,33 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4BN3nFQzDr2g
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4BP0vtMzDr2g
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:21:16 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u686I8dj096605
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 02:21:14 -0400
+ u686A4Ai006406
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 02:21:15 -0400
 Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xkrt3f-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2415xnrsxp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 02:21:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 02:21:15 -0400
 Received: from localhost
  by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 8 Jul 2016 02:21:12 -0400
+ Fri, 8 Jul 2016 02:21:14 -0400
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
  ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Rob Herring <robh+dt@kernel.org>,
- Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org
-Subject: [PATCH v8 00/11] powerpc/powernv/cpuidle: Add support for POWER ISA
- v3 idle states
-Date: Fri,  8 Jul 2016 11:50:42 +0530
-Message-Id: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v8 01/11] powerpc/powernv: Use PNV_THREAD_WINKLE macro while
+ requesting for winkle
+Date: Fri,  8 Jul 2016 11:50:43 +0530
+In-Reply-To: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
+References: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Message-Id: <1467958853-35841-2-git-send-email-shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,161 +39,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-POWER ISA v3 defines a new idle processor core mechanism. In summary,
- a) new instruction named stop is added. This instruction replaces
-	instructions like nap, sleep, rvwinkle.
- b) new per thread SPR named PSSCR is added which controls the behavior
-	of stop instruction. 
-		
-PSSCR has following key fields
-	Bits 0:3  - Power-Saving Level Status. This field indicates the
-	lowest power-saving state the thread entered since stop
-	instruction was last executed.
-		
-	Bit 42 - Enable State Loss                          
-	0 - No state is lost irrespective of other fields  
-	1 - Allows state loss
-		
-	Bits 44:47 - Power-Saving Level Limit      
-	This limits the power-saving level that can be entered into.
-		
-	Bits 60:63 - Requested Level              
-	Used to specify which power-saving level must be entered on
-	executing stop instruction
-		
-Stop idle states and their properties like name, latency, target
-residency, psscr value are exposed via device tree.
-
-This patch series adds support for this new mechanism.
-
-Patches 1-6 are cleanups and code movement.
-Patch 7 adds platform specific support for stop and psscr handling.
-Patch 8 and 9 are minor cleanup in cpuidle driver.
-Patch 10 adds cpuidle driver support.
-Patch 11 makes offlined cpu use deepest stop state.
-
-Note: Documentation for the device tree bindings is posted here-
-http://patchwork.ozlabs.org/patch/629125/
-
-Changes in v8
-=============
- - Fixed a copy-paste mistake in PATCH 10
- - Initializing pnv_first_deep_stop_state
- - Changing MMU_FTR_SECTION condition to reduce FTR section length
- - &snooze_loop -> snooze_loop
-
-Changes in v7
-=============
- - File renamed to idle_book3s.S instead of idle_power_common.S
- - Comment changes
- - power_stop0, power_stop renamed to power9_idle and power_idle_stop
- - PSSCR template is now a macro instead of storing in paca
- - power9_idle in C file instead of assembly
- - Fixed TOC related bug
- - Handling subcore within FTR section
- - Functions in idle.c reordered and broken into multiple functions
- - calling __restore_cpu_power8/9 via cur_cpu_spec->cpu_restore 
- - Added a minor patch with minor cleanups in cpuidle-powernv.c . This
-   was mainly to make the existing code consistent with the review
-   comments for new code
- - Using stack for variables while probing for idle states instead of
-   kzalloc/kcalloc
- - Restoring RPR once per core in P9
-
-Changes in v6
-=============
- - Restore new POWER ISA v3 SPRS when waking up from deep idle
-
-Changes in v5
-=============
- - Use generic cpuidle constant CPUIDLE_NAME_LEN
- - Fix return code handling for of_property_read_string_array
- - Use DT flags to determine if are using stop instruction, instead of
-   cpu_has_feature
- - Removed uncessary cast with names
- - &stop_loop -> stop_loop
- - Added POWERNV_THRESHOLD_LATENCY_NS to filter out idle states with high latency
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+---
+-No changes since v4
 
 Changes in v4
 =============
- - Added a patch to use PNV_THREAD_WINKLE macro while requesting for winkle
- - Moved power7_powersave_common rename to more appropriate patch
- - renaming power7_enter_nap_mode to pnv_enter_arch207_idle_mode
- - Added PSSCR layout to Patch 7's commit message
- - Improved / Fixed comments
- - Fixed whitespace error in paca.h
- - Using MAX_POSSIBLE_STOP_STATE macro instead of hardcoding 0xF has
-   max possible stop state
+- New in v4
 
-Changes in v3
-=============
- - Rebased on powerpc-next
- - Dropping patch 1 since we are not adding a new file for P9 idle support
- - Improved comments in multiple places
- - Moved GET_PACA from power7_restore_hyp_resource to System Reset
- - Instead of moving few functions from idle_power7 to idle_power_common,
-   renaming idle_power7.S to idle_power_common.S
- - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
- - Dropped earlier patch 5 which moved few macros from idle_power_common to
-   asm/cpuidle.h. 
- - Added a patch to rename reusable power7_* idle functions to pnv_*
- - Added new patch that creates abstraction for saving SPRs before
-   entering deep idle states
- - Instead of introducing new file idle_power_stop.S, P9 idle support
-   is added to idle_power_common.S using CPU_FTR sections.
- - Fixed r4 reg clobbering in power_stop0
+ arch/powerpc/kernel/idle_power7.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes in v2
-=============
- - Rebased on v4.6-rc6
- - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
-
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-
-Shreyas B. Prabhu (11):
-  powerpc/powernv: Use PNV_THREAD_WINKLE macro while requesting for
-    winkle
-  powerpc/kvm: make hypervisor state restore a function
-  powerpc/powernv: Rename idle_power7.S to idle_book3s.S
-  powerpc/powernv: Rename reusable idle functions to hardware agnostic
-    names
-  powerpc/powernv: Make pnv_powersave_common more generic
-  powerpc/powernv: abstraction for saving SPRs before entering deep idle
-    states
-  powerpc/powernv: Add platform support for stop instruction
-  cpuidle/powernv: Use CPUIDLE_STATE_MAX instead of
-    MAX_POWERNV_IDLE_STATES
-  cpuidle/powernv: cleanup cpuidle-powernv.c
-  cpuidle/powernv: Add support for POWER ISA v3 idle states
-  powerpc/powernv: Use deepest stop state when cpu is offlined
-
- arch/powerpc/include/asm/cpuidle.h        |   2 +
- arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
- arch/powerpc/include/asm/opal-api.h       |  11 +-
- arch/powerpc/include/asm/ppc-opcode.h     |   4 +
- arch/powerpc/include/asm/processor.h      |   2 +
- arch/powerpc/include/asm/reg.h            |  10 +
- arch/powerpc/kernel/Makefile              |   2 +-
- arch/powerpc/kernel/exceptions-64s.S      |  30 +-
- arch/powerpc/kernel/idle_book3s.S         | 668 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/idle_power7.S         | 515 -----------------------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +-
- arch/powerpc/platforms/powernv/idle.c     | 185 +++++++--
- arch/powerpc/platforms/powernv/powernv.h  |   1 +
- arch/powerpc/platforms/powernv/smp.c      |   4 +-
- drivers/cpuidle/cpuidle-powernv.c         | 101 ++++-
- 15 files changed, 945 insertions(+), 596 deletions(-)
- create mode 100644 arch/powerpc/kernel/idle_book3s.S
- delete mode 100644 arch/powerpc/kernel/idle_power7.S
-
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 470ceeb..705c867 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -252,7 +252,7 @@ _GLOBAL(power7_sleep)
+ 	/* No return */
+ 
+ _GLOBAL(power7_winkle)
+-	li	r3,3
++	li	r3,PNV_THREAD_WINKLE
+ 	li	r4,1
+ 	b	power7_powersave_common
+ 	/* No return */
 -- 
 2.4.11
