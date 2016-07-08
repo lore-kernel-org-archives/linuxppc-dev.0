@@ -1,48 +1,29 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <m.mizuma@jp.fujitsu.com>
+Received: from mgwym02.jp.fujitsu.com (mgwym02.jp.fujitsu.com [211.128.242.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm7QG3ZWnzDqlj
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 18:46:45 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id m2so3986125qtd.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 01:46:45 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 8 Jul 2016 10:46:39 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
- Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 0/9] mm: Hardened usercopy
-Message-ID: <20160708084639.GA4562@gmail.com>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm6Xr5PMPzDqlj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 18:07:24 +1000 (AEST)
+Received: from g01jpfmpwkw02.exch.g01.fujitsu.local
+ (g01jpfmpwkw02.exch.g01.fujitsu.local [10.0.193.56])
+ by yt-mxauth.gw.nic.fujitsu.com (Postfix) with ESMTP id 0D401AC0424
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:55:58 +0900 (JST)
+Message-ID: <577F5C4A.8070004@jp.fujitsu.com>
+Date: Fri, 8 Jul 2016 16:54:50 +0900
+From: Masayoshi Mizuma <m.mizuma@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ <linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-nvme@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>
+CC: Jens Axboe <axboe@fb.com>, Jonathan Corbet <corbet@lwn.net>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Keith Busch
+ <keith.busch@intel.com>, Michael Ellerman <mpe@ellerman.id.au>, Russell King
+ <rmk+kernel@arm.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2 2/3] nvme: implement DMA_ATTR_NO_WARN
+References: <1467895509-12194-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1467895509-12194-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+In-Reply-To: <1467895509-12194-3-git-send-email-mauricfo@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,18 +34,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Kees Cook <keescook@chromium.org> wrote:
+On Thu, 7 Jul 2016 09:45:08 -0300 Mauricio Faria De Oliveira wrote:
+> Use the DMA_ATTR_NO_WARN attribute on dma_map_sg() calls of nvme driver.
+>
+> Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+> Reviewed-by: Gabriel Krisman Bertazi <krisman@linux.vnet.ibm.com>
+> ---
+> Changelog:
+>   v2:
+>    - address warnings from checkpatch.pl (line wrapping and typos)
+>
+>   drivers/nvme/host/pci.c | 12 ++++++++++--
+>   1 file changed, 10 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+> index d1a8259..a7ccad8 100644
+> --- a/drivers/nvme/host/pci.c
+> +++ b/drivers/nvme/host/pci.c
+> @@ -18,6 +18,7 @@
+>   #include <linux/blk-mq.h>
+>   #include <linux/cpu.h>
+>   #include <linux/delay.h>
+> +#include <linux/dma-attrs.h>
+>   #include <linux/errno.h>
+>   #include <linux/fs.h>
+>   #include <linux/genhd.h>
+> @@ -65,6 +66,8 @@ MODULE_PARM_DESC(use_cmb_sqes, "use controller's memory buffer for I/O SQes");
+>
+>   static struct workqueue_struct *nvme_workq;
+>
+> +static DEFINE_DMA_ATTRS(nvme_dma_attrs);
+> +
+>   struct nvme_dev;
+>   struct nvme_queue;
+>
+> @@ -498,7 +501,8 @@ static int nvme_map_data(struct nvme_dev *dev, struct request *req,
+>   		goto out;
+>
+>   	ret = BLK_MQ_RQ_QUEUE_BUSY;
+> -	if (!dma_map_sg(dev->dev, iod->sg, iod->nents, dma_dir))
+> +	if (!dma_map_sg_attrs(dev->dev, iod->sg, iod->nents, dma_dir,
+> +				&nvme_dma_attrs))
 
-> - I couldn't detect a measurable performance change with these features
->   enabled. Kernel build times were unchanged, hackbench was unchanged,
->   etc. I think we could flip this to "on by default" at some point.
+This change is OK because the return value of nvme_map_data() is
+BLK_MQ_RQ_QUEUE_BUSY, so the IO will be requeued.
 
-Could you please try to find some syscall workload that does many small user 
-copies and thus excercises this code path aggressively?
+>   		goto out;
+>
+>   	if (!nvme_setup_prps(dev, req, size))
+> @@ -516,7 +520,8 @@ static int nvme_map_data(struct nvme_dev *dev, struct request *req,
+>   		if (rq_data_dir(req))
+>   			nvme_dif_remap(req, nvme_dif_prep);
+>
+> -		if (!dma_map_sg(dev->dev, &iod->meta_sg, 1, dma_dir))
+> +		if (!dma_map_sg_attrs(dev->dev, &iod->meta_sg, 1, dma_dir,
+> +					&nvme_dma_attrs))
 
-If that measurement works out fine then I'd prefer to enable these security checks 
-by default.
+Here, I think the error messages should not be suppressed because
+the return value of nvme_map_data() is BLK_MQ_RQ_QUEUE_ERROR, so
+the IO returns as -EIO.
 
-Thaks,
+- Masayoshi Mizuma
 
-	Ingo
+>   			goto out_unmap;
+>   	}
+>
+> @@ -2118,6 +2123,9 @@ static int __init nvme_init(void)
+>   	result = pci_register_driver(&nvme_driver);
+>   	if (result)
+>   		destroy_workqueue(nvme_workq);
+> +
+> +	dma_set_attr(DMA_ATTR_NO_WARN, &nvme_dma_attrs);
+> +
+>   	return result;
+>   }
+>
+>
