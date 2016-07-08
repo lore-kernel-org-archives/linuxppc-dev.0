@@ -1,35 +1,19 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4C32BMrzDr6d
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:21:51 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u686A0kH095067
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Jul 2016 02:21:49 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2415xn8ed8-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 02:21:49 -0400
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Fri, 8 Jul 2016 02:21:47 -0400
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
- ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v8 11/11] powerpc/powernv: Use deepest stop state when cpu is
- offlined
-Date: Fri,  8 Jul 2016 11:50:53 +0530
-In-Reply-To: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Message-Id: <1467958853-35841-12-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YB1cT5zDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:34 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rm4Y93qzZz9sdn
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:33 +1000 (AEST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/14] powerpc/powernv: Add XICS emulation APIs
+Date: Fri,  8 Jul 2016 16:37:05 +1000
+Message-Id: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,85 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If hardware supports stop state, use the deepest stop state when
-the cpu is offlined.
+OPAL provides an emulated XICS interrupt controller to
+use as a fallback on newer processors that don't have a
+XICS. It's meant as a way to provide backward compatibility
+with future processors. Add the corresponding interfaces.
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-- No changes since v1
+ arch/powerpc/include/asm/opal-api.h            | 6 +++++-
+ arch/powerpc/include/asm/opal.h                | 5 +++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 4 ++++
+ 3 files changed, 14 insertions(+), 1 deletion(-)
 
- arch/powerpc/platforms/powernv/idle.c    | 15 +++++++++++++--
- arch/powerpc/platforms/powernv/powernv.h |  1 +
- arch/powerpc/platforms/powernv/smp.c     |  4 +++-
- 3 files changed, 17 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 8219e22..479c256 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -253,6 +253,11 @@ static void power9_idle(void)
- u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 72b5f27..170ba0c 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -162,7 +162,11 @@
+ #define OPAL_PCI_GET_PRESENCE_STATE		119
+ #define OPAL_PCI_GET_POWER_STATE		120
+ #define OPAL_PCI_SET_POWER_STATE		121
+-#define OPAL_LAST				121
++#define OPAL_INT_GET_XIRR			122
++#define	OPAL_INT_SET_CPPR			123
++#define OPAL_INT_EOI				124
++#define OPAL_INT_SET_MFRR			125
++#define OPAL_LAST				125
  
- /*
-+ * Deepest stop idle state. Used when a cpu is offlined
-+ */
-+u64 pnv_deepest_stop_state;
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 3b369e9..42f0c95 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -218,6 +218,11 @@ int64_t opal_pci_set_power_state(uint64_t async_token, uint64_t id,
+ 				 uint64_t data);
+ int64_t opal_pci_poll2(uint64_t id, uint64_t data);
+ 
++int64_t opal_int_get_xirr(uint32_t *out_xirr, bool just_poll);
++int64_t opal_int_set_cppr(uint8_t cppr);
++int64_t opal_int_eoi(uint32_t xirr);
++int64_t opal_int_set_mfrr(uint32_t cpu, uint8_t mfrr);
 +
-+/*
-  * Power ISA 3.0 idle initialization.
-  *
-  * POWER ISA 3.0 defines a new SPR Processor stop Status and Control
-@@ -314,8 +319,11 @@ static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
- 	}
- 
- 	/*
--	 * Set pnv_first_deep_stop_state to the first stop level
--	 * to cause hypervisor state loss
-+	 * Set pnv_first_deep_stop_state and pnv_deepest_stop_state.
-+	 * pnv_first_deep_stop_state should be set to the first stop
-+	 * level to cause hypervisor state loss.
-+	 * pnv_deepest_stop_state should be set to the deepest stop
-+	 * stop state.
- 	 */
- 	pnv_first_deep_stop_state = MAX_STOP_STATE;
- 	for (i = 0; i < dt_idle_states; i++) {
-@@ -324,6 +332,9 @@ static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
- 		if ((flags[i] & OPAL_PM_LOSE_FULL_CONTEXT) &&
- 		     (pnv_first_deep_stop_state > psscr_rl))
- 			pnv_first_deep_stop_state = psscr_rl;
-+
-+		if (pnv_deepest_stop_state < psscr_rl)
-+			pnv_deepest_stop_state = psscr_rl;
- 	}
- 
- out:
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 6dbc0a1..da7c843 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -18,6 +18,7 @@ static inline void pnv_pci_shutdown(void) { }
- #endif
- 
- extern u32 pnv_get_supported_cpuidle_states(void);
-+extern u64 pnv_deepest_stop_state;
- 
- extern void pnv_lpc_init(void);
- 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index ad7b1a3..c789258 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -182,7 +182,9 @@ static void pnv_smp_cpu_kill_self(void)
- 
- 		ppc64_runlatch_off();
- 
--		if (idle_states & OPAL_PM_WINKLE_ENABLED)
-+		if (cpu_has_feature(CPU_FTR_ARCH_300))
-+			srr1 = power9_idle_stop(pnv_deepest_stop_state);
-+		else if (idle_states & OPAL_PM_WINKLE_ENABLED)
- 			srr1 = power7_winkle();
- 		else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
- 				(idle_states & OPAL_PM_SLEEP_ENABLED_ER1))
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+ 				   int depth, void *data);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 7979d6d..c7764f9 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -307,3 +307,7 @@ OPAL_CALL(opal_get_device_tree,			OPAL_GET_DEVICE_TREE);
+ OPAL_CALL(opal_pci_get_presence_state,		OPAL_PCI_GET_PRESENCE_STATE);
+ OPAL_CALL(opal_pci_get_power_state,		OPAL_PCI_GET_POWER_STATE);
+ OPAL_CALL(opal_pci_set_power_state,		OPAL_PCI_SET_POWER_STATE);
++OPAL_CALL(opal_int_get_xirr,			OPAL_INT_GET_XIRR);
++OPAL_CALL(opal_int_set_cppr,			OPAL_INT_SET_CPPR);
++OPAL_CALL(opal_int_eoi,				OPAL_INT_EOI);
++OPAL_CALL(opal_int_set_mfrr,			OPAL_INT_SET_MFRR);
 -- 
-2.4.11
+2.7.4
