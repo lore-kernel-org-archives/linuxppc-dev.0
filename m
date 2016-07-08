@@ -1,21 +1,45 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
+ [IPv6:2a00:1450:400c:c09::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rmJSD4MDgzDqm9
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 01:34:04 +1000 (AEST)
-Date: Fri, 8 Jul 2016 08:33:48 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: scottwood@freescale.com, qiang.zhao@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: Need proper type casting before assignment, Remove compilation
- Warning.
-Message-ID: <20160708153348.GA21592@roeck-us.net>
-References: <1467910871-6371-1-git-send-email-arvind.yadav.cs@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rmKCM6CJzzDqpM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 02:07:59 +1000 (AEST)
+Received: by mail-wm0-x22b.google.com with SMTP id n127so15849502wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Jul 2016 09:07:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467910871-6371-1-git-send-email-arvind.yadav.cs@gmail.com>
+Sender: keescook@google.com
+In-Reply-To: <alpine.DEB.2.20.1607080844370.3379@east.gentwo.org>
+References: <577f7e55.4668420a.84f17.5cb9SMTPIN_ADDED_MISSING@mx.google.com>
+ <alpine.DEB.2.20.1607080844370.3379@east.gentwo.org>
+From: Kees Cook <keescook@chromium.org>
+Date: Fri, 8 Jul 2016 12:07:54 -0400
+Message-ID: <CAGXu5jKE=h32tHVLsDeaPN1GfC+BB3YbFvC+5TE5TK1oR-xU3A@mail.gmail.com>
+Subject: Re: [kernel-hardening] Re: [PATCH 9/9] mm: SLUB hardened usercopy
+ support
+To: Christoph Lameter <cl@linux.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Jan Kara <jack@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Linux-MM <linux-mm@kvack.org>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-ia64@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>,
+ linux-arch <linux-arch@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, PaX Team <pageexec@freemail.hu>,
+ Borislav Petkov <bp@suse.de>, lin <ux-arm-kernel@lists.infradead.org>,
+ Mathias Krause <minipli@googlemail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Rik van Riel <riel@redhat.com>, David Rientjes <rientjes@google.com>,
+ Tony Luck <tony.luck@intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Dmitry Vyukov <dvyukov@google.com>, Laura Abbott <labbott@fedoraproject.org>,
+ Brad Spengler <spender@grsecurity.net>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ Case y Schauf ler <casey@schaufler-ca.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,84 +49,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 07, 2016 at 10:31:11PM +0530, Arvind Yadav wrote:
-> -Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
-> assigned in ucc_fast_tx_virtual_fifo_base_offset and
-> ucc_fast_rx_virtual_fifo_base_offset. These variable are 'unsigned int'.
-> So before assginment need a proper type casting.
+On Fri, Jul 8, 2016 at 9:45 AM, Christoph Lameter <cl@linux.com> wrote:
+> On Fri, 8 Jul 2016, Michael Ellerman wrote:
+>
+>> > I wonder if this code should be using size_from_object() instead of s->size?
 
-Are they ? In the upstream kernel, they seem to be "u32".
+BTW, I can't reproduce this on x86 yet...
 
-> 
-> -Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
-> into a function that takes an 'unsigned long' argument.This happens
-> to work because the type is sign-extended on 64-bit architectures
-> before it gets converted into an unsigned type.
-> 
-Not really sure I understand if/how this applies to the patch in question.
-I don't see an int passed to IS_ERR_VALUE(), I only see u32.
+>>
+>> Hmm, not sure. Who's SLUB maintainer? :)
+>
+> Me.
+>
+> s->size is the size of the whole object including debugging info etc.
+> ksize() gives you the actual usable size of an object.
 
-> -Passing an 'unsigned short' or 'unsigned int'argument into
-> IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
-> and types that are wider than 'unsigned long'.
-> 
-What does this have to do with this patch ?
+Is check_valid_pointer() making sure the pointer is within the usable
+size? It seemed like it was checking that it was within the slub
+object (checks against s->size, wants it above base after moving
+pointer to include redzone, etc).
 
-> -Any user will get compilation warning for that do not pass an
-> unsigned long' argument.
-> 
-Sure, but that doesn't mean that typecasting the parameter to unsigned long
-does any good (other than hiding the real bug).
+I think a potential problem with Michael's fix is that the ptr in
+__check_heap_object() may not point at the _start_ of the usable
+object, so doing the red zone shift isn't quite right.
 
-Your subject line still does not list the affected subsystem and/or driver.
-Documentation/SubmittingPatches might give some hints about proper subject
-lines, and looking at other patches applied to the same file(s) might help
-as well.
+This finds the ptr's offset within the slub object (since s->size is
+the slub object size):
 
-Also, if you want someone to review your patches, it helps to Cc: that
-someone.
+        offset = (ptr - page_address(page)) % s->size;
 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
->  drivers/soc/fsl/qe/ucc_fast.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-> index a768931..98eed25 100644
-> --- a/drivers/soc/fsl/qe/ucc_fast.c
-> +++ b/drivers/soc/fsl/qe/ucc_fast.c
-> @@ -267,8 +267,10 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
->  
->  	/* Allocate memory for Tx Virtual Fifo */
->  	uccf->ucc_fast_tx_virtual_fifo_base_offset =
-> -	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> -	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
-> +		(unsigned int)qe_muram_alloc(uf_info->utfs,
+But this looks at object_size and doesn't take into account actual size:
 
-I don't see the point of this typecast.
+        if (offset <= s->object_size && n <= s->object_size - offset)
+                return NULL;
 
-> +				UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> +	if (IS_ERR_VALUE(
-> +		(unsigned long)uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
+I think offset needs to be adjusted by the size of padding, which the
+restore_red_left() call had the same effect, but may not cover all
+padding conditions? I'm not sure.
 
-If sizeof(u32) == sizeof(unsigned long), this patch does not have an effect.
-If sizeof(u32) < sizeof(unsigned long), it does not change anything, and the
-resulting code is as wrong as it was before.
+Should it be:
 
->  		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
->  			__func__);
->  		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
-> @@ -278,10 +280,11 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
->  
->  	/* Allocate memory for Rx Virtual Fifo */
->  	uccf->ucc_fast_rx_virtual_fifo_base_offset =
-> -		qe_muram_alloc(uf_info->urfs +
-> +		(unsigned int)qe_muram_alloc(uf_info->urfs +
->  			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
->  			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> -	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
-> +	if (IS_ERR_VALUE(
-> +		(unsigned long)uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
->  		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
->  			__func__);
->  		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
+        /* Find offset within slab object. */
+        offset = (ptr - page_address(page)) % s->size;
+
+        /* Adjust offset for meta data and padding. */
+        offset -= s->size - s->object_size;
+
+        /* Make sure offset and size are within bounds of the
+allocation size. */
+        if (offset <= s->object_size && n <= s->object_size - offset)
+                return NULL;
+
+?
+
+-Kees
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
