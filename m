@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YK1qQszDrGY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rm4YM1CtlzDrFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jul 2016 16:37:43 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rm4YJ31qFz9s5Q
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:40 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rm4YL2g1Qz9s5Q
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jul 2016 16:37:41 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/14] powerpc/powernv: Discover IODA3 PHBs
-Date: Fri,  8 Jul 2016 16:37:09 +1000
-Message-Id: <1467959838-6900-5-git-send-email-benh@kernel.crashing.org>
+Subject: [PATCH 06/14] powerpc/pseries/pci: Remove obsolete SW invalidate
+Date: Fri,  8 Jul 2016 16:37:10 +1000
+Message-Id: <1467959838-6900-6-git-send-email-benh@kernel.crashing.org>
 In-Reply-To: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 References: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,44 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We instanciate them as IODA2. We also change the MSI EOI hack
-to only kick on PHB3 since it will not be needed on any new
-implementation.
+That was used by some old IBM internal bringup tools and is
+no longer relevant.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
- arch/powerpc/platforms/powernv/pci.c      | 4 ++++
- 2 files changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/iommu.c | 53 +---------------------------------
+ 1 file changed, 1 insertion(+), 52 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 0be6f2b..092b2e6 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2711,7 +2711,8 @@ static void set_msi_irq_chip(struct pnv_phb *phb, unsigned int virq)
- 	struct irq_data *idata;
- 	struct irq_chip *ichip;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 3e8865b..770a753 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -120,35 +120,6 @@ static void iommu_pseries_free_group(struct iommu_table_group *table_group,
+ 	kfree(table_group);
+ }
  
--	if (phb->type != PNV_PHB_IODA2)
-+	/* The MSI EOI OPAL call is only needed on PHB3 */
-+	if (phb->model != PNV_PHB_MODEL_PHB3)
- 		return;
+-static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
+-				      __be64 *startp, __be64 *endp)
+-{
+-	u64 __iomem *invalidate = (u64 __iomem *)tbl->it_index;
+-	unsigned long start, end, inc;
+-
+-	start = __pa(startp);
+-	end = __pa(endp);
+-	inc = L1_CACHE_BYTES; /* invalidate a cacheline of TCEs at a time */
+-
+-	/* If this is non-zero, change the format.  We shift the
+-	 * address and or in the magic from the device tree. */
+-	if (tbl->it_busno) {
+-		start <<= 12;
+-		end <<= 12;
+-		inc <<= 12;
+-		start |= tbl->it_busno;
+-		end |= tbl->it_busno;
+-	}
+-
+-	end |= inc - 1; /* round up end to be different than start */
+-
+-	mb(); /* Make sure TCEs in memory are written */
+-	while (start <= end) {
+-		out_be64(invalidate, start);
+-		start += inc;
+-	}
+-}
+-
+ static int tce_build_pSeries(struct iommu_table *tbl, long index,
+ 			      long npages, unsigned long uaddr,
+ 			      enum dma_data_direction direction,
+@@ -173,9 +144,6 @@ static int tce_build_pSeries(struct iommu_table *tbl, long index,
+ 		uaddr += TCE_PAGE_SIZE;
+ 		tcep++;
+ 	}
+-
+-	if (tbl->it_type & TCE_PCI_SWINV_CREATE)
+-		tce_invalidate_pSeries_sw(tbl, tces, tcep - 1);
+ 	return 0;
+ }
  
- 	if (!phb->ioda.irq_chip_init) {
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 62c7637..4617ea2 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -932,6 +932,10 @@ void __init pnv_pci_init(void)
- 	for_each_compatible_node(np, NULL, "ibm,ioda2-phb")
- 		pnv_pci_init_ioda2_phb(np);
+@@ -188,9 +156,6 @@ static void tce_free_pSeries(struct iommu_table *tbl, long index, long npages)
  
-+	/* Look for ioda3 built-in PHB4's, we treat them as IODA2 */
-+	for_each_compatible_node(np, NULL, "ibm,ioda3-phb")
-+		pnv_pci_init_ioda2_phb(np);
-+
- 	/* Look for NPU PHBs */
- 	for_each_compatible_node(np, NULL, "ibm,ioda2-npu-phb")
- 		pnv_pci_init_npu_phb(np);
+ 	while (npages--)
+ 		*(tcep++) = 0;
+-
+-	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+-		tce_invalidate_pSeries_sw(tbl, tces, tcep - 1);
+ }
+ 
+ static unsigned long tce_get_pseries(struct iommu_table *tbl, long index)
+@@ -537,7 +502,7 @@ static void iommu_table_setparms(struct pci_controller *phb,
+ 				 struct iommu_table *tbl)
+ {
+ 	struct device_node *node;
+-	const unsigned long *basep, *sw_inval;
++	const unsigned long *basep;
+ 	const u32 *sizep;
+ 
+ 	node = phb->dn;
+@@ -575,22 +540,6 @@ static void iommu_table_setparms(struct pci_controller *phb,
+ 	tbl->it_index = 0;
+ 	tbl->it_blocksize = 16;
+ 	tbl->it_type = TCE_PCI;
+-
+-	sw_inval = of_get_property(node, "linux,tce-sw-invalidate-info", NULL);
+-	if (sw_inval) {
+-		/*
+-		 * This property contains information on how to
+-		 * invalidate the TCE entry.  The first property is
+-		 * the base MMIO address used to invalidate entries.
+-		 * The second property tells us the format of the TCE
+-		 * invalidate (whether it needs to be shifted) and
+-		 * some magic routing info to add to our invalidate
+-		 * command.
+-		 */
+-		tbl->it_index = (unsigned long) ioremap(sw_inval[0], 8);
+-		tbl->it_busno = sw_inval[1]; /* overload this with magic */
+-		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
+-	}
+ }
+ 
+ /*
 -- 
 2.7.4
