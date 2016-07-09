@@ -1,21 +1,40 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <riel@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rmb2p0GZbzDqpZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 12:31:29 +1000 (AEST)
-Subject: Re: [PATCH v1] Specific requirement of type casting for 64-bit
- architectures.
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>, scottwood@freescale.com
-References: <1468014242-13939-1-git-send-email-arvind.yadav.cs@gmail.com>
-Cc: qiang.zhao@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rmbKW3L1CzDqpZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2016 12:44:15 +1000 (AEST)
+Message-ID: <1468032243.13253.59.camel@redhat.com>
+Subject: Re: [PATCH 0/9] mm: Hardened usercopy
+From: Rik van Riel <riel@redhat.com>
+To: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>,
  linux-kernel@vger.kernel.org
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <578061F6.4070307@roeck-us.net>
-Date: Fri, 8 Jul 2016 19:31:18 -0700
-MIME-Version: 1.0
-In-Reply-To: <1468014242-13939-1-git-send-email-arvind.yadav.cs@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell
+ King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
+ <ard.biesheuvel@linaro.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Tony
+ Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, "David S.
+ Miller" <davem@davemloft.net>, x86@kernel.org, Christoph Lameter
+ <cl@linux.com>, Pekka Enberg <penberg@kernel.org>, David Rientjes
+ <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>, Borislav
+ Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Jan Kara
+ <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli
+ <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
+ <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Date: Fri, 08 Jul 2016 22:44:03 -0400
+In-Reply-To: <b113b487-acc6-24b8-d58c-425d3c884f4c@redhat.com>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <b113b487-acc6-24b8-d58c-425d3c884f4c@redhat.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-WDIYwW63/yu0AaqYDmjB"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,137 +44,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/08/2016 02:44 PM, Arvind Yadav wrote:
 
-I would really suggest to read section 14 of Documentation/SubmittingPatches
-and to follow the guidance it provides.
+--=-WDIYwW63/yu0AaqYDmjB
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-For the subject line: The subsystem/driver is still not listed,
-and I am quite sure that this is not v1 of this patch.
-It also does not describe the patch, much less concisely.
+On Fri, 2016-07-08 at 19:22 -0700, Laura Abbott wrote:
+>=C2=A0
+> Even with the SLUB fixup I'm still seeing this blow up on my arm64
+> system. This is a
+> Fedora rawhide kernel + the patches
+>=20
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666700] usercopy: kernel memory exposure attem=
+pt detected from
+> fffffc0008b4dd58 (<kernel text>) (8 bytes)
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666720] CPU: 2 PID: 79 Comm: modprobe Tainted:
+> G=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0W=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A04.7.0-0.rc6.git1.1.hardenedusercopy.fc25.aarch64 #1
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666733] Hardware name: AppliedMicro Mustang/Mu=
+stang, BIOS
+> 1.1.0 Nov 24 2015
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666744] Call trace:
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666756] [<fffffc0008088a20>] dump_backtrace+0x=
+0/0x1e8
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666765] [<fffffc0008088c2c>] show_stack+0x24/0=
+x30
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666775] [<fffffc0008455344>] dump_stack+0xa4/0=
+xe0
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666785] [<fffffc000828d874>] __check_object_si=
+ze+0x6c/0x230
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666795] [<fffffc00083a5748>] create_elf_tables=
++0x74/0x420
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666805] [<fffffc00082fb1f0>] load_elf_binary+0=
+x828/0xb70
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666814] [<fffffc0008298b4c>] search_binary_han=
+dler+0xb4/0x240
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666823] [<fffffc0008299864>] do_execveat_commo=
+n+0x63c/0x950
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666832] [<fffffc0008299bb4>] do_execve+0x3c/0x=
+50
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666841] [<fffffc00080e3720>]
+> call_usermodehelper_exec_async+0xe8/0x148
+> [=C2=A0=C2=A0=C2=A0=C2=A00.666850] [<fffffc0008084a80>] ret_from_fork+0x1=
+0/0x50
+>=20
+> This happens on every call to execve. This seems to be the first
+> copy_to_user in
+> create_elf_tables. I didn't get a chance to debug and I'm going out
+> of town
+> all of next week so all I have is the report unfortunately. config
+> attached.
 
-> -Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
-> assigned in ucc_fast_tx_virtual_fifo_base_offset and
-> ucc_fast_rx_virtual_fifo_base_offset. It will work on 32-bit architectures
-> But data can be loss on 64-bit architectures if 'qe_muram_alloc' will
-> return greater then MAX value of 'unsigned int'.
->
-Try to rephrase this to make it better readable.
+That's odd, this should be copying a piece of kernel data (not text)
+to userspace.
 
-> -Passing value in IS_ERR_VALUE() is wrong, as they pass an 'unsigned int'
-> into a function, It will through this compilation warning.
->
+from fs/binfmt_elf.c
 
-What is wrong it that the return value from the allocator function is truncated
-to 32 bit, and that the resulting value is then used as argument to IS_ERR_VALUE().
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 const char *k_platform =3D ELF_PLATFORM;
 
-> "
->   include/linux/err.h:21:49: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
->   #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
->                                                   ^
->   include/linux/compiler.h:170:42: note: in definition of macro ‘unlikely’
->   # define unlikely(x) __builtin_expect(!!(x), 0)
-> "
->
-> -Most users of IS_ERR_VALUE() in the kernel are wrong, as they
-> pass an 'unsigned int' into a function that takes an 'unsigned long'
-> argument. This happens to work because the type is sign-extended
-> on 64-bit architectures before it gets converted into an
-> unsigned type.
->
-While this may be true, the description of this patch should be about
-this patch, not about the rest of the kernel.
+...
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 size_t len =3D strl=
+en(k_platform) + 1;
+	=09
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 u_platform =3D (elf=
+_addr_t __user *)STACK_ALLOC(p, len);
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0if (__copy_to_user(u_platform, k_platform, len))
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return=
+ -EFAULT;
 
-> However, anything that passes an 'unsigned short' or 'unsigned int'
-> argument into IS_ERR_VALUE() is guaranteed to be broken, as are
-> 8-bit integers and types that are wider than 'unsigned long'.
->
+from arch/arm/include/asm/elf.h:
 
-What does that have to do with this patch ?
+#define ELF_PLATFORM_SIZE 8
+#define ELF_PLATFORM=C2=A0=C2=A0=C2=A0=C2=A0(elf_platform)
 
-Again, the problem here is that a unsigned long is assigned to an u32, and that
-the u32 is then used as parameter to IS_ERR_VALUE. This is wrong and needs to
-be fixed. Describe what is wrong and needs to be fixed, not what can be wrong
-elsewhere in the kernel.
+extern char elf_platform[];
 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
+from arch/arm/kernel/setup.c:
 
-Here is where one would normally expect a change log.
+char elf_platform[ELF_PLATFORM_SIZE];
+EXPORT_SYMBOL(elf_platform);
 
->   drivers/soc/fsl/qe/ucc_fast.c | 21 ++++++++++++++-------
->   1 file changed, 14 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-> index a768931..208b198 100644
-> --- a/drivers/soc/fsl/qe/ucc_fast.c
-> +++ b/drivers/soc/fsl/qe/ucc_fast.c
-> @@ -141,6 +141,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
->   	struct ucc_fast __iomem *uf_regs;
->   	u32 gumr;
->   	int ret;
-> +	unsigned long ret_muram;
->
+...
 
-Kind of an unfortunate variable name. A simple "offset" might be a better choice.
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0snprintf(elf_platform, ELF_=
+PLATFORM_SIZE, "%s%c",
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0list->elf_name, ENDIANNESS);
 
->   	if (!uf_info)
->   		return -EINVAL;
-> @@ -265,28 +266,34 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
->   	gumr |= uf_info->mode;
->   	out_be32(&uf_regs->gumr, gumr);
->
-> -	/* Allocate memory for Tx Virtual Fifo */
-> -	uccf->ucc_fast_tx_virtual_fifo_base_offset =
-> -	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> -	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
-> +	ret_muram =
-> +		qe_muram_alloc(uf_info->utfs,
-> +			UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+How does that end up in the .text section of the
+image, instead of in one of the various data sections?
 
-While minor, this introduces a checkpatch CHECK message.
+What kind of linker oddity is going on with ARM?
 
-> +
-This added empty line is an unnecessary whitespace change and does not add any value.
+--=C2=A0	=09
+All Rights Reversed.
+--=-WDIYwW63/yu0AaqYDmjB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-> +	if (IS_ERR_VALUE(ret_muram)) {
->   		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
->   			__func__);
->   		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
->   		ucc_fast_free(uccf);
->   		return -ENOMEM;
-> +	} else {
-> +		/* Allocate memory for Tx Virtual Fifo */
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Why did you move the comment here ? The code below does not allocate anything.
+iQEcBAABCAAGBQJXgGT0AAoJEM553pKExN6DH7wH/0znCffUzWBhau8KJMvAnoPK
+2C47QOWO1LqeYiuIoC3yiTbqFOhHvoqLSNvBp6YmLJDnSDgYPI8/BYHsu4kLLI0e
+yB0Gdczy2FQvfp5C3wvahbLkD8llhl/W4DOKfR7BtU3oUWHlQV00rz4qgV1H5uvf
+7mied4PFhk8Eabnl1GDcyIm4YZN93P17xqQzYLDc7IL79I79f5wSysmjLGD/slIN
+BP+5skId75PKMBrKkLdvD6y02VIgj0gILZyCsHlJRJ/LRfCmN1c9VXShmwd0FO0r
+oWiYUCRSZePuKHGuJh67xJknHH7PVvvUDyCrRRSS0dqNO3I/0AD1v9yuyt2eX2E=
+=+yIR
+-----END PGP SIGNATURE-----
 
-> +		uccf->ucc_fast_tx_virtual_fifo_base_offset = (u32)ret_muram;
->   	}
-
-checkpatch will rightfully tell you that else after return is generally not useful.
-Also, the typecast is not necessary.
-
->
-> -	/* Allocate memory for Rx Virtual Fifo */
-> -	uccf->ucc_fast_rx_virtual_fifo_base_offset =
-> +	ret_muram =
->   		qe_muram_alloc(uf_info->urfs +
->   			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
->   			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
-> -	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
-> +	if (IS_ERR_VALUE(ret_muram)) {
->   		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
->   			__func__);
->   		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
->   		ucc_fast_free(uccf);
->   		return -ENOMEM;
-> +	} else {
-> +		/* Allocate memory for Rx Virtual Fifo */
-> +		uccf->ucc_fast_rx_virtual_fifo_base_offset = (u32)ret_muram;
-
-Same comments as above.
-
->   	}
->
->   	/* Set Virtual Fifo registers */
->
+--=-WDIYwW63/yu0AaqYDmjB--
