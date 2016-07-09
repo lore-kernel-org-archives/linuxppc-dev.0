@@ -1,20 +1,46 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rn5FY4WSTzDqwM
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 08:12:33 +1000 (AEST)
-Date: Sat, 09 Jul 2016 18:06:40 -0400 (EDT)
-Message-Id: <20160709.180640.648031801699853376.davem@davemloft.net>
-To: arvind.yadav.cs@gmail.com
-Cc: leoli@freescale.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Need proper type casting before assignment, Remove
- compilation Warning.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1467916674-8418-1-git-send-email-arvind.yadav.cs@gmail.com>
-References: <1467916674-8418-1-git-send-email-arvind.yadav.cs@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <pageexec@freemail.hu>
+Received: from r00tworld.com (r00tworld.com [212.85.137.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rn7PF22N4zDqwR
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 09:49:20 +1000 (AEST)
+From: "PaX Team" <pageexec@freemail.hu>
+To: Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@amacapital.net>
+Date: Sun, 10 Jul 2016 01:16:36 +0200
+MIME-Version: 1.0
+Subject: Re: [PATCH 0/9] mm: Hardened usercopy
+Reply-to: pageexec@freemail.hu
+CC: Christoph Lameter <cl@linux.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Brad Spengler <spender@grsecurity.net>, Pekka Enberg <penberg@kernel.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Casey Schaufler <casey@schaufler-ca.com>,
+ Will Deacon <will.deacon@arm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ X86 ML <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ David Rientjes <rientjes@google.com>,
+ Mathias Krause <minipli@googlemail.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Jan Kara <jack@suse.cz>,
+ Russell King <linux@armlinux.org.uk>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Vitaly Wool <vitalywool@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, sparclinux@vger.kernel.org
+Message-ID: <578185D4.29090.242668C8@pageexec.freemail.hu>
+In-reply-to: <CALCETrU5Emr7jZNH5bh7Z+C8fLOcAah9SzeJbDjqW7N-xWGxHA@mail.gmail.com>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>,
+ <CALCETrU5Emr7jZNH5bh7Z+C8fLOcAah9SzeJbDjqW7N-xWGxHA@mail.gmail.com>
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +50,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Fri,  8 Jul 2016 00:07:54 +0530
+On 9 Jul 2016 at 14:27, Andy Lutomirski wrote:
 
-> -Return type of 'qe_muram_alloc' is 'unsigned long', That Was trying to
-> assigned in ucc_fast_tx_virtual_fifo_base_offset and
-> ucc_fast_rx_virtual_fifo_base_offset. These variable are 'unsigned int'.
-> So before assginment need a proper type casting.
+> On Jul 6, 2016 6:25 PM, "Kees Cook" <keescook@chromium.org> wrote:
+> >
+> > Hi,
+> >
+> > This is a start of the mainline port of PAX_USERCOPY[1]. After I started
+> > writing tests (now in lkdtm in -next) for Casey's earlier port[2], I
+> > kept tweaking things further and further until I ended up with a whole
+> > new patch series. To that end, I took Rik's feedback and made a number
+> > of other changes and clean-ups as well.
+> >
 > 
-> -Passing value in IS_ERR_VALUE() is wrong, as they pass an 'int'
-> into a function that takes an 'unsigned long' argument.This happens
-> to work because the type is sign-extended on 64-bit architectures
-> before it gets converted into an unsigned type.
-> 
-> -Passing an 'unsigned short' or 'unsigned int'argument into
-> IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
-> and types that are wider than 'unsigned long'.
-> 
-> -Any user will get compilation warning for that do not pass an
-> unsigned long' argument.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> I like the series, but I have one minor nit to pick.  The effect of
+> this series is to harden usercopy, but most of the code is really
+> about infrastructure to validate that a pointed-to object is valid.
 
-Your subject line is improperly formed.
+actually USERCOPY has never been about validating pointers. its sole purpose
+is to validate the *size* argument of copy*user calls, a very specific form
+of runtime bounds checking. it's only really relevant for slab objects and the
+pointer checks (that one might mistake for being a part of the defense mechanism)
+are only there to determine whether the kernel pointer refers to a slab object
+or not (the stack part is a small bonus and was never the main goal either).
 
-It must have the subsystem or driver name, followed by a colon ":"
-and a space.  Such as:
+> Might it make sense to call the infrastructure part something else?
 
-	[PATCH] ucc_geth: Need proper type ...
+yes, more bikeshedding will surely help, like the renaming of .data..read_only
+to .data..ro_after_init which also had nothing to do with init but everything
+to do with objects being conceptually read-only...
+
+> After all, this could be extended in the future for memcpy or even for
+> some GCC plugin to check pointers passed to ordinary (non-allocator)
+> functions.
+
+what kind of checks are you thinking of here? and more fundamentally, against
+what kind of threats? as for memcpy, it's the standard mandated memory copying
+function, what security related properties can it check on its pointer arguments?
