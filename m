@@ -1,46 +1,20 @@
-Return-Path: <pageexec@freemail.hu>
-Received: from r00tworld.com (r00tworld.com [212.85.137.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rn7PF22N4zDqwR
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 09:49:20 +1000 (AEST)
-From: "PaX Team" <pageexec@freemail.hu>
-To: Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@amacapital.net>
-Date: Sun, 10 Jul 2016 01:16:36 +0200
-MIME-Version: 1.0
-Subject: Re: [PATCH 0/9] mm: Hardened usercopy
-Reply-to: pageexec@freemail.hu
-CC: Christoph Lameter <cl@linux.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Brad Spengler <spender@grsecurity.net>, Pekka Enberg <penberg@kernel.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Will Deacon <will.deacon@arm.com>, Rik van Riel <riel@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dmitry Vyukov <dvyukov@google.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- X86 ML <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- linux-arch <linux-arch@vger.kernel.org>,
- David Rientjes <rientjes@google.com>,
- Mathias Krause <minipli@googlemail.com>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- "David S. Miller" <davem@davemloft.net>,
- Laura Abbott <labbott@fedoraproject.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Jan Kara <jack@suse.cz>,
- Russell King <linux@armlinux.org.uk>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Vitaly Wool <vitalywool@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, sparclinux@vger.kernel.org
-Message-ID: <578185D4.29090.242668C8@pageexec.freemail.hu>
-In-reply-to: <CALCETrU5Emr7jZNH5bh7Z+C8fLOcAah9SzeJbDjqW7N-xWGxHA@mail.gmail.com>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>,
- <CALCETrU5Emr7jZNH5bh7Z+C8fLOcAah9SzeJbDjqW7N-xWGxHA@mail.gmail.com>
-Content-type: text/plain; charset=US-ASCII
+Return-Path: <chengang@emindsoft.com.cn>
+Received: from out1134-250.mail.aliyun.com (out1134-250.mail.aliyun.com
+ [42.120.134.250])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rmxmH3VfvzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 02:35:11 +1000 (AEST)
+From: chengang@emindsoft.com.cn
+To: akpm@linux-foundation.org,
+	benh@kernel.crashing.org,
+	paulus@samba.org
+Cc: mpe@ellerman.id.au, dave.hansen@linux.intel.com, tglx@linutronix.de,
+ mingo@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Chen Gang <chengang@emindsoft.com.cn>,
+ Chen Gang <gang.chen.5i5j@gmail.com>
+Subject: [PATCH] include: mman: Use bool instead of int for the return value
+ of arch_validate_prot
+Date: Sun, 10 Jul 2016 00:29:11 +0800
+Message-Id: <1468081751-9468-1-git-send-email-chengang@emindsoft.com.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,40 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9 Jul 2016 at 14:27, Andy Lutomirski wrote:
+From: Chen Gang <chengang@emindsoft.com.cn>
 
-> On Jul 6, 2016 6:25 PM, "Kees Cook" <keescook@chromium.org> wrote:
-> >
-> > Hi,
-> >
-> > This is a start of the mainline port of PAX_USERCOPY[1]. After I started
-> > writing tests (now in lkdtm in -next) for Casey's earlier port[2], I
-> > kept tweaking things further and further until I ended up with a whole
-> > new patch series. To that end, I took Rik's feedback and made a number
-> > of other changes and clean-ups as well.
-> >
-> 
-> I like the series, but I have one minor nit to pick.  The effect of
-> this series is to harden usercopy, but most of the code is really
-> about infrastructure to validate that a pointed-to object is valid.
+For pure bool function's return value, bool is a little better more or
+less than int.
 
-actually USERCOPY has never been about validating pointers. its sole purpose
-is to validate the *size* argument of copy*user calls, a very specific form
-of runtime bounds checking. it's only really relevant for slab objects and the
-pointer checks (that one might mistake for being a part of the defense mechanism)
-are only there to determine whether the kernel pointer refers to a slab object
-or not (the stack part is a small bonus and was never the main goal either).
+And return boolean result directly. Since 'if' statement is also for
+boolean checking, and return boolean result, too.
 
-> Might it make sense to call the infrastructure part something else?
+Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
+---
+ arch/powerpc/include/asm/mman.h | 8 +++-----
+ include/linux/mman.h            | 2 +-
+ 2 files changed, 4 insertions(+), 6 deletions(-)
 
-yes, more bikeshedding will surely help, like the renaming of .data..read_only
-to .data..ro_after_init which also had nothing to do with init but everything
-to do with objects being conceptually read-only...
-
-> After all, this could be extended in the future for memcpy or even for
-> some GCC plugin to check pointers passed to ordinary (non-allocator)
-> functions.
-
-what kind of checks are you thinking of here? and more fundamentally, against
-what kind of threats? as for memcpy, it's the standard mandated memory copying
-function, what security related properties can it check on its pointer arguments?
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index 2563c43..62e1f47 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -31,13 +31,11 @@ static inline pgprot_t arch_vm_get_page_prot(unsigned long vm_flags)
+ }
+ #define arch_vm_get_page_prot(vm_flags) arch_vm_get_page_prot(vm_flags)
+ 
+-static inline int arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot)
+ {
+ 	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
+-		return 0;
+-	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
+-		return 0;
+-	return 1;
++		return false;
++	return (prot & PROT_SAO) == 0 || cpu_has_feature(CPU_FTR_SAO);
+ }
+ #define arch_validate_prot(prot) arch_validate_prot(prot)
+ 
+diff --git a/include/linux/mman.h b/include/linux/mman.h
+index 33e17f6..634c4c5 100644
+--- a/include/linux/mman.h
++++ b/include/linux/mman.h
+@@ -49,7 +49,7 @@ static inline void vm_unacct_memory(long pages)
+  *
+  * Returns true if the prot flags are valid
+  */
+-static inline int arch_validate_prot(unsigned long prot)
++static inline bool arch_validate_prot(unsigned long prot)
+ {
+ 	return (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM)) == 0;
+ }
+-- 
+1.9.3
