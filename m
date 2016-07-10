@@ -1,28 +1,54 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
+ [IPv6:2a00:1450:400c:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnJ0L1hjczDqpG
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 16:16:50 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- "Rafael J. Wysocki"  <rafael.j.wysocki@intel.com>,
- Daniel Lezcano  <daniel.lezcano@linaro.org>
-Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org,
- ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Rob Herring <robh+dt@kernel.org>,
- Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v8 10/11] cpuidle/powernv: Add support for POWER ISA v3
- idle states
-In-Reply-To: <1467958853-35841-11-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1467958853-35841-11-git-send-email-shreyas@linux.vnet.ibm.com>
-Date: Sun, 10 Jul 2016 16:16:49 +1000
-Message-ID: <877fcuj9v2.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnMzt6HJrzDqpG
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 19:16:42 +1000 (AEST)
+Received: by mail-wm0-x242.google.com with SMTP id k123so12934276wme.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 02:16:42 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Sun, 10 Jul 2016 11:16:32 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: PaX Team <pageexec@freemail.hu>
+Cc: Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@amacapital.net>,
+ Christoph Lameter <cl@linux.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Brad Spengler <spender@grsecurity.net>, Pekka Enberg <penberg@kernel.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Casey Schaufler <casey@schaufler-ca.com>,
+ Will Deacon <will.deacon@arm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ X86 ML <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ David Rientjes <rientjes@google.com>,
+ Mathias Krause <minipli@googlemail.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Jan Kara <jack@suse.cz>,
+ Russell King <linux@armlinux.org.uk>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, linuxppc-dev@lists.ozlabs.org,
+ Vitaly Wool <vitalywool@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, sparclinux@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/9] mm: Hardened usercopy
+Message-ID: <20160710091632.GA14172@gmail.com>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <CALCETrU5Emr7jZNH5bh7Z+C8fLOcAah9SzeJbDjqW7N-xWGxHA@mail.gmail.com>
+ <578185D4.29090.242668C8@pageexec.freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <578185D4.29090.242668C8@pageexec.freemail.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +58,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com> writes:
 
-> POWER ISA v3 defines a new idle processor core mechanism. In summary,
->  a) new instruction named stop is added.
->  b) new per thread SPR named PSSCR is added which controls the behavior
-> 	of stop instruction.
->
-> Supported idle states and value to be written to PSSCR register to enter
-> any idle state is exposed via ibm,cpu-idle-state-names and
-> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
-> platform provided power_stop() needs to be invoked with the appropriate
-> PSSCR value.
->
-> This patch adds support for this new mechanism in cpuidle powernv driver.
->
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-> Cc: linux-pm@vger.kernel.org
+* PaX Team <pageexec@freemail.hu> wrote:
 
-Rafael/Daniel do you guys want to ack or nack this?
+> On 9 Jul 2016 at 14:27, Andy Lutomirski wrote:
+> 
+> > I like the series, but I have one minor nit to pick.  The effect of this 
+> > series is to harden usercopy, but most of the code is really about 
+> > infrastructure to validate that a pointed-to object is valid.
+> 
+> actually USERCOPY has never been about validating pointers. its sole purpose is 
+> to validate the *size* argument of copy*user calls, a very specific form of 
+> runtime bounds checking.
 
-I'll take silence as "not bothered" and merge the whole series via the
-powerpc tree.
+What this code has been about originally is largely immaterial, unless you can 
+formulate it into a technical argument.
 
-cheers
+There are a number of cheap tests we can do and there are a number of ways how a 
+'pointer' can be validated runtime, without any 'size' information:
+
+ - for example if a pointer points into a red zone straight away then we know it's
+   bogus.
+
+ - or if a kernel pointer is points outside the valid kernel virtual memory range
+   we know it's bogus as well.
+
+So while only doing a bounds check might have been the original purpose of the 
+patch set, Andy's point is that it might make sense to treat this facility as a 
+more generic 'object validation' code of (pointer,size) object and not limit it to 
+'runtime bounds checking'. That kind of extended purpose behind a facility should 
+be reflected in the naming.
+
+Confusing names are often the source of misunderstandings and bugs.
+
+The 9-patch series as submitted here is neither just 'bounds checking' nor just 
+pure 'pointer checking', it's about validating that a (pointer,size) range of 
+memory passed to a (user) memory copy function is fully within a valid object the 
+kernel might know about (in an fast to check fashion).
+
+This necessary means:
+
+ - the start of the range points to a valid object to begin with (if known)
+
+ - the range itself does not point beyond the end of the object (if known)
+
+ - even if the kernel does not know anything about the pointed to object it can 
+   do a pointer check (for example is it pointing inside kernel virtual memory) 
+   and do a bounds check on the size.
+
+Do you disagree with that?
+
+> > Might it make sense to call the infrastructure part something else?
+> 
+> yes, more bikeshedding will surely help, [...]
+
+Insulting and ridiculing a reviewer who explicitly qualified his comments with 
+"one minor nit to pick" sure does not help upstream integration either. (Unless 
+the goal is to prevent upstream integration.)
+
+> [...] like the renaming of .data..read_only to .data..ro_after_init which also 
+> had nothing to do with init but everything to do with objects being conceptually 
+> read-only...
+
+.data..ro_after_init objects get written to during bootup so it's conceptually 
+quite confusing to name it "read-only" without any clear qualifiers.
+
+That it's named consistently with its role of "read-write before init and read 
+only after init" on the other hand is not confusing at all. Not sure what your 
+problem is with the new name.
+
+Names within submitted patches get renamed on a routine basis during review. It's 
+often only minor improvements in naming (which you can consider bike shedding), 
+but in this particular case the rename was clearly useful in not just improving 
+the name but in avoiding an actively confusing name. So I disagree not just with 
+the hostile tone of your reply but with your underlying technical point as well.
+
+Thanks,
+
+	Ingo
