@@ -1,52 +1,19 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-vk0-x22d.google.com (mail-vk0-x22d.google.com
- [IPv6:2607:f8b0:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fedora@leemhuis.info>
+Received: from basicbox7.server-home.net (basicbox7.server-home.net
+ [195.137.212.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnSTB478YzDqpG
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 22:38:54 +1000 (AEST)
-Received: by mail-vk0-x22d.google.com with SMTP id b192so107475324vke.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 05:38:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnX0j21gqzDqwH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 01:17:55 +1000 (AEST)
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Subject: Linux 4.7: Reported regressions as of Sunday, 2016-07-10
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
+Message-ID: <f899a767-aed3-2b25-16ec-96d81d258ecd@leemhuis.info>
+Date: Sun, 10 Jul 2016 17:17:48 +0200
 MIME-Version: 1.0
-In-Reply-To: <5782398B.32731.26E46C3D@pageexec.freemail.hu>
-References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
- <578185D4.29090.242668C8@pageexec.freemail.hu>
- <20160710091632.GA14172@gmail.com>
- <5782398B.32731.26E46C3D@pageexec.freemail.hu>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Sun, 10 Jul 2016 05:38:31 -0700
-Message-ID: <CALCETrXfdEbmSTs6XkZjHkAc3W_380bpde4bWQgRA5CQM0PtLA@mail.gmail.com>
-Subject: Re: [PATCH 0/9] mm: Hardened usercopy
-To: PaX Team <pageexec@freemail.hu>
-Cc: Ingo Molnar <mingo@kernel.org>, Kees Cook <keescook@chromium.org>,
- Christoph Lameter <cl@linux.com>, Andrew Morton <akpm@linux-foundation.org>,
- Brad Spengler <spender@grsecurity.net>, Pekka Enberg <penberg@kernel.org>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Casey Schaufler <casey@schaufler-ca.com>,
- Will Deacon <will.deacon@arm.com>, Rik van Riel <riel@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Dmitry Vyukov <dvyukov@google.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- X86 ML <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- linux-arch <linux-arch@vger.kernel.org>,
- David Rientjes <rientjes@google.com>, Mathias Krause <minipli@googlemail.com>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- "David S. Miller" <davem@davemloft.net>,
- Laura Abbott <labbott@fedoraproject.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Jan Kara <jack@suse.cz>,
- Russell King <linux@armlinux.org.uk>,
- Michael Ellerman <mpe@ellerman.id.au>, Andrea Arcangeli <aarcange@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Vitaly Wool <vitalywool@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Borislav Petkov <bp@suse.de>,
- Tony Luck <tony.luck@intel.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- sparclinux@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,108 +23,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 10, 2016 at 5:03 AM, PaX Team <pageexec@freemail.hu> wrote:
-> On 10 Jul 2016 at 11:16, Ingo Molnar wrote:
->
->> * PaX Team <pageexec@freemail.hu> wrote:
->>
->> > On 9 Jul 2016 at 14:27, Andy Lutomirski wrote:
->> >
->> > > I like the series, but I have one minor nit to pick.  The effect of this
->> > > series is to harden usercopy, but most of the code is really about
->> > > infrastructure to validate that a pointed-to object is valid.
->> >
->> > actually USERCOPY has never been about validating pointers. its sole purpose is
->> > to validate the *size* argument of copy*user calls, a very specific form of
->> > runtime bounds checking.
->>
->> What this code has been about originally is largely immaterial, unless you can
->> formulate it into a technical argument.
->
-> we design defense mechanisms for specific and clear purposes, starting with
-> a threat model, evaluating defense options based on various criteria, etc.
-> USERCOPY underwent this same process and taking it out of its original context
-> means that all you get in the end is cargo cult security (wouldn't be the first
-> time it has happened (ExecShield, ASLR, etc)).
->
-> that said, i actually started that discussion but for some reason you chose
-> not to respond to that one part of my mail so let me ask it again:
->
->   what kind of checks are you thinking of here? and more fundamentally, against
->   what kind of threats?
->
-> as far as i'm concerned, a defense mechanism is only as good as its underlying
-> threat model. by validating pointers (for yet to be stated security related
-> properties) you're presumably assuming some kind of threat and unless stated
-> clearly what that threat is (unintended pointer modification through memory
-> corruption and/or other bugs?) noone can tell whether the proposed defense
-> mechanism will actually be effective in preventing exploitation. it is the
-> worst kind of defense that doesn't actually achieve its stated goals, that
-> way lies false sense of security and i hope noone here is in that business.
+Hi! Here is my fifth regression report for Linux 4.7. It lists 10
+regressions I'm currently aware of; 2 of them are new; 1 of those 
+seems to be a a side effect of a fix for another regression.
 
-I'm imaging security bugs that involve buffer length corruption but
-that don't call copy_to/from_user.  Hardened usercopy shuts
-expoitation down if the first use of the corrupt size is
-copy_to/from_user or similar.  I bet that a bit better coverage could
-be achieved by instrumenting more functions.
+The report also mentions 3 regression that I removed from the list, as
+it looks like those issues are no regressions.
 
-To be clear: I'm not objecting to calling the overall feature hardened
-usercopy or similar.  I object to
-CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR.  That feature is *used* for
-hardened usercopy but is not, in and of itself, a usercopy thing.
-It's an object / memory range validation thing.  So we'll feel silly
-down the road if we use it for something else and the config option
-name has nothing to do with the feature.
+Find also details on 4 regressions that were fixed since the last
+report(¹)
 
->> > [...] like the renaming of .data..read_only to .data..ro_after_init which also
->> > had nothing to do with init but everything to do with objects being conceptually
->> > read-only...
->>
->> .data..ro_after_init objects get written to during bootup so it's conceptually
->> quite confusing to name it "read-only" without any clear qualifiers.
->>
->> That it's named consistently with its role of "read-write before init and read
->> only after init" on the other hand is not confusing at all. Not sure what your
->> problem is with the new name.
->
-> the new name reflects a complete misunderstanding of the PaX feature it was based
-> on (typical case of cargo cult security). in particular, the __read_only facility
-> in PaX is part of a defense mechanism that attempts to solve a specific problem
-> (like everything else) and that problem has nothing whatsoever to do with what
-> happens before/after the kernel init process. enforcing read-ony kernel memory at
-> the end of kernel initialization is an implementation detail only and wasn't even
-> true always (and still isn't true for kernel modules for example): in the linux 2.4
-> days PaX actually enforced read-only kernel memory properties in startup_32 already
-> but i relaxed that for the 2.6+ port as the maintenance cost (finding out and
-> handling new exceptional cases) wasn't worth it.
->
-> also naming things after their implementation is poor taste and can result in
-> even bigger problems down the line since as soon as the implementation changes,
-> you will have a flag day or have to keep a bad name. this is a lesson that the
-> REFCOUNT submission will learn too since the kernel's atomic*_t types (an
-> implementation detail) are used extensively for different purposes, instead of
-> using specialized types (kref is a good example of that). for .data..ro_after_init
-> the lesson will happen when you try to add back the remaining pieces from PaX,
-> such as module handling and not-always-const-in-the-C-sense objects and associated
-> accessors.
+As usual: Please let me know about any regression missing on the list  
+or if it contains something which shouldn't be there.
 
-The name is related to how the thing works.  If I understand
-correctly, in PaX, the idea is to make some things readonly and use
-pax_open_kernel(), etc to write it as needed.  This is a nifty
-mechanism, but it's *not* what .data..ro_after_init does upstream.  If
-I mark something __ro_after_init, then I can write it freely during
-boot, but I can't write it thereafter.  In contrast, if I put
-something in .rodata (using 'const', for example), then I must not
-write it *at all* unless I use special helpers (kmap, pax_open_kernel,
-etc).  So the practical effect from a programer's perspective of
-__ro_after_init is quite different from .rodata, and I think the names
-should reflect that.
+HTH, CU, Thorsten
 
-(And yes, the upstream kernel should soon have __ro_after_init working
-in modules.  And the not-always-const-in-the-C-sense objects using
-accessors will need changes to add those accessors, and we can and
-should change the annotation on the object itself at the same time.
-But if I mark something __ro_after_init, I can write it using normal C
-during init, and there's nothing wrong with that.)
+(¹) previous reports can be found at
+http://thread.gmane.org/gmane.linux.kernel/2241805
+http://thread.gmane.org/gmane.linux.kernel/2247804
+http://thread.gmane.org/gmane.linux.kernel/2253623
+http://thread.gmane.org/gmane.linux.kernel/2258287
 
---Andy
+== Current regressions ==
+
+Desc: Bad flicker on skylake HQD due to code in the 4.7 merge window
+Repo: 2016-05-30 http://thread.gmane.org/gmane.linux.kernel/2230377
+Stat: 2016-07-08 http://thread.gmane.org/gmane.linux.kernel/2230377/focus=94140
+Note: vswing issue, maybe primary a Firmware problem; a few patches improved situation, but did not fix the problem
+
+Desc: 795ae7a0de: pixz.throughput -9.1% regression
+Repo: 2016-06-02 http://thread.gmane.org/gmane.linux.kernel/2233056/
+Stat: 2016-06-22 http://thread.gmane.org/gmane.linux.kernel/2233056/focus=2251134
+Note: hannes still can't reproduce; stalled until reporter posts results from more tests
+
+Desc: System hang when plug/un-plug USB 3.1 key via thunderbolt port on Dell XPS 13
+Repo: 2016-06-14 https://bugzilla.kernel.org/show_bug.cgi?id=120241
+Stat: 2016-07-08 https://bugzilla.kernel.org/show_bug.cgi?id=120241#c7
+Note: there was wip, but root cause hard to track down; responsible developer now afk till early August
+
+Desc: regression in 8250 uart driver
+Repo: 2016-06-14 http://thread.gmane.org/gmane.linux.kernel/2243130/focus=2243653
+Stat: 2016-07-02 http://thread.gmane.org/gmane.linux.kernel/2243130/focus=2258232
+Note: andy has it still on his todo list, but something else has a higher priority
+
+Desc: Multi-thread udp 4.7 regression, bisected to 71d8c47fc653; performance decreased or complete failure with a test
+Repo: 2016-06-27 http://thread.gmane.org/gmane.linux.network/418861/focus=418908
+Stat: 2016-07-05 http://thread.gmane.org/gmane.linux.network/418861/focus=63936
+Note: waiting for feedback from reporter
+
+Desc: kmemcheck: Caught 64-bit read from uninitialized memory; iptables/nf_register_net_hooks
+Repo: 2016-06-19 https://bugzilla.kernel.org/show_bug.cgi?id=120651
+Stat: 2016-07-02 
+Note: afaics stalled, after I told reporter a week ago how to contact the relevant developers
+
+Desc: UBSAN splat in drivers/acpi/acpica/dsutils.c:641:16
+Repo: 2016-06-15 https://bugzilla.kernel.org/show_bug.cgi?id=120351
+Stat: 2016-06-22 https://bugzilla.kernel.org/show_bug.cgi?id=120411#c3
+Note: wonder if this is important enough to investigate further; related, similar bugs: https://bugzilla.kernel.org/show_bug.cgi?id=120411 https://bugzilla.kernel.org/show_bug.cgi?id=120391 https://bugzilla.kernel.org/show_bug.cgi?id=120371 https://bugzilla.kernel.org/show_bug.cgi?id=120361 Not sure which of them are regressions
+
+Desc: Kernel does not boot with 7ed18e2d1b6782989eb399ef79a8cc1a1b583b3c ( acpi-4.7-rc7 aka All of these fix recent regressions in ACPICA, in the ACPI PCI IRQ management code and in the ACPI AML debugger.)
+Repo: 2016-07-08 https://bugzilla.kernel.org/show_bug.cgi?id=121701
+Stat: 2016-07-10 http://thread.gmane.org/gmane.linux.kernel.pci/53279/focus=85652
+Note: pointed Rafael to bugzilla on LKML
+
+Desc: ACPI EC problems/ ACPI / EC: Fix an order issue in ec_remove_handlers()
+Repo: 2016-07-06 http://thread.gmane.org/gmane.linux.kernel/2260279/
+Stat: 2016-07-08 http://thread.gmane.org/gmane.linux.kernel/2260279/focus=85583
+Note: patch under discussion
+
+
+== Going to me removed from the list ==
+
+Desc: RadeonSI get a huge performance dip with used with the nine state tracker
+Repo: 2016-06-04 https://bugzilla.kernel.org/show_bug.cgi?id=119631
+Stat: 2016-07-04 https://bugzilla.kernel.org/show_bug.cgi?id=119631#c14
+Note: not a regression according to one of the AMD graphic driver developers; otoh it looks like one to me; yes, the real bug is in the gallium nine, wine side, but afaics it only showed up after a kernel change introduced a new feature
+
+Desc: performance drop on SFC interface around 30 %
+Repo: 2016-06-17 https://bugzilla.kernel.org/show_bug.cgi?id=120461
+Stat: 2016-07-06 https://bugzilla.kernel.org/show_bug.cgi?id=120461#c20
+Note: reporter and developer agree: not a regression in 4.7
+
+Desc: Rename file corruption due to VFS-Changes?
+Repo: 2016-06-16 http://thread.gmane.org/gmane.linux.kernel/2245402/
+Stat: 2016-06-22 http://thread.gmane.org/gmane.linux.kernel/2245402/focus=2250254
+Note: issue likely fixed in mainline by 9f541801 + e7d6ef979; see also: http://thread.gmane.org/gmane.linux.kernel/2231928/focus=76124
+
+
+== Fixed since last report ==
+
+Desc: BUG: unable to handle kernel NULL pointer dereference […] qla24xx_process_response_queue+0x49/0x4b0 [qla2xxx]
+Repo: 2016-06-14 https://bugzilla.kernel.org/show_bug.cgi?id=120201
+Stat: 2016-07-08 https://git.kernel.org/torvalds/c/262e2bfd7d1e1f1ee48b870e5dfabb87c06b975e
+Note: Fixed
+
+Desc: Performance drop 30-40% for SPECjbb2005 and SPECjvm2008 benchmarks
+Repo: 2016-06-16 https://bugzilla.kernel.org/show_bug.cgi?id=120481
+Stat: 2016-07-08 https://git.kernel.org/torvalds/c/7dd4912594daf769a46744848b05bd5bc6d62469 https://git.kernel.org/torvalds/c/ea1dc6fc6242f991656e35e2ed3d90ec1cd13418
+Note: Fixed
+
+Desc: lk 4.7 regression: EDAC, amd64_edac: Drop pci_register_driver() use
+Repo: 2016-06-15 http://thread.gmane.org/gmane.linux.kernel/2245115/
+Stat: 2016-07-08 https://git.kernel.org/torvalds/c/1ead852dd88779eda12cb09cc894a03d9abfe1ec
+Note: Fixed
+
+Desc: sound disappeared, ACPI/PCI/IRQ related
+Repo: 2016-06-20 http://thread.gmane.org/gmane.linux.kernel/2247930/ http://thread.gmane.org/gmane.linux.acpi.devel/85281/focus=20097
+Stat: 2016-07-07 https://git.kernel.org/linus/7ed18e2d1b6782989eb399ef79a8cc1a1b583b3c
+Note: fixed
