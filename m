@@ -2,13 +2,13 @@ Return-Path: <sam@mendozajonas.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnrTC3ChHzDqwh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 13:40:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnrTD02rmzDqwj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 13:40:16 +1000 (AEST)
 Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rnrTB3hcCz9sXy
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2016 13:40:14 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3rnrTC4mHyz9t0m
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2016 13:40:15 +1000 (AEST)
 From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
 To: linuxppc-dev@ozlabs.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -16,9 +16,11 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Alistair Popple <alistair@popple.id.au>,
  Samuel Mendoza-Jonas <sam@mendozajonas.com>,
  "# 4 . 1 . x-" <stable@vger.kernel.org>
-Subject: [PATCH V2 1/2] tty/hvc: Use IRQF_SHARED for OPAL hvc consoles
-Date: Mon, 11 Jul 2016 13:38:57 +1000
-Message-Id: <20160711033858.16172-1-sam@mendozajonas.com>
+Subject: [PATCH V2 2/2] tty/hvc: Use opal irqchip interface if available
+Date: Mon, 11 Jul 2016 13:38:58 +1000
+Message-Id: <20160711033858.16172-2-sam@mendozajonas.com>
+In-Reply-To: <20160711033858.16172-1-sam@mendozajonas.com>
+References: <20160711033858.16172-1-sam@mendozajonas.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,84 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 2def86a7200c
-("hvc: Convert to using interrupts instead of opal events")
-enabled the use of interrupts in the hvc_driver for OPAL platforms.
-However on machines with more than one hvc console, any console after
-the first will fail to register an interrupt handler in
-notifier_add_irq() since all consoles share the same IRQ number but do
-not set the IRQF_SHARED flag:
-
-[   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
-00000000 (hvc_console)
-[   51.180010] hvc_open: request_irq failed with rc -16.
-
-This error propagates up to hvc_open() and the console is closed, but
-OPAL will still generate interrupts that are not handled, leading to
-rcu_sched stall warnings.
-
-Set IRQF_SHARED when calling request_irq, allowing additional consoles
-to start properly. This is only set for consoles handled by
-hvc_opal_probe(), leaving other types unaffected.
+Update the hvc driver to use the OPAL irqchip if made available by the
+running firmware. If it is not present, the driver falls back to the
+existing OPAL event number.
 
 Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
 Cc: <stable@vger.kernel.org> # 4.1.x-
 ---
- drivers/tty/hvc/hvc_console.h | 1 +
- drivers/tty/hvc/hvc_irq.c     | 7 +++++--
- drivers/tty/hvc/hvc_opal.c    | 3 +++
- 3 files changed, 9 insertions(+), 2 deletions(-)
+v2: Always try irq_of_parse_and_map before falling back
 
-diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
-index 9131019..798c48d 100644
---- a/drivers/tty/hvc/hvc_console.h
-+++ b/drivers/tty/hvc/hvc_console.h
-@@ -60,6 +60,7 @@ struct hvc_struct {
- 	struct winsize ws;
- 	struct work_struct tty_resize;
- 	struct list_head next;
-+	unsigned long flags;
- };
- 
- /* implemented by a low level driver */
-diff --git a/drivers/tty/hvc/hvc_irq.c b/drivers/tty/hvc/hvc_irq.c
-index c9adb05..57d9df7 100644
---- a/drivers/tty/hvc/hvc_irq.c
-+++ b/drivers/tty/hvc/hvc_irq.c
-@@ -14,6 +14,9 @@ static irqreturn_t hvc_handle_interrupt(int irq, void *dev_instance)
- 	/* if hvc_poll request a repoll, then kick the hvcd thread */
- 	if (hvc_poll(dev_instance))
- 		hvc_kick();
-+	/* We're safe to always return IRQ_HANDLED as the hvcd thread will
-+	 * iterate through each hvc_struct
-+	 */
- 	return IRQ_HANDLED;
- }
- 
-@@ -28,8 +31,8 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
- 		hp->irq_requested = 0;
- 		return 0;
- 	}
--	rc = request_irq(irq, hvc_handle_interrupt, 0,
--			   "hvc_console", hp);
-+	rc = request_irq(irq, hvc_handle_interrupt, hp->flags,
-+			"hvc_console", hp);
- 	if (!rc)
- 		hp->irq_requested = 1;
- 	return rc;
+ drivers/tty/hvc/hvc_opal.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
 diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index 47b54c6..b7cd0ae 100644
+index b7cd0ae..5107993 100644
 --- a/drivers/tty/hvc/hvc_opal.c
 +++ b/drivers/tty/hvc/hvc_opal.c
-@@ -224,6 +224,9 @@ static int hvc_opal_probe(struct platform_device *dev)
- 	hp = hvc_alloc(termno, irq, ops, MAX_VIO_PUT_CHARS);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
-+
-+	/* hvc consoles on powernv may need to share a single irq */
-+	hp->flags = IRQF_SHARED;
- 	dev_set_drvdata(&dev->dev, hp);
+@@ -214,7 +214,13 @@ static int hvc_opal_probe(struct platform_device *dev)
+ 		dev->dev.of_node->full_name,
+ 		boot ? " (boot console)" : "");
  
- 	return 0;
+-	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
++	irq = irq_of_parse_and_map(dev->dev.of_node, 0);
++	if (!irq) {
++		pr_info("hvc%d: No interrupts property, using OPAL event\n",
++				termno);
++		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
++	}
++
+ 	if (!irq) {
+ 		pr_err("hvc_opal: Unable to map interrupt for device %s\n",
+ 			dev->dev.of_node->full_name);
 -- 
 2.9.0
