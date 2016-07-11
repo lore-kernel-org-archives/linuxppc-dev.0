@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rp1Kv4WvhzDqxn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 20:19:31 +1000 (AEST)
-In-Reply-To: <1467716886-20991-1-git-send-email-felix@linux.vnet.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rp1Kw6bvhzDqyG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 20:19:32 +1000 (AEST)
+In-Reply-To: <1466747662-9868-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Philippe Bergheaud <felix@linux.vnet.ibm.com>, mikey@neuling.org,
- imunsie@au1.ibm.com, fbarrat@linux.vnet.ibm.com
-Subject: Re: [v3] cxl: Refine slice error debug messages
-Message-Id: <3rp1Kv2Xh6z9t1L@ozlabs.org>
-Date: Mon, 11 Jul 2016 20:19:31 +1000 (AEST)
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: powerpc/eeh: fix pr_debug()s in eeh_cache.c
+Message-Id: <3rp1Kw58dVz9t1C@ozlabs.org>
+Date: Mon, 11 Jul 2016 20:19:32 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,25 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-05-07 at 11:08:06 UTC, Philippe Bergheaud wrote:
-> The PSL Slice Error Register (PSL_SERR_An) reports implementation
-> dependent AFU errors, in the form of a bitmap. The PSL_SERR_An
-> register content is printed in the form of hex dump debug message.
+On Fri, 2016-24-06 at 05:54:22 UTC, Andrew Donnellan wrote:
+> eeh_cache.c doesn't build cleanly with -DDEBUG when
+> CONFIG_PHYS_ADDR_T_64BIT is set, as a couple of pr_debug()s use "%lx" for
+> resource_size_t parameters.
 > 
-> This patch decodes the PSL_ERR_An register contents, and prints a
-> specific error message for each possible error bit. It also dumps
-> the secondary registers AFU_ERR_An and PSL_DSISR_An, that may
-> contain extra debug information.
+> Use "%pap" instead, as it's the correct format specifier for types deriving
+> from phys_addr_t.
 > 
-> This patch also removes the large WARN message that used to report
-> the cxl slice error interrupt, and replaces it by a short informative
-> message, that draws attention to AFU implementation errors.
-> 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Cc: Russell Currey <ruscur@russell.cc>
+> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6e0c50f9e814220ada60497c52
+https://git.kernel.org/powerpc/c/91dc068202a61741a458232de7
 
 cheers
