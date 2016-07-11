@@ -1,22 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpM2B2gzLzDqwH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 09:37:06 +1000 (AEST)
-Date: Tue, 12 Jul 2016 09:37:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, "Leonidas S. Barbosa"
- <leosilva@linux.vnet.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- Paul Mackerras <paulus@samba.org>, "open list:IBM Power VMX Cryptographic
- instructions" <linux-crypto@vger.kernel.org>, "open list:LINUX FOR POWERPC
- 32-BIT AND 64-BIT" <linuxppc-dev@lists.ozlabs.org>, "David S. Miller"
- <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] crypto: vmx - Adding asm subroutines for XTS
-Message-ID: <20160712093705.6f0fde7a@canb.auug.org.au>
-In-Reply-To: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-References: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpM8312XwzDqwH
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 09:42:11 +1000 (AEST)
+Date: Tue, 12 Jul 2016 09:41:49 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/configs: Enable VMX crypto
+Message-ID: <20160712094149.21a28e0d@kryten>
+In-Reply-To: <20160712093317.0c3ab74e@canb.auug.org.au>
+References: <1468279521-9720-1-git-send-email-anton@ozlabs.org>
+ <20160712093317.0c3ab74e@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,26 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Paulo,
+Hi Steven,
 
-On Mon, 11 Jul 2016 16:07:39 -0300 Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com> wrote:
->
-> diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
-> index 2280539..813ffcc 100644
-> --- a/drivers/crypto/vmx/aesp8-ppc.pl
-> +++ b/drivers/crypto/vmx/aesp8-ppc.pl
-> @@ -1,4 +1,11 @@
-> -#!/usr/bin/env perl
-> +#! /usr/bin/env perl
-> +# Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
-> +#
-> +# Licensed under the OpenSSL license (the "License").  You may not use
-> +# this file except in compliance with the License.  You can obtain a copy
-> +# in the file LICENSE in the source distribution or at
-> +# https://www.openssl.org/source/license.html
+> Not in ppc64_defconfig?
 
-So, I assume that this license is compatible with the GPLv2?
+Good point. The recent addition of powernv_defconfig made me forget
+about ppc64_defconfig. We could do with some rationalisation here.
 
--- 
-Cheers,
-Stephen Rothwell
+pseries isn't really pseries, perhaps we should call it ibm_defconfig,
+or maybe server_deconfig. ppc64_defconfig continues to be the lower end
+defconfig.
+
+Anton
