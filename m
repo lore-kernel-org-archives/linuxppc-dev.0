@@ -1,45 +1,46 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rp3Nq5BwkzDr0q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:11 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6BBnJJC037885
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 07:52:09 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 243enqpfcw-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rp3Nv2bFJzDr11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:15 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6BBnIsM067992
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 07:52:13 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2448qjcqtj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 07:52:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 07:52:13 -0400
 Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 11 Jul 2016 21:52:06 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7CFC82BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:03 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6BBq3fQ18087944
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:03 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6BBq2u1026140
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:03 +1000
+ Mon, 11 Jul 2016 21:52:11 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2F9A53578053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:09 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6BBq9Up21561468
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:09 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6BBq887017774
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 21:52:09 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
 Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH 11/15] cxl: Add support for interrupts on the Mellanox CX4
-Date: Mon, 11 Jul 2016 21:50:18 +1000
+Subject: [PATCH 05/15] cxl: Allow a default context to be associated with an
+ external pci_dev
+Date: Mon, 11 Jul 2016 21:50:12 +1000
 In-Reply-To: <1468237822-26276-1-git-send-email-imunsie@au.ibm.com>
 References: <1468237822-26276-1-git-send-email-imunsie@au.ibm.com>
-Message-Id: <1468237822-26276-12-git-send-email-imunsie@au.ibm.com>
+Message-Id: <1468237822-26276-6-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,286 +52,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-The Mellanox CX4 in cxl mode uses a hybrid interrupt model, where
-interrupts are routed from the networking hardware to the XSL using the
-MSIX table, and from there will be transformed back into an MSIX
-interrupt using the cxl style interrupts (i.e. using IVTE entries and
-ranges to map a PE and AFU interrupt number to an MSIX address).
+The cxl kernel API has a concept of a default context associated with
+each PCI device under the virtual PHB. The Mellanox CX4 will also use
+the cxl kernel API, but it does not use a virtual PHB - rather, the AFU
+appears as a physical function as a peer to the networking functions.
 
-We want to hide the implementation details of cxl interrupts as much as
-possible. To this end, we use a special version of the MSI setup &
-teardown routines in the PHB while in cxl mode to allocate the cxl
-interrupts and configure the IVTE entries in the process element.
-
-This function does not configure the MSIX table - the CX4 card uses a
-custom format in that table and it would not be appropriate to fill that
-out in generic code. The rest of the functionality is similar to the
-"Full MSI-X mode" described in the CAIA, and this could be easily
-extended to support other adapters that use that mode in the future.
-
-The interrupts will be associated with the default context. If the
-maximum number of interrupts per context has been limited (e.g. by the
-mlx5 driver), it will automatically allocate additional kernel contexts
-to associate extra interrupts as required. These contexts will be
-started using the same WED that was used to start the default context.
+In order to allow the kernel API to work with those networking
+functions, we will need to associate a default context with them as
+well. To this end, refactor the corresponding code to do this in vphb.c
+and export it so that it can be called from the PHB code.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-
+Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
+ drivers/misc/cxl/base.c | 35 +++++++++++++++++++++++++++++++++++
+ drivers/misc/cxl/cxl.h  |  6 ++++++
+ drivers/misc/cxl/main.c |  2 ++
+ drivers/misc/cxl/vphb.c | 37 +++++++++++++++++++++++--------------
+ include/misc/cxl-base.h |  6 ++++++
+ 5 files changed, 72 insertions(+), 14 deletions(-)
 
-V1->V2:
-	- Handle error case if cxl_next_msi_hwirq returns 0 signifying
-	  that an AFU IRQ is not mapped to a hardware interrupt.
----
- arch/powerpc/platforms/powernv/pci-cxl.c  | 84 +++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c |  4 ++
- arch/powerpc/platforms/powernv/pci.h      |  2 +
- drivers/misc/cxl/api.c                    | 71 ++++++++++++++++++++++++++
- drivers/misc/cxl/base.c                   | 31 ++++++++++++
- drivers/misc/cxl/cxl.h                    |  4 ++
- drivers/misc/cxl/main.c                   |  2 +
- include/misc/cxl-base.h                   |  4 ++
- 8 files changed, 202 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
-index 3c4caf0..0e6bd0a 100644
---- a/arch/powerpc/platforms/powernv/pci-cxl.c
-+++ b/arch/powerpc/platforms/powernv/pci-cxl.c
-@@ -8,6 +8,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/msi.h>
- #include <asm/pci-bridge.h>
- #include <asm/pnv-pci.h>
- #include <asm/opal.h>
-@@ -281,3 +282,86 @@ void pnv_cxl_disable_device(struct pci_dev *dev)
- 	cxl_pci_disable_device(dev);
- 	cxl_afu_put(afu);
- }
-+
-+/*
-+ * This is a special version of pnv_setup_msi_irqs for cards in cxl mode. This
-+ * function handles setting up the IVTE entries for the XSL to use.
-+ *
-+ * We are currently not filling out the MSIX table, since the only currently
-+ * supported adapter (CX4) uses a custom MSIX table format in cxl mode and it
-+ * is up to their driver to fill that out. In the future we may fill out the
-+ * MSIX table (and change the IVTE entries to be an index to the MSIX table)
-+ * for adapters implementing the Full MSI-X mode described in the CAIA.
-+ */
-+int pnv_cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct msi_desc *entry;
-+	struct cxl_context *ctx = NULL;
-+	unsigned int virq;
-+	int hwirq;
-+	int afu_irq = 0;
-+	int rc;
-+
-+	if (WARN_ON(!phb) || !phb->msi_bmp.bitmap)
-+		return -ENODEV;
-+
-+	if (pdev->no_64bit_msi && !phb->msi32_support)
-+		return -ENODEV;
-+
-+	rc = cxl_cx4_setup_msi_irqs(pdev, nvec, type);
-+	if (rc)
-+		return rc;
-+
-+	for_each_pci_msi_entry(entry, pdev) {
-+		if (!entry->msi_attrib.is_64 && !phb->msi32_support) {
-+			pr_warn("%s: Supports only 64-bit MSIs\n",
-+				pci_name(pdev));
-+			return -ENXIO;
-+		}
-+
-+		hwirq = cxl_next_msi_hwirq(pdev, &ctx, &afu_irq);
-+		if (WARN_ON(hwirq <= 0))
-+			return (hwirq ? hwirq : -ENOMEM);
-+
-+		virq = irq_create_mapping(NULL, hwirq);
-+		if (virq == NO_IRQ) {
-+			pr_warn("%s: Failed to map cxl mode MSI to linux irq\n",
-+				pci_name(pdev));
-+			return -ENOMEM;
-+		}
-+
-+		rc = pnv_cxl_ioda_msi_setup(pdev, hwirq, virq);
-+		if (rc) {
-+			pr_warn("%s: Failed to setup cxl mode MSI\n", pci_name(pdev));
-+			irq_dispose_mapping(virq);
-+			return rc;
-+		}
-+
-+		irq_set_msi_desc(virq, entry);
-+	}
-+
-+	return 0;
-+}
-+
-+void pnv_cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct msi_desc *entry;
-+	irq_hw_number_t hwirq;
-+
-+	if (WARN_ON(!phb))
-+		return;
-+
-+	for_each_pci_msi_entry(entry, pdev) {
-+		if (entry->irq == NO_IRQ)
-+			continue;
-+		hwirq = virq_to_hw(entry->irq);
-+		irq_set_msi_desc(entry->irq, NULL);
-+		irq_dispose_mapping(entry->irq);
-+	}
-+
-+	cxl_cx4_teardown_msi_irqs(pdev);
-+}
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 467085f..c8f3b5c 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3465,6 +3465,10 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
- const struct pci_controller_ops pnv_cxl_cx4_ioda_controller_ops = {
- 	.dma_dev_setup		= pnv_pci_dma_dev_setup,
- 	.dma_bus_setup		= pnv_pci_dma_bus_setup,
-+#ifdef CONFIG_PCI_MSI
-+	.setup_msi_irqs		= pnv_cxl_cx4_setup_msi_irqs,
-+	.teardown_msi_irqs	= pnv_cxl_cx4_teardown_msi_irqs,
-+#endif
- 	.enable_device_hook	= pnv_cxl_enable_device_hook,
- 	.disable_device		= pnv_cxl_disable_device,
- 	.release_device		= pnv_pci_release_device,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 4d003dc..4799127 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -248,6 +248,8 @@ extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
- /* cxl functions */
- extern bool pnv_cxl_enable_device_hook(struct pci_dev *dev);
- extern void pnv_cxl_disable_device(struct pci_dev *dev);
-+extern int pnv_cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
-+extern void pnv_cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
- 
- 
- /* phb ops (cxl switches these when enabling the kernel api on the phb) */
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index f02a859..f3d34b9 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -14,6 +14,7 @@
- #include <misc/cxl.h>
- #include <linux/fs.h>
- #include <asm/pnv-pci.h>
-+#include <linux/msi.h>
- 
- #include "cxl.h"
- 
-@@ -489,3 +490,73 @@ int cxl_get_max_irqs_per_process(struct pci_dev *dev)
- 	return afu->irqs_max;
- }
- EXPORT_SYMBOL_GPL(cxl_get_max_irqs_per_process);
-+
-+/*
-+ * This is a special interrupt allocation routine called from the PHB's MSI
-+ * setup function. When capi interrupts are allocated in this manner they must
-+ * still be associated with a running context, but since the MSI APIs have no
-+ * way to specify this we use the default context associated with the device.
-+ *
-+ * The Mellanox CX4 has a hardware limitation that restricts the maximum AFU
-+ * interrupt number, so in order to overcome this their driver informs us of
-+ * the restriction by setting the maximum interrupts per context, and we
-+ * allocate additional contexts as necessary so that we can keep the AFU
-+ * interrupt number within the supported range.
-+ */
-+int _cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-+{
-+	struct cxl_context *ctx, *new_ctx, *default_ctx;
-+	int remaining;
-+	int rc;
-+
-+	ctx = default_ctx = cxl_get_context(pdev);
-+	if (WARN_ON(!default_ctx))
-+		return -ENODEV;
-+
-+	remaining = nvec;
-+	while (remaining > 0) {
-+		rc = cxl_allocate_afu_irqs(ctx, min(remaining, ctx->afu->irqs_max));
-+		if (rc) {
-+			pr_warn("%s: Failed to find enough free MSIs\n", pci_name(pdev));
-+			return rc;
-+		}
-+		remaining -= ctx->afu->irqs_max;
-+
-+		if (ctx != default_ctx && default_ctx->status == STARTED) {
-+			WARN_ON(cxl_start_context(ctx,
-+				be64_to_cpu(default_ctx->elem->common.wed),
-+				NULL));
-+		}
-+
-+		if (remaining > 0) {
-+			new_ctx = cxl_dev_context_init(pdev);
-+			if (!new_ctx) {
-+				pr_warn("%s: Failed to allocate enough contexts for MSIs\n", pci_name(pdev));
-+				return -ENOSPC;
-+			}
-+			list_add(&new_ctx->extra_irq_contexts, &ctx->extra_irq_contexts);
-+			ctx = new_ctx;
-+		}
-+	}
-+
-+	return 0;
-+}
-+/* Exported via cxl_base */
-+
-+void _cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
-+{
-+	struct cxl_context *ctx, *pos, *tmp;
-+
-+	ctx = cxl_get_context(pdev);
-+	if (WARN_ON(!ctx))
-+		return;
-+
-+	cxl_free_afu_irqs(ctx);
-+	list_for_each_entry_safe(pos, tmp, &ctx->extra_irq_contexts, extra_irq_contexts) {
-+		cxl_stop_context(pos);
-+		cxl_free_afu_irqs(pos);
-+		list_del(&pos->extra_irq_contexts);
-+		cxl_release_context(pos);
-+	}
-+}
-+/* Exported via cxl_base */
 diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index d7d9d02..43ec3a9 100644
+index d7dcf5b..1c3e737f 100644
 --- a/drivers/misc/cxl/base.c
 +++ b/drivers/misc/cxl/base.c
-@@ -158,6 +158,37 @@ int cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_
+@@ -106,6 +106,41 @@ int cxl_update_properties(struct device_node *dn,
  }
- EXPORT_SYMBOL_GPL(cxl_next_msi_hwirq);
+ EXPORT_SYMBOL_GPL(cxl_update_properties);
  
-+int cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
++/*
++ * API calls into the driver that may be called from the PHB code and must be
++ * built in.
++ */
++bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu)
 +{
-+	int ret;
++	bool ret;
 +	struct cxl_calls *calls;
 +
 +	calls = cxl_calls_get();
 +	if (!calls)
 +		return false;
 +
-+	ret = calls->cxl_cx4_setup_msi_irqs(pdev, nvec, type);
++	ret = calls->cxl_pci_associate_default_context(dev, afu);
 +
 +	cxl_calls_put(calls);
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL_GPL(cxl_cx4_setup_msi_irqs);
++EXPORT_SYMBOL_GPL(cxl_pci_associate_default_context);
 +
-+void cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
++void cxl_pci_disable_device(struct pci_dev *dev)
 +{
 +	struct cxl_calls *calls;
 +
@@ -338,68 +109,151 @@ index d7d9d02..43ec3a9 100644
 +	if (!calls)
 +		return;
 +
-+	calls->cxl_cx4_teardown_msi_irqs(pdev);
++	calls->cxl_pci_disable_device(dev);
 +
 +	cxl_calls_put(calls);
 +}
-+EXPORT_SYMBOL_GPL(cxl_cx4_teardown_msi_irqs);
++EXPORT_SYMBOL_GPL(cxl_pci_disable_device);
 +
  static int __init cxl_base_init(void)
  {
  	struct device_node *np = NULL;
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 73b9a55..d50cdb1 100644
+index d4aae6f..b81f476 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -731,12 +731,16 @@ ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
- bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
- void _cxl_pci_disable_device(struct pci_dev *dev);
- int _cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
-+int _cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
-+void _cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
+@@ -719,9 +719,15 @@ static inline u64 cxl_p2n_read(struct cxl_afu *afu, cxl_p2n_reg_t reg)
+ ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+ 				loff_t off, size_t count);
+ 
++/* Internal functions wrapped in cxl_base to allow PHB to call them */
++bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
++void _cxl_pci_disable_device(struct pci_dev *dev);
  
  struct cxl_calls {
  	void (*cxl_slbia)(struct mm_struct *mm);
- 	bool (*cxl_pci_associate_default_context)(struct pci_dev *dev, struct cxl_afu *afu);
- 	void (*cxl_pci_disable_device)(struct pci_dev *dev);
- 	int (*cxl_next_msi_hwirq)(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
-+	int (*cxl_cx4_setup_msi_irqs)(struct pci_dev *pdev, int nvec, int type);
-+	void (*cxl_cx4_teardown_msi_irqs)(struct pci_dev *pdev);
- 
++	bool (*cxl_pci_associate_default_context)(struct pci_dev *dev, struct cxl_afu *afu);
++	void (*cxl_pci_disable_device)(struct pci_dev *dev);
++
  	struct module *owner;
  };
+ int register_cxl_calls(struct cxl_calls *calls);
 diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index 66fac71..d9be23b2 100644
+index ae68c32..4e5474b 100644
 --- a/drivers/misc/cxl/main.c
 +++ b/drivers/misc/cxl/main.c
-@@ -113,6 +113,8 @@ static struct cxl_calls cxl_calls = {
- 	.cxl_pci_associate_default_context = _cxl_pci_associate_default_context,
- 	.cxl_pci_disable_device = _cxl_pci_disable_device,
- 	.cxl_next_msi_hwirq = _cxl_next_msi_hwirq,
-+	.cxl_cx4_setup_msi_irqs = _cxl_cx4_setup_msi_irqs,
-+	.cxl_cx4_teardown_msi_irqs = _cxl_cx4_teardown_msi_irqs,
+@@ -110,6 +110,8 @@ static inline void cxl_slbia_core(struct mm_struct *mm)
+ 
+ static struct cxl_calls cxl_calls = {
+ 	.cxl_slbia = cxl_slbia_core,
++	.cxl_pci_associate_default_context = _cxl_pci_associate_default_context,
++	.cxl_pci_disable_device = _cxl_pci_disable_device,
  	.owner = THIS_MODULE,
  };
  
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index 012b6aa..c5b9c201 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -40,11 +40,28 @@ static void cxl_teardown_msi_irqs(struct pci_dev *pdev)
+ 	 */
+ }
+ 
++bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu)
++{
++	struct cxl_context *ctx;
++
++	/*
++	 * Allocate a context to do cxl things too. This is used for interrupts
++	 * in the peer model using a real phb, and if we eventually do DMA ops
++	 * in the virtual phb, we'll need a default context to attach them to.
++	 */
++	ctx = cxl_dev_context_init(dev);
++	if (!ctx)
++		return false;
++	dev->dev.archdata.cxl_ctx = ctx;
++
++	return (cxl_ops->afu_check_and_enable(afu) == 0);
++}
++/* exported via cxl_base */
++
+ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
+ {
+ 	struct pci_controller *phb;
+ 	struct cxl_afu *afu;
+-	struct cxl_context *ctx;
+ 
+ 	phb = pci_bus_to_host(dev->bus);
+ 	afu = (struct cxl_afu *)phb->private_data;
+@@ -57,19 +74,10 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
+ 	set_dma_ops(&dev->dev, &dma_direct_ops);
+ 	set_dma_offset(&dev->dev, PAGE_OFFSET);
+ 
+-	/*
+-	 * Allocate a context to do cxl things too.  If we eventually do real
+-	 * DMA ops, we'll need a default context to attach them to
+-	 */
+-	ctx = cxl_dev_context_init(dev);
+-	if (!ctx)
+-		return false;
+-	dev->dev.archdata.cxl_ctx = ctx;
+-
+-	return (cxl_ops->afu_check_and_enable(afu) == 0);
++	return _cxl_pci_associate_default_context(dev, afu);
+ }
+ 
+-static void cxl_pci_disable_device(struct pci_dev *dev)
++void _cxl_pci_disable_device(struct pci_dev *dev)
+ {
+ 	struct cxl_context *ctx = cxl_get_context(dev);
+ 
+@@ -82,6 +90,7 @@ static void cxl_pci_disable_device(struct pci_dev *dev)
+ 		cxl_release_context(ctx);
+ 	}
+ }
++/* exported via cxl_base */
+ 
+ static resource_size_t cxl_pci_window_alignment(struct pci_bus *bus,
+ 						unsigned long type)
+@@ -197,8 +206,8 @@ static struct pci_controller_ops cxl_pci_controller_ops =
+ {
+ 	.probe_mode = cxl_pci_probe_mode,
+ 	.enable_device_hook = cxl_pci_enable_device_hook,
+-	.disable_device = cxl_pci_disable_device,
+-	.release_device = cxl_pci_disable_device,
++	.disable_device = _cxl_pci_disable_device,
++	.release_device = _cxl_pci_disable_device,
+ 	.window_alignment = cxl_pci_window_alignment,
+ 	.reset_secondary_bus = cxl_pci_reset_secondary_bus,
+ 	.setup_msi_irqs = cxl_setup_msi_irqs,
 diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
-index bb7e629..b2ebc91 100644
+index f53808f..bb7e629 100644
 --- a/include/misc/cxl-base.h
 +++ b/include/misc/cxl-base.h
-@@ -43,6 +43,8 @@ void cxl_afu_put(struct cxl_afu *afu);
+@@ -10,6 +10,8 @@
+ #ifndef _MISC_CXL_BASE_H
+ #define _MISC_CXL_BASE_H
+ 
++#include <misc/cxl.h>
++
+ #ifdef CONFIG_CXL_BASE
+ 
+ #define CXL_IRQ_RANGES 4
+@@ -39,6 +41,8 @@ static inline void cxl_ctx_put(void)
+ struct cxl_afu *cxl_afu_get(struct cxl_afu *afu);
+ void cxl_afu_put(struct cxl_afu *afu);
  void cxl_slbia(struct mm_struct *mm);
- bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
- void cxl_pci_disable_device(struct pci_dev *dev);
-+int cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
-+void cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
++bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
++void cxl_pci_disable_device(struct pci_dev *dev);
  
  #else /* CONFIG_CXL_BASE */
  
-@@ -52,6 +54,8 @@ static inline void cxl_afu_put(struct cxl_afu *afu) {}
+@@ -46,6 +50,8 @@ static inline bool cxl_ctx_in_use(void) { return false; }
+ static inline struct cxl_afu *cxl_afu_get(struct cxl_afu *afu) { return NULL; }
+ static inline void cxl_afu_put(struct cxl_afu *afu) {}
  static inline void cxl_slbia(struct mm_struct *mm) {}
- static inline bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu) { return false; }
- static inline void cxl_pci_disable_device(struct pci_dev *dev) {}
-+static inline int cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type) { return -ENODEV; }
-+static inline void cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev) {}
++static inline bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu) { return false; }
++static inline void cxl_pci_disable_device(struct pci_dev *dev) {}
  
  #endif /* CONFIG_CXL_BASE */
  
