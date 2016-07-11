@@ -1,23 +1,23 @@
 Return-Path: <dmatlack@google.com>
-Received: from mail-oi0-x236.google.com (mail-oi0-x236.google.com
- [IPv6:2607:f8b0:4003:c06::236])
+Received: from mail-oi0-x233.google.com (mail-oi0-x233.google.com
+ [IPv6:2607:f8b0:4003:c06::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpBq06pxBzDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 03:26:52 +1000 (AEST)
-Received: by mail-oi0-x236.google.com with SMTP id r2so157687922oih.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 10:26:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpBvc4mdxzDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 03:30:52 +1000 (AEST)
+Received: by mail-oi0-x233.google.com with SMTP id w18so14756839oiw.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 10:30:52 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <78e920ba-b596-5475-ff30-0dd2c23d97b6@redhat.com>
+In-Reply-To: <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
 References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
- <1468220912-22828-3-git-send-email-sjitindarsingh@gmail.com>
- <CALzav=cUiiQ=OW=qKZ=J1jOC2KUoA8HeD2P_y_4odfkjCMJ-fw@mail.gmail.com>
- <78e920ba-b596-5475-ff30-0dd2c23d97b6@redhat.com>
+ <1468220912-22828-4-git-send-email-sjitindarsingh@gmail.com>
+ <CALzav=e=hScxto3c=4rJ88Phg989UZhk+O44rV56obFP3v1SFg@mail.gmail.com>
+ <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
 From: David Matlack <dmatlack@google.com>
-Date: Mon, 11 Jul 2016 10:26:31 -0700
-Message-ID: <CALzav=dDJCKo1SchBJJmxU2WLdxvAkybXmR34L7C_cyDe750VA@mail.gmail.com>
-Subject: Re: [PATCH V2 3/5] kvm/ppc/book3s_hv: Implement halt polling in the
- kvm_hv kernel module
+Date: Mon, 11 Jul 2016 10:30:30 -0700
+Message-ID: <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
+Subject: Re: [PATCH V2 4/5] kvm/stats: Add provisioning for 64-bit vcpu
+ statistics
 To: Paolo Bonzini <pbonzini@redhat.com>
 Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
  linuxppc-dev@lists.ozlabs.org,
@@ -34,25 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 11, 2016 at 10:07 AM, Paolo Bonzini <pbonzini@redhat.com> wrote:
+On Mon, Jul 11, 2016 at 10:05 AM, Paolo Bonzini <pbonzini@redhat.com> wrote:
 >
 >
-> On 11/07/2016 18:57, David Matlack wrote:
->> On Mon, Jul 11, 2016 at 12:08 AM, Suraj Jitindar Singh
->> <sjitindarsingh@gmail.com> wrote:
->> > This patch introduces new halt polling functionality into the kvm_hv kernel
->> > module. When a vcore is idle it will poll for some period of time before
->> > scheduling itself out.
+> On 11/07/2016 18:51, David Matlack wrote:
+>>> > vcpus have statistics associated with them which can be viewed within the
+>>> > debugfs. Currently it is assumed within the vcpu_stat_get() and
+>>> > vcpu_stat_get_per_vm() functions that all of these statistics are
+>>> > represented as 32-bit numbers. The next patch adds some 64-bit statistics,
+>>> > so add provisioning for the display of 64-bit vcpu statistics.
+>> Thanks, we need 64-bit stats in other places as well. Can we use this
+>> opportunity to wholesale upgrade all KVM stats from u32 to u64? Most
+>> of this patch is duplicated code with "u32" swapped with "u64".
 >>
->> Is there any way to reuse the existing halt-polling code? Having two
->> copies risks them diverging over time.
 >
-> s/risks/guarantees/ :(
->
-> Unfortunately, handling of the hardware threads in KVM PPC is a mess,
-> and I don't think it's possible to remove the duplication.
+> I'm not sure of what 32-bit architectures would do, but perhaps we could
+> upgrade them to unsigned long at least.
 
-Ah, ok. That's a shame.
+I thought u64 still existed on 32-bit architectures. unsigned long
+would be fine but with the caveat that certain stats would overflow on
+32-bit architectures.
 
 >
 > Paolo
