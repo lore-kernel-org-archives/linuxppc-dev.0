@@ -1,27 +1,40 @@
-Return-Path: <smueller@chronox.de>
-Received: from mail.eperm.de (mail.eperm.de [89.247.134.16])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rpGgG4P8jzDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 06:20:26 +1000 (AEST)
-From: Stephan Mueller <smueller@chronox.de>
-To: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
- "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
+Return-Path: <luto@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpHQq1q59zDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 06:54:43 +1000 (AEST)
+From: Andy Lutomirski <luto@kernel.org>
+To: x86@kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ Nadav Amit <nadav.amit@gmail.com>, Kees Cook <keescook@chromium.org>,
+ Brian Gerst <brgerst@gmail.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Jann Horn <jann@thejh.net>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Andy Lutomirski <luto@kernel.org>, Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
  "David S. Miller" <davem@davemloft.net>,
- "open list:IBM Power VMX Cryptographic instructions"
- <linux-crypto@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 2/2] crypto: vmx - Adding support for XTS
-Date: Mon, 11 Jul 2016 22:10:39 +0200
-Message-ID: <3796236.yVu684LHdL@positron.chronox.de>
-In-Reply-To: <1468264060-22769-2-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-References: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
- <1468264060-22769-2-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ Chris Metcalf <cmetcalf@mellanox.com>,
+ Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@suse.de>,
+ Dmitry Safonov <dsafonov@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-alpha@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: [PATCH v5 18/32] signal: Consolidate {TS,TLF}_RESTORE_SIGMASK code
+Date: Mon, 11 Jul 2016 13:53:51 -0700
+Message-Id: <dc84a1b979d800049bfd0629ed9380238cba2807.1468270393.git.luto@kernel.org>
+In-Reply-To: <cover.1468270393.git.luto@kernel.org>
+References: <cover.1468270393.git.luto@kernel.org>
+In-Reply-To: <cover.1468270393.git.luto@kernel.org>
+References: <cover.1468270393.git.luto@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,251 +44,507 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Montag, 11. Juli 2016, 16:07:40 CEST schrieb Paulo Flabiano Smorigo:
+In general, there's no need for the "restore sigmask" flag to live in
+ti->flags.  alpha, ia64, microblaze, powerpc, sh, sparc (64-bit only),
+tile, and x86 use essentially identical alternative implementations,
+placing the flag in ti->status.
 
-Hi Paulo,
+Replace those optimized implementations with an equally good common
+implementation that stores it in a bitfield in struct task_struct
+and drop the custom implementations.
 
-> From: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>
-> 
-> This patch add XTS support using VMX-crypto driver.
-> 
-> Signed-off-by: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
-> Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-> ---
->  drivers/crypto/vmx/Makefile  |   2 +-
->  drivers/crypto/vmx/aes_xts.c | 187
-> +++++++++++++++++++++++++++++++++++++++++++ drivers/crypto/vmx/vmx.c     | 
->  2 +
->  3 files changed, 190 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/crypto/vmx/aes_xts.c
-> 
-> diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
-> index d28ab96..de6e241 100644
-> --- a/drivers/crypto/vmx/Makefile
-> +++ b/drivers/crypto/vmx/Makefile
-> @@ -1,5 +1,5 @@
->  obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
-> -vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o
-> aes_ctr.o ghash.o +vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o
-> aes_cbc.o aes_ctr.o aes_xts.o ghash.o
-> 
->  ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
->  TARGET := linux-ppc64le
-> diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
-> new file mode 100644
-> index 0000000..62e698c
-> --- /dev/null
-> +++ b/drivers/crypto/vmx/aes_xts.c
-> @@ -0,0 +1,187 @@
-> +/**
-> + * AES XTS routines supporting VMX In-core instructions on Power 8
-> + *
-> + * Copyright (C) 2015 International Business Machines Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundations; version 2 only.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY of FITNESS FOR A PARTICUPAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> + *
-> + * Author: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
-> + */
-> +
-> +#include <linux/types.h>
-> +#include <linux/err.h>
-> +#include <linux/crypto.h>
-> +#include <linux/delay.h>
-> +#include <linux/hardirq.h>
-> +#include <asm/switch_to.h>
-> +#include <crypto/aes.h>
-> +#include <crypto/scatterwalk.h>
-> +
-> +#include "aesp8-ppc.h"
-> +
-> +struct p8_aes_xts_ctx {
-> +	struct crypto_blkcipher *fallback;
-> +	struct aes_key enc_key;
-> +	struct aes_key dec_key;
-> +	struct aes_key tweak_key;
-> +};
-> +
-> +static int p8_aes_xts_init(struct crypto_tfm *tfm)
-> +{
-> +	const char *alg;
-> +	struct crypto_blkcipher *fallback;
-> +	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
-> +
-> +	if (!(alg = crypto_tfm_alg_name(tfm))) {
-> +		printk(KERN_ERR "Failed to get algorithm name.\n");
-> +		return -ENOENT;
-> +	}
-> +
-> +	fallback =
-> +		crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-> +	if (IS_ERR(fallback)) {
-> +		printk(KERN_ERR
-> +			"Failed to allocate transformation for '%s': %ld\n",
-> +			alg, PTR_ERR(fallback));
-> +		return PTR_ERR(fallback);
-> +	}
-> +	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
-> +		crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
-> +
-> +	crypto_blkcipher_set_flags(
-> +		fallback,
-> +		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
-> +	ctx->fallback = fallback;
-> +
-> +	return 0;
-> +}
-> +
-> +static void p8_aes_xts_exit(struct crypto_tfm *tfm)
-> +{
-> +	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
-> +
-> +	if (ctx->fallback) {
-> +		crypto_free_blkcipher(ctx->fallback);
-> +		ctx->fallback = NULL;
-> +	}
-> +}
-> +
-> +static int p8_aes_xts_setkey(struct crypto_tfm *tfm, const u8 *key,
-> +			     unsigned int keylen)
-> +{
-> +	int ret;
-> +	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
-> +
-> +	if (keylen % 2)
-> +		return -EINVAL;
+Additional architectures can opt in by removing their
+TIF_RESTORE_SIGMASK defines.
 
-Please use xts_check_key instead of this check.
-> +
-> +	preempt_disable();
-> +	pagefault_disable();
-> +	enable_kernel_vsx();
-> +	ret = aes_p8_set_encrypt_key(key + keylen/2, (keylen/2) * 8,
-> &ctx->tweak_key); +	ret += aes_p8_set_encrypt_key(key, (keylen/2) * 8,
-> &ctx->enc_key); +	ret += aes_p8_set_decrypt_key(key, (keylen/2) * 8,
-> &ctx->dec_key); +	disable_kernel_vsx();
-> +	pagefault_enable();
-> +	preempt_enable();
-> +
-> +	ret += crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-> +	return ret;
-> +}
-> +
-> +static int p8_aes_xts_crypt(struct blkcipher_desc *desc,
-> +			    struct scatterlist *dst,
-> +			    struct scatterlist *src,
-> +			    unsigned int nbytes, int enc)
-> +{
-> +	int ret;
-> +	u8 tweak[AES_BLOCK_SIZE];
-> +	u8 *iv;
-> +	struct blkcipher_walk walk;
-> +	struct p8_aes_xts_ctx *ctx =
-> +		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
-> +	struct blkcipher_desc fallback_desc = {
-> +		.tfm = ctx->fallback,
-> +		.info = desc->info,
-> +		.flags = desc->flags
-> +	};
-> +
-> +	if (in_interrupt()) {
-> +		ret = enc ? crypto_blkcipher_encrypt(&fallback_desc, dst, src, nbytes) 
-:
-> +                            crypto_blkcipher_decrypt(&fallback_desc, dst,
-> src, nbytes); +	} else {
-> +		preempt_disable();
-> +		pagefault_disable();
-> +		enable_kernel_vsx();
-> +
-> +		blkcipher_walk_init(&walk, dst, src, nbytes);
-> +
-> +		iv = (u8 *)walk.iv;
-> +		ret = blkcipher_walk_virt(desc, &walk);
-> +		aes_p8_encrypt(iv, tweak, &ctx->tweak_key);
-> +
-> +		while ((nbytes = walk.nbytes)) {
-> +			if (enc)
-> +				aes_p8_xts_encrypt(walk.src.virt.addr, walk.dst.virt.addr,
-> +						nbytes & AES_BLOCK_MASK, &ctx->enc_key, NULL, tweak);
-> +			else
-> +				aes_p8_xts_decrypt(walk.src.virt.addr, walk.dst.virt.addr,
-> +						nbytes & AES_BLOCK_MASK, &ctx->dec_key, NULL, tweak);
-> +
-> +			nbytes &= AES_BLOCK_SIZE - 1;
-> +			ret = blkcipher_walk_done(desc, &walk, nbytes);
-> +		}
-> +
-> +		disable_kernel_vsx();
-> +		pagefault_enable();
-> +		preempt_enable();
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Rich Felker <dalias@libc.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Chris Metcalf <cmetcalf@mellanox.com>
+Cc: x86@kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Borislav Petkov <bp@suse.de>
+Cc: Brian Gerst <brgerst@gmail.com>
+Cc: Dmitry Safonov <dsafonov@virtuozzo.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Signed-off-by: Andy Lutomirski <luto@kernel.org>
+---
+ arch/alpha/include/asm/thread_info.h      | 27 -------------
+ arch/ia64/include/asm/thread_info.h       | 28 --------------
+ arch/microblaze/include/asm/thread_info.h | 27 -------------
+ arch/powerpc/include/asm/thread_info.h    | 25 ------------
+ arch/sh/include/asm/thread_info.h         | 26 -------------
+ arch/sparc/include/asm/thread_info_64.h   | 24 ------------
+ arch/tile/include/asm/thread_info.h       | 27 -------------
+ arch/x86/include/asm/thread_info.h        | 24 ------------
+ include/linux/sched.h                     | 63 +++++++++++++++++++++++++++++++
+ include/linux/thread_info.h               | 41 --------------------
+ 10 files changed, 63 insertions(+), 249 deletions(-)
 
-memzero_explicit(tweak) ?
-> +	}
-> +	return ret;
-> +}
-> +
-> +static int p8_aes_xts_encrypt(struct blkcipher_desc *desc,
-> +			      struct scatterlist *dst,
-> +			      struct scatterlist *src, unsigned int nbytes)
-> +{
-> +	return p8_aes_xts_crypt(desc, dst, src, nbytes, 1);
-> +}
-> +
-> +static int p8_aes_xts_decrypt(struct blkcipher_desc *desc,
-> +			      struct scatterlist *dst,
-> +			      struct scatterlist *src, unsigned int nbytes)
-> +{
-> +	return p8_aes_xts_crypt(desc, dst, src, nbytes, 0);
-> +}
-> +
-> +struct crypto_alg p8_aes_xts_alg = {
-> +	.cra_name = "xts(aes)",
-> +	.cra_driver_name = "p8_aes_xts",
-> +	.cra_module = THIS_MODULE,
-> +	.cra_priority = 2000,
-> +	.cra_type = &crypto_blkcipher_type,
-> +	.cra_flags = CRYPTO_ALG_TYPE_BLKCIPHER | CRYPTO_ALG_NEED_FALLBACK,
-> +	.cra_alignmask = 0,
-> +	.cra_blocksize = AES_BLOCK_SIZE,
-> +	.cra_ctxsize = sizeof(struct p8_aes_xts_ctx),
-> +	.cra_init = p8_aes_xts_init,
-> +	.cra_exit = p8_aes_xts_exit,
-> +	.cra_blkcipher = {
-> +			.ivsize = AES_BLOCK_SIZE,
-> +			.min_keysize = 2 * AES_MIN_KEY_SIZE,
-> +			.max_keysize = 2 * AES_MAX_KEY_SIZE,
-> +			.setkey	 = p8_aes_xts_setkey,
-> +			.encrypt = p8_aes_xts_encrypt,
-> +			.decrypt = p8_aes_xts_decrypt,
-> +	}
-> +};
-> diff --git a/drivers/crypto/vmx/vmx.c b/drivers/crypto/vmx/vmx.c
-> index e163d57..f688c32 100644
-> --- a/drivers/crypto/vmx/vmx.c
-> +++ b/drivers/crypto/vmx/vmx.c
-> @@ -31,10 +31,12 @@ extern struct shash_alg p8_ghash_alg;
->  extern struct crypto_alg p8_aes_alg;
->  extern struct crypto_alg p8_aes_cbc_alg;
->  extern struct crypto_alg p8_aes_ctr_alg;
-> +extern struct crypto_alg p8_aes_xts_alg;
->  static struct crypto_alg *algs[] = {
->  	&p8_aes_alg,
->  	&p8_aes_cbc_alg,
->  	&p8_aes_ctr_alg,
-> +	&p8_aes_xts_alg,
->  	NULL,
->  };
-
-
-Ciao
-Stephan
+diff --git a/arch/alpha/include/asm/thread_info.h b/arch/alpha/include/asm/thread_info.h
+index 32e920a83ae5..e9e90bfa2b50 100644
+--- a/arch/alpha/include/asm/thread_info.h
++++ b/arch/alpha/include/asm/thread_info.h
+@@ -86,33 +86,6 @@ register struct thread_info *__current_thread_info __asm__("$8");
+ #define TS_UAC_NOPRINT		0x0001	/* ! Preserve the following three */
+ #define TS_UAC_NOFIX		0x0002	/* ! flags as they match          */
+ #define TS_UAC_SIGBUS		0x0004	/* ! userspace part of 'osf_sysinfo' */
+-#define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal() */
+-
+-#ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, (unsigned long *)&ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+-#endif
+ 
+ #define SET_UNALIGN_CTL(task,value)	({				\
+ 	__u32 status = task_thread_info(task)->status & ~UAC_BITMASK;	\
+diff --git a/arch/ia64/include/asm/thread_info.h b/arch/ia64/include/asm/thread_info.h
+index f0a72e98e5a4..c7026429816b 100644
+--- a/arch/ia64/include/asm/thread_info.h
++++ b/arch/ia64/include/asm/thread_info.h
+@@ -121,32 +121,4 @@ struct thread_info {
+ /* like TIF_ALLWORK_BITS but sans TIF_SYSCALL_TRACE or TIF_SYSCALL_AUDIT */
+ #define TIF_WORK_MASK		(TIF_ALLWORK_MASK&~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT))
+ 
+-#define TS_RESTORE_SIGMASK	2	/* restore signal mask in do_signal() */
+-
+-#ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, &ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+-#endif	/* !__ASSEMBLY__ */
+-
+ #endif /* _ASM_IA64_THREAD_INFO_H */
+diff --git a/arch/microblaze/include/asm/thread_info.h b/arch/microblaze/include/asm/thread_info.h
+index 383f387b4eee..e7e8954e9815 100644
+--- a/arch/microblaze/include/asm/thread_info.h
++++ b/arch/microblaze/include/asm/thread_info.h
+@@ -148,33 +148,6 @@ static inline struct thread_info *current_thread_info(void)
+  */
+ /* FPU was used by this task this quantum (SMP) */
+ #define TS_USEDFPU		0x0001
+-#define TS_RESTORE_SIGMASK	0x0002
+-
+-#ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK 1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, (unsigned long *)&ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+-#endif
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_MICROBLAZE_THREAD_INFO_H */
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 8febc3f66d53..cfc35195f95e 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -134,40 +134,15 @@ static inline struct thread_info *current_thread_info(void)
+ /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
+ #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
+ #define TLF_SLEEPING		1	/* suspend code enabled SLEEP mode */
+-#define TLF_RESTORE_SIGMASK	2	/* Restore signal mask in do_signal */
+ #define TLF_LAZY_MMU		3	/* tlb_batch is active */
+ #define TLF_RUNLATCH		4	/* Is the runlatch enabled? */
+ 
+ #define _TLF_NAPPING		(1 << TLF_NAPPING)
+ #define _TLF_SLEEPING		(1 << TLF_SLEEPING)
+-#define _TLF_RESTORE_SIGMASK	(1 << TLF_RESTORE_SIGMASK)
+ #define _TLF_LAZY_MMU		(1 << TLF_LAZY_MMU)
+ #define _TLF_RUNLATCH		(1 << TLF_RUNLATCH)
+ 
+ #ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->local_flags |= _TLF_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, &ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->local_flags &= ~_TLF_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->local_flags & _TLF_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->local_flags & _TLF_RESTORE_SIGMASK))
+-		return false;
+-	ti->local_flags &= ~_TLF_RESTORE_SIGMASK;
+-	return true;
+-}
+ 
+ static inline bool test_thread_local_flags(unsigned int flags)
+ {
+diff --git a/arch/sh/include/asm/thread_info.h b/arch/sh/include/asm/thread_info.h
+index 2afa321157be..6c65dcd470ab 100644
+--- a/arch/sh/include/asm/thread_info.h
++++ b/arch/sh/include/asm/thread_info.h
+@@ -151,19 +151,10 @@ extern void init_thread_xstate(void);
+  * ever touches our thread-synchronous status, so we don't
+  * have to worry about atomic accesses.
+  */
+-#define TS_RESTORE_SIGMASK	0x0001	/* restore signal mask in do_signal() */
+ #define TS_USEDFPU		0x0002	/* FPU used by this task this quantum */
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, (unsigned long *)&ti->flags));
+-}
+-
+ #define TI_FLAG_FAULT_CODE_SHIFT	24
+ 
+ /*
+@@ -182,23 +173,6 @@ static inline unsigned int get_thread_fault_code(void)
+ 	return ti->flags >> TI_FLAG_FAULT_CODE_SHIFT;
+ }
+ 
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+-
+ #endif	/* !__ASSEMBLY__ */
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/sparc/include/asm/thread_info_64.h b/arch/sparc/include/asm/thread_info_64.h
+index bde59825d06c..3d7b925f6516 100644
+--- a/arch/sparc/include/asm/thread_info_64.h
++++ b/arch/sparc/include/asm/thread_info_64.h
+@@ -222,32 +222,8 @@ register struct thread_info *current_thread_info_reg asm("g6");
+  *
+  * Note that there are only 8 bits available.
+  */
+-#define TS_RESTORE_SIGMASK	0x0001	/* restore signal mask in do_signal() */
+ 
+ #ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, &ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+ 
+ #define thread32_stack_is_64bit(__SP) (((__SP) & 0x1) != 0)
+ #define test_thread_64bit_stack(__SP) \
+diff --git a/arch/tile/include/asm/thread_info.h b/arch/tile/include/asm/thread_info.h
+index c1467ac59ce6..b7659b8f1117 100644
+--- a/arch/tile/include/asm/thread_info.h
++++ b/arch/tile/include/asm/thread_info.h
+@@ -166,32 +166,5 @@ extern void _cpu_idle(void);
+ #ifdef __tilegx__
+ #define TS_COMPAT		0x0001	/* 32-bit compatibility mode */
+ #endif
+-#define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal */
+-
+-#ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, &ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+-#endif	/* !__ASSEMBLY__ */
+ 
+ #endif /* _ASM_TILE_THREAD_INFO_H */
+diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+index 89bff044a6f5..b45ffdda3549 100644
+--- a/arch/x86/include/asm/thread_info.h
++++ b/arch/x86/include/asm/thread_info.h
+@@ -219,32 +219,8 @@ static inline unsigned long current_stack_pointer(void)
+  * have to worry about atomic accesses.
+  */
+ #define TS_COMPAT		0x0002	/* 32bit syscall active (64BIT)*/
+-#define TS_RESTORE_SIGMASK	0x0008	/* restore signal mask in do_signal() */
+ 
+ #ifndef __ASSEMBLY__
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-static inline void set_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	ti->status |= TS_RESTORE_SIGMASK;
+-	WARN_ON(!test_bit(TIF_SIGPENDING, (unsigned long *)&ti->flags));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return current_thread_info()->status & TS_RESTORE_SIGMASK;
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	struct thread_info *ti = current_thread_info();
+-	if (!(ti->status & TS_RESTORE_SIGMASK))
+-		return false;
+-	ti->status &= ~TS_RESTORE_SIGMASK;
+-	return true;
+-}
+ 
+ static inline bool in_ia32_syscall(void)
+ {
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 26869dba21f1..569df670407a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1545,6 +1545,9 @@ struct task_struct {
+ 	/* unserialized, strictly 'current' */
+ 	unsigned in_execve:1; /* bit to tell LSMs we're in execve */
+ 	unsigned in_iowait:1;
++#if !defined(TIF_RESTORE_SIGMASK)
++	unsigned restore_sigmask:1;
++#endif
+ #ifdef CONFIG_MEMCG
+ 	unsigned memcg_may_oom:1;
+ #ifndef CONFIG_SLOB
+@@ -2664,6 +2667,66 @@ extern void sigqueue_free(struct sigqueue *);
+ extern int send_sigqueue(struct sigqueue *,  struct task_struct *, int group);
+ extern int do_sigaction(int, struct k_sigaction *, struct k_sigaction *);
+ 
++#ifdef TIF_RESTORE_SIGMASK
++/*
++ * Legacy restore_sigmask accessors.  These are inefficient on
++ * SMP architectures because they require atomic operations.
++ */
++
++/**
++ * set_restore_sigmask() - make sure saved_sigmask processing gets done
++ *
++ * This sets TIF_RESTORE_SIGMASK and ensures that the arch signal code
++ * will run before returning to user mode, to process the flag.  For
++ * all callers, TIF_SIGPENDING is already set or it's no harm to set
++ * it.  TIF_RESTORE_SIGMASK need not be in the set of bits that the
++ * arch code will notice on return to user mode, in case those bits
++ * are scarce.  We set TIF_SIGPENDING here to ensure that the arch
++ * signal code always gets run when TIF_RESTORE_SIGMASK is set.
++ */
++static inline void set_restore_sigmask(void)
++{
++	set_thread_flag(TIF_RESTORE_SIGMASK);
++	WARN_ON(!test_thread_flag(TIF_SIGPENDING));
++}
++static inline void clear_restore_sigmask(void)
++{
++	clear_thread_flag(TIF_RESTORE_SIGMASK);
++}
++static inline bool test_restore_sigmask(void)
++{
++	return test_thread_flag(TIF_RESTORE_SIGMASK);
++}
++static inline bool test_and_clear_restore_sigmask(void)
++{
++	return test_and_clear_thread_flag(TIF_RESTORE_SIGMASK);
++}
++
++#else	/* TIF_RESTORE_SIGMASK */
++
++/* Higher-quality implementation, used if TIF_RESTORE_SIGMASK doesn't exist. */
++static inline void set_restore_sigmask(void)
++{
++	current->restore_sigmask = true;
++	WARN_ON(!test_thread_flag(TIF_SIGPENDING));
++}
++static inline void clear_restore_sigmask(void)
++{
++	current->restore_sigmask = false;
++}
++static inline bool test_restore_sigmask(void)
++{
++	return current->restore_sigmask;
++}
++static inline bool test_and_clear_restore_sigmask(void)
++{
++	if (!current->restore_sigmask)
++		return false;
++	current->restore_sigmask = false;
++	return true;
++}
++#endif
++
+ static inline void restore_saved_sigmask(void)
+ {
+ 	if (test_and_clear_restore_sigmask())
+diff --git a/include/linux/thread_info.h b/include/linux/thread_info.h
+index b4c2a485b28a..352b1542f5cc 100644
+--- a/include/linux/thread_info.h
++++ b/include/linux/thread_info.h
+@@ -105,47 +105,6 @@ static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
+ 
+ #define tif_need_resched() test_thread_flag(TIF_NEED_RESCHED)
+ 
+-#if defined TIF_RESTORE_SIGMASK && !defined HAVE_SET_RESTORE_SIGMASK
+-/*
+- * An arch can define its own version of set_restore_sigmask() to get the
+- * job done however works, with or without TIF_RESTORE_SIGMASK.
+- */
+-#define HAVE_SET_RESTORE_SIGMASK	1
+-
+-/**
+- * set_restore_sigmask() - make sure saved_sigmask processing gets done
+- *
+- * This sets TIF_RESTORE_SIGMASK and ensures that the arch signal code
+- * will run before returning to user mode, to process the flag.  For
+- * all callers, TIF_SIGPENDING is already set or it's no harm to set
+- * it.  TIF_RESTORE_SIGMASK need not be in the set of bits that the
+- * arch code will notice on return to user mode, in case those bits
+- * are scarce.  We set TIF_SIGPENDING here to ensure that the arch
+- * signal code always gets run when TIF_RESTORE_SIGMASK is set.
+- */
+-static inline void set_restore_sigmask(void)
+-{
+-	set_thread_flag(TIF_RESTORE_SIGMASK);
+-	WARN_ON(!test_thread_flag(TIF_SIGPENDING));
+-}
+-static inline void clear_restore_sigmask(void)
+-{
+-	clear_thread_flag(TIF_RESTORE_SIGMASK);
+-}
+-static inline bool test_restore_sigmask(void)
+-{
+-	return test_thread_flag(TIF_RESTORE_SIGMASK);
+-}
+-static inline bool test_and_clear_restore_sigmask(void)
+-{
+-	return test_and_clear_thread_flag(TIF_RESTORE_SIGMASK);
+-}
+-#endif	/* TIF_RESTORE_SIGMASK && !HAVE_SET_RESTORE_SIGMASK */
+-
+-#ifndef HAVE_SET_RESTORE_SIGMASK
+-#error "no set_restore_sigmask() provided and default one won't work"
+-#endif
+-
+ #endif	/* __KERNEL__ */
+ 
+ #endif /* _LINUX_THREAD_INFO_H */
+-- 
+2.7.4
