@@ -1,24 +1,38 @@
-Return-Path: <anna-maria@linutronix.de>
-Received: from Galois.linutronix.de (linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rp56x4mHCzDqyL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 23:10:17 +1000 (AEST)
-Message-Id: <20160711122533.069789292@linutronix.de>
-Date: Mon, 11 Jul 2016 12:28:43 -0000
-From: Anna-Maria Gleixner <anna-maria@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org,
- Anna-Maria Gleixner <anna-maria@linutronix.de>
-Subject: [patch 29/66] powerpc: numa: Convert to hotplug state machine
-References: <20160711122450.923603742@linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rp6x823W5zDqyf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 00:31:55 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6BESvci051678
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 10:31:52 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 243enrmv3c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 10:31:51 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 11 Jul 2016 10:31:51 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3E31138C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 10:31:47 -0400 (EDT)
+Subject: Re: [PATCH 1/2] powerpc/pseries: Implemented indexed-count hotplug
+ memory add
+To: Sahil Mehta <smehta@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <19ab11fc-9771-1ad4-95d7-d26dd8f18184@linux.vnet.ibm.com>
+ <e0000ab7-3020-cfec-7137-b8a04aa06920@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 11 Jul 2016 09:31:43 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+In-Reply-To: <e0000ab7-3020-cfec-7137-b8a04aa06920@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5783ADCF.1090406@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,114 +42,288 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+On 06/30/2016 02:22 PM, Sahil Mehta wrote:
+> Indexed-count add for memory hotplug guarantees that a contiguous block
+> of <count> lmbs beginning at a specified <index> will be assigned (NOT
+> that <count> lmbs will be added). Because of Qemu's per-DIMM memory
+> management, the addition of a contiguous block of memory currently
+> requires a series of individual calls. Indexed-count add reduces
+> this series into a single call.
+> 
+> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/rtas.h                 |    2
+>  arch/powerpc/platforms/pseries/dlpar.c          |   32 ++++++-
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |  109 ++++++++++++++++++++---
+>  3 files changed, 126 insertions(+), 17 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 51400ba..f46b271 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -307,6 +307,7 @@ struct pseries_hp_errorlog {
+>  	union {
+>  		__be32	drc_index;
+>  		__be32	drc_count;
+> +		__be32	indexed_count[2];
+>  		char	drc_name[1];
+>  	} _drc_u;
+>  };
+> @@ -322,6 +323,7 @@ struct pseries_hp_errorlog {
+>  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+>  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
+>  #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
+> +#define PSERIES_HP_ELOG_ID_IC		4
+> 
+>  struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+>  					      uint16_t section_id);
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 2b93ae8..a3d5f20 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -345,11 +345,17 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+>  	switch (hp_elog->id_type) {
+>  	case PSERIES_HP_ELOG_ID_DRC_COUNT:
+>  		hp_elog->_drc_u.drc_count =
+> -					be32_to_cpu(hp_elog->_drc_u.drc_count);
+> +				be32_to_cpu(hp_elog->_drc_u.drc_count);
+>  		break;
+>  	case PSERIES_HP_ELOG_ID_DRC_INDEX:
+>  		hp_elog->_drc_u.drc_index =
+> -					be32_to_cpu(hp_elog->_drc_u.drc_index);
+> +				be32_to_cpu(hp_elog->_drc_u.drc_index);
+> +		break;
+> +	case PSERIES_HP_ELOG_ID_IC:
+> +		hp_elog->_drc_u.indexed_count[0] =
+> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[0]);
+> +		hp_elog->_drc_u.indexed_count[1] =
+> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[1]);
+>  	}
+> 
+>  	switch (hp_elog->resource) {
+> @@ -409,7 +415,27 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+>  		goto dlpar_store_out;
+>  	}
+> 
+> -	if (!strncmp(arg, "index", 5)) {
+> +	if (!strncmp(arg, "indexed-count", 13)) {
+> +		u32 index, count;
+> +		char *cstr, *istr;
+> +
+> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_IC;
+> +		arg += strlen("indexed-count ");
+> +
+> +		cstr = kstrdup(arg, GFP_KERNEL);
+> +		istr = strchr(cstr, ' ');
+> +		*istr++ = '\0';
+> +
+> +		if (kstrtou32(cstr, 0, &count) || kstrtou32(istr, 0, &index)) {
+> +			rc = -EINVAL;
+> +			pr_err("Invalid index or count : \"%s\"\n", buf);
+> +			goto dlpar_store_out;
 
-Install the callbacks via the state machine and let the core invoke
-the callbacks on the already online CPUs.
+You need to free cstr before the goto dlpar_store_out to avoid
+a memory leak.
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
----
- arch/powerpc/mm/numa.c     |   46 +++++++++++++++------------------------------
- include/linux/cpuhotplug.h |    1 
- 2 files changed, 17 insertions(+), 30 deletions(-)
+> +		}
+> +		kfree(cstr);
+> +
+> +		hp_elog->_drc_u.indexed_count[0] = cpu_to_be32(count);
+> +		hp_elog->_drc_u.indexed_count[1] = cpu_to_be32(index);
+> +	} else if (!strncmp(arg, "index", 5)) {
+>  		u32 index;
+> 
+>  		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index 2ce1385..cf359bf 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -458,8 +458,8 @@ static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
+>  			if (!lmbs[i].reserved)
+>  				continue;
+> 
+> -			pr_info("Memory at %llx was hot-removed\n",
+> -				lmbs[i].base_addr);
+> +			pr_info("Memory at %llx (drc index %x) was hot-removed\n",
+> +				lmbs[i].base_addr, lmbs[i].drc_index);
+> 
+>  			lmbs[i].reserved = 0;
+>  		}
+> @@ -618,7 +618,6 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
+>  	num_lmbs = *p++;
+>  	lmbs = (struct of_drconf_cell *)p;
+> 
+> -	/* Validate that there are enough LMBs to satisfy the request */
+>  	for (i = 0; i < num_lmbs; i++) {
+>  		if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
+>  			lmbs_available++;
+> @@ -634,7 +633,7 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
+> 
+>  		lmbs_added++;
+> 
+> -		/* Mark this lmb so we can remove it later if all of the
+> +		/* Mark this LMB so we can remove it later if all of the
+>  		 * requested LMBs cannot be added.
+>  		 */
+>  		lmbs[i].reserved = 1;
+> @@ -701,16 +700,90 @@ static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
+>  	return rc;
+>  }
+> 
+> +static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+> +				  struct property *prop)
+> +{
+> +	struct of_drconf_cell *lmbs;
+> +	u32 num_lmbs, *p;
+> +	int i, rc;
+> +	int lmbs_available = 0, start_index = 0, end_index;
+> +
+> +	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
+> +		lmbs_to_add, drc_index);
+> +
+> +	if (lmbs_to_add == 0)
+> +		return -EINVAL;
+> +
+> +	p = prop->value;
+> +	num_lmbs = *p++;
+> +	lmbs = (struct of_drconf_cell *)p;
+> +
+> +	/* Navigate to drc_index */
+> +	while (start_index < num_lmbs) {
+> +		if (lmbs[start_index].drc_index == drc_index)
+> +			break;
+> +
+> +		start_index++;
+> +	}
+> +
+> +	end_index = start_index + lmbs_to_add;
+> +
+> +	/* Validate that there are enough LMBs to satisfy the request */
+> +	for (i = start_index; i < end_index; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
+> +			break;
+> +
+> +		lmbs_available++;
+> +	}
+> +
+> +	if (lmbs_available < lmbs_to_add)
+> +		return -EINVAL;
+> +
+> +	for (i = start_index; i < end_index; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+> +			continue;
+> +
+> +		rc = dlpar_add_lmb(&lmbs[i]);
+> +		if (rc)
+> +			break;
+> +
+> +		lmbs[i].reserved = 1;
+> +	}
+> +
+> +	if (rc) {
+> +		pr_err("Memory indexed-count-add failed, removing any added LMBs\n");
+> +
+> +		for (i = start_index; i < end_index; i++) {
+> +			if (!lmbs[i].reserved)
+> +				continue;
+> +
+> +			rc = dlpar_remove_lmb(&lmbs[i]);
+> +			if (rc)
+> +				pr_err("Failed to remove LMB, drc index %x\n",
+> +				       be32_to_cpu(lmbs[i].drc_index));
+> +		}
+> +		rc = -EINVAL;
+> +	} else {
+> +		for (i = start_index; i < end_index; i++) {
+> +			if (!lmbs[i].reserved)
+> +				continue;
+> +
+> +			pr_info("Memory at %llx (drc index %x) was hot-added\n",
+> +				lmbs[i].base_addr, lmbs[i].drc_index);
+> +			lmbs[i].reserved = 0;
+> +		}
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+>  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>  {
+>  	struct device_node *dn;
+>  	struct property *prop;
+> -	u32 count, drc_index;
+> +	u32 count, drc_index, ic[2];
+>  	int rc;
+> 
+> -	count = hp_elog->_drc_u.drc_count;
+> -	drc_index = hp_elog->_drc_u.drc_index;
+> -
+>  	lock_device_hotplug();
+> 
+>  	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+> @@ -727,19 +800,27 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+> 
+>  	switch (hp_elog->action) {
+>  	case PSERIES_HP_ELOG_ACTION_ADD:
+> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+> +			count = hp_elog->_drc_u.drc_count;
+>  			rc = dlpar_memory_add_by_count(count, prop);
+> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+> +			drc_index = hp_elog->_drc_u.drc_index;
+>  			rc = dlpar_memory_add_by_index(drc_index, prop);
+> -		else
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_IC) {
+> +			ic[0] = hp_elog->_drc_u.indexed_count[0];
+> +			ic[1] = hp_elog->_drc_u.indexed_count[1];
+> +			rc = dlpar_memory_add_by_ic(ic[0], ic[1], prop);
 
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -581,30 +581,22 @@ static void verify_cpu_node_mapping(int
- 	}
- }
- 
--static int cpu_numa_callback(struct notifier_block *nfb, unsigned long action,
--			     void *hcpu)
-+/* Must run before sched domains notifier. */
-+static int ppc_numa_cpu_prepare(unsigned int cpu)
- {
--	unsigned long lcpu = (unsigned long)hcpu;
--	int ret = NOTIFY_DONE, nid;
-+	int nid;
-+
-+	nid = numa_setup_cpu(cpu);
-+	verify_cpu_node_mapping(cpu, nid);
-+	return 0;
-+}
- 
--	switch (action) {
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
--		nid = numa_setup_cpu(lcpu);
--		verify_cpu_node_mapping((int)lcpu, nid);
--		ret = NOTIFY_OK;
--		break;
-+static int ppc_numa_cpu_dead(unsigned int cpu)
-+{
- #ifdef CONFIG_HOTPLUG_CPU
--	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
--		unmap_cpu_from_node(lcpu);
--		ret = NOTIFY_OK;
--		break;
-+	unmap_cpu_from_node(cpu);
- #endif
--	}
--	return ret;
-+	return 0;
- }
- 
- /*
-@@ -913,11 +905,6 @@ static void __init dump_numa_memory_topo
- 	}
- }
- 
--static struct notifier_block ppc64_numa_nb = {
--	.notifier_call = cpu_numa_callback,
--	.priority = 1 /* Must run before sched domains notifier. */
--};
--
- /* Initialize NODE_DATA for a node on the local memory */
- static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
- {
-@@ -953,7 +940,7 @@ static void __init setup_node_data(int n
- 
- void __init initmem_init(void)
- {
--	int nid, cpu;
-+	int nid;
- 
- 	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
- 	max_pfn = max_low_pfn;
-@@ -985,15 +972,14 @@ void __init initmem_init(void)
- 	setup_node_to_cpumask_map();
- 
- 	reset_numa_cpu_lookup_table();
--	register_cpu_notifier(&ppc64_numa_nb);
-+
- 	/*
- 	 * We need the numa_cpu_lookup_table to be accurate for all CPUs,
- 	 * even before we online them, so that we can use cpu_to_{node,mem}
- 	 * early in boot, cf. smp_prepare_cpus().
- 	 */
--	for_each_present_cpu(cpu) {
--		numa_setup_cpu((unsigned long)cpu);
--	}
-+	cpuhp_setup_state(CPUHP_POWER_NUMA_PREPARE, "POWER_NUMA_PREPARE",
-+			  ppc_numa_cpu_prepare, ppc_numa_cpu_dead);
- }
- 
- static int __init early_numa(char *p)
---- a/include/linux/cpuhotplug.h
-+++ b/include/linux/cpuhotplug.h
-@@ -14,6 +14,7 @@ enum cpuhp_state {
- 	CPUHP_PERF_SUPERH,
- 	CPUHP_X86_HPET_DEAD,
- 	CPUHP_WORKQUEUE_PREP,
-+	CPUHP_POWER_NUMA_PREPARE,
- 	CPUHP_NOTIFY_PREPARE,
- 	CPUHP_BRINGUP_CPU,
- 	CPUHP_AP_IDLE_DEAD,
+Any reason you cannot use the drc_index and count variables here instead
+of ic[]?
+
+-Nathan
+
+> +		} else
+>  			rc = -EINVAL;
+>  		break;
+>  	case PSERIES_HP_ELOG_ACTION_REMOVE:
+> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+> +			count = hp_elog->_drc_u.drc_count;
+>  			rc = dlpar_memory_remove_by_count(count, prop);
+> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+> +			drc_index = hp_elog->_drc_u.drc_index;
+>  			rc = dlpar_memory_remove_by_index(drc_index, prop);
+> -		else
+> +		} else
+>  			rc = -EINVAL;
+>  		break;
+>  	default:
+> 
+> On 06/30/2016 02:21 PM, Sahil Mehta wrote:
+>> Indexed-count memory management allows addition and removal of contiguous
+>> lmb blocks to be added and removed with a single command. When compared
+>> to the series of calls previously required to manage contiguous blocks,
+>> indexed-count decreases command frequency and complexity, consequently
+>> preventing buffer overflow.
+>>
+>> -Sahil Mehta
+>> ---
+>>  include/asm/rtas.h                 |    2
+>>  platforms/pseries/dlpar.c          |   32 +++++-
+>>  platforms/pseries/hotplug-memory.c |  194 ++++++++++++++++++++++++++++++++++---
+>>  3 files changed, 210 insertions(+), 18 deletions(-)
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
