@@ -1,39 +1,54 @@
-Return-Path: <scott.wood@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0070.outbound.protection.outlook.com [104.47.2.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x22d.google.com (mail-wm0-x22d.google.com
+ [IPv6:2a00:1450:400c:c09::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpD9J3KGyzDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 04:27:47 +1000 (AEST)
-From: Scott Wood <scott.wood@nxp.com>
-To: Daniel Walker <danielwa@cisco.com>, Raghav Dogra <raghav.dogra@nxp.com>,
- Brian Norris <computersforpeace@gmail.com>, Jaiprakash Singh
- <b44839@freescale.com>, Scott Wood <scottwood@freescale.com>, Lijun Pan
- <Lijun.Pan@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "xe-kernel@external.cisco.com"
- <xe-kernel@external.cisco.com>
-Subject: Re: t1040 IFC flash driver Extended Chip Select
-Date: Mon, 11 Jul 2016 18:27:40 +0000
-Message-ID: <DB5PR0401MB1928A2DB8C8F8EBEC544A80E913F0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
-References: <577D68B8.8020305@cisco.com>
- <DB5PR0401MB1928C329F9B0FF9AAF5A607B913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577E79D4.1010709@cisco.com>
- <DB5PR0401MB1928CD680EFFD3A1712AA9F6913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EB10B.7010601@cisco.com>
- <DB5PR0401MB1928FF35ABE36D8E07BAA079913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EC0FC.8020304@cisco.com>
- <DB5PR0401MB1928FBF1769BCE0DE0E3E503913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577ECE6C.3000100@cisco.com>
- <DB5PR0401MB192848637D543D8B95B6092D913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577ED12C.30105@cisco.com>
- <DB5PR0401MB1928F9E528E4873AC7C17F6F913B0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <577EEA56.3070300@cisco.com>
- <DB5PR0401MB192830653731568F86FEB37D913D0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <5783CB03.4030806@cisco.com>
- <DB5PR0401MB1928CAA554662FF41C34210D913F0@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <5783D31A.3090609@cisco.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpDKh3fmSzDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 04:35:03 +1000 (AEST)
+Received: by mail-wm0-x22d.google.com with SMTP id o80so63580398wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 11:35:03 -0700 (PDT)
 MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <5782398B.32731.26E46C3D@pageexec.freemail.hu>
+References: <1467843928-29351-1-git-send-email-keescook@chromium.org>
+ <578185D4.29090.242668C8@pageexec.freemail.hu>
+ <20160710091632.GA14172@gmail.com>
+ <5782398B.32731.26E46C3D@pageexec.freemail.hu>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 11 Jul 2016 14:34:59 -0400
+Message-ID: <CAGXu5jLnCNHo2uPxeQeFF8DY0QG1x2QEnzmvevDqbjZ5ey2=Aw@mail.gmail.com>
+Subject: Re: [PATCH 0/9] mm: Hardened usercopy
+To: PaX Team <pageexec@freemail.hu>
+Cc: Ingo Molnar <mingo@kernel.org>, Andy Lutomirski <luto@amacapital.net>,
+ Christoph Lameter <cl@linux.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Brad Spengler <spender@grsecurity.net>, Pekka Enberg <penberg@kernel.org>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Casey Schaufler <casey@schaufler-ca.com>,
+ Will Deacon <will.deacon@arm.com>, Rik van Riel <riel@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ X86 ML <x86@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ David Rientjes <rientjes@google.com>, Mathias Krause <minipli@googlemail.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Jan Kara <jack@suse.cz>,
+ Russell King <linux@armlinux.org.uk>,
+ Michael Ellerman <mpe@ellerman.id.au>, Andrea Arcangeli <aarcange@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Vitaly Wool <vitalywool@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Borislav Petkov <bp@suse.de>,
+ Tony Luck <tony.luck@intel.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,102 +58,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2016 12:10 PM, Daniel Walker wrote:=0A=
-> On 07/11/2016 09:55 AM, Scott Wood wrote:=0A=
->> On 07/11/2016 11:36 AM, Daniel Walker wrote:=0A=
->>> On 07/08/2016 06:12 PM, Scott Wood wrote:=0A=
->>>> On 07/07/2016 06:48 PM, Daniel Walker wrote:=0A=
->>>>> On 07/07/2016 03:37 PM, Scott Wood wrote:=0A=
->>>>>> On 07/07/2016 05:01 PM, Daniel Walker wrote:=0A=
->>>>>>> On 07/07/2016 02:59 PM, Scott Wood wrote:=0A=
->>>>>>>> On 07/07/2016 04:49 PM, Daniel Walker wrote:=0A=
->>>>>>>>> On 07/07/2016 02:23 PM, Scott Wood wrote:=0A=
->>>>>>>>>> I suspect that add the usage of cspr_ext into the driver would f=
-ix the=0A=
->>>>>>>>>> issue we have. It reads like you would find that acceptable ?=0A=
->>>>>>>>>> What specifically is the problem you're having?  Is it that CSPR=
-_EXT is=0A=
->>>>>>>>>> not getting written to, and thus the device does not appear at t=
-he=0A=
->>>>>>>>>> address that it should?=0A=
->>>>>>>>>>=0A=
->>>>>>>>>> Or is the driver matching incorrectly?  The only way the driver'=
-s lack=0A=
->>>>>>>>>> of using CSPR_EXT to match would be a problem would be if you ha=
-ve=0A=
->>>>>>>>>> multiple chipselects with the same address in the lower 32 bits,=
- and=0A=
->>>>>>>>>> only CSPR_EXT distinguishing them.  Since you proposed a device =
-tree=0A=
->>>>>>>>>> binding that assumes all devices have the same CSPR_EXT, I doubt=
- that's=0A=
->>>>>>>>>> the case, so I doubt adding CSPR_EXT matching to the driver will=
- solve=0A=
->>>>>>>>>> your problem.=0A=
->>>>>>>>>>=0A=
->>>>>>>>>> -Scott=0A=
->>>>>>>>>>=0A=
->>>>>>>>> I didn't do the debug on this. From my perspective it's either fl=
-ash=0A=
->>>>>>>>> works, or it doesn't work. We need the code below for it to work,=
-=0A=
->>>>>>>> Adding CSPR_EXT matching to the driver will not accomplish the sam=
-e=0A=
->>>>>>>> thing as that code.=0A=
->>>>>>>>=0A=
->>>>>>> So from u-boot perspective, the values in the device tree under "ra=
-nges"=0A=
->>>>>>> or parts of it, are place into the cspr and cspr_ext ? Is that how =
-it's=0A=
->>>>>>> suppose to work ?=0A=
->>>>>> U-Boot writes values that are hardcoded in the board config header.=
-=0A=
->>>>>> These values (as well as the area covered by the IFC LAW) need to ma=
-tch=0A=
->>>>>> the address in the device tree, but U-Boot doesn't get them from the=
-=0A=
->>>>>> device tree.=0A=
->>>>>>=0A=
->>>>> I was suggesting the values it writes are the same as the ones inside=
-=0A=
->>>>> the device tree. So we could have both csrp and csrp_ext written from=
-=0A=
->>>>> the driver and the values would=0A=
->>>>> come from the ranges property.=0A=
->>>> There's more to CSPR than just the address.  The driver should either =
-be=0A=
->>>> able to assume that all of CSPR/CSOR has been correctly initialized, o=
-r=0A=
->>>> it should assume none of that has been initialized -- which again,=0A=
->>>> requires the attribute information to be in the device tree.  If you'r=
-e=0A=
->>>> doing something in between, then that's a board quirk rather than a=0A=
->>>> general solution.=0A=
->>>>=0A=
->>>> -Scott=0A=
->>>>=0A=
->>> It would seems like a good idea to add it then. I think it can be piece=
-=0A=
->>> mail, rather than all or nothing tho. How difficult is adding the other=
-=0A=
->>> part to the driver , v.s. just the cspr_ext ?=0A=
->> Writing only cspr_ext is a hack to work around a bug and should not be=
-=0A=
->> disguised as a "piecemeal" implementation of something different.=0A=
->>=0A=
->> -Scott=0A=
-> =0A=
-> Ok .. How hard is it to do all the stuff your asking for ?=0A=
-=0A=
-It shouldn't be hard.  Add properties (at the chipselect level -- not=0A=
-IFC controller) that hold the non-address portions of CSPR, CSOR, and=0A=
-(if applicable to the IFC version) CSOR_EXT, as well as the chipselect=0A=
-number.  If the chipselect property is present then the others must be=0A=
-as well.  Code to handle this should go in drivers/memory/fsl_ifc.c=0A=
-rather than the NAND driver.=0A=
-=0A=
-If the chipselect property is absent, then the driver will assume that=0A=
-the loader has set up all chipselect registers correctly.=0A=
-=0A=
--Scott=0A=
-=0A=
+On Sun, Jul 10, 2016 at 8:03 AM, PaX Team <pageexec@freemail.hu> wrote:
+> i note that this analysis is also missing from this USERCOPY submission except
+> for stating what Kees assumed about USERCOPY (and apparently noone could be
+> bothered to read the original Kconfig help of it which clearly states that the
+> purpose is copy size checking, not some elaborate pointer validation, the latter
+> is an implementation detail only and is necessary to be able to derive the
+> underlying slab object's intended size).
+
+I read the Kconfig text, but it's not entirely accurate. While size is
+being checked, it's all nonsense without also the address, so it's
+really an object checker. The original design intent may have been the
+slab size checks, but it grew beyond that (both within PaX and within
+Grsecurity which explicitly added the check for pointers into kernel
+text).
+
+I'm just trying to explain as fully as possible what the resulting
+code does and why.
+
+> it's not pointer validation but bounds checking: you already know which memory
+> object the pointer is supposed to point to, you only check its bounds. if it was
+> an attacker controlled pointer then all this would be a pointless check of course,
+> trivial for an attacker to circumvent (and this is why it's not part of the
+> USERCOPY design).
+
+Agreed: but the pointer is being checked to attempt to figure out what
+KIND of object is being copied. It is part of the logic. If it helps
+people understand it more clearly, I can describe them as separate
+steps: identify the object type, then perform bounds checking of the
+size on that type.
+
+>> > yes, more bikeshedding will surely help, [...]
+>>
+>> Insulting and ridiculing a reviewer who explicitly qualified his comments with
+>> "one minor nit to pick" sure does not help upstream integration either.
+>
+> sorry Ingo, but calling a spade a spade isn't insulting, at best it's exposing
+> some painful truth. you yourself used that term several times in the past, were
+> you insulting and ridiculing people then?
+>
+> as for the ad hominem that you displayed here and later, i hope that in the
+> future you will display the same professional conduct that you apparently expect
+> from others.
+
+There's a long history of misunderstanding and miscommunication
+(intentional or otherwise) by everyone on these topics. I'd love it if
+we can just side-step all of it, and try to stick as closely to the
+technical discussions as possible. Everyone involved in these
+discussions wants better security, even if we go about it in different
+ways. If anyone finds themselves feeling insulted, just try to let it
+go, and focus on the places where we can find productive common
+ground, remembering that any fighting just distracts from the more
+important issues at hand.
+
+> i'll voice my opinion when you guys are about to screw it up (as it happened in
+> the past and apparently history keeps repeating itself). if you don't want my
+> opinion then don't ask for it (in that case we'll write a blog at most ;).
+
+I am hugely interested in your involvement in these discussions:
+you're by far the most knowledgeable about them. You generally give
+very productive feedback, and for that I'm thankful. I prefer that to
+just saying something is wrong/broken without any actionable
+follow-up. :)
+
+>> > [...] like the renaming of .data..read_only to .data..ro_after_init which also
+>> > had nothing to do with init but everything to do with objects being conceptually
+>> > read-only...
+>>
+>> .data..ro_after_init objects get written to during bootup so it's conceptually
+>> quite confusing to name it "read-only" without any clear qualifiers.
+>>
+>> That it's named consistently with its role of "read-write before init and read
+>> only after init" on the other hand is not confusing at all. Not sure what your
+>> problem is with the new name.
+>
+> the new name reflects a complete misunderstanding of the PaX feature it was based
+> on (typical case of cargo cult security). in particular, the __read_only facility
+> in PaX is part of a defense mechanism that attempts to solve a specific problem
+> (like everything else) and that problem has nothing whatsoever to do with what
+> happens before/after the kernel init process. enforcing read-ony kernel memory at
+> the end of kernel initialization is an implementation detail only and wasn't even
+> true always (and still isn't true for kernel modules for example): in the linux 2.4
+> days PaX actually enforced read-only kernel memory properties in startup_32 already
+> but i relaxed that for the 2.6+ port as the maintenance cost (finding out and
+> handling new exceptional cases) wasn't worth it.
+
+Part of getting protections into upstream is doing them in ways that
+make them palatable for incremental work. As it happened, the
+read-after-init piece of the larger read-only attack surface reduction
+effort was small enough to make it in. As more work is done, we can
+continue to build on it.
+
+Making rodata read-only before mark_rodata() is part of my longer goal
+since other architectures (e.g. s390) already do this, and is
+technically the more correct thing to do: rodata should start its life
+read-only. It's a weird hack that it is delayed at all.
+
+> also naming things after their implementation is poor taste and can result in
+> even bigger problems down the line since as soon as the implementation changes,
+
+On the surface, I don't disagree, but as upstream is a large-scale
+collaborative effort, I tend to focus on what things are specifically
+critical, and naming isn't one of them. :)
+
+> you will have a flag day or have to keep a bad name. this is a lesson that the
+> REFCOUNT submission will learn too since the kernel's atomic*_t types (an
+> implementation detail) are used extensively for different purposes, instead of
+> using specialized types (kref is a good example of that).
+
+Right, and I think part of this is a failure of documentation and
+examples. As we make progress with REFCOUNT, we can learn about the
+best way to approach these kinds of larger tree-wide changes under the
+constraints of the existing upstream development process.
+
+> For .data..ro_after_init
+> the lesson will happen when you try to add back the remaining pieces from PaX,
+> such as module handling and not-always-const-in-the-C-sense objects and associated
+> accessors.
+
+Do you mean the rest of the KERNEXEC (hopefully I'm not confusing
+implementation names) code that uses pax_open/close_kernel()? I expect
+that to be a gradual addition too, and I'd love participation to get
+it and the constify plugin into the kernel.
+
+-Kees
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
