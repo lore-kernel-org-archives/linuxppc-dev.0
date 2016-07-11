@@ -2,23 +2,25 @@ Return-Path: <dyoung@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnqC34lVLzDqpW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 12:42:55 +1000 (AEST)
-Date: Mon, 11 Jul 2016 10:42:47 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnqqK6vTVzDqpY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 13:10:53 +1000 (AEST)
+Date: Mon, 11 Jul 2016 11:10:44 +0800
 From: Dave Young <dyoung@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v4 3/9] kexec_file: Factor out kexec_locate_mem_hole from
- kexec_add_buffer.
-Message-ID: <20160711024247.GA2853@dhcp-128-65.nay.redhat.com>
-References: <1467908615-18952-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1467908615-18952-4-git-send-email-bauerman@linux.vnet.ibm.com>
- <87a8hqja39.fsf@@concordia.ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>, kexec@lists.infradead.org,
+ ebiederm@xmission.com, bhe@redhat.com, vgoyal@redhat.com,
+ will.deacon@arm.com, catalin.marinas@arm.com,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC] arm64: kexec_file_load support
+Message-ID: <20160711031044.GA2850@dhcp-128-65.nay.redhat.com>
+References: <20160701051111.GL20774@linaro.org>
+ <20160705080355.GQ20774@linaro.org>
+ <20160707061245.GA18459@dhcp-128-65.nay.redhat.com>
+ <11139482.zLvCKVycQr@hactar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87a8hqja39.fsf@@concordia.ellerman.id.au>
+In-Reply-To: <11139482.zLvCKVycQr@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/16 at 04:11pm, Michael Ellerman wrote:
-> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+On 07/08/16 at 11:48am, Thiago Jung Bauermann wrote:
+> Am Donnerstag, 07 Juli 2016, 14:12:45 schrieb Dave Young:
+> > If so maybe change a bit from your precious mentioned 7 args proposal like
+> > below?
+> > 
+> > struct kexec_file_fd {
+> > 	enum kexec_file_type;
+> > 	int fd;
+> > }
+> > 
+> > struct kexec_fdset {
+> > 	int nr_fd;
+> > 	struct kexec_file_fd fd[0];
+> > }
+> > 
+> > int kexec_file_load(int kernel_fd, int initrd_fd,
+> > 		    unsigned long cmdline_len, const char *cmdline_ptr,
+> > 		    unsigned long flags, struct kexec_fdset *extra_fds);
 > 
-> > kexec_locate_mem_hole will be used by the PowerPC kexec_file_load
-> > implementation to find free memory for the purgatory stack.
-> >
-> > Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> > Cc: Eric Biederman <ebiederm@xmission.com>
-> > Cc: Dave Young <dyoung@redhat.com>
 > 
-> Dave are you happy with the first three patches? If so do you mind
-> sending an ack?
+> Is there a way for the kernel to distinguish whether the process passed 5 or 
+> 6 arguments? How can it know whether extra_fds is a valid argument or just 
+> garbage? I think we have to define a new flag KEXEC_FILE_EXTRA_FDS so that 
+> the process can signal that it is using the new interface.
 
-I reviewed the 3 patches, they look good to me. Will ack after a small test today.
-
-> 
-> Given the series touches generic code, x86 and powerpc this might be one
-> for Andrew to take. Or is there a kexec tree it should go through?
-
-They should go Andrew's tree, but I'm not sure about the powerpc part.
+Agreed, a new flag is needed.
 
 Thanks
 Dave
