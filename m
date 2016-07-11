@@ -1,26 +1,54 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnyZH14sQzDqxP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 18:15:02 +1000 (AEST)
-Date: Mon, 11 Jul 2016 16:14:52 +0800
-From: Dave Young <dyoung@redhat.com>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- kexec@lists.infradead.org, ebiederm@xmission.com, bhe@redhat.com,
- vgoyal@redhat.com, will.deacon@arm.com, catalin.marinas@arm.com,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC] arm64: kexec_file_load support
-Message-ID: <20160711081452.GA20771@dhcp-128-65.nay.redhat.com>
-References: <20160701051111.GL20774@linaro.org>
- <20160705080355.GQ20774@linaro.org>
- <20160707061245.GA18459@dhcp-128-65.nay.redhat.com>
- <11139482.zLvCKVycQr@hactar> <20160711071934.GZ20774@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160711071934.GZ20774@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rp00j1gLDzDqxS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 19:19:31 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6B9IpDf059755
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 05:19:29 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 242we0cgs9-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 05:19:29 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 11 Jul 2016 19:19:26 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 375502BB005A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 19:19:24 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6B9JOh725100522
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 19:19:24 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6B9JNDb011219
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 19:19:23 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Huy Nguyen <huyn@mellanox.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 14/14] cxl: Add cxl_check_and_switch_mode() API to switch
+ bi-modal cards
+In-reply-to: <48b96bd7-70fa-3169-ea1f-7ca66b69e41a@au1.ibm.com>
+References: <1467638532-9250-1-git-send-email-imunsie@au.ibm.com>
+ <1467638532-9250-15-git-send-email-imunsie@au.ibm.com>
+ <577D533E.4030605@linux.vnet.ibm.com>
+ <23e62784-d67a-1e08-ed60-99a50a15b249@au1.ibm.com>
+ <1467872513-sup-7704@x230.ozlabs.ibm.com>
+ <8ae21f63-a17e-5b57-3a9a-1c38eae358ed@au1.ibm.com>
+ <48b96bd7-70fa-3169-ea1f-7ca66b69e41a@au1.ibm.com>
+Date: Mon, 11 Jul 2016 19:19:22 +1000
+Message-Id: <1468228528-sup-5354@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +58,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/16 at 04:19pm, AKASHI Takahiro wrote:
-> On Fri, Jul 08, 2016 at 11:48:44AM -0300, Thiago Jung Bauermann wrote:
-> > Am Donnerstag, 07 Juli 2016, 14:12:45 schrieb Dave Young:
-> > > If so maybe change a bit from your precious mentioned 7 args proposal like
-> > > below?
-> > > 
-> > > struct kexec_file_fd {
-> > > 	enum kexec_file_type;
-> > > 	int fd;
-> > > }
-> > > 
-> > > struct kexec_fdset {
-> > > 	int nr_fd;
-> > > 	struct kexec_file_fd fd[0];
-> > > }
-> > > 
-> > > int kexec_file_load(int kernel_fd, int initrd_fd,
-> > > 		    unsigned long cmdline_len, const char *cmdline_ptr,
-> > > 		    unsigned long flags, struct kexec_fdset *extra_fds);
-> > 
-> > 
-> > Is there a way for the kernel to distinguish whether the process passed 5 or 
-> > 6 arguments? How can it know whether extra_fds is a valid argument or just 
-> > garbage? I think we have to define a new flag KEXEC_FILE_EXTRA_FDS so that 
-> > the process can signal that it is using the new interface.
+Excerpts from andrew.donnellan's message of 2016-07-07 18:15:06 +1000:
+> On 07/07/16 16:44, Andrew Donnellan wrote:
+> > We can match the vendor, device ID *and* class code - unfortunately
+> > there isn't a macro for this, which makes it a little bit less
+> > aesthetically pleasing, but I'm pretty sure this works.
 > 
-> Good point. What I had in my mind is "open" system call.
-> Glibc's implementation of open() checks for the second argument, flags,
-> to determine whether or not the third argument, mode, is required.
-> 
-> So our current consensus is that, for the time being, we will extend
-> the existing system call interface to allow extra file descriptors,
-> and *if* we really need a different type of parameters in the future,
-> we will add another system call.
+> Something like the below, which works fine:
 
-Sounds good to me.
+I like this solution, but I'm not going to include it in v2 of this
+series and would rather it be submitted separately. The reason being is
+that this series will work as is, and I'd like to see this undergo some
+regression testing separate to the cx4 work, and a bit of scrutiny from
+the hardware team just in case we are missing any device IDs that would
+no longer be matched(I'm not aware of any, but you never know).
 
-> 
-> If we all agree, I can post a kernel patch for this change as a RFC.
-> (I've already verified it with my prototype of kexec_file_load support
-> on arm64.)
-> 
-> Thanks,
-> -Takahiro AKASHI
-> 
-> > -- 
-> > []'s
-> > Thiago Jung Bauermann
-> > IBM Linux Technology Center
-> > 
-
-Thanks
-Dave
+Cheers,
+-Ian
