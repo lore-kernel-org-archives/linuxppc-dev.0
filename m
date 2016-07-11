@@ -1,25 +1,28 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pbonzini@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpDcX6sX6zDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 04:47:56 +1000 (AEST)
-Received: by mail-pa0-x234.google.com with SMTP id ks6so12263654pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 11:47:56 -0700 (PDT)
-Date: Mon, 11 Jul 2016 11:47:53 -0700
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ego@linux.vnet.ibm.com, paulus@ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v2] cpufreq: powernv: Replacing pstate_id with frequency
- table index
-Message-ID: <20160711184753.GD4695@ubuntu>
-References: <1467267787-2622-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpFZW4cHvzDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 05:31:15 +1000 (AEST)
+Subject: Re: [PATCH V2 4/5] kvm/stats: Add provisioning for 64-bit vcpu
+ statistics
+To: David Matlack <dmatlack@google.com>
+References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
+ <1468220912-22828-4-git-send-email-sjitindarsingh@gmail.com>
+ <CALzav=e=hScxto3c=4rJ88Phg989UZhk+O44rV56obFP3v1SFg@mail.gmail.com>
+ <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
+ <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
+Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ kvm list <kvm@vger.kernel.org>, agraf@suse.com,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
+Date: Mon, 11 Jul 2016 21:31:07 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467267787-2622-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+In-Reply-To: <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30-06-16, 11:53, Akshay Adiga wrote:
-> Refactoring code to use frequency table index instead of pstate_id.
-> This abstraction will make the code independent of the pstate values.
-> 
-> - No functional changes
-> - The highest frequency is at frequency table index 0 and the frequency
->   decreases as the index increases.
-> - Macros pstates_to_idx() and idx_to_pstate() can be used for conversion
->   between pstate_id and index.
-> - powernv_pstate_info now contains frequency table index to min, max and
->   nominal frequency (instead of pstate_ids)
-> - global_pstate_info new stores index values instead pstate ids.
-> - variables renamed as *_idx which now store index instead of pstate
-> 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
-> Changes from v1:
->   - changed macro names from get_pstate()/ get_index() to 
-> idx_to_pstate()/ pstate_to_idx()
->   - Renamed variables that store index instead of pstate_id to *_idx
->   - Retained previous printk's 
-> 
-> v1 : http://marc.info/?l=linux-pm&m=146677701501225&w=1
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 177 ++++++++++++++++++++++----------------
->  1 file changed, 102 insertions(+), 75 deletions(-)
 
-Haven't done in-depth review, but I trust that Gautham has done it :)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 11/07/2016 19:30, David Matlack wrote:
+> On Mon, Jul 11, 2016 at 10:05 AM, Paolo Bonzini <pbonzini@redhat.com> wrote:
+>>
+>>
+>> On 11/07/2016 18:51, David Matlack wrote:
+>>>>> vcpus have statistics associated with them which can be viewed within the
+>>>>> debugfs. Currently it is assumed within the vcpu_stat_get() and
+>>>>> vcpu_stat_get_per_vm() functions that all of these statistics are
+>>>>> represented as 32-bit numbers. The next patch adds some 64-bit statistics,
+>>>>> so add provisioning for the display of 64-bit vcpu statistics.
+>>> Thanks, we need 64-bit stats in other places as well. Can we use this
+>>> opportunity to wholesale upgrade all KVM stats from u32 to u64? Most
+>>> of this patch is duplicated code with "u32" swapped with "u64".
+>>>
+>>
+>> I'm not sure of what 32-bit architectures would do, but perhaps we could
+>> upgrade them to unsigned long at least.
+> 
+> I thought u64 still existed on 32-bit architectures. unsigned long
+> would be fine but with the caveat that certain stats would overflow on
+> 32-bit architectures.
 
--- 
-viresh
+Yes, but not all 32-bit architectures can do atomic read-modify-write
+(e.g. add) operations on 64-bit values.
+
+Paolo
