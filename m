@@ -1,27 +1,45 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnvj55CD1zDqwr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 16:05:45 +1000 (AEST)
-Received: by mail-pa0-x231.google.com with SMTP id ks6so6410565pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 23:05:45 -0700 (PDT)
-Subject: Re: [PATCH 1/4] kvm/ppc/book3s_hv: Change vcore element
- runnable_threads from linked-list to array
-To: Paolo Bonzini <pbonzini@redhat.com>, Paul Mackerras <paulus@ozlabs.org>
-References: <1465982468-18833-1-git-send-email-sjitindarsingh@gmail.com>
- <20160624095923.GG26584@fergus.ozlabs.ibm.com> <57735226.6010904@gmail.com>
- <f433feff-b8c6-2b99-4357-5146032e7d6d@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, kvm@vger.kernel.org,
- agraf@suse.com, rkrcmar@redhat.com
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Message-ID: <5783372F.2050804@gmail.com>
-Date: Mon, 11 Jul 2016 16:05:35 +1000
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from lgeamrelo12.lge.com (LGEAMRELO12.lge.com [156.147.23.52])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rnw1j3wbgzDqws
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 16:20:09 +1000 (AEST)
+Date: Mon, 11 Jul 2016 15:08:29 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: Christoph Lameter <cl@linux.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Jan Kara <jack@suse.cz>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Linux-MM <linux-mm@kvack.org>,
+ sparclinux <sparclinux@vger.kernel.org>, linux-ia64@vger.kernel.org,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ linux-arch <linux-arch@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>,
+ PaX Team <pageexec@freemail.hu>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>,
+ David Rientjes <rientjes@google.com>,
+ Tony Luck <tony.luck@intel.com>, Andy Lutomirski <luto@kernel.org>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ Brad Spengler <spender@grsecurity.net>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ Case y Schauf ler <casey@schaufler-ca.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [kernel-hardening] Re: [PATCH 9/9] mm: SLUB hardened usercopy
+ support
+Message-ID: <20160711060829.GB14107@js1304-P5Q-DELUXE>
+References: <577f7e55.4668420a.84f17.5cb9SMTPIN_ADDED_MISSING@mx.google.com>
+ <alpine.DEB.2.20.1607080844370.3379@east.gentwo.org>
+ <CAGXu5jKE=h32tHVLsDeaPN1GfC+BB3YbFvC+5TE5TK1oR-xU3A@mail.gmail.com>
+ <alpine.DEB.2.20.1607081119170.6192@east.gentwo.org>
+ <CAGXu5j+UdkQA+k39GNLe5CwBPVD5ZbRGTCQLqS8VF=kWx+PtsQ@mail.gmail.com>
+ <CAGXu5jKxw3RxWNKLX4XVCwJ6x_zA=_RwiU9jLDm2+VRO79G7+w@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <f433feff-b8c6-2b99-4357-5146032e7d6d@redhat.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAGXu5jKxw3RxWNKLX4XVCwJ6x_zA=_RwiU9jLDm2+VRO79G7+w@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +49,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/06/16 22:51, Paolo Bonzini wrote:
->
-> On 29/06/2016 06:44, Suraj Jitindar Singh wrote:
->> Thanks for catching that, yeah I see.
->>
->> I don't think we can trivially move the struct kvmppc_vcore definition into 
->> kvm_book3s.h as other code in kvm_host.h (i.e. struct kvm_vcpu_arch) requires
->> the definition. I was thinking that I could just put runnable_threads inside an #ifdef.
->>
->> #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
->> 	struct kvm_vcpu *runnable_threads[MAX_SMT_THREADS];
->> #endif
-> You can rename MAX_SMT_THREADS to BOOK3S_MAX_SMT_THREADS and move it to
-> kvm_host.h.  It seems like assembly code does not use it, so it's
-> unnecessary to have it in book3s_asm.h.
+On Fri, Jul 08, 2016 at 04:48:38PM -0400, Kees Cook wrote:
+> On Fri, Jul 8, 2016 at 1:41 PM, Kees Cook <keescook@chromium.org> wrote:
+> > On Fri, Jul 8, 2016 at 12:20 PM, Christoph Lameter <cl@linux.com> wrote:
+> >> On Fri, 8 Jul 2016, Kees Cook wrote:
+> >>
+> >>> Is check_valid_pointer() making sure the pointer is within the usable
+> >>> size? It seemed like it was checking that it was within the slub
+> >>> object (checks against s->size, wants it above base after moving
+> >>> pointer to include redzone, etc).
+> >>
+> >> check_valid_pointer verifies that a pointer is pointing to the start of an
+> >> object. It is used to verify the internal points that SLUB used and
+> >> should not be modified to do anything different.
+> >
+> > Yup, no worries -- I won't touch it. :) I just wanted to verify my
+> > understanding.
+> >
+> > And after playing a bit more, I see that the only thing to the left is
+> > padding and redzone. SLUB layout, from what I saw:
+> >
+> > offset: what's there
+> > -------
+> > start: padding, redzone
+> > red_left_pad: object itself
+> > inuse: rest of metadata
+> > size: start of next slub object
+> >
+> > (and object_size == inuse - red_left_pad)
+> >
+> > i.e. a pointer must be between red_left_pad and inuse, which is the
+> > same as pointer - ref_left_pad being less than object_size.
+> >
+> > So, as found already, the position in the usercopy check needs to be
+> > bumped down by red_left_pad, which is what Michael's fix does, so I'll
+> > include it in the next version.
+> 
+> Actually, after some offline chats, I think this is better, since it
+> makes sure the ptr doesn't end up somewhere weird before we start the
+> calculations. This leaves the pointer as-is, but explicitly handles
+> the redzone on the offset instead, with no wrapping, etc:
+> 
+>         /* Find offset within object. */
+>         offset = (ptr - page_address(page)) % s->size;
+> 
+> +       /* Adjust for redzone and reject if within the redzone. */
+> +       if (s->flags & SLAB_RED_ZONE) {
+> +               if (offset < s->red_left_pad)
+> +                       return s->name;
+> +               offset -= s->red_left_pad;
+> +       }
+> +
+>         /* Allow address range falling entirely within object size. */
+>         if (offset <= s->object_size && n <= s->object_size - offset)
+>                 return NULL;
+> 
 
-It looks like MAX_SMT_THREADS is used else where in book3s_asm.h.
-I think the easiest option is to put the v_core struct in book3s.h. 
+As Christoph saids, please use slab_ksize() rather than
+s->object_size.
 
->
-> Paolo
+Otherwise, looks good to me.
+
+Thanks.
