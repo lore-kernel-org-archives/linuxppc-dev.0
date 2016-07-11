@@ -1,21 +1,17 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpM8312XwzDqwH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 09:42:11 +1000 (AEST)
-Date: Tue, 12 Jul 2016 09:41:49 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/configs: Enable VMX crypto
-Message-ID: <20160712094149.21a28e0d@kryten>
-In-Reply-To: <20160712093317.0c3ab74e@canb.auug.org.au>
-References: <1468279521-9720-1-git-send-email-anton@ozlabs.org>
- <20160712093317.0c3ab74e@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpMBL2jGPzDqwM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 09:44:10 +1000 (AEST)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/configs: Enable VMX crypto
+Date: Tue, 12 Jul 2016 09:43:57 +1000
+Message-Id: <1468280637-11013-1-git-send-email-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Steven,
+From: Anton Blanchard <anton@samba.org>
 
-> Not in ppc64_defconfig?
+We see big improvements with the VMX crypto functions (often 10x or more),
+so enable it as a module.
 
-Good point. The recent addition of powernv_defconfig made me forget
-about ppc64_defconfig. We could do with some rationalisation here.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/configs/powernv_defconfig | 2 ++
+ arch/powerpc/configs/ppc64_defconfig   | 2 ++
+ arch/powerpc/configs/pseries_defconfig | 2 ++
+ 3 files changed, 6 insertions(+)
 
-pseries isn't really pseries, perhaps we should call it ibm_defconfig,
-or maybe server_deconfig. ppc64_defconfig continues to be the lower end
-defconfig.
-
-Anton
+diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
+index dce352e..3f6226b 100644
+--- a/arch/powerpc/configs/powernv_defconfig
++++ b/arch/powerpc/configs/powernv_defconfig
+@@ -310,6 +310,8 @@ CONFIG_CRYPTO_TEA=m
+ CONFIG_CRYPTO_TWOFISH=m
+ CONFIG_CRYPTO_LZO=m
+ CONFIG_CRYPTO_DEV_NX=y
++CONFIG_CRYPTO_DEV_VMX=y
++CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 0a8d250..861471d 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -347,6 +347,8 @@ CONFIG_CRYPTO_LZO=m
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
++CONFIG_CRYPTO_DEV_VMX=y
++CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 99dec9d..1d7eea2 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -313,6 +313,8 @@ CONFIG_CRYPTO_LZO=m
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ CONFIG_CRYPTO_DEV_NX=y
+ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
++CONFIG_CRYPTO_DEV_VMX=y
++CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM_BOOK3S_64=m
+ CONFIG_KVM_BOOK3S_64_HV=m
+-- 
+2.7.4
