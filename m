@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rp1Kz38sCzDqyQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 20:19:35 +1000 (AEST)
-In-Reply-To: <146602104462.23192.4267928292361711364.stgit@bahia.lan>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rp1L032WNzDqyC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 20:19:36 +1000 (AEST)
+In-Reply-To: <1467607904.13965.1.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, qemu-ppc@nongnu.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [v2] powerpc/pseries: start rtasd before PCI probing
-Message-Id: <3rp1Ky5q41z9t10@ozlabs.org>
-Date: Mon, 11 Jul 2016 20:19:34 +1000 (AEST)
+Cc: mikey@neuling.org
+Subject: Re: powerpc/opal: Wake up kopald polling thread before waiting for
+ events
+Message-Id: <3rp1Kz6jyyz9t1G@ozlabs.org>
+Date: Mon, 11 Jul 2016 20:19:35 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,34 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-15-06 at 20:26:41 UTC, Greg Kurz wrote:
-> A strange behaviour is observed when comparing PCI hotplug in QEMU, between
-> x86 and pseries. If you consider the following steps:
-> - start a VM
-> - add a PCI device via the QEMU monitor before the rtasd has started (for
->   example starting the VM in paused state, or hotplug during FW or boot
->   loader)
-> - resume the VM execution
+On Mon, 2016-04-07 at 04:51:44 UTC, Benjamin Herrenschmidt wrote:
+> On some environments (prototype machines, some simulators, etc...)
+> there is no functional interrupt source to signal completion, so
+> we rely on the fairly slow OPAL heartbeat.
 > 
-> The x86 kernel detects the PCI device, but the pseries one does not.
+> In a number of cases, the calls complete very quickly or even
+> immediately. We've observed that it helps a lot to wakeup the OPAL
+> heartbeat thread before waiting for event in those cases, it will
+> call OPAL immediately to collect completions for anything that
+> finished fast enough.
 > 
-> This happens because the rtasd kernel worker is currently started under
-> device_initcall, while PCI probing happens earlier under subsys_initcall.
-> 
-> As a consequence, if we have a pending RTAS event at boot time, a message
-> is printed and the event is dropped.
-> 
-> This patch moves all the initialization of rtasd to arch_initcall, which is
-> run before subsys_call: this way, logging_enabled is true when the RTAS
-> event pops up and it is not lost anymore.
-> 
-> The proc fs bits stay at device_initcall because they cannot be run before
-> fs_initcall.
-> 
-> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Acked-By: Michael Neuling <mikey@neuling.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8c6a0a1f4041f19559538649e0
+https://git.kernel.org/powerpc/c/a203658b5ed37c11e5016d3fbb
 
 cheers
