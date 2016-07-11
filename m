@@ -1,22 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnwDJ6KGBzDr0L
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 16:29:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Alistair Popple <alistair@popple.id.au>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- "# 4 . 1 . x-" <stable@vger.kernel.org>
-Subject: Re: [PATCH V2 1/2] tty/hvc: Use IRQF_SHARED for OPAL hvc consoles
-In-Reply-To: <20160711033858.16172-1-sam@mendozajonas.com>
-References: <20160711033858.16172-1-sam@mendozajonas.com>
-Date: Mon, 11 Jul 2016 16:29:20 +1000
-Message-ID: <87y458it6n.fsf@@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnx6K18CQzDqwx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 17:09:13 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id i123so12917425pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 00:09:13 -0700 (PDT)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org, kvm@vger.kernel.org, pbonzini@redhat.com,
+ agraf@suse.com, rkrcmar@redhat.com, sjitindarsingh@gmail.com
+Subject: [PATCH V2 1/5] kvm/ppc/book3s: Move struct kvmppc_vcore from
+ kvm_host.h to kvm_book3s.h
+Date: Mon, 11 Jul 2016 17:08:28 +1000
+Message-Id: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +25,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Samuel Mendoza-Jonas <sam@mendozajonas.com> writes:
+The next commit will introduce a member to the kvmppc_vcore struct which
+references MAX_SMT_THREADS which is defined in kvm_book3s_asm.h, however
+this file isn't included in kvm_host.h directly. Thus compiling for
+certain platforms such as pmac32_defconfig and ppc64e_defconfig with KVM
+fails due to MAX_SMT_THREADS not being defined.
 
-> Commit 2def86a7200c
-> ("hvc: Convert to using interrupts instead of opal events")
-> enabled the use of interrupts in the hvc_driver for OPAL platforms.
-> However on machines with more than one hvc console, any console after
-> the first will fail to register an interrupt handler in
-> notifier_add_irq() since all consoles share the same IRQ number but do
-> not set the IRQF_SHARED flag:
->
-> [   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
-> 00000000 (hvc_console)
-> [   51.180010] hvc_open: request_irq failed with rc -16.
->
-> This error propagates up to hvc_open() and the console is closed, but
-> OPAL will still generate interrupts that are not handled, leading to
-> rcu_sched stall warnings.
->
-> Set IRQF_SHARED when calling request_irq, allowing additional consoles
-> to start properly. This is only set for consoles handled by
-> hvc_opal_probe(), leaving other types unaffected.
->
-> Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-> Cc: <stable@vger.kernel.org> # 4.1.x-
-> ---
->  drivers/tty/hvc/hvc_console.h | 1 +
->  drivers/tty/hvc/hvc_irq.c     | 7 +++++--
->  drivers/tty/hvc/hvc_opal.c    | 3 +++
->  3 files changed, 9 insertions(+), 2 deletions(-)
+Move the struct kvmppc_vcore definition to kvm_book3s.h which explicitly
+includes kvm_book3s_asm.h.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+Change Log:
 
-Greg are you happy to take these two?
+V1 -> V2:
+	- Added patch to series
 
-cheers
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ arch/powerpc/include/asm/kvm_book3s.h | 35 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_host.h   | 35 -----------------------------------
+ 2 files changed, 35 insertions(+), 35 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 8f39796..a50c5fe 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -69,6 +69,41 @@ struct hpte_cache {
+ 	int pagesize;
+ };
+ 
++/*
++ * Struct for a virtual core.
++ * Note: entry_exit_map combines a bitmap of threads that have entered
++ * in the bottom 8 bits and a bitmap of threads that have exited in the
++ * next 8 bits.  This is so that we can atomically set the entry bit
++ * iff the exit map is 0 without taking a lock.
++ */
++struct kvmppc_vcore {
++	int n_runnable;
++	int num_threads;
++	int entry_exit_map;
++	int napping_threads;
++	int first_vcpuid;
++	u16 pcpu;
++	u16 last_cpu;
++	u8 vcore_state;
++	u8 in_guest;
++	struct kvmppc_vcore *master_vcore;
++	struct list_head runnable_threads;
++	struct list_head preempt_list;
++	spinlock_t lock;
++	struct swait_queue_head wq;
++	spinlock_t stoltb_lock;	/* protects stolen_tb and preempt_tb */
++	u64 stolen_tb;
++	u64 preempt_tb;
++	struct kvm_vcpu *runner;
++	struct kvm *kvm;
++	u64 tb_offset;		/* guest timebase - host timebase */
++	ulong lpcr;
++	u32 arch_compat;
++	ulong pcr;
++	ulong dpdes;		/* doorbell state (POWER8) */
++	ulong conferring_threads;
++};
++
+ struct kvmppc_vcpu_book3s {
+ 	struct kvmppc_sid_map sid_map[SID_MAP_NUM];
+ 	struct {
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index ec35af3..19c6731 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -275,41 +275,6 @@ struct kvm_arch {
+ #endif
+ };
+ 
+-/*
+- * Struct for a virtual core.
+- * Note: entry_exit_map combines a bitmap of threads that have entered
+- * in the bottom 8 bits and a bitmap of threads that have exited in the
+- * next 8 bits.  This is so that we can atomically set the entry bit
+- * iff the exit map is 0 without taking a lock.
+- */
+-struct kvmppc_vcore {
+-	int n_runnable;
+-	int num_threads;
+-	int entry_exit_map;
+-	int napping_threads;
+-	int first_vcpuid;
+-	u16 pcpu;
+-	u16 last_cpu;
+-	u8 vcore_state;
+-	u8 in_guest;
+-	struct kvmppc_vcore *master_vcore;
+-	struct list_head runnable_threads;
+-	struct list_head preempt_list;
+-	spinlock_t lock;
+-	struct swait_queue_head wq;
+-	spinlock_t stoltb_lock;	/* protects stolen_tb and preempt_tb */
+-	u64 stolen_tb;
+-	u64 preempt_tb;
+-	struct kvm_vcpu *runner;
+-	struct kvm *kvm;
+-	u64 tb_offset;		/* guest timebase - host timebase */
+-	ulong lpcr;
+-	u32 arch_compat;
+-	ulong pcr;
+-	ulong dpdes;		/* doorbell state (POWER8) */
+-	ulong conferring_threads;
+-};
+-
+ #define VCORE_ENTRY_MAP(vc)	((vc)->entry_exit_map & 0xff)
+ #define VCORE_EXIT_MAP(vc)	((vc)->entry_exit_map >> 8)
+ #define VCORE_IS_EXITING(vc)	(VCORE_EXIT_MAP(vc) != 0)
+-- 
+2.5.5
