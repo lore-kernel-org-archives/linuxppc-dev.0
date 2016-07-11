@@ -1,22 +1,24 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <sam@mendozajonas.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnr4M3QLPzDqyy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 13:22:11 +1000 (AEST)
-Date: Mon, 11 Jul 2016 11:22:03 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>
-Subject: Re: [PATCH v4 3/9] kexec_file: Factor out kexec_locate_mem_hole from
- kexec_add_buffer.
-Message-ID: <20160711032203.GD2850@dhcp-128-65.nay.redhat.com>
-References: <1467908615-18952-1-git-send-email-bauerman@linux.vnet.ibm.com>
- <1467908615-18952-4-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1467908615-18952-4-git-send-email-bauerman@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnrTC3ChHzDqwh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 13:40:15 +1000 (AEST)
+Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rnrTB3hcCz9sXy
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2016 13:40:14 +1000 (AEST)
+From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+To: linuxppc-dev@ozlabs.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alistair Popple <alistair@popple.id.au>,
+ Samuel Mendoza-Jonas <sam@mendozajonas.com>,
+ "# 4 . 1 . x-" <stable@vger.kernel.org>
+Subject: [PATCH V2 1/2] tty/hvc: Use IRQF_SHARED for OPAL hvc consoles
+Date: Mon, 11 Jul 2016 13:38:57 +1000
+Message-Id: <20160711033858.16172-1-sam@mendozajonas.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,78 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/16 at 01:23pm, Thiago Jung Bauermann wrote:
-> kexec_locate_mem_hole will be used by the PowerPC kexec_file_load
-> implementation to find free memory for the purgatory stack.
-> 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-> Cc: Eric Biederman <ebiederm@xmission.com>
-> Cc: Dave Young <dyoung@redhat.com>
-> ---
->  include/linux/kexec.h |  1 +
->  kernel/kexec_file.c   | 25 ++++++++++++++++++++-----
->  2 files changed, 21 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-> index ff5fa7707bd7..803f563df81d 100644
-> --- a/include/linux/kexec.h
-> +++ b/include/linux/kexec.h
-> @@ -174,6 +174,7 @@ struct kexec_buf {
->  int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
->  			       int (*func)(u64, u64, void *));
->  extern int kexec_add_buffer(struct kexec_buf *kbuf);
-> +int kexec_locate_mem_hole(struct kexec_buf *kbuf);
->  #endif /* CONFIG_KEXEC_FILE */
->  
->  struct kimage {
-> diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-> index 82ccfc4ee97e..3125d1689712 100644
-> --- a/kernel/kexec_file.c
-> +++ b/kernel/kexec_file.c
-> @@ -450,6 +450,23 @@ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
->  }
->  
->  /**
-> + * kexec_locate_mem_hole - find free memory for the purgatory or the next kernel
-> + * @kbuf:	Parameters for the memory search.
-> + *
-> + * On success, kbuf->mem will have the start address of the memory region found.
-> + *
-> + * Return: 0 on success, negative errno on error.
-> + */
-> +int kexec_locate_mem_hole(struct kexec_buf *kbuf)
-> +{
-> +	int ret;
-> +
-> +	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
-> +
-> +	return ret == 1 ? 0 : -EADDRNOTAVAIL;
-> +}
-> +
-> +/**
->   * kexec_add_buffer - place a buffer in a kexec segment
->   * @kbuf:	Buffer contents and memory parameters.
->   *
-> @@ -489,11 +506,9 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
->  	kbuf->buf_align = max(kbuf->buf_align, PAGE_SIZE);
->  
->  	/* Walk the RAM ranges and allocate a suitable range for the buffer */
-> -	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
-> -	if (ret != 1) {
-> -		/* A suitable memory range could not be found for buffer */
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	ret = kexec_locate_mem_hole(kbuf);
-> +	if (ret)
-> +		return ret;
->  
->  	/* Found a suitable memory range */
->  	ksegment = &kbuf->image->segment[kbuf->image->nr_segments];
-> -- 
-> 1.9.1
-> 
+Commit 2def86a7200c
+("hvc: Convert to using interrupts instead of opal events")
+enabled the use of interrupts in the hvc_driver for OPAL platforms.
+However on machines with more than one hvc console, any console after
+the first will fail to register an interrupt handler in
+notifier_add_irq() since all consoles share the same IRQ number but do
+not set the IRQF_SHARED flag:
 
-Acked-by: Dave Young <dyoung@redhat.com>
+[   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
+00000000 (hvc_console)
+[   51.180010] hvc_open: request_irq failed with rc -16.
 
-Thanks
-Dave
+This error propagates up to hvc_open() and the console is closed, but
+OPAL will still generate interrupts that are not handled, leading to
+rcu_sched stall warnings.
+
+Set IRQF_SHARED when calling request_irq, allowing additional consoles
+to start properly. This is only set for consoles handled by
+hvc_opal_probe(), leaving other types unaffected.
+
+Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+Cc: <stable@vger.kernel.org> # 4.1.x-
+---
+ drivers/tty/hvc/hvc_console.h | 1 +
+ drivers/tty/hvc/hvc_irq.c     | 7 +++++--
+ drivers/tty/hvc/hvc_opal.c    | 3 +++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index 9131019..798c48d 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -60,6 +60,7 @@ struct hvc_struct {
+ 	struct winsize ws;
+ 	struct work_struct tty_resize;
+ 	struct list_head next;
++	unsigned long flags;
+ };
+ 
+ /* implemented by a low level driver */
+diff --git a/drivers/tty/hvc/hvc_irq.c b/drivers/tty/hvc/hvc_irq.c
+index c9adb05..57d9df7 100644
+--- a/drivers/tty/hvc/hvc_irq.c
++++ b/drivers/tty/hvc/hvc_irq.c
+@@ -14,6 +14,9 @@ static irqreturn_t hvc_handle_interrupt(int irq, void *dev_instance)
+ 	/* if hvc_poll request a repoll, then kick the hvcd thread */
+ 	if (hvc_poll(dev_instance))
+ 		hvc_kick();
++	/* We're safe to always return IRQ_HANDLED as the hvcd thread will
++	 * iterate through each hvc_struct
++	 */
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -28,8 +31,8 @@ int notifier_add_irq(struct hvc_struct *hp, int irq)
+ 		hp->irq_requested = 0;
+ 		return 0;
+ 	}
+-	rc = request_irq(irq, hvc_handle_interrupt, 0,
+-			   "hvc_console", hp);
++	rc = request_irq(irq, hvc_handle_interrupt, hp->flags,
++			"hvc_console", hp);
+ 	if (!rc)
+ 		hp->irq_requested = 1;
+ 	return rc;
+diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
+index 47b54c6..b7cd0ae 100644
+--- a/drivers/tty/hvc/hvc_opal.c
++++ b/drivers/tty/hvc/hvc_opal.c
+@@ -224,6 +224,9 @@ static int hvc_opal_probe(struct platform_device *dev)
+ 	hp = hvc_alloc(termno, irq, ops, MAX_VIO_PUT_CHARS);
+ 	if (IS_ERR(hp))
+ 		return PTR_ERR(hp);
++
++	/* hvc consoles on powernv may need to share a single irq */
++	hp->flags = IRQF_SHARED;
+ 	dev_set_drvdata(&dev->dev, hp);
+ 
+ 	return 0;
+-- 
+2.9.0
