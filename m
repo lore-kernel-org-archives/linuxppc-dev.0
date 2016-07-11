@@ -1,26 +1,20 @@
-Return-Path: <sam@mendozajonas.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rnrTD02rmzDqwj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 13:40:16 +1000 (AEST)
-Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rnrTC4mHyz9t0m
- for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2016 13:40:15 +1000 (AEST)
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Alistair Popple <alistair@popple.id.au>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- "# 4 . 1 . x-" <stable@vger.kernel.org>
-Subject: [PATCH V2 2/2] tty/hvc: Use opal irqchip interface if available
-Date: Mon, 11 Jul 2016 13:38:58 +1000
-Message-Id: <20160711033858.16172-2-sam@mendozajonas.com>
-In-Reply-To: <20160711033858.16172-1-sam@mendozajonas.com>
-References: <20160711033858.16172-1-sam@mendozajonas.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rnsJj6hDPzDqwn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 14:17:57 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id hh10so2540365pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jul 2016 21:17:57 -0700 (PDT)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au,
+	sjitindarsingh@gmail.com
+Subject: [PATCH] powerpc/crash: Rearrange loop condition to avoid out of
+ bounds array access
+Date: Mon, 11 Jul 2016 14:17:31 +1000
+Message-Id: <1468210651-4199-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the hvc driver to use the OPAL irqchip if made available by the
-running firmware. If it is not present, the driver falls back to the
-existing OPAL event number.
+The array crash_shutdown_handles[] has size CRASH_HANDLER_MAX, thus when
+we loop over the elements of the list we check crash_shutdown_handles[i]
+&& i < CRASH_HANDLER_MAX. However this means that when we increment i to
+CRASH_HANDLER_MAX we will perform an out of bound array access checking
+the first condition before exiting on the second condition.
 
-Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Cc: <stable@vger.kernel.org> # 4.1.x-
+To avoid the out of bounds access, simply reorder the loop conditions.
+
+Fixes Coverity bug #128232
+
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 ---
-v2: Always try irq_of_parse_and_map before falling back
+ arch/powerpc/kernel/crash.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/tty/hvc/hvc_opal.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index b7cd0ae..5107993 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -214,7 +214,13 @@ static int hvc_opal_probe(struct platform_device *dev)
- 		dev->dev.of_node->full_name,
- 		boot ? " (boot console)" : "");
- 
--	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-+	irq = irq_of_parse_and_map(dev->dev.of_node, 0);
-+	if (!irq) {
-+		pr_info("hvc%d: No interrupts property, using OPAL event\n",
-+				termno);
-+		irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-+	}
-+
- 	if (!irq) {
- 		pr_err("hvc_opal: Unable to map interrupt for device %s\n",
- 			dev->dev.of_node->full_name);
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 888bdf1..47b63de 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -351,7 +351,7 @@ void default_machine_crash_shutdown(struct pt_regs *regs)
+ 	old_handler = __debugger_fault_handler;
+ 	__debugger_fault_handler = handle_fault;
+ 	crash_shutdown_cpu = smp_processor_id();
+-	for (i = 0; crash_shutdown_handles[i] && i < CRASH_HANDLER_MAX; i++) {
++	for (i = 0; i < CRASH_HANDLER_MAX && crash_shutdown_handles[i]; i++) {
+ 		if (setjmp(crash_shutdown_buf) == 0) {
+ 			/*
+ 			 * Insert syncs and delay to ensure
 -- 
-2.9.0
+2.5.5
