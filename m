@@ -1,27 +1,35 @@
-Return-Path: <waiman.long@hpe.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0133.outbound.protection.outlook.com [104.47.42.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rp8844bdfzDqwh
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 01:26:28 +1000 (AEST)
-Message-ID: <5783B6D7.7020903@hpe.com>
-Date: Mon, 11 Jul 2016 11:10:15 -0400
-From: Waiman Long <waiman.long@hpe.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rp8fG4m2tzDqpY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 01:49:09 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6BFmkvS103766
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 11:49:07 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 242wbn2s10-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 11:49:06 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 11 Jul 2016 09:49:05 -0600
+Subject: Re: [PATCH 1/3] powerpc/pseries: Add pseries hotplug workqueue
+To: John Allen <jallen@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <4cf3edf2-fc24-5989-ae5d-b451a2323cf2@linux.vnet.ibm.com>
+ <f03894c6-edf7-9fcc-c817-6e0ee6234dd6@linux.vnet.ibm.com>
+Cc: Michael Roth <mdroth@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 11 Jul 2016 10:48:57 -0500
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <virtualization@lists.linux-foundation.org>, <linux-s390@vger.kernel.org>,
- <mingo@redhat.com>, <mpe@ellerman.id.au>, <paulus@samba.org>,
- <benh@kernel.crashing.org>, <paulmck@linux.vnet.ibm.com>,
- <will.deacon@arm.com>, <boqun.feng@gmail.com>, <dave@stgolabs.net>,
- <schwidefsky@de.ibm.com>, <pbonzini@redhat.com>
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
-In-Reply-To: <20160706065255.GH30909@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+In-Reply-To: <f03894c6-edf7-9fcc-c817-6e0ee6234dd6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5783BFE9.9090907@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +39,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/06/2016 02:52 AM, Peter Zijlstra wrote:
-> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
->> change fomr v1:
->> 	a simplier definition of default vcpu_is_preempted
->> 	skip mahcine type check on ppc, and add config. remove dedicated macro.
->> 	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner.
->> 	add more comments
->> 	thanks boqun and Peter's suggestion.
->>
->> This patch set aims to fix lock holder preemption issues.
->>
->> test-case:
->> perf record -a perf bench sched messaging -g 400 -p&&  perf report
->>
->> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
->> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->>   5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->>   3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->>   3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->>   3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->>   2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
->>
->> We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
->> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
->> These spin_on_onwer variant also cause rcu stall before we apply this patch set
->>
-> Paolo, could you help out with an (x86) KVM interface for this?
->
-> Waiman, could you see if you can utilize this to get rid of the
-> SPIN_THRESHOLD in qspinlock_paravirt?
+On 07/07/2016 10:00 AM, John Allen wrote:
+> In support of PAPR changes to add a new hotplug interrupt, introduce a
+> hotplug workqueue to avoid processing hotplug events in interrupt context.
+> We will also take advantage of the queue on PowerVM to ensure hotplug
+> events initiated from different sources (HMC and PRRN events) are handled
+> and serialized properly.
+> 
+> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/dlpar.c |   52 ++++++++++++++++++++++++++++++++
+>  1 file changed, 52 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 2b93ae8..66a77d7 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -27,6 +27,15 @@
+>  #include <asm/uaccess.h>
+>  #include <asm/rtas.h>
+> 
+> +struct workqueue_struct *pseries_hp_wq;
+> +
+> +struct pseries_hp_work {
+> +	struct work_struct work;
+> +	struct pseries_hp_errorlog *errlog;
+> +	struct completion *hp_completion;
+> +	int *rc;
+> +};
+> +
+>  struct cc_workarea {
+>  	__be32	drc_index;
+>  	__be32	zero;
+> @@ -368,10 +377,51 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+>  	return rc;
+>  }
+> 
+> +void pseries_hp_work_fn(struct work_struct *work)
+> +{
+> +	struct pseries_hp_work *hp_work =
+> +			container_of(work, struct pseries_hp_work, work);
+> +
+> +	if (hp_work->rc)
+> +		*(hp_work->rc) = handle_dlpar_errorlog(hp_work->errlog);
+> +	else
+> +		handle_dlpar_errorlog(hp_work->errlog);
+> +
+> +	if (hp_work->hp_completion)
+> +		complete(hp_work->hp_completion);
+> +
+> +	kfree(hp_work->errlog);
+> +	kfree((void *)work);
+> +}
+> +
+> +void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+> +			 struct completion *hotplug_done, int *rc)
+> +{
+> +	struct pseries_hp_work *work;
+> +	struct pseries_hp_errorlog *hp_errlog_copy;
+> +
+> +	hp_errlog_copy = kmalloc(sizeof(struct pseries_hp_errorlog),
+> +				 GFP_KERNEL);
+> +	memcpy(hp_errlog_copy, hp_errlog, sizeof(struct pseries_hp_errorlog));
+> +
+> +	work = kmalloc(sizeof(struct pseries_hp_work), GFP_KERNEL);
+> +	if (work) {
+> +		INIT_WORK((struct work_struct *)work, pseries_hp_work_fn);
+> +		work->errlog = hp_errlog_copy;
+> +		work->hp_completion = hotplug_done;
+> +		work->rc = rc;
+> +		queue_work(pseries_hp_wq, (struct work_struct *)work);
+> +	} else {
+> +		*rc = -ENOMEM;
+> +		complete(hotplug_done);
+> +	}
+> +}
+> +
+>  static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+>  			   const char *buf, size_t count)
+>  {
+>  	struct pseries_hp_errorlog *hp_elog;
+> +	struct completion hotplug_done;
 
-That API is certainly useful to make the paravirt spinlock perform 
-better. However, I am not sure if we can completely get rid of the 
-SPIN_THRESHOLD at this point. It is not just the kvm, the xen code need 
-to be modified as well.
+It may not matter but this looks it may fit better in patch 3/3.
 
-Cheers,
-Longman
+Otherwise looks good.
+
+Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+
+>  	const char *arg;
+>  	int rc;
+> 
+> @@ -450,6 +500,8 @@ static CLASS_ATTR(dlpar, S_IWUSR, NULL, dlpar_store);
+> 
+>  static int __init pseries_dlpar_init(void)
+>  {
+> +	pseries_hp_wq = alloc_workqueue("pseries hotplug workqueue",
+> +					WQ_UNBOUND, 1);
+>  	return sysfs_create_file(kernel_kobj, &class_attr_dlpar.attr);
+>  }
+>  machine_device_initcall(pseries, pseries_dlpar_init);
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
