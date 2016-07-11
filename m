@@ -1,32 +1,33 @@
-Return-Path: <dmatlack@google.com>
-Received: from mail-oi0-x236.google.com (mail-oi0-x236.google.com
- [IPv6:2607:f8b0:4003:c06::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpFtt1Nm3zDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 05:45:25 +1000 (AEST)
-Received: by mail-oi0-x236.google.com with SMTP id u201so162924635oie.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 12:45:25 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
-References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
- <1468220912-22828-4-git-send-email-sjitindarsingh@gmail.com>
- <CALzav=e=hScxto3c=4rJ88Phg989UZhk+O44rV56obFP3v1SFg@mail.gmail.com>
- <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
- <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
- <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
-From: David Matlack <dmatlack@google.com>
-Date: Mon, 11 Jul 2016 12:45:04 -0700
-Message-ID: <CALzav=dKq4GLcQQ8wQm9iNSbQPYK64224aAtz0ve06KPvSfUww@mail.gmail.com>
-Subject: Re: [PATCH V2 4/5] kvm/stats: Add provisioning for 64-bit vcpu
- statistics
-To: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, kvm list <kvm@vger.kernel.org>, agraf@suse.com,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpKFV1hZHzDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 08:16:45 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6BM9N93124479
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 18:16:43 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 242wbne73x-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 18:16:43 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 11 Jul 2016 16:16:42 -0600
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: linux-pci@vger.kernel.org
+Cc: bhelgaas@google.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ nfont@linux.vnet.ibm.com, mdroth@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: [Patch v2] rpaphp: fix slot registration for multiple slots under a
+ PHB
+Date: Mon, 11 Jul 2016 17:16:27 -0500
+Message-Id: <1468275387-22392-1-git-send-email-tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,35 +37,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 11, 2016 at 12:31 PM, Paolo Bonzini <pbonzini@redhat.com> wrote:
->
->
-> On 11/07/2016 19:30, David Matlack wrote:
->> On Mon, Jul 11, 2016 at 10:05 AM, Paolo Bonzini <pbonzini@redhat.com> wrote:
->>>
->>>
->>> On 11/07/2016 18:51, David Matlack wrote:
->>>>>> vcpus have statistics associated with them which can be viewed within the
->>>>>> debugfs. Currently it is assumed within the vcpu_stat_get() and
->>>>>> vcpu_stat_get_per_vm() functions that all of these statistics are
->>>>>> represented as 32-bit numbers. The next patch adds some 64-bit statistics,
->>>>>> so add provisioning for the display of 64-bit vcpu statistics.
->>>> Thanks, we need 64-bit stats in other places as well. Can we use this
->>>> opportunity to wholesale upgrade all KVM stats from u32 to u64? Most
->>>> of this patch is duplicated code with "u32" swapped with "u64".
->>>>
->>>
->>> I'm not sure of what 32-bit architectures would do, but perhaps we could
->>> upgrade them to unsigned long at least.
->>
->> I thought u64 still existed on 32-bit architectures. unsigned long
->> would be fine but with the caveat that certain stats would overflow on
->> 32-bit architectures.
->
-> Yes, but not all 32-bit architectures can do atomic read-modify-write
-> (e.g. add) operations on 64-bit values.
+PowerVM seems to only ever provide a single hotplug slot per PHB.
+The under lying slot hotplug registration code assumed multiple slots,
+but the actual implementation is broken for multiple slots. This went
+unnoticed for years due to the nature of PowerVM as mentioned
+previously. Under qemu/kvm the hotplug slot model aligns more with
+x86 where multiple slots are presented under a single PHB. As seen
+in the following each additional slot after the first fails to
+register due to each slot always being compared against the first
+child node of the PHB in the device tree.
 
-I think that's ok, none of the stats currently use atomic operations.
+[    6.492291] rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+[    6.492569] rpaphp: Slot [Slot 0] registered
+[    6.492577] rpaphp: pci_hp_register failed with error -16
+[    6.493082] rpaphp: pci_hp_register failed with error -16
+[    6.493138] rpaphp: pci_hp_register failed with error -16
+[    6.493161] rpaphp: pci_hp_register failed with error -16
 
->
-> Paolo
+The registration logic is fixed so that each slot is compared
+against the existing child devices of the PHB in the device tree to
+determine present slots vs empty slots.
+
+[   38.481750] rpaphp: RPA HOT Plug PCI Controller Driver version: 0.1
+[   38.482004] rpaphp: Slot [C0] registered
+[   38.482127] rpaphp: Slot [C1] registered
+[   38.482241] rpaphp: Slot [C2] registered
+[   38.482356] rpaphp: Slot [C3] registered
+[   38.482495] rpaphp: Slot [C4] registered
+
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+
+Changes in v2: corrected ibm,my-drc-index property name
+
+---
+ drivers/pci/hotplug/rpaphp_slot.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/pci/hotplug/rpaphp_slot.c b/drivers/pci/hotplug/rpaphp_slot.c
+index 6937c72..388c4d8 100644
+--- a/drivers/pci/hotplug/rpaphp_slot.c
++++ b/drivers/pci/hotplug/rpaphp_slot.c
+@@ -117,8 +117,10 @@ EXPORT_SYMBOL_GPL(rpaphp_deregister_slot);
+ int rpaphp_register_slot(struct slot *slot)
+ {
+ 	struct hotplug_slot *php_slot = slot->hotplug_slot;
++	struct device_node *child;
++	u32 my_index;
+ 	int retval;
+-	int slotno;
++	int slotno = -1;
+ 
+ 	dbg("%s registering slot:path[%s] index[%x], name[%s] pdomain[%x] type[%d]\n",
+ 		__func__, slot->dn->full_name, slot->index, slot->name,
+@@ -130,10 +132,15 @@ int rpaphp_register_slot(struct slot *slot)
+ 		return -EAGAIN;
+ 	}
+ 
+-	if (slot->dn->child)
+-		slotno = PCI_SLOT(PCI_DN(slot->dn->child)->devfn);
+-	else
+-		slotno = -1;
++	for_each_child_of_node(slot->dn, child) {
++		retval = of_property_read_u32(child, "ibm,my-drc-index", &my_index);
++		if (my_index == slot->index) {
++			slotno = PCI_SLOT(PCI_DN(child)->devfn);
++			of_node_put(child);
++			break;
++		}
++	}
++
+ 	retval = pci_hp_register(php_slot, slot->bus, slotno, slot->name);
+ 	if (retval) {
+ 		err("pci_hp_register failed with error %d\n", retval);
+-- 
+2.7.4
