@@ -1,30 +1,37 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpXdK3sHpzDqFq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:49:41 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id t190so522456pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 23:49:41 -0700 (PDT)
-Subject: Re: [PATCH V2 3/5] kvm/ppc/book3s_hv: Implement halt polling in the
- kvm_hv kernel module
-To: David Matlack <dmatlack@google.com>, Paolo Bonzini <pbonzini@redhat.com>
-References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
- <1468220912-22828-3-git-send-email-sjitindarsingh@gmail.com>
- <CALzav=cUiiQ=OW=qKZ=J1jOC2KUoA8HeD2P_y_4odfkjCMJ-fw@mail.gmail.com>
- <78e920ba-b596-5475-ff30-0dd2c23d97b6@redhat.com>
- <CALzav=dDJCKo1SchBJJmxU2WLdxvAkybXmR34L7C_cyDe750VA@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
- kvm list <kvm@vger.kernel.org>, agraf@suse.com,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Message-ID: <57848F26.3060505@gmail.com>
-Date: Tue, 12 Jul 2016 16:33:10 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpXj641RXzDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:52:58 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rpXj56x6cz9s9Z
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2016 16:52:57 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6C6n8JI079642
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2016 02:52:55 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 243etye8br-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2016 02:52:55 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 12 Jul 2016 02:52:54 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 01/14] powerpc/powernv: Add XICS emulation APIs
+In-Reply-To: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
+References: <1467959838-6900-1-git-send-email-benh@kernel.crashing.org>
+Date: Tue, 12 Jul 2016 16:52:46 +1000
 MIME-Version: 1.0
-In-Reply-To: <CALzav=dDJCKo1SchBJJmxU2WLdxvAkybXmR34L7C_cyDe750VA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
+Message-Id: <87oa63qrep.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +41,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 12/07/16 03:26, David Matlack wrote:
-> On Mon, Jul 11, 2016 at 10:07 AM, Paolo Bonzini <pbonzini@redhat.com> wrote:
->>
->> On 11/07/2016 18:57, David Matlack wrote:
->>> On Mon, Jul 11, 2016 at 12:08 AM, Suraj Jitindar Singh
->>> <sjitindarsingh@gmail.com> wrote:
->>>> This patch introduces new halt polling functionality into the kvm_hv kernel
->>>> module. When a vcore is idle it will poll for some period of time before
->>>> scheduling itself out.
->>> Is there any way to reuse the existing halt-polling code? Having two
->>> copies risks them diverging over time.
->> s/risks/guarantees/ :(
->>
->> Unfortunately, handling of the hardware threads in KVM PPC is a mess,
->> and I don't think it's possible to remove the duplication.
-> Ah, ok. That's a shame.
-
-It's definitely not ideal having this code duplicated, although we have
-the issue that on PPC we only poll once all of the vcpus on a vcore have
-ceded and need to retain a reference to that vcore.
-
-Additionally we only actually do this in HV code, on the KVM PR
-version we call the generic halt-polling code which doesn't know
-about vcores.
-
-I don't see an easy way to use the existing function.
-
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> OPAL provides an emulated XICS interrupt controller to
+> use as a fallback on newer processors that don't have a
+> XICS. It's meant as a way to provide backward compatibility
+> with future processors. Add the corresponding interfaces.
 >
->> Paolo
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+These OPAL calls have the correct OPAL API numbers and they've been
+assigned upstream in skiboot.
+
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+
+-- 
+Stewart Smith
+OPAL Architect, IBM.
