@@ -1,48 +1,29 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <waiman.long@hpe.com>
+Received: from NAM03-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam03on0133.outbound.protection.outlook.com [104.47.42.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpnPW32HQzDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 02:25:19 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6CGJf82074087
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 12:25:17 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24507b1pgn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 12:25:17 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Tue, 12 Jul 2016 13:25:14 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 9DDD11DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 12:25:04 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6CGPC3A14745956
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 13:25:12 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6CGPCma026810
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 13:25:12 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>, vgoyal@redhat.com,
- dyoung@redhat.com, bhe@redhat.com, arnd@arndb.de,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Date: Tue, 12 Jul 2016 13:25:11 -0300
-In-Reply-To: <87furf7ztv.fsf@x220.int.ebiederm.org>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <87furf7ztv.fsf@x220.int.ebiederm.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpqtR3hrczDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 04:17:03 +1000 (AEST)
+Message-ID: <578533FE.9050606@hpe.com>
+Date: Tue, 12 Jul 2016 14:16:30 -0400
+From: Waiman Long <waiman.long@hpe.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <50662781.Utjsnse3nb@hactar>
+To: Juergen Gross <jgross@suse.com>
+CC: Peter Zijlstra <peterz@infradead.org>, <linux-s390@vger.kernel.org>,
+ <dave@stgolabs.net>, <benh@kernel.crashing.org>, Pan Xinhui
+ <xinhui.pan@linux.vnet.ibm.com>, <boqun.feng@gmail.com>,
+ <will.deacon@arm.com>, <linux-kernel@vger.kernel.org>,
+ <virtualization@lists.linux-foundation.org>, <mingo@redhat.com>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>, <schwidefsky@de.ibm.com>,
+ <pbonzini@redhat.com>, <paulmck@linux.vnet.ibm.com>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
+References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ <20160706065255.GH30909@twins.programming.kicks-ass.net>
+ <5783B6D7.7020903@hpe.com> <57846F02.7000306@suse.com>
+In-Reply-To: <57846F02.7000306@suse.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,55 +33,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Eric,
+On 07/12/2016 12:16 AM, Juergen Gross wrote:
+> On 11/07/16 17:10, Waiman Long wrote:
+>> On 07/06/2016 02:52 AM, Peter Zijlstra wrote:
+>>> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
+>>>> change fomr v1:
+>>>>      a simplier definition of default vcpu_is_preempted
+>>>>      skip mahcine type check on ppc, and add config. remove dedicated
+>>>> macro.
+>>>>      add one patch to drop overload of rwsem_spin_on_owner and
+>>>> mutex_spin_on_owner.
+>>>>      add more comments
+>>>>      thanks boqun and Peter's suggestion.
+>>>>
+>>>> This patch set aims to fix lock holder preemption issues.
+>>>>
+>>>> test-case:
+>>>> perf record -a perf bench sched messaging -g 400 -p&&   perf report
+>>>>
+>>>> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
+>>>> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
+>>>>    5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
+>>>>    3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
+>>>>    3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
+>>>>    3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
+>>>>    2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
+>>>>
+>>>> We introduce interface bool vcpu_is_preempted(int cpu) and use it in
+>>>> some spin
+>>>> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
+>>>> These spin_on_onwer variant also cause rcu stall before we apply this
+>>>> patch set
+>>>>
+>>> Paolo, could you help out with an (x86) KVM interface for this?
+>>>
+>>> Waiman, could you see if you can utilize this to get rid of the
+>>> SPIN_THRESHOLD in qspinlock_paravirt?
+>> That API is certainly useful to make the paravirt spinlock perform
+>> better. However, I am not sure if we can completely get rid of the
+>> SPIN_THRESHOLD at this point. It is not just the kvm, the xen code need
+>> to be modified as well.
+> This should be rather easy. The relevant information is included in the
+> runstate data mapped into kernel memory. I can provide a patch for Xen
+> if needed.
+>
+>
+> Juergen
 
-I'm trying to understand your concerns leading to your nack. I hope you 
-don't mind expanding your thoughts on them a bit.
+Thanks for the offering. We will wait until Xinhui's patch comes through 
+before working on the next step.
 
-Am Dienstag, 12 Juli 2016, 08:25:48 schrieb Eric W. Biederman:
-> AKASHI Takahiro <takahiro.akashi@linaro.org> writes:
-> > Device tree blob must be passed to a second kernel on DTB-capable
-> > archs, like powerpc and arm64, but the current kernel interface
-> > lacks this support.
-> > 
-> > This patch extends kexec_file_load system call by adding an extra
-> > argument to this syscall so that an arbitrary number of file descriptors
-> > can be handed out from user space to the kernel.
-> > 
-> > See the background [1].
-> > 
-> > Please note that the new interface looks quite similar to the current
-> > system call, but that it won't always mean that it provides the "binary
-> > compatibility."
-> > 
-> > [1] http://lists.infradead.org/pipermail/kexec/2016-June/016276.html
-> 
-> So this design is wrong.  The kernel already has the device tree blob,
-> you should not be extracting it from the kernel munging it, and then
-> reinserting it in the kernel if you want signatures and everything to
-> pass.
+As for the elimination of SPIN_THRESHOLD, the queue head may not always 
+have the right CPU number of the lock holder. So I don't think we can 
+eliminate that for the queue head spinning. I think we can eliminates 
+the SPIN_THRESHOLD spinning for the other queue node vCPUs.
 
-I don't understand how the kernel signature will be invalidated. 
-
-There are some types of boot images that can embed a device tree blob in 
-them, but the kernel can also be handed a separate device tree blob from 
-firmware, the boot loader, or kexec. This latter case is what we are 
-discussing, so we are not talking about modifying an embedded blob in the 
-kernel image.
-
-> What x86 does is pass it's equivalent of the device tree blob from one
-> kernel to another directly and behind the scenes.  It does not go
-> through userspace for this.
-> 
-> Until a persuasive case can be made for going around the kernel and
-> probably adding a feature (like code execution) that can be used to
-> defeat the signature scheme I am going to nack this.
-
-I also don't understand what you mean by code execution. How does passing a 
-device tree blob via kexec enables code execution? How can the signature 
-scheme be defeated?
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Cheers,
+Longman
