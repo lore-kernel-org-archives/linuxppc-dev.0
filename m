@@ -1,24 +1,23 @@
-Return-Path: <chengang@emindsoft.com.cn>
-Received: from out1134-234.mail.aliyun.com (out1134-234.mail.aliyun.com
- [42.120.134.234])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rpp0y4XC2zDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 02:52:34 +1000 (AEST)
-Message-ID: <57852093.1090909@emindsoft.com.cn>
-Date: Wed, 13 Jul 2016 00:53:39 +0800
-From: Chen Gang <chengang@emindsoft.com.cn>
+Return-Path: <ptesarik@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpvSP5Bd4zDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 06:58:11 +1000 (AEST)
+Date: Tue, 12 Jul 2016 22:58:05 +0200
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, bhe@redhat.com,
+ arnd@arndb.de, linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ linux-arm-kernel@lists.infradead.org, dyoung@redhat.com, vgoyal@redhat.com
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160712225805.0d27fe5d@hananiah.suse.cz>
+In-Reply-To: <50662781.Utjsnse3nb@hactar>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <87furf7ztv.fsf@x220.int.ebiederm.org> <50662781.Utjsnse3nb@hactar>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org
-CC: tglx@linutronix.de, mingo@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Chen Gang <gang.chen.5i5j@gmail.com>
-Subject: Re: [PATCH] include: mman: Use bool instead of int for the return
- value of arch_validate_prot
-References: <1468081751-9468-1-git-send-email-chengang@emindsoft.com.cn>
- <5782DEA5.600@linux.intel.com> <5783ED17.9010805@emindsoft.com.cn>
- <878tx7cwsn.fsf@@concordia.ellerman.id.au>
-In-Reply-To: <878tx7cwsn.fsf@@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/12/16 12:20, Michael Ellerman wrote:
-> Chen Gang <chengang@emindsoft.com.cn> writes:
+On Tue, 12 Jul 2016 13:25:11 -0300
+Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> wrote:
+
+> Hi Eric,
 > 
->> On 7/11/16 07:47, Dave Hansen wrote:
->>> On 07/09/2016 09:29 AM, chengang@emindsoft.com.cn wrote:
->>>> -static inline int arch_validate_prot(unsigned long prot)
->>>> +static inline bool arch_validate_prot(unsigned long prot)
->>>>  {
->>>>  	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
->>>> -		return 0;
->>>> -	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
->>>> -		return 0;
->>>> -	return 1;
->>>> +		return false;
->>>> +	return (prot & PROT_SAO) == 0 || cpu_has_feature(CPU_FTR_SAO);
->>>>  }
->>>>  #define arch_validate_prot(prot) arch_validate_prot(prot)
->>>
->>> Please don't do things like this.  They're not obviously correct and
->>> also have no obvious benefit.  You also don't mention why you bothered
->>> to alter the logical structure of these checks.
->>>
->>
->> For all cases, bool is equal or a little better than int, and they are
->> equal in our case (2 final outputs are same). So for me, it may belong
->> to trivial patch, which can be skipped by the normal patch maintainers.
->>
->> As a 'trivial' patch:
->>
->>  - For a pure Boolean function, bool return value is more readable than
->>    int.
+> I'm trying to understand your concerns leading to your nack. I hope you 
+> don't mind expanding your thoughts on them a bit.
 > 
-> Agreed.
+> Am Dienstag, 12 Juli 2016, 08:25:48 schrieb Eric W. Biederman:
+> > AKASHI Takahiro <takahiro.akashi@linaro.org> writes:
+> > > Device tree blob must be passed to a second kernel on DTB-capable
+> > > archs, like powerpc and arm64, but the current kernel interface
+> > > lacks this support.
+> > > 
+> > > This patch extends kexec_file_load system call by adding an extra
+> > > argument to this syscall so that an arbitrary number of file descriptors
+> > > can be handed out from user space to the kernel.
+> > > 
+> > > See the background [1].
+> > > 
+> > > Please note that the new interface looks quite similar to the current
+> > > system call, but that it won't always mean that it provides the "binary
+> > > compatibility."
+> > > 
+> > > [1] http://lists.infradead.org/pipermail/kexec/2016-June/016276.html
+> > 
+> > So this design is wrong.  The kernel already has the device tree blob,
+> > you should not be extracting it from the kernel munging it, and then
+> > reinserting it in the kernel if you want signatures and everything to
+> > pass.
 > 
-> Please send a patch that does that and only that.
+> I don't understand how the kernel signature will be invalidated. 
 > 
+> There are some types of boot images that can embed a device tree blob in 
+> them, but the kernel can also be handed a separate device tree blob from 
+> firmware, the boot loader, or kexec. This latter case is what we are 
+> discussing, so we are not talking about modifying an embedded blob in the 
+> kernel image.
+> 
+> > What x86 does is pass it's equivalent of the device tree blob from one
+> > kernel to another directly and behind the scenes.  It does not go
+> > through userspace for this.
+> > 
+> > Until a persuasive case can be made for going around the kernel and
+> > probably adding a feature (like code execution) that can be used to
+> > defeat the signature scheme I am going to nack this.
+> 
+> I also don't understand what you mean by code execution. How does passing a 
+> device tree blob via kexec enables code execution? How can the signature 
+> scheme be defeated?
 
-OK, thanks.
+I'm not an expert on DTB, so I can't provide an example of code
+execution, but you have already mentioned the /chosen/linux,stdout-path
+property. If an attacker redirects the bootloader to an insecure
+console, they may get access to the system that would otherwise be
+impossible.
 
-After check the assembly output, for some cases, merging 3 lines to 1
-line may be a little more readable, but compiler will generate a little
-bad output code.
+In general, tampering with the hardware inventory of a machine opens up
+a security hole, and one must be very cautious which modifications are
+allowed. You're giving this power to an (unsigned, hence untrusted)
+userspace application; Eric argues that only the kernel should have
+this power.
 
-I shall send patch v2 for it within this weekend.
-
-Thanks.
--- 
-Chen Gang (陈刚)
-
-Managing Natural Environments is the Duty of Human Beings.
+Just my two cents,
+Petr T
