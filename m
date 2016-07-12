@@ -1,24 +1,26 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rplJ56WSYzDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 00:50:29 +1000 (AEST)
-Date: Tue, 12 Jul 2016 15:50:10 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org, bhe@redhat.com,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, dyoung@redhat.com,
- Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160712145010.GA8447@leverpostej>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
- <293705810.hBL93OOmOz@wuerfel>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.191])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpnKn2BkCzDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 02:22:04 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Paulo Flabiano Smorigo' <pfsmorigo@linux.vnet.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>, Herbert Xu
+ <herbert@gondor.apana.org.au>, Paul Mackerras <paulus@samba.org>, "open
+ list:IBM Power VMX Cryptographic instructions"
+ <linux-crypto@vger.kernel.org>, "open list:LINUX FOR POWERPC 32-BIT AND
+ 64-BIT" <linuxppc-dev@lists.ozlabs.org>, "David S. Miller"
+ <davem@davemloft.net>
+Subject: RE: [PATCH 1/2] crypto: vmx - Adding asm subroutines for XTS
+Date: Tue, 12 Jul 2016 16:19:42 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4F62C4@AcuExch.aculab.com>
+References: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+In-Reply-To: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <293705810.hBL93OOmOz@wuerfel>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +30,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 12, 2016 at 04:24:10PM +0200, Arnd Bergmann wrote:
-> On Tuesday, July 12, 2016 10:18:11 AM CEST Vivek Goyal wrote:
-> > > 
-> > > On Open Firmware, the DT is extracted from running firmware and copied
-> > > into dynamically allocated data structures. After a kexec, the runtime
-> > > interface to the firmware is not available, so the flattened DT format
-> > > was created as a way to pass the same data in a binary blob to the new
-> > > kernel in a format that can be read from the kernel by walking the
-> > > directories in /proc/device-tree/*.
-> > 
-> > So this DT is available inside kernel and running kernel can still
-> > retrieve it and pass it to second kernel?
-> 
-> The kernel only uses the flattened DT blob at boot time and converts
-> it into the runtime data structures (struct device_node). The original
-> dtb is typically overwritten later.
-
-On arm64 we deliberately preserved the DTB, so we can take that and
-build a new DTB from that kernel-side.
-
-> > > - we typically ship devicetree sources for embedded machines with the
-> > >   kernel sources. As more hardware of the system gets enabled, the
-> > >   devicetree gains extra nodes and properties that describe the hardware
-> > >   more completely, so we need to use the latest DT blob to use all
-> > >   the drivers
-> > > 
-> > > - in some cases, kernels will fail to boot at all with an older version
-> > >   of the DT, or fail to use the devices that were working on the
-> > >   earlier kernel. This is usually considered a bug, but it's not rare
-> > > 
-> > > - In some cases, the kernel can update its DT at runtime, and the new
-> > >   settings are expected to be available in the new kernel too, though
-> > >   there are cases where you actually don't want the modified contents.
-> > 
-> > I am assuming that modified DT and unmodifed one both are accessible to
-> > kernel. And if user space can make decisions which modfied fields to use
-> > for new kernels and which ones not, then same can be done in kernel too?
-> 
-> The unmodified DT can typically be found on disk next to the kernel binary.
-> The option you have is to either read it from /proc/devicetree or to
-> read it from from /boot/*.dtb.
-
-/proc/devicetree (aka /sys/firmware/devicetree) is a filesystem derived
-from the raw DTB (which is exposed at /sys/firmware/fdt).
-
-The blob that was handed to the kernel at boot time is exposed at
-/sys/firmware/fdt.
-
-Thanks,
-Mark.
+RnJvbTogUGF1bG8gRmxhYmlhbm8gU21vcmlnbw0KPiBTZW50OiAxMSBKdWx5IDIwMTYgMjA6MDgN
+Cj4gDQo+IFRoaXMgcGF0Y2ggYWRkIFhUUyBzdWJyb3V0aW5lcyB1c2luZyBWTVgtY3J5cHRvIGRy
+aXZlci4NCj4gDQo+IEl0IGdpdmVzIGEgYm9vc3Qgb2YgMjAgdGltZXMgdXNpbmcgWFRTLg0KPiAN
+Cj4gVGhlc2UgY29kZSBoYXMgYmVlbiBhZG9wdGVkIGZyb20gT3BlblNTTCBwcm9qZWN0IGluIGNv
+bGxhYm9yYXRpb24NCj4gd2l0aCB0aGUgb3JpZ2luYWwgYXV0aG9yIChBbmR5IFBvbHlha292IDxh
+cHByb0BvcGVuc3NsLm9yZz4pLg0KDQpZZXAsIHR5cGljYWwgb3BlbnNzbCBjb2RlLiAxMDAwKyBs
+aW5lcyBvZiB1bmNvbW1lbnRlZCBpbXBlbmV0cmFibGUgYXNzZW1ibGVyLg0KVGhlcmUgaXMgMCBj
+aGFuY2Ugb2YgYW55b25lIGV2ZXIgY2hlY2tpbmcgdGhpcyBkb2VzIHdoYXQgaXQgc2hvdWxkLg0K
+DQoJRGF2aWQNCg0K
