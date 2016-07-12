@@ -1,21 +1,21 @@
 Return-Path: <takahiro.akashi@linaro.org>
-Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
- [IPv6:2607:f8b0:400e:c00::22d])
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpPhx4ZM0zDqwH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 11:37:21 +1000 (AEST)
-Received: by mail-pf0-x22d.google.com with SMTP id t190so768689pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 18:37:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpPj632FSzDqxM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 11:37:30 +1000 (AEST)
+Received: by mail-pa0-x233.google.com with SMTP id hu1so755156pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2016 18:37:30 -0700 (PDT)
 From: AKASHI Takahiro <takahiro.akashi@linaro.org>
 To: ebiederm@xmission.com, vgoyal@redhat.com, dyoung@redhat.com,
  bhe@redhat.com, bauerman@linux.vnet.ibm.com, arnd@arndb.de
 Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  AKASHI Takahiro <takahiro.akashi@linaro.org>
-Subject: [RFC 1/3] syscall: add kexec_file_load to generic unistd.h
-Date: Tue, 12 Jul 2016 10:41:59 +0900
-Message-Id: <20160712014201.11456-2-takahiro.akashi@linaro.org>
+Subject: [RFC 2/3] kexec: add dtb info to struct kimage
+Date: Tue, 12 Jul 2016 10:42:00 +0900
+Message-Id: <20160712014201.11456-3-takahiro.akashi@linaro.org>
 In-Reply-To: <20160712014201.11456-1-takahiro.akashi@linaro.org>
 References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,35 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently kexec_file_load is supported only on x86, but it will be
-supported on powerpc and arm64 in near future. Since both archs
-use asm-generic/unistd.h, this patch adds the entry to this file.
+Device tree blob must be passed to a second kernel on DTB-capable
+archs, like powerpc and arm64, but the current kernel interface
+lacks this support.
+
+This patch adds dtb buffer information to struct kimage.
+When users don't specify dtb explicitly and the one used for the current
+kernel can be re-used, this change will be good enough for implementing
+kexec_file_load feature.
 
 Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
 ---
- include/uapi/asm-generic/unistd.h | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ include/linux/kexec.h | 3 +++
+ kernel/kexec_file.c   | 5 +++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index a26415b..9ead10f 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -724,9 +724,15 @@ __SYSCALL(__NR_copy_file_range, sys_copy_file_range)
- __SC_COMP(__NR_preadv2, sys_preadv2, compat_sys_preadv2)
- #define __NR_pwritev2 287
- __SC_COMP(__NR_pwritev2, sys_pwritev2, compat_sys_pwritev2)
-+#define __NR_kexec_file_load 288
-+#ifdef CONFIG_KEXEC_FILE
-+__SYSCALL(__NR_kexec_file_load, sys_kexec_file_load)
-+#else
-+__SYSCALL(__NR_kexec_file_load, sys_ni_syscall)
-+#endif /* CONFIG_KEXEC_FILE */
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index e8acb2b..554c848 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -190,6 +190,9 @@ struct kimage {
+ 	char *cmdline_buf;
+ 	unsigned long cmdline_buf_len;
  
- #undef __NR_syscalls
--#define __NR_syscalls 288
-+#define __NR_syscalls 289
++	void *dtb_buf;
++	unsigned long dtb_buf_len;
++
+ 	/* File operations provided by image loader */
+ 	struct kexec_file_ops *fops;
  
- /*
-  * All syscalls below here should go away really,
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index 9891464..7278329 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -96,6 +96,11 @@ void kimage_file_post_load_cleanup(struct kimage *image)
+ 		image->initrd_buf = NULL;
+ 	}
+ 
++	if (image->dtb_buf) {
++		vfree(image->dtb_buf);
++		image->dtb_buf = NULL;
++	}
++
+ 	if (image->cmdline_buf) {
+ 		kfree(image->cmdline_buf);
+ 		image->cmdline_buf = NULL;
 -- 
 2.9.0
