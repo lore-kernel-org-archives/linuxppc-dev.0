@@ -1,17 +1,24 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpMBL2jGPzDqwM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 09:44:10 +1000 (AEST)
-From: Anton Blanchard <anton@ozlabs.org>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/configs: Enable VMX crypto
-Date: Tue, 12 Jul 2016 09:43:57 +1000
-Message-Id: <1468280637-11013-1-git-send-email-anton@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpNmD3FzPzDqpQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 10:55:08 +1000 (AEST)
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rpNmC4Xwlz9sDk
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jul 2016 10:55:06 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id dx3so63466pab.2
+ for <linuxppc-dev@ozlabs.org>; Mon, 11 Jul 2016 17:55:06 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: arnd@arndb.de,
+	Daniel Axtens <dja@axtens.net>
+Subject: [PATCH v2 1/5] powerpc/kvm: Clarify __user annotations
+Date: Tue, 12 Jul 2016 10:54:48 +1000
+Message-Id: <1468284892-27765-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,56 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+kvmppc_h_put_tce_indirect labels a u64 pointer as __user. It also
+labelled the u64 where get_user puts the result as __user. This isn't
+a pointer and so doesn't need to be labelled __user.
 
-We see big improvements with the VMX crypto functions (often 10x or more),
-so enable it as a module.
+Split the u64 value definition onto a new line to make it clear that
+it doesn't get the annotation.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/configs/powernv_defconfig | 2 ++
- arch/powerpc/configs/ppc64_defconfig   | 2 ++
- arch/powerpc/configs/pseries_defconfig | 2 ++
- 3 files changed, 6 insertions(+)
+ arch/powerpc/kvm/book3s_64_vio.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index dce352e..3f6226b 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -310,6 +310,8 @@ CONFIG_CRYPTO_TEA=m
- CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_LZO=m
- CONFIG_CRYPTO_DEV_NX=y
-+CONFIG_CRYPTO_DEV_VMX=y
-+CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM_BOOK3S_64=m
- CONFIG_KVM_BOOK3S_64_HV=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 0a8d250..861471d 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -347,6 +347,8 @@ CONFIG_CRYPTO_LZO=m
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-+CONFIG_CRYPTO_DEV_VMX=y
-+CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM_BOOK3S_64=m
- CONFIG_KVM_BOOK3S_64_HV=m
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index 99dec9d..1d7eea2 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -313,6 +313,8 @@ CONFIG_CRYPTO_LZO=m
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-+CONFIG_CRYPTO_DEV_VMX=y
-+CONFIG_CRYPTO_DEV_VMX_ENCRYPT=m
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM_BOOK3S_64=m
- CONFIG_KVM_BOOK3S_64_HV=m
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 18cf6d1f8174..c379ff5a4438 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -242,7 +242,8 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 	struct kvmppc_spapr_tce_table *stt;
+ 	long i, ret = H_SUCCESS, idx;
+ 	unsigned long entry, ua = 0;
+-	u64 __user *tces, tce;
++	u64 __user *tces;
++	u64 tce;
+ 
+ 	stt = kvmppc_find_table(vcpu, liobn);
+ 	if (!stt)
 -- 
-2.7.4
+2.1.4
