@@ -1,29 +1,35 @@
-Return-Path: <waiman.long@hpe.com>
-Received: from NAM03-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam03on0133.outbound.protection.outlook.com [104.47.42.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpqtR3hrczDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 04:17:03 +1000 (AEST)
-Message-ID: <578533FE.9050606@hpe.com>
-Date: Tue, 12 Jul 2016 14:16:30 -0400
-From: Waiman Long <waiman.long@hpe.com>
-MIME-Version: 1.0
-To: Juergen Gross <jgross@suse.com>
-CC: Peter Zijlstra <peterz@infradead.org>, <linux-s390@vger.kernel.org>,
- <dave@stgolabs.net>, <benh@kernel.crashing.org>, Pan Xinhui
- <xinhui.pan@linux.vnet.ibm.com>, <boqun.feng@gmail.com>,
- <will.deacon@arm.com>, <linux-kernel@vger.kernel.org>,
- <virtualization@lists.linux-foundation.org>, <mingo@redhat.com>,
- <paulus@samba.org>, <mpe@ellerman.id.au>, <schwidefsky@de.ibm.com>,
- <pbonzini@redhat.com>, <paulmck@linux.vnet.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <5783B6D7.7020903@hpe.com> <57846F02.7000306@suse.com>
-In-Reply-To: <57846F02.7000306@suse.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rptsg4QN2zDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 06:31:35 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6CKTgGr083757
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:31:33 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24507b90mx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:31:32 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Tue, 12 Jul 2016 14:31:30 -0600
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [PATCH] cxl: remove dead Kconfig options
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Tue, 12 Jul 2016 15:31:24 -0500
+Cc: linuxppc-dev@lists.ozlabs.org, clombard@linux.vnet.ibm.com,
+ linux-scsi@vger.kernel.org, fbarrat@linux.vnet.ibm.com,
+ manoj@linux.vnet.ibm.com, imunsie@au1.ibm.com
+References: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Message-Id: <0E3E1855-3038-4414-A0A4-EABC431AEEA4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,60 +39,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/12/2016 12:16 AM, Juergen Gross wrote:
-> On 11/07/16 17:10, Waiman Long wrote:
->> On 07/06/2016 02:52 AM, Peter Zijlstra wrote:
->>> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
->>>> change fomr v1:
->>>>      a simplier definition of default vcpu_is_preempted
->>>>      skip mahcine type check on ppc, and add config. remove dedicated
->>>> macro.
->>>>      add one patch to drop overload of rwsem_spin_on_owner and
->>>> mutex_spin_on_owner.
->>>>      add more comments
->>>>      thanks boqun and Peter's suggestion.
->>>>
->>>> This patch set aims to fix lock holder preemption issues.
->>>>
->>>> test-case:
->>>> perf record -a perf bench sched messaging -g 400 -p&&   perf report
->>>>
->>>> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
->>>> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->>>>    5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->>>>    3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->>>>    3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->>>>    3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->>>>    2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
->>>>
->>>> We introduce interface bool vcpu_is_preempted(int cpu) and use it in
->>>> some spin
->>>> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
->>>> These spin_on_onwer variant also cause rcu stall before we apply this
->>>> patch set
->>>>
->>> Paolo, could you help out with an (x86) KVM interface for this?
->>>
->>> Waiman, could you see if you can utilize this to get rid of the
->>> SPIN_THRESHOLD in qspinlock_paravirt?
->> That API is certainly useful to make the paravirt spinlock perform
->> better. However, I am not sure if we can completely get rid of the
->> SPIN_THRESHOLD at this point. It is not just the kvm, the xen code need
->> to be modified as well.
-> This should be rather easy. The relevant information is included in the
-> runstate data mapped into kernel memory. I can provide a patch for Xen
-> if needed.
->
->
-> Juergen
+> On Jul 4, 2016, at 2:12 AM, Andrew Donnellan =
+<andrew.donnellan@au1.ibm.com> wrote:
+>=20
+> Remove the CXL_KERNEL_API and CXL_EEH Kconfig options, as they were =
+only
+> needed to coordinate the merging of the cxlflash driver. Also remove =
+the
+> stub implementation of cxl_perst_reloads_same_image() in cxlflash =
+which is
+> only used if CXL_EEH isn't defined (i.e. never).
+>=20
+> Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Thanks for the offering. We will wait until Xinhui's patch comes through 
-before working on the next step.
-
-As for the elimination of SPIN_THRESHOLD, the queue head may not always 
-have the right CPU number of the lock holder. So I don't think we can 
-eliminate that for the queue head spinning. I think we can eliminates 
-the SPIN_THRESHOLD spinning for the other queue node vCPUs.
-
-Cheers,
-Longman
+Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
