@@ -1,48 +1,46 @@
-Return-Path: <luto@amacapital.net>
-Received: from mail-lf0-x232.google.com (mail-lf0-x232.google.com
- [IPv6:2a00:1450:4010:c07::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpyBy3GF0zDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:01:46 +1000 (AEST)
-Received: by mail-lf0-x232.google.com with SMTP id f93so25355308lfi.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:01:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpyKj01WyzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:07:36 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6CMxi1S051613
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 19:07:34 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 243ensm5vt-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 19:07:34 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Tue, 12 Jul 2016 20:07:32 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 1CCBB1DC0051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 19:07:21 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6CN7TlF15663504
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 20:07:29 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6CN7SBc021922
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 20:07:28 -0300
+Subject: Re: [PATCH] powerpc: fix oops in pcibios_release_device() after
+ pcibios_free_controller()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1467683085-3537-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1467687331.13965.27.camel@kernel.crashing.org>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Tue, 12 Jul 2016 20:07:25 -0300
 MIME-Version: 1.0
-In-Reply-To: <CAMzpN2j2F9gQCRGmzVb0LjQT9mmU9m=HRG2Vbf-g79+i57dvdg@mail.gmail.com>
-References: <cover.1468270393.git.luto@kernel.org>
- <dc84a1b979d800049bfd0629ed9380238cba2807.1468270393.git.luto@kernel.org>
- <CAMzpN2j2F9gQCRGmzVb0LjQT9mmU9m=HRG2Vbf-g79+i57dvdg@mail.gmail.com>
-From: Andy Lutomirski <luto@amacapital.net>
-Date: Tue, 12 Jul 2016 16:01:23 -0700
-Message-ID: <CALCETrXN3Jd=8TOsHejVNQj8ef4KH-GYzW8rD6ounq=ZX9TT5A@mail.gmail.com>
-Subject: Re: [PATCH v5 18/32] signal: Consolidate {TS,
- TLF}_RESTORE_SIGMASK code
-To: Brian Gerst <brgerst@gmail.com>
-Cc: Andy Lutomirski <luto@kernel.org>,
- "the arch/x86 maintainers" <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Borislav Petkov <bp@alien8.de>, Nadav Amit <nadav.amit@gmail.com>,
- Kees Cook <keescook@chromium.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>,
- Jann Horn <jann@thejh.net>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Richard Henderson <rth@twiddle.net>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Michal Simek <monstr@monstr.eu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S. Miller" <davem@davemloft.net>,
- Chris Metcalf <cmetcalf@mellanox.com>, Peter Zijlstra <peterz@infradead.org>,
- Borislav Petkov <bp@suse.de>, Dmitry Safonov <dsafonov@virtuozzo.com>,
- Andrew Morton <akpm@linux-foundation.org>, linux-alpha@vger.kernel.org,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- sparclinux@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1467687331.13965.27.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <5785782D.3010407@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,25 +50,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 12, 2016 at 4:57 AM, Brian Gerst <brgerst@gmail.com> wrote:
-> On Mon, Jul 11, 2016 at 4:53 PM, Andy Lutomirski <luto@kernel.org> wrote:
->> In general, there's no need for the "restore sigmask" flag to live in
->> ti->flags.  alpha, ia64, microblaze, powerpc, sh, sparc (64-bit only),
->> tile, and x86 use essentially identical alternative implementations,
->> placing the flag in ti->status.
->>
->> Replace those optimized implementations with an equally good common
->> implementation that stores it in a bitfield in struct task_struct
->> and drop the custom implementations.
->>
->> Additional architectures can opt in by removing their
->> TIF_RESTORE_SIGMASK defines.
->
-> There is a small typo in the subject, should be "signal: Consolidate
-> {TS,TIF}_RESTORE_SIGMASK code"
+Ben,
 
-I really did mean "TLF" -- it's a powerpc-ism.  This patch doesn't
-affect TIF_RESTORE_SIGMASK on architectures that have that flag,
-although it makes it much easier for them to get rid of it.
+On 07/04/2016 11:55 PM, Benjamin Herrenschmidt wrote:
+> Have you considered instead adding a kref to the PHB and only freeing
+> it when all devices have been freed ? Or it's too hard to tract device
+> creation ?
 
---Andy
+Can you clarify which are the devices that should be tracked w/ krefs to
+the PHB?
+
+I've been wondering if it's just the root bus (phb->bus) -- which relays
+on it (ie its phb->bus->children and phb->bus->devices) being eventually
+freed in order to free the phb, or perhaps track the children & devices
+directly.
+
+If that's too far from sensible, can you point some interesting places
+to look at? I've read much of arch/powerpc/kernel/pci-{common,hotplug}.c
+and arch/powerpc/include/asm/pci-bridge.h, and some more in drivers/pci,
+but things weren't as obvious to a newcomer in this area.
+
+Thanks,
+
+-- 
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
