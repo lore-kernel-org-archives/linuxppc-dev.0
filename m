@@ -2,17 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpTFP4JvnzDqyM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 14:17:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpTJn2P53zDqxm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 14:20:09 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>, Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/configs: Enable VMX crypto
-In-Reply-To: <20160712094149.21a28e0d@kryten>
-References: <1468279521-9720-1-git-send-email-anton@ozlabs.org>
- <20160712093317.0c3ab74e@canb.auug.org.au> <20160712094149.21a28e0d@kryten>
-Date: Tue, 12 Jul 2016 14:17:11 +1000
-Message-ID: <87bn23cwxk.fsf@@concordia.ellerman.id.au>
+To: Chen Gang <chengang@emindsoft.com.cn>,
+ Dave Hansen <dave.hansen@linux.intel.com>, akpm@linux-foundation.org,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: tglx@linutronix.de, mingo@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Chen Gang <gang.chen.5i5j@gmail.com>
+Subject: Re: [PATCH] include: mman: Use bool instead of int for the return
+ value of arch_validate_prot
+In-Reply-To: <5783ED17.9010805@emindsoft.com.cn>
+References: <1468081751-9468-1-git-send-email-chengang@emindsoft.com.cn>
+ <5782DEA5.600@linux.intel.com> <5783ED17.9010805@emindsoft.com.cn>
+Date: Tue, 12 Jul 2016 14:20:08 +1000
+Message-ID: <878tx7cwsn.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,37 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> writes:
+Chen Gang <chengang@emindsoft.com.cn> writes:
 
-> Hi Steven,
+> On 7/11/16 07:47, Dave Hansen wrote:
+>> On 07/09/2016 09:29 AM, chengang@emindsoft.com.cn wrote:
+>>> -static inline int arch_validate_prot(unsigned long prot)
+>>> +static inline bool arch_validate_prot(unsigned long prot)
+>>>  {
+>>>  	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
+>>> -		return 0;
+>>> -	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
+>>> -		return 0;
+>>> -	return 1;
+>>> +		return false;
+>>> +	return (prot & PROT_SAO) == 0 || cpu_has_feature(CPU_FTR_SAO);
+>>>  }
+>>>  #define arch_validate_prot(prot) arch_validate_prot(prot)
+>> 
+>> Please don't do things like this.  They're not obviously correct and
+>> also have no obvious benefit.  You also don't mention why you bothered
+>> to alter the logical structure of these checks.
+>> 
 >
->> Not in ppc64_defconfig?
+> For all cases, bool is equal or a little better than int, and they are
+> equal in our case (2 final outputs are same). So for me, it may belong
+> to trivial patch, which can be skipped by the normal patch maintainers.
 >
-> Good point. The recent addition of powernv_defconfig made me forget
-> about ppc64_defconfig. We could do with some rationalisation here.
+> As a 'trivial' patch:
+>
+>  - For a pure Boolean function, bool return value is more readable than
+>    int.
 
-Understatement of the century.
+Agreed.
 
-> pseries isn't really pseries, perhaps we should call it ibm_defconfig,
-> or maybe server_deconfig.
-
-pseries should be just pseries, and nothing else.
-
-> ppc64_defconfig continues to be the lower end defconfig.
-
-ppc64_defconfig *should* be the primary config. And similarly ppc64le
-when building little endian.
-
-The reason being that 'make defconfig' will give you one of those
-depending on uname (when building native).
-
-I think the only thing disqualifying it from that role at the moment is
-that it builds 4K pages.
-
-But I think we should just change that. We can add ppc64_4K_defconfig
-for anyone who wants it (G5 users mainly I would guess).
-
-We'd also need to make sure ppc64/ppc64le have all the modern options
-enabled.
+Please send a patch that does that and only that.
 
 cheers
