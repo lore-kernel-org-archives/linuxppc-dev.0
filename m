@@ -1,27 +1,20 @@
-Return-Path: <jgross@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rpTDD1dd5zDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 14:16:10 +1000 (AEST)
-Subject: Re: [PATCH v2 0/4] implement vcpu preempted check
-To: Waiman Long <waiman.long@hpe.com>, Peter Zijlstra <peterz@infradead.org>
-References: <1467124991-13164-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
- <20160706065255.GH30909@twins.programming.kicks-ass.net>
- <5783B6D7.7020903@hpe.com>
-Cc: linux-s390@vger.kernel.org, dave@stgolabs.net, benh@kernel.crashing.org,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>, boqun.feng@gmail.com,
- will.deacon@arm.com, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, mingo@redhat.com,
- paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com,
- pbonzini@redhat.com, paulmck@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Juergen Gross <jgross@suse.com>
-Message-ID: <57846F02.7000306@suse.com>
-Date: Tue, 12 Jul 2016 06:16:02 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rpTFP4JvnzDqyM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 14:17:13 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/configs: Enable VMX crypto
+In-Reply-To: <20160712094149.21a28e0d@kryten>
+References: <1468279521-9720-1-git-send-email-anton@ozlabs.org>
+ <20160712093317.0c3ab74e@canb.auug.org.au> <20160712094149.21a28e0d@kryten>
+Date: Tue, 12 Jul 2016 14:17:11 +1000
+Message-ID: <87bn23cwxk.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <5783B6D7.7020903@hpe.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/07/16 17:10, Waiman Long wrote:
-> On 07/06/2016 02:52 AM, Peter Zijlstra wrote:
->> On Tue, Jun 28, 2016 at 10:43:07AM -0400, Pan Xinhui wrote:
->>> change fomr v1:
->>>     a simplier definition of default vcpu_is_preempted
->>>     skip mahcine type check on ppc, and add config. remove dedicated
->>> macro.
->>>     add one patch to drop overload of rwsem_spin_on_owner and
->>> mutex_spin_on_owner.
->>>     add more comments
->>>     thanks boqun and Peter's suggestion.
->>>
->>> This patch set aims to fix lock holder preemption issues.
->>>
->>> test-case:
->>> perf record -a perf bench sched messaging -g 400 -p&&  perf report
->>>
->>> 18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
->>> 12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
->>>   5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
->>>   3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
->>>   3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
->>>   3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
->>>   2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
->>>
->>> We introduce interface bool vcpu_is_preempted(int cpu) and use it in
->>> some spin
->>> loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
->>> These spin_on_onwer variant also cause rcu stall before we apply this
->>> patch set
->>>
->> Paolo, could you help out with an (x86) KVM interface for this?
->>
->> Waiman, could you see if you can utilize this to get rid of the
->> SPIN_THRESHOLD in qspinlock_paravirt?
-> 
-> That API is certainly useful to make the paravirt spinlock perform
-> better. However, I am not sure if we can completely get rid of the
-> SPIN_THRESHOLD at this point. It is not just the kvm, the xen code need
-> to be modified as well.
+Anton Blanchard <anton@samba.org> writes:
 
-This should be rather easy. The relevant information is included in the
-runstate data mapped into kernel memory. I can provide a patch for Xen
-if needed.
+> Hi Steven,
+>
+>> Not in ppc64_defconfig?
+>
+> Good point. The recent addition of powernv_defconfig made me forget
+> about ppc64_defconfig. We could do with some rationalisation here.
 
+Understatement of the century.
 
-Juergen
+> pseries isn't really pseries, perhaps we should call it ibm_defconfig,
+> or maybe server_deconfig.
+
+pseries should be just pseries, and nothing else.
+
+> ppc64_defconfig continues to be the lower end defconfig.
+
+ppc64_defconfig *should* be the primary config. And similarly ppc64le
+when building little endian.
+
+The reason being that 'make defconfig' will give you one of those
+depending on uname (when building native).
+
+I think the only thing disqualifying it from that role at the moment is
+that it builds 4K pages.
+
+But I think we should just change that. We can add ppc64_4K_defconfig
+for anyone who wants it (G5 users mainly I would guess).
+
+We'd also need to make sure ppc64/ppc64le have all the modern options
+enabled.
+
+cheers
