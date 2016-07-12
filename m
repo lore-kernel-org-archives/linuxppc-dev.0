@@ -1,35 +1,24 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rptsg4QN2zDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 06:31:35 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6CKTgGr083757
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:31:33 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24507b90mx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 16:31:32 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Tue, 12 Jul 2016 14:31:30 -0600
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH] cxl: remove dead Kconfig options
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Tue, 12 Jul 2016 15:31:24 -0500
-Cc: linuxppc-dev@lists.ozlabs.org, clombard@linux.vnet.ibm.com,
- linux-scsi@vger.kernel.org, fbarrat@linux.vnet.ibm.com,
- manoj@linux.vnet.ibm.com, imunsie@au1.ibm.com
-References: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Message-Id: <0E3E1855-3038-4414-A0A4-EABC431AEEA4@linux.vnet.ibm.com>
+Return-Path: <chengang@emindsoft.com.cn>
+Received: from out1134-234.mail.aliyun.com (out1134-234.mail.aliyun.com
+ [42.120.134.234])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rpp0y4XC2zDqDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 02:52:34 +1000 (AEST)
+Message-ID: <57852093.1090909@emindsoft.com.cn>
+Date: Wed, 13 Jul 2016 00:53:39 +0800
+From: Chen Gang <chengang@emindsoft.com.cn>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org
+CC: tglx@linutronix.de, mingo@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Chen Gang <gang.chen.5i5j@gmail.com>
+Subject: Re: [PATCH] include: mman: Use bool instead of int for the return
+ value of arch_validate_prot
+References: <1468081751-9468-1-git-send-email-chengang@emindsoft.com.cn>
+ <5782DEA5.600@linux.intel.com> <5783ED17.9010805@emindsoft.com.cn>
+ <878tx7cwsn.fsf@@concordia.ellerman.id.au>
+In-Reply-To: <878tx7cwsn.fsf@@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,18 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Jul 4, 2016, at 2:12 AM, Andrew Donnellan =
-<andrew.donnellan@au1.ibm.com> wrote:
->=20
-> Remove the CXL_KERNEL_API and CXL_EEH Kconfig options, as they were =
-only
-> needed to coordinate the merging of the cxlflash driver. Also remove =
-the
-> stub implementation of cxl_perst_reloads_same_image() in cxlflash =
-which is
-> only used if CXL_EEH isn't defined (i.e. never).
->=20
-> Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+On 7/12/16 12:20, Michael Ellerman wrote:
+> Chen Gang <chengang@emindsoft.com.cn> writes:
+> 
+>> On 7/11/16 07:47, Dave Hansen wrote:
+>>> On 07/09/2016 09:29 AM, chengang@emindsoft.com.cn wrote:
+>>>> -static inline int arch_validate_prot(unsigned long prot)
+>>>> +static inline bool arch_validate_prot(unsigned long prot)
+>>>>  {
+>>>>  	if (prot & ~(PROT_READ | PROT_WRITE | PROT_EXEC | PROT_SEM | PROT_SAO))
+>>>> -		return 0;
+>>>> -	if ((prot & PROT_SAO) && !cpu_has_feature(CPU_FTR_SAO))
+>>>> -		return 0;
+>>>> -	return 1;
+>>>> +		return false;
+>>>> +	return (prot & PROT_SAO) == 0 || cpu_has_feature(CPU_FTR_SAO);
+>>>>  }
+>>>>  #define arch_validate_prot(prot) arch_validate_prot(prot)
+>>>
+>>> Please don't do things like this.  They're not obviously correct and
+>>> also have no obvious benefit.  You also don't mention why you bothered
+>>> to alter the logical structure of these checks.
+>>>
+>>
+>> For all cases, bool is equal or a little better than int, and they are
+>> equal in our case (2 final outputs are same). So for me, it may belong
+>> to trivial patch, which can be skipped by the normal patch maintainers.
+>>
+>> As a 'trivial' patch:
+>>
+>>  - For a pure Boolean function, bool return value is more readable than
+>>    int.
+> 
+> Agreed.
+> 
+> Please send a patch that does that and only that.
+> 
 
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+OK, thanks.
+
+After check the assembly output, for some cases, merging 3 lines to 1
+line may be a little more readable, but compiler will generate a little
+bad output code.
+
+I shall send patch v2 for it within this weekend.
+
+Thanks.
+-- 
+Chen Gang (陈刚)
+
+Managing Natural Environments is the Duty of Human Beings.
