@@ -1,45 +1,45 @@
 Return-Path: <alastair@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq7Cq5vXzzDqFP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:07 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D5i1UF045269
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:05 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq7Ct75L8zDqGS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:10 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D5i5lO016186
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:08 -0400
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2452yp6bx5-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2455fcgks8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:08 -0400
 Received: from localhost
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 13 Jul 2016 15:48:02 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 955D12BB005C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:00 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6D5m08f18284608
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:00 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6D5lxDT004289
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:00 +1000
+ Wed, 13 Jul 2016 15:48:05 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6B39E3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:03 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6D5m3sD16646318
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:03 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6D5m2NX028309
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:03 +1000
 From: alastair@au1.ibm.com
 To: mpe@ellerman.id.au
 Cc: benh@kernel.crashing.org, paulus@samba.org, herbert@gondor.apana.org.au,
  davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
  linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH 1/2] Allow drivers to be autoloaded.
-Date: Wed, 13 Jul 2016 15:47:17 +1000
+Subject: [PATCH 1/2] powerpc: Add module autoloading based on CPU features
+Date: Wed, 13 Jul 2016 15:47:18 +1000
 In-Reply-To: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
 References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
-Message-Id: <1468388840-12068-2-git-send-email-alastair@au1.ibm.com>
+Message-Id: <1468388840-12068-3-git-send-email-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,8 +64,8 @@ userspace are consistent.
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
  arch/powerpc/Kconfig                  |  1 +
- arch/powerpc/include/asm/cpufeature.h | 68 +++++++++++++++++++++++++++++++++++
- 2 files changed, 69 insertions(+)
+ arch/powerpc/include/asm/cpufeature.h | 70 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+)
  create mode 100644 arch/powerpc/include/asm/cpufeature.h
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
@@ -82,11 +82,13 @@ index 0a9d439..a6e49db 100644
  	def_bool CPU_LITTLE_ENDIAN
 diff --git a/arch/powerpc/include/asm/cpufeature.h b/arch/powerpc/include/asm/cpufeature.h
 new file mode 100644
-index 0000000..6d52527
+index 0000000..df31627
 --- /dev/null
 +++ b/arch/powerpc/include/asm/cpufeature.h
-@@ -0,0 +1,68 @@
-+/*
+@@ -0,0 +1,70 @@
++/* CPU feature definitions for module loading, used by
++ * module_cpu_feature_match(), see asm/cputable.h for powerpc CPU features
++ *
 + * Copyright 2016 Alastair D'Silva, IBM Corporation.
 + *
 + * This program is free software; you can redistribute it and/or
@@ -96,7 +98,7 @@ index 0000000..6d52527
 + */
 +
 +#ifndef __ASM_CPUFEATURE_H
-+#define __ASM_CPUFEATURE_H
++#define __ASM_POWERPC_CPUFEATURE_H
 +
 +#include <asm/cputable.h>
 +
@@ -153,6 +155,6 @@ index 0000000..6d52527
 +		return !!(cur_cpu_spec->cpu_user_features2 & 1UL << (num - 32));
 +}
 +
-+#endif
++#endif /* __ASM_POWERPC_CPUFEATURE_H */
 -- 
 2.7.4
