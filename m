@@ -1,31 +1,35 @@
-Return-Path: <takahiro.akashi@linaro.org>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqQzJ5G2XzDqGV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 03:38:19 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id t190so20675263pfb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:38:19 -0700 (PDT)
-Date: Thu, 14 Jul 2016 02:38:06 +0900
-From: AKASHI Takahiro <takahiro.akashi@linaro.org>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Dave Young <dyoung@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- bhe@redhat.com, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqR2M3ttLzDqJt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 03:40:58 +1000 (AEST)
+Date: Wed, 13 Jul 2016 18:40:10 +0100
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, bhe@redhat.com,
+ arnd@arndb.de, kexec@lists.infradead.org, dyoung@redhat.com,
+ Petr Tesarik <ptesarik@suse.cz>, linux-kernel@vger.kernel.org,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
  "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713173804.GA25723@porco>
+Message-ID: <20160713174009.GA1041@n2100.armlinux.org.uk>
 References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
- <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
- <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
- <20160713093432.GB14522@leverpostej>
+ <87furf7ztv.fsf@x220.int.ebiederm.org> <50662781.Utjsnse3nb@hactar>
+ <20160712225805.0d27fe5d@hananiah.suse.cz>
+ <20160712221804.GV1041@n2100.armlinux.org.uk>
+ <87twfunneg.fsf@linux.vnet.ibm.com>
+ <20160713073657.GX1041@n2100.armlinux.org.uk>
+ <87poqinf9m.fsf@linux.vnet.ibm.com>
+ <20160713082639.GZ1041@n2100.armlinux.org.uk>
+ <20160713130338.GB16900@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-In-Reply-To: <20160713093432.GB14522@leverpostej>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160713130338.GB16900@redhat.com>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,57 +39,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Apologies for the slow response. I'm attending LinuxCon this week.
-
-On Wed, Jul 13, 2016 at 10:34:47AM +0100, Mark Rutland wrote:
-> On Wed, Jul 13, 2016 at 10:36:14AM +0800, Dave Young wrote:
-> > But consider we can kexec to a different kernel and a different initrd so there
-> > will be use cases to pass a total different dtb as well.
+On Wed, Jul 13, 2016 at 09:03:38AM -0400, Vivek Goyal wrote:
+> On Wed, Jul 13, 2016 at 09:26:39AM +0100, Russell King - ARM Linux wrote:
+> > Indeed - maybe Eric knows better, but I can't see any situation where
+> > the dtb we load via kexec should ever affect "the bootloader", unless
+> > the "kernel" that's being loaded into kexec is "the bootloader".
+> > 
+> > Now, going back to the more fundamental issue raised in my first reply,
+> > about the kernel command line.
+> > 
+> > On x86, I can see that it _is_ possible for userspace to specify a
+> > command line, and the kernel loading the image provides the command
+> > line to the to-be-kexeced kernel with very little checking.  So, if
+> > your kernel is signed, what stops the "insecure userspace" loading
+> > a signed kernel but giving it an insecure rootfs and/or console?
 > 
-> It depends on what you mean by "a different kernel", and what this
-> implies for the DTB.
+> It is not kexec specific. I could do this for regular boot too, right?
 > 
-> I expect future arm64 Linux kernels to function with today's DTBs, and
-> the existing boot protocol. The kexec_file_load syscall already has
-> enough information for the kernel to inject the initrd and bootargs
-> properties into a DTB.
+> Command line options are not signed. I thought idea behind secureboot
+> was to execute only trusted code and command line options don't enforce
+> you to execute unsigned code.
 > 
-> In practice on x86 today, kexec_file_load only supports booting to a
-> Linux kernel, because the in-kernel purgatory only implements the x86
-> Linux boot protocol. Analagously, for arm64 I think that the first
-> kernel should use its internal copy of the boot DTB, with /chosen fixed
-> up appropriately, assuming the next kernel is an arm64 Linux image.
-> 
-> If booting another OS, the only parts of the DTB I would expect to
-> change are the properties under chosen, as everything else *should* be
-> OS-independent. However the other OS may have a completely different
-> boot protocol, might not even take a DTB, and will likely need a
-> compeltely different purgatory implementation. So just allowing the DTB
-> to be altered isn't sufficient for that case.
-> 
-> There might be cases where we want a different DTB, but as far as I can
-> tell we have nothing analagous on x86 today. If we do need this, we
-> should have an idea of what real case(s) were trying to solve.
+> So it sounds like different class of security problems which you are
+> referring to and not necessarily covered by secureboot or signed
+> kernel.
 
-What I had in my mind was:
+Let me give you an example.
 
-- Kdump
-  As Russel said, we definitely need to modify dtb.
-  In addition to bootargs and initrd proerties (FYI, in my arm64
-  implementation for arm64, eflcorehdr info is also passed as DT
-  property), we may want to remove unnecessary devices and
-  even add a dedicated storage device for storing a core dump image.
-- Say, booting BE kernel on ACPI LE kernel
-  In this case, there is no useful dtb in the kernel.
+You have a secure boot setup, where the firmware/ROM validates the boot
+loader.  Good, the boot loader hasn't been tampered with.
 
-Have said that, as Mark said, we may be able to use normal kexec_load
-system call if we don't need a "secure" kexec.
+You interrupt the boot loader and are able to modify the command line
+for the booted kernel.
 
-BTW, why doesn't the current kexec_load have ability of verifying
-a signature of initramfs image? Is IMA/EVM expected to be used
-at runtime?
+The boot loader loads the kernel and verifies the kernel's signature.
+Good, the kernel hasn't been tampered with.  The kernel starts running.
 
-Thanks,
--Takahiro AKASHI
-> Thanks,
-> Mark.
+You've plugged in a USB drive to the device, and specified a partition
+containing a root filesystem that you control to the kernel.  The
+validated kernel finds the USB drive, and mounts it, and executes
+your own binaries on the USB drive.
+
+You run a shell on the console.  You now have control of the system,
+and can mount the real rootfs, inspect it, and work out what it does,
+etc.
+
+At this point, what use was all the validation that the secure boot
+has done?  Absolutely useless.
+
+If you can change the command line arguments given to the kernel, you
+have no security, no matter how much you verify signatures.  It's
+the illusion of security, nothing more, nothing less.
+
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
