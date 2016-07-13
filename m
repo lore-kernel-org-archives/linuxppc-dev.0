@@ -1,33 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDJN3QmfzDqKR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:37:24 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D9YDOj140044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:22 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 243ent3h87-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDJQ2WrRzDqPj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:37:26 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D9YEXM037837
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:24 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2452xrn1ud-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:21 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:24 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 03:37:21 -0600
+ Wed, 13 Jul 2016 03:37:24 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH for-4.8 08/13] powerpc/mm: Drop multiple definition of
- mm_is_core_local
-Date: Wed, 13 Jul 2016 15:06:39 +0530
+Subject: [PATCH for-4.8 09/13] powerpc/mm/radix: Add tlb flush of THP ptes
+Date: Wed, 13 Jul 2016 15:06:40 +0530
 In-Reply-To: <1468402604-5130-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1468402604-5130-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1468402604-5130-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1468402604-5130-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,69 +36,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Instead of flushing the entire mm, implement a flush_pmd_tlb_range
+
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/tlb.h | 13 +++++++++++++
- arch/powerpc/mm/tlb-radix.c    |  6 ------
- arch/powerpc/mm/tlb_nohash.c   |  6 ------
- 3 files changed, 13 insertions(+), 12 deletions(-)
+ arch/powerpc/include/asm/book3s/64/tlbflush-radix.h | 2 ++
+ arch/powerpc/include/asm/book3s/64/tlbflush.h       | 9 +++++++++
+ arch/powerpc/mm/pgtable-book3s64.c                  | 4 ++--
+ arch/powerpc/mm/tlb-radix.c                         | 7 +++++++
+ 4 files changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-index 20733fa518ae..f6f68f73e858 100644
---- a/arch/powerpc/include/asm/tlb.h
-+++ b/arch/powerpc/include/asm/tlb.h
-@@ -46,5 +46,18 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
- #endif
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index 7ee9a195fa9c..30fad5d78e30 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -12,6 +12,8 @@ static inline int mmu_get_ap(int psize)
  
-+#ifdef CONFIG_SMP
-+static inline int mm_is_core_local(struct mm_struct *mm)
+ extern void radix__flush_tlb_range_psize(struct mm_struct *mm, unsigned long start,
+ 					 unsigned long end, int psize);
++extern void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
++				       unsigned long start, unsigned long end);
+ extern void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 			    unsigned long end);
+ extern void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end);
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+index 96e5769b18b0..0790c4e92a64 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -7,6 +7,15 @@
+ #include <asm/book3s/64/tlbflush-hash.h>
+ #include <asm/book3s/64/tlbflush-radix.h>
+ 
++#define __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
++static inline void flush_pmd_tlb_range(struct vm_area_struct *vma,
++				       unsigned long start, unsigned long end)
 +{
-+	return cpumask_subset(mm_cpumask(mm),
-+			      topology_sibling_cpumask(smp_processor_id()));
++	if (radix_enabled())
++		return radix__flush_pmd_tlb_range(vma, start, end);
++	return hash__flush_tlb_range(vma, start, end);
 +}
-+#else
-+static inline int mm_is_core_local(struct mm_struct *mm)
-+{
-+	return 1;
-+}
-+#endif
 +
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_TLB_H */
+ static inline void flush_tlb_range(struct vm_area_struct *vma,
+ 				   unsigned long start, unsigned long end)
+ {
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 670318766545..7bb8acffe876 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -33,7 +33,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 	changed = !pmd_same(*(pmdp), entry);
+ 	if (changed) {
+ 		__ptep_set_access_flags(pmdp_ptep(pmdp), pmd_pte(entry));
+-		flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
++		flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	}
+ 	return changed;
+ }
+@@ -66,7 +66,7 @@ void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+ 		     pmd_t *pmdp)
+ {
+ 	pmd_hugepage_update(vma->vm_mm, address, pmdp, _PAGE_PRESENT, 0);
+-	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
++	flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	/*
+ 	 * This ensures that generic code that rely on IRQ disabling
+ 	 * to prevent a parallel THP split work as expected.
 diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 6de05c59b375..4d0f03ad0996 100644
+index 4d0f03ad0996..456c155fe76c 100644
 --- a/arch/powerpc/mm/tlb-radix.c
 +++ b/arch/powerpc/mm/tlb-radix.c
-@@ -165,12 +165,6 @@ void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
- EXPORT_SYMBOL(radix__local_flush_tlb_page);
- 
- #ifdef CONFIG_SMP
--static int mm_is_core_local(struct mm_struct *mm)
--{
--	return cpumask_subset(mm_cpumask(mm),
--			      topology_sibling_cpumask(smp_processor_id()));
--}
--
- void radix__flush_tlb_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
-diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
-index f4668488512c..050badc0ebd3 100644
---- a/arch/powerpc/mm/tlb_nohash.c
-+++ b/arch/powerpc/mm/tlb_nohash.c
-@@ -215,12 +215,6 @@ EXPORT_SYMBOL(local_flush_tlb_page);
- 
- static DEFINE_RAW_SPINLOCK(tlbivax_lock);
- 
--static int mm_is_core_local(struct mm_struct *mm)
--{
--	return cpumask_subset(mm_cpumask(mm),
--			      topology_sibling_cpumask(smp_processor_id()));
--}
--
- struct tlb_flush_param {
- 	unsigned long addr;
- 	unsigned int pid;
+@@ -391,3 +391,10 @@ void radix__flush_tlb_lpid(unsigned long lpid)
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
+ EXPORT_SYMBOL(radix__flush_tlb_lpid);
++
++void radix__flush_pmd_tlb_range(struct vm_area_struct *vma,
++				unsigned long start, unsigned long end)
++{
++	radix__flush_tlb_range_psize(vma->vm_mm, start, end, MMU_PAGE_2M);
++}
++EXPORT_SYMBOL(radix__flush_pmd_tlb_range);
 -- 
 2.7.4
