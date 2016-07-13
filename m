@@ -1,37 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <dan.carpenter@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqLGZ6s1bzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 00:06:14 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6DE4Jik065226
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:06:12 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2452atggax-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:06:12 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 08:06:12 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH for-4.8 02/10] powerpc/mm: Convert early cpu/mmu feature
- check to use the new helpers
-In-Reply-To: <1468411747.20552.81.camel@kernel.crashing.org>
-References: <1468402690-5373-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1468402690-5373-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1468411747.20552.81.camel@kernel.crashing.org>
-Date: Wed, 13 Jul 2016 19:36:06 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqLJ83gNTzDqFP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 00:07:35 +1000 (AEST)
+Date: Wed, 13 Jul 2016 17:07:12 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: markos.chandras@imgtec.com, Matt Evans <matt@ozlabs.org>
+Cc: linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] MIPS: net: Add BPF JIT
+Message-ID: <20160713140711.GA8984@mwanda>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87k2gpy6nl.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Hello Markos Chandras,
 
-> On Wed, 2016-07-13 at 15:08 +0530, Aneesh Kumar K.V wrote:
->> This switch most of the early feature check to use the non static key
->> variant of the function. In later patches we will be switching
->> cpu_has_feature and mmu_has_feature to use static keys and we can use
->> them only after static key/jump label is initialized. Any check for
->> feature before jump label init should be done using this new helper.
->
-> I'm not sure about that. This is converting way way way way more
-> functions than is needed. Especially if Michael applies my series
-> there will be very little code run before the patching, really only the
-> MMU initialization....
+The patch c6610de353da: "MIPS: net: Add BPF JIT" from Apr 8, 2014,
+leads to the following static checker warning:
 
+	arch/mips/net/bpf_jit.c:1185 build_body()
+	warn: potential off by one 'ctx->offsets[]' limit 'prog->len'
 
-Michael is also running into boot issues with the early init rewrite
-patch series on G5. That is why I didn't rebase my patches on top of
-that changes.
+arch/mips/net/bpf_jit.c
+   652  static int build_body(struct jit_ctx *ctx)
+   653  {
+   654          const struct bpf_prog *prog = ctx->skf;
+   655          const struct sock_filter *inst;
+   656          unsigned int i, off, condt;
+   657          u32 k, b_off __maybe_unused;
+   658          u8 (*sk_load_func)(unsigned long *skb, int offset);
+   659  
+   660          for (i = 0; i < prog->len; i++) {
+   661                  u16 code;
+   662  
+   663                  inst = &(prog->insns[i]);
+   664                  pr_debug("%s: code->0x%02x, jt->0x%x, jf->0x%x, k->0x%x\n",
+   665                           __func__, inst->code, inst->jt, inst->jf, inst->k);
+   666                  k = inst->k;
+   667                  code = bpf_anc_helper(inst);
+   668  
+   669                  if (ctx->target == NULL)
+   670                          ctx->offsets[i] = ctx->idx * 4;
 
--aneesh
+We have this so we don't need the other assignment.
+
+   671  
+   672                  switch (code) {
+
+[ snipped big switch statement ]
+
+  1176                  default:
+  1177                          pr_debug("%s: Unhandled opcode: 0x%02x\n", __FILE__,
+  1178                                   inst->code);
+  1179                          return -1;
+  1180                  }
+  1181          }
+  1182  
+  1183          /* compute offsets only during the first pass */
+  1184          if (ctx->target == NULL)
+  1185                  ctx->offsets[i] = ctx->idx * 4;
+
+i is always one step beyond the end of the array here.
+
+  1186  
+  1187          return 0;
+  1188  }
+
+That arm and powerpc implementations have the same issue.
+
+regards,
+dan carpenter
