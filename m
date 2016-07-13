@@ -1,23 +1,26 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq1BH6WR2zDqK1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:16:23 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id ib6so2029896pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:16:23 -0700 (PDT)
-Date: Wed, 13 Jul 2016 09:16:09 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 0/3] powerpc: tweak the kernel options for CRASH_DUMP
- and RELOCATABLE
-Message-ID: <20160713011609.GM17403@pek-khao-d1>
-References: <1468372373-6346-1-git-send-email-haokexin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq2yb1rslzDqFP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 12:36:22 +1000 (AEST)
+Date: Wed, 13 Jul 2016 10:36:14 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, bhe@redhat.com, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
+ <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="AQYPrgrEUc/1pSX1"
-In-Reply-To: <1468372373-6346-1-git-send-email-haokexin@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160712145010.GA8447@leverpostej>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,60 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/12/16 at 03:50pm, Mark Rutland wrote:
+> On Tue, Jul 12, 2016 at 04:24:10PM +0200, Arnd Bergmann wrote:
+> > On Tuesday, July 12, 2016 10:18:11 AM CEST Vivek Goyal wrote:
+> > > > 
+> > > > On Open Firmware, the DT is extracted from running firmware and copied
+> > > > into dynamically allocated data structures. After a kexec, the runtime
+> > > > interface to the firmware is not available, so the flattened DT format
+> > > > was created as a way to pass the same data in a binary blob to the new
+> > > > kernel in a format that can be read from the kernel by walking the
+> > > > directories in /proc/device-tree/*.
+> > > 
+> > > So this DT is available inside kernel and running kernel can still
+> > > retrieve it and pass it to second kernel?
+> > 
+> > The kernel only uses the flattened DT blob at boot time and converts
+> > it into the runtime data structures (struct device_node). The original
+> > dtb is typically overwritten later.
+> 
+> On arm64 we deliberately preserved the DTB, so we can take that and
+> build a new DTB from that kernel-side.
+> 
+> > > > - we typically ship devicetree sources for embedded machines with the
+> > > >   kernel sources. As more hardware of the system gets enabled, the
+> > > >   devicetree gains extra nodes and properties that describe the hardware
+> > > >   more completely, so we need to use the latest DT blob to use all
+> > > >   the drivers
+> > > > 
+> > > > - in some cases, kernels will fail to boot at all with an older version
+> > > >   of the DT, or fail to use the devices that were working on the
+> > > >   earlier kernel. This is usually considered a bug, but it's not rare
+> > > > 
+> > > > - In some cases, the kernel can update its DT at runtime, and the new
+> > > >   settings are expected to be available in the new kernel too, though
+> > > >   there are cases where you actually don't want the modified contents.
+> > > 
+> > > I am assuming that modified DT and unmodifed one both are accessible to
+> > > kernel. And if user space can make decisions which modfied fields to use
+> > > for new kernels and which ones not, then same can be done in kernel too?
+> > 
+> > The unmodified DT can typically be found on disk next to the kernel binary.
+> > The option you have is to either read it from /proc/devicetree or to
+> > read it from from /boot/*.dtb.
+> 
+> /proc/devicetree (aka /sys/firmware/devicetree) is a filesystem derived
+> from the raw DTB (which is exposed at /sys/firmware/fdt).
+> 
+> The blob that was handed to the kernel at boot time is exposed at
+> /sys/firmware/fdt.
 
---AQYPrgrEUc/1pSX1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I believe the blob can be read and passed to kexec kernel in kernel code without
+the extra fd.
 
-Please ignore this. Forgot the CC list.
+But consider we can kexec to a different kernel and a different initrd so there
+will be use cases to pass a total different dtb as well. From my understanding
+it is reasonable but yes I think we should think carefully about the design.
 
-Thanks,
-Kevin
+Thanks
+Dave
 
-On Wed, Jul 13, 2016 at 09:12:53AM +0800, Kevin Hao wrote:
-> v2:
-> Compare to v1 [1], the main differences are:
->  - Still automatically select RELOCATABLE when CRASH_DUMP is enabled.
->  - Add a new patch to kill RELOCATABLE_PPC32.
->=20
-> v1:
-> The first patch fixes a build error when CRASH_DUMP=3Dy && ADVANCED_OPTIO=
-NS=3Dn
-> for ppc32. The second does some cleanup for RELOCATABLE option.
->=20
-> Kevin Hao (3):
->   powerpc32: booke: fix the build error when CRASH_DUMP is enabled
->   powerpc: merge the RELOCATABLE config entries for ppc32 and ppc64
->   powerpc32: kill RELOCATABLE_PPC32
->=20
->  arch/powerpc/Kconfig              | 61 +++++++++++++++------------------=
-------
->  arch/powerpc/include/asm/page.h   |  6 ++--
->  arch/powerpc/kernel/Makefile      |  3 +-
->  arch/powerpc/kernel/vmlinux.lds.S |  2 +-
->  arch/powerpc/mm/init_32.c         |  2 +-
->  5 files changed, 29 insertions(+), 45 deletions(-)
->=20
-> [1] http://linuxppc-dev.ozlabs.narkive.com/fKHcSZbu/patch-0-2-powerpc-twe=
-ak-the-kernel-options-for-crash-dump-and-relocatable
-> --=20
-> 2.8.1
->=20
-
---AQYPrgrEUc/1pSX1
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXhZZZAAoJEJNY7TDerrFxIzIH/3QbKEWYk3G5bZdHzXiIcH0c
-BZE1wVuREcORxPrpnoohXRw+CaobJw+teFGYsysn/6uY4pxrA3GmpRjPJxFmocJ/
-vzYmopBzVMq2WfEOdvqTC5In1WBH7xfcRqVVYlaRJ97nF/wEWyBatTKBuGpiGM7N
-4GWwAaoaJVgXt1TdZV44StrYjJyueg+DHANbek1oBsIQMxYm+n8a6XG8piOUSOFP
-0c2wbTFgCsDTROPngy8VsVpXjQ9ledeqYGpVVmkj25GYYCMv7PctkCFGFVwhFuki
-lx9SqYTcZlR6H6dZ/VRO1Z+s3Ryt89iGRRtNCTxaKILKleYrOoSPH/i5Tn8pa7M=
-=MW37
------END PGP SIGNATURE-----
-
---AQYPrgrEUc/1pSX1--
+> Thanks,
+> Mark.
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
