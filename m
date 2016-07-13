@@ -1,46 +1,46 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqWs0041kzDqFn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:11 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqWs15XwnzDqGW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:13 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6DL91t5096612
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 17:18:10 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24567dd3hc-1
+ u6DL92eq032034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 17:18:11 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24539c464k-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 17:18:09 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 17:18:11 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 14 Jul 2016 07:18:06 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 297112BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:04 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6DLI4eB25952442
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:04 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6DLI3qH000937
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:03 +1000
+ Thu, 14 Jul 2016 07:18:09 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BA2312BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:05 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6DLI5qV11862084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:05 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6DLI5Ak015905
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:18:05 +1000
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, Huy Nguyen <huyn@mellanox.com>
 Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: [PATCH 09/15] cxl: Add kernel APIs to get & set the max irqs per
- context
-Date: Thu, 14 Jul 2016 07:17:08 +1000
+Subject: [PATCH 10/15] cxl: Add preliminary workaround for CX4 interrupt
+ limitation
+Date: Thu, 14 Jul 2016 07:17:09 +1000
 In-Reply-To: <1468444634-1866-1-git-send-email-imunsie@au.ibm.com>
 References: <1468444634-1866-1-git-send-email-imunsie@au.ibm.com>
-Message-Id: <1468444634-1866-10-git-send-email-imunsie@au.ibm.com>
+Message-Id: <1468444634-1866-11-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,74 +52,171 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-These APIs will be used by the Mellanox CX4 support. While they function
-standalone to configure existing behaviour, their primary purpose is to
-allow the Mellanox driver to inform the cxl driver of a hardware
-limitation, which will be used in a future patch.
+The Mellanox CX4 has a hardware limitation where only 4 bits of the
+AFU interrupt number can be passed to the XSL when sending an interrupt,
+limiting it to only 15 interrupts per context (AFU interrupt number 0 is
+invalid).
+
+In order to overcome this, we will allocate additional contexts linked
+to the default context as extra address space for the extra interrupts -
+this will be implemented in the next patch.
+
+This patch adds the preliminary support to allow this, by way of adding
+a linked list in the context structure that we use to keep track of the
+contexts dedicated to interrupts, and an API to simultaneously iterate
+over the related context structures, AFU interrupt numbers and hardware
+interrupt numbers. The point of using a single API to iterate these is
+to hide some of the details of the iteration from external code, and to
+reduce the number of APIs that need to be exported via base.c to allow
+built in code to call.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
 ---
- drivers/misc/cxl/api.c | 27 +++++++++++++++++++++++++++
- include/misc/cxl.h     | 10 ++++++++++
- 2 files changed, 37 insertions(+)
+
+V1->V2:
+	- Fixed typo spotted by Fred
+---
+ drivers/misc/cxl/api.c     | 15 +++++++++++++++
+ drivers/misc/cxl/base.c    | 17 +++++++++++++++++
+ drivers/misc/cxl/context.c |  1 +
+ drivers/misc/cxl/cxl.h     | 10 ++++++++++
+ drivers/misc/cxl/main.c    |  1 +
+ include/misc/cxl.h         |  9 +++++++++
+ 6 files changed, 53 insertions(+)
 
 diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 6a030bf..1e2c0d9 100644
+index 1e2c0d9..f02a859 100644
 --- a/drivers/misc/cxl/api.c
 +++ b/drivers/misc/cxl/api.c
-@@ -447,3 +447,30 @@ ssize_t cxl_read_adapter_vpd(struct pci_dev *dev, void *buf, size_t count)
- 	return cxl_ops->read_adapter_vpd(afu->adapter, buf, count);
+@@ -97,6 +97,21 @@ static irq_hw_number_t cxl_find_afu_irq(struct cxl_context *ctx, int num)
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(cxl_read_adapter_vpd);
-+
-+int cxl_set_max_irqs_per_process(struct pci_dev *dev, int irqs)
+ 
++int _cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq)
 +{
-+	struct cxl_afu *afu = cxl_pci_to_afu(dev);
-+	if (IS_ERR(afu))
-+		return -ENODEV;
-+
-+	if (irqs > afu->adapter->user_irqs)
-+		return -EINVAL;
-+
-+	/* Limit user_irqs to prevent the user increasing this via sysfs */
-+	afu->adapter->user_irqs = irqs;
-+	afu->irqs_max = irqs;
-+
-+	return 0;
++	if (*ctx == NULL || *afu_irq == 0) {
++		*afu_irq = 1;
++		*ctx = cxl_get_context(pdev);
++	} else {
++		(*afu_irq)++;
++		if (*afu_irq > cxl_get_max_irqs_per_process(pdev)) {
++			*ctx = list_next_entry(*ctx, extra_irq_contexts);
++			*afu_irq = 1;
++		}
++	}
++	return cxl_find_afu_irq(*ctx, *afu_irq);
 +}
-+EXPORT_SYMBOL_GPL(cxl_set_max_irqs_per_process);
-+
-+int cxl_get_max_irqs_per_process(struct pci_dev *dev)
++/* Exported via cxl_base */
+ 
+ int cxl_set_priv(struct cxl_context *ctx, void *priv)
+ {
+diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
+index 1c3e737f..d7d9d02 100644
+--- a/drivers/misc/cxl/base.c
++++ b/drivers/misc/cxl/base.c
+@@ -141,6 +141,23 @@ void cxl_pci_disable_device(struct pci_dev *dev)
+ }
+ EXPORT_SYMBOL_GPL(cxl_pci_disable_device);
+ 
++int cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq)
 +{
-+	struct cxl_afu *afu = cxl_pci_to_afu(dev);
-+	if (IS_ERR(afu))
-+		return -ENODEV;
++	int ret;
++	struct cxl_calls *calls;
 +
-+	return afu->irqs_max;
++	calls = cxl_calls_get();
++	if (!calls)
++		return -EBUSY;
++
++	ret = calls->cxl_next_msi_hwirq(pdev, ctx, afu_irq);
++
++	cxl_calls_put(calls);
++
++	return ret;
 +}
-+EXPORT_SYMBOL_GPL(cxl_get_max_irqs_per_process);
++EXPORT_SYMBOL_GPL(cxl_next_msi_hwirq);
++
+ static int __init cxl_base_init(void)
+ {
+ 	struct device_node *np = NULL;
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index edbb99e..2616cddb 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -68,6 +68,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
+ 	ctx->pending_afu_err = false;
+ 
+ 	INIT_LIST_HEAD(&ctx->irq_names);
++	INIT_LIST_HEAD(&ctx->extra_irq_contexts);
+ 
+ 	/*
+ 	 * When we have to destroy all contexts in cxl_context_detach_all() we
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index b81f476..73b9a55 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -537,6 +537,14 @@ struct cxl_context {
+ 	atomic_t afu_driver_events;
+ 
+ 	struct rcu_head rcu;
++
++	/*
++	 * Only used when more interrupts are allocated via
++	 * pci_enable_msix_range than are supported in the default context, to
++	 * use additional contexts to overcome the limitation. i.e. Mellanox
++	 * CX4 only:
++	 */
++	struct list_head extra_irq_contexts;
+ };
+ 
+ struct cxl_service_layer_ops {
+@@ -722,11 +730,13 @@ ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+ /* Internal functions wrapped in cxl_base to allow PHB to call them */
+ bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
+ void _cxl_pci_disable_device(struct pci_dev *dev);
++int _cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
+ 
+ struct cxl_calls {
+ 	void (*cxl_slbia)(struct mm_struct *mm);
+ 	bool (*cxl_pci_associate_default_context)(struct pci_dev *dev, struct cxl_afu *afu);
+ 	void (*cxl_pci_disable_device)(struct pci_dev *dev);
++	int (*cxl_next_msi_hwirq)(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
+ 
+ 	struct module *owner;
+ };
+diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+index 4e5474b..66fac71 100644
+--- a/drivers/misc/cxl/main.c
++++ b/drivers/misc/cxl/main.c
+@@ -112,6 +112,7 @@ static struct cxl_calls cxl_calls = {
+ 	.cxl_slbia = cxl_slbia_core,
+ 	.cxl_pci_associate_default_context = _cxl_pci_associate_default_context,
+ 	.cxl_pci_disable_device = _cxl_pci_disable_device,
++	.cxl_next_msi_hwirq = _cxl_next_msi_hwirq,
+ 	.owner = THIS_MODULE,
+ };
+ 
 diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index dd9eebb..fc07ed4 100644
+index fc07ed4..6c52cbc 100644
 --- a/include/misc/cxl.h
 +++ b/include/misc/cxl.h
-@@ -166,6 +166,16 @@ void cxl_psa_unmap(void __iomem *addr);
- /*  Get the process element for this context */
- int cxl_process_element(struct cxl_context *ctx);
- 
-+/*
-+ * Limit the number of interrupts that a single context can allocate via
-+ * cxl_start_work. If using the api with a real phb, this may be used to
-+ * request that additional default contexts be created when allocating
-+ * interrupts via pci_enable_msix_range. These will be set to the same running
-+ * state as the default context, and if that is running it will reuse the
-+ * parameters previously passed to cxl_start_context for the default context.
-+ */
-+int cxl_set_max_irqs_per_process(struct pci_dev *dev, int irqs);
-+int cxl_get_max_irqs_per_process(struct pci_dev *dev);
+@@ -178,6 +178,15 @@ int cxl_set_max_irqs_per_process(struct pci_dev *dev, int irqs);
+ int cxl_get_max_irqs_per_process(struct pci_dev *dev);
  
  /*
++ * Use to simultaneously iterate over hardware interrupt numbers, contexts and
++ * afu interrupt numbers allocated for the device via pci_enable_msix_range and
++ * is a useful convenience function when working with hardware that has
++ * limitations on the number of interrupts per process. *ctx and *afu_irq
++ * should be NULL and 0 to start the iteration.
++ */
++int cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
++
++/*
   * These calls allow drivers to create their own file descriptors and make them
+  * identical to the cxl file descriptor user API. An example use case:
+  *
 -- 
 2.8.1
