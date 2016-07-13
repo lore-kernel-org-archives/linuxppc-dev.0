@@ -1,32 +1,25 @@
-Return-Path: <vgoyal@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqJtR2fyKzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 23:03:42 +1000 (AEST)
-Date: Wed, 13 Jul 2016 09:03:38 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Petr Tesarik <ptesarik@suse.cz>, linux-arm-kernel@lists.infradead.org,
- bhe@redhat.com, arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqK9Y4JdHzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 23:16:48 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Dave Young <dyoung@redhat.com>,
+ linux-arm-kernel@lists.infradead.org, bhe@redhat.com,
  kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
  AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, dyoung@redhat.com
+ "Eric W. Biederman" <ebiederm@xmission.com>, bauerman@linux.vnet.ibm.com,
+ Vivek Goyal <vgoyal@redhat.com>
 Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713130338.GB16900@redhat.com>
+Date: Wed, 13 Jul 2016 15:13:42 +0200
+Message-ID: <7352796.seiSnHrYPy@wuerfel>
+In-Reply-To: <20160713094127.GC14522@leverpostej>
 References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <87furf7ztv.fsf@x220.int.ebiederm.org> <50662781.Utjsnse3nb@hactar>
- <20160712225805.0d27fe5d@hananiah.suse.cz>
- <20160712221804.GV1041@n2100.armlinux.org.uk>
- <87twfunneg.fsf@linux.vnet.ibm.com>
- <20160713073657.GX1041@n2100.armlinux.org.uk>
- <87poqinf9m.fsf@linux.vnet.ibm.com>
- <20160713082639.GZ1041@n2100.armlinux.org.uk>
+ <5352106.oQ0Ff9gWJA@wuerfel> <20160713094127.GC14522@leverpostej>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160713082639.GZ1041@n2100.armlinux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,78 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 09:26:39AM +0100, Russell King - ARM Linux wrote:
-> On Wed, Jul 13, 2016 at 05:55:33PM +1000, Stewart Smith wrote:
-> > Russell King - ARM Linux <linux@armlinux.org.uk> writes:
-> > > On Wed, Jul 13, 2016 at 02:59:51PM +1000, Stewart Smith wrote:
-> > >> Russell King - ARM Linux <linux@armlinux.org.uk> writes:
-> > >> > On Tue, Jul 12, 2016 at 10:58:05PM +0200, Petr Tesarik wrote:
-> > >> >> I'm not an expert on DTB, so I can't provide an example of code
-> > >> >> execution, but you have already mentioned the /chosen/linux,stdout-path
-> > >> >> property. If an attacker redirects the bootloader to an insecure
-> > >> >> console, they may get access to the system that would otherwise be
-> > >> >> impossible.
-> > >> >
-> > >> > I fail to see how kexec connects with the boot loader - the DTB image
-> > >> > that's being talked about is one which is passed from the currently
-> > >> > running kernel to the to-be-kexec'd kernel.  For ARM (and I suspect
-> > >> > also ARM64) that's a direct call chain which doesn't involve any
-> > >> > boot loader or firmware, and certainly none that would involve the
-> > >> > passed DTB image.
-> > >> 
-> > >> For OpenPOWER machines, kexec is the bootloader. Our bootloader is a
-> > >> linux kernel and initramfs with a UI (petitboot) - this means we never
-> > >> have to write a device driver twice: write a kernel one and you're done
-> > >> (for booting from the device and using it in your OS).
-> > >
-> > > I think you misunderstood my point.
-> > >
-> > > On ARM, we do not go:
-> > >
-> > > 	kernel (kexec'd from) -> boot loader -> kernel (kexec'd to)
-> > >
-> > > but we go:
-> > >
-> > > 	kernel (kexec'd from) -> kernel (kexec'd to)
-> > >
-> > > There's no intermediate step involving any bootloader.
-> > >
-> > > Hence, my point is that the dtb loaded by kexec is _only_ used by the
-> > > kernel which is being kexec'd to, not by the bootloader, nor indeed
-> > > the kernel which it is loaded into.
-> > >
-> > > Moreover, if you read the bit that I quoted (which is what I was
-> > > replying to), you'll notice that it is talking about the DTB loaded
-> > > by kexec somehow causing the _bootloader_ to be redirected to an
-> > > alternative console.  This point is wholely false on ARM.
+On Wednesday, July 13, 2016 10:41:28 AM CEST Mark Rutland wrote:
+> On Wed, Jul 13, 2016 at 10:01:33AM +0200, Arnd Bergmann wrote:
+> > On Wednesday, July 13, 2016 10:36:14 AM CEST Dave Young wrote:
+> > > On 07/12/16 at 03:50pm, Mark Rutland wrote:
+> > > > On Tue, Jul 12, 2016 at 04:24:10PM +0200, Arnd Bergmann wrote:
+> > > > > On Tuesday, July 12, 2016 10:18:11 AM CEST Vivek Goyal wrote:
+> > > > 
+> > > > /proc/devicetree (aka /sys/firmware/devicetree) is a filesystem derived
+> > > > from the raw DTB (which is exposed at /sys/firmware/fdt).
+> > > > 
+> > > > The blob that was handed to the kernel at boot time is exposed at
+> > > > /sys/firmware/fdt.
+> > > 
+> > > I believe the blob can be read and passed to kexec kernel in kernel code without
+> > > the extra fd.
+> > > 
+> > > But consider we can kexec to a different kernel and a different initrd so there
+> > > will be use cases to pass a total different dtb as well. From my understanding
+> > > it is reasonable but yes I think we should think carefully about the design.
 > > 
-> > Ahh.. I missed the bootloader bit there.
+> > Ok, I can see four interesting use cases here:
 > > 
-> > In which case, we're the same on OpenPOWER, there is no intermediate
-> > bootloader - in our case we have linux (with kexec) taking on what uboot
-> > or grub is typically used for on other platforms.
+> > - Using the dtb that the kernel has saved at boot time. Ideally this should not
+> >   require an additional step of signing it, since the running kernel already
+> >   trusts it.
 > 
-> Indeed - maybe Eric knows better, but I can't see any situation where
-> the dtb we load via kexec should ever affect "the bootloader", unless
-> the "kernel" that's being loaded into kexec is "the bootloader".
+> We have sufficient information from the existing kexec_file_load syscall
+> prototype to do this in-kernel.
+
+Ok.
+
+> > - A dtb blob from the file system that was produced along with the kernel image.
+> >   If we require a signature on the kernel, the the same requirement should be
+> >   made on the dtb. Whoever signs the kernel can also sign the dtb.
+> >   The tricky part here is the kernel command line that is part of the dtb
+> >   and that may need to be modified.
 > 
-> Now, going back to the more fundamental issue raised in my first reply,
-> about the kernel command line.
+> I suspect that for this case, following the example of the existing
+> sycall, we'd allow the kernel to modify bootargs and initrd properties
+> after verfiying the signature of the DTB.
+
+Makes sense.
+ 
+> The big question is whether this is a realistic case on a secure boot
+> system.
+
+What does x86 do here? I assume changes to the command line are also
+limited.
+
+> > - Modifying the dtb at for any of the reasons I listed: This should always
+> >   be possible when we do not use secure boot, just like booting an unsigned
+> >   kernel is.
 > 
-> On x86, I can see that it _is_ possible for userspace to specify a
-> command line, and the kernel loading the image provides the command
-> line to the to-be-kexeced kernel with very little checking.  So, if
-> your kernel is signed, what stops the "insecure userspace" loading
-> a signed kernel but giving it an insecure rootfs and/or console?
+> This is possible with the existing kexec_load syscall, for the non
+> secure boot case.
 
-It is not kexec specific. I could do this for regular boot too, right?
+Ok, let's skip that then.
 
-Command line options are not signed. I thought idea behind secureboot
-was to execute only trusted code and command line options don't enforce
-you to execute unsigned code.
+> > - kboot/petitboot with all of the user space being part of the trusted boot
+> >   chain: it would be good to allow these to modify the dtb as needed without
+> >   breaking the trust chain, just like we allow grub or u-boot to modify the dtb
+> >   before passing it to the kernel.
+> 
+> It depends on *what* we need to modify here. We can modify the bootargs
+> and initrd properties as part of the kexec_file_load syscall, so what
+> else would we want to alter?
 
-So it sounds like different class of security problems which you are
-referring to and not necessarily covered by secureboot or signed
-kernel.
+I guess petitboot can also just use kexec_load() instead of kexec_file_load(),
+as long as the initramfs containing petitboot is trusted by the kernel.
 
-Vivek
+	Arnd
