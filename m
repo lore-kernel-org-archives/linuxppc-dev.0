@@ -3,43 +3,44 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq7Cy3468zDqFq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq7D00mnRzDqKK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:15 +1000 (AEST)
 Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D5i1Tu108959
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:12 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2452at079h-1
+ u6D5i0Ma108833
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:14 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2452at07a8-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:14 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 13 Jul 2016 15:48:08 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2BA43357805E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:06 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6D5m6k425296914
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:06 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6D5m5a8009927
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:06 +1000
+ Wed, 13 Jul 2016 15:48:11 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E19C02CE802D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:08 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6D5m8xI18219166
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:08 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6D5m7s8008929
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:08 +1000
 From: alastair@au1.ibm.com
 To: mpe@ellerman.id.au
 Cc: benh@kernel.crashing.org, paulus@samba.org, herbert@gondor.apana.org.au,
  davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
  linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH 2/2] Automatically load the vmx_crypto module if supported.
-Date: Wed, 13 Jul 2016 15:47:19 +1000
+Subject: [PATCH 2/2] crypto: vmx - Convert to CPU feature based module
+ autoloading
+Date: Wed, 13 Jul 2016 15:47:20 +1000
 In-Reply-To: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
 References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
-Message-Id: <1468388840-12068-4-git-send-email-alastair@au1.ibm.com>
+Message-Id: <1468388840-12068-5-git-send-email-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
