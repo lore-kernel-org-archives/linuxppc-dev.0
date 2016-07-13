@@ -1,26 +1,56 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rqRRf6mQVzDqFn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 03:59:26 +1000 (AEST)
-Date: Wed, 13 Jul 2016 18:58:32 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Dave Young <dyoung@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- bhe@redhat.com, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713175630.GA2668@leverpostej>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
- <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
- <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
- <20160713093432.GB14522@leverpostej> <20160713173804.GA25723@porco>
+Return-Path: <borntraeger@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqRTc3gdbzDqGw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 04:01:08 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6DHxu2Y108082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 14:01:05 -0400
+Received: from e06smtp08.uk.ibm.com (e06smtp08.uk.ibm.com [195.75.94.104])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 245hgaw8yy-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 14:01:02 -0400
+Received: from localhost
+ by e06smtp08.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Wed, 13 Jul 2016 19:01:01 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4F3172190046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:00:27 +0100 (BST)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6DI0wbQ15270378
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 18:00:59 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6DI0whl002993
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 12:00:58 -0600
+Subject: Re: [PATCH V2 4/5] kvm/stats: Add provisioning for 64-bit vcpu
+ statistics
+To: Paolo Bonzini <pbonzini@redhat.com>, David Matlack <dmatlack@google.com>
+References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
+ <1468220912-22828-4-git-send-email-sjitindarsingh@gmail.com>
+ <CALzav=e=hScxto3c=4rJ88Phg989UZhk+O44rV56obFP3v1SFg@mail.gmail.com>
+ <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
+ <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
+ <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
+Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ kvm list <kvm@vger.kernel.org>, agraf@suse.com,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Date: Wed, 13 Jul 2016 20:00:54 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160713173804.GA25723@porco>
+In-Reply-To: <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <578681D6.8070801@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,104 +60,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 14, 2016 at 02:38:06AM +0900, AKASHI Takahiro wrote:
-> Apologies for the slow response. I'm attending LinuxCon this week.
+On 07/11/2016 09:31 PM, Paolo Bonzini wrote:
 > 
-> On Wed, Jul 13, 2016 at 10:34:47AM +0100, Mark Rutland wrote:
-> > On Wed, Jul 13, 2016 at 10:36:14AM +0800, Dave Young wrote:
-> > > But consider we can kexec to a different kernel and a different initrd so there
-> > > will be use cases to pass a total different dtb as well.
-> > 
-> > It depends on what you mean by "a different kernel", and what this
-> > implies for the DTB.
-> > 
-> > I expect future arm64 Linux kernels to function with today's DTBs, and
-> > the existing boot protocol. The kexec_file_load syscall already has
-> > enough information for the kernel to inject the initrd and bootargs
-> > properties into a DTB.
-> > 
-> > In practice on x86 today, kexec_file_load only supports booting to a
-> > Linux kernel, because the in-kernel purgatory only implements the x86
-> > Linux boot protocol. Analagously, for arm64 I think that the first
-> > kernel should use its internal copy of the boot DTB, with /chosen fixed
-> > up appropriately, assuming the next kernel is an arm64 Linux image.
-> > 
-> > If booting another OS, the only parts of the DTB I would expect to
-> > change are the properties under chosen, as everything else *should* be
-> > OS-independent. However the other OS may have a completely different
-> > boot protocol, might not even take a DTB, and will likely need a
-> > compeltely different purgatory implementation. So just allowing the DTB
-> > to be altered isn't sufficient for that case.
-> > 
-> > There might be cases where we want a different DTB, but as far as I can
-> > tell we have nothing analagous on x86 today. If we do need this, we
-> > should have an idea of what real case(s) were trying to solve.
 > 
-> What I had in my mind was:
+> On 11/07/2016 19:30, David Matlack wrote:
+>> On Mon, Jul 11, 2016 at 10:05 AM, Paolo Bonzini <pbonzini@redhat.com> wrote:
+>>>
+>>>
+>>> On 11/07/2016 18:51, David Matlack wrote:
+>>>>>> vcpus have statistics associated with them which can be viewed within the
+>>>>>> debugfs. Currently it is assumed within the vcpu_stat_get() and
+>>>>>> vcpu_stat_get_per_vm() functions that all of these statistics are
+>>>>>> represented as 32-bit numbers. The next patch adds some 64-bit statistics,
+>>>>>> so add provisioning for the display of 64-bit vcpu statistics.
+>>>> Thanks, we need 64-bit stats in other places as well. Can we use this
+>>>> opportunity to wholesale upgrade all KVM stats from u32 to u64? Most
+>>>> of this patch is duplicated code with "u32" swapped with "u64".
+>>>>
+>>>
+>>> I'm not sure of what 32-bit architectures would do, but perhaps we could
+>>> upgrade them to unsigned long at least.
+>>
+>> I thought u64 still existed on 32-bit architectures. unsigned long
+>> would be fine but with the caveat that certain stats would overflow on
+>> 32-bit architectures.
 > 
-> - Kdump
->   As Russel said, we definitely need to modify dtb.
+> Yes, but not all 32-bit architectures can do atomic read-modify-write
+> (e.g. add) operations on 64-bit values.
 
-I agree that *something* needs to modify the DTB to pass the cmdline and
-initrd properties.
-
-What I'm trying to point out that it isn't necessary that *userspace*
-does so for the vast majority of kexec_file_load cases.
-
-If userspace where to have to modify things dynamically, then you can't
-have a secure deployment. Either you don't verify signatures on things
-modified by userspace, giving a backdoor, or each machine has to have a
-local copy of (locally) trusted private keys, which comes with other
-risks (e.g. offline extraction of the keys).
-
->   In addition to bootargs and initrd proerties (FYI, in my arm64
->   implementation for arm64, eflcorehdr info is also passed as DT
->   property),
-
-As pointed out, for kexec_file_load we can add code to the kernel can
-add bootargs and initrd properties as necessary for this case. The
-existing kexec_file_load prototype allows userspace to pass the required
-information.
-
->   we may want to remove unnecessary devices and even add a dedicated
->   storage device for storing a core dump image.
-
-I suspect that bringing up a minimal number of devices is better
-controlled by a cmdline option. In general, figuring out what is
-necessary and what is not is going to be board specific, so hacking the
-FW tables (DTB or ACPI) is not a very portable/reliable approach.
-
-Do we actually add devices in practice? More so than the above that
-requires special knowledge of the platform (including things that were
-not described in the boot DTB).
-
-In the ACPI case modifying a DTB alone is not sufficient to change the
-information regarding devices, as those won't be described in the DTB.
-It's not possible to convert ACPI to DTB in general.
-
-> - Say, booting BE kernel on ACPI LE kernel
->   In this case, there is no useful dtb in the kernel.
-
-If the platform only has ACPI, then you cannot boot a BE kernel to begin
-with. As above one cannot convert ACPI to DTB, so one would need
-extensive platform knowledge for this to work.
-
-I think it's fair to say that this is not a realistic/common case.
-
-> Have said that, as Mark said, we may be able to use normal kexec_load
-> system call if we don't need a "secure" kexec.
-> 
-> BTW, why doesn't the current kexec_load have ability of verifying
-> a signature of initramfs image?
-
-I believe the code was written before secure boot was a concern, and in
-the absence of secure boot it was expected that a trusted userspace
-would verify signatures itself.
-
-> Is IMA/EVM expected to be used at runtime?
-
-Sorry, I'm not sure what those abbreviations mean. Could you expand
-them?
-
-Thanks,
-Mark.
+So what about only doing it for the VCPU events? Those should be only
+modified by one CPU. We would have some odd values on 32bit overflow, but
+this will be certainly better than just start with 0
