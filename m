@@ -1,46 +1,40 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqX4J5CK2zDrK6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:28:00 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6DLO6l0097617
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 17:27:58 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24567cn0y4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 17:27:57 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 14 Jul 2016 07:27:55 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 903FF2CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:27:52 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6DLRqTG11337882
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:27:52 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6DLRqUG026097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:27:52 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: weiyj_lk <weiyj_lk@163.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- Wei Yongjun <yongjun_wei@trendmicro.com.cn>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] cxl: Use for_each_compatible_node() macro
-In-reply-to: <1468323011-1513-1-git-send-email-weiyj_lk@163.com>
-References: <1468323011-1513-1-git-send-email-weiyj_lk@163.com>
-Date: Thu, 14 Jul 2016 07:27:50 +1000
-Message-Id: <1468445263-sup-6615@x230.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqXhx3pt9zDqFX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:56:17 +1000 (AEST)
+Received: by mail-pa0-x231.google.com with SMTP id fi15so21386472pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 14:56:17 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: linux-kernel@vger.kernel.org
+Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Subject: [PATCH v2 0/11] mm: Hardened usercopy
+Date: Wed, 13 Jul 2016 14:55:53 -0700
+Message-Id: <1468446964-22213-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,4 +44,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+Hi,
+
+This is a start of the mainline port of PAX_USERCOPY[1]. After I started
+writing tests (now in lkdtm in -next) for Casey's earlier port[2], I
+kept tweaking things further and further until I ended up with a whole
+new patch series. To that end, I took Rik's feedback and made a number
+of other changes and clean-ups as well.
+
+Based on my understanding, PAX_USERCOPY was designed to catch a
+few classes of flaws (mainly bad bounds checking) around the use of
+copy_to_user()/copy_from_user(). These changes don't touch get_user() and
+put_user(), since these operate on constant sized lengths, and tend to be
+much less vulnerable. There are effectively three distinct protections in
+the whole series, each of which I've given a separate CONFIG, though this
+patch set is only the first of the three intended protections. (Generally
+speaking, PAX_USERCOPY covers what I'm calling CONFIG_HARDENED_USERCOPY
+(this) and CONFIG_HARDENED_USERCOPY_WHITELIST (future), and
+PAX_USERCOPY_SLABS covers CONFIG_HARDENED_USERCOPY_SPLIT_KMALLOC
+(future).)
+
+This series, which adds CONFIG_HARDENED_USERCOPY, checks that objects
+being copied to/from userspace meet certain criteria:
+- if address is a heap object, the size must not exceed the object's
+  allocated size. (This will catch all kinds of heap overflow flaws.)
+- if address range is in the current process stack, it must be within the
+  current stack frame (if such checking is possible) or at least entirely
+  within the current process's stack. (This could catch large lengths that
+  would have extended beyond the current process stack, or overflows if
+  their length extends back into the original stack.)
+- if the address range is part of kernel data, rodata, or bss, allow it.
+- if address range is page-allocated, that it doesn't span multiple
+  allocations.
+- if address is within the kernel text, reject it.
+- everything else is accepted
+
+The patches in the series are:
+- Support for arch-specific stack frame checking:
+	1- mm: Implement stack frame object validation
+- The core copy_to/from_user() checks, without the slab object checks:
+        2- mm: Hardened usercopy
+- Per-arch enablement of the protection:
+        3- x86/uaccess: Enable hardened usercopy
+        4- ARM: uaccess: Enable hardened usercopy
+        5- arm64/uaccess: Enable hardened usercopy
+        6- ia64/uaccess: Enable hardened usercopy
+        7- powerpc/uaccess: Enable hardened usercopy
+        8- sparc/uaccess: Enable hardened usercopy
+        9- s390/uaccess: Enable hardened usercopy
+- The heap allocator implementation of object size checking:
+       10- mm: SLAB hardened usercopy support
+       11- mm: SLUB hardened usercopy support
+
+Some notes:
+
+- This is expected to apply on top of -next which contains fixes for the
+  position of _etext on both arm and arm64.
+
+- I couldn't detect a measurable performance change with these features
+  enabled. Kernel build times were unchanged, hackbench was unchanged,
+  etc. I think we could flip this to "on by default" at some point, but
+  for now, I'm leaving it off until I can get some more definitive
+  measurements.
+
+- The SLOB support extracted from grsecurity seems entirely broken. I
+  have no idea what's going on there, I spent my time testing SLAB and
+  SLUB. Having someone else look at SLOB would be nice, but this series
+  doesn't depend on it.
+
+Additional features that would be nice, but aren't blocking this series:
+
+- Needs more architecture support for stack frame checking (only x86 now).
+
+
+Thanks!
+
+-Kees
+
+[1] https://grsecurity.net/download.php "grsecurity - test kernel patch"
+[2] http://www.openwall.com/lists/kernel-hardening/2016/05/19/5
+
+v2:
+- added s390 support
+- handle slub red zone
+- disallow writes to rodata area
+- stack frame walker now CONFIG-controlled arch-specific helper
