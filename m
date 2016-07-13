@@ -3,31 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDJF1sv4zDqKs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:37:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDJJ2frfzDqQb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:37:20 +1000 (AEST)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D9YqUP117023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:14 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2455fcq9bq-1
+ u6D9YF69115713
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:18 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2455fcq9eq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:14 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:37:18 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 03:37:14 -0600
+ Wed, 13 Jul 2016 03:37:17 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH for-4.8 06/13] powerpc/mm/hash: Add helper for finding SLBE
- LLP encoding
-Date: Wed, 13 Jul 2016 15:06:37 +0530
+Subject: [PATCH for-4.8 07/13] powerpc/mm: Use hugetlb flush functions
+Date: Wed, 13 Jul 2016 15:06:38 +0530
 In-Reply-To: <1468402604-5130-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1468402604-5130-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1468402604-5130-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1468402604-5130-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,73 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace opencoding of the same at multiple places with the helper.
-No functional change with this patch.
+Use flush_hugetlb_page instead of flush_tlb_page when we clear flush the
+pte.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h | 9 +++++++++
- arch/powerpc/include/asm/kvm_book3s_64.h      | 3 +--
- arch/powerpc/mm/hash_native_64.c              | 6 ++----
- 3 files changed, 12 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/hugetlb.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 2c2d55580ae2..6ec21aad8ccc 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -151,6 +151,15 @@ static inline unsigned int mmu_psize_to_shift(unsigned int mmu_psize)
- 	BUG();
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index e2d9f4996e5c..c5517f463ec7 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -147,7 +147,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+ {
+ 	pte_t pte;
+ 	pte = huge_ptep_get_and_clear(vma->vm_mm, addr, ptep);
+-	flush_tlb_page(vma, addr);
++	flush_hugetlb_page(vma, addr);
  }
  
-+static inline unsigned long get_sllp_encoding(int psize)
-+{
-+	unsigned long sllp;
-+
-+	sllp = ((mmu_psize_defs[psize].sllp & SLB_VSID_L) >> 6) |
-+		((mmu_psize_defs[psize].sllp & SLB_VSID_LP) >> 4);
-+	return sllp;
-+}
-+
- #endif /* __ASSEMBLY__ */
- 
- /*
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 1f4497fb5b83..88d17b4ea9c8 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -181,8 +181,7 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 
- 	switch (b_psize) {
- 	case MMU_PAGE_4K:
--		sllp = ((mmu_psize_defs[a_psize].sllp & SLB_VSID_L) >> 6) |
--			((mmu_psize_defs[a_psize].sllp & SLB_VSID_LP) >> 4);
-+		sllp = get_sllp_encoding(a_psize);
- 		rb |= sllp << 5;	/*  AP field */
- 		rb |= (va_low & 0x7ff) << 12;	/* remaining 11 bits of AVA */
- 		break;
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index cb3b4c98b637..277047528a3a 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -72,8 +72,7 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
- 		/* clear out bits after (52) [0....52.....63] */
- 		va &= ~((1ul << (64 - 52)) - 1);
- 		va |= ssize << 8;
--		sllp = ((mmu_psize_defs[apsize].sllp & SLB_VSID_L) >> 6) |
--			((mmu_psize_defs[apsize].sllp & SLB_VSID_LP) >> 4);
-+		sllp = get_sllp_encoding(apsize);
- 		va |= sllp << 5;
- 		asm volatile(ASM_FTR_IFCLR("tlbie %0,0", PPC_TLBIE(%1,%0), %2)
- 			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
-@@ -122,8 +121,7 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
- 		/* clear out bits after(52) [0....52.....63] */
- 		va &= ~((1ul << (64 - 52)) - 1);
- 		va |= ssize << 8;
--		sllp = ((mmu_psize_defs[apsize].sllp & SLB_VSID_L) >> 6) |
--			((mmu_psize_defs[apsize].sllp & SLB_VSID_LP) >> 4);
-+		sllp = get_sllp_encoding(apsize);
- 		va |= sllp << 5;
- 		asm volatile(".long 0x7c000224 | (%0 << 11) | (0 << 21)"
- 			     : : "r"(va) : "memory");
+ static inline int huge_pte_none(pte_t pte)
 -- 
 2.7.4
