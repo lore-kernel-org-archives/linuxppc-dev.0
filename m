@@ -1,42 +1,47 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
+Return-Path: <luto@amacapital.net>
+Received: from mail-vk0-x236.google.com (mail-vk0-x236.google.com
+ [IPv6:2607:f8b0:400c:c05::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqXj06ry7zDqFX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:56:20 +1000 (AEST)
-Received: by mail-pa0-x22d.google.com with SMTP id dx3so21507376pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 14:56:20 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: linux-kernel@vger.kernel.org
-Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqXqM6XG9zDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 08:01:51 +1000 (AEST)
+Received: by mail-vk0-x236.google.com with SMTP id x130so85238399vkc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:01:51 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1468446964-22213-2-git-send-email-keescook@chromium.org>
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-2-git-send-email-keescook@chromium.org>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Wed, 13 Jul 2016 15:01:28 -0700
+Message-ID: <CALCETrVDJDjdoh7yvOPd=_5twQnzQRhe8G2KLaRw-NnA1Uf__g@mail.gmail.com>
+Subject: Re: [PATCH v2 01/11] mm: Implement stack frame object validation
+To: Kees Cook <keescook@chromium.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Rik van Riel <riel@redhat.com>,
  Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
+ Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
  Ard Biesheuvel <ard.biesheuvel@linaro.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, X86 ML <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
  Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
  Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
  Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Subject: [PATCH v2 11/11] mm: SLUB hardened usercopy support
-Date: Wed, 13 Jul 2016 14:56:04 -0700
-Message-Id: <1468446964-22213-12-git-send-email-keescook@chromium.org>
-In-Reply-To: <1468446964-22213-1-git-send-email-keescook@chromium.org>
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-arch <linux-arch@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,76 +51,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
-SLUB allocator to catch any copies that may span objects. Includes a
-redzone handling fix from Michael Ellerman.
+On Wed, Jul 13, 2016 at 2:55 PM, Kees Cook <keescook@chromium.org> wrote:
+> This creates per-architecture function arch_within_stack_frames() that
+> should validate if a given object is contained by a kernel stack frame.
+> Initial implementation is on x86.
+>
+> This is based on code from PaX.
+>
 
-Based on code from PaX and grsecurity.
+This, along with Josh's livepatch work, are two examples of unwinders
+that matter for correctness instead of just debugging.  ISTM this
+should just use Josh's code directly once it's been written.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- init/Kconfig |  1 +
- mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
-
-diff --git a/init/Kconfig b/init/Kconfig
-index 798c2020ee7c..1c4711819dfd 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1765,6 +1765,7 @@ config SLAB
- 
- config SLUB
- 	bool "SLUB (Unqueued Allocator)"
-+	select HAVE_HARDENED_USERCOPY_ALLOCATOR
- 	help
- 	   SLUB is a slab allocator that minimizes cache line usage
- 	   instead of managing queues of cached objects (SLAB approach).
-diff --git a/mm/slub.c b/mm/slub.c
-index 825ff4505336..7dee3d9a5843 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
- EXPORT_SYMBOL(__kmalloc_node);
- #endif
- 
-+#ifdef CONFIG_HARDENED_USERCOPY
-+/*
-+ * Rejects objects that are incorrectly sized.
-+ *
-+ * Returns NULL if check passes, otherwise const char * to name of cache
-+ * to indicate an error.
-+ */
-+const char *__check_heap_object(const void *ptr, unsigned long n,
-+				struct page *page)
-+{
-+	struct kmem_cache *s;
-+	unsigned long offset;
-+	size_t object_size;
-+
-+	/* Find object and usable object size. */
-+	s = page->slab_cache;
-+	object_size = slab_ksize(s);
-+
-+	/* Find offset within object. */
-+	offset = (ptr - page_address(page)) % s->size;
-+
-+	/* Adjust for redzone and reject if within the redzone. */
-+	if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
-+		if (offset < s->red_left_pad)
-+			return s->name;
-+		offset -= s->red_left_pad;
-+	}
-+
-+	/* Allow address range falling entirely within object size. */
-+	if (offset <= object_size && n <= object_size - offset)
-+		return NULL;
-+
-+	return s->name;
-+}
-+#endif /* CONFIG_HARDENED_USERCOPY */
-+
- static size_t __ksize(const void *object)
- {
- 	struct page *page;
--- 
-2.7.4
+--Andy
