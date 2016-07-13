@@ -1,22 +1,22 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqV5p2swWzDqLB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 05:59:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqV7l4mYXzDqLG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 06:00:51 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Dave Young <dyoung@redhat.com>, bhe@redhat.com, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>, bauerman@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ bhe@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>
 Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Date: Wed, 13 Jul 2016 21:57:28 +0200
-Message-ID: <7927804.6bj1abO0d2@wuerfel>
-In-Reply-To: <20160713175630.GA2668@leverpostej>
+Date: Wed, 13 Jul 2016 21:59:18 +0200
+Message-ID: <5108278.va6WuahHro@wuerfel>
+In-Reply-To: <2222184.ZN0KkkXgPC@hactar>
 References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <20160713173804.GA25723@porco> <20160713175630.GA2668@leverpostej>
+ <7352796.seiSnHrYPy@wuerfel> <2222184.ZN0KkkXgPC@hactar>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,39 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, July 13, 2016 6:58:32 PM CEST Mark Rutland wrote:
+On Wednesday, July 13, 2016 3:45:41 PM CEST Thiago Jung Bauermann wrote:
+> Am Mittwoch, 13 Juli 2016, 15:13:42 schrieb Arnd Bergmann:
+> > On Wednesday, July 13, 2016 10:41:28 AM CEST Mark Rutland wrote:
+> > > On Wed, Jul 13, 2016 at 10:01:33AM +0200, Arnd Bergmann wrote:
+> > > > - kboot/petitboot with all of the user space being part of the trusted
+> > > > boot> > 
+> > > >   chain: it would be good to allow these to modify the dtb as needed
+> > > >   without breaking the trust chain, just like we allow grub or u-boot
+> > > >   to modify the dtb before passing it to the kernel.
+> > > 
+> > > It depends on *what* we need to modify here. We can modify the bootargs
+> > > and initrd properties as part of the kexec_file_load syscall, so what
+> > > else would we want to alter?
+> > 
+> > I guess petitboot can also just use kexec_load() instead of
+> > kexec_file_load(), as long as the initramfs containing petitboot is
+> > trusted by the kernel.
 > 
-> >   we may want to remove unnecessary devices and even add a dedicated
-> >   storage device for storing a core dump image.
+> For secure boot, Petitboot needs to use kexec_file_load, because of the 
+> following two features which the system call enables:
 > 
-> I suspect that bringing up a minimal number of devices is better
-> controlled by a cmdline option. In general, figuring out what is
-> necessary and what is not is going to be board specific, so hacking the
-> FW tables (DTB or ACPI) is not a very portable/reliable approach.
+> 1. only allow loading of signed kernels.
+> 2. "measure" (i.e., record the hashes of) the kernel, initrd, kernel
+>    command line and other boot inputs for the Integrity Measurement
+>    Architecture subsystem.
 > 
-> Do we actually add devices in practice? More so than the above that
-> requires special knowledge of the platform (including things that were
-> not described in the boot DTB).
-> 
-> In the ACPI case modifying a DTB alone is not sufficient to change the
-> information regarding devices, as those won't be described in the DTB.
-> It's not possible to convert ACPI to DTB in general.
+> Those can't be done with kexec_load.
 
-A more likely scenario would be replacing ACPI tables with a DTB that
-describes the platform in order to use devices that the ACPI tables
-don't contain.
-
-> > - Say, booting BE kernel on ACPI LE kernel
-> >   In this case, there is no useful dtb in the kernel.
-
-> If the platform only has ACPI, then you cannot boot a BE kernel to begin
-> with. As above one cannot convert ACPI to DTB, so one would need
-> extensive platform knowledge for this to work.
-
-I think what he meant was to pass a DTB to the kexec kernel in order
-to run BE, while the original kernel can only run LE due to ACPI.
-
-If you boot a LE kernel using DTB, the same DTB should work
-for a kexec boot for a BE kernel.
+Can't petitboot do both of these in user space?
 
 	Arnd
