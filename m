@@ -1,21 +1,31 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ptesarik@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqCLq4kMrzDqKN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 18:54:27 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id g202so2782780pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:54:27 -0700 (PDT)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: sjitindarsingh@gmail.com, pbonzini@redhat.com, rkrcmar@redhat.com,
- agraf@suse.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, kvm-ppc@vger.kernel.org
-Subject: [PATCH V3 5/5] powerpc/kvm/stats: Implement existing and add new halt
- polling vcpu stats
-Date: Wed, 13 Jul 2016 18:54:13 +1000
-Message-Id: <1468400053-5115-1-git-send-email-sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqCQC1kqczDqLv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 18:57:23 +1000 (AEST)
+Date: Wed, 13 Jul 2016 10:57:16 +0200
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ linux-arm-kernel@lists.infradead.org, bhe@redhat.com, arnd@arndb.de,
+ linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Thiago Jung Bauermann
+ <bauerman@linux.vnet.ibm.com>, dyoung@redhat.com, vgoyal@redhat.com
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160713105716.535b6c91@hananiah.suse.cz>
+In-Reply-To: <20160713082639.GZ1041@n2100.armlinux.org.uk>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <87furf7ztv.fsf@x220.int.ebiederm.org> <50662781.Utjsnse3nb@hactar>
+ <20160712225805.0d27fe5d@hananiah.suse.cz>
+ <20160712221804.GV1041@n2100.armlinux.org.uk>
+ <87twfunneg.fsf@linux.vnet.ibm.com>
+ <20160713073657.GX1041@n2100.armlinux.org.uk>
+ <87poqinf9m.fsf@linux.vnet.ibm.com>
+ <20160713082639.GZ1041@n2100.armlinux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,149 +35,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vcpu stats are used to collect information about a vcpu which can be viewed
-in the debugfs. For example halt_attempted_poll and halt_successful_poll
-are used to keep track of the number of times the vcpu attempts to and
-successfully polls. These stats are currently not used on powerpc.
+On Wed, 13 Jul 2016 09:26:39 +0100
+Russell King - ARM Linux <linux@armlinux.org.uk> wrote:
 
-Implement incrementation of the halt_attempted_poll and
-halt_successful_poll vcpu stats for powerpc. Since these stats are summed
-over all the vcpus for a running guest it doesn't matter which vcpu
-they are attributed to, thus we choose the current runner vcpu of the
-vcore.
+> On Wed, Jul 13, 2016 at 05:55:33PM +1000, Stewart Smith wrote:
+> > Russell King - ARM Linux <linux@armlinux.org.uk> writes:
+> > > On Wed, Jul 13, 2016 at 02:59:51PM +1000, Stewart Smith wrote:
+> > >> Russell King - ARM Linux <linux@armlinux.org.uk> writes:
+> > >> > On Tue, Jul 12, 2016 at 10:58:05PM +0200, Petr Tesarik wrote:
+> > >> >> I'm not an expert on DTB, so I can't provide an example of code
+> > >> >> execution, but you have already mentioned the /chosen/linux,stdout-path
+> > >> >> property. If an attacker redirects the bootloader to an insecure
+> > >> >> console, they may get access to the system that would otherwise be
+> > >> >> impossible.
+> > >> >
+> > >> > I fail to see how kexec connects with the boot loader - the DTB image
+> > >> > that's being talked about is one which is passed from the currently
+> > >> > running kernel to the to-be-kexec'd kernel.  For ARM (and I suspect
+> > >> > also ARM64) that's a direct call chain which doesn't involve any
+> > >> > boot loader or firmware, and certainly none that would involve the
+> > >> > passed DTB image.
+> > >> 
+> > >> For OpenPOWER machines, kexec is the bootloader. Our bootloader is a
+> > >> linux kernel and initramfs with a UI (petitboot) - this means we never
+> > >> have to write a device driver twice: write a kernel one and you're done
+> > >> (for booting from the device and using it in your OS).
+> > >
+> > > I think you misunderstood my point.
+> > >
+> > > On ARM, we do not go:
+> > >
+> > > 	kernel (kexec'd from) -> boot loader -> kernel (kexec'd to)
+> > >
+> > > but we go:
+> > >
+> > > 	kernel (kexec'd from) -> kernel (kexec'd to)
+> > >
+> > > There's no intermediate step involving any bootloader.
+> > >
+> > > Hence, my point is that the dtb loaded by kexec is _only_ used by the
+> > > kernel which is being kexec'd to, not by the bootloader, nor indeed
+> > > the kernel which it is loaded into.
+> > >
+> > > Moreover, if you read the bit that I quoted (which is what I was
+> > > replying to), you'll notice that it is talking about the DTB loaded
+> > > by kexec somehow causing the _bootloader_ to be redirected to an
+> > > alternative console.  This point is wholely false on ARM.
+> > 
+> > Ahh.. I missed the bootloader bit there.
+> > 
+> > In which case, we're the same on OpenPOWER, there is no intermediate
+> > bootloader - in our case we have linux (with kexec) taking on what uboot
+> > or grub is typically used for on other platforms.
+> 
+> Indeed - maybe Eric knows better, but I can't see any situation where
+> the dtb we load via kexec should ever affect "the bootloader", unless
+> the "kernel" that's being loaded into kexec is "the bootloader".
+> 
+> Now, going back to the more fundamental issue raised in my first reply,
+> about the kernel command line.
+> 
+> On x86, I can see that it _is_ possible for userspace to specify a
+> command line, and the kernel loading the image provides the command
+> line to the to-be-kexeced kernel with very little checking.  So, if
+> your kernel is signed, what stops the "insecure userspace" loading
+> a signed kernel but giving it an insecure rootfs and/or console?
 
-Also add new vcpu stats: halt_block_time_successful_poll and
-halt_block_time_waited to be used to accumulate the total time spend
-blocked when we either successfully polled, or unsuccessfully polled and
-then waited respectively, and halt_successful_wait to accumulate the number
-of times the vcpu waited.
+This is a valid point. If there are kernel options that can be misused
+to defeat the purpose of UEFI SecureBoot, then we're in trouble.
+Generally, the Linux kernel should treat the command line as untrusted
+source.
 
-Given that halt_poll_time and halt_wait_time are expressed in nanoseconds
-it is necessary to represent these as 64-bit quantities, otherwise they
-would overflow after only about 4 seconds.
+My point is that modifying the DTB opens a completely new attack
+vector. And the goal is not extending the attack surface (because there
+are holes in it already), but reducing the attack surface (e.g. by
+limiting available kernel command line options).
 
-Given that the total time spend either successfully polling or
-unsuccessfully polling and then waiting will be known, and the number of
-times that each was done, it will be possible to determine the average
-block time of the vcore when it either successfully polls or
-unsuccessfully polls and then waits. This will give the ability to tune
-the kvm module parameters based on the calculated average block time in
-each scenario.
-
----
-Change Log:
-
-V1 -> V2:
-	- Nothing
-V2 -> V3:
-	- Rename vcpu stats to express with greater clarity what
-	  they represent:
-		halt_poll_time -> halt_block_time_successful_poll
-		halt_wait_time -> halt_block_time_waited
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
----
- arch/powerpc/include/asm/kvm_host.h |  3 +++
- arch/powerpc/kvm/book3s.c           |  5 +++++
- arch/powerpc/kvm/book3s_hv.c        | 16 ++++++++++++++--
- 3 files changed, 22 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 5c52a9f..c0e16d4 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -114,8 +114,11 @@ struct kvm_vcpu_stat {
- 	u64 emulated_inst_exits;
- 	u64 dec_exits;
- 	u64 ext_intr_exits;
-+	u64 halt_block_time_successful_poll;
-+	u64 halt_block_time_waited;
- 	u64 halt_successful_poll;
- 	u64 halt_attempted_poll;
-+	u64 halt_successful_wait;
- 	u64 halt_poll_invalid;
- 	u64 halt_wakeup;
- 	u64 dbell_exits;
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 47018fc..0c1295b 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -52,8 +52,13 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "dec",         VCPU_STAT(dec_exits) },
- 	{ "ext_intr",    VCPU_STAT(ext_intr_exits) },
- 	{ "queue_intr",  VCPU_STAT(queue_intr) },
-+	{ "halt_block_time_successful_poll_ns",
-+			VCPU_STAT(halt_block_time_successful_poll) },
-+	{ "halt_block_time_waited_ns",
-+			VCPU_STAT(halt_block_time_waited) },
- 	{ "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
- 	{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
-+	{ "halt_successful_wait",	VCPU_STAT(halt_successful_wait) },
- 	{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
- 	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
- 	{ "pf_storage",  VCPU_STAT(pf_storage) },
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 0d8ce14..975a757 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2679,8 +2679,8 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
-  */
- static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- {
--	int do_sleep = 1;
- 	ktime_t cur, start;
-+	int do_sleep = 1;
- 	u64 block_ns;
- 	DECLARE_SWAITQUEUE(wait);
- 
-@@ -2688,6 +2688,7 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	cur = start = ktime_get();
- 	if (vc->halt_poll_ns) {
- 		ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
-+		++vc->runner->stat.halt_attempted_poll;
- 
- 		vc->vcore_state = VCORE_POLLING;
- 		spin_unlock(&vc->lock);
-@@ -2703,8 +2704,10 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 		spin_lock(&vc->lock);
- 		vc->vcore_state = VCORE_INACTIVE;
- 
--		if (!do_sleep)
-+		if (!do_sleep) {
-+			++vc->runner->stat.halt_successful_poll;
- 			goto out;
-+		}
- 	}
- 
- 	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-@@ -2712,6 +2715,9 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	if (kvmppc_vcore_check_block(vc)) {
- 		finish_swait(&vc->wq, &wait);
- 		do_sleep = 0;
-+		/* If we polled, count this as a successful poll */
-+		if (vc->halt_poll_ns)
-+			++vc->runner->stat.halt_successful_poll;
- 		goto out;
- 	}
- 
-@@ -2723,12 +2729,18 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	spin_lock(&vc->lock);
- 	vc->vcore_state = VCORE_INACTIVE;
- 	trace_kvmppc_vcore_blocked(vc, 1);
-+	++vc->runner->stat.halt_successful_wait;
- 
- 	cur = ktime_get();
- 
- out:
- 	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
- 
-+	if (do_sleep)
-+		vc->runner->stat.halt_block_time_waited += block_ns;
-+	else if (vc->halt_poll_ns)
-+		vc->runner->stat.halt_block_time_successful_poll += block_ns;
-+
- 	if (halt_poll_max_ns) {
- 		if (block_ns <= vc->halt_poll_ns)
- 			;
--- 
-2.5.5
+Petr T
