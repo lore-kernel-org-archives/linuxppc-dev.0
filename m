@@ -1,53 +1,45 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqCZP6KmWzDqFX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:04:29 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqD7c3VJ1zDqH1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:29:48 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D93kU8141654
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:04:27 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2452at63tk-1
+ u6D9SwAd025760
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:29:45 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24567cnnjg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:04:27 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:29:45 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Wed, 13 Jul 2016 10:04:25 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6D5EB1B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:05:33 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6D94CGD61210878
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:04:12 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6D94Av0012952
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:04:12 -0400
-Subject: Re: [PATCH V3 4/5] kvm/stats: Add provisioning for 64-bit vm and vcpu
- statistics
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1468400015-4834-1-git-send-email-sjitindarsingh@gmail.com>
-Cc: pbonzini@redhat.com, rkrcmar@redhat.com, christoffer.dall@linaro.org,
- marc.zyngier@arm.com, james.hogan@imgtec.com, agraf@suse.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- cornelia.huck@de.ibm.com, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- kvmarm@lists.cs.columbia.edu, linux-mips@linux-mips.org,
- linux-s390@vger.kernel.org
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Wed, 13 Jul 2016 11:04:08 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Wed, 13 Jul 2016 03:29:43 -0600
+Subject: Re: [PATCH v3 3/4] perf annotate: add powerpc support
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+References: <1467267262-4589-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1467267262-4589-4-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+ <1467267714.7296.6.camel@ellerman.id.au>
+ <57762D2A.9040103@linux.vnet.ibm.com>
+ <87vb0j84fb.fsf@@concordia.ellerman.id.au>
+ <577F31D9.4050808@linux.vnet.ibm.com>
+ <87zipsmsyd.fsf@@concordia.ellerman.id.au>
+ <5784543A.9030801@linux.vnet.ibm.com> <20160712023937.GC3387@kernel.org>
+ <87eg6ym1gq.fsf@@concordia.ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
+ naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Wed, 13 Jul 2016 14:59:23 +0530
 MIME-Version: 1.0
-In-Reply-To: <1468400015-4834-1-git-send-email-sjitindarsingh@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <57860408.1000203@de.ibm.com>
+In-Reply-To: <87eg6ym1gq.fsf@@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <578609F3.5090707@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,51 +49,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/13/2016 10:53 AM, Suraj Jitindar Singh wrote:
-> vms and vcpus have statistics associated with them which can be viewed
-> within the debugfs. Currently it is assumed within the vcpu_stat_get() and
-> vm_stat_get() functions that all of these statistics are represented as
-> u32s, however the next patch adds some u64 statistics.
-> 
-> Thus modify these two functions, vcpu_stat_get() and vm_stat_get(), such
-> that they expect u64 statistics and update vm and vcpu statistics to u64s
-> accordingly.
-> 
-> ---
-> Change Log:
-> 
-> V1 -> V2:
-> 	- Nothing
-> V2 -> V3:
-> 	- Instead of implementing separate u32 and u64 functions keep the
-> 	  generic functions and modify them to expect u64s. Thus update all
-> 	  vm and vcpu statistics to u64s accordingly.
-
-Have not looked into everything, but I agree with changing everything to 64bit.
 
 
-> @@ -3583,8 +3583,8 @@ static const struct file_operations vcpu_stat_get_per_vm_fops = {
->  };
-> 
->  static const struct file_operations *stat_fops_per_vm[] = {
-> -	[KVM_STAT_VCPU] = &vcpu_stat_get_per_vm_fops,
-> -	[KVM_STAT_VM]   = &vm_stat_get_per_vm_fops,
-> +	[KVM_STAT_VCPU]		= &vcpu_stat_get_per_vm_fops,
-> +	[KVM_STAT_VM]		= &vm_stat_get_per_vm_fops,
->  };
-unrelated white space changes?
+On Wednesday 13 July 2016 01:09 PM, Michael Ellerman wrote:
+> Arnaldo Carvalho de Melo <acme@kernel.org> writes:
+>
+>> Em Tue, Jul 12, 2016 at 07:51:46AM +0530, Ravi Bangoria escreveu:
+>>> Hi Arnaldo,
+>>>
+>>> On Friday 08 July 2016 02:01 PM, Michael Ellerman wrote:
+>>>> Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com> writes:
+>>>>
+>>>>> On Wednesday 06 July 2016 03:38 PM, Michael Ellerman wrote:
+>>>>>
+>>>>> I've sent v4 which enables annotate for bctr' instructions.
+>>>>>
+>>>>> for 'bctr', it will show down arrow(indicate jump) and 'bctrl' will show
+>>>>> right arrow(indicate call). But no navigation options will be provided.
+>>>>> By pressing Enter key on that, message will be shown that like
+>>>>> "Invalid target"
+>>>> Great thanks.
+>>> I've sent v4 series. Please review it.
+>> If somebody else could do it and provide acks/reviewed by, that would
+>> help,
+>>
+>> Michael, can I get your comments as such?
+> It looks OK to me. But I don't know the code really, and I haven't had
+> time to test it personally.
+>
+> Ravi, have you tested on a big endian machine?
 
-> 
->  static int vm_stat_get(void *_offset, u64 *val)
-> @@ -3628,8 +3628,8 @@ static int vcpu_stat_get(void *_offset, u64 *val)
->  DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_fops, vcpu_stat_get, NULL, "%llu\n");
-> 
->  static const struct file_operations *stat_fops[] = {
-> -	[KVM_STAT_VCPU] = &vcpu_stat_fops,
-> -	[KVM_STAT_VM]   = &vm_stat_fops,
-> +	[KVM_STAT_VCPU]		= &vcpu_stat_fops,
-> +	[KVM_STAT_VM]		= &vm_stat_fops,
->  };
-> 
->  static int kvm_init_debug(void)
-> 
+Yes Michael, I've tested annotate on BE and LE both.
+
+-Ravi
+
+>
+> cheers
+>
