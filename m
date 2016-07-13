@@ -1,21 +1,23 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
+Received: from mail-yw0-x241.google.com (mail-yw0-x241.google.com
+ [IPv6:2607:f8b0:4002:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq18q4MSCzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:15:07 +1000 (AEST)
-Received: by mail-yw0-x242.google.com with SMTP id l125so2151813ywb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:15:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq18z39YPzDqFP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:15:15 +1000 (AEST)
+Received: by mail-yw0-x241.google.com with SMTP id y188so2167338ywf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:15:15 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Scott Wood <scottwood@freescale.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 0/3] powerpc: tweak the kernel options for CRASH_DUMP and
- RELOCATABLE
-Date: Wed, 13 Jul 2016 09:14:37 +0800
-Message-Id: <1468372480-6453-1-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v2 1/3] powerpc32: booke: fix the build error when CRASH_DUMP
+ is enabled
+Date: Wed, 13 Jul 2016 09:14:38 +0800
+Message-Id: <1468372480-6453-2-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1468372480-6453-1-git-send-email-haokexin@gmail.com>
+References: <1468372480-6453-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2:
-Compare to v1 [1], the main differences are:
- - Still automatically select RELOCATABLE when CRASH_DUMP is enabled.
- - Add a new patch to kill RELOCATABLE_PPC32.
+In the current code, the RELOCATABLE will be forcedly enabled when
+enabling CRASH_DUMP. But for ppc32, the RELOCABLE also depend on
+ADVANCED_OPTIONS and select NONSTATIC_KERNEL. This will cause the
+following build error when CRASH_DUMP=y && ADVANCED_OPTIONS=n
+because the select of NONSTATIC_KERNEL doesn't take effect.
+  arch/powerpc/include/asm/io.h: In function 'virt_to_phys':
+  arch/powerpc/include/asm/page.h:113:26: error: 'virt_phys_offset' undeclared (first use in this function)
+   #define VIRT_PHYS_OFFSET virt_phys_offset
+                          ^
+It doesn't have any strong reasons to make the RELOCATABLE depend on
+ADVANCED_OPTIONS. So remove this dependency to fix this issue.
 
-v1:
-The first patch fixes a build error when CRASH_DUMP=y && ADVANCED_OPTIONS=n
-for ppc32. The second does some cleanup for RELOCATABLE option.
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kevin Hao (3):
-  powerpc32: booke: fix the build error when CRASH_DUMP is enabled
-  powerpc: merge the RELOCATABLE config entries for ppc32 and ppc64
-  powerpc32: kill RELOCATABLE_PPC32
-
- arch/powerpc/Kconfig              | 61 +++++++++++++++------------------------
- arch/powerpc/include/asm/page.h   |  6 ++--
- arch/powerpc/kernel/Makefile      |  3 +-
- arch/powerpc/kernel/vmlinux.lds.S |  2 +-
- arch/powerpc/mm/init_32.c         |  2 +-
- 5 files changed, 29 insertions(+), 45 deletions(-)
-
-[1] http://linuxppc-dev.ozlabs.narkive.com/fKHcSZbu/patch-0-2-powerpc-tweak-the-kernel-options-for-crash-dump-and-relocatable
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0a4cea451cf2..cb7910b9f10f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -952,7 +952,7 @@ config DYNAMIC_MEMSTART
+ 
+ config RELOCATABLE
+ 	bool "Build a relocatable kernel"
+-	depends on ADVANCED_OPTIONS && FLATMEM && (44x || FSL_BOOKE)
++	depends on FLATMEM && (44x || FSL_BOOKE)
+ 	select NONSTATIC_KERNEL
+ 	help
+ 	  This builds a kernel image that is capable of running at the
 -- 
 2.8.1
