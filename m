@@ -1,11 +1,11 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
- [IPv6:2607:f8b0:400e:c00::235])
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqXhz2ZzGzDqFV
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqXhz5cQDzDqFX
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 07:56:19 +1000 (AEST)
-Received: by mail-pf0-x235.google.com with SMTP id c2so22710346pfa.2
+Received: by mail-pa0-x22a.google.com with SMTP id ks6so21467484pab.0
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 14:56:19 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: linux-kernel@vger.kernel.org
@@ -32,9 +32,9 @@ Cc: Kees Cook <keescook@chromium.org>, Rik van Riel <riel@redhat.com>,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
  linux-arch@vger.kernel.org, linux-mm@kvack.org,
  kernel-hardening@lists.openwall.com
-Subject: [PATCH v2 07/11] powerpc/uaccess: Enable hardened usercopy
-Date: Wed, 13 Jul 2016 14:56:00 -0700
-Message-Id: <1468446964-22213-8-git-send-email-keescook@chromium.org>
+Subject: [PATCH v2 08/11] sparc/uaccess: Enable hardened usercopy
+Date: Wed, 13 Jul 2016 14:56:01 -0700
+Message-Id: <1468446964-22213-9-git-send-email-keescook@chromium.org>
 In-Reply-To: <1468446964-22213-1-git-send-email-keescook@chromium.org>
 References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,86 +46,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enables CONFIG_HARDENED_USERCOPY checks on powerpc.
+Enables CONFIG_HARDENED_USERCOPY checks on sparc.
 
 Based on code from PaX and grsecurity.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/powerpc/Kconfig               |  1 +
- arch/powerpc/include/asm/uaccess.h | 21 +++++++++++++++++++--
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ arch/sparc/Kconfig                  |  1 +
+ arch/sparc/include/asm/uaccess_32.h | 14 ++++++++++----
+ arch/sparc/include/asm/uaccess_64.h | 11 +++++++++--
+ 3 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 01f7464d9fea..b7a18b2604be 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -164,6 +164,7 @@ config PPC
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
- 	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
- 	select HAVE_LIVEPATCH if HAVE_DYNAMIC_FTRACE_WITH_REGS
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 546293d9e6c5..59b09600dd32 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -43,6 +43,7 @@ config SPARC
+ 	select OLD_SIGSUSPEND
+ 	select ARCH_HAS_SG_CHAIN
+ 	select CPU_NO_EFFICIENT_FFS
 +	select HAVE_ARCH_HARDENED_USERCOPY
  
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index b7c20f0b8fbe..c1dc6c14deb8 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -310,10 +310,15 @@ static inline unsigned long copy_from_user(void *to,
- {
- 	unsigned long over;
+ config SPARC32
+ 	def_bool !64BIT
+diff --git a/arch/sparc/include/asm/uaccess_32.h b/arch/sparc/include/asm/uaccess_32.h
+index 57aca2792d29..341a5a133f48 100644
+--- a/arch/sparc/include/asm/uaccess_32.h
++++ b/arch/sparc/include/asm/uaccess_32.h
+@@ -248,22 +248,28 @@ unsigned long __copy_user(void __user *to, const void __user *from, unsigned lon
  
--	if (access_ok(VERIFY_READ, from, n))
-+	if (access_ok(VERIFY_READ, from, n)) {
-+		if (!__builtin_constant_p(n))
-+			check_object_size(to, n, false);
- 		return __copy_tofrom_user((__force void __user *)to, from, n);
-+	}
- 	if ((unsigned long)from < TASK_SIZE) {
- 		over = (unsigned long)from + n - TASK_SIZE;
-+		if (!__builtin_constant_p(n - over))
-+			check_object_size(to, n - over, false);
- 		return __copy_tofrom_user((__force void __user *)to, from,
- 				n - over) + over;
- 	}
-@@ -325,10 +330,15 @@ static inline unsigned long copy_to_user(void __user *to,
+ static inline unsigned long copy_to_user(void __user *to, const void *from, unsigned long n)
  {
- 	unsigned long over;
- 
--	if (access_ok(VERIFY_WRITE, to, n))
-+	if (access_ok(VERIFY_WRITE, to, n)) {
+-	if (n && __access_ok((unsigned long) to, n))
++	if (n && __access_ok((unsigned long) to, n)) {
 +		if (!__builtin_constant_p(n))
 +			check_object_size(from, n, true);
- 		return __copy_tofrom_user(to, (__force void __user *)from, n);
-+	}
- 	if ((unsigned long)to < TASK_SIZE) {
- 		over = (unsigned long)to + n - TASK_SIZE;
-+		if (!__builtin_constant_p(n))
-+			check_object_size(from, n - over, true);
- 		return __copy_tofrom_user(to, (__force void __user *)from,
- 				n - over) + over;
- 	}
-@@ -372,6 +382,10 @@ static inline unsigned long __copy_from_user_inatomic(void *to,
- 		if (ret == 0)
- 			return 0;
- 	}
-+
-+	if (!__builtin_constant_p(n))
-+		check_object_size(to, n, false);
-+
- 	return __copy_tofrom_user((__force void __user *)to, from, n);
+ 		return __copy_user(to, (__force void __user *) from, n);
+-	else
++	} else
+ 		return n;
  }
  
-@@ -398,6 +412,9 @@ static inline unsigned long __copy_to_user_inatomic(void __user *to,
- 		if (ret == 0)
- 			return 0;
- 	}
+ static inline unsigned long __copy_to_user(void __user *to, const void *from, unsigned long n)
+ {
 +	if (!__builtin_constant_p(n))
 +		check_object_size(from, n, true);
-+
- 	return __copy_tofrom_user(to, (__force const void __user *)from, n);
+ 	return __copy_user(to, (__force void __user *) from, n);
  }
  
+ static inline unsigned long copy_from_user(void *to, const void __user *from, unsigned long n)
+ {
+-	if (n && __access_ok((unsigned long) from, n))
++	if (n && __access_ok((unsigned long) from, n)) {
++		if (!__builtin_constant_p(n))
++			check_object_size(to, n, false);
+ 		return __copy_user((__force void __user *) to, from, n);
+-	else
++	} else
+ 		return n;
+ }
+ 
+diff --git a/arch/sparc/include/asm/uaccess_64.h b/arch/sparc/include/asm/uaccess_64.h
+index e9a51d64974d..8bda94fab8e8 100644
+--- a/arch/sparc/include/asm/uaccess_64.h
++++ b/arch/sparc/include/asm/uaccess_64.h
+@@ -210,8 +210,12 @@ unsigned long copy_from_user_fixup(void *to, const void __user *from,
+ static inline unsigned long __must_check
+ copy_from_user(void *to, const void __user *from, unsigned long size)
+ {
+-	unsigned long ret = ___copy_from_user(to, from, size);
++	unsigned long ret;
+ 
++	if (!__builtin_constant_p(size))
++		check_object_size(to, size, false);
++
++	ret = ___copy_from_user(to, from, size);
+ 	if (unlikely(ret))
+ 		ret = copy_from_user_fixup(to, from, size);
+ 
+@@ -227,8 +231,11 @@ unsigned long copy_to_user_fixup(void __user *to, const void *from,
+ static inline unsigned long __must_check
+ copy_to_user(void __user *to, const void *from, unsigned long size)
+ {
+-	unsigned long ret = ___copy_to_user(to, from, size);
++	unsigned long ret;
+ 
++	if (!__builtin_constant_p(size))
++		check_object_size(from, size, true);
++	ret = ___copy_to_user(to, from, size);
+ 	if (unlikely(ret))
+ 		ret = copy_to_user_fixup(to, from, size);
+ 	return ret;
 -- 
 2.7.4
