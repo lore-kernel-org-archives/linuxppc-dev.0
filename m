@@ -1,17 +1,24 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqLJ83gNTzDqFP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 00:07:35 +1000 (AEST)
-Date: Wed, 13 Jul 2016 17:07:12 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: markos.chandras@imgtec.com, Matt Evans <matt@ozlabs.org>
-Cc: linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] MIPS: net: Add BPF JIT
-Message-ID: <20160713140711.GA8984@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqM850wvyzDqFZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 00:45:40 +1000 (AEST)
+Message-ID: <1468421132.20552.93.camel@kernel.crashing.org>
+Subject: Re: [PATCH for-4.8 02/10] powerpc/mm: Convert early cpu/mmu feature
+ check to use the new helpers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 13 Jul 2016 09:45:32 -0500
+In-Reply-To: <87k2gpy6nl.fsf@skywalker.in.ibm.com>
+References: <1468402690-5373-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468402690-5373-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468411747.20552.81.camel@kernel.crashing.org>
+ <87k2gpy6nl.fsf@skywalker.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,60 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Markos Chandras,
+On Wed, 2016-07-13 at 19:36 +0530, Aneesh Kumar K.V wrote:
+> > I'm not sure about that. This is converting way way way way more
+> > functions than is needed. Especially if Michael applies my series
+> > there will be very little code run before the patching, really only
+> the
+> > MMU initialization....
+> 
+> 
+> Michael is also running into boot issues with the early init rewrite
+> patch series on G5. That is why I didn't rebase my patches on top of
+> that changes.
 
-The patch c6610de353da: "MIPS: net: Add BPF JIT" from Apr 8, 2014,
-leads to the following static checker warning:
+Well that shouldn't be too hard to fix when I'm back next week. It's
+working fine on my quad G5 ;-)
 
-	arch/mips/net/bpf_jit.c:1185 build_body()
-	warn: potential off by one 'ctx->offsets[]' limit 'prog->len'
-
-arch/mips/net/bpf_jit.c
-   652  static int build_body(struct jit_ctx *ctx)
-   653  {
-   654          const struct bpf_prog *prog = ctx->skf;
-   655          const struct sock_filter *inst;
-   656          unsigned int i, off, condt;
-   657          u32 k, b_off __maybe_unused;
-   658          u8 (*sk_load_func)(unsigned long *skb, int offset);
-   659  
-   660          for (i = 0; i < prog->len; i++) {
-   661                  u16 code;
-   662  
-   663                  inst = &(prog->insns[i]);
-   664                  pr_debug("%s: code->0x%02x, jt->0x%x, jf->0x%x, k->0x%x\n",
-   665                           __func__, inst->code, inst->jt, inst->jf, inst->k);
-   666                  k = inst->k;
-   667                  code = bpf_anc_helper(inst);
-   668  
-   669                  if (ctx->target == NULL)
-   670                          ctx->offsets[i] = ctx->idx * 4;
-
-We have this so we don't need the other assignment.
-
-   671  
-   672                  switch (code) {
-
-[ snipped big switch statement ]
-
-  1176                  default:
-  1177                          pr_debug("%s: Unhandled opcode: 0x%02x\n", __FILE__,
-  1178                                   inst->code);
-  1179                          return -1;
-  1180                  }
-  1181          }
-  1182  
-  1183          /* compute offsets only during the first pass */
-  1184          if (ctx->target == NULL)
-  1185                  ctx->offsets[i] = ctx->idx * 4;
-
-i is always one step beyond the end of the array here.
-
-  1186  
-  1187          return 0;
-  1188  }
-
-That arm and powerpc implementations have the same issue.
-
-regards,
-dan carpenter
+Cheers,
+Ben.
