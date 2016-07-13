@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDKr3n6YzDqR3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:38:40 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D9YHI8015019
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:38:38 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24567bwspx-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDKw3s7FzDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:38:44 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D9YDvE144652
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:38:42 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2455jsymqy-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:38:38 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:38:42 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 03:38:37 -0600
+ Wed, 13 Jul 2016 03:38:41 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH for-4.8 05/10] powerpc: Call jump_label_init early
-Date: Wed, 13 Jul 2016 15:08:05 +0530
+Cc: linuxppc-dev@lists.ozlabs.org, Kevin Hao <haokexin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH for-4.8 06/10] powerpc: kill mfvtb()
+Date: Wed, 13 Jul 2016 15:08:06 +0530
 In-Reply-To: <1468402690-5373-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1468402690-5373-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1468402690-5373-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1468402690-5373-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,49 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call jump_label_init early so that can use static keys for cpu and
-mmu feature check. We should have finalzed all the cpu/mmu features when
-we call setup_system and we also did feature fixup for ASM based code.
+From: Kevin Hao <haokexin@gmail.com>
 
+This function is only used by get_vtb(). They are almost the same
+except the reading from the real register. Move the mfspr() to
+get_vtb() and kill the function mfvtb(). With this, we can eliminate
+the use of cpu_has_feature() in very core header file like reg.h.
+This is a preparation for the use of jump label for cpu_has_feature().
+
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/setup_32.c | 6 ++++++
- arch/powerpc/kernel/setup_64.c | 6 ++++++
- 2 files changed, 12 insertions(+)
+ arch/powerpc/include/asm/reg.h  | 9 ---------
+ arch/powerpc/include/asm/time.h | 2 +-
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index ecdc42d44951..8831738c3dcb 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -99,6 +99,12 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
- 			 PTRRELOC(&__stop___lwsync_fixup));
- 
- 	do_final_fixups();
-+	/*
-+	 * init jump label so that cpu and mmu feature check can be optimized
-+	 * using jump label. We should have all the cpu/mmu features finalized
-+	 * by now.
-+	 */
-+	jump_label_init();
- 
- 	return KERNELBASE + offset;
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index a69e8f3a4171..7ee09aa90ab4 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1244,15 +1244,6 @@ static inline void msr_check_and_clear(unsigned long bits)
+ 		__msr_check_and_clear(bits);
  }
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 05dde6318b79..c6f6cbcbee91 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -480,6 +480,12 @@ void __init setup_system(void)
- 	do_lwsync_fixups(cur_cpu_spec->cpu_features,
- 			 &__start___lwsync_fixup, &__stop___lwsync_fixup);
- 	do_final_fixups();
-+	/*
-+	 * init jump label so that cpu and mmu feature check can be optimized
-+	 * using jump label. We should have all the cpu/mmu features finalized
-+	 * by now.
-+	 */
-+	jump_label_init();
  
- 	/*
- 	 * Unflatten the device-tree passed by prom_init or kexec
+-static inline unsigned long mfvtb (void)
+-{
+-#ifdef CONFIG_PPC_BOOK3S_64
+-	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return mfspr(SPRN_VTB);
+-#endif
+-	return 0;
+-}
+-
+ #ifdef __powerpc64__
+ #if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_FSL_BOOK3E)
+ #define mftb()		({unsigned long rval;				\
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 09211640a0e0..cbbeaf0a6597 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -103,7 +103,7 @@ static inline u64 get_vtb(void)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return mfvtb();
++		return mfspr(SPRN_VTB);
+ #endif
+ 	return 0;
+ }
 -- 
 2.7.4
