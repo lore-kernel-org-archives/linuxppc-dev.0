@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDGb1Hc9zDqHW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:35:51 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDGd6j9mzDqMF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:35:53 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D9YE6D075002
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:35:49 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2448qmthvd-1
+ u6D9YEnt043754
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:35:51 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 245hgabjuq-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:35:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:35:51 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 03:35:47 -0600
+ Wed, 13 Jul 2016 03:35:50 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH for-4.8 01/12] Fix .long's in mm/tlb-radix.c to more meaningful
-Date: Wed, 13 Jul 2016 15:05:20 +0530
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH for-4.8 02/12] powerpc/mm/radix: Update LPCR HR bit as per ISA
+Date: Wed, 13 Jul 2016 15:05:21 +0530
 In-Reply-To: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1468402531-4914-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1468402531-4914-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,110 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Balbir Singh <bsingharora@gmail.com>
+PowerISA 3.0 requires the MMU mode (radix vs. hash) of the hypervisor
+to be mirrored in the LPCR register, in addition to the partition table.
+This is done to avoid fetching from the table when deciding, among other
+things, how to perform transitions to HV mode on some interrupts.
+So let's set it up appropriately
 
-The .longs with the shifts are harder to read, use more
-meaningful names for the opcodes. PPC_TLBIE_5 is introduced
-for the 5 opcode variation of the instruction due to an existing
-op-code for the 2 opcode variant
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-opcode.h | 14 ++++++++++++++
- arch/powerpc/mm/tlb-radix.c           | 13 +++++--------
- 2 files changed, 19 insertions(+), 8 deletions(-)
+ arch/powerpc/include/asm/reg.h  | 1 +
+ arch/powerpc/mm/pgtable-radix.c | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 9de9df14a8d9..1c9b1d4386ba 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -190,6 +190,7 @@
- #define PPC_INST_STSWX			0x7c00052a
- #define PPC_INST_STXVD2X		0x7c000798
- #define PPC_INST_TLBIE			0x7c000264
-+#define PPC_INST_TLBIEL			0x7c000224
- #define PPC_INST_TLBILX			0x7c000024
- #define PPC_INST_WAIT			0x7c00007c
- #define PPC_INST_TLBIVAX		0x7c000624
-@@ -279,6 +280,9 @@
- #define ___PPC_RB(b)	(((b) & 0x1f) << 11)
- #define ___PPC_RS(s)	(((s) & 0x1f) << 21)
- #define ___PPC_RT(t)	___PPC_RS(t)
-+#define ___PPC_R(r)	(((r) & 0x1) << 16)
-+#define ___PPC_PRS(prs)	(((prs) & 0x1) << 17)
-+#define ___PPC_RIC(ric)	(((ric) & 0x3) << 18)
- #define __PPC_RA(a)	___PPC_RA(__REG_##a)
- #define __PPC_RA0(a)	___PPC_RA(__REGA0_##a)
- #define __PPC_RB(b)	___PPC_RB(__REG_##b)
-@@ -345,6 +349,16 @@
- 					__PPC_WC(w))
- #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
- 					       ___PPC_RB(a) | ___PPC_RS(lp))
-+#define	PPC_TLBIE_5(rb,rs,ric,prs,r) \
-+				stringify_in_c(.long PPC_INST_TLBIE | \
-+					___PPC_RB(rb) | ___PPC_RS(rs) | \
-+					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
-+					___PPC_R(r))
-+#define	PPC_TLBIEL(rb,rs,ric,prs,r) \
-+				stringify_in_c(.long PPC_INST_TLBIEL | \
-+					___PPC_RB(rb) | ___PPC_RS(rs) | \
-+					___PPC_RIC(ric) | ___PPC_PRS(prs) | \
-+					___PPC_R(r))
- #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
- 					__PPC_RA0(a) | __PPC_RB(b))
- #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index ab2f60e812e2..35690c41f85d 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -12,6 +12,7 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- #include <linux/memblock.h>
-+#include <asm/ppc-opcode.h>
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 320136f5fe28..a5ba263e0353 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -354,6 +354,7 @@
+ #define   LPCR_RMI     0x00000002      /* real mode is cache inhibit */
+ #define   LPCR_HDICE   0x00000001      /* Hyp Decr enable (HV,PR,EE) */
+ #define   LPCR_UPRT    0x00400000      /* Use Process Table (ISA 3) */
++#define   LPCR_HR      0x00100000
+ #ifndef SPRN_LPID
+ #define SPRN_LPID	0x13F	/* Logical Partition Identifier */
+ #endif
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index e58707deef5c..f8a3bec315f7 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -337,7 +337,7 @@ void __init radix__early_init_mmu(void)
+ 	radix_init_page_sizes();
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		lpcr = mfspr(SPRN_LPCR);
+-		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT);
++		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
+ 		radix_init_partition_table();
+ 	}
  
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
-@@ -34,8 +35,7 @@ static inline void __tlbiel_pid(unsigned long pid, int set,
- 	r = 1;   /* raidx format */
+@@ -352,7 +352,7 @@ void radix__early_init_mmu_secondary(void)
+ 	 */
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		lpcr = mfspr(SPRN_LPCR);
+-		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT);
++		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
  
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000224 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("ptesync": : :"memory");
- }
-@@ -63,8 +63,7 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- 	r = 1;   /* raidx format */
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000264 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
-@@ -81,8 +80,7 @@ static inline void _tlbiel_va(unsigned long va, unsigned long pid,
- 	r = 1;   /* raidx format */
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000224 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("ptesync": : :"memory");
- }
-@@ -99,8 +97,7 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 	r = 1;   /* raidx format */
- 
- 	asm volatile("ptesync": : :"memory");
--	asm volatile(".long 0x7c000264 | (%0 << 11) | (%1 << 16) |"
--		     "(%2 << 17) | (%3 << 18) | (%4 << 21)"
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
- 		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
+ 		mtspr(SPRN_PTCR,
+ 		      __pa(partition_tb) | (PATB_SIZE_SHIFT - 12));
 -- 
 2.7.4
