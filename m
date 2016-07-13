@@ -1,21 +1,21 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yw0-x241.google.com (mail-yw0-x241.google.com
- [IPv6:2607:f8b0:4002:c05::241])
+Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
+ [IPv6:2607:f8b0:4002:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq18z39YPzDqFP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:15:15 +1000 (AEST)
-Received: by mail-yw0-x241.google.com with SMTP id y188so2167338ywf.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:15:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq19F4N3VzDqH0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:15:29 +1000 (AEST)
+Received: by mail-yw0-x243.google.com with SMTP id y188so2167644ywf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:15:29 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Scott Wood <scottwood@freescale.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 1/3] powerpc32: booke: fix the build error when CRASH_DUMP
- is enabled
-Date: Wed, 13 Jul 2016 09:14:38 +0800
-Message-Id: <1468372480-6453-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v2 2/3] powerpc: merge the RELOCATABLE config entries for
+ ppc32 and ppc64
+Date: Wed, 13 Jul 2016 09:14:39 +0800
+Message-Id: <1468372480-6453-3-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1468372480-6453-1-git-send-email-haokexin@gmail.com>
 References: <1468372480-6453-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,35 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the current code, the RELOCATABLE will be forcedly enabled when
-enabling CRASH_DUMP. But for ppc32, the RELOCABLE also depend on
-ADVANCED_OPTIONS and select NONSTATIC_KERNEL. This will cause the
-following build error when CRASH_DUMP=y && ADVANCED_OPTIONS=n
-because the select of NONSTATIC_KERNEL doesn't take effect.
-  arch/powerpc/include/asm/io.h: In function 'virt_to_phys':
-  arch/powerpc/include/asm/page.h:113:26: error: 'virt_phys_offset' undeclared (first use in this function)
-   #define VIRT_PHYS_OFFSET virt_phys_offset
-                          ^
-It doesn't have any strong reasons to make the RELOCATABLE depend on
-ADVANCED_OPTIONS. So remove this dependency to fix this issue.
+It makes no sense to keep two separate RELOCATABLE config entries for
+ppc32 and ppc64 respectively. Merge them into one and move it to
+a common place.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/Kconfig | 65 ++++++++++++++++++++++------------------------------
+ 1 file changed, 27 insertions(+), 38 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0a4cea451cf2..cb7910b9f10f 100644
+index cb7910b9f10f..a9d847c8a20d 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -952,7 +952,7 @@ config DYNAMIC_MEMSTART
+@@ -458,6 +458,33 @@ config KEXEC
+ 	  interface is strongly in flux, so no good recommendation can be
+ 	  made.
  
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
--	depends on ADVANCED_OPTIONS && FLATMEM && (44x || FSL_BOOKE)
-+	depends on FLATMEM && (44x || FSL_BOOKE)
- 	select NONSTATIC_KERNEL
- 	help
- 	  This builds a kernel image that is capable of running at the
++config RELOCATABLE
++	bool "Build a relocatable kernel"
++	depends on (PPC64 && !COMPILE_TEST) || (FLATMEM && (44x || FSL_BOOKE))
++	select NONSTATIC_KERNEL
++	help
++	  This builds a kernel image that is capable of running at the
++	  location the kernel is loaded at. For ppc32, there is no any
++	  alignment restrictions, and this feature is a superset of
++	  DYNAMIC_MEMSTART and hence overrides it. For ppc64, we should use
++	  16k-aligned base address. The kernel is linked as a
++	  position-independent executable (PIE) and contains dynamic relocations
++	  which are processed early in the bootup process.
++
++	  One use is for the kexec on panic case where the recovery kernel
++	  must live at a different physical address than the primary
++	  kernel.
++
++	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
++	  it has been loaded at and the compile time physical addresses
++	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
++	  setting can still be useful to bootwrappers that need to know the
++	  load address of the kernel (eg. u-boot/mkimage).
++
++config RELOCATABLE_PPC32
++	def_bool y
++	depends on PPC32 && RELOCATABLE
++
+ config CRASH_DUMP
+ 	bool "Build a kdump crash kernel"
+ 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+@@ -950,29 +977,6 @@ config DYNAMIC_MEMSTART
+ 
+ 	  This option is overridden by CONFIG_RELOCATABLE
+ 
+-config RELOCATABLE
+-	bool "Build a relocatable kernel"
+-	depends on FLATMEM && (44x || FSL_BOOKE)
+-	select NONSTATIC_KERNEL
+-	help
+-	  This builds a kernel image that is capable of running at the
+-	  location the kernel is loaded at, without any alignment restrictions.
+-	  This feature is a superset of DYNAMIC_MEMSTART and hence overrides it.
+-
+-	  One use is for the kexec on panic case where the recovery kernel
+-	  must live at a different physical address than the primary
+-	  kernel.
+-
+-	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
+-	  it has been loaded at and the compile time physical addresses
+-	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
+-	  setting can still be useful to bootwrappers that need to know the
+-	  load address of the kernel (eg. u-boot/mkimage).
+-
+-config RELOCATABLE_PPC32
+-	def_bool y
+-	depends on PPC32 && RELOCATABLE
+-
+ config PAGE_OFFSET_BOOL
+ 	bool "Set custom page offset address"
+ 	depends on ADVANCED_OPTIONS
+@@ -1063,21 +1067,6 @@ config PIN_TLB_IMMR
+ endmenu
+ 
+ if PPC64
+-config RELOCATABLE
+-	bool "Build a relocatable kernel"
+-	depends on !COMPILE_TEST
+-	select NONSTATIC_KERNEL
+-	help
+-	  This builds a kernel image that is capable of running anywhere
+-	  in the RMA (real memory area) at any 16k-aligned base address.
+-	  The kernel is linked as a position-independent executable (PIE)
+-	  and contains dynamic relocations which are processed early
+-	  in the bootup process.
+-
+-	  One use is for the kexec on panic case where the recovery kernel
+-	  must live at a different physical address than the primary
+-	  kernel.
+-
+ # This value must have zeroes in the bottom 60 bits otherwise lots will break
+ config PAGE_OFFSET
+ 	hex
 -- 
 2.8.1
