@@ -1,25 +1,37 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rqDPK3Q1FzDrFt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:41:41 +1000 (AEST)
-Date: Wed, 13 Jul 2016 10:41:28 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Dave Young <dyoung@redhat.com>,
- linux-arm-kernel@lists.infradead.org, bhe@redhat.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713094127.GC14522@leverpostej>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <20160712145010.GA8447@leverpostej>
- <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
- <5352106.oQ0Ff9gWJA@wuerfel>
+Return-Path: <ravi.bangoria@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDTR24StzDrPt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:45:15 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D9iMgU102084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:45:13 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2452at7en0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:45:13 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.vnet.ibm.com>;
+ Wed, 13 Jul 2016 03:45:12 -0600
+Subject: Re: [PATCH v4 0/3] perf annotate: Enable cross arch annotate
+To: acme@kernel.org, mpe@ellerman.id.au
+References: <1467952813-5797-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ anton@ozlabs.org, ananth@in.ibm.com, dja@axtens.net,
+ naveen.n.rao@linux.vnet.ibm.com, David.Laight@ACULAB.COM,
+ rmk+kernel@arm.linux.org.uk,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+From: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+Date: Wed, 13 Jul 2016 15:15:02 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5352106.oQ0Ff9gWJA@wuerfel>
+In-Reply-To: <1467952813-5797-1-git-send-email-ravi.bangoria@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <57860D9E.7000906@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 10:01:33AM +0200, Arnd Bergmann wrote:
-> On Wednesday, July 13, 2016 10:36:14 AM CEST Dave Young wrote:
-> > On 07/12/16 at 03:50pm, Mark Rutland wrote:
-> > > On Tue, Jul 12, 2016 at 04:24:10PM +0200, Arnd Bergmann wrote:
-> > > > On Tuesday, July 12, 2016 10:18:11 AM CEST Vivek Goyal wrote:
-> > > 
-> > > /proc/devicetree (aka /sys/firmware/devicetree) is a filesystem derived
-> > > from the raw DTB (which is exposed at /sys/firmware/fdt).
-> > > 
-> > > The blob that was handed to the kernel at boot time is exposed at
-> > > /sys/firmware/fdt.
-> > 
-> > I believe the blob can be read and passed to kexec kernel in kernel code without
-> > the extra fd.
-> > 
-> > But consider we can kexec to a different kernel and a different initrd so there
-> > will be use cases to pass a total different dtb as well. From my understanding
-> > it is reasonable but yes I think we should think carefully about the design.
-> 
-> Ok, I can see four interesting use cases here:
-> 
-> - Using the dtb that the kernel has saved at boot time. Ideally this should not
->   require an additional step of signing it, since the running kernel already
->   trusts it.
+Arnaldo, Michael,
 
-We have sufficient information from the existing kexec_file_load syscall
-prototype to do this in-kernel.
+I've tested this patchset on ppc64 BE and LE both. Please review this.
 
-> - A dtb blob from the file system that was produced along with the kernel image.
->   If we require a signature on the kernel, the the same requirement should be
->   made on the dtb. Whoever signs the kernel can also sign the dtb.
->   The tricky part here is the kernel command line that is part of the dtb
->   and that may need to be modified.
+-Ravi
 
-I suspect that for this case, following the example of the existing
-sycall, we'd allow the kernel to modify bootargs and initrd properties
-after verfiying the signature of the DTB.
-
-The big question is whether this is a realistic case on a secure boot
-system.
-
-> - Modifying the dtb at for any of the reasons I listed: This should always
->   be possible when we do not use secure boot, just like booting an unsigned
->   kernel is.
-
-This is possible with the existing kexec_load syscall, for the non
-secure boot case.
-
-> - kboot/petitboot with all of the user space being part of the trusted boot
->   chain: it would be good to allow these to modify the dtb as needed without
->   breaking the trust chain, just like we allow grub or u-boot to modify the dtb
->   before passing it to the kernel.
-
-It depends on *what* we need to modify here. We can modify the bootargs
-and initrd properties as part of the kexec_file_load syscall, so what
-else would we want to alter?
-
-Thanks,
-Mark.
+On Friday 08 July 2016 10:10 AM, Ravi Bangoria wrote:
+> Perf can currently only support code navigation (branches and calls) in
+> annotate when run on the same architecture where perf.data was recorded.
+> But cross arch annotate is not supported.
+>
+> This patchset enables cross arch annotate. Currently I've used x86
+> and arm instructions which are already available and adding support
+> for powerpc as well. Adding support for other arch will be easy.
+>
+> I've created this patch on top of acme/perf/core. And tested it with
+> x86 and powerpc only.
+>
+> Note for arm:
+> Few instructions were defined under #if __arm__ which I've used as a
+> table for arm. But I'm not sure whether instruction defined outside of
+> that also contains arm instructions. Apart from that, 'call__parse()'
+> and 'move__parse()' contains #ifdef __arm__ directive. I've changed it
+> to  if (!strcmp(norm_arch, arm)). I don't have a arm machine to test
+> these changes.
+>
+> Example:
+>
+>    Record on powerpc:
+>    $ ./perf record -a
+>
+>    Report -> Annotate on x86:
+>    $ ./perf report -i perf.data.powerpc --vmlinux vmlinux.powerpc
+>
+> Changes in v4:
+>    - powerpc: Added support for branch instructions that includes 'ctr'
+>    - __maybe_unused was misplaced at few location. Corrected it.
+>    - Moved position of v3 last patch that define macro for each arch name
+>
+> v3 link: https://lkml.org/lkml/2016/6/30/99
+>
+> Naveen N. Rao (1):
+>    perf annotate: add powerpc support
+>
+> Ravi Bangoria (2):
+>    perf: Define macro for normalized arch names
+>    perf annotate: Enable cross arch annotate
+>
+>   tools/perf/arch/common.c           |  36 ++---
+>   tools/perf/arch/common.h           |  11 ++
+>   tools/perf/builtin-top.c           |   2 +-
+>   tools/perf/ui/browsers/annotate.c  |   3 +-
+>   tools/perf/ui/gtk/annotate.c       |   2 +-
+>   tools/perf/util/annotate.c         | 273 ++++++++++++++++++++++++++++++-------
+>   tools/perf/util/annotate.h         |   6 +-
+>   tools/perf/util/unwind-libunwind.c |   4 +-
+>   8 files changed, 265 insertions(+), 72 deletions(-)
+>
+> --
+> 2.5.5
+>
