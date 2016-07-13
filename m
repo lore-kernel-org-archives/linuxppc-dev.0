@@ -1,19 +1,21 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
- [IPv6:2607:f8b0:4002:c05::243])
+Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
+ [IPv6:2607:f8b0:4002:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq16X2jGkzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:13:08 +1000 (AEST)
-Received: by mail-yw0-x243.google.com with SMTP id l125so2149250ywb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:13:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq18q4MSCzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 11:15:07 +1000 (AEST)
+Received: by mail-yw0-x242.google.com with SMTP id l125so2151813ywb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 18:15:07 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
-To: kexin.hao@windriver.com,
-	linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Subject: [PATCH v2 0/3] powerpc: tweak the kernel options for CRASH_DUMP and
  RELOCATABLE
-Date: Wed, 13 Jul 2016 09:12:53 +0800
-Message-Id: <1468372373-6346-1-git-send-email-haokexin@gmail.com>
+Date: Wed, 13 Jul 2016 09:14:37 +0800
+Message-Id: <1468372480-6453-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
