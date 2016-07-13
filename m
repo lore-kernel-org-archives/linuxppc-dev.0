@@ -1,27 +1,53 @@
-Return-Path: <vgoyal@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pfsmorigo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqKQ76KMgzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 23:27:43 +1000 (AEST)
-Date: Wed, 13 Jul 2016 09:27:40 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqKZF246QzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 23:34:45 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6DDYPAj108659
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:34:43 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2448qn2g3e-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:34:42 -0400
+Received: from localhost
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
+ Wed, 13 Jul 2016 10:34:40 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 0A9C31DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:34:29 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6DDYaLG11272450
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:34:36 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6DDYZUu009512
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:34:36 -0300
+Date: Wed, 13 Jul 2016 10:34:27 -0300
+From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
 To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, bhe@redhat.com,
- arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>, dyoung@redhat.com,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713132740.GD16900@redhat.com>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <87furf7ztv.fsf@x220.int.ebiederm.org> <2675986.6AfrV5PCe0@hactar>
- <20160712140242.GA30181@redhat.com>
- <877fcqpgj1.fsf@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "open list:IBM Power VMX Cryptographic instructions"
+ <linux-crypto@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT"
+ <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] crypto: vmx - Adding asm subroutines for XTS
+References: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+ <20160712093705.6f0fde7a@canb.auug.org.au>
+ <8737nep7a8.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <877fcqpgj1.fsf@linux.vnet.ibm.com>
+In-Reply-To: <8737nep7a8.fsf@linux.vnet.ibm.com>
+Message-Id: <20160713133427.GA20432@dublin>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,66 +57,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 09:45:22AM +1000, Stewart Smith wrote:
-> Vivek Goyal <vgoyal@redhat.com> writes:
-> > On Tue, Jul 12, 2016 at 10:58:09AM -0300, Thiago Jung Bauermann wrote:
-> >> Hello Eric,
-> >> 
-> >> Am Dienstag, 12 Juli 2016, 08:25:48 schrieb Eric W. Biederman:
-> >> > AKASHI Takahiro <takahiro.akashi@linaro.org> writes:
-> >> > > Device tree blob must be passed to a second kernel on DTB-capable
-> >> > > archs, like powerpc and arm64, but the current kernel interface
-> >> > > lacks this support.
-> >> > > 
-> >> > > This patch extends kexec_file_load system call by adding an extra
-> >> > > argument to this syscall so that an arbitrary number of file descriptors
-> >> > > can be handed out from user space to the kernel.
-> >> > > 
-> >> > > See the background [1].
-> >> > > 
-> >> > > Please note that the new interface looks quite similar to the current
-> >> > > system call, but that it won't always mean that it provides the "binary
-> >> > > compatibility."
-> >> > > 
-> >> > > [1] http://lists.infradead.org/pipermail/kexec/2016-June/016276.html
-> >> > 
-> >> > So this design is wrong.  The kernel already has the device tree blob,
-> >> > you should not be extracting it from the kernel munging it, and then
-> >> > reinserting it in the kernel if you want signatures and everything to
-> >> > pass.
-> >> > 
-> >> > What x86 does is pass it's equivalent of the device tree blob from one
-> >> > kernel to another directly and behind the scenes.  It does not go
-> >> > through userspace for this.
-> >> > 
-> >> > Until a persuasive case can be made for going around the kernel and
-> >> > probably adding a feature (like code execution) that can be used to
-> >> > defeat the signature scheme I am going to nack this.
-> >> 
-> >> There are situations where userspace needs to change things in the device 
-> >> tree to be used by the next kernel.
-> >> 
-> >> For example, Petitboot (the boot loader used in OpenPOWER machines) is a 
-> >> userspace application running in an intermediary Linux instance and uses 
-> >> kexec to load the target OS. It has to modify the device tree that will be 
-> >> used by the next kernel so that the next kernel uses the same console that 
-> >> petitboot was configured to use (i.e., set the /chosen/linux,stdout-path 
-> >> property). It also modifies the device tree to allow the kernel to inherit 
-> >> Petitboot's Openfirmware framebuffer.
+Wed, Jul 13, 2016 at 01:05:03PM +1000, Stewart Smith wrote:
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> > On Mon, 11 Jul 2016 16:07:39 -0300 Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com> wrote:
+> >>
+> >> diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
+> >> index 2280539..813ffcc 100644
+> >> --- a/drivers/crypto/vmx/aesp8-ppc.pl
+> >> +++ b/drivers/crypto/vmx/aesp8-ppc.pl
+> >> @@ -1,4 +1,11 @@
+> >> -#!/usr/bin/env perl
+> >> +#! /usr/bin/env perl
+> >> +# Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
+> >> +#
+> >> +# Licensed under the OpenSSL license (the "License").  You may not use
+> >> +# this file except in compliance with the License.  You can obtain a copy
+> >> +# in the file LICENSE in the source distribution or at
+> >> +# https://www.openssl.org/source/license.html
 > >
-> > Can some of this be done with the help of kernel command line options for
-> > second kernel?
+> > So, I assume that this license is compatible with the GPLv2?
+
+Andy released this code under the cryptogams license:
+
+# ====================================================================
+# Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
+# project. The module is, however, dual licensed under OpenSSL and
+# CRYPTOGAMS licenses depending on where you obtain it. For further
+# details see http://www.openssl.org/~appro/cryptogams/.
+# ====================================================================
+
+The license is GPL compatible:
+
+ALTERNATIVELY, provided that this notice is retained in full, this
+product may be distributed under the terms of the GNU General Public
+License (GPL), in which case the provisions of the GPL apply INSTEAD OF
+those given above.
+
 > 
-> how would this be any more secure?
+> https://people.gnome.org/~markmc/openssl-and-the-gpl.html has an
+> explanation and points to:
+> https://www.openssl.org/docs/faq.html#LEGAL2
 > 
-> Passing in an address for a framebuffer via command line option means
-> you could scribble over any bit of memory, which is the same kind of
-> damage you could do by modifying the device tree.
+> which makes it anything but clearer.
+> 
+> it appears the answer is "probably not, unless you have an explicit
+> exemption in your license"
+> 
+> -- 
+> Stewart Smith
+> OPAL Architect, IBM.
 
-It is not necessarily safer but works with given framework and we don't
-have to modify existing system call.
-
-Also it will allow you to pass in only one thing at a time instead of
-allowing passing in new unsigned DTB, which can potentially do lot more.
-
-Vivek
+-- 
+Paulo Flabiano Smorigo
+IBM Linux Technology Center
