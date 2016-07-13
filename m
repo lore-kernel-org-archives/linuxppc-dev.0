@@ -1,45 +1,45 @@
 Return-Path: <alastair@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq7Ct75L8zDqGS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:10 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6D5i5lO016186
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:08 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2455fcgks8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq7Cy3468zDqFq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:14 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D5i1Tu108959
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:12 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2452at079h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:08 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 01:48:11 -0400
 Received: from localhost
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 13 Jul 2016 15:48:05 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6B39E3578058
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:03 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6D5m3sD16646318
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:03 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6D5m2NX028309
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:03 +1000
+ Wed, 13 Jul 2016 15:48:08 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2BA43357805E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:06 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6D5m6k425296914
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:06 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6D5m5a8009927
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:48:06 +1000
 From: alastair@au1.ibm.com
 To: mpe@ellerman.id.au
 Cc: benh@kernel.crashing.org, paulus@samba.org, herbert@gondor.apana.org.au,
  davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
  linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
  "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH 1/2] powerpc: Add module autoloading based on CPU features
-Date: Wed, 13 Jul 2016 15:47:18 +1000
+Subject: [PATCH 2/2] Automatically load the vmx_crypto module if supported.
+Date: Wed, 13 Jul 2016 15:47:19 +1000
 In-Reply-To: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
 References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
-Message-Id: <1468388840-12068-3-git-send-email-alastair@au1.ibm.com>
+Message-Id: <1468388840-12068-4-git-send-email-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,110 +51,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-This patch provides the necessary infrastructure to allow drivers
-to be automatically loaded via UDEV. It implements the minimum
-required to be able to use module_cpu_feature_match to trigger
-the GENERIC_CPU_AUTOPROBE mechanisms.
-
-The features exposed are a mirror of the cpu_user_features
-(converted to an offset from a mask). This decision was made to
-ensure that the behavior between features for module loading and
-userspace are consistent.
+This patch utilises the GENERIC_CPU_AUTOPROBE infrastructure
+to automatically load the vmx_crypto module if the CPU supports
+it.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/powerpc/Kconfig                  |  1 +
- arch/powerpc/include/asm/cpufeature.h | 70 +++++++++++++++++++++++++++++++++++
- 2 files changed, 71 insertions(+)
- create mode 100644 arch/powerpc/include/asm/cpufeature.h
+ drivers/crypto/vmx/Kconfig | 2 +-
+ drivers/crypto/vmx/vmx.c   | 6 ++----
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0a9d439..a6e49db 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -164,6 +164,7 @@ config PPC
- 	select ARCH_HAS_UBSAN_SANITIZE_ALL
- 	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
- 	select HAVE_LIVEPATCH if HAVE_DYNAMIC_FTRACE_WITH_REGS
-+	select GENERIC_CPU_AUTOPROBE
+diff --git a/drivers/crypto/vmx/Kconfig b/drivers/crypto/vmx/Kconfig
+index 89d8208..a83ead1 100644
+--- a/drivers/crypto/vmx/Kconfig
++++ b/drivers/crypto/vmx/Kconfig
+@@ -1,7 +1,7 @@
+ config CRYPTO_DEV_VMX_ENCRYPT
+ 	tristate "Encryption acceleration support on P8 CPU"
+ 	depends on CRYPTO_DEV_VMX
+-	default y
++	default m
+ 	help
+ 	  Support for VMX cryptographic acceleration instructions on Power8 CPU.
+ 	  This module supports acceleration for AES and GHASH in hardware. If you
+diff --git a/drivers/crypto/vmx/vmx.c b/drivers/crypto/vmx/vmx.c
+index e163d57..5a40f2f 100644
+--- a/drivers/crypto/vmx/vmx.c
++++ b/drivers/crypto/vmx/vmx.c
+@@ -23,6 +23,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/types.h>
+ #include <linux/err.h>
++#include <linux/cpufeature.h>
+ #include <linux/crypto.h>
+ #include <asm/cputable.h>
+ #include <crypto/internal/hash.h>
+@@ -43,9 +44,6 @@ int __init p8_init(void)
+ 	int ret = 0;
+ 	struct crypto_alg **alg_it;
  
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-diff --git a/arch/powerpc/include/asm/cpufeature.h b/arch/powerpc/include/asm/cpufeature.h
-new file mode 100644
-index 0000000..df31627
---- /dev/null
-+++ b/arch/powerpc/include/asm/cpufeature.h
-@@ -0,0 +1,70 @@
-+/* CPU feature definitions for module loading, used by
-+ * module_cpu_feature_match(), see asm/cputable.h for powerpc CPU features
-+ *
-+ * Copyright 2016 Alastair D'Silva, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef __ASM_CPUFEATURE_H
-+#define __ASM_POWERPC_CPUFEATURE_H
-+
-+#include <asm/cputable.h>
-+
-+/* Keep these in step with powerpc/include/asm/cputable.h */
-+#define MAX_CPU_FEATURES (2 * 32)
-+
-+#define PPC_MODULE_FEATURE_32				(ilog2(PPC_FEATURE_32))
-+#define PPC_MODULE_FEATURE_64				(ilog2(PPC_FEATURE_64))
-+#define PPC_MODULE_FEATURE_601_INSTR			(ilog2(PPC_FEATURE_601_INSTR))
-+#define PPC_MODULE_FEATURE_HAS_ALTIVEC			(ilog2(PPC_FEATURE_HAS_ALTIVEC))
-+#define PPC_MODULE_FEATURE_HAS_FPU			(ilog2(PPC_FEATURE_HAS_FPU))
-+#define PPC_MODULE_FEATURE_HAS_MMU			(ilog2(PPC_FEATURE_HAS_MMU))
-+#define PPC_MODULE_FEATURE_HAS_4xxMAC			(ilog2(PPC_FEATURE_HAS_4xxMAC))
-+#define PPC_MODULE_FEATURE_UNIFIED_CACHE		ilog2(PPC_FEATURE_UNIFIED_CACHE))
-+#define PPC_MODULE_FEATURE_HAS_SPE			(ilog2(PPC_FEATURE_HAS_SPE))
-+#define PPC_MODULE_FEATURE_HAS_EFP_SINGLE		(ilog2(PPC_FEATURE_HAS_EFP_SINGLE))
-+#define PPC_MODULE_FEATURE_HAS_EFP_DOUBLE		(ilog2(PPC_FEATURE_HAS_EFP_DOUBLE))
-+#define PPC_MODULE_FEATURE_NO_TB			(ilog2(PPC_FEATURE_NO_TB))
-+#define PPC_MODULE_FEATURE_POWER4			(ilog2(PPC_FEATURE_POWER4))
-+#define PPC_MODULE_FEATURE_POWER5			(ilog2(PPC_FEATURE_POWER5))
-+#define PPC_MODULE_FEATURE_POWER5_PLUS			(ilog2(PPC_FEATURE_POWER5_PLUS))
-+#define PPC_MODULE_FEATURE_CELL				(ilog2(PPC_FEATURE_CELL))
-+#define PPC_MODULE_FEATURE_BOOKE			(ilog2(PPC_FEATURE_BOOKE))
-+#define PPC_MODULE_FEATURE_SMT				(ilog2(PPC_FEATURE_SMT))
-+#define PPC_MODULE_FEATURE_ICACHE_SNOOP			(ilog2(PPC_FEATURE_ICACHE_SNOOP))
-+#define PPC_MODULE_FEATURE_ARCH_2_05			(ilog2(PPC_FEATURE_ARCH_2_05))
-+#define PPC_MODULE_FEATURE_PA6T				(ilog2(PPC_FEATURE_PA6T))
-+#define PPC_MODULE_FEATURE_HAS_DFP			(ilog2(PPC_FEATURE_HAS_DFP))
-+#define PPC_MODULE_FEATURE_POWER6_EXT			(ilog2(PPC_FEATURE_POWER6_EXT))
-+#define PPC_MODULE_FEATURE_ARCH_2_06			(ilog2(PPC_FEATURE_ARCH_2_06))
-+#define PPC_MODULE_FEATURE_HAS_VSX			(ilog2(PPC_FEATURE_HAS_VSX))
-+#define PPC_MODULE_FEATURE_PSERIES_PERFMON_COMPAT	(ilog2(PPC_FEATURE_PSERIES_PERFMON_COMPAT))
-+#define PPC_MODULE_FEATURE_TRUE_LE			(ilog2(PPC_FEATURE_TRUE_LE))
-+#define PPC_MODULE_FEATURE_PPC_LE			(ilog2(PPC_FEATURE_PPC_LE))
-+
-+#define PPC_MODULE_FEATURE_ARCH_2_07			(32 + ilog2(PPC_FEATURE2_ARCH_2_07))
-+#define PPC_MODULE_FEATURE_HTM				(32 + ilog2(PPC_FEATURE2_HTM))
-+#define PPC_MODULE_FEATURE_DSCR				(32 + ilog2(PPC_FEATURE2_DSCR))
-+#define PPC_MODULE_FEATURE_EBB				(32 + ilog2(PPC_FEATURE2_EBB))
-+#define PPC_MODULE_FEATURE_ISEL				(32 + ilog2(PPC_FEATURE2_ISEL))
-+#define PPC_MODULE_FEATURE_TAR				(32 + ilog2(PPC_FEATURE2_TAR))
-+#define PPC_MODULE_FEATURE_VEC_CRYPTO			(32 + ilog2(PPC_FEATURE2_VEC_CRYPTO))
-+#define PPC_MODULE_FEATURE_HTM_NOSC			(32 + ilog2(PPC_FEATURE2_HTM_NOSC))
-+#define PPC_MODULE_FEATURE_ARCH_3_00			(32 + ilog2(PPC_FEATURE2_ARCH_3_00))
-+#define PPC_MODULE_FEATURE_HAS_IEEE128			(32 + ilog2(PPC_FEATURE2_HAS_IEEE128))
-+
-+#define cpu_feature(x)		(x)
-+
-+static inline bool cpu_have_feature(unsigned int num)
-+{
-+	if (num < 32)
-+		return !!(cur_cpu_spec->cpu_user_features & 1UL << num);
-+	else
-+		return !!(cur_cpu_spec->cpu_user_features2 & 1UL << (num - 32));
-+}
-+
-+#endif /* __ASM_POWERPC_CPUFEATURE_H */
+-	if (!(cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_VEC_CRYPTO))
+-		return -ENODEV;
+-
+ 	for (alg_it = algs; *alg_it; alg_it++) {
+ 		ret = crypto_register_alg(*alg_it);
+ 		printk(KERN_INFO "crypto_register_alg '%s' = %d\n",
+@@ -78,7 +76,7 @@ void __exit p8_exit(void)
+ 	crypto_unregister_shash(&p8_ghash_alg);
+ }
+ 
+-module_init(p8_init);
++module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, p8_init);
+ module_exit(p8_exit);
+ 
+ MODULE_AUTHOR("Marcelo Cerri<mhcerri@br.ibm.com>");
 -- 
 2.7.4
