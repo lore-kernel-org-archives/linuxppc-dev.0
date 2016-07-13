@@ -1,54 +1,30 @@
-Return-Path: <pfsmorigo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anna-maria@linutronix.de>
+Received: from Galois.linutronix.de (linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqNrl0MJ6zDqFn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 02:02:30 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6DFxCtQ092539
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 12:02:28 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 245py7523x-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 12:02:28 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 13:02:26 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 117971DC0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 12:02:11 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6DG2Iwi65994880
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 13:02:19 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6DG2Icc014736
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 13:02:18 -0300
-Date: Wed, 13 Jul 2016 13:02:09 -0300
-From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "open list:IBM Power VMX Cryptographic instructions"
- <linux-crypto@vger.kernel.org>,
- "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] crypto: vmx - Adding asm subroutines for XTS
-References: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
- <20160712093705.6f0fde7a@canb.auug.org.au>
- <8737nep7a8.fsf@linux.vnet.ibm.com> <20160713133427.GA20432@dublin>
- <20160714011158.46c386f4@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqQYH1q1XzDqFq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 03:19:15 +1000 (AEST)
+Message-Id: <20160713153334.345786236@linutronix.de>
+Date: Wed, 13 Jul 2016 17:16:20 -0000
+From: Anna-Maria Gleixner <anna-maria@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, rt@linutronix.de,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Anna-Maria Gleixner <anna-maria@linutronix.de>
+Subject: [patch V2 18/67] powerpc/perf: Convert book3s notifier to state
+ machine callbacks
+References: <20160713153219.128052238@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160714011158.46c386f4@canb.auug.org.au>
-Message-Id: <20160713160209.GB20432@dublin>
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,71 +34,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thu, Jul 14, 2016 at 01:11:58AM +1000, Stephen Rothwell wrote:
-> Hi Paulo,
-> 
-> On Wed, 13 Jul 2016 10:34:27 -0300 Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com> wrote:
-> >
-> > Wed, Jul 13, 2016 at 01:05:03PM +1000, Stewart Smith wrote:
-> > > Stephen Rothwell <sfr@canb.auug.org.au> writes:  
-> > > > On Mon, 11 Jul 2016 16:07:39 -0300 Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com> wrote:  
-> > > >>
-> > > >> diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
-> > > >> index 2280539..813ffcc 100644
-> > > >> --- a/drivers/crypto/vmx/aesp8-ppc.pl
-> > > >> +++ b/drivers/crypto/vmx/aesp8-ppc.pl
-> > > >> @@ -1,4 +1,11 @@
-> > > >> -#!/usr/bin/env perl
-> > > >> +#! /usr/bin/env perl
-> > > >> +# Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
-> > > >> +#
-> > > >> +# Licensed under the OpenSSL license (the "License").  You may not use
-> > > >> +# this file except in compliance with the License.  You can obtain a copy
-> > > >> +# in the file LICENSE in the source distribution or at
-> > > >> +# https://www.openssl.org/source/license.html  
-> > > >
-> > > > So, I assume that this license is compatible with the GPLv2?  
-> > 
-> > Andy released this code under the cryptogams license:
-> > 
-> > # ====================================================================
-> > # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
-> > # project. The module is, however, dual licensed under OpenSSL and
-> > # CRYPTOGAMS licenses depending on where you obtain it. For further
-> > # details see http://www.openssl.org/~appro/cryptogams/.
-> > # ====================================================================
-> 
-> Yeah, this license statement is already in the file being patched, so
-> why is the above license (and Copyright notice) being added above the
-> existing one?
+From: Thomas Gleixner <tglx@linutronix.de>
 
-aesp8-ppc.pl from Linux is almost the same as the one from OpenSSL and we do
-that so we can keep it updated on both projects.
-The above license lines were added to all pl files in OpenSSL so it ended up
-here but since the author published it as cryptogams too we are ok.
+Install the callbacks via the state machine and let the core invoke
+the callbacks on the already online CPUs.
 
-> 
-> > The license is GPL compatible:
-> 
-> Good, thanks.
-> 
-> > ALTERNATIVELY, provided that this notice is retained in full, this
-> > product may be distributed under the terms of the GNU General Public
-> > License (GPL), in which case the provisions of the GPL apply INSTEAD OF
-> > those given above.
-> 
-> Which is not in this file or the patch, but presumably in the referred
-> to web page.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reviewed-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
+---
+ arch/powerpc/perf/core-book3s.c | 30 +++++++-----------------------
+ include/linux/cpuhotplug.h      |  1 +
+ 2 files changed, 8 insertions(+), 23 deletions(-)
 
-Yes, that comment is from the url pointed in the code.
-
-> 
-> Of course, I am not a lawyer :-)
-> -- 
-> Cheers,
-> Stephen Rothwell
-> 
-
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 97a1d40..ffd61d5 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2158,31 +2158,15 @@ static void perf_event_interrupt(struct pt_regs *regs)
+ 		irq_exit();
+ }
+ 
+-static void power_pmu_setup(int cpu)
++int power_pmu_prepare_cpu(unsigned int cpu)
+ {
+ 	struct cpu_hw_events *cpuhw = &per_cpu(cpu_hw_events, cpu);
+ 
+-	if (!ppmu)
+-		return;
+-	memset(cpuhw, 0, sizeof(*cpuhw));
+-	cpuhw->mmcr[0] = MMCR0_FC;
+-}
+-
+-static int
+-power_pmu_notifier(struct notifier_block *self, unsigned long action, void *hcpu)
+-{
+-	unsigned int cpu = (long)hcpu;
+-
+-	switch (action & ~CPU_TASKS_FROZEN) {
+-	case CPU_UP_PREPARE:
+-		power_pmu_setup(cpu);
+-		break;
+-
+-	default:
+-		break;
++	if (ppmu) {
++		memset(cpuhw, 0, sizeof(*cpuhw));
++		cpuhw->mmcr[0] = MMCR0_FC;
+ 	}
+-
+-	return NOTIFY_OK;
++	return 0;
+ }
+ 
+ int register_power_pmu(struct power_pmu *pmu)
+@@ -2205,7 +2189,7 @@ int register_power_pmu(struct power_pmu *pmu)
+ #endif /* CONFIG_PPC64 */
+ 
+ 	perf_pmu_register(&power_pmu, "cpu", PERF_TYPE_RAW);
+-	perf_cpu_notifier(power_pmu_notifier);
+-
++	cpuhp_setup_state(CPUHP_PERF_POWER, "PERF_POWER",
++			  power_pmu_prepare_cpu, NULL);
+ 	return 0;
+ }
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index d54973e..b265e99 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -10,6 +10,7 @@ enum cpuhp_state {
+ 	CPUHP_PERF_X86_AMD_UNCORE_PREP,
+ 	CPUHP_PERF_X86_RAPL_PREP,
+ 	CPUHP_PERF_BFIN,
++	CPUHP_PERF_POWER,
+ 	CPUHP_NOTIFY_PREPARE,
+ 	CPUHP_BRINGUP_CPU,
+ 	CPUHP_AP_IDLE_DEAD,
 -- 
-Paulo Flabiano Smorigo
-IBM Linux Technology Center
+2.8.1
