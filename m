@@ -1,26 +1,30 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rqDFg400PzDqKn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:35:03 +1000 (AEST)
-Date: Wed, 13 Jul 2016 10:34:47 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Dave Young <dyoung@redhat.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, bhe@redhat.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Vivek Goyal <vgoyal@redhat.com>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713093432.GB14522@leverpostej>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
- <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
- <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqDGW3wblzDqPK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 19:35:47 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D9YDvA033188
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:35:45 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24566wwn3u-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 05:35:44 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 13 Jul 2016 03:35:44 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH for-4.8_set1 00/12] Radix fixes for 4.8
+Date: Wed, 13 Jul 2016 15:05:19 +0530
+Message-Id: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +34,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 10:36:14AM +0800, Dave Young wrote:
-> But consider we can kexec to a different kernel and a different initrd so there
-> will be use cases to pass a total different dtb as well.
+Hi,
 
-It depends on what you mean by "a different kernel", and what this
-implies for the DTB.
+This series include cleanup and fixes for radix MMU mode. I also added a
+patch that provides a kernel command line option to disable radix.
 
-I expect future arm64 Linux kernels to function with today's DTBs, and
-the existing boot protocol. The kexec_file_load syscall already has
-enough information for the kernel to inject the initrd and bootargs
-properties into a DTB.
+Aneesh Kumar K.V (11):
+  powerpc/mm/radix: Update LPCR HR bit as per ISA
+  powerpc/mm: use _raw variant of page table accessors
+  powerpc/mm: Compile out radix related functions if RADIX_MMU is
+    disabled
+  powerpc/mm: Clear top 16 bits of va only on older cpus
+  powerpc/mm: Print formation regarding the the MMU mode
+  powerpc/mm/hash: Update SDR1 size encoding as documented in ISA 3.0
+  powerpc/mm/radix: Update PID switch sequence
+  powerpc/mm/radix: Update machine call back to support new HCALL.
+  powerpc/mm/radix: Add LPID based tlb flush helpers
+  powerpc/mm: Cleanup LPCR defines
+  powerpc/mm/radix: Add a kernel command line to disable radix
 
-In practice on x86 today, kexec_file_load only supports booting to a
-Linux kernel, because the in-kernel purgatory only implements the x86
-Linux boot protocol. Analagously, for arm64 I think that the first
-kernel should use its internal copy of the boot DTB, with /chosen fixed
-up appropriately, assuming the next kernel is an arm64 Linux image.
+Balbir Singh (1):
+  Fix .long's in mm/tlb-radix.c to more meaningful
 
-If booting another OS, the only parts of the DTB I would expect to
-change are the properties under chosen, as everything else *should* be
-OS-independent. However the other OS may have a completely different
-boot protocol, might not even take a DTB, and will likely need a
-compeltely different purgatory implementation. So just allowing the DTB
-to be altered isn't sufficient for that case.
+ Documentation/kernel-parameters.txt                |  3 +
+ arch/powerpc/include/asm/book3s/64/mmu.h           |  5 ++
+ arch/powerpc/include/asm/book3s/64/pgtable-4k.h    |  6 +-
+ arch/powerpc/include/asm/book3s/64/pgtable-64k.h   |  6 +-
+ arch/powerpc/include/asm/book3s/64/pgtable.h       | 99 +++++++++++++++-------
+ .../powerpc/include/asm/book3s/64/tlbflush-radix.h |  4 +-
+ arch/powerpc/include/asm/machdep.h                 |  3 +-
+ arch/powerpc/include/asm/mmu.h                     |  9 +-
+ arch/powerpc/include/asm/pgtable-be-types.h        | 15 ++++
+ arch/powerpc/include/asm/ppc-opcode.h              | 17 ++++
+ arch/powerpc/include/asm/reg.h                     | 55 ++++++------
+ arch/powerpc/kernel/cputable.c                     |  4 +-
+ arch/powerpc/kernel/prom.c                         | 13 +++
+ arch/powerpc/mm/hash_native_64.c                   | 16 +++-
+ arch/powerpc/mm/hash_utils_64.c                    | 12 +--
+ arch/powerpc/mm/mmu_context_book3s64.c             |  5 +-
+ arch/powerpc/mm/pgtable-radix.c                    | 16 ++--
+ arch/powerpc/mm/tlb-radix.c                        | 65 ++++++++++++--
+ 18 files changed, 260 insertions(+), 93 deletions(-)
 
-There might be cases where we want a different DTB, but as far as I can
-tell we have nothing analagous on x86 today. If we do need this, we
-should have an idea of what real case(s) were trying to solve.
-
-Thanks,
-Mark.
+-- 
+2.7.4
