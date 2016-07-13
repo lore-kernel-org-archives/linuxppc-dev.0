@@ -1,47 +1,37 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqKyR6z0nzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 23:52:15 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6DDn99e040199
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:52:12 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2455fcyqsn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqL6B2vsGzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 23:58:58 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6DDrnao030685
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:58:56 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2452atg5nd-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:52:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:58:56 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Wed, 13 Jul 2016 10:52:10 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 3458A3520068
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 09:51:50 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6DDq8kb4816934
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:52:08 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6DDq7cn014330
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 10:52:08 -0300
-Subject: Re: [PATCH] powerpc: fix oops in pcibios_release_device() after
- pcibios_free_controller()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <1467683085-3537-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <1467687331.13965.27.camel@kernel.crashing.org>
- <5785782D.3010407@linux.vnet.ibm.com>
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Date: Wed, 13 Jul 2016 10:52:05 -0300
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 13 Jul 2016 07:58:55 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH for-4.8 02/10] powerpc/mm: Convert early cpu/mmu feature
+ check to use the new helpers
+In-Reply-To: <1468411747.20552.81.camel@kernel.crashing.org>
+References: <1468402690-5373-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468402690-5373-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468411747.20552.81.camel@kernel.crashing.org>
+Date: Wed, 13 Jul 2016 19:28:46 +0530
 MIME-Version: 1.0
-In-Reply-To: <5785782D.3010407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57864785.1090309@linux.vnet.ibm.com>
+Content-Type: text/plain
+Message-Id: <87poqhy6zt.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,20 +41,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/12/2016 08:07 PM, Mauricio Faria de Oliveira wrote:
-> Can you clarify which are the devices that should be tracked w/ krefs to
-> the PHB?
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Last night I had forgotten about the fundamental point of krefs - track 
-references to pointers - and this answers the question.
+> On Wed, 2016-07-13 at 15:08 +0530, Aneesh Kumar K.V wrote:
+>> This switch most of the early feature check to use the non static key
+>> variant of the function. In later patches we will be switching
+>> cpu_has_feature and mmu_has_feature to use static keys and we can use
+>> them only after static key/jump label is initialized. Any check for
+>> feature before jump label init should be done using this new helper.
+>
+> I'm not sure about that. This is converting way way way way more
+> functions than is needed. Especially if Michael applies my series
+> there will be very little code run before the patching, really only the
+> MMU initialization....
+>
 
-I'm looking at the holders of pointers to the phb struct, and it seems
-I wasn't too far off w/ the child buses and devices idea -- as the root 
-bus (phb->bus) is assigned the phb pointer in the bus->sysdata field,
-and it's inherited from parent by child buses and devices.
+But then all of them are __init functions and that help in:
 
-I'll continue here. Comments always welcome.
+1) Avoid adding those location information to the __jump_table section. (I assume
+that will also have an impact of vmlinux size ?)
+2) Simple rule regarding when to use __cpu_has_feature and
+cpu_has_feature
+3) No need to runtime patch lot of these __init code paths which will we
+throw out after boot.
 
--- 
-Mauricio Faria de Oliveira
-IBM Linux Technology Center
+Do you see any draw back in making all the __init functions to use
+__cpu_has_feature() ?
+
+-aneesh
