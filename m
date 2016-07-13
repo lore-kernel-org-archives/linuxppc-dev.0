@@ -1,50 +1,19 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
- [IPv6:2a00:1450:400c:c09::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqXtQ3f81zDqHB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 08:04:30 +1000 (AEST)
-Received: by mail-wm0-x22b.google.com with SMTP id o80so88839549wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 15:04:30 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <CALCETrVDJDjdoh7yvOPd=_5twQnzQRhe8G2KLaRw-NnA1Uf__g@mail.gmail.com>
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-2-git-send-email-keescook@chromium.org>
- <CALCETrVDJDjdoh7yvOPd=_5twQnzQRhe8G2KLaRw-NnA1Uf__g@mail.gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 13 Jul 2016 15:04:26 -0700
-Message-ID: <CAGXu5jLPZiRJx8n3_7GW2bufiuUgE9=c6dQcNxDRPHMU72sD9g@mail.gmail.com>
-Subject: Re: [PATCH v2 01/11] mm: Implement stack frame object validation
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, X86 ML <x86@kernel.org>,
- Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqYms3NJ2zDqFn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 08:44:45 +1000 (AEST)
+Message-ID: <1468449883.20552.105.camel@kernel.crashing.org>
+Subject: Re: [bug report] [PATCH] powerpc: Thermal control for dual core G5s
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 13 Jul 2016 17:44:43 -0500
+In-Reply-To: <20160713101546.GK29468@mwanda>
+References: <20160713101546.GK29468@mwanda>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,25 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 3:01 PM, Andy Lutomirski <luto@amacapital.net> wrote:
-> On Wed, Jul 13, 2016 at 2:55 PM, Kees Cook <keescook@chromium.org> wrote:
->> This creates per-architecture function arch_within_stack_frames() that
->> should validate if a given object is contained by a kernel stack frame.
->> Initial implementation is on x86.
->>
->> This is based on code from PaX.
->>
->
-> This, along with Josh's livepatch work, are two examples of unwinders
-> that matter for correctness instead of just debugging.  ISTM this
-> should just use Josh's code directly once it's been written.
+On Wed, 2016-07-13 at 13:15 +0300, Dan Carpenter wrote:
+> Hello Benjamin Herrenschmidt,
+> 
+> The patch ac171c46667c: "[PATCH] powerpc: Thermal control for dual
+> core G5s" from Feb 8, 2006, leads to the following static checker
+> warning:
+> 
+> 	drivers/macintosh/windfarm_smu_controls.c:83 smu_set_fan()
+> 	warn: buffer overflow 'buffer' 16 <= 16
 
-Do you have URL for Josh's code? I'd love to see what happening there.
+Thanks. I had a look at it seems like id is actually always
+smaller than 6. So it's just the check id > 7 that needs
+to be id > 5 I think and unless some of these machines have a bad
+device-tree I think we don't actually corrupt memory.
 
-In the meantime, usercopy can use this...
-
--Kees
-
--- 
-Kees Cook
-Chrome OS & Brillo Security
+> drivers/macintosh/windfarm_smu_controls.c
+>     54  static int smu_set_fan(int pwm, u8 id, u16 value)
+>     55  {
+>     56          struct smu_cmd cmd;
+>     57          u8 buffer[16];
+>                    ^^^^^^^^^^
+> 16 bytes.
+> 
+>     58          DECLARE_COMPLETION_ONSTACK(comp);
+>     59          int rc;
+>     60  
+>     61          /* Fill SMU command structure */
+>     62          cmd.cmd = SMU_CMD_FAN_COMMAND;
+>     63  
+>     64          /* The SMU has an "old" and a "new" way of setting
+> the fan speed
+>     65           * Unfortunately, I found no reliable way to know
+> which one works
+>     66           * on a given machine model. After some
+> investigations it appears
+>     67           * that MacOS X just tries the new one, and if it
+> fails fallbacks
+>     68           * to the old ones ... Ugh.
+>     69           */
+>     70   retry:
+>     71          if (smu_supports_new_fans_ops) {
+>     72                  buffer[0] = 0x30;
+>     73                  buffer[1] = id;
+>     74                  *((u16 *)(&buffer[2])) = value;
+>     75                  cmd.data_len = 4;
+>     76          } else {
+>     77                  if (id > 7)
+>                             ^^^^^^
+> Assume id is 7.
+> 
+>     78                          return -EINVAL;
+>     79                  /* Fill argument buffer */
+>     80                  memset(buffer, 0, 16);
+>     81                  buffer[0] = pwm ? 0x10 : 0x00;
+>     82                  buffer[1] = 0x01 << id;
+>     83                  *((u16 *)&buffer[2 + id * 2]) = value;
+>                                   ^^^^^^^^^^^^^^^^^^
+> 2 + 7 * 2 = 16.  We're write two bytes beyond the end of the array.
+> 
+>     84                  cmd.data_len = 14;
+>     85          }
+>     86  
+> 
+> 
+> regards,
+> dan carpenter
