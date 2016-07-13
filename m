@@ -1,26 +1,41 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rq2yb1rslzDqFP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 12:36:22 +1000 (AEST)
-Date: Wed, 13 Jul 2016 10:36:14 +0800
-From: Dave Young <dyoung@redhat.com>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, bhe@redhat.com, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
- <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rq3cT6g7rzDqFP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 13:05:45 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6D33cKl033308
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 23:05:42 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 243enss4pv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2016 23:05:42 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 12 Jul 2016 21:05:41 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+Cc: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "open list\:IBM Power VMX Cryptographic instructions"
+ <linux-crypto@vger.kernel.org>,
+ "open list\:LINUX FOR POWERPC 32-BIT AND 64-BIT"
+ <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] crypto: vmx - Adding asm subroutines for XTS
+In-Reply-To: <20160712093705.6f0fde7a@canb.auug.org.au>
+References: <1468264060-22769-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+ <20160712093705.6f0fde7a@canb.auug.org.au>
+Date: Wed, 13 Jul 2016 13:05:03 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160712145010.GA8447@leverpostej>
+Content-Type: text/plain
+Message-Id: <8737nep7a8.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,69 +45,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/12/16 at 03:50pm, Mark Rutland wrote:
-> On Tue, Jul 12, 2016 at 04:24:10PM +0200, Arnd Bergmann wrote:
-> > On Tuesday, July 12, 2016 10:18:11 AM CEST Vivek Goyal wrote:
-> > > > 
-> > > > On Open Firmware, the DT is extracted from running firmware and copied
-> > > > into dynamically allocated data structures. After a kexec, the runtime
-> > > > interface to the firmware is not available, so the flattened DT format
-> > > > was created as a way to pass the same data in a binary blob to the new
-> > > > kernel in a format that can be read from the kernel by walking the
-> > > > directories in /proc/device-tree/*.
-> > > 
-> > > So this DT is available inside kernel and running kernel can still
-> > > retrieve it and pass it to second kernel?
-> > 
-> > The kernel only uses the flattened DT blob at boot time and converts
-> > it into the runtime data structures (struct device_node). The original
-> > dtb is typically overwritten later.
-> 
-> On arm64 we deliberately preserved the DTB, so we can take that and
-> build a new DTB from that kernel-side.
-> 
-> > > > - we typically ship devicetree sources for embedded machines with the
-> > > >   kernel sources. As more hardware of the system gets enabled, the
-> > > >   devicetree gains extra nodes and properties that describe the hardware
-> > > >   more completely, so we need to use the latest DT blob to use all
-> > > >   the drivers
-> > > > 
-> > > > - in some cases, kernels will fail to boot at all with an older version
-> > > >   of the DT, or fail to use the devices that were working on the
-> > > >   earlier kernel. This is usually considered a bug, but it's not rare
-> > > > 
-> > > > - In some cases, the kernel can update its DT at runtime, and the new
-> > > >   settings are expected to be available in the new kernel too, though
-> > > >   there are cases where you actually don't want the modified contents.
-> > > 
-> > > I am assuming that modified DT and unmodifed one both are accessible to
-> > > kernel. And if user space can make decisions which modfied fields to use
-> > > for new kernels and which ones not, then same can be done in kernel too?
-> > 
-> > The unmodified DT can typically be found on disk next to the kernel binary.
-> > The option you have is to either read it from /proc/devicetree or to
-> > read it from from /boot/*.dtb.
-> 
-> /proc/devicetree (aka /sys/firmware/devicetree) is a filesystem derived
-> from the raw DTB (which is exposed at /sys/firmware/fdt).
-> 
-> The blob that was handed to the kernel at boot time is exposed at
-> /sys/firmware/fdt.
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> On Mon, 11 Jul 2016 16:07:39 -0300 Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com> wrote:
+>>
+>> diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
+>> index 2280539..813ffcc 100644
+>> --- a/drivers/crypto/vmx/aesp8-ppc.pl
+>> +++ b/drivers/crypto/vmx/aesp8-ppc.pl
+>> @@ -1,4 +1,11 @@
+>> -#!/usr/bin/env perl
+>> +#! /usr/bin/env perl
+>> +# Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
+>> +#
+>> +# Licensed under the OpenSSL license (the "License").  You may not use
+>> +# this file except in compliance with the License.  You can obtain a copy
+>> +# in the file LICENSE in the source distribution or at
+>> +# https://www.openssl.org/source/license.html
+>
+> So, I assume that this license is compatible with the GPLv2?
 
-I believe the blob can be read and passed to kexec kernel in kernel code without
-the extra fd.
+https://people.gnome.org/~markmc/openssl-and-the-gpl.html has an
+explanation and points to:
+https://www.openssl.org/docs/faq.html#LEGAL2
 
-But consider we can kexec to a different kernel and a different initrd so there
-will be use cases to pass a total different dtb as well. From my understanding
-it is reasonable but yes I think we should think carefully about the design.
+which makes it anything but clearer.
 
-Thanks
-Dave
+it appears the answer is "probably not, unless you have an explicit
+exemption in your license"
 
-> Thanks,
-> Mark.
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+-- 
+Stewart Smith
+OPAL Architect, IBM.
