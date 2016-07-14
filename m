@@ -1,25 +1,26 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqjLP5lMszDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 14:25:49 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id g202so4195937pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 21:25:49 -0700 (PDT)
-Date: Thu, 14 Jul 2016 14:25:36 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqjQH4pn1zDqxj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 14:29:11 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id dx3so4029786pab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 21:29:11 -0700 (PDT)
+Date: Thu, 14 Jul 2016 14:29:02 +1000
 From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [RESEND][v2][PATCH] KVM: PPC: Book3S HV: Migrate pinned pages out of
- CMA
-Message-ID: <20160714042536.GG18277@balbir.ozlabs.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH for-4.8 07/12] powerpc/mm/hash: Update SDR1 size encoding
+ as documented in ISA 3.0
+Message-ID: <20160714042902.GH18277@balbir.ozlabs.ibm.com>
 Reply-To: bsingharora@gmail.com
+References: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468402531-4914-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1468402531-4914-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,164 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jul 13, 2016 at 03:05:26PM +0530, Aneesh Kumar K.V wrote:
+> ISA 3.0 document hash table size in bytes = 2^(HTABSIZE + 18)
+> 
+> No functionality change by this patch.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/hash_utils_64.c | 9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> index b90fe2480089..47d59a1f12f1 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -714,10 +714,9 @@ int remove_section_mapping(unsigned long start, unsigned long end)
+>  #endif /* CONFIG_MEMORY_HOTPLUG */
+>  
+>  static void __init hash_init_partition_table(phys_addr_t hash_table,
+> -					     unsigned long pteg_count)
+> +					     unsigned long htab_size)
+>  {
+>  	unsigned long ps_field;
+> -	unsigned long htab_size;
+>  	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
+>  
+>  	/*
+> @@ -725,7 +724,7 @@ static void __init hash_init_partition_table(phys_addr_t hash_table,
+>  	 * We can ignore that for lpid 0
+>  	 */
+>  	ps_field = 0;
+> -	htab_size =  __ilog2(pteg_count) - 11;
+> +	htab_size =  __ilog2(htab_size) - 18;
 
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: [RESEND][v2][PATCH] KVM: PPC: Book3S HV: Migrate pinned pages out of CMA
+I was wondering if we should just do
 
-When PCI Device pass-through is enabled via VFIO, KVM-PPC will
-pin pages using get_user_pages_fast(). One of the downsides of
-the pinning is that the page could be in CMA region. The CMA
-region is used for other allocations like the hash page table.
-Ideally we want the pinned pages to be from non CMA region.
+#define HPT_MIN_SIZE_SHIFT	18
 
-This patch (currently only for KVM PPC with VFIO) forcefully
-migrates the pages out (huge pages are omitted for the moment).
-There are more efficient ways of doing this, but that might
-be elaborate and might impact a larger audience beyond just
-the kvm ppc implementation.
-
-The magic is in new_iommu_non_cma_page() which allocates the
-new page from a non CMA region.
-
-I've tested the patches lightly at my end, but there might be bugs
-For example if after lru_add_drain(), the page is not isolated
-is this a BUG?
-
-Previous discussion was at
-http://permalink.gmane.org/gmane.linux.kernel.mm/136738
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/include/asm/mmu_context.h |  1 +
- arch/powerpc/mm/mmu_context_iommu.c    | 80 ++++++++++++++++++++++++++++++++--
- 2 files changed, 77 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 9d2cd0c..475d1be 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -18,6 +18,7 @@ extern void destroy_context(struct mm_struct *mm);
- #ifdef CONFIG_SPAPR_TCE_IOMMU
- struct mm_iommu_table_group_mem_t;
- 
-+extern int isolate_lru_page(struct page *page);	/* from internal.h */
- extern bool mm_iommu_preregistered(void);
- extern long mm_iommu_get(unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem);
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index da6a216..c18f742 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -15,6 +15,9 @@
- #include <linux/rculist.h>
- #include <linux/vmalloc.h>
- #include <linux/mutex.h>
-+#include <linux/migrate.h>
-+#include <linux/hugetlb.h>
-+#include <linux/swap.h>
- #include <asm/mmu_context.h>
- 
- static DEFINE_MUTEX(mem_list_mutex);
-@@ -72,6 +75,54 @@ bool mm_iommu_preregistered(void)
- }
- EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
- 
-+/*
-+ * Taken from alloc_migrate_target with changes to remove CMA allocations
-+ */
-+struct page *new_iommu_non_cma_page(struct page *page, unsigned long private,
-+					int **resultp)
-+{
-+	gfp_t gfp_mask = GFP_USER;
-+	struct page *new_page;
-+
-+	if (PageHuge(page) || PageTransHuge(page) || PageCompound(page))
-+		return NULL;
-+
-+	if (PageHighMem(page))
-+		gfp_mask |= __GFP_HIGHMEM;
-+
-+	/*
-+	 * We don't want the allocation to force an OOM if possibe
-+	 */
-+	new_page = alloc_page(gfp_mask | __GFP_NORETRY | __GFP_NOWARN);
-+	return new_page;
-+}
-+
-+static int mm_iommu_move_page_from_cma(struct page *page)
-+{
-+	int ret;
-+	LIST_HEAD(cma_migrate_pages);
-+
-+	/* Ignore huge pages for now */
-+	if (PageHuge(page) || PageTransHuge(page) || PageCompound(page))
-+		return -EBUSY;
-+
-+	lru_add_drain();
-+	ret = isolate_lru_page(page);
-+	if (ret)
-+		get_page(page); /* Potential BUG? */
-+
-+	list_add(&page->lru, &cma_migrate_pages);
-+	put_page(page); /* Drop the gup reference */
-+
-+	ret = migrate_pages(&cma_migrate_pages, new_iommu_non_cma_page,
-+				NULL, 0, MIGRATE_SYNC, MR_CMA);
-+	if (ret) {
-+		if (!list_empty(&cma_migrate_pages))
-+			putback_movable_pages(&cma_migrate_pages);
-+	}
-+	return 0;
-+}
-+
- long mm_iommu_get(unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem)
- {
-@@ -124,15 +175,36 @@ long mm_iommu_get(unsigned long ua, unsigned long entries,
- 	for (i = 0; i < entries; ++i) {
- 		if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
- 					1/* pages */, 1/* iswrite */, &page)) {
-+			ret = -EFAULT;
- 			for (j = 0; j < i; ++j)
--				put_page(pfn_to_page(
--						mem->hpas[j] >> PAGE_SHIFT));
-+				put_page(pfn_to_page(mem->hpas[j] >>
-+						PAGE_SHIFT));
- 			vfree(mem->hpas);
- 			kfree(mem);
--			ret = -EFAULT;
- 			goto unlock_exit;
- 		}
--
-+		/*
-+		 * If we get a page from the CMA zone, since we are going to
-+		 * be pinning these entries, we might as well move them out
-+		 * of the CMA zone if possible. NOTE: faulting in + migration
-+		 * can be expensive. Batching can be considered later
-+		 */
-+		if (get_pageblock_migratetype(page) == MIGRATE_CMA) {
-+			if (mm_iommu_move_page_from_cma(page))
-+				goto populate;
-+			if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
-+						1/* pages */, 1/* iswrite */,
-+						&page)) {
-+				ret = -EFAULT;
-+				for (j = 0; j < i; ++j)
-+					put_page(pfn_to_page(mem->hpas[j] >>
-+								PAGE_SHIFT));
-+				vfree(mem->hpas);
-+				kfree(mem);
-+				goto unlock_exit;
-+			}
-+		}
-+populate:
- 		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
- 	}
- 
--- 
-2.5.5
+and then use it instead?
