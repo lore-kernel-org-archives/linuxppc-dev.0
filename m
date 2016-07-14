@@ -1,21 +1,24 @@
-Return-Path: <wharms@bfs.de>
-Received: from mx01-fr.bfs.de (mx01-fr.bfs.de [193.174.231.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqt5700WmzDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 20:59:54 +1000 (AEST)
-Message-ID: <57876EE0.10603@bfs.de>
-Date: Thu, 14 Jul 2016 12:52:16 +0200
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqtKD5hgFzDqxj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:10:24 +1000 (AEST)
+Subject: Re: [patch] KVM: PPC: fix a sanity check
+To: Dan Carpenter <dan.carpenter@oracle.com>,
+ Bharat Bhushan <r65777@freescale.com>
+References: <20160714101545.GB18175@mwanda>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Paolo Bonzini <pbonzini@redhat.com>,
+ rkrcmar@redhat.com, Paul Mackerras <paulus@samba.org>,
+ kernel-janitors@vger.kernel.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+From: Alexander Graf <agraf@suse.de>
+Message-ID: <57877315.5060903@suse.de>
+Date: Thu, 14 Jul 2016 13:10:13 +0200
 MIME-Version: 1.0
-To: Dan Carpenter <dan.carpenter@oracle.com>
-CC: Zhao Qiang <qiang.zhao@nxp.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Subject: Re: [patch -next] wan/fsl_ucc_hdlc: info leak in uhdlc_ioctl()
-References: <20160714103415.GE18175@mwanda>
-In-Reply-To: <20160714103415.GE18175@mwanda>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20160714101545.GB18175@mwanda>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Am 14.07.2016 12:34, schrieb Dan Carpenter:
-> There is a 2 byte struct whole after line.loopback so we need to clear
-> that out to avoid disclosing stack information.
-> 
-> Fixes: c19b6d246a35 ('drivers/net: support hdlc function for QE-UCC')
+On 07/14/2016 12:15 PM, Dan Carpenter wrote:
+> We use logical negate where bitwise negate was intended.  It means that
+> we never return -EINVAL here.
+>
+> Fixes: ce11e48b7fdd ('KVM: PPC: E500: Add userspace debug stub support')
 > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> 
-> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-> index 19174ac..7608561 100644
-> --- a/drivers/net/wan/fsl_ucc_hdlc.c
-> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
-> @@ -635,6 +635,7 @@ static int uhdlc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
->  			ifr->ifr_settings.size = size; /* data size wanted */
->  			return -ENOBUFS;
->  		}
-> +		memset(&line, 0, sizeof(line));
->  		line.clock_type = priv->clocking;
->  		line.clock_rate = 0;
->  		line.loopback = 0;
+
+Oops :).
+
+Reviewed-by: Alexander Graf <agraf@suse.de>
 
 
-In this case
-  		line.clock_rate = 0;
- 		line.loopback = 0;
-
-are not need any more and can be removed
-except like them to have for documentation or so.
-
-re,
- wh
+Alex
