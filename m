@@ -1,17 +1,46 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrB7J1jBMzDqF8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 09:02:51 +1000 (AEST)
-Date: Fri, 15 Jul 2016 02:02:39 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] powerpc/qe: Increase MAX_QE_RISC to 4
-Message-ID: <20160714230239.GA2395@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrBW43rs4zDqF8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 09:20:00 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id g202so5477935pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 16:20:00 -0700 (PDT)
+Date: Fri, 15 Jul 2016 09:20:19 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
+ Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Subject: Re: [PATCH v2 02/11] mm: Hardened usercopy
+Message-ID: <20160714232019.GA28254@350D>
+Reply-To: bsingharora@gmail.com
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-3-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1468446964-22213-3-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,132 +50,361 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Anton Vorontsov,
+On Wed, Jul 13, 2016 at 02:55:55PM -0700, Kees Cook wrote:
+> This is the start of porting PAX_USERCOPY into the mainline kernel. This
+> is the first set of features, controlled by CONFIG_HARDENED_USERCOPY. The
+> work is based on code by PaX Team and Brad Spengler, and an earlier port
+> from Casey Schaufler. Additional non-slab page tests are from Rik van Riel.
+> 
+> This patch contains the logic for validating several conditions when
+> performing copy_to_user() and copy_from_user() on the kernel object
+> being copied to/from:
+> - address range doesn't wrap around
+> - address range isn't NULL or zero-allocated (with a non-zero copy size)
+> - if on the slab allocator:
+>   - object size must be less than or equal to copy size (when check is
+>     implemented in the allocator, which appear in subsequent patches)
+> - otherwise, object must not span page allocations
+> - if on the stack
+>   - object must not extend before/after the current process task
+>   - object must be contained by the current stack frame (when there is
+>     arch/build support for identifying stack frames)
+> - object must not overlap with kernel text
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> ---
+>  arch/Kconfig                |   7 ++
+>  include/linux/slab.h        |  12 +++
+>  include/linux/thread_info.h |  15 +++
+>  mm/Makefile                 |   4 +
+>  mm/usercopy.c               | 219 ++++++++++++++++++++++++++++++++++++++++++++
+>  security/Kconfig            |  27 ++++++
+>  6 files changed, 284 insertions(+)
+>  create mode 100644 mm/usercopy.c
+> 
+> diff --git a/arch/Kconfig b/arch/Kconfig
+> index 5e2776562035..195ee4cc939a 100644
+> --- a/arch/Kconfig
+> +++ b/arch/Kconfig
+> @@ -433,6 +433,13 @@ config HAVE_ARCH_WITHIN_STACK_FRAMES
+>  	  and similar) by implementing an inline arch_within_stack_frames(),
+>  	  which is used by CONFIG_HARDENED_USERCOPY.
+>  
+> +config HAVE_ARCH_LINEAR_KERNEL_MAPPING
+> +	bool
+> +	help
+> +	  An architecture should select this if it has a secondary linear
+> +	  mapping of the kernel text. This is used to verify that kernel
+> +	  text exposures are not visible under CONFIG_HARDENED_USERCOPY.
+> +
+>  config HAVE_CONTEXT_TRACKING
+>  	bool
+>  	help
+> diff --git a/include/linux/slab.h b/include/linux/slab.h
+> index aeb3e6d00a66..96a16a3fb7cb 100644
+> --- a/include/linux/slab.h
+> +++ b/include/linux/slab.h
+> @@ -155,6 +155,18 @@ void kfree(const void *);
+>  void kzfree(const void *);
+>  size_t ksize(const void *);
+>  
+> +#ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
+> +const char *__check_heap_object(const void *ptr, unsigned long n,
+> +				struct page *page);
+> +#else
+> +static inline const char *__check_heap_object(const void *ptr,
+> +					      unsigned long n,
+> +					      struct page *page)
+> +{
+> +	return NULL;
+> +}
+> +#endif
+> +
+>  /*
+>   * Some archs want to perform DMA into kmalloc caches and need a guaranteed
+>   * alignment larger than the alignment of a 64-bit integer.
+> diff --git a/include/linux/thread_info.h b/include/linux/thread_info.h
+> index 3d5c80b4391d..f24b99eac969 100644
+> --- a/include/linux/thread_info.h
+> +++ b/include/linux/thread_info.h
+> @@ -155,6 +155,21 @@ static inline int arch_within_stack_frames(const void * const stack,
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_HARDENED_USERCOPY
+> +extern void __check_object_size(const void *ptr, unsigned long n,
+> +					bool to_user);
+> +
+> +static inline void check_object_size(const void *ptr, unsigned long n,
+> +				     bool to_user)
+> +{
+> +	__check_object_size(ptr, n, to_user);
+> +}
+> +#else
+> +static inline void check_object_size(const void *ptr, unsigned long n,
+> +				     bool to_user)
+> +{ }
+> +#endif /* CONFIG_HARDENED_USERCOPY */
+> +
+>  #endif	/* __KERNEL__ */
+>  
+>  #endif /* _LINUX_THREAD_INFO_H */
+> diff --git a/mm/Makefile b/mm/Makefile
+> index 78c6f7dedb83..32d37247c7e5 100644
+> --- a/mm/Makefile
+> +++ b/mm/Makefile
+> @@ -21,6 +21,9 @@ KCOV_INSTRUMENT_memcontrol.o := n
+>  KCOV_INSTRUMENT_mmzone.o := n
+>  KCOV_INSTRUMENT_vmstat.o := n
+>  
+> +# Since __builtin_frame_address does work as used, disable the warning.
+> +CFLAGS_usercopy.o += $(call cc-disable-warning, frame-address)
+> +
+>  mmu-y			:= nommu.o
+>  mmu-$(CONFIG_MMU)	:= gup.o highmem.o memory.o mincore.o \
+>  			   mlock.o mmap.o mprotect.o mremap.o msync.o rmap.o \
+> @@ -99,3 +102,4 @@ obj-$(CONFIG_USERFAULTFD) += userfaultfd.o
+>  obj-$(CONFIG_IDLE_PAGE_TRACKING) += page_idle.o
+>  obj-$(CONFIG_FRAME_VECTOR) += frame_vector.o
+>  obj-$(CONFIG_DEBUG_PAGE_REF) += debug_page_ref.o
+> +obj-$(CONFIG_HARDENED_USERCOPY) += usercopy.o
+> diff --git a/mm/usercopy.c b/mm/usercopy.c
+> new file mode 100644
+> index 000000000000..4161a1fb1909
+> --- /dev/null
+> +++ b/mm/usercopy.c
+> @@ -0,0 +1,219 @@
+> +/*
+> + * This implements the various checks for CONFIG_HARDENED_USERCOPY*,
+> + * which are designed to protect kernel memory from needless exposure
+> + * and overwrite under many unintended conditions. This code is based
+> + * on PAX_USERCOPY, which is:
+> + *
+> + * Copyright (C) 2001-2016 PaX Team, Bradley Spengler, Open Source
+> + * Security Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/mm.h>
+> +#include <linux/slab.h>
+> +#include <asm/sections.h>
+> +
+> +/*
+> + * Checks if a given pointer and length is contained by the current
+> + * stack frame (if possible).
+> + *
+> + *	0: not at all on the stack
+> + *	1: fully within a valid stack frame
+> + *	2: fully on the stack (when can't do frame-checking)
+> + *	-1: error condition (invalid stack position or bad stack frame)
 
-The patch 98eaa0987afd: "powerpc/qe: Increase MAX_QE_RISC to 4" from
-Aug 27, 2009, leads to the following static checker warning:
+Can we use enums? Makes it easier to read/debug
 
-	drivers/soc/fsl/qe/qe.c:524 qe_upload_firmware()
-	error: buffer overflow 'qe_immr->rsp' 2 <= 3
+> + */
+> +static noinline int check_stack_object(const void *obj, unsigned long len)
+> +{
+> +	const void * const stack = task_stack_page(current);
+> +	const void * const stackend = stack + THREAD_SIZE;
+> +	int ret;
+> +
+> +	/* Object is not on the stack at all. */
+> +	if (obj + len <= stack || stackend <= obj)
+> +		return 0;
+> +
+> +	/*
+> +	 * Reject: object partially overlaps the stack (passing the
+> +	 * the check above means at least one end is within the stack,
+> +	 * so if this check fails, the other end is outside the stack).
+> +	 */
+> +	if (obj < stack || stackend < obj + len)
+> +		return -1;
+> +
+> +	/* Check if object is safely within a valid frame. */
+> +	ret = arch_within_stack_frames(stack, stackend, obj, len);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return 2;
+> +}
+> +
+> +static void report_usercopy(const void *ptr, unsigned long len,
+> +			    bool to_user, const char *type)
+> +{
+> +	pr_emerg("kernel memory %s attempt detected %s %p (%s) (%lu bytes)\n",
+> +		to_user ? "exposure" : "overwrite",
+> +		to_user ? "from" : "to", ptr, type ? : "unknown", len);
+> +	dump_stack();
+> +	do_group_exit(SIGKILL);
 
-drivers/soc/fsl/qe/qe.c
-   425  int qe_upload_firmware(const struct qe_firmware *firmware)
-   426  {
-   427          unsigned int i;
-   428          unsigned int j;
-   429          u32 crc;
-   430          size_t calc_size = sizeof(struct qe_firmware);
-   431          size_t length;
-   432          const struct qe_header *hdr;
-   433  
-   434          if (!firmware) {
-   435                  printk(KERN_ERR "qe-firmware: invalid pointer\n");
-   436                  return -EINVAL;
-   437          }
-   438  
-   439          hdr = &firmware->header;
-   440          length = be32_to_cpu(hdr->length);
-   441  
-   442          /* Check the magic */
-   443          if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
-   444              (hdr->magic[2] != 'F')) {
-   445                  printk(KERN_ERR "qe-firmware: not a microcode\n");
-   446                  return -EPERM;
-   447          }
-   448  
-   449          /* Check the version */
-   450          if (hdr->version != 1) {
-   451                  printk(KERN_ERR "qe-firmware: unsupported version\n");
-   452                  return -EPERM;
-   453          }
-   454  
-   455          /* Validate some of the fields */
-   456          if ((firmware->count < 1) || (firmware->count > MAX_QE_RISC)) {
-                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This used to be capped at 2.
+SIGKILL -- SIGBUS?
+
+> +}
+> +
+> +/* Returns true if any portion of [ptr,ptr+n) over laps with [low,high). */
+> +static bool overlaps(const void *ptr, unsigned long n, unsigned long low,
+> +		     unsigned long high)
+> +{
+> +	unsigned long check_low = (uintptr_t)ptr;
+> +	unsigned long check_high = check_low + n;
+> +
+> +	/* Does not overlap if entirely above or entirely below. */
+> +	if (check_low >= high || check_high < low)
+> +		return false;
+> +
+> +	return true;
+> +}
+> +
+> +/* Is this address range in the kernel text area? */
+> +static inline const char *check_kernel_text_object(const void *ptr,
+> +						   unsigned long n)
+> +{
+> +	unsigned long textlow = (unsigned long)_stext;
+> +	unsigned long texthigh = (unsigned long)_etext;
+> +
+> +	if (overlaps(ptr, n, textlow, texthigh))
+> +		return "<kernel text>";
+> +
+> +#ifdef HAVE_ARCH_LINEAR_KERNEL_MAPPING
+> +	/* Check against linear mapping as well. */
+> +	if (overlaps(ptr, n, (unsigned long)__va(__pa(textlow)),
+> +		     (unsigned long)__va(__pa(texthigh))))
+> +		return "<linear kernel text>";
+> +#endif
+> +
+> +	return NULL;
+> +}
+> +
+> +static inline const char *check_bogus_address(const void *ptr, unsigned long n)
+> +{
+> +	/* Reject if object wraps past end of memory. */
+> +	if (ptr + n < ptr)
+> +		return "<wrapped address>";
+> +
+> +	/* Reject if NULL or ZERO-allocation. */
+> +	if (ZERO_OR_NULL_PTR(ptr))
+> +		return "<null>";
+> +
+> +	return NULL;
+> +}
+> +
+> +static inline const char *check_heap_object(const void *ptr, unsigned long n,
+> +					    bool to_user)
+> +{
+> +	struct page *page, *endpage;
+> +	const void *end = ptr + n - 1;
+> +
+> +	if (!virt_addr_valid(ptr))
+> +		return NULL;
+> +
+> +	page = virt_to_head_page(ptr);
+> +
+> +	/* Check slab allocator for flags and size. */
+> +	if (PageSlab(page))
+> +		return __check_heap_object(ptr, n, page);
+> +
+> +	/*
+> +	 * Sometimes the kernel data regions are not marked Reserved (see
+> +	 * check below). And sometimes [_sdata,_edata) does not cover
+> +	 * rodata and/or bss, so check each range explicitly.
+> +	 */
+> +
+> +	/* Allow reads of kernel rodata region (if not marked as Reserved). */
+> +	if (ptr >= (const void *)__start_rodata &&
+> +	    end <= (const void *)__end_rodata) {
+> +		if (!to_user)
+> +			return "<rodata>";
+> +		return NULL;
+> +	}
+> +
+> +	/* Allow kernel data region (if not marked as Reserved). */
+> +	if (ptr >= (const void *)_sdata && end <= (const void *)_edata)
+> +		return NULL;
+> +
+> +	/* Allow kernel bss region (if not marked as Reserved). */
+> +	if (ptr >= (const void *)__bss_start &&
+> +	    end <= (const void *)__bss_stop)
+> +		return NULL;
+> +
+> +	/* Is the object wholly within one base page? */
+> +	if (likely(((unsigned long)ptr & (unsigned long)PAGE_MASK) ==
+> +		   ((unsigned long)end & (unsigned long)PAGE_MASK)))
+> +		return NULL;
+> +
+> +	/* Allow if start and end are inside the same compound page. */
+> +	endpage = virt_to_head_page(end);
+> +	if (likely(endpage == page))
+> +		return NULL;
+> +
+> +	/* Allow special areas, device memory, and sometimes kernel data. */
+> +	if (PageReserved(page) && PageReserved(endpage))
+> +		return NULL;a
+
+If we came here, it's likely that endpage > page, do we need to check
+that only the first and last pages are reserved? What about the ones in
+the middle?
 
 
-   457                  printk(KERN_ERR "qe-firmware: invalid data\n");
-   458                  return -EINVAL;
-   459          }
-   460  
-   461          /* Validate the length and check if there's a CRC */
-   462          calc_size += (firmware->count - 1) * sizeof(struct qe_microcode);
-   463  
-   464          for (i = 0; i < firmware->count; i++)
-   465                  /*
-   466                   * For situations where the second RISC uses the same microcode
-   467                   * as the first, the 'code_offset' and 'count' fields will be
-   468                   * zero, so it's okay to add those.
-   469                   */
-   470                  calc_size += sizeof(__be32) *
-   471                          be32_to_cpu(firmware->microcode[i].count);
-   472  
-   473          /* Validate the length */
-   474          if (length != calc_size + sizeof(__be32)) {
-   475                  printk(KERN_ERR "qe-firmware: invalid length\n");
-   476                  return -EPERM;
-   477          }
-   478  
-   479          /* Validate the CRC */
-   480          crc = be32_to_cpu(*(__be32 *)((void *)firmware + calc_size));
-   481          if (crc != crc32(0, firmware, calc_size)) {
-   482                  printk(KERN_ERR "qe-firmware: firmware CRC is invalid\n");
-   483                  return -EIO;
-   484          }
-   485  
-   486          /*
-   487           * If the microcode calls for it, split the I-RAM.
-   488           */
-   489          if (!firmware->split)
-   490                  setbits16(&qe_immr->cp.cercr, QE_CP_CERCR_CIR);
-   491  
-   492          if (firmware->soc.model)
-   493                  printk(KERN_INFO
-   494                          "qe-firmware: firmware '%s' for %u V%u.%u\n",
-   495                          firmware->id, be16_to_cpu(firmware->soc.model),
-   496                          firmware->soc.major, firmware->soc.minor);
-   497          else
-   498                  printk(KERN_INFO "qe-firmware: firmware '%s'\n",
-   499                          firmware->id);
-   500  
-   501          /*
-   502           * The QE only supports one microcode per RISC, so clear out all the
-   503           * saved microcode information and put in the new.
-   504           */
-   505          memset(&qe_firmware_info, 0, sizeof(qe_firmware_info));
-   506          strlcpy(qe_firmware_info.id, firmware->id, sizeof(qe_firmware_info.id));
-   507          qe_firmware_info.extended_modes = firmware->extended_modes;
-   508          memcpy(qe_firmware_info.vtraps, firmware->vtraps,
-   509                  sizeof(firmware->vtraps));
-   510  
-   511          /* Loop through each microcode. */
-   512          for (i = 0; i < firmware->count; i++) {
-   513                  const struct qe_microcode *ucode = &firmware->microcode[i];
-   514  
-   515                  /* Upload a microcode if it's present */
-   516                  if (ucode->code_offset)
-   517                          qe_upload_microcode(firmware, ucode);
-   518  
-   519                  /* Program the traps for this processor */
-   520                  for (j = 0; j < 16; j++) {
-   521                          u32 trap = be32_to_cpu(ucode->traps[j]);
-   522  
-   523                          if (trap)
-   524                                  out_be32(&qe_immr->rsp[i].tibcr[j], trap);
-                                                           ^^^^^^
-   525                  }
-   526  
-   527                  /* Enable traps */
-   528                  out_be32(&qe_immr->rsp[i].eccr, be32_to_cpu(ucode->eccr));
-                                           ^^^^^^
-These arrays only have 0x2 elements so we're beyond the end.
+> +
+> +	/* Uh oh. The "object" spans several independently allocated pages. */
+> +	return "<spans multiple pages>";
+> +}
+> +
+> +/*
+> + * Validates that the given object is one of:
+> + * - known safe heap object
+> + * - known safe stack object
+> + * - not in kernel text
+> + */
+> +void __check_object_size(const void *ptr, unsigned long n, bool to_user)
+> +{
+> +	const char *err;
+> +
+> +	/* Skip all tests if size is zero. */
+> +	if (!n)
+> +		return;
+> +
+> +	/* Check for invalid addresses. */
+> +	err = check_bogus_address(ptr, n);
+> +	if (err)
+> +		goto report;
+> +
+> +	/* Check for bad heap object. */
+> +	err = check_heap_object(ptr, n, to_user);
+> +	if (err)
+> +		goto report;
+> +
+> +	/* Check for bad stack object. */
+> +	switch (check_stack_object(ptr, n)) {
+> +	case 0:
+> +		/* Object is not touching the current process stack. */
+> +		break;
+> +	case 1:
+> +	case 2:
+> +		/*
+> +		 * Object is either in the correct frame (when it
+> +		 * is possible to check) or just generally on the
+> +		 * process stack (when frame checking not available).
+> +		 */
+> +		return;
+> +	default:
+> +		err = "<process stack>";
+> +		goto report;
+> +	}
+> +
+> +	/* Check for object in kernel to avoid text exposure. */
+> +	err = check_kernel_text_object(ptr, n);
+> +	if (!err)
+> +		return;
+> +
+> +report:
+> +	report_usercopy(ptr, n, to_user, err);
+> +}
 
-   529          }
-   530  
-   531          qe_firmware_uploaded = 1;
-   532  
-   533          return 0;
+Looks good otherwise
 
-regards,
-dan carpenter
+Balbir Singh
