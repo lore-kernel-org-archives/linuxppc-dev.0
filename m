@@ -1,28 +1,23 @@
-Return-Path: <dyoung@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqf0K0qbFzDqFB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 11:54:57 +1000 (AEST)
-Date: Thu, 14 Jul 2016 09:54:47 +0800
-From: Dave Young <dyoung@redhat.com>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- bhe@redhat.com, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160714015447.GB3121@dhcp-128-65.nay.redhat.com>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
- <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
- <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
- <20160713093432.GB14522@leverpostej> <20160713173804.GA25723@porco>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqf9H4bg1zDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 12:02:43 +1000 (AEST)
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com,
+ mrochs@linux.vnet.ibm.com, linux-scsi@vger.kernel.org,
+ manoj@linux.vnet.ibm.com, clombard@linux.vnet.ibm.com,
+ fbarrat@linux.vnet.ibm.com
+Subject: Re: [PATCH] cxl: remove dead Kconfig options
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Wed, 13 Jul 2016 22:02:31 -0400
+In-Reply-To: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ (Andrew Donnellan's message of "Mon, 4 Jul 2016 17:12:14 +1000")
+Message-ID: <yq1k2gpm0y0.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160713173804.GA25723@porco>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,62 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/14/16 at 02:38am, AKASHI Takahiro wrote:
-> Apologies for the slow response. I'm attending LinuxCon this week.
-> 
-> On Wed, Jul 13, 2016 at 10:34:47AM +0100, Mark Rutland wrote:
-> > On Wed, Jul 13, 2016 at 10:36:14AM +0800, Dave Young wrote:
-> > > But consider we can kexec to a different kernel and a different initrd so there
-> > > will be use cases to pass a total different dtb as well.
-> > 
-> > It depends on what you mean by "a different kernel", and what this
-> > implies for the DTB.
-> > 
-> > I expect future arm64 Linux kernels to function with today's DTBs, and
-> > the existing boot protocol. The kexec_file_load syscall already has
-> > enough information for the kernel to inject the initrd and bootargs
-> > properties into a DTB.
-> > 
-> > In practice on x86 today, kexec_file_load only supports booting to a
-> > Linux kernel, because the in-kernel purgatory only implements the x86
-> > Linux boot protocol. Analagously, for arm64 I think that the first
-> > kernel should use its internal copy of the boot DTB, with /chosen fixed
-> > up appropriately, assuming the next kernel is an arm64 Linux image.
-> > 
-> > If booting another OS, the only parts of the DTB I would expect to
-> > change are the properties under chosen, as everything else *should* be
-> > OS-independent. However the other OS may have a completely different
-> > boot protocol, might not even take a DTB, and will likely need a
-> > compeltely different purgatory implementation. So just allowing the DTB
-> > to be altered isn't sufficient for that case.
-> > 
-> > There might be cases where we want a different DTB, but as far as I can
-> > tell we have nothing analagous on x86 today. If we do need this, we
-> > should have an idea of what real case(s) were trying to solve.
-> 
-> What I had in my mind was:
-> 
-> - Kdump
->   As Russel said, we definitely need to modify dtb.
->   In addition to bootargs and initrd proerties (FYI, in my arm64
->   implementation for arm64, eflcorehdr info is also passed as DT
->   property), we may want to remove unnecessary devices and
->   even add a dedicated storage device for storing a core dump image.
-> - Say, booting BE kernel on ACPI LE kernel
->   In this case, there is no useful dtb in the kernel.
-> 
-> Have said that, as Mark said, we may be able to use normal kexec_load
-> system call if we don't need a "secure" kexec.
-> 
-> BTW, why doesn't the current kexec_load have ability of verifying
-> a signature of initramfs image? Is IMA/EVM expected to be used
-> at runtime?
+>>>>> "Andrew" == Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
 
-I believe there are some limitations for verify signatures in kexec_load.
-First kexec-tools need to be trusted, but there's no way to sign and
-verify signature of shared libraries. There maybe other limitations I
-can not remember which are also reasons why Vivek moved to current
-file based syscall.
+Andrew> Remove the CXL_KERNEL_API and CXL_EEH Kconfig options, as they
+Andrew> were only needed to coordinate the merging of the cxlflash
+Andrew> driver. Also remove the stub implementation of
+Andrew> cxl_perst_reloads_same_image() in cxlflash which is only used if
+Andrew> CXL_EEH isn't defined (i.e. never).
 
-Thanks
-Dave
+This patch straddles a few subsystems. Did you intend for me to queue it
+through SCSI?
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
