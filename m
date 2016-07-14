@@ -2,25 +2,14 @@ Return-Path: <dan.carpenter@oracle.com>
 Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rr9Dr38zfzDqyY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 08:22:35 +1000 (AEST)
-Received: from userv0021.oracle.com (userv0021.oracle.com [156.151.31.71])
- by aserp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- u6EMMWlR021257
- (version=TLSv1 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:22:33 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by userv0021.oracle.com (8.13.8/8.13.8) with ESMTP id u6EMMWYZ030252
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:22:32 GMT
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
- by aserv0122.oracle.com (8.13.8/8.13.8) with ESMTP id u6EMMTwD000810
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:22:30 GMT
-Date: Fri, 15 Jul 2016 01:22:24 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrB7J1jBMzDqF8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 09:02:51 +1000 (AEST)
+Date: Fri, 15 Jul 2016 02:02:39 +0300
 From: Dan Carpenter <dan.carpenter@oracle.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] Linux-2.6.12-rc2
-Message-ID: <20160714222224.GA25917@mwanda>
+To: avorontsov@ru.mvista.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] powerpc/qe: Increase MAX_QE_RISC to 4
+Message-ID: <20160714230239.GA2395@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,56 +21,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi PPC Devs,
+Hello Anton Vorontsov,
 
-The patch 1da177e4c3f4: "Linux-2.6.12-rc2" from Apr 16, 2005, leads
-to the following static checker warning:
+The patch 98eaa0987afd: "powerpc/qe: Increase MAX_QE_RISC to 4" from
+Aug 27, 2009, leads to the following static checker warning:
 
-	arch/powerpc/sysdev/ipic.c:783 ipic_set_priority()
-	error: buffer overflow 'ipic_info' 95 <= 127
+	drivers/soc/fsl/qe/qe.c:524 qe_upload_firmware()
+	error: buffer overflow 'qe_immr->rsp' 2 <= 3
 
-arch/powerpc/sysdev/ipic.c
-    36  static struct ipic_info ipic_info[] = {
-    37          [1] = {
-    38                  .mask   = IPIC_SIMSR_H,
-    39                  .prio   = IPIC_SIPRR_C,
-    40                  .force  = IPIC_SIFCR_H,
-    41                  .bit    = 16,
-    42                  .prio_mask = 0,
-    43          },
+drivers/soc/fsl/qe/qe.c
+   425  int qe_upload_firmware(const struct qe_firmware *firmware)
+   426  {
+   427          unsigned int i;
+   428          unsigned int j;
+   429          u32 crc;
+   430          size_t calc_size = sizeof(struct qe_firmware);
+   431          size_t length;
+   432          const struct qe_header *hdr;
+   433  
+   434          if (!firmware) {
+   435                  printk(KERN_ERR "qe-firmware: invalid pointer\n");
+   436                  return -EINVAL;
+   437          }
+   438  
+   439          hdr = &firmware->header;
+   440          length = be32_to_cpu(hdr->length);
+   441  
+   442          /* Check the magic */
+   443          if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
+   444              (hdr->magic[2] != 'F')) {
+   445                  printk(KERN_ERR "qe-firmware: not a microcode\n");
+   446                  return -EPERM;
+   447          }
+   448  
+   449          /* Check the version */
+   450          if (hdr->version != 1) {
+   451                  printk(KERN_ERR "qe-firmware: unsupported version\n");
+   452                  return -EPERM;
+   453          }
+   454  
+   455          /* Validate some of the fields */
+   456          if ((firmware->count < 1) || (firmware->count > MAX_QE_RISC)) {
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This used to be capped at 2.
 
- [ huge 95 element array snipped ]
 
-   500          [94] = {
-   501                  .mask   = IPIC_SIMSR_L,
-   502                  .prio   = 0,
-   503                  .force  = IPIC_SIFCR_L,
-   504                  .bit    = 30,
-   505          },
-   506  };
+   457                  printk(KERN_ERR "qe-firmware: invalid data\n");
+   458                  return -EINVAL;
+   459          }
+   460  
+   461          /* Validate the length and check if there's a CRC */
+   462          calc_size += (firmware->count - 1) * sizeof(struct qe_microcode);
+   463  
+   464          for (i = 0; i < firmware->count; i++)
+   465                  /*
+   466                   * For situations where the second RISC uses the same microcode
+   467                   * as the first, the 'code_offset' and 'count' fields will be
+   468                   * zero, so it's okay to add those.
+   469                   */
+   470                  calc_size += sizeof(__be32) *
+   471                          be32_to_cpu(firmware->microcode[i].count);
+   472  
+   473          /* Validate the length */
+   474          if (length != calc_size + sizeof(__be32)) {
+   475                  printk(KERN_ERR "qe-firmware: invalid length\n");
+   476                  return -EPERM;
+   477          }
+   478  
+   479          /* Validate the CRC */
+   480          crc = be32_to_cpu(*(__be32 *)((void *)firmware + calc_size));
+   481          if (crc != crc32(0, firmware, calc_size)) {
+   482                  printk(KERN_ERR "qe-firmware: firmware CRC is invalid\n");
+   483                  return -EIO;
+   484          }
+   485  
+   486          /*
+   487           * If the microcode calls for it, split the I-RAM.
+   488           */
+   489          if (!firmware->split)
+   490                  setbits16(&qe_immr->cp.cercr, QE_CP_CERCR_CIR);
+   491  
+   492          if (firmware->soc.model)
+   493                  printk(KERN_INFO
+   494                          "qe-firmware: firmware '%s' for %u V%u.%u\n",
+   495                          firmware->id, be16_to_cpu(firmware->soc.model),
+   496                          firmware->soc.major, firmware->soc.minor);
+   497          else
+   498                  printk(KERN_INFO "qe-firmware: firmware '%s'\n",
+   499                          firmware->id);
+   500  
+   501          /*
+   502           * The QE only supports one microcode per RISC, so clear out all the
+   503           * saved microcode information and put in the new.
+   504           */
+   505          memset(&qe_firmware_info, 0, sizeof(qe_firmware_info));
+   506          strlcpy(qe_firmware_info.id, firmware->id, sizeof(qe_firmware_info.id));
+   507          qe_firmware_info.extended_modes = firmware->extended_modes;
+   508          memcpy(qe_firmware_info.vtraps, firmware->vtraps,
+   509                  sizeof(firmware->vtraps));
+   510  
+   511          /* Loop through each microcode. */
+   512          for (i = 0; i < firmware->count; i++) {
+   513                  const struct qe_microcode *ucode = &firmware->microcode[i];
+   514  
+   515                  /* Upload a microcode if it's present */
+   516                  if (ucode->code_offset)
+   517                          qe_upload_microcode(firmware, ucode);
+   518  
+   519                  /* Program the traps for this processor */
+   520                  for (j = 0; j < 16; j++) {
+   521                          u32 trap = be32_to_cpu(ucode->traps[j]);
+   522  
+   523                          if (trap)
+   524                                  out_be32(&qe_immr->rsp[i].tibcr[j], trap);
+                                                           ^^^^^^
+   525                  }
+   526  
+   527                  /* Enable traps */
+   528                  out_be32(&qe_immr->rsp[i].eccr, be32_to_cpu(ucode->eccr));
+                                           ^^^^^^
+These arrays only have 0x2 elements so we're beyond the end.
 
- [ more code snipped ]
-
-   773  int ipic_set_priority(unsigned int virq, unsigned int priority)
-   774  {
-   775          struct ipic *ipic = ipic_from_irq(virq);
-   776          unsigned int src = virq_to_hw(virq);
-   777          u32 temp;
-   778  
-   779          if (priority > 7)
-   780                  return -EINVAL;
-   781          if (src > 127)
-                    ^^^^^^^^^
-We cap this at 127
-
-   782                  return -EINVAL;
-   783          if (ipic_info[src].prio == 0)
-                    ^^^^^^^^^^^^^^
-But we only have 95 elements.  Should the array be larger or should
-we >= ARRAY_SIZE(ipic_info) is invalid?
-
-   784                  return -EINVAL;
-   785  
+   529          }
+   530  
+   531          qe_firmware_uploaded = 1;
+   532  
+   533          return 0;
 
 regards,
 dan carpenter
