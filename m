@@ -1,27 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqvGH6VCDzDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:52:53 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id g202so4728757pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 04:52:53 -0700 (PDT)
-Subject: Re: [PATCH kernel] powerpc/mm/iommu: Put pages on process exit
-To: Balbir Singh <bsingharora@gmail.com>
-References: <1468473379-36602-1-git-send-email-aik@ozlabs.ru>
- <CAKTCnzkff8GDP3ZZOEETkVC4sYEnrN6z0B2aLvc3mbF-UViJKg@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- David Gibson <david@gibson.dropbear.id.au>, Nick Piggin <npiggin@kernel.dk>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <1af23846-c25c-6791-9224-82a4b1cfb496@ozlabs.ru>
-Date: Thu, 14 Jul 2016 21:52:43 +1000
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rqwMK6hcCzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:42:21 +1000 (AEST)
+Date: Thu, 14 Jul 2016 13:42:06 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ Dave Young <dyoung@redhat.com>, bhe@redhat.com,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Vivek Goyal <vgoyal@redhat.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160714124206.GB26061@leverpostej>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <20160713173804.GA25723@porco> <20160713175630.GA2668@leverpostej>
+ <7927804.6bj1abO0d2@wuerfel>
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnzkff8GDP3ZZOEETkVC4sYEnrN6z0B2aLvc3mbF-UViJKg@mail.gmail.com>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7927804.6bj1abO0d2@wuerfel>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,88 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/07/16 20:12, Balbir Singh wrote:
-> On Thu, Jul 14, 2016 at 3:16 PM, Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->> At the moment VFIO IOMMU SPAPR v2 driver pins all guest RAM pages when
->> the userspace starts using VFIO. When the userspace process finishes,
->> all the pinned pages need to be put; this is done as a part of
->> the userspace memory context (MM) destruction which happens on
->> the very last mmdrop().
->>
->> This approach has a problem that a MM of the userspace process
->> may live longer than the userspace process itself as kernel threads
->> usually execute on a MM of a userspace process which was runnning
->> on a CPU where the kernel thread was scheduled to. If this happened,
->> the MM remains referenced until this exact kernel thread wakes up again
->> and releases the very last reference to the MM, on an idle system this
->> can take even hours.
->>
->> This fixes the issue by moving mm_iommu_cleanup() (the helper which puts
->> pages) from destroy_context() (called on the last mmdrop()) to
->> the arch-specific arch_exit_mmap() hook (called on the last mmput()).
->> mmdrop() decrements the mm->mm_count which is a total reference number;
->> mmput() decrements the mm->mm_users which is a number of user spaces and
->> this is actually the counter we want to watch for here.
->>
->> Cc: David Gibson <david@gibson.dropbear.id.au>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Balbir Singh <bsingharora@gmail.com>
->> Cc: Nick Piggin <npiggin@kernel.dk>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>  arch/powerpc/include/asm/mmu_context.h | 3 +++
->>  arch/powerpc/mm/mmu_context_book3s64.c | 4 ----
->>  2 files changed, 3 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
->> index 9d2cd0c..24b590d 100644
->> --- a/arch/powerpc/include/asm/mmu_context.h
->> +++ b/arch/powerpc/include/asm/mmu_context.h
->> @@ -138,6 +138,9 @@ static inline void arch_dup_mmap(struct mm_struct *oldmm,
->>
->>  static inline void arch_exit_mmap(struct mm_struct *mm)
->>  {
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +       mm_iommu_cleanup(&mm->context);
->> +#endif
->>  }
->>
+On Wed, Jul 13, 2016 at 09:57:28PM +0200, Arnd Bergmann wrote:
+> On Wednesday, July 13, 2016 6:58:32 PM CEST Mark Rutland wrote:
+> > 
+> > >   we may want to remove unnecessary devices and even add a dedicated
+> > >   storage device for storing a core dump image.
+> > 
+> > I suspect that bringing up a minimal number of devices is better
+> > controlled by a cmdline option. In general, figuring out what is
+> > necessary and what is not is going to be board specific, so hacking the
+> > FW tables (DTB or ACPI) is not a very portable/reliable approach.
+> > 
+> > Do we actually add devices in practice? More so than the above that
+> > requires special knowledge of the platform (including things that were
+> > not described in the boot DTB).
+> > 
+> > In the ACPI case modifying a DTB alone is not sufficient to change the
+> > information regarding devices, as those won't be described in the DTB.
+> > It's not possible to convert ACPI to DTB in general.
 > 
-> The assumption is that all necessary tear down has happened. Earlier
-> we were doing the teardown
-> on the last mm ref drop, do we have any dependence on that? I don't
-> think so, but just checking
+> A more likely scenario would be replacing ACPI tables with a DTB that
+> describes the platform in order to use devices that the ACPI tables
+> don't contain.
+
+To do so, you need special knowledge of the platform, which users are
+unlikely to have in practice for ACPI-based platforms.
+
+So, I think that boils down to the same problem, and the same comments
+apply.
+
+> > > - Say, booting BE kernel on ACPI LE kernel
+> > >   In this case, there is no useful dtb in the kernel.
 > 
-> Does qemu dotce_iommu_register_pages on exit()/atexit() or do we rely
-> on the exit path to do the teardown?
-
-QEMU does call unregister when a memory region is deleted. Handling it in
-arch_exit_mmap() is for the case when a QEMU process just dies for whatever
-reason.
-
-> Can we please remove the #ifdef CONFIG_SPAPR_TCE_IOMMU here and have a version
-> of mm_iommu_cleanup that handles it
-
-
-That would be a change unrelated to the fix. And I just do not see the
-point in this - mm_iommu_cleanup() is declared in the very same header.
-
-
-> Basically do
+> > If the platform only has ACPI, then you cannot boot a BE kernel to begin
+> > with. As above one cannot convert ACPI to DTB, so one would need
+> > extensive platform knowledge for this to work.
 > 
-> #ifdef CONFIG_SPAPR_TCE_IOMMU
-> extern void mm_iommu_cleanup(void *ptr)
-> #else
-> static inline mm_iommu_cleanup(void *ptr) {}
-> #endif
-> 
-> Otherwise looks good
-> 
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> I think what he meant was to pass a DTB to the kexec kernel in order
+> to run BE, while the original kernel can only run LE due to ACPI.
 
-Thanks!
+I understood that. My point was that to build that DTB, you need to have
+knowledge of the platform that you are unlikely to have.
 
+The platform firmware may expect to interact with AML, which you can't
+place in DT or run in a BE context.
 
--- 
-Alexey
+If you need to run BE kernels on a platform, you would likely get a
+platform that could boot a BE kernel from the outset (i.e. one that
+provides a DTB), or run that code ina VM under an LE host.
+
+Thanks,
+Mark.
