@@ -1,27 +1,30 @@
-Return-Path: <chzigotzky@bayern-mail.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqxK36MKvzDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 23:25:27 +1000 (AEST)
-Subject: Kernel 4.1.28: Update TM user feature bits in scan_features()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <01f37269-7f95-225a-b09e-2f1995a394a3@bayern-mail.de>
- <87d1mga311.fsf@@concordia.ellerman.id.au>
- <45730340-be42-4307-6c00-5328b2552d98@bayern-mail.de>
-Cc: Pat Wall <pjwall@mac.com>, Darren Stevens <darren@stevens-zone.net>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat Wall <pjwall@me.com>,
- Julian Margetson <runaway@candw.ms>, "contact@a-eon.com"
- <contact@a-eon.com>, Alex Perez <aperez@alexperez.com>,
- luigi burdo <intermediadc@hotmail.com>, "R.T.Dickinson" <rtd@a-eon.com>,
- Matthew Leaman <matthew@a-eon.biz>, Sasha Levin <sasha.levin@oracle.com>
-From: Christian Zigotzky <chzigotzky@bayern-mail.de>
-Message-ID: <35b4b3c8-515d-6275-86fd-2d5d0a99a320@bayern-mail.de>
-Date: Thu, 14 Jul 2016 15:25:16 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rr8Qh6JPdzDqyV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 07:46:04 +1000 (AEST)
+Date: Fri, 15 Jul 2016 07:42:57 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Anna-Maria Gleixner <anna-maria@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra
+ <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner
+ <tglx@linutronix.de>, rt@linutronix.de, Sebastian Andrzej Siewior
+ <bigeasy@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bharata B Rao
+ <bharata@linux.vnet.ibm.com>, Christophe Jaillet
+ <christophe.jaillet@wanadoo.fr>, Linus Torvalds
+ <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@samba.org>, Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch V2 30/67] powerpc/numa: Convert to hotplug state machine
+Message-ID: <20160715074257.7801cd00@kryten>
+In-Reply-To: <20160713153335.369278769@linutronix.de>
+References: <20160713153219.128052238@linutronix.de>
+ <20160713153335.369278769@linutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <45730340-be42-4307-6c00-5328b2552d98@bayern-mail.de>
-Content-Type: multipart/alternative;
- boundary="------------27E5FFDF7024F21ED1F986B1"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,322 +34,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------27E5FFDF7024F21ED1F986B1
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Hi Michael,
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> 
+> Install the callbacks via the state machine and let the core invoke
+> the callbacks on the already online CPUs.
 
-I was able to compile the kernel 4.1.28 with your patch. It boots and works.
+This is causing an oops on ppc64le QEMU, looks like a NULL pointer:
 
-Thanks,
+percpu: Embedded 3 pages/cpu @c00000001fe00000 s145816 r0 d50792 u1048576
+Unable to handle kernel paging request for data at address 0x00001e08
+Faulting instruction address: 0xc0000000001e6b78
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2048 NUMA pSeries
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper Not tainted 4.7.0-rc7-00198-g425209e #14
+task: c000000000d82a00 ti: c000000000dc4000 task.ti: c000000000dc4000
+NIP: c0000000001e6b78 LR: c0000000001e6df4 CTR: 0000000000000000
+REGS: c000000000dc7b60 TRAP: 0300   Not tainted  (4.7.0-rc7-00198-g425209e)
+MSR: 8000000002001033 <SF,VEC,ME,IR,DR,RI,LE>  CR: 44000220  XER: 00000000
+CFAR: 0000000000008468 DAR: 0000000000001e08 DSISR: 40000000 SOFTE: 0 
+GPR00: 0000000000000006 c000000000dc7de0 c000000000dc6c00 0000000000000000 
+GPR04: 0000000000000000 0000000000000000 c00000001fe1fb70 0000000000000010 
+GPR08: c000000000dfe918 c000000000e50dd0 c000000000e56c00 0000000000000001 
+GPR12: 0000000000000000 c00000000fe00000 0000000000000060 0000000000f1d618 
+GPR16: 0000000000efccd8 0000000000efcb20 fffffffffffffffd 0000000000000000 
+GPR20: 000000001f150000 c000000000dfa8e0 c000000000ccfafc c000000000dfeb18 
+GPR24: c000000000dfee34 c000000000ccfaf8 0000000000000000 0000000000000001 
+GPR28: c000000000ebad20 c000000000ccfb00 0000000000000000 c00000001fe1fb00 
+NIP [c0000000001e6b78] local_memory_node+0x18/0x80
+LR [c0000000001e6df4] __build_all_zonelists+0x214/0x2d0
+Call Trace:
+[c000000000dc7de0] [c0000000001e6ccc] __build_all_zonelists+0xec/0x2d0 (unreliable)
+[c000000000dc7e70] [c000000000c39fbc] build_all_zonelists_init+0x1c/0x3c
+[c000000000dc7e90] [c000000000282acc] build_all_zonelists+0x17c/0x18c
+[c000000000dc7f00] [c000000000c13c54] start_kernel+0x18c/0x514
+[c000000000dc7f90] [c000000000008c60] start_here_common+0x20/0xa0
+Instruction dump:
+38810178 7f63db78 48769171 60000000 4bfffd2c 60420000 3c4c00be 384200a0 
+3d420009 78631f24 392aa1d0 7c69182a <81231e08> 38631e00 2b890002 419d001c 
 
-Christian
+Anton
 
-On 14 July 2016 at 1:33 PM, Christian Zigotzky wrote:
-> Hi Michael,
->
-> When I received your email with your solution, I had already compiled 
-> the kernel 4.1.28 with the following temporary solution:
->
-> Not suitable for 4.1-stable (no PPC_FEATURE2_HTM_NOSC_COMP).
->
-> -     * If the kernel doesn't support TM (ie 
-> CONFIG_PPC_TRANSACTIONAL_MEM=n),
-> -     * we don't want to turn on TM here, so we use the *_COMP versions
-> -     * which are 0 if the kernel doesn't support TM.
-> +     * If the kernel doesn't support TM (ie. 
-> CONFIG_PPC_TRANSACTIONAL_MEM=n),
-> +     * we don't want to turn on CPU_FTR_TM here, so we use 
-> CPU_FTR_TM_COMP
-> +     * which is 0 if the kernel doesn't support TM.
->       */
-> -    {CPU_FTR_TM_COMP, 0, 0,
-> -     PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
-> +    {CPU_FTR_TM_COMP, 0, 0, 0,        22, 0, 0},
->  };
->
-> The kernel boots and KVM PR works. I tested it with Mac-on-Linux/KVM 
-> PR and Mac OS X Tiger as guest system. I will try your solution too.
->
-> Many thanks for your fast response!
->
-> Cheers,
->
-> Christian
->
->
-> On 14 July 2016 at 1:10 PM, Michael Ellerman wrote:
->> Christian Zigotzky<chzigotzky@bayern-mail.de>  writes:
->>
->>> Hi All,
->>>
->>> I tried to compile the kernel 4.1.28 today. Unfortunately it doesn't
->>> compile because of an undeclared variable PPC_FEATURE2_HTM_NOSC_COMP.
->>>
->>> Error message:
->>>
->>>     CHK     include/config/kernel.release
->>>     CHK     include/generated/uapi/linux/version.h
->>>     CHK     include/generated/utsrelease.h
->>>     CHK     include/generated/bounds.h
->>>     CHK     include/generated/asm-offsets.h
->>>     CALL    scripts/checksyscalls.sh
->>>     CHK     include/generated/compile.h
->>>     CALL    arch/powerpc/kernel/systbl_chk.sh
->>>     CC      arch/powerpc/kernel/prom.o
->>> arch/powerpc/kernel/prom.c:170:25: error: 'PPC_FEATURE2_HTM_NOSC_COMP'
->>> undeclared here (not in a function)
->>>      PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
->>>                            ^
->>> make[1]: *** [arch/powerpc/kernel/prom.o] Error 1
->>> make: *** [arch/powerpc/kernel] Error 2
->>>
->>> ---
->>>
->>> Commit:
->>>
->>> f49eb503f0f9ab66874a81992b14249a1c59b6ad
->>> Author: Anton Blanchard<anton@samba.org>
->>> Date:   Fri Apr 15 12:08:19 2016 +1000
->>>
->>>       powerpc: Update TM user feature bits in scan_features()
->>>
->>>       [ Upstream commit 4705e02498d6d5a7ab98dfee9595cd5e91db2017 ]
->>>
->>>       We need to update the user TM feature bits (PPC_FEATURE2_HTM and
->>>       PPC_FEATURE2_HTM) to mirror what we do with the kernel TM feature
->>>       bit.
->>>
->>>       At the moment, if firmware reports TM is not available we turn off
->>>       the kernel TM feature bit but leave the userspace ones on. Userspace
->>>       thinks it can execute TM instructions and it dies trying.
->>>
->>>       This (together with a QEMU patch) fixes PR KVM, which doesn't currently
->>>       support TM.
->>>
->>>       Signed-off-by: Anton Blanchard<anton@samba.org>
->>>       Cc:stable@vger.kernel.org
->>>       Signed-off-by: Michael Ellerman<mpe@ellerman.id.au>
->>>       Signed-off-by: Sasha Levin<sasha.levin@oracle.com>
->>>
->>> ---
->>>
->>> PPC_FEATURE2_HTM_NOSC_COMP isn't defined or doesn't exist in the
->>> following files:
->> Thanks.
->>
->>> arch/powerpc/include/asm/cputable.h
->>> arch/powerpc/kernel/cputable.c
->>> arch/powerpc/include/uapi/asm/tm.h
->>>
->>> That means the following patches aren't included in the 4.1.28 source code:
->> Sorry that's the wrong fix.
->>
->> PPC_FEATURE2_HTM_NOSC indicates the presence of a certain kernel
->> behaviour, which has *not* been backported to 4.1.
->>
->> The right fix is just to remove the reference to PPC_FEATURE2_HTM_NOSC
->> in 4.1.28.
->>
->> eg:
->>
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index 28dbbb0d12c4..9b19d96e9562 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -166,8 +166,7 @@ static struct ibm_pa_feature {
->>   	 * we don't want to turn on TM here, so we use the *_COMP versions
->>   	 * which are 0 if the kernel doesn't support TM.
->>   	 */
->> -	{CPU_FTR_TM_COMP, 0, 0,
->> -	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
->> +	{CPU_FTR_TM_COMP, 0, 0, PPC_FEATURE2_HTM_COMP, 22, 0, 0},
->>   };
->>   
->>   static void __init scan_features(unsigned long node, const unsigned char *ftrs,
->>
->>
->>
->> cheers
->>
->
-
-
---------------27E5FFDF7024F21ED1F986B1
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">Hi Michael,<br>
-      <br>
-      I was able to compile the kernel 4.1.28 with your patch. It boots
-      and works.<br>
-      <br>
-      Thanks,<br>
-      <br>
-      Christian<br>
-      <br>
-      On 14 July 2016 at 1:33 PM, Christian Zigotzky wrote:<br>
-    </div>
-    <blockquote
-      cite="mid:45730340-be42-4307-6c00-5328b2552d98@bayern-mail.de"
-      type="cite">
-      <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-      <div class="moz-cite-prefix">Hi Michael,<br>
-        <br>
-        When I received your email with your solution, I had already
-        compiled the kernel 4.1.28 with the following temporary
-        solution:<br>
-        <br>
-        Not suitable for 4.1-stable (no PPC_FEATURE2_HTM_NOSC_COMP).<br>
-        <br>
-        -     * If the kernel doesn't support TM (ie
-        CONFIG_PPC_TRANSACTIONAL_MEM=n),<br>
-        -     * we don't want to turn on TM here, so we use the *_COMP
-        versions<br>
-        -     * which are 0 if the kernel doesn't support TM.<br>
-        +     * If the kernel doesn't support TM (ie.
-        CONFIG_PPC_TRANSACTIONAL_MEM=n),<br>
-        +     * we don't want to turn on CPU_FTR_TM here, so we use
-        CPU_FTR_TM_COMP<br>
-        +     * which is 0 if the kernel doesn't support TM.<br>
-              */<br>
-        -    {CPU_FTR_TM_COMP, 0, 0,<br>
-        -     PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0,
-        0},<br>
-        +    {CPU_FTR_TM_COMP, 0, 0, 0,        22, 0, 0},<br>
-         };<br>
-        <br>
-        The kernel boots and KVM PR works. I tested it with
-        Mac-on-Linux/KVM PR and Mac OS X Tiger as guest system. I will
-        try your solution too.<br>
-        <br>
-        Many thanks for your fast response!<br>
-        <br>
-        Cheers,<br>
-        <br>
-        Christian<br>
-        <br>
-        <br>
-        On 14 July 2016 at 1:10 PM, Michael Ellerman wrote:<br>
-      </div>
-      <blockquote cite="mid:87d1mga311.fsf@@concordia.ellerman.id.au"
-        type="cite">
-        <pre wrap="">Christian Zigotzky <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:chzigotzky@bayern-mail.de">&lt;chzigotzky@bayern-mail.de&gt;</a> writes:
-
-</pre>
-        <blockquote type="cite">
-          <pre wrap="">Hi All,
-
-I tried to compile the kernel 4.1.28 today. Unfortunately it doesn't 
-compile because of an undeclared variable PPC_FEATURE2_HTM_NOSC_COMP.
-
-Error message:
-
-   CHK     include/config/kernel.release
-   CHK     include/generated/uapi/linux/version.h
-   CHK     include/generated/utsrelease.h
-   CHK     include/generated/bounds.h
-   CHK     include/generated/asm-offsets.h
-   CALL    scripts/checksyscalls.sh
-   CHK     include/generated/compile.h
-   CALL    arch/powerpc/kernel/systbl_chk.sh
-   CC      arch/powerpc/kernel/prom.o
-arch/powerpc/kernel/prom.c:170:25: error: 'PPC_FEATURE2_HTM_NOSC_COMP' 
-undeclared here (not in a function)
-    PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
-                          ^
-make[1]: *** [arch/powerpc/kernel/prom.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
-
----
-
-Commit:
-
-f49eb503f0f9ab66874a81992b14249a1c59b6ad
-Author: Anton Blanchard <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:anton@samba.org">&lt;anton@samba.org&gt;</a>
-Date:   Fri Apr 15 12:08:19 2016 +1000
-
-     powerpc: Update TM user feature bits in scan_features()
-
-     [ Upstream commit 4705e02498d6d5a7ab98dfee9595cd5e91db2017 ]
-
-     We need to update the user TM feature bits (PPC_FEATURE2_HTM and
-     PPC_FEATURE2_HTM) to mirror what we do with the kernel TM feature
-     bit.
-
-     At the moment, if firmware reports TM is not available we turn off
-     the kernel TM feature bit but leave the userspace ones on. Userspace
-     thinks it can execute TM instructions and it dies trying.
-
-     This (together with a QEMU patch) fixes PR KVM, which doesn't currently
-     support TM.
-
-     Signed-off-by: Anton Blanchard <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:anton@samba.org">&lt;anton@samba.org&gt;</a>
-     Cc: <a moz-do-not-send="true" class="moz-txt-link-abbreviated" href="mailto:stable@vger.kernel.org">stable@vger.kernel.org</a>
-     Signed-off-by: Michael Ellerman <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:mpe@ellerman.id.au">&lt;mpe@ellerman.id.au&gt;</a>
-     Signed-off-by: Sasha Levin <a moz-do-not-send="true" class="moz-txt-link-rfc2396E" href="mailto:sasha.levin@oracle.com">&lt;sasha.levin@oracle.com&gt;</a>
-
----
-
-PPC_FEATURE2_HTM_NOSC_COMP isn't defined or doesn't exist in the 
-following files:
-</pre>
-        </blockquote>
-        <pre wrap="">Thanks.
-
-</pre>
-        <blockquote type="cite">
-          <pre wrap="">arch/powerpc/include/asm/cputable.h
-arch/powerpc/kernel/cputable.c
-arch/powerpc/include/uapi/asm/tm.h
-
-That means the following patches aren't included in the 4.1.28 source code:
-</pre>
-        </blockquote>
-        <pre wrap="">Sorry that's the wrong fix.
-
-PPC_FEATURE2_HTM_NOSC indicates the presence of a certain kernel
-behaviour, which has *not* been backported to 4.1.
-
-The right fix is just to remove the reference to PPC_FEATURE2_HTM_NOSC
-in 4.1.28.
-
-eg:
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 28dbbb0d12c4..9b19d96e9562 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -166,8 +166,7 @@ static struct ibm_pa_feature {
- 	 * we don't want to turn on TM here, so we use the *_COMP versions
- 	 * which are 0 if the kernel doesn't support TM.
- 	 */
--	{CPU_FTR_TM_COMP, 0, 0,
--	 PPC_FEATURE2_HTM_COMP|PPC_FEATURE2_HTM_NOSC_COMP, 22, 0, 0},
-+	{CPU_FTR_TM_COMP, 0, 0, PPC_FEATURE2_HTM_COMP, 22, 0, 0},
- };
- 
- static void __init scan_features(unsigned long node, const unsigned char *ftrs,
-
-
-
-cheers
-
-</pre>
-      </blockquote>
-      <p><br>
-      </p>
-    </blockquote>
-    <p><br>
-    </p>
-  </body>
-</html>
-
---------------27E5FFDF7024F21ED1F986B1--
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Cc: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
+> ---
+>  arch/powerpc/mm/numa.c     | 46
+> ++++++++++++++++------------------------------
+> include/linux/cpuhotplug.h |  1 + 2 files changed, 17 insertions(+),
+> 30 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 669a15e..d48ac48 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -581,30 +581,22 @@ static void verify_cpu_node_mapping(int cpu,
+> int node) }
+>  }
+>  
+> -static int cpu_numa_callback(struct notifier_block *nfb, unsigned
+> long action,
+> -			     void *hcpu)
+> +/* Must run before sched domains notifier. */
+> +static int ppc_numa_cpu_prepare(unsigned int cpu)
+>  {
+> -	unsigned long lcpu = (unsigned long)hcpu;
+> -	int ret = NOTIFY_DONE, nid;
+> +	int nid;
+>  
+> -	switch (action) {
+> -	case CPU_UP_PREPARE:
+> -	case CPU_UP_PREPARE_FROZEN:
+> -		nid = numa_setup_cpu(lcpu);
+> -		verify_cpu_node_mapping((int)lcpu, nid);
+> -		ret = NOTIFY_OK;
+> -		break;
+> +	nid = numa_setup_cpu(cpu);
+> +	verify_cpu_node_mapping(cpu, nid);
+> +	return 0;
+> +}
+> +
+> +static int ppc_numa_cpu_dead(unsigned int cpu)
+> +{
+>  #ifdef CONFIG_HOTPLUG_CPU
+> -	case CPU_DEAD:
+> -	case CPU_DEAD_FROZEN:
+> -	case CPU_UP_CANCELED:
+> -	case CPU_UP_CANCELED_FROZEN:
+> -		unmap_cpu_from_node(lcpu);
+> -		ret = NOTIFY_OK;
+> -		break;
+> +	unmap_cpu_from_node(cpu);
+>  #endif
+> -	}
+> -	return ret;
+> +	return 0;
+>  }
+>  
+>  /*
+> @@ -913,11 +905,6 @@ static void __init
+> dump_numa_memory_topology(void) }
+>  }
+>  
+> -static struct notifier_block ppc64_numa_nb = {
+> -	.notifier_call = cpu_numa_callback,
+> -	.priority = 1 /* Must run before sched domains notifier. */
+> -};
+> -
+>  /* Initialize NODE_DATA for a node on the local memory */
+>  static void __init setup_node_data(int nid, u64 start_pfn, u64
+> end_pfn) {
+> @@ -953,7 +940,7 @@ static void __init setup_node_data(int nid, u64
+> start_pfn, u64 end_pfn) 
+>  void __init initmem_init(void)
+>  {
+> -	int nid, cpu;
+> +	int nid;
+>  
+>  	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
+>  	max_pfn = max_low_pfn;
+> @@ -985,15 +972,14 @@ void __init initmem_init(void)
+>  	setup_node_to_cpumask_map();
+>  
+>  	reset_numa_cpu_lookup_table();
+> -	register_cpu_notifier(&ppc64_numa_nb);
+> +
+>  	/*
+>  	 * We need the numa_cpu_lookup_table to be accurate for all
+> CPUs,
+>  	 * even before we online them, so that we can use
+> cpu_to_{node,mem}
+>  	 * early in boot, cf. smp_prepare_cpus().
+>  	 */
+> -	for_each_present_cpu(cpu) {
+> -		numa_setup_cpu((unsigned long)cpu);
+> -	}
+> +	cpuhp_setup_state(CPUHP_POWER_NUMA_PREPARE,
+> "POWER_NUMA_PREPARE",
+> +			  ppc_numa_cpu_prepare, ppc_numa_cpu_dead);
+>  }
+>  
+>  static int __init early_numa(char *p)
+> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+> index 7449081..01133ec 100644
+> --- a/include/linux/cpuhotplug.h
+> +++ b/include/linux/cpuhotplug.h
+> @@ -14,6 +14,7 @@ enum cpuhp_state {
+>  	CPUHP_PERF_SUPERH,
+>  	CPUHP_X86_HPET_DEAD,
+>  	CPUHP_WORKQUEUE_PREP,
+> +	CPUHP_POWER_NUMA_PREPARE,
+>  	CPUHP_NOTIFY_PREPARE,
+>  	CPUHP_BRINGUP_CPU,
+>  	CPUHP_AP_IDLE_DEAD,
