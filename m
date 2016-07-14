@@ -1,20 +1,21 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Return-Path: <wharms@bfs.de>
+Received: from mx01-fr.bfs.de (mx01-fr.bfs.de [193.174.231.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqsr15rKCzDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 20:48:33 +1000 (AEST)
-Date: Thu, 14 Jul 2016 13:48:02 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-ide@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Subject: [patch] ide: missing break statement in set_timings_mdma()
-Message-ID: <20160714104802.GI18175@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqt5700WmzDqxj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 20:59:54 +1000 (AEST)
+Message-ID: <57876EE0.10603@bfs.de>
+Date: Thu, 14 Jul 2016 12:52:16 +0200
+From: walter harms <wharms@bfs.de>
+Reply-To: wharms@bfs.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dan Carpenter <dan.carpenter@oracle.com>
+CC: Zhao Qiang <qiang.zhao@nxp.com>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
+Subject: Re: [patch -next] wan/fsl_ucc_hdlc: info leak in uhdlc_ioctl()
+References: <20160714103415.GE18175@mwanda>
+In-Reply-To: <20160714103415.GE18175@mwanda>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There was clearly supposed to be a break statement here.  Currently we
-use the k2 ata timings instead of sh ata ones we intended.  Probably no
-one has this hardware anymore so it likely doesn't make a difference
-beyond the static checker warning.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
-index 7f0434f..0c5d3a9 100644
---- a/drivers/ide/pmac.c
-+++ b/drivers/ide/pmac.c
-@@ -707,6 +707,7 @@ set_timings_mdma(ide_drive_t *drive, int intf_type, u32 *timings, u32 *timings2,
- 		*timings = ((*timings) & ~TR_133_PIOREG_MDMA_MASK) | tr;
- 		*timings2 = (*timings2) & ~TR_133_UDMAREG_UDMA_EN;
- 		}
-+		break;
- 	case controller_un_ata6:
- 	case controller_k2_ata6: {
- 		/* 100Mhz cell */
+Am 14.07.2016 12:34, schrieb Dan Carpenter:
+> There is a 2 byte struct whole after line.loopback so we need to clear
+> that out to avoid disclosing stack information.
+> 
+> Fixes: c19b6d246a35 ('drivers/net: support hdlc function for QE-UCC')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+> index 19174ac..7608561 100644
+> --- a/drivers/net/wan/fsl_ucc_hdlc.c
+> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
+> @@ -635,6 +635,7 @@ static int uhdlc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+>  			ifr->ifr_settings.size = size; /* data size wanted */
+>  			return -ENOBUFS;
+>  		}
+> +		memset(&line, 0, sizeof(line));
+>  		line.clock_type = priv->clocking;
+>  		line.clock_rate = 0;
+>  		line.loopback = 0;
+
+
+In this case
+  		line.clock_rate = 0;
+ 		line.loopback = 0;
+
+are not need any more and can be removed
+except like them to have for documentation or so.
+
+re,
+ wh
