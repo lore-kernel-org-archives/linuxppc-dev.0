@@ -3,24 +3,24 @@ Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
  [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqjQH4pn1zDqxj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 14:29:11 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id dx3so4029786pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 21:29:11 -0700 (PDT)
-Date: Thu, 14 Jul 2016 14:29:02 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqk9S2GpZzDqxj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 15:03:08 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id ez1so635700pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2016 22:03:08 -0700 (PDT)
+Date: Thu, 14 Jul 2016 15:02:59 +1000
 From: Balbir Singh <bsingharora@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH for-4.8 07/12] powerpc/mm/hash: Update SDR1 size encoding
- as documented in ISA 3.0
-Message-ID: <20160714042902.GH18277@balbir.ozlabs.ibm.com>
+Subject: Re: [PATCH for-4.8 12/12] powerpc/mm/radix: Add a kernel command
+ line to disable radix
+Message-ID: <20160714050259.GJ18277@balbir.ozlabs.ibm.com>
 Reply-To: bsingharora@gmail.com
 References: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1468402531-4914-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468402531-4914-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1468402531-4914-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1468402531-4914-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 03:05:26PM +0530, Aneesh Kumar K.V wrote:
-> ISA 3.0 document hash table size in bytes = 2^(HTABSIZE + 18)
+On Wed, Jul 13, 2016 at 03:05:31PM +0530, Aneesh Kumar K.V wrote:
+> This patch adds the kernel command line disable_radix which disable
+> the radix MMU mode even if firmware indicates radix support via
+> ibm,pa-features device tree node.
 > 
-> No functionality change by this patch.
+> This helps in testing different MMU mode easily.
 > 
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/mm/hash_utils_64.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
+>  Documentation/kernel-parameters.txt |  3 +++
+>  arch/powerpc/kernel/prom.c          | 13 +++++++++++++
+>  2 files changed, 16 insertions(+)
 > 
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index b90fe2480089..47d59a1f12f1 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -714,10 +714,9 @@ int remove_section_mapping(unsigned long start, unsigned long end)
->  #endif /* CONFIG_MEMORY_HOTPLUG */
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 738bae4a5958..bba7ef30d74e 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -929,6 +929,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>  	disable=	[IPV6]
+>  			See Documentation/networking/ipv6.txt.
 >  
->  static void __init hash_init_partition_table(phys_addr_t hash_table,
-> -					     unsigned long pteg_count)
-> +					     unsigned long htab_size)
+> +	disable_radix	[PPC]
+> +			Disable RADIX MMU mode on POWER9
+> +
+>  	disable_cpu_apicid= [X86,APIC,SMP]
+>  			Format: <int>
+>  			The number of initial APIC ID for the
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 946e34ffeae9..022540b9366d 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -645,6 +645,14 @@ static void __init early_reserve_mem(void)
+>  #endif
+>  }
+>  
+> +static bool disable_radix;
+
+__read_mostly?
+
+> +static int __init parse_disable_radix(char *p)
+> +{
+> +	disable_radix = true;
+> +	return 0;
+> +}
+> +early_param("disable_radix", parse_disable_radix);
+> +
+>  void __init early_init_devtree(void *params)
 >  {
->  	unsigned long ps_field;
-> -	unsigned long htab_size;
->  	unsigned long patb_size = 1UL << PATB_SIZE_SHIFT;
->  
->  	/*
-> @@ -725,7 +724,7 @@ static void __init hash_init_partition_table(phys_addr_t hash_table,
->  	 * We can ignore that for lpid 0
->  	 */
->  	ps_field = 0;
-> -	htab_size =  __ilog2(pteg_count) - 11;
-> +	htab_size =  __ilog2(htab_size) - 18;
+>  	phys_addr_t limit;
+> @@ -739,6 +747,11 @@ void __init early_init_devtree(void *params)
+>  	/* Scan and build the list of machine check recoverable ranges */
+>  	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
+>  #endif
+> +	/*
+> +	 * now fixup radix MMU mode based on kernel command line
+> +	 */
+> +	if (disable_radix)
+> +		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
 
-I was wondering if we should just do
-
-#define HPT_MIN_SIZE_SHIFT	18
-
-and then use it instead?
+Shouldn't this happen before prom_init() and exchanging capabilities?
