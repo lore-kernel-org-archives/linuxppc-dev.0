@@ -1,15 +1,26 @@
 Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rr8by5nZxzDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 07:54:06 +1000 (AEST)
-Date: Fri, 15 Jul 2016 00:53:52 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rr9Dr38zfzDqyY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 08:22:35 +1000 (AEST)
+Received: from userv0021.oracle.com (userv0021.oracle.com [156.151.31.71])
+ by aserp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ u6EMMWlR021257
+ (version=TLSv1 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:22:33 GMT
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+ by userv0021.oracle.com (8.13.8/8.13.8) with ESMTP id u6EMMWYZ030252
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:22:32 GMT
+Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
+ by aserv0122.oracle.com (8.13.8/8.13.8) with ESMTP id u6EMMTwD000810
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:22:30 GMT
+Date: Fri, 15 Jul 2016 01:22:24 +0300
 From: Dan Carpenter <dan.carpenter@oracle.com>
-To: clombard@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] cxl: Add guest-specific code
-Message-ID: <20160714215352.GA19749@mwanda>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [bug report] Linux-2.6.12-rc2
+Message-ID: <20160714222224.GA25917@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,60 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Christophe Lombard,
+Hi PPC Devs,
 
-The patch 14baf4d9c739: "cxl: Add guest-specific code" from Mar 4,
-2016, leads to the following static checker warning:
+The patch 1da177e4c3f4: "Linux-2.6.12-rc2" from Apr 16, 2005, leads
+to the following static checker warning:
 
-	drivers/misc/cxl/guest.c:1115 cxl_guest_init_adapter()
-	error: we previously assumed 'adapter->guest' could be null (see line 1114)
+	arch/powerpc/sysdev/ipic.c:783 ipic_set_priority()
+	error: buffer overflow 'ipic_info' 95 <= 127
 
-drivers/misc/cxl/guest.c
-  1105  struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_device *pdev)
-  1106  {
-  1107          struct cxl *adapter;
-  1108          bool free = true;
-  1109          int rc;
-  1110  
-  1111          if (!(adapter = cxl_alloc_adapter()))
-  1112                  return ERR_PTR(-ENOMEM);
-  1113  
-  1114          if (!(adapter->guest = kzalloc(sizeof(struct cxl_guest), GFP_KERNEL))) {
-  1115                  free_adapter(adapter);
-                        ^^^^^^^^^^^^^^^^^^^^^
-We can't call free_adapter() if adapter->guest is NULL.
+arch/powerpc/sysdev/ipic.c
+    36  static struct ipic_info ipic_info[] = {
+    37          [1] = {
+    38                  .mask   = IPIC_SIMSR_H,
+    39                  .prio   = IPIC_SIPRR_C,
+    40                  .force  = IPIC_SIFCR_H,
+    41                  .bit    = 16,
+    42                  .prio_mask = 0,
+    43          },
 
-  1116                  return ERR_PTR(-ENOMEM);
-  1117          }
+ [ huge 95 element array snipped ]
 
+   500          [94] = {
+   501                  .mask   = IPIC_SIMSR_L,
+   502                  .prio   = 0,
+   503                  .force  = IPIC_SIFCR_L,
+   504                  .bit    = 30,
+   505          },
+   506  };
 
-	drivers/misc/cxl/guest.c:919 afu_properties_look_ok()
-	warn: unsigned 'afu->crs_len' is never less than zero.
+ [ more code snipped ]
 
-drivers/misc/cxl/guest.c
-   907  static int afu_properties_look_ok(struct cxl_afu *afu)
-   908  {
-   909          if (afu->pp_irqs < 0) {
-   910                  dev_err(&afu->dev, "Unexpected per-process minimum interrupt value\n");
-   911                  return -EINVAL;
-   912          }
-   913  
-   914          if (afu->max_procs_virtualised < 1) {
-   915                  dev_err(&afu->dev, "Unexpected max number of processes virtualised value\n");
-   916                  return -EINVAL;
-   917          }
-   918  
-   919          if (afu->crs_len < 0) {
-                    ^^^^^^^^^^^^^^^^
-Remove this test.  Unsigned is never less than zero.
+   773  int ipic_set_priority(unsigned int virq, unsigned int priority)
+   774  {
+   775          struct ipic *ipic = ipic_from_irq(virq);
+   776          unsigned int src = virq_to_hw(virq);
+   777          u32 temp;
+   778  
+   779          if (priority > 7)
+   780                  return -EINVAL;
+   781          if (src > 127)
+                    ^^^^^^^^^
+We cap this at 127
 
-   920                  dev_err(&afu->dev, "Unexpected configuration record size value\n");
-   921                  return -EINVAL;
-   922          }
-   923  
-   924          return 0;
-   925  }
+   782                  return -EINVAL;
+   783          if (ipic_info[src].prio == 0)
+                    ^^^^^^^^^^^^^^
+But we only have 95 elements.  Should the array be larger or should
+we >= ARRAY_SIZE(ipic_info) is invalid?
 
+   784                  return -EINVAL;
+   785  
 
 regards,
 dan carpenter
