@@ -1,19 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rqYms3NJ2zDqFn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 08:44:45 +1000 (AEST)
-Message-ID: <1468449883.20552.105.camel@kernel.crashing.org>
-Subject: Re: [bug report] [PATCH] powerpc: Thermal control for dual core G5s
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 13 Jul 2016 17:44:43 -0500
-In-Reply-To: <20160713101546.GK29468@mwanda>
-References: <20160713101546.GK29468@mwanda>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rqdvL3DCSzDqxj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 11:50:38 +1000 (AEST)
+Date: Thu, 14 Jul 2016 09:50:27 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, bhe@redhat.com, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160714015027.GA3121@dhcp-128-65.nay.redhat.com>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <1911992.H2WpLRr2Fi@wuerfel> <20160712141810.GB30181@redhat.com>
+ <293705810.hBL93OOmOz@wuerfel> <20160712145010.GA8447@leverpostej>
+ <20160713023614.GB3222@dhcp-128-65.nay.redhat.com>
+ <20160713093432.GB14522@leverpostej>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160713093432.GB14522@leverpostej>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-07-13 at 13:15 +0300, Dan Carpenter wrote:
-> Hello Benjamin Herrenschmidt,
+On 07/13/16 at 10:34am, Mark Rutland wrote:
+> On Wed, Jul 13, 2016 at 10:36:14AM +0800, Dave Young wrote:
+> > But consider we can kexec to a different kernel and a different initrd so there
+> > will be use cases to pass a total different dtb as well.
 > 
-> The patch ac171c46667c: "[PATCH] powerpc: Thermal control for dual
-> core G5s" from Feb 8, 2006, leads to the following static checker
-> warning:
+> It depends on what you mean by "a different kernel", and what this
+> implies for the DTB.
 > 
-> 	drivers/macintosh/windfarm_smu_controls.c:83 smu_set_fan()
-> 	warn: buffer overflow 'buffer' 16 <= 16
 
-Thanks. I had a look at it seems like id is actually always
-smaller than 6. So it's just the check id > 7 that needs
-to be id > 5 I think and unless some of these machines have a bad
-device-tree I think we don't actually corrupt memory.
+I thought about kexec as a boot loader just like other bootloaders.
+So just like a normal boot kexec should also accept external dtb.
+But acutally kexec is different because it can get original dtb and
+use it. So I agreed if we can not find a real use case that we have
+to extend it we should keep current interface.
 
-> drivers/macintosh/windfarm_smu_controls.c
->     54  static int smu_set_fan(int pwm, u8 id, u16 value)
->     55  {
->     56          struct smu_cmd cmd;
->     57          u8 buffer[16];
->                    ^^^^^^^^^^
-> 16 bytes.
+> I expect future arm64 Linux kernels to function with today's DTBs, and
+> the existing boot protocol. The kexec_file_load syscall already has
+> enough information for the kernel to inject the initrd and bootargs
+> properties into a DTB.
 > 
->     58          DECLARE_COMPLETION_ONSTACK(comp);
->     59          int rc;
->     60  
->     61          /* Fill SMU command structure */
->     62          cmd.cmd = SMU_CMD_FAN_COMMAND;
->     63  
->     64          /* The SMU has an "old" and a "new" way of setting
-> the fan speed
->     65           * Unfortunately, I found no reliable way to know
-> which one works
->     66           * on a given machine model. After some
-> investigations it appears
->     67           * that MacOS X just tries the new one, and if it
-> fails fallbacks
->     68           * to the old ones ... Ugh.
->     69           */
->     70   retry:
->     71          if (smu_supports_new_fans_ops) {
->     72                  buffer[0] = 0x30;
->     73                  buffer[1] = id;
->     74                  *((u16 *)(&buffer[2])) = value;
->     75                  cmd.data_len = 4;
->     76          } else {
->     77                  if (id > 7)
->                             ^^^^^^
-> Assume id is 7.
+> In practice on x86 today, kexec_file_load only supports booting to a
+> Linux kernel, because the in-kernel purgatory only implements the x86
+> Linux boot protocol. Analagously, for arm64 I think that the first
+> kernel should use its internal copy of the boot DTB, with /chosen fixed
+> up appropriately, assuming the next kernel is an arm64 Linux image.
 > 
->     78                          return -EINVAL;
->     79                  /* Fill argument buffer */
->     80                  memset(buffer, 0, 16);
->     81                  buffer[0] = pwm ? 0x10 : 0x00;
->     82                  buffer[1] = 0x01 << id;
->     83                  *((u16 *)&buffer[2 + id * 2]) = value;
->                                   ^^^^^^^^^^^^^^^^^^
-> 2 + 7 * 2 = 16.  We're write two bytes beyond the end of the array.
+> If booting another OS, the only parts of the DTB I would expect to
+> change are the properties under chosen, as everything else *should* be
+> OS-independent. However the other OS may have a completely different
+> boot protocol, might not even take a DTB, and will likely need a
+> compeltely different purgatory implementation. So just allowing the DTB
+> to be altered isn't sufficient for that case.
 > 
->     84                  cmd.data_len = 14;
->     85          }
->     86  
-> 
-> 
-> regards,
-> dan carpenter
+> There might be cases where we want a different DTB, but as far as I can
+> tell we have nothing analagous on x86 today. If we do need this, we
+> should have an idea of what real case(s) were trying to solve.
+
+Agreed.
+
+Thanks
+Dave
