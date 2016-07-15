@@ -2,18 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTty3n6lzDqyc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:14 +1000 (AEST)
-In-Reply-To: <1468444634-1866-7-git-send-email-imunsie@au.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTtz4qGLzDqyT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:15 +1000 (AEST)
+In-Reply-To: <1468444634-1866-8-git-send-email-imunsie@au.ibm.com>
 To: Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Huy Nguyen <huyn@mellanox.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [06/15] cxl: Do not create vPHB if there are no AFU configuration
- records
-Message-Id: <3rrTty1hxzz9snm@ozlabs.org>
+Subject: Re: [07/15] powerpc/powernv: Add support for the cxl kernel api on
+ the real phb
+Message-Id: <3rrTtz2Tb7z9sCj@ozlabs.org>
 Date: Fri, 15 Jul 2016 20:53:14 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,30 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-13-07 at 21:17:05 UTC, Ian Munsie wrote:
+On Wed, 2016-13-07 at 21:17:06 UTC, Ian Munsie wrote:
 > From: Ian Munsie <imunsie@au1.ibm.com>
 > 
-> The vPHB model of the cxl kernel API is a hierarchy where the AFU is
-> represented by the vPHB, and it's AFU configuration records are exposed
-> as functions under that vPHB. If there are no AFU configuration records
-> we will create a vPHB with nothing under it, which is a waste of
-> resources and will opt us into EEH handling despite not having anything
-> special to handle.
+> This adds support for the peer model of the cxl kernel api to the
+> PowerNV PHB, in which physical function 0 represents the cxl function on
+> the card (an XSL in the case of the CX4), which other physical functions
+> will use for memory access and interrupt services. It is referred to as
+> the peer model as these functions are peers of one another, as opposed
+> to the Virtual PHB model which forms a hierarchy.
 > 
-> This also does not make sense for cards using the peer model of the cxl
-> kernel API, where the other functions of the device are exposed via
-> additional peer physical functions rather than AFU configuration
-> records. This model will also not work with the existing EEH handling in
-> the cxl driver, as that is designed around the vPHB model.
+> This patch exports APIs to enable the peer mode, check if a PCI device
+> is attached to a PHB in this mode, and to set and get the peer AFU for
+> this mode.
 > 
-> Skip creating the vPHB for AFUs without any AFU configuration records,
-> and opt out of EEH handling for them.
+> The cxl driver will enable this mode for supported cards by calling
+> pnv_cxl_enable_phb_kernel_api(). This will set a flag in the PHB to note
+> that this mode is enabled, and switch out it's controller_ops for the
+> cxl version.
+> 
+> The cxl version of the controller_ops struct implements it's own
+> versions of the enable_device_hook and release_device to handle
+> refcounting on the peer AFU and to allocate a default context for the
+> device.
+> 
+> Once enabled, the cxl kernel API may not be disabled on a PHB. Currently
+> there is no safe way to disable cxl mode short of a reboot, so until
+> that changes there is no reason to support the disable path.
 > 
 > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 > Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e4f5fc001a6cb82bef91037245
+https://git.kernel.org/powerpc/c/4361b03430d685610e5feea3ec
 
 cheers
