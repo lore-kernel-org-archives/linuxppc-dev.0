@@ -1,53 +1,43 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@chromium.org>
+Received: from mail-pf0-f172.google.com (mail-pf0-f172.google.com
+ [209.85.192.172])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrlRX6yZ5zDr0W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 07:03:49 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6FL3igY120964
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:03:45 -0400
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0b-001b2d01.pphosted.com with ESMTP id 246k0uvsfv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:03:45 -0400
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 15 Jul 2016 18:03:42 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 26D891DC006D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:03:31 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6FL3dCI23331208
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 18:03:39 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6FL3cHY010869
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 18:03:39 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Russell King - ARM Linux <linux@armlinux.org.uk>,
- Vivek Goyal <vgoyal@redhat.com>, Mark Rutland <mark.rutland@arm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, bhe@redhat.com,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Date: Fri, 15 Jul 2016 18:03:35 -0300
-In-Reply-To: <3489461.zQnV5C1bXR@wuerfel>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <20160715134209.GF1041@n2100.armlinux.org.uk> <3489461.zQnV5C1bXR@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1808359.GMbkTHC4O6@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrmMf6vmPzDr0S
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 07:45:33 +1000 (AEST)
+Received: by mail-pf0-f172.google.com with SMTP id y134so18758047pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:45:33 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: linux-kernel@vger.kernel.org
+Cc: Kees Cook <keescook@chromium.org>, Balbir Singh <bsingharora@gmail.com>,
+ Daniel Micay <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Subject: [PATCH v3 04/11] ARM: uaccess: Enable hardened usercopy
+Date: Fri, 15 Jul 2016 14:44:18 -0700
+Message-Id: <1468619065-3222-5-git-send-email-keescook@chromium.org>
+In-Reply-To: <1468619065-3222-1-git-send-email-keescook@chromium.org>
+References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,39 +47,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Freitag, 15 Juli 2016, 22:26:09 schrieb Arnd Bergmann:
-> On Friday, July 15, 2016 2:42:10 PM CEST Russell King - ARM Linux wrote:
-> > On other architectures, DT can also contain open-firmware "functions"
-> > but I don't think there's much support in the kernel for that - maybe
-> > the PPC folk can reply on that point.
-> 
-> The open firmware runtime interface are shut down by the time we have
-> a flattened device tree, so those are not accessible any more. IIRC
-> SPARC leaves the open firmware interface live, but it doesn't use
-> fdt, so that's not relevant here.
-> 
-> However, the powerpc specific RTAS runtime services provide a similar
-> interface to the UEFI runtime support and allow to call into
-> binary code from the kernel, which gets mapped from a physical
-> address in the "linux,rtas-base" property in the rtas device node.
-> 
-> Modifying the /rtas node will definitely give you a backdoor into
-> priviledged code, but modifying only /chosen should not let you get
-> in through that specific method.
+Enables CONFIG_HARDENED_USERCOPY checks on arm.
 
-Except that arch/powerpc/kernel/rtas.c looks for any node in the tree called 
-"rtas", so it will try to use /chosen/rtas, or /chosen/foo/rtas.
+Based on code from PaX and grsecurity.
 
-We can forbid subnodes in /chosen in the dtb passed to kexec_file_load, 
-though that means userspace can't use the simple-framebuffer binding via 
-this mechanism.
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ arch/arm/Kconfig               |  1 +
+ arch/arm/include/asm/uaccess.h | 11 +++++++++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
 
-We also have to blacklist the device_type and compatible properties in 
-/chosen to avoid the problem Mark mentioned.
-
-Still doable, but not ideal. :-/
-
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 90542db1220d..f56b29b3f57e 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -35,6 +35,7 @@ config ARM
+ 	select HARDIRQS_SW_RESEND
+ 	select HAVE_ARCH_AUDITSYSCALL if (AEABI && !OABI_COMPAT)
+ 	select HAVE_ARCH_BITREVERSE if (CPU_32v7M || CPU_32v7) && !CPU_32v6
++	select HAVE_ARCH_HARDENED_USERCOPY
+ 	select HAVE_ARCH_JUMP_LABEL if !XIP_KERNEL && !CPU_ENDIAN_BE32 && MMU
+ 	select HAVE_ARCH_KGDB if !CPU_ENDIAN_BE32 && MMU
+ 	select HAVE_ARCH_MMAP_RND_BITS if MMU
+diff --git a/arch/arm/include/asm/uaccess.h b/arch/arm/include/asm/uaccess.h
+index 35c9db857ebe..7fb59199c6bb 100644
+--- a/arch/arm/include/asm/uaccess.h
++++ b/arch/arm/include/asm/uaccess.h
+@@ -496,7 +496,10 @@ arm_copy_from_user(void *to, const void __user *from, unsigned long n);
+ static inline unsigned long __must_check
+ __copy_from_user(void *to, const void __user *from, unsigned long n)
+ {
+-	unsigned int __ua_flags = uaccess_save_and_enable();
++	unsigned int __ua_flags;
++
++	check_object_size(to, n, false);
++	__ua_flags = uaccess_save_and_enable();
+ 	n = arm_copy_from_user(to, from, n);
+ 	uaccess_restore(__ua_flags);
+ 	return n;
+@@ -511,11 +514,15 @@ static inline unsigned long __must_check
+ __copy_to_user(void __user *to, const void *from, unsigned long n)
+ {
+ #ifndef CONFIG_UACCESS_WITH_MEMCPY
+-	unsigned int __ua_flags = uaccess_save_and_enable();
++	unsigned int __ua_flags;
++
++	check_object_size(from, n, true);
++	__ua_flags = uaccess_save_and_enable();
+ 	n = arm_copy_to_user(to, from, n);
+ 	uaccess_restore(__ua_flags);
+ 	return n;
+ #else
++	check_object_size(from, n, true);
+ 	return arm_copy_to_user(to, from, n);
+ #endif
+ }
 -- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+2.7.4
