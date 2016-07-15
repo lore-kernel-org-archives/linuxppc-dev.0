@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvR5dd1zDqyc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:39 +1000 (AEST)
-In-Reply-To: <1468284892-27765-4-git-send-email-dja@axtens.net>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvS5fV9zDqyS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:40 +1000 (AEST)
+In-Reply-To: <1467896070-15167-5-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: arnd@arndb.de, Daniel Axtens <dja@axtens.net>
-Subject: Re: [v2,4/5] powerpc/sparse: Pass endianness to sparse
-Message-Id: <3rrTvR2mk2z9s6r@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:39 +1000 (AEST)
+Subject: Re: [5/5] powerpc/xmon: Dump ISA 2.07 SPRs
+Message-Id: <3rrTvS28Wmz9sBg@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +19,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-12-07 at 00:54:51 UTC, Daniel Axtens wrote:
-> Explicitly give sparse an endianness in the Makefile, so that it
-> doesn't get confused.
-> 
-> Normally we have #ifdef one and #else the other, so it doesn't usually
-> matter, but we have been bitten by it before, and indeed this patch
-> fixes a number of sparse errors.
-> 
-> Suggested-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
+On Thu, 2016-07-07 at 12:54:30 UTC, Michael Ellerman wrote:
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/62c2c5cf387beb4bbf45045c30
+https://git.kernel.org/powerpc/c/e0ddf7a24558b356d5cf5ecc12
 
 cheers
