@@ -1,31 +1,61 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrYfQ4XgxzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 23:42:37 +1000 (AEST)
-Date: Fri, 15 Jul 2016 14:42:10 +0100
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, bhe@redhat.com,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160715134209.GF1041@n2100.armlinux.org.uk>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <4321972.HZgDox36RC@wuerfel> <3520758.yAgMzqF1PF@hactar>
- <5547846.5l81k4b13o@wuerfel> <20160715132610.GD23514@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrbgs0p3kzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 01:14:01 +1000 (AEST)
+Date: Fri, 15 Jul 2016 17:14:08 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Topi Miettinen <toiwoton@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Alexander Graf <agraf@suse.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>,
+ Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Christian Benvenuti <benve@cisco.com>,
+ Dave Goodell <dgoodell@cisco.com>, Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>,
+ Konstantin Khlebnikov <koct9i@gmail.com>,
+ Cyrill Gorcunov <gorcunov@openvz.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@suse.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Eric B Munson <emunson@akamai.com>, Alexey Klimov <klimov.linux@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Chen Gang <gang.chen.5i5j@gmail.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
+ Alexander Kuleshov <kuleshovmail@gmail.com>,
+ "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC" <kvm-ppc@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,
+ "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
+Subject: Re: [PATCH 09/14] resource limits: track highwater mark of locked
+ memory
+Message-ID: <20160715151408.GA32317@redhat.com>
+References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
+ <1468578983-28229-10-git-send-email-toiwoton@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160715132610.GD23514@redhat.com>
-Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
+In-Reply-To: <1468578983-28229-10-git-send-email-toiwoton@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +65,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 15, 2016 at 09:26:10AM -0400, Vivek Goyal wrote:
-> On Fri, Jul 15, 2016 at 09:31:02AM +0200, Arnd Bergmann wrote:
-> > I think that helps, as it makes the problem space correspond to that
-> > of modifying the command line, but I can still come up with countless
-> > attacks based on modifications of the /chosen node and/or the command
-> > line, in fact it's probably easier than any other node.
-> 
-> I don't know anything about DTB. So here comes a very basic question. Does
-> DTB allow passing an executable blob to kernel or pass the location of
-> some unsigned executable code at kernel level.
+On 07/15, Topi Miettinen wrote:
+>
+> Track maximum size of locked memory, to be able to configure
+> RLIMIT_MEMLOCK resource limits. The information is available
+> with taskstats and cgroupstats netlink socket.
 
-DT on ARM is a description of the hardware - it can be thought of as a
-set of nodes with properties attached.  The properties can describe
-anything (we have documentation in Documentation/devicetree/bindings
-which describes what we expect the properties to contain.)
+So I personally still dislike the very idea of this series... but I won't
+argue if you convince maintainers.
 
-On other architectures, DT can also contain open-firmware "functions"
-but I don't think there's much support in the kernel for that - maybe
-the PPC folk can reply on that point.
+> @@ -2020,6 +2020,10 @@ static int acct_stack_growth(struct vm_area_struct *vma, unsigned long size, uns
+>  		return -ENOMEM;
+>  
+>  	update_resource_highwatermark(RLIMIT_STACK, actual_size);
+> +	if (vma->vm_flags & VM_LOCKED)
+> +		update_resource_highwatermark(RLIMIT_MEMLOCK,
+> +					      (mm->locked_vm + grow) <<
+> +					      PAGE_SHIFT);
 
-It is possible that someone may, at some point, decide to create a
-property that points to some executable blob, but I can't think of a
-reason why we should ever allow such a monstrosity in mainline kernels.
+Btw this is not right. The same for the previous patch which tracks
+RLIMIT_STACK. The "current" task can debugger/etc.
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Yes, yes, this just reminds that the whole rlimit logic in this path
+is broken but still...
+
+Oleg.
