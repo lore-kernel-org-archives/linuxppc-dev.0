@@ -1,48 +1,51 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bauerman@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrFgB1WV6zDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 11:42:14 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id i6so5249282pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 18:42:14 -0700 (PDT)
-Date: Fri, 15 Jul 2016 11:41:51 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: bsingharora@gmail.com, Kees Cook <keescook@chromium.org>,
- linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>,
- PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
- Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Subject: Re: [PATCH v2 02/11] mm: Hardened usercopy
-Message-ID: <20160715014151.GA13944@balbir.ozlabs.ibm.com>
-Reply-To: bsingharora@gmail.com
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-3-git-send-email-keescook@chromium.org>
- <20160714232019.GA28254@350D>
- <1468544658.30053.26.camel@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrFjh5rSXzDqyT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 11:44:24 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6F1dKhZ137334
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:44:23 -0400
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 246k20w1ca-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:44:22 -0400
+Received: from localhost
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
+ Thu, 14 Jul 2016 22:44:20 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 8B2771DC0070
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:44:09 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6F1iHFr12386598
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:44:17 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6F1iGKK009423
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:44:17 -0300
+From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>, Samuel Mendoza-Jonas <sam@mendozajonas.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ bhe@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Vivek Goyal <vgoyal@redhat.com>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Date: Thu, 14 Jul 2016 22:44:14 -0300
+In-Reply-To: <4321972.HZgDox36RC@wuerfel>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <1678419.ODVtyXKVYJ@hactar> <4321972.HZgDox36RC@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1468544658.30053.26.camel@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Message-Id: <3520758.yAgMzqF1PF@hactar>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,37 +55,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 14, 2016 at 09:04:18PM -0400, Rik van Riel wrote:
-> On Fri, 2016-07-15 at 09:20 +1000, Balbir Singh wrote:
-> 
-> > > ==
-> > > +		   ((unsigned long)end & (unsigned
-> > > long)PAGE_MASK)))
-> > > +		return NULL;
-> > > +
-> > > +	/* Allow if start and end are inside the same compound
-> > > page. */
-> > > +	endpage = virt_to_head_page(end);
-> > > +	if (likely(endpage == page))
-> > > +		return NULL;
-> > > +
-> > > +	/* Allow special areas, device memory, and sometimes
-> > > kernel data. */
-> > > +	if (PageReserved(page) && PageReserved(endpage))
-> > > +		return NULL;
+Am Donnerstag, 14 Juli 2016, 10:29:11 schrieb Arnd Bergmann:
+> On Wednesday, July 13, 2016 11:18:04 PM CEST Thiago Jung Bauermann wrote:
+> > Am Mittwoch, 13 Juli 2016, 21:59:18 schrieb Arnd Bergmann:
+> > > On Wednesday, July 13, 2016 3:45:41 PM CEST Thiago Jung Bauermann 
+wrote:
+> > > > Am Mittwoch, 13 Juli 2016, 15:13:42 schrieb Arnd Bergmann:
+> > > > 
+> > > > For secure boot, Petitboot needs to use kexec_file_load, because of
+> > > > the
+> > > > following two features which the system call enables:
+> > > > 
+> > > > 1. only allow loading of signed kernels.
+> > > > 2. "measure" (i.e., record the hashes of) the kernel, initrd, kernel
+> > > > 
+> > > >    command line and other boot inputs for the Integrity Measurement
+> > > >    Architecture subsystem.
+> > > > 
+> > > > Those can't be done with kexec_load.
+> > > 
+> > > Can't petitboot do both of these in user space?
 > > 
-> > If we came here, it's likely that endpage > page, do we need to check
-> > that only the first and last pages are reserved? What about the ones
-> > in
-> > the middle?
+> > To be honest I'm not sure if it *can't* be done from userspace but if
+> > you do it from the kernel you can guarantee that any kernel image that
+> > is loaded gets verified and measured.
+> > 
+> > Whereas if you verify and measure the kernel in userspace then if
+> > there's a vulnerability in the system which allows an attacker to
+> > upload their own binary, then they can use kexec_load directly and
+> > bypass the verification and measurement.
+> > 
+> > So it's a more resilient design.
 > 
-> I think this will be so rare, we can get away with just
-> checking the beginning and the end.
->
+> Right, but the question remains whether this helps while you allow the
+> boot loader to modify the dtb. If an attacker gets in and cannot modify
+> the kernel or initid but can modify the DT, a successful attack would
+> be a bit harder than having a modified kernel, but you may still need
+> to treat the system as compromised.
 
-But do we want to leave a hole where an aware user space
-can try a longer copy_* to avoid this check? If it is unlikely
-should we just bite the bullet and do the check for the entire
-range?
+Yes, and the same question also remains regarding the kernel command line.
 
-Balbir Singh. 
+We can have the kernel perform sanity checks on the device tree, just as the 
+kernel needs to sanity check the command line.
+
+There's the point that was raised about not wanting to increase the attack 
+surface, and that's a valid point. But at least in the way Petitboot works 
+today, it needs to modify the device tree and pass it to the kernel.
+
+One thing that is unavoidable to come from userspace is 
+/chosen/linux,stdout-path, because it's Petitboot that knows from which 
+console the user is interacting with. The other modification to set 
+properties in vga@0 can be done in the kernel.
+
+Given that on DTB-based systems /chosen is an important and established way 
+to pass information to the operating system being booted, I'd like to 
+suggest the following, then:
+
+Extend the syscall as shown in this RFC from Takahiro AKASHI, but instead of 
+accepting a complete DTB from userspace, the syscall would accept a DTB 
+containing only a /chosen node. If the DTB contains any other node, the 
+syscall fails with EINVAL. The kernel can then add the properties in /chosen 
+to the device tree that it will pass to the next kernel.
+
+What do you think?
+
+-- 
+[]'s
+Thiago Jung Bauermann
+IBM Linux Technology Center
