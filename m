@@ -1,47 +1,21 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
- [IPv6:2a00:1450:400c:c09::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrKN85cDjzDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:29:28 +1000 (AEST)
-Received: by mail-wm0-x22b.google.com with SMTP id f65so11034013wmi.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:29:28 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20160715020550.GB13944@balbir.ozlabs.ibm.com>
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-12-git-send-email-keescook@chromium.org>
- <20160715020550.GB13944@balbir.ozlabs.ibm.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 14 Jul 2016 21:29:25 -0700
-Message-ID: <CAGXu5j+Ub2-jmTa-XmF90Gd+ze1os+eqk_yijouCSQoLvU1hNQ@mail.gmail.com>
-Subject: Re: [PATCH v2 11/11] mm: SLUB hardened usercopy support
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrKX23qDHzDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:36:18 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Joe Perches <joe@perches.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
- Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Content-Type: text/plain; charset=UTF-8
+ Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powernv: Use __printf in pe_level_printk
+In-Reply-To: <b204dbb1d8d13998eb8dee4dabbc91a0ee4b38b4.1468511136.git.joe@perches.com>
+References: <b204dbb1d8d13998eb8dee4dabbc91a0ee4b38b4.1468511136.git.joe@perches.com>
+Date: Fri, 15 Jul 2016 14:36:17 +1000
+Message-ID: <87eg6vbjr2.fsf@@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,42 +25,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 14, 2016 at 7:05 PM, Balbir Singh <bsingharora@gmail.com> wrote:
-> On Wed, Jul 13, 2016 at 02:56:04PM -0700, Kees Cook wrote:
->> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
->> SLUB allocator to catch any copies that may span objects. Includes a
->> redzone handling fix from Michael Ellerman.
->>
->> Based on code from PaX and grsecurity.
->>
->> Signed-off-by: Kees Cook <keescook@chromium.org>
->> ---
->>  init/Kconfig |  1 +
->>  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
->>  2 files changed, 37 insertions(+)
->>
->> diff --git a/init/Kconfig b/init/Kconfig
->> index 798c2020ee7c..1c4711819dfd 100644
->> --- a/init/Kconfig
->> +++ b/init/Kconfig
->> @@ -1765,6 +1765,7 @@ config SLAB
->>
->>  config SLUB
->>       bool "SLUB (Unqueued Allocator)"
->> +     select HAVE_HARDENED_USERCOPY_ALLOCATOR
+Joe Perches <joe@perches.com> writes:
+
+> Make the compiler detect format and argument mismatches.
 >
-> Should this patch come in earlier from a build perspective? I think
-> patch 1 introduces and uses __check_heap_object.
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/powerpc/platforms/powernv/pci.h | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
+s/powernv/pci.h
+> index 3a97990..1c1a586 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -213,6 +213,7 @@ extern void pnv_pci_dma_bus_setup(struct pci_bus *bus=
+);
+>  extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+>  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
+>=20=20
+> +__printf(3, 4)
+>  extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *le=
+vel,
+>  			    const char *fmt, ...);
 
-__check_heap_object in patch 1 is protected by a check for
-CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR.
+Thanks, but it breaks the build due to lots of new warnings.
 
-It seemed better to be to do arch enablement first, and then add the
-per-allocator heap object size check since it was a distinct piece.
-I'm happy to rearrange things, though, if there's a good reason.
+We'll have to fix those before merging it.
 
--Kees
+cheers
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+In file included from ../arch/powerpc/platforms/powernv/pci-ioda.c:49:0:
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_ioda=
+_deconfigure_pe=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:784:15: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+   pe_warn(pe, "OPAL error %ld remove self from PELTV\n", rc);
+               ^
+../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
+o =E2=80=98pe_warn=E2=80=99
+  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+                                    ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c:788:14: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+   pe_err(pe, "OPAL error %ld trying to setup PELT table\n", rc);
+              ^
+../arch/powerpc/platforms/powernv/pci.h:231:32: note: in definition of macr=
+o =E2=80=98pe_err=E2=80=99
+  pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
+                                ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_ioda=
+_setup_bus_PE=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:1095:15: error: format =E2=80=
+=98%d=E2=80=99 expects argument of type =E2=80=98int=E2=80=99, but argument=
+ 4 has type =E2=80=98resource_size_t {aka long long unsigned int}=E2=80=99 =
+[-Werror=3Dformat=3D]
+   pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
+               ^
+../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
+o =E2=80=98pe_info=E2=80=99
+  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+                                 ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c:1095:15: error: format =E2=80=
+=98%d=E2=80=99 expects argument of type =E2=80=98int=E2=80=99, but argument=
+ 5 has type =E2=80=98resource_size_t {aka long long unsigned int}=E2=80=99 =
+[-Werror=3Dformat=3D]
+   pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
+               ^
+../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
+o =E2=80=98pe_info=E2=80=99
+  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+                                 ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c:1098:15: error: format =E2=80=
+=98%d=E2=80=99 expects argument of type =E2=80=98int=E2=80=99, but argument=
+ 4 has type =E2=80=98resource_size_t {aka long long unsigned int}=E2=80=99 =
+[-Werror=3Dformat=3D]
+   pe_info(pe, "Secondary bus %d associated with PE#%d\n",
+               ^
+../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
+o =E2=80=98pe_info=E2=80=99
+  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+                                 ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
+ioda2_release_dma_pe=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:1351:15: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+   pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
+               ^
+../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
+o =E2=80=98pe_warn=E2=80=99
+  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+                                    ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
+ioda1_setup_dma_pe=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:2093:15: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+    pe_err(pe, " Failed to configure 32-bit TCE table,"
+               ^
+../arch/powerpc/platforms/powernv/pci.h:231:32: note: in definition of macr=
+o =E2=80=98pe_err=E2=80=99
+  pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
+                                ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
+ioda2_set_window=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:2153:14: error: format =E2=80=
+=98%x=E2=80=99 expects argument of type =E2=80=98unsigned int=E2=80=99, but=
+ argument 7 has type =E2=80=98long unsigned int=E2=80=99 [-Werror=3Dformat=
+=3D]
+  pe_info(pe, "Setting up window#%d %llx..%llx pg=3D%x\n", num,
+              ^
+../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
+o =E2=80=98pe_info=E2=80=99
+  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
+                                 ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c:2169:14: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+   pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
+              ^
+../arch/powerpc/platforms/powernv/pci.h:231:32: note: in definition of macr=
+o =E2=80=98pe_err=E2=80=99
+  pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
+                                ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
+ioda2_release_pe_dma=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:3312:15: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+   pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
+               ^
+../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
+o =E2=80=98pe_warn=E2=80=99
+  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+                                    ^~~
+../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_ioda=
+_free_pe_seg=E2=80=99:
+../arch/powerpc/platforms/powernv/pci-ioda.c:3347:16: error: format =E2=80=
+=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
+gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
+format=3D]
+    pe_warn(pe, "Error %ld unmapping (%d) segment#%d\n",
+                ^
+../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
+o =E2=80=98pe_warn=E2=80=99
+  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
+                                    ^~~
