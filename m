@@ -1,18 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvX06f9zDqyj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:44 +1000 (AEST)
-In-Reply-To: <1468210651-4199-1-git-send-email-sjitindarsingh@gmail.com>
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvY17wzzDqyj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:45 +1000 (AEST)
+In-Reply-To: <1468214718-15190-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: sjitindarsingh@gmail.com
-Subject: Re: powerpc/crash: Rearrange loop condition to avoid out of bounds
- array access
-Message-Id: <3rrTvW3rVDz9sCZ@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:43 +1000 (AEST)
+Subject: Re: selftests/powerpc: Add a test for PROT_SAO
+Message-Id: <3rrTvX3bRWz9sCg@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-11-07 at 04:17:31 UTC, Suraj Jitindar Singh wrote:
-> The array crash_shutdown_handles[] has size CRASH_HANDLER_MAX, thus when
-> we loop over the elements of the list we check crash_shutdown_handles[i]
-> && i < CRASH_HANDLER_MAX. However this means that when we increment i to
-> CRASH_HANDLER_MAX we will perform an out of bound array access checking
-> the first condition before exiting on the second condition.
+On Mon, 2016-11-07 at 05:25:18 UTC, Michael Ellerman wrote:
+> PROT_SAO is a powerpc-specific flag to mmap(), and we rely on arch
+> specific logic to allow it to be passed to mmap().
 > 
-> To avoid the out of bounds access, simply reorder the loop conditions.
+> Add a small test to ensure mmap() accepts PROT_SAO. We don't have a good
+> way to test that it actually causes the mapping to be created with the
+> right flags, so for now we just touch the mapping so it's faulted in. In
+> future we might be able to do something better.
 > 
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/a7d6392866e9777cb287ad194c
+https://git.kernel.org/powerpc/c/24af8c5a52a70bbfd275f59836
 
 cheers
