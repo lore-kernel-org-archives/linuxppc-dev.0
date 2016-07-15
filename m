@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTv34MqDzDqyl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:19 +1000 (AEST)
-In-Reply-To: <1468444634-1866-10-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Huy Nguyen <huyn@mellanox.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTv55KcHzDqyY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:21 +1000 (AEST)
+In-Reply-To: <1467695057-12431-10-git-send-email-benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [09/15] cxl: Add kernel APIs to get & set the max irqs per context
-Message-Id: <3rrTv31fkHz9sC4@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:18 +1000 (AEST)
+Subject: Re: [09/41] powerpc: Update obsolete comments in setup_32.c about
+ entry conditions
+Message-Id: <3rrTv41LZYz9s9Y@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-13-07 at 21:17:08 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Tue, 2016-05-07 at 05:03:45 UTC, Benjamin Herrenschmidt wrote:
+> early_init() is called in-place before kernel relocation and using
+> whatever MMU setup exists at the point the kernel is entered.
 > 
-> These APIs will be used by the Mellanox CX4 support. While they function
-> standalone to configure existing behaviour, their primary purpose is to
-> allow the Mellanox driver to inform the cxl driver of a hardware
-> limitation, which will be used in a future patch.
+> machine_init() is called after relocation and after some initial
+> mapping of PAGE_OFFSET has been established (typically using BATs
+> on 6xx/7xx/7xxx processors or some form of bolted TLB on others).
 > 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/79384e4b71240abf50c375eea5
+https://git.kernel.org/powerpc/c/bd7c93cca36911baf2eb2bc386
 
 cheers
