@@ -1,40 +1,29 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrR1K0YrxzDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 18:43:33 +1000 (AEST)
-Received: by mail-wm0-x241.google.com with SMTP id q128so1326365wma.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 01:43:32 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 15 Jul 2016 10:43:24 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: Anna-Maria Gleixner <anna-maria@linutronix.de>,
- LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>, rt@linutronix.de,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [patch V2 30/67] powerpc/numa: Convert to hotplug state machine
-Message-ID: <20160715084324.GB1056@gmail.com>
-References: <20160713153219.128052238@linutronix.de>
- <20160713153335.369278769@linutronix.de>
- <20160715074257.7801cd00@kryten>
- <9e878731c9b447ee5e8318237822c492@www.linutronix.de>
- <20160715102825.34d60395@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrR8S2gFXzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 18:49:44 +1000 (AEST)
+Date: Fri, 15 Jul 2016 09:49:25 +0100
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Mark Rutland <mark.rutland@arm.com>, bhe@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@redhat.com>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ bauerman@linux.vnet.ibm.com, Dave Young <dyoung@redhat.com>,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160715084925.GD1041@n2100.armlinux.org.uk>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <5352106.oQ0Ff9gWJA@wuerfel> <20160713094127.GC14522@leverpostej>
+ <7352796.seiSnHrYPy@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160715102825.34d60395@kryten>
+In-Reply-To: <7352796.seiSnHrYPy@wuerfel>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,28 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Anton Blanchard <anton@samba.org> wrote:
-
-> Hi Anna-Maria,
+On Wed, Jul 13, 2016 at 03:13:42PM +0200, Arnd Bergmann wrote:
+> On Wednesday, July 13, 2016 10:41:28 AM CEST Mark Rutland wrote:
+> > The big question is whether this is a realistic case on a secure boot
+> > system.
 > 
-> > >> Install the callbacks via the state machine and let the core invoke
-> > >> the callbacks on the already online CPUs.  
-> > >
-> > > This is causing an oops on ppc64le QEMU, looks like a NULL
-> > > pointer:  
-> > 
-> > Did you tested it against tip WIP.hotplug?
-> 
-> I noticed tip started failing in my CI environment which tests on QEMU.
-> The failure bisected to commit 425209e0abaf2c6e3a90ce4fedb935c10652bf80
+> What does x86 do here? I assume changes to the command line are also
+> limited.
 
-That's very useful, thanks Anton!
+They aren't.  You can specify /anything/ even with a fully-signed kernel
+and initrd, which was one of the things I pointed out in my previous
+set of responses.
 
-I have removed this commit from the series for the time being, refactored the 
-followup commits (there was one trivial conflict). We can re-try this patch when a 
-fix is found.
-
-Thanks,
-
-	Ingo
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
