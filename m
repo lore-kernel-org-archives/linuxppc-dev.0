@@ -1,30 +1,43 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrP472xDYzDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:15:51 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id ez1so2298951pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 00:15:51 -0700 (PDT)
-Date: Fri, 15 Jul 2016 15:15:46 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
- Rashmica Gupta <rashmicy@gmail.com>,
- "cyrilbur@gmail.com" <cyrilbur@gmail.com>
-Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
-Message-ID: <20160715071546.GA5290@simonLocalRHEL7.x64>
-References: <3rlZmP39HNz9sXR@ozlabs.org> <577E5534.70300@linux.vnet.ibm.com>
- <1467897678.27157.45.camel@kernel.crashing.org>
- <1467898167.27157.47.camel@kernel.crashing.org>
- <577f7a45.568f6b0a.bd0eb.4aa8SMTPIN_ADDED_BROKEN@mx.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <577f7a45.568f6b0a.bd0eb.4aa8SMTPIN_ADDED_BROKEN@mx.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPB21pnCzDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:20:58 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6F7KFN4122241
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 03:20:56 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 246kcjkxc7-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 03:20:55 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 15 Jul 2016 17:20:52 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3D4352CE802D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:20:50 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6F7KoOj3801278
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:20:50 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6F7Knww010381
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:20:50 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com,
+ clombard@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com
+Cc: dan.carpenter@oracle.com
+Subject: [PATCH] cxl: fix potential NULL dereference in free_adapter()
+Date: Fri, 15 Jul 2016 17:20:36 +1000
+In-Reply-To: <20160714215352.GA19749@mwanda>
+References: <20160714215352.GA19749@mwanda>
+Message-Id: <1468567236-5060-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,26 +47,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael, Ben,
-On Fri, Jul 08, 2016 at 08:02:42PM +1000, Michael Ellerman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > On Thu, 2016-07-07 at 23:21 +1000, Benjamin Herrenschmidt wrote:
-> >> 
-> >> I think the right fix is that if a restore_sigcontext() has the MSR
-> >> bits set,
-> >> it should set the corresponding used_* flag.
-> >
-> > Something like this:
-> >
-> > (totally untested)
-> 
-> Simon/Laurent, can you guys test this and let me know if it works for
-> your usecase.
-> 
+If kzalloc() fails when allocating adapter->guest in
+cxl_guest_init_adapter(), we call free_adapter() before erroring out.
+free_adapter() in turn attempts to dereference adapter->guest, which in
+this case is NULL.
 
-Sorry for the late reply. I tested Ben's patch and the fix works for the CRIU
-case mentioned before.
+In free_adapter(), skip the adapter->guest cleanup if adapter->guest is
+NULL.
 
-Thanks,
-Simon
+Fixes: 14baf4d9c739 ("cxl: Add guest-specific code")
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+---
+
+Build tested only.
+---
+ drivers/misc/cxl/guest.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index ee7148e..9aa58a7 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -1055,16 +1055,18 @@ static void free_adapter(struct cxl *adapter)
+ 	struct irq_avail *cur;
+ 	int i;
+ 
+-	if (adapter->guest->irq_avail) {
+-		for (i = 0; i < adapter->guest->irq_nranges; i++) {
+-			cur = &adapter->guest->irq_avail[i];
+-			kfree(cur->bitmap);
++	if (adapter->guest) {
++		if (adapter->guest->irq_avail) {
++			for (i = 0; i < adapter->guest->irq_nranges; i++) {
++				cur = &adapter->guest->irq_avail[i];
++				kfree(cur->bitmap);
++			}
++			kfree(adapter->guest->irq_avail);
+ 		}
+-		kfree(adapter->guest->irq_avail);
++		kfree(adapter->guest->status);
++		kfree(adapter->guest);
+ 	}
+-	kfree(adapter->guest->status);
+ 	cxl_remove_adapter_nr(adapter);
+-	kfree(adapter->guest);
+ 	kfree(adapter);
+ }
+ 
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
