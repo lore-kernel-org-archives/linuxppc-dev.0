@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvC3YXxzDqyr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:27 +1000 (AEST)
-In-Reply-To: <1468444634-1866-14-git-send-email-imunsie@au.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvD5KLRzDqyY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:28 +1000 (AEST)
+In-Reply-To: <1468444634-1866-15-git-send-email-imunsie@au.ibm.com>
 To: Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -12,10 +12,10 @@ To: Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
 From: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
  Ian Munsie <imunsie@au1.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [13/15] PCI/hotplug: pnv_php: export symbols and move struct
- types needed by cxl
-Message-Id: <3rrTvC2V9yz9ssM@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:27 +1000 (AEST)
+Subject: Re: [14/15] PCI/hotplug: pnv_php: handle OPAL_PCI_SLOT_OFFLINE power
+ state
+Message-Id: <3rrTvD2DB5z9sBg@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-13-07 at 21:17:12 UTC, Ian Munsie wrote:
+On Wed, 2016-13-07 at 21:17:13 UTC, Ian Munsie wrote:
 > From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 > 
-> The cxl driver will use infrastructure from pnv_php to handle device tree
-> updates when switching bi-modal CAPI cards into CAPI mode.
-> 
-> To enable this, export pnv_php_find_slot() and
-> pnv_php_set_slot_power_state(), and add corresponding declarations, as well
-> as the definition of struct pnv_php_slot, to asm/pnv-pci.h.
+> When calling pnv_php_set_slot_power_state() with state ==
+> OPAL_PCI_SLOT_OFFLINE, remove devices from the device tree as if we're
+> dealing with OPAL_PCI_SLOT_POWER_OFF.
 > 
 > Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > Cc: linux-pci@vger.kernel.org
@@ -44,6 +41,6 @@ On Wed, 2016-13-07 at 21:17:12 UTC, Ian Munsie wrote:
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/89379f165a1be13aa9b4731a90
+https://git.kernel.org/powerpc/c/5473a6bf635d35d5c1d12d0e13
 
 cheers
