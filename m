@@ -1,22 +1,24 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.185])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrVT22y0czDrVR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 21:19:18 +1000 (AEST)
-Date: Fri, 15 Jul 2016 14:18:57 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: [patch] ibmvfc: prevent a potential deadlock
-Message-ID: <20160715111857.GC13153@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrW362S16zDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 21:45:22 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Aneesh Kumar K.V' <aneesh.kumar@linux.vnet.ibm.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH for-4.8 03/12] powerpc/mm: use _raw variant of page
+ table accessors
+Date: Fri, 15 Jul 2016 11:42:51 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4F8E51@AcuExch.aculab.com>
+References: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1468402531-4914-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1468402531-4914-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-My static checker complains that we need to unlock on this path.  Seems
-true.
-
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index fc523c3..ab67ec4 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -4722,6 +4722,8 @@ static void ibmvfc_rport_add_thread(struct work_struct *work)
- 					tgt_dbg(tgt, "Setting rport roles\n");
- 					fc_remote_port_rolechg(rport, tgt->ids.roles);
- 					put_device(&rport->dev);
-+				} else {
-+					spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 				}
- 
- 				kref_put(&tgt->kref, ibmvfc_release_tgt);
+RnJvbTogQW5lZXNoIEt1bWFyIEsuVg0KPiBTZW50OiAxMyBKdWx5IDIwMTYgMTA6MzUNCj4gDQo+
+IFRoaXMgc3dpdGNoIGZldyBvZiB0aGUgcGFnZSB0YWJsZSBhY2Nlc3NvciB0byB1c2UgdGhlIF9f
+cmF3IHZhcmlhbnQNCj4gYW5kIGRvZXMgdGhlIGNwdSB0byBiaWcgZW5kaWFuIGNvbnZlcnNpb24g
+b2YgY29uc3RhbnRzLiBUaGlzIGhlbHBzIGluDQo+IGdlbmVyYXRpbmcgYmV0dGVyIGNvZGUuDQoN
+Ckl0IG1pZ2h0IGJlIGJldHRlciB0byBzYXkgdGhhdCBjaGVja3MgZm9yIGEgdmFsdWUgYmVpbmcg
+MCBkb24ndCBkZXBlbmQNCm9uIHRoZSBlbmRpYW5uZXNzLg0KDQpJbiB3aGljaCBjYXNlIHlvdSB3
+YW50IGEgZnVuY3Rpb24gdGhhdCByZXR1cm4gISF4eHhfcmF3KCkgaXRzZWxmLg0KDQpPVE9IIGl0
+IG1pZ2h0IGJlIHdvcnRoIGZpbmRpbmcgb3V0IHdoeSB0aGUgY3B1J3MgYnl0ZXN3YXBwaW5nIG1l
+bW9yeQ0KYWNjZXNzb3JzIGFyZW4ndCB1c2VkIC0gd2hpY2ggbWlnaHQgc2F2ZSB0aGUgYnl0ZXN3
+YXAgaW5zdHJ1Y3Rpb24NCnNlcXVlbmNlIGluIGFsbCBwYXRocy4NCg0KCURhdmlkDQoNCg==
