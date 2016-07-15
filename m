@@ -1,51 +1,28 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
+ [IPv6:2607:f8b0:400e:c03::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrFjh5rSXzDqyT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 11:44:24 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6F1dKhZ137334
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:44:23 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 246k20w1ca-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:44:22 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 14 Jul 2016 22:44:20 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 8B2771DC0070
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:44:09 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6F1iHFr12386598
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:44:17 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6F1iGKK009423
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 22:44:17 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>, Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
- Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org,
- bhe@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Date: Thu, 14 Jul 2016 22:44:14 -0300
-In-Reply-To: <4321972.HZgDox36RC@wuerfel>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <1678419.ODVtyXKVYJ@hactar> <4321972.HZgDox36RC@wuerfel>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrFn26HsTzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 11:47:18 +1000 (AEST)
+Received: by mail-pa0-x243.google.com with SMTP id hh10so5366670pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 18:47:18 -0700 (PDT)
+Subject: Re: [PATCH kernel] powerpc/mm/iommu: Put pages on process exit
+To: Balbir Singh <bsingharora@gmail.com>
+References: <1468473379-36602-1-git-send-email-aik@ozlabs.ru>
+ <CAKTCnzkff8GDP3ZZOEETkVC4sYEnrN6z0B2aLvc3mbF-UViJKg@mail.gmail.com>
+ <1af23846-c25c-6791-9224-82a4b1cfb496@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Gibson <david@gibson.dropbear.id.au>, npiggin@gmail.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <29d147e5-298c-b21c-6e16-f2462528a8c6@ozlabs.ru>
+Date: Fri, 15 Jul 2016 11:47:10 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <3520758.yAgMzqF1PF@hactar>
+In-Reply-To: <1af23846-c25c-6791-9224-82a4b1cfb496@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,71 +32,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Donnerstag, 14 Juli 2016, 10:29:11 schrieb Arnd Bergmann:
-> On Wednesday, July 13, 2016 11:18:04 PM CEST Thiago Jung Bauermann wrote:
-> > Am Mittwoch, 13 Juli 2016, 21:59:18 schrieb Arnd Bergmann:
-> > > On Wednesday, July 13, 2016 3:45:41 PM CEST Thiago Jung Bauermann 
-wrote:
-> > > > Am Mittwoch, 13 Juli 2016, 15:13:42 schrieb Arnd Bergmann:
-> > > > 
-> > > > For secure boot, Petitboot needs to use kexec_file_load, because of
-> > > > the
-> > > > following two features which the system call enables:
-> > > > 
-> > > > 1. only allow loading of signed kernels.
-> > > > 2. "measure" (i.e., record the hashes of) the kernel, initrd, kernel
-> > > > 
-> > > >    command line and other boot inputs for the Integrity Measurement
-> > > >    Architecture subsystem.
-> > > > 
-> > > > Those can't be done with kexec_load.
-> > > 
-> > > Can't petitboot do both of these in user space?
-> > 
-> > To be honest I'm not sure if it *can't* be done from userspace but if
-> > you do it from the kernel you can guarantee that any kernel image that
-> > is loaded gets verified and measured.
-> > 
-> > Whereas if you verify and measure the kernel in userspace then if
-> > there's a vulnerability in the system which allows an attacker to
-> > upload their own binary, then they can use kexec_load directly and
-> > bypass the verification and measurement.
-> > 
-> > So it's a more resilient design.
+On 14/07/16 21:52, Alexey Kardashevskiy wrote:
+> On 14/07/16 20:12, Balbir Singh wrote:
+>> On Thu, Jul 14, 2016 at 3:16 PM, Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>> At the moment VFIO IOMMU SPAPR v2 driver pins all guest RAM pages when
+>>> the userspace starts using VFIO. When the userspace process finishes,
+>>> all the pinned pages need to be put; this is done as a part of
+>>> the userspace memory context (MM) destruction which happens on
+>>> the very last mmdrop().
+>>>
+>>> This approach has a problem that a MM of the userspace process
+>>> may live longer than the userspace process itself as kernel threads
+>>> usually execute on a MM of a userspace process which was runnning
+>>> on a CPU where the kernel thread was scheduled to. If this happened,
+>>> the MM remains referenced until this exact kernel thread wakes up again
+>>> and releases the very last reference to the MM, on an idle system this
+>>> can take even hours.
+>>>
+>>> This fixes the issue by moving mm_iommu_cleanup() (the helper which puts
+>>> pages) from destroy_context() (called on the last mmdrop()) to
+>>> the arch-specific arch_exit_mmap() hook (called on the last mmput()).
+>>> mmdrop() decrements the mm->mm_count which is a total reference number;
+>>> mmput() decrements the mm->mm_users which is a number of user spaces and
+>>> this is actually the counter we want to watch for here.
+>>>
+>>> Cc: David Gibson <david@gibson.dropbear.id.au>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Cc: Balbir Singh <bsingharora@gmail.com>
+>>> Cc: Nick Piggin <npiggin@kernel.dk>
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> ---
+>>>  arch/powerpc/include/asm/mmu_context.h | 3 +++
+>>>  arch/powerpc/mm/mmu_context_book3s64.c | 4 ----
+>>>  2 files changed, 3 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+>>> index 9d2cd0c..24b590d 100644
+>>> --- a/arch/powerpc/include/asm/mmu_context.h
+>>> +++ b/arch/powerpc/include/asm/mmu_context.h
+>>> @@ -138,6 +138,9 @@ static inline void arch_dup_mmap(struct mm_struct *oldmm,
+>>>
+>>>  static inline void arch_exit_mmap(struct mm_struct *mm)
+>>>  {
+>>> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+>>> +       mm_iommu_cleanup(&mm->context);
+>>> +#endif
+>>>  }
+>>>
+>>
+>> The assumption is that all necessary tear down has happened. Earlier
+>> we were doing the teardown
+>> on the last mm ref drop, do we have any dependence on that? I don't
+>> think so, but just checking
+>>
+>> Does qemu dotce_iommu_register_pages on exit()/atexit() or do we rely
+>> on the exit path to do the teardown?
 > 
-> Right, but the question remains whether this helps while you allow the
-> boot loader to modify the dtb. If an attacker gets in and cannot modify
-> the kernel or initid but can modify the DT, a successful attack would
-> be a bit harder than having a modified kernel, but you may still need
-> to treat the system as compromised.
+> QEMU does call unregister when a memory region is deleted. Handling it in
+> arch_exit_mmap() is for the case when a QEMU process just dies for whatever
+> reason.
 
-Yes, and the same question also remains regarding the kernel command line.
+After a second thought the patch is not correct, before it would actually
+put pages when all references to MM were dropped and many of them are hold
+by file descriptors, with this patch, pages are put before files are closed
+which means that devices will not be reset and doing DMA to memory which is
+not pinned but there are TCEs pointign to it.
 
-We can have the kernel perform sanity checks on the device tree, just as the 
-kernel needs to sanity check the command line.
+I will make another patch, with additional mmget()/mmput().
 
-There's the point that was raised about not wanting to increase the attack 
-surface, and that's a valid point. But at least in the way Petitboot works 
-today, it needs to modify the device tree and pass it to the kernel.
 
-One thing that is unavoidable to come from userspace is 
-/chosen/linux,stdout-path, because it's Petitboot that knows from which 
-console the user is interacting with. The other modification to set 
-properties in vga@0 can be done in the kernel.
 
-Given that on DTB-based systems /chosen is an important and established way 
-to pass information to the operating system being booted, I'd like to 
-suggest the following, then:
-
-Extend the syscall as shown in this RFC from Takahiro AKASHI, but instead of 
-accepting a complete DTB from userspace, the syscall would accept a DTB 
-containing only a /chosen node. If the DTB contains any other node, the 
-syscall fails with EINVAL. The kernel can then add the properties in /chosen 
-to the device tree that it will pass to the next kernel.
-
-What do you think?
+>> Can we please remove the #ifdef CONFIG_SPAPR_TCE_IOMMU here and have a version
+>> of mm_iommu_cleanup that handles it
+> 
+> 
+> That would be a change unrelated to the fix. And I just do not see the
+> point in this - mm_iommu_cleanup() is declared in the very same header.
+> 
+> 
+>> Basically do
+>>
+>> #ifdef CONFIG_SPAPR_TCE_IOMMU
+>> extern void mm_iommu_cleanup(void *ptr)
+>> #else
+>> static inline mm_iommu_cleanup(void *ptr) {}
+>> #endif
+>>
+>> Otherwise looks good
+>>
+>> Acked-by: Balbir Singh <bsingharora@gmail.com>
+> 
+> Thanks!
+> 
+> 
+	
 
 -- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Alexey
