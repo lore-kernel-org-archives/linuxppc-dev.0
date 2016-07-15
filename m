@@ -1,23 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hzpeterchen@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrLsl0DtqzDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 15:36:43 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joe Perches <joe@perches.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powernv: Use __printf in pe_level_printk
-In-Reply-To: <1468558752.8745.52.camel@perches.com>
-References: <b204dbb1d8d13998eb8dee4dabbc91a0ee4b38b4.1468511136.git.joe@perches.com>
- <87eg6vbjr2.fsf@@concordia.ellerman.id.au>
- <1468558752.8745.52.camel@perches.com>
-Date: Fri, 15 Jul 2016 15:36:42 +1000
-Message-ID: <878tx3bgyd.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrNKS6mLpzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 16:42:20 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id t190so5875091pfb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 23:42:20 -0700 (PDT)
+Date: Fri, 15 Jul 2016 14:34:29 +0800
+From: Peter Chen <hzpeterchen@gmail.com>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Li Yang <leoli@freescale.com>, Xie Xiaobo <X.Xie@freescale.com>,
+ Felipe Balbi <balbi@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [patch] usb: gadget: fsl_qe_udc: off by one in
+ setup_received_handle()
+Message-ID: <20160715063429.GD817@shlinux2>
+References: <20160713101433.GI29468@mwanda>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160713101433.GI29468@mwanda>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joe Perches <joe@perches.com> writes:
+On Wed, Jul 13, 2016 at 01:14:33PM +0300, Dan Carpenter wrote:
+> The udc->eps[] array has USB_MAX_ENDPOINTS elements so > should be >=.
+> 
+> Fixes: 3948f0e0c999 ('usb: add Freescale QE/CPM USB peripheral controller driver')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+> index 93d28cb..cf8819a 100644
+> --- a/drivers/usb/gadget/udc/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+> @@ -2053,7 +2053,7 @@ static void setup_received_handle(struct qe_udc *udc,
+>  			struct qe_ep *ep;
+>  
+>  			if (wValue != 0 || wLength != 0
+> -				|| pipe > USB_MAX_ENDPOINTS)
+> +				|| pipe >= USB_MAX_ENDPOINTS)
+>  				break;
+>  			ep = &udc->eps[pipe];
+>  
 
-> On Fri, 2016-07-15 at 14:36 +1000, Michael Ellerman wrote:
->> Joe Perches <joe@perches.com> writes:
->> >=20
->> > diff --git a/arch/powerpc/platforms/powernv/pci.h
->> > b/arch/powerpc/platforms/powernv/pci.h
->> > index 3a97990..1c1a586 100644
->> > --- a/arch/powerpc/platforms/powernv/pci.h
->> > +++ b/arch/powerpc/platforms/powernv/pci.h
->> > @@ -213,6 +213,7 @@ extern void pnv_pci_dma_bus_setup(struct pci_bus
->> > *bus);
->> > =C2=A0extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int
->> > type);
->> > =C2=A0extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
->> > =C2=A0
->> > +__printf(3, 4)
->> > =C2=A0extern void pe_level_printk(const struct pnv_ioda_pe *pe, const
->> > char *level,
->> > =C2=A0			=C2=A0=C2=A0=C2=A0=C2=A0const char *fmt, ...);
->> Thanks, but it breaks the build due to lots of new warnings.
->>=20
->> We'll have to fix those before merging it.
->
-> Good. =C2=A0Are you going to fix those?
+Acked-by: Peter Chen <peter.chen@nxp.com>
 
-Not this month.
+-- 
 
-> I thought I did a powerpc defconfig build of arch/powerpc/
-> and I believe it finished without error, but I'm pleased
-> it found some defects.
-
-Hmm, I'd be surprised, but it might depend on the exact config /
-compiler etc.
-
-> I think it's now marked "rejected" in patchwork.
-> Perhaps it'd better to mark it "deferred" instead.
-
-I can do that. Though realistically I'm unlikely to go back and find it.
-
-cheers
+Best Regards,
+Peter Chen
