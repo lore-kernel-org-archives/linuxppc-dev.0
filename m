@@ -1,33 +1,49 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
+ [IPv6:2a00:1450:400c:c09::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrhzn5XZnzDr0N
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 05:13:09 +1000 (AEST)
-Message-ID: <1468609977.25630.5.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, Yangbo Lu
- <yangbo.lu@nxp.com>
-Cc: linux-mmc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree@vger.kernel.org, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, LKML
- <linux-kernel@vger.kernel.org>,  linux-clk@vger.kernel.org,
- linux-i2c@vger.kernel.org,  iommu@lists.linux-foundation.org, netdev
- <netdev@vger.kernel.org>,  ulf.hansson@linaro.org, Mark Rutland
- <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Russell King
- <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>, Joerg Roedel
- <joro@8bytes.org>, Claudiu Manoil <claudiu.manoil@freescale.com>, Bhupesh
- Sharma <bhupesh.sharma@freescale.com>,  Qiang Zhao <qiang.zhao@nxp.com>,
- Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- leoyang.li@nxp.com, xiaobo.xie@nxp.com
-Date: Fri, 15 Jul 2016 14:12:57 -0500
-In-Reply-To: <CAP=VYLqsV_M=8CM47k4kzdULCp_y0yP9t8Sq9=jFp6W593QJgw@mail.gmail.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <1462417950-46796-4-git-send-email-yangbo.lu@nxp.com>
- <CAP=VYLqsV_M=8CM47k4kzdULCp_y0yP9t8Sq9=jFp6W593QJgw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [v10, 3/7] soc: fsl: add GUTS driver for QorIQ platforms
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrj1K0P0nzDr5C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 05:14:29 +1000 (AEST)
+Received: by mail-wm0-x233.google.com with SMTP id f65so36734907wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 12:14:28 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <1468609254.32683.34.camel@gmail.com>
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-3-git-send-email-keescook@chromium.org>
+ <20160714232019.GA28254@350D>
+ <CAGXu5jKzD_rCMNJQU1bB5KDfKTsb+AaidZwe=FAfGMqt_FkfqQ@mail.gmail.com>
+ <1468609254.32683.34.camel@gmail.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Fri, 15 Jul 2016 12:14:23 -0700
+Message-ID: <CAGXu5jLiD1xEb=dDuf+_2JVzmkH_6O5-m=p=AVvi7qgQ+SV4UA@mail.gmail.com>
+Subject: Re: [kernel-hardening] Re: [PATCH v2 02/11] mm: Hardened usercopy
+To: "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,118 +53,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-07-15 at 12:43 -0400, Paul Gortmaker wrote:
-> On Wed, May 4, 2016 at 11:12 PM, Yangbo Lu <yangbo.lu@nxp.com> wrote:
-> > 
-> > The global utilities block controls power management, I/O device
-> > enabling, power-onreset(POR) configuration monitoring, alternate
-> > function selection for multiplexed signals,and clock control.
-> > 
-> > This patch adds GUTS driver to manage and access global utilities
-> > block.
-> > 
-> > Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-> > Acked-by: Scott Wood <oss@buserror.net>
-> > ---
-> > Changes for v4:
-> >         - Added this patch
-> > Changes for v5:
-> >         - Modified copyright info
-> >         - Changed MODULE_LICENSE to GPL
-> >         - Changed EXPORT_SYMBOL_GPL to EXPORT_SYMBOL
-> >         - Made FSL_GUTS user-invisible
-> >         - Added a complete compatible list for GUTS
-> >         - Stored guts info in file-scope variable
-> >         - Added mfspr() getting SVR
-> >         - Redefined GUTS APIs
-> >         - Called fsl_guts_init rather than using platform driver
-> >         - Removed useless parentheses
-> >         - Removed useless 'extern' key words
-> > Changes for v6:
-> >         - Made guts thread safe in fsl_guts_init
-> > Changes for v7:
-> >         - Removed 'ifdef' for function declaration in guts.h
-> > Changes for v8:
-> >         - Fixes lines longer than 80 characters checkpatch issue
-> >         - Added 'Acked-by: Scott Wood'
-> > Changes for v9:
-> >         - None
-> > Changes for v10:
-> >         - None
-> > ---
-> >  drivers/soc/Kconfig      |   2 +-
-> >  drivers/soc/fsl/Kconfig  |   8 +++
-> >  drivers/soc/fsl/Makefile |   1 +
-> >  drivers/soc/fsl/guts.c   | 119
-> > ++++++++++++++++++++++++++++++++++++++++++++
-> >  include/linux/fsl/guts.h | 126 +++++++++++++++++++++++++++++-------------
-> > -----
-> >  5 files changed, 207 insertions(+), 49 deletions(-)
-> >  create mode 100644 drivers/soc/fsl/Kconfig
-> >  create mode 100644 drivers/soc/fsl/guts.c
-> > 
-> > diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-> > index cb58ef0..7106463 100644
-> > --- a/drivers/soc/Kconfig
-> > +++ b/drivers/soc/Kconfig
-> > @@ -2,7 +2,7 @@ menu "SOC (System On Chip) specific Drivers"
-> > 
-> >  source "drivers/soc/bcm/Kconfig"
-> >  source "drivers/soc/brcmstb/Kconfig"
-> > -source "drivers/soc/fsl/qe/Kconfig"
-> > +source "drivers/soc/fsl/Kconfig"
-> >  source "drivers/soc/mediatek/Kconfig"
-> >  source "drivers/soc/qcom/Kconfig"
-> >  source "drivers/soc/rockchip/Kconfig"
-> > diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
-> > new file mode 100644
-> > index 0000000..b313759
-> > --- /dev/null
-> > +++ b/drivers/soc/fsl/Kconfig
-> > @@ -0,0 +1,8 @@
-> > +#
-> > +# Freescale SOC drivers
-> > +#
-> > +
-> > +source "drivers/soc/fsl/qe/Kconfig"
-> > +
-> > +config FSL_GUTS
-> > +       bool
-> > diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-> > index 203307f..02afb7f 100644
-> > --- a/drivers/soc/fsl/Makefile
-> > +++ b/drivers/soc/fsl/Makefile
-> > @@ -4,3 +4,4 @@
-> > 
-> >  obj-$(CONFIG_QUICC_ENGINE)             += qe/
-> >  obj-$(CONFIG_CPM)                      += qe/
-> > +obj-$(CONFIG_FSL_GUTS)                 += guts.o
-> > diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> > new file mode 100644
-> > index 0000000..fa155e6
-> > --- /dev/null
-> > +++ b/drivers/soc/fsl/guts.c
-> > @@ -0,0 +1,119 @@
-> > +/*
-> > + * Freescale QorIQ Platforms GUTS Driver
-> > + *
-> > + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License as published by
-> > + * the Free Software Foundation; either version 2 of the License, or
-> > + * (at your option) any later version.
-> > + */
-> > +
-> > +#include <linux/io.h>
-> > +#include <linux/module.h>
-> Seems there was lots of discussion on this.  If it does end up being
-> resent, it would be nice to get the module.h and other modular stuff
-> gone since it is a bool Kconfig.
+On Fri, Jul 15, 2016 at 12:00 PM, Daniel Micay <danielmicay@gmail.com> wrote:
+>> This could be a BUG, but I'd rather not panic the entire kernel.
+>
+> It seems unlikely that it will panic without panic_on_oops and that's
+> an explicit opt-in to taking down the system on kernel logic errors
+> exactly like this. In grsecurity, it calls the kernel exploit handling
+> logic (panic if root, otherwise kill all process of that user and ban
+> them until reboot) but that same logic is also called for BUG via oops
+> handling so there's only really a distinction with panic_on_oops=1.
+>
+> Does it make sense to be less fatal for a fatal assertion that's more
+> likely to be security-related? Maybe you're worried about having some
+> false positives for the whitelisting portion, but I don't think those
+> will lurk around very long with the way this works.
 
-I plan to resend just the GUTS driver portion and send it through the PPC
-tree.
+I'd like it to dump stack and be fatal to the process involved, but
+yeah, I guess BUG() would work. Creating an infrastructure for
+handling security-related Oopses can be done separately from this (and
+I'd like to see that added, since it's a nice bit of configurable
+reactivity to possible attacks).
 
-I don't see any modular stuff in there besides the linux/module.h include.
+-Kees
 
--Scott
+-- 
+Kees Cook
+Chrome OS & Brillo Security
