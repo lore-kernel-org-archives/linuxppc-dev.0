@@ -1,49 +1,26 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x233.google.com (mail-wm0-x233.google.com
- [IPv6:2a00:1450:400c:c09::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <martin.petersen@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrj1K0P0nzDr5C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 05:14:29 +1000 (AEST)
-Received: by mail-wm0-x233.google.com with SMTP id f65so36734907wmi.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 12:14:28 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1468609254.32683.34.camel@gmail.com>
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-3-git-send-email-keescook@chromium.org>
- <20160714232019.GA28254@350D>
- <CAGXu5jKzD_rCMNJQU1bB5KDfKTsb+AaidZwe=FAfGMqt_FkfqQ@mail.gmail.com>
- <1468609254.32683.34.camel@gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Fri, 15 Jul 2016 12:14:23 -0700
-Message-ID: <CAGXu5jLiD1xEb=dDuf+_2JVzmkH_6O5-m=p=AVvi7qgQ+SV4UA@mail.gmail.com>
-Subject: Re: [kernel-hardening] Re: [PATCH v2 02/11] mm: Hardened usercopy
-To: "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
- Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
- PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrjCL1ncMzDr0N
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 05:23:10 +1000 (AEST)
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
- Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [patch] ibmvfc: prevent a potential deadlock
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+References: <20160715111857.GC13153@mwanda>
+Date: Fri, 15 Jul 2016 15:14:24 -0400
+In-Reply-To: <20160715111857.GC13153@mwanda> (Dan Carpenter's message of "Fri,
+ 15 Jul 2016 14:18:57 +0300")
+Message-ID: <yq1d1meiui7.fsf@sermon.lab.mkp.net>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,29 +30,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 15, 2016 at 12:00 PM, Daniel Micay <danielmicay@gmail.com> wrote:
->> This could be a BUG, but I'd rather not panic the entire kernel.
->
-> It seems unlikely that it will panic without panic_on_oops and that's
-> an explicit opt-in to taking down the system on kernel logic errors
-> exactly like this. In grsecurity, it calls the kernel exploit handling
-> logic (panic if root, otherwise kill all process of that user and ban
-> them until reboot) but that same logic is also called for BUG via oops
-> handling so there's only really a distinction with panic_on_oops=1.
->
-> Does it make sense to be less fatal for a fatal assertion that's more
-> likely to be security-related? Maybe you're worried about having some
-> false positives for the whitelisting portion, but I don't think those
-> will lurk around very long with the way this works.
+>>>>> "Dan" == Dan Carpenter <dan.carpenter@oracle.com> writes:
 
-I'd like it to dump stack and be fatal to the process involved, but
-yeah, I guess BUG() would work. Creating an infrastructure for
-handling security-related Oopses can be done separately from this (and
-I'd like to see that added, since it's a nice bit of configurable
-reactivity to possible attacks).
+Dan> My static checker complains that we need to unlock on this path.
+Dan> Seems true.
 
--Kees
+Applied to 4.8/scsi-queue.
 
 -- 
-Kees Cook
-Chrome OS & Brillo Security
+Martin K. Petersen	Oracle Linux Engineering
