@@ -1,47 +1,27 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPFJ3TygzDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:23:48 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6F7NXgA119982
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 03:23:45 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 246k0u4ke4-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 03:23:45 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 15 Jul 2016 17:23:42 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 53A4F2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:23:41 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6F7Nfdr18874376
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:23:41 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6F7Nevl018364
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:23:41 +1000
-Subject: Re: [bug report] cxl: Add guest-specific code
-To: Dan Carpenter <dan.carpenter@oracle.com>, clombard@linux.vnet.ibm.com
-References: <20160714215352.GA19749@mwanda>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 15 Jul 2016 17:23:39 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPRV3cR4zDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:32:37 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Samuel Mendoza-Jonas <sam@mendozajonas.com>,
+ Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org,
+ bhe@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Date: Fri, 15 Jul 2016 09:31:02 +0200
+Message-ID: <5547846.5l81k4b13o@wuerfel>
+In-Reply-To: <3520758.yAgMzqF1PF@hactar>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <4321972.HZgDox36RC@wuerfel> <3520758.yAgMzqF1PF@hactar>
 MIME-Version: 1.0
-In-Reply-To: <20160714215352.GA19749@mwanda>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <32ab2339-9d4f-dfb9-9095-4ea3d08c3503@au1.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,13 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15/07/16 07:53, Dan Carpenter wrote:
->    919          if (afu->crs_len < 0) {
->                     ^^^^^^^^^^^^^^^^
-> Remove this test.  Unsigned is never less than zero.
+On Thursday, July 14, 2016 10:44:14 PM CEST Thiago Jung Bauermann wrote:
+> Am Donnerstag, 14 Juli 2016, 10:29:11 schrieb Arnd Bergmann:
 
-Is there another lower bound that we should be checking against here?
+> > 
+> > Right, but the question remains whether this helps while you allow the
+> > boot loader to modify the dtb. If an attacker gets in and cannot modify
+> > the kernel or initid but can modify the DT, a successful attack would
+> > be a bit harder than having a modified kernel, but you may still need
+> > to treat the system as compromised.
+> 
+> Yes, and the same question also remains regarding the kernel command line.
+> 
+> We can have the kernel perform sanity checks on the device tree, just as the 
+> kernel needs to sanity check the command line.
+> 
+> There's the point that was raised about not wanting to increase the attack 
+> surface, and that's a valid point. But at least in the way Petitboot works 
+> today, it needs to modify the device tree and pass it to the kernel.
+> 
+> One thing that is unavoidable to come from userspace is 
+> /chosen/linux,stdout-path, because it's Petitboot that knows from which 
+> console the user is interacting with. The other modification to set 
+> properties in vga@0 can be done in the kernel.
+> 
+> Given that on DTB-based systems /chosen is an important and established way 
+> to pass information to the operating system being booted, I'd like to 
+> suggest the following, then:
+> 
+> Extend the syscall as shown in this RFC from Takahiro AKASHI, but instead of 
+> accepting a complete DTB from userspace, the syscall would accept a DTB 
+> containing only a /chosen node. If the DTB contains any other node, the 
+> syscall fails with EINVAL. The kernel can then add the properties in /chosen 
+> to the device tree that it will pass to the next kernel.
+> 
+> What do you think?
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+I think that helps, as it makes the problem space correspond to that
+of modifying the command line, but I can still come up with countless
+attacks based on modifications of the /chosen node and/or the command
+line, in fact it's probably easier than any other node.
+
+What methods to we have in place for command line changes today on
+other architectures?
+
+	Arnd
