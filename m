@@ -1,24 +1,21 @@
-Return-Path: <toiwoton@gmail.com>
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrYtP0S3RzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 23:53:01 +1000 (AEST)
-Received: by mail-wm0-x231.google.com with SMTP id q128so721517wma.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 06:53:00 -0700 (PDT)
-Subject: Re: [PATCH 00/14] Present useful limits to user (v2)
-To: Peter Zijlstra <peterz@infradead.org>
-References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
- <20160715124330.GR30154@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrZ341LRkzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 00:00:32 +1000 (AEST)
+Date: Fri, 15 Jul 2016 15:59:56 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Topi Miettinen <toiwoton@gmail.com>
 Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Alexander Graf <agraf@suse.com>, Paolo Bonzini <pbonzini@redhat.com>,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Radim Kr??m???? <rkrcmar@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
  "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
  Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
  Hal Rosenstock <hal.rosenstock@gmail.com>,
@@ -38,9 +35,10 @@ Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  "David S. Miller" <davem@davemloft.net>,
  Nicolas Dichtel <nicolas.dichtel@6wind.com>,
  Andrew Morton <akpm@linux-foundation.org>,
- Konstantin Khlebnikov <koct9i@gmail.com>, Jiri Slaby <jslaby@suse.cz>,
- Cyrill Gorcunov <gorcunov@openvz.org>, Michal Hocko <mhocko@suse.com>,
- Vlastimil Babka <vbabka@suse.cz>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Konstantin Khlebnikov <koct9i@gmail.com>,
+ Jiri Slaby <jslaby@suse.cz>, Cyrill Gorcunov <gorcunov@openvz.org>,
+ Michal Hocko <mhocko@suse.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Dan Carpenter <dan.carpenter@oracle.com>,
  Michael Kerrisk <mtk.manpages@gmail.com>,
@@ -49,22 +47,23 @@ Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  Vladimir Davydov <vdavydov@virtuozzo.com>, Joe Perches <joe@perches.com>,
  Frederic Weisbecker <fweisbec@gmail.com>,
  Andrea Arcangeli <aarcange@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen
- <ak@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Andi Kleen <ak@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>,
  Stas Sergeev <stsp@list.ru>, Amanieu d'Antras <amanieu@gmail.com>,
- Richard Weinberger <richard@nod.at>, Wang Xiaoqiang <wangxq10@lzu.edu.cn>,
- Helge Deller <deller@gmx.de>, Mateusz Guzik <mguzik@redhat.com>,
+ Richard Weinberger <richard@nod.at>,
+ Wang Xiaoqiang <wangxq10@lzu.edu.cn>, Helge Deller <deller@gmx.de>,
+ Mateusz Guzik <mguzik@redhat.com>,
  Alex Thorlton <athorlton@sgi.com>, Ben Segall <bsegall@google.com>,
- John Stultz <john.stultz@linaro.org>, Rik van Riel <riel@redhat.com>,
- Eric B Munson <emunson@akamai.com>, Alexey Klimov <klimov.linux@gmail.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Rik van Riel <riel@redhat.com>, Eric B Munson <emunson@akamai.com>,
+ Alexey Klimov <klimov.linux@gmail.com>,
  Chen Gang <gang.chen.5i5j@gmail.com>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
  Alexander Kuleshov <kuleshovmail@gmail.com>,
  "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
  "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
- "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC"
- <kvm-ppc@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC" <kvm-ppc@vger.kernel.org>,
  "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
  "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
  <linuxppc-dev@lists.ozlabs.org>,
@@ -74,12 +73,14 @@ Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  "open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,
  "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
  "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
-From: Topi Miettinen <toiwoton@gmail.com>
-Message-ID: <28b4b919-4f50-d9f6-c5e1-d1e92ea1ba1c@gmail.com>
-Date: Fri, 15 Jul 2016 13:52:48 +0000
+Subject: Re: [PATCH 00/14] Present useful limits to user (v2)
+Message-ID: <20160715135956.GA3115@twins.programming.kicks-ass.net>
+References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
+ <20160715124330.GR30154@twins.programming.kicks-ass.net>
+ <28b4b919-4f50-d9f6-c5e1-d1e92ea1ba1c@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20160715124330.GR30154@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <28b4b919-4f50-d9f6-c5e1-d1e92ea1ba1c@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -89,22 +90,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/16 12:43, Peter Zijlstra wrote:
-> On Fri, Jul 15, 2016 at 01:35:47PM +0300, Topi Miettinen wrote:
->> Hello,
->>
->> There are many basic ways to control processes, including capabilities,
->> cgroups and resource limits. However, there are far fewer ways to find out
->> useful values for the limits, except blind trial and error.
->>
->> This patch series attempts to fix that by giving at least a nice starting
->> point from the highwater mark values of the resources in question.
->> I looked where each limit is checked and added a call to update the mark
->> nearby.
+On Fri, Jul 15, 2016 at 01:52:48PM +0000, Topi Miettinen wrote:
+> On 07/15/16 12:43, Peter Zijlstra wrote:
+> > On Fri, Jul 15, 2016 at 01:35:47PM +0300, Topi Miettinen wrote:
+> >> Hello,
+> >>
+> >> There are many basic ways to control processes, including capabilities,
+> >> cgroups and resource limits. However, there are far fewer ways to find out
+> >> useful values for the limits, except blind trial and error.
+> >>
+> >> This patch series attempts to fix that by giving at least a nice starting
+> >> point from the highwater mark values of the resources in question.
+> >> I looked where each limit is checked and added a call to update the mark
+> >> nearby.
+> > 
+> > And how is that useful? Setting things to the high watermark is
+> > basically the same as not setting the limit at all.
 > 
-> And how is that useful? Setting things to the high watermark is
-> basically the same as not setting the limit at all.
+> What else would you use, too small limits?
 
-What else would you use, too small limits?
+That question doesn't make sense.
 
--Topi
+What's the point of setting a limit if it ends up being the same as
+no-limit (aka unlimited).
+
+If you cannot explain; and you have not so far; what use these values
+are, why would we look at the patches.
