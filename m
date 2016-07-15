@@ -1,12 +1,14 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrXLk4cZdzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 22:43:58 +1000 (AEST)
-Date: Fri, 15 Jul 2016 14:43:30 +0200
-From: Peter Zijlstra <peterz@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrXpr2MSrzDr29
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 23:04:52 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id q2so6077429pap.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 06:04:52 -0700 (PDT)
+Date: Fri, 15 Jul 2016 23:04:58 +1000
+From: Balbir Singh <bsingharora@gmail.com>
 To: Topi Miettinen <toiwoton@gmail.com>
 Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
@@ -27,7 +29,7 @@ Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  Alex Williamson <alex.williamson@redhat.com>,
  Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>,
  Li Zefan <lizefan@huawei.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Alexei Starovoitov <ast@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Alexei Starovoitov <ast@kernel.org>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  Alexander Shishkin <alexander.shishkin@linux.intel.com>,
  Balbir Singh <bsingharora@gmail.com>,
@@ -74,7 +76,8 @@ Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
  "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
  "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
 Subject: Re: [PATCH 00/14] Present useful limits to user (v2)
-Message-ID: <20160715124330.GR30154@twins.programming.kicks-ass.net>
+Message-ID: <20160715130458.GB21685@350D>
+Reply-To: bsingharora@gmail.com
 References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -99,6 +102,51 @@ On Fri, Jul 15, 2016 at 01:35:47PM +0300, Topi Miettinen wrote:
 > point from the highwater mark values of the resources in question.
 > I looked where each limit is checked and added a call to update the mark
 > nearby.
+> 
+> Example run of program from Documentation/accounting/getdelauys.c:
+> 
+> ./getdelays -R -p `pidof smartd`
+> printing resource accounting
+> RLIMIT_CPU=0
+> RLIMIT_FSIZE=0
+> RLIMIT_DATA=18198528
+> RLIMIT_STACK=135168
+> RLIMIT_CORE=0
+> RLIMIT_RSS=0
+> RLIMIT_NPROC=1
+> RLIMIT_NOFILE=55
+> RLIMIT_MEMLOCK=0
+> RLIMIT_AS=130879488
+> RLIMIT_LOCKS=0
+> RLIMIT_SIGPENDING=0
+> RLIMIT_MSGQUEUE=0
+> RLIMIT_NICE=0
+> RLIMIT_RTPRIO=0
+> RLIMIT_RTTIME=0
+> 
+> ./getdelays -R -C /sys/fs/cgroup/systemd/system.slice/smartd.service/
+> printing resource accounting
+> sleeping 1, blocked 0, running 0, stopped 0, uninterruptible 0
+> RLIMIT_CPU=0
+> RLIMIT_FSIZE=0
+> RLIMIT_DATA=18198528
+> RLIMIT_STACK=135168
+> RLIMIT_CORE=0
+> RLIMIT_RSS=0
+> RLIMIT_NPROC=1
+> RLIMIT_NOFILE=55
+> RLIMIT_MEMLOCK=0
+> RLIMIT_AS=130879488
+> RLIMIT_LOCKS=0
+> RLIMIT_SIGPENDING=0
+> RLIMIT_MSGQUEUE=0
+> RLIMIT_NICE=0
+> RLIMIT_RTPRIO=0
+> RLIMIT_RTTIME=0
 
-And how is that useful? Setting things to the high watermark is
-basically the same as not setting the limit at all.
+Does this mean that rlimit_data and rlimit_stack should be set to the
+values as specified by the data above?
+
+Do we expect a smart user space daemon to then tweak the RLIMIT values?
+
+Balbir Singh.
