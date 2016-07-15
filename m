@@ -2,15 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvV14y5zDqyg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvV6pGDzDqyg
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:42 +1000 (AEST)
-In-Reply-To: <1468284892-27765-5-git-send-email-dja@axtens.net>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1459762201-183136-1-git-send-email-anna-maria@linutronix.de>
+To: Anna-Maria Gleixner <anna-maria@linutronix.de>,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: arnd@arndb.de, Daniel Axtens <dja@axtens.net>
-Subject: Re: [v2,5/5] powerpc/sparse: Make ppc_md.{halt, restart} __noreturn
-Message-Id: <3rrTvT4QDSz9s3v@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:41 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Anna-Maria Gleixner <anna-maria@linutronix.de>, rt@linutronix.de
+Subject: Re: powerpc/pmac/smp: Add missing FROZEN hotplug notifier transitions
+Message-Id: <3rrTvV41TWz9sC4@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,18 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-12-07 at 00:54:52 UTC, Daniel Axtens wrote:
-> PowerNV marks it's halt and restart calls as __noreturn. However,
-> ppc_md does not have this annotation. Add the annotation to ppc_md,
-> and then to every halt/restart function that is missing it.
+On Mon, 2016-04-04 at 09:30:01 UTC, Anna-Maria Gleixner wrote:
+> The FROZEN transitions are used when a CPU suspends/resumes. In case
+> of a suspend/resume, only the up prepare (CPU_UP_PREPARE_FROZEN) is
+> handled. The error handling transition CPU_UP_CANCELED_FROZEN as well
+> as the CPU_ONLINE_FROZEN transition are not handled.
 > 
-> Additionally, I have verified that all of these functions do not
-> return. Occasionally I have added a spin loop to be sure.
+> Masking the switch case action argument with ~CPU_TASKS_FROZEN, to
+> handle all FROZEN tasks the same way than the corresponding non frozen
+> tasks.
 > 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/95ec77c06e8e63fff50c497eca
+https://git.kernel.org/powerpc/c/c011926fcbeb9565599f278148
 
 cheers
