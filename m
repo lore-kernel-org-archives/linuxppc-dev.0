@@ -1,36 +1,84 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrpcr4X95zDr13
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 09:27:07 +1000 (AEST)
-Date: Fri, 15 Jul 2016 18:39:33 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Scott Wood <oss@buserror.net>
-CC: Yangbo Lu <yangbo.lu@nxp.com>, <linux-mmc@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- LKML <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
- <linux-i2c@vger.kernel.org>, <iommu@lists.linux-foundation.org>,
- netdev <netdev@vger.kernel.org>, <ulf.hansson@linaro.org>,
- Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
- Russell King <linux@arm.linux.org.uk>, Jochen Friedrich
- <jochen@scram.de>, Joerg Roedel <joro@8bytes.org>, Claudiu Manoil
- <claudiu.manoil@freescale.com>, Bhupesh Sharma
- <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>, Kumar Gala
- <galak@codeaurora.org>,
- Santosh Shilimkar <ssantosh@kernel.org>, <leoyang.li@nxp.com>,
- <xiaobo.xie@nxp.com>
-Subject: Re: [v10, 3/7] soc: fsl: add GUTS driver for QorIQ platforms
-Message-ID: <20160715223932.GC10758@windriver.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <1462417950-46796-4-git-send-email-yangbo.lu@nxp.com>
- <CAP=VYLqsV_M=8CM47k4kzdULCp_y0yP9t8Sq9=jFp6W593QJgw@mail.gmail.com>
- <1468609977.25630.5.camel@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrXLk4cZdzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 22:43:58 +1000 (AEST)
+Date: Fri, 15 Jul 2016 14:43:30 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Topi Miettinen <toiwoton@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Alexander Graf <agraf@suse.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>,
+ Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Christian Benvenuti <benve@cisco.com>, Dave Goodell <dgoodell@cisco.com>,
+ Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>,
+ Li Zefan <lizefan@huawei.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ "David S. Miller" <davem@davemloft.net>,
+ Nicolas Dichtel <nicolas.dichtel@6wind.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Konstantin Khlebnikov <koct9i@gmail.com>,
+ Jiri Slaby <jslaby@suse.cz>, Cyrill Gorcunov <gorcunov@openvz.org>,
+ Michal Hocko <mhocko@suse.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Marcus Gelderie <redmnic@gmail.com>,
+ Vladimir Davydov <vdavydov@virtuozzo.com>, Joe Perches <joe@perches.com>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Andi Kleen <ak@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>,
+ Stas Sergeev <stsp@list.ru>, Amanieu d'Antras <amanieu@gmail.com>,
+ Richard Weinberger <richard@nod.at>,
+ Wang Xiaoqiang <wangxq10@lzu.edu.cn>, Helge Deller <deller@gmx.de>,
+ Mateusz Guzik <mguzik@redhat.com>,
+ Alex Thorlton <athorlton@sgi.com>, Ben Segall <bsegall@google.com>,
+ John Stultz <john.stultz@linaro.org>,
+ Rik van Riel <riel@redhat.com>, Eric B Munson <emunson@akamai.com>,
+ Alexey Klimov <klimov.linux@gmail.com>,
+ Chen Gang <gang.chen.5i5j@gmail.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
+ Alexander Kuleshov <kuleshovmail@gmail.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC" <kvm-ppc@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,
+ "open list:FILESYSTEMS (VFS and infrastructure)"
+ <linux-fsdevel@vger.kernel.org>,
+ "open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,
+ "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
+Subject: Re: [PATCH 00/14] Present useful limits to user (v2)
+Message-ID: <20160715124330.GR30154@twins.programming.kicks-ass.net>
+References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-In-Reply-To: <1468609977.25630.5.camel@buserror.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,62 +88,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Re: [v10, 3/7] soc: fsl: add GUTS driver for QorIQ platforms] On 15/07/2016 (Fri 14:12) Scott Wood wrote:
-
-> On Fri, 2016-07-15 at 12:43 -0400, Paul Gortmaker wrote:
-> > > +source "drivers/soc/fsl/qe/Kconfig"
-
-[...]
-
-> > > +
-> > > +config FSL_GUTS
-> > > +       bool
-> > > diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-> > > index 203307f..02afb7f 100644
-> > > --- a/drivers/soc/fsl/Makefile
-> > > +++ b/drivers/soc/fsl/Makefile
-> > > @@ -4,3 +4,4 @@
-> > > 
-> > >  obj-$(CONFIG_QUICC_ENGINE)             += qe/
-> > >  obj-$(CONFIG_CPM)                      += qe/
-> > > +obj-$(CONFIG_FSL_GUTS)                 += guts.o
-> > > diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> > > new file mode 100644
-> > > index 0000000..fa155e6
-> > > --- /dev/null
-> > > +++ b/drivers/soc/fsl/guts.c
-> > > @@ -0,0 +1,119 @@
-> > > +/*
-> > > + * Freescale QorIQ Platforms GUTS Driver
-> > > + *
-> > > + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> > > + *
-> > > + * This program is free software; you can redistribute it and/or modify
-> > > + * it under the terms of the GNU General Public License as published by
-> > > + * the Free Software Foundation; either version 2 of the License, or
-> > > + * (at your option) any later version.
-> > > + */
-> > > +
-> > > +#include <linux/io.h>
-> > > +#include <linux/module.h>
-> > Seems there was lots of discussion on this.  If it does end up being
-> > resent, it would be nice to get the module.h and other modular stuff
-> > gone since it is a bool Kconfig.
+On Fri, Jul 15, 2016 at 01:35:47PM +0300, Topi Miettinen wrote:
+> Hello,
 > 
-> I plan to resend just the GUTS driver portion and send it through the PPC
-> tree.
+> There are many basic ways to control processes, including capabilities,
+> cgroups and resource limits. However, there are far fewer ways to find out
+> useful values for the limits, except blind trial and error.
 > 
-> I don't see any modular stuff in there besides the linux/module.h include.
+> This patch series attempts to fix that by giving at least a nice starting
+> point from the highwater mark values of the resources in question.
+> I looked where each limit is checked and added a call to update the mark
+> nearby.
 
-Great.  Normally I'm seeing the MODULE_DEVICE_TABLE and MODULE_AUTHOR
-and MODULE_LICENSE etc, so it has (unfortunately) become a knee jerk
-reaction to assume the latter follows a module.h presence...  thanks for
-removing the extraneous include.
-
-Paul.
---
-
-> 
-> -Scott
-> 
-> 
+And how is that useful? Setting things to the high watermark is
+basically the same as not setting the limit at all.
