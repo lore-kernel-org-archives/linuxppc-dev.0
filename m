@@ -1,33 +1,55 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrWjP2ZF6zDqyT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 22:15:05 +1000 (AEST)
-Date: Fri, 15 Jul 2016 22:14:09 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Anna-Maria Gleixner <anna-maria@linutronix.de>, LKML
- <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Thomas Gleixner <tglx@linutronix.de>, rt@linutronix.de, Sebastian Andrzej
- Siewior <bigeasy@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bharata B Rao
- <bharata@linux.vnet.ibm.com>, Christophe Jaillet
- <christophe.jaillet@wanadoo.fr>, Linus Torvalds
- <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [patch V2 30/67] powerpc/numa: Convert to hotplug state machine
-Message-ID: <20160715221409.31804800@kryten>
-In-Reply-To: <20160715084324.GB1056@gmail.com>
-References: <20160713153219.128052238@linutronix.de>
- <20160713153335.369278769@linutronix.de>
- <20160715074257.7801cd00@kryten>
- <9e878731c9b447ee5e8318237822c492@www.linutronix.de>
- <20160715102825.34d60395@kryten> <20160715084324.GB1056@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrXbS1tWqzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 22:55:00 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id t190so6294458pfb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 05:55:00 -0700 (PDT)
+Date: Fri, 15 Jul 2016 22:55:19 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Kees Cook <keescook@chromium.org>
+Cc: Balbir Singh <bsingharora@gmail.com>, Rik van Riel <riel@redhat.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Subject: Re: [PATCH v2 02/11] mm: Hardened usercopy
+Message-ID: <20160715125519.GA21685@350D>
+Reply-To: bsingharora@gmail.com
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-3-git-send-email-keescook@chromium.org>
+ <20160714232019.GA28254@350D>
+ <1468544658.30053.26.camel@redhat.com>
+ <20160715014151.GA13944@balbir.ozlabs.ibm.com>
+ <CAGXu5jJy4O4tV2sB=MSkYh2DEfxUYkH4Q3ghmrHEGc6s-k285A@mail.gmail.com>
+ <CAGXu5jLuQPdBH4a0BF9AgH7qQubfoz+fFW2sTi2rRxsU8u_8QQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAGXu5jLuQPdBH4a0BF9AgH7qQubfoz+fFW2sTi2rRxsU8u_8QQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,17 +59,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-> > I noticed tip started failing in my CI environment which tests on
-> > QEMU. The failure bisected to commit
-> > 425209e0abaf2c6e3a90ce4fedb935c10652bf80  
+On Thu, Jul 14, 2016 at 09:53:31PM -0700, Kees Cook wrote:
+> On Thu, Jul 14, 2016 at 9:05 PM, Kees Cook <keescook@chromium.org> wrote:
+> > On Thu, Jul 14, 2016 at 6:41 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+> >> On Thu, Jul 14, 2016 at 09:04:18PM -0400, Rik van Riel wrote:
+> >>> On Fri, 2016-07-15 at 09:20 +1000, Balbir Singh wrote:
+> >>>
+> >>> > > ==
+> >>> > > +            ((unsigned long)end & (unsigned
+> >>> > > long)PAGE_MASK)))
+> >>> > > +         return NULL;
+> >>> > > +
+> >>> > > + /* Allow if start and end are inside the same compound
+> >>> > > page. */
+> >>> > > + endpage = virt_to_head_page(end);
+> >>> > > + if (likely(endpage == page))
+> >>> > > +         return NULL;
+> >>> > > +
+> >>> > > + /* Allow special areas, device memory, and sometimes
+> >>> > > kernel data. */
+> >>> > > + if (PageReserved(page) && PageReserved(endpage))
+> >>> > > +         return NULL;
+> >>> >
+> >>> > If we came here, it's likely that endpage > page, do we need to check
+> >>> > that only the first and last pages are reserved? What about the ones
+> >>> > in
+> >>> > the middle?
+> >>>
+> >>> I think this will be so rare, we can get away with just
+> >>> checking the beginning and the end.
+> >>>
+> >>
+> >> But do we want to leave a hole where an aware user space
+> >> can try a longer copy_* to avoid this check? If it is unlikely
+> >> should we just bite the bullet and do the check for the entire
+> >> range?
+> >
+> > I'd be okay with expanding the test -- it should be an extremely rare
+> > situation already since the common Reserved areas (kernel data) will
+> > have already been explicitly tested.
+> >
+> > What's the best way to do "next page"? Should it just be:
+> >
+> > for ( ; page <= endpage ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr) ) {
+> >     if (!PageReserved(page))
+> >         return "<spans multiple pages>";
+> > }
+> >
+> > return NULL;
+> >
+> > ?
 > 
-> That's very useful, thanks Anton!
+> Er, I was testing the wrong thing. How about:
 > 
-> I have removed this commit from the series for the time being,
-> refactored the followup commits (there was one trivial conflict). We
-> can re-try this patch when a fix is found.
+>         /*
+>          * Reject if range is not Reserved (i.e. special or device memory),
+>          * since then the object spans several independently allocated pages.
+>          */
+>         for (; ptr <= end ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr)) {
+>                 if (!PageReserved(page))
+>                         return "<spans multiple pages>";
+>         }
+> 
+>         return NULL;
 
-Thanks Ingo, my tests are passing again after your last push.
+That looks reasonable to me
 
-Anton
+Balbir
