@@ -1,27 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPRV3cR4zDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:32:37 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Mark Rutland <mark.rutland@arm.com>, linuxppc-dev@lists.ozlabs.org,
- Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org,
- bhe@redhat.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>, Vivek Goyal <vgoyal@redhat.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Date: Fri, 15 Jul 2016 09:31:02 +0200
-Message-ID: <5547846.5l81k4b13o@wuerfel>
-In-Reply-To: <3520758.yAgMzqF1PF@hactar>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <4321972.HZgDox36RC@wuerfel> <3520758.yAgMzqF1PF@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPql4yy0zDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:50:11 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id q2so5740364pap.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 00:50:11 -0700 (PDT)
+Subject: Re: [PATCH V3 4/5] kvm/stats: Add provisioning for 64-bit vm and vcpu
+ statistics
+To: Christian Borntraeger <borntraeger@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1468400015-4834-1-git-send-email-sjitindarsingh@gmail.com>
+ <57860408.1000203@de.ibm.com>
+Cc: pbonzini@redhat.com, rkrcmar@redhat.com, christoffer.dall@linaro.org,
+ marc.zyngier@arm.com, james.hogan@imgtec.com, agraf@suse.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ cornelia.huck@de.ibm.com, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ kvmarm@lists.cs.columbia.edu, linux-mips@linux-mips.org,
+ linux-s390@vger.kernel.org
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Message-ID: <578895A7.5060001@gmail.com>
+Date: Fri, 15 Jul 2016 17:49:59 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <57860408.1000203@de.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, July 14, 2016 10:44:14 PM CEST Thiago Jung Bauermann wrote:
-> Am Donnerstag, 14 Juli 2016, 10:29:11 schrieb Arnd Bergmann:
 
-> > 
-> > Right, but the question remains whether this helps while you allow the
-> > boot loader to modify the dtb. If an attacker gets in and cannot modify
-> > the kernel or initid but can modify the DT, a successful attack would
-> > be a bit harder than having a modified kernel, but you may still need
-> > to treat the system as compromised.
-> 
-> Yes, and the same question also remains regarding the kernel command line.
-> 
-> We can have the kernel perform sanity checks on the device tree, just as the 
-> kernel needs to sanity check the command line.
-> 
-> There's the point that was raised about not wanting to increase the attack 
-> surface, and that's a valid point. But at least in the way Petitboot works 
-> today, it needs to modify the device tree and pass it to the kernel.
-> 
-> One thing that is unavoidable to come from userspace is 
-> /chosen/linux,stdout-path, because it's Petitboot that knows from which 
-> console the user is interacting with. The other modification to set 
-> properties in vga@0 can be done in the kernel.
-> 
-> Given that on DTB-based systems /chosen is an important and established way 
-> to pass information to the operating system being booted, I'd like to 
-> suggest the following, then:
-> 
-> Extend the syscall as shown in this RFC from Takahiro AKASHI, but instead of 
-> accepting a complete DTB from userspace, the syscall would accept a DTB 
-> containing only a /chosen node. If the DTB contains any other node, the 
-> syscall fails with EINVAL. The kernel can then add the properties in /chosen 
-> to the device tree that it will pass to the next kernel.
-> 
-> What do you think?
 
-I think that helps, as it makes the problem space correspond to that
-of modifying the command line, but I can still come up with countless
-attacks based on modifications of the /chosen node and/or the command
-line, in fact it's probably easier than any other node.
+On 13/07/16 19:04, Christian Borntraeger wrote:
+> On 07/13/2016 10:53 AM, Suraj Jitindar Singh wrote:
+>> vms and vcpus have statistics associated with them which can be viewed
+>> within the debugfs. Currently it is assumed within the vcpu_stat_get() and
+>> vm_stat_get() functions that all of these statistics are represented as
+>> u32s, however the next patch adds some u64 statistics.
+>>
+>> Thus modify these two functions, vcpu_stat_get() and vm_stat_get(), such
+>> that they expect u64 statistics and update vm and vcpu statistics to u64s
+>> accordingly.
+>>
+>> ---
+>> Change Log:
+>>
+>> V1 -> V2:
+>> 	- Nothing
+>> V2 -> V3:
+>> 	- Instead of implementing separate u32 and u64 functions keep the
+>> 	  generic functions and modify them to expect u64s. Thus update all
+>> 	  vm and vcpu statistics to u64s accordingly.
+> Have not looked into everything, but I agree with changing everything to 64bit.
+>
+>
+>> @@ -3583,8 +3583,8 @@ static const struct file_operations vcpu_stat_get_per_vm_fops = {
+>>  };
+>>
+>>  static const struct file_operations *stat_fops_per_vm[] = {
+>> -	[KVM_STAT_VCPU] = &vcpu_stat_get_per_vm_fops,
+>> -	[KVM_STAT_VM]   = &vm_stat_get_per_vm_fops,
+>> +	[KVM_STAT_VCPU]		= &vcpu_stat_get_per_vm_fops,
+>> +	[KVM_STAT_VM]		= &vm_stat_get_per_vm_fops,
+>>  };
+> unrelated white space changes?
 
-What methods to we have in place for command line changes today on
-other architectures?
+Woops, I'll fix that. Thanks
 
-	Arnd
+>
+>>  static int vm_stat_get(void *_offset, u64 *val)
+>> @@ -3628,8 +3628,8 @@ static int vcpu_stat_get(void *_offset, u64 *val)
+>>  DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_fops, vcpu_stat_get, NULL, "%llu\n");
+>>
+>>  static const struct file_operations *stat_fops[] = {
+>> -	[KVM_STAT_VCPU] = &vcpu_stat_fops,
+>> -	[KVM_STAT_VM]   = &vm_stat_fops,
+>> +	[KVM_STAT_VCPU]		= &vcpu_stat_fops,
+>> +	[KVM_STAT_VM]		= &vm_stat_fops,
+>>  };
+>>
+>>  static int kvm_init_debug(void)
+>>
