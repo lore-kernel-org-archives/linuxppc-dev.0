@@ -1,48 +1,40 @@
-Return-Path: <danielmicay@gmail.com>
-Received: from mail-qk0-x22c.google.com (mail-qk0-x22c.google.com
- [IPv6:2607:f8b0:400d:c09::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrj7X1S2XzDr0N
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 05:19:51 +1000 (AEST)
-Received: by mail-qk0-x22c.google.com with SMTP id x1so25432943qkb.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 12:19:51 -0700 (PDT)
-Message-ID: <1468610363.32683.42.camel@gmail.com>
-Subject: Re: [kernel-hardening] Re: [PATCH v2 02/11] mm: Hardened usercopy
-From: Daniel Micay <danielmicay@gmail.com>
-To: kernel-hardening@lists.openwall.com
-Cc: Balbir Singh <bsingharora@gmail.com>, LKML
- <linux-kernel@vger.kernel.org>,  Rik van Riel <riel@redhat.com>, Casey
- Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,  Brad
- Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>,  Michael Ellerman
- <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
- <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,  Pekka
- Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>, Joonsoo
- Kim <iamjoonsoo.kim@lge.com>,  Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,  Mathias
- Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>, Vitaly Wool
- <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>, Dmitry
- Vyukov <dvyukov@google.com>, Laura Abbott <labbott@fedoraproject.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, sparclinux
- <sparclinux@vger.kernel.org>,  linux-arch <linux-arch@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>
-Date: Fri, 15 Jul 2016 15:19:23 -0400
-In-Reply-To: <CAGXu5jLiD1xEb=dDuf+_2JVzmkH_6O5-m=p=AVvi7qgQ+SV4UA@mail.gmail.com>
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-3-git-send-email-keescook@chromium.org>
- <20160714232019.GA28254@350D>
- <CAGXu5jKzD_rCMNJQU1bB5KDfKTsb+AaidZwe=FAfGMqt_FkfqQ@mail.gmail.com>
- <1468609254.32683.34.camel@gmail.com>
- <CAGXu5jLiD1xEb=dDuf+_2JVzmkH_6O5-m=p=AVvi7qgQ+SV4UA@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-Y+YBKcxvbURjRYqK+Wc9"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrm775ZMVzDr0Z
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 07:34:43 +1000 (AEST)
+Message-Id: <201607152054.u6FKslD1005327@mail.zytor.com>
+In-Reply-To: <20160715135956.GA3115@twins.programming.kicks-ass.net>
+References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
+ <20160715124330.GR30154@twins.programming.kicks-ass.net>
+ <28b4b919-4f50-d9f6-c5e1-d1e92ea1ba1c@gmail.com>
+ <20160715135956.GA3115@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=UTF-8
+Subject: Re: [PATCH 00/14] Present useful limits to user (v2)
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Fri, 15 Jul 2016 13:54:44 -0700
+To: Peter Zijlstra <peterz@infradead.org>, Topi Miettinen <toiwoton@gmail.com>
+CC: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Alexander Graf <agraf@suse.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim Kr??m???? <rkrcmar@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>,
+ Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Christian Benvenuti <benve@cisco.com>,
+ Dave Goodell <dgoodell@cisco.com>, Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>,
+ Li.Zefan@zytor.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,44 +44,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+<lizefan@huawei.com>,Johannes Weiner <hannes@cmpxchg.org>,Alexei Starovoitov <ast@kernel.org>,Arnaldo Carvalho de Melo <acme@kernel.org>,Alexander Shishkin <alexander.shishkin@linux.intel.com>,Balbir Singh <bsingharora@gmail.com>,Markus Elfring <elfring@users.sourceforge.net>,"David S. Miller" <davem@davemloft.net>,Nicolas Dichtel <nicolas.dichtel@6wind.com>,Andrew Morton <akpm@linux-foundation.org>,Konstantin Khlebnikov <koct9i@gmail.com>,Jiri Slaby <jslaby@suse.cz>,Cyrill Gorcunov <gorcunov@openvz.org>,Michal Hocko <mhocko@suse.com>,Vlastimil Babka <vbabka@suse.cz>,Dave Hansen <dave.hansen@linux.intel.com>,Greg Kroah-Hartman <gregkh@linuxfoundation.org>,Dan Carpenter <dan.carpenter@oracle.com>,Michael Kerrisk <mtk.manpages@gmail.com>,"Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,Marcus Gelderie <redmnic@gmail.com>,Vladimir Davydov <vdavydov@virtuozzo.com>,Joe Perches <joe@perches.com>,Frederic Weisbecker <fweisbec@gmail.com>,Andrea Arcangeli <aarcange@redhat.com>,!
+ "Eric W.
+Biederman" <ebiederm@xmission.com>,Andi Kleen <ak@linux.intel.com>,Oleg Nesterov <oleg@redhat.com>,Stas Sergeev <stsp@list.ru>,Amanieu d'Antras <amanieu@gmail.com>,Richard Weinberger <richard@nod.at>,Wang Xiaoqiang <wangxq10@lzu.edu.cn>,Helge Deller <deller@gmx.de>,Mateusz Guzik <mguzik@redhat.com>,Alex Thorlton <athorlton@sgi.com>,Ben Segall <bsegall@google.com>,John Stultz <john.stultz@linaro.org>,Rik van Riel <riel@redhat.com>,Eric B Munson <emunson@akamai.com>,Alexey Klimov <klimov.linux@gmail.com>,Chen Gang <gang.chen.5i5j@gmail.com>,Andrey Ryabinin <aryabinin@virtuozzo.com>,David Rientjes <rientjes@google.com>,Hugh Dickins <hughd@google.com>,Alexander Kuleshov <kuleshovmail@gmail.com>,"open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,"open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,"open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC" <kvm-ppc@vger.kernel.org>,"open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,"open list:LINUX FOR POWERPC!
+  (32-BIT
+AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>,"open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,"open list:FILESYSTEMS (VFS and infrastructure)" <linux-fsdevel@vger.kernel.org>,"open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,"open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,"open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
+Message-ID: <D79806FE-E6B9-481B-8AA2-A1800419D9B5@zytor.com>
 
---=-Y+YBKcxvbURjRYqK+Wc9
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On July 15, 2016 6:59:56 AM PDT, Peter Zijlstra <peterz@infradead.org> wrote:
+>On Fri, Jul 15, 2016 at 01:52:48PM +0000, Topi Miettinen wrote:
+>> On 07/15/16 12:43, Peter Zijlstra wrote:
+>> > On Fri, Jul 15, 2016 at 01:35:47PM +0300, Topi Miettinen wrote:
+>> >> Hello,
+>> >>
+>> >> There are many basic ways to control processes, including
+>capabilities,
+>> >> cgroups and resource limits. However, there are far fewer ways to
+>find out
+>> >> useful values for the limits, except blind trial and error.
+>> >>
+>> >> This patch series attempts to fix that by giving at least a nice
+>starting
+>> >> point from the highwater mark values of the resources in question.
+>> >> I looked where each limit is checked and added a call to update
+>the mark
+>> >> nearby.
+>> > 
+>> > And how is that useful? Setting things to the high watermark is
+>> > basically the same as not setting the limit at all.
+>> 
+>> What else would you use, too small limits?
+>
+>That question doesn't make sense.
+>
+>What's the point of setting a limit if it ends up being the same as
+>no-limit (aka unlimited).
+>
+>If you cannot explain; and you have not so far; what use these values
+>are, why would we look at the patches.
 
-> I'd like it to dump stack and be fatal to the process involved, but
-> yeah, I guess BUG() would work. Creating an infrastructure for
-> handling security-related Oopses can be done separately from this
-> (and
-> I'd like to see that added, since it's a nice bit of configurable
-> reactivity to possible attacks).
-
-In grsecurity, the oops handling also uses do_group_exit instead of
-do_exit but both that change (or at least the option to do it) and the
-exploit handling could be done separately from this without actually
-needing special treatment for USERCOPY. Could expose is as something
-like panic_on_oops=3D2 as a balance between the existing options.
---=-Y+YBKcxvbURjRYqK+Wc9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIzBAABCAAdBQJXiTc7FhxkYW5pZWxtaWNheUBnbWFpbC5jb20ACgkQ+ecS5Zr1
-8ip2TA/+IoxpTaGfA5/9DDfnjr5OainSD/MMP/0obMRVPRnaJlTJT8ahCOtDauQv
-jTR+GoJaVkO6ZzOML+79FQOjv91/yPg2RiT6GKzKLb4jCGtJw/rEsMSGk0yJWUjJ
-IeazONbF6Swqm/JT/3UoxsJvf0QgUF3lhm3/vcvBoBjY9lCXtDSB0JYd7v+Ob8EU
-7D1mxokvg3MQCTVAlJa2IDkHanmIKBBRPXtbQl2KvlJhWF0GWkErplu5ZncVpY1X
-TvsiMEpyZDiQc+U1Cpu4Thc8/GUoWthZGgjhw7p+hGgw3XXrRb17WaBqWS5o8dJl
-/QbBOjzFopKRnovqTmIqYXgoue/LhZNYYRXAo35CcFDMOH3HvBCKtdNrngLjoxHv
-vRrubMLjSxBml8/ulNqXWmrFIvd8aLM8TAkWIvC8bEFMqITDXMXIp9zs1ObEVXD6
-m5pF2CtNgxIvx17/hnlp0U0k4ldaekkhHkSYyd7v8yr5CkqLh250YeRxWFf4kKh6
-Ii+rXm70hdGvMHOw8TcWW+B82eZiFOhPyeWyibFnO+JzsQyWwIzWpIY1+xQZUBcr
-b9rh+kXFS2aOvtj55KSScTEcGyo3aknrkt1kAJY8spQMUOLtog9eifryhpS3Nl6O
-hGQ5lDsxJxyZCdpLfv5RU4WC7xoQGdGAzV0Nn7ukkiF2x2R5MFI=
-=Wn4X
------END PGP SIGNATURE-----
-
---=-Y+YBKcxvbURjRYqK+Wc9--
+One reason is to catch a malfunctioning process rather than dragging the whole system down with it.  It could also be useful for development.
+-- 
+Sent from my Android device with K-9 Mail. Please excuse brevity and formatting.
