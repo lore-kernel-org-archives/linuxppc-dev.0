@@ -1,30 +1,35 @@
 Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPql4yy0zDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:50:11 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id q2so5740364pap.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 00:50:11 -0700 (PDT)
-Subject: Re: [PATCH V3 4/5] kvm/stats: Add provisioning for 64-bit vm and vcpu
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrPtN3Rd8zDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:52:28 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id y134so1736240pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 00:52:28 -0700 (PDT)
+Subject: Re: [PATCH V2 4/5] kvm/stats: Add provisioning for 64-bit vcpu
  statistics
-To: Christian Borntraeger <borntraeger@de.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1468400015-4834-1-git-send-email-sjitindarsingh@gmail.com>
- <57860408.1000203@de.ibm.com>
-Cc: pbonzini@redhat.com, rkrcmar@redhat.com, christoffer.dall@linaro.org,
- marc.zyngier@arm.com, james.hogan@imgtec.com, agraf@suse.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- cornelia.huck@de.ibm.com, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- kvmarm@lists.cs.columbia.edu, linux-mips@linux-mips.org,
- linux-s390@vger.kernel.org
+To: Paolo Bonzini <pbonzini@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ David Matlack <dmatlack@google.com>
+References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
+ <1468220912-22828-4-git-send-email-sjitindarsingh@gmail.com>
+ <CALzav=e=hScxto3c=4rJ88Phg989UZhk+O44rV56obFP3v1SFg@mail.gmail.com>
+ <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
+ <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
+ <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
+ <578681D6.8070801@de.ibm.com>
+ <46eaef93-af3a-4dbb-eb3e-df3d63b1eb1c@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ kvm list <kvm@vger.kernel.org>, agraf@suse.com,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Message-ID: <578895A7.5060001@gmail.com>
-Date: Fri, 15 Jul 2016 17:49:59 +1000
+Message-ID: <57889634.9030302@gmail.com>
+Date: Fri, 15 Jul 2016 17:52:20 +1000
 MIME-Version: 1.0
-In-Reply-To: <57860408.1000203@de.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <46eaef93-af3a-4dbb-eb3e-df3d63b1eb1c@redhat.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,53 +41,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 13/07/16 19:04, Christian Borntraeger wrote:
-> On 07/13/2016 10:53 AM, Suraj Jitindar Singh wrote:
->> vms and vcpus have statistics associated with them which can be viewed
->> within the debugfs. Currently it is assumed within the vcpu_stat_get() and
->> vm_stat_get() functions that all of these statistics are represented as
->> u32s, however the next patch adds some u64 statistics.
->>
->> Thus modify these two functions, vcpu_stat_get() and vm_stat_get(), such
->> that they expect u64 statistics and update vm and vcpu statistics to u64s
->> accordingly.
->>
->> ---
->> Change Log:
->>
->> V1 -> V2:
->> 	- Nothing
->> V2 -> V3:
->> 	- Instead of implementing separate u32 and u64 functions keep the
->> 	  generic functions and modify them to expect u64s. Thus update all
->> 	  vm and vcpu statistics to u64s accordingly.
-> Have not looked into everything, but I agree with changing everything to 64bit.
+On 14/07/16 19:42, Paolo Bonzini wrote:
 >
+> On 13/07/2016 20:00, Christian Borntraeger wrote:
+>>>>>> I thought u64 still existed on 32-bit architectures. unsigned long
+>>>>>> would be fine but with the caveat that certain stats would overflow on
+>>>>>> 32-bit architectures.
+>>>> Yes, but not all 32-bit architectures can do atomic read-modify-write
+>>>> (e.g. add) operations on 64-bit values.
+>> So what about only doing it for the VCPU events? Those should be only
+>> modified by one CPU. We would have some odd values on 32bit overflow, but
+>> this will be certainly better than just start with 0
+> If that's good enough for PPC, that's fine.
 >
->> @@ -3583,8 +3583,8 @@ static const struct file_operations vcpu_stat_get_per_vm_fops = {
->>  };
->>
->>  static const struct file_operations *stat_fops_per_vm[] = {
->> -	[KVM_STAT_VCPU] = &vcpu_stat_get_per_vm_fops,
->> -	[KVM_STAT_VM]   = &vm_stat_get_per_vm_fops,
->> +	[KVM_STAT_VCPU]		= &vcpu_stat_get_per_vm_fops,
->> +	[KVM_STAT_VM]		= &vm_stat_get_per_vm_fops,
->>  };
-> unrelated white space changes?
+> Paolo
 
-Woops, I'll fix that. Thanks
+I'm don't feel great about having vcpu_stats as u64 and vm_stats still as u32
+it's just a bit inconsistent.
 
->
->>  static int vm_stat_get(void *_offset, u64 *val)
->> @@ -3628,8 +3628,8 @@ static int vcpu_stat_get(void *_offset, u64 *val)
->>  DEFINE_SIMPLE_ATTRIBUTE(vcpu_stat_fops, vcpu_stat_get, NULL, "%llu\n");
->>
->>  static const struct file_operations *stat_fops[] = {
->> -	[KVM_STAT_VCPU] = &vcpu_stat_fops,
->> -	[KVM_STAT_VM]   = &vm_stat_fops,
->> +	[KVM_STAT_VCPU]		= &vcpu_stat_fops,
->> +	[KVM_STAT_VM]		= &vm_stat_fops,
->>  };
->>
->>  static int kvm_init_debug(void)
->>
+That being said, it's only the vcpu_stats which I require to be u64 at this
+stage so it's possible to just upgrade those.
