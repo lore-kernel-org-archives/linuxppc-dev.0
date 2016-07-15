@@ -1,27 +1,30 @@
-Return-Path: <hzpeterchen@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrNKS6mLpzDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 16:42:20 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id t190so5875091pfb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 23:42:20 -0700 (PDT)
-Date: Fri, 15 Jul 2016 14:34:29 +0800
-From: Peter Chen <hzpeterchen@gmail.com>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Li Yang <leoli@freescale.com>, Xie Xiaobo <X.Xie@freescale.com>,
- Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [patch] usb: gadget: fsl_qe_udc: off by one in
- setup_received_handle()
-Message-ID: <20160715063429.GD817@shlinux2>
-References: <20160713101433.GI29468@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrP472xDYzDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 17:15:51 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id ez1so2298951pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 00:15:51 -0700 (PDT)
+Date: Fri, 15 Jul 2016 15:15:46 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
+ Rashmica Gupta <rashmicy@gmail.com>,
+ "cyrilbur@gmail.com" <cyrilbur@gmail.com>
+Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-ID: <20160715071546.GA5290@simonLocalRHEL7.x64>
+References: <3rlZmP39HNz9sXR@ozlabs.org> <577E5534.70300@linux.vnet.ibm.com>
+ <1467897678.27157.45.camel@kernel.crashing.org>
+ <1467898167.27157.47.camel@kernel.crashing.org>
+ <577f7a45.568f6b0a.bd0eb.4aa8SMTPIN_ADDED_BROKEN@mx.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160713101433.GI29468@mwanda>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <577f7a45.568f6b0a.bd0eb.4aa8SMTPIN_ADDED_BROKEN@mx.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 01:14:33PM +0300, Dan Carpenter wrote:
-> The udc->eps[] array has USB_MAX_ENDPOINTS elements so > should be >=.
+Michael, Ben,
+On Fri, Jul 08, 2016 at 08:02:42PM +1000, Michael Ellerman wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 > 
-> Fixes: 3948f0e0c999 ('usb: add Freescale QE/CPM USB peripheral controller driver')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> > On Thu, 2016-07-07 at 23:21 +1000, Benjamin Herrenschmidt wrote:
+> >> 
+> >> I think the right fix is that if a restore_sigcontext() has the MSR
+> >> bits set,
+> >> it should set the corresponding used_* flag.
+> >
+> > Something like this:
+> >
+> > (totally untested)
 > 
-> diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-> index 93d28cb..cf8819a 100644
-> --- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-> +++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-> @@ -2053,7 +2053,7 @@ static void setup_received_handle(struct qe_udc *udc,
->  			struct qe_ep *ep;
->  
->  			if (wValue != 0 || wLength != 0
-> -				|| pipe > USB_MAX_ENDPOINTS)
-> +				|| pipe >= USB_MAX_ENDPOINTS)
->  				break;
->  			ep = &udc->eps[pipe];
->  
+> Simon/Laurent, can you guys test this and let me know if it works for
+> your usecase.
+> 
 
-Acked-by: Peter Chen <peter.chen@nxp.com>
+Sorry for the late reply. I tested Ben's patch and the fix works for the CRIU
+case mentioned before.
 
--- 
-
-Best Regards,
-Peter Chen
+Thanks,
+Simon
