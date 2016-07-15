@@ -1,27 +1,37 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rrcQm1FQ0zDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 01:47:43 +1000 (AEST)
-Date: Fri, 15 Jul 2016 16:47:27 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- linuxppc-dev@lists.ozlabs.org, Dave Young <dyoung@redhat.com>,
- linux-arm-kernel@lists.infradead.org, bhe@redhat.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Message-ID: <20160715154726.GE19840@leverpostej>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <20160715132610.GD23514@redhat.com>
- <20160715133346.GD19840@leverpostej> <1565504.8BCDUlPeYg@hactar>
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrdgx2dFqzDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 02:44:13 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id x83so2839598wma.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 09:44:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1565504.8BCDUlPeYg@hactar>
+Sender: paul.gortmaker@gmail.com
+In-Reply-To: <1462417950-46796-4-git-send-email-yangbo.lu@nxp.com>
+References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
+ <1462417950-46796-4-git-send-email-yangbo.lu@nxp.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Fri, 15 Jul 2016 12:43:41 -0400
+Message-ID: <CAP=VYLqsV_M=8CM47k4kzdULCp_y0yP9t8Sq9=jFp6W593QJgw@mail.gmail.com>
+Subject: Re: [v10, 3/7] soc: fsl: add GUTS driver for QorIQ platforms
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: linux-mmc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ devicetree@vger.kernel.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
+ iommu@lists.linux-foundation.org, netdev <netdev@vger.kernel.org>,
+ ulf.hansson@linaro.org, Scott Wood <oss@buserror.net>,
+ Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>,
+ Joerg Roedel <joro@8bytes.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Bhupesh Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
+ leoyang.li@nxp.com, xiaobo.xie@nxp.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +41,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 15, 2016 at 12:29:09PM -0300, Thiago Jung Bauermann wrote:
-> Am Freitag, 15 Juli 2016, 14:33:47 schrieb Mark Rutland:
-> > On Fri, Jul 15, 2016 at 09:26:10AM -0400, Vivek Goyal wrote:
-> > > I don't know anything about DTB. So here comes a very basic question.
-> > > Does DTB allow passing an executable blob to kernel or pass the
-> > > location of some unsigned executable code at kernel level. I think from
-> > > secureboot point of view that would be a concern. Being able to trick
-> > > kernel to execute an unsigned code at privileged level.
-> > 
-> > The DTB itself won't contain executable code.
-> > 
-> > However, arbitrary bindings could point kernel at such code. For
-> > instance, /chosen/linux,uefi-system-table could point the kernel at a
-> > faked EFI system table, with pointers to malicious code. So
-> > arbitrary modification of /chosen is not safe.
-> 
-> PowerPC doesn't have UEFI so this option is not a concern in that 
-> architecture. I'm having a look at what a PowerPC kernel gets from /chosen 
-> and haven't found anything of concern so far, but I'm still looking.
-> 
-> On the other hand, the kernel command line has the option acpi_rsdp, which 
-> is used to pass the address of the RSDP. I don't really know much about EFI 
-> so I'm not sure if it can be used to point to code that the kernel can 
-> execute, but it does point to tables that contain AML code.
+On Wed, May 4, 2016 at 11:12 PM, Yangbo Lu <yangbo.lu@nxp.com> wrote:
+> The global utilities block controls power management, I/O device
+> enabling, power-onreset(POR) configuration monitoring, alternate
+> function selection for multiplexed signals,and clock control.
+>
+> This patch adds GUTS driver to manage and access global utilities
+> block.
+>
+> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+> Acked-by: Scott Wood <oss@buserror.net>
+> ---
+> Changes for v4:
+>         - Added this patch
+> Changes for v5:
+>         - Modified copyright info
+>         - Changed MODULE_LICENSE to GPL
+>         - Changed EXPORT_SYMBOL_GPL to EXPORT_SYMBOL
+>         - Made FSL_GUTS user-invisible
+>         - Added a complete compatible list for GUTS
+>         - Stored guts info in file-scope variable
+>         - Added mfspr() getting SVR
+>         - Redefined GUTS APIs
+>         - Called fsl_guts_init rather than using platform driver
+>         - Removed useless parentheses
+>         - Removed useless 'extern' key words
+> Changes for v6:
+>         - Made guts thread safe in fsl_guts_init
+> Changes for v7:
+>         - Removed 'ifdef' for function declaration in guts.h
+> Changes for v8:
+>         - Fixes lines longer than 80 characters checkpatch issue
+>         - Added 'Acked-by: Scott Wood'
+> Changes for v9:
+>         - None
+> Changes for v10:
+>         - None
+> ---
+>  drivers/soc/Kconfig      |   2 +-
+>  drivers/soc/fsl/Kconfig  |   8 +++
+>  drivers/soc/fsl/Makefile |   1 +
+>  drivers/soc/fsl/guts.c   | 119 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/fsl/guts.h | 126 +++++++++++++++++++++++++++++------------------
+>  5 files changed, 207 insertions(+), 49 deletions(-)
+>  create mode 100644 drivers/soc/fsl/Kconfig
+>  create mode 100644 drivers/soc/fsl/guts.c
+>
+> diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
+> index cb58ef0..7106463 100644
+> --- a/drivers/soc/Kconfig
+> +++ b/drivers/soc/Kconfig
+> @@ -2,7 +2,7 @@ menu "SOC (System On Chip) specific Drivers"
+>
+>  source "drivers/soc/bcm/Kconfig"
+>  source "drivers/soc/brcmstb/Kconfig"
+> -source "drivers/soc/fsl/qe/Kconfig"
+> +source "drivers/soc/fsl/Kconfig"
+>  source "drivers/soc/mediatek/Kconfig"
+>  source "drivers/soc/qcom/Kconfig"
+>  source "drivers/soc/rockchip/Kconfig"
+> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
+> new file mode 100644
+> index 0000000..b313759
+> --- /dev/null
+> +++ b/drivers/soc/fsl/Kconfig
+> @@ -0,0 +1,8 @@
+> +#
+> +# Freescale SOC drivers
+> +#
+> +
+> +source "drivers/soc/fsl/qe/Kconfig"
+> +
+> +config FSL_GUTS
+> +       bool
+> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
+> index 203307f..02afb7f 100644
+> --- a/drivers/soc/fsl/Makefile
+> +++ b/drivers/soc/fsl/Makefile
+> @@ -4,3 +4,4 @@
+>
+>  obj-$(CONFIG_QUICC_ENGINE)             += qe/
+>  obj-$(CONFIG_CPM)                      += qe/
+> +obj-$(CONFIG_FSL_GUTS)                 += guts.o
+> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
+> new file mode 100644
+> index 0000000..fa155e6
+> --- /dev/null
+> +++ b/drivers/soc/fsl/guts.c
+> @@ -0,0 +1,119 @@
+> +/*
+> + * Freescale QorIQ Platforms GUTS Driver
+> + *
+> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/io.h>
+> +#include <linux/module.h>
 
-Please let's not conflate EFI and ACPI, the two are distinct.
-
-I believe that there aren't any ACPI tables which contain native code,
-or which contain pointers to native code, but I could be mistaken. It
-doesn't seem unlikely that malicious AML is possible, but I'm not
-familiar enough with AML to know how we sandbox that.
-
->From a scan of Documentation/kernel-parameters.txt, it doesn't look like
-there are options to override the EFI system table (or related tables),
-so it doesn't look like there's a trivial mechanism to trigger arbitrary
-code execution. It looks like efi_fake_mem could be used to trick the
-kernel to poke things it shouldn't, though that likely brings the system
-down entirely.
-
-> > Bindings describe arbitrary system features (devices, firmware
-> > interfaces, etc), so in general they might provide mechanisms to execute
-> > code.
-> 
-> Even bindings in /chosen?
-
-Yes, even bindings in /chosen. As above, the linux,uefi-system-table
-property lives under /chosen, and provides pointers to native code.
-Control over this property could yield arbitrary code execution.
-
-Additionally, there are drivers that just go looking for a compatible
-string, and will probe regardless of where the node is in the hierarchy.
-e.g. clock controller drivers, memory nodes. So /chosen isn't sandboxed
-as such. 
-
-I fear that there are many things that one could place under /chosen
-that could make the kernel do the wrong thing. Given the example of
-drivers, I'm not sure it's going to be possible to audit all the
-relevant code.
+Seems there was lots of discussion on this.  If it does end up being
+resent, it would be nice to get the module.h and other modular stuff
+gone since it is a bool Kconfig.
 
 Thanks,
-Mark.
+Paul.
+--
+
+> +#include <linux/slab.h>
+> +#include <linux/mutex.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/fsl/guts.h>
+> +
+>
