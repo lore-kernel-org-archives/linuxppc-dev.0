@@ -1,21 +1,50 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
+ [IPv6:2a00:1450:400c:c09::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrKX23qDHzDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:36:18 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joe Perches <joe@perches.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powernv: Use __printf in pe_level_printk
-In-Reply-To: <b204dbb1d8d13998eb8dee4dabbc91a0ee4b38b4.1468511136.git.joe@perches.com>
-References: <b204dbb1d8d13998eb8dee4dabbc91a0ee4b38b4.1468511136.git.joe@perches.com>
-Date: Fri, 15 Jul 2016 14:36:17 +1000
-Message-ID: <87eg6vbjr2.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrKvz5JvqzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:53:35 +1000 (AEST)
+Received: by mail-wm0-x22f.google.com with SMTP id f65so11403898wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:53:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Sender: keescook@google.com
+In-Reply-To: <CAGXu5jJy4O4tV2sB=MSkYh2DEfxUYkH4Q3ghmrHEGc6s-k285A@mail.gmail.com>
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-3-git-send-email-keescook@chromium.org>
+ <20160714232019.GA28254@350D>
+ <1468544658.30053.26.camel@redhat.com>
+ <20160715014151.GA13944@balbir.ozlabs.ibm.com>
+ <CAGXu5jJy4O4tV2sB=MSkYh2DEfxUYkH4Q3ghmrHEGc6s-k285A@mail.gmail.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Thu, 14 Jul 2016 21:53:31 -0700
+Message-ID: <CAGXu5jLuQPdBH4a0BF9AgH7qQubfoz+fFW2sTi2rRxsU8u_8QQ@mail.gmail.com>
+Subject: Re: [PATCH v2 02/11] mm: Hardened usercopy
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,158 +54,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joe Perches <joe@perches.com> writes:
-
-> Make the compiler detect format and argument mismatches.
+On Thu, Jul 14, 2016 at 9:05 PM, Kees Cook <keescook@chromium.org> wrote:
+> On Thu, Jul 14, 2016 at 6:41 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+>> On Thu, Jul 14, 2016 at 09:04:18PM -0400, Rik van Riel wrote:
+>>> On Fri, 2016-07-15 at 09:20 +1000, Balbir Singh wrote:
+>>>
+>>> > > ==
+>>> > > +            ((unsigned long)end & (unsigned
+>>> > > long)PAGE_MASK)))
+>>> > > +         return NULL;
+>>> > > +
+>>> > > + /* Allow if start and end are inside the same compound
+>>> > > page. */
+>>> > > + endpage = virt_to_head_page(end);
+>>> > > + if (likely(endpage == page))
+>>> > > +         return NULL;
+>>> > > +
+>>> > > + /* Allow special areas, device memory, and sometimes
+>>> > > kernel data. */
+>>> > > + if (PageReserved(page) && PageReserved(endpage))
+>>> > > +         return NULL;
+>>> >
+>>> > If we came here, it's likely that endpage > page, do we need to check
+>>> > that only the first and last pages are reserved? What about the ones
+>>> > in
+>>> > the middle?
+>>>
+>>> I think this will be so rare, we can get away with just
+>>> checking the beginning and the end.
+>>>
+>>
+>> But do we want to leave a hole where an aware user space
+>> can try a longer copy_* to avoid this check? If it is unlikely
+>> should we just bite the bullet and do the check for the entire
+>> range?
 >
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/powerpc/platforms/powernv/pci.h | 1 +
->  1 file changed, 1 insertion(+)
+> I'd be okay with expanding the test -- it should be an extremely rare
+> situation already since the common Reserved areas (kernel data) will
+> have already been explicitly tested.
 >
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platform=
-s/powernv/pci.h
-> index 3a97990..1c1a586 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -213,6 +213,7 @@ extern void pnv_pci_dma_bus_setup(struct pci_bus *bus=
-);
->  extern int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
->  extern void pnv_teardown_msi_irqs(struct pci_dev *pdev);
->=20=20
-> +__printf(3, 4)
->  extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *le=
-vel,
->  			    const char *fmt, ...);
+> What's the best way to do "next page"? Should it just be:
+>
+> for ( ; page <= endpage ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr) ) {
+>     if (!PageReserved(page))
+>         return "<spans multiple pages>";
+> }
+>
+> return NULL;
+>
+> ?
 
-Thanks, but it breaks the build due to lots of new warnings.
+Er, I was testing the wrong thing. How about:
 
-We'll have to fix those before merging it.
+        /*
+         * Reject if range is not Reserved (i.e. special or device memory),
+         * since then the object spans several independently allocated pages.
+         */
+        for (; ptr <= end ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr)) {
+                if (!PageReserved(page))
+                        return "<spans multiple pages>";
+        }
 
-cheers
+        return NULL;
 
-In file included from ../arch/powerpc/platforms/powernv/pci-ioda.c:49:0:
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_ioda=
-_deconfigure_pe=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:784:15: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-   pe_warn(pe, "OPAL error %ld remove self from PELTV\n", rc);
-               ^
-../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
-o =E2=80=98pe_warn=E2=80=99
-  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
-                                    ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c:788:14: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-   pe_err(pe, "OPAL error %ld trying to setup PELT table\n", rc);
-              ^
-../arch/powerpc/platforms/powernv/pci.h:231:32: note: in definition of macr=
-o =E2=80=98pe_err=E2=80=99
-  pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
-                                ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_ioda=
-_setup_bus_PE=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:1095:15: error: format =E2=80=
-=98%d=E2=80=99 expects argument of type =E2=80=98int=E2=80=99, but argument=
- 4 has type =E2=80=98resource_size_t {aka long long unsigned int}=E2=80=99 =
-[-Werror=3Dformat=3D]
-   pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
-               ^
-../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
-o =E2=80=98pe_info=E2=80=99
-  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-                                 ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c:1095:15: error: format =E2=80=
-=98%d=E2=80=99 expects argument of type =E2=80=98int=E2=80=99, but argument=
- 5 has type =E2=80=98resource_size_t {aka long long unsigned int}=E2=80=99 =
-[-Werror=3Dformat=3D]
-   pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
-               ^
-../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
-o =E2=80=98pe_info=E2=80=99
-  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-                                 ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c:1098:15: error: format =E2=80=
-=98%d=E2=80=99 expects argument of type =E2=80=98int=E2=80=99, but argument=
- 4 has type =E2=80=98resource_size_t {aka long long unsigned int}=E2=80=99 =
-[-Werror=3Dformat=3D]
-   pe_info(pe, "Secondary bus %d associated with PE#%d\n",
-               ^
-../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
-o =E2=80=98pe_info=E2=80=99
-  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-                                 ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
-ioda2_release_dma_pe=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:1351:15: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-   pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-               ^
-../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
-o =E2=80=98pe_warn=E2=80=99
-  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
-                                    ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
-ioda1_setup_dma_pe=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:2093:15: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-    pe_err(pe, " Failed to configure 32-bit TCE table,"
-               ^
-../arch/powerpc/platforms/powernv/pci.h:231:32: note: in definition of macr=
-o =E2=80=98pe_err=E2=80=99
-  pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
-                                ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
-ioda2_set_window=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:2153:14: error: format =E2=80=
-=98%x=E2=80=99 expects argument of type =E2=80=98unsigned int=E2=80=99, but=
- argument 7 has type =E2=80=98long unsigned int=E2=80=99 [-Werror=3Dformat=
-=3D]
-  pe_info(pe, "Setting up window#%d %llx..%llx pg=3D%x\n", num,
-              ^
-../arch/powerpc/platforms/powernv/pci.h:235:33: note: in definition of macr=
-o =E2=80=98pe_info=E2=80=99
-  pe_level_printk(pe, KERN_INFO, fmt, ##__VA_ARGS__)
-                                 ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c:2169:14: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-   pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
-              ^
-../arch/powerpc/platforms/powernv/pci.h:231:32: note: in definition of macr=
-o =E2=80=98pe_err=E2=80=99
-  pe_level_printk(pe, KERN_ERR, fmt, ##__VA_ARGS__)
-                                ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_pci_=
-ioda2_release_pe_dma=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:3312:15: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-   pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-               ^
-../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
-o =E2=80=98pe_warn=E2=80=99
-  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
-                                    ^~~
-../arch/powerpc/platforms/powernv/pci-ioda.c: In function =E2=80=98pnv_ioda=
-_free_pe_seg=E2=80=99:
-../arch/powerpc/platforms/powernv/pci-ioda.c:3347:16: error: format =E2=80=
-=98%ld=E2=80=99 expects argument of type =E2=80=98long int=E2=80=99, but ar=
-gument 4 has type =E2=80=98int64_t {aka long long int}=E2=80=99 [-Werror=3D=
-format=3D]
-    pe_warn(pe, "Error %ld unmapping (%d) segment#%d\n",
-                ^
-../arch/powerpc/platforms/powernv/pci.h:233:36: note: in definition of macr=
-o =E2=80=98pe_warn=E2=80=99
-  pe_level_printk(pe, KERN_WARNING, fmt, ##__VA_ARGS__)
-                                    ^~~
+
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
