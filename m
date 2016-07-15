@@ -1,24 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.185])
+Return-Path: <sasha.levin@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrW362S16zDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 21:45:22 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Aneesh Kumar K.V' <aneesh.kumar@linux.vnet.ibm.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH for-4.8 03/12] powerpc/mm: use _raw variant of page
- table accessors
-Date: Fri, 15 Jul 2016 11:42:51 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4F8E51@AcuExch.aculab.com>
-References: <1468402531-4914-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1468402531-4914-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1468402531-4914-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrWDk3X09zDqyT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 21:53:42 +1000 (AEST)
+Subject: Re: [4.1.28 PATCH] powerpc: Fix build break due to missing
+ PPC_FEATURE2_HTM_NOSC
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <87bn20a30y.fsf@@concordia.ellerman.id.au>
+Cc: Christian Zigotzky <chzigotzky@bayern-mail.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, stable@vger.kernel.org
+From: Sasha Levin <sasha.levin@oracle.com>
+Message-ID: <5788CEB9.4020101@oracle.com>
+Date: Fri, 15 Jul 2016 07:53:29 -0400
 MIME-Version: 1.0
+In-Reply-To: <87bn20a30y.fsf@@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQW5lZXNoIEt1bWFyIEsuVg0KPiBTZW50OiAxMyBKdWx5IDIwMTYgMTA6MzUNCj4gDQo+
-IFRoaXMgc3dpdGNoIGZldyBvZiB0aGUgcGFnZSB0YWJsZSBhY2Nlc3NvciB0byB1c2UgdGhlIF9f
-cmF3IHZhcmlhbnQNCj4gYW5kIGRvZXMgdGhlIGNwdSB0byBiaWcgZW5kaWFuIGNvbnZlcnNpb24g
-b2YgY29uc3RhbnRzLiBUaGlzIGhlbHBzIGluDQo+IGdlbmVyYXRpbmcgYmV0dGVyIGNvZGUuDQoN
-Ckl0IG1pZ2h0IGJlIGJldHRlciB0byBzYXkgdGhhdCBjaGVja3MgZm9yIGEgdmFsdWUgYmVpbmcg
-MCBkb24ndCBkZXBlbmQNCm9uIHRoZSBlbmRpYW5uZXNzLg0KDQpJbiB3aGljaCBjYXNlIHlvdSB3
-YW50IGEgZnVuY3Rpb24gdGhhdCByZXR1cm4gISF4eHhfcmF3KCkgaXRzZWxmLg0KDQpPVE9IIGl0
-IG1pZ2h0IGJlIHdvcnRoIGZpbmRpbmcgb3V0IHdoeSB0aGUgY3B1J3MgYnl0ZXN3YXBwaW5nIG1l
-bW9yeQ0KYWNjZXNzb3JzIGFyZW4ndCB1c2VkIC0gd2hpY2ggbWlnaHQgc2F2ZSB0aGUgYnl0ZXN3
-YXAgaW5zdHJ1Y3Rpb24NCnNlcXVlbmNlIGluIGFsbCBwYXRocy4NCg0KCURhdmlkDQoNCg==
+On 07/14/2016 07:10 AM, Michael Ellerman wrote:
+> The backport of 4705e02498d6 ("powerpc: Update TM user feature bits in
+> scan_features()") (f49eb503f0f9), missed the fact that 4.1 doesn't
+> include the commit that added PPC_FEATURE2_HTM_NOSC.
+> 
+> The correct fix is simply to omit PPC_FEATURE2_HTM_NOSC.
+> 
+> Fixes: f49eb503f0f9 ("powerpc: Update TM user feature bits in scan_features()")
+> Reported-by: Christian Zigotzky <chzigotzky@bayern-mail.de>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+Thanks Michael, I've queued it up.
+
+
+Thanks,
+Sasha
