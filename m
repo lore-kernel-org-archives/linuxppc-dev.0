@@ -1,37 +1,37 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrdgx2dFqzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 02:44:13 +1000 (AEST)
-Received: by mail-wm0-x241.google.com with SMTP id x83so2839598wma.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 09:44:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrf2r09F1zDqF6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 03:00:35 +1000 (AEST)
+Date: Fri, 15 Jul 2016 18:20:45 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Anton Blanchard <anton@samba.org>
+Cc: Anna-Maria Gleixner <anna-maria@linutronix.de>,
+ LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, rt@linutronix.de,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch V2 30/67] powerpc/numa: Convert to hotplug state machine
+Message-ID: <20160715162045.GE16938@linutronix.de>
+References: <20160713153219.128052238@linutronix.de>
+ <20160713153335.369278769@linutronix.de>
+ <20160715074257.7801cd00@kryten>
+ <9e878731c9b447ee5e8318237822c492@www.linutronix.de>
+ <20160715102825.34d60395@kryten>
 MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <1462417950-46796-4-git-send-email-yangbo.lu@nxp.com>
-References: <1462417950-46796-1-git-send-email-yangbo.lu@nxp.com>
- <1462417950-46796-4-git-send-email-yangbo.lu@nxp.com>
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Fri, 15 Jul 2016 12:43:41 -0400
-Message-ID: <CAP=VYLqsV_M=8CM47k4kzdULCp_y0yP9t8Sq9=jFp6W593QJgw@mail.gmail.com>
-Subject: Re: [v10, 3/7] soc: fsl: add GUTS driver for QorIQ platforms
-To: Yangbo Lu <yangbo.lu@nxp.com>
-Cc: linux-mmc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree@vger.kernel.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- LKML <linux-kernel@vger.kernel.org>,
- linux-clk@vger.kernel.org, linux-i2c@vger.kernel.org,
- iommu@lists.linux-foundation.org, netdev <netdev@vger.kernel.org>,
- ulf.hansson@linaro.org, Scott Wood <oss@buserror.net>,
- Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>,
- Russell King <linux@arm.linux.org.uk>, Jochen Friedrich <jochen@scram.de>,
- Joerg Roedel <joro@8bytes.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Bhupesh Sharma <bhupesh.sharma@freescale.com>, Qiang Zhao <qiang.zhao@nxp.com>,
- Kumar Gala <galak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>,
- leoyang.li@nxp.com, xiaobo.xie@nxp.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20160715102825.34d60395@kryten>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,120 +41,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 4, 2016 at 11:12 PM, Yangbo Lu <yangbo.lu@nxp.com> wrote:
-> The global utilities block controls power management, I/O device
-> enabling, power-onreset(POR) configuration monitoring, alternate
-> function selection for multiplexed signals,and clock control.
->
-> This patch adds GUTS driver to manage and access global utilities
-> block.
->
-> Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
-> Acked-by: Scott Wood <oss@buserror.net>
-> ---
-> Changes for v4:
->         - Added this patch
-> Changes for v5:
->         - Modified copyright info
->         - Changed MODULE_LICENSE to GPL
->         - Changed EXPORT_SYMBOL_GPL to EXPORT_SYMBOL
->         - Made FSL_GUTS user-invisible
->         - Added a complete compatible list for GUTS
->         - Stored guts info in file-scope variable
->         - Added mfspr() getting SVR
->         - Redefined GUTS APIs
->         - Called fsl_guts_init rather than using platform driver
->         - Removed useless parentheses
->         - Removed useless 'extern' key words
-> Changes for v6:
->         - Made guts thread safe in fsl_guts_init
-> Changes for v7:
->         - Removed 'ifdef' for function declaration in guts.h
-> Changes for v8:
->         - Fixes lines longer than 80 characters checkpatch issue
->         - Added 'Acked-by: Scott Wood'
-> Changes for v9:
->         - None
-> Changes for v10:
->         - None
-> ---
->  drivers/soc/Kconfig      |   2 +-
->  drivers/soc/fsl/Kconfig  |   8 +++
->  drivers/soc/fsl/Makefile |   1 +
->  drivers/soc/fsl/guts.c   | 119 ++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/fsl/guts.h | 126 +++++++++++++++++++++++++++++------------------
->  5 files changed, 207 insertions(+), 49 deletions(-)
->  create mode 100644 drivers/soc/fsl/Kconfig
->  create mode 100644 drivers/soc/fsl/guts.c
->
-> diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-> index cb58ef0..7106463 100644
-> --- a/drivers/soc/Kconfig
-> +++ b/drivers/soc/Kconfig
-> @@ -2,7 +2,7 @@ menu "SOC (System On Chip) specific Drivers"
->
->  source "drivers/soc/bcm/Kconfig"
->  source "drivers/soc/brcmstb/Kconfig"
-> -source "drivers/soc/fsl/qe/Kconfig"
-> +source "drivers/soc/fsl/Kconfig"
->  source "drivers/soc/mediatek/Kconfig"
->  source "drivers/soc/qcom/Kconfig"
->  source "drivers/soc/rockchip/Kconfig"
-> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
-> new file mode 100644
-> index 0000000..b313759
-> --- /dev/null
-> +++ b/drivers/soc/fsl/Kconfig
-> @@ -0,0 +1,8 @@
-> +#
-> +# Freescale SOC drivers
-> +#
-> +
-> +source "drivers/soc/fsl/qe/Kconfig"
-> +
-> +config FSL_GUTS
-> +       bool
-> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-> index 203307f..02afb7f 100644
-> --- a/drivers/soc/fsl/Makefile
-> +++ b/drivers/soc/fsl/Makefile
-> @@ -4,3 +4,4 @@
->
->  obj-$(CONFIG_QUICC_ENGINE)             += qe/
->  obj-$(CONFIG_CPM)                      += qe/
-> +obj-$(CONFIG_FSL_GUTS)                 += guts.o
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-> new file mode 100644
-> index 0000000..fa155e6
-> --- /dev/null
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -0,0 +1,119 @@
-> +/*
-> + * Freescale QorIQ Platforms GUTS Driver
-> + *
-> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#include <linux/io.h>
-> +#include <linux/module.h>
+* Anton Blanchard | 2016-07-15 10:28:25 [+1000]:
 
-Seems there was lots of discussion on this.  If it does end up being
-resent, it would be nice to get the module.h and other modular stuff
-gone since it is a bool Kconfig.
+>Hi Anna-Maria,
+Hi Anton,
 
-Thanks,
-Paul.
---
-
-> +#include <linux/slab.h>
-> +#include <linux/mutex.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/fsl/guts.h>
-> +
+>> >> Install the callbacks via the state machine and let the core invoke
+>> >> the callbacks on the already online CPUs. =20
+>> >
+>> > This is causing an oops on ppc64le QEMU, looks like a NULL
+>> > pointer: =20
+>>=20
+>> Did you tested it against tip WIP.hotplug?
 >
+>I noticed tip started failing in my CI environment which tests on QEMU.
+>The failure bisected to commit 425209e0abaf2c6e3a90ce4fedb935c10652bf80
+>
+>It reproduces running ppc64le QEMU on a x86-64 box. On Ubuntu:
+=E2=80=A6
+
+Thanks for that. I can reproduce this ontop of latest WIP.hotplug with
+this patch.
+
+>Anton
+
+Sebastian
