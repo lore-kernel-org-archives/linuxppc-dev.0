@@ -1,83 +1,45 @@
-Return-Path: <toiwoton@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Return-Path: <danielmicay@gmail.com>
+Received: from mail-qk0-x22a.google.com (mail-qk0-x22a.google.com
+ [IPv6:2607:f8b0:400d:c09::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrfSb1vJGzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 03:19:27 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id x83so2955070wma.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 10:19:27 -0700 (PDT)
-Subject: Re: [PATCH 00/14] Present useful limits to user (v2)
-To: Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org
-References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
- <5788F0E1.8090203@nod.at>
-Cc: Jonathan Corbet <corbet@lwn.net>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Alexander Graf <agraf@suse.com>,
- Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?=
- <rkrcmar@redhat.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>,
- Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
- Hal Rosenstock <hal.rosenstock@gmail.com>,
- Mike Marciniszyn <mike.marciniszyn@intel.com>,
- Dennis Dalessandro <dennis.dalessandro@intel.com>,
- Christian Benvenuti <benve@cisco.com>, Dave Goodell <dgoodell@cisco.com>,
- Sudeep Dutt <sudeep.dutt@intel.com>,
- Ashutosh Dixit <ashutosh.dixit@intel.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>,
- Li Zefan <lizefan@huawei.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Peter Zijlstra <peterz@infradead.org>, Alexei Starovoitov <ast@kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Markus Elfring <elfring@users.sourceforge.net>,
- "David S. Miller" <davem@davemloft.net>,
- Nicolas Dichtel <nicolas.dichtel@6wind.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Konstantin Khlebnikov <koct9i@gmail.com>, Jiri Slaby <jslaby@suse.cz>,
- Cyrill Gorcunov <gorcunov@openvz.org>, Michal Hocko <mhocko@suse.com>,
- Vlastimil Babka <vbabka@suse.cz>, Dave Hansen <dave.hansen@linux.intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dan Carpenter <dan.carpenter@oracle.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Marcus Gelderie <redmnic@gmail.com>,
- Vladimir Davydov <vdavydov@virtuozzo.com>, Joe Perches <joe@perches.com>,
- Frederic Weisbecker <fweisbec@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen
- <ak@linux.intel.com>, Oleg Nesterov <oleg@redhat.com>,
- Stas Sergeev <stsp@list.ru>, Amanieu d'Antras <amanieu@gmail.com>,
- Wang Xiaoqiang <wangxq10@lzu.edu.cn>, Helge Deller <deller@gmx.de>,
- Mateusz Guzik <mguzik@redhat.com>, Alex Thorlton <athorlton@sgi.com>,
- Ben Segall <bsegall@google.com>, John Stultz <john.stultz@linaro.org>,
- Rik van Riel <riel@redhat.com>, Eric B Munson <emunson@akamai.com>,
- Alexey Klimov <klimov.linux@gmail.com>, Chen Gang
- <gang.chen.5i5j@gmail.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>,
- David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
- Alexander Kuleshov <kuleshovmail@gmail.com>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
- "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC"
- <kvm-ppc@vger.kernel.org>,
- "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>,
- "open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,
- "open list:FILESYSTEMS (VFS and infrastructure)"
- <linux-fsdevel@vger.kernel.org>,
- "open list:CONTROL GROUP (CGROUP)" <cgroups@vger.kernel.org>,
- "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
- "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
-From: Topi Miettinen <toiwoton@gmail.com>
-Message-ID: <cf28b6b8-6d0d-8ce2-f3dc-953b9bee12d1@gmail.com>
-Date: Fri, 15 Jul 2016 17:19:14 +0000
-MIME-Version: 1.0
-In-Reply-To: <5788F0E1.8090203@nod.at>
-Content-Type: text/plain; charset=iso-8859-15
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrhkB1dlRzDr0N
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 05:01:22 +1000 (AEST)
+Received: by mail-qk0-x22a.google.com with SMTP id o67so109841062qke.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 12:01:22 -0700 (PDT)
+Message-ID: <1468609254.32683.34.camel@gmail.com>
+Subject: Re: [kernel-hardening] Re: [PATCH v2 02/11] mm: Hardened usercopy
+From: Daniel Micay <danielmicay@gmail.com>
+To: kernel-hardening@lists.openwall.com, bsingharora@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>,  Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will
+ Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,  Fenghua Yu
+ <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>, Pekka
+ Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>, Joonsoo
+ Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Mathias
+ Krause <minipli@googlemail.com>,  Jan Kara <jack@suse.cz>, Vitaly Wool
+ <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,  Dmitry
+ Vyukov <dvyukov@google.com>, Laura Abbott <labbott@fedoraproject.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, sparclinux
+ <sparclinux@vger.kernel.org>,  linux-arch <linux-arch@vger.kernel.org>,
+ Linux-MM <linux-mm@kvack.org>
+Date: Fri, 15 Jul 2016 15:00:54 -0400
+In-Reply-To: <CAGXu5jKzD_rCMNJQU1bB5KDfKTsb+AaidZwe=FAfGMqt_FkfqQ@mail.gmail.com>
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-3-git-send-email-keescook@chromium.org>
+ <20160714232019.GA28254@350D>
+ <CAGXu5jKzD_rCMNJQU1bB5KDfKTsb+AaidZwe=FAfGMqt_FkfqQ@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-iJ67bgEOqJPCpsbunZkk"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -87,76 +49,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/16 14:19, Richard Weinberger wrote:
-> Hi!
-> 
-> Am 15.07.2016 um 12:35 schrieb Topi Miettinen:
->> Hello,
->>
->> There are many basic ways to control processes, including capabilities,
->> cgroups and resource limits. However, there are far fewer ways to find out
->> useful values for the limits, except blind trial and error.
->>
->> This patch series attempts to fix that by giving at least a nice starting
->> point from the highwater mark values of the resources in question.
->> I looked where each limit is checked and added a call to update the mark
->> nearby.
->>
->> Example run of program from Documentation/accounting/getdelauys.c:
->>
->> ./getdelays -R -p `pidof smartd`
->> printing resource accounting
->> RLIMIT_CPU=0
->> RLIMIT_FSIZE=0
->> RLIMIT_DATA=18198528
->> RLIMIT_STACK=135168
->> RLIMIT_CORE=0
->> RLIMIT_RSS=0
->> RLIMIT_NPROC=1
->> RLIMIT_NOFILE=55
->> RLIMIT_MEMLOCK=0
->> RLIMIT_AS=130879488
->> RLIMIT_LOCKS=0
->> RLIMIT_SIGPENDING=0
->> RLIMIT_MSGQUEUE=0
->> RLIMIT_NICE=0
->> RLIMIT_RTPRIO=0
->> RLIMIT_RTTIME=0
->>
->> ./getdelays -R -C /sys/fs/cgroup/systemd/system.slice/smartd.service/
->> printing resource accounting
->> sleeping 1, blocked 0, running 0, stopped 0, uninterruptible 0
->> RLIMIT_CPU=0
->> RLIMIT_FSIZE=0
->> RLIMIT_DATA=18198528
->> RLIMIT_STACK=135168
->> RLIMIT_CORE=0
->> RLIMIT_RSS=0
->> RLIMIT_NPROC=1
->> RLIMIT_NOFILE=55
->> RLIMIT_MEMLOCK=0
->> RLIMIT_AS=130879488
->> RLIMIT_LOCKS=0
->> RLIMIT_SIGPENDING=0
->> RLIMIT_MSGQUEUE=0
->> RLIMIT_NICE=0
->> RLIMIT_RTPRIO=0
->> RLIMIT_RTTIME=0
->>
->> In this example, smartd is running as a non-root user. The presented
->> values can be used as a starting point for giving new limits to the
->> service.
-> 
-> I don't think it is worth sprinkling the kernel with update_resource_highwatermark()
-> calls just to get these metrics.
-> 
-> Can't we teach the existing perf infrastructure to collect these highwatermarks for us?
 
-I don't know. What kind of changes do you think would be needed?
+--=-iJ67bgEOqJPCpsbunZkk
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
--Topi
+> This could be a BUG, but I'd rather not panic the entire kernel.
 
-> 
-> Thanks,
-> //richard
-> 
+It seems unlikely that it will panic without panic_on_oops and that's
+an explicit opt-in to taking down the system on kernel logic errors
+exactly like this. In grsecurity, it calls the kernel exploit handling
+logic (panic if root, otherwise kill all process of that user and ban
+them until reboot) but that same logic is also called for BUG via oops
+handling so there's only really a distinction with panic_on_oops=3D1.
+
+Does it make sense to be less fatal for a fatal assertion that's more
+likely to be security-related? Maybe you're worried about having some
+false positives for the whitelisting portion, but I don't think those
+will lurk around very long with the way this works.
+--=-iJ67bgEOqJPCpsbunZkk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIzBAABCAAdBQJXiTLmFhxkYW5pZWxtaWNheUBnbWFpbC5jb20ACgkQ+ecS5Zr1
+8ipfHQ/9GuB4gHqH46EsTlmQ5fcWXnwNJB5FATNyKhlxyXfCcEGojs2+G059y/C5
+iIp7FmOqCknF/Aj7c/owNO28BFPBdpetDI4a2HTto0zFCtD69qpGjJ4wWmgYBkUb
+he2J5Lok020qi4ffWmNy1fgjkyfkUU4cGDaosxKbXcOe1mgmhi7ghnsXcqeEU4ii
+HCNFvYgV0hVKQHvrWIUW51r3j1fWWR22bghGy0wHLWrFeOhX1d5WK9TfzfSUZdTz
+/g+4Wji0OKpI+75VYJc2P35LxTsSN0JT8XDicnus4+4l8MGc6TW4Z9AZBK7lZEK5
+nhFWXS926xNGc1c5NPQzkEtgUKoeEbAeMcdyFd8k/JfOLas0WAF+iqVGAP/DlxHm
+WTFcfvOpTArS7MMdfB6v3yj7ZOsVPCJAakuJdVCvXCKLAISy86p2EZT43vggz2q2
+FJORgUNfHfmGiZy9r+MHTBtwAS+Gn9Z77gmQcMb0pVdHVj4l+QkEcSkdliOcVJ4c
+6ITvBCD0F+1CiNTUIJ9oYlW92iqUX9M2QweDrlQ1PbWQVjyZU7NWh1VWmAsnhFBO
+OE0GVO34OySR+FpVyqH7keEbb5e0P4ECC1e0UwxMfUZIpqMPT+g/9WAIJay6gVLk
+6JVsWwkgg2nYyVFwvmP7gnUCeQB4ckhH08Ki7gjt0BidNywxfkU=
+=PaWF
+-----END PGP SIGNATURE-----
+
+--=-iJ67bgEOqJPCpsbunZkk--
