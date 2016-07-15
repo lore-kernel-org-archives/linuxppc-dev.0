@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvV6pGDzDqyg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:42 +1000 (AEST)
-In-Reply-To: <1459762201-183136-1-git-send-email-anna-maria@linutronix.de>
-To: Anna-Maria Gleixner <anna-maria@linutronix.de>,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTvX06f9zDqyj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:44 +1000 (AEST)
+In-Reply-To: <1468210651-4199-1-git-send-email-sjitindarsingh@gmail.com>
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Anna-Maria Gleixner <anna-maria@linutronix.de>, rt@linutronix.de
-Subject: Re: powerpc/pmac/smp: Add missing FROZEN hotplug notifier transitions
-Message-Id: <3rrTvV41TWz9sC4@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:42 +1000 (AEST)
+Cc: sjitindarsingh@gmail.com
+Subject: Re: powerpc/crash: Rearrange loop condition to avoid out of bounds
+ array access
+Message-Id: <3rrTvW3rVDz9sCZ@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:43 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-04-04 at 09:30:01 UTC, Anna-Maria Gleixner wrote:
-> The FROZEN transitions are used when a CPU suspends/resumes. In case
-> of a suspend/resume, only the up prepare (CPU_UP_PREPARE_FROZEN) is
-> handled. The error handling transition CPU_UP_CANCELED_FROZEN as well
-> as the CPU_ONLINE_FROZEN transition are not handled.
+On Mon, 2016-11-07 at 04:17:31 UTC, Suraj Jitindar Singh wrote:
+> The array crash_shutdown_handles[] has size CRASH_HANDLER_MAX, thus when
+> we loop over the elements of the list we check crash_shutdown_handles[i]
+> && i < CRASH_HANDLER_MAX. However this means that when we increment i to
+> CRASH_HANDLER_MAX we will perform an out of bound array access checking
+> the first condition before exiting on the second condition.
 > 
-> Masking the switch case action argument with ~CPU_TASKS_FROZEN, to
-> handle all FROZEN tasks the same way than the corresponding non frozen
-> tasks.
+> To avoid the out of bounds access, simply reorder the loop conditions.
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Anna-Maria Gleixner <anna-maria@linutronix.de>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c011926fcbeb9565599f278148
+https://git.kernel.org/powerpc/c/a7d6392866e9777cb287ad194c
 
 cheers
