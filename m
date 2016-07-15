@@ -1,18 +1,20 @@
 Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrVPQ2zkqzDrgs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 21:16:10 +1000 (AEST)
-Date: Fri, 15 Jul 2016 14:15:47 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrVT22y0czDrVR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 21:19:18 +1000 (AEST)
+Date: Fri, 15 Jul 2016 14:18:57 +0300
 From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Li Yang <leoli@freescale.com>
-Cc: Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  kernel-janitors@vger.kernel.org
-Subject: [patch] usb: gadget: fsl_qe_udc: signedness bug in qe_get_frame()
-Message-ID: <20160715111547.GF9258@mwanda>
+Subject: [patch] ibmvfc: prevent a potential deadlock
+Message-ID: <20160715111857.GC13153@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,26 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can't assign -EINVAL to a u16.
+My static checker complains that we need to unlock on this path.  Seems
+true.
 
-Fixes: 3948f0e0c999 ('usb: add Freescale QE/CPM USB peripheral controller driver')
 Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index 93d28cb..901366f 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -1878,11 +1878,8 @@ static int qe_get_frame(struct usb_gadget *gadget)
+diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+index fc523c3..ab67ec4 100644
+--- a/drivers/scsi/ibmvscsi/ibmvfc.c
++++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+@@ -4722,6 +4722,8 @@ static void ibmvfc_rport_add_thread(struct work_struct *work)
+ 					tgt_dbg(tgt, "Setting rport roles\n");
+ 					fc_remote_port_rolechg(rport, tgt->ids.roles);
+ 					put_device(&rport->dev);
++				} else {
++					spin_unlock_irqrestore(vhost->host->host_lock, flags);
+ 				}
  
- 	tmp = in_be16(&udc->usb_param->frame_n);
- 	if (tmp & 0x8000)
--		tmp = tmp & 0x07ff;
--	else
--		tmp = -EINVAL;
--
--	return (int)tmp;
-+		return tmp & 0x07ff;
-+	return -EINVAL;
- }
- 
- static int fsl_qe_start(struct usb_gadget *gadget,
+ 				kref_put(&tgt->kref, ibmvfc_release_tgt);
