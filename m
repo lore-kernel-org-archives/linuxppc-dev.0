@@ -1,32 +1,40 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <riel@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrD2q1Q9bzDqFR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 10:29:07 +1000 (AEST)
-Date: Fri, 15 Jul 2016 10:28:25 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Anna-Maria Gleixner <anna-maria@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner
- <tglx@linutronix.de>, <rt@linutronix.de>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bharata B Rao
- <bharata@linux.vnet.ibm.com>, Christophe Jaillet
- <christophe.jaillet@wanadoo.fr>, Linus Torvalds
- <torvalds@linux-foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [patch V2 30/67] powerpc/numa: Convert to hotplug state machine
-Message-ID: <20160715102825.34d60395@kryten>
-In-Reply-To: <9e878731c9b447ee5e8318237822c492@www.linutronix.de>
-References: <20160713153219.128052238@linutronix.de>
- <20160713153335.369278769@linutronix.de>
- <20160715074257.7801cd00@kryten>
- <9e878731c9b447ee5e8318237822c492@www.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrDqk2rPHzDqFR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 11:04:33 +1000 (AEST)
+Message-ID: <1468544658.30053.26.camel@redhat.com>
+Subject: Re: [PATCH v2 02/11] mm: Hardened usercopy
+From: Rik van Riel <riel@redhat.com>
+To: bsingharora@gmail.com, Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Ard
+ Biesheuvel <ard.biesheuvel@linaro.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Tony
+ Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, "David S.
+ Miller" <davem@davemloft.net>, x86@kernel.org, Christoph Lameter
+ <cl@linux.com>, Pekka Enberg <penberg@kernel.org>, David Rientjes
+ <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>, Borislav
+ Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Jan Kara
+ <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli
+ <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
+ <labbott@fedoraproject.org>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ kernel-hardening@lists.openwall.com
+Date: Thu, 14 Jul 2016 21:04:18 -0400
+In-Reply-To: <20160714232019.GA28254@350D>
+References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
+ <1468446964-22213-3-git-send-email-keescook@chromium.org>
+ <20160714232019.GA28254@350D>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-KZJAwjbKcy8GWaOESkNS"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,27 +44,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anna-Maria,
 
-> >> Install the callbacks via the state machine and let the core invoke
-> >> the callbacks on the already online CPUs.  
-> >
-> > This is causing an oops on ppc64le QEMU, looks like a NULL
-> > pointer:  
-> 
-> Did you tested it against tip WIP.hotplug?
+--=-KZJAwjbKcy8GWaOESkNS
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I noticed tip started failing in my CI environment which tests on QEMU.
-The failure bisected to commit 425209e0abaf2c6e3a90ce4fedb935c10652bf80
+On Fri, 2016-07-15 at 09:20 +1000, Balbir Singh wrote:
 
-It reproduces running ppc64le QEMU on a x86-64 box. On Ubuntu:
+> > =3D=3D
+> > +		=C2=A0=C2=A0=C2=A0((unsigned long)end & (unsigned
+> > long)PAGE_MASK)))
+> > +		return NULL;
+> > +
+> > +	/* Allow if start and end are inside the same compound
+> > page. */
+> > +	endpage =3D virt_to_head_page(end);
+> > +	if (likely(endpage =3D=3D page))
+> > +		return NULL;
+> > +
+> > +	/* Allow special areas, device memory, and sometimes
+> > kernel data. */
+> > +	if (PageReserved(page) && PageReserved(endpage))
+> > +		return NULL;
+>=20
+> If we came here, it's likely that endpage > page, do we need to check
+> that only the first and last pages are reserved? What about the ones
+> in
+> the middle?
 
-sudo apt-get install qemu-system-ppc gcc-powerpc64le-linux-gnu
+I think this will be so rare, we can get away with just
+checking the beginning and the end.
 
-make ARCH=powerpc pseries_le_defconfig
+--=20
 
-make ARCH=powerpc CROSS_COMPILE=powerpc64le-linux-gnu- vmlinux -j4
+All Rights Reversed.
+--=-KZJAwjbKcy8GWaOESkNS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-qemu-system-ppc64 -nographic -vga none -kernel vmlinux 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Anton
+iQEcBAABCAAGBQJXiDaSAAoJEM553pKExN6D6uIIAKN7TgG6txgGbnc5u842to8Y
+3onll7X1bxNRDoiohBXsmoCTB8Taa6Ww5jduLzxsxD5jFJSjRAKpR9Dq1RLTeG+P
+jKOw5tUu3KGj86rJuCpRHZF/FcPWIFode9mhcRFP+l4SucdpGY2TT4qdwuHPtkAC
++e04TCM0knAUCsZAjh1/dewujxGK45ssvdS0W9z6ASEEO07dnfbkwe10jAtAHwJ/
+RpyHZAtOUyc0mpYb+JFhD1bdN1BS9YQTydVkTC2Xb33u1TYKd8mkILPs/cSe7Atk
+7kZKV9BFL1qQgnUvKuTjf6pBQDf3HqAnFvgLzDG9d1niLnZ+/8/1LKoum3nLMPw=
+=+jcM
+-----END PGP SIGNATURE-----
+
+--=-KZJAwjbKcy8GWaOESkNS--
