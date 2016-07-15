@@ -1,23 +1,23 @@
 Return-Path: <keescook@google.com>
-Received: from mail-wm0-x22f.google.com (mail-wm0-x22f.google.com
- [IPv6:2a00:1450:400c:c09::22f])
+Received: from mail-wm0-x22b.google.com (mail-wm0-x22b.google.com
+ [IPv6:2a00:1450:400c:c09::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrKHw3LX5zDqFK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:25:48 +1000 (AEST)
-Received: by mail-wm0-x22f.google.com with SMTP id o80so12548142wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:25:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrKN85cDjzDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 14:29:28 +1000 (AEST)
+Received: by mail-wm0-x22b.google.com with SMTP id f65so11034013wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 21:29:28 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <20160714232019.GA28254@350D>
+In-Reply-To: <20160715020550.GB13944@balbir.ozlabs.ibm.com>
 References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-3-git-send-email-keescook@chromium.org>
- <20160714232019.GA28254@350D>
+ <1468446964-22213-12-git-send-email-keescook@chromium.org>
+ <20160715020550.GB13944@balbir.ozlabs.ibm.com>
 From: Kees Cook <keescook@chromium.org>
-Date: Thu, 14 Jul 2016 21:25:42 -0700
-Message-ID: <CAGXu5jKzD_rCMNJQU1bB5KDfKTsb+AaidZwe=FAfGMqt_FkfqQ@mail.gmail.com>
-Subject: Re: [PATCH v2 02/11] mm: Hardened usercopy
-To: bsingharora@gmail.com
+Date: Thu, 14 Jul 2016 21:29:25 -0700
+Message-ID: <CAGXu5j+Ub2-jmTa-XmF90Gd+ze1os+eqk_yijouCSQoLvU1hNQ@mail.gmail.com>
+Subject: Re: [PATCH v2 11/11] mm: SLUB hardened usercopy support
+To: Balbir Singh <bsingharora@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
  Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
  Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
@@ -51,42 +51,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 14, 2016 at 4:20 PM, Balbir Singh <bsingharora@gmail.com> wrote:
-> On Wed, Jul 13, 2016 at 02:55:55PM -0700, Kees Cook wrote:
->> [...]
->> +++ b/mm/usercopy.c
->> @@ -0,0 +1,219 @@
->> [...]
->> +/*
->> + * Checks if a given pointer and length is contained by the current
->> + * stack frame (if possible).
->> + *
->> + *   0: not at all on the stack
->> + *   1: fully within a valid stack frame
->> + *   2: fully on the stack (when can't do frame-checking)
->> + *   -1: error condition (invalid stack position or bad stack frame)
+On Thu, Jul 14, 2016 at 7:05 PM, Balbir Singh <bsingharora@gmail.com> wrote:
+> On Wed, Jul 13, 2016 at 02:56:04PM -0700, Kees Cook wrote:
+>> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
+>> SLUB allocator to catch any copies that may span objects. Includes a
+>> redzone handling fix from Michael Ellerman.
+>>
+>> Based on code from PaX and grsecurity.
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> ---
+>>  init/Kconfig |  1 +
+>>  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 37 insertions(+)
+>>
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index 798c2020ee7c..1c4711819dfd 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -1765,6 +1765,7 @@ config SLAB
+>>
+>>  config SLUB
+>>       bool "SLUB (Unqueued Allocator)"
+>> +     select HAVE_HARDENED_USERCOPY_ALLOCATOR
 >
-> Can we use enums? Makes it easier to read/debug
+> Should this patch come in earlier from a build perspective? I think
+> patch 1 introduces and uses __check_heap_object.
 
-Sure, I will update this.
+__check_heap_object in patch 1 is protected by a check for
+CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR.
 
->> [...]
->> +static void report_usercopy(const void *ptr, unsigned long len,
->> +                         bool to_user, const char *type)
->> +{
->> +     pr_emerg("kernel memory %s attempt detected %s %p (%s) (%lu bytes)\n",
->> +             to_user ? "exposure" : "overwrite",
->> +             to_user ? "from" : "to", ptr, type ? : "unknown", len);
->> +     dump_stack();
->> +     do_group_exit(SIGKILL);
->
-> SIGKILL -- SIGBUS?
-
-I'd like to keep SIGKILL since it indicates a process fiddling with a
-kernel bug. The real problem here is that there doesn't seem to be an
-arch-independent way to Oops the kernel and kill a process ("die()" is
-closest, but it's defined on a per-arch basis with varying arguments).
-This could be a BUG, but I'd rather not panic the entire kernel.
+It seemed better to be to do arch enablement first, and then add the
+per-allocator heap object size check since it was a distinct piece.
+I'm happy to rearrange things, though, if there's a good reason.
 
 -Kees
 
