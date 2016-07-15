@@ -2,18 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTv119NrzDqyY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:17 +1000 (AEST)
-In-Reply-To: <1468444634-1866-9-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Huy Nguyen <huyn@mellanox.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrTv21HGNzDqyl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 20:53:18 +1000 (AEST)
+In-Reply-To: <1467695057-12431-9-git-send-email-benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [08/15] cxl: Add support for using the kernel API with a real PHB
-Message-Id: <3rrTv04m8hz9srX@ozlabs.org>
-Date: Fri, 15 Jul 2016 20:53:16 +1000 (AEST)
+Subject: Re: [08/41] powerpc: Move epapr_paravirt_early_init() to
+ early_init_devtree()
+Message-Id: <3rrTv13X12z9sDG@ozlabs.org>
+Date: Fri, 15 Jul 2016 20:53:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-13-07 at 21:17:07 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Tue, 2016-05-07 at 05:03:44 UTC, Benjamin Herrenschmidt wrote:
+> The function is called by both 32-bit and 64-bit early setup right
+> after early_init_devtree(). All it does is run yet another early
+> DT parser which is precisely what early_init_devtree() is about,
+> so move it in there.
 > 
-> This hooks up support for using the kernel API with a real PHB. After
-> the AFU initialisation has completed it calls into the PHB code to pass
-> it the AFU that will be used by other peer physical functions on the
-> adapter.
-> 
-> The cxl_pci_to_afu API is extended to work with peer PCI devices,
-> retrieving the peer AFU from the PHB. This API may also now return an
-> error if it is called on a PCI device that is not associated with either
-> a cxl vPHB or a peer PCI device to an AFU, and this error is propagated
-> down.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/317f5ef1b363417b6f1e93b90d
+https://git.kernel.org/powerpc/c/da6a97bf12d57e341029b3624e
 
 cheers
