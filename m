@@ -1,46 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x243.google.com (mail-pa0-x243.google.com
- [IPv6:2607:f8b0:400e:c03::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rrGBq4zRPzDqyT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 12:06:11 +1000 (AEST)
-Received: by mail-pa0-x243.google.com with SMTP id dx3so5406509pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2016 19:06:11 -0700 (PDT)
-Date: Fri, 15 Jul 2016 12:05:50 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, x86@kernel.org,
- Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Subject: Re: [PATCH v2 11/11] mm: SLUB hardened usercopy support
-Message-ID: <20160715020550.GB13944@balbir.ozlabs.ibm.com>
-Reply-To: bsingharora@gmail.com
-References: <1468446964-22213-1-git-send-email-keescook@chromium.org>
- <1468446964-22213-12-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rrHwt6lRpzDqFK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2016 13:24:14 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dan Carpenter <dan.carpenter@oracle.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [bug report] Linux-2.6.12-rc2
+In-Reply-To: <20160714222224.GA25917@mwanda>
+References: <20160714222224.GA25917@mwanda>
+Date: Fri, 15 Jul 2016 13:24:11 +1000
+Message-ID: <87mvljbn38.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1468446964-22213-12-git-send-email-keescook@chromium.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,30 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 13, 2016 at 02:56:04PM -0700, Kees Cook wrote:
-> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
-> SLUB allocator to catch any copies that may span objects. Includes a
-> redzone handling fix from Michael Ellerman.
-> 
-> Based on code from PaX and grsecurity.
-> 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  init/Kconfig |  1 +
->  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 37 insertions(+)
-> 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 798c2020ee7c..1c4711819dfd 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -1765,6 +1765,7 @@ config SLAB
->  
->  config SLUB
->  	bool "SLUB (Unqueued Allocator)"
-> +	select HAVE_HARDENED_USERCOPY_ALLOCATOR
+Dan Carpenter <dan.carpenter@oracle.com> writes:
 
-Should this patch come in earlier from a build perspective? I think
-patch 1 introduces and uses __check_heap_object.
+> Hi PPC Devs,
+>
+> The patch 1da177e4c3f4: "Linux-2.6.12-rc2" from Apr 16, 2005, leads
 
-Balbir Singh.
+Might want to special case that one :)
+
+> to the following static checker warning:
+>
+> 	arch/powerpc/sysdev/ipic.c:783 ipic_set_priority()
+> 	error: buffer overflow 'ipic_info' 95 <= 127
+...
+>
+>    773  int ipic_set_priority(unsigned int virq, unsigned int priority)
+>    774  {
+>    775          struct ipic *ipic = ipic_from_irq(virq);
+>    776          unsigned int src = virq_to_hw(virq);
+>    777          u32 temp;
+>    778  
+>    779          if (priority > 7)
+>    780                  return -EINVAL;
+>    781          if (src > 127)
+>                     ^^^^^^^^^
+> We cap this at 127
+>
+>    782                  return -EINVAL;
+>    783          if (ipic_info[src].prio == 0)
+>                     ^^^^^^^^^^^^^^
+> But we only have 95 elements.  Should the array be larger or should
+> we >= ARRAY_SIZE(ipic_info) is invalid?
+
+I don't know the code personally, but looking at the history it seems new
+interrupts are added manually with specific flags.
+
+So testing against ARRAY_SIZE would be the best fix AFAICS.
+
+cheers
