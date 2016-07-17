@@ -2,16 +2,18 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rsW53565XzDqMB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rsW535Bf1zDrFW
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 12:50:31 +1000 (AEST)
 From: Scott Wood <oss@buserror.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, Scott Wood <oss@buserror.net>
-Date: Sat, 16 Jul 2016 21:50:17 -0500
-Message-Id: <1468723822-30457-1-git-send-email-oss@buserror.net>
-Subject: [PATCH v11 0/5] soc: fsl: Add initial guts driver
+Date: Sat, 16 Jul 2016 21:50:18 -0500
+Message-Id: <1468723822-30457-2-git-send-email-oss@buserror.net>
+In-Reply-To: <1468723822-30457-1-git-send-email-oss@buserror.net>
+References: <1468723822-30457-1-git-send-email-oss@buserror.net>
+Subject: [PATCH v11 1/5] dt: bindings: update Freescale DCFG compatible
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,49 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset adds the beginnings of a driver to consolidate accesses to
-the Freescale/NXP "global utilities" block.  Initially only access to SVR
-(the system version register) is provided.  This register is needed by
-various drivers, mainly for errata detection.  Access to SVR via
-mfspr(SPRN_SVR) is now discouraged, especially in drivers that are
-not PPC-specific.
+From: yangbo lu <yangbo.lu@nxp.com>
 
-I plan to send this via the PPC tree for this merge window, to provide a
-base for using/extending the guts driver in various drivers in the next
-cycle.
+Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead
+of 'fsl,ls1021a-dcfg' to include more chips such as ls1021a,
+ls1043a, and ls2080a.
 
-Scott Wood (1):
-  powerpc/fsl-pci: Use fsl_guts_get_svr()
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Scott Wood <oss@buserror.net>
+---
+ Documentation/devicetree/bindings/arm/fsl.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Yangbo Lu (2):
-  dt: bindings: move guts devicetree doc out of powerpc directory
-  soc: fsl: add GUTS driver for QorIQ platforms
-
-yangbo lu (2):
-  dt: bindings: update Freescale DCFG compatible
-  powerpc/fsl: move mpc85xx.h to include/linux/fsl
-
- Documentation/devicetree/bindings/arm/fsl.txt      |   6 +-
- .../bindings/{powerpc => soc}/fsl/guts.txt         |   3 +
- arch/powerpc/Kconfig                               |   1 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S          |   2 +-
- arch/powerpc/platforms/85xx/common.c               |   2 -
- arch/powerpc/sysdev/fsl_pci.c                      |   8 +-
- drivers/clk/clk-qoriq.c                            |   3 +-
- drivers/i2c/busses/i2c-mpc.c                       |   2 +-
- drivers/iommu/fsl_pamu.c                           |   3 +-
- drivers/net/ethernet/freescale/gianfar.c           |   2 +-
- drivers/soc/Kconfig                                |   2 +-
- drivers/soc/fsl/Kconfig                            |   8 ++
- drivers/soc/fsl/Makefile                           |   1 +
- drivers/soc/fsl/guts.c                             | 113 ++++++++++++++++++
- include/linux/fsl/guts.h                           | 126 +++++++++++++--------
- .../asm/mpc85xx.h => include/linux/fsl/svr.h       |   4 +-
- 16 files changed, 223 insertions(+), 63 deletions(-)
- rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
- create mode 100644 drivers/soc/fsl/Kconfig
- create mode 100644 drivers/soc/fsl/guts.c
- rename arch/powerpc/include/asm/mpc85xx.h => include/linux/fsl/svr.h (97%)
-
+diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
+index dbbc095..713c1ae 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.txt
++++ b/Documentation/devicetree/bindings/arm/fsl.txt
+@@ -119,7 +119,11 @@ Freescale DCFG
+ configuration and status for the device. Such as setting the secondary
+ core start address and release the secondary core from holdoff and startup.
+   Required properties:
+-  - compatible: should be "fsl,ls1021a-dcfg"
++  - compatible: should be "fsl,<chip>-dcfg"
++    Possible compatibles:
++	"fsl,ls1021a-dcfg"
++	"fsl,ls1043a-dcfg"
++	"fsl,ls2080a-dcfg"
+   - reg : should contain base address and length of DCFG memory-mapped registers
+ 
+ Example:
 -- 
 2.7.4
