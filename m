@@ -1,19 +1,42 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <simonguo@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rsW564B7dzDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 12:50:34 +1000 (AEST)
-From: Scott Wood <oss@buserror.net>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, Scott Wood <oss@buserror.net>
-Date: Sat, 16 Jul 2016 21:50:22 -0500
-Message-Id: <1468723822-30457-6-git-send-email-oss@buserror.net>
-In-Reply-To: <1468723822-30457-1-git-send-email-oss@buserror.net>
-References: <1468723822-30457-1-git-send-email-oss@buserror.net>
-Subject: [PATCH v11 5/5] powerpc/fsl-pci: Use fsl_guts_get_svr()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rsWsx0CtBzDqNB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 13:25:57 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rsWsw3Wgmz9sdn
+ for <linuxppc-dev@ozlabs.org>; Sun, 17 Jul 2016 13:25:54 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6H3OCdl136566
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Jul 2016 23:25:50 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 247h3jsena-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Sat, 16 Jul 2016 23:25:50 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <simonguo@linux.vnet.ibm.com>;
+ Sat, 16 Jul 2016 21:25:49 -0600
+Date: Sun, 17 Jul 2016 11:25:43 +0800
+From: Simon Guo <simonguo@linux.vnet.ibm.com>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@ozlabs.org, mikey@neuling.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Simon Guo <wei.guo.simon@gmail.com>
+Subject: Re: [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to
+ store live registers
+References: <20160608040036.13064-1-cyrilbur@gmail.com>
+ <20160608040036.13064-4-cyrilbur@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160608040036.13064-4-cyrilbur@gmail.com>
+Message-Id: <20160717032543.GB3843@simonLocalRHEL7.x64>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +46,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Establish an initial user of fsl_guts_get_svr(), so that the code gets
-some test coverage until users outside arch/powerpc can get converted.
+Hi Cyril,
+On Wed, Jun 08, 2016 at 02:00:34PM +1000, Cyril Bur wrote:
+> @@ -917,24 +907,10 @@ static inline void tm_recheckpoint_new_task(struct task_struct *new)
+>  		 "(new->msr 0x%lx, new->origmsr 0x%lx)\n",
+>  		 new->pid, new->thread.regs->msr, msr);
+>  
+> -	/* This loads the checkpointed FP/VEC state, if used */
+>  	tm_recheckpoint(&new->thread, msr);
+>  
+> -	/* This loads the speculative FP/VEC state, if used */
+> -	if (msr & MSR_FP) {
+> -		do_load_up_transact_fpu(&new->thread);
+> -		new->thread.regs->msr |=
+> -			(MSR_FP | new->thread.fpexc_mode);
+> -	}
+> -#ifdef CONFIG_ALTIVEC
+> -	if (msr & MSR_VEC) {
+> -		do_load_up_transact_altivec(&new->thread);
+> -		new->thread.regs->msr |= MSR_VEC;
+> -	}
+> -#endif
+> -	/* We may as well turn on VSX too since all the state is restored now */
+> -	if (msr & MSR_VSX)
+> -		new->thread.regs->msr |= MSR_VSX;
+> +	/* Won't restore math get called later? */
+> +	restore_math(new->thread.regs);
 
-Signed-off-by: Scott Wood <oss@buserror.net>
----
- arch/powerpc/Kconfig          | 1 +
- arch/powerpc/sysdev/fsl_pci.c | 6 +++++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
+I have some question for the "restore_math" in tm_recheckpoint_new_task().
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index fcfe533..765df81 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -777,6 +777,7 @@ config FSL_PCI
-  	bool
- 	select PPC_INDIRECT_PCI
- 	select PCI_QUIRKS
-+	select FSL_GUTS
- 
- config FSL_PMC
- 	bool
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 0fd1895..9ba570cf 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -22,6 +22,7 @@
- #include <linux/delay.h>
- #include <linux/string.h>
- #include <linux/fsl/edac.h>
-+#include <linux/fsl/guts.h>
- #include <linux/fsl/svr.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
-@@ -529,7 +530,10 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
- 	struct device_node *dev;
- 	struct ccsr_pci __iomem *pci;
- 	u16 temp;
--	u32 svr = mfspr(SPRN_SVR);
-+	u32 svr;
-+
-+	fsl_guts_init();
-+	svr = fsl_guts_get_svr();
- 
- 	dev = pdev->dev.of_node;
- 
--- 
-2.7.4
+Per my understanding, now after tm_recheckpoint, the fp_state content
+is obsolete.  However restore_math() will try to restore FP/Vec/VSX state 
+from fp_state, (orginally it is right, since fp_state was the valid
+checkpointed state and consistent with FP register ). Should we remove
+the restore_math() here?
+
+And, should the thread's MSR now set FP bit in tm_recheckpoint(), to 
+indicate that FP register content is "fresh" in contrast to thread.fp_state?
+
+Please correct me if I am wrong.
+
+Thanks,
+- Simon
