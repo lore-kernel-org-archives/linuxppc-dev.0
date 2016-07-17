@@ -1,18 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pa0-f65.google.com (mail-pa0-f65.google.com
+ [209.85.220.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rsPxH4b5MzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 08:58:27 +1000 (AEST)
-Message-ID: <1468709905.20552.165.camel@kernel.crashing.org>
-Subject: [PATCH] powerpc/book64s: Move a few exception common handlers to
- make room
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rsV0y1ZZFzDqFB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 12:01:54 +1000 (AEST)
+Received: by mail-pa0-f65.google.com with SMTP id hh10so8573691pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2016 19:01:54 -0700 (PDT)
+From: wei.guo.simon@gmail.com
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Date: Sat, 16 Jul 2016 17:58:25 -0500
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Cc: Simon Guo <wei.guo.simon@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Shuah Khan <shuahkh@osg.samsung.com>,
+ Anton Blanchard <anton@samba.org>, Cyril Bur <cyrilbur@gmail.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Ulrich Weigand <ulrich.weigand@de.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>,
+ Khem Raj <raj.khem@gmail.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ Chris Smart <chris@distroguy.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
+Subject: [PATCH v11 00/27] Add new powerpc specific ELF core notes
+Date: Sun, 17 Jul 2016 09:59:33 +0800
+Message-Id: <1468720800-2950-1-git-send-email-wei.guo.simon@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +37,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the CBE RAS and facility unavailable "common" handlers
-down to after the FWNMI page.
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-This frees up some space in the very demanded spaces before the
-relocation-on vectors and before the FWNMI page. They are still
-within 64K of __start, so CONFIG_RELOCATABLE should still work.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+This patch series adds twelve new ELF core note sections which can 
+be used with existing ptrace request PTRACE_GETREG/SET-SETREGSET for accessing 
+various transactional memory and other miscellaneous debug register sets on 
+powerpc platform. 
 
-Written in an airline lounge after about 30h spent in planes and
-airports, so I apologize in advance if something is just plain
-wrong here, but it seems to compile ;-)
+Note this patch series now depends on following patch:
+  [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to store live registers
 
- arch/powerpc/kernel/exceptions-64s.S | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Cyril Bur <cyrilbur@gmail.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Simon Guo <wei.guo.simon@gmail.com>
+Cc: Ulrich Weigand <ulrich.weigand@de.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Rashmica Gupta <rashmicy@gmail.com>
+Cc: Khem Raj <raj.khem@gmail.com>
+Cc: Jessica Yu <jeyu@redhat.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Cc: Miroslav Benes <mbenes@suse.cz>
+Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: Chris Smart <chris@distroguy.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-kselftest@vger.kernel.org
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 4c94406..92bab94 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -762,11 +762,6 @@ kvmppc_skip_Hinterrupt:
- #else
- 	STD_EXCEPTION_COMMON(0x1700, altivec_assist, unknown_exception)
- #endif
--#ifdef CONFIG_CBE_RAS
--	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, cbe_system_error_exception)
--	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, cbe_maintenance_exception)
--	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, cbe_thermal_exception)
--#endif /* CONFIG_CBE_RAS */
- 
- 	/*
- 	 * Relocation-on interrupts: A subset of the interrupts can be delivered
-@@ -1131,9 +1126,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	bl	vsx_unavailable_exception
- 	b	ret_from_except
- 
--	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
--	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
--
- 	/* Equivalents to the above handlers for relocation-on interrupt vectors */
- 	STD_RELON_EXCEPTION_HV_OOL(0xe40, emulation_assist)
- 	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell)
-@@ -1170,6 +1162,15 @@ fwnmi_data_area:
- 	. = 0x8000
- #endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
- 
-+	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
-+	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
-+
-+#ifdef CONFIG_CBE_RAS
-+	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, cbe_system_error_exception)
-+	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, cbe_maintenance_exception)
-+	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, cbe_thermal_exception)
-+#endif /* CONFIG_CBE_RAS */
-+
- 	.globl hmi_exception_early
- hmi_exception_early:
- 	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
+Test Result (All tests pass on both BE and LE) 
+---------------------------------------------- 
+ptrace-ebb	PASS 
+ptrace-gpr	PASS 
+ptrace-tm-gpr	PASS 
+ptrace-tm-spd-gpr	PASS 
+ptrace-tar	PASS 
+ptrace-tm-tar	PASS 
+ptrace-tm-spd-tar	PASS 
+ptrace-vsx	PASS 
+ptrace-tm-vsx	PASS 
+ptrace-tm-spd-vsx	PASS 
+ptrace-tm-spr	PASS 
+
+Previous versions: 
+================== 
+RFC: https://lkml.org/lkml/2014/4/1/292
+V1:  https://lkml.org/lkml/2014/4/2/43
+V2:  https://lkml.org/lkml/2014/5/5/88
+V3:  https://lkml.org/lkml/2014/5/23/486
+V4:  https://lkml.org/lkml/2014/11/11/6
+V5:  https://lkml.org/lkml/2014/11/25/134
+V6:  https://lkml.org/lkml/2014/12/2/98
+V7:  https://lkml.org/lkml/2015/1/14/19
+V8:  https://lkml.org/lkml/2015/5/19/700
+V9:  https://lkml.org/lkml/2015/10/8/522
+V10: https://lkml.org/lkml/2016/2/16/219
+
+Changes in V11: 
+--------------- 
+- Rework based on following patch:
+  [PATCH 3/5] powerpc: tm: Always use fp_state and vr_state to store live registers
+- Split EBB/PMU register ptrace implementation.
+- Clean some coding style warning
+- Added more shared memory based sync between parent and child during TM tests
+- Re worded some of the commit messages and cleaned them up
+- selftests/powerpc/ebb/reg.h has already moved as selftests/powerpc/reg.h
+  Dropped the previous patch doing the same thing
+- Combined the definitions of SPRN_DSCR from dscr/ test cases
+- Fixed dscr/ test cases for new SPRN_DSCR_PRIV definition available
+
+Changes in V10: 
+--------------- 
+- Rebased against the latest mainline 
+- Fixed couple of build failures in the test cases related to aux vector 
+
+Changes in V9: 
+-------------- 
+- Fixed static build check failure after tm_orig_msr got dropped 
+- Fixed asm volatile construct for used registers set 
+- Fixed EBB, VSX, VMX tests for LE 
+- Fixed TAR test which was failing because of system calls 
+- Added checks for PPC_FEATURE2_HTM aux feature in the tests 
+- Fixed copyright statements 
+
+Changes in V8: 
+-------------- 
+- Split the misc register set into individual ELF core notes 
+- Implemented support for VSX register set (on and off TM) 
+- Implemented support for EBB register set 
+- Implemented review comments on previous versions 
+- Some code re-arrangements, re-writes and documentation 
+- Added comprehensive list of test cases into selftests 
+
+Changes in V7: 
+-------------- 
+- Fixed a config directive in the MISC code 
+- Merged the two gitignore patches into a single one 
+
+Changes in V6: 
+-------------- 
+- Added two git ignore patches for powerpc selftests 
+- Re-formatted all in-code function definitions in kernel-doc format 
+
+Changes in V5: 
+-------------- 
+- Changed flush_tmregs_to_thread, so not to take into account self tracing 
+- Dropped the 3rd patch in the series which had merged two functions 
+- Fixed one build problem for the misc debug register patch 
+- Accommodated almost all the review comments from Suka on the 6th patch 
+- Minor changes to the self test program 
+- Changed commit messages for some of the patches 
+
+Changes in V4: 
+-------------- 
+- Added one test program into the powerpc selftest bucket in this regard 
+- Split the 2nd patch in the previous series into four different patches 
+- Accommodated most of the review comments on the previous patch series 
+- Added a patch to merge functions __switch_to_tm and tm_reclaim_task 
+
+Changes in V3: 
+-------------- 
+- Added two new error paths in every TM related get/set functions when regset 
+support is not present on the system (ENODEV) or when the process does not 
+have any transaction active (ENODATA) in the context 
+- Installed the active hooks for all the newly added regset core note
+types 
+
+Changes in V2: 
+-------------- 
+- Removed all the power specific ptrace requests corresponding to new
+NT_PPC_* 
+elf core note types. Now all the register sets can be accessed from
+ptrace 
+through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual
+NT_PPC* core 
+note type instead 
+- Fixed couple of attribute values for REGSET_TM_CGPR register set 
+- Renamed flush_tmreg_to_thread as flush_tmregs_to_thread 
+- Fixed 32 bit checkpointed GPR support 
+- Changed commit messages accordingly 
+Anshuman Khandual (27):
+  elf: Add powerpc specific core note sections
+  powerpc/process: Add the function flush_tmregs_to_thread
+  powerpc/ptrace: Adapt gpr32_get, gpr32_set functions for transaction
+  powerpc/ptrace: Enable support for NT_PPC_CGPR
+  powerpc/ptrace: Enable support for NT_PPC_CFPR
+  powerpc/ptrace: Enable support for NT_PPC_CVMX
+  powerpc/ptrace: Enable support for NT_PPC_CVSX
+  powerpc/ptrace: Enable support for TM SPR state
+  powerpc/ptrace: Enable NT_PPC_TM_CTAR, NT_PPC_TM_CPPR, NT_PPC_TM_CDSCR
+  powerpc/ptrace: Enable support for NT_PPPC_TAR, NT_PPC_PPR,
+    NT_PPC_DSCR
+  powerpc/ptrace: Enable support for EBB registers
+  powerpc/ptrace: Enable support for Performance Monitor registers
+  selftests/powerpc: Add more SPR numbers, TM & VMX instructions to
+    'reg.h'
+  selftests/powerpc: Use the new SPRN_DSCR_PRIV definiton
+  selftests/powerpc: Add ptrace tests for EBB
+  selftests/powerpc: Add ptrace tests for GPR/FPR registers
+  selftests/powerpc: Add ptrace tests for GPR/FPR registers in TM
+  selftests/powerpc: Add ptrace tests for GPR/FPR registers in suspended
+    TM
+  selftests/powerpc: Add ptrace tests for TAR, PPR, DSCR registers
+  selftests/powerpc: Add ptrace tests for TAR, PPR, DSCR in TM
+  selftests/powerpc: Add ptrace tests for TAR, PPR, DSCR in suspended TM
+  selftests/powerpc: Add ptrace tests for VSX, VMX registers
+  selftests/powerpc: Add ptrace tests for VSX, VMX registers in TM
+  selftests/powerpc: Add ptrace tests for VSX, VMX registers in
+    suspended TM
+  selftests/powerpc: Add ptrace tests for TM SPR registers
+  selftests/powerpc: Add .gitignore file for ptrace executables
+  selftests/powerpc: Fix a build issue
+
+ arch/powerpc/include/asm/switch_to.h               |    8 +
+ arch/powerpc/include/uapi/asm/elf.h                |    5 +
+ arch/powerpc/kernel/process.c                      |   20 +
+ arch/powerpc/kernel/ptrace.c                       | 1601 +++++++++++++++++---
+ include/uapi/linux/elf.h                           |   13 +
+ tools/testing/selftests/powerpc/Makefile           |    3 +-
+ .../selftests/powerpc/context_switch/cp_abort.c    |    6 +-
+ tools/testing/selftests/powerpc/dscr/dscr.h        |   10 +-
+ tools/testing/selftests/powerpc/ptrace/.gitignore  |   11 +
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   13 +
+ .../testing/selftests/powerpc/ptrace/ptrace-ebb.c  |  184 +++
+ .../testing/selftests/powerpc/ptrace/ptrace-ebb.h  |  102 ++
+ .../testing/selftests/powerpc/ptrace/ptrace-gpr.c  |  195 +++
+ .../testing/selftests/powerpc/ptrace/ptrace-gpr.h  |   74 +
+ .../testing/selftests/powerpc/ptrace/ptrace-tar.c  |  158 ++
+ .../testing/selftests/powerpc/ptrace/ptrace-tar.h  |   50 +
+ .../selftests/powerpc/ptrace/ptrace-tm-gpr.c       |  296 ++++
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c   |  322 ++++
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-tar.c   |  192 +++
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c   |  218 +++
+ .../selftests/powerpc/ptrace/ptrace-tm-spr.c       |  175 +++
+ .../selftests/powerpc/ptrace/ptrace-tm-tar.c       |  179 +++
+ .../selftests/powerpc/ptrace/ptrace-tm-vsx.c       |  205 +++
+ .../testing/selftests/powerpc/ptrace/ptrace-vsx.c  |  140 ++
+ .../testing/selftests/powerpc/ptrace/ptrace-vsx.h  |  121 ++
+ tools/testing/selftests/powerpc/ptrace/ptrace.S    |  396 +++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.h    |  783 ++++++++++
+ tools/testing/selftests/powerpc/reg.h              |   42 +-
+ .../powerpc/tm/tm-signal-context-chk-fpu.c         |    3 -
+ .../powerpc/tm/tm-signal-context-chk-gpr.c         |    3 -
+ .../powerpc/tm/tm-signal-context-chk-vmx.c         |    3 -
+ .../powerpc/tm/tm-signal-context-chk-vsx.c         |    3 -
+ .../selftests/powerpc/tm/tm-signal-context-chk.c   |    3 -
+ 33 files changed, 5338 insertions(+), 199 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tar.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tar.h
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-vsx.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-vsx.h
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.S
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.h
+
+-- 
+1.8.3.1
