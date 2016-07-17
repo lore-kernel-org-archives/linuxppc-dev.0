@@ -2,18 +2,19 @@ Return-Path: <oss@buserror.net>
 Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rsW535Bf1zDrFW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rsW535FpMzDrFY
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 12:50:31 +1000 (AEST)
 From: Scott Wood <oss@buserror.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Yangbo Lu <yangbo.lu@nxp.com>, linux-mmc@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
  devicetree@vger.kernel.org, Scott Wood <oss@buserror.net>
-Date: Sat, 16 Jul 2016 21:50:18 -0500
-Message-Id: <1468723822-30457-2-git-send-email-oss@buserror.net>
+Date: Sat, 16 Jul 2016 21:50:19 -0500
+Message-Id: <1468723822-30457-3-git-send-email-oss@buserror.net>
 In-Reply-To: <1468723822-30457-1-git-send-email-oss@buserror.net>
 References: <1468723822-30457-1-git-send-email-oss@buserror.net>
-Subject: [PATCH v11 1/5] dt: bindings: update Freescale DCFG compatible
+Subject: [PATCH v11 2/5] dt: bindings: move guts devicetree doc out of powerpc
+ directory
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: yangbo lu <yangbo.lu@nxp.com>
+From: Yangbo Lu <yangbo.lu@nxp.com>
 
-Update Freescale DCFG compatible with 'fsl,<chip>-dcfg' instead
-of 'fsl,ls1021a-dcfg' to include more chips such as ls1021a,
-ls1043a, and ls2080a.
+Move guts devicetree doc to Documentation/devicetree/bindings/soc/fsl/
+since it's used by not only PowerPC but also ARM. And add a specification
+for 'little-endian' property.
 
 Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
 Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Scott Wood <oss@buserror.net>
 ---
- Documentation/devicetree/bindings/arm/fsl.txt | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+ rename Documentation/devicetree/bindings/{powerpc => soc}/fsl/guts.txt (91%)
 
-diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
-index dbbc095..713c1ae 100644
---- a/Documentation/devicetree/bindings/arm/fsl.txt
-+++ b/Documentation/devicetree/bindings/arm/fsl.txt
-@@ -119,7 +119,11 @@ Freescale DCFG
- configuration and status for the device. Such as setting the secondary
- core start address and release the secondary core from holdoff and startup.
-   Required properties:
--  - compatible: should be "fsl,ls1021a-dcfg"
-+  - compatible: should be "fsl,<chip>-dcfg"
-+    Possible compatibles:
-+	"fsl,ls1021a-dcfg"
-+	"fsl,ls1043a-dcfg"
-+	"fsl,ls2080a-dcfg"
-   - reg : should contain base address and length of DCFG memory-mapped registers
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+similarity index 91%
+rename from Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+rename to Documentation/devicetree/bindings/soc/fsl/guts.txt
+index b71b203..07adca9 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/guts.txt
+@@ -25,6 +25,9 @@ Recommended properties:
+  - fsl,liodn-bits : Indicates the number of defined bits in the LIODN
+    registers, for those SOCs that have a PAMU device.
  
- Example:
++ - little-endian : Indicates that the global utilities block is little
++   endian. The default is big endian.
++
+ Examples:
+ 	global-utilities@e0000 {	/* global utilities block */
+ 		compatible = "fsl,mpc8548-guts";
 -- 
 2.7.4
