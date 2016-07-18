@@ -1,17 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-To: Darren Stevens <darren@stevens-zone.net>
-Subject: Re: [PATCH 0/1] pasemi: Add fixup_device_tree function to prom_init
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtMgV5m7fzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 22:19:50 +1000 (AEST)
+Date: Mon, 18 Jul 2016 22:19:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Kees Cook <keescook@google.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Christophe Leroy
+ <christophe.leroy@c-s.fr>, "oss@buserror.net" <oss@buserror.net>
+Subject: Re: linux-next: manual merge of the kspp tree with the powerpc tree
+Message-ID: <20160718221949.620fba2c@canb.auug.org.au>
+In-Reply-To: <871t2rb496.fsf@@concordia.ellerman.id.au>
+References: <20160718130315.314f8a77@canb.auug.org.au>
+ <871t2rb496.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Mon, 18 Jul 2016 21:16:12 +1000
-From: mpe <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Olof Johansson <olof@lixom.net>,
- Christian Zigotzky <chzigotzky@xenosoft.de>, Linuxppc-dev
- <linuxppc-dev-bounces+mpe=ellerman.id.au@lists.ozlabs.org>
-In-Reply-To: <487fa010858.3ea76b1c@auth.smtp.1and1.co.uk>
-References: <487fa010858.3ea76b1c@auth.smtp.1and1.co.uk>
-Message-ID: <5bb1da8238b302cb807cfd6b9dc2ca54@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,28 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2016-07-18 04:40, Darren Stevens wrote:
-> Hello All,
+Hi Michael,
 
-Hi Darren,
+On Mon, 18 Jul 2016 21:00:05 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> 
+> > from the powerpc tree and commit:  
+> 
+> Actually that's in Scott's tree.
 
-> I'm currently working on some device tree patches for the AmigaOne 
-> X1000,
-> which I hope to push into the mainline kernel, however there is 
-> currently no
-> function for PASemi fixes, this patch introduces it. No code changes at
-> this time.
+Oops, sorry.
 
-I'd love to have those workarounds handled via a fixup function.
+> > Michael: time to sort these selects?  
+> 
+> Yeah I was thinking that the other day. Not sure when is a good time though.
 
-But I'd rather wait until we actually have some content for the 
-function.
-Is there any reason you need the empty version merged into mainline?
+Just after -rc1, before you open the powerpc tree up again so most of
+the powerpc patches can be based after it.  Also a good time to update
+the config files if necessary.
 
-> This will be for 4.8 (if possible)
-
-It's probably too late for 4.8. But send it whenever it's ready and I'll 
-put
-it in as soon as is practical.
-
-cheers
+-- 
+Cheers,
+Stephen Rothwell
