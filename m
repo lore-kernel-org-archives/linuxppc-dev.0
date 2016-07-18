@@ -1,25 +1,27 @@
-Return-Path: <hzpeterchen@gmail.com>
-Received: from mail-pf0-f194.google.com (mail-pf0-f194.google.com
- [209.85.192.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dyoung@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rt5vc3Yh9zDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 11:59:23 +1000 (AEST)
-Received: by mail-pf0-f194.google.com with SMTP id y134so6262314pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jul 2016 18:59:23 -0700 (PDT)
-Date: Mon, 18 Jul 2016 09:50:23 +0800
-From: Peter Chen <hzpeterchen@gmail.com>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Li Yang <leoli@freescale.com>, Felipe Balbi <balbi@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [patch] usb: gadget: fsl_qe_udc: signedness bug in qe_get_frame()
-Message-ID: <20160718015023.GA31293@shlinux2>
-References: <20160715111547.GF9258@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rt6bZ61dtzDqDX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 12:30:34 +1000 (AEST)
+Date: Mon, 18 Jul 2016 10:30:24 +0800
+From: Dave Young <dyoung@redhat.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>, bhe@redhat.com,
+ arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ ebiederm@xmission.com, bauerman@linux.vnet.ibm.com,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 3/3] kexec: extend kexec_file_load system call
+Message-ID: <20160718023024.GB6310@dhcp-128-65.nay.redhat.com>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <20160712014201.11456-4-takahiro.akashi@linaro.org>
+ <20160715130955.GC23514@redhat.com>
+ <20160715131950.GB19840@leverpostej>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160715111547.GF9258@mwanda>
+In-Reply-To: <20160715131950.GB19840@leverpostej>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 15, 2016 at 02:15:47PM +0300, Dan Carpenter wrote:
-> We can't assign -EINVAL to a u16.
+On 07/15/16 at 02:19pm, Mark Rutland wrote:
+> On Fri, Jul 15, 2016 at 09:09:55AM -0400, Vivek Goyal wrote:
+> > On Tue, Jul 12, 2016 at 10:42:01AM +0900, AKASHI Takahiro wrote:
+> > 
+> > [..]
+> > > -SYSCALL_DEFINE5(kexec_file_load, int, kernel_fd, int, initrd_fd,
+> > > +SYSCALL_DEFINE6(kexec_file_load, int, kernel_fd, int, initrd_fd,
+> > >  		unsigned long, cmdline_len, const char __user *, cmdline_ptr,
+> > > -		unsigned long, flags)
+> > > +		unsigned long, flags, const struct kexec_fdset __user *, ufdset)
+> > 
+> > Can one add more parameters to existing syscall. Can it break existing
+> > programs with new kernel? I was of the impression that one can't do that.
+> > But may be I am missing something.
 > 
-> Fixes: 3948f0e0c999 ('usb: add Freescale QE/CPM USB peripheral controller driver')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> I think the idea was that we would only look at the new params if a new
+> flags was set, and otherwise it would behave as the old syscall.
 > 
-> diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-> index 93d28cb..901366f 100644
-> --- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-> +++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-> @@ -1878,11 +1878,8 @@ static int qe_get_frame(struct usb_gadget *gadget)
->  
->  	tmp = in_be16(&udc->usb_param->frame_n);
->  	if (tmp & 0x8000)
-> -		tmp = tmp & 0x07ff;
-> -	else
-> -		tmp = -EINVAL;
-> -
-> -	return (int)tmp;
-> +		return tmp & 0x07ff;
-> +	return -EINVAL;
->  }
+> Regardless, I think it makes far more sense to add a kexec_file_load2
+> syscall if we're going to modify the prototype at all. It's a rather
+> different proposition to the existing syscall, and needs to be treated
+> as such.
 
-Acked-by: Peter Chen <peter.chen@nxp.com>
->  
->  static int fsl_qe_start(struct usb_gadget *gadget,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I do not think it is worth to add another syscall for extra fds.
+We have open(2) as an example for different numbers of arguments
+already.
 
--- 
-
-Best Regards,
-Peter Chen
+Thanks
+Dave
