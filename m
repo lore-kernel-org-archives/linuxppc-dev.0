@@ -1,59 +1,40 @@
-Return-Path: <borntraeger@de.ibm.com>
+Return-Path: <andrew.donnellan@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtDzM6C4gzDqDX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 17:18:07 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtFp76ycHzDqDX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 17:55:11 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6I7DcG3018472
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 03:18:05 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 248ncnf2fj-1
+ u6I7roQo073928
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 03:55:09 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2482fvvceu-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 03:18:05 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 03:55:09 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Mon, 18 Jul 2016 08:18:02 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 70A6117D805D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 08:19:28 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6I7HxkO2818394
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 07:17:59 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6I7HwYw021753
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 03:17:59 -0400
-Subject: Re: [PATCH V2 4/5] kvm/stats: Add provisioning for 64-bit vcpu
- statistics
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Paolo Bonzini <pbonzini@redhat.com>, David Matlack <dmatlack@google.com>
-References: <1468220912-22828-1-git-send-email-sjitindarsingh@gmail.com>
- <1468220912-22828-4-git-send-email-sjitindarsingh@gmail.com>
- <CALzav=e=hScxto3c=4rJ88Phg989UZhk+O44rV56obFP3v1SFg@mail.gmail.com>
- <9253603f-fbfb-09f1-9576-9291d1587397@redhat.com>
- <CALzav=cueDab=SQ0WmL6JcAY-18SLvcaVF9Zc1Ezs_f-eP7HOA@mail.gmail.com>
- <353f05d6-74a2-69c0-978d-7c3df6b33755@redhat.com>
- <578681D6.8070801@de.ibm.com>
- <46eaef93-af3a-4dbb-eb3e-df3d63b1eb1c@redhat.com>
- <57889634.9030302@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
- paulus@samba.org, benh@kernel.crashing.org,
- kvm list <kvm@vger.kernel.org>, agraf@suse.com,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Mon, 18 Jul 2016 09:17:58 +0200
-MIME-Version: 1.0
-In-Reply-To: <57889634.9030302@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <578C82A6.6090201@de.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 18 Jul 2016 17:55:04 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7BE6C2BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 17:55:01 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6I7t1Pn26411206
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 17:55:01 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6I7t0AU012210
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 17:55:01 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: imunsie@au1.ibm.com
+Subject: [PATCH] powerpc/powernv: fix pci-cxl.c build when CONFIG_MODULES=n
+Date: Mon, 18 Jul 2016 17:53:19 +1000
+Message-Id: <1468828399-30151-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,30 +44,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2016 09:52 AM, Suraj Jitindar Singh wrote:
-> 
-> 
-> On 14/07/16 19:42, Paolo Bonzini wrote:
->>
->> On 13/07/2016 20:00, Christian Borntraeger wrote:
->>>>>>> I thought u64 still existed on 32-bit architectures. unsigned long
->>>>>>> would be fine but with the caveat that certain stats would overflow on
->>>>>>> 32-bit architectures.
->>>>> Yes, but not all 32-bit architectures can do atomic read-modify-write
->>>>> (e.g. add) operations on 64-bit values.
->>> So what about only doing it for the VCPU events? Those should be only
->>> modified by one CPU. We would have some odd values on 32bit overflow, but
->>> this will be certainly better than just start with 0
->> If that's good enough for PPC, that's fine.
->>
->> Paolo
-> 
-> I'm don't feel great about having vcpu_stats as u64 and vm_stats still as u32
-> it's just a bit inconsistent.
-> 
-> That being said, it's only the vcpu_stats which I require to be u64 at this
-> stage so it's possible to just upgrade those.
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Yes, its not nice, but we probably want to avoid the overhead of atomics.
-What about using u64 for vcpu_stats and unsigned long for vm_stats. This will be
-correct for anyone and on 64bit systems we get 64 bits for everything?
+pnv_cxl_enable_phb_kernel_api() grabs a reference to the cxl module to
+prevent it from being unloaded after the PHB has been switched to CX4 mode.
+This breaks the build when CONFIG_MODULES=n as module_mutex doesn't exist.
+
+However, if we don't have modules, we don't need to protect against the
+case of the cxl module being unloaded. As such, split the relevant
+code out into a function surrounded with #if IS_MODULE(CXL) so we don't try
+to compile it if cxl isn't being compiled as a module.
+
+Fixes: 5918dbc9b4ec ("powerpc/powernv: Add support for the cxl kernel api
+on the real phb")
+Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+---
+
+Compile tested only.
+---
+ arch/powerpc/platforms/powernv/pci-cxl.c | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
+index 1559ca2..40b9d19 100644
+--- a/arch/powerpc/platforms/powernv/pci-cxl.c
++++ b/arch/powerpc/platforms/powernv/pci-cxl.c
+@@ -166,6 +166,23 @@ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ }
+ EXPORT_SYMBOL(pnv_cxl_ioda_msi_setup);
+ 
++#if IS_MODULE(cxl)
++static inline void get_cxl_module(void)
++{
++       struct module *cxl_module;
++
++       mutex_lock(&module_mutex);
++       cxl_module = find_module("cxl");
++       if (cxl_module)
++              __module_get(cxl_module);
++       mutex_unlock(&module_mutex);
++       if (!cxl_module)
++              return -ENODEV;
++}
++#else
++static inline void get_cxl_module(void) {}
++#endif
++
+ /*
+  * Sets flags and switches the controller ops to enable the cxl kernel api.
+  * Original the cxl kernel API operated on a virtual PHB, but certain cards
+@@ -175,7 +192,6 @@ EXPORT_SYMBOL(pnv_cxl_ioda_msi_setup);
+ int pnv_cxl_enable_phb_kernel_api(struct pci_controller *hose, bool enable)
+ {
+ 	struct pnv_phb *phb = hose->private_data;
+-	struct module *cxl_module;
+ 
+ 	if (!enable) {
+ 		/*
+@@ -194,13 +210,7 @@ int pnv_cxl_enable_phb_kernel_api(struct pci_controller *hose, bool enable)
+ 	 * long as we are in this mode (and since we can't safely disable this
+ 	 * mode once enabled...).
+ 	 */
+-	mutex_lock(&module_mutex);
+-	cxl_module = find_module("cxl");
+-	if (cxl_module)
+-		__module_get(cxl_module);
+-	mutex_unlock(&module_mutex);
+-	if (!cxl_module)
+-		return -ENODEV;
++	get_cxl_module();
+ 
+ 	phb->flags |= PNV_PHB_FLAG_CXL;
+ 	hose->controller_ops = pnv_cxl_cx4_ioda_controller_ops;
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
