@@ -1,47 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rt9vH0zB3zDqDX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 14:59:22 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6I4wMRC000572
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 00:59:20 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 248ncnbpq9-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 00:59:20 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 18 Jul 2016 14:59:17 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 772C32BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 14:59:15 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6I4xFf223724202
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 14:59:15 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6I4xEgV027823
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 14:59:15 +1000
-Subject: Re: [PATCH v2] cxl: remove dead Kconfig options
-To: linuxppc-dev@lists.ozlabs.org
-References: <1467616334-20977-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1468817577-1843-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Cc: clombard@linux.vnet.ibm.com, linux-scsi@vger.kernel.org,
- mrochs@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- manoj@linux.vnet.ibm.com, imunsie@au1.ibm.com
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Mon, 18 Jul 2016 14:59:14 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtC6f5DKSzDqDX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 15:54:18 +1000 (AEST)
+Date: Mon, 18 Jul 2016 15:54:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@kernel.org>,
+ <kvm@vger.kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Mahesh
+ Salgaonkar <mahesh@linux.vnet.ibm.com>, Paul Mackerras <paulus@ozlabs.org>
+Subject: linux-next: manual merge of the kvm tree with the powerpc tree
+Message-ID: <20160718155418.2ca9a858@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <1468817577-1843-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <14b26416-8ead-5329-13bb-078b6badd0cd@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,24 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/07/16 14:52, Andrew Donnellan wrote:
-> Remove the CXL_KERNEL_API and CXL_EEH Kconfig options, as they were only
-> needed to coordinate the merging of the cxlflash driver. Also remove the
-> stub implementation of cxl_perst_reloads_same_image() in cxlflash which is
-> only used if CXL_EEH isn't defined (i.e. never).
->
-> Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
->
-> ---
->
-> Applies on top of powerpc#next, now that the Mellanox CX-4 patches have
-> been applied.
+Hi all,
 
-As it turns out, this patch is exactly identical to V1... oh well.
+Today's linux-next merge of the kvm tree got a conflict in:
+
+  arch/powerpc/kernel/exceptions-64s.S
+
+between commit:
+
+  9baaef0a22c8 ("powerpc/irq: Add support for HV virtualization interrupts")
+
+from the powerpc tree and commit:
+
+  fd7bacbca47a ("KVM: PPC: Book3S HV: Fix TB corruption in guest exit path on HMI interrupt")
+
+from the kvm tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/kernel/exceptions-64s.S
+index 6200e4925d26,0eba47e074b9..000000000000
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@@ -669,8 -680,8 +669,10 @@@ _GLOBAL(__replay_interrupt
+  BEGIN_FTR_SECTION
+  	cmpwi	r3,0xe80
+  	beq	h_doorbell_common
+ +	cmpwi	r3,0xea0
+ +	beq	h_virt_irq_common
++ 	cmpwi	r3,0xe60
++ 	beq	hmi_exception_common
+  FTR_SECTION_ELSE
+  	cmpwi	r3,0xa00
+  	beq	doorbell_super_common
+@@@ -1161,18 -1172,9 +1163,18 @@@ fwnmi_data_area
+  	. = 0x8000
+  #endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
+  
+ +	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
+ +	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
+ +
+ +#ifdef CONFIG_CBE_RAS
+ +	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, cbe_system_error_exception)
+ +	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, cbe_maintenance_exception)
+ +	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, cbe_thermal_exception)
+ +#endif /* CONFIG_CBE_RAS */
+ +
+  	.globl hmi_exception_early
+  hmi_exception_early:
+- 	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
++ 	EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST, 0xe62)
+  	mr	r10,r1			/* Save r1			*/
+  	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
+  	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
