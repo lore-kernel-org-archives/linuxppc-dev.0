@@ -1,51 +1,63 @@
-Return-Path: <pfsmorigo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtRqd31x9zDqLw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 01:27:09 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6IFO6lG139602
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 11:27:07 -0400
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2482asv1rx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 11:27:06 -0400
-Received: from localhost
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
- Mon, 18 Jul 2016 12:27:04 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id ABF371DC0071
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 11:26:53 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6IFR1pr58720358
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 12:27:01 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6IFR0tS021331
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 12:27:01 -0300
-From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtS474Xh3zDqDX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 01:37:59 +1000 (AEST)
+Date: Mon, 18 Jul 2016 17:38:03 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Topi Miettinen <toiwoton@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Paolo Bonzini <pbonzini@redhat.com>,
+ Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Alexander Graf <agraf@suse.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- linux-crypto@vger.kernel.org (open list:IBM Power VMX Cryptographic
- instructions),
- linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT))
-Subject: [PATCH v2 2/2] crypto: vmx - Adding support for XTS
-Date: Mon, 18 Jul 2016 12:26:26 -0300
-In-Reply-To: <1468855586-848-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-References: <1468855586-848-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-Message-Id: <1468855586-848-2-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+ Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>,
+ Hal Rosenstock <hal.rosenstock@gmail.com>,
+ Mike Marciniszyn <mike.marciniszyn@intel.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Christian Benvenuti <benve@cisco.com>,
+ Dave Goodell <dgoodell@cisco.com>, Sudeep Dutt <sudeep.dutt@intel.com>,
+ Ashutosh Dixit <ashutosh.dixit@intel.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Alexei Starovoitov <ast@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>,
+ Konstantin Khlebnikov <koct9i@gmail.com>,
+ Cyrill Gorcunov <gorcunov@openvz.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@suse.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Eric B Munson <emunson@akamai.com>, Alexey Klimov <klimov.linux@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Chen Gang <gang.chen.5i5j@gmail.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ David Rientjes <rientjes@google.com>, Hugh Dickins <hughd@google.com>,
+ Alexander Kuleshov <kuleshovmail@gmail.com>,
+ "open list:IA64 (Itanium) PLATFORM" <linux-ia64@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM)" <kvm@vger.kernel.org>,
+ "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC" <kvm-ppc@vger.kernel.org>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "open list:INFINIBAND SUBSYSTEM" <linux-rdma@vger.kernel.org>,
+ "open list:BPF (Safe dynamic programs and tools)" <netdev@vger.kernel.org>,
+ "open list:MEMORY MANAGEMENT" <linux-mm@kvack.org>
+Subject: Re: [PATCH 09/14] resource limits: track highwater mark of locked
+ memory
+Message-ID: <20160718153802.GA31174@redhat.com>
+References: <1468578983-28229-1-git-send-email-toiwoton@gmail.com>
+ <1468578983-28229-10-git-send-email-toiwoton@gmail.com>
+ <20160715151408.GA32317@redhat.com>
+ <5c43bc33-6625-ceb7-e96e-adf7df5b642c@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5c43bc33-6625-ceb7-e96e-adf7df5b642c@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,242 +67,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>
+On 07/15, Topi Miettinen wrote:
+>
+> On 07/15/16 15:14, Oleg Nesterov wrote:
+> >
+> > Btw this is not right. The same for the previous patch which tracks
+> > RLIMIT_STACK. The "current" task can debugger/etc.
+>
+> acct_stack_growth() is called from expand_upwards() and
+> expand_downwards(). They call security_mmap_addr() and the various LSM
+> implementations also use current task in the checks. Are these also not
+> right?
 
-This patch add XTS support using VMX-crypto driver.
+Just suppose that the stack grows because you read/write to /proc/pid/mem.
 
-Signed-off-by: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
-Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
----
- drivers/crypto/vmx/Makefile  |   2 +-
- drivers/crypto/vmx/aes_xts.c | 190 +++++++++++++++++++++++++++++++++++++++++++
- drivers/crypto/vmx/vmx.c     |   2 +
- 3 files changed, 193 insertions(+), 1 deletion(-)
- create mode 100644 drivers/crypto/vmx/aes_xts.c
+> > Yes, yes, this just reminds that the whole rlimit logic in this path
+> > is broken but still...
+>
+> I'd be happy to fix the logic with a separate prerequisite patch and
+> then use the right logic for this patch, but I'm not sure I know how.
+> Could you elaborate a bit?
 
-diff --git a/drivers/crypto/vmx/Makefile b/drivers/crypto/vmx/Makefile
-index d28ab96..de6e241 100644
---- a/drivers/crypto/vmx/Makefile
-+++ b/drivers/crypto/vmx/Makefile
-@@ -1,5 +1,5 @@
- obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
--vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o ghash.o
-+vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
- 
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- TARGET := linux-ppc64le
-diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
-new file mode 100644
-index 0000000..cfb2541
---- /dev/null
-+++ b/drivers/crypto/vmx/aes_xts.c
-@@ -0,0 +1,190 @@
-+/**
-+ * AES XTS routines supporting VMX In-core instructions on Power 8
-+ *
-+ * Copyright (C) 2015 International Business Machines Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundations; version 2 only.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY of FITNESS FOR A PARTICUPAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ * Author: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/err.h>
-+#include <linux/crypto.h>
-+#include <linux/delay.h>
-+#include <linux/hardirq.h>
-+#include <asm/switch_to.h>
-+#include <crypto/aes.h>
-+#include <crypto/scatterwalk.h>
-+#include <crypto/xts.h>
-+
-+#include "aesp8-ppc.h"
-+
-+struct p8_aes_xts_ctx {
-+	struct crypto_blkcipher *fallback;
-+	struct aes_key enc_key;
-+	struct aes_key dec_key;
-+	struct aes_key tweak_key;
-+};
-+
-+static int p8_aes_xts_init(struct crypto_tfm *tfm)
-+{
-+	const char *alg;
-+	struct crypto_blkcipher *fallback;
-+	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
-+
-+	if (!(alg = crypto_tfm_alg_name(tfm))) {
-+		printk(KERN_ERR "Failed to get algorithm name.\n");
-+		return -ENOENT;
-+	}
-+
-+	fallback =
-+		crypto_alloc_blkcipher(alg, 0, CRYPTO_ALG_NEED_FALLBACK);
-+	if (IS_ERR(fallback)) {
-+		printk(KERN_ERR
-+			"Failed to allocate transformation for '%s': %ld\n",
-+			alg, PTR_ERR(fallback));
-+		return PTR_ERR(fallback);
-+	}
-+	printk(KERN_INFO "Using '%s' as fallback implementation.\n",
-+		crypto_tfm_alg_driver_name((struct crypto_tfm *) fallback));
-+
-+	crypto_blkcipher_set_flags(
-+		fallback,
-+		crypto_blkcipher_get_flags((struct crypto_blkcipher *)tfm));
-+	ctx->fallback = fallback;
-+
-+	return 0;
-+}
-+
-+static void p8_aes_xts_exit(struct crypto_tfm *tfm)
-+{
-+	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
-+
-+	if (ctx->fallback) {
-+		crypto_free_blkcipher(ctx->fallback);
-+		ctx->fallback = NULL;
-+	}
-+}
-+
-+static int p8_aes_xts_setkey(struct crypto_tfm *tfm, const u8 *key,
-+			     unsigned int keylen)
-+{
-+	int ret;
-+	struct p8_aes_xts_ctx *ctx = crypto_tfm_ctx(tfm);
-+
-+	ret = xts_check_key(tfm, key, keylen);
-+	if (ret)
-+		return ret;
-+
-+	preempt_disable();
-+	pagefault_disable();
-+	enable_kernel_vsx();
-+	ret = aes_p8_set_encrypt_key(key + keylen/2, (keylen/2) * 8, &ctx->tweak_key);
-+	ret += aes_p8_set_encrypt_key(key, (keylen/2) * 8, &ctx->enc_key);
-+	ret += aes_p8_set_decrypt_key(key, (keylen/2) * 8, &ctx->dec_key);
-+	disable_kernel_vsx();
-+	pagefault_enable();
-+	preempt_enable();
-+
-+	ret += crypto_blkcipher_setkey(ctx->fallback, key, keylen);
-+	return ret;
-+}
-+
-+static int p8_aes_xts_crypt(struct blkcipher_desc *desc,
-+			    struct scatterlist *dst,
-+			    struct scatterlist *src,
-+			    unsigned int nbytes, int enc)
-+{
-+	int ret;
-+	u8 tweak[AES_BLOCK_SIZE];
-+	u8 *iv;
-+	struct blkcipher_walk walk;
-+	struct p8_aes_xts_ctx *ctx =
-+		crypto_tfm_ctx(crypto_blkcipher_tfm(desc->tfm));
-+	struct blkcipher_desc fallback_desc = {
-+		.tfm = ctx->fallback,
-+		.info = desc->info,
-+		.flags = desc->flags
-+	};
-+
-+	if (in_interrupt()) {
-+		ret = enc ? crypto_blkcipher_encrypt(&fallback_desc, dst, src, nbytes) :
-+                            crypto_blkcipher_decrypt(&fallback_desc, dst, src, nbytes);
-+	} else {
-+		preempt_disable();
-+		pagefault_disable();
-+		enable_kernel_vsx();
-+
-+		blkcipher_walk_init(&walk, dst, src, nbytes);
-+
-+		iv = (u8 *)walk.iv;
-+		ret = blkcipher_walk_virt(desc, &walk);
-+		memset(tweak, 0, AES_BLOCK_SIZE);
-+		aes_p8_encrypt(iv, tweak, &ctx->tweak_key);
-+
-+		while ((nbytes = walk.nbytes)) {
-+			if (enc)
-+				aes_p8_xts_encrypt(walk.src.virt.addr, walk.dst.virt.addr,
-+						nbytes & AES_BLOCK_MASK, &ctx->enc_key, NULL, tweak);
-+			else
-+				aes_p8_xts_decrypt(walk.src.virt.addr, walk.dst.virt.addr,
-+						nbytes & AES_BLOCK_MASK, &ctx->dec_key, NULL, tweak);
-+
-+			nbytes &= AES_BLOCK_SIZE - 1;
-+			ret = blkcipher_walk_done(desc, &walk, nbytes);
-+		}
-+
-+		disable_kernel_vsx();
-+		pagefault_enable();
-+		preempt_enable();
-+	}
-+	return ret;
-+}
-+
-+static int p8_aes_xts_encrypt(struct blkcipher_desc *desc,
-+			      struct scatterlist *dst,
-+			      struct scatterlist *src, unsigned int nbytes)
-+{
-+	return p8_aes_xts_crypt(desc, dst, src, nbytes, 1);
-+}
-+
-+static int p8_aes_xts_decrypt(struct blkcipher_desc *desc,
-+			      struct scatterlist *dst,
-+			      struct scatterlist *src, unsigned int nbytes)
-+{
-+	return p8_aes_xts_crypt(desc, dst, src, nbytes, 0);
-+}
-+
-+struct crypto_alg p8_aes_xts_alg = {
-+	.cra_name = "xts(aes)",
-+	.cra_driver_name = "p8_aes_xts",
-+	.cra_module = THIS_MODULE,
-+	.cra_priority = 2000,
-+	.cra_type = &crypto_blkcipher_type,
-+	.cra_flags = CRYPTO_ALG_TYPE_BLKCIPHER | CRYPTO_ALG_NEED_FALLBACK,
-+	.cra_alignmask = 0,
-+	.cra_blocksize = AES_BLOCK_SIZE,
-+	.cra_ctxsize = sizeof(struct p8_aes_xts_ctx),
-+	.cra_init = p8_aes_xts_init,
-+	.cra_exit = p8_aes_xts_exit,
-+	.cra_blkcipher = {
-+			.ivsize = AES_BLOCK_SIZE,
-+			.min_keysize = 2 * AES_MIN_KEY_SIZE,
-+			.max_keysize = 2 * AES_MAX_KEY_SIZE,
-+			.setkey	 = p8_aes_xts_setkey,
-+			.encrypt = p8_aes_xts_encrypt,
-+			.decrypt = p8_aes_xts_decrypt,
-+	}
-+};
-diff --git a/drivers/crypto/vmx/vmx.c b/drivers/crypto/vmx/vmx.c
-index e163d57..f688c32 100644
---- a/drivers/crypto/vmx/vmx.c
-+++ b/drivers/crypto/vmx/vmx.c
-@@ -31,10 +31,12 @@ extern struct shash_alg p8_ghash_alg;
- extern struct crypto_alg p8_aes_alg;
- extern struct crypto_alg p8_aes_cbc_alg;
- extern struct crypto_alg p8_aes_ctr_alg;
-+extern struct crypto_alg p8_aes_xts_alg;
- static struct crypto_alg *algs[] = {
- 	&p8_aes_alg,
- 	&p8_aes_cbc_alg,
- 	&p8_aes_ctr_alg,
-+	&p8_aes_xts_alg,
- 	NULL,
- };
- 
--- 
-2.5.5
+If only I Knew how to fix this ;) I mean, if only I could suggest a
+simple fix. Because IMHO we do not really care, rlimts are obsolete.
+
+Oleg.
