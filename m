@@ -1,26 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtK5s2VfGzDqNV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 20:24:01 +1000 (AEST)
-Date: Mon, 18 Jul 2016 18:23:33 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Kent Yoder <key@linux.vnet.ibm.com>,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "David S. Miller" <davem@davemloft.net>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [patch] crypto: nx - off by one bug in nx_of_update_msc()
-Message-ID: <20160718102333.GC13780@gondor.apana.org.au>
-References: <20160715110912.GE9258@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtKfr1fVFzDqHC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 20:49:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com,
+ fbarrat@linux.vnet.ibm.com, ukrishn@linux.vnet.ibm.com, imunsie@au1.ibm.com,
+ felix@linux.vnet.ibm.com
+Subject: Re: [PATCH] cxl: add option to enable -DDEBUG
+In-Reply-To: <1468829857-821-1-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1468829857-821-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Mon, 18 Jul 2016 20:49:01 +1000
+Message-ID: <877fcjb4rm.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160715110912.GE9258@mwanda>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 15, 2016 at 02:09:13PM +0300, Dan Carpenter wrote:
-> The props->ap[] array is defined like this:
-> 
-> 	struct alg_props ap[NX_MAX_FC][NX_MAX_MODE][3];
-> 
-> So we can see that if msc->fc and msc->mode are == to NX_MAX_FC or
-> NX_MAX_MODE then we're off by one.
-> 
-> Fixes: ae0222b7289d ('powerpc/crypto: nx driver code supporting nx encryption')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
 
-Patch applied.  Thanks.
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> Developers working on AFUs and AFU drivers often find it useful to see the
+> pr_devel() and dev_dbg() messages from cxl. Give them an easy way to enable
+> -DDEBUG by adding a Kconfig option, CONFIG_CXL_DEBUG.
+
+Another option is to use DYNAMIC_DEBUG. If you turn that on the
+dev_dbg()'s can be enabled at runtime, and you could en masse or
+selectively convert the pr_devel()s to pr_debug() to get the same
+result.
+
+cheers
