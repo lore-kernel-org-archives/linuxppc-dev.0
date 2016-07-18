@@ -1,23 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtKvV5dk3zDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2016 21:00:06 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Kees Cook <keescook@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- oss@buserror.net <oss@buserror.net>
-Subject: Re: linux-next: manual merge of the kspp tree with the powerpc tree
-In-Reply-To: <20160718130315.314f8a77@canb.auug.org.au>
-References: <20160718130315.314f8a77@canb.auug.org.au>
-Date: Mon, 18 Jul 2016 21:00:05 +1000
-Message-ID: <871t2rb496.fsf@@concordia.ellerman.id.au>
+To: Darren Stevens <darren@stevens-zone.net>
+Subject: Re: [PATCH 0/1] pasemi: Add fixup_device_tree function to prom_init
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Mon, 18 Jul 2016 21:16:12 +1000
+From: mpe <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Olof Johansson <olof@lixom.net>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>, Linuxppc-dev
+ <linuxppc-dev-bounces+mpe=ellerman.id.au@lists.ozlabs.org>
+In-Reply-To: <487fa010858.3ea76b1c@auth.smtp.1and1.co.uk>
+References: <487fa010858.3ea76b1c@auth.smtp.1and1.co.uk>
+Message-ID: <5bb1da8238b302cb807cfd6b9dc2ca54@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+On 2016-07-18 04:40, Darren Stevens wrote:
+> Hello All,
 
-> Hi Kees,
->
-> Today's linux-next merge of the kspp tree got a conflict in:
->
->   arch/powerpc/Kconfig
->
-> between commit:
->
->   c223c90386bc ("powerpc32: provide VIRT_CPU_ACCOUNTING")
->
-> from the powerpc tree and commit:
+Hi Darren,
 
-Actually that's in Scott's tree.
+> I'm currently working on some device tree patches for the AmigaOne 
+> X1000,
+> which I hope to push into the mainline kernel, however there is 
+> currently no
+> function for PASemi fixes, this patch introduces it. No code changes at
+> this time.
 
-I didn't love it, but I guess it's OK to go in.
+I'd love to have those workarounds handled via a fixup function.
 
->   006d998dda94 ("powerpc/uaccess: Enable hardened usercopy")
->
-> from the kspp tree.
->
-> I fixed it up (see below) and can carry the fix as necessary. This
-> is now fixed as far as linux-next is concerned, but any non trivial
-> conflicts should be mentioned to your upstream maintainer when your tree
-> is submitted for merging.  You may also want to consider cooperating
-> with the maintainer of the conflicting tree to minimise any particularly
-> complex conflicts.
->
-> Michael: time to sort these selects?
+But I'd rather wait until we actually have some content for the 
+function.
+Is there any reason you need the empty version merged into mainline?
 
-Yeah I was thinking that the other day. Not sure when is a good time though.
+> This will be for 4.8 (if possible)
+
+It's probably too late for 4.8. But send it whenever it's ready and I'll 
+put
+it in as soon as is practical.
 
 cheers
