@@ -1,33 +1,46 @@
-Return-Path: <vgoyal@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pfsmorigo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rv15q2688zDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 23:26:22 +1000 (AEST)
-Date: Tue, 19 Jul 2016 09:26:19 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Dave Young <dyoung@redhat.com>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>, bhe@redhat.com,
- arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- ebiederm@xmission.com, bauerman@linux.vnet.ibm.com,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC 3/3] kexec: extend kexec_file_load system call
-Message-ID: <20160719132619.GA3290@redhat.com>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <20160712014201.11456-4-takahiro.akashi@linaro.org>
- <20160715130955.GC23514@redhat.com>
- <20160715131950.GB19840@leverpostej>
- <20160718023024.GB6310@dhcp-128-65.nay.redhat.com>
- <20160718100704.GB10069@leverpostej>
- <20160719005556.GE3326@dhcp-128-65.nay.redhat.com>
- <20160719105049.GD27022@leverpostej>
- <20160719122406.GA18124@redhat.com>
- <20160719124651.GA21007@leverpostej>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160719124651.GA21007@leverpostej>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rv1Ls14sXzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 23:37:40 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6JDYEX0046888
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 09:37:39 -0400
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2495s94e3s-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 09:37:38 -0400
+Received: from localhost
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
+ Tue, 19 Jul 2016 10:37:36 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id BA5C7352006C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 09:37:14 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6JDbXPQ2032096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 10:37:33 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6JDbWnR024703
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 10:37:33 -0300
+From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND
+ 64-BIT)), linux-crypto@vger.kernel.org (open list:CRYPTO API)
+Subject: [PATCH] crypto: vmx - Ignore generated files
+Date: Tue, 19 Jul 2016 10:36:26 -0300
+Message-Id: <1468935388-6489-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,60 +50,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 19, 2016 at 01:47:28PM +0100, Mark Rutland wrote:
-> On Tue, Jul 19, 2016 at 08:24:06AM -0400, Vivek Goyal wrote:
-> > On Tue, Jul 19, 2016 at 11:52:00AM +0100, Mark Rutland wrote:
-> > > Regardless, this extended syscall changes some underlying assumptions
-> > > made with the development of kexec_file_load, and I think treating this
-> > > as an extension is not a great idea. From a user's perspective there is
-> > > little difference between passing an additional flag or using a
-> > > different syscall number, so I don't think that we gain much by altering
-> > > the existing prototype relative to allocating a new syscall number.
-> > 
-> > If we are providing/opening up additional flags, I can't think what will
-> > it break. Same flag was invalid in old kernel but new kernel supports 
-> > it and will accept it. So it sounds reasonable to me to add new flags.
-> > 
-> > If existing users are not broken, then I think it might be a good idea
-> > to extend existing syscall. Otherwise userspace will have to be modified
-> > to understand a 3rd syscall also and an additional option will show up
-> > which asks users to specify which syscall to use. So extending existing
-> > syscall might keep it little simple for users.
-> 
-> I don't follow.
-> 
-> To use the new feature, you have to modify userspace anyway, as you
-> require userspace to pass information which it did not previously pass
-> (in the new arguments added to the syscall).
-> 
-> The presence of a new syscall does not imply the absence of the old
-> syscall, so you can always use that be default unless the user asks for
-> asomething only the new syscall provides. Regardless of the
-> syscall/flags difference, you still have to detect whether the new
-> functionality is present somehow.
-> 
+Ignore assembly files generated by the perl script.
 
-Hmm., so current idea is that we have two syscalls() which are *ideally*
-supposed to work for all arches. Difference between two is that first
-one does not support kernel signature verification while second one does.
+Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+---
+ drivers/crypto/vmx/.gitignore | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 drivers/crypto/vmx/.gitignore
 
-By default old syscall is used and user can force using new syscall using
-option --kexec-file-load.
-
-If a user DTB is present, I was hoping that it will continue to work the
-same way. Both the sycalls can be used and can handle DTB. If we introduce
-a 3rd syscall, that means only first and 3rd syscall can handle DTB and
-we need to introduce one more option which tells whether to use
-kexec_load() or use the 3rd new syscall. And that's what I am trying
-to avoid.
-
-Vivek
-
-> > BTW, does kexec_load() needs to be modified too to handle DT?
-> 
-> No, at least for arm64. In the kexec_load case userspace provides the
-> DTB as a raw segment, and the user-provided purgatory sets up registers
-> to pass that to the new kernel.
-> 
-> Thanks,
-> Mark.
+diff --git a/drivers/crypto/vmx/.gitignore b/drivers/crypto/vmx/.gitignore
+new file mode 100644
+index 0000000..af4a7ce
+--- /dev/null
++++ b/drivers/crypto/vmx/.gitignore
+@@ -0,0 +1,2 @@
++aesp8-ppc.S
++ghashp8-ppc.S
+-- 
+2.5.5
