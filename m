@@ -1,75 +1,19 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvBr74vZCzDqPb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 06:45:11 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6JKhmlF146018
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 16:45:08 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2495r8a9he-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 16:45:08 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Tue, 19 Jul 2016 21:45:06 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id BEFAD17D8042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 21:46:33 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6JKj4OB24641844
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 20:45:04 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6JKj0qZ003957
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:45:04 -0600
-Subject: Re: [PATCH v3 02/11] mm: Hardened usercopy
-To: Kees Cook <keescook@chromium.org>
-References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
- <1468619065-3222-3-git-send-email-keescook@chromium.org>
- <578DF109.5030704@de.ibm.com>
- <CAGXu5jKRDuELqGY1F-D4+MD+dMXSbiPGzf1hXb7Kp8ACBjpw9g@mail.gmail.com>
- <578E8A22.5080807@de.ibm.com>
- <CAGXu5j+HqLY1gZycV9S9_Vf8uuQj4Z3qsV8WBxLORuseiJaw5Q@mail.gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Balbir Singh <bsingharora@gmail.com>,
- Daniel Micay <danielmicay@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>, Russell King
- <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski
- <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
- <labbott@fedoraproject.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Tue, 19 Jul 2016 22:44:58 +0200
-MIME-Version: 1.0
-In-Reply-To: <CAGXu5j+HqLY1gZycV9S9_Vf8uuQj4Z3qsV8WBxLORuseiJaw5Q@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <578E914A.7070900@de.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvDKX57s2zDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 07:52:16 +1000 (AEST)
+Message-ID: <1468965129.25630.15.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 19 Jul 2016 16:52:09 -0500
+In-Reply-To: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
+References: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: Suspected regression?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -79,57 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/19/2016 10:34 PM, Kees Cook wrote:
-[...]
->>
->> So what about for the CONFIG text:
->>
->>        An architecture should select this if the kernel mapping has a secondary
->>        linear mapping of the kernel text - in other words more than one virtual
->>        kernel address that points to the kernel image. This is used to verify
->>        that kernel text exposures are not visible under CONFIG_HARDENED_USERCOPY.
+On Tue, 2016-07-19 at 12:00 +0200, Alessio Igor Bogani wrote:
+> Hi all,
 > 
-> Sounds good, I've adjusted it for now.
+> I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
+> cpu) for which I use the same cross-compiler (ppc7400).
 > 
->>> I wonder if I can avoid the CONFIG entirely if I just did a
->>> __va(__pa(_stext)) != _stext test... would that break anyone?
->>
->> Can this be resolved on all platforms at compile time?
+> I tested these against kernel HEAD to found that these don't boot
+> anymore (PID 1 crash).
 > 
-> Well, I think it still needs a runtime check (compile-time may not be
-> able to tell about kaslr, or who knows what else). I would really like
-> to avoid the CONFIG if possible, though. Would this do the right thing
-> on s390? This appears to work where I'm able to test it (32/64 x86,
-> 32/64 arm):
+> Bisecting results in first offending commit:
+> 7aef4136566b0539a1a98391181e188905e33401
 > 
->         unsigned long textlow = (unsigned long)_stext;
->         unsigned long texthigh = (unsigned long)_etext;
->         unsigned long textlow_linear = (unsigned long)__va(__pa(textlow);
->         unsigned long texthigh_linear = (unsigned long)__va(__pa(texthigh);
+> Removing it from HEAD make boards boot properly again.
 > 
-as we have
+> A third system based on P2010 isn't affected at all.
+> 
+> Is it a regression or I have made something wrong?
 
-#define PAGE_OFFSET             0x0UL
-#define __pa(x)                 (unsigned long)(x)
-#define __va(x)                 (void *)(unsigned long)(x)
+I booted both my next branch, and Linus's master on MPC8641HPCN and didn't see
+this -- though possibly your RFS is doing something different.  Maybe that's
+the difference with P2010 as well.
 
-both should be identical on s390 as of today, so it should work fine and only
-do the check once
+Is there any way you can debug the cause of the crash?  Or send me a minimal
+RFS that demonstrates the problem (ideally with debug symbols on the userspace
+binaries)?
 
->         if (overlaps(ptr, n, textlow, texthigh))
->                 return "<kernel text>";
-> 
->         /* Check against possible secondary linear mapping as well. */
->         if (textlow != textlow_linear &&
->             overlaps(ptr, n, textlow_linear, texthigh_linear))
->                 return "<linear kernel text>";
-> 
->         return NULL;
-> 
-> 
-> -Kees
-> 
-
-
-PS: Not sure how useful and flexible this offers is but you can get some temporary
-free access to an s390 on https://developer.ibm.com/linuxone/
+-Scott
