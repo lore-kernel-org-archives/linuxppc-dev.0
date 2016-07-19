@@ -1,49 +1,39 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x230.google.com (mail-wm0-x230.google.com
- [IPv6:2a00:1450:400c:c09::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvFl32l1BzDqPb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 08:55:59 +1000 (AEST)
-Received: by mail-wm0-x230.google.com with SMTP id q128so34840010wma.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 15:55:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvGdj2nYczDqPl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 09:36:25 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6JNTW6K029068
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 19:36:21 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2496h6vquq-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 19:36:21 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Tue, 19 Jul 2016 17:36:20 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 21E0919D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 17:35:54 -0600 (MDT)
+Subject: Re: [PATCH v2 1/2] powerpc/pseries: Implemented indexed-count hotplug
+ memory add
+To: Sahil Mehta <smehta@linux.vnet.ibm.com>
+References: <f3a63611-ae4d-be48-64d7-88a7ac7c1091@linux.vnet.ibm.com>
+ <f128910f-59ed-bdd6-afef-af8d287e77e6@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Tue, 19 Jul 2016 18:36:17 -0500
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <CAGXu5jJqo55G0tHzbdobEg_rjKvFONQRk7mkPq1JXOd-Hneipw@mail.gmail.com>
-References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
- <1468619065-3222-3-git-send-email-keescook@chromium.org>
- <ea4cdd53-7336-63b5-25ed-a397859eca4d@redhat.com>
- <CAGXu5jJqo55G0tHzbdobEg_rjKvFONQRk7mkPq1JXOd-Hneipw@mail.gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 19 Jul 2016 15:55:54 -0700
-Message-ID: <CAGXu5j+0RryPNbSeEYcn6o9zTqz4DKZV3XCuRVuus_X9oUfmww@mail.gmail.com>
-Subject: Re: [PATCH v3 02/11] mm: Hardened usercopy
-To: Laura Abbott <labbott@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Balbir Singh <bsingharora@gmail.com>,
- Daniel Micay <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
- PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
- Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <f128910f-59ed-bdd6-afef-af8d287e77e6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <578EB971.7030802@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,38 +43,268 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 19, 2016 at 12:12 PM, Kees Cook <keescook@chromium.org> wrote:
-> On Mon, Jul 18, 2016 at 6:52 PM, Laura Abbott <labbott@redhat.com> wrote:
->> On 07/15/2016 02:44 PM, Kees Cook wrote:
->>> +static inline const char *check_heap_object(const void *ptr, unsigned
->>> long n,
->>> +                                           bool to_user)
->>> +{
->>> +       struct page *page, *endpage;
->>> +       const void *end = ptr + n - 1;
->>> +
->>> +       if (!virt_addr_valid(ptr))
->>> +               return NULL;
->>> +
->>
->>
->> virt_addr_valid returns true on vmalloc addresses on arm64 which causes some
->> intermittent false positives (tab completion in a qemu buildroot environment
->> was showing it fairly reliably). I think this is an arm64 bug because
->> virt_addr_valid should return true if and only if virt_to_page returns the
->> corresponding page. We can work around this for now by explicitly
->> checking against is_vmalloc_addr.
+On 07/18/2016 10:07 AM, Sahil Mehta wrote:
+> Indexed-count add for memory hotplug guarantees that a contiguous block
+> of <count> lmbs beginning at a specified <index> will be assigned (NOT
+> that <count> lmbs will be added). Because of Qemu's per-DIMM memory
+> management, the addition of a contiguous block of memory currently
+> requires a series of individual calls. Indexed-count add reduces
+> this series into a single call.
 >
-> Hrm, that's weird. Sounds like a bug too, but I'll add a check for
-> is_vmalloc_addr() to catch it for now.
+> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
+> ---
+> v2:	-remove potential memory leak when parsing command
+> 	-use u32s drc_index and count instead of u32 ic[]
+> 	 in dlpar_memory
+>
+>  arch/powerpc/include/asm/rtas.h                 |    2
+>  arch/powerpc/platforms/pseries/dlpar.c          |   34 +++++++-
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |  100 +++++++++++++++++++++--
+>  3 files changed, 124 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 51400ba..f46b271 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -307,6 +307,7 @@ struct pseries_hp_errorlog {
+>  	union {
+>  		__be32	drc_index;
+>  		__be32	drc_count;
+> +		__be32	indexed_count[2];
+>  		char	drc_name[1];
+>  	} _drc_u;
+>  };
+> @@ -322,6 +323,7 @@ struct pseries_hp_errorlog {
+>  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+>  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
+>  #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
+> +#define PSERIES_HP_ELOG_ID_IC		4
+>
+>  struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+>  					      uint16_t section_id);
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 2b93ae8..2a6dc9e 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -345,11 +345,17 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+>  	switch (hp_elog->id_type) {
+>  	case PSERIES_HP_ELOG_ID_DRC_COUNT:
+>  		hp_elog->_drc_u.drc_count =
+> -					be32_to_cpu(hp_elog->_drc_u.drc_count);
+> +				be32_to_cpu(hp_elog->_drc_u.drc_count);
+>  		break;
+>  	case PSERIES_HP_ELOG_ID_DRC_INDEX:
+>  		hp_elog->_drc_u.drc_index =
+> -					be32_to_cpu(hp_elog->_drc_u.drc_index);
+> +				be32_to_cpu(hp_elog->_drc_u.drc_index);
+> +		break;
+> +	case PSERIES_HP_ELOG_ID_IC:
+> +		hp_elog->_drc_u.indexed_count[0] =
+> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[0]);
+> +		hp_elog->_drc_u.indexed_count[1] =
+> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[1]);
+>  	}
+>
+>  	switch (hp_elog->resource) {
+> @@ -409,7 +415,29 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+>  		goto dlpar_store_out;
+>  	}
+>
+> -	if (!strncmp(arg, "index", 5)) {
+> +	if (!strncmp(arg, "indexed-count", 13)) {
+> +		u32 index, count;
+> +		char *cstr, *istr;
+> +
+> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_IC;
+> +		arg += strlen("indexed-count ");
+> +
+> +		cstr = kstrdup(arg, GFP_KERNEL);
+> +		istr = strchr(cstr, ' ');
+> +		*istr++ = '\0';
+> +
+> +		if (kstrtou32(cstr, 0, &count) || kstrtou32(istr, 0, &index)) {
+> +			rc = -EINVAL;
+> +			pr_err("Invalid index or count : \"%s\"\n", buf);
+> +			kfree(cstr);
+> +			goto dlpar_store_out;
+> +		}
+> +
+> +		kfree(cstr);
+> +
+> +		hp_elog->_drc_u.indexed_count[0] = cpu_to_be32(count);
+> +		hp_elog->_drc_u.indexed_count[1] = cpu_to_be32(index);
+> +	} else if (!strncmp(arg, "index", 5)) {
+>  		u32 index;
+>
+>  		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index 2ce1385..d7942ca 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -701,6 +701,83 @@ static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
+>  	return rc;
+>  }
+>
+> +static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+> +				  struct property *prop)
+> +{
+> +	struct of_drconf_cell *lmbs;
+> +	u32 num_lmbs, *p;
+> +	int i, rc;
+> +	int lmbs_available = 0, start_index = 0, end_index;
+> +
+> +	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
+> +		lmbs_to_add, drc_index);
+> +
+> +	if (lmbs_to_add == 0)
+> +		return -EINVAL;
+> +
+> +	p = prop->value;
+> +	num_lmbs = *p++;
+> +	lmbs = (struct of_drconf_cell *)p;
+> +
+> +	/* Navigate to drc_index */
+> +	while (start_index < num_lmbs) {
+> +		if (lmbs[start_index].drc_index == drc_index)
+> +			break;
+> +
+> +		start_index++;
+> +	}
 
-BTW, if you were testing against -next, KASAN moved things around in
-copy_*_user() in a way I wasn't expecting (__copy* and copy* now both
-call __arch_copy* instead of copy* calling __copy*). I'll have this
-fixed in the next version.
+There should be a check here that returns -EINVAL in case the function gets a bad drc index and/or the drc index can't be found, like in dlpar_memory_add_by_index.  Same goes for the dlpar_memory_remove_by_ic function.
 
--Kees
+> +
+> +	end_index = start_index + lmbs_to_add;
+> +
+> +	/* Validate that there are enough LMBs to satisfy the request */
+> +	for (i = start_index; i < end_index; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
+> +			break;
+> +
+> +		lmbs_available++;
+> +	}
+> +
+> +	if (lmbs_available < lmbs_to_add)
+> +		return -EINVAL;
+> +
+> +	for (i = start_index; i < end_index; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+> +			continue;
+> +
+> +		rc = dlpar_add_lmb(&lmbs[i]);
+> +		if (rc)
+> +			break;
+> +
+> +		lmbs[i].reserved = 1;
+> +	}
+> +
+> +	if (rc) {
+> +		pr_err("Memory indexed-count-add failed, removing any added LMBs\n");
+> +
+> +		for (i = start_index; i < end_index; i++) {
+> +			if (!lmbs[i].reserved)
+> +				continue;
+> +
+> +			rc = dlpar_remove_lmb(&lmbs[i]);
+> +			if (rc)
+> +				pr_err("Failed to remove LMB, drc index %x\n",
+> +				       be32_to_cpu(lmbs[i].drc_index));
+> +		}
+> +		rc = -EINVAL;
+> +	} else {
+> +		for (i = start_index; i < end_index; i++) {
+> +			if (!lmbs[i].reserved)
+> +				continue;
+> +
+> +			pr_info("Memory at %llx (drc index %x) was hot-added\n",
+> +				lmbs[i].base_addr, lmbs[i].drc_index);
+> +			lmbs[i].reserved = 0;
+> +		}
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+>  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>  {
+>  	struct device_node *dn;
+> @@ -708,9 +785,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>  	u32 count, drc_index;
+>  	int rc;
+>
+> -	count = hp_elog->_drc_u.drc_count;
+> -	drc_index = hp_elog->_drc_u.drc_index;
+> -
+>  	lock_device_hotplug();
+>
+>  	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+> @@ -727,19 +801,27 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>
+>  	switch (hp_elog->action) {
+>  	case PSERIES_HP_ELOG_ACTION_ADD:
+> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+> +			count = hp_elog->_drc_u.drc_count;
+>  			rc = dlpar_memory_add_by_count(count, prop);
+> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+> +			drc_index = hp_elog->_drc_u.drc_index;
+>  			rc = dlpar_memory_add_by_index(drc_index, prop);
+> -		else
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_IC) {
+> +			count = hp_elog->_drc_u.indexed_count[0];
+> +			drc_index = hp_elog->_drc_u.indexed_count[1];
+> +			rc = dlpar_memory_add_by_ic(count, drc_index, prop);
+> +		} else
+>  			rc = -EINVAL;
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+Small point, but I think kernel style requires this last "else" have brackets. 
+
+Thanks,
+Tom
+>  		break;
+>  	case PSERIES_HP_ELOG_ACTION_REMOVE:
+> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+> +			count = hp_elog->_drc_u.drc_count;
+>  			rc = dlpar_memory_remove_by_count(count, prop);
+> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+> +			drc_index = hp_elog->_drc_u.drc_index;
+>  			rc = dlpar_memory_remove_by_index(drc_index, prop);
+> -		else
+> +		} else
+>  			rc = -EINVAL;
+>  		break;
+>  	default:
+>
+> On 07/18/2016 10:04 AM, Sahil Mehta wrote:
+>> Indexed-count memory management allows addition and removal of contiguous
+>> lmb blocks with a single command. When compared to the series of calls
+>> previously required to manage contiguous blocks, indexed-count decreases
+>> command frequency and reduces risk of buffer overflow.
+>>
+>> Changes in v2:
+>> --------------
+>> -[PATCH 1/2]:	-remove potential memory leak when parsing command
+>> 		-use u32s drc_index and count instead of u32 ic[]
+>> 		 in dlpar_memory
+>> -[PATCH 2/2]:	-use u32s drc_index and count instead of u32 ic[]
+>> 		 in dlpar_memory
+>>
+>> -Sahil Mehta
+>> ---
+>>  include/asm/rtas.h                 |    2
+>>  platforms/pseries/dlpar.c          |   34 ++++++
+>>  platforms/pseries/hotplug-memory.c |  184 +++++++++++++++++++++++++++++++++++--
+>>  3 files changed, 208 insertions(+), 12 deletions(-)
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
