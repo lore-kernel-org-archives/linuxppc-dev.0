@@ -1,24 +1,43 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <alastair@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtmXr5fg5zDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:00:28 +1000 (AEST)
-Date: Tue, 19 Jul 2016 11:59:39 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: alastair@au1.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtmdv4BrhzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:51 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6J43qn1018764
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 00:04:48 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2496eb9b10-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 00:04:48 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Tue, 19 Jul 2016 14:04:45 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 50C9F2CE802D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:44 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6J44i9Z22151210
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:44 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6J44hAb004823
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:43 +1000
+From: alastair@au1.ibm.com
+To: mpe@ellerman.id.au
+Cc: benh@kernel.crashing.org, paulus@samba.org, herbert@gondor.apana.org.au,
  davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
  linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alastair D'Silva <alastair@d-silva.org>
-Subject: Re: [PATCH 0/2] Automatically load the vmx_crypto module if supported
-Message-ID: <20160719035939.GA20847@gondor.apana.org.au>
-References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
- <20160718102253.GA13780@gondor.apana.org.au>
- <87fur6phj0.fsf@@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87fur6phj0.fsf@@concordia.ellerman.id.au>
+ "Alastair D'Silva" <alastair@d-silva.org>
+Subject: [PATCH V2 0/2] Automatically load the vmx_crypto module if supported
+Date: Tue, 19 Jul 2016 14:03:51 +1000
+Message-Id: <1468901033-28996-1-git-send-email-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +47,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 19, 2016 at 11:01:55AM +1000, Michael Ellerman wrote:
->
-> Can you please ask for an ack before merging arch patches?
-> 
-> That's a 70 line powerpc patch and a 6 line crypto patch. It has no
-> reviews and no acks. I would have preferred it if we could take it via
-> the powerpc tree.
+From: Alastair D'Silva <alastair@d-silva.org>
 
-Sorry, I'll delete them from the crypto tree.
+This series allows the vmx_crypto module to be detected and automatically
+loaded via UDEV if the CPU supports the vector crypto feature.
 
-Cheers,
+Alastair D'Silva (2):
+  powerpc: Add module autoloading based on CPU features
+  crypto: vmx - Convert to CPU feature based module autoloading
+
+ arch/powerpc/Kconfig                  |  1 +
+ arch/powerpc/include/asm/cpufeature.h | 70 +++++++++++++++++++++++++++++++++++
+ drivers/crypto/vmx/Kconfig            |  2 +-
+ drivers/crypto/vmx/vmx.c              |  6 +--
+ 4 files changed, 74 insertions(+), 5 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/cpufeature.h
+
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.7.4
