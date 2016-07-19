@@ -1,27 +1,47 @@
-Return-Path: <dmatlack@google.com>
-Received: from mail-oi0-x235.google.com (mail-oi0-x235.google.com
- [IPv6:2607:f8b0:4003:c06::235])
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
+ [IPv6:2a00:1450:400c:c09::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rv8yn4tm8zDqPG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 05:20:49 +1000 (AEST)
-Received: by mail-oi0-x235.google.com with SMTP id l72so40021048oig.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 12:20:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rv9Bw5hpCzDqPK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 05:31:20 +1000 (AEST)
+Received: by mail-wm0-x231.google.com with SMTP id o80so38892464wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 12:31:20 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1468915977-26929-5-git-send-email-sjitindarsingh@gmail.com>
-References: <1468915977-26929-1-git-send-email-sjitindarsingh@gmail.com>
- <1468915977-26929-5-git-send-email-sjitindarsingh@gmail.com>
-From: David Matlack <dmatlack@google.com>
-Date: Tue, 19 Jul 2016 12:20:28 -0700
-Message-ID: <CALzav=de7UN9cu3K5Gixb8Qf4wCAAWK-kW8EX-kQ=Ch0Reo5wQ@mail.gmail.com>
-Subject: Re: [PATCH V4 5/5] powerpc/kvm/stats: Implement existing and add new
- halt polling vcpu stats
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm list <kvm@vger.kernel.org>, mpe@ellerman.id.au, paulus@samba.org,
- benh@kernel.crashing.org, Paolo Bonzini <pbonzini@redhat.com>, agraf@suse.com,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>
+Sender: keescook@google.com
+In-Reply-To: <578DF109.5030704@de.ibm.com>
+References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
+ <1468619065-3222-3-git-send-email-keescook@chromium.org>
+ <578DF109.5030704@de.ibm.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 19 Jul 2016 12:31:15 -0700
+Message-ID: <CAGXu5jKRDuELqGY1F-D4+MD+dMXSbiPGzf1hXb7Kp8ACBjpw9g@mail.gmail.com>
+Subject: Re: [PATCH v3 02/11] mm: Hardened usercopy
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Balbir Singh <bsingharora@gmail.com>,
+ Daniel Micay <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,165 +52,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 19, 2016 at 1:12 AM, Suraj Jitindar Singh
-<sjitindarsingh@gmail.com> wrote:
-> vcpu stats are used to collect information about a vcpu which can be viewed
-> in the debugfs. For example halt_attempted_poll and halt_successful_poll
-> are used to keep track of the number of times the vcpu attempts to and
-> successfully polls. These stats are currently not used on powerpc.
+On Tue, Jul 19, 2016 at 2:21 AM, Christian Borntraeger
+<borntraeger@de.ibm.com> wrote:
+> On 07/15/2016 11:44 PM, Kees Cook wrote:
+>> +config HAVE_ARCH_LINEAR_KERNEL_MAPPING
+>> +     bool
+>> +     help
+>> +       An architecture should select this if it has a secondary linear
+>> +       mapping of the kernel text. This is used to verify that kernel
+>> +       text exposures are not visible under CONFIG_HARDENED_USERCOPY.
 >
-> Implement incrementation of the halt_attempted_poll and
-> halt_successful_poll vcpu stats for powerpc. Since these stats are summed
-> over all the vcpus for all running guests it doesn't matter which vcpu
-> they are attributed to, thus we choose the current runner vcpu of the
-> vcore.
->
-> Also add new vcpu stats: halt_poll_success_ns, halt_poll_fail_ns and
-> halt_wait_ns to be used to accumulate the total time spend polling
-> successfully, polling unsuccessfully and waiting respectively, and
-> halt_successful_wait to accumulate the number of times the vcpu waits.
-> Given that halt_poll_success_ns, halt_poll_fail_ns and halt_wait_ns are
-> expressed in nanoseconds it is necessary to represent these as 64-bit
-> quantities, otherwise they would overflow after only about 4 seconds.
->
-> Given that the total time spend either polling or waiting will be known and
-> the number of times that each was done, it will be possible to determine
-> the average poll and wait times. This will give the ability to tune the kvm
-> module parameters based on the calculated average wait and poll times.
->
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> I have trouble parsing this. (What does secondary linear mapping mean?)
 
-Reviewed-by: David Matlack <dmatlack@google.com>
+I likely need help clarifying this language...
 
+> So let me give an example below
 >
-> ---
-> Change Log:
+>> +
+> [...]
+>> +/* Is this address range in the kernel text area? */
+>> +static inline const char *check_kernel_text_object(const void *ptr,
+>> +                                                unsigned long n)
+>> +{
+>> +     unsigned long textlow = (unsigned long)_stext;
+>> +     unsigned long texthigh = (unsigned long)_etext;
+>> +
+>> +     if (overlaps(ptr, n, textlow, texthigh))
+>> +             return "<kernel text>";
+>> +
+>> +#ifdef HAVE_ARCH_LINEAR_KERNEL_MAPPING
+>> +     /* Check against linear mapping as well. */
+>> +     if (overlaps(ptr, n, (unsigned long)__va(__pa(textlow)),
+>> +                  (unsigned long)__va(__pa(texthigh))))
+>> +             return "<linear kernel text>";
+>> +#endif
+>> +
+>> +     return NULL;
+>> +}
 >
-> V3 -> V4:
->         - Instead of accounting just wait and poll time, separate these
->           into successful_poll_time, failed_poll_time and wait_time.
-> ---
->  arch/powerpc/include/asm/kvm_host.h |  4 ++++
->  arch/powerpc/kvm/book3s.c           |  4 ++++
->  arch/powerpc/kvm/book3s_hv.c        | 36 +++++++++++++++++++++++++++++++-----
->  3 files changed, 39 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index f6304c5..f15ffc0 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -114,8 +114,12 @@ struct kvm_vcpu_stat {
->         u64 emulated_inst_exits;
->         u64 dec_exits;
->         u64 ext_intr_exits;
-> +       u64 halt_poll_success_ns;
-> +       u64 halt_poll_fail_ns;
-> +       u64 halt_wait_ns;
->         u64 halt_successful_poll;
->         u64 halt_attempted_poll;
-> +       u64 halt_successful_wait;
->         u64 halt_poll_invalid;
->         u64 halt_wakeup;
->         u64 dbell_exits;
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index 47018fc..71eb8f3 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -52,8 +52,12 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
->         { "dec",         VCPU_STAT(dec_exits) },
->         { "ext_intr",    VCPU_STAT(ext_intr_exits) },
->         { "queue_intr",  VCPU_STAT(queue_intr) },
-> +       { "halt_poll_success_ns",       VCPU_STAT(halt_poll_success_ns) },
-> +       { "halt_poll_fail_ns",          VCPU_STAT(halt_poll_fail_ns) },
-> +       { "halt_wait_ns",               VCPU_STAT(halt_wait_ns) },
->         { "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
->         { "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
-> +       { "halt_successful_wait",       VCPU_STAT(halt_successful_wait) },
->         { "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
->         { "halt_wakeup", VCPU_STAT(halt_wakeup) },
->         { "pf_storage",  VCPU_STAT(pf_storage) },
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index a9de1d4..81072f2 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -2679,15 +2679,16 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
->   */
->  static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->  {
-> +       ktime_t cur, start_poll, start_wait;
->         int do_sleep = 1;
-> -       ktime_t cur, start;
->         u64 block_ns;
->         DECLARE_SWAITQUEUE(wait);
->
->         /* Poll for pending exceptions and ceded state */
-> -       cur = start = ktime_get();
-> +       cur = start_poll = ktime_get();
->         if (vc->halt_poll_ns) {
-> -               ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
-> +               ktime_t stop = ktime_add_ns(start_poll, vc->halt_poll_ns);
-> +               ++vc->runner->stat.halt_attempted_poll;
->
->                 vc->vcore_state = VCORE_POLLING;
->                 spin_unlock(&vc->lock);
-> @@ -2703,8 +2704,10 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->                 spin_lock(&vc->lock);
->                 vc->vcore_state = VCORE_INACTIVE;
->
-> -               if (!do_sleep)
-> +               if (!do_sleep) {
-> +                       ++vc->runner->stat.halt_successful_poll;
->                         goto out;
-> +               }
->         }
->
->         prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-> @@ -2712,9 +2715,14 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->         if (kvmppc_vcore_check_block(vc)) {
->                 finish_swait(&vc->wq, &wait);
->                 do_sleep = 0;
-> +               /* If we polled, count this as a successful poll */
-> +               if (vc->halt_poll_ns)
-> +                       ++vc->runner->stat.halt_successful_poll;
->                 goto out;
->         }
->
-> +       start_wait = ktime_get();
-> +
->         vc->vcore_state = VCORE_SLEEPING;
->         trace_kvmppc_vcore_blocked(vc, 0);
->         spin_unlock(&vc->lock);
-> @@ -2723,11 +2731,29 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->         spin_lock(&vc->lock);
->         vc->vcore_state = VCORE_INACTIVE;
->         trace_kvmppc_vcore_blocked(vc, 1);
-> +       ++vc->runner->stat.halt_successful_wait;
->
->         cur = ktime_get();
->
->  out:
-> -       block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
-> +       block_ns = ktime_to_ns(cur) - ktime_to_ns(start_poll);
-> +
-> +       /* Attribute wait time */
-> +       if (do_sleep) {
-> +               vc->runner->stat.halt_wait_ns +=
-> +                       ktime_to_ns(cur) - ktime_to_ns(start_wait);
-> +               /* Attribute failed poll time */
-> +               if (vc->halt_poll_ns)
-> +                       vc->runner->stat.halt_poll_fail_ns +=
-> +                               ktime_to_ns(start_wait) -
-> +                               ktime_to_ns(start_poll);
-> +       } else {
-> +               /* Attribute successful poll time */
-> +               if (vc->halt_poll_ns)
-> +                       vc->runner->stat.halt_poll_success_ns +=
-> +                               ktime_to_ns(cur) -
-> +                               ktime_to_ns(start_poll);
-> +       }
->
->         /* Adjust poll time */
->         if (halt_poll_max_ns) {
-> --
-> 2.5.5
->
+> s390 has an address space for user (primary address space from 0..4TB/8PB) and a separate
+> address space (home space from 0..4TB/8PB) for the kernel. In this home space the kernel
+> mapping is virtual containing the physical memory as well as vmalloc memory (creating aliases
+> into the physical one). The kernel text is mapped from _stext to _etext in this mapping.
+> So I assume this would qualify for HAVE_ARCH_LINEAR_KERNEL_MAPPING ?
+
+If I understand your example, yes. In the home space you have two
+addresses that reference the kernel image? The intent is that if
+__va(__pa(_stext)) != _stext, there's a linear mapping of physical
+memory in the virtual memory range. On x86_64, the kernel is visible
+in two locations in virtual memory. The kernel start in physical
+memory address 0x01000000 maps to virtual address 0xffff880001000000,
+and the "regular" virtual memory kernel address is at
+0xffffffff81000000:
+
+# grep Kernel /proc/iomem
+  01000000-01a59767 : Kernel code
+  01a59768-0213d77f : Kernel data
+  02280000-02fdefff : Kernel bss
+
+# grep startup_64 /proc/kallsyms
+ffffffff81000000 T startup_64
+
+# less /sys/kernel/debug/kernel_page_tables
+...
+---[ Low Kernel Mapping ]---
+...
+0xffff880001000000-0xffff880001a00000          10M     ro         PSE
+ GLB NX pmd
+0xffff880001a00000-0xffff880001a5c000         368K     ro   GLB NX pte
+0xffff880001a5c000-0xffff880001c00000        1680K     RW   GLB NX pte
+...
+---[ High Kernel Mapping ]---
+...
+0xffffffff81000000-0xffffffff81a00000          10M     ro         PSE
+ GLB x  pmd
+0xffffffff81a00000-0xffffffff81a5c000         368K     ro   GLB x  pte
+0xffffffff81a5c000-0xffffffff81c00000        1680K     RW   GLB NX pte
+...
+
+I wonder if I can avoid the CONFIG entirely if I just did a
+__va(__pa(_stext)) != _stext test... would that break anyone?
+
+-Kees
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
