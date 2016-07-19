@@ -1,31 +1,28 @@
-Return-Path: <alessio.bogani@elettra.eu>
-Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
- [140.105.206.208])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtwl94bxDzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 20:09:53 +1000 (AEST)
-Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
- by localhost (Email Security Appliance) with SMTP id 39457440D9C_78DFA4BB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 10:00:43 +0000 (GMT)
-Received: from mail-qk0-f171.google.com (mail-qk0-f171.google.com
- [209.85.220.171])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (Client CN "smtp.gmail.com",
- Issuer "Google Internet Authority G2" (verified OK))
- by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
- 2FB8643E05D_78DFA4AF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 10:00:42 +0000 (GMT)
-Received: by mail-qk0-f171.google.com with SMTP id p74so10930728qka.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 03:00:42 -0700 (PDT)
+Return-Path: <mark.rutland@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rtxgs10zwzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 20:52:08 +1000 (AEST)
+Date: Tue, 19 Jul 2016 11:52:00 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Dave Young <dyoung@redhat.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>, bhe@redhat.com,
+ arnd@arndb.de, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ ebiederm@xmission.com, bauerman@linux.vnet.ibm.com,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 3/3] kexec: extend kexec_file_load system call
+Message-ID: <20160719105049.GD27022@leverpostej>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <20160712014201.11456-4-takahiro.akashi@linaro.org>
+ <20160715130955.GC23514@redhat.com>
+ <20160715131950.GB19840@leverpostej>
+ <20160718023024.GB6310@dhcp-128-65.nay.redhat.com>
+ <20160718100704.GB10069@leverpostej>
+ <20160719005556.GE3326@dhcp-128-65.nay.redhat.com>
 MIME-Version: 1.0
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Date: Tue, 19 Jul 2016 12:00:40 +0200
-Message-ID: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
-Subject: Suspected regression?
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>, christophe leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160719005556.GE3326@dhcp-128-65.nay.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,24 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+On Tue, Jul 19, 2016 at 08:55:56AM +0800, Dave Young wrote:
+> On 07/18/16 at 11:07am, Mark Rutland wrote:
+> > On Mon, Jul 18, 2016 at 10:30:24AM +0800, Dave Young wrote:
+> > > I do not think it is worth to add another syscall for extra fds.
+> > > We have open(2) as an example for different numbers of arguments
+> > > already.
+> > 
+> > Did we change the syscall interface for that?
+> > 
+> > I was under the impression that there was always one underlying syscall,
+> > and the C library did the right thing to pass the expected information
+> > to the underlying syscall.
+> 
+> I'm not sure kexec_load and kexec_file_load were included in glibc, we use
+> syscall directly in kexec-tools.
+> 
+> kexec_load man pages says there are no wrappers for both kexec_load and
+> kexec_file_load in glibc.
 
-I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
-cpu) for which I use the same cross-compiler (ppc7400).
+For the above, I was talking about how open() was handled.
 
-I tested these against kernel HEAD to found that these don't boot
-anymore (PID 1 crash).
+If there are no userspace wrappers, then the two cases aren't comparable
+in the first place...
 
-Bisecting results in first offending commit:
-7aef4136566b0539a1a98391181e188905e33401
+> > That's rather different to changing the underlying syscall.
+> > 
+> > Regardless of how this is wrapped in userspace, I do not think modifying
+> > the existing prototype is a good idea, and I think this kind of
+> > extension needs to be a new syscall.
+> 
+> Hmm, as I replied to Vivek, there is one case about the flags, previously
+> the new flag will be regarded as invalid, but not we extend it it will be
+> valid, this maybe the only potential bad case.
 
-Removing it from HEAD make boards boot properly again.
+It's true that adding suport for new flags will change the behaviour of
+what used to be error cases. We generally expect real users to not be
+making pointless calls for which they rely on an error being returned in
+all cases.
 
-A third system based on P2010 isn't affected at all.
+Regardless, this extended syscall changes some underlying assumptions
+made with the development of kexec_file_load, and I think treating this
+as an extension is not a great idea. From a user's perspective there is
+little difference between passing an additional flag or using a
+different syscall number, so I don't think that we gain much by altering
+the existing prototype relative to allocating a new syscall number.
 
-Is it a regression or I have made something wrong?
+Thus, I think that if this is necessary it should be treated as a new
+syscall.
 
-Thanks!
-
-Ciao,
-Alessio
+Thanks,
+Mark.
