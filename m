@@ -1,38 +1,47 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x234.google.com (mail-wm0-x234.google.com
+ [IPv6:2a00:1450:400c:c09::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rv7tW20KtzDqP7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 04:32:02 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6JISqte128999
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:32:00 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2495r9fehu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:31:59 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 19 Jul 2016 12:31:59 -0600
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DF1B73E40063
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 12:31:56 -0600 (MDT)
-Subject: Re: [PATCH v2 1/2] powerpc/pseries: Implemented indexed-count hotplug
- memory add
-To: Sahil Mehta <smehta@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <f3a63611-ae4d-be48-64d7-88a7ac7c1091@linux.vnet.ibm.com>
- <f128910f-59ed-bdd6-afef-af8d287e77e6@linux.vnet.ibm.com>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Tue, 19 Jul 2016 11:31:55 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rv8F75FZ1zDqP8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 04:48:11 +1000 (AEST)
+Received: by mail-wm0-x234.google.com with SMTP id o80so37596770wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 11:48:11 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <f128910f-59ed-bdd6-afef-af8d287e77e6@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <578E721B.4050406@linux.vnet.ibm.com>
+Sender: keescook@google.com
+In-Reply-To: <fc3c7f68-bd2e-cb06-c47c-d97c520fc08b@redhat.com>
+References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
+ <1468619065-3222-3-git-send-email-keescook@chromium.org>
+ <fc3c7f68-bd2e-cb06-c47c-d97c520fc08b@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 19 Jul 2016 11:48:05 -0700
+Message-ID: <CAGXu5j+nHpHcYT8FyHNe6AFQCdakoSMW=UWDatyxhRK7CB7_=g@mail.gmail.com>
+Subject: Re: [PATCH v3 02/11] mm: Hardened usercopy
+To: Laura Abbott <labbott@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Balbir Singh <bsingharora@gmail.com>,
+ Daniel Micay <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,269 +51,406 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/18/2016 08:07 AM, Sahil Mehta wrote:
-> Indexed-count add for memory hotplug guarantees that a contiguous block
-> of <count> lmbs beginning at a specified <index> will be assigned (NOT
-> that <count> lmbs will be added). Because of Qemu's per-DIMM memory
-> management, the addition of a contiguous block of memory currently
-> requires a series of individual calls. Indexed-count add reduces
-> this series into a single call.
-> 
-> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
-> ---
-> v2:	-remove potential memory leak when parsing command
-> 	-use u32s drc_index and count instead of u32 ic[]
-> 	 in dlpar_memory
-> 
->  arch/powerpc/include/asm/rtas.h                 |    2
->  arch/powerpc/platforms/pseries/dlpar.c          |   34 +++++++-
->  arch/powerpc/platforms/pseries/hotplug-memory.c |  100 +++++++++++++++++++++--
->  3 files changed, 124 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index 51400ba..f46b271 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -307,6 +307,7 @@ struct pseries_hp_errorlog {
->  	union {
->  		__be32	drc_index;
->  		__be32	drc_count;
-> +		__be32	indexed_count[2];
->  		char	drc_name[1];
->  	} _drc_u;
->  };
-> @@ -322,6 +323,7 @@ struct pseries_hp_errorlog {
->  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
->  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
->  #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
-> +#define PSERIES_HP_ELOG_ID_IC		4
-
-For consistency it would be nice if this had the same prefix, namely
-PSERIES_HP_ELOG_ID_DRC_XXX, as the previous types. Otherwise, we need to
-remember that indexed count is named slightly different.
-
--Tyrel
-
-> 
->  struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
->  					      uint16_t section_id);
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index 2b93ae8..2a6dc9e 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -345,11 +345,17 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
->  	switch (hp_elog->id_type) {
->  	case PSERIES_HP_ELOG_ID_DRC_COUNT:
->  		hp_elog->_drc_u.drc_count =
-> -					be32_to_cpu(hp_elog->_drc_u.drc_count);
-> +				be32_to_cpu(hp_elog->_drc_u.drc_count);
->  		break;
->  	case PSERIES_HP_ELOG_ID_DRC_INDEX:
->  		hp_elog->_drc_u.drc_index =
-> -					be32_to_cpu(hp_elog->_drc_u.drc_index);
-> +				be32_to_cpu(hp_elog->_drc_u.drc_index);
-> +		break;
-> +	case PSERIES_HP_ELOG_ID_IC:
-> +		hp_elog->_drc_u.indexed_count[0] =
-> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[0]);
-> +		hp_elog->_drc_u.indexed_count[1] =
-> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[1]);
->  	}
-> 
->  	switch (hp_elog->resource) {
-> @@ -409,7 +415,29 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
->  		goto dlpar_store_out;
->  	}
-> 
-> -	if (!strncmp(arg, "index", 5)) {
-> +	if (!strncmp(arg, "indexed-count", 13)) {
-> +		u32 index, count;
-> +		char *cstr, *istr;
-> +
-> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_IC;
-> +		arg += strlen("indexed-count ");
-> +
-> +		cstr = kstrdup(arg, GFP_KERNEL);
-> +		istr = strchr(cstr, ' ');
-> +		*istr++ = '\0';
-> +
-> +		if (kstrtou32(cstr, 0, &count) || kstrtou32(istr, 0, &index)) {
-> +			rc = -EINVAL;
-> +			pr_err("Invalid index or count : \"%s\"\n", buf);
-> +			kfree(cstr);
-> +			goto dlpar_store_out;
-> +		}
-> +
-> +		kfree(cstr);
-> +
-> +		hp_elog->_drc_u.indexed_count[0] = cpu_to_be32(count);
-> +		hp_elog->_drc_u.indexed_count[1] = cpu_to_be32(index);
-> +	} else if (!strncmp(arg, "index", 5)) {
->  		u32 index;
-> 
->  		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 2ce1385..d7942ca 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -701,6 +701,83 @@ static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
->  	return rc;
->  }
-> 
-> +static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
-> +				  struct property *prop)
-> +{
-> +	struct of_drconf_cell *lmbs;
-> +	u32 num_lmbs, *p;
-> +	int i, rc;
-> +	int lmbs_available = 0, start_index = 0, end_index;
-> +
-> +	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
-> +		lmbs_to_add, drc_index);
-> +
-> +	if (lmbs_to_add == 0)
-> +		return -EINVAL;
-> +
-> +	p = prop->value;
-> +	num_lmbs = *p++;
-> +	lmbs = (struct of_drconf_cell *)p;
-> +
-> +	/* Navigate to drc_index */
-> +	while (start_index < num_lmbs) {
-> +		if (lmbs[start_index].drc_index == drc_index)
-> +			break;
-> +
-> +		start_index++;
-> +	}
-> +
-> +	end_index = start_index + lmbs_to_add;
-> +
-> +	/* Validate that there are enough LMBs to satisfy the request */
-> +	for (i = start_index; i < end_index; i++) {
-> +		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
-> +			break;
-> +
-> +		lmbs_available++;
-> +	}
-> +
-> +	if (lmbs_available < lmbs_to_add)
-> +		return -EINVAL;
-> +
-> +	for (i = start_index; i < end_index; i++) {
-> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
-> +			continue;
-> +
-> +		rc = dlpar_add_lmb(&lmbs[i]);
-> +		if (rc)
-> +			break;
-> +
-> +		lmbs[i].reserved = 1;
-> +	}
-> +
-> +	if (rc) {
-> +		pr_err("Memory indexed-count-add failed, removing any added LMBs\n");
-> +
-> +		for (i = start_index; i < end_index; i++) {
-> +			if (!lmbs[i].reserved)
-> +				continue;
-> +
-> +			rc = dlpar_remove_lmb(&lmbs[i]);
-> +			if (rc)
-> +				pr_err("Failed to remove LMB, drc index %x\n",
-> +				       be32_to_cpu(lmbs[i].drc_index));
-> +		}
-> +		rc = -EINVAL;
-> +	} else {
-> +		for (i = start_index; i < end_index; i++) {
-> +			if (!lmbs[i].reserved)
-> +				continue;
-> +
-> +			pr_info("Memory at %llx (drc index %x) was hot-added\n",
-> +				lmbs[i].base_addr, lmbs[i].drc_index);
-> +			lmbs[i].reserved = 0;
-> +		}
-> +	}
-> +
-> +	return rc;
-> +}
-> +
->  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  {
->  	struct device_node *dn;
-> @@ -708,9 +785,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  	u32 count, drc_index;
->  	int rc;
-> 
-> -	count = hp_elog->_drc_u.drc_count;
-> -	drc_index = hp_elog->_drc_u.drc_index;
-> -
->  	lock_device_hotplug();
-> 
->  	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> @@ -727,19 +801,27 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
-> 
->  	switch (hp_elog->action) {
->  	case PSERIES_HP_ELOG_ACTION_ADD:
-> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
-> +			count = hp_elog->_drc_u.drc_count;
->  			rc = dlpar_memory_add_by_count(count, prop);
-> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
-> +			drc_index = hp_elog->_drc_u.drc_index;
->  			rc = dlpar_memory_add_by_index(drc_index, prop);
-> -		else
-> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_IC) {
-> +			count = hp_elog->_drc_u.indexed_count[0];
-> +			drc_index = hp_elog->_drc_u.indexed_count[1];
-> +			rc = dlpar_memory_add_by_ic(count, drc_index, prop);
-> +		} else
->  			rc = -EINVAL;
->  		break;
->  	case PSERIES_HP_ELOG_ACTION_REMOVE:
-> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
-> +			count = hp_elog->_drc_u.drc_count;
->  			rc = dlpar_memory_remove_by_count(count, prop);
-> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
-> +			drc_index = hp_elog->_drc_u.drc_index;
->  			rc = dlpar_memory_remove_by_index(drc_index, prop);
-> -		else
-> +		} else
->  			rc = -EINVAL;
->  		break;
->  	default:
-> 
-> On 07/18/2016 10:04 AM, Sahil Mehta wrote:
->> Indexed-count memory management allows addition and removal of contiguous
->> lmb blocks with a single command. When compared to the series of calls
->> previously required to manage contiguous blocks, indexed-count decreases
->> command frequency and reduces risk of buffer overflow.
+On Mon, Jul 18, 2016 at 6:06 PM, Laura Abbott <labbott@redhat.com> wrote:
+> On 07/15/2016 02:44 PM, Kees Cook wrote:
 >>
->> Changes in v2:
->> --------------
->> -[PATCH 1/2]:	-remove potential memory leak when parsing command
->> 		-use u32s drc_index and count instead of u32 ic[]
->> 		 in dlpar_memory
->> -[PATCH 2/2]:	-use u32s drc_index and count instead of u32 ic[]
->> 		 in dlpar_memory
+>> This is the start of porting PAX_USERCOPY into the mainline kernel. This
+>> is the first set of features, controlled by CONFIG_HARDENED_USERCOPY. The
+>> work is based on code by PaX Team and Brad Spengler, and an earlier port
+>> from Casey Schaufler. Additional non-slab page tests are from Rik van
+>> Riel.
 >>
->> -Sahil Mehta
+>> This patch contains the logic for validating several conditions when
+>> performing copy_to_user() and copy_from_user() on the kernel object
+>> being copied to/from:
+>> - address range doesn't wrap around
+>> - address range isn't NULL or zero-allocated (with a non-zero copy size)
+>> - if on the slab allocator:
+>>   - object size must be less than or equal to copy size (when check is
+>>     implemented in the allocator, which appear in subsequent patches)
+>> - otherwise, object must not span page allocations
+>> - if on the stack
+>>   - object must not extend before/after the current process task
+>>   - object must be contained by the current stack frame (when there is
+>>     arch/build support for identifying stack frames)
+>> - object must not overlap with kernel text
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> Tested-By: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
 >> ---
->>  include/asm/rtas.h                 |    2
->>  platforms/pseries/dlpar.c          |   34 ++++++
->>  platforms/pseries/hotplug-memory.c |  184 +++++++++++++++++++++++++++++++++++--
->>  3 files changed, 208 insertions(+), 12 deletions(-)
+>>  arch/Kconfig                |   7 ++
+>>  include/linux/slab.h        |  12 +++
+>>  include/linux/thread_info.h |  15 +++
+>>  mm/Makefile                 |   4 +
+>>  mm/usercopy.c               | 234
+>> ++++++++++++++++++++++++++++++++++++++++++++
+>>  security/Kconfig            |  28 ++++++
+>>  6 files changed, 300 insertions(+)
+>>  create mode 100644 mm/usercopy.c
 >>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> diff --git a/arch/Kconfig b/arch/Kconfig
+>> index 5e2776562035..195ee4cc939a 100644
+>> --- a/arch/Kconfig
+>> +++ b/arch/Kconfig
+>> @@ -433,6 +433,13 @@ config HAVE_ARCH_WITHIN_STACK_FRAMES
+>>           and similar) by implementing an inline
+>> arch_within_stack_frames(),
+>>           which is used by CONFIG_HARDENED_USERCOPY.
 >>
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+>> +config HAVE_ARCH_LINEAR_KERNEL_MAPPING
+>> +       bool
+>> +       help
+>> +         An architecture should select this if it has a secondary linear
+>> +         mapping of the kernel text. This is used to verify that kernel
+>> +         text exposures are not visible under CONFIG_HARDENED_USERCOPY.
+>> +
+>>  config HAVE_CONTEXT_TRACKING
+>>         bool
+>>         help
+>> diff --git a/include/linux/slab.h b/include/linux/slab.h
+>> index aeb3e6d00a66..96a16a3fb7cb 100644
+>> --- a/include/linux/slab.h
+>> +++ b/include/linux/slab.h
+>> @@ -155,6 +155,18 @@ void kfree(const void *);
+>>  void kzfree(const void *);
+>>  size_t ksize(const void *);
+>>
+>> +#ifdef CONFIG_HAVE_HARDENED_USERCOPY_ALLOCATOR
+>> +const char *__check_heap_object(const void *ptr, unsigned long n,
+>> +                               struct page *page);
+>> +#else
+>> +static inline const char *__check_heap_object(const void *ptr,
+>> +                                             unsigned long n,
+>> +                                             struct page *page)
+>> +{
+>> +       return NULL;
+>> +}
+>> +#endif
+>> +
+>>  /*
+>>   * Some archs want to perform DMA into kmalloc caches and need a
+>> guaranteed
+>>   * alignment larger than the alignment of a 64-bit integer.
+>> diff --git a/include/linux/thread_info.h b/include/linux/thread_info.h
+>> index 3d5c80b4391d..f24b99eac969 100644
+>> --- a/include/linux/thread_info.h
+>> +++ b/include/linux/thread_info.h
+>> @@ -155,6 +155,21 @@ static inline int arch_within_stack_frames(const void
+>> * const stack,
+>>  }
+>>  #endif
+>>
+>> +#ifdef CONFIG_HARDENED_USERCOPY
+>> +extern void __check_object_size(const void *ptr, unsigned long n,
+>> +                                       bool to_user);
+>> +
+>> +static inline void check_object_size(const void *ptr, unsigned long n,
+>> +                                    bool to_user)
+>> +{
+>> +       __check_object_size(ptr, n, to_user);
+>> +}
+>> +#else
+>> +static inline void check_object_size(const void *ptr, unsigned long n,
+>> +                                    bool to_user)
+>> +{ }
+>> +#endif /* CONFIG_HARDENED_USERCOPY */
+>> +
+>>  #endif /* __KERNEL__ */
+>>
+>>  #endif /* _LINUX_THREAD_INFO_H */
+>> diff --git a/mm/Makefile b/mm/Makefile
+>> index 78c6f7dedb83..32d37247c7e5 100644
+>> --- a/mm/Makefile
+>> +++ b/mm/Makefile
+>> @@ -21,6 +21,9 @@ KCOV_INSTRUMENT_memcontrol.o := n
+>>  KCOV_INSTRUMENT_mmzone.o := n
+>>  KCOV_INSTRUMENT_vmstat.o := n
+>>
+>> +# Since __builtin_frame_address does work as used, disable the warning.
+>> +CFLAGS_usercopy.o += $(call cc-disable-warning, frame-address)
+>> +
+>>  mmu-y                  := nommu.o
+>>  mmu-$(CONFIG_MMU)      := gup.o highmem.o memory.o mincore.o \
+>>                            mlock.o mmap.o mprotect.o mremap.o msync.o
+>> rmap.o \
+>> @@ -99,3 +102,4 @@ obj-$(CONFIG_USERFAULTFD) += userfaultfd.o
+>>  obj-$(CONFIG_IDLE_PAGE_TRACKING) += page_idle.o
+>>  obj-$(CONFIG_FRAME_VECTOR) += frame_vector.o
+>>  obj-$(CONFIG_DEBUG_PAGE_REF) += debug_page_ref.o
+>> +obj-$(CONFIG_HARDENED_USERCOPY) += usercopy.o
+>> diff --git a/mm/usercopy.c b/mm/usercopy.c
+>> new file mode 100644
+>> index 000000000000..e4bf4e7ccdf6
+>> --- /dev/null
+>> +++ b/mm/usercopy.c
+>> @@ -0,0 +1,234 @@
+>> +/*
+>> + * This implements the various checks for CONFIG_HARDENED_USERCOPY*,
+>> + * which are designed to protect kernel memory from needless exposure
+>> + * and overwrite under many unintended conditions. This code is based
+>> + * on PAX_USERCOPY, which is:
+>> + *
+>> + * Copyright (C) 2001-2016 PaX Team, Bradley Spengler, Open Source
+>> + * Security Inc.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published by the Free Software Foundation.
+>> + *
+>> + */
+>> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>> +
+>> +#include <linux/mm.h>
+>> +#include <linux/slab.h>
+>> +#include <asm/sections.h>
+>> +
+>> +enum {
+>> +       BAD_STACK = -1,
+>> +       NOT_STACK = 0,
+>> +       GOOD_FRAME,
+>> +       GOOD_STACK,
+>> +};
+>> +
+>> +/*
+>> + * Checks if a given pointer and length is contained by the current
+>> + * stack frame (if possible).
+>> + *
+>> + *     0: not at all on the stack
+>> + *     1: fully within a valid stack frame
+>> + *     2: fully on the stack (when can't do frame-checking)
+>> + *     -1: error condition (invalid stack position or bad stack frame)
+>> + */
+>
+>
+> Nit: update comments to match enum (BAD_STACK instead of -1 etc.)
+
+Ah, yes, thanks. I will fix this.
+
+>> +static noinline int check_stack_object(const void *obj, unsigned long
+>> len)
+>> +{
+>> +       const void * const stack = task_stack_page(current);
+>> +       const void * const stackend = stack + THREAD_SIZE;
+>> +       int ret;
+>> +
+>> +       /* Object is not on the stack at all. */
+>> +       if (obj + len <= stack || stackend <= obj)
+>> +               return NOT_STACK;
+>> +
+>> +       /*
+>> +        * Reject: object partially overlaps the stack (passing the
+>> +        * the check above means at least one end is within the stack,
+>> +        * so if this check fails, the other end is outside the stack).
+>> +        */
+>> +       if (obj < stack || stackend < obj + len)
+>> +               return BAD_STACK;
+>> +
+>> +       /* Check if object is safely within a valid frame. */
+>> +       ret = arch_within_stack_frames(stack, stackend, obj, len);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       return GOOD_STACK;
+>> +}
+>> +
+>> +static void report_usercopy(const void *ptr, unsigned long len,
+>> +                           bool to_user, const char *type)
+>> +{
+>> +       pr_emerg("kernel memory %s attempt detected %s %p (%s) (%lu
+>> bytes)\n",
+>> +               to_user ? "exposure" : "overwrite",
+>> +               to_user ? "from" : "to", ptr, type ? : "unknown", len);
+>> +       /*
+>> +        * For greater effect, it would be nice to do do_group_exit(),
+>> +        * but BUG() actually hooks all the lock-breaking and per-arch
+>> +        * Oops code, so that is used here instead.
+>> +        */
+>> +       BUG();
+>> +}
+>> +
+>> +/* Returns true if any portion of [ptr,ptr+n) over laps with [low,high).
+>> */
+>> +static bool overlaps(const void *ptr, unsigned long n, unsigned long low,
+>> +                    unsigned long high)
+>> +{
+>> +       unsigned long check_low = (uintptr_t)ptr;
+>> +       unsigned long check_high = check_low + n;
+>> +
+>> +       /* Does not overlap if entirely above or entirely below. */
+>> +       if (check_low >= high || check_high < low)
+>> +               return false;
+>> +
+>> +       return true;
+>> +}
+>> +
+>> +/* Is this address range in the kernel text area? */
+>> +static inline const char *check_kernel_text_object(const void *ptr,
+>> +                                                  unsigned long n)
+>> +{
+>> +       unsigned long textlow = (unsigned long)_stext;
+>> +       unsigned long texthigh = (unsigned long)_etext;
+>> +
+>> +       if (overlaps(ptr, n, textlow, texthigh))
+>> +               return "<kernel text>";
+>> +
+>> +#ifdef HAVE_ARCH_LINEAR_KERNEL_MAPPING
+>> +       /* Check against linear mapping as well. */
+>> +       if (overlaps(ptr, n, (unsigned long)__va(__pa(textlow)),
+>> +                    (unsigned long)__va(__pa(texthigh))))
+>> +               return "<linear kernel text>";
+>> +#endif
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +static inline const char *check_bogus_address(const void *ptr, unsigned
+>> long n)
+>> +{
+>> +       /* Reject if object wraps past end of memory. */
+>> +       if (ptr + n < ptr)
+>> +               return "<wrapped address>";
+>> +
+>> +       /* Reject if NULL or ZERO-allocation. */
+>> +       if (ZERO_OR_NULL_PTR(ptr))
+>> +               return "<null>";
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +static inline const char *check_heap_object(const void *ptr, unsigned
+>> long n,
+>> +                                           bool to_user)
+>> +{
+>> +       struct page *page, *endpage;
+>> +       const void *end = ptr + n - 1;
+>> +
+>> +       if (!virt_addr_valid(ptr))
+>> +               return NULL;
+>> +
+>> +       page = virt_to_head_page(ptr);
+>> +
+>> +       /* Check slab allocator for flags and size. */
+>> +       if (PageSlab(page))
+>> +               return __check_heap_object(ptr, n, page);
+>> +
+>> +       /*
+>> +        * Sometimes the kernel data regions are not marked Reserved (see
+>> +        * check below). And sometimes [_sdata,_edata) does not cover
+>> +        * rodata and/or bss, so check each range explicitly.
+>> +        */
+>> +
+>> +       /* Allow reads of kernel rodata region (if not marked as
+>> Reserved). */
+>> +       if (ptr >= (const void *)__start_rodata &&
+>> +           end <= (const void *)__end_rodata) {
+>> +               if (!to_user)
+>> +                       return "<rodata>";
+>> +               return NULL;
+>> +       }
+>> +
+>> +       /* Allow kernel data region (if not marked as Reserved). */
+>> +       if (ptr >= (const void *)_sdata && end <= (const void *)_edata)
+>> +               return NULL;
+>> +
+>> +       /* Allow kernel bss region (if not marked as Reserved). */
+>> +       if (ptr >= (const void *)__bss_start &&
+>> +           end <= (const void *)__bss_stop)
+>> +               return NULL;
+>> +
+>> +       /* Is the object wholly within one base page? */
+>> +       if (likely(((unsigned long)ptr & (unsigned long)PAGE_MASK) ==
+>> +                  ((unsigned long)end & (unsigned long)PAGE_MASK)))
+>> +               return NULL;
+>> +
+>> +       /* Allow if start and end are inside the same compound page. */
+>> +       endpage = virt_to_head_page(end);
+>> +       if (likely(endpage == page))
+>> +               return NULL;
+>> +
+>> +       /*
+>> +        * Reject if range is not Reserved (i.e. special or device
+>> memory),
+>> +        * since then the object spans several independently allocated
+>> pages.
+>> +        */
+>> +       for (; ptr <= end ; ptr += PAGE_SIZE, page =
+>> virt_to_head_page(ptr)) {
+>> +               if (!PageReserved(page))
+>> +                       return "<spans multiple pages>";
+>> +       }
+>> +
+>
+>
+> This doesn't work when copying CMA allocated memory since CMA purposely
+> allocates larger than a page block size without setting head pages.
+> Given CMA may be used with drivers doing zero copy buffers, I think it
+> should be permitted.
+>
+> Something like the following lets it pass (I can clean up and submit
+> the is_migrate_cma_page APIs as a separate patch for review)
+
+Yeah, this would be great. I'd rather use an accessor to check this
+than a direct check for MIGRATE_CMA.
+
+>
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 02069c2..e9b0661 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -18,6 +18,7 @@
+>  #include <linux/page-flags-layout.h>
+>  #include <linux/atomic.h>
+>  #include <asm/page.h>
+> +#include <asm/pgtable.h>
+>   /* Free memory management - zoned buddy allocator.  */
+>  #ifndef CONFIG_FORCE_MAX_ZONEORDER
+> @@ -85,6 +86,18 @@ extern int page_group_by_mobility_disabled;
+>         get_pfnblock_flags_mask(page, page_to_pfn(page),                \
+>                         PB_migrate_end, MIGRATETYPE_MASK)
+>  +#ifdef CONFIG_CMA
+> +static inline bool is_migrate_cma_page(struct page *page)
+> +{
+> +        return get_pageblock_migratetype(page) == MIGRATE_CMA;
+> +}
+> +#else
+> +static inline bool is_migrate_cma_page(struct page *page)
+> +{
+> +        return false;
+> +}
+> +#endif
+> +
+>  struct free_area {
+>         struct list_head        free_list[MIGRATE_TYPES];
+>         unsigned long           nr_free;
+> diff --git a/mm/usercopy.c b/mm/usercopy.c
+> index e4bf4e7..15275ab 100644
+> --- a/mm/usercopy.c
+> +++ b/mm/usercopy.c
+> @@ -16,6 +16,7 @@
+>   #include <linux/mm.h>
+>  #include <linux/slab.h>
+> +#include <linux/mmzone.h>
+>  #include <asm/sections.h>
+>   enum {
+> @@ -174,7 +175,7 @@ static inline const char *check_heap_object(const void
+> *ptr, unsigned long n,
+>          * since then the object spans several independently allocated
+> pages.
+>          */
+>         for (; ptr <= end ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr))
+> {
+> -               if (!PageReserved(page))
+> +               if (!PageReserved(page) && !is_migrate_cma_page(page))
+>                         return "<spans multiple pages>";
+>         }
+
+Yeah, I'll modify this a bit so that which type it starts as is
+maintained for all pages (rather than allowing to flip back and forth
+-- even though that is likely impossible).
+
+-Kees
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
