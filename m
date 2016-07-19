@@ -1,26 +1,31 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtwMs24CqzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 19:53:13 +1000 (AEST)
-Date: Tue, 19 Jul 2016 17:52:39 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: alastair@au1.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alastair D'Silva <alastair@d-silva.org>
-Subject: Re: [PATCH 0/2] Automatically load the vmx_crypto module if supported
-Message-ID: <20160719095239.GA24167@gondor.apana.org.au>
-References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
- <20160718102253.GA13780@gondor.apana.org.au>
- <87fur6phj0.fsf@@concordia.ellerman.id.au>
- <20160719035939.GA20847@gondor.apana.org.au>
- <87poqa9eiz.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtwl94bxDzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 20:09:53 +1000 (AEST)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 39457440D9C_78DFA4BB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 10:00:43 +0000 (GMT)
+Received: from mail-qk0-f171.google.com (mail-qk0-f171.google.com
+ [209.85.220.171])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ 2FB8643E05D_78DFA4AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 10:00:42 +0000 (GMT)
+Received: by mail-qk0-f171.google.com with SMTP id p74so10930728qka.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 03:00:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87poqa9eiz.fsf@@concordia.ellerman.id.au>
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Date: Tue, 19 Jul 2016 12:00:40 +0200
+Message-ID: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
+Subject: Suspected regression?
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>, christophe leroy <christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 19, 2016 at 07:13:24PM +1000, Michael Ellerman wrote:
->
-> I'll assume patch 2 has your ack :)
+Hi all,
 
-Sure,
+I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
+cpu) for which I use the same cross-compiler (ppc7400).
 
-Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+I tested these against kernel HEAD to found that these don't boot
+anymore (PID 1 crash).
 
-Thanks,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Bisecting results in first offending commit:
+7aef4136566b0539a1a98391181e188905e33401
+
+Removing it from HEAD make boards boot properly again.
+
+A third system based on P2010 isn't affected at all.
+
+Is it a regression or I have made something wrong?
+
+Thanks!
+
+Ciao,
+Alessio
