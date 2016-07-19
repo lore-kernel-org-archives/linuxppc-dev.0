@@ -1,41 +1,46 @@
-Return-Path: <labbott@redhat.com>
-Received: from mail-yw0-f180.google.com (mail-yw0-f180.google.com
- [209.85.161.180])
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x22e.google.com (mail-wm0-x22e.google.com
+ [IPv6:2a00:1450:400c:c09::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvDVn2rCnzDqQy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 08:00:17 +1000 (AEST)
-Received: by mail-yw0-f180.google.com with SMTP id j12so21982073ywb.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 15:00:17 -0700 (PDT)
-From: Laura Abbott <labbott@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>,
- Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
- PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvFPc2FrJzDqP7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 08:40:52 +1000 (AEST)
+Received: by mail-wm0-x22e.google.com with SMTP id o80so43935280wme.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 15:40:52 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <1468965604-25023-1-git-send-email-labbott@redhat.com>
+References: <CAGXu5j+nHpHcYT8FyHNe6AFQCdakoSMW=UWDatyxhRK7CB7_=g@mail.gmail.com>
+ <1468965604-25023-1-git-send-email-labbott@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 19 Jul 2016 15:40:46 -0700
+Message-ID: <CAGXu5jLRkRMutEauAg7dWV9CeDP3nzE4d71Fqt6H2d7OHTy71w@mail.gmail.com>
+Subject: Re: [PATCH] mm: Add is_migrate_cma_page
+To: Laura Abbott <labbott@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
  Ard Biesheuvel <ard.biesheuvel@linaro.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
  Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
  Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
  Laura Abbott <labbott@fedoraproject.org>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- kernel-hardening@lists.openwall.com
-Subject: [PATCH] mm: Add is_migrate_cma_page
-Date: Tue, 19 Jul 2016 15:00:04 -0700
-Message-Id: <1468965604-25023-1-git-send-email-labbott@redhat.com>
-In-Reply-To: <CAGXu5j+nHpHcYT8FyHNe6AFQCdakoSMW=UWDatyxhRK7CB7_=g@mail.gmail.com>
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,34 +50,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Code such as hardened user copy[1] needs a way to tell if a
-page is CMA or not. Add is_migrate_cma_page in a similar way
-to is_migrate_isolate_page.
+On Tue, Jul 19, 2016 at 3:00 PM, Laura Abbott <labbott@redhat.com> wrote:
+> Code such as hardened user copy[1] needs a way to tell if a
+> page is CMA or not. Add is_migrate_cma_page in a similar way
+> to is_migrate_isolate_page.
+>
+> [1]http://article.gmane.org/gmane.linux.kernel.mm/155238
+>
+> Signed-off-by: Laura Abbott <labbott@redhat.com>
 
-[1]http://article.gmane.org/gmane.linux.kernel.mm/155238
+Great, thanks!
 
-Signed-off-by: Laura Abbott <labbott@redhat.com>
----
-Here's an explicit patch, slightly different than what I posted before. It can
-be kept separate or folded in as needed.
----
- include/linux/mmzone.h | 2 ++
- 1 file changed, 2 insertions(+)
+> ---
+> Here's an explicit patch, slightly different than what I posted before. It can
+> be kept separate or folded in as needed.
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 02069c2..c8478b2 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -68,8 +68,10 @@ extern char * const migratetype_names[MIGRATE_TYPES];
- 
- #ifdef CONFIG_CMA
- #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
-+#  define is_migrate_cma_page(_page) (get_pageblock_migratetype(_page) == MIGRATE_CMA)
- #else
- #  define is_migrate_cma(migratetype) false
-+#  define is_migrate_cma_page(_page) false
- #endif
- 
- #define for_each_migratetype_order(order, type) \
+Assuming there's no objection, I'll add it to my tree and use the new macro.
+
+-Kees
+
+> ---
+>  include/linux/mmzone.h | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 02069c2..c8478b2 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -68,8 +68,10 @@ extern char * const migratetype_names[MIGRATE_TYPES];
+>
+>  #ifdef CONFIG_CMA
+>  #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
+> +#  define is_migrate_cma_page(_page) (get_pageblock_migratetype(_page) == MIGRATE_CMA)
+>  #else
+>  #  define is_migrate_cma(migratetype) false
+> +#  define is_migrate_cma_page(_page) false
+>  #endif
+>
+>  #define for_each_migratetype_order(order, type) \
+> --
+> 2.7.4
+>
+
+
+
 -- 
-2.7.4
+Kees Cook
+Chrome OS & Brillo Security
