@@ -1,27 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtsQq5b60zDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 17:40:34 +1000 (AEST)
-Date: Tue, 19 Jul 2016 15:40:07 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
- "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "David S. Miller" <davem@davemloft.net>,
- "open list:IBM Power VMX Cryptographic instructions"
- <linux-crypto@vger.kernel.org>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 1/2] crypto: vmx - Adding asm subroutines for XTS
-Message-ID: <20160719074007.GA22394@gondor.apana.org.au>
-References: <1468855586-848-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1468855586-848-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtt8g1SrRzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 18:13:23 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id y134so930945pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 01:13:23 -0700 (PDT)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ mpe@ellerman.id.au, paulus@samba.org, benh@kernel.crashing.org,
+ pbonzini@redhat.com, agraf@suse.com, rkrcmar@redhat.com,
+ dmatlack@google.com, borntraeger@de.ibm.com
+Subject: [PATCH V4 1/5] kvm/ppc/book3s: Move struct kvmppc_vcore from
+ kvm_host.h to kvm_book3s.h
+Date: Tue, 19 Jul 2016 18:12:53 +1000
+Message-Id: <1468915977-26929-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +26,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 18, 2016 at 12:26:25PM -0300, Paulo Flabiano Smorigo wrote:
-> This patch add XTS subroutines using VMX-crypto driver.
-> 
-> It gives a boost of 20 times using XTS.
-> 
-> These code has been adopted from OpenSSL project in collaboration
-> with the original author (Andy Polyakov <appro@openssl.org>).
-> 
-> Signed-off-by: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
-> Signed-off-by: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+The next commit will introduce a member to the kvmppc_vcore struct which
+references MAX_SMT_THREADS which is defined in kvm_book3s_asm.h, however
+this file isn't included in kvm_host.h directly. Thus compiling for
+certain platforms such as pmac32_defconfig and ppc64e_defconfig with KVM
+fails due to MAX_SMT_THREADS not being defined.
 
-Both patches applied.  Thanks.
+Move the struct kvmppc_vcore definition to kvm_book3s.h which explicitly
+includes kvm_book3s_asm.h.
+
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+
+---
+Change Log:
+
+V1 -> V2:
+	- Added patch to series
+---
+ arch/powerpc/include/asm/kvm_book3s.h | 35 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_host.h   | 35 -----------------------------------
+ 2 files changed, 35 insertions(+), 35 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 8f39796..a50c5fe 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -69,6 +69,41 @@ struct hpte_cache {
+ 	int pagesize;
+ };
+ 
++/*
++ * Struct for a virtual core.
++ * Note: entry_exit_map combines a bitmap of threads that have entered
++ * in the bottom 8 bits and a bitmap of threads that have exited in the
++ * next 8 bits.  This is so that we can atomically set the entry bit
++ * iff the exit map is 0 without taking a lock.
++ */
++struct kvmppc_vcore {
++	int n_runnable;
++	int num_threads;
++	int entry_exit_map;
++	int napping_threads;
++	int first_vcpuid;
++	u16 pcpu;
++	u16 last_cpu;
++	u8 vcore_state;
++	u8 in_guest;
++	struct kvmppc_vcore *master_vcore;
++	struct list_head runnable_threads;
++	struct list_head preempt_list;
++	spinlock_t lock;
++	struct swait_queue_head wq;
++	spinlock_t stoltb_lock;	/* protects stolen_tb and preempt_tb */
++	u64 stolen_tb;
++	u64 preempt_tb;
++	struct kvm_vcpu *runner;
++	struct kvm *kvm;
++	u64 tb_offset;		/* guest timebase - host timebase */
++	ulong lpcr;
++	u32 arch_compat;
++	ulong pcr;
++	ulong dpdes;		/* doorbell state (POWER8) */
++	ulong conferring_threads;
++};
++
+ struct kvmppc_vcpu_book3s {
+ 	struct kvmppc_sid_map sid_map[SID_MAP_NUM];
+ 	struct {
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index ec35af3..19c6731 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -275,41 +275,6 @@ struct kvm_arch {
+ #endif
+ };
+ 
+-/*
+- * Struct for a virtual core.
+- * Note: entry_exit_map combines a bitmap of threads that have entered
+- * in the bottom 8 bits and a bitmap of threads that have exited in the
+- * next 8 bits.  This is so that we can atomically set the entry bit
+- * iff the exit map is 0 without taking a lock.
+- */
+-struct kvmppc_vcore {
+-	int n_runnable;
+-	int num_threads;
+-	int entry_exit_map;
+-	int napping_threads;
+-	int first_vcpuid;
+-	u16 pcpu;
+-	u16 last_cpu;
+-	u8 vcore_state;
+-	u8 in_guest;
+-	struct kvmppc_vcore *master_vcore;
+-	struct list_head runnable_threads;
+-	struct list_head preempt_list;
+-	spinlock_t lock;
+-	struct swait_queue_head wq;
+-	spinlock_t stoltb_lock;	/* protects stolen_tb and preempt_tb */
+-	u64 stolen_tb;
+-	u64 preempt_tb;
+-	struct kvm_vcpu *runner;
+-	struct kvm *kvm;
+-	u64 tb_offset;		/* guest timebase - host timebase */
+-	ulong lpcr;
+-	u32 arch_compat;
+-	ulong pcr;
+-	ulong dpdes;		/* doorbell state (POWER8) */
+-	ulong conferring_threads;
+-};
+-
+ #define VCORE_ENTRY_MAP(vc)	((vc)->entry_exit_map & 0xff)
+ #define VCORE_EXIT_MAP(vc)	((vc)->entry_exit_map >> 8)
+ #define VCORE_IS_EXITING(vc)	(VCORE_EXIT_MAP(vc) != 0)
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.5.5
