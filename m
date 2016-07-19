@@ -1,19 +1,51 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <maddy@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtncQ69gxzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:48:38 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>,
- duwe@lst.de
-Subject: [PATCH 2/2] powerpc/modules: Never restore r2 for a mprofile-kernel
- style mcount() call
-Date: Tue, 19 Jul 2016 14:48:31 +1000
-Message-Id: <1468903711-5869-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1468903711-5869-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtprp4vbdzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 15:44:26 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3rtprp18h2z9sC3
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2016 15:44:25 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6J5hYqa064889
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2016 01:44:22 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2495r7cy5n-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2016 01:44:22 -0400
+Received: from localhost
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 19 Jul 2016 11:14:19 +0530
+Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id F1E78394005E
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2016 11:14:15 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6J5iF2830867706
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2016 11:14:15 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6J5iDPE028920
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Jul 2016 11:14:15 +0530
+Subject: Re: [PATCH 1/2] powerpc/ftrace: Separate the heuristics for checking
+ call sites
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 References: <1468903711-5869-1-git-send-email-mpe@ellerman.id.au>
+Cc: duwe@lst.de, aneesh.kumar@linux.vnet.ibm.com,
+ Anton Blanchard <anton@samba.org>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Tue, 19 Jul 2016 11:14:09 +0530
+MIME-Version: 1.0
+In-Reply-To: <1468903711-5869-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <578DBE29.6010100@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +55,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the module loader we process relocations, and for long jumps we
-generate trampolines (aka stubs). At the call site for one of these
-trampolines we usually need to generate a load instruction to restore
-the TOC pointer into r2.
 
-There is one exception however, which is calls to mcount() using the
-mprofile-kernel ABI, they handle the TOC inside the stub, and so for
-them we do not generate a TOC load.
 
-The bug is in how the code in restore_r2() decides if it needs to
-generate the TOC load. It does so by looking for a nop following the
-branch, and if it sees a nop, it replaces it with the load. In general
-the compiler has no reason to generate a nop following the mcount()
-call and so that check works OK.
+On Tuesday 19 July 2016 10:18 AM, Michael Ellerman wrote:
+> In __ftrace_make_nop() (the 64-bit version), we have code to deal with
+> two ftrace ABIs. There is the original ABI, which looks mostly like a
+> function call, and then the mprofile-kernel ABI which is just a branch.
+>
+> The code tries to handle both cases, by looking for the presence of a
+> load to restore the TOC pointer (PPC_INST_LD_TOC). If we detect the TOC
+> load, we assume the call site is for an mcount() call using the old ABI.
+> That means we patch the mcount() call with a b +8, to branch over the
+> TOC load.
+>
+> However if the kernel was built with mprofile-kernel, then there will
+> never be a call site using the original ftrace ABI. If for some reason
+> we do see a TOC load, then it's there for a good reason, and we should
+> not jump over it.
+>
+> So split the code, using the existing CC_USING_MPROFILE_KERNEL. Kernels
+> built with mprofile-kernel will only look for, and expect, the new ABI,
+> and similarly for the original ABI.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>   arch/powerpc/kernel/ftrace.c | 35 ++++++++++++++++++-----------------
+>   1 file changed, 18 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+> index 7af6c4de044b..438442dac44c 100644
+> --- a/arch/powerpc/kernel/ftrace.c
+> +++ b/arch/powerpc/kernel/ftrace.c
+> @@ -144,6 +144,21 @@ __ftrace_make_nop(struct module *mod,
+>   		return -EINVAL;
+>   	}
+>   
+> +#ifdef CC_USING_MPROFILE_KERNEL
+> +	/* When using -mkernel_profile there is no load to jump over */
+> +	pop = PPC_INST_NOP;
+> +
+> +	if (probe_kernel_read(&op, (void *)(ip - 4), 4)) {
+> +		pr_err("Fetching instruction at %lx failed.\n", ip - 4);
+> +		return -EFAULT;
+> +	}
+> +
+> +	/* We expect either a mlfr r0, or a std r0, LRSAVE(r1) */
 
-However if we combine a jump label at the start of a function, with an
-early return, such that GCC applies the shrink-wrapping optimisation, we
-can then end up with an mcount call followed immediately by a nop.
-However the nop is not there for a TOC load, it is for the jump label.
-
-That confuses restore_r2() into replacing the jump label nop with a TOC
-load, which in turn confuses ftrace into replacing the mcount call with
-a b +8 (fixed in the previous commit). The end result is we jump over
-the jump label, which if it was supposed to return means we incorrectly
-run the body of the function.
-
-We have seen this in practice with some yet-to-be-merged patches that
-use jump labels more extensively.
-
-The fix is relatively simple, in restore_r2() we check for an
-mprofile-kernel style mcount() call first, before looking for the
-presence of a nop.
-
-Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/module_64.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index f703f343358e..183368e008cf 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -494,9 +494,10 @@ static bool is_early_mcount_callsite(u32 *instruction)
-    restore r2. */
- static int restore_r2(u32 *instruction, struct module *me)
- {
-+	if (is_early_mcount_callsite(instruction - 1))
-+		return 1;
-+
- 	if (*instruction != PPC_INST_NOP) {
--		if (is_early_mcount_callsite(instruction - 1))
--			return 1;
- 		pr_err("%s: Expect noop after relocate, got %08x\n",
- 		       me->name, *instruction);
- 		return 0;
--- 
-2.7.4
+nit..  "mflr" and not "mlfr"
+> +	if (op != PPC_INST_MFLR && op != PPC_INST_STD_LR) {
+> +		pr_err("Unexpected instruction %08x around bl _mcount\n", op);
+> +		return -EINVAL;
+> +	}
+> +#else
+>   	/*
+>   	 * Our original call site looks like:
+>   	 *
+> @@ -170,24 +185,10 @@ __ftrace_make_nop(struct module *mod,
+>   	}
+>   
+>   	if (op != PPC_INST_LD_TOC) {
+> -		unsigned int inst;
+> -
+> -		if (probe_kernel_read(&inst, (void *)(ip - 4), 4)) {
+> -			pr_err("Fetching instruction at %lx failed.\n", ip - 4);
+> -			return -EFAULT;
+> -		}
+> -
+> -		/* We expect either a mlfr r0, or a std r0, LRSAVE(r1) */
+> -		if (inst != PPC_INST_MFLR && inst != PPC_INST_STD_LR) {
+> -			pr_err("Unexpected instructions around bl _mcount\n"
+> -			       "when enabling dynamic ftrace!\t"
+> -			       "(%08x,bl,%08x)\n", inst, op);
+> -			return -EINVAL;
+> -		}
+> -
+> -		/* When using -mkernel_profile there is no load to jump over */
+> -		pop = PPC_INST_NOP;
+> +		pr_err("Expected %08x found %08x\n", PPC_INST_LD_TOC, op);
+> +		return -EINVAL;
+>   	}
+> +#endif /* CC_USING_MPROFILE_KERNEL */
+>   
+>   	if (patch_instruction((unsigned int *)ip, pop)) {
+>   		pr_err("Patching NOP failed.\n");
