@@ -1,46 +1,17 @@
-Return-Path: <alastair@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtmf55MYKzDqNC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:05:01 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6J43k0f002531
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 00:04:59 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2496gq1d5v-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 00:04:59 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Tue, 19 Jul 2016 14:04:57 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6A56F2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:55 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6J44sOE24772862
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:54 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6J44rF6009075
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:04:54 +1000
-From: alastair@au1.ibm.com
-To: mpe@ellerman.id.au
-Cc: benh@kernel.crashing.org, paulus@samba.org, herbert@gondor.apana.org.au,
- davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH V2 2/2] crypto: vmx - Convert to CPU feature based module
- autoloading
-Date: Tue, 19 Jul 2016 14:03:53 +1000
-In-Reply-To: <1468901033-28996-1-git-send-email-alastair@au1.ibm.com>
-References: <1468901033-28996-1-git-send-email-alastair@au1.ibm.com>
-Message-Id: <1468901033-28996-3-git-send-email-alastair@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtncN3tvwzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 14:48:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>,
+ duwe@lst.de
+Subject: [PATCH 1/2] powerpc/ftrace: Separate the heuristics for checking call
+ sites
+Date: Tue, 19 Jul 2016 14:48:30 +1000
+Message-Id: <1468903711-5869-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,63 +21,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+In __ftrace_make_nop() (the 64-bit version), we have code to deal with
+two ftrace ABIs. There is the original ABI, which looks mostly like a
+function call, and then the mprofile-kernel ABI which is just a branch.
 
-This patch utilises the GENERIC_CPU_AUTOPROBE infrastructure
-to automatically load the vmx_crypto module if the CPU supports
-it.
+The code tries to handle both cases, by looking for the presence of a
+load to restore the TOC pointer (PPC_INST_LD_TOC). If we detect the TOC
+load, we assume the call site is for an mcount() call using the old ABI.
+That means we patch the mcount() call with a b +8, to branch over the
+TOC load.
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+However if the kernel was built with mprofile-kernel, then there will
+never be a call site using the original ftrace ABI. If for some reason
+we do see a TOC load, then it's there for a good reason, and we should
+not jump over it.
+
+So split the code, using the existing CC_USING_MPROFILE_KERNEL. Kernels
+built with mprofile-kernel will only look for, and expect, the new ABI,
+and similarly for the original ABI.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/crypto/vmx/Kconfig | 2 +-
- drivers/crypto/vmx/vmx.c   | 6 ++----
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/ftrace.c | 35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/crypto/vmx/Kconfig b/drivers/crypto/vmx/Kconfig
-index 89d8208..a83ead1 100644
---- a/drivers/crypto/vmx/Kconfig
-+++ b/drivers/crypto/vmx/Kconfig
-@@ -1,7 +1,7 @@
- config CRYPTO_DEV_VMX_ENCRYPT
- 	tristate "Encryption acceleration support on P8 CPU"
- 	depends on CRYPTO_DEV_VMX
--	default y
-+	default m
- 	help
- 	  Support for VMX cryptographic acceleration instructions on Power8 CPU.
- 	  This module supports acceleration for AES and GHASH in hardware. If you
-diff --git a/drivers/crypto/vmx/vmx.c b/drivers/crypto/vmx/vmx.c
-index e163d57..5a40f2f 100644
---- a/drivers/crypto/vmx/vmx.c
-+++ b/drivers/crypto/vmx/vmx.c
-@@ -23,6 +23,7 @@
- #include <linux/moduleparam.h>
- #include <linux/types.h>
- #include <linux/err.h>
-+#include <linux/cpufeature.h>
- #include <linux/crypto.h>
- #include <asm/cputable.h>
- #include <crypto/internal/hash.h>
-@@ -43,9 +44,6 @@ int __init p8_init(void)
- 	int ret = 0;
- 	struct crypto_alg **alg_it;
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 7af6c4de044b..438442dac44c 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -144,6 +144,21 @@ __ftrace_make_nop(struct module *mod,
+ 		return -EINVAL;
+ 	}
  
--	if (!(cur_cpu_spec->cpu_user_features2 & PPC_FEATURE2_VEC_CRYPTO))
--		return -ENODEV;
++#ifdef CC_USING_MPROFILE_KERNEL
++	/* When using -mkernel_profile there is no load to jump over */
++	pop = PPC_INST_NOP;
++
++	if (probe_kernel_read(&op, (void *)(ip - 4), 4)) {
++		pr_err("Fetching instruction at %lx failed.\n", ip - 4);
++		return -EFAULT;
++	}
++
++	/* We expect either a mlfr r0, or a std r0, LRSAVE(r1) */
++	if (op != PPC_INST_MFLR && op != PPC_INST_STD_LR) {
++		pr_err("Unexpected instruction %08x around bl _mcount\n", op);
++		return -EINVAL;
++	}
++#else
+ 	/*
+ 	 * Our original call site looks like:
+ 	 *
+@@ -170,24 +185,10 @@ __ftrace_make_nop(struct module *mod,
+ 	}
+ 
+ 	if (op != PPC_INST_LD_TOC) {
+-		unsigned int inst;
 -
- 	for (alg_it = algs; *alg_it; alg_it++) {
- 		ret = crypto_register_alg(*alg_it);
- 		printk(KERN_INFO "crypto_register_alg '%s' = %d\n",
-@@ -78,7 +76,7 @@ void __exit p8_exit(void)
- 	crypto_unregister_shash(&p8_ghash_alg);
- }
+-		if (probe_kernel_read(&inst, (void *)(ip - 4), 4)) {
+-			pr_err("Fetching instruction at %lx failed.\n", ip - 4);
+-			return -EFAULT;
+-		}
+-
+-		/* We expect either a mlfr r0, or a std r0, LRSAVE(r1) */
+-		if (inst != PPC_INST_MFLR && inst != PPC_INST_STD_LR) {
+-			pr_err("Unexpected instructions around bl _mcount\n"
+-			       "when enabling dynamic ftrace!\t"
+-			       "(%08x,bl,%08x)\n", inst, op);
+-			return -EINVAL;
+-		}
+-
+-		/* When using -mkernel_profile there is no load to jump over */
+-		pop = PPC_INST_NOP;
++		pr_err("Expected %08x found %08x\n", PPC_INST_LD_TOC, op);
++		return -EINVAL;
+ 	}
++#endif /* CC_USING_MPROFILE_KERNEL */
  
--module_init(p8_init);
-+module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, p8_init);
- module_exit(p8_exit);
- 
- MODULE_AUTHOR("Marcelo Cerri<mhcerri@br.ibm.com>");
+ 	if (patch_instruction((unsigned int *)ip, pop)) {
+ 		pr_err("Patching NOP failed.\n");
 -- 
 2.7.4
-
-V2: No change
