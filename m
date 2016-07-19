@@ -1,22 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rtvl30SY5zDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 19:24:47 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, aik@ozlabs.ru,
- agraf@suse.de, kvm-ppc@vger.kernel.org, qemu-devel@nongnu.org,
- paulus@samba.org, david@gibson.dropbear.id.au
-Subject: Re: [1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
-In-Reply-To: <20160719032325.GA14519@tungsten.ozlabs.ibm.com>
-References: <741e7a7860e055603a311bcc6051bd88fdad1215.1467785081.git.sam.bobroff@au1.ibm.com>
- <3rmB8G0Wkxz9s9Z@ozlabs.org> <20160719032325.GA14519@tungsten.ozlabs.ibm.com>
-Date: Tue, 19 Jul 2016 19:24:46 +1000
-Message-ID: <87lh0y9e01.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rtwMs24CqzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 19:53:13 +1000 (AEST)
+Date: Tue, 19 Jul 2016 17:52:39 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: alastair@au1.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ davem@davemloft.net, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alastair D'Silva <alastair@d-silva.org>
+Subject: Re: [PATCH 0/2] Automatically load the vmx_crypto module if supported
+Message-ID: <20160719095239.GA24167@gondor.apana.org.au>
+References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
+ <20160718102253.GA13780@gondor.apana.org.au>
+ <87fur6phj0.fsf@@concordia.ellerman.id.au>
+ <20160719035939.GA20847@gondor.apana.org.au>
+ <87poqa9eiz.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87poqa9eiz.fsf@@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sam Bobroff <sam.bobroff@au1.ibm.com> writes:
-
-> On Fri, Jul 08, 2016 at 08:49:49PM +1000, Michael Ellerman wrote:
->> On Wed, 2016-06-07 at 06:05:54 UTC, Sam bobroff wrote:
->> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> > index 02416fe..06d79bc 100644
->> > --- a/arch/powerpc/kvm/powerpc.c
->> > +++ b/arch/powerpc/kvm/powerpc.c
->> > @@ -588,6 +588,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->> >  		r = 1;
->> >  		break;
->> >  #endif
->> > +	case KVM_CAP_PPC_HTM:
->> > +		r = cpu_has_feature(CPU_FTR_TM)
->> > +		    && is_kvmppc_hv_enabled(kvm);
->> 
->> I think it should be using CPU_FTR_TM_COMP.
+On Tue, Jul 19, 2016 at 07:13:24PM +1000, Michael Ellerman wrote:
 >
-> Oh, why is that? I'm happy to respin the patch I'm just curious.
->
-> (I did it that way becuase that seems to be the way the other flags are used,
-> e.g. CPU_FTR_ALTIVEC).
->
-> If I read the code correctly, using CPU_FTR_TM_COMP will work fine: it should
-> cause the cpu_has_feature() test to always return false if CPU_FTR_TM_COMP is
-> 0.
+> I'll assume patch 2 has your ack :)
 
-CPU_FTR_TM says the CPU supports TM.
+Sure,
 
-CPU_FTR_TM_COMP says the CPU supports TM *and* the kernel is built with
-TM support.
+Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-The distinction exists because currently the assembly patching macros
-don't deal correctly with a feature bit that is defined to 0. (And
-possibly other reasons I don't remember)
-
-We should fix that, but until we have, anything that is advertising
-support to userspace should be using the COMP bits, when they exist.
-
-cheers
+Thanks,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
