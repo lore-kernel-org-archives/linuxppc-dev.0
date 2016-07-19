@@ -1,22 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rthZr1432zDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 11:01:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>, alastair@au1.ibm.com
-Cc: benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
- linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alastair D'Silva <alastair@d-silva.org>
-Subject: Re: [PATCH 0/2] Automatically load the vmx_crypto module if supported
-In-Reply-To: <20160718102253.GA13780@gondor.apana.org.au>
-References: <1468388840-12068-1-git-send-email-alastair@au1.ibm.com>
- <20160718102253.GA13780@gondor.apana.org.au>
-Date: Tue, 19 Jul 2016 11:01:55 +1000
-Message-ID: <87fur6phj0.fsf@@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rthd01MvXzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 11:03:48 +1000 (AEST)
+Date: Tue, 19 Jul 2016 11:03:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>, Scott Wood
+ <scottwood@freescale.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Christophe
+ Leroy <christophe.leroy@c-s.fr>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the crypto tree with the fsl tree
+Message-ID: <20160719110347.1abfa9a3@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Herbert Xu <herbert@gondor.apana.org.au> writes:
-
-> On Wed, Jul 13, 2016 at 03:47:16PM +1000, alastair@au1.ibm.com wrote:
->> From: Alastair D'Silva <alastair@d-silva.org>
->> 
->> This series allows the vmx_crypto module to be detected and automatically
->> loaded via UDEV if the CPU supports the vector crypto feature.
->> 
->> Alastair D'Silva (2):
->>   powerpc: Add module autoloading based on CPU features
->>   crypto: vmx - Convert to CPU feature based module autoloading
->
-> Both patches applied.  Thanks.
-
 Hi Herbert,
 
-Can you please ask for an ack before merging arch patches?
+Today's linux-next merge of the crypto tree got a conflict in:
 
-That's a 70 line powerpc patch and a 6 line crypto patch. It has no
-reviews and no acks. I would have preferred it if we could take it via
-the powerpc tree.
+  arch/powerpc/Kconfig
 
-cheers
+between commit:
+
+  c223c90386bc ("powerpc32: provide VIRT_CPU_ACCOUNTING")
+
+from the fsl tree and commit:
+
+  377ca89f0b37 ("powerpc: Add module autoloading based on CPU features")
+
+from the crypto tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+-- 
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/Kconfig
+index fcfe5332416f,174f1e8f9cac..000000000000
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@@ -165,7 -164,7 +165,8 @@@ config PP
+  	select ARCH_HAS_UBSAN_SANITIZE_ALL
+  	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+  	select HAVE_LIVEPATCH if HAVE_DYNAMIC_FTRACE_WITH_REGS
+ +	select HAVE_VIRT_CPU_ACCOUNTING
++ 	select GENERIC_CPU_AUTOPROBE
+  
+  config GENERIC_CSUM
+  	def_bool CPU_LITTLE_ENDIAN
