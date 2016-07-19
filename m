@@ -1,25 +1,38 @@
-Return-Path: <hongtao.jia@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00080.outbound.protection.outlook.com [40.107.0.80])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rv2Vt4hYxzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 00:29:41 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@nxp.com>
-To: "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhang@intel.com"
- <rui.zhang@intel.com>, Scott Wood <scott.wood@nxp.com>
-CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
-Date: Tue, 19 Jul 2016 06:54:11 +0000
-Message-ID: <AM4PR0401MB18432B70EEB53C04594821DEEB370@AM4PR0401MB1843.eurprd04.prod.outlook.com>
-References: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
-In-Reply-To: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rv74r48rdzDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 03:55:54 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6JHsWs7136372
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 13:55:51 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2495r8dftm-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 13:55:51 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 19 Jul 2016 11:55:50 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6BB833E40048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 11:55:46 -0600 (MDT)
+Subject: Re: [PATCH v2 1/2] powerpc/pseries: Implemented indexed-count hotplug
+ memory add
+To: Sahil Mehta <smehta@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <f3a63611-ae4d-be48-64d7-88a7ac7c1091@linux.vnet.ibm.com>
+ <f128910f-59ed-bdd6-afef-af8d287e77e6@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 19 Jul 2016 12:55:44 -0500
 MIME-Version: 1.0
+In-Reply-To: <f128910f-59ed-bdd6-afef-af8d287e77e6@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <578E69A0.6050005@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,405 +42,265 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Eduardo,
+On 07/18/2016 10:07 AM, Sahil Mehta wrote:
+> Indexed-count add for memory hotplug guarantees that a contiguous block
+> of <count> lmbs beginning at a specified <index> will be assigned (NOT
+> that <count> lmbs will be added). Because of Qemu's per-DIMM memory
+> management, the addition of a contiguous block of memory currently
+> requires a series of individual calls. Indexed-count add reduces
+> this series into a single call.
+> 
+> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
 
-Any comments on this patch?
+Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-Thanks.
--Hongtao.
-
-> -----Original Message-----
-> From: Jia Hongtao [mailto:hongtao.jia@nxp.com]
-> Sent: Thursday, June 30, 2016 11:09 AM
-> To: edubezval@gmail.com; rui.zhang@intel.com; robh+dt@kernel.org;
-> galak@codeaurora.org; Scott Wood <scott.wood@nxp.com>;
-> shawnguo@kernel.org
-> Cc: linux-pm@vger.kernel.org; devicetree@vger.kernel.org; linux-
-> kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-arm-
-> kernel@lists.infradead.org; Hongtao Jia <hongtao.jia@nxp.com>
-> Subject: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
->=20
-> This driver add thermal management support by enabling TMU (Thermal
-> Monitoring Unit) on QorIQ platform.
->=20
-> It's based on thermal of framework:
-> - Trip points defined in device tree.
-> - Cpufreq as cooling device registered in qoriq cpufreq driver.
->=20
-> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
 > ---
-> Changes of V2:
-> * Add HAS_IOMEM dependency to fix build error on UM
->=20
->  drivers/thermal/Kconfig         |  10 ++
->  drivers/thermal/Makefile        |   1 +
->  drivers/thermal/qoriq_thermal.c | 328
-> ++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 339 insertions(+)
->  create mode 100644 drivers/thermal/qoriq_thermal.c
->=20
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
-> 2d702ca..56ef30d 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -195,6 +195,16 @@ config IMX_THERMAL
->  	  cpufreq is used as the cooling device to throttle CPUs when the
->  	  passive trip is crossed.
->=20
-> +config QORIQ_THERMAL
-> +	tristate "QorIQ Thermal Monitoring Unit"
-> +	depends on THERMAL_OF
-> +	depends on HAS_IOMEM
-> +	help
-> +	  Support for Thermal Monitoring Unit (TMU) found on QorIQ platforms.
-> +	  It supports one critical trip point and one passive trip point. The
-> +	  cpufreq is used as the cooling device to throttle CPUs when the
-> +	  passive trip is crossed.
+> v2:	-remove potential memory leak when parsing command
+> 	-use u32s drc_index and count instead of u32 ic[]
+> 	 in dlpar_memory
+> 
+>  arch/powerpc/include/asm/rtas.h                 |    2
+>  arch/powerpc/platforms/pseries/dlpar.c          |   34 +++++++-
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |  100 +++++++++++++++++++++--
+>  3 files changed, 124 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 51400ba..f46b271 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -307,6 +307,7 @@ struct pseries_hp_errorlog {
+>  	union {
+>  		__be32	drc_index;
+>  		__be32	drc_count;
+> +		__be32	indexed_count[2];
+>  		char	drc_name[1];
+>  	} _drc_u;
+>  };
+> @@ -322,6 +323,7 @@ struct pseries_hp_errorlog {
+>  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+>  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
+>  #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
+> +#define PSERIES_HP_ELOG_ID_IC		4
+> 
+>  struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+>  					      uint16_t section_id);
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 2b93ae8..2a6dc9e 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -345,11 +345,17 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
+>  	switch (hp_elog->id_type) {
+>  	case PSERIES_HP_ELOG_ID_DRC_COUNT:
+>  		hp_elog->_drc_u.drc_count =
+> -					be32_to_cpu(hp_elog->_drc_u.drc_count);
+> +				be32_to_cpu(hp_elog->_drc_u.drc_count);
+>  		break;
+>  	case PSERIES_HP_ELOG_ID_DRC_INDEX:
+>  		hp_elog->_drc_u.drc_index =
+> -					be32_to_cpu(hp_elog->_drc_u.drc_index);
+> +				be32_to_cpu(hp_elog->_drc_u.drc_index);
+> +		break;
+> +	case PSERIES_HP_ELOG_ID_IC:
+> +		hp_elog->_drc_u.indexed_count[0] =
+> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[0]);
+> +		hp_elog->_drc_u.indexed_count[1] =
+> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[1]);
+>  	}
+> 
+>  	switch (hp_elog->resource) {
+> @@ -409,7 +415,29 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
+>  		goto dlpar_store_out;
+>  	}
+> 
+> -	if (!strncmp(arg, "index", 5)) {
+> +	if (!strncmp(arg, "indexed-count", 13)) {
+> +		u32 index, count;
+> +		char *cstr, *istr;
 > +
->  config SPEAR_THERMAL
->  	tristate "SPEAr thermal sensor driver"
->  	depends on PLAT_SPEAR || COMPILE_TEST
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile index
-> 10b07c1..6662232 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -37,6 +37,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
->  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
->  obj-$(CONFIG_TANGO_THERMAL)	+=3D tango_thermal.o
->  obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
-> +obj-$(CONFIG_QORIQ_THERMAL)	+=3D qoriq_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D db8500_cpufreq_cooling.o
->  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
->  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
-> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_ther=
-mal.c new
-> file mode 100644 index 0000000..644ba52
-> --- /dev/null
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -0,0 +1,328 @@
-> +/*
-> + * Copyright 2016 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> +it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but
-> +WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-> +or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-> +License for
-> + * more details.
-> + *
-> + */
+> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_IC;
+> +		arg += strlen("indexed-count ");
 > +
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/thermal.h>
+> +		cstr = kstrdup(arg, GFP_KERNEL);
+> +		istr = strchr(cstr, ' ');
+> +		*istr++ = '\0';
 > +
-> +#include "thermal_core.h"
+> +		if (kstrtou32(cstr, 0, &count) || kstrtou32(istr, 0, &index)) {
+> +			rc = -EINVAL;
+> +			pr_err("Invalid index or count : \"%s\"\n", buf);
+> +			kfree(cstr);
+> +			goto dlpar_store_out;
+> +		}
 > +
-> +#define SITES_MAX	16
+> +		kfree(cstr);
 > +
-> +/*
-> + * QorIQ TMU Registers
-> + */
-> +struct qoriq_tmu_site_regs {
-> +	u32 tritsr;		/* Immediate Temperature Site Register */
-> +	u32 tratsr;		/* Average Temperature Site Register */
-> +	u8 res0[0x8];
-> +};
+> +		hp_elog->_drc_u.indexed_count[0] = cpu_to_be32(count);
+> +		hp_elog->_drc_u.indexed_count[1] = cpu_to_be32(index);
+> +	} else if (!strncmp(arg, "index", 5)) {
+>  		u32 index;
+> 
+>  		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index 2ce1385..d7942ca 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -701,6 +701,83 @@ static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
+>  	return rc;
+>  }
+> 
+> +static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
+> +				  struct property *prop)
+> +{
+> +	struct of_drconf_cell *lmbs;
+> +	u32 num_lmbs, *p;
+> +	int i, rc;
+> +	int lmbs_available = 0, start_index = 0, end_index;
 > +
-> +struct qoriq_tmu_regs {
-> +	u32 tmr;		/* Mode Register */
-> +#define TMR_DISABLE	0x0
-> +#define TMR_ME		0x80000000
-> +#define TMR_ALPF	0x0c000000
-> +	u32 tsr;		/* Status Register */
-> +	u32 tmtmir;		/* Temperature measurement interval Register */
-> +#define TMTMIR_DEFAULT	0x0000000f
-> +	u8 res0[0x14];
-> +	u32 tier;		/* Interrupt Enable Register */
-> +#define TIER_DISABLE	0x0
-> +	u32 tidr;		/* Interrupt Detect Register */
-> +	u32 tiscr;		/* Interrupt Site Capture Register */
-> +	u32 ticscr;		/* Interrupt Critical Site Capture Register */
-> +	u8 res1[0x10];
-> +	u32 tmhtcrh;		/* High Temperature Capture Register */
-> +	u32 tmhtcrl;		/* Low Temperature Capture Register */
-> +	u8 res2[0x8];
-> +	u32 tmhtitr;		/* High Temperature Immediate Threshold */
-> +	u32 tmhtatr;		/* High Temperature Average Threshold */
-> +	u32 tmhtactr;	/* High Temperature Average Crit Threshold */
-> +	u8 res3[0x24];
-> +	u32 ttcfgr;		/* Temperature Configuration Register */
-> +	u32 tscfgr;		/* Sensor Configuration Register */
-> +	u8 res4[0x78];
-> +	struct qoriq_tmu_site_regs site[SITES_MAX];
-> +	u8 res5[0x9f8];
-> +	u32 ipbrr0;		/* IP Block Revision Register 0 */
-> +	u32 ipbrr1;		/* IP Block Revision Register 1 */
-> +	u8 res6[0x310];
-> +	u32 ttr0cr;		/* Temperature Range 0 Control Register */
-> +	u32 ttr1cr;		/* Temperature Range 1 Control Register */
-> +	u32 ttr2cr;		/* Temperature Range 2 Control Register */
-> +	u32 ttr3cr;		/* Temperature Range 3 Control Register */
-> +};
+> +	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
+> +		lmbs_to_add, drc_index);
 > +
-> +/*
-> + * Thermal zone data
-> + */
-> +struct qoriq_tmu_data {
-> +	struct thermal_zone_device *tz;
-> +	struct qoriq_tmu_regs __iomem *regs;
-> +	int sensor_id;
-> +	bool little_endian;
-> +};
+> +	if (lmbs_to_add == 0)
+> +		return -EINVAL;
 > +
-> +static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem
-> +*addr) {
-> +	if (p->little_endian)
-> +		iowrite32(val, addr);
-> +	else
-> +		iowrite32be(val, addr);
-> +}
+> +	p = prop->value;
+> +	num_lmbs = *p++;
+> +	lmbs = (struct of_drconf_cell *)p;
 > +
-> +static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr) {
-> +	if (p->little_endian)
-> +		return ioread32(addr);
-> +	else
-> +		return ioread32be(addr);
-> +}
+> +	/* Navigate to drc_index */
+> +	while (start_index < num_lmbs) {
+> +		if (lmbs[start_index].drc_index == drc_index)
+> +			break;
 > +
-> +static int tmu_get_temp(void *p, int *temp) {
-> +	u32 val;
-> +	struct qoriq_tmu_data *data =3D p;
-> +
-> +	val =3D tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
-> +	*temp =3D (val & 0xff) * 1000;
-> +
-> +	return 0;
-> +}
-> +
-> +static int qoriq_tmu_get_sensor_id(void) {
-> +	int ret, id;
-> +	struct of_phandle_args sensor_specs;
-> +	struct device_node *np, *sensor_np;
-> +
-> +	np =3D of_find_node_by_name(NULL, "thermal-zones");
-> +	if (!np)
-> +		return -ENODEV;
-> +
-> +	sensor_np =3D of_get_next_child(np, NULL);
-> +	ret =3D of_parse_phandle_with_args(sensor_np, "thermal-sensors",
-> +			"#thermal-sensor-cells",
-> +			0, &sensor_specs);
-> +	if (ret) {
-> +		of_node_put(np);
-> +		of_node_put(sensor_np);
-> +		return ret;
+> +		start_index++;
 > +	}
 > +
-> +	if (sensor_specs.args_count >=3D 1) {
-> +		id =3D sensor_specs.args[0];
-> +		WARN(sensor_specs.args_count > 1,
-> +				"%s: too many cells in sensor specifier %d\n",
-> +				sensor_specs.np->name,
-> sensor_specs.args_count);
+> +	end_index = start_index + lmbs_to_add;
+> +
+> +	/* Validate that there are enough LMBs to satisfy the request */
+> +	for (i = start_index; i < end_index; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
+> +			break;
+> +
+> +		lmbs_available++;
+> +	}
+> +
+> +	if (lmbs_available < lmbs_to_add)
+> +		return -EINVAL;
+> +
+> +	for (i = start_index; i < end_index; i++) {
+> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
+> +			continue;
+> +
+> +		rc = dlpar_add_lmb(&lmbs[i]);
+> +		if (rc)
+> +			break;
+> +
+> +		lmbs[i].reserved = 1;
+> +	}
+> +
+> +	if (rc) {
+> +		pr_err("Memory indexed-count-add failed, removing any added LMBs\n");
+> +
+> +		for (i = start_index; i < end_index; i++) {
+> +			if (!lmbs[i].reserved)
+> +				continue;
+> +
+> +			rc = dlpar_remove_lmb(&lmbs[i]);
+> +			if (rc)
+> +				pr_err("Failed to remove LMB, drc index %x\n",
+> +				       be32_to_cpu(lmbs[i].drc_index));
+> +		}
+> +		rc = -EINVAL;
 > +	} else {
-> +		id =3D 0;
+> +		for (i = start_index; i < end_index; i++) {
+> +			if (!lmbs[i].reserved)
+> +				continue;
+> +
+> +			pr_info("Memory at %llx (drc index %x) was hot-added\n",
+> +				lmbs[i].base_addr, lmbs[i].drc_index);
+> +			lmbs[i].reserved = 0;
+> +		}
 > +	}
 > +
-> +	of_node_put(np);
-> +	of_node_put(sensor_np);
-> +
-> +	return id;
+> +	return rc;
 > +}
 > +
-> +static int qoriq_tmu_calibration(struct platform_device *pdev) {
-> +	int i, val, len;
-> +	u32 range[4];
-> +	const u32 *calibration;
-> +	struct device_node *np =3D pdev->dev.of_node;
-> +	struct qoriq_tmu_data *data =3D platform_get_drvdata(pdev);
-> +
-> +	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
-> +		dev_err(&pdev->dev, "missing calibration range.\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	/* Init temperature range registers */
-> +	tmu_write(data, range[0], &data->regs->ttr0cr);
-> +	tmu_write(data, range[1], &data->regs->ttr1cr);
-> +	tmu_write(data, range[2], &data->regs->ttr2cr);
-> +	tmu_write(data, range[3], &data->regs->ttr3cr);
-> +
-> +	calibration =3D of_get_property(np, "fsl,tmu-calibration", &len);
-> +	if (calibration =3D=3D NULL || len % 8) {
-> +		dev_err(&pdev->dev, "invalid calibration data.\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	for (i =3D 0; i < len; i +=3D 8, calibration +=3D 2) {
-> +		val =3D of_read_number(calibration, 1);
-> +		tmu_write(data, val, &data->regs->ttcfgr);
-> +		val =3D of_read_number(calibration + 1, 1);
-> +		tmu_write(data, val, &data->regs->tscfgr);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
-> +	/* Disable interrupt, using polling instead */
-> +	tmu_write(data, TIER_DISABLE, &data->regs->tier);
-> +
-> +	/* Set update_interval */
-> +	tmu_write(data, TMTMIR_DEFAULT, &data->regs->tmtmir);
-> +
-> +	/* Disable monitoring */
-> +	tmu_write(data, TMR_DISABLE, &data->regs->tmr); }
-> +
-> +static struct thermal_zone_of_device_ops tmu_tz_ops =3D {
-> +	.get_temp =3D tmu_get_temp,
-> +};
-> +
-> +static int qoriq_tmu_probe(struct platform_device *pdev) {
-> +	int ret;
-> +	const struct thermal_trip *trip;
-> +	struct qoriq_tmu_data *data;
-> +	struct device_node *np =3D pdev->dev.of_node;
-> +	u32 site =3D 0;
-> +
-> +	if (!np) {
-> +		dev_err(&pdev->dev, "Device OF-Node is NULL");
-> +		return -ENODEV;
-> +	}
-> +
-> +	data =3D devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-> +			    GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	platform_set_drvdata(pdev, data);
-> +
-> +	data->little_endian =3D of_property_read_bool(np, "little-endian");
-> +
-> +	data->sensor_id =3D qoriq_tmu_get_sensor_id();
-> +	if (data->sensor_id < 0) {
-> +		dev_err(&pdev->dev, "Failed to get sensor id\n");
-> +		ret =3D -ENODEV;
-> +		goto err_iomap;
-> +	}
-> +
-> +	data->regs =3D of_iomap(np, 0);
-> +	if (!data->regs) {
-> +		dev_err(&pdev->dev, "Failed to get memory region\n");
-> +		ret =3D -ENODEV;
-> +		goto err_iomap;
-> +	}
-> +
-> +	qoriq_tmu_init_device(data);	/* TMU initialization */
-> +
-> +	ret =3D qoriq_tmu_calibration(pdev);	/* TMU calibration */
-> +	if (ret < 0)
-> +		goto err_tmu;
-> +
-> +	data->tz =3D thermal_zone_of_sensor_register(&pdev->dev, data->sensor_i=
-d,
-> +				data, &tmu_tz_ops);
-> +	if (IS_ERR(data->tz)) {
-> +		ret =3D PTR_ERR(data->tz);
-> +		dev_err(&pdev->dev,
-> +			"Failed to register thermal zone device %d\n", ret);
-> +		goto err_tmu;
-> +	}
-> +
-> +	trip =3D of_thermal_get_trip_points(data->tz);
-> +
-> +	/* Enable monitoring */
-> +	site |=3D 0x1 << (15 - data->sensor_id);
-> +	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
-> +
-> +	return 0;
-> +
-> +err_tmu:
-> +	iounmap(data->regs);
-> +
-> +err_iomap:
-> +	platform_set_drvdata(pdev, NULL);
-> +
-> +	return ret;
-> +}
-> +
-> +static int qoriq_tmu_remove(struct platform_device *pdev) {
-> +	struct qoriq_tmu_data *data =3D platform_get_drvdata(pdev);
-> +
-> +	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
-> +
-> +	/* Disable monitoring */
-> +	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
-> +
-> +	iounmap(data->regs);
-> +	platform_set_drvdata(pdev, NULL);
-> +
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +static int qoriq_tmu_suspend(struct device *dev) {
-> +	u32 tmr;
-> +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
-> +
-> +	/* Disable monitoring */
-> +	tmr =3D tmu_read(data, &data->regs->tmr);
-> +	tmr &=3D ~TMR_ME;
-> +	tmu_write(data, tmr, &data->regs->tmr);
-> +
-> +	return 0;
-> +}
-> +
-> +static int qoriq_tmu_resume(struct device *dev) {
-> +	u32 tmr;
-> +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
-> +
-> +	/* Enable monitoring */
-> +	tmr =3D tmu_read(data, &data->regs->tmr);
-> +	tmr |=3D TMR_ME;
-> +	tmu_write(data, tmr, &data->regs->tmr);
-> +
-> +	return 0;
-> +}
-> +#endif
-> +
-> +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-> +			 qoriq_tmu_suspend, qoriq_tmu_resume);
-> +
-> +static const struct of_device_id qoriq_tmu_match[] =3D {
-> +	{ .compatible =3D "fsl,qoriq-tmu", },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
-> +
-> +static struct platform_driver qoriq_tmu =3D {
-> +	.driver	=3D {
-> +		.name		=3D "qoriq_thermal",
-> +		.pm		=3D &qoriq_tmu_pm_ops,
-> +		.of_match_table	=3D qoriq_tmu_match,
-> +	},
-> +	.probe	=3D qoriq_tmu_probe,
-> +	.remove	=3D qoriq_tmu_remove,
-> +};
-> +module_platform_driver(qoriq_tmu);
-> +
-> +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@nxp.com>");
-> +MODULE_DESCRIPTION("QorIQ Thermal Monitoring Unit driver");
-> +MODULE_LICENSE("GPL v2");
-> --
-> 2.1.0.27.g96db324
+>  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>  {
+>  	struct device_node *dn;
+> @@ -708,9 +785,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>  	u32 count, drc_index;
+>  	int rc;
+> 
+> -	count = hp_elog->_drc_u.drc_count;
+> -	drc_index = hp_elog->_drc_u.drc_index;
+> -
+>  	lock_device_hotplug();
+> 
+>  	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+> @@ -727,19 +801,27 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+> 
+>  	switch (hp_elog->action) {
+>  	case PSERIES_HP_ELOG_ACTION_ADD:
+> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+> +			count = hp_elog->_drc_u.drc_count;
+>  			rc = dlpar_memory_add_by_count(count, prop);
+> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+> +			drc_index = hp_elog->_drc_u.drc_index;
+>  			rc = dlpar_memory_add_by_index(drc_index, prop);
+> -		else
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_IC) {
+> +			count = hp_elog->_drc_u.indexed_count[0];
+> +			drc_index = hp_elog->_drc_u.indexed_count[1];
+> +			rc = dlpar_memory_add_by_ic(count, drc_index, prop);
+> +		} else
+>  			rc = -EINVAL;
+>  		break;
+>  	case PSERIES_HP_ELOG_ACTION_REMOVE:
+> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
+> +			count = hp_elog->_drc_u.drc_count;
+>  			rc = dlpar_memory_remove_by_count(count, prop);
+> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
+> +			drc_index = hp_elog->_drc_u.drc_index;
+>  			rc = dlpar_memory_remove_by_index(drc_index, prop);
+> -		else
+> +		} else
+>  			rc = -EINVAL;
+>  		break;
+>  	default:
+> 
+> On 07/18/2016 10:04 AM, Sahil Mehta wrote:
+>> Indexed-count memory management allows addition and removal of contiguous
+>> lmb blocks with a single command. When compared to the series of calls
+>> previously required to manage contiguous blocks, indexed-count decreases
+>> command frequency and reduces risk of buffer overflow.
+>>
+>> Changes in v2:
+>> --------------
+>> -[PATCH 1/2]:	-remove potential memory leak when parsing command
+>> 		-use u32s drc_index and count instead of u32 ic[]
+>> 		 in dlpar_memory
+>> -[PATCH 2/2]:	-use u32s drc_index and count instead of u32 ic[]
+>> 		 in dlpar_memory
+>>
+>> -Sahil Mehta
+>> ---
+>>  include/asm/rtas.h                 |    2
+>>  platforms/pseries/dlpar.c          |   34 ++++++
+>>  platforms/pseries/hotplug-memory.c |  184 +++++++++++++++++++++++++++++++++++--
+>>  3 files changed, 208 insertions(+), 12 deletions(-)
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
