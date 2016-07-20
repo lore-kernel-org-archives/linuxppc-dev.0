@@ -1,46 +1,35 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvY1B2FGSzDqT2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 20:24:14 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id q2so3084930pap.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 03:24:14 -0700 (PDT)
-Message-ID: <1469010283.2800.5.camel@gmail.com>
-Subject: Re: [PATCH v3 02/11] mm: Hardened usercopy
-From: Balbir Singh <bsingharora@gmail.com>
-To: Kees Cook <keescook@chromium.org>, Laura Abbott <labbott@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Daniel Micay
- <danielmicay@gmail.com>,  Josh Poimboeuf <jpoimboe@redhat.com>, Rik van
- Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,  PaX Team
- <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Russell
- King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Tony
- Luck <tony.luck@intel.com>,  Fenghua Yu <fenghua.yu@intel.com>, "David S.
- Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>, Christoph
- Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>, David Rientjes
- <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton
- <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>, Borislav
- Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>,  Jan Kara
- <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli
- <aarcange@redhat.com>,  Dmitry Vyukov <dvyukov@google.com>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, sparclinux
- <sparclinux@vger.kernel.org>,  linux-arch <linux-arch@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>,  "kernel-hardening@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>
-Date: Wed, 20 Jul 2016 20:24:43 +1000
-In-Reply-To: <CAGXu5j+nHpHcYT8FyHNe6AFQCdakoSMW=UWDatyxhRK7CB7_=g@mail.gmail.com>
-References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
- <1468619065-3222-3-git-send-email-keescook@chromium.org>
- <fc3c7f68-bd2e-cb06-c47c-d97c520fc08b@redhat.com>
- <CAGXu5j+nHpHcYT8FyHNe6AFQCdakoSMW=UWDatyxhRK7CB7_=g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvYXL478dzDqSW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 20:47:46 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Balbir Singh <bsingharora@gmail.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, bhe@redhat.com, arnd@arndb.de,
+ kexec@lists.infradead.org, dyoung@redhat.com, Petr Tesarik <ptesarik@suse.cz>,
+ linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Vivek Goyal <vgoyal@redhat.com>,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+In-Reply-To: <20160720083530.GK1041@n2100.armlinux.org.uk>
+References: <87twfunneg.fsf@linux.vnet.ibm.com>
+ <20160713073657.GX1041@n2100.armlinux.org.uk>
+ <87poqinf9m.fsf@linux.vnet.ibm.com>
+ <20160713082639.GZ1041@n2100.armlinux.org.uk>
+ <20160713130338.GB16900@redhat.com>
+ <20160713174009.GA1041@n2100.armlinux.org.uk>
+ <20160713182247.GA25232@redhat.com> <1468845964.2800.3.camel@gmail.com>
+ <20160718132629.GB32512@redhat.com>
+ <8a8b2909-7f95-03e4-bf8e-dd29b5fc1fba@gmail.com>
+ <20160720083530.GK1041@n2100.armlinux.org.uk>
+Date: Wed, 20 Jul 2016 20:47:45 +1000
+Message-ID: <87zipc8u26.fsf@@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,33 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-07-19 at 11:48 -0700, Kees Cook wrote:
-> On Mon, Jul 18, 2016 at 6:06 PM, Laura Abbott <labbott@redhat.com> wrote:
-> > 
-> > On 07/15/2016 02:44 PM, Kees Cook wrote:
-> > 
-> > This doesn't work when copying CMA allocated memory since CMA purposely
-> > allocates larger than a page block size without setting head pages.
-> > Given CMA may be used with drivers doing zero copy buffers, I think it
-> > should be permitted.
-> > 
-> > Something like the following lets it pass (I can clean up and submit
-> > the is_migrate_cma_page APIs as a separate patch for review)
-> Yeah, this would be great. I'd rather use an accessor to check this
-> than a direct check for MIGRATE_CMA.
->
-> >          */
-> >         for (; ptr <= end ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr))
-> > {
-> > -               if (!PageReserved(page))
-> > +               if (!PageReserved(page) && !is_migrate_cma_page(page))
-> >                         return "<spans multiple pages>";
-> >         }
-> Yeah, I'll modify this a bit so that which type it starts as is
-> maintained for all pages (rather than allowing to flip back and forth
-> -- even though that is likely impossible).
-> 
-Sorry, I completely missed the MIGRATE_CMA bits. Could you clarify if you
-caught this in testing/review?
+Russell King - ARM Linux <linux@armlinux.org.uk> writes:
 
-Balbir Singh.
+> On Wed, Jul 20, 2016 at 01:45:42PM +1000, Balbir Singh wrote:
+>> > IOW, if your kernel forced signature verification, you should not be
+>> > able to do sig_enforce=0. If you kernel did not have
+>> > CONFIG_MODULE_SIG_FORCE=y, then sig_enforce should be 0 by default anyway
+>> > and you are not making it worse using command line.
+>> 
+>> OK.. I checked and you are right, but that is an example and there are
+>> other things like security=, thermal.*, nosmep, nosmap that need auditing
+>> for safety and might hurt the system security if used. I still think
+>> think that assuming you can pass any command line without breaking security
+>> is a broken argument.
+>
+> Quite, and you don't need to run code in a privileged environment to do
+> any of that.
+>
+> It's also not trivial to protect against: new kernels gain new arguments
+> which older kernels may not know about.  No matter how much protection
+> is built into older kernels, newer kernels can become vulnerable through
+> the addition of further arguments.
+
+Indeed. A whitelist of allowed command line arguments is the only option.
+
+But given the existing syscall has shipped without a whitelist of command line
+arguments, you can't add a whitelist now without potentially breaking someone's
+setup.
+
+Getting back to the device tree, we could similarly have a whitelist of
+nodes/properties that we allow to be passed in.
+
+At least for stdout-path, I can't really see how that would significantly help
+an attacker, but I'm all ears if anyone has ideas.
+
+> Also, how sure are we that there are no stack overflow issues with kernel
+> command line parsing?  Can we be sure that there's none?  This is
+> something which happens early in the kernel boot, before the full memory
+> protections have been set up.
+
+Yeah that's also a good point. More so for the device tree, because the parsing
+is more complicated. I think there has been some work done on fuzzing libfdt,
+but we should probably do more.
+
+cheers
