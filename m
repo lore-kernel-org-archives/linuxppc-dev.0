@@ -1,15 +1,15 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP521GczDqYG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:27:20 +1000 (AEST)
-Received: by mail-pa0-x22c.google.com with SMTP id fi15so21426533pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP521H6zDqYK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:27:21 +1000 (AEST)
+Received: by mail-pa0-x229.google.com with SMTP id iw10so21360657pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:21 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: kernel-hardening@lists.openwall.com
-Cc: Kees Cook <keescook@chromium.org>, Laura Abbott <labbott@redhat.com>,
+Cc: Kees Cook <keescook@chromium.org>,
  Laura Abbott <labbott@fedoraproject.org>,
  Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
  Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
@@ -33,9 +33,9 @@ Cc: Kees Cook <keescook@chromium.org>, Laura Abbott <labbott@redhat.com>,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v4 01/12] mm: Add is_migrate_cma_page
-Date: Wed, 20 Jul 2016 13:26:56 -0700
-Message-Id: <1469046427-12696-2-git-send-email-keescook@chromium.org>
+Subject: [PATCH v4 04/12] x86/uaccess: Enable hardened usercopy
+Date: Wed, 20 Jul 2016 13:26:59 -0700
+Message-Id: <1469046427-12696-5-git-send-email-keescook@chromium.org>
 In-Reply-To: <1469046427-12696-1-git-send-email-keescook@chromium.org>
 References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,34 +47,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Laura Abbott <labbott@redhat.com>
+Enables CONFIG_HARDENED_USERCOPY checks on x86. This is done both in
+copy_*_user() and __copy_*_user() because copy_*_user() actually calls
+down to _copy_*_user() and not __copy_*_user().
 
-Code such as hardened user copy[1] needs a way to tell if a
-page is CMA or not. Add is_migrate_cma_page in a similar way
-to is_migrate_isolate_page.
+Based on code from PaX and grsecurity.
 
-[1]http://article.gmane.org/gmane.linux.kernel.mm/155238
-
-Signed-off-by: Laura Abbott <labbott@redhat.com>
 Signed-off-by: Kees Cook <keescook@chromium.org>
+Tested-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
 ---
- include/linux/mmzone.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/Kconfig                  |  1 +
+ arch/x86/include/asm/uaccess.h    | 10 ++++++----
+ arch/x86/include/asm/uaccess_32.h |  2 ++
+ arch/x86/include/asm/uaccess_64.h |  2 ++
+ 4 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 02069c23486d..c8478b29f070 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -68,8 +68,10 @@ extern char * const migratetype_names[MIGRATE_TYPES];
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 4407f596b72c..762a0349633c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -80,6 +80,7 @@ config X86
+ 	select HAVE_ALIGNED_STRUCT_PAGE		if SLUB
+ 	select HAVE_AOUT			if X86_32
+ 	select HAVE_ARCH_AUDITSYSCALL
++	select HAVE_ARCH_HARDENED_USERCOPY
+ 	select HAVE_ARCH_HUGE_VMAP		if X86_64 || X86_PAE
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KASAN			if X86_64 && SPARSEMEM_VMEMMAP
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index 2982387ba817..d3312f0fcdfc 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -742,9 +742,10 @@ copy_from_user(void *to, const void __user *from, unsigned long n)
+ 	 * case, and do only runtime checking for non-constant sizes.
+ 	 */
  
- #ifdef CONFIG_CMA
- #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
-+#  define is_migrate_cma_page(_page) (get_pageblock_migratetype(_page) == MIGRATE_CMA)
- #else
- #  define is_migrate_cma(migratetype) false
-+#  define is_migrate_cma_page(_page) false
- #endif
+-	if (likely(sz < 0 || sz >= n))
++	if (likely(sz < 0 || sz >= n)) {
++		check_object_size(to, n, false);
+ 		n = _copy_from_user(to, from, n);
+-	else if(__builtin_constant_p(n))
++	} else if (__builtin_constant_p(n))
+ 		copy_from_user_overflow();
+ 	else
+ 		__copy_from_user_overflow(sz, n);
+@@ -762,9 +763,10 @@ copy_to_user(void __user *to, const void *from, unsigned long n)
+ 	might_fault();
  
- #define for_each_migratetype_order(order, type) \
+ 	/* See the comment in copy_from_user() above. */
+-	if (likely(sz < 0 || sz >= n))
++	if (likely(sz < 0 || sz >= n)) {
++		check_object_size(from, n, true);
+ 		n = _copy_to_user(to, from, n);
+-	else if(__builtin_constant_p(n))
++	} else if (__builtin_constant_p(n))
+ 		copy_to_user_overflow();
+ 	else
+ 		__copy_to_user_overflow(sz, n);
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 4b32da24faaf..7d3bdd1ed697 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -37,6 +37,7 @@ unsigned long __must_check __copy_from_user_ll_nocache_nozero
+ static __always_inline unsigned long __must_check
+ __copy_to_user_inatomic(void __user *to, const void *from, unsigned long n)
+ {
++	check_object_size(from, n, true);
+ 	return __copy_to_user_ll(to, from, n);
+ }
+ 
+@@ -95,6 +96,7 @@ static __always_inline unsigned long
+ __copy_from_user(void *to, const void __user *from, unsigned long n)
+ {
+ 	might_fault();
++	check_object_size(to, n, false);
+ 	if (__builtin_constant_p(n)) {
+ 		unsigned long ret;
+ 
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index 2eac2aa3e37f..673059a109fe 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -54,6 +54,7 @@ int __copy_from_user_nocheck(void *dst, const void __user *src, unsigned size)
+ {
+ 	int ret = 0;
+ 
++	check_object_size(dst, size, false);
+ 	if (!__builtin_constant_p(size))
+ 		return copy_user_generic(dst, (__force void *)src, size);
+ 	switch (size) {
+@@ -119,6 +120,7 @@ int __copy_to_user_nocheck(void __user *dst, const void *src, unsigned size)
+ {
+ 	int ret = 0;
+ 
++	check_object_size(src, size, true);
+ 	if (!__builtin_constant_p(size))
+ 		return copy_user_generic((__force void *)dst, src, size);
+ 	switch (size) {
 -- 
 2.7.4
