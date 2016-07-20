@@ -1,41 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvXLg1BQszDqWj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:54:19 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Kees Cook' <keescook@chromium.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-CC: Jan Kara <jack@suse.cz>, "kernel-hardening@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>, Will Deacon <will.deacon@arm.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, "sparclinux@vger.kernel.org"
- <sparclinux@vger.kernel.org>, "linux-ia64@vger.kernel.org"
- <linux-ia64@vger.kernel.org>, Christoph Lameter <cl@linux.com>, "Andrea
- Arcangeli" <aarcange@redhat.com>, "linux-arch@vger.kernel.org"
- <linux-arch@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, Russell King
- <linux@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Catalin Marinas
- <catalin.marinas@arm.com>, PaX Team <pageexec@freemail.hu>, Borislav Petkov
- <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Fenghua Yu
- <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>, David Rientjes
- <rientjes@google.com>, Tony Luck <tony.luck@intel.com>, Andy Lutomirski
- <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Andrew Morton
- <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
- <labbott@fedoraproject.org>, Brad Spengler <spender@grsecurity.net>, "Ard
- Biesheuvel" <ard.biesheuvel@linaro.org>, Pekka Enberg <penberg@kernel.org>,
- Daniel Micay <danielmicay@gmail.com>, Casey Schaufler
- <casey@schaufler-ca.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S.
- Miller" <davem@davemloft.net>
-Subject: RE: [PATCH v3 00/11] mm: Hardened usercopy
-Date: Wed, 20 Jul 2016 09:52:25 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4FD6A3@AcuExch.aculab.com>
-References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
-In-Reply-To: <1468619065-3222-1-git-send-email-keescook@chromium.org>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvXxT3MNDzDqS6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 20:21:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paolo Bonzini <pbonzini@redhat.com>, Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, qemu-devel@nongnu.org, paulus@samba.org,
+ david@gibson.dropbear.id.au, Radim =?utf-8?B?S3LEjW3DocWZ?=
+ <rkrcmar@redhat.com>
+Subject: Re: [PATCH v2 1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
+In-Reply-To: <ee83aaeb-40cf-4b46-4ae0-bb4265a0e610@redhat.com>
+References: <7286403003b30fc87740f1c1d6cb67d8f8eaafd7.1468986094.git.sam.bobroff@au1.ibm.com>
+ <20534.8713825972$1468993677@news.gmane.org>
+ <ee83aaeb-40cf-4b46-4ae0-bb4265a0e610@redhat.com>
+Date: Wed, 20 Jul 2016 20:20:57 +1000
+Message-ID: <87r3aohapi.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,20 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogS2VlcyBDb29rDQo+IFNlbnQ6IDE1IEp1bHkgMjAxNiAyMjo0NA0KPiBUaGlzIGlzIGEg
-c3RhcnQgb2YgdGhlIG1haW5saW5lIHBvcnQgb2YgUEFYX1VTRVJDT1BZWzFdLiANCi4uLg0KPiAt
-IGlmIGFkZHJlc3MgcmFuZ2UgaXMgaW4gdGhlIGN1cnJlbnQgcHJvY2VzcyBzdGFjaywgaXQgbXVz
-dCBiZSB3aXRoaW4gdGhlDQo+ICAgY3VycmVudCBzdGFjayBmcmFtZSAoaWYgc3VjaCBjaGVja2lu
-ZyBpcyBwb3NzaWJsZSkgb3IgYXQgbGVhc3QgZW50aXJlbHkNCj4gICB3aXRoaW4gdGhlIGN1cnJl
-bnQgcHJvY2VzcydzIHN0YWNrLg0KLi4uDQoNClRoYXQgZGVzY3JpcHRpb24gZG9lc24ndCBzZWVt
-IHF1aXRlIHJpZ2h0IHRvIG1lLg0KSSBwcmVzdW1lIHRoZSBjaGVjayBpczoNCiAgV2l0aGluIHRo
-ZSBjdXJyZW50IHByb2Nlc3MncyBzdGFjayBhbmQgbm90IGNyb3NzaW5nIHRoZSBlbmRzIG9mIHRo
-ZQ0KICBjdXJyZW50IHN0YWNrIGZyYW1lLg0KDQpUaGUgJ2N1cnJlbnQnIHN0YWNrIGZyYW1lIGlz
-IGxpa2VseSB0byBiZSB0aGF0IG9mIGNvcHlfdG8vZnJvbV91c2VyKCkuDQpFdmVuIGlmIHlvdSB1
-c2UgdGhlIHN0YWNrIG9mIHRoZSBjYWxsZXIsIGFueSBwcm9ibGVtYXRpYyBidWZmZXJzDQphcmUg
-bGlrZWx5IHRvIGhhdmUgYmVlbiBwYXNzZWQgaW4gZnJvbSBhIGNhbGxpbmcgZnVuY3Rpb24uDQpT
-byB1bmxlc3MgeW91IGFyZSBnb2luZyB0byB3YWxrIHRoZSBzdGFjayAoZ29vZCBsdWNrIG9uIHRo
-YXQpDQpJJ20gbm90IHN1cmUgY2hlY2tpbmcgdGhlIHN0YWNrIGZyYW1lcyBpcyB3b3J0aCBpdC4N
-Cg0KSSdkIGFsc28gZ3Vlc3MgdGhhdCBhIGxvdCBvZiBjb3BpZXMgYXJlIGZyb20gdGhlIG1pZGRs
-ZSBvZiBzdHJ1Y3R1cmVzDQpzbyBjYW5ub3QgZmFpbCB0aGUgdGVzdHMgeW91IGFyZSBhZGRpbmcu
-DQoNCglEYXZpZA0KDQo=
+Paolo Bonzini <pbonzini@redhat.com> writes:
+
+> On 20/07/2016 07:46, Michael Ellerman wrote:
+>> Thanks.
+>> 
+>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>> 
+>> Or do you want me to merge this before Paul gets back?
+>
+> No, this should be merged through the KVM tree.  Please Cc the KVM
+> maintainers before offering to apply a patch that formally belongs to
+> another tree.
+
+Yeah OK. It was just an offer, because I know the Qemu side is blocked
+until this goes in.
+
+> In particular this patch would indeed have a conflict, because you have
+>
+> +#define KVM_CAP_PPC_HTM 129
+>
+> but cap numbers 129 and 130 are already taken.  So whoever applies it
+> should bump the number to 131.
+
+Yep, I know about KVM caps, I probably would have remembered to check
+the KVM tree. At the very least it would have got caught in linux-next.
+
+cheers
