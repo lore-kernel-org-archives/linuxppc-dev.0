@@ -1,15 +1,21 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3rvP5Y6X2CzDqQN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 14:27:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rvPG21PsSzDqQd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 14:34:50 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, stable@vger.kernel.org,
- #@ozlabs.ru, 4.2+@ozlabs.ru
-Subject: [PATCH kernel] powerpc/powernv/ioda: Fix endianness when reading TCEs
-Date: Wed, 20 Jul 2016 14:26:51 +1000
-Message-Id: <1468988811-49142-1-git-send-email-aik@ozlabs.ru>
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Balbir Singh <bsingharora@gmail.com>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH kernel v2 2/2] powerpc/mm/iommu: Put pages on process exit
+Date: Wed, 20 Jul 2016 14:34:31 +1000
+Message-Id: <1468989271-753-3-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1468989271-753-1-git-send-email-aik@ozlabs.ru>
+References: <1468989271-753-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,36 +25,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The iommu_table_ops::exchange() callback writes new TCE to the table
-and returns old value and permission mask. The old TCE value is
-correctly converted from BE to CPU endian; however permission mask
-was calculated from BE value and therefore always returned DMA_NONE
-which could cause memory leak on LE systems using VFIO SPAPR TCE IOMMU v1
-driver.
+At the moment VFIO IOMMU SPAPR v2 driver pins all guest RAM pages when
+the userspace starts using VFIO. When the userspace process finishes,
+all the pinned pages need to be put; this is done as a part of
+the userspace memory context (MM) destruction which happens on
+the very last mmdrop().
 
-This fixes pnv_tce_xchg() to have @oldtce a CPU endian.
+This approach has a problem that a MM of the userspace process
+may live longer than the userspace process itself as kernel threads
+use userspace process MMs which was runnning on a CPU where
+the kernel thread was scheduled to. If this happened, the MM remains
+referenced until this exact kernel thread wakes up again
+and releases the very last reference to the MM, on an idle system this
+can take even hours.
 
-Fixes: 05c6cfb9dce0d13d37e9d007ee6a4af36f1c0a58
-Cc: stable@vger.kernel.org # 4.2+
+This references and caches MM once per container and adds tracking
+how many times each preregistered area was registered in
+a specific container. This way we do not depend on @current pointing to
+a valid task descriptor.
+
+This changes the userspce interface to return EBUSY if memory is
+already registered (mm_iommu_get() used to increment the counter);
+however it should not have any practical effect as the only
+userspace tool available now does register memory area once per
+container anyway.
+
+As tce_iommu_register_pages/tce_iommu_unregister_pages are called
+under container->lock, this does not need additional locking.
+
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h |  1 -
+ arch/powerpc/mm/mmu_context_book3s64.c |  4 ---
+ arch/powerpc/mm/mmu_context_iommu.c    | 10 -------
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 52 +++++++++++++++++++++++++++++++++-
+ 4 files changed, 51 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 1d92bd9..7b17f88 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -620,8 +620,8 @@ int pnv_tce_xchg(struct iommu_table *tbl, long index,
- 	if (newtce & TCE_PCI_WRITE)
- 		newtce |= TCE_PCI_READ;
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 745b4bd..90338fd 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -24,7 +24,6 @@ extern long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long e
+ extern long mm_iommu_put(struct mm_struct *mm,
+ 		struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_init(mm_context_t *ctx);
+-extern void mm_iommu_cleanup(mm_context_t *ctx);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index 227b2a6..5c67d1c 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -159,10 +159,6 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
  
--	oldtce = xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
--	*hpa = be64_to_cpu(oldtce) & ~(TCE_PCI_READ | TCE_PCI_WRITE);
-+	oldtce = be64_to_cpu(xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce)));
-+	*hpa = oldtce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
- 	*direction = iommu_tce_direction(oldtce);
+ void destroy_context(struct mm_struct *mm)
+ {
+-#ifdef CONFIG_SPAPR_TCE_IOMMU
+-	mm_iommu_cleanup(&mm->context);
+-#endif
+-
+ #ifdef CONFIG_PPC_ICSWX
+ 	drop_cop(mm->context.acop, mm);
+ 	kfree(mm->context.cop_lockp);
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 65086bf..901773d 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -293,13 +293,3 @@ void mm_iommu_init(mm_context_t *ctx)
+ {
+ 	INIT_LIST_HEAD_RCU(&ctx->iommu_group_mem_list);
+ }
+-
+-void mm_iommu_cleanup(mm_context_t *ctx)
+-{
+-	struct mm_iommu_table_group_mem_t *mem, *tmp;
+-
+-	list_for_each_entry_safe(mem, tmp, &ctx->iommu_group_mem_list, next) {
+-		list_del_rcu(&mem->next);
+-		mm_iommu_do_free(mem);
+-	}
+-}
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 9752e77..40e71a0 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -89,6 +89,15 @@ struct tce_iommu_group {
+ };
+ 
+ /*
++ * A container needs to remember which preregistered areas and how many times
++ * it has referenced to do proper cleanup at the userspace process exit.
++ */
++struct tce_iommu_prereg {
++	struct list_head next;
++	struct mm_iommu_table_group_mem_t *mem;
++};
++
++/*
+  * The container descriptor supports only a single group per container.
+  * Required by the API as the container is not supplied with the IOMMU group
+  * at the moment of initialization.
+@@ -101,12 +110,26 @@ struct tce_container {
+ 	struct mm_struct *mm;
+ 	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+ 	struct list_head group_list;
++	struct list_head prereg_list;
+ };
+ 
++static long tce_iommu_prereg_free(struct tce_container *container,
++		struct tce_iommu_prereg *tcemem)
++{
++	long ret;
++
++	list_del(&tcemem->next);
++	ret = mm_iommu_put(container->mm, tcemem->mem);
++	kfree(tcemem);
++
++	return ret;
++}
++
+ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 		__u64 vaddr, __u64 size)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
++	struct tce_iommu_prereg *tcemem;
+ 
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+ 		return -EINVAL;
+@@ -115,7 +138,12 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 	if (!mem)
+ 		return -ENOENT;
+ 
+-	return mm_iommu_put(container->mm, mem);
++	list_for_each_entry(tcemem, &container->prereg_list, next) {
++		if (tcemem->mem == mem)
++			return tce_iommu_prereg_free(container, tcemem);
++	}
++
++	return -ENOENT;
+ }
+ 
+ static long tce_iommu_register_pages(struct tce_container *container,
+@@ -123,6 +151,7 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ {
+ 	long ret = 0;
+ 	struct mm_iommu_table_group_mem_t *mem = NULL;
++	struct tce_iommu_prereg *tcemem;
+ 	unsigned long entries = size >> PAGE_SHIFT;
+ 
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+@@ -140,6 +169,18 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
+ 	if (ret)
+ 		return ret;
++
++	list_for_each_entry(tcemem, &container->prereg_list, next) {
++		if (tcemem->mem == mem) {
++			mm_iommu_put(container->mm, mem);
++			return -EBUSY;
++		}
++	}
++
++	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
++	tcemem->mem = mem;
++	list_add(&tcemem->next, &container->prereg_list);
++
+ 	container->enabled = true;
  
  	return 0;
+@@ -325,6 +366,7 @@ static void *tce_iommu_open(unsigned long arg)
+ 
+ 	mutex_init(&container->lock);
+ 	INIT_LIST_HEAD_RCU(&container->group_list);
++	INIT_LIST_HEAD_RCU(&container->prereg_list);
+ 
+ 	container->v2 = arg == VFIO_SPAPR_TCE_v2_IOMMU;
+ 
+@@ -362,6 +404,14 @@ static void tce_iommu_release(void *iommu_data)
+ 		tce_iommu_free_table(tbl);
+ 	}
+ 
++	while (!list_empty(&container->prereg_list)) {
++		struct tce_iommu_prereg *tcemem;
++
++		tcemem = list_first_entry(&container->prereg_list,
++				struct tce_iommu_prereg, next);
++		tce_iommu_prereg_free(container, tcemem);
++	}
++
+ 	if (container->mm)
+ 		mmdrop(container->mm);
+ 	tce_iommu_disable(container);
 -- 
 2.5.0.rc3
