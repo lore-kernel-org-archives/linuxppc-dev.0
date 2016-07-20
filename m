@@ -1,43 +1,22 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP90sWqzDqYG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:27:25 +1000 (AEST)
-Received: by mail-pa0-x22b.google.com with SMTP id iw10so21361144pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:25 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: kernel-hardening@lists.openwall.com
-Cc: Kees Cook <keescook@chromium.org>,
- Laura Abbott <labbott@fedoraproject.org>,
- Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- x86@kernel.org, Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>, linux-arm-kernel@lists.infradead.org,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v4 12/12] mm: SLUB hardened usercopy support
-Date: Wed, 20 Jul 2016 13:27:07 -0700
-Message-Id: <1469046427-12696-13-git-send-email-keescook@chromium.org>
-In-Reply-To: <1469046427-12696-1-git-send-email-keescook@chromium.org>
-References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpZg5pR0zDqdh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:35:39 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>, linux-mmc@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Yangbo Lu <yangbo.lu@nxp.com>
+Subject: Re: [PATCH v11 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
+Date: Wed, 20 Jul 2016 22:35:20 +0200
+Message-ID: <5282323.HEP6x2M0Nh@wuerfel>
+In-Reply-To: <1469039508.25630.17.camel@buserror.net>
+References: <1468723822-30457-1-git-send-email-oss@buserror.net>
+ <4016699.uYaV8nWfqC@wuerfel> <1469039508.25630.17.camel@buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,77 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
-SLUB allocator to catch any copies that may span objects. Includes a
-redzone handling fix discovered by Michael Ellerman.
+On Wednesday, July 20, 2016 1:31:48 PM CEST Scott Wood wrote:
+> On Wed, 2016-07-20 at 13:24 +0200, Arnd Bergmann wrote:
+> > On Saturday, July 16, 2016 9:50:21 PM CEST Scott Wood wrote:
+> > > 
+> > > From: yangbo lu <yangbo.lu@nxp.com>
+> > > 
+> > > Move mpc85xx.h to include/linux/fsl and rename it to svr.h as a common
+> > > header file.  This SVR numberspace is used on some ARM chips as well as
+> > > PPC, and even to check for a PPC SVR multi-arch drivers would otherwise
+> > > need to ifdef the header inclusion and all references to the SVR symbols.
+> > > 
+> > > Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+> > > Acked-by: Wolfram Sang <wsa@the-dreams.de>
+> > > Acked-by: Stephen Boyd <sboyd@codeaurora.org>
+> > > Acked-by: Joerg Roedel <jroedel@suse.de>
+> > > [scottwood: update description]
+> > > Signed-off-by: Scott Wood <oss@buserror.net>
+> > > 
+> > As discussed before, please don't introduce yet another vendor specific
+> > way to match a SoC ID from a device driver.
+> > 
+> > I've posted a patch for an extension to the soc_device infrastructure
+> > to allow comparing the running SoC to a table of devices, use that
+> > instead.
+> 
+> As I asked before, in which relevant maintainership capacity are you NACKing
+> this?
 
-Based on code from PaX and grsecurity.
+I don't know why that's important, but I suggested the creation of
+drivers/soc/ as a place to have a more general place for platform
+specific drivers as part of being maintainer for arm-soc, and
+almost all changes to drivers/soc go through our tree.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Tested-by: Michael Ellerman <mpe@ellerman.id.au>
----
- init/Kconfig |  1 +
- mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
+Olof does about half the merges, but I do the majority of the reviews
+for drivers/soc patches. See also
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 798c2020ee7c..1c4711819dfd 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1765,6 +1765,7 @@ config SLAB
- 
- config SLUB
- 	bool "SLUB (Unqueued Allocator)"
-+	select HAVE_HARDENED_USERCOPY_ALLOCATOR
- 	help
- 	   SLUB is a slab allocator that minimizes cache line usage
- 	   instead of managing queues of cached objects (SLAB approach).
-diff --git a/mm/slub.c b/mm/slub.c
-index 825ff4505336..7dee3d9a5843 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
- EXPORT_SYMBOL(__kmalloc_node);
- #endif
- 
-+#ifdef CONFIG_HARDENED_USERCOPY
-+/*
-+ * Rejects objects that are incorrectly sized.
-+ *
-+ * Returns NULL if check passes, otherwise const char * to name of cache
-+ * to indicate an error.
-+ */
-+const char *__check_heap_object(const void *ptr, unsigned long n,
-+				struct page *page)
-+{
-+	struct kmem_cache *s;
-+	unsigned long offset;
-+	size_t object_size;
-+
-+	/* Find object and usable object size. */
-+	s = page->slab_cache;
-+	object_size = slab_ksize(s);
-+
-+	/* Find offset within object. */
-+	offset = (ptr - page_address(page)) % s->size;
-+
-+	/* Adjust for redzone and reject if within the redzone. */
-+	if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
-+		if (offset < s->red_left_pad)
-+			return s->name;
-+		offset -= s->red_left_pad;
-+	}
-+
-+	/* Allow address range falling entirely within object size. */
-+	if (offset <= object_size && n <= object_size - offset)
-+		return NULL;
-+
-+	return s->name;
-+}
-+#endif /* CONFIG_HARDENED_USERCOPY */
-+
- static size_t __ksize(const void *object)
- {
- 	struct page *page;
--- 
-2.7.4
+git log --graph --format="%an %s" --merges drivers/soc/ 
+
+	Arnd
