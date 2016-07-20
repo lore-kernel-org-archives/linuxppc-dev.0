@@ -1,12 +1,12 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
+Received: from mail-pf0-x229.google.com (mail-pf0-x229.google.com
+ [IPv6:2607:f8b0:400e:c00::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP632f3zDqYN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:27:22 +1000 (AEST)
-Received: by mail-pa0-x22e.google.com with SMTP id pp5so21350854pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP71F8YzDqYB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:27:23 +1000 (AEST)
+Received: by mail-pf0-x229.google.com with SMTP id y134so22374274pfg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:23 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: kernel-hardening@lists.openwall.com
 Cc: Kees Cook <keescook@chromium.org>,
@@ -33,9 +33,9 @@ Cc: Kees Cook <keescook@chromium.org>,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v4 06/12] arm64/uaccess: Enable hardened usercopy
-Date: Wed, 20 Jul 2016 13:27:01 -0700
-Message-Id: <1469046427-12696-7-git-send-email-keescook@chromium.org>
+Subject: [PATCH v4 07/12] ia64/uaccess: Enable hardened usercopy
+Date: Wed, 20 Jul 2016 13:27:02 -0700
+Message-Id: <1469046427-12696-8-git-send-email-keescook@chromium.org>
 In-Reply-To: <1469046427-12696-1-git-send-email-keescook@chromium.org>
 References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,140 +47,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enables CONFIG_HARDENED_USERCOPY checks on arm64. As done by KASAN in -next,
-renames the low-level functions to __arch_copy_*_user() so a static inline
-can do additional work before the copy.
+Enables CONFIG_HARDENED_USERCOPY checks on ia64.
+
+Based on code from PaX and grsecurity.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/arm64/Kconfig               |  1 +
- arch/arm64/include/asm/uaccess.h | 29 ++++++++++++++++++++++-------
- arch/arm64/kernel/arm64ksyms.c   |  4 ++--
- arch/arm64/lib/copy_from_user.S  |  4 ++--
- arch/arm64/lib/copy_to_user.S    |  4 ++--
- 5 files changed, 29 insertions(+), 13 deletions(-)
+ arch/ia64/Kconfig               |  1 +
+ arch/ia64/include/asm/uaccess.h | 18 +++++++++++++++---
+ 2 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 5a0a691d4220..9cdb2322c811 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -51,6 +51,7 @@ config ARM64
- 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index f80758cb7157..32a87ef516a0 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -53,6 +53,7 @@ config IA64
+ 	select MODULES_USE_ELF_RELA
+ 	select ARCH_USE_CMPXCHG_LOCKREF
  	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_BITREVERSE
 +	select HAVE_ARCH_HARDENED_USERCOPY
- 	select HAVE_ARCH_HUGE_VMAP
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KASAN if SPARSEMEM_VMEMMAP && !(ARM64_16K_PAGES && ARM64_VA_BITS_48)
-diff --git a/arch/arm64/include/asm/uaccess.h b/arch/arm64/include/asm/uaccess.h
-index 9e397a542756..92848b00e3cd 100644
---- a/arch/arm64/include/asm/uaccess.h
-+++ b/arch/arm64/include/asm/uaccess.h
-@@ -256,24 +256,39 @@ do {									\
- 		-EFAULT;						\
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+diff --git a/arch/ia64/include/asm/uaccess.h b/arch/ia64/include/asm/uaccess.h
+index 2189d5ddc1ee..465c70982f40 100644
+--- a/arch/ia64/include/asm/uaccess.h
++++ b/arch/ia64/include/asm/uaccess.h
+@@ -241,12 +241,18 @@ extern unsigned long __must_check __copy_user (void __user *to, const void __use
+ static inline unsigned long
+ __copy_to_user (void __user *to, const void *from, unsigned long count)
+ {
++	if (!__builtin_constant_p(count))
++		check_object_size(from, count, true);
++
+ 	return __copy_user(to, (__force void __user *) from, count);
+ }
+ 
+ static inline unsigned long
+ __copy_from_user (void *to, const void __user *from, unsigned long count)
+ {
++	if (!__builtin_constant_p(count))
++		check_object_size(to, count, false);
++
+ 	return __copy_user((__force void __user *) to, from, count);
+ }
+ 
+@@ -258,8 +264,11 @@ __copy_from_user (void *to, const void __user *from, unsigned long count)
+ 	const void *__cu_from = (from);							\
+ 	long __cu_len = (n);								\
+ 											\
+-	if (__access_ok(__cu_to, __cu_len, get_fs()))					\
+-		__cu_len = __copy_user(__cu_to, (__force void __user *) __cu_from, __cu_len);	\
++	if (__access_ok(__cu_to, __cu_len, get_fs())) {					\
++		if (!__builtin_constant_p(n))						\
++			check_object_size(__cu_from, __cu_len, true);			\
++		__cu_len = __copy_user(__cu_to, (__force void __user *)  __cu_from, __cu_len);	\
++	}										\
+ 	__cu_len;									\
  })
  
--extern unsigned long __must_check __copy_from_user(void *to, const void __user *from, unsigned long n);
--extern unsigned long __must_check __copy_to_user(void __user *to, const void *from, unsigned long n);
-+extern unsigned long __must_check __arch_copy_from_user(void *to, const void __user *from, unsigned long n);
-+extern unsigned long __must_check __arch_copy_to_user(void __user *to, const void *from, unsigned long n);
- extern unsigned long __must_check __copy_in_user(void __user *to, const void __user *from, unsigned long n);
- extern unsigned long __must_check __clear_user(void __user *addr, unsigned long n);
+@@ -270,8 +279,11 @@ __copy_from_user (void *to, const void __user *from, unsigned long count)
+ 	long __cu_len = (n);								\
+ 											\
+ 	__chk_user_ptr(__cu_from);							\
+-	if (__access_ok(__cu_from, __cu_len, get_fs()))					\
++	if (__access_ok(__cu_from, __cu_len, get_fs())) {				\
++		if (!__builtin_constant_p(n))						\
++			check_object_size(__cu_to, __cu_len, false);			\
+ 		__cu_len = __copy_user((__force void __user *) __cu_to, __cu_from, __cu_len);	\
++	}										\
+ 	__cu_len;									\
+ })
  
-+static inline unsigned long __must_check __copy_from_user(void *to, const void __user *from, unsigned long n)
-+{
-+	check_object_size(to, n, false);
-+	return __arch_copy_from_user(to, from, n);
-+}
-+
-+static inline unsigned long __must_check __copy_to_user(void __user *to, const void *from, unsigned long n)
-+{
-+	check_object_size(from, n, true);
-+	return __arch_copy_to_user(to, from, n);
-+}
-+
- static inline unsigned long __must_check copy_from_user(void *to, const void __user *from, unsigned long n)
- {
--	if (access_ok(VERIFY_READ, from, n))
--		n = __copy_from_user(to, from, n);
--	else /* security hole - plug it */
-+	if (access_ok(VERIFY_READ, from, n)) {
-+		check_object_size(to, n, false);
-+		n = __arch_copy_from_user(to, from, n);
-+	} else /* security hole - plug it */
- 		memset(to, 0, n);
- 	return n;
- }
- 
- static inline unsigned long __must_check copy_to_user(void __user *to, const void *from, unsigned long n)
- {
--	if (access_ok(VERIFY_WRITE, to, n))
--		n = __copy_to_user(to, from, n);
-+	if (access_ok(VERIFY_WRITE, to, n)) {
-+		check_object_size(from, n, true);
-+		n = __arch_copy_to_user(to, from, n);
-+	}
- 	return n;
- }
- 
-diff --git a/arch/arm64/kernel/arm64ksyms.c b/arch/arm64/kernel/arm64ksyms.c
-index 678f30b05a45..2dc44406a7ad 100644
---- a/arch/arm64/kernel/arm64ksyms.c
-+++ b/arch/arm64/kernel/arm64ksyms.c
-@@ -34,8 +34,8 @@ EXPORT_SYMBOL(copy_page);
- EXPORT_SYMBOL(clear_page);
- 
- 	/* user mem (segment) */
--EXPORT_SYMBOL(__copy_from_user);
--EXPORT_SYMBOL(__copy_to_user);
-+EXPORT_SYMBOL(__arch_copy_from_user);
-+EXPORT_SYMBOL(__arch_copy_to_user);
- EXPORT_SYMBOL(__clear_user);
- EXPORT_SYMBOL(__copy_in_user);
- 
-diff --git a/arch/arm64/lib/copy_from_user.S b/arch/arm64/lib/copy_from_user.S
-index 17e8306dca29..0b90497d4424 100644
---- a/arch/arm64/lib/copy_from_user.S
-+++ b/arch/arm64/lib/copy_from_user.S
-@@ -66,7 +66,7 @@
- 	.endm
- 
- end	.req	x5
--ENTRY(__copy_from_user)
-+ENTRY(__arch_copy_from_user)
- ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(0)), ARM64_ALT_PAN_NOT_UAO, \
- 	    CONFIG_ARM64_PAN)
- 	add	end, x0, x2
-@@ -75,7 +75,7 @@ ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(1)), ARM64_ALT_PAN_NOT_UAO, \
- 	    CONFIG_ARM64_PAN)
- 	mov	x0, #0				// Nothing to copy
- 	ret
--ENDPROC(__copy_from_user)
-+ENDPROC(__arch_copy_from_user)
- 
- 	.section .fixup,"ax"
- 	.align	2
-diff --git a/arch/arm64/lib/copy_to_user.S b/arch/arm64/lib/copy_to_user.S
-index 21faae60f988..7a7efe255034 100644
---- a/arch/arm64/lib/copy_to_user.S
-+++ b/arch/arm64/lib/copy_to_user.S
-@@ -65,7 +65,7 @@
- 	.endm
- 
- end	.req	x5
--ENTRY(__copy_to_user)
-+ENTRY(__arch_copy_to_user)
- ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(0)), ARM64_ALT_PAN_NOT_UAO, \
- 	    CONFIG_ARM64_PAN)
- 	add	end, x0, x2
-@@ -74,7 +74,7 @@ ALTERNATIVE("nop", __stringify(SET_PSTATE_PAN(1)), ARM64_ALT_PAN_NOT_UAO, \
- 	    CONFIG_ARM64_PAN)
- 	mov	x0, #0
- 	ret
--ENDPROC(__copy_to_user)
-+ENDPROC(__arch_copy_to_user)
- 
- 	.section .fixup,"ax"
- 	.align	2
 -- 
 2.7.4
