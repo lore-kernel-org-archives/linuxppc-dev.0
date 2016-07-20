@@ -1,48 +1,48 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x22a.google.com (mail-wm0-x22a.google.com
- [IPv6:2a00:1450:400c:c09::22a])
+Return-Path: <labbott@redhat.com>
+Received: from mail-it0-f43.google.com (mail-it0-f43.google.com
+ [209.85.214.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvgr20WDwzDqQn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 01:31:45 +1000 (AEST)
-Received: by mail-wm0-x22a.google.com with SMTP id o80so74641260wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 08:31:45 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4FD6A3@AcuExch.aculab.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvgxp291wzDqV1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 01:36:46 +1000 (AEST)
+Received: by mail-it0-f43.google.com with SMTP id u186so119051287ita.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 08:36:46 -0700 (PDT)
+Subject: Re: [PATCH v3 02/11] mm: Hardened usercopy
+To: Balbir Singh <bsingharora@gmail.com>, Kees Cook <keescook@chromium.org>
 References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
- <063D6719AE5E284EB5DD2968C1650D6D5F4FD6A3@AcuExch.aculab.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 20 Jul 2016 08:31:37 -0700
-Message-ID: <CAGXu5j+QH8Fdk7p6bZV_yMv1puHRxZRu5z45+tKrmLyGBTymFw@mail.gmail.com>
-Subject: Re: [PATCH v3 00/11] mm: Hardened usercopy
-To: David Laight <David.Laight@aculab.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Jan Kara <jack@suse.cz>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Will Deacon <will.deacon@arm.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Christoph Lameter <cl@linux.com>, Andrea Arcangeli <aarcange@redhat.com>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, PaX Team <pageexec@freemail.hu>,
- Borislav Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Rik van Riel <riel@redhat.com>, David Rientjes <rientjes@google.com>,
- Tony Luck <tony.luck@intel.com>,
- Andy Lutomirski <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- Brad Spengler <spender@grsecurity.net>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, Pekka Enberg <penberg@kernel.org>,
- Daniel Micay <danielmicay@gmail.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ <1468619065-3222-3-git-send-email-keescook@chromium.org>
+ <fc3c7f68-bd2e-cb06-c47c-d97c520fc08b@redhat.com>
+ <CAGXu5j+nHpHcYT8FyHNe6AFQCdakoSMW=UWDatyxhRK7CB7_=g@mail.gmail.com>
+ <1469010283.2800.5.camel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Daniel Micay
+ <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
  Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski
+ <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+From: Laura Abbott <labbott@redhat.com>
+Message-ID: <2aabe10d-2ccb-2ba6-18bb-b7f52d70d36c@redhat.com>
+Date: Wed, 20 Jul 2016 08:36:38 -0700
+MIME-Version: 1.0
+In-Reply-To: <1469010283.2800.5.camel@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,36 +52,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 20, 2016 at 2:52 AM, David Laight <David.Laight@aculab.com> wrote:
-> From: Kees Cook
->> Sent: 15 July 2016 22:44
->> This is a start of the mainline port of PAX_USERCOPY[1].
-> ...
->> - if address range is in the current process stack, it must be within the
->>   current stack frame (if such checking is possible) or at least entirely
->>   within the current process's stack.
-> ...
+On 07/20/2016 03:24 AM, Balbir Singh wrote:
+> On Tue, 2016-07-19 at 11:48 -0700, Kees Cook wrote:
+>> On Mon, Jul 18, 2016 at 6:06 PM, Laura Abbott <labbott@redhat.com> wrote:
+>>>
+>>> On 07/15/2016 02:44 PM, Kees Cook wrote:
+>>>
+>>> This doesn't work when copying CMA allocated memory since CMA purposely
+>>> allocates larger than a page block size without setting head pages.
+>>> Given CMA may be used with drivers doing zero copy buffers, I think it
+>>> should be permitted.
+>>>
+>>> Something like the following lets it pass (I can clean up and submit
+>>> the is_migrate_cma_page APIs as a separate patch for review)
+>> Yeah, this would be great. I'd rather use an accessor to check this
+>> than a direct check for MIGRATE_CMA.
+>>
+>>>          */
+>>>         for (; ptr <= end ; ptr += PAGE_SIZE, page = virt_to_head_page(ptr))
+>>> {
+>>> -               if (!PageReserved(page))
+>>> +               if (!PageReserved(page) && !is_migrate_cma_page(page))
+>>>                         return "<spans multiple pages>";
+>>>         }
+>> Yeah, I'll modify this a bit so that which type it starts as is
+>> maintained for all pages (rather than allowing to flip back and forth
+>> -- even though that is likely impossible).
+>>
+> Sorry, I completely missed the MIGRATE_CMA bits. Could you clarify if you
+> caught this in testing/review?
 >
-> That description doesn't seem quite right to me.
-> I presume the check is:
->   Within the current process's stack and not crossing the ends of the
->   current stack frame.
+> Balbir Singh.
+>
 
-Actually, it's a bad description all around. :) The check is that the
-range is within a valid stack frame (current or any prior caller's
-frame). i.e. it does not cross a frame or touch the saved frame
-pointer nor instruction pointer.
+I caught it while looking at the code and then wrote a test case to confirm
+I was correct because I wasn't sure how to easily find an in tree user.
 
-> The 'current' stack frame is likely to be that of copy_to/from_user().
-> Even if you use the stack of the caller, any problematic buffers
-> are likely to have been passed in from a calling function.
-> So unless you are going to walk the stack (good luck on that)
-> I'm not sure checking the stack frames is worth it.
-
-Yup: that's exactly what it's doing: walking up the stack. :)
-
--Kees
-
--- 
-Kees Cook
-Chrome OS & Brillo Security
+Thanks,
+Laura
