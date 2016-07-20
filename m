@@ -2,18 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWMz4Q4VzDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:10:23 +1000 (AEST)
-In-Reply-To: <1468817577-1843-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWN045gjzDqQK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:10:24 +1000 (AEST)
+In-Reply-To: <1468895615-4855-1-git-send-email-imunsie@au.ibm.com>
+To: Ian Munsie <imunsie@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: clombard@linux.vnet.ibm.com, linux-scsi@vger.kernel.org,
- mrochs@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- manoj@linux.vnet.ibm.com, imunsie@au1.ibm.com
-Subject: Re: [v2] cxl: remove dead Kconfig options
-Message-Id: <3rvWMz2vPGz9t0t@ozlabs.org>
-Date: Wed, 20 Jul 2016 19:10:22 +1000 (AEST)
+Cc: Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Subject: Re: [v2] powerpc/powernv: fix pci-cxl.c build when CONFIG_MODULES=n
+Message-Id: <3rvWN02pJLz9t10@ozlabs.org>
+Date: Wed, 20 Jul 2016 19:10:24 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,19 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-18-07 at 04:52:57 UTC, Andrew Donnellan wrote:
-> Remove the CXL_KERNEL_API and CXL_EEH Kconfig options, as they were only
-> needed to coordinate the merging of the cxlflash driver. Also remove the
-> stub implementation of cxl_perst_reloads_same_image() in cxlflash which is
-> only used if CXL_EEH isn't defined (i.e. never).
+On Tue, 2016-19-07 at 02:33:35 UTC, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
 > 
-> Suggested-by: Ian Munsie <imunsie@au1.ibm.com>
+> pnv_cxl_enable_phb_kernel_api() grabs a reference to the cxl module to
+> prevent it from being unloaded after the PHB has been switched to CX4 mode.
+> This breaks the build when CONFIG_MODULES=n as module_mutex doesn't exist.
+> 
+> However, if we don't have modules, we don't need to protect against the
+> case of the cxl module being unloaded. As such, split the relevant
+> code out into a function surrounded with #if IS_MODULE(CXL) so we don't try
+> to compile it if cxl isn't being compiled as a module.
+> 
+> Fixes: 5918dbc9b4ec ("powerpc/powernv: Add support for the cxl kernel api
+> on the real phb")
+> Reported-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 > Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-> Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1e44727a0b220f6ead12fefcff
+https://git.kernel.org/powerpc/c/c2ca9f6b4cc4c45eb598b24b8b
 
 cheers
