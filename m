@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWMv1jJhzDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:10:19 +1000 (AEST)
-In-Reply-To: <f03894c6-edf7-9fcc-c817-6e0ee6234dd6@linux.vnet.ibm.com>
-To: John Allen <jallen@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWMw09dMzDqQK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:10:20 +1000 (AEST)
+In-Reply-To: <1468372480-6453-2-git-send-email-haokexin@gmail.com>
+To: Kevin Hao <haokexin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Michael Roth <mdroth@linux.vnet.ibm.com>
-Subject: Re: [1/3] powerpc/pseries: Add pseries hotplug workqueue
-Message-Id: <3rvWMv15qLz9t0t@ozlabs.org>
+Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [v2,
+ 1/3] powerpc32: booke: fix the build error when CRASH_DUMP is enabled
+Message-Id: <3rvWMv6fJzz9t0v@ozlabs.org>
 Date: Wed, 20 Jul 2016 19:10:19 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,18 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-07-07 at 15:00:34 UTC, John Allen wrote:
-> In support of PAPR changes to add a new hotplug interrupt, introduce a
-> hotplug workqueue to avoid processing hotplug events in interrupt context.
-> We will also take advantage of the queue on PowerVM to ensure hotplug
-> events initiated from different sources (HMC and PRRN events) are handled
-> and serialized properly.
+On Wed, 2016-13-07 at 01:14:38 UTC, Kevin Hao wrote:
+> In the current code, the RELOCATABLE will be forcedly enabled when
+> enabling CRASH_DUMP. But for ppc32, the RELOCABLE also depend on
+> ADVANCED_OPTIONS and select NONSTATIC_KERNEL. This will cause the
+> following build error when CRASH_DUMP=y && ADVANCED_OPTIONS=n
+> because the select of NONSTATIC_KERNEL doesn't take effect.
+>   arch/powerpc/include/asm/io.h: In function 'virt_to_phys':
+>   arch/powerpc/include/asm/page.h:113:26: error: 'virt_phys_offset' undeclared (first use in this function)
+>    #define VIRT_PHYS_OFFSET virt_phys_offset
+>                           ^
+> It doesn't have any strong reasons to make the RELOCATABLE depend on
+> ADVANCED_OPTIONS. So remove this dependency to fix this issue.
 > 
-> Signed-off-by: John Allen <jallen@linux.vnet.ibm.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9054619ef54a3a832863ae25d1
+https://git.kernel.org/powerpc/c/da4230714662278781d007fb2b
 
 cheers
