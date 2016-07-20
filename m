@@ -1,18 +1,41 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.190])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWN12mKmzDqQK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:10:25 +1000 (AEST)
-In-Reply-To: <1468275387-22392-1-git-send-email-tyreld@linux.vnet.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linux-pci@vger.kernel.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mdroth@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, bhelgaas@google.com,
- nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2] rpaphp: fix slot registration for multiple slots under a PHB
-Message-Id: <3rvWN11qwnz9t1D@ozlabs.org>
-Date: Wed, 20 Jul 2016 19:10:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvXLg1BQszDqWj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:54:19 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Kees Cook' <keescook@chromium.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+CC: Jan Kara <jack@suse.cz>, "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, Will Deacon <will.deacon@arm.com>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, "sparclinux@vger.kernel.org"
+ <sparclinux@vger.kernel.org>, "linux-ia64@vger.kernel.org"
+ <linux-ia64@vger.kernel.org>, Christoph Lameter <cl@linux.com>, "Andrea
+ Arcangeli" <aarcange@redhat.com>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, Russell King
+ <linux@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Catalin Marinas
+ <catalin.marinas@arm.com>, PaX Team <pageexec@freemail.hu>, Borislav Petkov
+ <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Fenghua Yu
+ <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>, David Rientjes
+ <rientjes@google.com>, Tony Luck <tony.luck@intel.com>, Andy Lutomirski
+ <luto@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Laura Abbott
+ <labbott@fedoraproject.org>, Brad Spengler <spender@grsecurity.net>, "Ard
+ Biesheuvel" <ard.biesheuvel@linaro.org>, Pekka Enberg <penberg@kernel.org>,
+ Daniel Micay <danielmicay@gmail.com>, Casey Schaufler
+ <casey@schaufler-ca.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "David S.
+ Miller" <davem@davemloft.net>
+Subject: RE: [PATCH v3 00/11] mm: Hardened usercopy
+Date: Wed, 20 Jul 2016 09:52:25 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4FD6A3@AcuExch.aculab.com>
+References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
+In-Reply-To: <1468619065-3222-1-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,22 +45,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-11-07 at 22:16:27 UTC, Tyrel Datwyler wrote:
-> PowerVM seems to only ever provide a single hotplug slot per PHB.
-> The under lying slot hotplug registration code assumed multiple slots,
-> but the actual implementation is broken for multiple slots. This went
-> unnoticed for years due to the nature of PowerVM as mentioned
-> previously. Under qemu/kvm the hotplug slot model aligns more with
-> x86 where multiple slots are presented under a single PHB. As seen
-> in the following each additional slot after the first fails to
-> register due to each slot always being compared against the first
-> child node of the PHB in the device tree.
-...
-> 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-
-Applied to powerpc next, thanks.
-
-https://git.kernel.org/powerpc/c/e2413a7dae52fab290b7a8d11e
-
-cheers
+RnJvbTogS2VlcyBDb29rDQo+IFNlbnQ6IDE1IEp1bHkgMjAxNiAyMjo0NA0KPiBUaGlzIGlzIGEg
+c3RhcnQgb2YgdGhlIG1haW5saW5lIHBvcnQgb2YgUEFYX1VTRVJDT1BZWzFdLiANCi4uLg0KPiAt
+IGlmIGFkZHJlc3MgcmFuZ2UgaXMgaW4gdGhlIGN1cnJlbnQgcHJvY2VzcyBzdGFjaywgaXQgbXVz
+dCBiZSB3aXRoaW4gdGhlDQo+ICAgY3VycmVudCBzdGFjayBmcmFtZSAoaWYgc3VjaCBjaGVja2lu
+ZyBpcyBwb3NzaWJsZSkgb3IgYXQgbGVhc3QgZW50aXJlbHkNCj4gICB3aXRoaW4gdGhlIGN1cnJl
+bnQgcHJvY2VzcydzIHN0YWNrLg0KLi4uDQoNClRoYXQgZGVzY3JpcHRpb24gZG9lc24ndCBzZWVt
+IHF1aXRlIHJpZ2h0IHRvIG1lLg0KSSBwcmVzdW1lIHRoZSBjaGVjayBpczoNCiAgV2l0aGluIHRo
+ZSBjdXJyZW50IHByb2Nlc3MncyBzdGFjayBhbmQgbm90IGNyb3NzaW5nIHRoZSBlbmRzIG9mIHRo
+ZQ0KICBjdXJyZW50IHN0YWNrIGZyYW1lLg0KDQpUaGUgJ2N1cnJlbnQnIHN0YWNrIGZyYW1lIGlz
+IGxpa2VseSB0byBiZSB0aGF0IG9mIGNvcHlfdG8vZnJvbV91c2VyKCkuDQpFdmVuIGlmIHlvdSB1
+c2UgdGhlIHN0YWNrIG9mIHRoZSBjYWxsZXIsIGFueSBwcm9ibGVtYXRpYyBidWZmZXJzDQphcmUg
+bGlrZWx5IHRvIGhhdmUgYmVlbiBwYXNzZWQgaW4gZnJvbSBhIGNhbGxpbmcgZnVuY3Rpb24uDQpT
+byB1bmxlc3MgeW91IGFyZSBnb2luZyB0byB3YWxrIHRoZSBzdGFjayAoZ29vZCBsdWNrIG9uIHRo
+YXQpDQpJJ20gbm90IHN1cmUgY2hlY2tpbmcgdGhlIHN0YWNrIGZyYW1lcyBpcyB3b3J0aCBpdC4N
+Cg0KSSdkIGFsc28gZ3Vlc3MgdGhhdCBhIGxvdCBvZiBjb3BpZXMgYXJlIGZyb20gdGhlIG1pZGRs
+ZSBvZiBzdHJ1Y3R1cmVzDQpzbyBjYW5ub3QgZmFpbCB0aGUgdGVzdHMgeW91IGFyZSBhZGRpbmcu
+DQoNCglEYXZpZA0KDQo=
