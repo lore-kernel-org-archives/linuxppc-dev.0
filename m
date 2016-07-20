@@ -1,12 +1,12 @@
 Return-Path: <keescook@chromium.org>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP80BVpzDqYB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvpP82fwJzDqYG
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 06:27:24 +1000 (AEST)
-Received: by mail-pa0-x22c.google.com with SMTP id iw10so21360980pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:23 -0700 (PDT)
+Received: by mail-pa0-x233.google.com with SMTP id ks6so21478005pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 13:27:24 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: kernel-hardening@lists.openwall.com
 Cc: Kees Cook <keescook@chromium.org>,
@@ -33,9 +33,9 @@ Cc: Kees Cook <keescook@chromium.org>,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v4 09/12] sparc/uaccess: Enable hardened usercopy
-Date: Wed, 20 Jul 2016 13:27:04 -0700
-Message-Id: <1469046427-12696-10-git-send-email-keescook@chromium.org>
+Subject: [PATCH v4 10/12] s390/uaccess: Enable hardened usercopy
+Date: Wed, 20 Jul 2016 13:27:05 -0700
+Message-Id: <1469046427-12696-11-git-send-email-keescook@chromium.org>
 In-Reply-To: <1469046427-12696-1-git-send-email-keescook@chromium.org>
 References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,96 +47,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enables CONFIG_HARDENED_USERCOPY checks on sparc.
-
-Based on code from PaX and grsecurity.
+Enables CONFIG_HARDENED_USERCOPY checks on s390.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/sparc/Kconfig                  |  1 +
- arch/sparc/include/asm/uaccess_32.h | 14 ++++++++++----
- arch/sparc/include/asm/uaccess_64.h | 11 +++++++++--
- 3 files changed, 20 insertions(+), 6 deletions(-)
+ arch/s390/Kconfig       | 1 +
+ arch/s390/lib/uaccess.c | 2 ++
+ 2 files changed, 3 insertions(+)
 
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 546293d9e6c5..59b09600dd32 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -43,6 +43,7 @@ config SPARC
- 	select OLD_SIGSUSPEND
- 	select ARCH_HAS_SG_CHAIN
- 	select CPU_NO_EFFICIENT_FFS
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index a8c259059adf..9f694311c9ed 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -122,6 +122,7 @@ config S390
+ 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_EARLY_PFN_TO_NID
 +	select HAVE_ARCH_HARDENED_USERCOPY
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select CPU_NO_EFFICIENT_FFS if !HAVE_MARCH_Z9_109_FEATURES
+ 	select HAVE_ARCH_SECCOMP_FILTER
+diff --git a/arch/s390/lib/uaccess.c b/arch/s390/lib/uaccess.c
+index ae4de559e3a0..6986c20166f0 100644
+--- a/arch/s390/lib/uaccess.c
++++ b/arch/s390/lib/uaccess.c
+@@ -104,6 +104,7 @@ static inline unsigned long copy_from_user_mvcp(void *x, const void __user *ptr,
  
- config SPARC32
- 	def_bool !64BIT
-diff --git a/arch/sparc/include/asm/uaccess_32.h b/arch/sparc/include/asm/uaccess_32.h
-index 57aca2792d29..341a5a133f48 100644
---- a/arch/sparc/include/asm/uaccess_32.h
-+++ b/arch/sparc/include/asm/uaccess_32.h
-@@ -248,22 +248,28 @@ unsigned long __copy_user(void __user *to, const void __user *from, unsigned lon
- 
- static inline unsigned long copy_to_user(void __user *to, const void *from, unsigned long n)
+ unsigned long __copy_from_user(void *to, const void __user *from, unsigned long n)
  {
--	if (n && __access_ok((unsigned long) to, n))
-+	if (n && __access_ok((unsigned long) to, n)) {
-+		if (!__builtin_constant_p(n))
-+			check_object_size(from, n, true);
- 		return __copy_user(to, (__force void __user *) from, n);
--	else
-+	} else
- 		return n;
- }
++	check_object_size(to, n, false);
+ 	if (static_branch_likely(&have_mvcos))
+ 		return copy_from_user_mvcos(to, from, n);
+ 	return copy_from_user_mvcp(to, from, n);
+@@ -177,6 +178,7 @@ static inline unsigned long copy_to_user_mvcs(void __user *ptr, const void *x,
  
- static inline unsigned long __copy_to_user(void __user *to, const void *from, unsigned long n)
+ unsigned long __copy_to_user(void __user *to, const void *from, unsigned long n)
  {
-+	if (!__builtin_constant_p(n))
-+		check_object_size(from, n, true);
- 	return __copy_user(to, (__force void __user *) from, n);
- }
- 
- static inline unsigned long copy_from_user(void *to, const void __user *from, unsigned long n)
- {
--	if (n && __access_ok((unsigned long) from, n))
-+	if (n && __access_ok((unsigned long) from, n)) {
-+		if (!__builtin_constant_p(n))
-+			check_object_size(to, n, false);
- 		return __copy_user((__force void __user *) to, from, n);
--	else
-+	} else
- 		return n;
- }
- 
-diff --git a/arch/sparc/include/asm/uaccess_64.h b/arch/sparc/include/asm/uaccess_64.h
-index e9a51d64974d..8bda94fab8e8 100644
---- a/arch/sparc/include/asm/uaccess_64.h
-+++ b/arch/sparc/include/asm/uaccess_64.h
-@@ -210,8 +210,12 @@ unsigned long copy_from_user_fixup(void *to, const void __user *from,
- static inline unsigned long __must_check
- copy_from_user(void *to, const void __user *from, unsigned long size)
- {
--	unsigned long ret = ___copy_from_user(to, from, size);
-+	unsigned long ret;
- 
-+	if (!__builtin_constant_p(size))
-+		check_object_size(to, size, false);
-+
-+	ret = ___copy_from_user(to, from, size);
- 	if (unlikely(ret))
- 		ret = copy_from_user_fixup(to, from, size);
- 
-@@ -227,8 +231,11 @@ unsigned long copy_to_user_fixup(void __user *to, const void *from,
- static inline unsigned long __must_check
- copy_to_user(void __user *to, const void *from, unsigned long size)
- {
--	unsigned long ret = ___copy_to_user(to, from, size);
-+	unsigned long ret;
- 
-+	if (!__builtin_constant_p(size))
-+		check_object_size(from, size, true);
-+	ret = ___copy_to_user(to, from, size);
- 	if (unlikely(ret))
- 		ret = copy_to_user_fixup(to, from, size);
- 	return ret;
++	check_object_size(from, n, true);
+ 	if (static_branch_likely(&have_mvcos))
+ 		return copy_to_user_mvcos(to, from, n);
+ 	return copy_to_user_mvcs(to, from, n);
 -- 
 2.7.4
