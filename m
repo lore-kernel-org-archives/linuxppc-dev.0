@@ -1,28 +1,37 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvRqH22TBzDqQw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 16:30:19 +1000 (AEST)
-Received: by mail-lf0-x242.google.com with SMTP id l69so2911581lfg.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2016 23:30:19 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Subject: Re: [PATCH v2 1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Sam Bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <7286403003b30fc87740f1c1d6cb67d8f8eaafd7.1468986094.git.sam.bobroff@au1.ibm.com>
- <20534.8713825972$1468993677@news.gmane.org>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, agraf@suse.de,
- kvm-ppc@vger.kernel.org, qemu-devel@nongnu.org, paulus@samba.org,
- david@gibson.dropbear.id.au, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?=
- <rkrcmar@redhat.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <ee83aaeb-40cf-4b46-4ae0-bb4265a0e610@redhat.com>
-Date: Wed, 20 Jul 2016 08:30:09 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvVcR3TBFzDqQj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 18:36:06 +1000 (AEST)
+Date: Wed, 20 Jul 2016 09:35:30 +0100
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>, bhe@redhat.com,
+ arnd@arndb.de, Petr Tesarik <ptesarik@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+ dyoung@redhat.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC 0/3] extend kexec_file_load system call
+Message-ID: <20160720083530.GK1041@n2100.armlinux.org.uk>
+References: <87twfunneg.fsf@linux.vnet.ibm.com>
+ <20160713073657.GX1041@n2100.armlinux.org.uk>
+ <87poqinf9m.fsf@linux.vnet.ibm.com>
+ <20160713082639.GZ1041@n2100.armlinux.org.uk>
+ <20160713130338.GB16900@redhat.com>
+ <20160713174009.GA1041@n2100.armlinux.org.uk>
+ <20160713182247.GA25232@redhat.com>
+ <1468845964.2800.3.camel@gmail.com>
+ <20160718132629.GB32512@redhat.com>
+ <8a8b2909-7f95-03e4-bf8e-dd29b5fc1fba@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20534.8713825972$1468993677@news.gmane.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8a8b2909-7f95-03e4-bf8e-dd29b5fc1fba@gmail.com>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +41,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 20/07/2016 07:46, Michael Ellerman wrote:
-> Thanks.
+On Wed, Jul 20, 2016 at 01:45:42PM +1000, Balbir Singh wrote:
+> > IOW, if your kernel forced signature verification, you should not be
+> > able to do sig_enforce=0. If you kernel did not have
+> > CONFIG_MODULE_SIG_FORCE=y, then sig_enforce should be 0 by default anyway
+> > and you are not making it worse using command line.
 > 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> Or do you want me to merge this before Paul gets back?
+> OK.. I checked and you are right, but that is an example and there are
+> other things like security=, thermal.*, nosmep, nosmap that need auditing
+> for safety and might hurt the system security if used. I still think
+> think that assuming you can pass any command line without breaking security
+> is a broken argument.
 
-No, this should be merged through the KVM tree.  Please Cc the KVM
-maintainers before offering to apply a patch that formally belongs to
-another tree.
+Quite, and you don't need to run code in a privileged environment to do
+any of that.
 
-I don't care if Paul merges the patch or Radim and I do, but we're
-getting lots of unnecessary conflicts from patches that go through the
-main architecture tree and that shouldn't really happen.  Please let's
-keep some discipline, as I want to minimize the number of conflicts that
-reach Linus (and 4.8 is going to be *bad* in this respect, with both PPC
-and s390 having conflicts between the KVM and arch tree).
+It's also not trivial to protect against: new kernels gain new arguments
+which older kernels may not know about.  No matter how much protection
+is built into older kernels, newer kernels can become vulnerable through
+the addition of further arguments.
 
-In particular this patch would indeed have a conflict, because you have
+Also, how sure are we that there are no stack overflow issues with kernel
+command line parsing?  Can we be sure that there's none?  This is
+something which happens early in the kernel boot, before the full memory
+protections have been set up.
 
-+#define KVM_CAP_PPC_HTM 129
-
-but cap numbers 129 and 130 are already taken.  So whoever applies it
-should bump the number to 131.
-
-Paolo
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
