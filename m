@@ -1,22 +1,22 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWWP6Wl3zDqR2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:16:49 +1000 (AEST)
-Date: Wed, 20 Jul 2016 19:16:04 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvWWQ05PTzDqR4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 19:16:50 +1000 (AEST)
+Date: Wed, 20 Jul 2016 19:16:42 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, #@ozlabs.ru,
- 4.2+@ozlabs.ru
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda: Fix endianness when reading
- TCEs
-Message-ID: <20160720091604.GC27358@voom.fritz.box>
-References: <1468988811-49142-1-git-send-email-aik@ozlabs.ru>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, aik@ozlabs.ru, mpe@ellerman.id.au,
+ agraf@suse.de, qemu-devel@nongnu.org, paulus@samba.org
+Subject: Re: [PATCH v2 1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
+Message-ID: <20160720091642.GD27358@voom.fritz.box>
+References: <7286403003b30fc87740f1c1d6cb67d8f8eaafd7.1468986094.git.sam.bobroff@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="raC6veAxrt5nqIoY"
-In-Reply-To: <1468988811-49142-1-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="q9KOos5vDmpwPx9o"
+In-Reply-To: <7286403003b30fc87740f1c1d6cb67d8f8eaafd7.1468986094.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +27,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---raC6veAxrt5nqIoY
+--q9KOos5vDmpwPx9o
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jul 20, 2016 at 02:26:51PM +1000, Alexey Kardashevskiy wrote:
-> The iommu_table_ops::exchange() callback writes new TCE to the table
-> and returns old value and permission mask. The old TCE value is
-> correctly converted from BE to CPU endian; however permission mask
-> was calculated from BE value and therefore always returned DMA_NONE
-> which could cause memory leak on LE systems using VFIO SPAPR TCE IOMMU v1
-> driver.
+On Wed, Jul 20, 2016 at 01:41:36PM +1000, Sam Bobroff wrote:
+> Introduce a new KVM capability, KVM_CAP_PPC_HTM, that can be queried to
+> determine if a PowerPC KVM guest should use HTM (Hardware Transactional
+> Memory).
 >=20
-> This fixes pnv_tce_xchg() to have @oldtce a CPU endian.
+> This will be used by QEMU to populate the pa-features bits in the
+> guest's device tree.
 >=20
-> Fixes: 05c6cfb9dce0d13d37e9d007ee6a4af36f1c0a58
-> Cc: stable@vger.kernel.org # 4.2+
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 > ---
->  arch/powerpc/platforms/powernv/pci.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 >=20
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platform=
-s/powernv/pci.c
-> index 1d92bd9..7b17f88 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -620,8 +620,8 @@ int pnv_tce_xchg(struct iommu_table *tbl, long index,
->  	if (newtce & TCE_PCI_WRITE)
->  		newtce |=3D TCE_PCI_READ;
+> v2:
+>=20
+> * Use CPU_FTR_TM_COMP instead of CPU_FTR_TM.
+> * I didn't unbreak the line, as with the extra characters checkpatch will
+>   complain if I do. I did move the break to a more usual place.
+>=20
+>  arch/powerpc/kvm/powerpc.c | 4 ++++
+>  include/uapi/linux/kvm.h   | 1 +
+>  2 files changed, 5 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 02416fe..5ebc8ff 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -588,6 +588,10 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, lo=
+ng ext)
+>  		r =3D 1;
+>  		break;
+>  #endif
+> +	case KVM_CAP_PPC_HTM:
+> +		r =3D cpu_has_feature(CPU_FTR_TM_COMP) &&
+> +		    is_kvmppc_hv_enabled(kvm);
+> +		break;
+>  	default:
+>  		r =3D 0;
+>  		break;
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 05ebf47..f421d0e 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -866,6 +866,7 @@ struct kvm_ppc_smmu_info {
+>  #define KVM_CAP_ARM_PMU_V3 126
+>  #define KVM_CAP_VCPU_ATTRIBUTES 127
+>  #define KVM_CAP_MAX_VCPU_ID 128
+> +#define KVM_CAP_PPC_HTM 129
 > =20
-> -	oldtce =3D xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce));
-> -	*hpa =3D be64_to_cpu(oldtce) & ~(TCE_PCI_READ | TCE_PCI_WRITE);
-> +	oldtce =3D be64_to_cpu(xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce)));
-> +	*hpa =3D oldtce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
->  	*direction =3D iommu_tce_direction(oldtce);
+>  #ifdef KVM_CAP_IRQ_ROUTING
 > =20
->  	return 0;
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -75,25 +91,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---raC6veAxrt5nqIoY
+--q9KOos5vDmpwPx9o
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJXj0FUAAoJEGw4ysog2bOS2SMP/i1/WLqhSsQ8Ssgnekn96Uvp
-1Sxb451//8XF6wgzLEpif6QCIAKrt0QpSS3XLh32ZyONcLovakZ9kLo61JMSovCg
-NCqCzH1PVfDrRx62iMR+oCS7sil+mdncxPUQVctRK/nsgv5WTfjgw1VSuw2SP9Kl
-VDVg7+XsA6bIWh3zfkQI1NHCOorJ9w6lhzHPufZv3UJnmkq/TxeAOqILMC0eBFkc
-Bx/ACBF8Rl/lX82OTcCCZi4hEORyjwZSNRzA4fHwLeHEDFz3+16JWxqWFt5lJ6OF
-RunkMD7XF2F291Gk475QwaPLENnu/H8yA1lJtfKXyU3HEq2Y6ZB3JItQKFaPJM7j
-bEc3eXUxJgwRMTOm15fsolwf2GFCvjuDWrErrfM5Aawn5PbSk19M8ahv9WXlMRBa
-d+rl0xi4yiEUnDVEIN78tEpfbMBdr5FMknihY0539nhgmqSq4wqHfUP8vnelLI6V
-3DpWeRgVHZTF8ZFEEIqJPm5nUPCbC4nVc9sFZRPeSWNTYTSYOiM7YfFNOzsOnRGs
-JmLiSLq6ZGkNUpQnwoQTqSXeIqfNszUFjQPf9wJo4KX78S74qUMRnun3qefIttUP
-5s1WoNt8F3F8q4MXBX4dkJIaEjNHy9EfgG8GE+K1P7HCCFavcnReuzianvo7xyI3
-psaWCLZmt1LhZc/8JyhA
-=a8Tx
+iQIcBAEBAgAGBQJXj0F5AAoJEGw4ysog2bOSXtwQAIeVu6nVCDZgod/lmktXo+Te
+Pv9OSxoOLgyfw+pIWIEODBb71RRler0+7WQf7QhSO1n8cCXxJ0SijENDfXgHkQef
+d+y4oKZyTXem9c9ZBf4KxupXja0O3Lxc3er7j1fKNKp16pRuVyOzI+v7lUjLat0I
+hgZwxIQhMcyJeddz0ijYc/GM4wj6SuUaktzNb1Q6ZuHLODy4Ewga5Z82kMna683W
+iWcKE0A2OYEQJC3OSeDFv07Lw5rPkU6kdh/Yfk3sYjmkYE0RQ7FLEmS1/6n9KVRL
+VEkaMZALTPCmgvu1/b5O2r7JJl7kYHkysAH9nvRWssVM0n/mofB7YsSkJWN02Ll8
+5kcM2LADcyVVEKXZko1Wao13TuFMcG1WbMuJj54akKqVom9qEC97lG2xIUmlQQYb
+hIitaGnB2AqVXJscBY64T8UcAumupW5waJgg/wdiwK9NufdgH4gud/i+2JucflBu
+3GHCqLCt9fH6ilGI2eKqG3UXg6o4pa8KVCGxByMtU3VWSS6s0ttgoMDt3qfkzUBB
+pfeaidcaInU2hH2fhLwzVAlLTv01QPfogmm/oCMvwCFWblJf0w9AD1h3JHThooaa
+Ffd5Jb30caK1ucD5y8wuKbZ+qfXNSyD5dA4uTEpNY1wlC7NYQFRmla0/y0hsePV/
+G3Rm844v7pQcPjSNq5Bj
+=BTPv
 -----END PGP SIGNATURE-----
 
---raC6veAxrt5nqIoY--
+--q9KOos5vDmpwPx9o--
