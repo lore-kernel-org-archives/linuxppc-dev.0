@@ -1,24 +1,39 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.192])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.4])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rvcrd58S8zDqTf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 23:17:04 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Paulo Flabiano Smorigo' <pfsmorigo@linux.vnet.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, Paul Mackerras
- <paulus@samba.org>, "open list:CRYPTO API" <linux-crypto@vger.kernel.org>,
- "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
-Subject: RE: [PATCH] crypto: vmx - Ignore generated files
-Date: Wed, 20 Jul 2016 13:15:14 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4FE8AB@AcuExch.aculab.com>
-References: <1468935388-6489-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-In-Reply-To: <1468935388-6489-1-git-send-email-pfsmorigo@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rvd3h55GhzDqTj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 23:26:40 +1000 (AEST)
+Subject: [PATCH] cxl: Delete an unnecessary check before the function call
+ "of_node_put"
+To: linuxppc-dev@lists.ozlabs.org,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
+ Julia Lawall <julia.lawall@lip6.fr>, Michael Ellerman <mpe@ellerman.id.au>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Message-ID: <33fb6b04-9986-35ee-f4e2-0ebeb79c5e23@users.sourceforge.net>
+Date: Wed, 20 Jul 2016 15:20:59 +0200
 MIME-Version: 1.0
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,12 +43,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogIFBhdWxvIEZsYWJpYW5vIFNtb3JpZ28NCj4gU2VudDogMTkgSnVseSAyMDE2IDE0OjM2
-DQo+IElnbm9yZSBhc3NlbWJseSBmaWxlcyBnZW5lcmF0ZWQgYnkgdGhlIHBlcmwgc2NyaXB0Lg0K
-Li4uDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NyeXB0by92bXgvLmdpdGlnbm9yZSBiL2RyaXZl
-cnMvY3J5cHRvL3ZteC8uZ2l0aWdub3JlDQo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4
-IDAwMDAwMDAuLmFmNGE3Y2UNCj4gLS0tIC9kZXYvbnVsbA0KPiArKysgYi9kcml2ZXJzL2NyeXB0
-by92bXgvLmdpdGlnbm9yZQ0KPiBAQCAtMCwwICsxLDIgQEANCj4gK2Flc3A4LXBwYy5TDQo+ICtn
-aGFzaHA4LXBwYy5TDQoNClNob3VsZG4ndCB0aGUgZ2VuZXJhdGVkIGZpbGVzIGJlIHdyaXR0ZW4g
-dG8gdGhlIG9iamVjdCB0cmVlPw0KDQpJIHdvdWxkIGhvcGUgdGhlIGxpbnV4IGtlcm5lbCBidWls
-ZHMgZnJvbSBhIHJlYWRvbmx5IHNvdXJjZSB0cmVlLg0KDQoJRGF2aWQNCg0K
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 20 Jul 2016 15:10:32 +0200
+
+The of_node_put() function tests whether its argument is NULL
+and then returns immediately.
+Thus the test around the call is not needed.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/misc/cxl/of.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/of.c b/drivers/misc/cxl/of.c
+index edc4583..333256a 100644
+--- a/drivers/misc/cxl/of.c
++++ b/drivers/misc/cxl/of.c
+@@ -490,8 +490,7 @@ int cxl_of_probe(struct platform_device *pdev)
+ 		adapter->slices = 0;
+ 	}
+ 
+-	if (afu_np)
+-		of_node_put(afu_np);
++	of_node_put(afu_np);
+ 	return 0;
+ }
+ 
+-- 
+2.9.2
