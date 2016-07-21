@@ -1,16 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rw9zM13Q5zDqYy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 21:09:51 +1000 (AEST)
-In-Reply-To: <1467695057-12431-34-git-send-email-benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rw9zN2XvhzDqZ4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 21:09:52 +1000 (AEST)
+In-Reply-To: <1467695057-12431-35-git-send-email-benh@kernel.crashing.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [33/41] powerpc/64: Move the content of setup_system() to
- setup_arch()
-Message-Id: <3rw9zL4h57z9sxS@ozlabs.org>
-Date: Thu, 21 Jul 2016 21:09:50 +1000 (AEST)
+Subject: Re: [34/41] powerpc/32: Move cache info inits to a separate function
+Message-Id: <3rw9zM47rlz9snm@ozlabs.org>
+Date: Thu, 21 Jul 2016 21:09:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,13 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-05-07 at 05:04:09 UTC, Benjamin Herrenschmidt wrote:
-> And kill setup_system()
+On Tue, 2016-05-07 at 05:04:10 UTC, Benjamin Herrenschmidt wrote:
+> Matches 64-bit. Also move the call to the same spot as ppc64
 > 
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/fa745a129cae93ca5d871ebac2
+https://git.kernel.org/powerpc/c/8f212cb26fc74dcf7b8c5c3dbc
 
 cheers
