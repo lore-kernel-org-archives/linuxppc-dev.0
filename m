@@ -1,23 +1,36 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwMrT16ybzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 04:34:32 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Scott Wood <oss@buserror.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-mmc@vger.kernel.org,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Yangbo Lu <yangbo.lu@nxp.com>
-Subject: Re: [PATCH v11 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
-Date: Thu, 21 Jul 2016 20:34:12 +0200
-Message-ID: <3917663.1nRrfqKY9D@wuerfel>
-In-Reply-To: <1469119526.25630.42.camel@buserror.net>
-References: <1468723822-30457-1-git-send-email-oss@buserror.net>
- <146909676646.16700.8383344640490662952@concordia>
- <1469119526.25630.42.camel@buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwQjb3WJ4zDrFT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 06:43:46 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6LKdCNW132736
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 16:43:44 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24atwt8c55-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 16:43:43 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Thu, 21 Jul 2016 14:43:43 -0600
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] cxlflash: Regression patch and updating Maintainers list
+Date: Thu, 21 Jul 2016 15:42:52 -0500
+Message-Id: <1469133772-14953-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, July 21, 2016 11:45:26 AM CEST Scott Wood wrote:
-> 
-> For the MMC issue I suggest using ifdef CONFIG_PPC and mfspr(SPRN_SVR) like
-> the clock driver does[1] and we can revisit the issue if/when we need to do
-> something similar on an ARM chip.
+First patch in this set fixes a regression that was casued by the
+Commit 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL
+Flash cards"), which is currently staged for 4.8 in next/master.
+Second patch updates the Maintainers list for cxlflash driver.
 
-That sounds ok to me. having an mfspr check isn't nice but does the
-job to work around existing bindings. For future chips, we can hopefully
-find a way to identify most quirks early enough that the DT binding
-can describe them using distinct compatible strings or other properties,
-if necessary with the help of the boot loader.
+This series is intended for 4.8 and is bisectable. These patches
+are cut against next/master that contains the original commit.
 
-Some other folks on MIPS were interested in having the soc_device
-matching infrastructure and contacted me off-list, but they can of
-course take the patch I sent and work from that.
+Uma Krishnan (2):
+  cxlflash: Verify problem state area is mapped before notifying
+    shutdown
+  MAINTAINERS: Update cxlflash maintainers
 
-	Arnd
+ MAINTAINERS                  |  1 +
+ drivers/scsi/cxlflash/main.c | 10 +++++++++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+-- 
+2.1.0
