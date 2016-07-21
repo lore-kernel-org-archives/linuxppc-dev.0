@@ -1,35 +1,35 @@
-Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rw5Sz2z2lzDqY7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 17:46:43 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6L7iMMw057331
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 03:46:41 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24akx6tyt0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 03:46:41 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Thu, 21 Jul 2016 01:46:40 -0600
-From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
- xen-devel-request@lists.xenproject.org, kvm@vger.kernel.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mingo@redhat.com, peterz@infradead.org, paulmck@linux.vnet.ibm.com,
- will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
- pbonzini@redhat.com, bsingharora@gmail.com,
- Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v3 0/4] implement vcpu preempted check
-Date: Thu, 21 Jul 2016 07:45:10 -0400
-Message-Id: <1469101514-49475-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rw7bY6fwfzDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 19:22:33 +1000 (AEST)
+Date: Thu, 21 Jul 2016 10:21:55 +0100
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: 'Dave Young' <dyoung@redhat.com>, Mark Rutland <mark.rutland@arm.com>,
+ "bhe@redhat.com" <bhe@redhat.com>, "arnd@arndb.de" <arnd@arndb.de>,
+ "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Vivek Goyal <vgoyal@redhat.com>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ "ebiederm@xmission.com" <ebiederm@xmission.com>,
+ "bauerman@linux.vnet.ibm.com" <bauerman@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [RFC 3/3] kexec: extend kexec_file_load system call
+Message-ID: <20160721092155.GM1041@n2100.armlinux.org.uk>
+References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
+ <20160712014201.11456-4-takahiro.akashi@linaro.org>
+ <20160715130955.GC23514@redhat.com>
+ <20160715131950.GB19840@leverpostej>
+ <20160718023024.GB6310@dhcp-128-65.nay.redhat.com>
+ <063D6719AE5E284EB5DD2968C1650D6D5F4FE82B@AcuExch.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4FE82B@AcuExch.aculab.com>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-change from v2:
-	no code change, fix typos, update some comments
+On Wed, Jul 20, 2016 at 11:41:35AM +0000, David Laight wrote:
+> From: Dave Young
+> > I do not think it is worth to add another syscall for extra fds.
+> > We have open(2) as an example for different numbers of arguments
+> > already.
+> 
+> Probably works 'by luck' and no one has actually thought about why.
+> That ioctl() works is (probably) even more lucky.
+> 
+> There are ABI that use different calling conventions for varags functions
+> (eg always stack all the arguments). I guess linux doesn't run on any of them.
+> 
+> ioctl() is a particular problem because the 'arg' might be an integer or a pointer.
+> Fortunately all the 64bit ABI linux uses pass the arg parameter in a register
+> (and don't use different registers for pointer and data arguments).
+> 
+> You could have two 'libc' functions that refer to the same system call entry.
+> Certainly safer than a varargs function.
 
-change from v1:
-	a simplier definition of default vcpu_is_preempted
-	skip mahcine type check on ppc, and add config. remove dedicated macro.
-	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner. 
-	add more comments
-	thanks boqun and Peter's suggestion.
+Don't forget that the syscall API is not a normal C function API - it's
+special, because there's little point stacking arguments on the userspace
+stack and then having the kernel function try and read them off the
+kernelspace stack.
 
-This patch set aims to fix lock holder preemption issues.
+If an architecture does such a thing, then it needs special veneers to
+handle that (reading off the userspace stack and placing them onto the
+kernelspace stack, or the arch needs to define some other method of
+handling the situation.)
 
-test-case:
-perf record -a perf bench sched messaging -g 400 -p && perf report
-
-before patch:
-18.09%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
-12.28%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
- 5.27%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
- 3.89%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
- 3.64%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
- 3.41%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner.is
- 2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
-
-after patch:
- 9.99%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
- 5.28%  sched-messaging  [unknown]         [H] 0xc0000000000768e0
- 4.27%  sched-messaging  [kernel.vmlinux]  [k] __copy_tofrom_user_power7
- 3.77%  sched-messaging  [kernel.vmlinux]  [k] copypage_power7
- 3.24%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
- 3.02%  sched-messaging  [kernel.vmlinux]  [k] system_call
- 2.69%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
-
-We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
-loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
-These spin_on_onwer variant also cause rcu stall before we apply this patch set
-
-Pan Xinhui (4):
-  kernel/sched: introduce vcpu preempted check interface
-  powerpc/spinlock: support vcpu preempted check
-  locking/osq: Drop the overhead of osq_lock()
-  kernel/locking: Drop the overhead of {mutex,rwsem}_spin_on_owner
-
- arch/powerpc/include/asm/spinlock.h | 18 ++++++++++++++++++
- include/linux/sched.h               | 12 ++++++++++++
- kernel/locking/mutex.c              | 15 +++++++++++++--
- kernel/locking/osq_lock.c           | 10 +++++++++-
- kernel/locking/rwsem-xadd.c         | 16 +++++++++++++---
- 5 files changed, 65 insertions(+), 6 deletions(-)
+So, really, the actual C APIs don't matter that much - what matters more
+is the definition of a sane way to pass such arguments.  Given the
+extensive historical nature of open() and ioctl(), it would be completely
+silly not to create something which allows these calls to work.
 
 -- 
-2.4.11
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
