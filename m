@@ -1,21 +1,20 @@
 Return-Path: <nicholas.piggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rw4682rLrzDqTC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 16:45:20 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id g202so4911514pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 23:45:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rw46C3d50zDqTC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 16:45:23 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h186so4888844pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jul 2016 23:45:23 -0700 (PDT)
 From: Nicholas Piggin <nicholas.piggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 12/14] powerpc/pseries: remove unused exception code,
- small cleanups
-Date: Thu, 21 Jul 2016 16:44:11 +1000
-Message-Id: <1469083453-9279-13-git-send-email-npiggin@gmail.com>
+Subject: [PATCH 13/14] powerpc/pseries: consolidate slb exceptions
+Date: Thu, 21 Jul 2016 16:44:12 +1000
+Message-Id: <1469083453-9279-14-git-send-email-npiggin@gmail.com>
 In-Reply-To: <1469083453-9279-1-git-send-email-npiggin@gmail.com>
 References: <1469083453-9279-1-git-send-email-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,94 +26,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This was not done before the big patches because I only noticed
-them afterwards. It has become much easier to see which handlers
-are branched to from which exception vectors now, and to see
-exactly what vector space is being used for what.
+slb exceptions all follow the same pattern, so put it in a macro.
+Generated code should be the same.
 
 Signed-off-by: Nick Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 172 ++++++++++++++---------------------
+ 1 file changed, 69 insertions(+), 103 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9832765..b7a8a66 100644
+index b7a8a66..c317faf 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -90,6 +90,9 @@ USE_FIXED_SECTION(real_vectors)
- 	.globl __start_interrupts
- __start_interrupts:
+@@ -497,111 +497,32 @@ MMU_FTR_SECTION_ELSE
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
+ COMMON_HANDLER_END(data_access_common)
  
-+/* No virt vectors corresponding with 0x0..0x100 */
-+VECTOR_HANDLER_VIRT_NONE(0x4000, 0x4100)
+-
+-VECTOR_HANDLER_REAL_BEGIN(data_access_slb, 0x380, 0x400)
+-	SET_SCRATCH0(r13)
+-	EXCEPTION_PROLOG_0(PACA_EXSLB)
+-	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
+-	std	r3,PACA_EXSLB+EX_R3(r13)
+-	mfspr	r3,SPRN_DAR
+-	mfspr	r12,SPRN_SRR1
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	/*
+-	 * We can't just use a direct branch to slb_miss_realmode
+-	 * because the distance from here to there depends on where
+-	 * the kernel ends up being put.
+-	 */
+-	mfctr	r11
+-	ld	r10,PACAKBASE(r13)
+-	LOAD_HANDLER_4G(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
+-VECTOR_HANDLER_REAL_END(data_access_slb, 0x380, 0x400)
+-
+-VECTOR_HANDLER_VIRT_BEGIN(data_access_slb, 0x4380, 0x4400)
+-	SET_SCRATCH0(r13)
+-	EXCEPTION_PROLOG_0(PACA_EXSLB)
+-	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x380)
+-	std	r3,PACA_EXSLB+EX_R3(r13)
+-	mfspr	r3,SPRN_DAR
+-	mfspr	r12,SPRN_SRR1
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	/*
+-	 * We can't just use a direct branch to slb_miss_realmode
+-	 * because the distance from here to there depends on where
+-	 * the kernel ends up being put.
+-	 */
+-	mfctr	r11
+-	ld	r10,PACAKBASE(r13)
+-	LOAD_HANDLER_4G(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
+-VECTOR_HANDLER_VIRT_END(data_access_slb, 0x4380, 0x4400)
+-TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
+-
+-
+-VECTOR_HANDLER_REAL(instruction_access, 0x400, 0x480)
+-VECTOR_HANDLER_VIRT(instruction_access, 0x4400, 0x4480, 0x400)
+-TRAMP_KVM(PACA_EXGEN, 0x400)
+-COMMON_HANDLER_BEGIN(instruction_access_common)
+-	EXCEPTION_PROLOG_COMMON(0x400, PACA_EXGEN)
+-	RECONCILE_IRQ_STATE(r10, r11)
+-	ld	r12,_MSR(r1)
+-	ld	r3,_NIP(r1)
+-	andis.	r4,r12,0x5820
+-	li	r5,0x400
+-	std	r3,_DAR(r1)
+-	std	r4,_DSISR(r1)
+-BEGIN_MMU_FTR_SECTION
+-	b	do_hash_page		/* Try to handle as hpte fault */
+-MMU_FTR_SECTION_ELSE
+-	b	handle_page_fault
+-ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
+-COMMON_HANDLER_END(instruction_access_common)
+-
+-
+-VECTOR_HANDLER_REAL_BEGIN(instruction_access_slb, 0x480, 0x500)
+-	SET_SCRATCH0(r13)
+-	EXCEPTION_PROLOG_0(PACA_EXSLB)
+-	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x480)
+-	std	r3,PACA_EXSLB+EX_R3(r13)
+-	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
+-	mfspr	r12,SPRN_SRR1
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
+-#else
+-	mfctr	r11
+-	ld	r10,PACAKBASE(r13)
+-	LOAD_HANDLER_4G(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
+-#endif
+-VECTOR_HANDLER_REAL_END(instruction_access_slb, 0x480, 0x500)
+-VECTOR_HANDLER_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x4500)
+-	SET_SCRATCH0(r13)
+-	EXCEPTION_PROLOG_0(PACA_EXSLB)
+-	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x480)
+-	std	r3,PACA_EXSLB+EX_R3(r13)
+-	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
+-	mfspr	r12,SPRN_SRR1
+-#ifndef CONFIG_RELOCATABLE
+-	b	slb_miss_realmode
++/*
++ * SLB miss macro takes care of all 4 cases (I/D, real/virt)
++ */
++#if defined(CONFIG_RELOCATABLE)
++#define SLB_ACCESS_EXCEPTION(addr_spr, vec, TEST)		\
++	SET_SCRATCH0(r13);					\
++	EXCEPTION_PROLOG_0(PACA_EXSLB);				\
++	EXCEPTION_PROLOG_1(PACA_EXSLB, TEST, vec);		\
++	std	r3,PACA_EXSLB+EX_R3(r13);			\
++	mfspr	r3,addr_spr;					\
++	mfspr	r12,SPRN_SRR1;					\
++	mfctr	r11;						\
++	ld	r10,PACAKBASE(r13);				\
++	LOAD_HANDLER_4G(r10, slb_miss_realmode);		\
++	mtctr	r10;						\
++	bctr;
+ #else
+-	mfctr	r11
+-	ld	r10,PACAKBASE(r13)
+-	LOAD_HANDLER_4G(r10, slb_miss_realmode)
+-	mtctr	r10
+-	bctr
++#define SLB_ACCESS_EXCEPTION(addr_spr, vec, TEST)		\
++	SET_SCRATCH0(r13);					\
++	EXCEPTION_PROLOG_0(PACA_EXSLB);				\
++	EXCEPTION_PROLOG_1(PACA_EXSLB, TEST, vec);		\
++	std	r3,PACA_EXSLB+EX_R3(r13);			\
++	mfspr	r3,addr_spr;					\
++	mfspr	r12,SPRN_SRR1;					\
++	b	slb_miss_realmode;
+ #endif
+-VECTOR_HANDLER_VIRT_END(instruction_access_slb, 0x4480, 0x4500)
+-TRAMP_KVM(PACA_EXSLB, 0x480)
+-
+ 
+ TRAMP_HANDLER_BEGIN(slb_miss_realmode)
+ 	/*
+@@ -674,6 +595,45 @@ COMMON_HANDLER_BEGIN(unrecov_slb)
+ COMMON_HANDLER_END(unrecov_slb)
+ 
+ 
++VECTOR_HANDLER_REAL_BEGIN(data_access_slb, 0x380, 0x400)
++	SLB_ACCESS_EXCEPTION(SPRN_DAR, 0x380, KVMTEST_PR)
++VECTOR_HANDLER_REAL_END(data_access_slb, 0x380, 0x400)
 +
- VECTOR_HANDLER_REAL_BEGIN(system_reset, 0x100, 0x200)
- 	SET_SCRATCH0(r13)
- #ifdef CONFIG_PPC_P7_NAP
-@@ -891,9 +894,7 @@ TRAMP_KVM(PACA_EXGEN, 0xd00)
- COMMON_HANDLER(single_step_common, 0xd00, single_step_exception)
++VECTOR_HANDLER_VIRT_BEGIN(data_access_slb, 0x4380, 0x4400)
++	SLB_ACCESS_EXCEPTION(SPRN_DAR, 0x380, NOTEST)
++VECTOR_HANDLER_VIRT_END(data_access_slb, 0x4380, 0x4400)
++TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
++
++
++VECTOR_HANDLER_REAL(instruction_access, 0x400, 0x480)
++VECTOR_HANDLER_VIRT(instruction_access, 0x4400, 0x4480, 0x400)
++TRAMP_KVM(PACA_EXGEN, 0x400)
++COMMON_HANDLER_BEGIN(instruction_access_common)
++	EXCEPTION_PROLOG_COMMON(0x400, PACA_EXGEN)
++	RECONCILE_IRQ_STATE(r10, r11)
++	ld	r12,_MSR(r1)
++	ld	r3,_NIP(r1)
++	andis.	r4,r12,0x5820
++	li	r5,0x400
++	std	r3,_DAR(r1)
++	std	r4,_DSISR(r1)
++BEGIN_MMU_FTR_SECTION
++	b	do_hash_page		/* Try to handle as hpte fault */
++MMU_FTR_SECTION_ELSE
++	b	handle_page_fault
++ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_RADIX)
++COMMON_HANDLER_END(instruction_access_common)
++
++
++VECTOR_HANDLER_REAL_BEGIN(instruction_access_slb, 0x480, 0x500)
++	SLB_ACCESS_EXCEPTION(SPRN_SRR0, 0x480, KVMTEST_PR)
++VECTOR_HANDLER_REAL_END(instruction_access_slb, 0x480, 0x500)
++VECTOR_HANDLER_VIRT_BEGIN(instruction_access_slb, 0x4480, 0x4500)
++	SLB_ACCESS_EXCEPTION(SPRN_SRR0, 0x480, NOTEST)
++VECTOR_HANDLER_VIRT_END(instruction_access_slb, 0x4480, 0x4500)
++TRAMP_KVM(PACA_EXSLB, 0x480)
++
++
+ VECTOR_HANDLER_REAL_BEGIN(hardware_interrupt, 0x500, 0x600)
+ 	.globl hardware_interrupt_hv;
+ hardware_interrupt_hv:
+@@ -922,7 +882,13 @@ TRAMP_KVM_HV(PACA_EXGEN, 0xe40)
+ COMMON_HANDLER(emulation_assist_common, 0xe40, emulation_assist_interrupt)
  
- VECTOR_HANDLER_REAL_OOL_HV(h_data_storage, 0xe00, 0xe20)
--VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e00, 0x4e20)
--	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
--VECTOR_HANDLER_VIRT_END(unused, 0x4e00, 0x4e20)
-+VECTOR_HANDLER_VIRT_NONE(0x4e00, 0x4e20)
- TRAMP_KVM_HV_SKIP(PACA_EXGEN, 0xe00)
- COMMON_HANDLER_BEGIN(h_data_storage_common)
- 	mfspr   r10,SPRN_HDAR
-@@ -907,13 +908,10 @@ COMMON_HANDLER_BEGIN(h_data_storage_common)
- 	bl      unknown_exception
- 	b       ret_from_except
- COMMON_HANDLER_END(h_data_storage_common)
--COMMON_HANDLER(trap_0e_common, 0xe00, unknown_exception)
  
- 
- VECTOR_HANDLER_REAL_OOL_HV(h_instr_storage, 0xe20, 0xe40)
--VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e20, 0x4e40)
--	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
--VECTOR_HANDLER_VIRT_END(unused, 0x4e20, 0x4e40)
-+VECTOR_HANDLER_VIRT_NONE(0x4e20, 0x4e40)
- TRAMP_KVM_HV(PACA_EXGEN, 0xe20)
- COMMON_HANDLER(h_instr_storage_common, 0xe20, unknown_exception)
- 
-@@ -925,9 +923,7 @@ COMMON_HANDLER(emulation_assist_common, 0xe40, emulation_assist_interrupt)
- 
- 
++/*
++ * hmi_exception trampoline is a special case. It jumps to hmi_exception_early
++ * first, and then eventaully from there to the trampoline to get into virtual
++ * mode.
++ */
  __VECTOR_HANDLER_REAL_OOL_HV_DIRECT(hmi_exception, 0xe60, 0xe80, hmi_exception_early)
--VECTOR_HANDLER_VIRT_BEGIN(unused, 0x4e60, 0x4e80)
--	b       .       /* Can't happen, see v2.07 Book III-S section 6.5 */
--VECTOR_HANDLER_VIRT_END(unused, 0x4e60, 0x4e80)
-+VECTOR_HANDLER_VIRT_NONE(0x4e60, 0x4e80)
++__TRAMP_HANDLER_REAL_OOL_MASKABLE_HV(hmi_exception, 0xe60)
+ VECTOR_HANDLER_VIRT_NONE(0x4e60, 0x4e80)
  TRAMP_KVM_HV(PACA_EXGEN, 0xe60)
  COMMON_HANDLER_BEGIN(hmi_exception_early)
- 	EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0xe60)
-@@ -1100,6 +1096,7 @@ COMMON_HANDLER(cbe_system_error_common, 0x1200, cbe_system_error_exception)
- 
- #else /* CONFIG_CBE_RAS */
- VECTOR_HANDLER_REAL_NONE(0x1200, 0x1300)
-+VECTOR_HANDLER_VIRT_NONE(0x5200, 0x5300)
- #endif
- 
- 
-@@ -1212,6 +1209,7 @@ COMMON_HANDLER(cbe_maintenance, 0x1600, cbe_maintenance_exception)
- 
- #else /* CONFIG_CBE_RAS */
- VECTOR_HANDLER_REAL_NONE(0x1600, 0x1700)
-+VECTOR_HANDLER_VIRT_NONE(0x5600, 0x5700)
- #endif
- 
- 
-@@ -1233,8 +1231,11 @@ COMMON_HANDLER(cbe_thermal, 0x1800, cbe_thermal_exception)
- 
- #else /* CONFIG_CBE_RAS */
- VECTOR_HANDLER_REAL_NONE(0x1800, 0x1900)
-+VECTOR_HANDLER_VIRT_NONE(0x5800, 0x5900)
- #endif
- 
-+VECTOR_HANDLER_REAL_NONE(0x1900, 0x2000)
-+VECTOR_HANDLER_VIRT_NONE(0x5900, 0x6000)
- 
- /*
-  * An interrupt came in while soft-disabled. We set paca->irq_happened, then:
 -- 
 2.8.1
