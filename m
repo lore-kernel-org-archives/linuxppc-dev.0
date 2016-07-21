@@ -1,22 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.186])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwGYH3Hz1zDqQF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 00:36:01 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Nicholas Piggin' <nicholas.piggin@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: Nicholas Piggin <npiggin@gmail.com>
-Subject: RE: [PATCH 05/14] powerpc/pseries: 4GB exception handler offsets
-Date: Thu, 21 Jul 2016 14:34:10 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F50086C@AcuExch.aculab.com>
-References: <1469083453-9279-1-git-send-email-npiggin@gmail.com>
- <1469083453-9279-6-git-send-email-npiggin@gmail.com>
-In-Reply-To: <1469083453-9279-6-git-send-email-npiggin@gmail.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwKQn0XL5zDqYY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 02:45:36 +1000 (AEST)
+Message-ID: <1469119526.25630.42.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-mmc@vger.kernel.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Yangbo Lu
+ <yangbo.lu@nxp.com>
+Date: Thu, 21 Jul 2016 11:45:26 -0500
+In-Reply-To: <146909676646.16700.8383344640490662952@concordia>
+References: <1468723822-30457-1-git-send-email-oss@buserror.net>
+ <1468723822-30457-5-git-send-email-oss@buserror.net>
+ <4016699.uYaV8nWfqC@wuerfel> <1469039508.25630.17.camel@buserror.net>
+ <146909676646.16700.8383344640490662952@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v11 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,14 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogTmljaG9sYXMgUGlnZ2luDQo+IFNlbnQ6IDIxIEp1bHkgMjAxNiAwNzo0NA0KLi4uDQo+
-IEBAIC03MzksNyArNzM5LDggQEAga3ZtcHBjX3NraXBfSGludGVycnVwdDoNCj4gICAqIEVuc3Vy
-ZSB0aGF0IGFueSBoYW5kbGVycyB0aGF0IGdldCBpbnZva2VkIGZyb20gdGhlIGV4Y2VwdGlvbiBw
-cm9sb2dzDQo+ICAgKiBhYm92ZSBhcmUgYmVsb3cgdGhlIGZpcnN0IDY0S0IgKDB4MTAwMDApIG9m
-IHRoZSBrZXJuZWwgaW1hZ2UgYmVjYXVzZQ0KPiAgICogdGhlIHByb2xvZ3MgYXNzZW1ibGUgdGhl
-IGFkZHJlc3NlcyBvZiB0aGVzZSBoYW5kbGVycyB1c2luZyB0aGUNCj4gLSAqIExPQURfSEFORExF
-UiBtYWNybywgd2hpY2ggdXNlcyBhbiBvcmkgaW5zdHJ1Y3Rpb24uDQo+ICsgKiBMT0FEX0hBTkRM
-RVJfNEcgbWFjcm8sIHdoaWNoIHVzZXMgYW4gb3JpIGluc3RydWN0aW9uLiBDYXJlIG11c3QgYWxz
-bw0KPiArICogYmUgdGFrZW4gYmVjYXVzZSByZWxhdGl2ZSBicmFuY2hlcyBjYW4gb25seSBhZGRy
-ZXNzIDMySyBpbiBlYWNoIGRpcmVjdGlvbi4NCj4gICAqLw0KDQpUaGF0IGNvbW1lbnQgbm93IGxv
-b2tzIHdyb25nLg0KDQoJRGF2aWQNCg0K
+On Thu, 2016-07-21 at 20:26 +1000, Michael Ellerman wrote:
+> Quoting Scott Wood (2016-07-21 04:31:48)
+> > 
+> > On Wed, 2016-07-20 at 13:24 +0200, Arnd Bergmann wrote:
+> > > 
+> > > On Saturday, July 16, 2016 9:50:21 PM CEST Scott Wood wrote:
+> > > > 
+> > > > 
+> > > > From: yangbo lu <yangbo.lu@nxp.com>
+> > > > 
+> > > > Move mpc85xx.h to include/linux/fsl and rename it to svr.h as a common
+> > > > header file.  This SVR numberspace is used on some ARM chips as well
+> > > > as
+> > > > PPC, and even to check for a PPC SVR multi-arch drivers would
+> > > > otherwise
+> > > > need to ifdef the header inclusion and all references to the SVR
+> > > > symbols.
+> > > > 
+> > > > Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+> > > > Acked-by: Wolfram Sang <wsa@the-dreams.de>
+> > > > Acked-by: Stephen Boyd <sboyd@codeaurora.org>
+> > > > Acked-by: Joerg Roedel <jroedel@suse.de>
+> > > > [scottwood: update description]
+> > > > Signed-off-by: Scott Wood <oss@buserror.net>
+> > > > 
+> > > As discussed before, please don't introduce yet another vendor specific
+> > > way to match a SoC ID from a device driver.
+> > > 
+> > > I've posted a patch for an extension to the soc_device infrastructure
+> > > to allow comparing the running SoC to a table of devices, use that
+> > > instead.
+> > As I asked before, in which relevant maintainership capacity are you
+> > NACKing
+> > this?
+> I'll nack the powerpc part until you guys can agree.
+
+OK, I've pulled these patches out.
+
+For the MMC issue I suggest using ifdef CONFIG_PPC and mfspr(SPRN_SVR) like
+the clock driver does[1] and we can revisit the issue if/when we need to do
+something similar on an ARM chip.
+
+-Scott
+
+[1] One of the issues with Arnd's approach is that it wouldn't have worked for
+early things like the clock driver, and he didn't seem to mind using ifdef and
+mfspr() there.
