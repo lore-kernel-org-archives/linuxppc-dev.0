@@ -1,23 +1,23 @@
 Return-Path: <xinhui.pan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rw5Sz1LxdzDqTh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 17:46:42 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6L7iPKJ043157
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 03:46:40 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rw5Sz2z2lzDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 17:46:43 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6L7iMMw057331
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 03:46:41 -0400
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 249qam3tfj-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24akx6tyt0-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 03:46:40 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 03:46:41 -0400
 Received: from localhost
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <xinhui.pan@linux.vnet.ibm.com>;
- Thu, 21 Jul 2016 01:46:39 -0600
+ Thu, 21 Jul 2016 01:46:40 -0600
 From: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  virtualization@lists.linux-foundation.org, linux-s390@vger.kernel.org,
@@ -27,11 +27,9 @@ Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  will.deacon@arm.com, kernellwp@gmail.com, jgross@suse.com,
  pbonzini@redhat.com, bsingharora@gmail.com,
  Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
-Subject: [PATCH v3 3/4] locking/osq: Drop the overhead of osq_lock()
-Date: Thu, 21 Jul 2016 07:45:13 -0400
-In-Reply-To: <1469101514-49475-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-References: <1469101514-49475-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
-Message-Id: <1469101514-49475-4-git-send-email-xinhui.pan@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/4] implement vcpu preempted check
+Date: Thu, 21 Jul 2016 07:45:10 -0400
+Message-Id: <1469101514-49475-1-git-send-email-xinhui.pan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,17 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An over-committed guest with more vCPUs than pCPUs has a heavy overhead in
-osq_lock().
+change from v2:
+	no code change, fix typos, update some comments
 
-This is because vCPU A hold the osq lock and yield out, vCPU B wait per_cpu
-node->locked to be set. IOW, vCPU B wait vCPU A to run and unlock the osq
-lock.
+change from v1:
+	a simplier definition of default vcpu_is_preempted
+	skip mahcine type check on ppc, and add config. remove dedicated macro.
+	add one patch to drop overload of rwsem_spin_on_owner and mutex_spin_on_owner. 
+	add more comments
+	thanks boqun and Peter's suggestion.
 
-Kernel has an interface bool vcpu_is_preempted(int cpu) to see if a vCPU is
-currently running or not. So break the spin loops on true condition.
+This patch set aims to fix lock holder preemption issues.
 
-test case:
+test-case:
 perf record -a perf bench sched messaging -g 400 -p && perf report
 
 before patch:
@@ -64,48 +64,30 @@ before patch:
  2.49%  sched-messaging  [kernel.vmlinux]  [k] system_call
 
 after patch:
-20.68%  sched-messaging  [kernel.vmlinux]  [k] mutex_spin_on_owner
- 8.45%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
- 4.12%  sched-messaging  [kernel.vmlinux]  [k] system_call
- 3.01%  sched-messaging  [kernel.vmlinux]  [k] system_call_common
- 2.83%  sched-messaging  [kernel.vmlinux]  [k] copypage_power7
- 2.64%  sched-messaging  [kernel.vmlinux]  [k] rwsem_spin_on_owner
- 2.00%  sched-messaging  [kernel.vmlinux]  [k] osq_lock
+ 9.99%  sched-messaging  [kernel.vmlinux]  [k] mutex_unlock
+ 5.28%  sched-messaging  [unknown]         [H] 0xc0000000000768e0
+ 4.27%  sched-messaging  [kernel.vmlinux]  [k] __copy_tofrom_user_power7
+ 3.77%  sched-messaging  [kernel.vmlinux]  [k] copypage_power7
+ 3.24%  sched-messaging  [kernel.vmlinux]  [k] _raw_write_lock_irq
+ 3.02%  sched-messaging  [kernel.vmlinux]  [k] system_call
+ 2.69%  sched-messaging  [kernel.vmlinux]  [k] wait_consider_task
 
-Suggested-by: Boqun Feng <boqun.feng@gmail.com>
-Signed-off-by: Pan Xinhui <xinhui.pan@linux.vnet.ibm.com>
----
- kernel/locking/osq_lock.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+We introduce interface bool vcpu_is_preempted(int cpu) and use it in some spin
+loops of osq_lock, rwsem_spin_on_owner and mutex_spin_on_owner.
+These spin_on_onwer variant also cause rcu stall before we apply this patch set
 
-diff --git a/kernel/locking/osq_lock.c b/kernel/locking/osq_lock.c
-index 05a3785..858a0ed 100644
---- a/kernel/locking/osq_lock.c
-+++ b/kernel/locking/osq_lock.c
-@@ -21,6 +21,11 @@ static inline int encode_cpu(int cpu_nr)
- 	return cpu_nr + 1;
- }
- 
-+static inline int node_cpu(struct optimistic_spin_node *node)
-+{
-+	return node->cpu - 1;
-+}
-+
- static inline struct optimistic_spin_node *decode_cpu(int encoded_cpu_val)
- {
- 	int cpu_nr = encoded_cpu_val - 1;
-@@ -118,8 +123,11 @@ bool osq_lock(struct optimistic_spin_queue *lock)
- 	while (!READ_ONCE(node->locked)) {
- 		/*
- 		 * If we need to reschedule bail... so we can block.
-+		 * Use vcpu_is_preempted to detech lock holder preemption issue
-+		 * and break the loop. vcpu_is_preempted is a macro defined by
-+		 * false if arch does not support vcpu preempted check,
- 		 */
--		if (need_resched())
-+		if (need_resched() || vcpu_is_preempted(node_cpu(node->prev)))
- 			goto unqueue;
- 
- 		cpu_relax_lowlatency();
+Pan Xinhui (4):
+  kernel/sched: introduce vcpu preempted check interface
+  powerpc/spinlock: support vcpu preempted check
+  locking/osq: Drop the overhead of osq_lock()
+  kernel/locking: Drop the overhead of {mutex,rwsem}_spin_on_owner
+
+ arch/powerpc/include/asm/spinlock.h | 18 ++++++++++++++++++
+ include/linux/sched.h               | 12 ++++++++++++
+ kernel/locking/mutex.c              | 15 +++++++++++++--
+ kernel/locking/osq_lock.c           | 10 +++++++++-
+ kernel/locking/rwsem-xadd.c         | 16 +++++++++++++---
+ 5 files changed, 65 insertions(+), 6 deletions(-)
+
 -- 
 2.4.11
