@@ -2,21 +2,26 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rw9DJ6bJwzDqYY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 20:36:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rw9j637X9zDqXD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 20:57:30 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Cc: duwe@lst.de, aneesh.kumar@linux.vnet.ibm.com,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] powerpc/ftrace: Separate the heuristics for checking
- call sites
-In-Reply-To: <578DBE29.6010100@linux.vnet.ibm.com>
-References: <1468903711-5869-1-git-send-email-mpe@ellerman.id.au>
- <578DBE29.6010100@linux.vnet.ibm.com>
-Date: Thu, 21 Jul 2016 20:36:00 +1000
-Message-ID: <87k2gfth0v.fsf@@concordia.ellerman.id.au>
+To: Simon Guo <wei.guo.simon@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>,
+ "cyrilbur\@gmail.com" <cyrilbur@gmail.com>
+Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
+In-Reply-To: <20160715071546.GA5290@simonLocalRHEL7.x64>
+References: <3rlZmP39HNz9sXR@ozlabs.org> <577E5534.70300@linux.vnet.ibm.com>
+ <1467897678.27157.45.camel@kernel.crashing.org>
+ <1467898167.27157.47.camel@kernel.crashing.org>
+ <577f7a45.568f6b0a.bd0eb.4aa8SMTPIN_ADDED_BROKEN@mx.google.com>
+ <20160715071546.GA5290@simonLocalRHEL7.x64>
+Date: Thu, 21 Jul 2016 20:57:29 +1000
+Message-ID: <87h9bjtg12.fsf@@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+Simon Guo <wei.guo.simon@gmail.com> writes:
 
-> On Tuesday 19 July 2016 10:18 AM, Michael Ellerman wrote:
->> In __ftrace_make_nop() (the 64-bit version), we have code to deal with
->> two ftrace ABIs. There is the original ABI, which looks mostly like a
->> function call, and then the mprofile-kernel ABI which is just a branch.
->>
-...
->> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
->> index 7af6c4de044b..438442dac44c 100644
->> --- a/arch/powerpc/kernel/ftrace.c
->> +++ b/arch/powerpc/kernel/ftrace.c
->> @@ -144,6 +144,21 @@ __ftrace_make_nop(struct module *mod,
->>   		return -EINVAL;
->>   	}
->>   
->> +#ifdef CC_USING_MPROFILE_KERNEL
->> +	/* When using -mkernel_profile there is no load to jump over */
->> +	pop = PPC_INST_NOP;
->> +
->> +	if (probe_kernel_read(&op, (void *)(ip - 4), 4)) {
->> +		pr_err("Fetching instruction at %lx failed.\n", ip - 4);
->> +		return -EFAULT;
->> +	}
->> +
->> +	/* We expect either a mlfr r0, or a std r0, LRSAVE(r1) */
+> Michael, Ben,
+> On Fri, Jul 08, 2016 at 08:02:42PM +1000, Michael Ellerman wrote:
+>> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>>=20
+>> > On Thu, 2016-07-07 at 23:21 +1000, Benjamin Herrenschmidt wrote:
+>> >>=C2=A0
+>> >> I think the right fix is that if a restore_sigcontext() has the MSR
+>> >> bits set,
+>> >> it should set the corresponding used_* flag.
+>> >
+>> > Something like this:
+>> >
+>> > (totally untested)
+>>=20
+>> Simon/Laurent, can you guys test this and let me know if it works for
+>> your usecase.
 >
-> nit..  "mflr" and not "mlfr"
+> Sorry for the late reply. I tested Ben's patch and the fix works for the =
+CRIU
+> case mentioned before.
 
-Yep, copied from the old comment, but I'll fix it up. Thanks.
+Thanks.
+
+Can one of you send a properly formatted and signed-off patch.
 
 cheers
