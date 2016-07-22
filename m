@@ -1,55 +1,28 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dmatlack@google.com>
+Received: from mail-oi0-x22b.google.com (mail-oi0-x22b.google.com
+ [IPv6:2607:f8b0:4003:c06::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rx2cx05z4zDqTF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 06:41:52 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6MKcxFx147161
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 16:41:50 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24bhv1k8ps-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 16:41:50 -0400
-Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 22 Jul 2016 17:41:48 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id A96831DC0051
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 16:41:37 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6MKfjCw4145376
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:41:45 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6MKfiWj002577
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:41:45 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Vivek Goyal <vgoyal@redhat.com>, Mark Rutland <mark.rutland@arm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, bhe@redhat.com,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Dave Young <dyoung@redhat.com>, linux-arm-kernel@lists.infradead.org,
- Jeremy Kerr <jeremy.kerr@au1.ibm.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-Date: Fri, 22 Jul 2016 17:41:40 -0300
-In-Reply-To: <878twutmaj.fsf@concordia.ellerman.id.au>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <4197460.etrDupniY8@hactar> <878twutmaj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rx4Cg37JTzDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 07:53:35 +1000 (AEST)
+Received: by mail-oi0-x22b.google.com with SMTP id l65so180845057oib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 14:53:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1732711.nTAkJm8nA3@hactar>
+In-Reply-To: <1469158863-28518-5-git-send-email-sjitindarsingh@gmail.com>
+References: <1469158863-28518-1-git-send-email-sjitindarsingh@gmail.com>
+ <1469158863-28518-5-git-send-email-sjitindarsingh@gmail.com>
+From: David Matlack <dmatlack@google.com>
+Date: Fri, 22 Jul 2016 14:53:13 -0700
+Message-ID: <CALzav=cYY0YMhPOuU7rzimPJhg5ofcwK=1aqCnb6NPw783O=6A@mail.gmail.com>
+Subject: Re: [PATCH V5 5/5] powerpc/kvm/stats: Implement existing and add new
+ halt polling vcpu stats
+To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
+ paulus@samba.org, benh@kernel.crashing.org,
+ Paolo Bonzini <pbonzini@redhat.com>, agraf@suse.com,
+ =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,52 +32,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am Freitag, 22 Juli 2016, 12:54:28 schrieb Michael Ellerman:
-> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
-> > So even if not ideal, the solution above is desirable for powerpc. We
-> > would like to preserve the ability of allowing userspace to pass
-> > parameters to the OS via the DTB, even if secure boot is enabled.
-> > 
-> > I would like to turn the above into a proposal:
-> > 
-> > Extend the syscall as shown in this RFC from Takahiro AKASHI, but
-> > instead of accepting a complete DTB from userspace, the syscall accepts
-> > a DTB containing only a /chosen node. If the DTB contains any other
-> > node, the syscall fails with EINVAL. If the DTB contains any subnode in
-> > /chosen, or if there's a compatible or device_type property in /chosen,
-> > the syscall fails with EINVAL as well.
-> > 
-> > The kernel can then add the properties in /chosen to the device tree
-> > that it will pass to the next kernel.
-> > 
-> > What do you think?
-> 
-> I think we will inevitably have someone who wants to pass something
-> other than a child of /chosen.
-> 
-> At that point we would be faced with adding yet another syscall, or at
-> best a new flag.
-> 
-> I think we'd be better allowing userspace to pass a DTB, and having an
-> explicit whitelist (in the kernel) of which nodes & properties are
-> allowed in that DTB.
+On Thu, Jul 21, 2016 at 8:41 PM, Suraj Jitindar Singh
+<sjitindarsingh@gmail.com> wrote:
+> vcpu stats are used to collect information about a vcpu which can be viewed
+> in the debugfs. For example halt_attempted_poll and halt_successful_poll
+> are used to keep track of the number of times the vcpu attempts to and
+> successfully polls. These stats are currently not used on powerpc.
+>
+> Implement incrementation of the halt_attempted_poll and
+> halt_successful_poll vcpu stats for powerpc. Since these stats are summed
+> over all the vcpus for all running guests it doesn't matter which vcpu
+> they are attributed to, thus we choose the current runner vcpu of the
+> vcore.
+>
+> Also add new vcpu stats: halt_poll_success_ns, halt_poll_fail_ns and
+> halt_wait_ns to be used to accumulate the total time spend polling
+> successfully, polling unsuccessfully and waiting respectively, and
+> halt_successful_wait to accumulate the number of times the vcpu waits.
+> Given that halt_poll_success_ns, halt_poll_fail_ns and halt_wait_ns are
+> expressed in nanoseconds it is necessary to represent these as 64-bit
+> quantities, otherwise they would overflow after only about 4 seconds.
+>
+> Given that the total time spend either polling or waiting will be known and
+> the number of times that each was done, it will be possible to determine
+> the average poll and wait times. This will give the ability to tune the kvm
+> module parameters based on the calculated average wait and poll times.
+>
+> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Reviewed-by: David Matlack <dmatlack@google.com>
+>
+> ---
+> Change Log:
+>
+> V3 -> V4:
+>         - Instead of accounting just wait and poll time, separate these
+>           into successful_poll_time, failed_poll_time and wait_time.
+> V4 -> V5:
+>         - Add single_task_running() check to polling loop
 
-Sounds good to me.
+I was expecting to see this in PATCH 3/5 with the halt-polling
+implementation. But otherwise, looks good, and the net effect is the
+same.
 
-> For starters it would only contain /chosen/stdout-path (for example).
-> But we would be able to add new nodes & properties in future.
-
-If we allow things outside of chosen, we can keep the offb.c hook in 
-Petitboot and whitelist the framebuffer properties it adds to the vga node.
-
-> The downside is userspace would have no way of detecting the content of
-> the white list, other than trial and error. But in practice I'm not sure
-> that would be a big problem.
-
-For our use case in OpenPower I don't think it would be a problem, since the 
-userspace and the kernel are developed together.
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> ---
+>  arch/powerpc/include/asm/kvm_host.h |  4 ++++
+>  arch/powerpc/kvm/book3s.c           |  4 ++++
+>  arch/powerpc/kvm/book3s_hv.c        | 38 +++++++++++++++++++++++++++++++------
+>  3 files changed, 40 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index f6304c5..f15ffc0 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -114,8 +114,12 @@ struct kvm_vcpu_stat {
+>         u64 emulated_inst_exits;
+>         u64 dec_exits;
+>         u64 ext_intr_exits;
+> +       u64 halt_poll_success_ns;
+> +       u64 halt_poll_fail_ns;
+> +       u64 halt_wait_ns;
+>         u64 halt_successful_poll;
+>         u64 halt_attempted_poll;
+> +       u64 halt_successful_wait;
+>         u64 halt_poll_invalid;
+>         u64 halt_wakeup;
+>         u64 dbell_exits;
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index 47018fc..71eb8f3 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -52,8 +52,12 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
+>         { "dec",         VCPU_STAT(dec_exits) },
+>         { "ext_intr",    VCPU_STAT(ext_intr_exits) },
+>         { "queue_intr",  VCPU_STAT(queue_intr) },
+> +       { "halt_poll_success_ns",       VCPU_STAT(halt_poll_success_ns) },
+> +       { "halt_poll_fail_ns",          VCPU_STAT(halt_poll_fail_ns) },
+> +       { "halt_wait_ns",               VCPU_STAT(halt_wait_ns) },
+>         { "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
+>         { "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
+> +       { "halt_successful_wait",       VCPU_STAT(halt_successful_wait) },
+>         { "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
+>         { "halt_wakeup", VCPU_STAT(halt_wakeup) },
+>         { "pf_storage",  VCPU_STAT(pf_storage) },
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index a9de1d4..b1d9e88 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -2679,15 +2679,16 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
+>   */
+>  static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+>  {
+> +       ktime_t cur, start_poll, start_wait;
+>         int do_sleep = 1;
+> -       ktime_t cur, start;
+>         u64 block_ns;
+>         DECLARE_SWAITQUEUE(wait);
+>
+>         /* Poll for pending exceptions and ceded state */
+> -       cur = start = ktime_get();
+> +       cur = start_poll = ktime_get();
+>         if (vc->halt_poll_ns) {
+> -               ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
+> +               ktime_t stop = ktime_add_ns(start_poll, vc->halt_poll_ns);
+> +               ++vc->runner->stat.halt_attempted_poll;
+>
+>                 vc->vcore_state = VCORE_POLLING;
+>                 spin_unlock(&vc->lock);
+> @@ -2698,13 +2699,15 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+>                                 break;
+>                         }
+>                         cur = ktime_get();
+> -               } while (ktime_before(cur, stop));
+> +               } while (single_task_running() && ktime_before(cur, stop));
+>
+>                 spin_lock(&vc->lock);
+>                 vc->vcore_state = VCORE_INACTIVE;
+>
+> -               if (!do_sleep)
+> +               if (!do_sleep) {
+> +                       ++vc->runner->stat.halt_successful_poll;
+>                         goto out;
+> +               }
+>         }
+>
+>         prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
+> @@ -2712,9 +2715,14 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+>         if (kvmppc_vcore_check_block(vc)) {
+>                 finish_swait(&vc->wq, &wait);
+>                 do_sleep = 0;
+> +               /* If we polled, count this as a successful poll */
+> +               if (vc->halt_poll_ns)
+> +                       ++vc->runner->stat.halt_successful_poll;
+>                 goto out;
+>         }
+>
+> +       start_wait = ktime_get();
+> +
+>         vc->vcore_state = VCORE_SLEEPING;
+>         trace_kvmppc_vcore_blocked(vc, 0);
+>         spin_unlock(&vc->lock);
+> @@ -2723,11 +2731,29 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+>         spin_lock(&vc->lock);
+>         vc->vcore_state = VCORE_INACTIVE;
+>         trace_kvmppc_vcore_blocked(vc, 1);
+> +       ++vc->runner->stat.halt_successful_wait;
+>
+>         cur = ktime_get();
+>
+>  out:
+> -       block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
+> +       block_ns = ktime_to_ns(cur) - ktime_to_ns(start_poll);
+> +
+> +       /* Attribute wait time */
+> +       if (do_sleep) {
+> +               vc->runner->stat.halt_wait_ns +=
+> +                       ktime_to_ns(cur) - ktime_to_ns(start_wait);
+> +               /* Attribute failed poll time */
+> +               if (vc->halt_poll_ns)
+> +                       vc->runner->stat.halt_poll_fail_ns +=
+> +                               ktime_to_ns(start_wait) -
+> +                               ktime_to_ns(start_poll);
+> +       } else {
+> +               /* Attribute successful poll time */
+> +               if (vc->halt_poll_ns)
+> +                       vc->runner->stat.halt_poll_success_ns +=
+> +                               ktime_to_ns(cur) -
+> +                               ktime_to_ns(start_poll);
+> +       }
+>
+>         /* Adjust poll time */
+>         if (halt_poll_max_ns) {
+> --
+> 2.5.5
+>
