@@ -1,25 +1,42 @@
-Return-Path: <nicholas.piggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwjYN6rw7zDrMG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:52:40 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id g202so6887073pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 00:52:40 -0700 (PDT)
-Date: Fri, 22 Jul 2016 17:52:30 +1000
-From: Nicholas Piggin <nicholas.piggin@gmail.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 05/14] powerpc/pseries: 4GB exception handler offsets
-Message-ID: <20160722175230.012e3d6f@roar.ozlabs.ibm.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F50086C@AcuExch.aculab.com>
-References: <1469083453-9279-1-git-send-email-npiggin@gmail.com>
- <1469083453-9279-6-git-send-email-npiggin@gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6D5F50086C@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwl8Z4vKtzDrKf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 19:04:45 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6M945Hr142168
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 05:04:43 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24athdue22-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 05:04:43 -0400
+Received: from localhost
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 22 Jul 2016 19:04:41 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1094A2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 19:04:39 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6M94cWp26083450
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 19:04:38 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6M94cJh004374
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 19:04:38 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: imunsie@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
+ clombard@linux.vnet.ibm.com, felix@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com
+Subject: [PATCH] cxl: fix sparse warnings
+Date: Fri, 22 Jul 2016 19:01:36 +1000
+Message-Id: <1469178096-8510-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +46,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 21 Jul 2016 14:34:10 +0000
-David Laight <David.Laight@ACULAB.COM> wrote:
+Make native_irq_wait() static and use NULL rather than 0 to initialise
+phb->cfg_data in cxl_pci_vphb_add() to remove sparse warnings.
 
-> From: Nicholas Piggin
-> > Sent: 21 July 2016 07:44  
-> ...
-> > @@ -739,7 +739,8 @@ kvmppc_skip_Hinterrupt:
-> >   * Ensure that any handlers that get invoked from the exception
-> > prologs
-> >   * above are below the first 64KB (0x10000) of the kernel image
-> > because
-> >   * the prologs assemble the addresses of these handlers using the
-> > - * LOAD_HANDLER macro, which uses an ori instruction.
-> > + * LOAD_HANDLER_4G macro, which uses an ori instruction. Care must
-> > also
-> > + * be taken because relative branches can only address 32K in each
-> > direction. */  
-> 
-> That comment now looks wrong.
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+---
+ drivers/misc/cxl/native.c | 2 +-
+ drivers/misc/cxl/vphb.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-You're right, I'll correct it.
-
-Thanks,
-Nick
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 3bcdaee..e606fdc 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -924,7 +924,7 @@ static irqreturn_t native_irq_multiplexed(int irq, void *data)
+ 	return fail_psl_irq(afu, &irq_info);
+ }
+ 
+-void native_irq_wait(struct cxl_context *ctx)
++static void native_irq_wait(struct cxl_context *ctx)
+ {
+ 	u64 dsisr;
+ 	int timeout = 1000;
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index dee8def..7ada5f1 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -221,7 +221,7 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
+ 	/* Setup the PHB using arch provided callback */
+ 	phb->ops = &cxl_pcie_pci_ops;
+ 	phb->cfg_addr = NULL;
+-	phb->cfg_data = 0;
++	phb->cfg_data = NULL;
+ 	phb->private_data = afu;
+ 	phb->controller_ops = cxl_pci_controller_ops;
+ 
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
