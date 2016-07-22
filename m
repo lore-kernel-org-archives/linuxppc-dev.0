@@ -1,41 +1,20 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwhmg63bkzDrKB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:17:23 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6M7E35t020444
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 03:17:21 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24athdr9cc-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 03:17:21 -0400
-Received: from localhost
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 22 Jul 2016 17:17:18 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6C5463578053
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:17:16 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6M7HGwi28967048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:17:16 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6M7HFk3004949
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:17:16 +1000
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwj133ywqzDrKD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:28:07 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id q2so6546505pap.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 00:28:07 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: gwshan@linux.vnet.ibm.com, imunsie@au1.ibm.com
-Subject: [PATCH] powerpc/powernv: document cxl dependency on special case in
- pnv_eeh_reset()
-Date: Fri, 22 Jul 2016 17:16:35 +1000
-Message-Id: <1469171795-9879-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/tm: do not use r13 for tabort_syscall
+Date: Fri, 22 Jul 2016 17:27:48 +1000
+Message-Id: <1469172468-12892-1-git-send-email-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pnv_eeh_reset() has special handling for PEs whose primary bus is the root
-bus or the bus immediately underneath the root port.
+tabort_syscall runs with RI=1, so a nested recoverable machine
+check will load the paca into r13 and overwrite what we loaded
+it with, because exceptions returning to privileged mode do not
+restore r13.
 
-The cxl bi-modal card support added in b0b5e5918ad1 ("cxl: Add
-cxl_check_and_switch_mode() API to switch bi-modal cards") relies on this
-behaviour when hot-resetting the CAPI adapter following a mode switch.
-Document this in pnv_eeh_reset() so we don't accidentally break it.
+This has survived testing with sc instruction inside transaction
+(bare sc, not glibc syscall because glibc can tabort before sc).
+Verified the transaction is failing failing with with
+TM_CAUSE_SYSCALL.
 
-Suggested-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Signed-off-by: Nick Piggin <npiggin@gmail.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 
 ---
 
-Gavin requested that I add this comment a few weeks ago but I didn't get
-around to including it in b0b5e5918ad1. Sorry Gavin!
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/kernel/entry_64.S | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 86544ea..3af854e 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1094,6 +1094,13 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
- 	if (pe->type & EEH_PE_VF)
- 		return pnv_eeh_reset_vf_pe(pe, option);
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 73e461a..387dee3 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -368,13 +368,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ tabort_syscall:
+ 	/* Firstly we need to enable TM in the kernel */
+ 	mfmsr	r10
+-	li	r13, 1
+-	rldimi	r10, r13, MSR_TM_LG, 63-MSR_TM_LG
+-	mtmsrd	r10, 0
++	li	r9,1
++	rldimi	r10,r9,MSR_TM_LG,63-MSR_TM_LG
++	mtmsrd	r10,0
  
-+	/*
-+	 * If dealing with the root bus (or the bus underneath the
-+	 * root port), we reset the bus underneath the root port.
-+	 *
-+	 * The cxl driver depends on this behaviour for bi-modal card
-+	 * switching.
-+	 */
- 	if (pci_is_root_bus(bus) ||
- 	    pci_is_root_bus(bus->parent))
- 		return pnv_eeh_root_reset(hose, option);
+ 	/* tabort, this dooms the transaction, nothing else */
+-	li	r13, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
+-	TABORT(R13)
++	li	r9,(TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
++	TABORT(R9)
+ 
+ 	/*
+ 	 * Return directly to userspace. We have corrupted user register state,
+@@ -382,11 +382,11 @@ tabort_syscall:
+ 	 * resume after the tbegin of the aborted transaction with the
+ 	 * checkpointed register state.
+ 	 */
+-	li	r13, MSR_RI
+-	andc	r10, r10, r13
+-	mtmsrd	r10, 1
+-	mtspr	SPRN_SRR0, r11
+-	mtspr	SPRN_SRR1, r12
++	li	r9,MSR_RI
++	andc	r10,r10,r9
++	mtmsrd	r10,1
++	mtspr	SPRN_SRR0,r11
++	mtspr	SPRN_SRR1,r12
+ 
+ 	rfid
+ 	b	.	/* prevent speculative execution */
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.8.1
