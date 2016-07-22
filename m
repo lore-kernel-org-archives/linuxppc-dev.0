@@ -1,24 +1,16 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwbzq4xvNzDrFd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:41:43 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id hh10so6251852pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 20:41:43 -0700 (PDT)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwfPP720FzDrJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 15:30:33 +1000 (AEST)
+From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
- paulus@samba.org, benh@kernel.crashing.org, pbonzini@redhat.com,
- agraf@suse.com, rkrcmar@redhat.com, dmatlack@google.com,
- borntraeger@de.ibm.com
-Subject: [PATCH V5 5/5] powerpc/kvm/stats: Implement existing and add new halt
- polling vcpu stats
-Date: Fri, 22 Jul 2016 13:41:03 +1000
-Message-Id: <1469158863-28518-5-git-send-email-sjitindarsingh@gmail.com>
-In-Reply-To: <1469158863-28518-1-git-send-email-sjitindarsingh@gmail.com>
-References: <1469158863-28518-1-git-send-email-sjitindarsingh@gmail.com>
+Cc: gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ Russell Currey <ruscur@russell.cc>
+Subject: [PATCH] powernv/pci: Add PHB register dump debugfs handle
+Date: Fri, 22 Jul 2016 15:23:36 +1000
+Message-Id: <20160722052336.3340-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,168 +20,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vcpu stats are used to collect information about a vcpu which can be viewed
-in the debugfs. For example halt_attempted_poll and halt_successful_poll
-are used to keep track of the number of times the vcpu attempts to and
-successfully polls. These stats are currently not used on powerpc.
+On EEH events the kernel will print a dump of relevant registers.
+If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
+doesn't have EEH support, etc) this information isn't readily available.
 
-Implement incrementation of the halt_attempted_poll and
-halt_successful_poll vcpu stats for powerpc. Since these stats are summed
-over all the vcpus for all running guests it doesn't matter which vcpu
-they are attributed to, thus we choose the current runner vcpu of the
-vcore.
+Add a new debugfs handler to trigger a PHB register dump, so that this
+information can be made available on demand.
 
-Also add new vcpu stats: halt_poll_success_ns, halt_poll_fail_ns and
-halt_wait_ns to be used to accumulate the total time spend polling
-successfully, polling unsuccessfully and waiting respectively, and
-halt_successful_wait to accumulate the number of times the vcpu waits.
-Given that halt_poll_success_ns, halt_poll_fail_ns and halt_wait_ns are
-expressed in nanoseconds it is necessary to represent these as 64-bit
-quantities, otherwise they would overflow after only about 4 seconds.
-
-Given that the total time spend either polling or waiting will be known and
-the number of times that each was done, it will be possible to determine
-the average poll and wait times. This will give the ability to tune the kvm
-module parameters based on the calculated average wait and poll times.
-
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Reviewed-by: David Matlack <dmatlack@google.com>
-
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
-Change Log:
+ arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-V3 -> V4:
-	- Instead of accounting just wait and poll time, separate these
-	  into successful_poll_time, failed_poll_time and wait_time.
-V4 -> V5:
-	- Add single_task_running() check to polling loop
----
- arch/powerpc/include/asm/kvm_host.h |  4 ++++
- arch/powerpc/kvm/book3s.c           |  4 ++++
- arch/powerpc/kvm/book3s_hv.c        | 38 +++++++++++++++++++++++++++++++------
- 3 files changed, 40 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index f6304c5..f15ffc0 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -114,8 +114,12 @@ struct kvm_vcpu_stat {
- 	u64 emulated_inst_exits;
- 	u64 dec_exits;
- 	u64 ext_intr_exits;
-+	u64 halt_poll_success_ns;
-+	u64 halt_poll_fail_ns;
-+	u64 halt_wait_ns;
- 	u64 halt_successful_poll;
- 	u64 halt_attempted_poll;
-+	u64 halt_successful_wait;
- 	u64 halt_poll_invalid;
- 	u64 halt_wakeup;
- 	u64 dbell_exits;
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 47018fc..71eb8f3 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -52,8 +52,12 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "dec",         VCPU_STAT(dec_exits) },
- 	{ "ext_intr",    VCPU_STAT(ext_intr_exits) },
- 	{ "queue_intr",  VCPU_STAT(queue_intr) },
-+	{ "halt_poll_success_ns",	VCPU_STAT(halt_poll_success_ns) },
-+	{ "halt_poll_fail_ns",		VCPU_STAT(halt_poll_fail_ns) },
-+	{ "halt_wait_ns",		VCPU_STAT(halt_wait_ns) },
- 	{ "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
- 	{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
-+	{ "halt_successful_wait",	VCPU_STAT(halt_successful_wait) },
- 	{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
- 	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
- 	{ "pf_storage",  VCPU_STAT(pf_storage) },
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index a9de1d4..b1d9e88 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2679,15 +2679,16 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
-  */
- static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 891fc4a..ada2f3c 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3018,6 +3018,38 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
+ 	}
+ }
+ 
++#ifdef CONFIG_DEBUG_FS
++static ssize_t pnv_pci_debug_write(struct file *filp,
++				   const char __user *user_buf,
++				   size_t count, loff_t *ppos)
++{
++	struct pci_controller *hose = filp->private_data;
++	struct pnv_phb *phb;
++	int ret = 0;
++
++	if (!hose)
++		return -EFAULT;
++
++	phb = hose->private_data;
++	if (!phb)
++		return -EFAULT;
++
++	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
++					  PNV_PCI_DIAG_BUF_SIZE);
++
++	if (!ret)
++		pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
++
++	return ret < 0 ? ret : count;
++}
++
++static const struct file_operations pnv_pci_debug_ops = {
++	.open	= simple_open,
++	.llseek	= no_llseek,
++	.write	= pnv_pci_debug_write,
++};
++#endif /* CONFIG_DEBUG_FS */
++
+ static void pnv_pci_ioda_create_dbgfs(void)
  {
-+	ktime_t cur, start_poll, start_wait;
- 	int do_sleep = 1;
--	ktime_t cur, start;
- 	u64 block_ns;
- 	DECLARE_SWAITQUEUE(wait);
- 
- 	/* Poll for pending exceptions and ceded state */
--	cur = start = ktime_get();
-+	cur = start_poll = ktime_get();
- 	if (vc->halt_poll_ns) {
--		ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
-+		ktime_t stop = ktime_add_ns(start_poll, vc->halt_poll_ns);
-+		++vc->runner->stat.halt_attempted_poll;
- 
- 		vc->vcore_state = VCORE_POLLING;
- 		spin_unlock(&vc->lock);
-@@ -2698,13 +2699,15 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 				break;
- 			}
- 			cur = ktime_get();
--		} while (ktime_before(cur, stop));
-+		} while (single_task_running() && ktime_before(cur, stop));
- 
- 		spin_lock(&vc->lock);
- 		vc->vcore_state = VCORE_INACTIVE;
- 
--		if (!do_sleep)
-+		if (!do_sleep) {
-+			++vc->runner->stat.halt_successful_poll;
- 			goto out;
-+		}
- 	}
- 
- 	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-@@ -2712,9 +2715,14 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	if (kvmppc_vcore_check_block(vc)) {
- 		finish_swait(&vc->wq, &wait);
- 		do_sleep = 0;
-+		/* If we polled, count this as a successful poll */
-+		if (vc->halt_poll_ns)
-+			++vc->runner->stat.halt_successful_poll;
- 		goto out;
- 	}
- 
-+	start_wait = ktime_get();
+ #ifdef CONFIG_DEBUG_FS
+@@ -3036,6 +3068,9 @@ static void pnv_pci_ioda_create_dbgfs(void)
+ 		if (!phb->dbgfs)
+ 			pr_warning("%s: Error on creating debugfs on PHB#%x\n",
+ 				__func__, hose->global_number);
 +
- 	vc->vcore_state = VCORE_SLEEPING;
- 	trace_kvmppc_vcore_blocked(vc, 0);
- 	spin_unlock(&vc->lock);
-@@ -2723,11 +2731,29 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	spin_lock(&vc->lock);
- 	vc->vcore_state = VCORE_INACTIVE;
- 	trace_kvmppc_vcore_blocked(vc, 1);
-+	++vc->runner->stat.halt_successful_wait;
- 
- 	cur = ktime_get();
- 
- out:
--	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
-+	block_ns = ktime_to_ns(cur) - ktime_to_ns(start_poll);
-+
-+	/* Attribute wait time */
-+	if (do_sleep) {
-+		vc->runner->stat.halt_wait_ns +=
-+			ktime_to_ns(cur) - ktime_to_ns(start_wait);
-+		/* Attribute failed poll time */
-+		if (vc->halt_poll_ns)
-+			vc->runner->stat.halt_poll_fail_ns +=
-+				ktime_to_ns(start_wait) -
-+				ktime_to_ns(start_poll);
-+	} else {
-+		/* Attribute successful poll time */
-+		if (vc->halt_poll_ns)
-+			vc->runner->stat.halt_poll_success_ns +=
-+				ktime_to_ns(cur) -
-+				ktime_to_ns(start_poll);
-+	}
- 
- 	/* Adjust poll time */
- 	if (halt_poll_max_ns) {
++		debugfs_create_file("regdump", 0200, phb->dbgfs, hose,
++				    &pnv_pci_debug_ops);
+ 	}
+ #endif /* CONFIG_DEBUG_FS */
+ }
 -- 
-2.5.5
+2.9.0
