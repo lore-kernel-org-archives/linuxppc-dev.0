@@ -1,30 +1,53 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwZxJ5x7JzDrFr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 12:54:28 +1000 (AEST)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>
-Cc: Russell King - ARM Linux <linux@armlinux.org.uk>,
- Vivek Goyal <vgoyal@redhat.com>, Mark Rutland <mark.rutland@arm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, bhe@redhat.com,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, AKASHI Takahiro <takahiro.akashi@linaro.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>, Dave Young <dyoung@redhat.com>,
- linux-arm-kernel@lists.infradead.org, Jeremy Kerr <jeremy.kerr@au1.ibm.com>
-Subject: Re: [RFC 0/3] extend kexec_file_load system call
-In-Reply-To: <4197460.etrDupniY8@hactar>
-References: <20160712014201.11456-1-takahiro.akashi@linaro.org>
- <3489461.zQnV5C1bXR@wuerfel> <1808359.GMbkTHC4O6@hactar>
- <4197460.etrDupniY8@hactar>
-Date: Fri, 22 Jul 2016 12:54:28 +1000
-Message-ID: <878twutmaj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwbgD4dDwzDqfV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:19 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6M3OXpd070687
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 23:27:16 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24a9p73gvv-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 23:27:16 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 22 Jul 2016 13:27:14 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D7DD12BB0045
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:11 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6M3RB0j19136516
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:11 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6M3RBfw026777
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:11 +1000
+Subject: Re: [PATCH 1/2] cxlflash: Verify problem state area is mapped before
+ notifying shutdown
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+References: <1469133772-14953-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 22 Jul 2016 13:26:40 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <78e66b27-a98a-21b6-1d66-a06ab9c0bed4@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +57,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
-
-> Am Freitag, 15 Juli 2016, 18:03:35 schrieb Thiago Jung Bauermann:
->> Am Freitag, 15 Juli 2016, 22:26:09 schrieb Arnd Bergmann:
->> > However, the powerpc specific RTAS runtime services provide a similar
->> > interface to the UEFI runtime support and allow to call into
->> > binary code from the kernel, which gets mapped from a physical
->> > address in the "linux,rtas-base" property in the rtas device node.
->> > 
->> > Modifying the /rtas node will definitely give you a backdoor into
->> > priviledged code, but modifying only /chosen should not let you get
->> > in through that specific method.
->> 
->> Except that arch/powerpc/kernel/rtas.c looks for any node in the tree
->> called "rtas", so it will try to use /chosen/rtas, or /chosen/foo/rtas.
->> 
->> We can forbid subnodes in /chosen in the dtb passed to kexec_file_load,
->> though that means userspace can't use the simple-framebuffer binding via
->> this mechanism.
->> 
->> We also have to blacklist the device_type and compatible properties in
->> /chosen to avoid the problem Mark mentioned.
->> 
->> Still doable, but not ideal. :-/
+On 22/07/16 06:44, Uma Krishnan wrote:
+> If an EEH or some other hard error occurs while the
+> adapter instance was being initialized, on the subsequent
+> shutdown of the device, the system could crash with:
 >
-> So even if not ideal, the solution above is desirable for powerpc. We would 
-> like to preserve the ability of allowing userspace to pass parameters to the 
-> OS via the DTB, even if secure boot is enabled.
+> [c000000f1da03b60] c0000000005eccfc pci_device_shutdown+0x6c/0x100
+> [c000000f1da03ba0] c0000000006d67d4 device_shutdown+0x1b4/0x2c0
+> [c000000f1da03c40] c0000000000ea30c kernel_restart_prepare+0x5c/0x80
+> [c000000f1da03c70] c0000000000ea48c kernel_restart+0x2c/0xc0
+> [c000000f1da03ce0] c0000000000ea970 SyS_reboot+0x1c0/0x2d0
+> [c000000f1da03e30] c000000000009204 system_call+0x38/0xb4
 >
-> I would like to turn the above into a proposal:
+> This crash is due to the AFU not being mapped when the shutdown
+> notification routine is called and is a regression that was inserted
+> recently with Commit 704c4b0ddc03 ("cxlflash: Shutdown notify support
+> for CXL Flash cards").
 >
-> Extend the syscall as shown in this RFC from Takahiro AKASHI, but instead of 
-> accepting a complete DTB from userspace, the syscall accepts a DTB 
-> containing only a /chosen node. If the DTB contains any other node, the 
-> syscall fails with EINVAL. If the DTB contains any subnode in /chosen, or if 
-> there's a compatible or device_type property in /chosen, the syscall fails 
-> with EINVAL as well.
+> As a fix, shutdown notification should only occur when the AFU is mapped.
 >
-> The kernel can then add the properties in /chosen to the device tree that it 
-> will pass to the next kernel.
->
-> What do you think?
+> Fixes: 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL Flash cards")
+> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
-I think we will inevitably have someone who wants to pass something
-other than a child of /chosen.
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-At that point we would be faced with adding yet another syscall, or at
-best a new flag.
-
-I think we'd be better allowing userspace to pass a DTB, and having an
-explicit whitelist (in the kernel) of which nodes & properties are
-allowed in that DTB.
-
-For starters it would only contain /chosen/stdout-path (for example).
-But we would be able to add new nodes & properties in future.
-
-The downside is userspace would have no way of detecting the content of
-the white list, other than trial and error. But in practice I'm not sure
-that would be a big problem.
-
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
