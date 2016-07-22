@@ -1,53 +1,22 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sjitindarsingh@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwbgD4dDwzDqfV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:19 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6M3OXpd070687
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 23:27:16 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24a9p73gvv-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 23:27:16 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 22 Jul 2016 13:27:14 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D7DD12BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:11 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6M3RB0j19136516
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:11 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6M3RBfw026777
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:27:11 +1000
-Subject: Re: [PATCH 1/2] cxlflash: Verify problem state area is mapped before
- notifying shutdown
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-References: <1469133772-14953-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 22 Jul 2016 13:26:40 +1000
-MIME-Version: 1.0
-In-Reply-To: <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <78e66b27-a98a-21b6-1d66-a06ab9c0bed4@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwbzQ6gvMzDrFT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 13:41:22 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id h186so6486507pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jul 2016 20:41:22 -0700 (PDT)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
+ paulus@samba.org, benh@kernel.crashing.org, pbonzini@redhat.com,
+ agraf@suse.com, rkrcmar@redhat.com, dmatlack@google.com,
+ borntraeger@de.ibm.com
+Subject: [PATCH V5 1/5] kvm/ppc/book3s: Move struct kvmppc_vcore from
+ kvm_host.h to kvm_book3s.h
+Date: Fri, 22 Jul 2016 13:40:59 +1000
+Message-Id: <1469158863-28518-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,30 +26,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/07/16 06:44, Uma Krishnan wrote:
-> If an EEH or some other hard error occurs while the
-> adapter instance was being initialized, on the subsequent
-> shutdown of the device, the system could crash with:
->
-> [c000000f1da03b60] c0000000005eccfc pci_device_shutdown+0x6c/0x100
-> [c000000f1da03ba0] c0000000006d67d4 device_shutdown+0x1b4/0x2c0
-> [c000000f1da03c40] c0000000000ea30c kernel_restart_prepare+0x5c/0x80
-> [c000000f1da03c70] c0000000000ea48c kernel_restart+0x2c/0xc0
-> [c000000f1da03ce0] c0000000000ea970 SyS_reboot+0x1c0/0x2d0
-> [c000000f1da03e30] c000000000009204 system_call+0x38/0xb4
->
-> This crash is due to the AFU not being mapped when the shutdown
-> notification routine is called and is a regression that was inserted
-> recently with Commit 704c4b0ddc03 ("cxlflash: Shutdown notify support
-> for CXL Flash cards").
->
-> As a fix, shutdown notification should only occur when the AFU is mapped.
->
-> Fixes: 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL Flash cards")
-> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+The next commit will introduce a member to the kvmppc_vcore struct which
+references MAX_SMT_THREADS which is defined in kvm_book3s_asm.h, however
+this file isn't included in kvm_host.h directly. Thus compiling for
+certain platforms such as pmac32_defconfig and ppc64e_defconfig with KVM
+fails due to MAX_SMT_THREADS not being defined.
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Move the struct kvmppc_vcore definition to kvm_book3s.h which explicitly
+includes kvm_book3s_asm.h.
 
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+
+---
+Change Log:
+
+V1 -> V2:
+	- Added patch to series
+---
+ arch/powerpc/include/asm/kvm_book3s.h | 35 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/kvm_host.h   | 35 -----------------------------------
+ 2 files changed, 35 insertions(+), 35 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 8f39796..a50c5fe 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -69,6 +69,41 @@ struct hpte_cache {
+ 	int pagesize;
+ };
+ 
++/*
++ * Struct for a virtual core.
++ * Note: entry_exit_map combines a bitmap of threads that have entered
++ * in the bottom 8 bits and a bitmap of threads that have exited in the
++ * next 8 bits.  This is so that we can atomically set the entry bit
++ * iff the exit map is 0 without taking a lock.
++ */
++struct kvmppc_vcore {
++	int n_runnable;
++	int num_threads;
++	int entry_exit_map;
++	int napping_threads;
++	int first_vcpuid;
++	u16 pcpu;
++	u16 last_cpu;
++	u8 vcore_state;
++	u8 in_guest;
++	struct kvmppc_vcore *master_vcore;
++	struct list_head runnable_threads;
++	struct list_head preempt_list;
++	spinlock_t lock;
++	struct swait_queue_head wq;
++	spinlock_t stoltb_lock;	/* protects stolen_tb and preempt_tb */
++	u64 stolen_tb;
++	u64 preempt_tb;
++	struct kvm_vcpu *runner;
++	struct kvm *kvm;
++	u64 tb_offset;		/* guest timebase - host timebase */
++	ulong lpcr;
++	u32 arch_compat;
++	ulong pcr;
++	ulong dpdes;		/* doorbell state (POWER8) */
++	ulong conferring_threads;
++};
++
+ struct kvmppc_vcpu_book3s {
+ 	struct kvmppc_sid_map sid_map[SID_MAP_NUM];
+ 	struct {
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index ec35af3..19c6731 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -275,41 +275,6 @@ struct kvm_arch {
+ #endif
+ };
+ 
+-/*
+- * Struct for a virtual core.
+- * Note: entry_exit_map combines a bitmap of threads that have entered
+- * in the bottom 8 bits and a bitmap of threads that have exited in the
+- * next 8 bits.  This is so that we can atomically set the entry bit
+- * iff the exit map is 0 without taking a lock.
+- */
+-struct kvmppc_vcore {
+-	int n_runnable;
+-	int num_threads;
+-	int entry_exit_map;
+-	int napping_threads;
+-	int first_vcpuid;
+-	u16 pcpu;
+-	u16 last_cpu;
+-	u8 vcore_state;
+-	u8 in_guest;
+-	struct kvmppc_vcore *master_vcore;
+-	struct list_head runnable_threads;
+-	struct list_head preempt_list;
+-	spinlock_t lock;
+-	struct swait_queue_head wq;
+-	spinlock_t stoltb_lock;	/* protects stolen_tb and preempt_tb */
+-	u64 stolen_tb;
+-	u64 preempt_tb;
+-	struct kvm_vcpu *runner;
+-	struct kvm *kvm;
+-	u64 tb_offset;		/* guest timebase - host timebase */
+-	ulong lpcr;
+-	u32 arch_compat;
+-	ulong pcr;
+-	ulong dpdes;		/* doorbell state (POWER8) */
+-	ulong conferring_threads;
+-};
+-
+ #define VCORE_ENTRY_MAP(vc)	((vc)->entry_exit_map & 0xff)
+ #define VCORE_EXIT_MAP(vc)	((vc)->entry_exit_map >> 8)
+ #define VCORE_IS_EXITING(vc)	(VCORE_EXIT_MAP(vc) != 0)
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.5.5
