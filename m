@@ -1,22 +1,42 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwsHH6g7QzDqTg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 23:40:59 +1000 (AEST)
-Message-ID: <1469194843.8568.179.camel@kernel.crashing.org>
-Subject: Re: [for-4.8, 1/2] powerpc/mm: Switch user slb fault handling to
- translation enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 22 Jul 2016 23:40:43 +1000
-In-Reply-To: <20160722223738.62a27fed@roar.ozlabs.ibm.com>
-References: <1468402850-6052-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160722223738.62a27fed@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwvrY10mzzDrL3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 01:36:28 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6MFYM0a060280
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 11:36:26 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24bhkrjg6c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 11:36:25 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Fri, 22 Jul 2016 11:36:25 -0400
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
+Subject: Re: [PATCH 1/2] cxlflash: Verify problem state area is mapped before
+ notifying shutdown
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Fri, 22 Jul 2016 10:36:18 -0500
+Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>
+References: <1469133772-14953-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Message-Id: <4981EA58-75C0-4757-9B4E-E63F0476A31A@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +46,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-07-22 at 22:37 +1000, Nicholas Piggin wrote:
-> > We also handle fault with proper stack initialized. This enable us
-> to
-> > callout to C in fault handling routines. We don't do this for
-> kernel
-> > mapping, because of the possibility of taking recursive fault if
-> > kernel stack in not yet mapped by an slb entry.
-> > 
-> > This enable us to handle Power9 slb fault better. We will add
-> bolted
-> > entries for the entire kernel mapping in segment table and user slb
-> > entries we take fault and insert on demand. With translation on, we
-> > should be able to access segment table from fault handler.
-> 
-> What does this cost on P8? Is that a problem? Might need to do
-> feature bits.
+> On Jul 21, 2016, at 3:44 PM, Uma Krishnan <ukrishn@linux.vnet.ibm.com> =
+wrote:
+>=20
+> If an EEH or some other hard error occurs while the
+> adapter instance was being initialized, on the subsequent
+> shutdown of the device, the system could crash with:
+>=20
+> [c000000f1da03b60] c0000000005eccfc pci_device_shutdown+0x6c/0x100
+> [c000000f1da03ba0] c0000000006d67d4 device_shutdown+0x1b4/0x2c0
+> [c000000f1da03c40] c0000000000ea30c kernel_restart_prepare+0x5c/0x80
+> [c000000f1da03c70] c0000000000ea48c kernel_restart+0x2c/0xc0
+> [c000000f1da03ce0] c0000000000ea970 SyS_reboot+0x1c0/0x2d0
+> [c000000f1da03e30] c000000000009204 system_call+0x38/0xb4
+>=20
+> This crash is due to the AFU not being mapped when the shutdown
+> notification routine is called and is a regression that was inserted
+> recently with Commit 704c4b0ddc03 ("cxlflash: Shutdown notify support
+> for CXL Flash cards").
+>=20
+> As a fix, shutdown notification should only occur when the AFU is =
+mapped.
+>=20
+> Fixes: 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL Flash =
+cards")
+> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
-Also what is the need ?
-
-The segment table is only for Nest MMU clients, we should probably
-handle it separately.
-
-Cheers,
-Ben.
+Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
