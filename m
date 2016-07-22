@@ -1,30 +1,29 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwvrY10mzzDrL3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 01:36:28 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6MFYM0a060280
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 11:36:26 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwvsQ5g1kzDrLj
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 01:37:14 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6MFYGMs077674
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 11:37:12 -0400
 Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24bhkrjg6c-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24bhuhj82h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 11:36:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 11:37:12 -0400
 Received: from localhost
  by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 22 Jul 2016 11:36:25 -0400
+ Fri, 22 Jul 2016 11:37:11 -0400
 Content-Type: text/plain; charset=us-ascii
 Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH 1/2] cxlflash: Verify problem state area is mapped before
- notifying shutdown
+Subject: Re: [PATCH 2/2] MAINTAINERS: Update cxlflash maintainers
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Date: Fri, 22 Jul 2016 10:36:18 -0500
+In-Reply-To: <1469133877-25255-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Date: Fri, 22 Jul 2016 10:37:05 -0500
 Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
@@ -34,9 +33,9 @@ Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
 References: <1469133772-14953-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1469133844-8629-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ <1469133877-25255-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Message-Id: <4981EA58-75C0-4757-9B4E-E63F0476A31A@linux.vnet.ibm.com>
+Message-Id: <68FD5100-85A8-413A-9F50-09EAA820639F@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,27 +48,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > On Jul 21, 2016, at 3:44 PM, Uma Krishnan <ukrishn@linux.vnet.ibm.com> =
 wrote:
 >=20
-> If an EEH or some other hard error occurs while the
-> adapter instance was being initialized, on the subsequent
-> shutdown of the device, the system could crash with:
+> Adding myself as a cxlflash maintainer.
 >=20
-> [c000000f1da03b60] c0000000005eccfc pci_device_shutdown+0x6c/0x100
-> [c000000f1da03ba0] c0000000006d67d4 device_shutdown+0x1b4/0x2c0
-> [c000000f1da03c40] c0000000000ea30c kernel_restart_prepare+0x5c/0x80
-> [c000000f1da03c70] c0000000000ea48c kernel_restart+0x2c/0xc0
-> [c000000f1da03ce0] c0000000000ea970 SyS_reboot+0x1c0/0x2d0
-> [c000000f1da03e30] c000000000009204 system_call+0x38/0xb4
->=20
-> This crash is due to the AFU not being mapped when the shutdown
-> notification routine is called and is a regression that was inserted
-> recently with Commit 704c4b0ddc03 ("cxlflash: Shutdown notify support
-> for CXL Flash cards").
->=20
-> As a fix, shutdown notification should only occur when the AFU is =
-mapped.
->=20
-> Fixes: 704c4b0ddc03 ("cxlflash: Shutdown notify support for CXL Flash =
-cards")
 > Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
 Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
