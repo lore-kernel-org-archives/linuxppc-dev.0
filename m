@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rwfrg3VhBzDqYB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rwfrg4cPPzDqYG
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 15:50:43 +1000 (AEST)
-In-Reply-To: <1468903711-5869-2-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1468988811-49142-1-git-send-email-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: duwe@lst.de, aneesh.kumar@linux.vnet.ibm.com,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [2/2] powerpc/modules: Never restore r2 for a mprofile-kernel
- style mcount() call
-Message-Id: <3rwfrg24k8z9t0d@ozlabs.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, #@ozlabs.ru, 4.2+@ozlabs.ru,
+ stable@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel] powerpc/powernv/ioda: Fix endianness when reading TCEs
+Message-Id: <3rwfrg3pBPz9t0w@ozlabs.org>
 Date: Fri, 22 Jul 2016 15:50:43 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,22 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-19-07 at 04:48:31 UTC, Michael Ellerman wrote:
-> In the module loader we process relocations, and for long jumps we
-> generate trampolines (aka stubs). At the call site for one of these
-> trampolines we usually need to generate a load instruction to restore
-> the TOC pointer into r2.
-...
+On Wed, 2016-20-07 at 04:26:51 UTC, Alexey Kardashevskiy wrote:
+> The iommu_table_ops::exchange() callback writes new TCE to the table
+> and returns old value and permission mask. The old TCE value is
+> correctly converted from BE to CPU endian; however permission mask
+> was calculated from BE value and therefore always returned DMA_NONE
+> which could cause memory leak on LE systems using VFIO SPAPR TCE IOMMU v1
+> driver.
 > 
-> The fix is relatively simple, in restore_r2() we check for an
-> mprofile-kernel style mcount() call first, before looking for the
-> presence of a nop.
+> This fixes pnv_tce_xchg() to have @oldtce a CPU endian.
 > 
-> Fixes: 153086644fd1 ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fixes: 05c6cfb9dce0d13d37e9d007ee6a4af36f1c0a58
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/31278b17a0dfed3014786b623f
+https://git.kernel.org/powerpc/c/802a345183c0308aa64969cca6
 
 cheers
