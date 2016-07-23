@@ -3,30 +3,30 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rxMHz0r01zDqV1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 19:13:18 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rxMJ33f3zzDqZT
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 19:13:23 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6N99wDr138681
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 05:13:16 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24c4qh1cyd-1
+ u6N99o5I040172
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 05:13:21 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24c2qruwvp-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 05:13:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 05:13:20 -0400
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 23 Jul 2016 03:13:15 -0600
+ Sat, 23 Jul 2016 03:13:20 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH for-4.8 V2 05/10] powerpc: Call jump_label_init early
-Date: Sat, 23 Jul 2016 14:42:38 +0530
+Cc: linuxppc-dev@lists.ozlabs.org, Kevin Hao <haokexin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH for-4.8 V2 06/10] powerpc: kill mfvtb()
+Date: Sat, 23 Jul 2016 14:42:39 +0530
 In-Reply-To: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1469265163-1491-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Message-Id: <1469265163-1491-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Call jump_label_init early so that can use static keys for cpu and
-mmu feature check. We should have finalzed all the cpu/mmu features when
-we call setup_system and we also did feature fixup for ASM based code.
+From: Kevin Hao <haokexin@gmail.com>
 
+This function is only used by get_vtb(). They are almost the same
+except the reading from the real register. Move the mfspr() to
+get_vtb() and kill the function mfvtb(). With this, we can eliminate
+the use of cpu_has_feature() in very core header file like reg.h.
+This is a preparation for the use of jump label for cpu_has_feature().
+
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/lib/feature-fixups.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/include/asm/reg.h  | 9 ---------
+ arch/powerpc/include/asm/time.h | 2 +-
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index defb2998b818..8b0b0b51e8aa 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -177,6 +177,12 @@ void apply_feature_fixups(void)
- 			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
- #endif
- 	do_final_fixups();
-+	/*
-+	 * init jump label so that cpu and mmu feature check can be optimized
-+	 * using jump label. We should have all the cpu/mmu features finalized
-+	 * by now.
-+	 */
-+	jump_label_init();
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index d7e9ab5e4709..817c005205f0 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1256,15 +1256,6 @@ static inline void msr_check_and_clear(unsigned long bits)
+ 		__msr_check_and_clear(bits);
  }
  
- #ifdef CONFIG_FTR_FIXUP_SELFTEST
+-static inline unsigned long mfvtb (void)
+-{
+-#ifdef CONFIG_PPC_BOOK3S_64
+-	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return mfspr(SPRN_VTB);
+-#endif
+-	return 0;
+-}
+-
+ #ifdef __powerpc64__
+ #if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_FSL_BOOK3E)
+ #define mftb()		({unsigned long rval;				\
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 09211640a0e0..cbbeaf0a6597 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -103,7 +103,7 @@ static inline u64 get_vtb(void)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+-		return mfvtb();
++		return mfspr(SPRN_VTB);
+ #endif
+ 	return 0;
+ }
 -- 
 2.7.4
