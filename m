@@ -1,27 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rxP8L5bwZzDqVF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 20:36:50 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id hh10so8360350pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 03:36:50 -0700 (PDT)
-Date: Sat, 23 Jul 2016 20:36:42 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/64: implement a slice mask cache
-Message-ID: <20160723103642.GB13796@350D>
-Reply-To: bsingharora@gmail.com
-References: <1469192248-25141-1-git-send-email-npiggin@gmail.com>
- <20160723021937.GA13796@350D>
- <20160723171036.67144c5d@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160723171036.67144c5d@roar.ozlabs.ibm.com>
+Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
+Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.19.103])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3rxbM64XHVzDqYb
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 04:16:50 +1000 (AEST)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: zajec5@gmail.com,
+	leoli@freescale.com
+Cc: qiang.zhao@freescale.com, scottwood@freescale.com, viresh.kumar@linaro.org,
+ akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net,
+ arnd@arndb.de, Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [v3] UCC_GETH/UCC_FAST: Use IS_ERR_VALUE_U32 API to avoid
+ IS_ERR_VALUE abuses.
+Date: Sat, 23 Jul 2016 23:35:51 +0530
+Message-Id: <1469297151-9763-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,126 +22,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 23, 2016 at 05:10:36PM +1000, Nicholas Piggin wrote:
-> On Sat, 23 Jul 2016 12:19:37 +1000
-> Balbir Singh <bsingharora@gmail.com> wrote:
-> 
-> > On Fri, Jul 22, 2016 at 10:57:28PM +1000, Nicholas Piggin wrote:
-> > > Calculating the slice mask can become a signifcant overhead for
-> > > get_unmapped_area. The mask is relatively small and does not change
-> > > frequently, so we can cache it in the mm context.
-> > > 
-> > > This saves about 30% kernel time on a 4K user address allocation
-> > > in a microbenchmark.
-> > > 
-> > > Comments on the approach taken? I think there is the option for
-> > > fixed allocations to avoid some of the slice calculation entirely,
-> > > but first I think it will be good to have a general speedup that
-> > > covers all mmaps.
-> > > 
-> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Cc: Anton Blanchard <anton@samba.org>
-> > > ---
-> > >  arch/powerpc/include/asm/book3s/64/mmu.h |  8 +++++++
-> > >  arch/powerpc/mm/slice.c                  | 39
-> > > ++++++++++++++++++++++++++++++-- 2 files changed, 45 insertions(+),
-> > > 2 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h
-> > > b/arch/powerpc/include/asm/book3s/64/mmu.h index 5854263..0d15af4
-> > > 100644 --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> > > +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> > > @@ -71,6 +71,14 @@ typedef struct {
-> > >  #ifdef CONFIG_PPC_MM_SLICES
-> > >  	u64 low_slices_psize;	/* SLB page size encodings */
-> > >  	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
-> > > +	struct slice_mask mask_4k;
-> > > +# ifdef CONFIG_PPC_64K_PAGES
-> > > +	struct slice_mask mask_64k;
-> > > +# endif
-> > > +# ifdef CONFIG_HUGETLB_PAGE
-> > > +	struct slice_mask mask_16m;
-> > > +	struct slice_mask mask_16g;
-> > > +# endif  
-> > 
-> > Should we cache these in mmu_psize_defs? I am not 100% sure
-> > if want to overload that structure, but it provides a convient
-> > way of saying mmu_psize_defs[psize].mask instead of all
-> > the if checks
-> 
-> I'm not sure if we can, can we? mmu_psize_defs is global
-> whereas we need per-process structure.
->
+IS_ERR_VALUE() assumes that its parameter is an unsigned long.
+It can not be used to check if an 'unsigned int' reflects an error.
+As they pass an 'unsigned int' into a function that takes an
+'unsigned long' argument. This happens to work because the type
+is sign-extended on 64-bit architectures before it gets converted
+into an unsigned type.
 
-Oh! sorry, I meant a structure like mmu_psize_defs.
+However, anything that passes an 'unsigned short' or 'unsigned int'
+argument into IS_ERR_VALUE() is guaranteed to be broken, as are
+8-bit integers and types that are wider than 'unsigned long'.
+
+It would be nice to any users that are not passing 'unsigned int'
+arguments.
+
+Passing value in IS_ERR_VALUE() is wrong, as they pass an
+'unsigned int' into a function that takes an 'unsigned long'
+argument.This happens to work because the type is sign-extended
+on 64-bit architectures before it gets converted into an
+unsigned type.
+
+Passing an 'unsigned short' or 'unsigned int'argument into
+IS_ERR_VALUE() is guaranteed to be broken, as are 8-bit integers
+and types that are wider than 'unsigned long'.
+
+Any user will get compilation warning for that do not pass an
+unsigned long' argument.
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/bcma/scan.c                       |  2 --
+ drivers/net/ethernet/freescale/ucc_geth.c | 30 +++++++++++++++---------------
+ drivers/soc/fsl/qe/ucc_fast.c             |  4 ++--
+ include/linux/err.h                       |  1 +
+ 4 files changed, 18 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/bcma/scan.c b/drivers/bcma/scan.c
+index 4a2d1b2..319d78e 100644
+--- a/drivers/bcma/scan.c
++++ b/drivers/bcma/scan.c
+@@ -272,8 +272,6 @@ static struct bcma_device *bcma_find_core_reverse(struct bcma_bus *bus, u16 core
+ 	return NULL;
+ }
  
-> The branches are a bit annoying, but we can't directly use an array
-> because it's too big. But see the comment at MMU_PAGE_* defines.
-> Perhaps we could change this structure to be sized at compile time to
-> only include possible page sizes, and would enable building a
-> structure like the above with simply
-> 
-> struct type blah[MMU_POSSIBLE_PAGE_COUNT];
-> 
-> Perhaps we can consider that as a follow on patch? It's probably a bit
-> more work to implement.
-> 
-
-
-Yeah.. good idea
-MMU_PAGE_COUNT is 15, the size is going to be 15*8 bytes?
-
-
-> 
-> > >  #else
-> > >  	u16 sllp;		/* SLB page size encoding */
-> > >  #endif
-> > > diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> > > index 2b27458..559ea5f 100644
-> > > --- a/arch/powerpc/mm/slice.c
-> > > +++ b/arch/powerpc/mm/slice.c
-> > > @@ -147,7 +147,7 @@ static struct slice_mask
-> > > slice_mask_for_free(struct mm_struct *mm) return ret;
-> > >  }
-> > >  
-> > > -static struct slice_mask slice_mask_for_size(struct mm_struct *mm,
-> > > int psize) +static struct slice_mask
-> > > calc_slice_mask_for_size(struct mm_struct *mm, int psize) {
-> > >  	unsigned char *hpsizes;
-> > >  	int index, mask_index;
-> > > @@ -171,6 +171,36 @@ static struct slice_mask
-> > > slice_mask_for_size(struct mm_struct *mm, int psize) return ret;
-> > >  }
-> > >  
-> > > +static void recalc_slice_mask_cache(struct mm_struct *mm)
-> > > +{
-> > > +	mm->context.mask_4k = calc_slice_mask_for_size(mm,
-> > > MMU_PAGE_4K); +#ifdef CONFIG_PPC_64K_PAGES
-> > > +	mm->context.mask_64k = calc_slice_mask_for_size(mm,
-> > > MMU_PAGE_64K); +#endif
-> > > +# ifdef CONFIG_HUGETLB_PAGE
-> > > +	/* Radix does not come here */
-> > > +	mm->context.mask_16m = calc_slice_mask_for_size(mm,
-> > > MMU_PAGE_16M);
-> > > +	mm->context.mask_16g = calc_slice_mask_for_size(mm,
-> > > MMU_PAGE_16G); +# endif
-> > > +}  
-> > 
-> > Should the function above be called under slice_convert_lock?
-> 
-> Good question. The slice_convert_lock is... interesting. It only
-> protects the update-side of the slice page size arrays. I thought
-> this was okay last time I looked, but now you make me think again
-> maybe it is not. I need to check again what's providing exclusion
-> on the read side too.
-> 
-> I wanted to avoid doing more work under slice_convert_lock, but
-> we should just make that a per-mm lock anyway shouldn't we?
->
-
-Yeah and Ben's comment in the reply suggest we already hold a
-per mm lock on the read side.
-
-Balbir Singh
-
+-#define IS_ERR_VALUE_U32(x) ((x) >= (u32)-MAX_ERRNO)
+-
+ static int bcma_get_next_core(struct bcma_bus *bus, u32 __iomem **eromptr,
+ 			      struct bcma_device_id *match, int core_num,
+ 			      struct bcma_device *core)
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 5bf1ade..d290dea 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -289,7 +289,7 @@ static int fill_init_enet_entries(struct ucc_geth_private *ugeth,
+ 		else {
+ 			init_enet_offset =
+ 			    qe_muram_alloc(thread_size, thread_alignment);
+-			if (IS_ERR_VALUE(init_enet_offset)) {
++			if (IS_ERR_VALUE_U32(init_enet_offset)) {
+ 				if (netif_msg_ifup(ugeth))
+ 					pr_err("Can not allocate DPRAM memory\n");
+ 				qe_put_snum((u8) snum);
+@@ -2234,7 +2234,7 @@ static int ucc_geth_alloc_tx(struct ucc_geth_private *ugeth)
+ 			ugeth->tx_bd_ring_offset[j] =
+ 			    qe_muram_alloc(length,
+ 					   UCC_GETH_TX_BD_RING_ALIGNMENT);
+-			if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
++			if (!IS_ERR_VALUE_U32(ugeth->tx_bd_ring_offset[j]))
+ 				ugeth->p_tx_bd_ring[j] =
+ 				    (u8 __iomem *) qe_muram_addr(ugeth->
+ 							 tx_bd_ring_offset[j]);
+@@ -2311,7 +2311,7 @@ static int ucc_geth_alloc_rx(struct ucc_geth_private *ugeth)
+ 			ugeth->rx_bd_ring_offset[j] =
+ 			    qe_muram_alloc(length,
+ 					   UCC_GETH_RX_BD_RING_ALIGNMENT);
+-			if (!IS_ERR_VALUE(ugeth->rx_bd_ring_offset[j]))
++			if (!IS_ERR_VALUE_U32(ugeth->rx_bd_ring_offset[j]))
+ 				ugeth->p_rx_bd_ring[j] =
+ 				    (u8 __iomem *) qe_muram_addr(ugeth->
+ 							 rx_bd_ring_offset[j]);
+@@ -2521,7 +2521,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	ugeth->tx_glbl_pram_offset =
+ 	    qe_muram_alloc(sizeof(struct ucc_geth_tx_global_pram),
+ 			   UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->tx_glbl_pram_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->tx_glbl_pram_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_tx_glbl_pram\n");
+ 		return -ENOMEM;
+@@ -2541,7 +2541,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			   sizeof(struct ucc_geth_thread_data_tx) +
+ 			   32 * (numThreadsTxNumerical == 1),
+ 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->thread_dat_tx_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->thread_dat_tx_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_thread_data_tx\n");
+ 		return -ENOMEM;
+@@ -2568,7 +2568,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	    qe_muram_alloc(ug_info->numQueuesTx *
+ 			   sizeof(struct ucc_geth_send_queue_qd),
+ 			   UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->send_q_mem_reg_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->send_q_mem_reg_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_send_q_mem_reg\n");
+ 		return -ENOMEM;
+@@ -2609,7 +2609,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		ugeth->scheduler_offset =
+ 		    qe_muram_alloc(sizeof(struct ucc_geth_scheduler),
+ 				   UCC_GETH_SCHEDULER_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->scheduler_offset)) {
++		if (IS_ERR_VALUE_U32(ugeth->scheduler_offset)) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_scheduler\n");
+ 			return -ENOMEM;
+@@ -2656,7 +2656,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		    qe_muram_alloc(sizeof
+ 				   (struct ucc_geth_tx_firmware_statistics_pram),
+ 				   UCC_GETH_TX_STATISTICS_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->tx_fw_statistics_pram_offset)) {
++		if (IS_ERR_VALUE_U32(ugeth->tx_fw_statistics_pram_offset)) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_tx_fw_statistics_pram\n");
+ 			return -ENOMEM;
+@@ -2693,7 +2693,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	ugeth->rx_glbl_pram_offset =
+ 	    qe_muram_alloc(sizeof(struct ucc_geth_rx_global_pram),
+ 			   UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->rx_glbl_pram_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->rx_glbl_pram_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_rx_glbl_pram\n");
+ 		return -ENOMEM;
+@@ -2712,7 +2712,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	    qe_muram_alloc(numThreadsRxNumerical *
+ 			   sizeof(struct ucc_geth_thread_data_rx),
+ 			   UCC_GETH_THREAD_DATA_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->thread_dat_rx_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->thread_dat_rx_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_thread_data_rx\n");
+ 		return -ENOMEM;
+@@ -2733,7 +2733,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		    qe_muram_alloc(sizeof
+ 				   (struct ucc_geth_rx_firmware_statistics_pram),
+ 				   UCC_GETH_RX_STATISTICS_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->rx_fw_statistics_pram_offset)) {
++		if (IS_ERR_VALUE_U32(ugeth->rx_fw_statistics_pram_offset)) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_rx_fw_statistics_pram\n");
+ 			return -ENOMEM;
+@@ -2753,7 +2753,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	    qe_muram_alloc(ug_info->numQueuesRx *
+ 			   sizeof(struct ucc_geth_rx_interrupt_coalescing_entry)
+ 			   + 4, UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->rx_irq_coalescing_tbl_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->rx_irq_coalescing_tbl_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_rx_irq_coalescing_tbl\n");
+ 		return -ENOMEM;
+@@ -2819,7 +2819,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 			   (sizeof(struct ucc_geth_rx_bd_queues_entry) +
+ 			    sizeof(struct ucc_geth_rx_prefetched_bds)),
+ 			   UCC_GETH_RX_BD_QUEUES_ALIGNMENT);
+-	if (IS_ERR_VALUE(ugeth->rx_bd_qs_tbl_offset)) {
++	if (IS_ERR_VALUE_U32(ugeth->rx_bd_qs_tbl_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_rx_bd_qs_tbl\n");
+ 		return -ENOMEM;
+@@ -2905,7 +2905,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 		ugeth->exf_glbl_param_offset =
+ 		    qe_muram_alloc(sizeof(struct ucc_geth_exf_global_pram),
+ 		UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT);
+-		if (IS_ERR_VALUE(ugeth->exf_glbl_param_offset)) {
++		if (IS_ERR_VALUE_U32(ugeth->exf_glbl_param_offset)) {
+ 			if (netif_msg_ifup(ugeth))
+ 				pr_err("Can not allocate DPRAM memory for p_exf_glbl_param\n");
+ 			return -ENOMEM;
+@@ -3039,7 +3039,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
  
+ 	/* Allocate InitEnet command parameter structure */
+ 	init_enet_pram_offset = qe_muram_alloc(sizeof(struct ucc_geth_init_pram), 4);
+-	if (IS_ERR_VALUE(init_enet_pram_offset)) {
++	if (IS_ERR_VALUE_U32(init_enet_pram_offset)) {
+ 		if (netif_msg_ifup(ugeth))
+ 			pr_err("Can not allocate DPRAM memory for p_init_enet_pram\n");
+ 		return -ENOMEM;
+diff --git a/drivers/soc/fsl/qe/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
+index a768931..f7fa59f 100644
+--- a/drivers/soc/fsl/qe/ucc_fast.c
++++ b/drivers/soc/fsl/qe/ucc_fast.c
+@@ -268,7 +268,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	/* Allocate memory for Tx Virtual Fifo */
+ 	uccf->ucc_fast_tx_virtual_fifo_base_offset =
+ 	    qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+-	if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
++	if (IS_ERR_VALUE_U32(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
+ 		printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
+ 			__func__);
+ 		uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
+@@ -281,7 +281,7 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 		qe_muram_alloc(uf_info->urfs +
+ 			   UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
+ 			   UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+-	if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
++	if (IS_ERR_VALUE_U32(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
+ 		printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
+ 			__func__);
+ 		uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
+diff --git a/include/linux/err.h b/include/linux/err.h
+index 1e35588..a42f942 100644
+--- a/include/linux/err.h
++++ b/include/linux/err.h
+@@ -19,6 +19,7 @@
+ #ifndef __ASSEMBLY__
+ 
+ #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
++#define IS_ERR_VALUE_U32(x) unlikely((unsigned int)(x) >= (unsigned int)-MAX_ERRNO)
+ 
+ static inline void * __must_check ERR_PTR(long error)
+ {
+-- 
+1.9.1
