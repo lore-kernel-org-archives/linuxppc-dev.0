@@ -1,28 +1,42 @@
-Return-Path: <dmatlack@google.com>
-Received: from mail-oi0-x22b.google.com (mail-oi0-x22b.google.com
- [IPv6:2607:f8b0:4003:c06::22b])
+Return-Path: <labbott@redhat.com>
+Received: from mail-qt0-f169.google.com (mail-qt0-f169.google.com
+ [209.85.216.169])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rx4Cg37JTzDqTG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 07:53:35 +1000 (AEST)
-Received: by mail-oi0-x22b.google.com with SMTP id l65so180845057oib.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 14:53:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rx7qv14wjzDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 10:36:42 +1000 (AEST)
+Received: by mail-qt0-f169.google.com with SMTP id 52so70656010qtq.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2016 17:36:42 -0700 (PDT)
+Subject: Re: [PATCH v4 00/12] mm: Hardened usercopy
+To: Kees Cook <keescook@chromium.org>, kernel-hardening@lists.openwall.com
+References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+Cc: Balbir Singh <bsingharora@gmail.com>, Daniel Micay
+ <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski
+ <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>, linux-arm-kernel@lists.infradead.org,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+From: Laura Abbott <labbott@redhat.com>
+Message-ID: <93009d46-0171-7398-4add-98e09ade608b@redhat.com>
+Date: Fri, 22 Jul 2016 17:36:33 -0700
 MIME-Version: 1.0
-In-Reply-To: <1469158863-28518-5-git-send-email-sjitindarsingh@gmail.com>
-References: <1469158863-28518-1-git-send-email-sjitindarsingh@gmail.com>
- <1469158863-28518-5-git-send-email-sjitindarsingh@gmail.com>
-From: David Matlack <dmatlack@google.com>
-Date: Fri, 22 Jul 2016 14:53:13 -0700
-Message-ID: <CALzav=cYY0YMhPOuU7rzimPJhg5ofcwK=1aqCnb6NPw783O=6A@mail.gmail.com>
-Subject: Re: [PATCH V5 5/5] powerpc/kvm/stats: Implement existing and add new
- halt polling vcpu stats
-To: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
- paulus@samba.org, benh@kernel.crashing.org,
- Paolo Bonzini <pbonzini@redhat.com>, agraf@suse.com,
- =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,176 +46,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 21, 2016 at 8:41 PM, Suraj Jitindar Singh
-<sjitindarsingh@gmail.com> wrote:
-> vcpu stats are used to collect information about a vcpu which can be viewed
-> in the debugfs. For example halt_attempted_poll and halt_successful_poll
-> are used to keep track of the number of times the vcpu attempts to and
-> successfully polls. These stats are currently not used on powerpc.
+On 07/20/2016 01:26 PM, Kees Cook wrote:
+> Hi,
 >
-> Implement incrementation of the halt_attempted_poll and
-> halt_successful_poll vcpu stats for powerpc. Since these stats are summed
-> over all the vcpus for all running guests it doesn't matter which vcpu
-> they are attributed to, thus we choose the current runner vcpu of the
-> vcore.
+> [This is now in my kspp -next tree, though I'd really love to add some
+> additional explicit Tested-bys, Reviewed-bys, or Acked-bys. If you've
+> looked through any part of this or have done any testing, please consider
+> sending an email with your "*-by:" line. :)]
 >
-> Also add new vcpu stats: halt_poll_success_ns, halt_poll_fail_ns and
-> halt_wait_ns to be used to accumulate the total time spend polling
-> successfully, polling unsuccessfully and waiting respectively, and
-> halt_successful_wait to accumulate the number of times the vcpu waits.
-> Given that halt_poll_success_ns, halt_poll_fail_ns and halt_wait_ns are
-> expressed in nanoseconds it is necessary to represent these as 64-bit
-> quantities, otherwise they would overflow after only about 4 seconds.
+> This is a start of the mainline port of PAX_USERCOPY[1]. After writing
+> tests (now in lkdtm in -next) for Casey's earlier port[2], I kept tweaking
+> things further and further until I ended up with a whole new patch series.
+> To that end, I took Rik, Laura, and other people's feedback along with
+> additional changes and clean-ups.
 >
-> Given that the total time spend either polling or waiting will be known and
-> the number of times that each was done, it will be possible to determine
-> the average poll and wait times. This will give the ability to tune the kvm
-> module parameters based on the calculated average wait and poll times.
+> Based on my understanding, PAX_USERCOPY was designed to catch a
+> few classes of flaws (mainly bad bounds checking) around the use of
+> copy_to_user()/copy_from_user(). These changes don't touch get_user() and
+> put_user(), since these operate on constant sized lengths, and tend to be
+> much less vulnerable. There are effectively three distinct protections in
+> the whole series, each of which I've given a separate CONFIG, though this
+> patch set is only the first of the three intended protections. (Generally
+> speaking, PAX_USERCOPY covers what I'm calling CONFIG_HARDENED_USERCOPY
+> (this) and CONFIG_HARDENED_USERCOPY_WHITELIST (future), and
+> PAX_USERCOPY_SLABS covers CONFIG_HARDENED_USERCOPY_SPLIT_KMALLOC
+> (future).)
 >
-> Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> Reviewed-by: David Matlack <dmatlack@google.com>
+> This series, which adds CONFIG_HARDENED_USERCOPY, checks that objects
+> being copied to/from userspace meet certain criteria:
+> - if address is a heap object, the size must not exceed the object's
+>   allocated size. (This will catch all kinds of heap overflow flaws.)
+> - if address range is in the current process stack, it must be within the
+>   a valid stack frame (if such checking is possible) or at least entirely
+>   within the current process's stack. (This could catch large lengths that
+>   would have extended beyond the current process stack, or overflows if
+>   their length extends back into the original stack.)
+> - if the address range is part of kernel data, rodata, or bss, allow it.
+> - if address range is page-allocated, that it doesn't span multiple
+>   allocations (excepting Reserved and CMA pages).
+> - if address is within the kernel text, reject it.
+> - everything else is accepted
 >
-> ---
-> Change Log:
+> The patches in the series are:
+> - Support for examination of CMA page types:
+> 	1- mm: Add is_migrate_cma_page
+> - Support for arch-specific stack frame checking (which will likely be
+>   replaced in the future by Josh's more comprehensive unwinder):
+>         2- mm: Implement stack frame object validation
+> - The core copy_to/from_user() checks, without the slab object checks:
+>         3- mm: Hardened usercopy
+> - Per-arch enablement of the protection:
+>         4- x86/uaccess: Enable hardened usercopy
+>         5- ARM: uaccess: Enable hardened usercopy
+>         6- arm64/uaccess: Enable hardened usercopy
+>         7- ia64/uaccess: Enable hardened usercopy
+>         8- powerpc/uaccess: Enable hardened usercopy
+>         9- sparc/uaccess: Enable hardened usercopy
+>        10- s390/uaccess: Enable hardened usercopy
+> - The heap allocator implementation of object size checking:
+>        11- mm: SLAB hardened usercopy support
+>        12- mm: SLUB hardened usercopy support
 >
-> V3 -> V4:
->         - Instead of accounting just wait and poll time, separate these
->           into successful_poll_time, failed_poll_time and wait_time.
-> V4 -> V5:
->         - Add single_task_running() check to polling loop
+> Some notes:
+>
+> - This is expected to apply on top of -next which contains fixes for the
+>   position of _etext on both arm and arm64, though it has some conflicts
+>   with KASAN that should be trivial to fix up. Also in -next are the
+>   tests for this protection (in lkdtm), prefixed with USERCOPY_.
+>
+> - I couldn't detect a measurable performance change with these features
+>   enabled. Kernel build times were unchanged, hackbench was unchanged,
+>   etc. I think we could flip this to "on by default" at some point, but
+>   for now, I'm leaving it off until I can get some more definitive
+>   measurements. I would love if someone with greater familiarity with
+>   perf could give this a spin and report results.
+>
+> - The SLOB support extracted from grsecurity seems entirely broken. I
+>   have no idea what's going on there, I spent my time testing SLAB and
+>   SLUB. Having someone else look at SLOB would be nice, but this series
+>   doesn't depend on it.
+>
+> Additional features that would be nice, but aren't blocking this series:
+>
+> - Needs more architecture support for stack frame checking (only x86 now,
+>   but it seems Josh will have a good solution for this soon).
+>
+>
+> Thanks!
+>
+> -Kees
+>
+> [1] https://grsecurity.net/download.php "grsecurity - test kernel patch"
+> [2] http://www.openwall.com/lists/kernel-hardening/2016/05/19/5
+>
+> v4:
+> - handle CMA pages, labbott
+> - update stack checker comments, labbott
+> - check for vmalloc addresses, labbott
+> - deal with KASAN in -next changing arm64 copy*user calls
+> - check for linear mappings at runtime instead of via CONFIG
+>
+> v3:
+> - switch to using BUG for better Oops integration
+> - when checking page allocations, check each for Reserved
+> - use enums for the stack check return for readability
+>
+> v2:
+> - added s390 support
+> - handle slub red zone
+> - disallow writes to rodata area
+> - stack frame walker now CONFIG-controlled arch-specific helper
+>
 
-I was expecting to see this in PATCH 3/5 with the halt-polling
-implementation. But otherwise, looks good, and the net effect is the
-same.
+Do you have/plan to have LKDTM or the like tests for this? I started reviewing
+the slub code and was about to write some test cases for myself. I did that
+for CMA as well which is a decent indicator these should all go somewhere.
 
-> ---
->  arch/powerpc/include/asm/kvm_host.h |  4 ++++
->  arch/powerpc/kvm/book3s.c           |  4 ++++
->  arch/powerpc/kvm/book3s_hv.c        | 38 +++++++++++++++++++++++++++++++------
->  3 files changed, 40 insertions(+), 6 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index f6304c5..f15ffc0 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -114,8 +114,12 @@ struct kvm_vcpu_stat {
->         u64 emulated_inst_exits;
->         u64 dec_exits;
->         u64 ext_intr_exits;
-> +       u64 halt_poll_success_ns;
-> +       u64 halt_poll_fail_ns;
-> +       u64 halt_wait_ns;
->         u64 halt_successful_poll;
->         u64 halt_attempted_poll;
-> +       u64 halt_successful_wait;
->         u64 halt_poll_invalid;
->         u64 halt_wakeup;
->         u64 dbell_exits;
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index 47018fc..71eb8f3 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -52,8 +52,12 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
->         { "dec",         VCPU_STAT(dec_exits) },
->         { "ext_intr",    VCPU_STAT(ext_intr_exits) },
->         { "queue_intr",  VCPU_STAT(queue_intr) },
-> +       { "halt_poll_success_ns",       VCPU_STAT(halt_poll_success_ns) },
-> +       { "halt_poll_fail_ns",          VCPU_STAT(halt_poll_fail_ns) },
-> +       { "halt_wait_ns",               VCPU_STAT(halt_wait_ns) },
->         { "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
->         { "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
-> +       { "halt_successful_wait",       VCPU_STAT(halt_successful_wait) },
->         { "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
->         { "halt_wakeup", VCPU_STAT(halt_wakeup) },
->         { "pf_storage",  VCPU_STAT(pf_storage) },
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index a9de1d4..b1d9e88 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -2679,15 +2679,16 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
->   */
->  static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->  {
-> +       ktime_t cur, start_poll, start_wait;
->         int do_sleep = 1;
-> -       ktime_t cur, start;
->         u64 block_ns;
->         DECLARE_SWAITQUEUE(wait);
->
->         /* Poll for pending exceptions and ceded state */
-> -       cur = start = ktime_get();
-> +       cur = start_poll = ktime_get();
->         if (vc->halt_poll_ns) {
-> -               ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
-> +               ktime_t stop = ktime_add_ns(start_poll, vc->halt_poll_ns);
-> +               ++vc->runner->stat.halt_attempted_poll;
->
->                 vc->vcore_state = VCORE_POLLING;
->                 spin_unlock(&vc->lock);
-> @@ -2698,13 +2699,15 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->                                 break;
->                         }
->                         cur = ktime_get();
-> -               } while (ktime_before(cur, stop));
-> +               } while (single_task_running() && ktime_before(cur, stop));
->
->                 spin_lock(&vc->lock);
->                 vc->vcore_state = VCORE_INACTIVE;
->
-> -               if (!do_sleep)
-> +               if (!do_sleep) {
-> +                       ++vc->runner->stat.halt_successful_poll;
->                         goto out;
-> +               }
->         }
->
->         prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-> @@ -2712,9 +2715,14 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->         if (kvmppc_vcore_check_block(vc)) {
->                 finish_swait(&vc->wq, &wait);
->                 do_sleep = 0;
-> +               /* If we polled, count this as a successful poll */
-> +               if (vc->halt_poll_ns)
-> +                       ++vc->runner->stat.halt_successful_poll;
->                 goto out;
->         }
->
-> +       start_wait = ktime_get();
-> +
->         vc->vcore_state = VCORE_SLEEPING;
->         trace_kvmppc_vcore_blocked(vc, 0);
->         spin_unlock(&vc->lock);
-> @@ -2723,11 +2731,29 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
->         spin_lock(&vc->lock);
->         vc->vcore_state = VCORE_INACTIVE;
->         trace_kvmppc_vcore_blocked(vc, 1);
-> +       ++vc->runner->stat.halt_successful_wait;
->
->         cur = ktime_get();
->
->  out:
-> -       block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
-> +       block_ns = ktime_to_ns(cur) - ktime_to_ns(start_poll);
-> +
-> +       /* Attribute wait time */
-> +       if (do_sleep) {
-> +               vc->runner->stat.halt_wait_ns +=
-> +                       ktime_to_ns(cur) - ktime_to_ns(start_wait);
-> +               /* Attribute failed poll time */
-> +               if (vc->halt_poll_ns)
-> +                       vc->runner->stat.halt_poll_fail_ns +=
-> +                               ktime_to_ns(start_wait) -
-> +                               ktime_to_ns(start_poll);
-> +       } else {
-> +               /* Attribute successful poll time */
-> +               if (vc->halt_poll_ns)
-> +                       vc->runner->stat.halt_poll_success_ns +=
-> +                               ktime_to_ns(cur) -
-> +                               ktime_to_ns(start_poll);
-> +       }
->
->         /* Adjust poll time */
->         if (halt_poll_max_ns) {
-> --
-> 2.5.5
->
+Thanks,
+Laura
