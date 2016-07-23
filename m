@@ -1,33 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rxMJJ3jbPzDqWK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 19:13:36 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6N99v86059457
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 05:13:34 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24c5420vt6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 05:13:34 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 23 Jul 2016 03:13:33 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH for-4.8 V2 10/10] powerpc/mm: Catch the usage of
- cpu/mmu_has_feature before jump label init
-Date: Sat, 23 Jul 2016 14:42:43 +0530
-In-Reply-To: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Message-Id: <1469265163-1491-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rxP8L5bwZzDqVF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 20:36:50 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id hh10so8360350pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2016 03:36:50 -0700 (PDT)
+Date: Sat, 23 Jul 2016 20:36:42 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/64: implement a slice mask cache
+Message-ID: <20160723103642.GB13796@350D>
+Reply-To: bsingharora@gmail.com
+References: <1469192248-25141-1-git-send-email-npiggin@gmail.com>
+ <20160723021937.GA13796@350D>
+ <20160723171036.67144c5d@roar.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160723171036.67144c5d@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,100 +31,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enable us to catch the wrong usage of cpu_has_feature and
-mmu_has_feature in the code. We need to use the feature bit based
-check in show_regs because that is used in the reporting code.
+On Sat, Jul 23, 2016 at 05:10:36PM +1000, Nicholas Piggin wrote:
+> On Sat, 23 Jul 2016 12:19:37 +1000
+> Balbir Singh <bsingharora@gmail.com> wrote:
+> 
+> > On Fri, Jul 22, 2016 at 10:57:28PM +1000, Nicholas Piggin wrote:
+> > > Calculating the slice mask can become a signifcant overhead for
+> > > get_unmapped_area. The mask is relatively small and does not change
+> > > frequently, so we can cache it in the mm context.
+> > > 
+> > > This saves about 30% kernel time on a 4K user address allocation
+> > > in a microbenchmark.
+> > > 
+> > > Comments on the approach taken? I think there is the option for
+> > > fixed allocations to avoid some of the slice calculation entirely,
+> > > but first I think it will be good to have a general speedup that
+> > > covers all mmaps.
+> > > 
+> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > Cc: Anton Blanchard <anton@samba.org>
+> > > ---
+> > >  arch/powerpc/include/asm/book3s/64/mmu.h |  8 +++++++
+> > >  arch/powerpc/mm/slice.c                  | 39
+> > > ++++++++++++++++++++++++++++++-- 2 files changed, 45 insertions(+),
+> > > 2 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h
+> > > b/arch/powerpc/include/asm/book3s/64/mmu.h index 5854263..0d15af4
+> > > 100644 --- a/arch/powerpc/include/asm/book3s/64/mmu.h
+> > > +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+> > > @@ -71,6 +71,14 @@ typedef struct {
+> > >  #ifdef CONFIG_PPC_MM_SLICES
+> > >  	u64 low_slices_psize;	/* SLB page size encodings */
+> > >  	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
+> > > +	struct slice_mask mask_4k;
+> > > +# ifdef CONFIG_PPC_64K_PAGES
+> > > +	struct slice_mask mask_64k;
+> > > +# endif
+> > > +# ifdef CONFIG_HUGETLB_PAGE
+> > > +	struct slice_mask mask_16m;
+> > > +	struct slice_mask mask_16g;
+> > > +# endif  
+> > 
+> > Should we cache these in mmu_psize_defs? I am not 100% sure
+> > if want to overload that structure, but it provides a convient
+> > way of saying mmu_psize_defs[psize].mask instead of all
+> > the if checks
+> 
+> I'm not sure if we can, can we? mmu_psize_defs is global
+> whereas we need per-process structure.
+>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig.debug             | 11 +++++++++++
- arch/powerpc/include/asm/cpufeatures.h |  6 ++++++
- arch/powerpc/include/asm/mmu.h         | 13 +++++++++++++
- arch/powerpc/kernel/process.c          |  2 +-
- 4 files changed, 31 insertions(+), 1 deletion(-)
+Oh! sorry, I meant a structure like mmu_psize_defs.
+ 
+> The branches are a bit annoying, but we can't directly use an array
+> because it's too big. But see the comment at MMU_PAGE_* defines.
+> Perhaps we could change this structure to be sized at compile time to
+> only include possible page sizes, and would enable building a
+> structure like the above with simply
+> 
+> struct type blah[MMU_POSSIBLE_PAGE_COUNT];
+> 
+> Perhaps we can consider that as a follow on patch? It's probably a bit
+> more work to implement.
+> 
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 8243ada23237..e4da4e4985fe 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -60,6 +60,17 @@ config CODE_PATCHING_SELFTEST
- 	depends on DEBUG_KERNEL
- 	default n
+
+Yeah.. good idea
+MMU_PAGE_COUNT is 15, the size is going to be 15*8 bytes?
+
+
+> 
+> > >  #else
+> > >  	u16 sllp;		/* SLB page size encoding */
+> > >  #endif
+> > > diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> > > index 2b27458..559ea5f 100644
+> > > --- a/arch/powerpc/mm/slice.c
+> > > +++ b/arch/powerpc/mm/slice.c
+> > > @@ -147,7 +147,7 @@ static struct slice_mask
+> > > slice_mask_for_free(struct mm_struct *mm) return ret;
+> > >  }
+> > >  
+> > > -static struct slice_mask slice_mask_for_size(struct mm_struct *mm,
+> > > int psize) +static struct slice_mask
+> > > calc_slice_mask_for_size(struct mm_struct *mm, int psize) {
+> > >  	unsigned char *hpsizes;
+> > >  	int index, mask_index;
+> > > @@ -171,6 +171,36 @@ static struct slice_mask
+> > > slice_mask_for_size(struct mm_struct *mm, int psize) return ret;
+> > >  }
+> > >  
+> > > +static void recalc_slice_mask_cache(struct mm_struct *mm)
+> > > +{
+> > > +	mm->context.mask_4k = calc_slice_mask_for_size(mm,
+> > > MMU_PAGE_4K); +#ifdef CONFIG_PPC_64K_PAGES
+> > > +	mm->context.mask_64k = calc_slice_mask_for_size(mm,
+> > > MMU_PAGE_64K); +#endif
+> > > +# ifdef CONFIG_HUGETLB_PAGE
+> > > +	/* Radix does not come here */
+> > > +	mm->context.mask_16m = calc_slice_mask_for_size(mm,
+> > > MMU_PAGE_16M);
+> > > +	mm->context.mask_16g = calc_slice_mask_for_size(mm,
+> > > MMU_PAGE_16G); +# endif
+> > > +}  
+> > 
+> > Should the function above be called under slice_convert_lock?
+> 
+> Good question. The slice_convert_lock is... interesting. It only
+> protects the update-side of the slice page size arrays. I thought
+> this was okay last time I looked, but now you make me think again
+> maybe it is not. I need to check again what's providing exclusion
+> on the read side too.
+> 
+> I wanted to avoid doing more work under slice_convert_lock, but
+> we should just make that a per-mm lock anyway shouldn't we?
+>
+
+Yeah and Ben's comment in the reply suggest we already hold a
+per mm lock on the read side.
+
+Balbir Singh
+
  
-+config FEATURE_FIXUP_DEBUG
-+	bool "Do extra check on feature fixup calls"
-+	depends on DEBUG_KERNEL
-+	default n
-+	help
-+	  This catch the wrong usage of cpu_has_feature and mmu_has_feature
-+	  in the code.
-+
-+	  If you don't know what this means, say N
-+
-+
- config FTR_FIXUP_SELFTEST
- 	bool "Run self-tests of the feature-fixup code"
- 	depends on DEBUG_KERNEL
-diff --git a/arch/powerpc/include/asm/cpufeatures.h b/arch/powerpc/include/asm/cpufeatures.h
-index 4a4a0b898463..93e7e3e87af4 100644
---- a/arch/powerpc/include/asm/cpufeatures.h
-+++ b/arch/powerpc/include/asm/cpufeatures.h
-@@ -22,6 +22,12 @@ static __always_inline bool cpu_has_feature(unsigned long feature)
- {
- 	int i;
- 
-+#ifdef CONFIG_FEATURE_FIXUP_DEBUG
-+	if (!static_key_initialized) {
-+		WARN_ON(1);
-+		return __cpu_has_feature(feature);
-+	}
-+#endif
- 	if (CPU_FTRS_ALWAYS & feature)
- 		return true;
- 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 3726161f6a8d..5c1f3a4cb99f 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -152,6 +152,12 @@ static __always_inline bool mmu_has_feature(unsigned long feature)
- {
- 	int i;
- 
-+#ifdef CONFIG_FEATURE_FIXUP_DEBUG
-+	if (!static_key_initialized) {
-+		WARN_ON(1);
-+		return __mmu_has_feature(feature);
-+	}
-+#endif
- 	if (!(MMU_FTRS_POSSIBLE & feature))
- 		return false;
- 
-@@ -163,6 +169,13 @@ static inline void mmu_clear_feature(unsigned long feature)
- {
- 	int i;
- 
-+#ifdef CONFIG_FEATURE_FIXUP_DEBUG
-+	if (!static_key_initialized) {
-+		WARN_ON(1);
-+		cur_cpu_spec->mmu_features &= ~feature;
-+		return;
-+	}
-+#endif
- 	i = __builtin_ctzl(feature);
- 	cur_cpu_spec->mmu_features &= ~feature;
- 	static_branch_disable(&mmu_feat_keys[i]);
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 75611b984faa..5a08cff6621c 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1315,7 +1315,7 @@ void show_regs(struct pt_regs * regs)
- 	print_msr_bits(regs->msr);
- 	printk("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
- 	trap = TRAP(regs);
--	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
-+	if ((regs->trap != 0xc00) && __cpu_has_feature(CPU_FTR_CFAR))
- 		printk("CFAR: "REG" ", regs->orig_gpr3);
- 	if (trap == 0x200 || trap == 0x300 || trap == 0x600)
- #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
--- 
-2.7.4
