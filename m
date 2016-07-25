@@ -1,24 +1,23 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryXMk4yXjzDqcV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 17:05:38 +1000 (AEST)
-Message-ID: <1469430327.25630.74.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Qiang Zhao <qiang.zhao@nxp.com>, Jason Cooper <jason@lakedaemon.net>
-Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "marc.zyngier@arm.com"
- <marc.zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>
-Date: Mon, 25 Jul 2016 02:05:27 -0500
-In-Reply-To: <AM3PR04MB1185B0A04FC6879C2550A8EC910D0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
- <20160707142458.GN3348@io.lakedaemon.net>
- <AM3PR04MB1185B0A04FC6879C2550A8EC910D0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryZKT39N0zDqhN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:33:49 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH for-4.8 V2 03/10] powerpc/mm/radix: Add radix_set_pte to
+ use in early init
+In-Reply-To: <20160725162349.1bc9a9fe@roar.ozlabs.ibm.com>
+References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160725162349.1bc9a9fe@roar.ozlabs.ibm.com>
+Date: Mon, 25 Jul 2016 18:33:41 +1000
+Message-ID: <87vazuyv4q.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-07-25 at 06:15 +0000, Qiang Zhao wrote:
-> On Thu, Jul 07, 2016 at 10:25PM , Jason Cooper <jason@lakedaemon.net> wrote:
-> > 
-> > -----Original Message-----
-> > From: Jason Cooper [mailto:jason@lakedaemon.net]
-> > Sent: Thursday, July 07, 2016 10:25 PM
-> > To: Qiang Zhao <qiang.zhao@nxp.com>
-> > Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo Xie
-> > <xiaobo.xie@nxp.com>
-> > Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from
-> > drivers/soc/fsl/qe
-> > 
-> > Hi Zhao Qiang,
-> > 
-> > On Thu, Jul 07, 2016 at 09:23:55AM +0800, Zhao Qiang wrote:
-> > > 
-> > > The driver stays the same.
-> > > 
-> > > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > > ---
-> > > Changes for v2:
-> > > 	- modify the subject and commit msg
-> > > 
-> > >  drivers/irqchip/Makefile                | 1 +
-> > >  drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0  drivers/{soc/fsl/qe =>
-> > > irqchip}/qe_ic.h | 0
-> > >  drivers/soc/fsl/qe/Makefile             | 2 +-
-> > >  4 files changed, 2 insertions(+), 1 deletion(-)  rename
-> > > drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)  rename
-> > > drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
-> > Please merge the include file into the C file and rename to follow the
-> > naming
-> > convention in drivers/irqchip/.  e.g. irq-qeic.c or irq-qe_ic.c.
-> > 
-> > Once you have that, please resend the entire series with this as the first
-> > patch.
-> Sorry, I have no idea about "Include file", could you explain which file you
-> meant?
+Nicholas Piggin <npiggin@gmail.com> writes:
 
+> On Sat, 23 Jul 2016 14:42:36 +0530
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>> @@ -102,7 +123,7 @@ int radix__map_kernel_page(unsigned long ea,
+>> unsigned long pa, }
+>>  
+>>  set_the_pte:
+>> -	set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+>> flags));
+>> +	radix__set_pte(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
+>> flags)); smp_wmb();
+>
+> What we have in existing code is set_pte_at() function that adds
+> the _PAGE_PTE bit, then calls __set_pte_at(), which calls radix or hash
+> version of __set_pte_at().
+>
+> Now we also have radix__set_pte(), which has the function of the
+> set_pte_at(), which is starting to confuse the naming convention.
+> The new function is a radix-only set_pte_at(), rather than the
+> radix implementation that gets called via set_pte().
+>
+> set_pte_at_radix()? That kind of sucks too, though. It might be better
+> if the radix/hash variants were called __radix__set_pte_at(), and this
+> new function was called radix__set_pte_at().
 
-qe_ic.h
+I think Aneesh originally used set_pte_at_r() or maybe rset_pte_at()?
 
-If nothing else is going to include that, then the contents can go directly
-into qe_ic.c.
+It was my idea to use radix__ and hash__ as prefixes for all the
+radix/hash functions.
 
--Scott
+That was 1) to make it clear that it's not part of the name as such, ie.
+it's a prefix, and 2) because it's ugly as hell and hopefully that would
+motivate us to consolidate as many of them as possible.
+
+I balked at adding __radix__set_pte_at(), and just went with
+radix__set_pte_at(). But it does complicate things now.
+
+In fact I think we need to rethink this whole series, and not actually
+do it this way at all, meaning this naming problem will go away.
+
+cheers
