@@ -1,25 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryWRd2b5QzDqdw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:23:57 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id h186so11314361pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 23:23:57 -0700 (PDT)
-Date: Mon, 25 Jul 2016 16:23:49 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryWV14vlZzDqPb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:26:01 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6P6NdeL045743
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 02:25:59 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24c2qujyf1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 02:25:58 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 25 Jul 2016 00:25:58 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH for-4.8 V2 03/10] powerpc/mm/radix: Add radix_set_pte to
- use in early init
-Message-ID: <20160725162349.1bc9a9fe@roar.ozlabs.ibm.com>
-In-Reply-To: <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH for-4.8 V2 00/10] Use jump label for cpu/mmu_has_feature
+In-Reply-To: <20160725152201.03788ccb@roar.ozlabs.ibm.com>
 References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20160725152201.03788ccb@roar.ozlabs.ibm.com>
+Date: Mon, 25 Jul 2016 11:55:50 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
+Message-Id: <87shuykzdd.fsf@skywalker.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,73 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 23 Jul 2016 14:42:36 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> We want to use the static key based feature check in set_pte_at. Since
-> we call radix__map_kernel_page early in boot before jump label is
-> initialized we can't call set_pte_at there. Add radix__set_pte for the
-> same.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/pgtable-radix.c | 23 ++++++++++++++++++++++-
->  1 file changed, 22 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/pgtable-radix.c
-> b/arch/powerpc/mm/pgtable-radix.c index 003ff48a11b6..6d2eb76b508e
-> 100644 --- a/arch/powerpc/mm/pgtable-radix.c
-> +++ b/arch/powerpc/mm/pgtable-radix.c
-> @@ -39,6 +39,27 @@ static __ref void *early_alloc_pgtable(unsigned
-> long size) 
->  	return pt;
->  }
-> +/*
-> + * set_pte stores a linux PTE into the linux page table.
-> + */
-> +static void radix__set_pte(struct mm_struct *mm, unsigned long addr,
-> pte_t *ptep,
-> +			   pte_t pte)
-> +{
-> +	/*
-> +	 * When handling numa faults, we already have the pte marked
-> +	 * _PAGE_PRESENT, but we can be sure that it is not in hpte.
-> +	 * Hence we can use set_pte_at for them.
-> +	 */
-> +	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
-> +
-> +	/*
-> +	 * Add the pte bit when tryint set a pte
-> +	 */
-> +	pte = __pte(pte_val(pte) | _PAGE_PTE);
-> +
-> +	/* Perform the setting of the PTE */
-> +	radix__set_pte_at(mm, addr, ptep, pte, 0);
-> +}
->  
->  int radix__map_kernel_page(unsigned long ea, unsigned long pa,
->  			  pgprot_t flags,
-> @@ -102,7 +123,7 @@ int radix__map_kernel_page(unsigned long ea,
-> unsigned long pa, }
->  
->  set_the_pte:
-> -	set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> flags));
-> +	radix__set_pte(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
-> flags)); smp_wmb();
+> On Sat, 23 Jul 2016 14:42:33 +0530
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Changes from V1:
+>> * Update "powerpc/mm: Convert early cpu/mmu feature check to use the
+>> new helpers" based on resend code changes in this area.
+>> 
+>> We now do feature fixup early and hence we can reduce the usage of
+>>  __cpu/__mmu_has_feature.
+>
+> Is there a particular reason for for-4.8?
+>
+> I've only just started following this development so it might be
+> obvious, but if you could add some small justifications for why
+> a patch or series is done, it would be of great help to me.
 
-What we have in existing code is set_pte_at() function that adds
-the _PAGE_PTE bit, then calls __set_pte_at(), which calls radix or hash
-version of __set_pte_at().
+The goal is to reduce the impact of radix series on existing MMU
+function. With radix series, we do
 
-Now we also have radix__set_pte(), which has the function of the
-set_pte_at(), which is starting to confuse the naming convention.
-The new function is a radix-only set_pte_at(), rather than the
-radix implementation that gets called via set_pte().
+if (radix_enabled())
+        radix_function()
+else
+        hash_function()
 
-set_pte_at_radix()? That kind of sucks too, though. It might be better
-if the radix/hash variants were called __radix__set_pte_at(), and this
-new function was called radix__set_pte_at().
+We did try to reduce the impact in most code path like linux page table
+accessors by moving linux pte bits around to match the radix/hardware
+requirements. But we still have other code paths where we do the above
+conditional.
 
-Thanks,
-Nick
+Now for-4.8 is mainly because, I was trying to make sure 4.8 release
+will have a good performing radix/hash implementation which distros can
+base their kernel on. This series was posted to external list multiple
+times and I didn't receive many objections to the series. Hence I was
+thinking it to be a good idea to get it upstream by 4.8.
+ 
+-aneesh
