@@ -3,35 +3,35 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rywhV512DzDrJQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 08:21:30 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rywhg2GWjzDrJK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 08:21:39 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6PMJb5P058957
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:28 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24c1h4vbr1-1
+ u6PMJbFH015892
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:36 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24dnc5cvqn-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:36 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 25 Jul 2016 16:21:27 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 9B3373E40048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:21:26 -0600 (MDT)
+ Mon, 25 Jul 2016 16:21:35 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CE1071FF001E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:21:15 -0600 (MDT)
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH 5/8] pseries/drc-info: Search new DRC properties for CPU
- indexes
-Date: Mon, 25 Jul 2016 17:21:25 -0500
+Subject: [PATCH 6/8] hotplug/drc-info: Add code to search new devtree
+ properties
+Date: Mon, 25 Jul 2016 17:21:32 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <99c7b2cb-78a3-0d69-ab4b-d9f85a3bbab0@linux.vnet.ibm.com>
+Message-Id: <b102039d-7a0e-e5c1-ee3b-364946115702@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,214 +41,234 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pseries/drc-info: Provide parallel routines to convert between
-drc_index and CPU numbers at runtime, using the older device-tree
-properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
+rpadlpar_core.c: Provide parallel routines to search the older device-
+tree properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+and "ibm,drc-power-domains"), or the new property "ibm,drc-info".  The
+code searches for PHP PCI Slots, gets the DRC properties within the
+current node (using my-drc-index as correlation), and performs searches
+by name or type of DRC node.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
-diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
-index 9276779..10c4200 100644
---- a/arch/powerpc/platforms/pseries/pseries_energy.c
-+++ b/arch/powerpc/platforms/pseries/pseries_energy.c
-@@ -35,10 +35,68 @@ static int sysfs_entries;
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index dc67f39..bea9723 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -27,6 +27,7 @@
+ #include <linux/mutex.h>
+ #include <asm/rtas.h>
+ #include <asm/vio.h>
++#include <linux/firmware.h>
  
- /* Helper Routines to convert between drc_index to cpu numbers */
- 
-+void read_one_drc_info(int **info, char **dtype, char **dname,
-+			unsigned long int *fdi_p, unsigned long int *nsl_p,
-+			unsigned long int *si_p, unsigned long int *ldi_p)
-+{
-+	char *drc_type, *drc_name, *pc;
-+	u32 fdi, nsl, si, ldi;
-+
-+	fdi = nsl = si = ldi = 0;
-+
-+	/* Get drc-type:encode-string */
-+	pc = (char *)info;
-+	drc_type = pc;
-+	pc += (strlen(drc_type) + 1);
-+
-+	/* Get drc-name-prefix:encode-string */
-+	drc_name = (char *)pc;
-+	pc += (strlen(drc_name) + 1);
-+
-+	/* Get drc-index-start:encode-int */
-+	memcpy(&fdi, pc, 4);
-+	fdi = be32_to_cpu(fdi);
-+	pc += 4;
-+
-+	/* Get/skip drc-name-suffix-start:encode-int */
-+	pc += 4;
-+
-+	/* Get number-sequential-elements:encode-int */
-+	memcpy(&nsl, pc, 4);
-+	nsl = be32_to_cpu(nsl);
-+	pc += 4;
-+
-+	/* Get sequential-increment:encode-int */
-+	memcpy(&si, pc, 4);
-+	si = be32_to_cpu(si);
-+	pc += 4;
-+
-+	/* Get/skip drc-power-domain:encode-int */
-+	pc += 4;
-+
-+	/* Should now know end of current entry */
-+	ldi = fdi + ((nsl-1)*si);
-+
-+	(*info) = (int *)pc;
-+
-+	if (dtype)
-+		*dtype = drc_type;
-+	if (dname)
-+		*dname = drc_name;
-+	if (fdi_p)
-+		*fdi_p = fdi;
-+	if (nsl_p)
-+		*nsl_p = nsl;
-+	if (si_p)
-+		*si_p = si;
-+	if (ldi_p)
-+		*ldi_p = ldi;
-+}
-+EXPORT_SYMBOL(read_one_drc_info);
-+
- static u32 cpu_to_drc_index(int cpu)
+ #include "../pci.h"
+ #include "rpaphp.h"
+@@ -44,15 +45,14 @@ static struct device_node *find_vio_slot_node(char *drc_name)
  {
+ 	struct device_node *parent = of_find_node_by_name(NULL, "vdevice");
  	struct device_node *dn = NULL;
--	const int *indexes;
- 	int i;
- 	int rc = 1;
- 	u32 ret = 0;
-@@ -46,18 +104,54 @@ static u32 cpu_to_drc_index(int cpu)
- 	dn = of_find_node_by_path("/cpus");
- 	if (dn == NULL)
- 		goto err;
--	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
--	if (indexes == NULL)
--		goto err_of_node_put;
+-	char *name;
+ 	int rc;
+ 
+ 	if (!parent)
+ 		return NULL;
+ 
+ 	while ((dn = of_get_next_child(parent, dn))) {
+-		rc = rpaphp_get_drc_props(dn, NULL, &name, NULL, NULL);
+-		if ((rc == 0) && (!strcmp(drc_name, name)))
++		rc = rpaphp_check_drc_props(dn, drc_name, NULL);
++		if (rc == 0)
+ 			break;
+ 	}
+ 
+@@ -64,15 +64,12 @@ static struct device_node *find_php_slot_pci_node(char *drc_name,
+ 						  char *drc_type)
+ {
+ 	struct device_node *np = NULL;
+-	char *name;
+-	char *type;
+ 	int rc;
+ 
+ 	while ((np = of_find_node_by_name(np, "pci"))) {
+-		rc = rpaphp_get_drc_props(np, NULL, &name, &type, NULL);
++		rc = rpaphp_check_drc_props(np, drc_name, drc_type);
+ 		if (rc == 0)
+-			if (!strcmp(drc_name, name) && !strcmp(drc_type, type))
+-				break;
++			break;
+ 	}
+ 
+ 	return np;
+diff --git a/drivers/pci/hotplug/rpaphp.h b/drivers/pci/hotplug/rpaphp.h
+index 7db024e..8db5f2e 100644
+--- a/drivers/pci/hotplug/rpaphp.h
++++ b/drivers/pci/hotplug/rpaphp.h
+@@ -91,8 +91,8 @@ int rpaphp_get_sensor_state(struct slot *slot, int *state);
+ 
+ /* rpaphp_core.c */
+ int rpaphp_add_slot(struct device_node *dn);
+-int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+-		char **drc_name, char **drc_type, int *drc_power_domain);
++int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
++		char *drc_type);
+ 
+ /* rpaphp_slot.c */
+ void dealloc_slot_struct(struct slot *slot);
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 8d13202..0cfdbd9 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -30,6 +30,7 @@
+ #include <linux/smp.h>
+ #include <linux/init.h>
+ #include <linux/vmalloc.h>
++#include <asm/firmware.h>
+ #include <asm/eeh.h>       /* for eeh_add_device() */
+ #include <asm/rtas.h>		/* rtas_call */
+ #include <asm/pci-bridge.h>	/* for pci_controller */
+@@ -142,15 +143,6 @@ static enum pci_bus_speed get_max_bus_speed(struct slot *slot)
+ 	case 5:
+ 	case 6:
+ 		speed = PCI_SPEED_33MHz;	/* speed for case 1-6 */
+-		break;
+-	case 7:
+-	case 8:
+-		speed = PCI_SPEED_66MHz;
+-		break;
+-	case 11:
+-	case 14:
+-		speed = PCI_SPEED_66MHz_PCIX;
+-		break;
+ 	case 12:
+ 	case 15:
+ 		speed = PCI_SPEED_100MHz_PCIX;
+@@ -196,25 +188,21 @@ static int get_children_props(struct device_node *dn, const int **drc_indexes,
+ 	return 0;
+ }
+ 
+-/* To get the DRC props describing the current node, first obtain it's
+- * my-drc-index property.  Next obtain the DRC list from it's parent.  Use
+- * the my-drc-index for correlation, and obtain the requested properties.
 +
- 	/* Convert logical cpu number to core number */
- 	i = cpu_core_index_of_thread(cpu);
--	/*
--	 * The first element indexes[0] is the number of drc_indexes
--	 * returned in the list.  Hence i+1 will get the drc_index
--	 * corresponding to core number i.
--	 */
--	WARN_ON(i > indexes[0]);
--	ret = indexes[i + 1];
++/* Verify the existence of 'drc_name' and/or 'drc_type' within the
++ * current node.  First obtain it's my-drc-index property.  Next,
++ * obtain the DRC info from it's parent.  Use the my-drc-index for
++ * correlation, and obtain/validate the requested properties.
+  */
+-int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+-		char **drc_name, char **drc_type, int *drc_power_domain)
 +
-+	if (firmware_has_feature(FW_FEATURE_RPS_DRC_INFO)) {
-+		int *info = (int *)4;
-+		unsigned long int num_set_entries, j, iw = i, fdi = 0;
-+		unsigned long int ldi = 0, nsl = 0, si = 0;
-+		char *dtype;
-+		char *dname;
++static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
++				char *drc_type, unsigned int my_index)
+ {
++	char *name_tmp, *type_tmp;
+ 	const int *indexes, *names;
+ 	const int *types, *domains;
+-	const unsigned int *my_index;
+-	char *name_tmp, *type_tmp;
+ 	int i, rc;
+ 
+-	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
+-	if (!my_index) {
+-		/* Node isn't DLPAR/hotplug capable */
+-		return -EINVAL;
+-	}
+-
+ 	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
+ 	if (rc < 0) {
+ 		return -EINVAL;
+@@ -225,24 +213,83 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+ 
+ 	/* Iterate through parent properties, looking for my-drc-index */
+ 	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
+-		if ((unsigned int) indexes[i + 1] == *my_index) {
+-			if (drc_name)
+-				*drc_name = name_tmp;
+-			if (drc_type)
+-				*drc_type = type_tmp;
+-			if (drc_index)
+-				*drc_index = be32_to_cpu(*my_index);
+-			if (drc_power_domain)
+-				*drc_power_domain = be32_to_cpu(domains[i+1]);
+-			return 0;
+-		}
++		if ((unsigned int) indexes[i + 1] == my_index)
++			break;
 +
-+		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
-+		if (info == NULL)
-+			goto err_of_node_put;
+ 		name_tmp += (strlen(name_tmp) + 1);
+ 		type_tmp += (strlen(type_tmp) + 1);
+ 	}
+ 
++	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
++	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
++		return 0;
 +
-+		num_set_entries = be32_to_cpu(*info++);
++	return -EINVAL;
++}
 +
-+		for (j = 0; j < num_set_entries; j++) {
++static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
++				char *drc_type, unsigned int my_index)
++{
++	int *info = (int *)dn;
++	unsigned int entries;
++	unsigned long int fdi = 0, ldi = 0, nsl = 0, si = 0;
++	char *name_tmp, *type_tmp;
++	int j, ret = -EINVAL;
 +
-+			read_one_drc_info(&info, &dtype, &dname, &fdi,
-+					&nsl, &si, &ldi);
-+			if (strcmp(dtype, "CPU"))
-+				goto err;
++	info = (int *)of_get_property(dn->parent, "ibm,drc-info", NULL);
++	if (info == NULL)
++		return -EINVAL;
 +
-+			if (iw < ldi)
-+				break;
++	entries = be32_to_cpu(*info++);
 +
-+			WARN_ON(((iw-fdi)%si) != 0);
-+		}
-+		WARN_ON((nsl == 0) | (si == 0));
++	for (j = 0; j < entries; j++) {
++		read_one_drc_info(&info, &type_tmp, &name_tmp,
++				&fdi, &nsl, &si, &ldi);
 +
-+		ret = ldi + (iw*si);
-+	} else {
-+		const int *indexes;
++		/* Should now know end of current entry */
 +
-+		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+		if (indexes == NULL)
-+			goto err_of_node_put;
++		ldi = fdi + ((nsl-1)*si);
 +
-+		/*
-+		 * The first element indexes[0] is the number of drc_indexes
-+		 * returned in the list.  Hence i+1 will get the drc_index
-+		 * corresponding to core number i.
-+		 */
-+		WARN_ON(i > indexes[0]);
-+		ret = indexes[i + 1];
++		WARN_ON(my_index < fdi);
++		if (my_index > ldi)
++			continue;
++
++		WARN_ON(((my_index-fdi)%si) != 0);
++
++		ret = ((my_index-fdi)/si);
++		break;
++	}
++	/* Found it */
++
++	if (((drc_name == NULL) ||
++	     (drc_name && !strcmp(drc_name, name_tmp))) &&
++	    ((drc_type == NULL) ||
++	     (drc_type && !strcmp(drc_type, type_tmp))))
++		return 0;
++
+ 	return -EINVAL;
+ }
+-EXPORT_SYMBOL_GPL(rpaphp_get_drc_props);
++
++int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
++			char *drc_type)
++{
++	const unsigned int *my_index;
++
++	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
++	if (!my_index) {
++		/* Node isn't DLPAR/hotplug capable */
++		return -EINVAL;
 +	}
 +
- 	rc = 0;
++	if (firmware_has_feature(FW_FEATURE_RPS_DRC_INFO))
++		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
++						*my_index);
++	else
++		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
++						*my_index);
++}
++EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
++
  
- err_of_node_put:
-@@ -78,21 +172,51 @@ static int drc_index_to_cpu(u32 drc_index)
- 	dn = of_find_node_by_path("/cpus");
- 	if (dn == NULL)
- 		goto err;
--	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
--	if (indexes == NULL)
--		goto err_of_node_put;
--	/*
--	 * First element in the array is the number of drc_indexes
--	 * returned.  Search through the list to find the matching
--	 * drc_index and get the core number
--	 */
--	for (i = 0; i < indexes[0]; i++) {
--		if (indexes[i + 1] == drc_index)
-+
-+	if (firmware_has_feature(FW_FEATURE_RPS_DRC_INFO)) {
-+		int *info = (int *)dn;
-+		unsigned long int num_set_entries, j, ret;
-+		unsigned long int fdi = 0, ldi = 0, nsl = 0, si = 0;
-+		char *dtype, *dname;
-+
-+		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
-+		if (info == NULL)
-+			goto err_of_node_put;
-+
-+		num_set_entries = be32_to_cpu(*info++);
-+
-+		for (j = 0; j < num_set_entries; j++) {
-+			read_one_drc_info(&info, &dtype, &dname, &fdi,
-+					&nsl, &si, &ldi);
-+			if (strcmp(dtype, "CPU"))
-+				goto err;
-+
-+			WARN_ON(drc_index < fdi);
-+			if (drc_index > ldi)
-+				continue;
-+
-+			WARN_ON(((drc_index-fdi)%si) != 0);
-+
-+			ret = ((drc_index-fdi)/si);
- 			break;
-+		}
-+	} else {
-+		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+		if (indexes == NULL)
-+			goto err_of_node_put;
-+		/*
-+		 * First element in the array is the number of drc_indexes
-+		 * returned.  Search through the list to find the matching
-+		 * drc_index and get the core number
-+		 */
-+		for (i = 0; i < indexes[0]; i++) {
-+			if (indexes[i + 1] == drc_index)
-+				break;
-+		}
-+		/* Convert core number to logical cpu number */
-+		cpu = cpu_first_thread_of_core(i);
-+		rc = 0;
- 	}
--	/* Convert core number to logical cpu number */
--	cpu = cpu_first_thread_of_core(i);
--	rc = 0;
- 
- err_of_node_put:
- 	of_node_put(dn);
+ static int is_php_type(char *drc_type)
+ {
