@@ -1,25 +1,44 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR01-VE1-obe.outbound.protection.outlook.com
- (mail-ve1eur01on0042.outbound.protection.outlook.com [104.47.1.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <labbott@redhat.com>
+Received: from mail-it0-f48.google.com (mail-it0-f48.google.com
+ [209.85.214.48])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryr2J4dHDzDrJT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 04:51:35 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: Jason Cooper <jason@lakedaemon.net>
-CC: "oss@buserror.net" <oss@buserror.net>, "tglx@linutronix.de"
- <tglx@linutronix.de>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Xiaobo Xie
- <xiaobo.xie@nxp.com>
-Subject: RE: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-Date: Mon, 25 Jul 2016 06:15:57 +0000
-Message-ID: <AM3PR04MB1185B0A04FC6879C2550A8EC910D0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-References: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
- <20160707142458.GN3348@io.lakedaemon.net>
-In-Reply-To: <20160707142458.GN3348@io.lakedaemon.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryrb44FmrzDrJM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 05:16:32 +1000 (AEST)
+Received: by mail-it0-f48.google.com with SMTP id j124so115277271ith.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 12:16:32 -0700 (PDT)
+From: Laura Abbott <labbott@redhat.com>
+Subject: Re: [PATCH v4 12/12] mm: SLUB hardened usercopy support
+To: Kees Cook <keescook@chromium.org>, kernel-hardening@lists.openwall.com
+References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+ <1469046427-12696-13-git-send-email-keescook@chromium.org>
+Cc: Laura Abbott <labbott@fedoraproject.org>,
+ Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
+ <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ x86@kernel.org, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski
+ <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>, linux-arm-kernel@lists.infradead.org,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <0f980e84-b587-3d9e-3c26-ad57f947c08b@redhat.com>
+Date: Mon, 25 Jul 2016 12:16:24 -0700
 MIME-Version: 1.0
+In-Reply-To: <1469046427-12696-13-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +48,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 07, 2016 at 10:25PM , Jason Cooper <jason@lakedaemon.net> wrote=
-:
-> -----Original Message-----
-> From: Jason Cooper [mailto:jason@lakedaemon.net]
-> Sent: Thursday, July 07, 2016 10:25 PM
-> To: Qiang Zhao <qiang.zhao@nxp.com>
-> Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo Xie
-> <xiaobo.xie@nxp.com>
-> Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/f=
-sl/qe
->=20
-> Hi Zhao Qiang,
->=20
-> On Thu, Jul 07, 2016 at 09:23:55AM +0800, Zhao Qiang wrote:
-> > The driver stays the same.
-> >
-> > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> > ---
-> > Changes for v2:
-> > 	- modify the subject and commit msg
-> >
-> >  drivers/irqchip/Makefile                | 1 +
-> >  drivers/{soc/fsl/qe =3D> irqchip}/qe_ic.c | 0  drivers/{soc/fsl/qe =3D=
+On 07/20/2016 01:27 PM, Kees Cook wrote:
+> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
+> SLUB allocator to catch any copies that may span objects. Includes a
+> redzone handling fix discovered by Michael Ellerman.
 >
-> > irqchip}/qe_ic.h | 0
-> >  drivers/soc/fsl/qe/Makefile             | 2 +-
-> >  4 files changed, 2 insertions(+), 1 deletion(-)  rename
-> > drivers/{soc/fsl/qe =3D> irqchip}/qe_ic.c (100%)  rename
-> > drivers/{soc/fsl/qe =3D> irqchip}/qe_ic.h (100%)
->=20
-> Please merge the include file into the C file and rename to follow the na=
-ming
-> convention in drivers/irqchip/.  e.g. irq-qeic.c or irq-qe_ic.c.
->=20
-> Once you have that, please resend the entire series with this as the firs=
-t patch.
+> Based on code from PaX and grsecurity.
+>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  init/Kconfig |  1 +
+>  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
+>  2 files changed, 37 insertions(+)
+>
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 798c2020ee7c..1c4711819dfd 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -1765,6 +1765,7 @@ config SLAB
+>
+>  config SLUB
+>  	bool "SLUB (Unqueued Allocator)"
+> +	select HAVE_HARDENED_USERCOPY_ALLOCATOR
+>  	help
+>  	   SLUB is a slab allocator that minimizes cache line usage
+>  	   instead of managing queues of cached objects (SLAB approach).
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 825ff4505336..7dee3d9a5843 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+>  EXPORT_SYMBOL(__kmalloc_node);
+>  #endif
+>
+> +#ifdef CONFIG_HARDENED_USERCOPY
+> +/*
+> + * Rejects objects that are incorrectly sized.
+> + *
+> + * Returns NULL if check passes, otherwise const char * to name of cache
+> + * to indicate an error.
+> + */
+> +const char *__check_heap_object(const void *ptr, unsigned long n,
+> +				struct page *page)
+> +{
+> +	struct kmem_cache *s;
+> +	unsigned long offset;
+> +	size_t object_size;
+> +
+> +	/* Find object and usable object size. */
+> +	s = page->slab_cache;
+> +	object_size = slab_ksize(s);
+> +
+> +	/* Find offset within object. */
+> +	offset = (ptr - page_address(page)) % s->size;
+> +
+> +	/* Adjust for redzone and reject if within the redzone. */
+> +	if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
+> +		if (offset < s->red_left_pad)
+> +			return s->name;
+> +		offset -= s->red_left_pad;
+> +	}
+> +
+> +	/* Allow address range falling entirely within object size. */
+> +	if (offset <= object_size && n <= object_size - offset)
+> +		return NULL;
+> +
+> +	return s->name;
+> +}
+> +#endif /* CONFIG_HARDENED_USERCOPY */
+> +
 
-Sorry, I have no idea about "Include file", could you explain which file yo=
-u meant?
+I compared this against what check_valid_pointer does for SLUB_DEBUG
+checking. I was hoping we could utilize that function to avoid
+duplication but a) __check_heap_object needs to allow accesses anywhere
+in the object, not just the beginning b) accessing page->objects
+is racy without the addition of locking in SLUB_DEBUG.
 
-Thank you!
--Zhao Qiang
+Still, the ptr < page_address(page) check from __check_heap_object would
+be good to add to avoid generating garbage large offsets and trying to
+infer C math.
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 7dee3d9..5370e4f 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -3632,6 +3632,9 @@ const char *__check_heap_object(const void *ptr, unsigned long n,
+         s = page->slab_cache;
+         object_size = slab_ksize(s);
+  
++       if (ptr < page_address(page))
++               return s->name;
++
+         /* Find offset within object. */
+         offset = (ptr - page_address(page)) % s->size;
+  
+
+With that, you can add
+
+Reviwed-by: Laura Abbott <labbott@redhat.com>
+
+>  static size_t __ksize(const void *object)
+>  {
+>  	struct page *page;
+>
+
+Thanks,
+Laura
