@@ -1,48 +1,19 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from NAM03-CO1-obe.outbound.protection.outlook.com
+ (mail-co1nam03on0043.outbound.protection.outlook.com [104.47.40.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryVkz3Z0vzDqcn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:52:11 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6P5mvOK017472
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 01:52:08 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24c1h3m7v1-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 01:52:08 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 25 Jul 2016 15:52:04 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 82CAC2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:52:02 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6P5q2bj31391998
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:52:02 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6P5q1hj001195
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:52:02 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- clombard <clombard@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- fbarrat <fbarrat@linux.vnet.ibm.com>,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- Huy Nguyen <huyn@mellanox.com>
-Subject: Re: [PATCH] cxl: add device ID for Mellanox ConnectX-4
-In-reply-to: <1469422692-30782-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1469422692-30782-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Mon, 25 Jul 2016 15:52:00 +1000
-Message-Id: <1469425913-sup-1327@x230.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryVpQ21kMzDqcn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:55:09 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@nxp.com>
+To: <oss@buserror.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <xiaobo.xie@nxp.com>, Zhao Qiang <qiang.zhao@nxp.com>
+Subject: [PATCH v5 1/2] qe: modify get_qe_base function
+Date: Mon, 25 Jul 2016 13:43:46 +0800
+Message-ID: <1469425427-33883-1-git-send-email-qiang.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,4 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+modify get_qe_base function with of_address_to_resource
+instead of of_get_property and of_translate_address.
+
+Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+---
+Changes for v2:
+	- na
+Changes for v3:
+	- na
+Changes for v4:
+	- na
+Changes for v5:
+	- na
+
+ drivers/soc/fsl/qe/qe.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 7026507..2707a82 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -69,8 +69,8 @@ static phys_addr_t qebase = -1;
+ phys_addr_t get_qe_base(void)
+ {
+ 	struct device_node *qe;
+-	int size;
+-	const u32 *prop;
++	int ret;
++	struct resource res;
+ 
+ 	if (qebase != -1)
+ 		return qebase;
+@@ -82,9 +82,9 @@ phys_addr_t get_qe_base(void)
+ 			return qebase;
+ 	}
+ 
+-	prop = of_get_property(qe, "reg", &size);
+-	if (prop && size >= sizeof(*prop))
+-		qebase = of_translate_address(qe, prop);
++	ret = of_address_to_resource(qe, 0, &res);
++	if (!ret)
++		qebase = res.start;
+ 	of_node_put(qe);
+ 
+ 	return qebase;
+-- 
+2.1.0.27.g96db324
