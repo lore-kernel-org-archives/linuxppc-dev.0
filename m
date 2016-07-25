@@ -1,28 +1,43 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0085.outbound.protection.outlook.com [104.47.2.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rygxr1V1NzDrFG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 22:47:11 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: Scott Wood <oss@buserror.net>, Michael Ellerman <mpe@ellerman.id.au>, Arnd
- Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
-CC: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v11 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
-Date: Mon, 25 Jul 2016 06:12:18 +0000
-Message-ID: <HE1PR04MB088913D39528958C6905D43DF80D0@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1468723822-30457-1-git-send-email-oss@buserror.net>
- <1468723822-30457-5-git-send-email-oss@buserror.net>
- <4016699.uYaV8nWfqC@wuerfel> <1469039508.25630.17.camel@buserror.net>
- <146909676646.16700.8383344640490662952@concordia>
- <1469119526.25630.42.camel@buserror.net>
-In-Reply-To: <1469119526.25630.42.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rykkg5rYjzDrFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 00:52:43 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6PEn49L009832
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 10:52:41 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24c1h4dxw3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 10:52:40 -0400
+Received: from localhost
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 26 Jul 2016 00:52:38 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AA6622BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 00:52:31 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6PEqV4627459612
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 00:52:31 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6PEqV09012108
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 00:52:31 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [RFC PATCH 0/9]powerpc: "paca->soft_enabled" based local atomic
+ operation implementation
+Date: Mon, 25 Jul 2016 20:22:13 +0530
+Message-Id: <1469458342-26233-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,51 +47,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQsDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTY290
-dCBXb29kIFttYWlsdG86b3NzQGJ1c2Vycm9yLm5ldF0NCj4gU2VudDogRnJpZGF5LCBKdWx5IDIy
-LCAyMDE2IDEyOjQ1IEFNDQo+IFRvOiBNaWNoYWVsIEVsbGVybWFuOyBBcm5kIEJlcmdtYW5uDQo+
-IENjOiBsaW51eC1tbWNAdmdlci5rZXJuZWwub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9y
-ZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5r
-ZXJuZWwub3JnOyBZYW5nYm8gTHUNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MTEgNC81XSBwb3dl
-cnBjL2ZzbDogbW92ZSBtcGM4NXh4LmggdG8NCj4gaW5jbHVkZS9saW51eC9mc2wNCj4gDQo+IE9u
-IFRodSwgMjAxNi0wNy0yMSBhdCAyMDoyNiArMTAwMCwgTWljaGFlbCBFbGxlcm1hbiB3cm90ZToN
-Cj4gPiBRdW90aW5nIFNjb3R0IFdvb2QgKDIwMTYtMDctMjEgMDQ6MzE6NDgpDQo+ID4gPg0KPiA+
-ID4gT24gV2VkLCAyMDE2LTA3LTIwIGF0IDEzOjI0ICswMjAwLCBBcm5kIEJlcmdtYW5uIHdyb3Rl
-Og0KPiA+ID4gPg0KPiA+ID4gPiBPbiBTYXR1cmRheSwgSnVseSAxNiwgMjAxNiA5OjUwOjIxIFBN
-IENFU1QgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+ID4gPg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-RnJvbTogeWFuZ2JvIGx1IDx5YW5nYm8ubHVAbnhwLmNvbT4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+
-IE1vdmUgbXBjODV4eC5oIHRvIGluY2x1ZGUvbGludXgvZnNsIGFuZCByZW5hbWUgaXQgdG8gc3Zy
-LmggYXMgYQ0KPiA+ID4gPiA+IGNvbW1vbiBoZWFkZXIgZmlsZS7CoMKgVGhpcyBTVlIgbnVtYmVy
-c3BhY2UgaXMgdXNlZCBvbiBzb21lIEFSTQ0KPiA+ID4gPiA+IGNoaXBzIGFzIHdlbGwgYXMgUFBD
-LCBhbmQgZXZlbiB0byBjaGVjayBmb3IgYSBQUEMgU1ZSIG11bHRpLWFyY2gNCj4gPiA+ID4gPiBk
-cml2ZXJzIHdvdWxkIG90aGVyd2lzZSBuZWVkIHRvIGlmZGVmIHRoZSBoZWFkZXIgaW5jbHVzaW9u
-IGFuZA0KPiA+ID4gPiA+IGFsbCByZWZlcmVuY2VzIHRvIHRoZSBTVlIgc3ltYm9scy4NCj4gPiA+
-ID4gPg0KPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFlhbmdibyBMdSA8eWFuZ2JvLmx1QG54cC5j
-b20+DQo+ID4gPiA+ID4gQWNrZWQtYnk6IFdvbGZyYW0gU2FuZyA8d3NhQHRoZS1kcmVhbXMuZGU+
-DQo+ID4gPiA+ID4gQWNrZWQtYnk6IFN0ZXBoZW4gQm95ZCA8c2JveWRAY29kZWF1cm9yYS5vcmc+
-DQo+ID4gPiA+ID4gQWNrZWQtYnk6IEpvZXJnIFJvZWRlbCA8anJvZWRlbEBzdXNlLmRlPg0KPiA+
-ID4gPiA+IFtzY290dHdvb2Q6IHVwZGF0ZSBkZXNjcmlwdGlvbl0NCj4gPiA+ID4gPiBTaWduZWQt
-b2ZmLWJ5OiBTY290dCBXb29kIDxvc3NAYnVzZXJyb3IubmV0Pg0KPiA+ID4gPiA+DQo+ID4gPiA+
-IEFzIGRpc2N1c3NlZCBiZWZvcmUsIHBsZWFzZSBkb24ndCBpbnRyb2R1Y2UgeWV0IGFub3RoZXIg
-dmVuZG9yDQo+ID4gPiA+IHNwZWNpZmljIHdheSB0byBtYXRjaCBhIFNvQyBJRCBmcm9tIGEgZGV2
-aWNlIGRyaXZlci4NCj4gPiA+ID4NCj4gPiA+ID4gSSd2ZSBwb3N0ZWQgYSBwYXRjaCBmb3IgYW4g
-ZXh0ZW5zaW9uIHRvIHRoZSBzb2NfZGV2aWNlDQo+ID4gPiA+IGluZnJhc3RydWN0dXJlIHRvIGFs
-bG93IGNvbXBhcmluZyB0aGUgcnVubmluZyBTb0MgdG8gYSB0YWJsZSBvZg0KPiA+ID4gPiBkZXZp
-Y2VzLCB1c2UgdGhhdCBpbnN0ZWFkLg0KPiA+ID4gQXMgSSBhc2tlZCBiZWZvcmUsIGluIHdoaWNo
-IHJlbGV2YW50IG1haW50YWluZXJzaGlwIGNhcGFjaXR5IGFyZSB5b3UNCj4gPiA+IE5BQ0tpbmcg
-dGhpcz8NCj4gPiBJJ2xsIG5hY2sgdGhlIHBvd2VycGMgcGFydCB1bnRpbCB5b3UgZ3V5cyBjYW4g
-YWdyZWUuDQo+IA0KPiBPSywgSSd2ZSBwdWxsZWQgdGhlc2UgcGF0Y2hlcyBvdXQuDQo+IA0KPiBG
-b3IgdGhlIE1NQyBpc3N1ZSBJIHN1Z2dlc3QgdXNpbmcgaWZkZWYgQ09ORklHX1BQQyBhbmQgbWZz
-cHIoU1BSTl9TVlIpDQo+IGxpa2UgdGhlIGNsb2NrIGRyaXZlciBkb2VzWzFdIGFuZCB3ZSBjYW4g
-cmV2aXNpdCB0aGUgaXNzdWUgaWYvd2hlbiB3ZQ0KPiBuZWVkIHRvIGRvIHNvbWV0aGluZyBzaW1p
-bGFyIG9uIGFuIEFSTSBjaGlwLg0KDQpbTHUgWWFuZ2JvLUI0NzA5M10gSSByZW1lbWJlcmVkIHRo
-YXQgVWZmZSBoYWQgb3Bwb3NlZCB1cyB0byBpbnRyb2R1Y2Ugbm9uLWdlbmVyaWMgaGVhZGVyIGZp
-bGVzKGxpa2UgJyNpbmNsdWRlIDxhc20vbXBjODV4eC5oPicpDQppbiBtbWMgZHJpdmVyIGluaXRp
-YWxseS4gU28gSSB0aGluayBpdCB3aWxsIG5vdCBiZSBhY2NlcHRlZCB0byB1c2UgaWZkZWYgQ09O
-RklHX1BQQyBhbmQgbWZzcHIoU1BSTl9TVlIpLi4uDQpBbmQgdGhpcyBtZXRob2Qgc3RpbGwgY291
-bGRu4oCZdCBnZXQgU1ZSIG9mIEFSTSBjaGlwIG5vdy4NCg0KQW55IG90aGVyIHN1Z2dlc3Rpb24g
-aGVyZT8NClRoYW5rIHlvdSB2ZXJ5IG11Y2guDQoNCi0gWWFuZ2JvIEx1DQoNCj4gDQo+IC1TY290
-dA0KPiANCj4gWzFdIE9uZSBvZiB0aGUgaXNzdWVzIHdpdGggQXJuZCdzIGFwcHJvYWNoIGlzIHRo
-YXQgaXQgd291bGRuJ3QgaGF2ZQ0KPiB3b3JrZWQgZm9yIGVhcmx5IHRoaW5ncyBsaWtlIHRoZSBj
-bG9jayBkcml2ZXIsIGFuZCBoZSBkaWRuJ3Qgc2VlbSB0byBtaW5kDQo+IHVzaW5nIGlmZGVmIGFu
-ZA0KPiBtZnNwcigpIHRoZXJlLg0KDQo=
+Local atomic operations are fast and highly reentrant per CPU counters.
+Used for percpu variable updates. Local atomic operations only guarantee
+variable modification atomicity wrt the CPU which owns the data and
+these needs to be executed in a preemption safe way.
+
+Here is the design of the patchset. Since local_* operations
+are only need to be atomic to interrupts (IIUC), we have two options.
+Either replay the "op" if interrupted or replay the interrupt after
+the "op". Initial patchset posted was based on implementing local_* operation
+based on CR5 which replay's the "op". Patchset had issues in case of
+rewinding the address pointor from an array. This make the slow patch
+really slow. Since CR5 based implementation proposed using __ex_table to find
+the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
+
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
+
+But this patchset uses Benjamin Herrenschmidt suggestion of using
+arch_local_irq_disable_var() to soft_disable interrupts (including PMIs).
+After finishing the "op", arch_local_irq_restore() called and correspondingly
+interrupts are replayed if any occured.
+
+patch re-write the current local_* functions to use arch_local_irq_disbale.
+Base flow for each function is
+
+ {
+        arch_local_irq_disable_var(2)
+        load
+        ..
+        store
+        arch_local_irq_restore()
+ }
+
+Currently only asm/local.h has been rewrite, and also
+the entire change is tested only in PPC64 (pseries guest)
+
+Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
+instruction pair is used for local_* operations, which are heavy
+on cycle count and they dont support a local variant. So to
+see whether the new implementation helps, used a modified
+version of Rusty's benchmark code on local_t.
+
+https://lkml.org/lkml/2008/12/16/450
+
+Modifications to Rusty's benchmark code:
+ - Executed only local_t test
+
+Here are the values with the patch.
+
+Time in ns per iteration
+
+Local_t         Without Patch           With Patch
+
+_inc                    28              8
+_add                    28              8
+_read                   3               3
+_add_return             28              7
+
+First four are the clean up patches which lays the foundation
+to make things easier. Fifth patch in the patchset reverse the
+current soft_enabled logic and commit message details the reason and
+need for this change. Sixth patch holds the changes needed
+for reversing logic. Rest of the patches are to add support
+for maskable PMI and implementation of local_t using arch_local_disable_*().
+
+Since the patchset is experimental, changes made are focused on pseries and
+powernv platforms only. Would really like to know comments for
+this approach before extending to other powerpc platforms.
+
+Tested the patchset in a
+ - pSeries LPAR (with perf record).
+	- Ran kernbench with perf record for 24 hours.
+	- More testing needed.
+
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+
+Madhavan Srinivasan (9):
+  Add #defs for paca->soft_enabled flags
+  Cleanup to use LAZY_INTERRUPT_* macros for paca->soft_enabled update
+  powerpc: move set_soft_enabled()
+  powerpc: Use set_soft_enabled api to update paca->soft_enabled
+  powerpc: reverse the soft_enable logic
+  powerpc: modify __SOFTEN_TEST to support tri-state soft_enabled flag
+  powerpc: Add support to mask perf interrupts
+  powerpc: Support to replay PMIs
+  powerpc: rewrite local_t using soft_irq
+
+ arch/powerpc/include/asm/exception-64s.h | 24 +++++++--
+ arch/powerpc/include/asm/hw_irq.h        | 43 ++++++++++++---
+ arch/powerpc/include/asm/irqflags.h      |  8 +--
+ arch/powerpc/include/asm/kvm_ppc.h       |  2 +-
+ arch/powerpc/include/asm/local.h         | 91 ++++++++++++++++++++++----------
+ arch/powerpc/kernel/entry_64.S           | 16 +++---
+ arch/powerpc/kernel/exceptions-64s.S     | 27 ++++++++--
+ arch/powerpc/kernel/head_64.S            |  3 +-
+ arch/powerpc/kernel/idle_power4.S        |  3 +-
+ arch/powerpc/kernel/irq.c                | 24 +++++----
+ arch/powerpc/kernel/process.c            |  3 +-
+ arch/powerpc/kernel/setup_64.c           |  4 ++
+ arch/powerpc/kernel/time.c               |  4 +-
+ arch/powerpc/mm/hugetlbpage.c            |  2 +-
+ arch/powerpc/perf/core-book3s.c          |  2 +-
+ 15 files changed, 184 insertions(+), 72 deletions(-)
+
+--
+2.7.4
