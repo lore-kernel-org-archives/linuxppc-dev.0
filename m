@@ -1,20 +1,42 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-cys01nam02on0059.outbound.protection.outlook.com [104.47.37.59])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.189])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rybV41ChpzDrJ2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 19:26:19 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <jason@lakedaemon.net>
-CC: <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, <xiaobo.xie@nxp.com>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [Patch v3 1/3] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-Date: Mon, 25 Jul 2016 16:59:54 +0800
-Message-ID: <1469437196-38003-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rybZ30jWhzDqd9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 19:29:47 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Josh Poimboeuf' <jpoimboe@redhat.com>, Kees Cook <keescook@chromium.org>
+CC: Jan Kara <jack@suse.cz>, "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, Will Deacon <will.deacon@arm.com>,
+ Linux-MM <linux-mm@kvack.org>, sparclinux <sparclinux@vger.kernel.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, Christoph Lameter
+ <cl@linux.com>, Andrea Arcangeli <aarcange@redhat.com>, linux-arch
+ <linux-arch@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, Russell King
+ <linux@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Catalin Marinas
+ <catalin.marinas@arm.com>, PaX Team <pageexec@freemail.hu>, Borislav Petkov
+ <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Fenghua Yu
+ <fenghua.yu@intel.com>, Rik van Riel <riel@redhat.com>, David Rientjes
+ <rientjes@google.com>, Tony Luck <tony.luck@intel.com>, Andy Lutomirski
+ <luto@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Dmitry Vyukov
+ <dvyukov@google.com>, Laura Abbott <labbott@fedoraproject.org>, Brad Spengler
+ <spender@grsecurity.net>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, LKML
+ <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>, "Daniel
+ Micay" <danielmicay@gmail.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Subject: RE: [PATCH v3 02/11] mm: Hardened usercopy
+Date: Mon, 25 Jul 2016 09:27:31 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F502102@AcuExch.aculab.com>
+References: <1468619065-3222-1-git-send-email-keescook@chromium.org>
+ <1468619065-3222-3-git-send-email-keescook@chromium.org>
+ <5790711f.2350420a.b4287.2cc0SMTPIN_ADDED_BROKEN@mx.google.com>
+ <CAGXu5jLCu1Vv0uugKZrsjSEsoABgXJSOJ8GkKmrHbvj9jkC2YA@mail.gmail.com>
+ <20160722174551.jddle6mf7zlq6xmb@treble>
+In-Reply-To: <20160722174551.jddle6mf7zlq6xmb@treble>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,250 +46,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-move the driver from drivers/soc/fsl/qe to drivers/irqchip,
-merge qe_ic.h and qe_ic.c into irq-qeic.c.
-
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
-Changes for v2:
-	- modify the subject and commit msg
-Changes for v3:
-	- merge .h file to .c, rename it with irq-qeic.c
-
- drivers/irqchip/Makefile                           |   1 +
- drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} |  82 +++++++++++++++-
- drivers/soc/fsl/qe/Makefile                        |   2 +-
- drivers/soc/fsl/qe/qe_ic.h                         | 103 ---------------------
- 4 files changed, 83 insertions(+), 105 deletions(-)
- rename drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} (85%)
- delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
-
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 38853a1..cef999d 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -69,3 +69,4 @@ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
- obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
- obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
-+obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/irq-qeic.c
-similarity index 85%
-rename from drivers/soc/fsl/qe/qe_ic.c
-rename to drivers/irqchip/irq-qeic.c
-index ec2ca86..1f91225 100644
---- a/drivers/soc/fsl/qe/qe_ic.c
-+++ b/drivers/irqchip/irq-qeic.c
-@@ -30,7 +30,87 @@
- #include <asm/io.h>
- #include <soc/fsl/qe/qe_ic.h>
- 
--#include "qe_ic.h"
-+#define NR_QE_IC_INTS		64
-+
-+/* QE IC registers offset */
-+#define QEIC_CICR		0x00
-+#define QEIC_CIVEC		0x04
-+#define QEIC_CRIPNR		0x08
-+#define QEIC_CIPNR		0x0c
-+#define QEIC_CIPXCC		0x10
-+#define QEIC_CIPYCC		0x14
-+#define QEIC_CIPWCC		0x18
-+#define QEIC_CIPZCC		0x1c
-+#define QEIC_CIMR		0x20
-+#define QEIC_CRIMR		0x24
-+#define QEIC_CICNR		0x28
-+#define QEIC_CIPRTA		0x30
-+#define QEIC_CIPRTB		0x34
-+#define QEIC_CRICR		0x3c
-+#define QEIC_CHIVEC		0x60
-+
-+/* Interrupt priority registers */
-+#define CIPCC_SHIFT_PRI0	29
-+#define CIPCC_SHIFT_PRI1	26
-+#define CIPCC_SHIFT_PRI2	23
-+#define CIPCC_SHIFT_PRI3	20
-+#define CIPCC_SHIFT_PRI4	13
-+#define CIPCC_SHIFT_PRI5	10
-+#define CIPCC_SHIFT_PRI6	7
-+#define CIPCC_SHIFT_PRI7	4
-+
-+/* CICR priority modes */
-+#define CICR_GWCC		0x00040000
-+#define CICR_GXCC		0x00020000
-+#define CICR_GYCC		0x00010000
-+#define CICR_GZCC		0x00080000
-+#define CICR_GRTA		0x00200000
-+#define CICR_GRTB		0x00400000
-+#define CICR_HPIT_SHIFT		8
-+#define CICR_HPIT_MASK		0x00000300
-+#define CICR_HP_SHIFT		24
-+#define CICR_HP_MASK		0x3f000000
-+
-+/* CICNR */
-+#define CICNR_WCC1T_SHIFT	20
-+#define CICNR_ZCC1T_SHIFT	28
-+#define CICNR_YCC1T_SHIFT	12
-+#define CICNR_XCC1T_SHIFT	4
-+
-+/* CRICR */
-+#define CRICR_RTA1T_SHIFT	20
-+#define CRICR_RTB1T_SHIFT	28
-+
-+/* Signal indicator */
-+#define SIGNAL_MASK		3
-+#define SIGNAL_HIGH		2
-+#define SIGNAL_LOW		0
-+
-+struct qe_ic {
-+	/* Control registers offset */
-+	volatile u32 __iomem *regs;
-+
-+	/* The remapper for this QEIC */
-+	struct irq_domain *irqhost;
-+
-+	/* The "linux" controller struct */
-+	struct irq_chip hc_irq;
-+
-+	/* VIRQ numbers of QE high/low irqs */
-+	unsigned int virq_high;
-+	unsigned int virq_low;
-+};
-+
-+/*
-+ * QE interrupt controller internal structure
-+ */
-+struct qe_ic_info {
-+	u32	mask;	  /* location of this source at the QIMR register. */
-+	u32	mask_reg; /* Mask register offset */
-+	u8	pri_code; /* for grouped interrupts sources - the interrupt
-+			     code as appears at the group priority register */
-+	u32	pri_reg;  /* Group priority register offset */
-+};
- 
- static DEFINE_RAW_SPINLOCK(qe_ic_lock);
- 
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index 2031d38..51e4726 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
- obj-$(CONFIG_CPM)	+= qe_common.o
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
-deleted file mode 100644
-index 926a2ed..0000000
---- a/drivers/soc/fsl/qe/qe_ic.h
-+++ /dev/null
-@@ -1,103 +0,0 @@
--/*
-- * drivers/soc/fsl/qe/qe_ic.h
-- *
-- * QUICC ENGINE Interrupt Controller Header
-- *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-- *
-- * Author: Li Yang <leoli@freescale.com>
-- * Based on code from Shlomi Gridish <gridish@freescale.com>
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--#ifndef _POWERPC_SYSDEV_QE_IC_H
--#define _POWERPC_SYSDEV_QE_IC_H
--
--#include <soc/fsl/qe/qe_ic.h>
--
--#define NR_QE_IC_INTS		64
--
--/* QE IC registers offset */
--#define QEIC_CICR		0x00
--#define QEIC_CIVEC		0x04
--#define QEIC_CRIPNR		0x08
--#define QEIC_CIPNR		0x0c
--#define QEIC_CIPXCC		0x10
--#define QEIC_CIPYCC		0x14
--#define QEIC_CIPWCC		0x18
--#define QEIC_CIPZCC		0x1c
--#define QEIC_CIMR		0x20
--#define QEIC_CRIMR		0x24
--#define QEIC_CICNR		0x28
--#define QEIC_CIPRTA		0x30
--#define QEIC_CIPRTB		0x34
--#define QEIC_CRICR		0x3c
--#define QEIC_CHIVEC		0x60
--
--/* Interrupt priority registers */
--#define CIPCC_SHIFT_PRI0	29
--#define CIPCC_SHIFT_PRI1	26
--#define CIPCC_SHIFT_PRI2	23
--#define CIPCC_SHIFT_PRI3	20
--#define CIPCC_SHIFT_PRI4	13
--#define CIPCC_SHIFT_PRI5	10
--#define CIPCC_SHIFT_PRI6	7
--#define CIPCC_SHIFT_PRI7	4
--
--/* CICR priority modes */
--#define CICR_GWCC		0x00040000
--#define CICR_GXCC		0x00020000
--#define CICR_GYCC		0x00010000
--#define CICR_GZCC		0x00080000
--#define CICR_GRTA		0x00200000
--#define CICR_GRTB		0x00400000
--#define CICR_HPIT_SHIFT		8
--#define CICR_HPIT_MASK		0x00000300
--#define CICR_HP_SHIFT		24
--#define CICR_HP_MASK		0x3f000000
--
--/* CICNR */
--#define CICNR_WCC1T_SHIFT	20
--#define CICNR_ZCC1T_SHIFT	28
--#define CICNR_YCC1T_SHIFT	12
--#define CICNR_XCC1T_SHIFT	4
--
--/* CRICR */
--#define CRICR_RTA1T_SHIFT	20
--#define CRICR_RTB1T_SHIFT	28
--
--/* Signal indicator */
--#define SIGNAL_MASK		3
--#define SIGNAL_HIGH		2
--#define SIGNAL_LOW		0
--
--struct qe_ic {
--	/* Control registers offset */
--	volatile u32 __iomem *regs;
--
--	/* The remapper for this QEIC */
--	struct irq_domain *irqhost;
--
--	/* The "linux" controller struct */
--	struct irq_chip hc_irq;
--
--	/* VIRQ numbers of QE high/low irqs */
--	unsigned int virq_high;
--	unsigned int virq_low;
--};
--
--/*
-- * QE interrupt controller internal structure
-- */
--struct qe_ic_info {
--	u32	mask;	  /* location of this source at the QIMR register. */
--	u32	mask_reg; /* Mask register offset */
--	u8	pri_code; /* for grouped interrupts sources - the interrupt
--			     code as appears at the group priority register */
--	u32	pri_reg;  /* Group priority register offset */
--};
--
--#endif /* _POWERPC_SYSDEV_QE_IC_H */
--- 
-2.1.0.27.g96db324
+RnJvbTogSm9zaCBQb2ltYm9ldWYNCj4gU2VudDogMjIgSnVseSAyMDE2IDE4OjQ2DQouLg0KPiA+
+ID4+ICsvKg0KPiA+ID4+ICsgKiBDaGVja3MgaWYgYSBnaXZlbiBwb2ludGVyIGFuZCBsZW5ndGgg
+aXMgY29udGFpbmVkIGJ5IHRoZSBjdXJyZW50DQo+ID4gPj4gKyAqIHN0YWNrIGZyYW1lIChpZiBw
+b3NzaWJsZSkuDQo+ID4gPj4gKyAqDQo+ID4gPj4gKyAqICAgMDogbm90IGF0IGFsbCBvbiB0aGUg
+c3RhY2sNCj4gPiA+PiArICogICAxOiBmdWxseSB3aXRoaW4gYSB2YWxpZCBzdGFjayBmcmFtZQ0K
+PiA+ID4+ICsgKiAgIDI6IGZ1bGx5IG9uIHRoZSBzdGFjayAod2hlbiBjYW4ndCBkbyBmcmFtZS1j
+aGVja2luZykNCj4gPiA+PiArICogICAtMTogZXJyb3IgY29uZGl0aW9uIChpbnZhbGlkIHN0YWNr
+IHBvc2l0aW9uIG9yIGJhZCBzdGFjayBmcmFtZSkNCj4gPiA+PiArICovDQo+ID4gPj4gK3N0YXRp
+YyBub2lubGluZSBpbnQgY2hlY2tfc3RhY2tfb2JqZWN0KGNvbnN0IHZvaWQgKm9iaiwgdW5zaWdu
+ZWQgbG9uZyBsZW4pDQo+ID4gPj4gK3sNCj4gPiA+PiArICAgICBjb25zdCB2b2lkICogY29uc3Qg
+c3RhY2sgPSB0YXNrX3N0YWNrX3BhZ2UoY3VycmVudCk7DQo+ID4gPj4gKyAgICAgY29uc3Qgdm9p
+ZCAqIGNvbnN0IHN0YWNrZW5kID0gc3RhY2sgKyBUSFJFQURfU0laRTsNCj4gPiA+DQo+ID4gPiBU
+aGF0IGFsbG93cyBhY2Nlc3MgdG8gdGhlIGVudGlyZSBzdGFjaywgaW5jbHVkaW5nIHRoZSBzdHJ1
+Y3QgdGhyZWFkX2luZm8sDQo+ID4gPiBpcyB0aGF0IHdoYXQgd2Ugd2FudCAtIGl0IHNlZW1zIGRh
+bmdlcm91cz8gT3IgZGlkIEkgbWlzcyBhIGNoZWNrDQo+ID4gPiBzb21ld2hlcmUgZWxzZT8NCj4g
+Pg0KPiA+IFRoYXQgc2VlbXMgbGlrZSBhIG5pY2UgaW1wcm92ZW1lbnQgdG8gbWFrZSwgeWVhaC4N
+Cj4gPg0KPiA+ID4gV2UgaGF2ZSBlbmRfb2Zfc3RhY2soKSB3aGljaCBjb21wdXRlcyB0aGUgZW5k
+IG9mIHRoZSBzdGFjayB0YWtpbmcNCj4gPiA+IHRocmVhZF9pbmZvIGludG8gYWNjb3VudCAoZW5k
+IGJlaW5nIHRoZSBvcHBvc2l0ZSBvZiB5b3VyIGVuZCBhYm92ZSkuDQo+ID4NCj4gPiBBbXVzaW5n
+bHksIHRoZSBvYmplY3RfaXNfb25fc3RhY2soKSBjaGVjayBpbiBzY2hlZC5oIGRvZXNuJ3QgdGFr
+ZQ0KPiA+IHRocmVhZF9pbmZvIGludG8gYWNjb3VudCBlaXRoZXIuIDpQIFJlZ2FyZGxlc3MsIEkg
+dGhpbmsgdXNpbmcNCj4gPiBlbmRfb2Zfc3RhY2soKSBtYXkgbm90IGJlIGJlc3QuIFRvIHRpZ2h0
+ZW4gdGhlIGNoZWNrLCBJIHRoaW5rIHdlIGNvdWxkDQo+ID4gYWRkIHRoaXMgYWZ0ZXIgY2hlY2tp
+bmcgdGhhdCB0aGUgb2JqZWN0IGlzIG9uIHRoZSBzdGFjazoNCj4gPg0KPiA+ICNpZmRlZiBDT05G
+SUdfU1RBQ0tfR1JPV1NVUA0KPiA+ICAgICAgICAgc3RhY2tlbmQgLT0gc2l6ZW9mKHN0cnVjdCB0
+aHJlYWRfaW5mbyk7DQo+ID4gI2Vsc2UNCj4gPiAgICAgICAgIHN0YWNrICs9IHNpemVvZihzdHJ1
+Y3QgdGhyZWFkX2luZm8pOw0KPiA+ICNlbmRpZg0KPiA+DQo+ID4gZS5nLiB0aGVuIGlmIHRoZSBw
+b2ludGVyIHdhcyBpbiB0aGUgdGhyZWFkX2luZm8sIHRoZSBzZWNvbmQgdGVzdCB3b3VsZA0KPiA+
+IGZhaWwsIHRyaWdnZXJpbmcgdGhlIHByb3RlY3Rpb24uDQo+IA0KPiBGV0lXLCB0aGlzIHdvbid0
+IHdvcmsgcmlnaHQgb24geDg2IGFmdGVyIEFuZHkncw0KPiBDT05GSUdfVEhSRUFEX0lORk9fSU5f
+VEFTSyBwYXRjaGVzIGdldCBtZXJnZWQuDQoNCldoYXQgZW5kcyB1cCBpbiB0aGUgJ3RocmVhZF9p
+bmZvJyBhcmVhPw0KSWYgaXQgY29udGFpbnMgdGhlIGZwIHNhdmUgYXJlYSB0aGVuIHByb2dyYW1z
+IGxpa2UgZ2RiIG1heSBlbmQgdXAgcmVxdWVzdGluZw0KY29weV9pbi9vdXQgZGlyZWN0bHkgZnJv
+bSB0aGF0IGFyZWEuDQoNCkludGVyZXN0aW5nbHkgdGhlIGF2eCByZWdpc3RlcnMgZG9uJ3QgbmVl
+ZCBzYXZpbmcgb24gYSBub3JtYWwgc3lzdGVtIGNhbGwNCmVudHJ5ICh0aGV5IGFyZSBhbGwgY2Fs
+bGVyLXNhdmVkKSBzbyB0aGUga2VybmVsIHN0YWNrIGNhbiBzYWZlbHkgb3ZlcndyaXRlDQp0aGF0
+IGFyZWEuDQpTeXNjYWxsIGVudHJ5IHByb2JhYmx5IG91Z2h0IHRvIGV4ZWN1dGUgdGhlICd6ZXJv
+IGFsbCBhdnggcmVnaXN0ZXJzJyBpbnN0cnVjdGlvbi4NClRoZXkgZG8gbmVlZCBzYXZpbmcgb24g
+aW50ZXJydXB0IGVudHJ5IC0gYnV0IHRoZSBzdGFjayB1c2VkIHdpbGwgYmUgbGVzcy4NCg0KCURh
+dmlkDQoNCg==
