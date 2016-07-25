@@ -1,23 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryTpS4kSszDqVF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:10:08 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: chengang@emindsoft.com.cn, akpm@linux-foundation.org,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: dave.hansen@linux.intel.com, tglx@linutronix.de, mingo@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Chen Gang <chengang@emindsoft.com.cn>, Chen Gang <gang.chen.5i5j@gmail.com>
-Subject: Re: [PATCH v2] include: mman: Use bool instead of int for the return
- value of arch_validate_prot
-In-Reply-To: <1469331815-2026-1-git-send-email-chengang@emindsoft.com.cn>
-References: <1469331815-2026-1-git-send-email-chengang@emindsoft.com.cn>
-Date: Mon, 25 Jul 2016 15:10:06 +1000
-Message-ID: <8737my1exd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryV4M5xyDzDqYb
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 15:22:11 +1000 (AEST)
+Received: by mail-pa0-x22b.google.com with SMTP id fi15so57592140pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 22:22:11 -0700 (PDT)
+Date: Mon, 25 Jul 2016 15:22:01 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH for-4.8 V2 00/10] Use jump label for cpu/mmu_has_feature
+Message-ID: <20160725152201.03788ccb@roar.ozlabs.ibm.com>
+In-Reply-To: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,23 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-chengang@emindsoft.com.cn writes:
+On Sat, 23 Jul 2016 14:42:33 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-> From: Chen Gang <chengang@emindsoft.com.cn>
->
-> For pure bool function's return value, bool is a little better more or
-> less than int.
->
-> Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
-> ---
->  arch/powerpc/include/asm/mman.h | 8 ++++----
->  include/linux/mman.h            | 2 +-
->  2 files changed, 5 insertions(+), 5 deletions(-)
+> Changes from V1:
+> * Update "powerpc/mm: Convert early cpu/mmu feature check to use the
+> new helpers" based on resend code changes in this area.
+> 
+> We now do feature fixup early and hence we can reduce the usage of
+>  __cpu/__mmu_has_feature.
 
-LGTM.
+Is there a particular reason for for-4.8?
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+I've only just started following this development so it might be
+obvious, but if you could add some small justifications for why
+a patch or series is done, it would be of great help to me.
 
-Andrew do you want to take this or should I?
-
-cheers
+Thanks,
+Nick
