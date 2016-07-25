@@ -1,26 +1,47 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
- [IPv6:2607:f8b0:400e:c00::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryQCY1Bf9zDqVg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 12:28:09 +1000 (AEST)
-Received: by mail-pf0-x230.google.com with SMTP id y134so58769033pfg.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 19:28:09 -0700 (PDT)
-Date: Mon, 25 Jul 2016 12:28:01 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc/64: implement a slice mask cache
-Message-ID: <20160725122801.578622d6@roar.ozlabs.ibm.com>
-In-Reply-To: <1469263746.8568.185.camel@kernel.crashing.org>
-References: <1469192248-25141-1-git-send-email-npiggin@gmail.com>
- <20160723021937.GA13796@350D>
- <20160723171036.67144c5d@roar.ozlabs.ibm.com>
- <1469263746.8568.185.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryQXj4bCszDqWT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 12:43:01 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6P2d5Fk030272
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 22:42:58 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24c1h3ettw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 22:42:58 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 25 Jul 2016 12:42:54 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 273113578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 12:42:52 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6P2gpFG30408822
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 12:42:52 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6P2gpYp021053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 12:42:51 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ fbarrat <fbarrat@linux.vnet.ibm.com>,
+ clombard <clombard@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cxl: fix sparse warnings
+In-reply-to: <1469178096-8510-1-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1469178096-8510-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Date: Mon, 25 Jul 2016 12:42:48 +1000
+Message-Id: <1469414562-sup-3783@x230.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +51,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 23 Jul 2016 18:49:06 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> On Sat, 2016-07-23 at 17:10 +1000, Nicholas Piggin wrote:
-> > I wanted to avoid doing more work under slice_convert_lock, but
-> > we should just make that a per-mm lock anyway shouldn't we?  
-> 
-> Aren't the readers under the mm sem taken for writing or has this
-> changed ?
-
-
-I don't think this has changed, but I look at the writers now,
-which aren't synchronized by mm sem. But neither are readers
-under the slice_convert_lock, so I'm looking at what the locking
-actually is. Is it just using atomicity of dword stores vs loads?
-
-Thanks,
-Nick
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
