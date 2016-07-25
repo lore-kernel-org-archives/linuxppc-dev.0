@@ -1,48 +1,34 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
- [IPv6:2a00:1450:400c:c09::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rypgS063NzDqSB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 03:50:11 +1000 (AEST)
-Received: by mail-wm0-x229.google.com with SMTP id i5so167704502wmg.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 10:50:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rypln6yQHzDqQM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 03:53:57 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6PHhLC0143234
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:53:55 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24dnc553ef-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:53:54 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 25 Jul 2016 11:53:54 -0600
+Subject: Re: [PATCH] powernv/pci: Add PHB register dump debugfs handle
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>
+References: <20160722052336.3340-1-ruscur@russell.cc>
+ <20160722063655.GA28438@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Mon, 25 Jul 2016 10:53:49 -0700
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <93009d46-0171-7398-4add-98e09ade608b@redhat.com>
-References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
- <93009d46-0171-7398-4add-98e09ade608b@redhat.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Mon, 25 Jul 2016 10:50:05 -0700
-Message-ID: <CAGXu5jJYYaedBZPoEWz5KROP=tn8hAmOepoC+gMpXkRn8SCyTw@mail.gmail.com>
-Subject: Re: [PATCH v4 00/12] mm: Hardened usercopy
-To: Laura Abbott <labbott@redhat.com>
-Cc: "kernel-hardening@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>,
- Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
- Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
- Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>,
- Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20160722063655.GA28438@gwshan>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5796522D.9040601@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,132 +38,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 22, 2016 at 5:36 PM, Laura Abbott <labbott@redhat.com> wrote:
-> On 07/20/2016 01:26 PM, Kees Cook wrote:
+On 07/21/2016 11:36 PM, Gavin Shan wrote:
+> On Fri, Jul 22, 2016 at 03:23:36PM +1000, Russell Currey wrote:
+>> On EEH events the kernel will print a dump of relevant registers.
+>> If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
+>> doesn't have EEH support, etc) this information isn't readily available.
 >>
->> Hi,
+>> Add a new debugfs handler to trigger a PHB register dump, so that this
+>> information can be made available on demand.
 >>
->> [This is now in my kspp -next tree, though I'd really love to add some
->> additional explicit Tested-bys, Reviewed-bys, or Acked-bys. If you've
->> looked through any part of this or have done any testing, please consider
->> sending an email with your "*-by:" line. :)]
+>> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> 
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> 
+>> ---
+>> arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++++++++++++++++++++
+>> 1 file changed, 35 insertions(+)
 >>
->> This is a start of the mainline port of PAX_USERCOPY[1]. After writing
->> tests (now in lkdtm in -next) for Casey's earlier port[2], I kept tweaking
->> things further and further until I ended up with a whole new patch series.
->> To that end, I took Rik, Laura, and other people's feedback along with
->> additional changes and clean-ups.
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 891fc4a..ada2f3c 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -3018,6 +3018,38 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
+>> 	}
+>> }
 >>
->> Based on my understanding, PAX_USERCOPY was designed to catch a
->> few classes of flaws (mainly bad bounds checking) around the use of
->> copy_to_user()/copy_from_user(). These changes don't touch get_user() and
->> put_user(), since these operate on constant sized lengths, and tend to be
->> much less vulnerable. There are effectively three distinct protections in
->> the whole series, each of which I've given a separate CONFIG, though this
->> patch set is only the first of the three intended protections. (Generally
->> speaking, PAX_USERCOPY covers what I'm calling CONFIG_HARDENED_USERCOPY
->> (this) and CONFIG_HARDENED_USERCOPY_WHITELIST (future), and
->> PAX_USERCOPY_SLABS covers CONFIG_HARDENED_USERCOPY_SPLIT_KMALLOC
->> (future).)
->>
->> This series, which adds CONFIG_HARDENED_USERCOPY, checks that objects
->> being copied to/from userspace meet certain criteria:
->> - if address is a heap object, the size must not exceed the object's
->>   allocated size. (This will catch all kinds of heap overflow flaws.)
->> - if address range is in the current process stack, it must be within the
->>   a valid stack frame (if such checking is possible) or at least entirely
->>   within the current process's stack. (This could catch large lengths that
->>   would have extended beyond the current process stack, or overflows if
->>   their length extends back into the original stack.)
->> - if the address range is part of kernel data, rodata, or bss, allow it.
->> - if address range is page-allocated, that it doesn't span multiple
->>   allocations (excepting Reserved and CMA pages).
->> - if address is within the kernel text, reject it.
->> - everything else is accepted
->>
->> The patches in the series are:
->> - Support for examination of CMA page types:
->>         1- mm: Add is_migrate_cma_page
->> - Support for arch-specific stack frame checking (which will likely be
->>   replaced in the future by Josh's more comprehensive unwinder):
->>         2- mm: Implement stack frame object validation
->> - The core copy_to/from_user() checks, without the slab object checks:
->>         3- mm: Hardened usercopy
->> - Per-arch enablement of the protection:
->>         4- x86/uaccess: Enable hardened usercopy
->>         5- ARM: uaccess: Enable hardened usercopy
->>         6- arm64/uaccess: Enable hardened usercopy
->>         7- ia64/uaccess: Enable hardened usercopy
->>         8- powerpc/uaccess: Enable hardened usercopy
->>         9- sparc/uaccess: Enable hardened usercopy
->>        10- s390/uaccess: Enable hardened usercopy
->> - The heap allocator implementation of object size checking:
->>        11- mm: SLAB hardened usercopy support
->>        12- mm: SLUB hardened usercopy support
->>
->> Some notes:
->>
->> - This is expected to apply on top of -next which contains fixes for the
->>   position of _etext on both arm and arm64, though it has some conflicts
->>   with KASAN that should be trivial to fix up. Also in -next are the
->>   tests for this protection (in lkdtm), prefixed with USERCOPY_.
->>
->> - I couldn't detect a measurable performance change with these features
->>   enabled. Kernel build times were unchanged, hackbench was unchanged,
->>   etc. I think we could flip this to "on by default" at some point, but
->>   for now, I'm leaving it off until I can get some more definitive
->>   measurements. I would love if someone with greater familiarity with
->>   perf could give this a spin and report results.
->>
->> - The SLOB support extracted from grsecurity seems entirely broken. I
->>   have no idea what's going on there, I spent my time testing SLAB and
->>   SLUB. Having someone else look at SLOB would be nice, but this series
->>   doesn't depend on it.
->>
->> Additional features that would be nice, but aren't blocking this series:
->>
->> - Needs more architecture support for stack frame checking (only x86 now,
->>   but it seems Josh will have a good solution for this soon).
->>
->>
->> Thanks!
->>
->> -Kees
->>
->> [1] https://grsecurity.net/download.php "grsecurity - test kernel patch"
->> [2] http://www.openwall.com/lists/kernel-hardening/2016/05/19/5
->>
->> v4:
->> - handle CMA pages, labbott
->> - update stack checker comments, labbott
->> - check for vmalloc addresses, labbott
->> - deal with KASAN in -next changing arm64 copy*user calls
->> - check for linear mappings at runtime instead of via CONFIG
->>
->> v3:
->> - switch to using BUG for better Oops integration
->> - when checking page allocations, check each for Reserved
->> - use enums for the stack check return for readability
->>
->> v2:
->> - added s390 support
->> - handle slub red zone
->> - disallow writes to rodata area
->> - stack frame walker now CONFIG-controlled arch-specific helper
->>
->
-> Do you have/plan to have LKDTM or the like tests for this? I started
-> reviewing
-> the slub code and was about to write some test cases for myself. I did that
-> for CMA as well which is a decent indicator these should all go somewhere.
+>> +#ifdef CONFIG_DEBUG_FS
+>> +static ssize_t pnv_pci_debug_write(struct file *filp,
+>> +				   const char __user *user_buf,
+>> +				   size_t count, loff_t *ppos)
+>> +{
+>> +	struct pci_controller *hose = filp->private_data;
+>> +	struct pnv_phb *phb;
+>> +	int ret = 0;
+> 
+> Needn't initialize @ret in advance. The code might be simpler, but it's
+> only a personal preference:
 
-Yeah, there is an entire section of tests in lkdtm for the usercopy
-protection. I didn't add anything for CMA or multipage allocations
-yet, though. Feel free to add those if you have a moment! :) It's on
-my todo list.
+I believe its actually preferred that it not be initialized in advance
+so that the tooling can warn you about conditional code paths where you
+may have forgotten to set a value. Or as Gavin suggests to explicitly
+use error values in the return statements.
 
--Kees
+-Tyrel
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+> 
+> 	struct pci_controller *hose = filp->private_data;
+> 	struct pnv_phb *phb = hose ? hose->private_data : NULL;
+> 
+> 	if (!phb)
+> 		return -ENODEV;
+> 
+>> +
+>> +	if (!hose)
+>> +		return -EFAULT;
+>> +
+>> +	phb = hose->private_data;
+>> +	if (!phb)
+>> +		return -EFAULT;
+>> +
+>> +	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+>> +					  PNV_PCI_DIAG_BUF_SIZE);
+>> +
+>> +	if (!ret)
+>> +		pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
+>> +
+>> +	return ret < 0 ? ret : count;
+> 
+> return ret == OPAL_SUCCESS ? count : -EIO;
+> 
+>> +}
+>> +
+>> +static const struct file_operations pnv_pci_debug_ops = {
+>> +	.open	= simple_open,
+>> +	.llseek	= no_llseek,
+>> +	.write	= pnv_pci_debug_write,
+> 
+> It might be reasonable to dump the diag-data on read if it is trying
+> to do it on write.
+> 
+>> +};
+>> +#endif /* CONFIG_DEBUG_FS */
+>> +
+>> static void pnv_pci_ioda_create_dbgfs(void)
+>> {
+>> #ifdef CONFIG_DEBUG_FS
+>> @@ -3036,6 +3068,9 @@ static void pnv_pci_ioda_create_dbgfs(void)
+>> 		if (!phb->dbgfs)
+>> 			pr_warning("%s: Error on creating debugfs on PHB#%x\n",
+>> 				__func__, hose->global_number);
+>> +
+>> +		debugfs_create_file("regdump", 0200, phb->dbgfs, hose,
+>> +				    &pnv_pci_debug_ops);
+> 
+> "diag-data" might be indicating or a better one you can name :)
+> 
+> Thanks,
+> Gavin
+> 
+>> 	}
+>> #endif /* CONFIG_DEBUG_FS */
+>> }
+>> -- 
+>> 2.9.0
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
