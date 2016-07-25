@@ -1,25 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryWl26Gd3zDqcY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:37:18 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id h186so11334944pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jul 2016 23:37:18 -0700 (PDT)
-Date: Mon, 25 Jul 2016 16:37:11 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH for-4.8 V2 00/10] Use jump label for cpu/mmu_has_feature
-Message-ID: <20160725163711.648355ee@roar.ozlabs.ibm.com>
-In-Reply-To: <87shuykzdd.fsf@skywalker.in.ibm.com>
-References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160725152201.03788ccb@roar.ozlabs.ibm.com>
- <87shuykzdd.fsf@skywalker.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryXMk4yXjzDqcV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 17:05:38 +1000 (AEST)
+Message-ID: <1469430327.25630.74.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Jason Cooper <jason@lakedaemon.net>
+Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "marc.zyngier@arm.com"
+ <marc.zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Xiaobo Xie <xiaobo.xie@nxp.com>
+Date: Mon, 25 Jul 2016 02:05:27 -0500
+In-Reply-To: <AM3PR04MB1185B0A04FC6879C2550A8EC910D0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1467854635-19208-1-git-send-email-qiang.zhao@nxp.com>
+ <20160707142458.GN3348@io.lakedaemon.net>
+ <AM3PR04MB1185B0A04FC6879C2550A8EC910D0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,52 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 25 Jul 2016 11:55:50 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Mon, 2016-07-25 at 06:15 +0000, Qiang Zhao wrote:
+> On Thu, Jul 07, 2016 at 10:25PM , Jason Cooper <jason@lakedaemon.net> wrote:
+> > 
+> > -----Original Message-----
+> > From: Jason Cooper [mailto:jason@lakedaemon.net]
+> > Sent: Thursday, July 07, 2016 10:25 PM
+> > To: Qiang Zhao <qiang.zhao@nxp.com>
+> > Cc: oss@buserror.net; tglx@linutronix.de; marc.zyngier@arm.com; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Xiaobo Xie
+> > <xiaobo.xie@nxp.com>
+> > Subject: Re: [PATCH v2] irqchip/qeic: move qeic driver from
+> > drivers/soc/fsl/qe
+> > 
+> > Hi Zhao Qiang,
+> > 
+> > On Thu, Jul 07, 2016 at 09:23:55AM +0800, Zhao Qiang wrote:
+> > > 
+> > > The driver stays the same.
+> > > 
+> > > Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> > > ---
+> > > Changes for v2:
+> > > 	- modify the subject and commit msg
+> > > 
+> > >  drivers/irqchip/Makefile                | 1 +
+> > >  drivers/{soc/fsl/qe => irqchip}/qe_ic.c | 0  drivers/{soc/fsl/qe =>
+> > > irqchip}/qe_ic.h | 0
+> > >  drivers/soc/fsl/qe/Makefile             | 2 +-
+> > >  4 files changed, 2 insertions(+), 1 deletion(-)  rename
+> > > drivers/{soc/fsl/qe => irqchip}/qe_ic.c (100%)  rename
+> > > drivers/{soc/fsl/qe => irqchip}/qe_ic.h (100%)
+> > Please merge the include file into the C file and rename to follow the
+> > naming
+> > convention in drivers/irqchip/.  e.g. irq-qeic.c or irq-qe_ic.c.
+> > 
+> > Once you have that, please resend the entire series with this as the first
+> > patch.
+> Sorry, I have no idea about "Include file", could you explain which file you
+> meant?
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> 
-> > On Sat, 23 Jul 2016 14:42:33 +0530
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >  
-> >> Changes from V1:
-> >> * Update "powerpc/mm: Convert early cpu/mmu feature check to use
-> >> the new helpers" based on resend code changes in this area.
-> >> 
-> >> We now do feature fixup early and hence we can reduce the usage of
-> >>  __cpu/__mmu_has_feature.  
-> >
-> > Is there a particular reason for for-4.8?
-> >
-> > I've only just started following this development so it might be
-> > obvious, but if you could add some small justifications for why
-> > a patch or series is done, it would be of great help to me.  
-> 
-> The goal is to reduce the impact of radix series on existing MMU
-> function. With radix series, we do
-> 
-> if (radix_enabled())
->         radix_function()
-> else
->         hash_function()
-> 
-> We did try to reduce the impact in most code path like linux page
-> table accessors by moving linux pte bits around to match the
-> radix/hardware requirements. But we still have other code paths where
-> we do the above conditional.
-> 
-> Now for-4.8 is mainly because, I was trying to make sure 4.8 release
-> will have a good performing radix/hash implementation which distros
-> can base their kernel on. This series was posted to external list
-> multiple times and I didn't receive many objections to the series.
-> Hence I was thinking it to be a good idea to get it upstream by 4.8.
 
-Thanks, I was just curious. I don't have an objection.
+qe_ic.h
 
-It would be a bigger change, but it might be nice to do alternate
-patching for some of these, so we could even avoid the branch for
-the radix case in some of the critical functions. That's something
-for later though.
+If nothing else is going to include that, then the contents can go directly
+into qe_ic.c.
 
-Thanks,
-Nick
+-Scott
