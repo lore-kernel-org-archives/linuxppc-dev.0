@@ -1,48 +1,48 @@
-Return-Path: <smehta@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x229.google.com (mail-wm0-x229.google.com
+ [IPv6:2a00:1450:400c:c09::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rypTW4jVGzDrJd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 03:41:35 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6PHd6J3019528
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:41:33 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24c4nrdpmn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:41:33 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <smehta@linux.vnet.ibm.com>;
- Mon, 25 Jul 2016 11:41:32 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 818D43E4004F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 11:41:19 -0600 (MDT)
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6PHfJ1N49479864
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 17:41:19 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 150FC2803D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:41:19 -0400 (EDT)
-Received: from oc2173006240.ibm.com (unknown [9.41.92.166])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP id DC07C2803E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:41:18 -0400 (EDT)
-Subject: [PATCH v3 2/2] powerpc/pseries: Implement indexed-count hotplug
- memory remove
-To: linuxppc-dev@lists.ozlabs.org
-References: <ef1e34d9-376c-1418-2862-f2543452298e@linux.vnet.ibm.com>
-From: Sahil Mehta <smehta@linux.vnet.ibm.com>
-Date: Mon, 25 Jul 2016 12:41:18 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rypgS063NzDqSB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 03:50:11 +1000 (AEST)
+Received: by mail-wm0-x229.google.com with SMTP id i5so167704502wmg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 10:50:11 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <ef1e34d9-376c-1418-2862-f2543452298e@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <af2a02d5-8ca3-ef2f-c1ac-c467c197ad12@linux.vnet.ibm.com>
+Sender: keescook@google.com
+In-Reply-To: <93009d46-0171-7398-4add-98e09ade608b@redhat.com>
+References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+ <93009d46-0171-7398-4add-98e09ade608b@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 25 Jul 2016 10:50:05 -0700
+Message-ID: <CAGXu5jJYYaedBZPoEWz5KROP=tn8hAmOepoC+gMpXkRn8SCyTw@mail.gmail.com>
+Subject: Re: [PATCH v4 00/12] mm: Hardened usercopy
+To: Laura Abbott <labbott@redhat.com>
+Cc: "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>,
+ Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,127 +52,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Indexed-count remove for memory hotplug guarantees that a contiguous block
-of <count> lmbs beginning at a specified <index> will be unassigned (NOT
-that <count> lmbs will be removed). Because of Qemu's per-DIMM memory
-management, the removal of a contiguous block of memory currently
-requires a series of individual calls. Indexed-count remove reduces
-this series into a single call.
+On Fri, Jul 22, 2016 at 5:36 PM, Laura Abbott <labbott@redhat.com> wrote:
+> On 07/20/2016 01:26 PM, Kees Cook wrote:
+>>
+>> Hi,
+>>
+>> [This is now in my kspp -next tree, though I'd really love to add some
+>> additional explicit Tested-bys, Reviewed-bys, or Acked-bys. If you've
+>> looked through any part of this or have done any testing, please consider
+>> sending an email with your "*-by:" line. :)]
+>>
+>> This is a start of the mainline port of PAX_USERCOPY[1]. After writing
+>> tests (now in lkdtm in -next) for Casey's earlier port[2], I kept tweaking
+>> things further and further until I ended up with a whole new patch series.
+>> To that end, I took Rik, Laura, and other people's feedback along with
+>> additional changes and clean-ups.
+>>
+>> Based on my understanding, PAX_USERCOPY was designed to catch a
+>> few classes of flaws (mainly bad bounds checking) around the use of
+>> copy_to_user()/copy_from_user(). These changes don't touch get_user() and
+>> put_user(), since these operate on constant sized lengths, and tend to be
+>> much less vulnerable. There are effectively three distinct protections in
+>> the whole series, each of which I've given a separate CONFIG, though this
+>> patch set is only the first of the three intended protections. (Generally
+>> speaking, PAX_USERCOPY covers what I'm calling CONFIG_HARDENED_USERCOPY
+>> (this) and CONFIG_HARDENED_USERCOPY_WHITELIST (future), and
+>> PAX_USERCOPY_SLABS covers CONFIG_HARDENED_USERCOPY_SPLIT_KMALLOC
+>> (future).)
+>>
+>> This series, which adds CONFIG_HARDENED_USERCOPY, checks that objects
+>> being copied to/from userspace meet certain criteria:
+>> - if address is a heap object, the size must not exceed the object's
+>>   allocated size. (This will catch all kinds of heap overflow flaws.)
+>> - if address range is in the current process stack, it must be within the
+>>   a valid stack frame (if such checking is possible) or at least entirely
+>>   within the current process's stack. (This could catch large lengths that
+>>   would have extended beyond the current process stack, or overflows if
+>>   their length extends back into the original stack.)
+>> - if the address range is part of kernel data, rodata, or bss, allow it.
+>> - if address range is page-allocated, that it doesn't span multiple
+>>   allocations (excepting Reserved and CMA pages).
+>> - if address is within the kernel text, reject it.
+>> - everything else is accepted
+>>
+>> The patches in the series are:
+>> - Support for examination of CMA page types:
+>>         1- mm: Add is_migrate_cma_page
+>> - Support for arch-specific stack frame checking (which will likely be
+>>   replaced in the future by Josh's more comprehensive unwinder):
+>>         2- mm: Implement stack frame object validation
+>> - The core copy_to/from_user() checks, without the slab object checks:
+>>         3- mm: Hardened usercopy
+>> - Per-arch enablement of the protection:
+>>         4- x86/uaccess: Enable hardened usercopy
+>>         5- ARM: uaccess: Enable hardened usercopy
+>>         6- arm64/uaccess: Enable hardened usercopy
+>>         7- ia64/uaccess: Enable hardened usercopy
+>>         8- powerpc/uaccess: Enable hardened usercopy
+>>         9- sparc/uaccess: Enable hardened usercopy
+>>        10- s390/uaccess: Enable hardened usercopy
+>> - The heap allocator implementation of object size checking:
+>>        11- mm: SLAB hardened usercopy support
+>>        12- mm: SLUB hardened usercopy support
+>>
+>> Some notes:
+>>
+>> - This is expected to apply on top of -next which contains fixes for the
+>>   position of _etext on both arm and arm64, though it has some conflicts
+>>   with KASAN that should be trivial to fix up. Also in -next are the
+>>   tests for this protection (in lkdtm), prefixed with USERCOPY_.
+>>
+>> - I couldn't detect a measurable performance change with these features
+>>   enabled. Kernel build times were unchanged, hackbench was unchanged,
+>>   etc. I think we could flip this to "on by default" at some point, but
+>>   for now, I'm leaving it off until I can get some more definitive
+>>   measurements. I would love if someone with greater familiarity with
+>>   perf could give this a spin and report results.
+>>
+>> - The SLOB support extracted from grsecurity seems entirely broken. I
+>>   have no idea what's going on there, I spent my time testing SLAB and
+>>   SLUB. Having someone else look at SLOB would be nice, but this series
+>>   doesn't depend on it.
+>>
+>> Additional features that would be nice, but aren't blocking this series:
+>>
+>> - Needs more architecture support for stack frame checking (only x86 now,
+>>   but it seems Josh will have a good solution for this soon).
+>>
+>>
+>> Thanks!
+>>
+>> -Kees
+>>
+>> [1] https://grsecurity.net/download.php "grsecurity - test kernel patch"
+>> [2] http://www.openwall.com/lists/kernel-hardening/2016/05/19/5
+>>
+>> v4:
+>> - handle CMA pages, labbott
+>> - update stack checker comments, labbott
+>> - check for vmalloc addresses, labbott
+>> - deal with KASAN in -next changing arm64 copy*user calls
+>> - check for linear mappings at runtime instead of via CONFIG
+>>
+>> v3:
+>> - switch to using BUG for better Oops integration
+>> - when checking page allocations, check each for Reserved
+>> - use enums for the stack check return for readability
+>>
+>> v2:
+>> - added s390 support
+>> - handle slub red zone
+>> - disallow writes to rodata area
+>> - stack frame walker now CONFIG-controlled arch-specific helper
+>>
+>
+> Do you have/plan to have LKDTM or the like tests for this? I started
+> reviewing
+> the slub code and was about to write some test cases for myself. I did that
+> for CMA as well which is a decent indicator these should all go somewhere.
 
-Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
----
-v2:	-use u32s drc_index and count instead of u32 ic[]
-	 in dlpar_memory
-v3:	-add logic to handle invalid drc_index input
+Yeah, there is an entire section of tests in lkdtm for the usercopy
+protection. I didn't add anything for CMA or multipage allocations
+yet, though. Feel free to add those if you have a moment! :) It's on
+my todo list.
 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   90 +++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+-Kees
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 2d4ceb3..dd5eb38 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -503,6 +503,92 @@ static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
- 	return rc;
- }
-
-+static int dlpar_memory_remove_by_ic(u32 lmbs_to_remove, u32 drc_index,
-+				     struct property *prop)
-+{
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmbs, *p;
-+	int i, rc, start_lmb_found;
-+	int lmbs_available = 0, start_index = 0, end_index;
-+
-+	pr_info("Attempting to hot-remove %u LMB(s) at %x\n",
-+		lmbs_to_remove, drc_index);
-+
-+	if (lmbs_to_remove == 0)
-+		return -EINVAL;
-+
-+	p = prop->value;
-+	num_lmbs = *p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+	start_lmb_found = 0;
-+
-+	/* Navigate to drc_index */
-+	while (start_index < num_lmbs) {
-+		if (lmbs[start_index].drc_index == drc_index) {
-+			start_lmb_found = 1;
-+			break;
-+		}
-+
-+		start_index++;
-+	}
-+
-+	if (!start_lmb_found)
-+		return -EINVAL;
-+
-+	end_index = start_index + lmbs_to_remove;
-+
-+	/* Validate that there are enough LMBs to satisfy the request */
-+	for (i = start_index; i < end_index; i++) {
-+		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
-+			break;
-+
-+		lmbs_available++;
-+	}
-+
-+	if (lmbs_available < lmbs_to_remove)
-+		return -EINVAL;
-+
-+	for (i = 0; i < end_index; i++) {
-+		if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
-+			continue;
-+
-+		rc = dlpar_remove_lmb(&lmbs[i]);
-+		if (rc)
-+			break;
-+
-+		lmbs[i].reserved = 1;
-+	}
-+
-+	if (rc) {
-+		pr_err("Memory indexed-count-remove failed, adding any removed LMBs\n");
-+
-+		for (i = start_index; i < end_index; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			rc = dlpar_add_lmb(&lmbs[i]);
-+			if (rc)
-+				pr_err("Failed to add LMB, drc index %x\n",
-+				       be32_to_cpu(lmbs[i].drc_index));
-+
-+			lmbs[i].reserved = 0;
-+		}
-+		rc = -EINVAL;
-+	} else {
-+		for (i = start_index; i < end_index; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			pr_info("Memory at %llx (drc index %x) was hot-removed\n",
-+				lmbs[i].base_addr, lmbs[i].drc_index);
-+
-+			lmbs[i].reserved = 0;
-+		}
-+	}
-+
-+	return rc;
-+}
-+
- #else
- static inline int pseries_remove_memblock(unsigned long base,
- 					  unsigned int memblock_size)
-@@ -829,6 +915,10 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- 		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
- 			drc_index = hp_elog->_drc_u.drc_index;
- 			rc = dlpar_memory_remove_by_index(drc_index, prop);
-+		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_IC) {
-+			count = hp_elog->_drc_u.indexed_count[0];
-+			drc_index = hp_elog->_drc_u.indexed_count[1];
-+			rc = dlpar_memory_remove_by_ic(count, drc_index, prop);
- 		} else {
- 			rc = -EINVAL;
- 		}
+-- 
+Kees Cook
+Chrome OS & Brillo Security
