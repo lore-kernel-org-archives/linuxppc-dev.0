@@ -3,34 +3,35 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rywh32zmHzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 08:21:05 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rywh509PrzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 08:21:08 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6PMJg11049535
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:02 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24c4nrntq3-1
+ u6PMJcn6035625
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:07 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24c545werv-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:21:06 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 25 Jul 2016 16:21:01 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 64AE419D803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:20:33 -0600 (MDT)
+ Mon, 25 Jul 2016 16:21:06 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D51623E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 16:21:03 -0600 (MDT)
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  Michael Bringmann <mwb@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH 0/8] powerpc/devtree: Add support for 2 new DRC properties
-Date: Mon, 25 Jul 2016 17:20:57 -0500
+Subject: [PATCH 1/8] powerpc/firmware: Add definitions for new firmware
+ features.
+Date: Mon, 25 Jul 2016 17:21:03 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <14a1af8c-d749-b9fa-59f9-61b9451aea77@linux.vnet.ibm.com>
+Message-Id: <5e8da0dd-8f11-2e4d-720c-6ff22c781b32@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,38 +41,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Several properties in the DRC device tree format are replaced by
-more compact representations to allow, for example, for the encoding
-of vast amounts of memory, and or reduced duplication of information
-in related data structures.
-
-"ibm,drc-info": This property, when present, replaces the following
-four properties: "ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
-and "ibm,drc-power-domains".  This property is defined for all
-dynamically reconfigurable platform nodes.  The "ibm,drc-info" elements
-are intended to provide a more compact representation, and reduce some
-search overhead.
-
-"ibm,dynamic-memory-v2": This property replaces the "ibm,dynamic-memory"
-node representation within the "ibm,dynamic-reconfiguration-memory"
-property provided by the BMC.  This element format is intended to provide
-a more compact representation of memory, especially, for systems with
-massive amounts of RAM.  To simplify portability, this property is
-converted to the "ibm,dynamic-memory" property during system boot.
-
-"ibm,architecture.vec": Bit flags are added to this data structure
-by the front end processor to inform the kernel as to whether to expect
-the changes to one or both of the device tree structures "ibm,drc-info"
-and "ibm,dynamic-memory-v2".
+Firmware Features: Define new bit flags representing the presence of
+new device tree properties "ibm,drc-info", and "ibm,dynamic-memory-v2".
+These flags are used to tell the front end processor when the Linux
+kernel supports the new properties, and by the front end processor to
+tell the Linux kernel that the new properties are present in the devie
+tree.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-
-Michael Bringmann (8):
-  powerpc/firmware: Add definitions for new firmware features.
-  powerpc/memory: Parse new memory property to register blocks.
-  powerpc/memory: Parse new memory property to initialize structures.
-  pseries/hotplug init: Convert new DRC memory property for hotplug runtime
-  pseries/drc-info: Search new DRC properties for CPU indexes
-  hotplug/drc-info: Add code to search new devtree properties
-  powerpc: Check arch.vec earlier during boot for memory features
-  powerpc: Enable support for new DRC devtree properties
+---
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index b062924..a9d66d5 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -51,6 +51,8 @@
+ #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
+ #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
+ #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
++#define FW_FEATURE_RPS_DM2	ASM_CONST(0x0000000400000000)
++#define FW_FEATURE_RPS_DRC_INFO	ASM_CONST(0x0000000800000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -66,7 +68,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_RPS_DM2 | FW_FEATURE_RPS_DRC_INFO,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..b9a1534 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -155,6 +203,8 @@ struct of_drconf_cell {
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+ #define OV5_SUB_PROCESSORS	0x0F01	/* 1,2,or 4 Sub-Processors supported */
++#define OV5_RPS_DM2		0x1680	/* Redef Prop Structures: dyn-mem-v2 */
++#define OV5_RPS_DRC_INFO	0x1640	/* Redef Prop Structures: drc-info   */
+ 
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 8c80588..00243ee 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -111,6 +111,8 @@ static __initdata struct vec5_fw_feature
+ vec5_fw_features_table[] = {
+ 	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
+ 	{FW_FEATURE_PRRN,		OV5_PRRN},
++	{FW_FEATURE_RPS_DM2,		OV5_RPS_DM2},
++	{FW_FEATURE_RPS_DRC_INFO,	OV5_RPS_DRC_INFO},
+ };
+ 
+ void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
