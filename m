@@ -1,25 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryd2l2gFWzDqfV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 20:36:15 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] powerpc/mm: Rename hpte_init_lpar() & put fallback in
- a header
-In-Reply-To: <1469440186.5978.35.camel@kernel.crashing.org>
-References: <1469415471-2476-1-git-send-email-mpe@ellerman.id.au>
- <1469415471-2476-2-git-send-email-mpe@ellerman.id.au>
- <20160725141326.6a155483@canb.auug.org.au>
- <871t2i1dv5.fsf@concordia.ellerman.id.au>
- <1469440186.5978.35.camel@kernel.crashing.org>
-Date: Mon, 25 Jul 2016 20:36:12 +1000
-Message-ID: <87r3aidmxv.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryd6W6SzPzDqfj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 20:39:31 +1000 (AEST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+From: Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <87y44qz1f3.fsf@concordia.ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+References: <1469415471-2476-1-git-send-email-mpe@ellerman.id.au>
+ <20160725140332.0c0b6acd@canb.auug.org.au>
+ <87y44qz1f3.fsf@concordia.ellerman.id.au>
+Message-ID: <146944317083.4433.13452510294448721403@concordia>
+Subject: Re: [PATCH 1/3] powerpc/mm: Fix build break due when PPC_NATIVE=n
+Date: Mon, 25 Jul 2016 20:39:30 +1000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Quoting Michael Ellerman (2016-07-25 16:17:52)
+> Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> =
 
-> On Mon, 2016-07-25 at 15:33 +1000, Michael Ellerman wrote:
->> When we detect a PS3 we set both PS3_LV1 and LPAR at the same time,
->> so
->> there should be no way they can get out of sync, other than due to a
->> bug in the code.
->
-> I thought I had changed PS3 to no longer set LPAR ?
+> > Hi Michael,
+> >
+> > On Mon, 25 Jul 2016 12:57:49 +1000 Michael Ellerman <mpe@ellerman.id.au=
+> wrote:
+> >>
+> >> The recent commit to rework the hash MMU setup broke the build when
+> >> CONFIG_PPC_NATIVE=3Dn. Fix it by providing a fallback implementation of
+> >> hpte_init_native().
+> >
+> > Alternatively, you could make the call site dependent on
+> > IS_ENABLED(CONFIG_PPC_NATIVE) and not need the fallback.
+> >
+> > so:
+> >
+> >       else if (IS_ENABLED(CONFIG_PPC_NATIVE))
+> >               hpte_init_native();
+> >
+> > in arch/powerpc/mm/hash_utils_64.c and let the compiler elide the call.
+> =
 
-Nope:
+> That would mean we might fall through and not assign any ops, so I think
+> it's preferable to have a fallback that explicitly panics().
 
-FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+Actually I think this works and is smaller all round.
 
-...
-
-#ifdef CONFIG_PPC_PS3
-	/* Identify PS3 firmware */
-	if (of_flat_dt_is_compatible(of_get_flat_dt_root(), "sony,ps3"))
-		powerpc_firmware_features |= FW_FEATURE_PS3_POSSIBLE;
-#endif
-
-> I like having a flag that basically says PAPR and that's pretty much
-> what LPAR is, in fact I think I've been using it elsewhere with that
-> meaning
-
-That would be nice, but these look fishy at least:
-
-arch/powerpc/platforms/cell/spu_manage.c:       if (!firmware_has_feature(FW_FEATURE_LPAR))
-arch/powerpc/platforms/cell/spu_manage.c:       if (!firmware_has_feature(FW_FEATURE_LPAR)) {
-arch/powerpc/platforms/cell/spu_manage.c:       if (!firmware_has_feature(FW_FEATURE_LPAR))
-arch/powerpc/platforms/pasemi/iommu.c:      !firmware_has_feature(FW_FEATURE_LPAR)) {
-drivers/net/ethernet/pasemi/pasemi_mac.c:       return firmware_has_feature(FW_FEATURE_LPAR);
+Will test and resend.
 
 cheers
+
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_6=
+4.c
+index 341632471b9d..e44f2d759055 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -885,11 +885,6 @@ static void __init htab_initialize(void)
+ #undef KB
+ #undef MB
+ =
+
+-void __init __weak hpte_init_lpar(void)
+-{
+-	panic("FW_FEATURE_LPAR set but no LPAR support compiled\n");
+-}
+-
+ void __init hash__early_init_mmu(void)
+ {
+ 	/*
+@@ -931,9 +926,12 @@ void __init hash__early_init_mmu(void)
+ 		ps3_early_mm_init();
+ 	else if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		hpte_init_lpar();
+-	else
++	else if IS_ENABLED(CONFIG_PPC_NATIVE)
+ 		hpte_init_native();
+ =
+
++	if (!mmu_hash_ops.hpte_insert)
++		panic("hash__early_init_mmu: No MMU hash ops defined!\n");
++
+ 	/* Initialize the MMU Hash table and create the linear mapping
+ 	 * of memory. Has to be done before SLB initialization as this is
+ 	 * currently where the page size encoding is obtained.
