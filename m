@@ -1,21 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryZKT39N0zDqhN
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:33:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryZNB3yWJzDqTt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:36:10 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>,
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH for-4.8 V2 03/10] powerpc/mm/radix: Add radix_set_pte to
  use in early init
-In-Reply-To: <20160725162349.1bc9a9fe@roar.ozlabs.ibm.com>
+In-Reply-To: <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
  <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20160725162349.1bc9a9fe@roar.ozlabs.ibm.com>
-Date: Mon, 25 Jul 2016 18:33:41 +1000
-Message-ID: <87vazuyv4q.fsf@concordia.ellerman.id.au>
+Date: Mon, 25 Jul 2016 18:36:09 +1000
+Message-ID: <87shuyyv0m.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,45 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> On Sat, 23 Jul 2016 14:42:36 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
->> @@ -102,7 +123,7 @@ int radix__map_kernel_page(unsigned long ea,
->> unsigned long pa, }
->>  
->>  set_the_pte:
->> -	set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
->> flags));
->> +	radix__set_pte(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT,
->> flags)); smp_wmb();
->
-> What we have in existing code is set_pte_at() function that adds
-> the _PAGE_PTE bit, then calls __set_pte_at(), which calls radix or hash
-> version of __set_pte_at().
->
-> Now we also have radix__set_pte(), which has the function of the
-> set_pte_at(), which is starting to confuse the naming convention.
-> The new function is a radix-only set_pte_at(), rather than the
-> radix implementation that gets called via set_pte().
->
-> set_pte_at_radix()? That kind of sucks too, though. It might be better
-> if the radix/hash variants were called __radix__set_pte_at(), and this
-> new function was called radix__set_pte_at().
+> We want to use the static key based feature check in set_pte_at. Since
+> we call radix__map_kernel_page early in boot before jump label is
+> initialized we can't call set_pte_at there. Add radix__set_pte for the
+> same.
 
-I think Aneesh originally used set_pte_at_r() or maybe rset_pte_at()?
+Although this is an OK solution to this problem, I think it highlights a
+bigger problem, which is that we're still doing the feature patching too
+late.
 
-It was my idea to use radix__ and hash__ as prefixes for all the
-radix/hash functions.
+If we can move the feature patching prior to MMU init, then all (or more
+of) these problems with pre vs post patching go away.
 
-That was 1) to make it clear that it's not part of the name as such, ie.
-it's a prefix, and 2) because it's ugly as hell and hopefully that would
-motivate us to consolidate as many of them as possible.
-
-I balked at adding __radix__set_pte_at(), and just went with
-radix__set_pte_at(). But it does complicate things now.
-
-In fact I think we need to rethink this whole series, and not actually
-do it this way at all, meaning this naming problem will go away.
+I'll see if I can come up with something tomorrow.
 
 cheers
