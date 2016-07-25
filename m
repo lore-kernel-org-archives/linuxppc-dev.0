@@ -1,22 +1,49 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from outbound1.eu.mailhop.org (outbound1.eu.mailhop.org
- [52.28.251.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x235.google.com (mail-wm0-x235.google.com
+ [IPv6:2a00:1450:400c:c09::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryrmX5CbgzDrJM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 05:24:44 +1000 (AEST)
-Date: Mon, 25 Jul 2016 19:23:33 +0000
-From: Jason Cooper <jason@lakedaemon.net>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: oss@buserror.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, xiaobo.xie@nxp.com
-Subject: Re: [Patch v3 1/3] irqchip/qeic: move qeic driver from
- drivers/soc/fsl/qe
-Message-ID: <20160725192333.GB4541@io.lakedaemon.net>
-References: <1469437196-38003-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rytZB6LBVzDqSM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 06:45:54 +1000 (AEST)
+Received: by mail-wm0-x235.google.com with SMTP id f65so149672190wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 13:45:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1469437196-38003-1-git-send-email-qiang.zhao@nxp.com>
+Sender: keescook@google.com
+In-Reply-To: <0f980e84-b587-3d9e-3c26-ad57f947c08b@redhat.com>
+References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+ <1469046427-12696-13-git-send-email-keescook@chromium.org>
+ <0f980e84-b587-3d9e-3c26-ad57f947c08b@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 25 Jul 2016 13:45:50 -0700
+Message-ID: <CAGXu5jJQQNDMK7vxKqhwQukL771uOT-2No7fnNreQVLWs8UBMA@mail.gmail.com>
+Subject: Re: [PATCH v4 12/12] mm: SLUB hardened usercopy support
+To: Laura Abbott <labbott@redhat.com>
+Cc: "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>,
+ Laura Abbott <labbott@fedoraproject.org>, Balbir Singh <bsingharora@gmail.com>,
+ Daniel Micay <danielmicay@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ Rik van Riel <riel@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
+ PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
+ Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "x86@kernel.org" <x86@kernel.org>,
+ Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>,
+ Jan Kara <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,175 +53,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Zhao Qiang,
+On Mon, Jul 25, 2016 at 12:16 PM, Laura Abbott <labbott@redhat.com> wrote:
+> On 07/20/2016 01:27 PM, Kees Cook wrote:
+>>
+>> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
+>> SLUB allocator to catch any copies that may span objects. Includes a
+>> redzone handling fix discovered by Michael Ellerman.
+>>
+>> Based on code from PaX and grsecurity.
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>  init/Kconfig |  1 +
+>>  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 37 insertions(+)
+>>
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index 798c2020ee7c..1c4711819dfd 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -1765,6 +1765,7 @@ config SLAB
+>>
+>>  config SLUB
+>>         bool "SLUB (Unqueued Allocator)"
+>> +       select HAVE_HARDENED_USERCOPY_ALLOCATOR
+>>         help
+>>            SLUB is a slab allocator that minimizes cache line usage
+>>            instead of managing queues of cached objects (SLAB approach).
+>> diff --git a/mm/slub.c b/mm/slub.c
+>> index 825ff4505336..7dee3d9a5843 100644
+>> --- a/mm/slub.c
+>> +++ b/mm/slub.c
+>> @@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t flags, int
+>> node)
+>>  EXPORT_SYMBOL(__kmalloc_node);
+>>  #endif
+>>
+>> +#ifdef CONFIG_HARDENED_USERCOPY
+>> +/*
+>> + * Rejects objects that are incorrectly sized.
+>> + *
+>> + * Returns NULL if check passes, otherwise const char * to name of cache
+>> + * to indicate an error.
+>> + */
+>> +const char *__check_heap_object(const void *ptr, unsigned long n,
+>> +                               struct page *page)
+>> +{
+>> +       struct kmem_cache *s;
+>> +       unsigned long offset;
+>> +       size_t object_size;
+>> +
+>> +       /* Find object and usable object size. */
+>> +       s = page->slab_cache;
+>> +       object_size = slab_ksize(s);
+>> +
+>> +       /* Find offset within object. */
+>> +       offset = (ptr - page_address(page)) % s->size;
+>> +
+>> +       /* Adjust for redzone and reject if within the redzone. */
+>> +       if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
+>> +               if (offset < s->red_left_pad)
+>> +                       return s->name;
+>> +               offset -= s->red_left_pad;
+>> +       }
+>> +
+>> +       /* Allow address range falling entirely within object size. */
+>> +       if (offset <= object_size && n <= object_size - offset)
+>> +               return NULL;
+>> +
+>> +       return s->name;
+>> +}
+>> +#endif /* CONFIG_HARDENED_USERCOPY */
+>> +
+>
+>
+> I compared this against what check_valid_pointer does for SLUB_DEBUG
+> checking. I was hoping we could utilize that function to avoid
+> duplication but a) __check_heap_object needs to allow accesses anywhere
+> in the object, not just the beginning b) accessing page->objects
+> is racy without the addition of locking in SLUB_DEBUG.
+>
+> Still, the ptr < page_address(page) check from __check_heap_object would
+> be good to add to avoid generating garbage large offsets and trying to
+> infer C math.
+>
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 7dee3d9..5370e4f 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -3632,6 +3632,9 @@ const char *__check_heap_object(const void *ptr,
+> unsigned long n,
+>         s = page->slab_cache;
+>         object_size = slab_ksize(s);
+>  +       if (ptr < page_address(page))
+> +               return s->name;
+> +
+>         /* Find offset within object. */
+>         offset = (ptr - page_address(page)) % s->size;
+>
+> With that, you can add
+>
+> Reviwed-by: Laura Abbott <labbott@redhat.com>
 
-On Mon, Jul 25, 2016 at 04:59:54PM +0800, Zhao Qiang wrote:
-> move the driver from drivers/soc/fsl/qe to drivers/irqchip,
-> merge qe_ic.h and qe_ic.c into irq-qeic.c.
-> 
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
-> ---
-> Changes for v2:
-> 	- modify the subject and commit msg
-> Changes for v3:
-> 	- merge .h file to .c, rename it with irq-qeic.c
-> 
->  drivers/irqchip/Makefile                           |   1 +
->  drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} |  82 +++++++++++++++-
->  drivers/soc/fsl/qe/Makefile                        |   2 +-
->  drivers/soc/fsl/qe/qe_ic.h                         | 103 ---------------------
->  4 files changed, 83 insertions(+), 105 deletions(-)
->  rename drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} (85%)
->  delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
-> 
-> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-> index 38853a1..cef999d 100644
-> --- a/drivers/irqchip/Makefile
-> +++ b/drivers/irqchip/Makefile
-> @@ -69,3 +69,4 @@ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
->  obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
->  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
->  obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
-> +obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
+Cool, I'll add that.
 
-Did you test this? ;-)
+Should I add your reviewed-by for this patch only or for the whole series?
 
-> diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/irq-qeic.c
-> similarity index 85%
-> rename from drivers/soc/fsl/qe/qe_ic.c
-> rename to drivers/irqchip/irq-qeic.c
-> index ec2ca86..1f91225 100644
-> --- a/drivers/soc/fsl/qe/qe_ic.c
-> +++ b/drivers/irqchip/irq-qeic.c
-> @@ -30,7 +30,87 @@
->  #include <asm/io.h>
->  #include <soc/fsl/qe/qe_ic.h>
->  
-> -#include "qe_ic.h"
-> +#define NR_QE_IC_INTS		64
-> +
-> +/* QE IC registers offset */
-> +#define QEIC_CICR		0x00
-> +#define QEIC_CIVEC		0x04
-> +#define QEIC_CRIPNR		0x08
-> +#define QEIC_CIPNR		0x0c
-> +#define QEIC_CIPXCC		0x10
-> +#define QEIC_CIPYCC		0x14
-> +#define QEIC_CIPWCC		0x18
-> +#define QEIC_CIPZCC		0x1c
-> +#define QEIC_CIMR		0x20
-> +#define QEIC_CRIMR		0x24
-> +#define QEIC_CICNR		0x28
-> +#define QEIC_CIPRTA		0x30
-> +#define QEIC_CIPRTB		0x34
-> +#define QEIC_CRICR		0x3c
-> +#define QEIC_CHIVEC		0x60
-> +
-> +/* Interrupt priority registers */
-> +#define CIPCC_SHIFT_PRI0	29
-> +#define CIPCC_SHIFT_PRI1	26
-> +#define CIPCC_SHIFT_PRI2	23
-> +#define CIPCC_SHIFT_PRI3	20
-> +#define CIPCC_SHIFT_PRI4	13
-> +#define CIPCC_SHIFT_PRI5	10
-> +#define CIPCC_SHIFT_PRI6	7
-> +#define CIPCC_SHIFT_PRI7	4
-> +
-> +/* CICR priority modes */
-> +#define CICR_GWCC		0x00040000
-> +#define CICR_GXCC		0x00020000
-> +#define CICR_GYCC		0x00010000
-> +#define CICR_GZCC		0x00080000
-> +#define CICR_GRTA		0x00200000
-> +#define CICR_GRTB		0x00400000
-> +#define CICR_HPIT_SHIFT		8
-> +#define CICR_HPIT_MASK		0x00000300
-> +#define CICR_HP_SHIFT		24
-> +#define CICR_HP_MASK		0x3f000000
-> +
-> +/* CICNR */
-> +#define CICNR_WCC1T_SHIFT	20
-> +#define CICNR_ZCC1T_SHIFT	28
-> +#define CICNR_YCC1T_SHIFT	12
-> +#define CICNR_XCC1T_SHIFT	4
-> +
-> +/* CRICR */
-> +#define CRICR_RTA1T_SHIFT	20
-> +#define CRICR_RTB1T_SHIFT	28
-> +
-> +/* Signal indicator */
-> +#define SIGNAL_MASK		3
-> +#define SIGNAL_HIGH		2
-> +#define SIGNAL_LOW		0
-> +
-> +struct qe_ic {
-> +	/* Control registers offset */
-> +	volatile u32 __iomem *regs;
-> +
-> +	/* The remapper for this QEIC */
-> +	struct irq_domain *irqhost;
-> +
-> +	/* The "linux" controller struct */
-> +	struct irq_chip hc_irq;
-> +
-> +	/* VIRQ numbers of QE high/low irqs */
-> +	unsigned int virq_high;
-> +	unsigned int virq_low;
-> +};
-> +
-> +/*
-> + * QE interrupt controller internal structure
-> + */
-> +struct qe_ic_info {
-> +	u32	mask;	  /* location of this source at the QIMR register. */
-> +	u32	mask_reg; /* Mask register offset */
-> +	u8	pri_code; /* for grouped interrupts sources - the interrupt
-> +			     code as appears at the group priority register */
-> +	u32	pri_reg;  /* Group priority register offset */
-> +};
+Thanks!
 
-Please, no tail comments.  Refer to KernelDoc.
+-Kees
 
->  
->  static DEFINE_RAW_SPINLOCK(qe_ic_lock);
->  
-> diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-> index 2031d38..51e4726 100644
-> --- a/drivers/soc/fsl/qe/Makefile
-> +++ b/drivers/soc/fsl/qe/Makefile
-> @@ -1,7 +1,7 @@
->  #
->  # Makefile for the linux ppc-specific parts of QE
->  #
-> -obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-> +obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
->  obj-$(CONFIG_CPM)	+= qe_common.o
->  obj-$(CONFIG_UCC)	+= ucc.o
->  obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-> diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
-> deleted file mode 100644
-> index 926a2ed..0000000
-> --- a/drivers/soc/fsl/qe/qe_ic.h
-> +++ /dev/null
-> @@ -1,103 +0,0 @@
-> -/*
-> - * drivers/soc/fsl/qe/qe_ic.h
-> - *
-> - * QUICC ENGINE Interrupt Controller Header
-> - *
-> - * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-> - *
-> - * Author: Li Yang <leoli@freescale.com>
-> - * Based on code from Shlomi Gridish <gridish@freescale.com>
-> - *
-> - * This program is free software; you can redistribute  it and/or modify it
-> - * under  the terms of  the GNU General  Public License as published by the
-> - * Free Software Foundation;  either version 2 of the  License, or (at your
-> - * option) any later version.
-> - */
+>
+>>  static size_t __ksize(const void *object)
+>>  {
+>>         struct page *page;
+>>
+>
+> Thanks,
+> Laura
 
-Please transfer this over as well, and update is as necessary.
 
-thx,
 
-Jason.
+-- 
+Kees Cook
+Chrome OS & Brillo Security
