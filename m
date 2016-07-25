@@ -1,23 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryZNB3yWJzDqTt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:36:10 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH for-4.8 V2 03/10] powerpc/mm/radix: Add radix_set_pte to
- use in early init
-In-Reply-To: <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1469265163-1491-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1469265163-1491-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 25 Jul 2016 18:36:09 +1000
-Message-ID: <87shuyyv0m.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryZlV5cnMzDqhN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 18:52:54 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id y134so11559386pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 01:52:54 -0700 (PDT)
+Date: Mon, 25 Jul 2016 16:52:49 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
+ Rashmica Gupta <rashmicy@gmail.com>,
+ "cyrilbur@gmail.com" <cyrilbur@gmail.com>
+Subject: Re: [v4] powerpc: Export thread_struct.used_vr/used_vsr to user space
+Message-ID: <20160725085248.GA4354@simonLocalRHEL7.x64>
+References: <3rlZmP39HNz9sXR@ozlabs.org> <577E5534.70300@linux.vnet.ibm.com>
+ <1467897678.27157.45.camel@kernel.crashing.org>
+ <1467898167.27157.47.camel@kernel.crashing.org>
+ <577f7a45.568f6b0a.bd0eb.4aa8SMTPIN_ADDED_BROKEN@mx.google.com>
+ <20160715071546.GA5290@simonLocalRHEL7.x64>
+ <5790aa9c.05296b0a.adf58.5901SMTPIN_ADDED_BROKEN@mx.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5790aa9c.05296b0a.adf58.5901SMTPIN_ADDED_BROKEN@mx.google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +36,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> We want to use the static key based feature check in set_pte_at. Since
-> we call radix__map_kernel_page early in boot before jump label is
-> initialized we can't call set_pte_at there. Add radix__set_pte for the
-> same.
+On Thu, Jul 21, 2016 at 08:57:29PM +1000, Michael Ellerman wrote:
+> Can one of you send a properly formatted and signed-off patch.
 
-Although this is an OK solution to this problem, I think it highlights a
-bigger problem, which is that we're still doing the feature patching too
-late.
+I will work on that.
 
-If we can move the feature patching prior to MMU init, then all (or more
-of) these problems with pre vs post patching go away.
-
-I'll see if I can come up with something tomorrow.
-
-cheers
+Thanks,
+Simon
