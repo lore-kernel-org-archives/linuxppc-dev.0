@@ -1,24 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz67m5Cg8zDqfp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 15:27:16 +1000 (AEST)
-Received: by mail-pa0-x236.google.com with SMTP id ks6so68502079pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 22:27:16 -0700 (PDT)
-Date: Tue, 26 Jul 2016 15:27:06 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 1/9] Add #defs for paca->soft_enabled flags
-Message-ID: <20160726152706.43bffd08@roar.ozlabs.ibm.com>
-In-Reply-To: <1469458342-26233-2-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1469458342-26233-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1469458342-26233-2-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz6BR076czDqfp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 15:29:35 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Nick Piggin <npiggin@gmail.com>
+Subject: [PATCH 1/2] powerpc/64: Correct comment on LOAD_HANDLER()
+Date: Tue, 26 Jul 2016 15:29:29 +1000
+Message-Id: <1469510970-11599-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 25 Jul 2016 20:22:14 +0530
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+The comment for LOAD_HANDLER() was wrong. The part about kdump has not
+been true since 1f6a93e4c35e ("powerpc: Make it possible to move the
+interrupt handlers away from the kernel").
 
-> Two #defs LAZY_INTERRUPT_ENABLED and
-> LAZY_INTERRUPT_DISABLED are added to be used
-> when updating paca->soft_enabled.
+Describe how it currently works, and combine the two separate comments
+into one.
 
-This is a very nice patchset, but can this not be a new name?
-We use "soft enabled/disabled" everywhere for it. I think lazy
-is an implementation detail anyway because some interrupts don't
-cause a hard disable at all.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/exception-64s.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Thanks,
-Nick
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index 93ae809fe5ea..4ff3e2f16b5d 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -84,12 +84,12 @@
+ 
+ /*
+  * We're short on space and time in the exception prolog, so we can't
+- * use the normal SET_REG_IMMEDIATE macro. Normally we just need the
+- * low halfword of the address, but for Kdump we need the whole low
+- * word.
++ * use the normal LOAD_REG_IMMEDIATE macro to load the address of label.
++ * Instead we get the base of the kernel from paca->kernelbase and or in the low
++ * part of label. This requires that the label be within 64KB of kernelbase, and
++ * that kernelbase be 64K aligned.
+  */
+ #define LOAD_HANDLER(reg, label)					\
+-	/* Handlers must be within 64K of kbase, which must be 64k aligned */ \
+ 	ori	reg,reg,(label)-_stext;	/* virt addr of handler ... */
+ 
+ /* Exception register prefixes */
+-- 
+2.7.4
