@@ -1,28 +1,23 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.smirnov@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz4qN18KbzDqdj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 14:28:00 +1000 (AEST)
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rz4qM614vz9s0M
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Jul 2016 14:27:59 +1000 (AEST)
-Date: Mon, 25 Jul 2016 21:28:14 -0700
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>, Jiri Slaby <jslaby@suse.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V2 1/2] tty/hvc: Use IRQF_SHARED for OPAL hvc consoles
-Message-ID: <20160726042814.GA20815@kroah.com>
-References: <20160711033858.16172-1-sam@mendozajonas.com>
- <87y458it6n.fsf@@concordia.ellerman.id.au>
- <146950627136.13887.1548506149694212821@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <146950627136.13887.1548506149694212821@concordia>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz4mT4qRDzDqYp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 14:25:29 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id h186so13061259pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 21:25:29 -0700 (PDT)
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Scott Wood <oss@buserror.net>,
+ Kumar Gala <galak@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] powerpc: Factor out common code in setup-common.c
+Date: Mon, 25 Jul 2016 21:25:12 -0700
+Message-Id: <1469507114-5788-1-git-send-email-andrew.smirnov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 26, 2016 at 02:11:11PM +1000, Michael Ellerman wrote:
-> Quoting Michael Ellerman (2016-07-11 16:29:20)
-> > Samuel Mendoza-Jonas <sam@mendozajonas.com> writes:
-> > 
-> > > Commit 2def86a7200c
-> > > ("hvc: Convert to using interrupts instead of opal events")
-> > > enabled the use of interrupts in the hvc_driver for OPAL platforms.
-> > > However on machines with more than one hvc console, any console after
-> > > the first will fail to register an interrupt handler in
-> > > notifier_add_irq() since all consoles share the same IRQ number but do
-> > > not set the IRQF_SHARED flag:
-> > >
-> > > [   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
-> > > 00000000 (hvc_console)
-> > > [   51.180010] hvc_open: request_irq failed with rc -16.
-> > >
-> > > This error propagates up to hvc_open() and the console is closed, but
-> > > OPAL will still generate interrupts that are not handled, leading to
-> > > rcu_sched stall warnings.
-> > >
-> > > Set IRQF_SHARED when calling request_irq, allowing additional consoles
-> > > to start properly. This is only set for consoles handled by
-> > > hvc_opal_probe(), leaving other types unaffected.
-> > >
-> > > Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-> > > Cc: <stable@vger.kernel.org> # 4.1.x-
-> > > ---
-> > >  drivers/tty/hvc/hvc_console.h | 1 +
-> > >  drivers/tty/hvc/hvc_irq.c     | 7 +++++--
-> > >  drivers/tty/hvc/hvc_opal.c    | 3 +++
-> > >  3 files changed, 9 insertions(+), 2 deletions(-)
-> > 
-> > Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-> > 
-> > Greg are you happy to take these two?
-> 
-> Hi Greg,
-> 
-> I don't see this series anywhere, do you mind if I take them via the
-> powerpc tree for 4.8 ? Or do you want to pick them up.
+Factor out a small bit of common code in machine_restart(),
+machine_power_off() and machine_halt().
 
-You can take them, I'm not touching patches now until 4.8-rc1 is out,
-sorry.
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+---
+ arch/powerpc/kernel/setup-common.c | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 714b4ba..5cd3283 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -130,15 +130,22 @@ void machine_shutdown(void)
+ 		ppc_md.machine_shutdown();
+ }
+ 
++static void machine_hang(void)
++{
++	pr_emerg("System Halted, OK to turn off power\n");
++	local_irq_disable();
++	while (1)
++		;
++}
++
+ void machine_restart(char *cmd)
+ {
+ 	machine_shutdown();
+ 	if (ppc_md.restart)
+ 		ppc_md.restart(cmd);
++
+ 	smp_send_stop();
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1) ;
++	machine_hang();
+ }
+ 
+ void machine_power_off(void)
+@@ -146,10 +153,9 @@ void machine_power_off(void)
+ 	machine_shutdown();
+ 	if (pm_power_off)
+ 		pm_power_off();
++
+ 	smp_send_stop();
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1) ;
++	machine_hang();
+ }
+ /* Used by the G5 thermal driver */
+ EXPORT_SYMBOL_GPL(machine_power_off);
+@@ -162,10 +168,9 @@ void machine_halt(void)
+ 	machine_shutdown();
+ 	if (ppc_md.halt)
+ 		ppc_md.halt();
++
+ 	smp_send_stop();
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1) ;
++	machine_hang();
+ }
+ 
+ 
+-- 
+2.5.5
