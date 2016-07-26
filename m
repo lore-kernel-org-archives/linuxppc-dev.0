@@ -1,48 +1,26 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c00::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz77n3QsHzDqwM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 16:12:21 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6Q69Aif016404
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 02:12:19 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24dnc5rac0-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 02:12:18 -0400
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 26 Jul 2016 16:12:15 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C3E192CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 16:12:12 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6Q6CCOZ3342582
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 16:12:12 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6Q6CB2h023824
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 16:12:12 +1000
-Subject: Re: [RFC PATCH 6/9] powerpc: modify __SOFTEN_TEST to support
- tri-state soft_enabled flag
-To: Nicholas Piggin <npiggin@gmail.com>
-References: <1469458342-26233-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1469458342-26233-7-git-send-email-maddy@linux.vnet.ibm.com>
- <20160726154115.292349df@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz7911qwRzDrKv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 16:13:25 +1000 (AEST)
+Received: by mail-pf0-x22d.google.com with SMTP id x72so71951608pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 23:13:25 -0700 (PDT)
+Date: Tue, 26 Jul 2016 16:13:15 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
  paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 26 Jul 2016 11:42:09 +0530
+Subject: Re: [RFC PATCH 1/9] Add #defs for paca->soft_enabled flags
+Message-ID: <20160726161315.3b1c6841@roar.ozlabs.ibm.com>
+In-Reply-To: <1ee595c7-2c1e-82f4-4d1b-33fa9074c545@linux.vnet.ibm.com>
+References: <1469458342-26233-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1469458342-26233-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <20160726152706.43bffd08@roar.ozlabs.ibm.com>
+ <1ee595c7-2c1e-82f4-4d1b-33fa9074c545@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20160726154115.292349df@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <b1f2b5dd-c002-420c-f90b-0ac1356f6c8b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,28 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 26 Jul 2016 11:35:16 +0530
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
+> On Tuesday 26 July 2016 10:57 AM, Nicholas Piggin wrote:
+> > On Mon, 25 Jul 2016 20:22:14 +0530
+> > Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+> >  
+> >> Two #defs LAZY_INTERRUPT_ENABLED and
+> >> LAZY_INTERRUPT_DISABLED are added to be used
+> >> when updating paca->soft_enabled.  
+> > This is a very nice patchset, but can this not be a new name?  
+> 
+> Thanks, but idea is from ben :)
+> Regarding the name, I looked at the initial patchset posted by
+> paul and took the name from it :).
+> 
+> But will work on that, any suggestion for the name?
 
-On Tuesday 26 July 2016 11:11 AM, Nicholas Piggin wrote:
-> On Mon, 25 Jul 2016 20:22:19 +0530
-> Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
->
->> Foundation patch to support checking of new flag for
->> "paca->soft_enabled". Modify the condition checking for the
->> "soft_enabled" from "equal" to "greater than or equal to".
-> Rather than a "tri-state" and the mystery "2" state, can you
-> make a #define for that guy, and use levels.
+I don't have a strong preference. LAZY_* is not horrible itself,
+it's just that softe variant is used elsewhere. I don't mind if
+you rename softe to something else completely (although Ben might).
+Allow me to apply the first coat of paint to the bikeshed:
 
-Yes. Will do. Will wait for any feedback on the macro name
-for the patch 1 of this series.
+irq_disable_level
 
-Maddy
-
-> 0-> all enabled
-> 1-> "linux" interrupts disabled
-> 2-> PMU also disabled
-> etc.
->
-> Thanks,
-> Nick
->
+IRQ_DISABLE_LEVEL_NONE
+IRQ_DISABLE_LEVEL_LINUX
+IRQ_DISABLE_LEVEL_PMU
