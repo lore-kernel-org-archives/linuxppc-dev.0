@@ -1,26 +1,22 @@
 Return-Path: <andrew.smirnov@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz4t36BKGzDqdj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 14:30:19 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id hh10so12589169pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 21:30:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz5CF2xmnzDrJj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 14:45:13 +1000 (AEST)
+Received: by mail-pa0-x242.google.com with SMTP id hh10so12611112pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 21:45:13 -0700 (PDT)
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Scott Wood <oss@buserror.net>,
  Kumar Gala <galak@kernel.crashing.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <f.fainelli@gmail.com>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc: e8248e: Select PHYLIB only if NETDEVICES is
- enabled
-Date: Mon, 25 Jul 2016 21:30:10 -0700
-Message-Id: <1469507410-6112-2-git-send-email-andrew.smirnov@gmail.com>
-In-Reply-To: <1469507410-6112-1-git-send-email-andrew.smirnov@gmail.com>
-References: <1469507410-6112-1-git-send-email-andrew.smirnov@gmail.com>
+Subject: [PATCH] powerpc: sgy_cts1000: Fix gpio_halt_cb()'s signature
+Date: Mon, 25 Jul 2016 21:45:01 -0700
+Message-Id: <1469508301-14645-1-git-send-email-andrew.smirnov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Select PHYLIB only if NETDEVICES is enabled and MDIO_BITBANG only if
-PHYLIB is present to avoid warnings from Kconfig.
+Halt callback in struct machdep_calls is declared with __noreturn
+attribute, so omitting that attribute in gpio_halt_cb()'s signatrue
+results in compilation error.
 
-To prevent undefined references during linking register MDIO driver only
-if CONFIG_MDIO_BITBANG is enabled.
+Change the signature to address the problem as well as change the code
+of the function to avoid ever returning from the function.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 ---
- arch/powerpc/platforms/82xx/Kconfig   | 4 ++--
- arch/powerpc/platforms/82xx/ep8248e.c | 4 +++-
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/85xx/sgy_cts1000.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/Kconfig b/arch/powerpc/platforms/82xx/Kconfig
-index 7c7df400..994d1a9 100644
---- a/arch/powerpc/platforms/82xx/Kconfig
-+++ b/arch/powerpc/platforms/82xx/Kconfig
-@@ -30,8 +30,8 @@ config EP8248E
- 	select 8272
- 	select 8260
- 	select FSL_SOC
--	select PHYLIB
--	select MDIO_BITBANG
-+	select PHYLIB if NETDEVICES
-+	select MDIO_BITBANG if PHYLIB
- 	help
- 	  This enables support for the Embedded Planet EP8248E board.
- 
-diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index cdab847..8fec050 100644
---- a/arch/powerpc/platforms/82xx/ep8248e.c
-+++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -298,7 +298,9 @@ static const struct of_device_id of_bus_ids[] __initconst = {
- static int __init declare_of_platform_devices(void)
- {
- 	of_platform_bus_probe(NULL, of_bus_ids, NULL);
--	platform_driver_register(&ep8248e_mdio_driver);
-+
-+	if (IS_ENABLED(CONFIG_MDIO_BITBANG))
-+		platform_driver_register(&ep8248e_mdio_driver);
- 
- 	return 0;
+diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+index 79fd0df..21d6aaa 100644
+--- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
++++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+@@ -38,18 +38,18 @@ static void gpio_halt_wfn(struct work_struct *work)
  }
+ static DECLARE_WORK(gpio_halt_wq, gpio_halt_wfn);
+ 
+-static void gpio_halt_cb(void)
++static void __noreturn gpio_halt_cb(void)
+ {
+ 	enum of_gpio_flags flags;
+ 	int trigger, gpio;
+ 
+ 	if (!halt_node)
+-		return;
++		panic("No reset GPIO information was provided in DT\n");
+ 
+ 	gpio = of_get_gpio_flags(halt_node, 0, &flags);
+ 
+ 	if (!gpio_is_valid(gpio))
+-		return;
++		panic("Provided GPIO is invalid\n");
+ 
+ 	trigger = (flags == OF_GPIO_ACTIVE_LOW);
+ 
+@@ -57,6 +57,8 @@ static void gpio_halt_cb(void)
+ 
+ 	/* Probably wont return */
+ 	gpio_set_value(gpio, trigger);
++
++	panic("Halt failed\n");
+ }
+ 
+ /* This IRQ means someone pressed the power button and it is waiting for us
 -- 
 2.5.5
