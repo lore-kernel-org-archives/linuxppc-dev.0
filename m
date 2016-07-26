@@ -1,44 +1,19 @@
-Return-Path: <riel@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ryzMp4xlWzDqYp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:22:13 +1000 (AEST)
-Message-ID: <1469492520.30053.123.camel@redhat.com>
-Subject: Re: [PATCH v4 12/12] mm: SLUB hardened usercopy support
-From: Rik van Riel <riel@redhat.com>
-To: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>,
- kernel-hardening@lists.openwall.com
-Cc: Laura Abbott <labbott@fedoraproject.org>, Balbir Singh
- <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>, Josh
- Poimboeuf <jpoimboe@redhat.com>, Casey Schaufler <casey@schaufler-ca.com>,
- PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Ard
- Biesheuvel <ard.biesheuvel@linaro.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Tony
- Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, "David S.
- Miller" <davem@davemloft.net>, x86@kernel.org, Christoph Lameter
- <cl@linux.com>, Pekka Enberg <penberg@kernel.org>, David Rientjes
- <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>, Andrew Morton
- <akpm@linux-foundation.org>, Andy Lutomirski <luto@kernel.org>, Borislav
- Petkov <bp@suse.de>, Mathias Krause <minipli@googlemail.com>, Jan Kara
- <jack@suse.cz>, Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli
- <aarcange@redhat.com>, Dmitry Vyukov <dvyukov@google.com>,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org
-Date: Mon, 25 Jul 2016 20:22:00 -0400
-In-Reply-To: <9fca8a3c-da82-d609-79bb-4f5a779cbc1b@redhat.com>
-References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
- <1469046427-12696-13-git-send-email-keescook@chromium.org>
- <0f980e84-b587-3d9e-3c26-ad57f947c08b@redhat.com>
- <1469482923.30053.122.camel@redhat.com>
- <9fca8a3c-da82-d609-79bb-4f5a779cbc1b@redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-8qqetdyYF8mCBLlKELUz"
-Mime-Version: 1.0
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3ryzRj5fRZzDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:25:37 +1000 (AEST)
+Date: Tue, 26 Jul 2016 08:25:00 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: Re: [PATCH 7/8] powerpc: Check arch.vec earlier during boot for
+ memory features
+Message-ID: <201607260827.YHon1Aw9%fengguang.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="Nq2Wo0NMKNjxTN9z"
+In-Reply-To: <0721e01a-13b8-674f-3e0b-a9016f620baf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,189 +24,150 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-8qqetdyYF8mCBLlKELUz
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+--Nq2Wo0NMKNjxTN9z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, 2016-07-25 at 16:29 -0700, Laura Abbott wrote:
-> On 07/25/2016 02:42 PM, Rik van Riel wrote:
-> > On Mon, 2016-07-25 at 12:16 -0700, Laura Abbott wrote:
-> > > On 07/20/2016 01:27 PM, Kees Cook wrote:
-> > > > Under CONFIG_HARDENED_USERCOPY, this adds object size checking
-> > > > to
-> > > > the
-> > > > SLUB allocator to catch any copies that may span objects.
-> > > > Includes
-> > > > a
-> > > > redzone handling fix discovered by Michael Ellerman.
-> > > >=20
-> > > > Based on code from PaX and grsecurity.
-> > > >=20
-> > > > Signed-off-by: Kees Cook <keescook@chromium.org>
-> > > > Tested-by: Michael Ellerman <mpe@ellerman.id.au>
-> > > > ---
-> > > > =C2=A0init/Kconfig |=C2=A0=C2=A01 +
-> > > > =C2=A0mm/slub.c=C2=A0=C2=A0=C2=A0=C2=A0| 36 +++++++++++++++++++++++=
-+++++++++++++
-> > > > =C2=A02 files changed, 37 insertions(+)
-> > > >=20
-> > > > diff --git a/init/Kconfig b/init/Kconfig
-> > > > index 798c2020ee7c..1c4711819dfd 100644
-> > > > --- a/init/Kconfig
-> > > > +++ b/init/Kconfig
-> > > > @@ -1765,6 +1765,7 @@ config SLAB
-> > > >=20
-> > > > =C2=A0config SLUB
-> > > > =C2=A0	bool "SLUB (Unqueued Allocator)"
-> > > > +	select HAVE_HARDENED_USERCOPY_ALLOCATOR
-> > > > =C2=A0	help
-> > > > =C2=A0	=C2=A0=C2=A0=C2=A0SLUB is a slab allocator that minimizes ca=
-che line
-> > > > usage
-> > > > =C2=A0	=C2=A0=C2=A0=C2=A0instead of managing queues of cached objec=
-ts (SLAB
-> > > > approach).
-> > > > diff --git a/mm/slub.c b/mm/slub.c
-> > > > index 825ff4505336..7dee3d9a5843 100644
-> > > > --- a/mm/slub.c
-> > > > +++ b/mm/slub.c
-> > > > @@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t
-> > > > flags, int node)
-> > > > =C2=A0EXPORT_SYMBOL(__kmalloc_node);
-> > > > =C2=A0#endif
-> > > >=20
-> > > > +#ifdef CONFIG_HARDENED_USERCOPY
-> > > > +/*
-> > > > + * Rejects objects that are incorrectly sized.
-> > > > + *
-> > > > + * Returns NULL if check passes, otherwise const char * to
-> > > > name of
-> > > > cache
-> > > > + * to indicate an error.
-> > > > + */
-> > > > +const char *__check_heap_object(const void *ptr, unsigned long
-> > > > n,
-> > > > +				struct page *page)
-> > > > +{
-> > > > +	struct kmem_cache *s;
-> > > > +	unsigned long offset;
-> > > > +	size_t object_size;
-> > > > +
-> > > > +	/* Find object and usable object size. */
-> > > > +	s =3D page->slab_cache;
-> > > > +	object_size =3D slab_ksize(s);
-> > > > +
-> > > > +	/* Find offset within object. */
-> > > > +	offset =3D (ptr - page_address(page)) % s->size;
-> > > > +
-> > > > +	/* Adjust for redzone and reject if within the
-> > > > redzone. */
-> > > > +	if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
-> > > > +		if (offset < s->red_left_pad)
-> > > > +			return s->name;
-> > > > +		offset -=3D s->red_left_pad;
-> > > > +	}
-> > > > +
-> > > > +	/* Allow address range falling entirely within object
-> > > > size. */
-> > > > +	if (offset <=3D object_size && n <=3D object_size -
-> > > > offset)
-> > > > +		return NULL;
-> > > > +
-> > > > +	return s->name;
-> > > > +}
-> > > > +#endif /* CONFIG_HARDENED_USERCOPY */
-> > > > +
-> > >=20
-> > > I compared this against what check_valid_pointer does for
-> > > SLUB_DEBUG
-> > > checking. I was hoping we could utilize that function to avoid
-> > > duplication but a) __check_heap_object needs to allow accesses
-> > > anywhere
-> > > in the object, not just the beginning b) accessing page->objects
-> > > is racy without the addition of locking in SLUB_DEBUG.
-> > >=20
-> > > Still, the ptr < page_address(page) check from
-> > > __check_heap_object
-> > > would
-> > > be good to add to avoid generating garbage large offsets and
-> > > trying
-> > > to
-> > > infer C math.
-> > >=20
-> > > diff --git a/mm/slub.c b/mm/slub.c
-> > > index 7dee3d9..5370e4f 100644
-> > > --- a/mm/slub.c
-> > > +++ b/mm/slub.c
-> > > @@ -3632,6 +3632,9 @@ const char *__check_heap_object(const void
-> > > *ptr, unsigned long n,
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0s =3D page->sla=
-b_cache;
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0object_size =3D=
- slab_ksize(s);
-> > >=20
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (ptr < page_address(pag=
-e))
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0return s->name;
-> > > +
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* Find offset =
-within object. */
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0offset =3D (ptr=
- - page_address(page)) % s->size;
-> > >=20
-> >=20
-> > I don't get it, isn't that already guaranteed because we
-> > look for the page that ptr is in, before __check_heap_object
-> > is called?
-> >=20
-> > Specifically, in patch 3/12:
-> >=20
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0page =3D virt_to_head_page(p=
-tr);
-> > +
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* Check slab allocator for =
-flags and size. */
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (PageSlab(page))
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0return __check_heap_object(ptr, n, page);
-> >=20
-> > How can that generate a ptr that is not inside the page?
-> >=20
-> > What am I overlooking?=C2=A0=C2=A0And, should it be in the changelog or
-> > a comment? :)
-> >=20
->=20
->=20
-> I ran into the subtraction issue when the vmalloc detection wasn't
-> working on ARM64, somehow virt_to_head_page turned into a page
-> that happened to have PageSlab set. I agree if everything is working
-> properly this is redundant but given the type of feature this is, a
-> little bit of redundancy against a system running off into the weeds
-> or bad patches might be warranted.
->=C2=A0
-That's fair. =C2=A0I have no objection to the check, but would
-like to see it documented, since it does look a little out
-of place.
+Hi,
 
---=20
+[auto build test ERROR on pci/next]
+[cannot apply to powerpc/next next-20160725]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-All Rights Reversed.
---=-8qqetdyYF8mCBLlKELUz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+url:    https://github.com/0day-ci/linux/commits/Michael-Bringmann/powerpc-devtree-Add-support-for-2-new-DRC-properties/20160726-063623
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
+config: powerpc-allnoconfig (attached as .config)
+compiler: powerpc-linux-gnu-gcc (Debian 5.4.0-6) 5.4.0 20160609
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+All errors (new ones prefixed by >>):
 
-iQEcBAABCAAGBQJXlq0pAAoJEM553pKExN6Dv5IIALtZxgoQj8M9YOmCa4BjHZtJ
-R5FYg7nvY19D598u4s6f88QF92Xf7D7iqkCugZOU6/Te6x54VypAx83ud2zP828U
-4qmIudPyyhX+VGlc71cVJ2gy12Xx5G7u9H5/+Qgyp/Y4bxithElDidjQN4VTpS8g
-6y4hwd34ADw7ah+yVR65GNIq+eZTdRjH0wTCE0vrcdgl4yCWQ5vm3uv4LzAkbRPH
-QWRmKt4D5ubSb5cPqK6EnUUc+0SYkydVSNII4DoG+NGNYynklhlptGEFdrrIG/sS
-Gb++LQw7kb4XrQ2/Jg6jy1yqimXo2OeQ8ZZXo86zz82ByleVjvWRnxsvcHEqk8o=
-=kQY+
------END PGP SIGNATURE-----
+   arch/powerpc/kernel/built-in.o: In function `early_init_devtree':
+>> (.init.text+0x1072): undefined reference to `pseries_probe_fw_features'
+   arch/powerpc/kernel/built-in.o: In function `early_init_devtree':
+   (.init.text+0x107a): undefined reference to `pseries_probe_fw_features'
 
---=-8qqetdyYF8mCBLlKELUz--
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+--Nq2Wo0NMKNjxTN9z
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+4NhkAJpdC3X08YzC2AgEAA7qqQRtUQAA
+
+--Nq2Wo0NMKNjxTN9z--
