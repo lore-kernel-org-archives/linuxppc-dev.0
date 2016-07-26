@@ -1,19 +1,20 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by lists.ozlabs.org (Postfix) with ESMTP id 3ryzRj5fRZzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:25:37 +1000 (AEST)
-Date: Tue, 26 Jul 2016 08:25:00 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: Re: [PATCH 7/8] powerpc: Check arch.vec earlier during boot for
- memory features
-Message-ID: <201607260827.YHon1Aw9%fengguang.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="Nq2Wo0NMKNjxTN9z"
-In-Reply-To: <0721e01a-13b8-674f-3e0b-a9016f620baf@linux.vnet.ibm.com>
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3ryzjP3hvdzDqZk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:37:29 +1000 (AEST)
+Message-ID: <1469493443.3419.4.camel@russell.cc>
+Subject: Re: [PATCH] powernv/pci: Add PHB register dump debugfs handle
+From: Russell Currey <ruscur@russell.cc>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
+Date: Tue, 26 Jul 2016 10:37:23 +1000
+In-Reply-To: <20160722063655.GA28438@gwshan>
+References: <20160722052336.3340-1-ruscur@russell.cc>
+ <20160722063655.GA28438@gwshan>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,151 +24,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2016-07-22 at 16:36 +1000, Gavin Shan wrote:
+> On Fri, Jul 22, 2016 at 03:23:36PM +1000, Russell Currey wrote:
+> > 
+> > On EEH events the kernel will print a dump of relevant registers.
+> > If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
+> > doesn't have EEH support, etc) this information isn't readily available.
+> > 
+> > Add a new debugfs handler to trigger a PHB register dump, so that this
+> > information can be made available on demand.
+> > 
+> > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> 
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
---Nq2Wo0NMKNjxTN9z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi Gavin, thanks for the review.
 
-Hi,
+> 
+> > 
+> > ---
+> > arch/powerpc/platforms/powernv/pci-ioda.c | 35
+> > +++++++++++++++++++++++++++++++
+> > 1 file changed, 35 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 891fc4a..ada2f3c 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -3018,6 +3018,38 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe
+> > *pe)
+> > 	}
+> > }
+> > 
+> > +#ifdef CONFIG_DEBUG_FS
+> > +static ssize_t pnv_pci_debug_write(struct file *filp,
+> > +				   const char __user *user_buf,
+> > +				   size_t count, loff_t *ppos)
+> > +{
+> > +	struct pci_controller *hose = filp->private_data;
+> > +	struct pnv_phb *phb;
+> > +	int ret = 0;
+> 
+> Needn't initialize @ret in advance. The code might be simpler, but it's
+> only a personal preference:
+> 
+> 	struct pci_controller *hose = filp->private_data;
+> 	struct pnv_phb *phb = hose ? hose->private_data : NULL;
+> 
+> 	if (!phb)
+> 		return -ENODEV;
+> 
+> > 
+> > +
+> > +	if (!hose)
+> > +		return -EFAULT;
+> > +
+> > +	phb = hose->private_data;
+> > +	if (!phb)
+> > +		return -EFAULT;
+> > +
+> > +	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+> > +					  PNV_PCI_DIAG_BUF_SIZE);
+> > +
+> > +	if (!ret)
+> > +		pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
+> > +
+> > +	return ret < 0 ? ret : count;
+> 
+> return ret == OPAL_SUCCESS ? count : -EIO;
 
-[auto build test ERROR on pci/next]
-[cannot apply to powerpc/next next-20160725]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Yeah, that's much better.
 
-url:    https://github.com/0day-ci/linux/commits/Michael-Bringmann/powerpc-devtree-Add-support-for-2-new-DRC-properties/20160726-063623
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
-config: powerpc-allnoconfig (attached as .config)
-compiler: powerpc-linux-gnu-gcc (Debian 5.4.0-6) 5.4.0 20160609
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=powerpc 
+> 
+> > 
+> > +}
+> > +
+> > +static const struct file_operations pnv_pci_debug_ops = {
+> > +	.open	= simple_open,
+> > +	.llseek	= no_llseek,
+> > +	.write	= pnv_pci_debug_write,
+> 
+> It might be reasonable to dump the diag-data on read if it is trying
+> to do it on write.
 
-All errors (new ones prefixed by >>):
+I'm not sure about this one.  I went with write since (at least, in my mind)
+writing to a file feels like triggering an action, although we're not actually
+reading any input.  It also means that it works the same way as the other PHB
+debugfs entries (i.e. errinjct).
 
-   arch/powerpc/kernel/built-in.o: In function `early_init_devtree':
->> (.init.text+0x1072): undefined reference to `pseries_probe_fw_features'
-   arch/powerpc/kernel/built-in.o: In function `early_init_devtree':
-   (.init.text+0x107a): undefined reference to `pseries_probe_fw_features'
+I could rework it into a read that said something like "PHB#%x diag data dumped,
+check the kernel log", what do you think?
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-
---Nq2Wo0NMKNjxTN9z
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-4NhkAJpdC3X08YzC2AgEAA7qqQRtUQAA
-
---Nq2Wo0NMKNjxTN9z--
+> 
+> > 
+> > +};
+> > +#endif /* CONFIG_DEBUG_FS */
+> > +
+> > static void pnv_pci_ioda_create_dbgfs(void)
+> > {
+> > #ifdef CONFIG_DEBUG_FS
+> > @@ -3036,6 +3068,9 @@ static void pnv_pci_ioda_create_dbgfs(void)
+> > 		if (!phb->dbgfs)
+> > 			pr_warning("%s: Error on creating debugfs on PHB#%x\n",
+> > 				__func__, hose->global_number);
+> > +
+> > +		debugfs_create_file("regdump", 0200, phb->dbgfs, hose,
+> > +				    &pnv_pci_debug_ops);
+> 
+> "diag-data" might be indicating or a better one you can name :)
+> 
+> Thanks,
+> Gavin
+> 
+> > 
+> > 	}
+> > #endif /* CONFIG_DEBUG_FS */
+> > }
+> > -- 
+> > 2.9.0
+> > 
