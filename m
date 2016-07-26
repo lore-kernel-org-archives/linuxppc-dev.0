@@ -1,23 +1,50 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
- by lists.ozlabs.org (Postfix) with ESMTP id 3ryzy65cmFzDqZv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:48:30 +1000 (AEST)
-Date: Mon, 25 Jul 2016 17:48:26 -0700 (PDT)
-Message-Id: <20160725.174826.2146830871661675561.davem@davemloft.net>
-To: arvind.yadav.cs@gmail.com
-Cc: zajec5@gmail.com, leoli@freescale.com, qiang.zhao@freescale.com,
- scottwood@freescale.com, viresh.kumar@linaro.org,
- akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net,
- arnd@arndb.de
-Subject: Re: [v3] UCC_GETH/UCC_FAST: Use IS_ERR_VALUE_U32 API to avoid
- IS_ERR_VALUE abuses.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1469297151-9763-1-git-send-email-arvind.yadav.cs@gmail.com>
-References: <1469297151-9763-1-git-send-email-arvind.yadav.cs@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <labbott@redhat.com>
+Received: from mail-io0-f173.google.com (mail-io0-f173.google.com
+ [209.85.223.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz0545j5tzDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:54:32 +1000 (AEST)
+Received: by mail-io0-f173.google.com with SMTP id b62so185632969iod.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 17:54:32 -0700 (PDT)
+Subject: Re: [PATCH v4 12/12] mm: SLUB hardened usercopy support
+To: Kees Cook <keescook@chromium.org>
+References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
+ <1469046427-12696-13-git-send-email-keescook@chromium.org>
+ <0f980e84-b587-3d9e-3c26-ad57f947c08b@redhat.com>
+ <CAGXu5jJQQNDMK7vxKqhwQukL771uOT-2No7fnNreQVLWs8UBMA@mail.gmail.com>
+Cc: "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>,
+ Laura Abbott <labbott@fedoraproject.org>,
+ Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
+ Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
+ Brad Spengler <spender@grsecurity.net>, Russell King
+ <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
+ <ard.biesheuvel@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
+ "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski
+ <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
+ Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
+ Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Dmitry Vyukov <dvyukov@google.com>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+From: Laura Abbott <labbott@redhat.com>
+Message-ID: <e19dd469-37c9-846f-43a6-f28ab0c6c547@redhat.com>
+Date: Mon, 25 Jul 2016 17:54:25 -0700
+MIME-Version: 1.0
+In-Reply-To: <CAGXu5jJQQNDMK7vxKqhwQukL771uOT-2No7fnNreQVLWs8UBMA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +54,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Sat, 23 Jul 2016 23:35:51 +0530
+On 07/25/2016 01:45 PM, Kees Cook wrote:
+> On Mon, Jul 25, 2016 at 12:16 PM, Laura Abbott <labbott@redhat.com> wrote:
+>> On 07/20/2016 01:27 PM, Kees Cook wrote:
+>>>
+>>> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
+>>> SLUB allocator to catch any copies that may span objects. Includes a
+>>> redzone handling fix discovered by Michael Ellerman.
+>>>
+>>> Based on code from PaX and grsecurity.
+>>>
+>>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> ---
+>>>  init/Kconfig |  1 +
+>>>  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
+>>>  2 files changed, 37 insertions(+)
+>>>
+>>> diff --git a/init/Kconfig b/init/Kconfig
+>>> index 798c2020ee7c..1c4711819dfd 100644
+>>> --- a/init/Kconfig
+>>> +++ b/init/Kconfig
+>>> @@ -1765,6 +1765,7 @@ config SLAB
+>>>
+>>>  config SLUB
+>>>         bool "SLUB (Unqueued Allocator)"
+>>> +       select HAVE_HARDENED_USERCOPY_ALLOCATOR
+>>>         help
+>>>            SLUB is a slab allocator that minimizes cache line usage
+>>>            instead of managing queues of cached objects (SLAB approach).
+>>> diff --git a/mm/slub.c b/mm/slub.c
+>>> index 825ff4505336..7dee3d9a5843 100644
+>>> --- a/mm/slub.c
+>>> +++ b/mm/slub.c
+>>> @@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t flags, int
+>>> node)
+>>>  EXPORT_SYMBOL(__kmalloc_node);
+>>>  #endif
+>>>
+>>> +#ifdef CONFIG_HARDENED_USERCOPY
+>>> +/*
+>>> + * Rejects objects that are incorrectly sized.
+>>> + *
+>>> + * Returns NULL if check passes, otherwise const char * to name of cache
+>>> + * to indicate an error.
+>>> + */
+>>> +const char *__check_heap_object(const void *ptr, unsigned long n,
+>>> +                               struct page *page)
+>>> +{
+>>> +       struct kmem_cache *s;
+>>> +       unsigned long offset;
+>>> +       size_t object_size;
+>>> +
+>>> +       /* Find object and usable object size. */
+>>> +       s = page->slab_cache;
+>>> +       object_size = slab_ksize(s);
+>>> +
+>>> +       /* Find offset within object. */
+>>> +       offset = (ptr - page_address(page)) % s->size;
+>>> +
+>>> +       /* Adjust for redzone and reject if within the redzone. */
+>>> +       if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
+>>> +               if (offset < s->red_left_pad)
+>>> +                       return s->name;
+>>> +               offset -= s->red_left_pad;
+>>> +       }
+>>> +
+>>> +       /* Allow address range falling entirely within object size. */
+>>> +       if (offset <= object_size && n <= object_size - offset)
+>>> +               return NULL;
+>>> +
+>>> +       return s->name;
+>>> +}
+>>> +#endif /* CONFIG_HARDENED_USERCOPY */
+>>> +
+>>
+>>
+>> I compared this against what check_valid_pointer does for SLUB_DEBUG
+>> checking. I was hoping we could utilize that function to avoid
+>> duplication but a) __check_heap_object needs to allow accesses anywhere
+>> in the object, not just the beginning b) accessing page->objects
+>> is racy without the addition of locking in SLUB_DEBUG.
+>>
+>> Still, the ptr < page_address(page) check from __check_heap_object would
+>> be good to add to avoid generating garbage large offsets and trying to
+>> infer C math.
+>>
+>> diff --git a/mm/slub.c b/mm/slub.c
+>> index 7dee3d9..5370e4f 100644
+>> --- a/mm/slub.c
+>> +++ b/mm/slub.c
+>> @@ -3632,6 +3632,9 @@ const char *__check_heap_object(const void *ptr,
+>> unsigned long n,
+>>         s = page->slab_cache;
+>>         object_size = slab_ksize(s);
+>>  +       if (ptr < page_address(page))
+>> +               return s->name;
+>> +
+>>         /* Find offset within object. */
+>>         offset = (ptr - page_address(page)) % s->size;
+>>
+>> With that, you can add
+>>
+>> Reviwed-by: Laura Abbott <labbott@redhat.com>
+>
+> Cool, I'll add that.
+>
+> Should I add your reviewed-by for this patch only or for the whole series?
+>
+> Thanks!
+>
+> -Kees
+>
 
-> However, anything that passes an 'unsigned short' or 'unsigned int'
-> argument into IS_ERR_VALUE() is guaranteed to be broken, as are
-> 8-bit integers and types that are wider than 'unsigned long'.
- ...
-> Passing value in IS_ERR_VALUE() is wrong, as they pass an
-> 'unsigned int' into a function that takes an 'unsigned long'
-> argument.This happens to work because the type is sign-extended
-> on 64-bit architectures before it gets converted into an
-> unsigned type.
+Just this patch for now, I'm working through a couple of others
 
-This commit log message is a complete mess, you're saying exactly
-the same thing over and over again.
-
-Also your Subject line is not formatted correctly, do not list
-the subsystem prefix in ALL CAPS.  Just plain "ucc_geth/ucc_fast: "
-would be fine.
+>>
+>>>  static size_t __ksize(const void *object)
+>>>  {
+>>>         struct page *page;
+>>>
+>>
+>> Thanks,
+>> Laura
+>
+>
+>
