@@ -1,11 +1,11 @@
 Return-Path: <andrew.smirnov@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz4mT4qRDzDqYp
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz4mT71sTzDqZq
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 14:25:29 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id h186so13061259pfg.2
+Received: by mail-pf0-x241.google.com with SMTP id i6so13103306pfe.0
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 21:25:29 -0700 (PDT)
 From: Andrey Smirnov <andrew.smirnov@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
@@ -15,9 +15,11 @@ Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Scott Wood <oss@buserror.net>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Alessio Igor Bogani <alessio.bogani@elettra.eu>,
  Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] powerpc: Factor out common code in setup-common.c
-Date: Mon, 25 Jul 2016 21:25:12 -0700
-Message-Id: <1469507114-5788-1-git-send-email-andrew.smirnov@gmail.com>
+Subject: [PATCH 2/3] powerpc: Call chained reset handlers during reset
+Date: Mon, 25 Jul 2016 21:25:13 -0700
+Message-Id: <1469507114-5788-2-git-send-email-andrew.smirnov@gmail.com>
+In-Reply-To: <1469507114-5788-1-git-send-email-andrew.smirnov@gmail.com>
+References: <1469507114-5788-1-git-send-email-andrew.smirnov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Factor out a small bit of common code in machine_restart(),
-machine_power_off() and machine_halt().
+Call out to all restart handlers that were added via
+register_restart_handler() API when restarting the machine.
 
 Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
 ---
- arch/powerpc/kernel/setup-common.c | 23 ++++++++++++++---------
- 1 file changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 714b4ba..5cd3283 100644
+index 5cd3283..205d073 100644
 --- a/arch/powerpc/kernel/setup-common.c
 +++ b/arch/powerpc/kernel/setup-common.c
-@@ -130,15 +130,22 @@ void machine_shutdown(void)
- 		ppc_md.machine_shutdown();
- }
- 
-+static void machine_hang(void)
-+{
-+	pr_emerg("System Halted, OK to turn off power\n");
-+	local_irq_disable();
-+	while (1)
-+		;
-+}
-+
- void machine_restart(char *cmd)
- {
- 	machine_shutdown();
- 	if (ppc_md.restart)
+@@ -145,6 +145,10 @@ void machine_restart(char *cmd)
  		ppc_md.restart(cmd);
-+
- 	smp_send_stop();
--	printk(KERN_EMERG "System Halted, OK to turn off power\n");
--	local_irq_disable();
--	while (1) ;
-+	machine_hang();
- }
  
- void machine_power_off(void)
-@@ -146,10 +153,9 @@ void machine_power_off(void)
- 	machine_shutdown();
- 	if (pm_power_off)
- 		pm_power_off();
-+
  	smp_send_stop();
--	printk(KERN_EMERG "System Halted, OK to turn off power\n");
--	local_irq_disable();
--	while (1) ;
-+	machine_hang();
- }
- /* Used by the G5 thermal driver */
- EXPORT_SYMBOL_GPL(machine_power_off);
-@@ -162,10 +168,9 @@ void machine_halt(void)
- 	machine_shutdown();
- 	if (ppc_md.halt)
- 		ppc_md.halt();
 +
- 	smp_send_stop();
--	printk(KERN_EMERG "System Halted, OK to turn off power\n");
--	local_irq_disable();
--	while (1) ;
-+	machine_hang();
++	do_kernel_restart(cmd);
++	mdelay(1000);
++
+ 	machine_hang();
  }
- 
  
 -- 
 2.5.5
