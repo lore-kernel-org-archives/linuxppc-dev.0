@@ -1,50 +1,21 @@
-Return-Path: <labbott@redhat.com>
-Received: from mail-io0-f173.google.com (mail-io0-f173.google.com
- [209.85.223.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz0545j5tzDqQw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 10:54:32 +1000 (AEST)
-Received: by mail-io0-f173.google.com with SMTP id b62so185632969iod.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 17:54:32 -0700 (PDT)
-Subject: Re: [PATCH v4 12/12] mm: SLUB hardened usercopy support
-To: Kees Cook <keescook@chromium.org>
-References: <1469046427-12696-1-git-send-email-keescook@chromium.org>
- <1469046427-12696-13-git-send-email-keescook@chromium.org>
- <0f980e84-b587-3d9e-3c26-ad57f947c08b@redhat.com>
- <CAGXu5jJQQNDMK7vxKqhwQukL771uOT-2No7fnNreQVLWs8UBMA@mail.gmail.com>
-Cc: "kernel-hardening@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>,
- Laura Abbott <labbott@fedoraproject.org>,
- Balbir Singh <bsingharora@gmail.com>, Daniel Micay <danielmicay@gmail.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Rik van Riel <riel@redhat.com>,
- Casey Schaufler <casey@schaufler-ca.com>, PaX Team <pageexec@freemail.hu>,
- Brad Spengler <spender@grsecurity.net>, Russell King
- <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Ard Biesheuvel
- <ard.biesheuvel@linaro.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, "David S. Miller" <davem@davemloft.net>,
- "x86@kernel.org" <x86@kernel.org>, Christoph Lameter <cl@linux.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>, Andy Lutomirski
- <luto@kernel.org>, Borislav Petkov <bp@suse.de>,
- Mathias Krause <minipli@googlemail.com>, Jan Kara <jack@suse.cz>,
- Vitaly Wool <vitalywool@gmail.com>, Andrea Arcangeli <aarcange@redhat.com>,
- Dmitry Vyukov <dvyukov@google.com>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, linux-ia64@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>
-From: Laura Abbott <labbott@redhat.com>
-Message-ID: <e19dd469-37c9-846f-43a6-f28ab0c6c547@redhat.com>
-Date: Mon, 25 Jul 2016 17:54:25 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz0LZ3s84zDqZv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 11:06:14 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powernv/pci: Add PHB register dump debugfs handle
+In-Reply-To: <5796522D.9040601@linux.vnet.ibm.com>
+References: <20160722052336.3340-1-ruscur@russell.cc>
+ <20160722063655.GA28438@gwshan> <5796522D.9040601@linux.vnet.ibm.com>
+Date: Tue, 26 Jul 2016 11:06:11 +1000
+Message-ID: <87y44pryws.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <CAGXu5jJQQNDMK7vxKqhwQukL771uOT-2No7fnNreQVLWs8UBMA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,129 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2016 01:45 PM, Kees Cook wrote:
-> On Mon, Jul 25, 2016 at 12:16 PM, Laura Abbott <labbott@redhat.com> wrote:
->> On 07/20/2016 01:27 PM, Kees Cook wrote:
+Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+
+> On 07/21/2016 11:36 PM, Gavin Shan wrote:
+>> On Fri, Jul 22, 2016 at 03:23:36PM +1000, Russell Currey wrote:
+>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> index 891fc4a..ada2f3c 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> @@ -3018,6 +3018,38 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
+>>> 	}
+>>> }
 >>>
->>> Under CONFIG_HARDENED_USERCOPY, this adds object size checking to the
->>> SLUB allocator to catch any copies that may span objects. Includes a
->>> redzone handling fix discovered by Michael Ellerman.
->>>
->>> Based on code from PaX and grsecurity.
->>>
->>> Signed-off-by: Kees Cook <keescook@chromium.org>
->>> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
->>> ---
->>>  init/Kconfig |  1 +
->>>  mm/slub.c    | 36 ++++++++++++++++++++++++++++++++++++
->>>  2 files changed, 37 insertions(+)
->>>
->>> diff --git a/init/Kconfig b/init/Kconfig
->>> index 798c2020ee7c..1c4711819dfd 100644
->>> --- a/init/Kconfig
->>> +++ b/init/Kconfig
->>> @@ -1765,6 +1765,7 @@ config SLAB
->>>
->>>  config SLUB
->>>         bool "SLUB (Unqueued Allocator)"
->>> +       select HAVE_HARDENED_USERCOPY_ALLOCATOR
->>>         help
->>>            SLUB is a slab allocator that minimizes cache line usage
->>>            instead of managing queues of cached objects (SLAB approach).
->>> diff --git a/mm/slub.c b/mm/slub.c
->>> index 825ff4505336..7dee3d9a5843 100644
->>> --- a/mm/slub.c
->>> +++ b/mm/slub.c
->>> @@ -3614,6 +3614,42 @@ void *__kmalloc_node(size_t size, gfp_t flags, int
->>> node)
->>>  EXPORT_SYMBOL(__kmalloc_node);
->>>  #endif
->>>
->>> +#ifdef CONFIG_HARDENED_USERCOPY
->>> +/*
->>> + * Rejects objects that are incorrectly sized.
->>> + *
->>> + * Returns NULL if check passes, otherwise const char * to name of cache
->>> + * to indicate an error.
->>> + */
->>> +const char *__check_heap_object(const void *ptr, unsigned long n,
->>> +                               struct page *page)
+>>> +#ifdef CONFIG_DEBUG_FS
+>>> +static ssize_t pnv_pci_debug_write(struct file *filp,
+>>> +				   const char __user *user_buf,
+>>> +				   size_t count, loff_t *ppos)
 >>> +{
->>> +       struct kmem_cache *s;
->>> +       unsigned long offset;
->>> +       size_t object_size;
->>> +
->>> +       /* Find object and usable object size. */
->>> +       s = page->slab_cache;
->>> +       object_size = slab_ksize(s);
->>> +
->>> +       /* Find offset within object. */
->>> +       offset = (ptr - page_address(page)) % s->size;
->>> +
->>> +       /* Adjust for redzone and reject if within the redzone. */
->>> +       if (kmem_cache_debug(s) && s->flags & SLAB_RED_ZONE) {
->>> +               if (offset < s->red_left_pad)
->>> +                       return s->name;
->>> +               offset -= s->red_left_pad;
->>> +       }
->>> +
->>> +       /* Allow address range falling entirely within object size. */
->>> +       if (offset <= object_size && n <= object_size - offset)
->>> +               return NULL;
->>> +
->>> +       return s->name;
->>> +}
->>> +#endif /* CONFIG_HARDENED_USERCOPY */
->>> +
->>
->>
->> I compared this against what check_valid_pointer does for SLUB_DEBUG
->> checking. I was hoping we could utilize that function to avoid
->> duplication but a) __check_heap_object needs to allow accesses anywhere
->> in the object, not just the beginning b) accessing page->objects
->> is racy without the addition of locking in SLUB_DEBUG.
->>
->> Still, the ptr < page_address(page) check from __check_heap_object would
->> be good to add to avoid generating garbage large offsets and trying to
->> infer C math.
->>
->> diff --git a/mm/slub.c b/mm/slub.c
->> index 7dee3d9..5370e4f 100644
->> --- a/mm/slub.c
->> +++ b/mm/slub.c
->> @@ -3632,6 +3632,9 @@ const char *__check_heap_object(const void *ptr,
->> unsigned long n,
->>         s = page->slab_cache;
->>         object_size = slab_ksize(s);
->>  +       if (ptr < page_address(page))
->> +               return s->name;
->> +
->>         /* Find offset within object. */
->>         offset = (ptr - page_address(page)) % s->size;
->>
->> With that, you can add
->>
->> Reviwed-by: Laura Abbott <labbott@redhat.com>
+>>> +	struct pci_controller *hose = filp->private_data;
+>>> +	struct pnv_phb *phb;
+>>> +	int ret = 0;
+>> 
+>> Needn't initialize @ret in advance. The code might be simpler, but it's
+>> only a personal preference:
 >
-> Cool, I'll add that.
->
-> Should I add your reviewed-by for this patch only or for the whole series?
->
-> Thanks!
->
-> -Kees
->
+> I believe its actually preferred that it not be initialized in advance
+> so that the tooling can warn you about conditional code paths where you
+> may have forgotten to set a value.
 
-Just this patch for now, I'm working through a couple of others
+Yeah that's right, it's preferable not to initialise it.
 
->>
->>>  static size_t __ksize(const void *object)
->>>  {
->>>         struct page *page;
->>>
->>
->> Thanks,
->> Laura
->
->
->
+It helps for complex if/else/switch cases, where you might accidentally
+have a path where you return without giving ret the right value.
+
+The other case is when someone modifies your code. For example if you
+have:
+
+	int ret;
+
+        if (foo)
+                ret = do_foo();
+        else
+                ret = 1;
+
+        return ret;
+
+And then you add a case to the if:
+
+        if (foo)
+                ret = do_foo();
+        else if (bar)
+        	do_bar();
+        else
+                ret = 1;
+
+The compiler will warn you that in the bar case you forget to initialise
+ret. Whereas if you initialised ret at the start then the compiler can't
+help you.
+
+There are times when it's cleaner to initialise the value at the start,
+eg. if you have many error cases and only one success case. But that
+should be a deliberate choice.
+
+cheers
