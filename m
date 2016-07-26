@@ -1,24 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rz6DK4KbCzDrPC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 15:31:13 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id q2so12648468pap.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2016 22:31:13 -0700 (PDT)
-Date: Tue, 26 Jul 2016 15:31:03 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, anton@samba.org,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 5/9] powerpc: reverse the soft_enable logic
-Message-ID: <20160726153103.26dda0ce@roar.ozlabs.ibm.com>
-In-Reply-To: <1469458342-26233-6-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1469458342-26233-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1469458342-26233-6-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rz6MV6NH9zDqV1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2016 15:37:26 +1000 (AEST)
+Message-ID: <1469511443.5228.2.camel@russell.cc>
+Subject: Re: [PATCH] powernv/pci: Add PHB register dump debugfs handle
+From: Russell Currey <ruscur@russell.cc>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: gwshan@linux.vnet.ibm.com
+Date: Tue, 26 Jul 2016 15:37:23 +1000
+In-Reply-To: <146949753931.3859.11305398485148230358@concordia>
+References: <20160722052336.3340-1-ruscur@russell.cc>
+ <146949753931.3859.11305398485148230358@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,62 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 25 Jul 2016 20:22:18 +0530
-Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+On Tue, 2016-07-26 at 11:45 +1000, Michael Ellerman wrote:
+> Quoting Russell Currey (2016-07-22 15:23:36)
+> > 
+> > On EEH events the kernel will print a dump of relevant registers.
+> > If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
+> > doesn't have EEH support, etc) this information isn't readily available.
+> > 
+> > Add a new debugfs handler to trigger a PHB register dump, so that this
+> > information can be made available on demand.
+> 
+> This is a bit weird.
+> 
+> It's a debugfs file, but when you read from it you get nothing (I think,
+> you have no read() defined).
+> 
+> When you write to it, regardless of what you write, the kernel spits
+> some stuff out to dmesg and throws away whatever you wrote.
+> 
+> Ideally pnv_pci_dump_phb_diag_data() would write its output to a buffer,
+> which we could then either send to dmesg, or give to debugfs. But that
+> might be more work than we want to do for this.
+> 
+> If we just want a trigger file, then I think it'd be preferable to just
+> use a simple attribute, with a set and no show, eg. something like:
+> 
+> static int foo_set(void *data, u64 val)
+> {
+>         if (val != 1)
+>                 return -EINVAL;
+> 
+>         ...
+> 
+>         return 0;
+> }
+> 
+> DEFINE_SIMPLE_ATTRIBUTE(fops_foo, NULL, foo_set, "%llu\n");
+> 
+> That requires that you write "1" to the file to trigger the reg dump.
 
-> "paca->soft_enabled" is used as a flag to mask some of interrupts.
-> Currently supported flags values and their details:
-> 
-> soft_enabled		MSR[EE]
-> 
-> 0			0	Disabled (PMI and HMI not masked)
-> 1			1	Enabled
-> 
-> "paca->soft_enabled" is initialed to 1 to make the interripts as
-> enabled. arch_local_irq_disable() will toggle the value when
-> interrupts needs to disbled. At this point, the interrupts are not
-> actually disabled, instead, interrupt vector has code to check for
-> the flag and mask it when it occurs. By "mask it", it updated
-> interrupt paca->irq_happened and return. arch_local_irq_restore() is
-> called to re-enable interrupts, which checks and replays interrupts
-> if any occured.
-> 
-> Now, as mentioned, current logic doesnot mask "performance monitoring
-> interrupts" and PMIs are implemented as NMI. But this patchset
-> depends on local_irq_* for a successful local_* update. Meaning, mask
-> all possible interrupts during local_* update and replay them after
-> the update.
-> 
-> So the idea here is to reserve the "paca->soft_enabled" logic. New
-> values and details:
-> 
-> soft_enabled		MSR[EE]
-> 
-> 1			0	Disabled  (PMI and HMI not masked)
-> 0			1	Enabled
-> 
-> Reason for the this change is to create foundation for a third flag
-> value "2" for "soft_enabled" to add support to mask PMIs. When
-> arch_irq_disable_* is called with a value "2", PMI interrupts are
-> mask. But when called with a value of "1", PMI are not mask.
-> 
-> With new flag value for "soft_enabled", states looks like:
-> 
-> soft_enabled		MSR[EE]
-> 
-> 2			0	Disbaled PMIs also
-> 1			0	Disabled  (PMI and HMI not masked)
-> 0			1	Enabled
-> 
-> And interrupt handler code for checking has been modified to check for
-> for "greater than or equal" to 1 condition instead.
+I don't think I can use this here.  Triggering the diag dump on the given PHB
+(these are in /sys/kernel/debug/powerpc/PCI####), and that PHB is retrieved from
+the file handler.  It looks like I have no access to the file struct if using a
+simple getter/setter.
 
-This bit of the patch seems to have been moved into other part
-of the series. Ideally (unless there is a good reason), it is nice
-to have each individual patch result in a working kernel before
-and after.
+> 
+> 
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 891fc4a..ada2f3c 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -3036,6 +3068,9 @@ static void pnv_pci_ioda_create_dbgfs(void)
+> >                 if (!phb->dbgfs)
+> >                         pr_warning("%s: Error on creating debugfs on
+> > PHB#%x\n",
+> >                                 __func__, hose->global_number);
+> > +
+> > +               debugfs_create_file("regdump", 0200, phb->dbgfs, hose,
+> > +                                   &pnv_pci_debug_ops);
+> >         }
+> 
+> You shouldn't be trying to create the file if the directory create failed. So
+> the check for (!phb->dbgfs) should probably print and then continue.
 
-Nice way to avoid adding more branches though.
+Good catch.
 
-Thanks,
-Nick
+> 
+> And a better name would be "dump-regs", because it indicates that the file
+> does
+> something, rather than is something.
+
+That is indeed better.
+
+> 
+> cheers
