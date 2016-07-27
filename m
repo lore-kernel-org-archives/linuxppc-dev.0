@@ -1,23 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzrs82GpZzDqQL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 20:32:12 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3rzrs74Xr8z9srY
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jul 2016 20:32:11 +1000 (AEST)
-Message-ID: <1469612976.5978.143.camel@kernel.crashing.org>
-Subject: Re: _PAGE_PRESENT and _PAGE_ACCESSED
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: LEROY Christophe <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Date: Wed, 27 Jul 2016 19:49:36 +1000
-In-Reply-To: <20160726195245.Horde.xJWqCTeuxQeC7gAnGhJItg6@messagerie.si.c-s.fr>
-References: <20160726195245.Horde.xJWqCTeuxQeC7gAnGhJItg6@messagerie.si.c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzsqQ2f0mzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:15:45 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6RBDVA8048105
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 07:15:44 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24dvp8e9ug-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 07:15:43 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Wed, 27 Jul 2016 05:15:43 -0600
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
+ mpe@ellerman.id.au
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Subject: [PowerPC] Kernel OOPS while compiling LTP test suite on linus mainline
+Date: Wed, 27 Jul 2016 16:45:35 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <2a9abff6-7820-a95b-0de3-8e6723707cb6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-07-26 at 19:52 +0200, LEROY Christophe wrote:
-> In ppc8xx tlbmiss handler, we consider a page valid if both  
-> _PAGE_PRESENT and _PAGE_ACCESSED are set.
-> Is there any chance to have _PAGE_ACCESSED set and not _PAGE_PRESENT ?
-> Otherwise we could simplify the handler by considering the page valid  
-> only when _PAGE_ACCESSED is set
+Hi,
 
-When _PAGE_PRESENT is not set, the PTE becomes a swap PTE and a pile
-of the other bits can be repurposed, you may want to verify if
-_PAGE_ACCESSED is one of them.
+Kernel OOPS messages were seen while compiling linux test project (LTP) source on 4.7.0-rc5 mainline.
 
-Cheers,
-Ben.
+Kernel config : pseries_le_defconfig
+Machine Type  : PowerVM LPAR
+Machine hardware : LPAR uses 16 vCPUs, and 29G memory
+
+trace messages:
+*15:34:57* [  862.548866] Unable to handle kernel paging request for data at address 0x00000000
+*15:34:57* [  862.548904] Faulting instruction address: 0xc000000000260900
+*15:34:57* [  862.548911] Oops: Kernel access of bad area, sig: 11 [#1]
+*15:34:57* [  862.548917] SMP NR_CPUS=2048 NUMA pSeries
+*15:34:57* [  862.548924] Modules linked in: rtc_generic(E) pseries_rng(E) autofs4(E)
+*15:34:57* [  862.548938] CPU: 0 PID: 129 Comm: kswapd2 Tainted: G            E   4.7.0-rc5-autotest #1
+*15:34:57* [  862.548946] task: c0000007766a2600 ti: c000000776764000 task.ti: c000000776764000
+*15:34:57* [  862.548953] NIP: c000000000260900 LR: c00000000026452c CTR: 0000000000000000
+*15:34:57* [  862.548961] REGS: c000000776767830 TRAP: 0300   Tainted: G            E    (4.7.0-rc5-autotest)
+*15:34:57* [  862.548968] MSR: 800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 24000222  XER: 20000001
+*15:34:57* [  862.548996] CFAR: c000000000008468 DAR: 0000000000000000 DSISR: 40000000 SOFTE: 0
+*15:34:57* GPR00: c00000000026452c c000000776767ab0 c0000000013ac100 c00000077ff54200
+*15:34:57* GPR04: 0000000000000000 c000000776767ba0 0000000000000001 c00000000151c100
+*15:34:57* GPR08: 0000000000000000 00000000000b4057 0000000080000000 c00000071664b7a0
+*15:34:57* GPR12: 0000000000000000 c00000000e800000 0000000000000001 f0000000015dc000
+*15:34:57* GPR16: c00000077ff54700 0000000000000000 0000000000000000 c00000077ff54700
+*15:34:57* GPR20: 0000000000000001 0000000000000100 0000000000000200 c00000077ff54200
+*15:34:57* GPR24: c000000776767ba0 0000000000000020 0000000000000000 0000000000000001
+*15:34:57* GPR28: 0000000000000010 0000000000000000 c000000776767ba0 f0000000015dc020
+*15:34:57* [  862.549094] NIP [c000000000260900] move_active_pages_to_lru.isra.16+0xa0/0x380
+*15:34:57* [  862.549102] LR [c00000000026452c] shrink_active_list+0x2fc/0x510
+*15:34:57* [  862.549108] Call Trace:
+*15:34:57* [  862.549112] [c000000776767ab0] [f0000000015dc000] 0xf0000000015dc000 (unreliable)
+*15:34:57* [  862.549122] [c000000776767b60] [c00000000026452c] shrink_active_list+0x2fc/0x510
+*15:34:57* [  862.549131] [c000000776767c50] [c0000000002665d4] kswapd+0x434/0xa70
+*15:34:57* [  862.549139] [c000000776767d80] [c0000000000f1b50] kthread+0x110/0x130
+*15:34:57* [  862.549148] [c000000776767e30] [c0000000000095f0] ret_from_kernel_thread+0x5c/0x6c
+*15:34:57* [  862.549155] Instruction dump:
+*15:34:57* [  862.549161] 60000000 3b200020 3a800001 7b7c26e4 3aa00100 3ac00200 3a400000 3a770500
+*15:34:57* [  862.549174] 3a200000 60000000 60000000 60420000 <e93d0000> 7fbd4840 419e01b8 ebfd0008
+*15:34:57* [  862.549193] ---[ end trace fcc50906d9164c56 ]---
+*15:34:57* [  862.550562]
+*15:35:18* [  883.551577] INFO: rcu_sched self-detected stall on CPU
+*15:35:18* [  883.551578] INFO: rcu_sched self-detected stall on CPU
+*15:35:18* [  883.551588] 	2-...: (5249 ticks this GP) idle=cc5/140000000000001/0 softirq=50260/50260 fqs=5249
+*15:35:18* [  883.551591] 	 (t=5250 jiffies g=48365 c=48364 q=182)
+
+Regard's
+Abdul
