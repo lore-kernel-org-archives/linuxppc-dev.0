@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtV0XnKzDrL7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtV6LsCzDrLH
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:42 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  aneesh.kumar@linux.vnet.ibm.com, haokexin@gmail.com
-Subject: [PATCH v3 04/21] powerpc/mm: Do radix device tree scanning earlier
-Date: Thu, 28 Jul 2016 00:18:00 +1000
-Message-Id: <1469629097-30859-4-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 05/21] powerpc/64: Do feature patching before MMU init
+Date: Thu, 28 Jul 2016 00:18:01 +1000
+Message-Id: <1469629097-30859-5-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,65 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Like we just did for hash, split the device tree scanning parts out and
-call them from mmu_early_init_devtree().
+Up until now we needed to do the MMU init before feature patching,
+because part of the MMU init was scanning the device tree and setting
+and/or clearing some MMU feature bits.
+
+Now that we have split that MMU feature modification out into routines
+called from early_init_devtree() (called earlier) we can now do feature
+patching before calling MMU init.
+
+The advantage of this is it means the remainder of the MMU init runs
+with the final set of features which will apply for the rest of the life
+of the system. This means we don't have to special case anything called
+from MMU init to deal with a changing set of feature bits.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h | 1 +
- arch/powerpc/mm/init_64.c                | 4 +++-
- arch/powerpc/mm/pgtable-radix.c          | 3 +--
- 3 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/setup_64.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 v3: Merged into this series.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 358f1410dc0d..9ee00c2576d0 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -109,6 +109,7 @@ extern int mmu_io_psize;
- /* MMU initialization */
- void mmu_early_init_devtree(void);
- void hash__early_init_devtree(void);
-+void radix__early_init_devtree(void);
- extern void radix_init_native(void);
- extern void hash__early_init_mmu(void);
- extern void radix__early_init_mmu(void);
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index d023333c6c9a..e0ab33d20a10 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -427,7 +427,9 @@ void __init mmu_early_init_devtree(void)
- 	if (disable_radix)
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index d8216aed22b7..984696136f96 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -298,12 +298,12 @@ void __init early_setup(unsigned long dt_ptr)
+ 	 */
+ 	configure_exceptions();
  
--	if (!radix_enabled())
-+	if (radix_enabled())
-+		radix__early_init_devtree();
-+	else
- 		hash__early_init_devtree();
- }
- #endif /* CONFIG_PPC_STD_MMU_64 */
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 003ff48a11b6..f34ccdbe0fbd 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -264,7 +264,7 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
- 	return 1;
- }
+-	/* Initialize the hash table or TLB handling */
+-	early_init_mmu();
+-
+ 	/* Apply all the dynamic patching */
+ 	apply_feature_fixups();
  
--static void __init radix_init_page_sizes(void)
-+void __init radix__early_init_devtree(void)
- {
- 	int rc;
- 
-@@ -343,7 +343,6 @@ void __init radix__early_init_mmu(void)
- 	__pte_frag_nr = H_PTE_FRAG_NR;
- 	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
- 
--	radix_init_page_sizes();
- 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
- 		radix_init_native();
- 		lpcr = mfspr(SPRN_LPCR);
++	/* Initialize the hash table or TLB handling */
++	early_init_mmu();
++
+ 	/*
+ 	 * At this point, we can let interrupts switch to virtual mode
+ 	 * (the MMU has been setup), so adjust the MSR in the PACA to
 -- 
 2.7.4
