@@ -2,18 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzyBk5zXszDrRK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:32:46 +1000 (AEST)
-In-Reply-To: <20160711033858.16172-1-sam@mendozajonas.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzyBl4cHnzDrWy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:32:47 +1000 (AEST)
+In-Reply-To: <20160711033858.16172-2-sam@mendozajonas.com>
 To: Sam Mendoza-Jonas <sam@mendozajonas.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>, "# 4 . 1 . x-" <stable@vger.kernel.org>,
  Alistair Popple <alistair@popple.id.au>,
  Samuel Mendoza-Jonas <sam@mendozajonas.com>
-Subject: Re: [V2,1/2] tty/hvc: Use IRQF_SHARED for OPAL hvc consoles
-Message-Id: <3rzyBk1HzVz9t29@ozlabs.org>
-Date: Thu, 28 Jul 2016 00:32:45 +1000 (AEST)
+Subject: Re: [V2,2/2] tty/hvc: Use opal irqchip interface if available
+Message-Id: <3rzyBl2QmKz9t2L@ozlabs.org>
+Date: Thu, 28 Jul 2016 00:32:46 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2016-11-07 at 03:38:57 UTC, Sam Mendoza-Jonas wrote:
-> Commit 2def86a7200c
-> ("hvc: Convert to using interrupts instead of opal events")
-> enabled the use of interrupts in the hvc_driver for OPAL platforms.
-> However on machines with more than one hvc console, any console after
-> the first will fail to register an interrupt handler in
-> notifier_add_irq() since all consoles share the same IRQ number but do
-> not set the IRQF_SHARED flag:
-> 
-> [   51.179907] genirq: Flags mismatch irq 31. 00000000 (hvc_console) vs.
-> 00000000 (hvc_console)
-> [   51.180010] hvc_open: request_irq failed with rc -16.
-> 
-> This error propagates up to hvc_open() and the console is closed, but
-> OPAL will still generate interrupts that are not handled, leading to
-> rcu_sched stall warnings.
-> 
-> Set IRQF_SHARED when calling request_irq, allowing additional consoles
-> to start properly. This is only set for consoles handled by
-> hvc_opal_probe(), leaving other types unaffected.
+On Mon, 2016-11-07 at 03:38:58 UTC, Sam Mendoza-Jonas wrote:
+> Update the hvc driver to use the OPAL irqchip if made available by the
+> running firmware. If it is not present, the driver falls back to the
+> existing OPAL event number.
 > 
 > Signed-off-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
 > Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bbc3dfe8805de86874b1a1b142
+https://git.kernel.org/powerpc/c/00dab8187e182da41122f66c20
 
 cheers
