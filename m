@@ -1,18 +1,27 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzzr75QZKzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 01:46:47 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>,
-	olof@lixom.net
-Date: Wed, 27 Jul 2016 15:41:29 +0100 (BST)
-Message-ID: <488c970c5ae.f93db6b@auth.smtp.1and1.co.uk>
-Subject: [PATCH] pasemi: Fix coherent_dma_mask for dma engine
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s01cs4vv0zDrMY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 03:07:09 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id h186so2129448pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 10:07:09 -0700 (PDT)
+Subject: Re: [v3] UCC_GETH/UCC_FAST: Use IS_ERR_VALUE_U32 API to avoid
+ IS_ERR_VALUE abuses.
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+References: <1469297151-9763-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <4175803.I7CDUloLxQ@wuerfel>
+Cc: zajec5@gmail.com, leoli@freescale.com, qiang.zhao@freescale.com,
+ viresh.kumar@linaro.org, linux-wireless@vger.kernel.org,
+ netdev@vger.kernel.org, scottwood@freescale.com, akpm@linux-foundation.org,
+ linux@roeck-us.net
+From: arvind Yadav <arvind.yadav.cs@gmail.com>
+Message-ID: <5798EA36.70000@gmail.com>
+Date: Wed, 27 Jul 2016 22:37:02 +0530
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c707e401f754ac2.5c"
+In-Reply-To: <4175803.I7CDUloLxQ@wuerfel>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does
-not support MIME. Some parts of this message will be readable as
-plain text. To see the rest, you will need to upgrade your mail
-reader. Following are some URLs where you can find MIME-capable
-mail programs for common platforms:
+I am also agree with Arnd Bergmann. We should use 'static inline function'
+instead of macro to deal with error check.
 
-  AmigaOS...........: http://yam.ch/
-  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
-
-General information about MIME can be found at:
-http://en.wikipedia.org/wiki/MIME
-
-----=_BOUNDARY.6c707e401f754ac2.5c
-Content-Type: text/plain
-
-    Commit 817820b0226a ("powerpc/iommu: Support "hybrid" iommu/direct DMA
-    ops for coherent_mask < dma_mask) adds a check of coherent_dma_mask
-    for dma allocations.
-    Unfortunately current PASemi code does not set this value for the DMA
-    engine, which ends up with the default value of 0xffffffff, the result 
-    is on a PASemi system with >2Gb ram and iommu enabled the the onboard 
-    ethernet stops working due to an inability to allocate memory.
-    Add an initialisation to pci_dma_dev_setup_pasemi()
-  
-    Signed-off-by: Darren Stevens <darren@stevens-zone.net>
-  
----
-
-----=_BOUNDARY.6c707e401f754ac2.5c
-Content-Type: text/plain;
-	name="iommu.patch"
-Content-Disposition: attachment;
-	filename="iommu.patch";
-	size=610
-
-diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
-index c929644..81b334a 100644
---- a/arch/powerpc/platforms/pasemi/iommu.c
-+++ b/arch/powerpc/platforms/pasemi/iommu.c
-@@ -187,6 +187,11 @@ static void pci_dma_dev_setup_pasemi(struct pci_dev *dev)
- 	if (dev->vendor == 0x1959 && dev->device == 0xa007 &&
- 	    !firmware_has_feature(FW_FEATURE_LPAR)) {
- 		dev->dev.archdata.dma_ops = &dma_direct_ops;
-+		/*
-+		 * Set the coherent DMA mask to prevent the iommu
-+		 * being used unnecessarily
-+		 */
-+		dev->dev.coherent_dma_mask = DMA_BIT_MASK(44);
- 		return;
- 	}
- #endif
-
-----=_BOUNDARY.6c707e401f754ac2.5c--
+On Tuesday 26 July 2016 05:09 PM, Arnd Bergmann wrote:
+> On Saturday, July 23, 2016 11:35:51 PM CEST Arvind Yadav wrote:
+>> diff --git a/include/linux/err.h b/include/linux/err.h
+>> index 1e35588..a42f942 100644
+>> --- a/include/linux/err.h
+>> +++ b/include/linux/err.h
+>> @@ -19,6 +19,7 @@
+>>   #ifndef __ASSEMBLY__
+>>   
+>>   #define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
+>> +#define IS_ERR_VALUE_U32(x) unlikely((unsigned int)(x) >= (unsigned int)-MAX_ERRNO)
+>>   
+>>   static inline void * __must_check ERR_PTR(long error)
+>>   {
+> This doesn't really look like something we want to have as a generic
+> interface. The IS_ERR_VALUE() API is rather awkward already, and your
+> use seems specific to the cpu_muram_alloc() function.
+>
+> How about something like
+>
+> int cpm_muram_error(unsigned long addr)
+> {
+> 	if (addr >= (unsigned long)-MAX_ERRNO)
+> 		return addr;
+> 	else
+> 		return 0;
+> }
+>
+> and then use that to check the value returned by the allocation
+> that is still an 'unsigned long', before assigning it to a 'u32'.
+>
+> 	Arnd
