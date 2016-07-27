@@ -1,26 +1,19 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxQ81Zk3zDrK7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 23:57:35 +1000 (AEST)
-Received: by mail-pa0-x234.google.com with SMTP id iw10so10720175pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 06:57:35 -0700 (PDT)
-Date: Wed, 27 Jul 2016 23:57:28 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- svaidy@linux.vnet.ibm.com
-Subject: Re: [PATCH] Make system_reset_pSeries relocatable
-Message-ID: <20160727135728.GC3720@350D>
-Reply-To: bsingharora@gmail.com
-References: <48aad8b6-a27f-44c5-2b0b-f276595e9c04@gmail.com>
- <20160727215003.16b9feaf@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160727215003.16b9feaf@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtS09K5zDrL7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ aneesh.kumar@linux.vnet.ibm.com, haokexin@gmail.com
+Subject: [PATCH v3 02/21] powerpc/mm: Move disable_radix handling into
+ mmu_early_init_devtree()
+Date: Thu, 28 Jul 2016 00:17:58 +1000
+Message-Id: <1469629097-30859-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
+References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 27, 2016 at 09:50:03PM +1000, Nicholas Piggin wrote:
-> On Wed, 27 Jul 2016 17:32:06 +1000
-> Balbir Singh <bsingharora@gmail.com> wrote:
-> 
-> > +#ifndef CONFIG_RELOCATABLE
-> > +	b	power7_wakeup_common
-> > +#else
-> > +	/*
-> > +	 * We can't just use a direct branch to power7_wakeup_common
-> > +	 * because the distance from here to there depends on where
-> > +	 * the kernel ends up being put.
-> > +	 */
-> > +	mfctr	r11
-> > +	ld	r10, PACAKBASE(r13)
-> > +	LOAD_HANDLER(r10, power7_wakeup_common)
-> > +	mtctr	r10
-> > +	bctr
-> >  #endif
-> 
-> So r10 and r11 are safe to use (as well as existing registers
-> being used without saving) because we are returning via the nap
-> functions that caller will expect te trash volatile registers,
-> yes?
->
+Move the handling of the disable_radix command line argument into the
+newly created mmu_early_init_devtree().
 
-r10, r11 are volatile as per the ABI, so yes.
+It's an MMU option so it's preferable to have it in an mm related file,
+and it also means platforms that don't support radix don't have to carry
+the code.
 
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/prom.c | 13 -------------
+ arch/powerpc/mm/init_64.c  | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 13 deletions(-)
+
+v3: Merged into this series.
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 9686984e79c4..b4b6952e8991 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -647,14 +647,6 @@ static void __init early_reserve_mem(void)
+ #endif
+ }
  
-> In that caie I can't see a problem with this.
->
-
-Thanks for the review
-
-Balbir 
+-static bool disable_radix;
+-static int __init parse_disable_radix(char *p)
+-{
+-	disable_radix = true;
+-	return 0;
+-}
+-early_param("disable_radix", parse_disable_radix);
+-
+ void __init early_init_devtree(void *params)
+ {
+ 	phys_addr_t limit;
+@@ -744,11 +736,6 @@ void __init early_init_devtree(void *params)
+ 	 */
+ 	spinning_secondaries = boot_cpu_count - 1;
+ #endif
+-	/*
+-	 * now fixup radix MMU mode based on kernel command line
+-	 */
+-	if (disable_radix)
+-		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
+ 
+ 	mmu_early_init_devtree();
+ 
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index d0fb33ac3db2..0d51e6e25db5 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -413,7 +413,18 @@ EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
+ 
+ #ifdef CONFIG_PPC_STD_MMU_64
++static bool disable_radix;
++static int __init parse_disable_radix(char *p)
++{
++	disable_radix = true;
++	return 0;
++}
++early_param("disable_radix", parse_disable_radix);
++
+ void __init mmu_early_init_devtree(void)
+ {
++	/* Disable radix mode based on kernel command line. */
++	if (disable_radix)
++		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
+ }
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+-- 
+2.7.4
