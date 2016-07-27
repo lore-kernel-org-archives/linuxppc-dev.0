@@ -1,16 +1,21 @@
-Return-Path: <ruscur@russell.cc>
-Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzlCZ0kRCzDrFC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 16:17:46 +1000 (AEST)
-From: Russell Currey <ruscur@russell.cc>
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzmsW4jH9zDr17
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 17:32:15 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id h186so1342490pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 00:32:15 -0700 (PDT)
 To: linuxppc-dev@lists.ozlabs.org
-Cc: gwshan@linux.vnet.ibm.com,
-	Russell Currey <ruscur@russell.cc>
-Subject: [PATCH v2] powernv/pci: Add PHB register dump debugfs handle
-Date: Wed, 27 Jul 2016 16:14:04 +1000
-Message-Id: <20160727061404.13831-1-ruscur@russell.cc>
+Subject: [PATCH] Make system_reset_pSeries relocatable
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ npiggin@gmail.com, svaidy@linux.vnet.ibm.com
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <48aad8b6-a27f-44c5-2b0b-f276595e9c04@gmail.com>
+Date: Wed, 27 Jul 2016 17:32:06 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,85 +25,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On EEH events the kernel will print a dump of relevant registers.
-If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
-doesn't have EEH support, etc) this information isn't readily available.
 
-Add a new debugfs handler to trigger a PHB register dump, so that this
-information can be made available on demand.
+From: Balbir Singh <bsingharora@gmail.com>
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
+Currently the power management bits are broken w.r.t. relocation.
+There are direct branches from system_reset_pSeries to
+power7_wakeup_*. The correct way to do it is to do what
+the slb miss handler does, which is jump to a small stub within
+the first 64k of the relocated address and then jump to the
+actual location.
+
+The code has been lightly tested (not the kvm bits), I would highly
+appreciate a review of the code. I suspect there might be easy
+to find bugs :)
+
+Cc: benh@kernel.crashing.org
+Cc: mpe@ellerman.id.au
+Cc: paulus@samba.org
+Cc: npiggin@gmail.com
+Cc: svaidy@linux.vnet.ibm.com
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
-V2 changes:
-	- use a simple attribute instead of full fops thanks to mpe
-	- miscellanous fixes thanks to Gavin
-	- rename from "regdump" to "dump_regs"
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 43 ++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S | 82 ++++++++++++++++++++++--------------
+ 1 file changed, 51 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 891fc4a..2b9f114 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3018,6 +3018,42 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
- 	}
- }
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 8bcc1b4..64f9650 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -118,39 +118,21 @@ BEGIN_FTR_SECTION
+ 	cmpwi	cr4,r5,1
+ 	mtspr	SPRN_HSPRG0,r13
  
-+#ifdef CONFIG_DEBUG_FS
-+static int pnv_pci_diag_data_set(void *data, u64 val)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	int ret;
-+
-+	if (val != 1)
-+		return -EINVAL;
-+
-+	hose = (struct pci_controller *)data;
-+	if (!hose)
-+		return -EFAULT;
-+
-+	phb = hose->private_data;
-+	if (!phb)
-+		return -EFAULT;
-+
-+	/* Retrieve the diag data from firmware */
-+	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
-+					  PNV_PCI_DIAG_BUF_SIZE);
-+	if (ret != OPAL_SUCCESS)
-+		return -EIO;
-+
-+	/* Print the diag data to the kernel log */
-+	pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(pnv_pci_diag_data_fops,
-+			NULL,
-+			pnv_pci_diag_data_set,
-+			"%llu\n");
-+
-+#endif /* CONFIG_DEBUG_FS */
-+
- static void pnv_pci_ioda_create_dbgfs(void)
- {
- #ifdef CONFIG_DEBUG_FS
-@@ -3033,9 +3069,14 @@ static void pnv_pci_ioda_create_dbgfs(void)
+-	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
+-	cmpwi   cr2,r0,PNV_THREAD_NAP
+-	bgt     cr2,8f				/* Either sleep or Winkle */
+-
+-	/* Waking up from nap should not cause hypervisor state loss */
+-	bgt	cr3,.
+-
+-	/* Waking up from nap */
+-	li	r0,PNV_THREAD_RUNNING
+-	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
+-
+-#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	li	r0,KVM_HWTHREAD_IN_KERNEL
+-	stb	r0,HSTATE_HWTHREAD_STATE(r13)
+-	/* Order setting hwthread_state vs. testing hwthread_req */
+-	sync
+-	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
+-	cmpwi	r0,0
+-	beq	1f
+-	b	kvm_start_guest
+-1:
++#ifndef CONFIG_RELOCATABLE
++	b	power7_wakeup_common
++#else
++	/*
++	 * We can't just use a direct branch to power7_wakeup_common
++	 * because the distance from here to there depends on where
++	 * the kernel ends up being put.
++	 */
++	mfctr	r11
++	ld	r10, PACAKBASE(r13)
++	LOAD_HANDLER(r10, power7_wakeup_common)
++	mtctr	r10
++	bctr
+ #endif
  
- 		sprintf(name, "PCI%04x", hose->global_number);
- 		phb->dbgfs = debugfs_create_dir(name, powerpc_debugfs_root);
--		if (!phb->dbgfs)
-+		if (!phb->dbgfs) {
- 			pr_warning("%s: Error on creating debugfs on PHB#%x\n",
- 				__func__, hose->global_number);
-+			continue;
-+		}
+-	/* Return SRR1 from power7_nap() */
+-	mfspr	r3,SPRN_SRR1
+-	beq	cr3,2f
+-	b	power7_wakeup_noloss
+-2:	b	power7_wakeup_loss
+-
+-	/* Fast Sleep wakeup on PowerNV */
+-8:	GET_PACA(r13)
+-	b 	power7_wakeup_tb_loss
+-
+ 9:
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #endif /* CONFIG_PPC_P7_NAP */
+@@ -1448,6 +1430,44 @@ power4_fixup_nap:
+ 	blr
+ #endif
+ 
++	.align 7
++_GLOBAL(power7_wakeup_common)
++#ifdef CONFIG_RELOCATABLE
++	mtctr	r11
++#endif
++	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
++	cmpwi   cr2,r0,PNV_THREAD_NAP
++	bgt     cr2,8f				/* Either sleep or Winkle */
 +
-+		debugfs_create_file("dump_regs", 0200, phb->dbgfs, hose,
-+				    &pnv_pci_diag_data_fops);
- 	}
- #endif /* CONFIG_DEBUG_FS */
- }
++	/* Waking up from nap should not cause hypervisor state loss */
++	bgt	cr3,.
++
++	/* Waking up from nap */
++	li	r0,PNV_THREAD_RUNNING
++	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
++
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	li	r0,KVM_HWTHREAD_IN_KERNEL
++	stb	r0,HSTATE_HWTHREAD_STATE(r13)
++	/* Order setting hwthread_state vs. testing hwthread_req */
++	sync
++	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
++	cmpwi	r0,0
++	beq	1f
++	b	kvm_start_guest
++1:
++#endif
++
++	/* Return SRR1 from power7_nap() */
++	mfspr	r3,SPRN_SRR1
++	beq	cr3,2f
++	b	power7_wakeup_noloss
++2:	b	power7_wakeup_loss
++
++	/* Fast Sleep wakeup on PowerNV */
++8:	GET_PACA(r13)
++	b 	power7_wakeup_tb_loss
++
+ /*
+  * Hash table stuff
+  */
 -- 
-2.9.0
+2.5.5
