@@ -1,32 +1,33 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzsqQ2f0mzDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:15:45 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6RBDVA8048105
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 07:15:44 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24dvp8e9ug-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 07:15:43 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Wed, 27 Jul 2016 05:15:43 -0600
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
- mpe@ellerman.id.au
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Subject: [PowerPC] Kernel OOPS while compiling LTP test suite on linus mainline
-Date: Wed, 27 Jul 2016 16:45:35 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzsvD3L77zDqQD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:19:04 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: wei.guo.simon@gmail.com
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Shuah Khan <shuahkh@osg.samsung.com>,
+ Anton Blanchard <anton@samba.org>, Cyril Bur <cyrilbur@gmail.com>,
+ Simon Guo <wei.guo.simon@gmail.com>,
+ Ulrich Weigand <ulrich.weigand@de.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>,
+ Khem Raj <raj.khem@gmail.com>, Jessica Yu <jeyu@redhat.com>,
+ Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
+ Chris Smart <chris@distroguy.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v12 02/30] powerpc/process: Add the function
+ flush_tmregs_to_thread
+In-Reply-To: <1469611615-2935-3-git-send-email-wei.guo.simon@gmail.com>
+References: <1469611615-2935-1-git-send-email-wei.guo.simon@gmail.com>
+ <1469611615-2935-3-git-send-email-wei.guo.simon@gmail.com>
+Date: Wed, 27 Jul 2016 21:19:00 +1000
+Message-ID: <87oa5juy57.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <2a9abff6-7820-a95b-0de3-8e6723707cb6@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +37,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-Kernel OOPS messages were seen while compiling linux test project (LTP) source on 4.7.0-rc5 mainline.
+Hi Simon,
 
-Kernel config : pseries_le_defconfig
-Machine Type  : PowerVM LPAR
-Machine hardware : LPAR uses 16 vCPUs, and 29G memory
+wei.guo.simon@gmail.com writes:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>
+> This patch creates a function flush_tmregs_to_thread which
+> will then be used by subsequent patches in this series. The
+> function checks for self tracing ptrace interface attempts
+> while in the TM context and logs appropriate warning message.
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Shuah Khan <shuahkh@osg.samsung.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> Cc: Cyril Bur <cyrilbur@gmail.com>
+> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Cc: Simon Guo <wei.guo.simon@gmail.com>
+> Cc: Ulrich Weigand <ulrich.weigand@de.ibm.com>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Kees Cook <keescook@chromium.org>
+> Cc: Rashmica Gupta <rashmicy@gmail.com>
+> Cc: Khem Raj <raj.khem@gmail.com>
+> Cc: Jessica Yu <jeyu@redhat.com>
+> Cc: Jiri Kosina <jkosina@suse.cz>
+> Cc: Miroslav Benes <mbenes@suse.cz>
+> Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+> Cc: Chris Smart <chris@distroguy.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-kselftest@vger.kernel.org
 
-trace messages:
-*15:34:57* [  862.548866] Unable to handle kernel paging request for data at address 0x00000000
-*15:34:57* [  862.548904] Faulting instruction address: 0xc000000000260900
-*15:34:57* [  862.548911] Oops: Kernel access of bad area, sig: 11 [#1]
-*15:34:57* [  862.548917] SMP NR_CPUS=2048 NUMA pSeries
-*15:34:57* [  862.548924] Modules linked in: rtc_generic(E) pseries_rng(E) autofs4(E)
-*15:34:57* [  862.548938] CPU: 0 PID: 129 Comm: kswapd2 Tainted: G            E   4.7.0-rc5-autotest #1
-*15:34:57* [  862.548946] task: c0000007766a2600 ti: c000000776764000 task.ti: c000000776764000
-*15:34:57* [  862.548953] NIP: c000000000260900 LR: c00000000026452c CTR: 0000000000000000
-*15:34:57* [  862.548961] REGS: c000000776767830 TRAP: 0300   Tainted: G            E    (4.7.0-rc5-autotest)
-*15:34:57* [  862.548968] MSR: 800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 24000222  XER: 20000001
-*15:34:57* [  862.548996] CFAR: c000000000008468 DAR: 0000000000000000 DSISR: 40000000 SOFTE: 0
-*15:34:57* GPR00: c00000000026452c c000000776767ab0 c0000000013ac100 c00000077ff54200
-*15:34:57* GPR04: 0000000000000000 c000000776767ba0 0000000000000001 c00000000151c100
-*15:34:57* GPR08: 0000000000000000 00000000000b4057 0000000080000000 c00000071664b7a0
-*15:34:57* GPR12: 0000000000000000 c00000000e800000 0000000000000001 f0000000015dc000
-*15:34:57* GPR16: c00000077ff54700 0000000000000000 0000000000000000 c00000077ff54700
-*15:34:57* GPR20: 0000000000000001 0000000000000100 0000000000000200 c00000077ff54200
-*15:34:57* GPR24: c000000776767ba0 0000000000000020 0000000000000000 0000000000000001
-*15:34:57* GPR28: 0000000000000010 0000000000000000 c000000776767ba0 f0000000015dc020
-*15:34:57* [  862.549094] NIP [c000000000260900] move_active_pages_to_lru.isra.16+0xa0/0x380
-*15:34:57* [  862.549102] LR [c00000000026452c] shrink_active_list+0x2fc/0x510
-*15:34:57* [  862.549108] Call Trace:
-*15:34:57* [  862.549112] [c000000776767ab0] [f0000000015dc000] 0xf0000000015dc000 (unreliable)
-*15:34:57* [  862.549122] [c000000776767b60] [c00000000026452c] shrink_active_list+0x2fc/0x510
-*15:34:57* [  862.549131] [c000000776767c50] [c0000000002665d4] kswapd+0x434/0xa70
-*15:34:57* [  862.549139] [c000000776767d80] [c0000000000f1b50] kthread+0x110/0x130
-*15:34:57* [  862.549148] [c000000776767e30] [c0000000000095f0] ret_from_kernel_thread+0x5c/0x6c
-*15:34:57* [  862.549155] Instruction dump:
-*15:34:57* [  862.549161] 60000000 3b200020 3a800001 7b7c26e4 3aa00100 3ac00200 3a400000 3a770500
-*15:34:57* [  862.549174] 3a200000 60000000 60000000 60420000 <e93d0000> 7fbd4840 419e01b8 ebfd0008
-*15:34:57* [  862.549193] ---[ end trace fcc50906d9164c56 ]---
-*15:34:57* [  862.550562]
-*15:35:18* [  883.551577] INFO: rcu_sched self-detected stall on CPU
-*15:35:18* [  883.551578] INFO: rcu_sched self-detected stall on CPU
-*15:35:18* [  883.551588] 	2-...: (5249 ticks this GP) idle=cc5/140000000000001/0 softirq=50260/50260 fqs=5249
-*15:35:18* [  883.551591] 	 (t=5250 jiffies g=48365 c=48364 q=182)
+Please drop these Cc lines from the change log.
 
-Regard's
-Abdul
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+
+This and all the other patches need your Signed-off-by, as well as
+Anshuman's.
+
+cheers
