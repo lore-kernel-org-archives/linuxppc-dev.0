@@ -2,15 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtR2CcfzDrL7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtc361xzDrLR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:48 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  aneesh.kumar@linux.vnet.ibm.com, haokexin@gmail.com
-Subject: [PATCH v3 01/21] powerpc/mm: Add mmu_early_init_devtree()
-Date: Thu, 28 Jul 2016 00:17:57 +1000
-Message-Id: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 10/21] powerpc/mm: Define radix_enabled() in one place &
+ use static inline
+Date: Thu, 28 Jul 2016 00:18:06 +1000
+Message-Id: <1469629097-30859-10-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
+References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,68 +23,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Empty for now, but we'll add to it in the next patch.
+Currently we have radix_enabled() three times, twice in asm/book3s/64/mmu.h
+and then a fallback in asm/mmu.h.
+
+Consolidate them in asm/mmu.h. While we're at it convert them to be
+static inlines, and change the fallback case to returning a bool, like
+mmu_has_feature().
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h | 1 +
- arch/powerpc/include/asm/mmu.h           | 1 +
- arch/powerpc/kernel/prom.c               | 2 ++
- arch/powerpc/mm/init_64.c                | 6 ++++++
- 4 files changed, 10 insertions(+)
+ arch/powerpc/include/asm/book3s/64/mmu.h |  7 -------
+ arch/powerpc/include/asm/mmu.h           | 16 ++++++++++++----
+ 2 files changed, 12 insertions(+), 11 deletions(-)
 
-v3: Merged into this series.
+v3: New.
 
 diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index d4eda6420523..4eb4bd019716 100644
+index ad2d501cddcf..70c995870297 100644
 --- a/arch/powerpc/include/asm/book3s/64/mmu.h
 +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -107,6 +107,7 @@ extern int mmu_vmemmap_psize;
- extern int mmu_io_psize;
+@@ -23,13 +23,6 @@ struct mmu_psize_def {
+ };
+ extern struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
  
- /* MMU initialization */
-+void mmu_early_init_devtree(void);
- extern void radix_init_native(void);
- extern void hash__early_init_mmu(void);
- extern void radix__early_init_mmu(void);
+-#ifdef CONFIG_PPC_RADIX_MMU
+-#define radix_enabled() mmu_has_feature(MMU_FTR_TYPE_RADIX)
+-#else
+-#define radix_enabled() (0)
+-#endif
+-
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ /* 64-bit classic hash table MMU */
 diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 54471228f7b8..14220c5c12c9 100644
+index eb942a446969..f413b3213a3b 100644
 --- a/arch/powerpc/include/asm/mmu.h
 +++ b/arch/powerpc/include/asm/mmu.h
-@@ -210,6 +210,7 @@ extern void early_init_mmu(void);
- extern void early_init_mmu_secondary(void);
- extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 				       phys_addr_t first_memblock_size);
-+static inline void mmu_early_init_devtree(void) { }
- #endif /* __ASSEMBLY__ */
+@@ -163,6 +163,18 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+ }
+ #endif /* !CONFIG_DEBUG_VM */
+ 
++#ifdef CONFIG_PPC_RADIX_MMU
++static inline bool radix_enabled(void)
++{
++	return mmu_has_feature(MMU_FTR_TYPE_RADIX);
++}
++#else
++static inline bool radix_enabled(void)
++{
++	return false;
++}
++#endif
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ /* The kernel use the constants below to index in the page sizes array.
+@@ -230,9 +242,5 @@ static inline void mmu_early_init_devtree(void) { }
+ #  include <asm/mmu-8xx.h>
  #endif
  
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index bae3db791150..9686984e79c4 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -750,6 +750,8 @@ void __init early_init_devtree(void *params)
- 	if (disable_radix)
- 		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
- 
-+	mmu_early_init_devtree();
-+
- #ifdef CONFIG_PPC_POWERNV
- 	/* Scan and build the list of machine check recoverable ranges */
- 	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 33709bdb0419..d0fb33ac3db2 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -411,3 +411,9 @@ struct page *realmode_pfn_to_page(unsigned long pfn)
- EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
- 
- #endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
-+
-+#ifdef CONFIG_PPC_STD_MMU_64
-+void __init mmu_early_init_devtree(void)
-+{
-+}
-+#endif /* CONFIG_PPC_STD_MMU_64 */
+-#ifndef radix_enabled
+-#define radix_enabled() (0)
+-#endif
+-
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_MMU_H_ */
 -- 
 2.7.4
