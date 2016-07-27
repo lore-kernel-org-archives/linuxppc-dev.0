@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtT1jVkzDrL7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtV0XnKzDrL7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:42 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  aneesh.kumar@linux.vnet.ibm.com, haokexin@gmail.com
-Subject: [PATCH v3 03/21] powerpc/mm: Do hash device tree scanning earlier
-Date: Thu, 28 Jul 2016 00:17:59 +1000
-Message-Id: <1469629097-30859-3-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 04/21] powerpc/mm: Do radix device tree scanning earlier
+Date: Thu, 28 Jul 2016 00:18:00 +1000
+Message-Id: <1469629097-30859-4-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,80 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently MMU initialisation (early_init_mmu()) consists of a mixture of
-scanning the device tree, setting MMU feature bits, and then also doing
-actual initialisation of MMU data structures.
-
-We'd like to decouple the setting of the MMU features from the actual
-setup. So split out the device tree scanning, and associated code, and
-call it from mmu_init_early_devtree().
+Like we just did for hash, split the device tree scanning parts out and
+call them from mmu_early_init_devtree().
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/book3s/64/mmu.h |  1 +
- arch/powerpc/mm/hash_utils_64.c          | 15 +++++++++------
- arch/powerpc/mm/init_64.c                |  3 +++
- 3 files changed, 13 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h | 1 +
+ arch/powerpc/mm/init_64.c                | 4 +++-
+ arch/powerpc/mm/pgtable-radix.c          | 3 +--
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
 v3: Merged into this series.
 
 diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-index 4eb4bd019716..358f1410dc0d 100644
+index 358f1410dc0d..9ee00c2576d0 100644
 --- a/arch/powerpc/include/asm/book3s/64/mmu.h
 +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-@@ -108,6 +108,7 @@ extern int mmu_io_psize;
- 
+@@ -109,6 +109,7 @@ extern int mmu_io_psize;
  /* MMU initialization */
  void mmu_early_init_devtree(void);
-+void hash__early_init_devtree(void);
+ void hash__early_init_devtree(void);
++void radix__early_init_devtree(void);
  extern void radix_init_native(void);
  extern void hash__early_init_mmu(void);
  extern void radix__early_init_mmu(void);
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 1ff11c1bb182..5f922e93af25 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -759,12 +759,6 @@ static void __init htab_initialize(void)
- 
- 	DBG(" -> htab_initialize()\n");
- 
--	/* Initialize segment sizes */
--	htab_init_seg_sizes();
--
--	/* Initialize page sizes */
--	htab_init_page_sizes();
--
- 	if (mmu_has_feature(MMU_FTR_1T_SEGMENT)) {
- 		mmu_kernel_ssize = MMU_SEGSIZE_1T;
- 		mmu_highuser_ssize = MMU_SEGSIZE_1T;
-@@ -885,6 +879,15 @@ static void __init htab_initialize(void)
- #undef KB
- #undef MB
- 
-+void __init hash__early_init_devtree(void)
-+{
-+	/* Initialize segment sizes */
-+	htab_init_seg_sizes();
-+
-+	/* Initialize page sizes */
-+	htab_init_page_sizes();
-+}
-+
- void __init hash__early_init_mmu(void)
- {
- 	/*
 diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 0d51e6e25db5..d023333c6c9a 100644
+index d023333c6c9a..e0ab33d20a10 100644
 --- a/arch/powerpc/mm/init_64.c
 +++ b/arch/powerpc/mm/init_64.c
-@@ -426,5 +426,8 @@ void __init mmu_early_init_devtree(void)
- 	/* Disable radix mode based on kernel command line. */
+@@ -427,7 +427,9 @@ void __init mmu_early_init_devtree(void)
  	if (disable_radix)
  		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
-+
-+	if (!radix_enabled())
-+		hash__early_init_devtree();
+ 
+-	if (!radix_enabled())
++	if (radix_enabled())
++		radix__early_init_devtree();
++	else
+ 		hash__early_init_devtree();
  }
  #endif /* CONFIG_PPC_STD_MMU_64 */
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 003ff48a11b6..f34ccdbe0fbd 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -264,7 +264,7 @@ static int __init radix_dt_scan_page_sizes(unsigned long node,
+ 	return 1;
+ }
+ 
+-static void __init radix_init_page_sizes(void)
++void __init radix__early_init_devtree(void)
+ {
+ 	int rc;
+ 
+@@ -343,7 +343,6 @@ void __init radix__early_init_mmu(void)
+ 	__pte_frag_nr = H_PTE_FRAG_NR;
+ 	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
+ 
+-	radix_init_page_sizes();
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		radix_init_native();
+ 		lpcr = mfspr(SPRN_LPCR);
 -- 
 2.7.4
