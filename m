@@ -1,33 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzsvD3L77zDqQD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:19:04 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: wei.guo.simon@gmail.com
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Shuah Khan <shuahkh@osg.samsung.com>,
- Anton Blanchard <anton@samba.org>, Cyril Bur <cyrilbur@gmail.com>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Ulrich Weigand <ulrich.weigand@de.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Andrew Morton <akpm@linux-foundation.org>,
- Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>,
- Khem Raj <raj.khem@gmail.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Chris Smart <chris@distroguy.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v12 02/30] powerpc/process: Add the function
- flush_tmregs_to_thread
-In-Reply-To: <1469611615-2935-3-git-send-email-wei.guo.simon@gmail.com>
-References: <1469611615-2935-1-git-send-email-wei.guo.simon@gmail.com>
- <1469611615-2935-3-git-send-email-wei.guo.simon@gmail.com>
-Date: Wed, 27 Jul 2016 21:19:00 +1000
-Message-ID: <87oa5juy57.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rztFQ0jFjzDrFS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:34:50 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id cf3so1633825pad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 04:34:50 -0700 (PDT)
+Date: Wed, 27 Jul 2016 21:34:40 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, npiggin@gmail.com,
+ svaidy@linux.vnet.ibm.com
+Subject: Re: [PATCH] Make system_reset_pSeries relocatable
+Message-ID: <20160727113440.GA3720@350D>
+Reply-To: bsingharora@gmail.com
+References: <48aad8b6-a27f-44c5-2b0b-f276595e9c04@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <48aad8b6-a27f-44c5-2b0b-f276595e9c04@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,46 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi Simon,
-
-wei.guo.simon@gmail.com writes:
-> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On Wed, Jul 27, 2016 at 05:32:06PM +1000, Balbir Singh wrote:
+> 
+> From: Balbir Singh <bsingharora@gmail.com>
+> 
+> Currently the power management bits are broken w.r.t. relocation.
+> There are direct branches from system_reset_pSeries to
+> power7_wakeup_*. The correct way to do it is to do what
+> the slb miss handler does, which is jump to a small stub within
+> the first 64k of the relocated address and then jump to the
+> actual location.
+> 
+> The code has been lightly tested (not the kvm bits), I would highly
+> appreciate a review of the code. I suspect there might be easy
+> to find bugs :)
 >
-> This patch creates a function flush_tmregs_to_thread which
-> will then be used by subsequent patches in this series. The
-> function checks for self tracing ptrace interface attempts
-> while in the TM context and logs appropriate warning message.
->
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Shuah Khan <shuahkh@osg.samsung.com>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Cyril Bur <cyrilbur@gmail.com>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Simon Guo <wei.guo.simon@gmail.com>
-> Cc: Ulrich Weigand <ulrich.weigand@de.ibm.com>
-> Cc: Michael Neuling <mikey@neuling.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Kees Cook <keescook@chromium.org>
-> Cc: Rashmica Gupta <rashmicy@gmail.com>
-> Cc: Khem Raj <raj.khem@gmail.com>
-> Cc: Jessica Yu <jeyu@redhat.com>
-> Cc: Jiri Kosina <jkosina@suse.cz>
-> Cc: Miroslav Benes <mbenes@suse.cz>
-> Cc: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-> Cc: Chris Smart <chris@distroguy.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-kselftest@vger.kernel.org
+Snip
+ 
+> +	.align 7
+> +_GLOBAL(power7_wakeup_common)
+> +#ifdef CONFIG_RELOCATABLE
+> +	mtctr	r11
+> +#endif
+> +	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
+> +	cmpwi   cr2,r0,PNV_THREAD_NAP
+> +	bgt     cr2,8f				/* Either sleep or Winkle */
+> +
+> +	/* Waking up from nap should not cause hypervisor state loss */
+> +	bgt	cr3,.
+> +
+> +	/* Waking up from nap */
+> +	li	r0,PNV_THREAD_RUNNING
+> +	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
+> +
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +	li	r0,KVM_HWTHREAD_IN_KERNEL
+> +	stb	r0,HSTATE_HWTHREAD_STATE(r13)
+> +	/* Order setting hwthread_state vs. testing hwthread_req */
+> +	sync
+> +	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
+> +	cmpwi	r0,0
+> +	beq	1f
+> +	b	kvm_start_guest
+> +1:
+> +#endif
+> +
+> +	/* Return SRR1 from power7_nap() */
+> +	mfspr	r3,SPRN_SRR1
+> +	beq	cr3,2f
+> +	b	power7_wakeup_noloss
+> +2:	b	power7_wakeup_loss
+> +
+> +	/* Fast Sleep wakeup on PowerNV */
+> +8:	GET_PACA(r13)
+> +	b 	power7_wakeup_tb_loss
+> +
+>  /*
+>   * Hash table stuff
+>   */
 
-Please drop these Cc lines from the change log.
+As per 0day, this part needs to be under #ifdef CONFIG_PPC_P7_NAP
 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
+I'll repose a new version tomorrow.
 
-This and all the other patches need your Signed-off-by, as well as
-Anshuman's.
-
-cheers
+Balbir Singh
