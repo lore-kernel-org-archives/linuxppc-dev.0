@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtS09K5zDrL7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzxtT1jVkzDrL7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 00:18:41 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  aneesh.kumar@linux.vnet.ibm.com, haokexin@gmail.com
-Subject: [PATCH v3 02/21] powerpc/mm: Move disable_radix handling into
- mmu_early_init_devtree()
-Date: Thu, 28 Jul 2016 00:17:58 +1000
-Message-Id: <1469629097-30859-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v3 03/21] powerpc/mm: Do hash device tree scanning earlier
+Date: Thu, 28 Jul 2016 00:17:59 +1000
+Message-Id: <1469629097-30859-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,73 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move the handling of the disable_radix command line argument into the
-newly created mmu_early_init_devtree().
+Currently MMU initialisation (early_init_mmu()) consists of a mixture of
+scanning the device tree, setting MMU feature bits, and then also doing
+actual initialisation of MMU data structures.
 
-It's an MMU option so it's preferable to have it in an mm related file,
-and it also means platforms that don't support radix don't have to carry
-the code.
+We'd like to decouple the setting of the MMU features from the actual
+setup. So split out the device tree scanning, and associated code, and
+call it from mmu_init_early_devtree().
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 13 -------------
- arch/powerpc/mm/init_64.c  | 11 +++++++++++
- 2 files changed, 11 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu.h |  1 +
+ arch/powerpc/mm/hash_utils_64.c          | 15 +++++++++------
+ arch/powerpc/mm/init_64.c                |  3 +++
+ 3 files changed, 13 insertions(+), 6 deletions(-)
 
 v3: Merged into this series.
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 9686984e79c4..b4b6952e8991 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -647,14 +647,6 @@ static void __init early_reserve_mem(void)
- #endif
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
+index 4eb4bd019716..358f1410dc0d 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu.h
+@@ -108,6 +108,7 @@ extern int mmu_io_psize;
  
--static bool disable_radix;
--static int __init parse_disable_radix(char *p)
--{
--	disable_radix = true;
--	return 0;
--}
--early_param("disable_radix", parse_disable_radix);
+ /* MMU initialization */
+ void mmu_early_init_devtree(void);
++void hash__early_init_devtree(void);
+ extern void radix_init_native(void);
+ extern void hash__early_init_mmu(void);
+ extern void radix__early_init_mmu(void);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 1ff11c1bb182..5f922e93af25 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -759,12 +759,6 @@ static void __init htab_initialize(void)
+ 
+ 	DBG(" -> htab_initialize()\n");
+ 
+-	/* Initialize segment sizes */
+-	htab_init_seg_sizes();
 -
- void __init early_init_devtree(void *params)
+-	/* Initialize page sizes */
+-	htab_init_page_sizes();
+-
+ 	if (mmu_has_feature(MMU_FTR_1T_SEGMENT)) {
+ 		mmu_kernel_ssize = MMU_SEGSIZE_1T;
+ 		mmu_highuser_ssize = MMU_SEGSIZE_1T;
+@@ -885,6 +879,15 @@ static void __init htab_initialize(void)
+ #undef KB
+ #undef MB
+ 
++void __init hash__early_init_devtree(void)
++{
++	/* Initialize segment sizes */
++	htab_init_seg_sizes();
++
++	/* Initialize page sizes */
++	htab_init_page_sizes();
++}
++
+ void __init hash__early_init_mmu(void)
  {
- 	phys_addr_t limit;
-@@ -744,11 +736,6 @@ void __init early_init_devtree(void *params)
- 	 */
- 	spinning_secondaries = boot_cpu_count - 1;
- #endif
--	/*
--	 * now fixup radix MMU mode based on kernel command line
--	 */
--	if (disable_radix)
--		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
- 
- 	mmu_early_init_devtree();
- 
+ 	/*
 diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index d0fb33ac3db2..0d51e6e25db5 100644
+index 0d51e6e25db5..d023333c6c9a 100644
 --- a/arch/powerpc/mm/init_64.c
 +++ b/arch/powerpc/mm/init_64.c
-@@ -413,7 +413,18 @@ EXPORT_SYMBOL_GPL(realmode_pfn_to_page);
- #endif /* CONFIG_SPARSEMEM_VMEMMAP/CONFIG_FLATMEM */
- 
- #ifdef CONFIG_PPC_STD_MMU_64
-+static bool disable_radix;
-+static int __init parse_disable_radix(char *p)
-+{
-+	disable_radix = true;
-+	return 0;
-+}
-+early_param("disable_radix", parse_disable_radix);
+@@ -426,5 +426,8 @@ void __init mmu_early_init_devtree(void)
+ 	/* Disable radix mode based on kernel command line. */
+ 	if (disable_radix)
+ 		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
 +
- void __init mmu_early_init_devtree(void)
- {
-+	/* Disable radix mode based on kernel command line. */
-+	if (disable_radix)
-+		cur_cpu_spec->mmu_features &= ~MMU_FTR_RADIX;
++	if (!radix_enabled())
++		hash__early_init_devtree();
  }
  #endif /* CONFIG_PPC_STD_MMU_64 */
 -- 
