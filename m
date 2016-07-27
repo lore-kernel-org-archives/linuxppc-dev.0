@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3rzqQt4Z9FzDrF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 19:27:50 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id h186so1521621pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 02:27:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3rzqQz4yFPzDrJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 19:27:55 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h186so1521762pfg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 02:27:55 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
@@ -23,10 +23,10 @@ Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
  Chris Smart <chris@distroguy.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
-Subject: [PATCH v12 05/30] powerpc/ptrace: Enable in transaction NT_PPC_VSX
- ptrace requests
-Date: Wed, 27 Jul 2016 17:26:30 +0800
-Message-Id: <1469611615-2935-6-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v12 06/30] powerpc/ptrace: Adapt gpr32_get,
+ gpr32_set functions for transaction
+Date: Wed, 27 Jul 2016 17:26:31 +0800
+Message-Id: <1469611615-2935-7-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1469611615-2935-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1469611615-2935-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,12 +40,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-This patch enables in transaction NT_PPC_VSX ptrace requests. The
-function vsr_get which gets the running value of all VSX registers
-and the function vsr_set which sets the running value of of all VSX
-registers work on the running set of VMX registers whose location
-will be different if transaction is active. This patch makes these
-functions adapt to situations when the transaction is active.
+This patch splits gpr32_get, gpr32_set functions to accommodate
+in transaction ptrace requests implemented in patches later in
+the series.
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
@@ -71,113 +68,116 @@ Cc: linux-kernel@vger.kernel.org
 Cc: linux-kselftest@vger.kernel.org
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/ptrace.c | 64 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
+ arch/powerpc/kernel/ptrace.c | 64 +++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 51 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 3baa57e..ebf3b0e 100644
+index ebf3b0e..2cdb4e7 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -681,6 +681,21 @@ static int vsr_active(struct task_struct *target,
- 	return target->thread.used_vsr ? regset->n : 0;
- }
+@@ -907,24 +907,35 @@ static const struct user_regset_view user_ppc_native_view = {
+ #ifdef CONFIG_PPC64
+ #include <linux/compat.h>
  
-+/*
-+ * When the transaction is active, 'transact_fp' holds the current running
-+ * value of all FPR registers and 'fp_state' holds the last checkpointed
-+ * value of all FPR registers for the current transaction. When transaction
-+ * is not active 'fp_state' holds the current running state of all the FPR
-+ * registers. So this function which returns the current running values of
-+ * all the FPR registers, needs to know whether any transaction is active
-+ * or not.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	vsx[32];
-+ * };
-+ */
- static int vsr_get(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count,
- 		   void *kbuf, void __user *ubuf)
-@@ -688,16 +703,47 @@ static int vsr_get(struct task_struct *target, const struct user_regset *regset,
- 	u64 buf[32];
- 	int ret, i;
+-static int gpr32_get(struct task_struct *target,
++static int gpr32_get_common(struct task_struct *target,
+ 		     const struct user_regset *regset,
+ 		     unsigned int pos, unsigned int count,
+-		     void *kbuf, void __user *ubuf)
++			    void *kbuf, void __user *ubuf, bool tm_active)
+ {
+ 	const unsigned long *regs = &target->thread.regs->gpr[0];
++	const unsigned long *ckpt_regs;
+ 	compat_ulong_t *k = kbuf;
+ 	compat_ulong_t __user *u = ubuf;
+ 	compat_ulong_t reg;
+ 	int i;
  
+-	if (target->thread.regs == NULL)
+-		return -EIO;
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+	flush_tmregs_to_thread(target);
++	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
 +#endif
- 	flush_vsx_to_thread(target);
- 
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
-+		for (i = 0; i < 32 ; i++)
-+			buf[i] = target->thread.
-+				transact_fp.fpr[i][TS_VSRLOWOFFSET];
++	if (tm_active) {
++		regs = ckpt_regs;
 +	} else {
-+		for (i = 0; i < 32 ; i++)
-+			buf[i] = target->thread.
-+				fp_state.fpr[i][TS_VSRLOWOFFSET];
-+	}
-+#else
- 	for (i = 0; i < 32 ; i++)
- 		buf[i] = target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET];
-+#endif
- 	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
- 				  buf, 0, 32 * sizeof(double));
++		if (target->thread.regs == NULL)
++			return -EIO;
  
- 	return ret;
+-	if (!FULL_REGS(target->thread.regs)) {
+-		/* We have a partial register set.  Fill 14-31 with bogus values */
+-		for (i = 14; i < 32; i++)
+-			target->thread.regs->gpr[i] = NV_REG_POISON; 
++		if (!FULL_REGS(target->thread.regs)) {
++			/*
++			 * We have a partial register set.
++			 * Fill 14-31 with bogus values.
++			 */
++			for (i = 14; i < 32; i++)
++				target->thread.regs->gpr[i] = NV_REG_POISON;
++		}
+ 	}
+ 
+ 	pos /= sizeof(reg);
+@@ -964,20 +975,31 @@ static int gpr32_get(struct task_struct *target,
+ 					PT_REGS_COUNT * sizeof(reg), -1);
  }
  
-+/*
-+ * When the transaction is active, 'transact_fp' holds the current running
-+ * value of all FPR registers and 'fp_state' holds the last checkpointed
-+ * value of all FPR registers for the current transaction. When transaction
-+ * is not active 'fp_state' holds the current running state of all the FPR
-+ * registers. So this function which sets the current running values of all
-+ * the FPR registers, needs to know whether any transaction is active or not.
-+ *
-+ * Userspace interface buffer layout:
-+ *
-+ * struct data {
-+ *	u64	vsx[32];
-+ * };
-+ */
- static int vsr_set(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count,
- 		   const void *kbuf, const void __user *ubuf)
-@@ -705,12 +751,30 @@ static int vsr_set(struct task_struct *target, const struct user_regset *regset,
- 	u64 buf[32];
- 	int ret,i;
+-static int gpr32_set(struct task_struct *target,
++static int gpr32_set_common(struct task_struct *target,
+ 		     const struct user_regset *regset,
+ 		     unsigned int pos, unsigned int count,
+-		     const void *kbuf, const void __user *ubuf)
++		     const void *kbuf, const void __user *ubuf, bool tm_active)
+ {
+ 	unsigned long *regs = &target->thread.regs->gpr[0];
++	unsigned long *ckpt_regs;
+ 	const compat_ulong_t *k = kbuf;
+ 	const compat_ulong_t __user *u = ubuf;
+ 	compat_ulong_t reg;
  
+-	if (target->thread.regs == NULL)
+-		return -EIO;
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+	flush_tmregs_to_thread(target);
++	ckpt_regs = &target->thread.ckpt_regs.gpr[0];
 +#endif
- 	flush_vsx_to_thread(target);
  
- 	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				 buf, 0, 32 * sizeof(double));
+-	CHECK_FULL_REGS(target->thread.regs);
++	if (tm_active) {
++		regs = ckpt_regs;
++	} else {
++		regs = &target->thread.regs->gpr[0];
 +
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	if (MSR_TM_ACTIVE(target->thread.regs->msr)) {
-+		for (i = 0; i < 32 ; i++)
-+			target->thread.transact_fp.
-+				fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+	} else {
-+		for (i = 0; i < 32 ; i++)
-+			target->thread.fp_state.
-+				fpr[i][TS_VSRLOWOFFSET] = buf[i];
++		if (target->thread.regs == NULL)
++			return -EIO;
++
++		CHECK_FULL_REGS(target->thread.regs);
 +	}
-+#else
- 	for (i = 0; i < 32 ; i++)
- 		target->thread.fp_state.fpr[i][TS_VSRLOWOFFSET] = buf[i];
-+#endif
  
+ 	pos /= sizeof(reg);
+ 	count /= sizeof(reg);
+@@ -1037,6 +1059,22 @@ static int gpr32_set(struct task_struct *target,
+ 					 (PT_TRAP + 1) * sizeof(reg), -1);
+ }
  
- 	return ret;
++static int gpr32_get(struct task_struct *target,
++		     const struct user_regset *regset,
++		     unsigned int pos, unsigned int count,
++		     void *kbuf, void __user *ubuf)
++{
++	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 0);
++}
++
++static int gpr32_set(struct task_struct *target,
++		     const struct user_regset *regset,
++		     unsigned int pos, unsigned int count,
++		     const void *kbuf, const void __user *ubuf)
++{
++	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 0);
++}
++
+ /*
+  * These are the regset flavors matching the CONFIG_PPC32 native set.
+  */
 -- 
 1.8.3.1
