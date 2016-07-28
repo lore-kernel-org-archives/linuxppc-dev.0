@@ -1,38 +1,37 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0fx06vh4zDrPm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2016 04:08:20 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6SHwniH139750
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 14:08:17 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24fhts7r8u-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0kNT2MvjzDrQG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2016 06:43:52 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6SKY9CM076720
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 16:43:50 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24eun2tnjm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 14:08:17 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 16:43:50 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 28 Jul 2016 14:08:16 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id AA061C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 14:08:02 -0400 (EDT)
-Subject: Re: [PATCH v3 1/2] powerpc/pseries: Implement indexed-count hotplug
- memory add
-To: Sahil Mehta <smehta@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <ef1e34d9-376c-1418-2862-f2543452298e@linux.vnet.ibm.com>
- <3177a8e2-6752-192c-4b9e-f6a37fd0dd46@linux.vnet.ibm.com>
+ Thu, 28 Jul 2016 14:43:49 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 13416C40002
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 14:43:28 -0600 (MDT)
+Subject: Re: [PATCH V2 2/8] powerpc/memory: Parse new memory property to
+ register blocks.
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <f77ccfa8-ade6-c0c4-ab3f-8dc3a80ed099@linux.vnet.ibm.com>
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Thu, 28 Jul 2016 13:08:12 -0500
+Date: Thu, 28 Jul 2016 15:43:44 -0500
 MIME-Version: 1.0
-In-Reply-To: <3177a8e2-6752-192c-4b9e-f6a37fd0dd46@linux.vnet.ibm.com>
+In-Reply-To: <f77ccfa8-ade6-c0c4-ab3f-8dc3a80ed099@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <38e7b92f-6b4a-1139-7890-f317081c25ce@linux.vnet.ibm.com>
+Message-Id: <48dfeafd-f379-23be-ae85-8cec8591698a@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,253 +41,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/25/2016 12:40 PM, Sahil Mehta wrote:
-> Indexed-count add for memory hotplug guarantees that a contiguous block
-> of <count> lmbs beginning at a specified <index> will be assigned (NOT
-> that <count> lmbs will be added). Because of Qemu's per-DIMM memory
-> management, the addition of a contiguous block of memory currently
-> requires a series of individual calls. Indexed-count add reduces
-> this series into a single call.
+On 07/27/2016 09:23 AM, Michael Bringmann wrote:
+> powerpc/memory: Add parallel routines to parse the new property
+> "ibm,dynamic-memory-v2" property when it is present, and then to
+> register the relevant memory blocks with the operating system.
+> This property format is intended to provide a more compact
+> representation of memory when communicating with the front end
+> processor, especially when describing vast amounts of RAM.
 > 
-> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 > ---
-> v2:	-remove potential memory leak when parsing command
-> 	-use u32s drc_index and count instead of u32 ic[]
-> 	 in dlpar_memory
-> v3:	-add logic to handle invalid drc_index input
-> 	-update indexed-count trigger to follow naming convention
-> 	-update dlpar_memory to follow kernel if-else style
-> 
->  arch/powerpc/include/asm/rtas.h                 |    2
->  arch/powerpc/platforms/pseries/dlpar.c          |   34 ++++++-
->  arch/powerpc/platforms/pseries/hotplug-memory.c |  110 +++++++++++++++++++++--
->  3 files changed, 134 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index 51400ba..088ea75 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -307,6 +307,7 @@ struct pseries_hp_errorlog {
->  	union {
->  		__be32	drc_index;
->  		__be32	drc_count;
-> +		__be32	indexed_count[2];
->  		char	drc_name[1];
->  	} _drc_u;
+> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> index 7f436ba..b9a1534 100644
+> --- a/arch/powerpc/include/asm/prom.h
+> +++ b/arch/powerpc/include/asm/prom.h
+> @@ -69,6 +69,8 @@ struct boot_param_header {
+>   * OF address retreival & translation
+>   */
+>  
+> +extern int n_mem_addr_cells;
+> +
+>  /* Parse the ibm,dma-window property of an OF node into the busno, phys and
+>   * size parameters.
+>   */
+> @@ -81,8 +83,9 @@ extern void of_instantiate_rtc(void);
+>  extern int of_get_ibm_chip_id(struct device_node *np);
+>  
+>  /* The of_drconf_cell struct defines the layout of the LMB array
+> - * specified in the device tree property
+> - * ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
+> + * specified in the device tree properties,
+> + *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory
+> + *     ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory-v2
+>   */
+>  struct of_drconf_cell {
+>  	u64	base_addr;
+> @@ -92,9 +95,32 @@ struct of_drconf_cell {
+>  	u32	flags;
 >  };
-> @@ -322,6 +323,7 @@ struct pseries_hp_errorlog {
->  #define PSERIES_HP_ELOG_ID_DRC_NAME	1
->  #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
->  #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
-> +#define PSERIES_HP_ELOG_ID_DRC_IC	4
-> 
->  struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
->  					      uint16_t section_id);
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index 2b93ae8..6dbd13c 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -345,11 +345,17 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
->  	switch (hp_elog->id_type) {
->  	case PSERIES_HP_ELOG_ID_DRC_COUNT:
->  		hp_elog->_drc_u.drc_count =
-> -					be32_to_cpu(hp_elog->_drc_u.drc_count);
-> +				be32_to_cpu(hp_elog->_drc_u.drc_count);
->  		break;
->  	case PSERIES_HP_ELOG_ID_DRC_INDEX:
->  		hp_elog->_drc_u.drc_index =
-> -					be32_to_cpu(hp_elog->_drc_u.drc_index);
-> +				be32_to_cpu(hp_elog->_drc_u.drc_index);
-> +		break;
-> +	case PSERIES_HP_ELOG_ID_DRC_IC:
-> +		hp_elog->_drc_u.indexed_count[0] =
-> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[0]);
-> +		hp_elog->_drc_u.indexed_count[1] =
-> +				be32_to_cpu(hp_elog->_drc_u.indexed_count[1]);
->  	}
-> 
->  	switch (hp_elog->resource) {
-> @@ -409,7 +415,29 @@ static ssize_t dlpar_store(struct class *class, struct class_attribute *attr,
->  		goto dlpar_store_out;
->  	}
-> 
-> -	if (!strncmp(arg, "index", 5)) {
-> +	if (!strncmp(arg, "indexed-count", 13)) {
-> +		u32 index, count;
-> +		char *cstr, *istr;
+>  
+> -#define DRCONF_MEM_ASSIGNED	0x00000008
+> -#define DRCONF_MEM_AI_INVALID	0x00000040
+> -#define DRCONF_MEM_RESERVED	0x00000080
+> +#define DRCONF_MEM_ASSIGNED		0x00000008
+> +#define DRCONF_MEM_AI_INVALID		0x00000040
+> +#define DRCONF_MEM_RESERVED		0x00000080
 > +
-> +		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_IC;
-> +		arg += strlen("indexed-count ");
+> +struct of_drconf_cell_v2 {
+> +	u32	num_seq_lmbs;
+> +	u64	base_addr;
+> +	u32	drc_index;
+> +	u32	aa_index;
+> +	u32	flags;
+> +} __attribute__((packed));
 > +
-> +		cstr = kstrdup(arg, GFP_KERNEL);
-> +		istr = strchr(cstr, ' ');
-> +		*istr++ = '\0';
+> +
+> +static inline int dyn_mem_v2_len(int entries)
+> +{
+> +	int drconf_v2_cells = (n_mem_addr_cells + 4);
+> +	int drconf_v2_cells_len = (drconf_v2_cells * sizeof(unsigned int));
+> +	return (((entries) * drconf_v2_cells_len) +
+> +                (1 * sizeof(unsigned int)));
+> +}
+> +
+> +extern void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem,
+> +				const __be32 **cellp);
+> +extern void read_one_drc_info(int **info, char **drc_type, char **drc_name,
+> +			unsigned long int *fdi_p, unsigned long int *nsl_p,
+> +			unsigned long int *si_p, unsigned long int *ldi_p);
 
-This block should have some additional error checking. It is possible for kstrdup to return
-NULL, and it is possible that the arg string does not contain a space character. Either of
-these would result in dereferencing a NULL pointer.
+You have added dyn_mem_v2_len() and read_on_drc_info but I do not see that
+they are used in this patch.
+ 
+>  
+>  /*
+>   * There are two methods for telling firmware what our capabilities are.
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 669a15e..ad294ce 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -57,8 +57,10 @@
+>  EXPORT_SYMBOL(node_data);
+>  
+>  static int min_common_depth;
+> -static int n_mem_addr_cells, n_mem_size_cells;
+> +int n_mem_addr_cells;
+> +static int n_mem_size_cells;
+>  static int form1_affinity;
+> +EXPORT_SYMBOL(n_mem_addr_cells);
+>  
+>  #define MAX_DISTANCE_REF_POINTS 4
+>  static int distance_ref_points_depth;
+> @@ -405,6 +405,24 @@ static void read_drconf_cell(struct of_drconf_cell *drmem, const __be32 **cellp)
+>  
+>  	*cellp = cp + 4;
+>  }
+> + 
+> + /*
+> + * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+> + * Read the next memory block set entry from the ibm,dynamic-memory-v2 property
+> + * and return the information in the provided of_drconf_cell_v2 structure.
+> + */
+> +void read_drconf_cell_v2(struct of_drconf_cell_v2 *drmem, const __be32 **cellp)
+> +{
+> +	const __be32 *cp = (const __be32 *)*cellp;
+> +	drmem->num_seq_lmbs = be32_to_cpu(*cp++);
+> +	drmem->base_addr = read_n_cells(n_mem_addr_cells, &cp);
+> +	drmem->drc_index = be32_to_cpu(*cp++);
+> +	drmem->aa_index = be32_to_cpu(*cp++);
+> +	drmem->flags = be32_to_cpu(*cp++);
+> +
+> +	*cellp = cp;
+> +}
+> +EXPORT_SYMBOL(read_drconf_cell_v2);
+>  
+>  /*
+>   * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 946e34f..a55bc1e 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -56,6 +56,7 @@
+>  #include <asm/opal.h>
+>  #include <asm/fadump.h>
+>  #include <asm/debug.h>
+> +#include <asm/firmware.h>
+>  
+>  #include <mm/mmu_decl.h>
+>  
+> @@ -441,12 +442,12 @@ static int __init early_init_dt_scan_chosen_ppc(unsigned long node,
+>  
+>  #ifdef CONFIG_PPC_PSERIES
+>  /*
+> - * Interpret the ibm,dynamic-memory property in the
+> - * /ibm,dynamic-reconfiguration-memory node.
+> + * Interpret the ibm,dynamic-memory property/ibm,dynamic-memory-v2
+> + * in the /ibm,dynamic-reconfiguration-memory node.
+>   * This contains a list of memory blocks along with NUMA affinity
+>   * information.
+>   */
+> -static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+> +static int __init early_init_dt_scan_drconf_memory_v1(unsigned long node)
+>  {
+>  	const __be32 *dm, *ls, *usm;
+>  	int l;
+> @@ -516,6 +517,105 @@ static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+>  	memblock_dump_all();
+>  	return 0;
+>  }
+> +
+> +static int __init early_init_dt_scan_drconf_memory_v2(unsigned long node)
+> +{
+> +	const __be32 *dm, *ls, *usm;
+> +	int l;
+> +	unsigned long num_sets;
+> +	u64 size, base, memblock_size;
+> +	unsigned int is_kexec_kdump = 0, rngs;
+> +
+> +	ls = of_get_flat_dt_prop(node, "ibm,lmb-size", &l);
+> +	if (ls == NULL || l < dt_root_size_cells * sizeof(__be32))
+> +		return 0;
+> +	memblock_size = dt_mem_next_cell(dt_root_size_cells, &ls);
+> +
+> +	dm = of_get_flat_dt_prop(node, "ibm,dynamic-memory-v2", &l);
+> +	if (dm == NULL || l < sizeof(__be32))
+> +		return 0;
+> +
+> +	num_sets = of_read_number(dm++, 1);
+> +	if (l < (num_sets * (dt_root_addr_cells + 4) + 1) * sizeof(__be32))
+> +		return 0;
+> +
+> +	/* check if this is a kexec/kdump kernel. */
+> +	usm = of_get_flat_dt_prop(node, "linux,drconf-usable-memory", &l);
+> +	if (usm != NULL)
+> +		is_kexec_kdump = 1;
+> +
+> +	if (n_mem_addr_cells == 0)
+> +		n_mem_addr_cells = dt_root_addr_cells;
+> +
+> +	for (; num_sets != 0; --num_sets) {
+> +		struct of_drconf_cell_v2 drmem;
+> +		unsigned long nsl;
+> +
+> +		read_drconf_cell_v2(&drmem, &dm);
+> +		base = drmem.base_addr;
+> +		nsl = drmem.num_seq_lmbs;
+> +		size = memblock_size;
+
+I don't think we need to set size here since it gets set again in the loop below.
+
+> +
+> +		/* SKip this block if the reserved bit is set in flags
+
+                   Skip
+
+> +		 * or if the block is not assigned to this partition
+> +		 */
+> +		if ((drmem.flags & DRCONF_MEM_RESERVED) ||
+> +		    !(drmem.flags & DRCONF_MEM_ASSIGNED))
+> +			continue;
+> +
+> +		for (; nsl != 0; nsl--) {
+> +			size = memblock_size;
+> +			rngs = 1;
+> +			if (is_kexec_kdump)
+
+For kexec either the kexec-tools need to be updated to understand this
+new drc property format or the hotplug-memory pseries needs to be run
+always to convert v2 of this property to v1. Currently this is only
+run if HOTPLUG_MEMORY is configured.
+
+If this is done you could just drop all of the kexec bits from the v2
+parsing.
 
 -Nathan
 
+> +				/*
+> +				 * For each memblock in ibm,dynamic-memory,
+> +				 * a corresponding entry in
+> +				 * linux,drconf-usable-memory property
+> +				 * contains a counter 'p' followed by 'p'
+> +				 * (base, size) duple.  Now read the counter
+> +				 * from linux,drconf-usable-memory property
+> +				 */
+> +				rngs = dt_mem_next_cell(dt_root_size_cells,
+> +							&usm);
 > +
-> +		if (kstrtou32(cstr, 0, &count) || kstrtou32(istr, 0, &index)) {
-> +			rc = -EINVAL;
-> +			pr_err("Invalid index or count : \"%s\"\n", buf);
-> +			kfree(cstr);
-> +			goto dlpar_store_out;
-> +		}
+> +			if (rngs) {
+> +				do {
+> +					if (is_kexec_kdump) {
+> +						base = dt_mem_next_cell(
+> +							dt_root_addr_cells,
+> +							&usm);
+> +						size = dt_mem_next_cell(
+> +							dt_root_size_cells,
+> +							&usm);
+> +					}
+> +					if (iommu_is_off) {
+> +						if (base >= 0x80000000ul)
+> +							continue;
+> +						if ((base + size) >
+> +								0x80000000ul)
+> +							size = 0x80000000ul -
+> +								base;
+> +					}
+> +					memblock_add(base, size);
+> +				} while (--rngs);
+> +			}
 > +
-> +		kfree(cstr);
-> +
-> +		hp_elog->_drc_u.indexed_count[0] = cpu_to_be32(count);
-> +		hp_elog->_drc_u.indexed_count[1] = cpu_to_be32(index);
-> +	} else if (!strncmp(arg, "index", 5)) {
->  		u32 index;
-> 
->  		hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 2ce1385..2d4ceb3 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -701,6 +701,89 @@ static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
->  	return rc;
->  }
-> 
-> +static int dlpar_memory_add_by_ic(u32 lmbs_to_add, u32 drc_index,
-> +				  struct property *prop)
-> +{
-> +	struct of_drconf_cell *lmbs;
-> +	u32 num_lmbs, *p;
-> +	int i, rc, start_lmb_found;
-> +	int lmbs_available = 0, start_index = 0, end_index;
-> +
-> +	pr_info("Attempting to hot-add %u LMB(s) at index %x\n",
-> +		lmbs_to_add, drc_index);
-> +
-> +	if (lmbs_to_add == 0)
-> +		return -EINVAL;
-> +
-> +	p = prop->value;
-> +	num_lmbs = *p++;
-> +	lmbs = (struct of_drconf_cell *)p;
-> +	start_lmb_found = 0;
-> +
-> +	/* Navigate to drc_index */
-> +	while (start_index < num_lmbs) {
-> +		if (lmbs[start_index].drc_index == drc_index) {
-> +			start_lmb_found = 1;
-> +			break;
-> +		}
-> +
-> +		start_index++;
-> +	}
-> +
-> +	if (!start_lmb_found)
-> +		return -EINVAL;
-> +
-> +	end_index = start_index + lmbs_to_add;
-> +
-> +	/* Validate that there are enough LMBs to satisfy the request */
-> +	for (i = start_index; i < end_index; i++) {
-> +		if (lmbs[i].flags & DRCONF_MEM_RESERVED)
-> +			break;
-> +
-> +		lmbs_available++;
-> +	}
-> +
-> +	if (lmbs_available < lmbs_to_add)
-> +		return -EINVAL;
-> +
-> +	for (i = start_index; i < end_index; i++) {
-> +		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
-> +			continue;
-> +
-> +		rc = dlpar_add_lmb(&lmbs[i]);
-> +		if (rc)
-> +			break;
-> +
-> +		lmbs[i].reserved = 1;
-> +	}
-> +
-> +	if (rc) {
-> +		pr_err("Memory indexed-count-add failed, removing any added LMBs\n");
-> +
-> +		for (i = start_index; i < end_index; i++) {
-> +			if (!lmbs[i].reserved)
-> +				continue;
-> +
-> +			rc = dlpar_remove_lmb(&lmbs[i]);
-> +			if (rc)
-> +				pr_err("Failed to remove LMB, drc index %x\n",
-> +				       be32_to_cpu(lmbs[i].drc_index));
-> +		}
-> +		rc = -EINVAL;
-> +	} else {
-> +		for (i = start_index; i < end_index; i++) {
-> +			if (!lmbs[i].reserved)
-> +				continue;
-> +
-> +			pr_info("Memory at %llx (drc index %x) was hot-added\n",
-> +				lmbs[i].base_addr, lmbs[i].drc_index);
-> +			lmbs[i].reserved = 0;
+> +			base += size;
 > +		}
 > +	}
 > +
-> +	return rc;
+> +	memblock_dump_all();
+> +	return 0;
 > +}
 > +
->  int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  {
->  	struct device_node *dn;
-> @@ -708,9 +791,6 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  	u32 count, drc_index;
->  	int rc;
-> 
-> -	count = hp_elog->_drc_u.drc_count;
-> -	drc_index = hp_elog->_drc_u.drc_index;
-> -
->  	lock_device_hotplug();
-> 
->  	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> @@ -727,20 +807,32 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
-> 
->  	switch (hp_elog->action) {
->  	case PSERIES_HP_ELOG_ACTION_ADD:
-> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
-> +			count = hp_elog->_drc_u.drc_count;
->  			rc = dlpar_memory_add_by_count(count, prop);
-> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
-> +			drc_index = hp_elog->_drc_u.drc_index;
->  			rc = dlpar_memory_add_by_index(drc_index, prop);
-> -		else
-> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_IC) {
-> +			count = hp_elog->_drc_u.indexed_count[0];
-> +			drc_index = hp_elog->_drc_u.indexed_count[1];
-> +			rc = dlpar_memory_add_by_ic(count, drc_index, prop);
-> +		} else {
->  			rc = -EINVAL;
-> +		}
+> +static int __init early_init_dt_scan_drconf_memory(unsigned long node)
+> +{
+> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
+> +		return early_init_dt_scan_drconf_memory_v2(node);
+> +	else
+> +		return early_init_dt_scan_drconf_memory_v1(node);
+> +}
 > +
->  		break;
->  	case PSERIES_HP_ELOG_ACTION_REMOVE:
-> -		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT) {
-> +			count = hp_elog->_drc_u.drc_count;
->  			rc = dlpar_memory_remove_by_count(count, prop);
-> -		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +		} else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX) {
-> +			drc_index = hp_elog->_drc_u.drc_index;
->  			rc = dlpar_memory_remove_by_index(drc_index, prop);
-> -		else
-> +		} else {
->  			rc = -EINVAL;
-> +		}
-> +
->  		break;
->  	default:
->  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+>  #else
+>  #define early_init_dt_scan_drconf_memory(node)	0
+>  #endif /* CONFIG_PPC_PSERIES */
 > 
 > _______________________________________________
 > Linuxppc-dev mailing list
