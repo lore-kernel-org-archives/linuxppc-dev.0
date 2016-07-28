@@ -1,19 +1,22 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0FfV5XHDzDqTt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:09:22 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id ez1so2639545pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 19:09:22 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, npiggin@gmail.com
-Subject: [PATCH v2] Make system_reset_pSeries relocatable
-Date: Thu, 28 Jul 2016 12:09:03 +1000
-Message-Id: <1469671743-3093-1-git-send-email-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0GKz3MVszDrKN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:40:07 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Marek <mmarek@suse.cz>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: linux-next: build failure after merge of the kbuild tree
+In-Reply-To: <20160728120814.59e42bc8@canb.auug.org.au>
+References: <20160728120814.59e42bc8@canb.auug.org.au>
+Date: Thu, 28 Jul 2016 12:40:04 +1000
+Message-ID: <8737mutri3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,134 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the power management bits are broken w.r.t. relocation.
-There are direct branches from system_reset_pSeries to
-power7_wakeup_*. The correct way to do it is to do what
-the slb miss handler does, which is jump to a small stub within
-the first 64k of relocated address and then jump to the actual
-location
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-The code has been lightly tested (not the kvm bits), I would highly
-appreciate a review of the code. I suspect there might be easy
-to find bugs :)
+> Hi Michal,
+>
+> After merging the kbuild tree, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+>
+...
+> arch/powerpc/mm/hash_utils_64.c:929:10: note: in expansion of macro 'IS_ENABLED'
+>   else if IS_ENABLED(CONFIG_PPC_NATIVE)
+>           ^
+> cc1: all warnings being treated as errors
+>
+> Caused by commit
+>
+>   7353644fa9df ("powerpc/mm: Fix build break when PPC_NATIVE=n")
+>
+> from the powerpc tree interacting with commit
+>
+>   5e8754fd80b0 ("kconfig.h: allow to use IS_{ENABLE,REACHABLE} in macro expansion")
+>
+> from the kbuild tree.
 
-Cc: benh@kernel.crashing.org
-Cc: mpe@ellerman.id.au
-Cc: paulus@samba.org
-Cc: npiggin@gmail.com
+**expletive deleted**
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
-v2:
-	Fix broken compile for other ppc architectures,
-	added #ifdef CONFIG_PPC_P7_NAP
+I was wary of IS_ENABLED(), I should have trusted my instincts.
 
- arch/powerpc/kernel/exceptions-64s.S | 84 +++++++++++++++++++++++-------------
- 1 file changed, 53 insertions(+), 31 deletions(-)
+> I have applied the following fix patch (that should be applied to the
+> powerpc tree):
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 8bcc1b4..d5e0e96 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -118,39 +118,21 @@ BEGIN_FTR_SECTION
- 	cmpwi	cr4,r5,1
- 	mtspr	SPRN_HSPRG0,r13
- 
--	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
--	cmpwi   cr2,r0,PNV_THREAD_NAP
--	bgt     cr2,8f				/* Either sleep or Winkle */
--
--	/* Waking up from nap should not cause hypervisor state loss */
--	bgt	cr3,.
--
--	/* Waking up from nap */
--	li	r0,PNV_THREAD_RUNNING
--	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
--
--#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
--	li	r0,KVM_HWTHREAD_IN_KERNEL
--	stb	r0,HSTATE_HWTHREAD_STATE(r13)
--	/* Order setting hwthread_state vs. testing hwthread_req */
--	sync
--	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
--	cmpwi	r0,0
--	beq	1f
--	b	kvm_start_guest
--1:
-+#ifndef CONFIG_RELOCATABLE
-+	b	power7_wakeup_common
-+#else
-+	/*
-+	 * We can't just use a direct branch to power7_wakeup_common
-+	 * because the distance from here to there depends on where
-+	 * the kernel ends up being put.
-+	 */
-+	mfctr	r11
-+	ld	r10, PACAKBASE(r13)
-+	LOAD_HANDLER(r10, power7_wakeup_common)
-+	mtctr	r10
-+	bctr
- #endif
- 
--	/* Return SRR1 from power7_nap() */
--	mfspr	r3,SPRN_SRR1
--	beq	cr3,2f
--	b	power7_wakeup_noloss
--2:	b	power7_wakeup_loss
--
--	/* Fast Sleep wakeup on PowerNV */
--8:	GET_PACA(r13)
--	b 	power7_wakeup_tb_loss
--
- 9:
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
- #endif /* CONFIG_PPC_P7_NAP */
-@@ -1448,6 +1430,46 @@ power4_fixup_nap:
- 	blr
- #endif
- 
-+#ifdef CONFIG_PPC_P7_NAP
-+	.align 7
-+_GLOBAL(power7_wakeup_common)
-+#ifdef CONFIG_RELOCATABLE
-+	mtctr	r11
-+#endif
-+	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
-+	cmpwi   cr2,r0,PNV_THREAD_NAP
-+	bgt     cr2,8f				/* Either sleep or Winkle */
-+
-+	/* Waking up from nap should not cause hypervisor state loss */
-+	bgt	cr3,.
-+
-+	/* Waking up from nap */
-+	li	r0,PNV_THREAD_RUNNING
-+	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
-+
-+#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+	li	r0,KVM_HWTHREAD_IN_KERNEL
-+	stb	r0,HSTATE_HWTHREAD_STATE(r13)
-+	/* Order setting hwthread_state vs. testing hwthread_req */
-+	sync
-+	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
-+	cmpwi	r0,0
-+	beq	1f
-+	b	kvm_start_guest
-+1:
-+#endif
-+
-+	/* Return SRR1 from power7_nap() */
-+	mfspr	r3,SPRN_SRR1
-+	beq	cr3,2f
-+	b	power7_wakeup_noloss
-+2:	b	power7_wakeup_loss
-+
-+	/* Fast Sleep wakeup on PowerNV */
-+8:	GET_PACA(r13)
-+	b 	power7_wakeup_tb_loss
-+#endif
-+
- /*
-  * Hash table stuff
-  */
--- 
-2.5.5
+Applied, thanks.
+
+cheers
