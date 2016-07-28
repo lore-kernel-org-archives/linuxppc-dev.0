@@ -2,19 +2,17 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0GKz3MVszDrKN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:40:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0Gbj5hFGzDrL2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:52:01 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Michal Marek <mmarek@suse.cz>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: linux-next: build failure after merge of the kbuild tree
-In-Reply-To: <20160728120814.59e42bc8@canb.auug.org.au>
-References: <20160728120814.59e42bc8@canb.auug.org.au>
-Date: Thu, 28 Jul 2016 12:40:04 +1000
-Message-ID: <8737mutri3.fsf@concordia.ellerman.id.au>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] powernv/pci: Add PHB register dump debugfs handle
+In-Reply-To: <20160728015847.GA17212@gwshan>
+References: <20160727061404.13831-1-ruscur@russell.cc>
+ <20160728015847.GA17212@gwshan>
+Date: Thu, 28 Jul 2016 12:52:01 +1000
+Message-ID: <871t2e325q.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,36 +24,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
-> Hi Michal,
+> On Wed, Jul 27, 2016 at 04:14:04PM +1000, Russell Currey wrote:
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index 891fc4a..2b9f114 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -3018,6 +3018,42 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
+>> 	}
+>> }
+>>
+>>+#ifdef CONFIG_DEBUG_FS
+>>+static int pnv_pci_diag_data_set(void *data, u64 val)
+>>+{
+>>+	struct pci_controller *hose;
+>>+	struct pnv_phb *phb;
+>>+	int ret;
 >
-> After merging the kbuild tree, today's linux-next build (powerpc
-> ppc64_defconfig) failed like this:
->
-...
-> arch/powerpc/mm/hash_utils_64.c:929:10: note: in expansion of macro 'IS_ENABLED'
->   else if IS_ENABLED(CONFIG_PPC_NATIVE)
->           ^
-> cc1: all warnings being treated as errors
->
-> Caused by commit
->
->   7353644fa9df ("powerpc/mm: Fix build break when PPC_NATIVE=n")
->
-> from the powerpc tree interacting with commit
->
->   5e8754fd80b0 ("kconfig.h: allow to use IS_{ENABLE,REACHABLE} in macro expansion")
->
-> from the kbuild tree.
+> s/int/int64_t
 
-**expletive deleted**
+Actually please stick to the kernel types, so s64.
 
-I was wary of IS_ENABLED(), I should have trusted my instincts.
+>>+	/* Retrieve the diag data from firmware */
+>
+> Unnecessary comments as the code is obvious.
 
-> I have applied the following fix patch (that should be applied to the
-> powerpc tree):
+Only if you know the OPAL API, for the rest of us that comment is fine IMHO.
 
-Applied, thanks.
+>>+	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
+>>+					  PNV_PCI_DIAG_BUF_SIZE);
+>>+	if (ret != OPAL_SUCCESS)
+>>+		return -EIO;
+>>+
+>>+	/* Print the diag data to the kernel log */
+
+And that comment is very helpful, because the expectation is that the output
+would go to the debugfs file.
+
+>>@@ -3033,9 +3069,14 @@ static void pnv_pci_ioda_create_dbgfs(void)
+>>
+>> 		sprintf(name, "PCI%04x", hose->global_number);
+>> 		phb->dbgfs = debugfs_create_dir(name, powerpc_debugfs_root);
+>>-		if (!phb->dbgfs)
+>>+		if (!phb->dbgfs) {
+>> 			pr_warning("%s: Error on creating debugfs on PHB#%x\n",
+>> 				__func__, hose->global_number);
+>>+			continue;
+>>+		}
+>>+
+>>+		debugfs_create_file("dump_regs", 0200, phb->dbgfs, hose,
+>>+				    &pnv_pci_diag_data_fops);
+>
+> I still think "diag-data" is more indicative. It's also consistent with
+> the handler's name (pnv_pci_diag_data_set())?
+
+"dump_regs" is better because it's clearly a verb phrase. Which makes it clear
+that manipulating the file causes something to happen.
+
+"diag-data" could be a verb phrase, if you read "diag" as "diagnose", in which
+case it would mean "diagnose the data". But that's not what the file does, it
+doesn't diagnose anything, it just dumps some registers.
+
+Most likely people will read "diag" as "diagnostic", in which case the name
+means "diagnostic data" - which is a noun phrase. That indicates the file *is*
+something, ie. an object, so when I read it I would expect to see the object,
+and when I write to the file I would expect that to mutate the object.
 
 cheers
