@@ -1,37 +1,23 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.smirnov@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0kyg4vr6zDrF1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2016 07:10:03 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6SL9Fr3071908
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 17:10:00 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24fkarrj1c-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 17:10:00 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 28 Jul 2016 15:09:59 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DD8B43E40055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 15:09:47 -0600 (MDT)
-Subject: Re: [PATCH V2 4/8] pseries/hotplug init: Convert new DRC memory
- property for hotplug runtime
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1d9cb658-f6ba-1667-0d8a-3e50e4011a68@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Thu, 28 Jul 2016 16:09:46 -0500
-MIME-Version: 1.0
-In-Reply-To: <1d9cb658-f6ba-1667-0d8a-3e50e4011a68@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <f6f106ea-3148-266c-40aa-b4b556116c28@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0nZM6xLXzDrQP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2016 09:07:39 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id g202so4397990pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 16:07:39 -0700 (PDT)
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Scott Wood <oss@buserror.net>,
+ Kumar Gala <galak@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/3] powerpc: Factor out common code in setup-common.c
+Date: Thu, 28 Jul 2016 16:07:16 -0700
+Message-Id: <1469747238-17432-1-git-send-email-andrew.smirnov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,146 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/27/2016 09:23 AM, Michael Bringmann wrote:
-> hotplug_init: Simplify the code needed for runtime memory hotplug and
-> maintenance with a conversion routine that transforms the compressed
-> property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-> within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-> a single set of routines should be required at runtime to parse, edit,
-> and manipulate the memory representation in the device tree.  Similarly,
-> any userspace applications that need this information will only need
-> to recognize the older format to be able to continue to operate.
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 2ce1385..f422dcb 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -839,6 +839,95 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
->  	return rc;
->  }
->  
-> +static int pseries_rewrite_dynamic_memory_v2(void)
-> +{
-> +	unsigned long memblock_size;
-> +	struct device_node *dn;
-> +	struct property *prop, *prop_v2;
-> +	__be32 *p;
-> +	struct of_drconf_cell *lmbs;
-> +	u32 num_lmb_desc_sets, num_lmbs;
-> +	int i;
-> +
-> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> +	if (!dn)
-> +		return -EINVAL;
-> +
-> +	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-> +	if (!prop_v2)
-> +		return -EINVAL;
-> +
-> +	memblock_size = pseries_memory_block_size();
-> +	if (!memblock_size)
-> +		return -EINVAL;
-> +
-> +	/* The first int of the property is the number of lmb sets
-> +	 * described by the property.
-> +	 */
-> +	p = (__be32 *)prop_v2->value;
-> +	num_lmb_desc_sets = be32_to_cpu(*p++);
-> +
-> +	/* Count the number of LMBs for generating the alternate format
-> +	 */
-> +	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-> +		struct of_drconf_cell_v2 drmem;
-> +
-> +		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-> +		num_lmbs += drmem.num_seq_lmbs;
-> +	}
-> +
-> +	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-> +	 */
-> +	{
-> +		prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-> +		if (!prop)
-> +			return -ENOMEM;
-> +		prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-> +		prop->length = dyn_mem_v2_len(num_lmbs);
+Factor out a small bit of common code in machine_restart(),
+machine_power_off() and machine_halt().
 
-I don't think dyn_mem_v2_len() is correct for the length of the new v1
-property. After lookiing at that routine though it does seem to compute
-the correct value, I think a v1_len call, or directly computing the length,
-may make the code clearer.
+Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+---
 
-> +		prop->value = kzalloc(prop->length, GFP_KERNEL);
-> +	}
+No changes compared to v1.
 
-Is there a reason this is in its own block of code in {}?
+ arch/powerpc/kernel/setup-common.c | 23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
 
-Also, you will want to verify that prop->name and prop->value are non-NULL.
-
-> +
-> +	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-> +	 * ibm,dynamic-memory format.
-> +	 */
-> +	p = (__be32 *)prop->value;
-> +	*p = cpu_to_be32(num_lmbs);
-> +	p++;
-> +	lmbs = (struct of_drconf_cell *)p;
-> +
-> +	p = (__be32 *)prop_v2->value;
-> +	p++;
-> +
-> +	for (i = 0; i < num_lmb_desc_sets; i++) {
-> +		struct of_drconf_cell_v2 drmem;
-> +		int j, k = 0;
-
-Won't this reset k to zero every time through the loop?
-
--Nathan
-
-> +
-> +		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-> +
-> +		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-> +			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-> +			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-> +			lmbs[k+j].reserved  = 0;
-> +			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-> +			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-> +
-> +			drmem.base_addr += memblock_size;
-> +			drmem.drc_index++;
-> +		}
-> +
-> +		k += drmem.num_seq_lmbs;
-> +	}
-> +
-> +	of_remove_property(dn, prop_v2);
-> +
-> +	of_add_property(dn, prop);
-> +
-> +	/* And disable feature flag since the property has gone away */
-> +	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-> +
-> +	return 0;
-> +}
-> +
->  static int pseries_memory_notifier(struct notifier_block *nb,
->  				   unsigned long action, void *data)
->  {
-> @@ -866,6 +952,8 @@ static struct notifier_block pseries_mem_nb = {
->  
->  static int __init pseries_memory_hotplug_init(void)
->  {
-> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-> +		pseries_rewrite_dynamic_memory_v2();
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		of_reconfig_notifier_register(&pseries_mem_nb);
->  
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 714b4ba..5cd3283 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -130,15 +130,22 @@ void machine_shutdown(void)
+ 		ppc_md.machine_shutdown();
+ }
+ 
++static void machine_hang(void)
++{
++	pr_emerg("System Halted, OK to turn off power\n");
++	local_irq_disable();
++	while (1)
++		;
++}
++
+ void machine_restart(char *cmd)
+ {
+ 	machine_shutdown();
+ 	if (ppc_md.restart)
+ 		ppc_md.restart(cmd);
++
+ 	smp_send_stop();
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1) ;
++	machine_hang();
+ }
+ 
+ void machine_power_off(void)
+@@ -146,10 +153,9 @@ void machine_power_off(void)
+ 	machine_shutdown();
+ 	if (pm_power_off)
+ 		pm_power_off();
++
+ 	smp_send_stop();
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1) ;
++	machine_hang();
+ }
+ /* Used by the G5 thermal driver */
+ EXPORT_SYMBOL_GPL(machine_power_off);
+@@ -162,10 +168,9 @@ void machine_halt(void)
+ 	machine_shutdown();
+ 	if (ppc_md.halt)
+ 		ppc_md.halt();
++
+ 	smp_send_stop();
+-	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+-	local_irq_disable();
+-	while (1) ;
++	machine_hang();
+ }
+ 
+ 
+-- 
+2.5.5
