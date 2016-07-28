@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0FdB5z4qzDqRm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:08:14 +1000 (AEST)
-Date: Thu, 28 Jul 2016 12:08:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michal Marek <mmarek@suse.cz>, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Masahiro
- Yamada <yamada.masahiro@socionext.com>
-Subject: linux-next: build failure after merge of the kbuild tree
-Message-ID: <20160728120814.59e42bc8@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0FfV5XHDzDqTt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:09:22 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id ez1so2639545pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 19:09:22 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Balbir Singh <bsingharora@gmail.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, npiggin@gmail.com
+Subject: [PATCH v2] Make system_reset_pSeries relocatable
+Date: Thu, 28 Jul 2016 12:09:03 +1000
+Message-Id: <1469671743-3093-1-git-send-email-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,92 +23,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
+Currently the power management bits are broken w.r.t. relocation.
+There are direct branches from system_reset_pSeries to
+power7_wakeup_*. The correct way to do it is to do what
+the slb miss handler does, which is jump to a small stub within
+the first 64k of relocated address and then jump to the actual
+location
 
-After merging the kbuild tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+The code has been lightly tested (not the kvm bits), I would highly
+appreciate a review of the code. I suspect there might be easy
+to find bugs :)
 
-In file included from <command-line>:0:0:
-arch/powerpc/mm/hash_utils_64.c: In function 'hash__early_init_mmu':
-include/linux/kconfig.h:19:65: error: expected '(' before numeric constant
- #define ____or(arg1_or_junk, y)  __take_second_arg(arg1_or_junk 1, y)
-                                                                 ^
-include/linux/kconfig.h:7:48: note: in definition of macro '__take_second_arg'
- #define __take_second_arg(__ignored, val, ...) val
-                                                ^
-include/linux/kconfig.h:18:23: note: in expansion of macro '____or'
- #define ___or(x, y)   ____or(__ARG_PLACEHOLDER_##x, y)
-                       ^
-include/linux/kconfig.h:17:22: note: in expansion of macro '___or'
- #define __or(x, y)   ___or(x, y)   
-                      ^
-include/linux/kconfig.h:65:28: note: in expansion of macro '__or'
- #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
-                            ^
-arch/powerpc/mm/hash_utils_64.c:929:10: note: in expansion of macro 'IS_ENABLED'
-  else if IS_ENABLED(CONFIG_PPC_NATIVE)
-          ^
-include/linux/kconfig.h:19:65: error: statement with no effect [-Werror=unused-value]
- #define ____or(arg1_or_junk, y)  __take_second_arg(arg1_or_junk 1, y)
-                                                                 ^
-include/linux/kconfig.h:7:48: note: in definition of macro '__take_second_arg'
- #define __take_second_arg(__ignored, val, ...) val
-                                                ^
-include/linux/kconfig.h:18:23: note: in expansion of macro '____or'
- #define ___or(x, y)   ____or(__ARG_PLACEHOLDER_##x, y)
-                       ^
-include/linux/kconfig.h:17:22: note: in expansion of macro '___or'
- #define __or(x, y)   ___or(x, y)   
-                      ^
-include/linux/kconfig.h:65:28: note: in expansion of macro '__or'
- #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
-                            ^
-arch/powerpc/mm/hash_utils_64.c:929:10: note: in expansion of macro 'IS_ENABLED'
-  else if IS_ENABLED(CONFIG_PPC_NATIVE)
-          ^
-cc1: all warnings being treated as errors
+Cc: benh@kernel.crashing.org
+Cc: mpe@ellerman.id.au
+Cc: paulus@samba.org
+Cc: npiggin@gmail.com
 
-Caused by commit
-
-  7353644fa9df ("powerpc/mm: Fix build break when PPC_NATIVE=n")
-
-from the powerpc tree interacting with commit
-
-  5e8754fd80b0 ("kconfig.h: allow to use IS_{ENABLE,REACHABLE} in macro expansion")
-
-from the kbuild tree.
-
-I have applied the following fix patch (that should be applied to the
-powerpc tree):
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 28 Jul 2016 12:03:25 +1000
-Subject: [PATCH] powerpc/mm: parenthesise the if condition
-
-The breakage here used to be hidden by the macro expansion.
-
-Fixes: 7353644fa9df ("powerpc/mm: Fix build break when PPC_NATIVE=n")
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/mm/hash_utils_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2:
+	Fix broken compile for other ppc architectures,
+	added #ifdef CONFIG_PPC_P7_NAP
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 1ff11c1bb182..b78b5d211278 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -926,7 +926,7 @@ void __init hash__early_init_mmu(void)
- 		ps3_early_mm_init();
- 	else if (firmware_has_feature(FW_FEATURE_LPAR))
- 		hpte_init_pseries();
--	else if IS_ENABLED(CONFIG_PPC_NATIVE)
-+	else if (IS_ENABLED(CONFIG_PPC_NATIVE))
- 		hpte_init_native();
+ arch/powerpc/kernel/exceptions-64s.S | 84 +++++++++++++++++++++++-------------
+ 1 file changed, 53 insertions(+), 31 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 8bcc1b4..d5e0e96 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -118,39 +118,21 @@ BEGIN_FTR_SECTION
+ 	cmpwi	cr4,r5,1
+ 	mtspr	SPRN_HSPRG0,r13
  
- 	if (!mmu_hash_ops.hpte_insert)
+-	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
+-	cmpwi   cr2,r0,PNV_THREAD_NAP
+-	bgt     cr2,8f				/* Either sleep or Winkle */
+-
+-	/* Waking up from nap should not cause hypervisor state loss */
+-	bgt	cr3,.
+-
+-	/* Waking up from nap */
+-	li	r0,PNV_THREAD_RUNNING
+-	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
+-
+-#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+-	li	r0,KVM_HWTHREAD_IN_KERNEL
+-	stb	r0,HSTATE_HWTHREAD_STATE(r13)
+-	/* Order setting hwthread_state vs. testing hwthread_req */
+-	sync
+-	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
+-	cmpwi	r0,0
+-	beq	1f
+-	b	kvm_start_guest
+-1:
++#ifndef CONFIG_RELOCATABLE
++	b	power7_wakeup_common
++#else
++	/*
++	 * We can't just use a direct branch to power7_wakeup_common
++	 * because the distance from here to there depends on where
++	 * the kernel ends up being put.
++	 */
++	mfctr	r11
++	ld	r10, PACAKBASE(r13)
++	LOAD_HANDLER(r10, power7_wakeup_common)
++	mtctr	r10
++	bctr
+ #endif
+ 
+-	/* Return SRR1 from power7_nap() */
+-	mfspr	r3,SPRN_SRR1
+-	beq	cr3,2f
+-	b	power7_wakeup_noloss
+-2:	b	power7_wakeup_loss
+-
+-	/* Fast Sleep wakeup on PowerNV */
+-8:	GET_PACA(r13)
+-	b 	power7_wakeup_tb_loss
+-
+ 9:
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #endif /* CONFIG_PPC_P7_NAP */
+@@ -1448,6 +1430,46 @@ power4_fixup_nap:
+ 	blr
+ #endif
+ 
++#ifdef CONFIG_PPC_P7_NAP
++	.align 7
++_GLOBAL(power7_wakeup_common)
++#ifdef CONFIG_RELOCATABLE
++	mtctr	r11
++#endif
++	lbz	r0,PACA_THREAD_IDLE_STATE(r13)
++	cmpwi   cr2,r0,PNV_THREAD_NAP
++	bgt     cr2,8f				/* Either sleep or Winkle */
++
++	/* Waking up from nap should not cause hypervisor state loss */
++	bgt	cr3,.
++
++	/* Waking up from nap */
++	li	r0,PNV_THREAD_RUNNING
++	stb	r0,PACA_THREAD_IDLE_STATE(r13)	/* Clear thread state */
++
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	li	r0,KVM_HWTHREAD_IN_KERNEL
++	stb	r0,HSTATE_HWTHREAD_STATE(r13)
++	/* Order setting hwthread_state vs. testing hwthread_req */
++	sync
++	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
++	cmpwi	r0,0
++	beq	1f
++	b	kvm_start_guest
++1:
++#endif
++
++	/* Return SRR1 from power7_nap() */
++	mfspr	r3,SPRN_SRR1
++	beq	cr3,2f
++	b	power7_wakeup_noloss
++2:	b	power7_wakeup_loss
++
++	/* Fast Sleep wakeup on PowerNV */
++8:	GET_PACA(r13)
++	b 	power7_wakeup_tb_loss
++#endif
++
+ /*
+  * Hash table stuff
+  */
 -- 
-2.8.1
-
--- 
-Cheers,
-Stephen Rothwell
+2.5.5
