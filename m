@@ -1,12 +1,12 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0GpB4mlszDrLS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 13:01:06 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id y134so2832768pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 20:01:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0GpJ5z24zDrP3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 13:01:12 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id i6so2842882pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 20:01:12 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
@@ -23,10 +23,10 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
  Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
  Chris Smart <chris@distroguy.com>, linux-kselftest@vger.kernel.org
-Subject: [PATCH v13 26/30] selftests/powerpc: Add ptrace tests for VSX,
- VMX registers in TM
-Date: Thu, 28 Jul 2016 10:57:55 +0800
-Message-Id: <1469674679-8580-27-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v13 27/30] selftests/powerpc: Add ptrace tests for VSX,
+ VMX registers in suspended TM
+Date: Thu, 28 Jul 2016 10:57:56 +0800
+Message-Id: <1469674679-8580-28-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1469674679-8580-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1469674679-8580-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,37 +41,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
 This patch adds ptrace interface test for VSX, VMX registers
-inside TM context. This also adds ptrace interface based helper
-functions related to chckpointed VSX, VMX registers access.
+inside suspended TM context.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
  tools/testing/selftests/powerpc/ptrace/Makefile    |   3 +-
- .../selftests/powerpc/ptrace/ptrace-tm-vsx.c       | 209 +++++++++++++++++++++
- 2 files changed, 211 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c   | 222 +++++++++++++++++++++
+ 2 files changed, 224 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index e3d9ceb..1b07649 100644
+index 1b07649..797840a 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
 @@ -1,5 +1,6 @@
  TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
--ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx
-+ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx
-+
+-ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx
++ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
++ptrace-tm-spd-vsx
+ 
  
  all: $(TEST_PROGS)
- CFLAGS += -m64
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
 new file mode 100644
-index 0000000..d63f45d
+index 0000000..dbb0cc1
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
-@@ -0,0 +1,209 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
+@@ -0,0 +1,222 @@
 +/*
-+ * Ptrace test for VMX/VSX registers in the TM context
++ * Ptrace test for VMX/VSX registers in the TM Suspend context
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -84,12 +83,13 @@ index 0000000..d63f45d
 +#include "ptrace-vsx.h"
 +
 +int shm_id;
-+volatile unsigned long *cptr, *pptr;
++volatile int *cptr, *pptr;
 +
 +void loadvsx(void *p, int tmp);
 +void storevsx(void *p, int tmp);
 +
 +unsigned long fp_load[VEC_MAX];
++unsigned long fp_load_new[VEC_MAX];
 +unsigned long fp_store[VEC_MAX];
 +unsigned long fp_load_ckpt[VEC_MAX];
 +unsigned long fp_load_ckpt_new[VEC_MAX];
@@ -99,20 +99,31 @@ index 0000000..d63f45d
 +	loadvsx(fp_load, 0);
 +}
 +
++__attribute__((used)) void load_vsx_new(void)
++{
++	loadvsx(fp_load_new, 0);
++}
++
 +__attribute__((used)) void load_vsx_ckpt(void)
 +{
 +	loadvsx(fp_load_ckpt, 0);
 +}
 +
-+void tm_vsx(void)
++__attribute__((used)) void wait_parent(void)
++{
++	cptr[2] = 1;
++	while (!cptr[1]);
++}
++
++void tm_spd_vsx(void)
 +{
 +	unsigned long result, texasr;
 +	int ret;
 +
-+	cptr = (unsigned long *)shmat(shm_id, NULL, 0);
++	cptr = (int *)shmat(shm_id, NULL, 0);
 +
 +trans:
-+	cptr[1] = 0;
++	cptr[2] = 0;
 +	asm __volatile__(
 +		"bl load_vsx_ckpt;"
 +
@@ -120,12 +131,11 @@ index 0000000..d63f45d
 +		TBEGIN
 +		"beq 2f;"
 +
-+		"bl load_vsx;"
++		"bl load_vsx_new;"
 +		TSUSPEND
-+		"li 7, 1;"
-+		"stw 7, 0(%[cptr1]);"
++		"bl load_vsx;"
++		"bl wait_parent;"
 +		TRESUME
-+		"b .;"
 +
 +		TEND
 +		"li 0, 0;"
@@ -140,16 +150,16 @@ index 0000000..d63f45d
 +		"3: ;"
 +		: [res] "=r" (result), [texasr] "=r" (texasr)
 +		: [fp_load] "r" (fp_load), [fp_load_ckpt] "r" (fp_load_ckpt),
-+		[sprn_texasr] "i"  (SPRN_TEXASR), [cptr1] "r" (&cptr[1])
++		[sprn_texasr] "i"  (SPRN_TEXASR)
 +		: "memory", "r0", "r1", "r2", "r3", "r4",
-+		"r7", "r8", "r9", "r10", "r11"
++		"r8", "r9", "r10", "r11"
 +		);
 +
 +	if (result) {
 +		if (!cptr[0])
 +			goto trans;
-+
 +		shmdt((void *)cptr);
++
 +		storevsx(fp_store, 0);
 +		ret = compare_vsx_vmx(fp_store, fp_load_ckpt_new);
 +		if (ret)
@@ -160,7 +170,7 @@ index 0000000..d63f45d
 +	exit(1);
 +}
 +
-+int trace_tm_vsx(pid_t child)
++int trace_tm_spd_vsx(pid_t child)
 +{
 +	unsigned long vsx[VSX_MAX];
 +	unsigned long vmx[VMX_MAX + 2][2];
@@ -216,6 +226,7 @@ index 0000000..d63f45d
 +		return TEST_FAIL;
 +
 +	pptr[0] = 1;
++	pptr[1] = 1;
 +	ret = stop_trace(child);
 +	if (ret)
 +		return TEST_FAIL;
@@ -223,18 +234,19 @@ index 0000000..d63f45d
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_vsx(void)
++int ptrace_tm_spd_vsx(void)
 +{
 +	pid_t pid;
 +	int ret, status, i;
 +
 +	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-+	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 2, 0777|IPC_CREAT);
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 3, 0777|IPC_CREAT);
 +
 +	for (i = 0; i < 128; i++) {
 +		fp_load[i] = 1 + rand();
-+		fp_load_ckpt[i] = 1 + 2 * rand();
-+		fp_load_ckpt_new[i] = 1 + 3 * rand();
++		fp_load_new[i] = 1 + 2 * rand();
++		fp_load_ckpt[i] = 1 + 3 * rand();
++		fp_load_ckpt_new[i] = 1 + 4 * rand();
 +	}
 +
 +	pid = fork();
@@ -244,13 +256,13 @@ index 0000000..d63f45d
 +	}
 +
 +	if (pid == 0)
-+		tm_vsx();
++		tm_spd_vsx();
 +
 +	if (pid) {
-+		pptr = (unsigned long *)shmat(shm_id, NULL, 0);
-+		while (!pptr[1]);
++		pptr = (int *)shmat(shm_id, NULL, 0);
++		while (!pptr[2]);
 +
-+		ret = trace_tm_vsx(pid);
++		ret = trace_tm_spd_vsx(pid);
 +		if (ret) {
 +			kill(pid, SIGKILL);
 +			shmdt((void *)pptr);
@@ -277,7 +289,7 @@ index 0000000..d63f45d
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_vsx, "ptrace_tm_vsx");
++	return test_harness(ptrace_tm_spd_vsx, "ptrace_tm_spd_vsx");
 +}
 -- 
 1.8.3.1
