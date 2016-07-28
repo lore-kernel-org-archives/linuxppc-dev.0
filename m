@@ -1,45 +1,20 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0FQc1ByLzDqRP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 11:59:03 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6S1wvQr140511
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:59:00 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24eun1gdtd-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2016 21:59:00 -0400
-Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 28 Jul 2016 11:58:52 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id ECACC2BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 11:58:48 +1000 (EST)
-Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6S1wmIZ18022508
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 11:58:48 +1000
-Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
- by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6S1wmas007289
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 11:58:48 +1000
-Date: Thu, 28 Jul 2016 11:58:47 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH v2] powernv/pci: Add PHB register dump debugfs handle
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20160727061404.13831-1-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0FdB5z4qzDqRm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 12:08:14 +1000 (AEST)
+Date: Thu, 28 Jul 2016 12:08:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michal Marek <mmarek@suse.cz>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Masahiro
+ Yamada <yamada.masahiro@socionext.com>
+Subject: linux-next: build failure after merge of the kbuild tree
+Message-ID: <20160728120814.59e42bc8@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160727061404.13831-1-ruscur@russell.cc>
-Message-Id: <20160728015847.GA17212@gwshan>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,119 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 27, 2016 at 04:14:04PM +1000, Russell Currey wrote:
->On EEH events the kernel will print a dump of relevant registers.
->If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
->doesn't have EEH support, etc) this information isn't readily available.
->
->Add a new debugfs handler to trigger a PHB register dump, so that this
->information can be made available on demand.
->
->Signed-off-by: Russell Currey <ruscur@russell.cc>
+Hi Michal,
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+After merging the kbuild tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
 
->---
->V2 changes:
->	- use a simple attribute instead of full fops thanks to mpe
->	- miscellanous fixes thanks to Gavin
->	- rename from "regdump" to "dump_regs"
->---
-> arch/powerpc/platforms/powernv/pci-ioda.c | 43 ++++++++++++++++++++++++++++++-
-> 1 file changed, 42 insertions(+), 1 deletion(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 891fc4a..2b9f114 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -3018,6 +3018,42 @@ static void pnv_ioda_setup_pe_seg(struct pnv_ioda_pe *pe)
-> 	}
-> }
->
->+#ifdef CONFIG_DEBUG_FS
->+static int pnv_pci_diag_data_set(void *data, u64 val)
->+{
->+	struct pci_controller *hose;
->+	struct pnv_phb *phb;
->+	int ret;
+In file included from <command-line>:0:0:
+arch/powerpc/mm/hash_utils_64.c: In function 'hash__early_init_mmu':
+include/linux/kconfig.h:19:65: error: expected '(' before numeric constant
+ #define ____or(arg1_or_junk, y)  __take_second_arg(arg1_or_junk 1, y)
+                                                                 ^
+include/linux/kconfig.h:7:48: note: in definition of macro '__take_second_arg'
+ #define __take_second_arg(__ignored, val, ...) val
+                                                ^
+include/linux/kconfig.h:18:23: note: in expansion of macro '____or'
+ #define ___or(x, y)   ____or(__ARG_PLACEHOLDER_##x, y)
+                       ^
+include/linux/kconfig.h:17:22: note: in expansion of macro '___or'
+ #define __or(x, y)   ___or(x, y)   
+                      ^
+include/linux/kconfig.h:65:28: note: in expansion of macro '__or'
+ #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
+                            ^
+arch/powerpc/mm/hash_utils_64.c:929:10: note: in expansion of macro 'IS_ENABLED'
+  else if IS_ENABLED(CONFIG_PPC_NATIVE)
+          ^
+include/linux/kconfig.h:19:65: error: statement with no effect [-Werror=unused-value]
+ #define ____or(arg1_or_junk, y)  __take_second_arg(arg1_or_junk 1, y)
+                                                                 ^
+include/linux/kconfig.h:7:48: note: in definition of macro '__take_second_arg'
+ #define __take_second_arg(__ignored, val, ...) val
+                                                ^
+include/linux/kconfig.h:18:23: note: in expansion of macro '____or'
+ #define ___or(x, y)   ____or(__ARG_PLACEHOLDER_##x, y)
+                       ^
+include/linux/kconfig.h:17:22: note: in expansion of macro '___or'
+ #define __or(x, y)   ___or(x, y)   
+                      ^
+include/linux/kconfig.h:65:28: note: in expansion of macro '__or'
+ #define IS_ENABLED(option) __or(IS_BUILTIN(option), IS_MODULE(option))
+                            ^
+arch/powerpc/mm/hash_utils_64.c:929:10: note: in expansion of macro 'IS_ENABLED'
+  else if IS_ENABLED(CONFIG_PPC_NATIVE)
+          ^
+cc1: all warnings being treated as errors
 
-s/int/int64_t
+Caused by commit
 
->+
->+	if (val != 1)
->+		return -EINVAL;
+  7353644fa9df ("powerpc/mm: Fix build break when PPC_NATIVE=n")
 
-if (val != 1ULL)
+from the powerpc tree interacting with commit
 
->+
->+	hose = (struct pci_controller *)data;
->+	if (!hose)
->+		return -EFAULT;
->+
->+	phb = hose->private_data;
->+	if (!phb)
->+		return -EFAULT;
+  5e8754fd80b0 ("kconfig.h: allow to use IS_{ENABLE,REACHABLE} in macro expansion")
 
-hose = (struct pci_controller *)data;
-if (!hose || !hose->private_data)
-	return -ENODEV;
+from the kbuild tree.
 
-phb = hose->private_data;
+I have applied the following fix patch (that should be applied to the
+powerpc tree):
 
->+
->+	/* Retrieve the diag data from firmware */
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 28 Jul 2016 12:03:25 +1000
+Subject: [PATCH] powerpc/mm: parenthesise the if condition
 
-Unnecessary comments as the code is obvious.
+The breakage here used to be hidden by the macro expansion.
 
->+	ret = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
->+					  PNV_PCI_DIAG_BUF_SIZE);
->+	if (ret != OPAL_SUCCESS)
->+		return -EIO;
->+
->+	/* Print the diag data to the kernel log */
+Fixes: 7353644fa9df ("powerpc/mm: Fix build break when PPC_NATIVE=n")
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/mm/hash_utils_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Same as above.
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 1ff11c1bb182..b78b5d211278 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -926,7 +926,7 @@ void __init hash__early_init_mmu(void)
+ 		ps3_early_mm_init();
+ 	else if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		hpte_init_pseries();
+-	else if IS_ENABLED(CONFIG_PPC_NATIVE)
++	else if (IS_ENABLED(CONFIG_PPC_NATIVE))
+ 		hpte_init_native();
+ 
+ 	if (!mmu_hash_ops.hpte_insert)
+-- 
+2.8.1
 
->+	pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
->+	return 0;
->+}
->+
->+DEFINE_SIMPLE_ATTRIBUTE(pnv_pci_diag_data_fops,
->+			NULL,
->+			pnv_pci_diag_data_set,
->+			"%llu\n");
->+
-
-Can be squeezed to 2 lines:
-
-DEFINE_SIMPLE_ATTRIBUTE(pnv_pci_diag_data_fops, NULL,
-			pnv_pci_diag_data_set, "%llu\n");
-
->+#endif /* CONFIG_DEBUG_FS */
->+
-> static void pnv_pci_ioda_create_dbgfs(void)
-> {
-> #ifdef CONFIG_DEBUG_FS
->@@ -3033,9 +3069,14 @@ static void pnv_pci_ioda_create_dbgfs(void)
->
-> 		sprintf(name, "PCI%04x", hose->global_number);
-> 		phb->dbgfs = debugfs_create_dir(name, powerpc_debugfs_root);
->-		if (!phb->dbgfs)
->+		if (!phb->dbgfs) {
-> 			pr_warning("%s: Error on creating debugfs on PHB#%x\n",
-> 				__func__, hose->global_number);
->+			continue;
->+		}
->+
->+		debugfs_create_file("dump_regs", 0200, phb->dbgfs, hose,
->+				    &pnv_pci_diag_data_fops);
-
-I still think "diag-data" is more indicative. It's also consistent with
-the handler's name (pnv_pci_diag_data_set())?
-
-> 	}
-> #endif /* CONFIG_DEBUG_FS */
-> }
-
-Thanks,
-Gavin
+-- 
+Cheers,
+Stephen Rothwell
