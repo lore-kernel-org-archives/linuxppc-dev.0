@@ -1,29 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s0PMl4gSbzDqPN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 17:57:07 +1000 (AEST)
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s0PMk6r0tz9t1b
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jul 2016 17:57:06 +1000 (AEST)
-Received: by mail-pa0-x230.google.com with SMTP id iw10so18622289pac.2
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jul 2016 00:57:06 -0700 (PDT)
-Date: Thu, 28 Jul 2016 17:56:58 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: <linuxppc-dev@ozlabs.org>, haokexin@gmail.com,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v3 21/21] powerpc/jump_label: Annotate jump label assembly
-Message-ID: <20160728175658.74405e08@roar.ozlabs.ibm.com>
-In-Reply-To: <1469629097-30859-21-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s0PhB2WJyzDqh9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2016 18:11:22 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@ozlabs.org
+Cc: haokexin@gmail.com, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 04/21] powerpc/mm: Do radix device tree scanning earlier
+In-Reply-To: <4dce619e-1901-4528-9522-02c0a466d130@gmail.com>
 References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
- <1469629097-30859-21-git-send-email-mpe@ellerman.id.au>
+ <1469629097-30859-4-git-send-email-mpe@ellerman.id.au>
+ <4dce619e-1901-4528-9522-02c0a466d130@gmail.com>
+Date: Thu, 28 Jul 2016 18:11:18 +1000
+Message-ID: <87vazq18t5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,18 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 28 Jul 2016 00:18:17 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> Add a comment to the generated assembler for jump labels. This makes
-> it easier to identify them in asm listings (generated with $ make
-> foo.s).
+> On 28/07/16 00:18, Michael Ellerman wrote:
+>> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+>> index 003ff48a11b6..f34ccdbe0fbd 100644
+>> --- a/arch/powerpc/mm/pgtable-radix.c
+>> +++ b/arch/powerpc/mm/pgtable-radix.c
+>> @@ -343,7 +343,6 @@ void __init radix__early_init_mmu(void)
+>>  	__pte_frag_nr = H_PTE_FRAG_NR;
+>>  	__pte_frag_size_shift = H_PTE_FRAG_SIZE_SHIFT;
+>>  
+>> -	radix_init_page_sizes();
+>>  	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+>>  		radix_init_native();
+>>  		lpcr = mfspr(SPRN_LPCR);
+>>
+>
+> If I am reading this correctly, radix_init_page_sizes() has become
+> radix__early_init_devtree() where as hash__early_init_devtree() initializes
+> both segment and page sizes? I would still like to keep
+>
+> mmu_early_init_devtree()
+> 	-> radix__early_init_devtree()
+> 		-> radix__init_page_sizes()
 
-The series looks in much better shape now.
+But then radix__early_init_devtree() would just be:
 
-As a disclaimer I did not go through the shuffling around of the early
-init code too closely, and I don't know that part of the arch very
-well. But other than that it looks good.
+void radix__early_init_devtree(void)
+{
+    radix__init_page_sizes();
+}
 
-Thanks,
-Nick
+Which seems silly.
+
+I'm doing a new version which splits the htab scanning from the page
+init more, as Ben suggested.
+
+cheers
