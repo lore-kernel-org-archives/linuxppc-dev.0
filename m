@@ -1,22 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s16F82wn4zDrPs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2016 21:38:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s16K00cYbzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2016 21:42:12 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.vnet.ibm.com, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org, fbarrat@linux.vnet.ibm.com, julia.lawall@lip6.fr,
- imunsie@au1.ibm.com, elfring@users.sourceforge.net
-Subject: Re: [PATCH] cxl: replace loop with for_each_child_of_node(),
- remove unneeded of_node_put()
-In-Reply-To: <1469764534-26948-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <601fb58c-7aee-91ce-2a3d-7a29787968fc@au1.ibm.com>
- <1469764534-26948-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Fri, 29 Jul 2016 21:38:48 +1000
-Message-ID: <87fuqsllmf.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, haokexin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 10/21] powerpc/mm: Define radix_enabled() in one place
+ & use static inline
+In-Reply-To: <20160728174611.1ec99066@roar.ozlabs.ibm.com>
+References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
+ <1469629097-30859-10-git-send-email-mpe@ellerman.id.au>
+ <20160728174611.1ec99066@roar.ozlabs.ibm.com>
+Date: Fri, 29 Jul 2016 21:42:11 +1000
+Message-ID: <87d1lwllgs.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,35 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> Rewrite the cxl_guest_init_afu() loop in cxl_of_probe() to use
-> for_each_child_of_node() rather than a hand-coded for loop.
+> On Thu, 28 Jul 2016 00:18:06 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> diff --git a/arch/powerpc/include/asm/mmu.h
+>> b/arch/powerpc/include/asm/mmu.h index eb942a446969..f413b3213a3b
+>> 100644 --- a/arch/powerpc/include/asm/mmu.h
+>> +++ b/arch/powerpc/include/asm/mmu.h
+>> @@ -163,6 +163,18 @@ static inline void assert_pte_locked(struct
+>> mm_struct *mm, unsigned long addr) }
+>>  #endif /* !CONFIG_DEBUG_VM */
+>>  
+>> +#ifdef CONFIG_PPC_RADIX_MMU
+>> +static inline bool radix_enabled(void)
+>> +{
+>> +	return mmu_has_feature(MMU_FTR_TYPE_RADIX);
+>> +}
+>> +#else
+>> +static inline bool radix_enabled(void)
+>> +{
+>> +	return false;
+>> +}
+>> +#endif
 >
-> Remove the useless of_node_put(afu_np) call after the loop, where it's
-> guaranteed that afu_np == NULL.
->
-> Reported-by: SF Markus Elfring <elfring@users.sourceforge.net>
-> Reported-by: Julia Lawall <julia.lawall@lip6.fr>
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->
-> ---
->
-> Checked the of_node_put() with Fred, he thinks it was probably just left
-> over from an earlier private version of the code and we can just get rid of
-> it.
+> Won't MMU_FTRS_POSSIBLE just do the right thing when
+> !CONFIG_PPC_RADIX_MMU?
 
-But who does keep a reference on the device_node? I can't see it anywhere. Which
-means in theory the device_node can be freed out from under you.
+Yes it should.
 
-You have a reference for afu_np as part of for_each_child_of_node(), but it's
-dropped as soon as you go around the loop.
-
-The typical pattern would be that cxl_guest_init_afu() takes an additional
-reference once it's done all its setup and can't fail.
-
-That way at the end of the loop when the loop construct has dropped all
-references, the nodes you actually init'ed have their reference count
-incremented by 1.
+I'll have to work out why Aneesh thought he needed to do it explicitly
+and whether that is needed or not.
 
 cheers
