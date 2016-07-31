@@ -1,16 +1,18 @@
-Return-Path: <xypron.glpk@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s2KkQ4TtQzDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 21:19:58 +1000 (AEST)
-From: Heinrich Schuchardt <xypron.glpk@gmx.de>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Heinrich Schuchardt <xypron.glpk@gmx.de>
-Subject: [PATCH 1/1] wan/fsl_ucc_hdlc: avoid possible NULL pointer dereference
-Date: Sun, 31 Jul 2016 13:14:23 +0200
-Message-Id: <1469963663-3005-1-git-send-email-xypron.glpk@gmx.de>
+Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
+Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.17.131])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s2Tjf0Wc9zDqMg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 03:19:49 +1000 (AEST)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: zajec5@gmail.com,
+	leoli@freescale.com
+Cc: qiang.zhao@freescale.com, scottwood@freescale.com, viresh.kumar@linaro.org,
+ akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net,
+ arnd@arndb.de, davem@davemloft.net, David.Laight@aculab.com,
+ Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
+Date: Sun, 31 Jul 2016 16:48:44 +0530
+Message-Id: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,34 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All assignments to components of priv should only
-occur after the check if prif is NULL.
+IS_ERR_VALUE() assumes that parameter is an unsigned long.
+It can not be used to check if 'unsigned int' is passed insted.
+Which tends to reflect an error.
 
-Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+In 64bit architectures sizeof (int) == 4 && sizeof (long) == 8.
+IS_ERR_VALUE(x) is ((x) >= (unsigned long)-4095).
+
+IS_ERR_VALUE() of 'unsigned int' is always false because the 32bit
+value is zero extended to 64 bits.
+
+Value of (unsigned int)-4095 is always less than value of
+(unsigned long)-4095.
+
+Now We are taking only first 32 bit for error checking rest of the 32 bit
+we ignore such that we get appropriate comparison on 64bit system as well.
+
+First 32bit of Value of (unsigned int)-4095 and (unsigned long)-4095 will
+be equal.
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/linux/err.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 2fc50ec..6f04445 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -862,7 +862,7 @@ static int uhdlc_suspend(struct device *dev)
- static int uhdlc_resume(struct device *dev)
- {
- 	struct ucc_hdlc_private *priv = dev_get_drvdata(dev);
--	struct ucc_tdm *utdm = priv->utdm;
-+	struct ucc_tdm *utdm;
- 	struct ucc_tdm_info *ut_info;
- 	struct ucc_fast __iomem *uf_regs;
- 	struct ucc_fast_private *uccf;
-@@ -877,6 +877,7 @@ static int uhdlc_resume(struct device *dev)
- 	if (!netif_running(priv->ndev))
- 		return 0;
+diff --git a/include/linux/err.h b/include/linux/err.h
+index 1e35588..c2a2789 100644
+--- a/include/linux/err.h
++++ b/include/linux/err.h
+@@ -18,7 +18,17 @@
  
-+	utdm = priv->utdm;
- 	ut_info = priv->ut_info;
- 	uf_info = &ut_info->uf_info;
- 	uf_regs = priv->uf_regs;
+ #ifndef __ASSEMBLY__
+ 
+-#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
++#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
++
++static inline int is_error_check(unsigned long error)
++{
++	unsigned int first32bit = (error & 0xFFFFFFFF);
++
++	if (first32bit >= (unsigned int)-MAX_ERRNO)
++		return 1;
++	else
++		return 0;
++}
+ 
+ static inline void * __must_check ERR_PTR(long error)
+ {
 -- 
-2.8.1
+1.9.1
