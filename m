@@ -1,44 +1,41 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s2X5f1rgTzDqQM
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 05:07:18 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u6VJ3ePG058524
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 15:07:16 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24gpjdgv6p-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s2XZg2thfzDqJ4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 05:28:58 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6VJORe8089547
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 15:28:56 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24gpcusa17-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 15:07:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 15:28:56 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 1 Aug 2016 05:07:13 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9CC6E2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 05:07:10 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u6VJ7ACr28508380
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 05:07:10 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u6VJ79ss009930
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 05:07:10 +1000
+ Mon, 1 Aug 2016 05:28:53 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 98A323578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 05:28:50 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6VJSoWm28835866
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 05:28:50 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6VJSoHh026787
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 05:28:50 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, mpe@ellerman.id.au
-Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org,
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 11/11] powerpc: rewrite local_t using soft_irq
-Date: Mon,  1 Aug 2016 00:36:29 +0530
-In-Reply-To: <1469991989-28409-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1469991989-28409-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1469991989-28409-12-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/perf: fix wrong event codes in power9-event-list
+Date: Mon,  1 Aug 2016 00:58:39 +0530
+Message-Id: <1469993319-29946-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,257 +45,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Local atomic operations are fast and highly reentrant per CPU counters.
-Used for percpu variable updates. Local atomic operations only guarantee
-variable modification atomicity wrt the CPU which owns the data and
-these needs to be executed in a preemption safe way.
-
-Here is the design of this patch. Since local_* operations
-are only need to be atomic to interrupts (IIUC), we have two options.
-Either replay the "op" if interrupted or replay the interrupt after
-the "op". Initial patchset posted was based on implementing local_* operation
-based on CR5 which replay's the "op". Patchset had issues in case of
-rewinding the address pointor from an array. This make the slow patch
-really slow. Since CR5 based implementation proposed using __ex_table to find
-the rewind addressr, this rasied concerns about size of __ex_table and vmlinux.
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123115.html
-
-But this patch uses, arch_local_irq_*() to soft_disable
-interrupts (including PMIs). After finishing the "op", arch_local_irq_restore()
-called and correspondingly interrupts are replayed if any occured.
-
-patch re-write the current local_* functions to use arch_local_irq_disbale.
-Base flow for each function is
-
-{
-	soft_irq_set_level(2)
-	load
-	..
-	store
-	arch_local_irq_restore()
-}
-
-Reason for the approach is that, currently l[w/d]arx/st[w/d]cx.
-instruction pair is used for local_* operations, which are heavy
-on cycle count and they dont support a local variant. So to
-see whether the new implementation helps, used a modified
-version of Rusty's benchmark code on local_t.
-
-https://lkml.org/lkml/2008/12/16/450
-
-Modifications to Rusty's benchmark code:
-- Executed only local_t test
-
-Here are the values with the patch.
-
-Time in ns per iteration
-
-Local_t             Without Patch           With Patch
-
-_inc                        28              8
-_add                        28              8
-_read                       3               3
-_add_return         28              7
-
-Currently only asm/local.h has been rewrite, and also
-the entire change is tested only in PPC64 (pseries guest)
-
-TODO:
-	- local_cmpxchg and local_xchg needs modification.
-
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/local.h | 91 +++++++++++++++++++++++++++-------------
- 1 file changed, 63 insertions(+), 28 deletions(-)
+ arch/powerpc/perf/power9-events-list.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/local.h b/arch/powerpc/include/asm/local.h
-index b8da91363864..9c006c0215f7 100644
---- a/arch/powerpc/include/asm/local.h
-+++ b/arch/powerpc/include/asm/local.h
-@@ -14,24 +14,50 @@ typedef struct
- #define local_read(l)	atomic_long_read(&(l)->a)
- #define local_set(l,i)	atomic_long_set(&(l)->a, (i))
- 
--#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
--#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
-+static __inline__ void local_add(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	add     %0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	arch_local_irq_restore(flags);
-+}
-+
-+static __inline__ void local_sub(long i, local_t *l)
-+{
-+	long t;
-+	unsigned long flags;
-+
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
-+	__asm__ __volatile__(
-+	PPC_LL" %0,0(%2)\n\
-+	subf    %0,%1,%0\n"
-+	PPC_STL" %0,0(%2)\n"
-+	: "=&r" (t)
-+	: "r" (i), "r" (&(l->a.counter)));
-+	arch_local_irq_restore(flags);
-+}
- 
- static __inline__ long local_add_return(long a, local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%2,0) "			# local_add_return\n\
-+	PPC_LL" %0,0(%2)\n\
- 	add	%0,%1,%0\n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%2 \n\
--	bne-	1b"
-+	PPC_STL	"%0,0(%2)\n"
- 	: "=&r" (t)
- 	: "r" (a), "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
- 
- 	return t;
- }
-@@ -41,16 +67,18 @@ static __inline__ long local_add_return(long a, local_t *l)
- static __inline__ long local_sub_return(long a, local_t *l)
- {
- 	long t;
-+	unsigned long flags;
-+
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
- 
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%2,0) "			# local_sub_return\n\
-+"1:"	PPC_LL" %0,0(%2)\n\
- 	subf	%0,%1,%0\n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%2 \n\
--	bne-	1b"
-+	PPC_STL	"%0,0(%2)\n"
- 	: "=&r" (t)
- 	: "r" (a), "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
- 
- 	return t;
- }
-@@ -58,16 +86,17 @@ static __inline__ long local_sub_return(long a, local_t *l)
- static __inline__ long local_inc_return(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_inc_return\n\
-+"1:"	PPC_LL" %0,0(%1)\n\
- 	addic	%0,%0,1\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1 \n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "xer", "memory");
-+	arch_local_irq_restore(flags);
- 
- 	return t;
- }
-@@ -85,20 +114,24 @@ static __inline__ long local_inc_return(local_t *l)
- static __inline__ long local_dec_return(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_dec_return\n\
-+	PPC_LL" %0,0(%1)\n\
- 	addic	%0,%0,-1\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1\n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "xer", "memory");
-+	arch_local_irq_restore(flags);
- 
- 	return t;
- }
- 
-+#define local_inc(l)	local_inc_return(l)
-+#define local_dec(l)	local_dec_return(l)
-+
- #define local_cmpxchg(l, o, n) \
- 	(cmpxchg_local(&((l)->a.counter), (o), (n)))
- #define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
-@@ -115,20 +148,21 @@ static __inline__ long local_dec_return(local_t *l)
- static __inline__ int local_add_unless(local_t *l, long a, long u)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
- 	__asm__ __volatile__ (
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_add_unless\n\
-+	PPC_LL" %0,0(%1)\n\
- 	cmpw	0,%0,%3 \n\
- 	beq-	2f \n\
- 	add	%0,%2,%0 \n"
--	PPC405_ERR77(0,%2)
--	PPC_STLCX	"%0,0,%1 \n\
--	bne-	1b \n"
-+	PPC_STL" %0,0(%1) \n"
- "	subf	%0,%2,%0 \n\
- 2:"
- 	: "=&r" (t)
- 	: "r" (&(l->a.counter)), "r" (a), "r" (u)
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
- 
- 	return t != u;
- }
-@@ -145,19 +179,20 @@ static __inline__ int local_add_unless(local_t *l, long a, long u)
- static __inline__ long local_dec_if_positive(local_t *l)
- {
- 	long t;
-+	unsigned long flags;
- 
-+	flags = soft_irq_set_level(IRQ_DISABLE_LEVEL_PMU);
- 	__asm__ __volatile__(
--"1:"	PPC_LLARX(%0,0,%1,0) "			# local_dec_if_positive\n\
-+	PPC_LL" %0,0(%1)\n\
- 	cmpwi	%0,1\n\
- 	addi	%0,%0,-1\n\
- 	blt-	2f\n"
--	PPC405_ERR77(0,%1)
--	PPC_STLCX	"%0,0,%1\n\
--	bne-	1b"
-+	PPC_STL "%0,0(%1)\n"
- 	"\n\
- 2:"	: "=&b" (t)
- 	: "r" (&(l->a.counter))
- 	: "cc", "memory");
-+	arch_local_irq_restore(flags);
- 
- 	return t;
- }
+diff --git a/arch/powerpc/perf/power9-events-list.h b/arch/powerpc/perf/power9-events-list.h
+index cda6fcb809ca..6447dc1c3d89 100644
+--- a/arch/powerpc/perf/power9-events-list.h
++++ b/arch/powerpc/perf/power9-events-list.h
+@@ -34,15 +34,15 @@ EVENT(PM_L1_ICACHE_MISS,			0x200fd)
+ /* Instruction Demand sectors wriittent into IL1 */
+ EVENT(PM_L1_DEMAND_WRITE,			0x0408c)
+ /* Instruction prefetch written into IL1 */
+-EVENT(PM_IC_PREF_WRITE,				0x0408e)
++EVENT(PM_IC_PREF_WRITE,				0x0488c)
+ /* The data cache was reloaded from local core's L3 due to a demand load */
+ EVENT(PM_DATA_FROM_L3,				0x4c042)
+ /* Demand LD - L3 Miss (not L2 hit and not L3 hit) */
+ EVENT(PM_DATA_FROM_L3MISS,			0x300fe)
+ /* All successful D-side store dispatches for this thread */
+-EVENT(PM_L2_ST,					0x16081)
++EVENT(PM_L2_ST,					0x16880)
+ /* All successful D-side store dispatches for this thread that were L2 Miss */
+-EVENT(PM_L2_ST_MISS,				0x26081)
++EVENT(PM_L2_ST_MISS,				0x26880)
+ /* Total HW L3 prefetches(Load+store) */
+ EVENT(PM_L3_PREF_ALL,				0x4e052)
+ /* Data PTEG reload */
 -- 
 2.7.4
