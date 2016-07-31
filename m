@@ -1,18 +1,44 @@
-Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
-Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.17.131])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s2Tjf0Wc9zDqMg
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 03:19:49 +1000 (AEST)
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-To: zajec5@gmail.com,
-	leoli@freescale.com
-Cc: qiang.zhao@freescale.com, scottwood@freescale.com, viresh.kumar@linaro.org,
- akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net,
- arnd@arndb.de, davem@davemloft.net, David.Laight@aculab.com,
- Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
-Date: Sun, 31 Jul 2016 16:48:44 +0530
-Message-Id: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s2X5C39Y3zDqQ7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 05:06:55 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u6VJ3gII036745
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 15:06:52 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24gn5w0m5c-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 15:06:52 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 1 Aug 2016 05:06:49 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A7AA53578056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 05:06:47 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u6VJ6lqA34210030
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 05:06:47 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u6VJ6kBa009651
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 05:06:47 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au
+Cc: anton@samba.org, paulus@samba.org, npiggin@gmail.com,
+ linuxppc-dev@lists.ozlabs.org,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 03/11] powerpc: move set_soft_enabled()
+Date: Mon,  1 Aug 2016 00:36:21 +0530
+In-Reply-To: <1469991989-28409-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1469991989-28409-1-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1469991989-28409-4-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +48,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IS_ERR_VALUE() assumes that parameter is an unsigned long.
-It can not be used to check if 'unsigned int' is passed insted.
-Which tends to reflect an error.
+Move set_soft_enabled() from powerpc/kernel/irq.c to
+asm/hw_irq.c. this way updation of paca->soft_enabled
+can be forced wherever possible.
 
-In 64bit architectures sizeof (int) == 4 && sizeof (long) == 8.
-IS_ERR_VALUE(x) is ((x) >= (unsigned long)-4095).
-
-IS_ERR_VALUE() of 'unsigned int' is always false because the 32bit
-value is zero extended to 64 bits.
-
-Value of (unsigned int)-4095 is always less than value of
-(unsigned long)-4095.
-
-Now We are taking only first 32 bit for error checking rest of the 32 bit
-we ignore such that we get appropriate comparison on 64bit system as well.
-
-First 32bit of Value of (unsigned int)-4095 and (unsigned long)-4095 will
-be equal.
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- include/linux/err.h | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/hw_irq.h | 6 ++++++
+ arch/powerpc/kernel/irq.c         | 6 ------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/err.h b/include/linux/err.h
-index 1e35588..c2a2789 100644
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -18,7 +18,17 @@
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index eb4cc85b930e..ba4ade085aef 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -48,6 +48,12 @@ extern void unknown_exception(struct pt_regs *regs);
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
  
- #ifndef __ASSEMBLY__
- 
--#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
-+#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
-+
-+static inline int is_error_check(unsigned long error)
++static inline notrace void set_soft_enabled(unsigned long enable)
 +{
-+	unsigned int first32bit = (error & 0xFFFFFFFF);
-+
-+	if (first32bit >= (unsigned int)-MAX_ERRNO)
-+		return 1;
-+	else
-+		return 0;
++	__asm__ __volatile__("stb %0,%1(13)"
++	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
 +}
- 
- static inline void * __must_check ERR_PTR(long error)
++
+ static inline unsigned long arch_local_save_flags(void)
  {
+ 	unsigned long flags;
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 0c12e90f2cc7..1d0e82a6c861 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -106,12 +106,6 @@ static inline notrace unsigned long get_irq_happened(void)
+ 	return happened;
+ }
+ 
+-static inline notrace void set_soft_enabled(unsigned long enable)
+-{
+-	__asm__ __volatile__("stb %0,%1(13)"
+-	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
+-}
+-
+ static inline notrace int decrementer_check_overflow(void)
+ {
+  	u64 now = get_tb_or_rtc();
 -- 
-1.9.1
+2.7.4
