@@ -1,29 +1,36 @@
-Return-Path: <paolo.bonzini@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
+ [IPv6:2a00:1450:400c:c09::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s37kj3bFrzDqRq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 04:53:01 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id i5so27437916wmg.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 11:53:01 -0700 (PDT)
-Sender: Paolo Bonzini <paolo.bonzini@gmail.com>
-Subject: Re: [PATCH v2 1/1] KVM: PPC: Introduce KVM_CAP_PPC_HTM
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Sam Bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <7286403003b30fc87740f1c1d6cb67d8f8eaafd7.1468986094.git.sam.bobroff@au1.ibm.com>
- <20534.8713825972$1468993677@news.gmane.org>
- <ee83aaeb-40cf-4b46-4ae0-bb4265a0e610@redhat.com>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, agraf@suse.de,
- kvm-ppc@vger.kernel.org, qemu-devel@nongnu.org, paulus@samba.org,
- david@gibson.dropbear.id.au, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?=
- <rkrcmar@redhat.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <66a3fbaa-8f0c-870d-063c-00c2340c06b5@redhat.com>
-Date: Mon, 1 Aug 2016 20:52:52 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s38ty05XmzDqRq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 05:45:13 +1000 (AEST)
+Received: by mail-wm0-x231.google.com with SMTP id f65so382730670wmi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 12:45:13 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <ee83aaeb-40cf-4b46-4ae0-bb4265a0e610@redhat.com>
-Content-Type: text/plain; charset=utf-8
+Sender: keescook@google.com
+In-Reply-To: <87h9b4oebf.fsf@concordia.ellerman.id.au>
+References: <1465336628-18219-1-git-send-email-keescook@chromium.org>
+ <1465336628-18219-4-git-send-email-keescook@chromium.org>
+ <87h9b4oebf.fsf@concordia.ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 1 Aug 2016 12:45:09 -0700
+Message-ID: <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
+Subject: Re: Linker segfault on powerpc when CONFIG_LKDTM=y (was Re:
+ [kernel-hardening] [PATCH 3/5] lkdtm: add function for testing .rodata
+ section)
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "kernel-hardening@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Jiri Slaby <jslaby@suse.cz>, Guenter Roeck <linux@roeck-us.net>,
+ LKML <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,16 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Aug 1, 2016 at 5:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Kees Cook <keescook@chromium.org> writes:
+>
+>> This adds a function that lives in the .rodata section. The section
+>> flags are corrected using objcopy since there is no way with gcc to
+>> declare section flags in an architecture-agnostic way.
+>>
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> ---
+>>  drivers/misc/Makefile       |  7 +++++++
+>>  drivers/misc/lkdtm.h        |  6 ++++++
+>>  drivers/misc/lkdtm_core.c   | 24 +++++++++++++++++-------
+>>  drivers/misc/lkdtm_rodata.c | 10 ++++++++++
+>>  4 files changed, 40 insertions(+), 7 deletions(-)
+>>  create mode 100644 drivers/misc/lkdtm.h
+>>  create mode 100644 drivers/misc/lkdtm_rodata.c
+>
+> This is blowing up my linker :(
+>
+>   scripts/link-vmlinux.sh: line 52: 36260 Segmentation fault      (core dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds} ${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
+>
+> Haven't had a chance to debug it further.
 
+Argh. Do you want a quick fix for this now? I can add a PPC CONFIG
+blacklist for the rodata check, maybe?
 
-On 20/07/2016 08:30, Paolo Bonzini wrote:
-> In particular this patch would indeed have a conflict, because you have
-> 
-> +#define KVM_CAP_PPC_HTM 129
-> 
-> but cap numbers 129 and 130 are already taken.  So whoever applies it
-> should bump the number to 131.
+Also, what version of gcc? I'll see if I can reproduce this with a
+cross compiler...
 
-Applied now, it's 132.
+-Kees
 
-Paolo
+-- 
+Kees Cook
+Chrome OS & Brillo Security
