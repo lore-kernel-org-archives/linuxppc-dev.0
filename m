@@ -1,23 +1,24 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0052.outbound.protection.outlook.com [104.47.36.52])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s2l2R3D23zDqRQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 13:20:15 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@nxp.com>
-To: <jason@lakedaemon.net>
-CC: <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, <xiaobo.xie@nxp.com>, Zhao Qiang
- <qiang.zhao@nxp.com>
-Subject: [PATCH v4 2/3] irqchip/qeic: merge qeic init code from platforms to a
- common function
-Date: Mon, 1 Aug 2016 10:53:19 +0800
-Message-ID: <1470020000-12197-2-git-send-email-qiang.zhao@nxp.com>
-In-Reply-To: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
-References: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s2lV25l0zzDqQD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 13:40:42 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id g202so9501013pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 Jul 2016 20:40:42 -0700 (PDT)
+Date: Mon, 1 Aug 2016 13:40:31 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Scott Wood
+ <oss@buserror.net>, Alessio Igor Bogani <alessio.bogani@elettra.eu>, Paul
+ Mackerras <paulus@samba.org>, Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v2 1/3] powerpc: Factor out common code in setup-common.c
+Message-ID: <20160801134031.7dcb7c82@roar.ozlabs.ibm.com>
+In-Reply-To: <1469747238-17432-1-git-send-email-andrew.smirnov@gmail.com>
+References: <1469747238-17432-1-git-send-email-andrew.smirnov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,205 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The codes of qe_ic init from a variety of platforms are redundant,
-merge them to a common function and put it to irqchip/irq-qeic.c
+On Thu, 28 Jul 2016 16:07:16 -0700
+Andrey Smirnov <andrew.smirnov@gmail.com> wrote:
 
-For non-p1021_mds mpc85xx_mds boards, use "qe_ic_init(np, 0,
-qe_ic_cascade_low_mpic, qe_ic_cascade_high_mpic);" instead of
-"qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);".
+> Factor out a small bit of common code in machine_restart(),
+> machine_power_off() and machine_halt().
+> 
+> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+> ---
+> 
+> No changes compared to v1.
+> 
+>  arch/powerpc/kernel/setup-common.c | 23 ++++++++++++++---------
+>  1 file changed, 14 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup-common.c
+> b/arch/powerpc/kernel/setup-common.c index 714b4ba..5cd3283 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -130,15 +130,22 @@ void machine_shutdown(void)
+>  		ppc_md.machine_shutdown();
+>  }
+>  
+> +static void machine_hang(void)
+> +{
+> +	pr_emerg("System Halted, OK to turn off power\n");
+> +	local_irq_disable();
+> +	while (1)
+> +		;
+> +}
 
-qe_ic_cascade_muxed_mpic was used for boards has the same interrupt
-number for low interrupt and high interrupt, qe_ic_init has checked
-if "low interrupt == high interrupt"
+What's the intended semantics of this function? A default power
+off handler when the platform supplies none? Would ppc_power_off()
+be a good name? Should the smp_send_stop() call be moved here?
 
-Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
----
-Changes for v2:
-	- modify subject and commit msg
-	- add check for qeic by type
-Changes for v3:
-	- na
-Changes for v4:
-	- na
+It seems like a reasonable cleanup though.
 
- arch/powerpc/platforms/83xx/misc.c            | 15 ---------------
- arch/powerpc/platforms/85xx/corenet_generic.c |  9 ---------
- arch/powerpc/platforms/85xx/mpc85xx_mds.c     | 14 --------------
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c     | 16 ----------------
- arch/powerpc/platforms/85xx/twr_p102x.c       | 14 --------------
- drivers/irqchip/irq-qeic.c                    | 16 ++++++++++++++++
- 6 files changed, 16 insertions(+), 68 deletions(-)
-
-diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
-index 7e923ca..9431fc7 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -93,24 +93,9 @@ void __init mpc83xx_ipic_init_IRQ(void)
- }
- 
- #ifdef CONFIG_QUICC_ENGINE
--void __init mpc83xx_qe_init_IRQ(void)
--{
--	struct device_node *np;
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (!np) {
--		np = of_find_node_by_type(NULL, "qeic");
--		if (!np)
--			return;
--	}
--	qe_ic_init(np, 0, qe_ic_cascade_low_ipic, qe_ic_cascade_high_ipic);
--	of_node_put(np);
--}
--
- void __init mpc83xx_ipic_and_qe_init_IRQ(void)
- {
- 	mpc83xx_ipic_init_IRQ();
--	mpc83xx_qe_init_IRQ();
- }
- #endif /* CONFIG_QUICC_ENGINE */
- 
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index a2b0bc8..526fc2b 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -41,8 +41,6 @@ void __init corenet_gen_pic_init(void)
- 	unsigned int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
- 		MPIC_NO_RESET;
- 
--	struct device_node *np;
--
- 	if (ppc_md.get_irq == mpic_get_coreint_irq)
- 		flags |= MPIC_ENABLE_COREINT;
- 
-@@ -50,13 +48,6 @@ void __init corenet_gen_pic_init(void)
- 	BUG_ON(mpic == NULL);
- 
- 	mpic_init(mpic);
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (np) {
--		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
--				qe_ic_cascade_high_mpic);
--		of_node_put(np);
--	}
- }
- 
- /*
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index f61cbe2..7ae4901 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -279,20 +279,6 @@ static void __init mpc85xx_mds_qeic_init(void)
- 		of_node_put(np);
- 		return;
- 	}
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (!np) {
--		np = of_find_node_by_type(NULL, "qeic");
--		if (!np)
--			return;
--	}
--
--	if (machine_is(p1021_mds))
--		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
--				qe_ic_cascade_high_mpic);
--	else
--		qe_ic_init(np, 0, qe_ic_cascade_muxed_mpic, NULL);
--	of_node_put(np);
- }
- #else
- static void __init mpc85xx_mds_qe_init(void) { }
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 3f4dad1..779f54f 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -49,10 +49,6 @@ void __init mpc85xx_rdb_pic_init(void)
- 	struct mpic *mpic;
- 	unsigned long root = of_get_flat_dt_root();
- 
--#ifdef CONFIG_QUICC_ENGINE
--	struct device_node *np;
--#endif
--
- 	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
- 		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
- 			MPIC_BIG_ENDIAN |
-@@ -67,18 +63,6 @@ void __init mpc85xx_rdb_pic_init(void)
- 
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
--
--#ifdef CONFIG_QUICC_ENGINE
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (np) {
--		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
--				qe_ic_cascade_high_mpic);
--		of_node_put(np);
--
--	} else
--		pr_err("%s: Could not find qe-ic node\n", __func__);
--#endif
--
- }
- 
- /*
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 71bc255..603e244 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -35,26 +35,12 @@ static void __init twr_p1025_pic_init(void)
- {
- 	struct mpic *mpic;
- 
--#ifdef CONFIG_QUICC_ENGINE
--	struct device_node *np;
--#endif
--
- 	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
- 			MPIC_SINGLE_DEST_CPU,
- 			0, 256, " OpenPIC  ");
- 
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
--
--#ifdef CONFIG_QUICC_ENGINE
--	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
--	if (np) {
--		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
--				qe_ic_cascade_high_mpic);
--		of_node_put(np);
--	} else
--		pr_err("Could not find qe-ic node\n");
--#endif
- }
- 
- /* ************************************************************************
-diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
-index 48ceded..1463731 100644
---- a/drivers/irqchip/irq-qeic.c
-+++ b/drivers/irqchip/irq-qeic.c
-@@ -598,4 +598,20 @@ static int __init init_qe_ic_sysfs(void)
- 	return 0;
- }
- 
-+static int __init qeic_of_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (!np) {
-+		np = of_find_node_by_type(NULL, "qeic");
-+		if (!np)
-+			return;
-+	}
-+	qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+		   qe_ic_cascade_high_mpic);
-+	of_node_put(np);
-+}
-+
-+subsys_initcall(qeic_of_init);
- subsys_initcall(init_qe_ic_sysfs);
--- 
-2.1.0.27.g96db324
+Thanks,
+Nick
