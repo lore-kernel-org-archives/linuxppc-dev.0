@@ -1,18 +1,20 @@
 Return-Path: <qiang.zhao@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0050.outbound.protection.outlook.com [104.47.34.50])
+Received: from NAM02-SN1-obe.outbound.protection.outlook.com
+ (mail-sn1nam02on0045.outbound.protection.outlook.com [104.47.36.45])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s2l250Wx4zDqQD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 13:19:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s2l254vd0zDqQF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 13:19:57 +1000 (AEST)
 From: Zhao Qiang <qiang.zhao@nxp.com>
 To: <jason@lakedaemon.net>
 CC: <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>, <xiaobo.xie@nxp.com>, Zhao Qiang
  <qiang.zhao@nxp.com>
-Subject: [PATCH v4 1/3] irqchip/qeic: move qeic driver from drivers/soc/fsl/qe
-Date: Mon, 1 Aug 2016 10:53:18 +0800
-Message-ID: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
+Subject: [PATCH v4 3/3] irqchip/qeic: merge qeic_of_init into qe_ic_init
+Date: Mon, 1 Aug 2016 10:53:20 +0800
+Message-ID: <1470020000-12197-3-git-send-email-qiang.zhao@nxp.com>
+In-Reply-To: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
+References: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,271 +26,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-move the driver from drivers/soc/fsl/qe to drivers/irqchip,
-merge qe_ic.h and qe_ic.c into irq-qeic.c.
+qeic_of_init just get device_node of qeic from dtb and call qe_ic_init,
+pass the device_node to qe_ic_init.
+So merge qeic_of_init into qe_ic_init to get the qeic node in
+qe_ic_init.
 
 Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
 ---
 Changes for v2:
-	- modify the subject and commit msg
+	- modify subject and commit msg
+	- return 0 and add put node when return in qe_ic_init
 Changes for v3:
-	- merge .h file to .c, rename it with irq-qeic.c
+	- na
 Changes for v4:
-	- modify comments
+	- na
 
- drivers/irqchip/Makefile                           |   1 +
- drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} |  95 ++++++++++++++++++-
- drivers/soc/fsl/qe/Makefile                        |   2 +-
- drivers/soc/fsl/qe/qe_ic.h                         | 103 ---------------------
- 4 files changed, 94 insertions(+), 107 deletions(-)
- rename drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} (85%)
- delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
+ drivers/irqchip/irq-qeic.c | 91 +++++++++++++++++++++++++---------------------
+ include/soc/fsl/qe/qe_ic.h |  7 ----
+ 2 files changed, 50 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 38853a1..846b34e 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -69,3 +69,4 @@ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
- obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
- obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
-+obj-$(CONFIG_QUICC_ENGINE)		+= irq-qeic.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/irq-qeic.c
-similarity index 85%
-rename from drivers/soc/fsl/qe/qe_ic.c
-rename to drivers/irqchip/irq-qeic.c
-index ec2ca86..48ceded 100644
---- a/drivers/soc/fsl/qe/qe_ic.c
+diff --git a/drivers/irqchip/irq-qeic.c b/drivers/irqchip/irq-qeic.c
+index 1463731..4f49d4b 100644
+--- a/drivers/irqchip/irq-qeic.c
 +++ b/drivers/irqchip/irq-qeic.c
-@@ -1,7 +1,7 @@
- /*
-- * arch/powerpc/sysdev/qe_lib/qe_ic.c
-+ * drivers/irqchip/irq-qeic.c
-  *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc.  All rights reserved.
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.  All rights reserved.
-  *
-  * Author: Li Yang <leoli@freescale.com>
-  * Based on code from Shlomi Gridish <gridish@freescale.com>
-@@ -30,7 +30,96 @@
- #include <asm/io.h>
- #include <soc/fsl/qe/qe_ic.h>
+@@ -406,27 +406,38 @@ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
+ 	return irq_linear_revmap(qe_ic->irqhost, irq);
+ }
  
--#include "qe_ic.h"
-+#define NR_QE_IC_INTS		64
+-void __init qe_ic_init(struct device_node *node, unsigned int flags,
+-		       void (*low_handler)(struct irq_desc *desc),
+-		       void (*high_handler)(struct irq_desc *desc))
++static int __init qe_ic_init(unsigned int flags)
+ {
++	struct device_node *node;
+ 	struct qe_ic *qe_ic;
+ 	struct resource res;
+-	u32 temp = 0, ret, high_active = 0;
++	u32 temp = 0, high_active = 0;
++	int ret = 0;
 +
-+/* QE IC registers offset */
-+#define QEIC_CICR		0x00
-+#define QEIC_CIVEC		0x04
-+#define QEIC_CRIPNR		0x08
-+#define QEIC_CIPNR		0x0c
-+#define QEIC_CIPXCC		0x10
-+#define QEIC_CIPYCC		0x14
-+#define QEIC_CIPWCC		0x18
-+#define QEIC_CIPZCC		0x1c
-+#define QEIC_CIMR		0x20
-+#define QEIC_CRIMR		0x24
-+#define QEIC_CICNR		0x28
-+#define QEIC_CIPRTA		0x30
-+#define QEIC_CIPRTB		0x34
-+#define QEIC_CRICR		0x3c
-+#define QEIC_CHIVEC		0x60
-+
-+/* Interrupt priority registers */
-+#define CIPCC_SHIFT_PRI0	29
-+#define CIPCC_SHIFT_PRI1	26
-+#define CIPCC_SHIFT_PRI2	23
-+#define CIPCC_SHIFT_PRI3	20
-+#define CIPCC_SHIFT_PRI4	13
-+#define CIPCC_SHIFT_PRI5	10
-+#define CIPCC_SHIFT_PRI6	7
-+#define CIPCC_SHIFT_PRI7	4
-+
-+/* CICR priority modes */
-+#define CICR_GWCC		0x00040000
-+#define CICR_GXCC		0x00020000
-+#define CICR_GYCC		0x00010000
-+#define CICR_GZCC		0x00080000
-+#define CICR_GRTA		0x00200000
-+#define CICR_GRTB		0x00400000
-+#define CICR_HPIT_SHIFT		8
-+#define CICR_HPIT_MASK		0x00000300
-+#define CICR_HP_SHIFT		24
-+#define CICR_HP_MASK		0x3f000000
-+
-+/* CICNR */
-+#define CICNR_WCC1T_SHIFT	20
-+#define CICNR_ZCC1T_SHIFT	28
-+#define CICNR_YCC1T_SHIFT	12
-+#define CICNR_XCC1T_SHIFT	4
-+
-+/* CRICR */
-+#define CRICR_RTA1T_SHIFT	20
-+#define CRICR_RTB1T_SHIFT	28
-+
-+/* Signal indicator */
-+#define SIGNAL_MASK		3
-+#define SIGNAL_HIGH		2
-+#define SIGNAL_LOW		0
-+
-+struct qe_ic {
-+	/* Control registers offset */
-+	volatile u32 __iomem *regs;
-+
-+	/* The remapper for this QEIC */
-+	struct irq_domain *irqhost;
-+
-+	/* The "linux" controller struct */
-+	struct irq_chip hc_irq;
-+
-+	/* VIRQ numbers of QE high/low irqs */
-+	unsigned int virq_high;
-+	unsigned int virq_low;
-+};
-+
-+/*
-+ * QE interrupt controller internal structure
-+ */
-+struct qe_ic_info {
-+	/* location of this source at the QIMR register. */
-+	u32	mask;
-+
-+	/* Mask register offset */
-+	u32	mask_reg;
-+
-+	/*
-+	 * for grouped interrupts sources - the interrupt
-+	 * code as appears at the group priority register
-+	 */
-+	u8	pri_code;
-+
-+	/* Group priority register offset */
-+	u32	pri_reg;
-+};
++	node = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (!node) {
++		node = of_find_node_by_type(NULL, "qeic");
++		if (!node)
++			return -ENODEV;
++	}
  
- static DEFINE_RAW_SPINLOCK(qe_ic_lock);
+ 	ret = of_address_to_resource(node, 0, &res);
+-	if (ret)
+-		return;
++	if (ret) {
++		ret = -ENODEV;
++		goto err_put_node;
++	}
  
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index 2031d38..51e4726 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
- obj-$(CONFIG_CPM)	+= qe_common.o
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
-deleted file mode 100644
-index 926a2ed..0000000
---- a/drivers/soc/fsl/qe/qe_ic.h
-+++ /dev/null
-@@ -1,103 +0,0 @@
--/*
-- * drivers/soc/fsl/qe/qe_ic.h
-- *
-- * QUICC ENGINE Interrupt Controller Header
-- *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-- *
-- * Author: Li Yang <leoli@freescale.com>
-- * Based on code from Shlomi Gridish <gridish@freescale.com>
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--#ifndef _POWERPC_SYSDEV_QE_IC_H
--#define _POWERPC_SYSDEV_QE_IC_H
+ 	qe_ic = kzalloc(sizeof(*qe_ic), GFP_KERNEL);
+-	if (qe_ic == NULL)
+-		return;
++	if (qe_ic == NULL) {
++		ret = -ENOMEM;
++		goto err_put_node;
++	}
+ 
+ 	qe_ic->irqhost = irq_domain_add_linear(node, NR_QE_IC_INTS,
+ 					       &qe_ic_host_ops, qe_ic);
+ 	if (qe_ic->irqhost == NULL) {
+-		kfree(qe_ic);
+-		return;
++		ret = -ENOMEM;
++		goto err_free_qe_ic;
+ 	}
+ 
+ 	qe_ic->regs = ioremap(res.start, resource_size(&res));
+@@ -437,9 +448,9 @@ void __init qe_ic_init(struct device_node *node, unsigned int flags,
+ 	qe_ic->virq_low = irq_of_parse_and_map(node, 1);
+ 
+ 	if (qe_ic->virq_low == NO_IRQ) {
+-		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
+-		kfree(qe_ic);
+-		return;
++		pr_err("Failed to map QE_IC low IRQ\n");
++		ret = -ENOMEM;
++		goto err_domain_remove;
+ 	}
+ 
+ 	/* default priority scheme is grouped. If spread mode is    */
+@@ -466,13 +477,24 @@ void __init qe_ic_init(struct device_node *node, unsigned int flags,
+ 	qe_ic_write(qe_ic->regs, QEIC_CICR, temp);
+ 
+ 	irq_set_handler_data(qe_ic->virq_low, qe_ic);
+-	irq_set_chained_handler(qe_ic->virq_low, low_handler);
++	irq_set_chained_handler(qe_ic->virq_low, qe_ic_cascade_low_mpic);
+ 
+ 	if (qe_ic->virq_high != NO_IRQ &&
+ 			qe_ic->virq_high != qe_ic->virq_low) {
+ 		irq_set_handler_data(qe_ic->virq_high, qe_ic);
+-		irq_set_chained_handler(qe_ic->virq_high, high_handler);
++		irq_set_chained_handler(qe_ic->virq_high,
++					qe_ic_cascade_high_mpic);
+ 	}
++	of_node_put(node);
++	return 0;
++
++err_domain_remove:
++	irq_domain_remove(qe_ic->irqhost);
++err_free_qe_ic:
++	kfree(qe_ic);
++err_put_node:
++	of_node_put(node);
++	return ret;
+ }
+ 
+ void qe_ic_set_highest_priority(unsigned int virq, int high)
+@@ -579,39 +601,26 @@ static struct device device_qe_ic = {
+ 	.bus = &qe_ic_subsys,
+ };
+ 
+-static int __init init_qe_ic_sysfs(void)
++static int __init init_qe_ic(void)
+ {
+-	int rc;
++	int ret;
+ 
+-	printk(KERN_DEBUG "Registering qe_ic with sysfs...\n");
++	ret = qe_ic_init(0);
++	if (ret)
++		return ret;
+ 
+-	rc = subsys_system_register(&qe_ic_subsys, NULL);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering qe_ic sys class\n");
++	ret = subsys_system_register(&qe_ic_subsys, NULL);
++	if (ret) {
++		pr_err("Failed registering qe_ic sys class\n");
+ 		return -ENODEV;
+ 	}
+-	rc = device_register(&device_qe_ic);
+-	if (rc) {
+-		printk(KERN_ERR "Failed registering qe_ic sys device\n");
++	ret = device_register(&device_qe_ic);
++	if (ret) {
++		pr_err("Failed registering qe_ic sys device\n");
+ 		return -ENODEV;
+ 	}
+-	return 0;
+-}
 -
--#include <soc/fsl/qe/qe_ic.h>
--
--#define NR_QE_IC_INTS		64
--
--/* QE IC registers offset */
--#define QEIC_CICR		0x00
--#define QEIC_CIVEC		0x04
--#define QEIC_CRIPNR		0x08
--#define QEIC_CIPNR		0x0c
--#define QEIC_CIPXCC		0x10
--#define QEIC_CIPYCC		0x14
--#define QEIC_CIPWCC		0x18
--#define QEIC_CIPZCC		0x1c
--#define QEIC_CIMR		0x20
--#define QEIC_CRIMR		0x24
--#define QEIC_CICNR		0x28
--#define QEIC_CIPRTA		0x30
--#define QEIC_CIPRTB		0x34
--#define QEIC_CRICR		0x3c
--#define QEIC_CHIVEC		0x60
--
--/* Interrupt priority registers */
--#define CIPCC_SHIFT_PRI0	29
--#define CIPCC_SHIFT_PRI1	26
--#define CIPCC_SHIFT_PRI2	23
--#define CIPCC_SHIFT_PRI3	20
--#define CIPCC_SHIFT_PRI4	13
--#define CIPCC_SHIFT_PRI5	10
--#define CIPCC_SHIFT_PRI6	7
--#define CIPCC_SHIFT_PRI7	4
--
--/* CICR priority modes */
--#define CICR_GWCC		0x00040000
--#define CICR_GXCC		0x00020000
--#define CICR_GYCC		0x00010000
--#define CICR_GZCC		0x00080000
--#define CICR_GRTA		0x00200000
--#define CICR_GRTB		0x00400000
--#define CICR_HPIT_SHIFT		8
--#define CICR_HPIT_MASK		0x00000300
--#define CICR_HP_SHIFT		24
--#define CICR_HP_MASK		0x3f000000
--
--/* CICNR */
--#define CICNR_WCC1T_SHIFT	20
--#define CICNR_ZCC1T_SHIFT	28
--#define CICNR_YCC1T_SHIFT	12
--#define CICNR_XCC1T_SHIFT	4
--
--/* CRICR */
--#define CRICR_RTA1T_SHIFT	20
--#define CRICR_RTB1T_SHIFT	28
--
--/* Signal indicator */
--#define SIGNAL_MASK		3
--#define SIGNAL_HIGH		2
--#define SIGNAL_LOW		0
--
--struct qe_ic {
--	/* Control registers offset */
--	volatile u32 __iomem *regs;
--
--	/* The remapper for this QEIC */
--	struct irq_domain *irqhost;
--
--	/* The "linux" controller struct */
--	struct irq_chip hc_irq;
--
--	/* VIRQ numbers of QE high/low irqs */
--	unsigned int virq_high;
--	unsigned int virq_low;
--};
--
--/*
-- * QE interrupt controller internal structure
-- */
--struct qe_ic_info {
--	u32	mask;	  /* location of this source at the QIMR register. */
--	u32	mask_reg; /* Mask register offset */
--	u8	pri_code; /* for grouped interrupts sources - the interrupt
--			     code as appears at the group priority register */
--	u32	pri_reg;  /* Group priority register offset */
--};
--
--#endif /* _POWERPC_SYSDEV_QE_IC_H */
+-static int __init qeic_of_init(void)
+-{
+-	struct device_node *np;
+ 
+-	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
+-	if (!np) {
+-		np = of_find_node_by_type(NULL, "qeic");
+-		if (!np)
+-			return;
+-	}
+-	qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
+-		   qe_ic_cascade_high_mpic);
+-	of_node_put(np);
++	return 0;
+ }
+ 
+-subsys_initcall(qeic_of_init);
+-subsys_initcall(init_qe_ic_sysfs);
++subsys_initcall(init_qe_ic);
+diff --git a/include/soc/fsl/qe/qe_ic.h b/include/soc/fsl/qe/qe_ic.h
+index 1e155ca..6113699 100644
+--- a/include/soc/fsl/qe/qe_ic.h
++++ b/include/soc/fsl/qe/qe_ic.h
+@@ -58,16 +58,9 @@ enum qe_ic_grp_id {
+ };
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+-void qe_ic_init(struct device_node *node, unsigned int flags,
+-		void (*low_handler)(struct irq_desc *desc),
+-		void (*high_handler)(struct irq_desc *desc));
+ unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic);
+ unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic);
+ #else
+-static inline void qe_ic_init(struct device_node *node, unsigned int flags,
+-		void (*low_handler)(struct irq_desc *desc),
+-		void (*high_handler)(struct irq_desc *desc))
+-{}
+ static inline unsigned int qe_ic_get_low_irq(struct qe_ic *qe_ic)
+ { return 0; }
+ static inline unsigned int qe_ic_get_high_irq(struct qe_ic *qe_ic)
 -- 
 2.1.0.27.g96db324
