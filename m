@@ -1,22 +1,29 @@
-Return-Path: <jason@lakedaemon.net>
-Received: from pmta2.delivery5.ore.mailhop.org
- (pmta2.delivery5.ore.mailhop.org [54.186.218.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s2yyK12DKzDqQ9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 22:17:28 +1000 (AEST)
-Date: Mon, 1 Aug 2016 12:16:19 +0000
-From: Jason Cooper <jason@lakedaemon.net>
-To: Zhao Qiang <qiang.zhao@nxp.com>
-Cc: oss@buserror.net, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, xiaobo.xie@nxp.com
-Subject: Re: [PATCH v4 1/3] irqchip/qeic: move qeic driver from
- drivers/soc/fsl/qe
-Message-ID: <20160801121619.GB4541@io.lakedaemon.net>
-References: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s2zPP3f62zDqQF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 22:37:29 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>, kernel-hardening@lists.openwall.com
+Cc: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Jiri Slaby <jslaby@suse.cz>,
+ Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard  <anton@samba.org>
+Subject: Linker segfault on powerpc when CONFIG_LKDTM=y (was Re:
+ [kernel-hardening] [PATCH 3/5] lkdtm: add function for testing .rodata
+ section)
+In-Reply-To: <1465336628-18219-4-git-send-email-keescook@chromium.org>
+References: <1465336628-18219-1-git-send-email-keescook@chromium.org>
+ <1465336628-18219-4-git-send-email-keescook@chromium.org>
+Date: Mon, 01 Aug 2016 22:37:24 +1000
+Message-ID: <87h9b4oebf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1470020000-12197-1-git-send-email-qiang.zhao@nxp.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,283 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Zhao Qiang,
+Kees Cook <keescook@chromium.org> writes:
 
-On Mon, Aug 01, 2016 at 10:53:18AM +0800, Zhao Qiang wrote:
-> move the driver from drivers/soc/fsl/qe to drivers/irqchip,
-> merge qe_ic.h and qe_ic.c into irq-qeic.c.
-> 
-> Signed-off-by: Zhao Qiang <qiang.zhao@nxp.com>
+> This adds a function that lives in the .rodata section. The section
+> flags are corrected using objcopy since there is no way with gcc to
+> declare section flags in an architecture-agnostic way.
+>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
-> Changes for v2:
-> 	- modify the subject and commit msg
-> Changes for v3:
-> 	- merge .h file to .c, rename it with irq-qeic.c
-> Changes for v4:
-> 	- modify comments
-> 
->  drivers/irqchip/Makefile                           |   1 +
->  drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} |  95 ++++++++++++++++++-
->  drivers/soc/fsl/qe/Makefile                        |   2 +-
->  drivers/soc/fsl/qe/qe_ic.h                         | 103 ---------------------
->  4 files changed, 94 insertions(+), 107 deletions(-)
->  rename drivers/{soc/fsl/qe/qe_ic.c => irqchip/irq-qeic.c} (85%)
+>  drivers/misc/Makefile       |  7 +++++++
+>  drivers/misc/lkdtm.h        |  6 ++++++
+>  drivers/misc/lkdtm_core.c   | 24 +++++++++++++++++-------
+>  drivers/misc/lkdtm_rodata.c | 10 ++++++++++
+>  4 files changed, 40 insertions(+), 7 deletions(-)
+>  create mode 100644 drivers/misc/lkdtm.h
+>  create mode 100644 drivers/misc/lkdtm_rodata.c
 
-Could you disable rename detection so that we can review the entire
-codebase being brought into drivers/irqchip?
+This is blowing up my linker :(
 
-thx,
+  scripts/link-vmlinux.sh: line 52: 36260 Segmentation fault      (core dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds} ${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
 
-Jason.
+Haven't had a chance to debug it further.
 
->  delete mode 100644 drivers/soc/fsl/qe/qe_ic.h
-> 
-> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-> index 38853a1..846b34e 100644
-> --- a/drivers/irqchip/Makefile
-> +++ b/drivers/irqchip/Makefile
-> @@ -69,3 +69,4 @@ obj-$(CONFIG_PIC32_EVIC)		+= irq-pic32-evic.o
->  obj-$(CONFIG_MVEBU_ODMI)		+= irq-mvebu-odmi.o
->  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
->  obj-$(CONFIG_EZNPS_GIC)			+= irq-eznps.o
-> +obj-$(CONFIG_QUICC_ENGINE)		+= irq-qeic.o
-> diff --git a/drivers/soc/fsl/qe/qe_ic.c b/drivers/irqchip/irq-qeic.c
-> similarity index 85%
-> rename from drivers/soc/fsl/qe/qe_ic.c
-> rename to drivers/irqchip/irq-qeic.c
-> index ec2ca86..48ceded 100644
-> --- a/drivers/soc/fsl/qe/qe_ic.c
-> +++ b/drivers/irqchip/irq-qeic.c
-> @@ -1,7 +1,7 @@
->  /*
-> - * arch/powerpc/sysdev/qe_lib/qe_ic.c
-> + * drivers/irqchip/irq-qeic.c
->   *
-> - * Copyright (C) 2006 Freescale Semiconductor, Inc.  All rights reserved.
-> + * Copyright (C) 2016 Freescale Semiconductor, Inc.  All rights reserved.
->   *
->   * Author: Li Yang <leoli@freescale.com>
->   * Based on code from Shlomi Gridish <gridish@freescale.com>
-> @@ -30,7 +30,96 @@
->  #include <asm/io.h>
->  #include <soc/fsl/qe/qe_ic.h>
->  
-> -#include "qe_ic.h"
-> +#define NR_QE_IC_INTS		64
-> +
-> +/* QE IC registers offset */
-> +#define QEIC_CICR		0x00
-> +#define QEIC_CIVEC		0x04
-> +#define QEIC_CRIPNR		0x08
-> +#define QEIC_CIPNR		0x0c
-> +#define QEIC_CIPXCC		0x10
-> +#define QEIC_CIPYCC		0x14
-> +#define QEIC_CIPWCC		0x18
-> +#define QEIC_CIPZCC		0x1c
-> +#define QEIC_CIMR		0x20
-> +#define QEIC_CRIMR		0x24
-> +#define QEIC_CICNR		0x28
-> +#define QEIC_CIPRTA		0x30
-> +#define QEIC_CIPRTB		0x34
-> +#define QEIC_CRICR		0x3c
-> +#define QEIC_CHIVEC		0x60
-> +
-> +/* Interrupt priority registers */
-> +#define CIPCC_SHIFT_PRI0	29
-> +#define CIPCC_SHIFT_PRI1	26
-> +#define CIPCC_SHIFT_PRI2	23
-> +#define CIPCC_SHIFT_PRI3	20
-> +#define CIPCC_SHIFT_PRI4	13
-> +#define CIPCC_SHIFT_PRI5	10
-> +#define CIPCC_SHIFT_PRI6	7
-> +#define CIPCC_SHIFT_PRI7	4
-> +
-> +/* CICR priority modes */
-> +#define CICR_GWCC		0x00040000
-> +#define CICR_GXCC		0x00020000
-> +#define CICR_GYCC		0x00010000
-> +#define CICR_GZCC		0x00080000
-> +#define CICR_GRTA		0x00200000
-> +#define CICR_GRTB		0x00400000
-> +#define CICR_HPIT_SHIFT		8
-> +#define CICR_HPIT_MASK		0x00000300
-> +#define CICR_HP_SHIFT		24
-> +#define CICR_HP_MASK		0x3f000000
-> +
-> +/* CICNR */
-> +#define CICNR_WCC1T_SHIFT	20
-> +#define CICNR_ZCC1T_SHIFT	28
-> +#define CICNR_YCC1T_SHIFT	12
-> +#define CICNR_XCC1T_SHIFT	4
-> +
-> +/* CRICR */
-> +#define CRICR_RTA1T_SHIFT	20
-> +#define CRICR_RTB1T_SHIFT	28
-> +
-> +/* Signal indicator */
-> +#define SIGNAL_MASK		3
-> +#define SIGNAL_HIGH		2
-> +#define SIGNAL_LOW		0
-> +
-> +struct qe_ic {
-> +	/* Control registers offset */
-> +	volatile u32 __iomem *regs;
-> +
-> +	/* The remapper for this QEIC */
-> +	struct irq_domain *irqhost;
-> +
-> +	/* The "linux" controller struct */
-> +	struct irq_chip hc_irq;
-> +
-> +	/* VIRQ numbers of QE high/low irqs */
-> +	unsigned int virq_high;
-> +	unsigned int virq_low;
-> +};
-> +
-> +/*
-> + * QE interrupt controller internal structure
-> + */
-> +struct qe_ic_info {
-> +	/* location of this source at the QIMR register. */
-> +	u32	mask;
-> +
-> +	/* Mask register offset */
-> +	u32	mask_reg;
-> +
-> +	/*
-> +	 * for grouped interrupts sources - the interrupt
-> +	 * code as appears at the group priority register
-> +	 */
-> +	u8	pri_code;
-> +
-> +	/* Group priority register offset */
-> +	u32	pri_reg;
-> +};
->  
->  static DEFINE_RAW_SPINLOCK(qe_ic_lock);
->  
-> diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-> index 2031d38..51e4726 100644
-> --- a/drivers/soc/fsl/qe/Makefile
-> +++ b/drivers/soc/fsl/qe/Makefile
-> @@ -1,7 +1,7 @@
->  #
->  # Makefile for the linux ppc-specific parts of QE
->  #
-> -obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
-> +obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_io.o
->  obj-$(CONFIG_CPM)	+= qe_common.o
->  obj-$(CONFIG_UCC)	+= ucc.o
->  obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-> diff --git a/drivers/soc/fsl/qe/qe_ic.h b/drivers/soc/fsl/qe/qe_ic.h
-> deleted file mode 100644
-> index 926a2ed..0000000
-> --- a/drivers/soc/fsl/qe/qe_ic.h
-> +++ /dev/null
-> @@ -1,103 +0,0 @@
-> -/*
-> - * drivers/soc/fsl/qe/qe_ic.h
-> - *
-> - * QUICC ENGINE Interrupt Controller Header
-> - *
-> - * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-> - *
-> - * Author: Li Yang <leoli@freescale.com>
-> - * Based on code from Shlomi Gridish <gridish@freescale.com>
-> - *
-> - * This program is free software; you can redistribute  it and/or modify it
-> - * under  the terms of  the GNU General  Public License as published by the
-> - * Free Software Foundation;  either version 2 of the  License, or (at your
-> - * option) any later version.
-> - */
-> -#ifndef _POWERPC_SYSDEV_QE_IC_H
-> -#define _POWERPC_SYSDEV_QE_IC_H
-> -
-> -#include <soc/fsl/qe/qe_ic.h>
-> -
-> -#define NR_QE_IC_INTS		64
-> -
-> -/* QE IC registers offset */
-> -#define QEIC_CICR		0x00
-> -#define QEIC_CIVEC		0x04
-> -#define QEIC_CRIPNR		0x08
-> -#define QEIC_CIPNR		0x0c
-> -#define QEIC_CIPXCC		0x10
-> -#define QEIC_CIPYCC		0x14
-> -#define QEIC_CIPWCC		0x18
-> -#define QEIC_CIPZCC		0x1c
-> -#define QEIC_CIMR		0x20
-> -#define QEIC_CRIMR		0x24
-> -#define QEIC_CICNR		0x28
-> -#define QEIC_CIPRTA		0x30
-> -#define QEIC_CIPRTB		0x34
-> -#define QEIC_CRICR		0x3c
-> -#define QEIC_CHIVEC		0x60
-> -
-> -/* Interrupt priority registers */
-> -#define CIPCC_SHIFT_PRI0	29
-> -#define CIPCC_SHIFT_PRI1	26
-> -#define CIPCC_SHIFT_PRI2	23
-> -#define CIPCC_SHIFT_PRI3	20
-> -#define CIPCC_SHIFT_PRI4	13
-> -#define CIPCC_SHIFT_PRI5	10
-> -#define CIPCC_SHIFT_PRI6	7
-> -#define CIPCC_SHIFT_PRI7	4
-> -
-> -/* CICR priority modes */
-> -#define CICR_GWCC		0x00040000
-> -#define CICR_GXCC		0x00020000
-> -#define CICR_GYCC		0x00010000
-> -#define CICR_GZCC		0x00080000
-> -#define CICR_GRTA		0x00200000
-> -#define CICR_GRTB		0x00400000
-> -#define CICR_HPIT_SHIFT		8
-> -#define CICR_HPIT_MASK		0x00000300
-> -#define CICR_HP_SHIFT		24
-> -#define CICR_HP_MASK		0x3f000000
-> -
-> -/* CICNR */
-> -#define CICNR_WCC1T_SHIFT	20
-> -#define CICNR_ZCC1T_SHIFT	28
-> -#define CICNR_YCC1T_SHIFT	12
-> -#define CICNR_XCC1T_SHIFT	4
-> -
-> -/* CRICR */
-> -#define CRICR_RTA1T_SHIFT	20
-> -#define CRICR_RTB1T_SHIFT	28
-> -
-> -/* Signal indicator */
-> -#define SIGNAL_MASK		3
-> -#define SIGNAL_HIGH		2
-> -#define SIGNAL_LOW		0
-> -
-> -struct qe_ic {
-> -	/* Control registers offset */
-> -	volatile u32 __iomem *regs;
-> -
-> -	/* The remapper for this QEIC */
-> -	struct irq_domain *irqhost;
-> -
-> -	/* The "linux" controller struct */
-> -	struct irq_chip hc_irq;
-> -
-> -	/* VIRQ numbers of QE high/low irqs */
-> -	unsigned int virq_high;
-> -	unsigned int virq_low;
-> -};
-> -
-> -/*
-> - * QE interrupt controller internal structure
-> - */
-> -struct qe_ic_info {
-> -	u32	mask;	  /* location of this source at the QIMR register. */
-> -	u32	mask_reg; /* Mask register offset */
-> -	u8	pri_code; /* for grouped interrupts sources - the interrupt
-> -			     code as appears at the group priority register */
-> -	u32	pri_reg;  /* Group priority register offset */
-> -};
-> -
-> -#endif /* _POWERPC_SYSDEV_QE_IC_H */
-> -- 
-> 2.1.0.27.g96db324
-> 
+cheers
