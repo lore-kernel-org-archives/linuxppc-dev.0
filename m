@@ -1,45 +1,30 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scott.wood@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0071.outbound.protection.outlook.com [104.47.2.71])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3NvX2sVMzDqZ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:46:32 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u724hs2Y011051
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 00:46:29 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24gr47wpgs-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 00:46:29 -0400
-Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 2 Aug 2016 14:46:26 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 126BD3578053
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:46:23 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u724kN5m21889092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 14:46:23 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u724kMZ1005727
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 14:46:22 +1000
-Date: Tue, 2 Aug 2016 14:46:22 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH v3] powernv/pci: Add PHB register dump debugfs handle
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20160728050503.17366-1-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Prg5bFmzDrFJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 15:29:07 +1000 (AEST)
+From: Scott Wood <scott.wood@nxp.com>
+To: Arnd Bergmann <arnd@arndb.de>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+CC: Arvind Yadav <arvind.yadav.cs@gmail.com>, "zajec5@gmail.com"
+ <zajec5@gmail.com>, "leoli@freescale.com" <leoli@freescale.com>,
+ "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "David.Laight@aculab.com" <David.Laight@aculab.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "scottwood@freescale.com"
+ <scottwood@freescale.com>, "akpm@linux-foundation.org"
+ <akpm@linux-foundation.org>, "davem@davemloft.net" <davem@davemloft.net>,
+ "linux@roeck-us.net" <linux@roeck-us.net>
+Subject: Re: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
+Date: Mon, 1 Aug 2016 16:55:43 +0000
+Message-ID: <DB5PR0401MB19280ACA87C7F5EE2822D5FB91040@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+References: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <1956647.cOmaJREgOE@wuerfel>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160728050503.17366-1-ruscur@russell.cc>
-Message-Id: <20160802044621.GA23976@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,15 +34,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 28, 2016 at 03:05:03PM +1000, Russell Currey wrote:
->On EEH events the kernel will print a dump of relevant registers.
->If EEH is unavailable (i.e. CONFIG_EEH is disabled, a new platform
->doesn't have EEH support, etc) this information isn't readily available.
->
->Add a new debugfs handler to trigger a PHB register dump, so that this
->information can be made available on demand.
->
->Signed-off-by: Russell Currey <ruscur@russell.cc>
->---
-
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On 08/01/2016 02:02 AM, Arnd Bergmann wrote:=0A=
+> On Sunday, July 31, 2016 4:48:44 PM CEST Arvind Yadav wrote:=0A=
+>> IS_ERR_VALUE() assumes that parameter is an unsigned long.=0A=
+>> It can not be used to check if 'unsigned int' is passed insted.=0A=
+>> Which tends to reflect an error.=0A=
+>>=0A=
+>> In 64bit architectures sizeof (int) =3D=3D 4 && sizeof (long) =3D=3D 8.=
+=0A=
+>> IS_ERR_VALUE(x) is ((x) >=3D (unsigned long)-4095).=0A=
+>>=0A=
+>> IS_ERR_VALUE() of 'unsigned int' is always false because the 32bit=0A=
+>> value is zero extended to 64 bits.=0A=
+>>=0A=
+>> Value of (unsigned int)-4095 is always less than value of=0A=
+>> (unsigned long)-4095.=0A=
+>>=0A=
+>> Now We are taking only first 32 bit for error checking rest of the 32 bi=
+t=0A=
+>> we ignore such that we get appropriate comparison on 64bit system as wel=
+l.=0A=
+> =0A=
+> This is completely wrong: if you have a valid 64-bit pointer like=0A=
+> 0x00001234ffffff00, this will be interpreted as an error now.=0A=
+> =0A=
+>> First 32bit of Value of (unsigned int)-4095 and (unsigned long)-4095 wil=
+l=0A=
+>> be equal.=0A=
+>>=0A=
+>> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>=0A=
+>> ---=0A=
+>>  include/linux/err.h | 12 +++++++++++-=0A=
+>>  1 file changed, 11 insertions(+), 1 deletion(-)=0A=
+>>=0A=
+>> diff --git a/include/linux/err.h b/include/linux/err.h=0A=
+>> index 1e35588..c2a2789 100644=0A=
+>> --- a/include/linux/err.h=0A=
+>> +++ b/include/linux/err.h=0A=
+>> @@ -18,7 +18,17 @@=0A=
+>>  =0A=
+>>  #ifndef __ASSEMBLY__=0A=
+>>  =0A=
+>> -#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >=3D (unsig=
+ned long)-MAX_ERRNO)=0A=
+>> +#define IS_ERR_VALUE(x) unlikely(is_error_check(x))=0A=
+>> +=0A=
+>> +static inline int is_error_check(unsigned long error)=0A=
+> =0A=
+> Please leave the existing macro alone. I think you were looking for=0A=
+> something specific to the return code of qe_muram_alloc() function,=0A=
+> so please add a helper in that subsystem if you need it, not in=0A=
+> the generic header files.=0A=
+=0A=
+qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The=0A=
+problem is certain callers that store the return value in a u32.  Why=0A=
+not just fix those callers to store it in unsigned long (at least until=0A=
+error checking is done)?=0A=
+=0A=
+-Scott=0A=
+=0A=
