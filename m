@@ -1,44 +1,48 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3GHM0nk5zDqWP
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 09:48:14 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u71NiRSx085588
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 19:48:12 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24gnv18h0v-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3GXF70bPzDqQd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 09:59:25 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u71NsE1n090532
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 19:59:23 -0400
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24gr7vm6c5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 19:48:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 19:59:23 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Mon, 1 Aug 2016 20:48:10 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 6BF3F1DC0051
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 19:47:58 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u71Nm60l10224104
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 20:48:06 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u71Nm6V3000322
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 20:48:06 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/9] kexec_file_load implementation for PowerPC
-Date: Mon, 01 Aug 2016 20:48:05 -0300
-In-Reply-To: <1467908615-18952-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <1467908615-18952-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 2 Aug 2016 09:59:20 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3D1512CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 09:59:18 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u71NxIMi27721946
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 09:59:18 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u71NxHue014035
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 09:59:18 +1000
+Date: Tue, 2 Aug 2016 09:59:16 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org, benh@kernel.crashing.org, ruscur@russell.cc
+Subject: Re: [PATCH] powerpc/powernv: Fix BE PE number to
+ opal_pci_eeh_freeze_clear()
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1470034990-18860-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87k2g0oj8t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1610701.WIqt6fioh4@hactar>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k2g0oj8t.fsf@concordia.ellerman.id.au>
+Message-Id: <20160801235916.GA6355@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,24 +52,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon, Aug 01, 2016 at 08:50:58PM +1000, Michael Ellerman wrote:
+>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+>
+>> The PE number (@frozen_pe_no), filled by opal_pci_next_error() is
+>> in big-endian format. Frozen PE number in CPU-endian should be passed
+>> to opal_pci_eeh_freeze_clear() when clearing the frozen state if the
+>> PE is invalid one.
+>>
+>> This passes CPU-endian PE number to opal_pci_eeh_freeze_clear() and
+>> it should be part of commit <0f36db77643b> ("powerpc/eeh: Fix wrong
+>> printed PE number").
+>
+>Which commit added the broken usage?
+>
+>Looks like 2a485ad7c88d ("powerpc/powernv: Drop PHB operation
+>next_error()") ?
+>
 
-Am Donnerstag, 07 Juli 2016, 13:23:26 schrieb Thiago Jung Bauermann:
-> Note: We are currently discussing whether we need a new syscall so that
-> userspace can provide a custom device tree for the new kernel. Even if
-> that ends up being the way forward, it would affect only patches 7 and 8,
-> and even in those patches a significant part of the code would stay
-> the same. Therefore, it's still important for me to get feedback on
-> this series.
+It is commit 71b540adffd9 ("powerpc/powernv: Don't escalate non-existing frozen PE").
+As commit 0f36db77643b was merged to 4.3 kernel and the changes included in this
+patch should be part of the commit. It's why I marked this with 4.3+
 
-The discussion about how to pass device tree nodes/properties via 
-kexec_file_load seems a bit stuck at the moment. Since I'm targeting kernel 
-4.9 for this patch series, and considering that this code is functional and 
-useful as it is, I'd like to keep the process of upstreaming it in motion.
+>> Cc: stable@vger.kernel.org # v4.3+
+>> Suggested-by: Paul Mackerras <paulus@samba.org>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> index 86544ea..75363d9 100644
+>> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> @@ -1538,7 +1538,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+>>  
+>>  				/* Try best to clear it */
+>>  				opal_pci_eeh_freeze_clear(phb->opal_id,
+>> -					frozen_pe_no,
+>> +					be64_to_cpu(frozen_pe_no),
+>
+>Sparse knew about this:
+>
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41: warning: incorrect type in argument 2 (different base types)
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41:    expected unsigned long long [unsigned] [usertype] pe_number
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41:    got restricted __be64 [addressable] [usertype] frozen_pe_no
+>
 
-Ping?
+Ok, thanks. I never run sparse before and I will learn from you how to run it.
 
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+>And finds some other problems in that file:
+>
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:875:23: warning: constant 0x8000000000000000 is so big it is unsigned long
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1309:21: warning: restricted __be16 degrades to integer
+>
+
+Ok. I will fix it with separate patches.
+
+Thanks,
+Gavin
+
+>cheers
+>
