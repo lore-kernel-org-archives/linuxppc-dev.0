@@ -1,36 +1,38 @@
-Return-Path: <keescook@google.com>
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s38ty05XmzDqRq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 05:45:13 +1000 (AEST)
-Received: by mail-wm0-x231.google.com with SMTP id f65so382730670wmi.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 12:45:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s39cf4MNVzDqS1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 06:17:54 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u71KE1Ov054191
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 16:17:50 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24gre1h7hk-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 16:17:50 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 1 Aug 2016 14:17:49 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CA4FE3E40054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 14:17:46 -0600 (MDT)
+Subject: Re: [PATCH V2 5/8] pseries/drc-info: Search new DRC properties for
+ CPU indexes
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <1259a754-1269-228a-8d63-47ead60df1f4@linux.vnet.ibm.com>
+ <b55b0efe-3c92-8870-bec1-a3a459737e1a@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Date: Mon, 1 Aug 2016 15:17:46 -0500
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <87h9b4oebf.fsf@concordia.ellerman.id.au>
-References: <1465336628-18219-1-git-send-email-keescook@chromium.org>
- <1465336628-18219-4-git-send-email-keescook@chromium.org>
- <87h9b4oebf.fsf@concordia.ellerman.id.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Mon, 1 Aug 2016 12:45:09 -0700
-Message-ID: <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
-Subject: Re: Linker segfault on powerpc when CONFIG_LKDTM=y (was Re:
- [kernel-hardening] [PATCH 3/5] lkdtm: add function for testing .rodata
- section)
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "kernel-hardening@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
- Jiri Slaby <jslaby@suse.cz>, Guenter Roeck <linux@roeck-us.net>,
- LKML <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <b55b0efe-3c92-8870-bec1-a3a459737e1a@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f56bd1b0-6278-fc4c-17aa-820603cd3737@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,37 +42,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 1, 2016 at 5:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Kees Cook <keescook@chromium.org> writes:
->
->> This adds a function that lives in the .rodata section. The section
->> flags are corrected using objcopy since there is no way with gcc to
->> declare section flags in an architecture-agnostic way.
+
+
+On 08/01/2016 10:23 AM, Nathan Fontenot wrote:
+> On 07/27/2016 09:23 AM, Michael Bringmann wrote:
+>> pseries/drc-info: Provide parallel routines to convert between
+>> drc_index and CPU numbers at runtime, using the older device-tree
+>> properties ("ibm,drc-indexes", "ibm,drc-names", "ibm,drc-types"
+>> and "ibm,drc-power-domains"), or the new property "ibm,drc-info".
 >>
->> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 >> ---
->>  drivers/misc/Makefile       |  7 +++++++
->>  drivers/misc/lkdtm.h        |  6 ++++++
->>  drivers/misc/lkdtm_core.c   | 24 +++++++++++++++++-------
->>  drivers/misc/lkdtm_rodata.c | 10 ++++++++++
->>  4 files changed, 40 insertions(+), 7 deletions(-)
->>  create mode 100644 drivers/misc/lkdtm.h
->>  create mode 100644 drivers/misc/lkdtm_rodata.c
->
-> This is blowing up my linker :(
->
->   scripts/link-vmlinux.sh: line 52: 36260 Segmentation fault      (core dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds} ${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
->
-> Haven't had a chance to debug it further.
+>> diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+>> index 9276779..10c4200 100644
+>> --- a/arch/powerpc/platforms/pseries/pseries_energy.c
+>> +++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+>> @@ -35,10 +35,68 @@ static int sysfs_entries;
+>>  
+>>  /* Helper Routines to convert between drc_index to cpu numbers */
+>>  
+>> +void read_one_drc_info(int **info, char **dtype, char **dname,
+>> +			unsigned long int *fdi_p, unsigned long int *nsl_p,
+>> +			unsigned long int *si_p, unsigned long int *ldi_p)
+>> +{
+>> +	char *drc_type, *drc_name, *pc;
+>> +	u32 fdi, nsl, si, ldi;
+>> +
+>> +	fdi = nsl = si = ldi = 0;
+>> +
+>> +	/* Get drc-type:encode-string */
+>> +	pc = (char *)info;
+>> +	drc_type = pc;
+>> +	pc += (strlen(drc_type) + 1);
+>> +
+>> +	/* Get drc-name-prefix:encode-string */
+>> +	drc_name = (char *)pc;
+>> +	pc += (strlen(drc_name) + 1);
+>> +
+>> +	/* Get drc-index-start:encode-int */
+>> +	memcpy(&fdi, pc, 4);
+>> +	fdi = be32_to_cpu(fdi);
+> 
+> Could this be done with just using the drc-start-index directly? Such
+> as fdi = be32_to_cpu(*(u32 *)pc)? Just curious if the memcpy could be avoided.
 
-Argh. Do you want a quick fix for this now? I can add a PPC CONFIG
-blacklist for the rodata check, maybe?
+Will try it again.  I thought that I had a runtime problem, but maybe that
+has gone away.
 
-Also, what version of gcc? I'll see if I can reproduce this with a
-cross compiler...
+> 
+>> +	pc += 4;
+>> +
+>> +	/* Get/skip drc-name-suffix-start:encode-int */
+>> +	pc += 4;
+>> +
+>> +	/* Get number-sequential-elements:encode-int */
+>> +	memcpy(&nsl, pc, 4);
+>> +	nsl = be32_to_cpu(nsl);
+>> +	pc += 4;
+>> +
+>> +	/* Get sequential-increment:encode-int */
+>> +	memcpy(&si, pc, 4);
+>> +	si = be32_to_cpu(si);
+>> +	pc += 4;
+>> +
+>> +	/* Get/skip drc-power-domain:encode-int */
+>> +	pc += 4;
+>> +
+>> +	/* Should now know end of current entry */
+>> +	ldi = fdi + ((nsl-1)*si);
+>> +
+>> +	(*info) = (int *)pc;
+>> +
+>> +	if (dtype)
+>> +		*dtype = drc_type;
+>> +	if (dname)
+>> +		*dname = drc_name;
+>> +	if (fdi_p)
+>> +		*fdi_p = fdi;
+>> +	if (nsl_p)
+>> +		*nsl_p = nsl;
+>> +	if (si_p)
+>> +		*si_p = si;
+>> +	if (ldi_p)
+>> +		*ldi_p = ldi;
+>> +}
+>> +EXPORT_SYMBOL(read_one_drc_info);
+>> +
+>>  static u32 cpu_to_drc_index(int cpu)
+>>  {
+>>  	struct device_node *dn = NULL;
+>> -	const int *indexes;
+>>  	int i;
+>>  	int rc = 1;
+>>  	u32 ret = 0;
+>> @@ -46,18 +104,54 @@ static u32 cpu_to_drc_index(int cpu)
+>>  	dn = of_find_node_by_path("/cpus");
+>>  	if (dn == NULL)
+>>  		goto err;
+>> -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+>> -	if (indexes == NULL)
+>> -		goto err_of_node_put;
+>> +
+>>  	/* Convert logical cpu number to core number */
+>>  	i = cpu_core_index_of_thread(cpu);
+>> -	/*
+>> -	 * The first element indexes[0] is the number of drc_indexes
+>> -	 * returned in the list.  Hence i+1 will get the drc_index
+>> -	 * corresponding to core number i.
+>> -	 */
+>> -	WARN_ON(i > indexes[0]);
+>> -	ret = indexes[i + 1];
+>> +
+>> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+>> +		int *info = (int *)4;
+> 
+> Why initialize info to this?
 
--Kees
+The GCC compiler kept giving me fatal errors when this variable was not
+initialized.  I chose the value from "out of the hat".  Will retry again.
+
+> 
+>> +		unsigned long int num_set_entries, j, iw = i, fdi = 0;
+>> +		unsigned long int ldi = 0, nsl = 0, si = 0;
+>> +		char *dtype;
+>> +		char *dname;
+>> +
+>> +		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
+>> +		if (info == NULL)
+>> +			goto err_of_node_put;
+>> +
+>> +		num_set_entries = be32_to_cpu(*info++);
+>> +
+>> +		for (j = 0; j < num_set_entries; j++) {
+>> +
+>> +			read_one_drc_info(&info, &dtype, &dname, &fdi,
+>> +					&nsl, &si, &ldi);
+>> +			if (strcmp(dtype, "CPU"))
+>> +				goto err;
+>> +
+>> +			if (iw < ldi)
+>> +				break;
+>> +
+>> +			WARN_ON(((iw-fdi)%si) != 0);
+>> +		}
+>> +		WARN_ON((nsl == 0) | (si == 0));
+>> +
+>> +		ret = ldi + (iw*si);
+> 
+> I think some variable names other than the very short ones used would make
+> this code a lot easier to understand, otherwise it is not very clear exactly
+> what is being calculated here.
+
+Okay.
+
+> 
+> -Nathan
+> 
+>> +	} else {
+>> +		const int *indexes;
+>> +
+>> +		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+>> +		if (indexes == NULL)
+>> +			goto err_of_node_put;
+>> +
+>> +		/*
+>> +		 * The first element indexes[0] is the number of drc_indexes
+>> +		 * returned in the list.  Hence i+1 will get the drc_index
+>> +		 * corresponding to core number i.
+>> +		 */
+>> +		WARN_ON(i > indexes[0]);
+>> +		ret = indexes[i + 1];
+>> +	}
+>> +
+>>  	rc = 0;
+>>  
+>>  err_of_node_put:
+>> @@ -78,21 +172,51 @@ static int drc_index_to_cpu(u32 drc_index)
+>>  	dn = of_find_node_by_path("/cpus");
+>>  	if (dn == NULL)
+>>  		goto err;
+>> -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+>> -	if (indexes == NULL)
+>> -		goto err_of_node_put;
+>> -	/*
+>> -	 * First element in the array is the number of drc_indexes
+>> -	 * returned.  Search through the list to find the matching
+>> -	 * drc_index and get the core number
+>> -	 */
+>> -	for (i = 0; i < indexes[0]; i++) {
+>> -		if (indexes[i + 1] == drc_index)
+>> +
+>> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+>> +		int *info = (int *)dn;
+>> +		unsigned long int num_set_entries, j, ret;
+>> +		unsigned long int fdi = 0, ldi = 0, nsl = 0, si = 0;
+>> +		char *dtype, *dname;
+>> +
+>> +		info = (int *)of_get_property(dn, "ibm,drc-info", NULL);
+>> +		if (info == NULL)
+>> +			goto err_of_node_put;
+>> +
+>> +		num_set_entries = be32_to_cpu(*info++);
+>> +
+>> +		for (j = 0; j < num_set_entries; j++) {
+>> +			read_one_drc_info(&info, &dtype, &dname, &fdi,
+>> +					&nsl, &si, &ldi);
+>> +			if (strcmp(dtype, "CPU"))
+>> +				goto err;
+>> +
+>> +			WARN_ON(drc_index < fdi);
+>> +			if (drc_index > ldi)
+>> +				continue;
+>> +
+>> +			WARN_ON(((drc_index-fdi)%si) != 0);
+>> +
+>> +			ret = ((drc_index-fdi)/si);
+>>  			break;
+>> +		}
+>> +	} else {
+>> +		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+>> +		if (indexes == NULL)
+>> +			goto err_of_node_put;
+>> +		/*
+>> +		 * First element in the array is the number of drc_indexes
+>> +		 * returned.  Search through the list to find the matching
+>> +		 * drc_index and get the core number
+>> +		 */
+>> +		for (i = 0; i < indexes[0]; i++) {
+>> +			if (indexes[i + 1] == drc_index)
+>> +				break;
+>> +		}
+>> +		/* Convert core number to logical cpu number */
+>> +		cpu = cpu_first_thread_of_core(i);
+>> +		rc = 0;
+>>  	}
+>> -	/* Convert core number to logical cpu number */
+>> -	cpu = cpu_first_thread_of_core(i);
+>> -	rc = 0;
+>>  
+>>  err_of_node_put:
+>>  	of_node_put(dn);
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
 
 -- 
-Kees Cook
-Chrome OS & Brillo Security
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
