@@ -1,48 +1,36 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3GXF70bPzDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 09:59:25 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3HTp1S8WzDqZ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 10:42:21 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u71NsE1n090532
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 19:59:23 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24gr7vm6c5-1
+ u720Yqh5060238
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 20:42:20 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24grrx7rhj-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 19:59:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 20:42:19 -0400
 Received: from localhost
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 2 Aug 2016 09:59:20 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3D1512CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 09:59:18 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u71NxIMi27721946
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 09:59:18 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u71NxHue014035
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 09:59:18 +1000
-Date: Tue, 2 Aug 2016 09:59:16 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org, benh@kernel.crashing.org, ruscur@russell.cc
-Subject: Re: [PATCH] powerpc/powernv: Fix BE PE number to
- opal_pci_eeh_freeze_clear()
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1470034990-18860-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <87k2g0oj8t.fsf@concordia.ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 1 Aug 2016 18:42:19 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5A4CF19D801C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2016 18:41:50 -0600 (MDT)
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH V3 1/8] powerpc/firmware: Add definitions for new firmware
+ features.
+Date: Mon, 1 Aug 2016 19:42:15 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87k2g0oj8t.fsf@concordia.ellerman.id.au>
-Message-Id: <20160801235916.GA6355@gwshan>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8e1bef10-1514-d309-a994-ca1dd4ea49b2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,65 +40,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 01, 2016 at 08:50:58PM +1000, Michael Ellerman wrote:
->Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
->
->> The PE number (@frozen_pe_no), filled by opal_pci_next_error() is
->> in big-endian format. Frozen PE number in CPU-endian should be passed
->> to opal_pci_eeh_freeze_clear() when clearing the frozen state if the
->> PE is invalid one.
->>
->> This passes CPU-endian PE number to opal_pci_eeh_freeze_clear() and
->> it should be part of commit <0f36db77643b> ("powerpc/eeh: Fix wrong
->> printed PE number").
->
->Which commit added the broken usage?
->
->Looks like 2a485ad7c88d ("powerpc/powernv: Drop PHB operation
->next_error()") ?
->
+Firmware Features: Define new bit flags representing the presence of
+new device tree properties "ibm,drc-info", and "ibm,dynamic-memory-v2".
+These flags are used to tell the front end processor when the Linux
+kernel supports the new properties, and by the front end processor to
+tell the Linux kernel that the new properties are present in the devie
+tree.
 
-It is commit 71b540adffd9 ("powerpc/powernv: Don't escalate non-existing frozen PE").
-As commit 0f36db77643b was merged to 4.3 kernel and the changes included in this
-patch should be part of the commit. It's why I marked this with 4.3+
-
->> Cc: stable@vger.kernel.org # v4.3+
->> Suggested-by: Paul Mackerras <paulus@samba.org>
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->> index 86544ea..75363d9 100644
->> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->> @@ -1538,7 +1538,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
->>  
->>  				/* Try best to clear it */
->>  				opal_pci_eeh_freeze_clear(phb->opal_id,
->> -					frozen_pe_no,
->> +					be64_to_cpu(frozen_pe_no),
->
->Sparse knew about this:
->
->  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41: warning: incorrect type in argument 2 (different base types)
->  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41:    expected unsigned long long [unsigned] [usertype] pe_number
->  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41:    got restricted __be64 [addressable] [usertype] frozen_pe_no
->
-
-Ok, thanks. I never run sparse before and I will learn from you how to run it.
-
->And finds some other problems in that file:
->
->  arch/powerpc/platforms/powernv/eeh-powernv.c:875:23: warning: constant 0x8000000000000000 is so big it is unsigned long
->  arch/powerpc/platforms/powernv/eeh-powernv.c:1309:21: warning: restricted __be16 degrades to integer
->
-
-Ok. I will fix it with separate patches.
-
-Thanks,
-Gavin
-
->cheers
->
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+---
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index b062924..a9d66d5 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -51,6 +51,8 @@
+ #define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000080000000)
+ #define FW_FEATURE_TYPE1_AFFINITY ASM_CONST(0x0000000100000000)
+ #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
++#define FW_FEATURE_DYN_MEM_V2	ASM_CONST(0x0000000400000000)
++#define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -66,7 +68,8 @@ enum {
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+ 		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+-		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN,
++		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
++		FW_FEATURE_DYN_MEM_V2 | FW_FEATURE_DRC_INFO,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+index 7f436ba..b9a1534 100644
+--- a/arch/powerpc/include/asm/prom.h
++++ b/arch/powerpc/include/asm/prom.h
+@@ -155,6 +203,8 @@ struct of_drconf_cell {
+ #define OV5_PFO_HW_842		0x0E40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x0E20	/* PFO Encryption Accelerator */
+ #define OV5_SUB_PROCESSORS	0x0F01	/* 1,2,or 4 Sub-Processors supported */
++#define OV5_DYN_MEM_V2		0x1680	/* Redef Prop Structures: dyn-mem-v2 */
++#define OV5_DRC_INFO		0x1640	/* Redef Prop Structures: drc-info   */
+ 
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 8c80588..00243ee 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -111,6 +111,8 @@ static __initdata struct vec5_fw_feature
+ vec5_fw_features_table[] = {
+ 	{FW_FEATURE_TYPE1_AFFINITY,	OV5_TYPE1_AFFINITY},
+ 	{FW_FEATURE_PRRN,		OV5_PRRN},
++	{FW_FEATURE_DYN_MEM_V2,		OV5_DYN_MEM_V2},
++	{FW_FEATURE_DRC_INFO,		OV5_DRC_INFO},
+ };
+ 
+ void __init fw_vec5_feature_init(const char *vec5, unsigned long len)
