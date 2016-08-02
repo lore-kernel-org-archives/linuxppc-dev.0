@@ -1,33 +1,38 @@
-Return-Path: <mcgrof@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3nLG55TGzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 06:07:33 +1000 (AEST)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 06B8B20502
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 20:07:31 +0000 (UTC)
-Received: from mail-yw0-f173.google.com (mail-yw0-f173.google.com
- [209.85.161.173])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2A03B204DE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 20:07:30 +0000 (UTC)
-Received: by mail-yw0-f173.google.com with SMTP id r9so208697092ywg.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 13:07:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3ncf0Sg3zDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 06:20:01 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u72KEWJU025043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 16:19:59 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24k0bmn0s6-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 16:19:59 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 2 Aug 2016 16:19:58 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C838F38C8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 16:19:55 -0400 (EDT)
+Subject: Re: [PATCH v4 1/2] powerpc/pseries: Implement indexed-count hotplug
+ memory add
+To: Sahil Mehta <smehta@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <437ead25-8938-a0e8-c7cf-8ead45e5ef3b@linux.vnet.ibm.com>
+ <c8065de6-0f59-44a1-0e18-fc2dbb115839@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 2 Aug 2016 15:19:53 -0500
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Date: Tue, 2 Aug 2016 13:07:09 -0700
-Message-ID: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
-Subject: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
- next-20160729 build failures
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-next@vger.kernel.org, Fengguang Wu <fengguang.wu@intel.com>,
- Guenter Roeck <linux@roeck-us.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <c8065de6-0f59-44a1-0e18-fc2dbb115839@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <74a59ac8-7e81-694c-2b49-366518e58e7c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,61 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Are linux-next builds being tested for powerpc with allyesconfig and
-allmodconfig ? I have some changes I'm making and while debugging my
-build issues I decided to give a clean build a shot and see linux-next
-next-20160729 up to next-20160729 all have build failures without my
-changes. I get:
+On 08/01/2016 12:21 PM, Sahil Mehta wrote:
+> Indexed-count add for memory hotplug guarantees that a contiguous block
+> of <count> lmbs beginning at a specified <index> will be assigned (NOT
+> that <count> lmbs will be added). Because of Qemu's per-DIMM memory
+> management, the addition of a contiguous block of memory currently
+> requires a series of individual calls. Indexed-count add reduces
+> this series into a single call.
+> 
+> Signed-off-by: Sahil Mehta <smehta@linux.vnet.ibm.com>
 
-/opt/gcc-4.9.0-nolibc/powerpc64-linux/bin/powerpc64-linux-ld:
-drivers/built-in.o: .opd is not a regular array of opd entries
-  MODPOST vmlinux.o
-  GEN     .version
-  CHK     include/generated/compile.h
-  UPD     include/generated/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-/opt/gcc-4.9.0-nolibc/powerpc64-linux/bin/powerpc64-linux-ld:
-drivers/built-in.o: .opd is not a regular array of opd entries
-drivers/built-in.o: In function `.ipw2100_up':
-ipw2100.c:(.text+0x1ff9c90): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.round_jiffies_relative' defined
-in .text section in kernel/built-in.o
-drivers/built-in.o: In function `.ipw2100_reset_adapter':
-ipw2100.c:(.text+0x1ffa500): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `._raw_spin_lock_irqsave' defined
-in .spinlock.text section in kernel/built-in.o
-drivers/built-in.o: In function `.ipw2100_irq_tasklet':
-ipw2100.c:(.text+0x1ffa7cc): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `._raw_spin_lock_irqsave' defined
-in .spinlock.text section in kernel/built-in.o
-ipw2100.c:(.text+0x1ffb6c8): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.printk' defined in
-.text.unlikely section in kernel/built-in.o
-ipw2100.c:(.text+0x1ffb6d8): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.printk' defined in
-.text.unlikely section in kernel/built-in.o
-ipw2100.c:(.text+0x1ffb740): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.printk' defined in
-.text.unlikely section in kernel/built-in.o
-ipw2100.c:(.text+0x1ffb750): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.printk' defined in
-.text.unlikely section in kernel/built-in.o
-ipw2100.c:(.text+0x1ffb7ec): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.debug_dma_unmap_page' defined in
-.text section in lib/built-in.o
-ipw2100.c:(.text+0x1ffb88c): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.__dev_kfree_skb_any' defined in
-.text section in net/built-in.o
-ipw2100.c:(.text+0x1ffb8b8): relocation truncated to fit:
-R_PPC64_REL24 (stub) against symbol `.printk' defined in
-.text.unlikely section in kernel/built-in.o
-ipw2100.c:(.text+0x1ffb8f4): additional relocation overflows omitted
-from the output
-scripts/link-vmlinux.sh: line 52: 14580 Segmentation fault      (core
-dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds}
-${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN}
---end-group ${1}
-make: *** [Makefile:952: vmlinux] Error 139
+Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
-  Luis
+> ---
+> v2:	-remove potential memory leak when parsing command
+> 	-use u32s drc_index and count instead of u32 ic[]
+> 	 in dlpar_memory
+> v3:	-add logic to handle invalid drc_index input
+> 	-update indexed-count trigger to follow naming convention
+> 	-update dlpar_memory to follow kernel if-else style
+> v4: 	-add logic to handle kstrdup failure
+> 	-add logic to handle invalid command format
+> 
+>  arch/powerpc/include/asm/rtas.h                 |    2
+>  arch/powerpc/platforms/pseries/dlpar.c          |   46 +++++++++-
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |  110 +++++++++++++++++++++--
+>  3 files changed, 146 insertions(+), 12 deletions(-)
