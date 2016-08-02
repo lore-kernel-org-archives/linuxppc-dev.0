@@ -1,22 +1,22 @@
 Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3MyD3K12zDqpQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:03:48 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id hh10so11124778pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 21:03:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3MyK6HbBzDqgf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:03:53 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id i6so11583557pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 21:03:53 -0700 (PDT)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
  paulus@samba.org, benh@kernel.crashing.org, pbonzini@redhat.com,
  agraf@suse.com, rkrcmar@redhat.com, dmatlack@google.com,
  borntraeger@de.ibm.com, kvm@vger.kernel.org
-Subject: [RESEND] [PATCH V5 3/5] kvm/ppc/book3s_hv: Implement halt polling in
- the kvm_hv kernel module
-Date: Tue,  2 Aug 2016 14:03:21 +1000
-Message-Id: <1470110603-20695-3-git-send-email-sjitindarsingh@gmail.com>
+Subject: [RESEND] [PATCH V5 4/5] kvm/stats: Add provisioning for ulong vm
+ stats and u64 vcpu stats
+Date: Tue,  2 Aug 2016 14:03:22 +1000
+Message-Id: <1470110603-20695-4-git-send-email-sjitindarsingh@gmail.com>
 In-Reply-To: <1470110603-20695-1-git-send-email-sjitindarsingh@gmail.com>
 References: <1470110603-20695-1-git-send-email-sjitindarsingh@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,264 +28,485 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces new halt polling functionality into the kvm_hv kernel
-module. When a vcore is idle it will poll for some period of time before
-scheduling itself out.
+vms and vcpus have statistics associated with them which can be viewed
+within the debugfs. Currently it is assumed within the vcpu_stat_get() and
+vm_stat_get() functions that all of these statistics are represented as
+u32s, however the next patch adds some u64 vcpu statistics.
 
-When all of the runnable vcpus on a vcore have ceded (and thus the vcore is
-idle) we schedule ourselves out to allow something else to run. In the
-event that we need to wake up very quickly (for example an interrupt
-arrives), we are required to wait until we get scheduled again.
-
-Implement halt polling so that when a vcore is idle, and before scheduling
-ourselves, we poll for vcpus in the runnable_threads list which have
-pending exceptions or which leave the ceded state. If we poll successfully
-then we can get back into the guest very quickly without ever scheduling
-ourselves, otherwise we schedule ourselves out as before.
-
-There exists generic halt_polling code in virt/kvm_main.c, however on
-powerpc the polling conditions are different to the generic case. It would
-be nice if we could just implement an arch specific kvm_check_block()
-function, but there is still other arch specific things which need to be
-done for kvm_hv (for example manipulating vcore states) which means that a
-separate implementation is the best option.
-
-Testing of this patch with a TCP round robin test between two guests with
-virtio network interfaces has found a decrease in round trip time of ~15us
-on average. A performance gain is only seen when going out of and
-back into the guest often and quickly, otherwise there is no net benefit
-from the polling. The polling interval is adjusted such that when we are
-often scheduled out for long periods of time it is reduced, and when we
-often poll successfully it is increased. The rate at which the polling
-interval increases or decreases, and the maximum polling interval, can
-be set through module parameters.
-
-Based on the implementation in the generic kvm module by Wanpeng Li and
-Paolo Bonzini, and on direction from Paul Mackerras.
+Change all vcpu statistics to u64 and modify vcpu_stat_get() accordingly.
+Since vcpu statistics are per vcpu, they will only be updated by a single
+vcpu at a time so this shouldn't present a problem on 32-bit machines
+which can't atomically increment 64-bit numbers. However vm statistics
+could potentially be updated by multiple vcpus from that vm at a time.
+To avoid the overhead of atomics make all vm statistics ulong such that
+they are 64-bit on 64-bit systems where they can be atomically incremented
+and are 32-bit on 32-bit systems which may not be able to atomically
+increment 64-bit numbers. Modify vm_stat_get() to expect ulongs.
 
 Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Reviewed-by: David Matlack <dmatlack@google.com>
+Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
 ---
 Change Log:
 
-V4 -> V5:
-	- Add single_task_running() check to polling loop
+V2 -> V3:
+	- Instead of implementing separate u32 and u64 functions keep the
+	  generic functions and modify them to expect u64s. Thus update all
+	  vm and vcpu statistics to u64s accordingly.
+V3 -> V4:
+	- Change vm_stats from u64 to ulong
 ---
- arch/powerpc/include/asm/kvm_book3s.h |   1 +
- arch/powerpc/include/asm/kvm_host.h   |   1 +
- arch/powerpc/kvm/book3s_hv.c          | 116 ++++++++++++++++++++++++++++++----
- arch/powerpc/kvm/trace_hv.h           |  22 +++++++
- 4 files changed, 126 insertions(+), 14 deletions(-)
+ arch/arm/include/asm/kvm_host.h     |  12 ++--
+ arch/arm64/include/asm/kvm_host.h   |  12 ++--
+ arch/mips/include/asm/kvm_host.h    |  46 ++++++-------
+ arch/powerpc/include/asm/kvm_host.h |  60 ++++++++---------
+ arch/s390/include/asm/kvm_host.h    | 128 ++++++++++++++++++------------------
+ arch/x86/include/asm/kvm_host.h     |  72 ++++++++++----------
+ virt/kvm/kvm_main.c                 |   4 +-
+ 7 files changed, 167 insertions(+), 167 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 151f817..c261f52 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -102,6 +102,7 @@ struct kvmppc_vcore {
- 	ulong pcr;
- 	ulong dpdes;		/* doorbell state (POWER8) */
- 	ulong conferring_threads;
-+	unsigned int halt_poll_ns;
+diff --git a/arch/arm/include/asm/kvm_host.h b/arch/arm/include/asm/kvm_host.h
+index 96387d4..c8e55b3b 100644
+--- a/arch/arm/include/asm/kvm_host.h
++++ b/arch/arm/include/asm/kvm_host.h
+@@ -183,15 +183,15 @@ struct kvm_vcpu_arch {
  };
  
- struct kvmppc_vcpu_book3s {
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 02d06e9..610f393 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -294,6 +294,7 @@ struct kvm_arch {
- #define VCORE_SLEEPING	3
- #define VCORE_RUNNING	4
- #define VCORE_EXITING	5
-+#define VCORE_POLLING	6
+ struct kvm_vm_stat {
+-	u32 remote_tlb_flush;
++	ulong remote_tlb_flush;
+ };
  
- /*
-  * Struct used to manage memory for a virtual processor area
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 3bcf9e6..8ba8279 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -94,6 +94,23 @@ module_param_cb(h_ipi_redirect, &module_param_ops, &h_ipi_redirect,
- MODULE_PARM_DESC(h_ipi_redirect, "Redirect H_IPI wakeup to a free host core");
+ struct kvm_vcpu_stat {
+-	u32 halt_successful_poll;
+-	u32 halt_attempted_poll;
+-	u32 halt_poll_invalid;
+-	u32 halt_wakeup;
+-	u32 hvc_exit_stat;
++	u64 halt_successful_poll;
++	u64 halt_attempted_poll;
++	u64 halt_poll_invalid;
++	u64 halt_wakeup;
++	u64 hvc_exit_stat;
+ 	u64 wfe_exit_stat;
+ 	u64 wfi_exit_stat;
+ 	u64 mmio_exit_user;
+diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+index 49095fc..b14c8bc 100644
+--- a/arch/arm64/include/asm/kvm_host.h
++++ b/arch/arm64/include/asm/kvm_host.h
+@@ -291,15 +291,15 @@ struct kvm_vcpu_arch {
  #endif
  
-+/* Maximum halt poll interval defaults to KVM_HALT_POLL_NS_DEFAULT */
-+static unsigned int halt_poll_max_ns = KVM_HALT_POLL_NS_DEFAULT;
-+module_param(halt_poll_max_ns, uint, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(halt_poll_max_ns, "Maximum halt poll time in ns");
-+
-+/* Factor by which the vcore halt poll interval is grown, default is to double
-+ */
-+static unsigned int halt_poll_ns_grow = 2;
-+module_param(halt_poll_ns_grow, int, S_IRUGO);
-+MODULE_PARM_DESC(halt_poll_ns_grow, "Factor halt poll time is grown by");
-+
-+/* Factor by which the vcore halt poll interval is shrunk, default is to reset
-+ */
-+static unsigned int halt_poll_ns_shrink;
-+module_param(halt_poll_ns_shrink, int, S_IRUGO);
-+MODULE_PARM_DESC(halt_poll_ns_shrink, "Factor halt poll time is shrunk by");
-+
- static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
- static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
+ struct kvm_vm_stat {
+-	u32 remote_tlb_flush;
++	ulong remote_tlb_flush;
+ };
  
-@@ -2620,32 +2637,82 @@ static void kvmppc_wait_for_exec(struct kvmppc_vcore *vc,
- 	finish_wait(&vcpu->arch.cpu_run, &wait);
- }
+ struct kvm_vcpu_stat {
+-	u32 halt_successful_poll;
+-	u32 halt_attempted_poll;
+-	u32 halt_poll_invalid;
+-	u32 halt_wakeup;
+-	u32 hvc_exit_stat;
++	u64 halt_successful_poll;
++	u64 halt_attempted_poll;
++	u64 halt_poll_invalid;
++	u64 halt_wakeup;
++	u64 hvc_exit_stat;
+ 	u64 wfe_exit_stat;
+ 	u64 wfi_exit_stat;
+ 	u64 mmio_exit_user;
+diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+index 36a391d..9704888 100644
+--- a/arch/mips/include/asm/kvm_host.h
++++ b/arch/mips/include/asm/kvm_host.h
+@@ -98,32 +98,32 @@ extern void (*kvm_mips_release_pfn_clean)(kvm_pfn_t pfn);
+ extern bool (*kvm_mips_is_error_pfn)(kvm_pfn_t pfn);
  
-+static void grow_halt_poll_ns(struct kvmppc_vcore *vc)
-+{
-+	/* 10us base */
-+	if (vc->halt_poll_ns == 0 && halt_poll_ns_grow)
-+		vc->halt_poll_ns = 10000;
-+	else
-+		vc->halt_poll_ns *= halt_poll_ns_grow;
+ struct kvm_vm_stat {
+-	u32 remote_tlb_flush;
++	ulong remote_tlb_flush;
+ };
+ 
+ struct kvm_vcpu_stat {
+-	u32 wait_exits;
+-	u32 cache_exits;
+-	u32 signal_exits;
+-	u32 int_exits;
+-	u32 cop_unusable_exits;
+-	u32 tlbmod_exits;
+-	u32 tlbmiss_ld_exits;
+-	u32 tlbmiss_st_exits;
+-	u32 addrerr_st_exits;
+-	u32 addrerr_ld_exits;
+-	u32 syscall_exits;
+-	u32 resvd_inst_exits;
+-	u32 break_inst_exits;
+-	u32 trap_inst_exits;
+-	u32 msa_fpe_exits;
+-	u32 fpe_exits;
+-	u32 msa_disabled_exits;
+-	u32 flush_dcache_exits;
+-	u32 halt_successful_poll;
+-	u32 halt_attempted_poll;
+-	u32 halt_poll_invalid;
+-	u32 halt_wakeup;
++	u64 wait_exits;
++	u64 cache_exits;
++	u64 signal_exits;
++	u64 int_exits;
++	u64 cop_unusable_exits;
++	u64 tlbmod_exits;
++	u64 tlbmiss_ld_exits;
++	u64 tlbmiss_st_exits;
++	u64 addrerr_st_exits;
++	u64 addrerr_ld_exits;
++	u64 syscall_exits;
++	u64 resvd_inst_exits;
++	u64 break_inst_exits;
++	u64 trap_inst_exits;
++	u64 msa_fpe_exits;
++	u64 fpe_exits;
++	u64 msa_disabled_exits;
++	u64 flush_dcache_exits;
++	u64 halt_successful_poll;
++	u64 halt_attempted_poll;
++	u64 halt_poll_invalid;
++	u64 halt_wakeup;
+ };
+ 
+ enum kvm_mips_exit_types {
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 610f393..f6304c5 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -95,41 +95,41 @@ struct kvmppc_vcpu_book3s;
+ struct kvmppc_book3s_shadow_vcpu;
+ 
+ struct kvm_vm_stat {
+-	u32 remote_tlb_flush;
++	ulong remote_tlb_flush;
+ };
+ 
+ struct kvm_vcpu_stat {
+-	u32 sum_exits;
+-	u32 mmio_exits;
+-	u32 signal_exits;
+-	u32 light_exits;
++	u64 sum_exits;
++	u64 mmio_exits;
++	u64 signal_exits;
++	u64 light_exits;
+ 	/* Account for special types of light exits: */
+-	u32 itlb_real_miss_exits;
+-	u32 itlb_virt_miss_exits;
+-	u32 dtlb_real_miss_exits;
+-	u32 dtlb_virt_miss_exits;
+-	u32 syscall_exits;
+-	u32 isi_exits;
+-	u32 dsi_exits;
+-	u32 emulated_inst_exits;
+-	u32 dec_exits;
+-	u32 ext_intr_exits;
+-	u32 halt_successful_poll;
+-	u32 halt_attempted_poll;
+-	u32 halt_poll_invalid;
+-	u32 halt_wakeup;
+-	u32 dbell_exits;
+-	u32 gdbell_exits;
+-	u32 ld;
+-	u32 st;
++	u64 itlb_real_miss_exits;
++	u64 itlb_virt_miss_exits;
++	u64 dtlb_real_miss_exits;
++	u64 dtlb_virt_miss_exits;
++	u64 syscall_exits;
++	u64 isi_exits;
++	u64 dsi_exits;
++	u64 emulated_inst_exits;
++	u64 dec_exits;
++	u64 ext_intr_exits;
++	u64 halt_successful_poll;
++	u64 halt_attempted_poll;
++	u64 halt_poll_invalid;
++	u64 halt_wakeup;
++	u64 dbell_exits;
++	u64 gdbell_exits;
++	u64 ld;
++	u64 st;
+ #ifdef CONFIG_PPC_BOOK3S
+-	u32 pf_storage;
+-	u32 pf_instruc;
+-	u32 sp_storage;
+-	u32 sp_instruc;
+-	u32 queue_intr;
+-	u32 ld_slow;
+-	u32 st_slow;
++	u64 pf_storage;
++	u64 pf_instruc;
++	u64 sp_storage;
++	u64 sp_instruc;
++	u64 queue_intr;
++	u64 ld_slow;
++	u64 st_slow;
+ #endif
+ };
+ 
+diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
+index ac82e8e..bdacd9c 100644
+--- a/arch/s390/include/asm/kvm_host.h
++++ b/arch/s390/include/asm/kvm_host.h
+@@ -238,69 +238,69 @@ struct sie_page {
+ } __packed;
+ 
+ struct kvm_vcpu_stat {
+-	u32 exit_userspace;
+-	u32 exit_null;
+-	u32 exit_external_request;
+-	u32 exit_external_interrupt;
+-	u32 exit_stop_request;
+-	u32 exit_validity;
+-	u32 exit_instruction;
+-	u32 exit_pei;
+-	u32 halt_successful_poll;
+-	u32 halt_attempted_poll;
+-	u32 halt_poll_invalid;
+-	u32 halt_wakeup;
+-	u32 instruction_lctl;
+-	u32 instruction_lctlg;
+-	u32 instruction_stctl;
+-	u32 instruction_stctg;
+-	u32 exit_program_interruption;
+-	u32 exit_instr_and_program;
+-	u32 deliver_external_call;
+-	u32 deliver_emergency_signal;
+-	u32 deliver_service_signal;
+-	u32 deliver_virtio_interrupt;
+-	u32 deliver_stop_signal;
+-	u32 deliver_prefix_signal;
+-	u32 deliver_restart_signal;
+-	u32 deliver_program_int;
+-	u32 deliver_io_int;
+-	u32 exit_wait_state;
+-	u32 instruction_pfmf;
+-	u32 instruction_stidp;
+-	u32 instruction_spx;
+-	u32 instruction_stpx;
+-	u32 instruction_stap;
+-	u32 instruction_storage_key;
+-	u32 instruction_ipte_interlock;
+-	u32 instruction_stsch;
+-	u32 instruction_chsc;
+-	u32 instruction_stsi;
+-	u32 instruction_stfl;
+-	u32 instruction_tprot;
+-	u32 instruction_essa;
+-	u32 instruction_sigp_sense;
+-	u32 instruction_sigp_sense_running;
+-	u32 instruction_sigp_external_call;
+-	u32 instruction_sigp_emergency;
+-	u32 instruction_sigp_cond_emergency;
+-	u32 instruction_sigp_start;
+-	u32 instruction_sigp_stop;
+-	u32 instruction_sigp_stop_store_status;
+-	u32 instruction_sigp_store_status;
+-	u32 instruction_sigp_store_adtl_status;
+-	u32 instruction_sigp_arch;
+-	u32 instruction_sigp_prefix;
+-	u32 instruction_sigp_restart;
+-	u32 instruction_sigp_init_cpu_reset;
+-	u32 instruction_sigp_cpu_reset;
+-	u32 instruction_sigp_unknown;
+-	u32 diagnose_10;
+-	u32 diagnose_44;
+-	u32 diagnose_9c;
+-	u32 diagnose_258;
+-	u32 diagnose_308;
+-	u32 diagnose_500;
++	u64 exit_userspace;
++	u64 exit_null;
++	u64 exit_external_request;
++	u64 exit_external_interrupt;
++	u64 exit_stop_request;
++	u64 exit_validity;
++	u64 exit_instruction;
++	u64 exit_pei;
++	u64 halt_successful_poll;
++	u64 halt_attempted_poll;
++	u64 halt_poll_invalid;
++	u64 halt_wakeup;
++	u64 instruction_lctl;
++	u64 instruction_lctlg;
++	u64 instruction_stctl;
++	u64 instruction_stctg;
++	u64 exit_program_interruption;
++	u64 exit_instr_and_program;
++	u64 deliver_external_call;
++	u64 deliver_emergency_signal;
++	u64 deliver_service_signal;
++	u64 deliver_virtio_interrupt;
++	u64 deliver_stop_signal;
++	u64 deliver_prefix_signal;
++	u64 deliver_restart_signal;
++	u64 deliver_program_int;
++	u64 deliver_io_int;
++	u64 exit_wait_state;
++	u64 instruction_pfmf;
++	u64 instruction_stidp;
++	u64 instruction_spx;
++	u64 instruction_stpx;
++	u64 instruction_stap;
++	u64 instruction_storage_key;
++	u64 instruction_ipte_interlock;
++	u64 instruction_stsch;
++	u64 instruction_chsc;
++	u64 instruction_stsi;
++	u64 instruction_stfl;
++	u64 instruction_tprot;
++	u64 instruction_essa;
++	u64 instruction_sigp_sense;
++	u64 instruction_sigp_sense_running;
++	u64 instruction_sigp_external_call;
++	u64 instruction_sigp_emergency;
++	u64 instruction_sigp_cond_emergency;
++	u64 instruction_sigp_start;
++	u64 instruction_sigp_stop;
++	u64 instruction_sigp_stop_store_status;
++	u64 instruction_sigp_store_status;
++	u64 instruction_sigp_store_adtl_status;
++	u64 instruction_sigp_arch;
++	u64 instruction_sigp_prefix;
++	u64 instruction_sigp_restart;
++	u64 instruction_sigp_init_cpu_reset;
++	u64 instruction_sigp_cpu_reset;
++	u64 instruction_sigp_unknown;
++	u64 diagnose_10;
++	u64 diagnose_44;
++	u64 diagnose_9c;
++	u64 diagnose_258;
++	u64 diagnose_308;
++	u64 diagnose_500;
+ };
+ 
+ #define PGM_OPERATION			0x01
+@@ -563,7 +563,7 @@ struct kvm_vcpu_arch {
+ };
+ 
+ struct kvm_vm_stat {
+-	u32 remote_tlb_flush;
++	ulong remote_tlb_flush;
+ };
+ 
+ struct kvm_arch_memory_slot {
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 69e62862..c30462f 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -782,45 +782,45 @@ struct kvm_arch {
+ };
+ 
+ struct kvm_vm_stat {
+-	u32 mmu_shadow_zapped;
+-	u32 mmu_pte_write;
+-	u32 mmu_pte_updated;
+-	u32 mmu_pde_zapped;
+-	u32 mmu_flooded;
+-	u32 mmu_recycled;
+-	u32 mmu_cache_miss;
+-	u32 mmu_unsync;
+-	u32 remote_tlb_flush;
+-	u32 lpages;
++	ulong mmu_shadow_zapped;
++	ulong mmu_pte_write;
++	ulong mmu_pte_updated;
++	ulong mmu_pde_zapped;
++	ulong mmu_flooded;
++	ulong mmu_recycled;
++	ulong mmu_cache_miss;
++	ulong mmu_unsync;
++	ulong remote_tlb_flush;
++	ulong lpages;
+ };
+ 
+ struct kvm_vcpu_stat {
+-	u32 pf_fixed;
+-	u32 pf_guest;
+-	u32 tlb_flush;
+-	u32 invlpg;
+-
+-	u32 exits;
+-	u32 io_exits;
+-	u32 mmio_exits;
+-	u32 signal_exits;
+-	u32 irq_window_exits;
+-	u32 nmi_window_exits;
+-	u32 halt_exits;
+-	u32 halt_successful_poll;
+-	u32 halt_attempted_poll;
+-	u32 halt_poll_invalid;
+-	u32 halt_wakeup;
+-	u32 request_irq_exits;
+-	u32 irq_exits;
+-	u32 host_state_reload;
+-	u32 efer_reload;
+-	u32 fpu_reload;
+-	u32 insn_emulation;
+-	u32 insn_emulation_fail;
+-	u32 hypercalls;
+-	u32 irq_injections;
+-	u32 nmi_injections;
++	u64 pf_fixed;
++	u64 pf_guest;
++	u64 tlb_flush;
++	u64 invlpg;
 +
-+	if (vc->halt_poll_ns > halt_poll_max_ns)
-+		vc->halt_poll_ns = halt_poll_max_ns;
-+}
-+
-+static void shrink_halt_poll_ns(struct kvmppc_vcore *vc)
-+{
-+	if (halt_poll_ns_shrink == 0)
-+		vc->halt_poll_ns = 0;
-+	else
-+		vc->halt_poll_ns /= halt_poll_ns_shrink;
-+}
-+
-+/* Check to see if any of the runnable vcpus on the vcore have pending
-+ * exceptions or are no longer ceded
-+ */
-+static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
-+{
-+	struct kvm_vcpu *vcpu;
-+	int i;
-+
-+	for_each_runnable_thread(i, vcpu, vc) {
-+		if (vcpu->arch.pending_exceptions || !vcpu->arch.ceded)
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * All the vcpus in this vcore are idle, so wait for a decrementer
-  * or external interrupt to one of the vcpus.  vc->lock is held.
-  */
- static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
++	u64 exits;
++	u64 io_exits;
++	u64 mmio_exits;
++	u64 signal_exits;
++	u64 irq_window_exits;
++	u64 nmi_window_exits;
++	u64 halt_exits;
++	u64 halt_successful_poll;
++	u64 halt_attempted_poll;
++	u64 halt_poll_invalid;
++	u64 halt_wakeup;
++	u64 request_irq_exits;
++	u64 irq_exits;
++	u64 host_state_reload;
++	u64 efer_reload;
++	u64 fpu_reload;
++	u64 insn_emulation;
++	u64 insn_emulation_fail;
++	u64 hypercalls;
++	u64 irq_injections;
++	u64 nmi_injections;
+ };
+ 
+ struct x86_instruction_info;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 48bd520..37a6530 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3531,7 +3531,7 @@ static int vm_stat_get_per_vm(void *data, u64 *val)
  {
--	struct kvm_vcpu *vcpu;
--	int do_sleep = 1, i;
-+	int do_sleep = 1;
-+	ktime_t cur, start;
-+	u64 block_ns;
- 	DECLARE_SWAITQUEUE(wait);
+ 	struct kvm_stat_data *stat_data = (struct kvm_stat_data *)data;
  
--	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-+	/* Poll for pending exceptions and ceded state */
-+	cur = start = ktime_get();
-+	if (vc->halt_poll_ns) {
-+		ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
+-	*val = *(u32 *)((void *)stat_data->kvm + stat_data->offset);
++	*val = *(ulong *)((void *)stat_data->kvm + stat_data->offset);
  
--	/*
--	 * Check one last time for pending exceptions and ceded state after
--	 * we put ourselves on the wait queue
--	 */
--	for_each_runnable_thread(i, vcpu, vc) {
--		if (vcpu->arch.pending_exceptions || !vcpu->arch.ceded) {
--			do_sleep = 0;
--			break;
--		}
-+		vc->vcore_state = VCORE_POLLING;
-+		spin_unlock(&vc->lock);
-+
-+		do {
-+			if (kvmppc_vcore_check_block(vc)) {
-+				do_sleep = 0;
-+				break;
-+			}
-+			cur = ktime_get();
-+		} while (single_task_running() && ktime_before(cur, stop));
-+
-+		spin_lock(&vc->lock);
-+		vc->vcore_state = VCORE_INACTIVE;
-+
-+		if (!do_sleep)
-+			goto out;
- 	}
- 
--	if (!do_sleep) {
-+	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-+
-+	if (kvmppc_vcore_check_block(vc)) {
- 		finish_swait(&vc->wq, &wait);
--		return;
-+		do_sleep = 0;
-+		goto out;
- 	}
- 
- 	vc->vcore_state = VCORE_SLEEPING;
-@@ -2656,6 +2723,27 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	spin_lock(&vc->lock);
- 	vc->vcore_state = VCORE_INACTIVE;
- 	trace_kvmppc_vcore_blocked(vc, 1);
-+
-+	cur = ktime_get();
-+
-+out:
-+	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
-+
-+	/* Adjust poll time */
-+	if (halt_poll_max_ns) {
-+		if (block_ns <= vc->halt_poll_ns)
-+			;
-+		/* We slept and blocked for longer than the max halt time */
-+		else if (vc->halt_poll_ns && block_ns > halt_poll_max_ns)
-+			shrink_halt_poll_ns(vc);
-+		/* We slept and our poll time is too small */
-+		else if (vc->halt_poll_ns < halt_poll_max_ns &&
-+				block_ns < halt_poll_max_ns)
-+			grow_halt_poll_ns(vc);
-+	} else
-+		vc->halt_poll_ns = 0;
-+
-+	trace_kvmppc_vcore_wakeup(do_sleep, block_ns);
+ 	return 0;
  }
+@@ -3561,7 +3561,7 @@ static int vcpu_stat_get_per_vm(void *data, u64 *val)
+ 	*val = 0;
  
- static int kvmppc_run_vcpu(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
-diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
-index 33d9daf..fb21990 100644
---- a/arch/powerpc/kvm/trace_hv.h
-+++ b/arch/powerpc/kvm/trace_hv.h
-@@ -432,6 +432,28 @@ TRACE_EVENT(kvmppc_vcore_blocked,
- 		   __entry->runner_vcpu, __entry->n_runnable, __entry->tgid)
- );
+ 	kvm_for_each_vcpu(i, vcpu, stat_data->kvm)
+-		*val += *(u32 *)((void *)vcpu + stat_data->offset);
++		*val += *(u64 *)((void *)vcpu + stat_data->offset);
  
-+TRACE_EVENT(kvmppc_vcore_wakeup,
-+	TP_PROTO(int do_sleep, __u64 ns),
-+
-+	TP_ARGS(do_sleep, ns),
-+
-+	TP_STRUCT__entry(
-+		__field(__u64,  ns)
-+		__field(int,    waited)
-+		__field(pid_t,  tgid)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->ns     = ns;
-+		__entry->waited = do_sleep;
-+		__entry->tgid   = current->tgid;
-+	),
-+
-+	TP_printk("%s time %lld ns, tgid=%d",
-+		__entry->waited ? "wait" : "poll",
-+		__entry->ns, __entry->tgid)
-+);
-+
- TRACE_EVENT(kvmppc_run_vcpu_enter,
- 	TP_PROTO(struct kvm_vcpu *vcpu),
- 
+ 	return 0;
+ }
 -- 
 2.5.5
