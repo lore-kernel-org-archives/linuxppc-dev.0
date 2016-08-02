@@ -1,23 +1,27 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <olof@lixom.net>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3lTP5PVtzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 04:43:37 +1000 (AEST)
-Date: Tue, 2 Aug 2016 07:41:18 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, antoine.blangy@c-s.fr
-Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
-Message-ID: <20160802124118.GA10155@gate.crashing.org>
-References: <20160802080705.69A9F1A2394@localhost.localdomain>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3lrM3cHdzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 05:00:01 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id q128so32461078wma.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 12:00:01 -0700 (PDT)
+Date: Tue, 2 Aug 2016 11:54:47 -0700
+From: Olof Johansson <olof@lixom.net>
+To: Baole Ni <baolex.ni@intel.com>
+Cc: mchehab@kernel.org, maurochehab@gmail.com, mchehab@infradead.org,
+ mchehab@redhat.com, m.chehab@samsung.com, egor@pasemi.com,
+ dougthompson@xmission.com, bp@alien8.de,
+ linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org,
+ linux-kernel@vger.kernel.org, chuansheng.liu@intel.com,
+ lee.jones@linaro.org
+Subject: Re: [PATCH 0157/1285] Replace numeric parameter like 0444 with macro
+Message-ID: <20160802185447.GA5288@localhost>
+References: <20160802104515.24206-1-baolex.ni@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160802080705.69A9F1A2394@localhost.localdomain>
+In-Reply-To: <20160802104515.24206-1-baolex.ni@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 02, 2016 at 10:07:05AM +0200, Christophe Leroy wrote:
-> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-> based on copy_tofrom_user()") introduced a bug when destination
-> address is odd and initial csum is not null
-> 
-> In that (rare) case the initial csum value has to be rotated one byte
-> as well as the resulting value is
-> 
-> This patch also fixes related comments
-> 
-> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-> based on copy_tofrom_user()")
-> Cc: stable@vger.kernel.org
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  v2: updated comments as suggested by Segher
+On Tue, Aug 02, 2016 at 06:45:15PM +0800, Baole Ni wrote:
+> I find that the developers often just specified the numeric value
+> when calling a macro which is defined with a parameter for access permission.
+> As we know, these numeric value for access permission have had the corresponding macro,
+> and that using macro can improve the robustness and readability of the code,
+> thus, I suggest replacing the numeric parameter with the macro.
 
-Thanks.  It looks good to me now.
+Am I the only one who find the readability to be MUCH better for the
+numeric values?
 
 
-Segher
+-Olof
