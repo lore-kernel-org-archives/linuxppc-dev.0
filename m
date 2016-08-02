@@ -1,21 +1,18 @@
 Return-Path: <chenhui.zhao@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0066.outbound.protection.outlook.com [104.47.32.66])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0075.outbound.protection.outlook.com [104.47.37.75])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3cdH5bmQzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 23:34:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3dvw4SBxzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 00:32:43 +1000 (AEST)
 From: Chenhui Zhao <chenhui.zhao@nxp.com>
 To: <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>
 CC: <jason.jin@nxp.com>, <z.chenhui@gmail.com>, Chenhui Zhao
- <chenhui.zhao@nxp.com>, Tang Yuantian <yuantian.tang@nxp.com>
-Subject: [PATCH v3 5/5] powerpc/pm: save and restore registers during deep
- sleep
-Date: Tue, 2 Aug 2016 19:59:32 +0800
-Message-ID: <1470139172-12699-6-git-send-email-chenhui.zhao@nxp.com>
-In-Reply-To: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
-References: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
+ <chenhui.zhao@nxp.com>
+Subject: [PATCH v3 1/5] powerpc/dts: add mcke-gpios for PM feature
+Date: Tue, 2 Aug 2016 19:59:27 +0800
+Message-ID: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,199 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some CCSR registers will lost during deep sleep. Therefore,
-should save them before entering deep sleep, and restore them
-when resuming from deep sleep.
-
-Signed-off-by: Tang Yuantian <yuantian.tang@nxp.com>
 Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
 ---
- arch/powerpc/include/asm/fsl_pm.h       |   2 +
- arch/powerpc/platforms/85xx/deepsleep.c | 108 +++++++++++++++++++++++++++++++-
- 2 files changed, 109 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt | 13 +++++++++++++
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  3 +++
+ 2 files changed, 16 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
-index 48c2631..95601fb 100644
---- a/arch/powerpc/include/asm/fsl_pm.h
-+++ b/arch/powerpc/include/asm/fsl_pm.h
-@@ -61,7 +61,9 @@ extern void fsl_dp_enter_low(void *priv);
- extern void fsl_booke_deep_sleep_resume(void);
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+index e284e4e..1d44a80 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -21,6 +21,10 @@ Required properites:
+ 	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
+ 	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
  
- struct fsl_iomap {
-+	void *ccsr_lcc_base;
- 	void *ccsr_scfg_base;
-+	void *ccsr_dcfg_base;
- 	void *ccsr_rcpm_base;
- 	void *ccsr_ddr_base;
- 	void *ccsr_gpio1_base;
-diff --git a/arch/powerpc/platforms/85xx/deepsleep.c b/arch/powerpc/platforms/85xx/deepsleep.c
-index 9521d99..71987fd 100644
---- a/arch/powerpc/platforms/85xx/deepsleep.c
-+++ b/arch/powerpc/platforms/85xx/deepsleep.c
-@@ -23,6 +23,8 @@
++Optional properites:
++  - mcke-gpios : The GPIO pin is used for keeping the MCKE signal of DDR modules
++		 low in the LPM35 state on some platforms, such as T1040.
++
+ All references to "1.0" and "2.0" refer to the QorIQ chassis version to
+ which the chip complies.
+ Chassis Version		Example Chips
+@@ -37,6 +41,15 @@ The RCPM node for T4240:
+ 		fsl,#rcpm-wakeup-cells = <2>;
+ 	};
  
- #include "sleep_fsm.h"
++The RCPM node for T1040 (which supports LPM35 state):
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t1040-rcpm", "fsl,qoriq-rcpm-2.1";
++		reg = <0xe2000 0x1000>;
++		fsl,#rcpm-wakeup-cells = <1>;
++		mcke-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>
++	};
++
++
+ * Freescale RCPM Wakeup Source Device Tree Bindings
+ -------------------------------------------
+ Required fsl,rcpm-wakeup property should be added to a device node if the device
+diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+index 507649e..f66e7dd 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+@@ -33,6 +33,7 @@
+  */
  
-+#define CCSR_LAW_OFFSET		0xC00
-+
- #define CPC_CPCHDBCR0		0x0f00
- #define CPC_CPCHDBCR0_SPEC_DIS	0x08000000
+ #include <dt-bindings/thermal/thermal.h>
++#include <dt-bindings/gpio/gpio.h>
  
-@@ -41,6 +43,17 @@
- #define QORIQ_CPLD_MISCCSR		0x17
- #define QORIQ_CPLD_MISCCSR_SLEEPEN	0x40
+ &bman_fbpr {
+ 	compatible = "fsl,bman-fbpr";
+@@ -474,6 +475,8 @@
+ 	rcpm: global-utilities@e2000 {
+ 		compatible = "fsl,t1040-rcpm", "fsl,qoriq-rcpm-2.1";
+ 		reg = <0xe2000 0x1000>;
++		fsl,#rcpm-wakeup-cells = <1>;
++		mcke-gpios = <&gpio0 29 GPIO_ACTIVE_HIGH>;
+ 	};
  
-+#define CCSR_LCC_BSTRH	0x20
-+#define CCSR_LCC_BSTRL	0x24
-+#define CCSR_LCC_BSTAR	0x28
-+
-+#define CCSR_DCFG_BRR	0xE4
-+
-+#define CCSR_RCPM_PCTBENR	0x1A0
-+
-+/* the target id for the memory complex 1 (MC1) */
-+#define MC1_TRGT_ID		0x10
-+
- /* 128 bytes buffer for restoring data broke by DDR training initialization */
- #define DDR_BUF_SIZE	128
- static u8 ddr_buff[DDR_BUF_SIZE] __aligned(64);
-@@ -50,6 +63,23 @@ static void fsl_dp_iounmap(void);
- 
- static struct fsl_iomap fsl_dp_priv;
- 
-+struct fsl_ccsr_law {
-+	u32	lawbarh;	/* LAWn base address high */
-+	u32	lawbarl;	/* LAWn base address low */
-+	u32	lawar;		/* LAWn attributes */
-+	u32	reserved;
-+};
-+
-+static struct fsl_regs_buffer {
-+	u32 bstrh;
-+	u32 bstrl;
-+	u32 bstar;
-+	u32 brr;
-+	u32 pctbenr;
-+	u32 law_count;
-+	void *law_regs;
-+} fsl_dp_buffer;
-+
- static const struct of_device_id fsl_dp_cpld_ids[] __initconst = {
- 	{ .compatible = "fsl,t1024-cpld", },
- 	{ .compatible = "fsl,t1040rdb-cpld", },
-@@ -65,6 +95,60 @@ static const struct of_device_id fsl_dp_fpga_ids[] __initconst = {
- 	{}
- };
- 
-+static void fsl_regs_save(struct fsl_iomap *base,
-+			  struct fsl_regs_buffer *buffer)
-+{
-+	int i;
-+	struct fsl_ccsr_law *src = base->ccsr_lcc_base + CCSR_LAW_OFFSET;
-+	struct fsl_ccsr_law *dst = buffer->law_regs;
-+
-+	buffer->bstrh = in_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRH);
-+	buffer->bstrl = in_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRL);
-+	buffer->bstar = in_be32(base->ccsr_lcc_base + CCSR_LCC_BSTAR);
-+	buffer->brr = in_be32(base->ccsr_dcfg_base + CCSR_DCFG_BRR);
-+	buffer->pctbenr = in_be32(base->ccsr_rcpm_base + CCSR_RCPM_PCTBENR);
-+
-+	for (i = 0; i < buffer->law_count; i++) {
-+		dst->lawbarh = in_be32(&src->lawbarh);
-+		dst->lawbarl = in_be32(&src->lawbarl);
-+		dst->lawar = in_be32(&src->lawar);
-+		dst++;
-+		src++;
-+	}
-+}
-+
-+static void fsl_regs_restore(struct fsl_iomap *base,
-+			     struct fsl_regs_buffer *buffer)
-+{
-+	int i;
-+	u32 attr;
-+	struct fsl_ccsr_law *src = buffer->law_regs;
-+	struct fsl_ccsr_law *dst = base->ccsr_lcc_base + CCSR_LAW_OFFSET;
-+
-+	out_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRH, buffer->bstrh);
-+	out_be32(base->ccsr_lcc_base + CCSR_LCC_BSTRL, buffer->bstrl);
-+	out_be32(base->ccsr_lcc_base + CCSR_LCC_BSTAR, buffer->bstar);
-+	out_be32(base->ccsr_dcfg_base + CCSR_DCFG_BRR, buffer->brr);
-+	out_be32(base->ccsr_rcpm_base + CCSR_RCPM_PCTBENR, buffer->pctbenr);
-+
-+	for (i = 0; i < buffer->law_count; i++) {
-+		/*
-+		 * If the LAW with the target id of MC1 has been set,
-+		 * skip. Because changing it here causes memory
-+		 * access error.
-+		 */
-+		attr = in_be32(&dst->lawar);
-+		if (((attr >> 20) & 0xff) == MC1_TRGT_ID)
-+			continue;
-+		out_be32(&dst->lawar, 0);
-+		out_be32(&dst->lawbarl, src->lawbarl);
-+		out_be32(&dst->lawbarh, src->lawbarh);
-+		out_be32(&dst->lawar, src->lawar);
-+		src++;
-+		dst++;
-+	}
-+}
-+
- static void fsl_dp_set_resume_pointer(void)
- {
- 	u32 resume_addr;
-@@ -132,6 +216,8 @@ int fsl_enter_deepsleep(void)
- 
- 	fsl_dp_set_resume_pointer();
- 
-+	fsl_regs_save(&fsl_dp_priv, &fsl_dp_buffer);
-+
- 	/*  enable Warm Device Reset request. */
- 	setbits32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_DPSLPCR,
- 					CCSR_SCFG_DPSLPCR_WDRR_EN);
-@@ -152,6 +238,8 @@ int fsl_enter_deepsleep(void)
- 
- 	fsl_dp_enter_low(&fsl_dp_priv);
- 
-+	fsl_regs_restore(&fsl_dp_priv, &fsl_dp_buffer);
-+
- 	/* disable Warm Device Reset request */
- 	clrbits32(fsl_dp_priv.ccsr_scfg_base + CCSR_SCFG_DPSLPCR,
- 					CCSR_SCFG_DPSLPCR_WDRR_EN);
-@@ -212,6 +300,11 @@ static int __init fsl_dp_iomap(void)
- 			goto err;
- 	}
- 
-+	fsl_dp_priv.ccsr_dcfg_base =
-+			fsl_of_iomap("fsl,qoriq-device-config-2.0");
-+	if (!fsl_dp_priv.ccsr_dcfg_base)
-+		goto err;
-+
- 	fsl_dp_priv.ccsr_scfg_base = fsl_of_iomap("fsl,t1040-scfg");
- 	if (!fsl_dp_priv.ccsr_scfg_base) {
- 		fsl_dp_priv.ccsr_scfg_base = fsl_of_iomap("fsl,t1023-scfg");
-@@ -253,8 +346,21 @@ static int __init fsl_dp_iomap(void)
- 	if (!fsl_dp_priv.dcsr_rcpm_base)
- 		goto err;
- 
--	return 0;
-+	fsl_dp_priv.ccsr_lcc_base = fsl_of_iomap("fsl,corenet-law");
-+	if (!fsl_dp_priv.ccsr_lcc_base)
-+		goto err;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,corenet-law");
-+	if (of_property_read_u32(np, "fsl,num-laws",
-+					&fsl_dp_buffer.law_count))
-+		goto err;
- 
-+	fsl_dp_buffer.law_regs = kcalloc(fsl_dp_buffer.law_count,
-+				sizeof(struct fsl_ccsr_law), GFP_KERNEL);
-+	if (!fsl_dp_buffer.law_regs)
-+		goto err;
-+
-+	return 0;
- err:
- 	fsl_dp_iounmap();
- 	return -1;
+ 	sfp: sfp@e8000 {
 -- 
 1.9.1
