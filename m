@@ -1,18 +1,19 @@
-Return-Path: <sojkam1@fel.cvut.cz>
-Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s3QG82N6kzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 15:47:44 +1000 (AEST)
-From: Michal Sojka <sojkam1@fel.cvut.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: MPC5200 does not boot
-In-Reply-To: <1470116323.12584.11.camel@kernel.crashing.org>
-References: <874m74w1m7.fsf@steelpick.2x.cz>
- <1470116323.12584.11.camel@kernel.crashing.org>
-Date: Tue, 02 Aug 2016 07:47:39 +0200
-Message-ID: <87y44fvi10.fsf@steelpick.2x.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3QNb1fcDzDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 15:53:18 +1000 (AEST)
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id u725r1GN010813
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 00:53:04 -0500
+Message-ID: <1470117181.12584.14.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc/32: Fix early access to cpu_spec relocation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 02 Aug 2016 15:53:01 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 02 2016, Benjamin Herrenschmidt wrote:
-> On Tue, 2016-08-02 at 00:44 +0200, Michal Sojka wrote:
->> Hi Benjamin,
->>=20
->> the following commit causes my MPC5200 not to boot.
->>=20
->> =C2=A0=C2=A0=C2=A0=C2=A0commit 9402c684613163888714df0955fa1f17142b08bf
->
-> Does this fixes it for you ?
+Commit 9402c684613163888714df0955fa1f17142b08bf introduced a subtle bug
+on 32-bit. When reading the cpu spec from the global, we not only need
+to do a pointer relocation on the global address but also on the pointer
+we read from it.
 
-Yes, it does.
+This fixes crashes reported on MPC5200 based machines.
 
-Thanks.
--Michal
-
-
-> diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature=
--fixups.c
-> index defb299..fd36e13 100644
-> --- a/arch/powerpc/lib/feature-fixups.c
-> +++ b/arch/powerpc/lib/feature-fixups.c
-> @@ -154,7 +154,7 @@ static void do_final_fixups(void)
->=20=20
->  void apply_feature_fixups(void)
->  {
-> -	struct cpu_spec *spec =3D *PTRRELOC(&cur_cpu_spec);
-> +	struct cpu_spec *spec =3D PTRRELOC(*PTRRELOC(&cur_cpu_spec));
->=20=20
->  	/*
->  	 * Apply the CPU-specific and firmware specific fixups to kernel text
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: 9402c684613163888714df0955fa1f17142b08bf
+--
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index defb299..fd36e13 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -154,7 +154,7 @@ static void do_final_fixups(void)
+ 
+ void apply_feature_fixups(void)
+ {
+-	struct cpu_spec *spec = *PTRRELOC(&cur_cpu_spec);
++	struct cpu_spec *spec = PTRRELOC(*PTRRELOC(&cur_cpu_spec));
+ 
+ 	/*
+ 	 * Apply the CPU-specific and firmware specific fixups to kernel text
