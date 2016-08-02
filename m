@@ -1,20 +1,48 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3MQg2HDdzDqf5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 13:39:55 +1000 (AEST)
-Date: Tue, 2 Aug 2016 13:39:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Kevin Hao
- <haokexin@gmail.com>, Jason Baron <jbaron@akamai.com>
-Subject: linux-next: manual merge of the akpm tree with the powerpc tree
-Message-ID: <20160802133954.00eac68c@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Mlt3g5QzDqfS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 13:54:49 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u723s1fJ056856
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2016 23:54:47 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24gre1x2d2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 23:54:46 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 2 Aug 2016 13:54:44 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ED2612CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 13:54:40 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u723seBU28835914
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 13:54:40 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u723serI006068
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 13:54:40 +1000
+Date: Tue, 2 Aug 2016 13:54:39 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org, benh@kernel.crashing.org, ruscur@russell.cc
+Subject: Re: [PATCH] powerpc/powernv: Fix BE PE number to
+ opal_pci_eeh_freeze_clear()
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1470034990-18860-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <87k2g0oj8t.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k2g0oj8t.fsf@concordia.ellerman.id.au>
+Message-Id: <20160802035439.GA6568@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +52,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+On Mon, Aug 01, 2016 at 08:50:58PM +1000, Michael Ellerman wrote:
+>Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+>
+>> The PE number (@frozen_pe_no), filled by opal_pci_next_error() is
+>> in big-endian format. Frozen PE number in CPU-endian should be passed
+>> to opal_pci_eeh_freeze_clear() when clearing the frozen state if the
+>> PE is invalid one.
+>>
+>> This passes CPU-endian PE number to opal_pci_eeh_freeze_clear() and
+>> it should be part of commit <0f36db77643b> ("powerpc/eeh: Fix wrong
+>> printed PE number").
+>
+>Which commit added the broken usage?
+>
+>Looks like 2a485ad7c88d ("powerpc/powernv: Drop PHB operation
+>next_error()") ?
+>
+>> Cc: stable@vger.kernel.org # v4.3+
+>> Suggested-by: Paul Mackerras <paulus@samba.org>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> index 86544ea..75363d9 100644
+>> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> @@ -1538,7 +1538,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+>>  
+>>  				/* Try best to clear it */
+>>  				opal_pci_eeh_freeze_clear(phb->opal_id,
+>> -					frozen_pe_no,
+>> +					be64_to_cpu(frozen_pe_no),
+>
+>Sparse knew about this:
+>
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41: warning: incorrect type in argument 2 (different base types)
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41:    expected unsigned long long [unsigned] [usertype] pe_number
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1541:41:    got restricted __be64 [addressable] [usertype] frozen_pe_no
+>
+>And finds some other problems in that file:
+>
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:875:23: warning: constant 0x8000000000000000 is so big it is unsigned long
+>  arch/powerpc/platforms/powernv/eeh-powernv.c:1309:21: warning: restricted __be16 degrades to integer
+>
 
-Today's linux-next merge of the akpm tree got a conflict in:
+Michael, please ignore this one. A updated version will be included in the
+series fixing the warning reported from sparse on PowerNV PCI related files.
+I will post the series shortly.
 
-  kernel/jump_label.c
+Thanks,
+Gavin
 
-between commit:
-
-  e3f91083facb ("jump_label: Make it possible for arches to invoke jump_label_init() earlier")
-
-from the powerpc tree and patch:
-
-   "jump_label: remove bug.h, atomic.h dependencies for HAVE_JUMP_LABEL"
-
-from the akpm tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
--- 
-Cheers,
-Stephen Rothwell
-
-diff --cc kernel/jump_label.c
-index 85b7105fdd86,20400055f177..000000000000
---- a/kernel/jump_label.c
-+++ b/kernel/jump_label.c
-@@@ -235,9 -279,15 +279,18 @@@ void __init jump_label_init(void
-  	struct static_key *key = NULL;
-  	struct jump_entry *iter;
-  
-+ 	/*
-+ 	 * Since we are initializing the static_key.enabled field with
-+ 	 * with the 'raw' int values (to avoid pulling in atomic.h) in
-+ 	 * jump_label.h, let's make sure that is safe. There are only two
-+ 	 * cases to check since we initialize to 0 or 1.
-+ 	 */
-+ 	BUILD_BUG_ON((int)ATOMIC_INIT(0) != 0);
-+ 	BUILD_BUG_ON((int)ATOMIC_INIT(1) != 1);
-+ 
- +	if (static_key_initialized)
- +		return;
- +
-  	jump_label_lock();
-  	jump_label_sort_entries(iter_start, iter_stop);
-  
+>cheers
+>
