@@ -1,19 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3LC96Q6jzDqdc
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 12:44:53 +1000 (AEST)
-Message-ID: <1470105873.12584.7.camel@kernel.crashing.org>
-Subject: Re: MPC5200 does not boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michal Sojka <sojkam1@fel.cvut.cz>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 02 Aug 2016 12:44:33 +1000
-In-Reply-To: <874m74w1m7.fsf@steelpick.2x.cz>
-References: <874m74w1m7.fsf@steelpick.2x.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Lpc04YnzDqdt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 13:12:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: "kernel-hardening\@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Jiri Slaby <jslaby@suse.cz>,
+ Guenter Roeck <linux@roeck-us.net>, LKML <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Alan Modra  <amodra@gmail.com>
+Subject: Re: [kernel-hardening] Re: Linker segfault on powerpc when
+ CONFIG_LKDTM=y (was Re: [kernel-hardening] [PATCH 3/5] lkdtm: add function
+ for testing .rodata section)
+In-Reply-To: <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
+References: <1465336628-18219-1-git-send-email-keescook@chromium.org>
+ <1465336628-18219-4-git-send-email-keescook@chromium.org>
+ <87h9b4oebf.fsf@concordia.ellerman.id.au>
+ <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
+Date: Tue, 02 Aug 2016 13:12:02 +1000
+Message-ID: <87eg67ooe5.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +36,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-02 at 00:44 +0200, Michal Sojka wrote:
-> Hi Benjamin,
-> 
-> the following commit causes my MPC5200 not to boot.
-> 
->     commit 9402c684613163888714df0955fa1f17142b08bf
-> >     Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->     Date:   Tue Jul 5 15:03:41 2016 +1000
->      
->         powerpc: Factor do_feature_fixup calls
->         
->         32 and 64-bit do a similar set of calls early on, we move it all to
->         a single common function to make the boot code more readable.
->         
->         Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >         Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> I suspect that the cause will be similar as described in commit
-> 1cd03890ea64795e53f17a94928cca22495acb2a. Unfortunately, I don't have
-> much time to debug this, but I can easily test patches.
+Kees Cook <keescook@chromium.org> writes:
 
-Are you sure of your bisection ? Did you verify that reverting that one
-patch fixes it ? Because all this does is move code to a function,
-the code is functionally the same and called in the same place...
+> On Mon, Aug 1, 2016 at 5:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Kees Cook <keescook@chromium.org> writes:
+>>
+>>> This adds a function that lives in the .rodata section. The section
+>>> flags are corrected using objcopy since there is no way with gcc to
+>>> declare section flags in an architecture-agnostic way.
+>>>
+>>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>>> ---
+>>>  drivers/misc/Makefile       |  7 +++++++
+>>>  drivers/misc/lkdtm.h        |  6 ++++++
+>>>  drivers/misc/lkdtm_core.c   | 24 +++++++++++++++++-------
+>>>  drivers/misc/lkdtm_rodata.c | 10 ++++++++++
+>>>  4 files changed, 40 insertions(+), 7 deletions(-)
+>>>  create mode 100644 drivers/misc/lkdtm.h
+>>>  create mode 100644 drivers/misc/lkdtm_rodata.c
+>>
+>> This is blowing up my linker :(
+>>
+>>   scripts/link-vmlinux.sh: line 52: 36260 Segmentation fault      (core dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds} ${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
+>>
+>> Haven't had a chance to debug it further.
+>
+> Argh. Do you want a quick fix for this now? I can add a PPC CONFIG
+> blacklist for the rodata check, maybe?
 
-Cheers,
-Ben.
+Nah that's OK, none of our defconfigs have it enabled so it's not a real
+blocker. It also builds OK as a module - though I haven't tested the
+result yet.
+
+> Also, what version of gcc? I'll see if I can reproduce this with a
+> cross compiler...
+
+The original hit was with gcc-5.3 (which is actually a x86->ppc cross):
+
+  http://kisskb.ellerman.id.au/kisskb/buildresult/12762730/
+
+But I can also reproduce with 5.4, and 6.1.0.
+
+Interestingly I *can't* reproduce with the Ubuntu x86->ppc cross
+(5.4.0-6ubuntu1~16.04.1).
+
+Those toolchains are all using binutils 2.26 AFAIK.
+
+Going back to a really old toolchain (gcc 4.6.3/binutils 2.22) it does
+build but I get these warnings:
+
+ powerpc64-linux-ld: drivers/misc/built-in.o: .opd is not a regular array of opd entries
+ powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
+ powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
+ powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
+ powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
+
+
+So probably don't worry about it and we'll try and work it out on our end.
+
+cheers
