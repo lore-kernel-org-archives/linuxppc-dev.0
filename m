@@ -1,35 +1,24 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
+Return-Path: <geoff@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3gbp1DhPzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 01:48:54 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id hh10so12242305pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 08:48:54 -0700 (PDT)
-Subject: Re: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-References: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
- <1956647.cOmaJREgOE@wuerfel>
- <DB5PR0401MB19280ACA87C7F5EE2822D5FB91040@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <2484583.95xFmO7xir@wuerfel>
-Cc: Scott Wood <scott.wood@nxp.com>,
- "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "zajec5@gmail.com" <zajec5@gmail.com>,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- "David.Laight@aculab.com" <David.Laight@aculab.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "linux@roeck-us.net" <linux@roeck-us.net>
-From: arvind Yadav <arvind.yadav.cs@gmail.com>
-Message-ID: <57A0C0DE.3090706@gmail.com>
-Date: Tue, 2 Aug 2016 21:18:46 +0530
-MIME-Version: 1.0
-In-Reply-To: <2484583.95xFmO7xir@wuerfel>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3hsQ2whZzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 02:45:46 +1000 (AEST)
+Message-ID: <1470156329.16559.57.camel@infradead.org>
+Subject: Re: [PATCH 0867/1285] Replace numeric parameter like 0444 with macro
+From: Geoff Levand <geoff@infradead.org>
+To: Baole Ni <baolex.ni@intel.com>, benh@kernel.crashing.org,
+ paulus@samba.org,  mpe@ellerman.id.au, dwmw2@infradead.org,
+ m.chehab@samsung.com, pawel@osciak.com,  m.szyprowski@samsung.com,
+ kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ chuansheng.liu@intel.com
+Date: Tue, 02 Aug 2016 09:45:29 -0700
+In-Reply-To: <20160802115333.7780-1-baolex.ni@intel.com>
+References: <20160802115333.7780-1-baolex.ni@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,42 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2016-08-02 at 19:53 +0800, Baole Ni wrote:
+> I find that the developers often just specified the numeric value
+> when calling a macro which is defined with a parameter for access
+> permission.
+> As we know, these numeric value for access permission have had the
+> corresponding macro,
+> and that using macro can improve the robustness and readability of
+> the code,
+> thus, I suggest replacing the numeric parameter with the macro.
+> 
+> Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+> Signed-off-by: Baole Ni <baolex.ni@intel.com>
+> ---
+>  
+>  static int timeout = 5000;	/* in msec ( 5 sec ) */
+> -module_param(timeout, int, 0644);
+> +module_param(timeout, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
+To me, 644 is more 'readable', and as for robustness, the meaning of
+644 will never change.
 
-On Tuesday 02 August 2016 01:15 PM, Arnd Bergmann wrote:
-> On Monday, August 1, 2016 4:55:43 PM CEST Scott Wood wrote:
->> On 08/01/2016 02:02 AM, Arnd Bergmann wrote:
->>>> diff --git a/include/linux/err.h b/include/linux/err.h
->>>> index 1e35588..c2a2789 100644
->>>> --- a/include/linux/err.h
->>>> +++ b/include/linux/err.h
->>>> @@ -18,7 +18,17 @@
->>>>   
->>>>   #ifndef __ASSEMBLY__
->>>>   
->>>> -#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
->>>> +#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
->>>> +
->>>> +static inline int is_error_check(unsigned long error)
->>> Please leave the existing macro alone. I think you were looking for
->>> something specific to the return code of qe_muram_alloc() function,
->>> so please add a helper in that subsystem if you need it, not in
->>> the generic header files.
->> qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The
->> problem is certain callers that store the return value in a u32.  Why
->> not just fix those callers to store it in unsigned long (at least until
->> error checking is done)?
->>
-> Yes, that would also address another problem with code like
->
->           kfree((void *)ugeth->tx_bd_ring_offset[i]);
->
-> which is not 64-bit safe when tx_bd_ring_offset is a 32-bit value
-> that also holds the return value of qe_muram_alloc.
->
-> 	Arnd
-Yes, we will fix caller. Caller api is not safe on 64bit.
-Even qe_muram_addr(a.k.a. cpm_muram_addr )passing value unsigned int,
-but it should be unsigned long. Need to work on it.
-
-Arvind
+-Geoff
