@@ -1,19 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Q4448RTzDqZk
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 15:39:00 +1000 (AEST)
-Message-ID: <1470116323.12584.11.camel@kernel.crashing.org>
-Subject: Re: MPC5200 does not boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michal Sojka <sojkam1@fel.cvut.cz>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 02 Aug 2016 15:38:43 +1000
-In-Reply-To: <874m74w1m7.fsf@steelpick.2x.cz>
-References: <874m74w1m7.fsf@steelpick.2x.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Q9q0z1FzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 15:43:59 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id y134so11722444pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 22:43:59 -0700 (PDT)
+Date: Tue, 2 Aug 2016 13:43:53 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ppc64: allow ptrace to set TM bits
+Message-ID: <20160802054351.GA16975@simonLocalRHEL7.x64>
+References: <1469785882-9892-1-git-send-email-ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1469785882-9892-1-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,41 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-02 at 00:44 +0200, Michal Sojka wrote:
-> Hi Benjamin,
-> 
-> the following commit causes my MPC5200 not to boot.
-> 
->     commit 9402c684613163888714df0955fa1f17142b08bf
->     Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->     Date:   Tue Jul 5 15:03:41 2016 +1000
->      
->         powerpc: Factor do_feature_fixup calls
->         
->         32 and 64-bit do a similar set of calls early on, we move it
-> all to
->         a single common function to make the boot code more readable.
->         
->         Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.o
-> rg>
->         Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> 
-> I suspect that the cause will be similar as described in commit
-> 1cd03890ea64795e53f17a94928cca22495acb2a. Unfortunately, I don't have
-> much time to debug this, but I can easily test patches.
+Hi Laurent,
+On Fri, Jul 29, 2016 at 11:51:22AM +0200, Laurent Dufour wrote:
+>  static int set_user_msr(struct task_struct *task, unsigned long msr)
+>  {
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	if (!(task->thread.regs->msr & MSR_TM)) {
+> +		/* If TM is not available, discard TM bits changes */
+> +		msr &= ~(MSR_TM | MSR_TS_MASK);
+> +	}
+> +#endif
 
-Does this fixes it for you ?
+I am not sure whether following is an issue:
+Per PowerISA, any exception/interrupt will disable MSR[TM] bit 
+automatically and mark MSR_TS to be suspended when it is 
+transactional. It is possible that MSR[TM] = 0 and MSR[MSR_TS] != 0
+(suspended). 
 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index defb299..fd36e13 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -154,7 +154,7 @@ static void do_final_fixups(void)
- 
- void apply_feature_fixups(void)
- {
--	struct cpu_spec *spec = *PTRRELOC(&cur_cpu_spec);
-+	struct cpu_spec *spec = PTRRELOC(*PTRRELOC(&cur_cpu_spec));
- 
- 	/*
- 	 * Apply the CPU-specific and firmware specific fixups to kernel text
+Will set_user_msr() be able to escape from the above?
+ For example, one user space application encountered 
+page fault during transaction, its task->thread.regs->msr & MSR_TM == 0
+and MSR[MSR_TS] == suspended.  Then it is being traced and 
+set_user_msr() is invoked on it. I think it will be incorrect to 
+clear its  MSR_TS_MASK bits.....
+
+Please correct me if I am wrong.
+
+Thanks,
+- Simon
