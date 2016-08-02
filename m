@@ -1,18 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@nxp.com>
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-by2nam01on0064.outbound.protection.outlook.com [104.47.34.64])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3TM22dzYzDrJT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 18:07:10 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, antoine.blangy@c-s.fr, segher@kernel.crashing.org
-Message-Id: <20160802080705.69A9F1A2394@localhost.localdomain>
-Date: Tue,  2 Aug 2016 10:07:05 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3ZsJ5Y1kzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 22:15:16 +1000 (AEST)
+From: Chenhui Zhao <chenhui.zhao@nxp.com>
+To: <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+CC: <jason.jin@nxp.com>, <z.chenhui@gmail.com>, Chenhui Zhao
+ <chenhui.zhao@nxp.com>
+Subject: [PATCH v3 0/5] powerpc/pm: QorIQ deep sleep
+Date: Tue, 2 Aug 2016 19:59:28 +0800
+Message-ID: <1470139172-12699-2-git-send-email-chenhui.zhao@nxp.com>
+In-Reply-To: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
+References: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,50 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-based on copy_tofrom_user()") introduced a bug when destination
-address is odd and initial csum is not null
+Changes for v3:
+* add mcke-gpios in dts to specify the GPIO pin which works as MCKE signal
 
-In that (rare) case the initial csum value has to be rotated one byte
-as well as the resulting value is
+Changes for v2:
+* Ioremap every dts node used in the patches.
+* Check the board compatible string to see if the board supports deep sleep.
+* Can not reserve the first page of DDR memory, because PPC64 doesn't support
+  changing the kernel base address. So still save and restore the first 128 bytes
+  of DDR memory.
+* Still save and restoer CCSR registers in kernel, because bootloader doesn't
+  know what register values to restore
+* Changed copyright and email address from freescale to NXP
 
-This patch also fixes related comments
+Please refer to the version 1:
+[1/4] powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
+http://patchwork.ozlabs.org/patch/502549/
 
-Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-based on copy_tofrom_user()")
-Cc: stable@vger.kernel.org
+[2/4] powerpc: get the physical base address of DCSR
+http://patchwork.ozlabs.org/patch/502551/
+It is removed.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: updated comments as suggested by Segher
+[3/4] powerpc: pm: add EPU FSM configuration for deep sleep
+http://patchwork.ozlabs.org/patch/502548/
 
- arch/powerpc/lib/checksum_32.S | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+[4/4] powerpc: pm: support deep sleep feature on T104x
+http://patchwork.ozlabs.org/patch/502550/
 
-diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-index d90870a..0a57fe6 100644
---- a/arch/powerpc/lib/checksum_32.S
-+++ b/arch/powerpc/lib/checksum_32.S
-@@ -127,8 +127,9 @@ _GLOBAL(csum_partial_copy_generic)
- 	stw	r7,12(r1)
- 	stw	r8,8(r1)
- 
--	andi.	r0,r4,1			/* is destination address even ? */
--	cmplwi	cr7,r0,0
-+	rlwinm	r0,r4,3,0x8
-+	rlwnm	r6,r6,r0,0,31	/* odd destination address: rotate one byte */
-+	cmplwi	cr7,r0,0	/* is destination address even ? */
- 	addic	r12,r6,0
- 	addi	r6,r4,-4
- 	neg	r0,r4
-@@ -237,7 +238,7 @@ _GLOBAL(csum_partial_copy_generic)
- 66:	addze	r3,r12
- 	addi	r1,r1,16
- 	beqlr+	cr7
--	rlwinm	r3,r3,8,0,31	/* swap bytes for odd destination */
-+	rlwinm	r3,r3,8,0,31	/* odd destination address: rotate one byte */
- 	blr
- 
- /* read fault */
+
+Chenhui Zhao (5):
+  powerpc/dts: add mcke-gpios for PM feature
+  powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
+  powerpc: pm: add EPU FSM configuration for deep sleep
+  powerpc/pm: support deep sleep feature on T104x
+  powerpc/pm: save and restore registers during deep sleep
+
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  13 +
+ arch/powerpc/Kconfig                               |   3 +-
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |   3 +
+ arch/powerpc/include/asm/fsl_pm.h                  |  28 +-
+ arch/powerpc/kernel/asm-offsets.c                  |  12 +
+ arch/powerpc/kernel/fsl_booke_entry_mapping.S      |  10 +
+ arch/powerpc/kernel/head_64.S                      |   2 +-
+ arch/powerpc/platforms/85xx/Kconfig                |   5 +
+ arch/powerpc/platforms/85xx/Makefile               |   2 +
+ arch/powerpc/platforms/85xx/deepsleep.c            | 384 +++++++++++++++
+ arch/powerpc/platforms/85xx/qoriq_pm.c             |  84 ++++
+ arch/powerpc/platforms/85xx/sleep_fsm.c            | 267 +++++++++++
+ arch/powerpc/platforms/85xx/sleep_fsm.h            |  92 ++++
+ arch/powerpc/platforms/85xx/t104x_deepsleep.S      | 531 +++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig                |   1 +
+ arch/powerpc/sysdev/fsl_rcpm.c                     |  28 +-
+ 16 files changed, 1446 insertions(+), 19 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+ create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
+ create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.c
+ create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.h
+ create mode 100644 arch/powerpc/platforms/85xx/t104x_deepsleep.S
+
 -- 
-2.1.0
+1.9.1
