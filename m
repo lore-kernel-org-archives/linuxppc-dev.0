@@ -1,24 +1,41 @@
-Return-Path: <sjitindarsingh@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3MyR06CLzDrFN
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:03:58 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id cf3so11050813pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 21:03:58 -0700 (PDT)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3N6H6qkTzDqpR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:10:47 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7248qJc087056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 00:10:45 -0400
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24gre1xhu2-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 00:10:45 -0400
+Received: from localhost
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 2 Aug 2016 14:10:42 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9CD8E3578057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 14:10:40 +1000 (EST)
+Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u724Aete25362496
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 14:10:40 +1000
+Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
+ by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u724Aep3029701
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Aug 2016 14:10:40 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: sjitindarsingh@gmail.com, kvm-ppc@vger.kernel.org, mpe@ellerman.id.au,
- paulus@samba.org, benh@kernel.crashing.org, pbonzini@redhat.com,
- agraf@suse.com, rkrcmar@redhat.com, dmatlack@google.com,
- borntraeger@de.ibm.com, kvm@vger.kernel.org
-Subject: [RESEND] [PATCH V5 5/5] powerpc/kvm/stats: Implement existing and add
- new halt polling vcpu stats
-Date: Tue,  2 Aug 2016 14:03:23 +1000
-Message-Id: <1470110603-20695-5-git-send-email-sjitindarsingh@gmail.com>
-In-Reply-To: <1470110603-20695-1-git-send-email-sjitindarsingh@gmail.com>
-References: <1470110603-20695-1-git-send-email-sjitindarsingh@gmail.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 0/9] powerpc/powernv: Fix sparse warnings for PCI files
+Date: Tue,  2 Aug 2016 14:10:28 +1000
+Message-Id: <1470111037-18531-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,160 +45,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vcpu stats are used to collect information about a vcpu which can be viewed
-in the debugfs. For example halt_attempted_poll and halt_successful_poll
-are used to keep track of the number of times the vcpu attempts to and
-successfully polls. These stats are currently not used on powerpc.
+This fixes the warnings reported from sparse. With this applied, no sparse
+warning seen from below files with "make C=2 CF=-D__CHECK_ENDIAN__".
 
-Implement incrementation of the halt_attempted_poll and
-halt_successful_poll vcpu stats for powerpc. Since these stats are summed
-over all the vcpus for all running guests it doesn't matter which vcpu
-they are attributed to, thus we choose the current runner vcpu of the
-vcore.
+ arch/powerpc/platforms/powernv/eeh-powernv.c
+ arch/powerpc/platforms/powernv/pci-ioda.c
+ arch/powerpc/platforms/powernv/pci.c
 
-Also add new vcpu stats: halt_poll_success_ns, halt_poll_fail_ns and
-halt_wait_ns to be used to accumulate the total time spend polling
-successfully, polling unsuccessfully and waiting respectively, and
-halt_successful_wait to accumulate the number of times the vcpu waits.
-Given that halt_poll_success_ns, halt_poll_fail_ns and halt_wait_ns are
-expressed in nanoseconds it is necessary to represent these as 64-bit
-quantities, otherwise they would overflow after only about 4 seconds.
+Gavin Shan (9):
+  powerpc/powernv: Pass CPU-endian PE number to
+    opal_pci_eeh_freeze_clear()
+  powerpc/powernv: Use CPU-endian hub diag-data type in
+    pnv_eeh_get_and_dump_hub_diag()
+  powerpc/powernv: Specify proper data type for PCI_SLOT_ID_PREFIX
+  powerpc/powernv: Use CPU-endian PEST in pnv_pci_dump_p7ioc_diag_data()
+  powerpc/powernv: Fix endian for return value from pnv_tce_get()
+  powerpc/powernv: Pass CPU-endian argument to xchg() in pnv_tce_xchg()
+  powerpc/powernv: Fix data type for @r in pnv_ioda_parse_m64_window()
+  powerpc/powernv: Fix data type of argument to __raw_{rm_, }writeq()
+  powerpc/powernv: Fix data type in pnv_pci_ioda2_table_do_free_pages()
 
-Given that the total time spend either polling or waiting will be known and
-the number of times that each was done, it will be possible to determine
-the average poll and wait times. This will give the ability to tune the kvm
-module parameters based on the calculated average wait and poll times.
+ arch/powerpc/include/asm/pnv-pci.h           |  2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  4 ++--
+ arch/powerpc/platforms/powernv/pci-ioda.c    | 25 ++++++++++++++++---------
+ arch/powerpc/platforms/powernv/pci.c         | 10 ++++++----
+ 4 files changed, 25 insertions(+), 16 deletions(-)
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Reviewed-by: David Matlack <dmatlack@google.com>
-
----
-Change Log:
-
-V3 -> V4:
-	- Instead of accounting just wait and poll time, separate these
-	  into successful_poll_time, failed_poll_time and wait_time.
----
- arch/powerpc/include/asm/kvm_host.h |  4 ++++
- arch/powerpc/kvm/book3s.c           |  4 ++++
- arch/powerpc/kvm/book3s_hv.c        | 36 +++++++++++++++++++++++++++++++-----
- 3 files changed, 39 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index f6304c5..f15ffc0 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -114,8 +114,12 @@ struct kvm_vcpu_stat {
- 	u64 emulated_inst_exits;
- 	u64 dec_exits;
- 	u64 ext_intr_exits;
-+	u64 halt_poll_success_ns;
-+	u64 halt_poll_fail_ns;
-+	u64 halt_wait_ns;
- 	u64 halt_successful_poll;
- 	u64 halt_attempted_poll;
-+	u64 halt_successful_wait;
- 	u64 halt_poll_invalid;
- 	u64 halt_wakeup;
- 	u64 dbell_exits;
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 47018fc..71eb8f3 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -52,8 +52,12 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "dec",         VCPU_STAT(dec_exits) },
- 	{ "ext_intr",    VCPU_STAT(ext_intr_exits) },
- 	{ "queue_intr",  VCPU_STAT(queue_intr) },
-+	{ "halt_poll_success_ns",	VCPU_STAT(halt_poll_success_ns) },
-+	{ "halt_poll_fail_ns",		VCPU_STAT(halt_poll_fail_ns) },
-+	{ "halt_wait_ns",		VCPU_STAT(halt_wait_ns) },
- 	{ "halt_successful_poll", VCPU_STAT(halt_successful_poll), },
- 	{ "halt_attempted_poll", VCPU_STAT(halt_attempted_poll), },
-+	{ "halt_successful_wait",	VCPU_STAT(halt_successful_wait) },
- 	{ "halt_poll_invalid", VCPU_STAT(halt_poll_invalid) },
- 	{ "halt_wakeup", VCPU_STAT(halt_wakeup) },
- 	{ "pf_storage",  VCPU_STAT(pf_storage) },
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8ba8279..b1d9e88 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2679,15 +2679,16 @@ static int kvmppc_vcore_check_block(struct kvmppc_vcore *vc)
-  */
- static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- {
-+	ktime_t cur, start_poll, start_wait;
- 	int do_sleep = 1;
--	ktime_t cur, start;
- 	u64 block_ns;
- 	DECLARE_SWAITQUEUE(wait);
- 
- 	/* Poll for pending exceptions and ceded state */
--	cur = start = ktime_get();
-+	cur = start_poll = ktime_get();
- 	if (vc->halt_poll_ns) {
--		ktime_t stop = ktime_add_ns(start, vc->halt_poll_ns);
-+		ktime_t stop = ktime_add_ns(start_poll, vc->halt_poll_ns);
-+		++vc->runner->stat.halt_attempted_poll;
- 
- 		vc->vcore_state = VCORE_POLLING;
- 		spin_unlock(&vc->lock);
-@@ -2703,8 +2704,10 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 		spin_lock(&vc->lock);
- 		vc->vcore_state = VCORE_INACTIVE;
- 
--		if (!do_sleep)
-+		if (!do_sleep) {
-+			++vc->runner->stat.halt_successful_poll;
- 			goto out;
-+		}
- 	}
- 
- 	prepare_to_swait(&vc->wq, &wait, TASK_INTERRUPTIBLE);
-@@ -2712,9 +2715,14 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	if (kvmppc_vcore_check_block(vc)) {
- 		finish_swait(&vc->wq, &wait);
- 		do_sleep = 0;
-+		/* If we polled, count this as a successful poll */
-+		if (vc->halt_poll_ns)
-+			++vc->runner->stat.halt_successful_poll;
- 		goto out;
- 	}
- 
-+	start_wait = ktime_get();
-+
- 	vc->vcore_state = VCORE_SLEEPING;
- 	trace_kvmppc_vcore_blocked(vc, 0);
- 	spin_unlock(&vc->lock);
-@@ -2723,11 +2731,29 @@ static void kvmppc_vcore_blocked(struct kvmppc_vcore *vc)
- 	spin_lock(&vc->lock);
- 	vc->vcore_state = VCORE_INACTIVE;
- 	trace_kvmppc_vcore_blocked(vc, 1);
-+	++vc->runner->stat.halt_successful_wait;
- 
- 	cur = ktime_get();
- 
- out:
--	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
-+	block_ns = ktime_to_ns(cur) - ktime_to_ns(start_poll);
-+
-+	/* Attribute wait time */
-+	if (do_sleep) {
-+		vc->runner->stat.halt_wait_ns +=
-+			ktime_to_ns(cur) - ktime_to_ns(start_wait);
-+		/* Attribute failed poll time */
-+		if (vc->halt_poll_ns)
-+			vc->runner->stat.halt_poll_fail_ns +=
-+				ktime_to_ns(start_wait) -
-+				ktime_to_ns(start_poll);
-+	} else {
-+		/* Attribute successful poll time */
-+		if (vc->halt_poll_ns)
-+			vc->runner->stat.halt_poll_success_ns +=
-+				ktime_to_ns(cur) -
-+				ktime_to_ns(start_poll);
-+	}
- 
- 	/* Adjust poll time */
- 	if (halt_poll_max_ns) {
 -- 
-2.5.5
+2.1.0
