@@ -1,32 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Lpc04YnzDqdt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 13:12:08 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>
-Cc: "kernel-hardening\@lists.openwall.com"
- <kernel-hardening@lists.openwall.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Jiri Slaby <jslaby@suse.cz>,
- Guenter Roeck <linux@roeck-us.net>, LKML <linux-kernel@vger.kernel.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Alan Modra  <amodra@gmail.com>
-Subject: Re: [kernel-hardening] Re: Linker segfault on powerpc when
- CONFIG_LKDTM=y (was Re: [kernel-hardening] [PATCH 3/5] lkdtm: add function
- for testing .rodata section)
-In-Reply-To: <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
-References: <1465336628-18219-1-git-send-email-keescook@chromium.org>
- <1465336628-18219-4-git-send-email-keescook@chromium.org>
- <87h9b4oebf.fsf@concordia.ellerman.id.au>
- <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
-Date: Tue, 02 Aug 2016 13:12:02 +1000
-Message-ID: <87eg67ooe5.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Lw426fNzDqdt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 13:16:52 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id hh10so11055765pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2016 20:16:52 -0700 (PDT)
+Date: Tue, 2 Aug 2016 13:16:43 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michal Sojka <sojkam1@fel.cvut.cz>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: MPC5200 does not boot
+Message-ID: <20160802131643.0bb9a777@roar.ozlabs.ibm.com>
+In-Reply-To: <1470105873.12584.7.camel@kernel.crashing.org>
+References: <874m74w1m7.fsf@steelpick.2x.cz>
+ <1470105873.12584.7.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,62 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kees Cook <keescook@chromium.org> writes:
+On Tue, 02 Aug 2016 12:44:33 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Mon, Aug 1, 2016 at 5:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Kees Cook <keescook@chromium.org> writes:
->>
->>> This adds a function that lives in the .rodata section. The section
->>> flags are corrected using objcopy since there is no way with gcc to
->>> declare section flags in an architecture-agnostic way.
->>>
->>> Signed-off-by: Kees Cook <keescook@chromium.org>
->>> ---
->>>  drivers/misc/Makefile       |  7 +++++++
->>>  drivers/misc/lkdtm.h        |  6 ++++++
->>>  drivers/misc/lkdtm_core.c   | 24 +++++++++++++++++-------
->>>  drivers/misc/lkdtm_rodata.c | 10 ++++++++++
->>>  4 files changed, 40 insertions(+), 7 deletions(-)
->>>  create mode 100644 drivers/misc/lkdtm.h
->>>  create mode 100644 drivers/misc/lkdtm_rodata.c
->>
->> This is blowing up my linker :(
->>
->>   scripts/link-vmlinux.sh: line 52: 36260 Segmentation fault      (core dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds} ${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
->>
->> Haven't had a chance to debug it further.
->
-> Argh. Do you want a quick fix for this now? I can add a PPC CONFIG
-> blacklist for the rodata check, maybe?
+> On Tue, 2016-08-02 at 00:44 +0200, Michal Sojka wrote:
+> > Hi Benjamin,
+> >=20
+> > the following commit causes my MPC5200 not to boot.
+> >=20
+> > =C2=A0=C2=A0=C2=A0=C2=A0commit 9402c684613163888714df0955fa1f17142b08bf=
+ =20
+> > > =C2=A0=C2=A0=C2=A0=C2=A0Author: Benjamin Herrenschmidt <benh@kernel.c=
+rashing.org> =20
+> > =C2=A0=C2=A0=C2=A0=C2=A0Date:=C2=A0=C2=A0=C2=A0Tue Jul 5 15:03:41 2016 =
++1000
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc: Factor do_feat=
+ure_fixup calls
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A032 and 64-bit do a simi=
+lar set of calls early on, we move it all to
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0a single common functio=
+n to make the boot code more readable.
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Benjamin=
+ Herrenschmidt <benh@kernel.crashing.org> =20
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Michae=
+l Ellerman <mpe@ellerman.id.au> =20
+> >=20
+> > I suspect that the cause will be similar as described in commit
+> > 1cd03890ea64795e53f17a94928cca22495acb2a. Unfortunately, I don't have
+> > much time to debug this, but I can easily test patches. =20
+>=20
+> Are you sure of your bisection ? Did you verify that reverting that one
+> patch fixes it ? Because all this does is move code to a function,
+> the code is functionally the same and called in the same place...
 
-Nah that's OK, none of our defconfigs have it enabled so it's not a real
-blocker. It also builds OK as a module - though I haven't tested the
-result yet.
++	struct cpu_spec *spec =3D *PTRRELOC(&cur_cpu_spec);
++
++	/*
++	 * Apply the CPU-specific and firmware specific fixups to kernel text
++	 * (nop out sections not relevant to this CPU or this firmware).
++	 */
++	do_feature_fixups(spec->cpu_features,
++			  PTRRELOC(&__start___ftr_fixup),
++			  PTRRELOC(&__stop___ftr_fixup));
 
-> Also, what version of gcc? I'll see if I can reproduce this with a
-> cross compiler...
+Shouldn't these be PTRRELOC(spec)->cpu_features ? You are relocating
+access to the pointer word, but not the address it contains.
+identify_cpu() returns the relocated pointer which is what 32-bit used
+to use.
 
-The original hit was with gcc-5.3 (which is actually a x86->ppc cross):
-
-  http://kisskb.ellerman.id.au/kisskb/buildresult/12762730/
-
-But I can also reproduce with 5.4, and 6.1.0.
-
-Interestingly I *can't* reproduce with the Ubuntu x86->ppc cross
-(5.4.0-6ubuntu1~16.04.1).
-
-Those toolchains are all using binutils 2.26 AFAIK.
-
-Going back to a really old toolchain (gcc 4.6.3/binutils 2.22) it does
-build but I get these warnings:
-
- powerpc64-linux-ld: drivers/misc/built-in.o: .opd is not a regular array of opd entries
- powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
- powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
- powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
- powerpc64-linux-ld: drivers/built-in.o: .opd is not a regular array of opd entries
-
-
-So probably don't worry about it and we'll try and work it out on our end.
-
-cheers
+Thanks,
+Nick
