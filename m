@@ -1,17 +1,17 @@
 Return-Path: <baolex.ni@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s3YSp4fqZzDqQ6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 21:12:26 +1000 (AEST)
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s3Yhx73LvzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 21:22:57 +1000 (AEST)
 From: Baole Ni <baolex.ni@intel.com>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- adam.buchbinder@gmail.com, stewart@linux.vnet.ibm.com,
- chuansheng.liu@intel.com, baolex.ni@intel.com
-Subject: [PATCH 0018/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 18:34:39 +0800
-Message-Id: <20160802103439.14958-1-baolex.ni@intel.com>
+To: mchehab@kernel.org, maurochehab@gmail.com, mchehab@infradead.org,
+ mchehab@redhat.com, m.chehab@samsung.com, olof@lixom.net, egor@pasemi.com,
+ dougthompson@xmission.com, bp@alien8.de
+Cc: linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org,
+ linux-kernel@vger.kernel.org, chuansheng.liu@intel.com,
+ baolex.ni@intel.com, lee.jones@linaro.org
+Subject: [PATCH 0157/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 18:45:15 +0800
+Message-Id: <20160802104515.24206-1-baolex.ni@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +30,20 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- arch/powerpc/platforms/powernv/idle.c | 2 +-
+ drivers/edac/pasemi_edac.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index fcc8b68..69232b1 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -226,7 +226,7 @@ fail:
- 	return -EIO;
- }
- 
--static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
-+static DEVICE_ATTR(fastsleep_workaround_applyonce, S_IRUSR | S_IWUSR,
- 			show_fastsleep_workaround_applyonce,
- 			store_fastsleep_workaround_applyonce);
+diff --git a/drivers/edac/pasemi_edac.c b/drivers/edac/pasemi_edac.c
+index 9c971b5..8150e95 100644
+--- a/drivers/edac/pasemi_edac.c
++++ b/drivers/edac/pasemi_edac.c
+@@ -310,6 +310,6 @@ module_exit(pasemi_edac_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Egor Martovetsky <egor@pasemi.com>");
+ MODULE_DESCRIPTION("MC support for PA Semi PWRficient memory controller");
+-module_param(edac_op_state, int, 0444);
++module_param(edac_op_state, int, S_IRUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
  
 -- 
 2.9.2
