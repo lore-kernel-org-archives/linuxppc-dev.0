@@ -1,18 +1,36 @@
-Return-Path: <baolex.ni@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s3c5V37B9zDqQ6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 23:10:54 +1000 (AEST)
-From: Baole Ni <baolex.ni@intel.com>
-To: geoff@infradead.org, perex@perex.cz, tiwai@suse.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- davem@davemloft.net, m.szyprowski@samsung.com, kyungmin.park@samsung.com,
- k.kozlowski@samsung.com
-Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, chuansheng.liu@intel.com,
- baolex.ni@intel.com, aryabinin@virtuozzo.com
-Subject: [PATCH 1264/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 20:32:46 +0800
-Message-Id: <20160802123246.2235-1-baolex.ni@intel.com>
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
+ [IPv6:2607:f8b0:400e:c00::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3gHT5Y1HzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 01:34:45 +1000 (AEST)
+Received: by mail-pf0-x235.google.com with SMTP id p64so67605941pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 08:34:45 -0700 (PDT)
+Subject: Re: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+References: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <1956647.cOmaJREgOE@wuerfel>
+ <DB5PR0401MB19280ACA87C7F5EE2822D5FB91040@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <2484583.95xFmO7xir@wuerfel>
+Cc: Scott Wood <scott.wood@nxp.com>,
+ "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "zajec5@gmail.com" <zajec5@gmail.com>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "David.Laight@aculab.com" <David.Laight@aculab.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "linux@roeck-us.net" <linux@roeck-us.net>
+From: arvind Yadav <arvind.yadav.cs@gmail.com>
+Message-ID: <57A0BD8E.9050305@gmail.com>
+Date: Tue, 2 Aug 2016 21:04:38 +0530
+MIME-Version: 1.0
+In-Reply-To: <2484583.95xFmO7xir@wuerfel>
+Content-Type: multipart/alternative;
+ boundary="------------030904010008080602080808"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +40,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+This is a multi-part message in MIME format.
+--------------030904010008080602080808
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
----
- sound/ppc/snd_ps3.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index 3682425..594d694 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -51,15 +51,15 @@ static struct snd_ps3_card_info the_card;
+
+On Tuesday 02 August 2016 01:15 PM, Arnd Bergmann wrote:
+> On Monday, August 1, 2016 4:55:43 PM CEST Scott Wood wrote:
+>> On 08/01/2016 02:02 AM, Arnd Bergmann wrote:
+>>>> diff --git a/include/linux/err.h b/include/linux/err.h
+>>>> index 1e35588..c2a2789 100644
+>>>> --- a/include/linux/err.h
+>>>> +++ b/include/linux/err.h
+>>>> @@ -18,7 +18,17 @@
+>>>>   
+>>>>   #ifndef __ASSEMBLY__
+>>>>   
+>>>> -#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
+>>>> +#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
+>>>> +
+>>>> +static inline int is_error_check(unsigned long error)
+>>> Please leave the existing macro alone. I think you were looking for
+>>> something specific to the return code of qe_muram_alloc() function,
+>>> so please add a helper in that subsystem if you need it, not in
+>>> the generic header files.
+>> qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The
+>> problem is certain callers that store the return value in a u32.  Why
+>> not just fix those callers to store it in unsigned long (at least until
+>> error checking is done)?
+>>
+> Yes, that would also address another problem with code like
+>
+>           kfree((void *)ugeth->tx_bd_ring_offset[i]);
+>
+> which is not 64-bit safe when tx_bd_ring_offset is a 32-bit value
+> that also holds the return value of qe_muram_alloc.
+>
+> 	Arnd
+Yes, we will fix caller. Caller api is not safe on 64bit.
+Even qe_muram_addr(a.k.a. cpm_muram_addr )passing value unsigned int,
+but it should be unsigned long.
+
+
+
+--------------030904010008080602080808
+Content-Type: text/html; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252"
+      http-equiv="Content-Type">
+  </head>
+  <body text="#000000" bgcolor="#FFFFFF">
+    <br>
+    <br>
+    <div class="moz-cite-prefix">On Tuesday 02 August 2016 01:15 PM,
+      Arnd Bergmann wrote:<br>
+    </div>
+    <blockquote cite="mid:2484583.95xFmO7xir@wuerfel" type="cite">
+      <pre wrap="">On Monday, August 1, 2016 4:55:43 PM CEST Scott Wood wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">On 08/01/2016 02:02 AM, Arnd Bergmann wrote:
+</pre>
+      </blockquote>
+      <pre wrap="">
+</pre>
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <blockquote type="cite">
+            <pre wrap="">diff --git a/include/linux/err.h b/include/linux/err.h
+index 1e35588..c2a2789 100644
+--- a/include/linux/err.h
++++ b/include/linux/err.h
+@@ -18,7 +18,17 @@
  
- static int snd_ps3_start_delay = CONFIG_SND_PS3_DEFAULT_START_DELAY;
+ #ifndef __ASSEMBLY__
  
--module_param_named(start_delay, snd_ps3_start_delay, uint, 0644);
-+module_param_named(start_delay, snd_ps3_start_delay, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(start_delay, "time to insert silent data in ms");
- 
- static int index = SNDRV_DEFAULT_IDX1;
- static char *id = SNDRV_DEFAULT_STR1;
- 
--module_param(index, int, 0444);
-+module_param(index, int, S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(index, "Index value for PS3 soundchip.");
--module_param(id, charp, 0444);
-+module_param(id, charp, S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(id, "ID string for PS3 soundchip.");
- 
- 
--- 
-2.9.2
+-#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) &gt;= (unsigned long)-MAX_ERRNO)
++#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
++
++static inline int is_error_check(unsigned long error)
+</pre>
+          </blockquote>
+          <pre wrap="">
+Please leave the existing macro alone. I think you were looking for
+something specific to the return code of qe_muram_alloc() function,
+so please add a helper in that subsystem if you need it, not in
+the generic header files.
+</pre>
+        </blockquote>
+        <pre wrap="">
+qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The
+problem is certain callers that store the return value in a u32.  Why
+not just fix those callers to store it in unsigned long (at least until
+error checking is done)?
+
+</pre>
+      </blockquote>
+      <pre wrap="">
+Yes, that would also address another problem with code like
+
+         kfree((void *)ugeth-&gt;tx_bd_ring_offset[i]);
+
+which is not 64-bit safe when tx_bd_ring_offset is a 32-bit value
+that also holds the return value of qe_muram_alloc.
+
+	Arnd</pre>
+    </blockquote>
+    Yes, we will fix caller. Caller api is not safe on 64bit. <br>
+    Even qe_muram_addr(a.k.a. cpm_muram_addr )passing value unsigned
+    int,<br>
+    but it should be unsigned long.<br>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <br>
+    <br>
+  </body>
+</html>
+
+--------------030904010008080602080808--
