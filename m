@@ -1,18 +1,19 @@
 Return-Path: <chenhui.zhao@nxp.com>
-Received: from NAM01-BY2-obe.outbound.protection.outlook.com
- (mail-by2nam01on0064.outbound.protection.outlook.com [104.47.34.64])
+Received: from NAM03-DM3-obe.outbound.protection.outlook.com
+ (mail-dm3nam03on0048.outbound.protection.outlook.com [104.47.41.48])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3ZsJ5Y1kzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 22:15:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3Zsz4xDMzDqS1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 22:15:51 +1000 (AEST)
 From: Chenhui Zhao <chenhui.zhao@nxp.com>
 To: <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>
 CC: <jason.jin@nxp.com>, <z.chenhui@gmail.com>, Chenhui Zhao
  <chenhui.zhao@nxp.com>
-Subject: [PATCH v3 0/5] powerpc/pm: QorIQ deep sleep
-Date: Tue, 2 Aug 2016 19:59:28 +0800
-Message-ID: <1470139172-12699-2-git-send-email-chenhui.zhao@nxp.com>
+Subject: [PATCH v3 2/5] powerpc/85xx: support sleep feature on QorIQ SoCs with
+ RCPM
+Date: Tue, 2 Aug 2016 19:59:29 +0800
+Message-ID: <1470139172-12699-3-git-send-email-chenhui.zhao@nxp.com>
 In-Reply-To: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
 References: <1470139172-12699-1-git-send-email-chenhui.zhao@nxp.com>
 MIME-Version: 1.0
@@ -26,63 +27,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes for v3:
-* add mcke-gpios in dts to specify the GPIO pin which works as MCKE signal
+In sleep mode, the clocks of e500 cores and unused IP blocks is
+turned off. The IP blocks which are allowed to wake up the processor
+are still running.
 
-Changes for v2:
-* Ioremap every dts node used in the patches.
-* Check the board compatible string to see if the board supports deep sleep.
-* Can not reserve the first page of DDR memory, because PPC64 doesn't support
-  changing the kernel base address. So still save and restore the first 128 bytes
-  of DDR memory.
-* Still save and restoer CCSR registers in kernel, because bootloader doesn't
-  know what register values to restore
-* Changed copyright and email address from freescale to NXP
+The sleep mode is equal to the Standby state in Linux. Use the
+command to enter sleep mode:
+  echo standby > /sys/power/state
 
-Please refer to the version 1:
-[1/4] powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
-http://patchwork.ozlabs.org/patch/502549/
-
-[2/4] powerpc: get the physical base address of DCSR
-http://patchwork.ozlabs.org/patch/502551/
-It is removed.
-
-[3/4] powerpc: pm: add EPU FSM configuration for deep sleep
-http://patchwork.ozlabs.org/patch/502548/
-
-[4/4] powerpc: pm: support deep sleep feature on T104x
-http://patchwork.ozlabs.org/patch/502550/
-
-
-Chenhui Zhao (5):
-  powerpc/dts: add mcke-gpios for PM feature
-  powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
-  powerpc: pm: add EPU FSM configuration for deep sleep
-  powerpc/pm: support deep sleep feature on T104x
-  powerpc/pm: save and restore registers during deep sleep
-
- Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  13 +
- arch/powerpc/Kconfig                               |   3 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |   3 +
- arch/powerpc/include/asm/fsl_pm.h                  |  28 +-
- arch/powerpc/kernel/asm-offsets.c                  |  12 +
- arch/powerpc/kernel/fsl_booke_entry_mapping.S      |  10 +
- arch/powerpc/kernel/head_64.S                      |   2 +-
- arch/powerpc/platforms/85xx/Kconfig                |   5 +
- arch/powerpc/platforms/85xx/Makefile               |   2 +
- arch/powerpc/platforms/85xx/deepsleep.c            | 384 +++++++++++++++
- arch/powerpc/platforms/85xx/qoriq_pm.c             |  84 ++++
- arch/powerpc/platforms/85xx/sleep_fsm.c            | 267 +++++++++++
- arch/powerpc/platforms/85xx/sleep_fsm.h            |  92 ++++
- arch/powerpc/platforms/85xx/t104x_deepsleep.S      | 531 +++++++++++++++++++++
- arch/powerpc/platforms/86xx/Kconfig                |   1 +
- arch/powerpc/sysdev/fsl_rcpm.c                     |  28 +-
- 16 files changed, 1446 insertions(+), 19 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
+---
+ arch/powerpc/Kconfig                   |  3 +-
+ arch/powerpc/include/asm/fsl_pm.h      |  2 +-
+ arch/powerpc/platforms/85xx/Kconfig    |  5 +++
+ arch/powerpc/platforms/85xx/Makefile   |  1 +
+ arch/powerpc/platforms/85xx/qoriq_pm.c | 59 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig    |  1 +
+ arch/powerpc/sysdev/fsl_rcpm.c         | 20 ++++--------
+ 7 files changed, 74 insertions(+), 17 deletions(-)
  create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
- create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.c
- create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.h
- create mode 100644 arch/powerpc/platforms/85xx/t104x_deepsleep.S
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0a9d439..078d08c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -242,7 +242,7 @@ config ARCH_HIBERNATION_POSSIBLE
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+-		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
++		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
+ 		   || 44x || 40x
+ 
+ config PPC_DCR_NATIVE
+@@ -778,7 +778,6 @@ config FSL_PCI
+ 
+ config FSL_PMC
+ 	bool
+-	default y
+ 	depends on SUSPEND && (PPC_85xx || PPC_86xx)
+ 	help
+ 	  Freescale MPC85xx/MPC86xx power management controller support
+diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
+index 47df55e..e05049b 100644
+--- a/arch/powerpc/include/asm/fsl_pm.h
++++ b/arch/powerpc/include/asm/fsl_pm.h
+@@ -34,7 +34,7 @@ struct fsl_pm_ops {
+ 	void (*cpu_exit_state)(int cpu, int state);
+ 	void (*cpu_up_prepare)(int cpu);
+ 	void (*cpu_die)(int cpu);
+-	int (*plat_enter_sleep)(void);
++	int (*plat_enter_sleep)(int state);
+ 	void (*freeze_time_base)(bool freeze);
+ 
+ 	/* keep the power of IP blocks during sleep/deep sleep */
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index e626461..dff2ea6 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -9,6 +9,8 @@ menuconfig FSL_SOC_BOOKE
+ 	select SERIAL_8250_EXTENDED if SERIAL_8250
+ 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
+ 	select FSL_CORENET_RCPM if PPC_E500MC
++	select FSL_QORIQ_PM if SUSPEND && PPC_E500MC
++	select FSL_PMC if SUSPEND && !PPC_E500MC
+ 	default y
+ 
+ if FSL_SOC_BOOKE
+@@ -289,3 +291,6 @@ endif # FSL_SOC_BOOKE
+ 
+ config TQM85xx
+ 	bool
++
++config FSL_QORIQ_PM
++	bool
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 7bc86da..fdae28b 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -3,6 +3,7 @@
+ #
+ obj-$(CONFIG_SMP) += smp.o
+ obj-$(CONFIG_FSL_PMC)		  += mpc85xx_pm_ops.o
++obj-$(CONFIG_FSL_QORIQ_PM)	  += qoriq_pm.o
+ 
+ obj-y += common.o
+ 
+diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
+new file mode 100644
+index 0000000..c97ef8f
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
+@@ -0,0 +1,59 @@
++/*
++ * Support Power Management feature
++ *
++ * Copyright 2016 Freescale Semiconductor Inc.
++ *
++ * Author: Chenhui Zhao <chenhui.zhao@nxp.com>
++ *
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/suspend.h>
++#include <linux/of_platform.h>
++
++#include <asm/fsl_pm.h>
++
++static unsigned int pm_modes;
++
++static int qoriq_suspend_enter(suspend_state_t state)
++{
++	int ret = 0;
++
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++		ret = qoriq_pm_ops->plat_enter_sleep(FSL_PM_SLEEP);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++
++static int qoriq_suspend_valid(suspend_state_t state)
++{
++
++	if (state == PM_SUSPEND_STANDBY && (pm_modes & FSL_PM_SLEEP))
++		return 1;
++
++	return 0;
++}
++
++static const struct platform_suspend_ops qoriq_suspend_ops = {
++	.valid = qoriq_suspend_valid,
++	.enter = qoriq_suspend_enter,
++};
++
++static int __init qoriq_suspend_init(void)
++{
++	/* support sleep by default */
++	pm_modes |= FSL_PM_SLEEP;
++
++	suspend_set_ops(&qoriq_suspend_ops);
++	return 0;
++}
++arch_initcall(qoriq_suspend_init);
+diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
+index 1afd1e4..09638e0 100644
+--- a/arch/powerpc/platforms/86xx/Kconfig
++++ b/arch/powerpc/platforms/86xx/Kconfig
+@@ -5,6 +5,7 @@ menuconfig PPC_86xx
+ 	select FSL_SOC
+ 	select ALTIVEC
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
++	select FSL_PMC if SUSPEND
+ 	help
+ 	  The Freescale E600 SoCs have 74xx cores.
+ 
+diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
+index 9259a94..e5447ac 100644
+--- a/arch/powerpc/sysdev/fsl_rcpm.c
++++ b/arch/powerpc/sysdev/fsl_rcpm.c
+@@ -218,14 +218,15 @@ static void rcpm_v2_cpu_up_prepare(int cpu)
+ 	rcpm_v2_irq_unmask(cpu);
+ }
+ 
+-static int rcpm_v1_plat_enter_state(int state)
++static int rcpm_v1_plat_enter_sleep(int state)
+ {
+ 	u32 *pmcsr_reg = &rcpm_v1_regs->powmgtcsr;
+ 	int ret = 0;
+ 	int result;
+ 
+ 	switch (state) {
+-	case PLAT_PM_SLEEP:
++	case FSL_PM_SLEEP:
++		cur_cpu_spec->cpu_down_flush();
+ 		setbits32(pmcsr_reg, RCPM_POWMGTCSR_SLP);
+ 
+ 		/* Upon resume, wait for RCPM_POWMGTCSR_SLP bit to be clear. */
+@@ -244,14 +245,15 @@ static int rcpm_v1_plat_enter_state(int state)
+ 	return ret;
+ }
+ 
+-static int rcpm_v2_plat_enter_state(int state)
++static int rcpm_v2_plat_enter_sleep(int state)
+ {
+ 	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
+ 	int ret = 0;
+ 	int result;
+ 
+ 	switch (state) {
+-	case PLAT_PM_LPM20:
++	case FSL_PM_SLEEP:
++		cur_cpu_spec->cpu_down_flush();
+ 		/* clear previous LPM20 status */
+ 		setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
+ 		/* enter LPM20 status */
+@@ -275,16 +277,6 @@ static int rcpm_v2_plat_enter_state(int state)
+ 	return ret;
+ }
+ 
+-static int rcpm_v1_plat_enter_sleep(void)
+-{
+-	return rcpm_v1_plat_enter_state(PLAT_PM_SLEEP);
+-}
+-
+-static int rcpm_v2_plat_enter_sleep(void)
+-{
+-	return rcpm_v2_plat_enter_state(PLAT_PM_LPM20);
+-}
+-
+ static void rcpm_common_freeze_time_base(u32 *tben_reg, int freeze)
+ {
+ 	static u32 mask;
 -- 
 1.9.1
