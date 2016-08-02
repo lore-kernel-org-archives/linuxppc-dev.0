@@ -1,24 +1,22 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3hsQ2whZzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 02:45:46 +1000 (AEST)
-Message-ID: <1470156329.16559.57.camel@infradead.org>
-Subject: Re: [PATCH 0867/1285] Replace numeric parameter like 0444 with macro
-From: Geoff Levand <geoff@infradead.org>
-To: Baole Ni <baolex.ni@intel.com>, benh@kernel.crashing.org,
- paulus@samba.org,  mpe@ellerman.id.au, dwmw2@infradead.org,
- m.chehab@samsung.com, pawel@osciak.com,  m.szyprowski@samsung.com,
- kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- chuansheng.liu@intel.com
-Date: Tue, 02 Aug 2016 09:45:29 -0700
-In-Reply-To: <20160802115333.7780-1-baolex.ni@intel.com>
-References: <20160802115333.7780-1-baolex.ni@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <dave.hansen@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s3kjx0QZqzDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 04:09:23 +1000 (AEST)
+Subject: Re: [PATCH 1/2] mm: Allow disabling deferred struct page
+ initialisation
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>,
+ Michal Hocko <mhocko@kernel.org>, Andrew Morton
+ <akpm@linux--foundation.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1470143947-24443-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <57A0E1D1.8020608@intel.com>
+Date: Tue, 2 Aug 2016 11:09:21 -0700
+MIME-Version: 1.0
+In-Reply-To: <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-02 at 19:53 +0800, Baole Ni wrote:
-> I find that the developers often just specified the numeric value
-> when calling a macro which is defined with a parameter for access
-> permission.
-> As we know, these numeric value for access permission have had the
-> corresponding macro,
-> and that using macro can improve the robustness and readability of
-> the code,
-> thus, I suggest replacing the numeric parameter with the macro.
-> 
-> Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-> Signed-off-by: Baole Ni <baolex.ni@intel.com>
-> ---
->  
->  static int timeout = 5000;	/* in msec ( 5 sec ) */
-> -module_param(timeout, int, 0644);
-> +module_param(timeout, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+On 08/02/2016 06:19 AM, Srikar Dronamraju wrote:
+> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
+> only certain size memory per node. The certain size takes into account
+> the dentry and inode cache sizes. However such a kernel when booting a
+> secondary kernel will not be able to allocate the required amount of
+> memory to suffice for the dentry and inode caches. This results in
+> crashes like the below on large systems such as 32 TB systems.
 
-To me, 644 is more 'readable', and as for robustness, the meaning of
-644 will never change.
-
--Geoff
+What's a "secondary kernel"?
