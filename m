@@ -1,36 +1,24 @@
-Return-Path: <arvind.yadav.cs@gmail.com>
-Received: from mail-pf0-x235.google.com (mail-pf0-x235.google.com
- [IPv6:2607:f8b0:400e:c00::235])
+Return-Path: <mcgrof@gmail.com>
+Received: from mail-yw0-x243.google.com (mail-yw0-x243.google.com
+ [IPv6:2607:f8b0:4002:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3gHT5Y1HzDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 01:34:45 +1000 (AEST)
-Received: by mail-pf0-x235.google.com with SMTP id p64so67605941pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 08:34:45 -0700 (PDT)
-Subject: Re: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-References: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
- <1956647.cOmaJREgOE@wuerfel>
- <DB5PR0401MB19280ACA87C7F5EE2822D5FB91040@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <2484583.95xFmO7xir@wuerfel>
-Cc: Scott Wood <scott.wood@nxp.com>,
- "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "zajec5@gmail.com" <zajec5@gmail.com>,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- "David.Laight@aculab.com" <David.Laight@aculab.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "linux@roeck-us.net" <linux@roeck-us.net>
-From: arvind Yadav <arvind.yadav.cs@gmail.com>
-Message-ID: <57A0BD8E.9050305@gmail.com>
-Date: Tue, 2 Aug 2016 21:04:38 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s3pqn2VHlzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 07:14:45 +1000 (AEST)
+Received: by mail-yw0-x243.google.com with SMTP id z8so15553689ywa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Aug 2016 14:14:45 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2484583.95xFmO7xir@wuerfel>
-Content-Type: multipart/alternative;
- boundary="------------030904010008080602080808"
+Sender: mcgrof@gmail.com
+From: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
+Date: Tue, 2 Aug 2016 14:14:22 -0700
+Message-ID: <CAB=NE6Xu2t7JYUfvZcPSpX_Yt2yN9ooWgzctZFMr3LZGG1hVzw@mail.gmail.com>
+Subject: linker tables on powerpc - build issues
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Fengguang Wu <fengguang.wu@intel.com>,
+ Guenter Roeck <linux@roeck-us.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,128 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030904010008080602080808
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+I've run into a few compilation issues with linker tables support [0]
+[1] on only a few architectures:
 
+blackfin - compiler issue it seems, I have a work around now in place
+arm  - some alignment issue - still need to iron this out
+powerpc - issue with including <asm/sections.h> on <asm/jump_labels.h>
 
+The issue with powerpc can be replicated easily with the patch below,
+and compilation fails even on a 'make defconfig' configuration, the
+issues are recurring include header ordering issues. I've given this
+some tries to fix but am still a bit bewildered how to best do this
+without affecting non-powerpc compilations.  The patch below
+replicates the changes in question, it does not include the linker
+table work at all, it just includes <asm/sections.h> instead of
+<asm/tables.h> to reduce and provide an example of the issues
+observed. The list of errors are also pretty endless... so was hoping
+some power folks might be able to take a glance if possible. If you
+have any ideas, please let me know.
 
-On Tuesday 02 August 2016 01:15 PM, Arnd Bergmann wrote:
-> On Monday, August 1, 2016 4:55:43 PM CEST Scott Wood wrote:
->> On 08/01/2016 02:02 AM, Arnd Bergmann wrote:
->>>> diff --git a/include/linux/err.h b/include/linux/err.h
->>>> index 1e35588..c2a2789 100644
->>>> --- a/include/linux/err.h
->>>> +++ b/include/linux/err.h
->>>> @@ -18,7 +18,17 @@
->>>>   
->>>>   #ifndef __ASSEMBLY__
->>>>   
->>>> -#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
->>>> +#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
->>>> +
->>>> +static inline int is_error_check(unsigned long error)
->>> Please leave the existing macro alone. I think you were looking for
->>> something specific to the return code of qe_muram_alloc() function,
->>> so please add a helper in that subsystem if you need it, not in
->>> the generic header files.
->> qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The
->> problem is certain callers that store the return value in a u32.  Why
->> not just fix those callers to store it in unsigned long (at least until
->> error checking is done)?
->>
-> Yes, that would also address another problem with code like
->
->           kfree((void *)ugeth->tx_bd_ring_offset[i]);
->
-> which is not 64-bit safe when tx_bd_ring_offset is a 32-bit value
-> that also holds the return value of qe_muram_alloc.
->
-> 	Arnd
-Yes, we will fix caller. Caller api is not safe on 64bit.
-Even qe_muram_addr(a.k.a. cpm_muram_addr )passing value unsigned int,
-but it should be unsigned long.
+[0] https://lkml.kernel.org/r/1469222687-1600-1-git-send-email-mcgrof@kernel.org
+[1] https://git.kernel.org/cgit/linux/kernel/git/mcgrof/linux-next.git/log/?h=20160729-linker-table-v4-blackfin2
 
+diff --git a/arch/powerpc/include/asm/jump_label.h
+b/arch/powerpc/include/asm/jump_label.h
+index 9a287e0ac8b1..68e46825b0f8 100644
+--- a/arch/powerpc/include/asm/jump_label.h
++++ b/arch/powerpc/include/asm/jump_label.h
+@@ -9,6 +9,7 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
++#include <asm/sections.h>
 
-
---------------030904010008080602080808
-Content-Type: text/html; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=windows-1252"
-      http-equiv="Content-Type">
-  </head>
-  <body text="#000000" bgcolor="#FFFFFF">
-    <br>
-    <br>
-    <div class="moz-cite-prefix">On Tuesday 02 August 2016 01:15 PM,
-      Arnd Bergmann wrote:<br>
-    </div>
-    <blockquote cite="mid:2484583.95xFmO7xir@wuerfel" type="cite">
-      <pre wrap="">On Monday, August 1, 2016 4:55:43 PM CEST Scott Wood wrote:
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">On 08/01/2016 02:02 AM, Arnd Bergmann wrote:
-</pre>
-      </blockquote>
-      <pre wrap="">
-</pre>
-      <blockquote type="cite">
-        <blockquote type="cite">
-          <blockquote type="cite">
-            <pre wrap="">diff --git a/include/linux/err.h b/include/linux/err.h
-index 1e35588..c2a2789 100644
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -18,7 +18,17 @@
- 
  #ifndef __ASSEMBLY__
- 
--#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) &gt;= (unsigned long)-MAX_ERRNO)
-+#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
+ #include <linux/types.h>
+diff --git a/arch/powerpc/include/asm/sections.h
+b/arch/powerpc/include/asm/sections.h
+index 7dc006b58369..929decb62d9c 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -1,11 +1,14 @@
+ #ifndef _ASM_POWERPC_SECTIONS_H
+ #define _ASM_POWERPC_SECTIONS_H
+-#ifdef __KERNEL__
+
++#if defined(__KERNEL__) && !defined(__ASSEMBLER__) && !defined(__ASSEMBLY__)
+ #include <linux/elf.h>
+ #include <linux/uaccess.h>
++#endif /* defined(__KERNEL__) && !defined(__ASSEMBLER__) &&
+!defined(__ASSEMBLY__) */
 +
-+static inline int is_error_check(unsigned long error)
-</pre>
-          </blockquote>
-          <pre wrap="">
-Please leave the existing macro alone. I think you were looking for
-something specific to the return code of qe_muram_alloc() function,
-so please add a helper in that subsystem if you need it, not in
-the generic header files.
-</pre>
-        </blockquote>
-        <pre wrap="">
-qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The
-problem is certain callers that store the return value in a u32.  Why
-not just fix those callers to store it in unsigned long (at least until
-error checking is done)?
+ #include <asm-generic/sections.h>
 
-</pre>
-      </blockquote>
-      <pre wrap="">
-Yes, that would also address another problem with code like
++#if defined(__KERNEL__) && !defined(__ASSEMBLER__) && !defined(__ASSEMBLY__)
+ #ifdef __powerpc64__
 
-         kfree((void *)ugeth-&gt;tx_bd_ring_offset[i]);
+ extern char __start_interrupts[];
+@@ -77,5 +80,5 @@ static inline void *dereference_function_descriptor(void *ptr)
 
-which is not 64-bit safe when tx_bd_ring_offset is a 32-bit value
-that also holds the return value of qe_muram_alloc.
+ #endif
 
-	Arnd</pre>
-    </blockquote>
-    Yes, we will fix caller. Caller api is not safe on 64bit. <br>
-    Even qe_muram_addr(a.k.a. cpm_muram_addr )passing value unsigned
-    int,<br>
-    but it should be unsigned long.<br>
-    <meta http-equiv="content-type" content="text/html;
-      charset=windows-1252">
-    <meta http-equiv="content-type" content="text/html;
-      charset=windows-1252">
-    <br>
-    <br>
-  </body>
-</html>
+-#endif /* __KERNEL__ */
++#endif /* defined(__KERNEL__) && !defined(__ASSEMBLER__) &&
+!defined(__ASSEMBLY__) */
+ #endif /* _ASM_POWERPC_SECTIONS_H */
+diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+index af0254c09424..06bceee909da 100644
+--- a/include/asm-generic/sections.h
++++ b/include/asm-generic/sections.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_GENERIC_SECTIONS_H_
+ #define _ASM_GENERIC_SECTIONS_H_
 
---------------030904010008080602080808--
++#if defined(__KERNEL__) && !defined(__ASSEMBLER__) && !defined(__ASSEMBLY__)
++
+ /* References to section boundaries */
+
+ #include <linux/compiler.h>
+@@ -128,4 +130,6 @@ static inline bool init_section_intersects(void
+*virt, size_t size)
+  return memory_intersects(__init_begin, __init_end, virt, size);
+ }
+
++#endif /* defined(__KERNEL__) && !defined(__ASSEMBLER__) &&
+!defined(__ASSEMBLY__)  */
++
+ #endif /* _ASM_GENERIC_SECTIONS_H_ */
+
+
+  Luis
