@@ -1,15 +1,17 @@
 Return-Path: <baolex.ni@intel.com>
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s3Z161Vm6zDqQ3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 21:36:57 +1000 (AEST)
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s3Zr56cD5zDqQ3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2016 22:14:13 +1000 (AEST)
 From: Baole Ni <baolex.ni@intel.com>
-To: colin@colino.net, benh@kernel.crashing.org, hal.rosenstock@gmail.com,
- dledford@redhat.com, sean.hefty@intel.com, bp@alien8.de
+To: imunsie@au1.ibm.com, mikey@neuling.org,
+ suganath-prabu.subramani@broadcom.com, mchehab@redhat.com,
+ m.chehab@samsung.com, pawel@osciak.com, m.szyprowski@samsung.com,
+ kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- chuansheng.liu@intel.com, baolex.ni@intel.com
-Subject: [PATCH 0313/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 18:59:11 +0800
-Message-Id: <20160802105911.2408-1-baolex.ni@intel.com>
+ chuansheng.liu@intel.com, baolex.ni@intel.com, geliangtang@163.com
+Subject: [PATCH 0683/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 19:36:30 +0800
+Message-Id: <20160802113630.27598-1-baolex.ni@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +30,21 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/macintosh/therm_adt746x.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/misc/cxl/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
-index f433521..23c2e3c 100644
---- a/drivers/macintosh/therm_adt746x.c
-+++ b/drivers/macintosh/therm_adt746x.c
-@@ -58,11 +58,11 @@ MODULE_DESCRIPTION("Driver for ADT746x thermostat in iBook G4 and "
- 		   "Powerbook G4 Alu");
- MODULE_LICENSE("GPL");
+diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+index ae68c32..98b36a6 100644
+--- a/drivers/misc/cxl/main.c
++++ b/drivers/misc/cxl/main.c
+@@ -29,7 +29,7 @@ static DEFINE_SPINLOCK(adapter_idr_lock);
+ static DEFINE_IDR(cxl_adapter_idr);
  
--module_param(limit_adjust, int, 0644);
-+module_param(limit_adjust, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(limit_adjust,"Adjust maximum temperatures (50 sensor1, 70 sensor2) "
- 		 "by N degrees.");
+ uint cxl_verbose;
+-module_param_named(verbose, cxl_verbose, uint, 0600);
++module_param_named(verbose, cxl_verbose, uint, S_IRUSR | S_IWUSR);
+ MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
  
--module_param(fan_speed, int, 0644);
-+module_param(fan_speed, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(fan_speed,"Specify starting fan speed (0-255) "
- 		 "(default 64)");
- 
+ const struct cxl_backend_ops *cxl_ops;
 -- 
 2.9.2
