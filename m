@@ -1,17 +1,17 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s464974WczDqS6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 18:41:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s464C514DzDqTy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 18:41:31 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH kernel 10/15] KVM: PPC: Use preregistered memory API to access
- TCE list
-Date: Wed,  3 Aug 2016 18:40:51 +1000
-Message-Id: <1470213656-1042-11-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel 11/15] powerpc/powernv/iommu: Add real mode version of
+ iommu_table_ops::exchange()
+Date: Wed,  3 Aug 2016 18:40:52 +1000
+Message-Id: <1470213656-1042-12-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
 References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,121 +23,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VFIO on sPAPR already implements guest memory pre-registration
-when the entire guest RAM gets pinned. This can be used to translate
-the physical address of a guest page containing the TCE list
-from H_PUT_TCE_INDIRECT.
+In real mode, TCE tables are invalidated using special
+cache-inhibited store instructions which are not available in
+virtual mode
 
-This makes use of the pre-registrered memory API to access TCE list
-pages in order to avoid unnecessary locking on the KVM memory
-reverse map as we know that all of guest memory is pinned and
-we have a flat array mapping GPA to HPA which makes it simpler and
-quicker to index into that array (even with looking up the
-kernel page tables in vmalloc_to_phys) than it is to find the memslot,
-lock the rmap entry, look up the user page tables, and unlock the rmap
-entry. Note that the rmap pointer is initialized to NULL where declared
-(not in this patch).
+This defines and implements exchange_rm() callback. This does not
+define set_rm/clear_rm/flush_rm callbacks as there is no user for those -
+exchange/exchange_rm are only to be used by KVM for VFIO.
+
+The exchange_rm callback is defined for IODA1/IODA2 powernv platforms.
+
+This replaces list_for_each_entry_rcu with its lockless version as
+from now on pnv_pci_ioda2_tce_invalidate() can be called in
+the real mode too.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v2:
-* updated the commit log with Paul's comment
----
- arch/powerpc/kvm/book3s_64_vio_hv.c | 65 ++++++++++++++++++++++++++++---------
- 1 file changed, 49 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/iommu.h          |  7 +++++++
+ arch/powerpc/kernel/iommu.c               | 23 +++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c | 26 +++++++++++++++++++++++++-
+ 3 files changed, 55 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index d461c44..a3be4bd 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -180,6 +180,17 @@ long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
- EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index cd4df44..a13d207 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -64,6 +64,11 @@ struct iommu_table_ops {
+ 			long index,
+ 			unsigned long *hpa,
+ 			enum dma_data_direction *direction);
++	/* Real mode */
++	int (*exchange_rm)(struct iommu_table *tbl,
++			long index,
++			unsigned long *hpa,
++			enum dma_data_direction *direction);
+ #endif
+ 	void (*clear)(struct iommu_table *tbl,
+ 			long index, long npages);
+@@ -209,6 +214,8 @@ extern void iommu_del_device(struct device *dev);
+ extern int __init tce_iommu_bus_notifier_init(void);
+ extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+ 		unsigned long *hpa, enum dma_data_direction *direction);
++extern long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
++		unsigned long *hpa, enum dma_data_direction *direction);
+ #else
+ static inline void iommu_register_group(struct iommu_table_group *table_group,
+ 					int pci_domain_number,
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index a8f017a..65b2dac 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1020,6 +1020,29 @@ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+ }
+ EXPORT_SYMBOL_GPL(iommu_tce_xchg);
  
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
-+static inline bool kvmppc_preregistered(struct kvm_vcpu *vcpu)
++long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
++		unsigned long *hpa, enum dma_data_direction *direction)
 +{
-+	return mm_iommu_preregistered(vcpu->kvm->mm);
-+}
++	long ret;
 +
-+static struct mm_iommu_table_group_mem_t *kvmppc_rm_iommu_lookup(
-+		struct kvm_vcpu *vcpu, unsigned long ua, unsigned long size)
-+{
-+	return mm_iommu_lookup_rm(vcpu->kvm->mm, ua, size);
-+}
++	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
 +
- long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 		unsigned long ioba, unsigned long tce)
- {
-@@ -260,23 +271,44 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
--	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
--		return H_TOO_HARD;
-+	if (kvmppc_preregistered(vcpu)) {
-+		/*
-+		 * We get here if guest memory was pre-registered which
-+		 * is normally VFIO case and gpa->hpa translation does not
-+		 * depend on hpt.
-+		 */
-+		struct mm_iommu_table_group_mem_t *mem;
- 
--	rmap = (void *) vmalloc_to_phys(rmap);
-+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL))
-+			return H_TOO_HARD;
- 
--	/*
--	 * Synchronize with the MMU notifier callbacks in
--	 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
--	 * While we have the rmap lock, code running on other CPUs
--	 * cannot finish unmapping the host real page that backs
--	 * this guest real page, so we are OK to access the host
--	 * real page.
--	 */
--	lock_rmap(rmap);
--	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
--		ret = H_TOO_HARD;
--		goto unlock_exit;
-+		mem = kvmppc_rm_iommu_lookup(vcpu, ua, IOMMU_PAGE_SIZE_4K);
-+		if (!mem || mm_iommu_ua_to_hpa_rm(mem, ua, &tces))
-+			return H_TOO_HARD;
-+	} else {
-+		/*
-+		 * This is emulated devices case.
-+		 * We do not require memory to be preregistered in this case
-+		 * so lock rmap and do __find_linux_pte_or_hugepte().
-+		 */
-+		if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
-+			return H_TOO_HARD;
++	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
++			(*direction == DMA_BIDIRECTIONAL))) {
++		struct page *pg = realmode_pfn_to_page(*hpa >> PAGE_SHIFT);
 +
-+		rmap = (void *) vmalloc_to_phys(rmap);
-+
-+		/*
-+		 * Synchronize with the MMU notifier callbacks in
-+		 * book3s_64_mmu_hv.c (kvm_unmap_hva_hv etc.).
-+		 * While we have the rmap lock, code running on other CPUs
-+		 * cannot finish unmapping the host real page that backs
-+		 * this guest real page, so we are OK to access the host
-+		 * real page.
-+		 */
-+		lock_rmap(rmap);
-+		if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
-+			ret = H_TOO_HARD;
-+			goto unlock_exit;
++		if (likely(pg)) {
++			SetPageDirty(pg);
++		} else {
++			tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
++			ret = -EFAULT;
 +		}
- 	}
- 
- 	for (i = 0; i < npages; ++i) {
-@@ -290,7 +322,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	}
- 
- unlock_exit:
--	unlock_rmap(rmap);
-+	if (rmap)
-+		unlock_rmap(rmap);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(iommu_tce_xchg_rm);
++
+ int iommu_take_ownership(struct iommu_table *tbl)
+ {
+ 	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index c04afd2..a0b5ea6 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1827,6 +1827,17 @@ static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
  
  	return ret;
  }
++
++static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
++		unsigned long *hpa, enum dma_data_direction *direction)
++{
++	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
++
++	if (!ret)
++		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, true);
++
++	return ret;
++}
+ #endif
+ 
+ static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
+@@ -1841,6 +1852,7 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+ 	.set = pnv_ioda1_tce_build,
+ #ifdef CONFIG_IOMMU_API
+ 	.exchange = pnv_ioda1_tce_xchg,
++	.exchange_rm = pnv_ioda1_tce_xchg_rm,
+ #endif
+ 	.clear = pnv_ioda1_tce_free,
+ 	.get = pnv_tce_get,
+@@ -1915,7 +1927,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+ {
+ 	struct iommu_table_group_link *tgl;
+ 
+-	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
++	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
+ 		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
+ 				struct pnv_ioda_pe, table_group);
+ 		struct pnv_phb *phb = pe->phb;
+@@ -1973,6 +1985,17 @@ static int pnv_ioda2_tce_xchg(struct iommu_table *tbl, long index,
+ 
+ 	return ret;
+ }
++
++static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
++		unsigned long *hpa, enum dma_data_direction *direction)
++{
++	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
++
++	if (!ret)
++		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
++
++	return ret;
++}
+ #endif
+ 
+ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
+@@ -1992,6 +2015,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+ 	.set = pnv_ioda2_tce_build,
+ #ifdef CONFIG_IOMMU_API
+ 	.exchange = pnv_ioda2_tce_xchg,
++	.exchange_rm = pnv_ioda2_tce_xchg_rm,
+ #endif
+ 	.clear = pnv_ioda2_tce_free,
+ 	.get = pnv_tce_get,
 -- 
 2.5.0.rc3
