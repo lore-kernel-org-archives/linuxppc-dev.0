@@ -1,24 +1,52 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s42fP3lR7zDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 16:07:24 +1000 (AEST)
-Subject: Re: [PATCH 2/2] fadump: Disable deferred page struct initialisation
-To: Balbir Singh <bsingharora@gmail.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
- Mel Gorman <mgorman@techsingularity.net>, Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux--foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s43L46dhbzDqQt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 16:38:20 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u736XsnR135765
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 02:38:19 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24k0bmp1k3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 02:38:18 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 3 Aug 2016 16:38:16 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E0BCE3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 16:38:12 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u736cClq26804228
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 16:38:12 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u736cBas027504
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 16:38:12 +1000
+Date: Wed, 3 Aug 2016 12:08:08 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ mahesh@linux.vnet.ibm.com, hbathini@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] mm: Allow disabling deferred struct page
+ initialisation
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 References: <1470143947-24443-1-git-send-email-srikar@linux.vnet.ibm.com>
- <1470143947-24443-3-git-send-email-srikar@linux.vnet.ibm.com>
- <1470201642.5034.3.camel@gmail.com>
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <acefe941-2c2a-d7d2-0720-4cfbee404a16@suse.cz>
-Date: Wed, 3 Aug 2016 08:07:19 +0200
+ <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
+ <57A0E1D1.8020608@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <1470201642.5034.3.camel@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <57A0E1D1.8020608@intel.com>
+Message-Id: <20160803063808.GI6310@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +56,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/03/2016 07:20 AM, Balbir Singh wrote:
-> On Tue, 2016-08-02 at 18:49 +0530, Srikar Dronamraju wrote:
->> Fadump kernel reserves significant number of memory blocks. On a multi-node
->> machine, with CONFIG_DEFFERRED_STRUCT_PAGE support, fadump kernel fails to
->> boot. Fix this by disabling deferred page struct initialisation.
->>
->
-> How much memory does a fadump kernel need? Can we bump up the limits depending
-> on the config. I presume when you say fadump kernel you mean kernel with
-> FADUMP in the config?
->
-> BTW, I would much rather prefer a config based solution that does not select
-> DEFERRED_INIT if FADUMP is enabled.
+* Dave Hansen <dave.hansen@intel.com> [2016-08-02 11:09:21]:
 
-IIRC the kdump/fadump kernel is typically the same vmlinux as the main 
-kernel, just with special initrd and boot params. So if you want 
-deferred init for the main kernel, this would be impractical.
+> On 08/02/2016 06:19 AM, Srikar Dronamraju wrote:
+> > Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
+> > only certain size memory per node. The certain size takes into account
+> > the dentry and inode cache sizes. However such a kernel when booting a
+> > secondary kernel will not be able to allocate the required amount of
+> > memory to suffice for the dentry and inode caches. This results in
+> > crashes like the below on large systems such as 32 TB systems.
+> 
+> What's a "secondary kernel"?
+> 
 
-> Balbir
->
+I mean the kernel thats booted to collect the crash, On fadump, the
+first kernel acts as the secondary kernel i.e the same kernel is booted
+to collect the crash.
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
