@@ -1,25 +1,33 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4Mh34ZY2zDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 04:54:58 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Fengguang Wu <fengguang.wu@intel.com>,
- linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
-Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
- next-20160729 build failures
-Date: Wed, 03 Aug 2016 20:52:48 +0200
-Message-ID: <3892328.nUGXIq3MaH@wuerfel>
-In-Reply-To: <20160804013729.7fffa45a@roar.ozlabs.ibm.com>
-References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
- <5216072.9VpDc0iy8Q@wuerfel> <20160804013729.7fffa45a@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4MnD6Z8hzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 04:59:28 +1000 (AEST)
+Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
+ [IPv6:2a00:1450:400c:c09::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3s4MnD0HJSz9sxR
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 04:59:28 +1000 (AEST)
+Received: by mail-wm0-x231.google.com with SMTP id q128so66569296wma.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Aug 2016 11:59:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Sender: keescook@google.com
+In-Reply-To: <1470200371-31565-1-git-send-email-mpe@ellerman.id.au>
+References: <1470200371-31565-1-git-send-email-mpe@ellerman.id.au>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 3 Aug 2016 11:59:24 -0700
+Message-ID: <CAGXu5jJj8AJp0N23KLFQe9vX1qW0-4jkVqEwkKhGj9Q48T4Wtg@mail.gmail.com>
+Subject: Re: [PATCH] lkdtm: Mark lkdtm_rodata_do_nothing() notrace
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@osdl.org>, Greg Kroah-Hartman <greg@kroah.com>,
+ "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
+ Anton Blanchard <anton@samba.org>,
+ Alan Modra <amodra@gmail.com>, Nick Piggin <npiggin@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,99 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, August 4, 2016 1:37:29 AM CEST Nicholas Piggin wrote:
-> 
-> I've attached what I'm using, which builds and runs for me without
-> any work. Your arch obviously has to select the option to use it.
-> 
->     text      data     bss      dec       hex     filename
->     11196784  1185024  1923820  14305628  da495c  vmlinuxppc64.before
->     11187536  1181848  1923176  14292560  da1650  vmlinuxppc64.after
->     
-> ~9K text saving, ~3K data saving. I assume this comes from fewer
-> branch trampolines and toc entries, but haven't verified exactly.
+On Tue, Aug 2, 2016 at 9:59 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> lkdtm_rodata_do_nothing() is an empty function which is generated in
+> order to test the non-executability of rodata.
+>
+> Currently if function tracing is enabled then an mcount callsite will be
+> generated for lkdtm_rodata_do_nothing(), and it will appear in the list
+> of available functions for function tracing (available_filter_functions).
+>
+> Given it's purpose purely as a test function, it seems preferable for
+> lkdtm_rodata_do_nothing() to be marked notrace, so it doesn't appear as
+> traceable.
+>
+> This also avoids triggering a linker bug on powerpc:
+>
+>   https://sourceware.org/bugzilla/show_bug.cgi?id=20428
+>
+> When the linker sees code that needs to generate a call stub, eg. a
+> branch to mcount(), it assumes the section is executable and
+> dereferences a NULL pointer leading to a linker segfault. Marking
+> lkdtm_rodata_do_nothing() notrace avoids triggering the bug because the
+> function contains no other function calls.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-The patch seems to work great, but for me it's getting bigger
-(compared to my older patch, mainline allyesconfig doesn't build):
+Awesome! Thanks for tracking this down. I've applied it to my tree, it
+should get picked up by Greg on my next pull request.
 
-   text	   data	    bss	    dec	    hex	filename
-51299868	42599559	23362148	117261575	6fd4507	vmlinuxarm.before
-51302545	42595015	23361884	117259444	6fd3cb4	vmlinuxarm.after
+-Kees
 
-Most of the difference appears to be in branch trampolines (634 added,
-559 removed, 14837 unchanged) as you suspect, but I also see a couple
-of symbols show up in vmlinux that were not there before:
-
--A __crc_dma_noop_ops
--D dma_noop_ops
--R __clz_tab
--r fdt_errtable
--r __kcrctab_dma_noop_ops
--r __kstrtab_dma_noop_ops
--R __ksymtab_dma_noop_ops
--t dma_noop_alloc
--t dma_noop_free
--t dma_noop_map_page
--t dma_noop_mapping_error
--t dma_noop_map_sg
--t dma_noop_supported
--T fdt_add_reservemap_entry
--T fdt_begin_node
--T fdt_create
--T fdt_create_empty_tree
--T fdt_end_node
--T fdt_finish
--T fdt_finish_reservemap
--T fdt_property
--T fdt_resize
--T fdt_strerror
--T find_cpio_data
-
->From my first look, it seems that all of lib/*.o is now getting linked
-into vmlinux, while we traditionally leave out everything from lib/
-that is not referenced.
-
-I also see a noticeable overhead in link time, the numbers are for
-a cache-hot rebuild after a successful allyesconfig build, using a
-24-way Opteron@2.5Ghz, just relinking vmlinux:
-
-$ time make skj30 vmlinux # before
-real	2m8.092s
-user	3m41.008s
-sys	0m48.172s
-
-$ time make skj30 vmlinux # after
-real	4m10.189s
-user	5m43.804s
-sys	0m52.988s
-
-That is clearly a very sharp difference. Fortunately for the defconfig
-build, the times are much lower, and I see no real difference other
-than the noise between subsequent runs:
-
-$ time make skj30 vmlinux # before
-real	0m5.415s
-user	0m19.716s
-sys	0m9.356s
-$ time make skj30 vmlinux # before
-real	0m9.536s
-user	0m21.320s
-sys	0m9.224s
+> ---
+>  drivers/misc/lkdtm_rodata.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/misc/lkdtm_rodata.c b/drivers/misc/lkdtm_rodata.c
+> index 166b1db3969f..3564477b8c2d 100644
+> --- a/drivers/misc/lkdtm_rodata.c
+> +++ b/drivers/misc/lkdtm_rodata.c
+> @@ -4,7 +4,7 @@
+>   */
+>  #include "lkdtm.h"
+>
+> -void lkdtm_rodata_do_nothing(void)
+> +void notrace lkdtm_rodata_do_nothing(void)
+>  {
+>         /* Does nothing. We just want an architecture agnostic "return". */
+>  }
+> --
+> 2.7.4
+>
 
 
-$ time make skj30 vmlinux # after
-real	0m5.539s
-user	0m20.360s
-sys	0m9.224s
 
-$ time make skj30 vmlinux # after
-real	0m9.138s
-user	0m21.932s
-sys	0m8.988s
-
-$ time make skj30 vmlinux # after
-real	0m5.659s
-user	0m20.332s
-sys	0m9.620s
-
-	Arnd
+-- 
+Kees Cook
+Brillo & Chrome OS Security
