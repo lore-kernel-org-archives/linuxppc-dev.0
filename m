@@ -1,19 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s44BC38bbzDqQw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 17:16:35 +1000 (AEST)
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s450t5bJjzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 17:53:33 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Fengguang Wu <fengguang.wu@intel.com>, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
+ next-20160729 build failures
+Date: Wed, 03 Aug 2016 09:52:23 +0200
+Message-ID: <1944325.MtNrGQyQle@wuerfel>
+In-Reply-To: <20160803102324.6372e66a@canb.auug.org.au>
+References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
+ <20160802220243.GK3296@wotan.suse.de>
+ <20160803102324.6372e66a@canb.auug.org.au>
 MIME-Version: 1.0
-To: Jack Miller <jack@codezen.org>,  linuxppc-dev@lists.ozlabs.org, 
-From: Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20160801205035.18514-1-jack@codezen.org>
-Cc: jk@ozlabs.org,  stewart@linux.vnet.ibm.com,  benh@kernel.crashing.org
-References: <20160801205035.18514-1-jack@codezen.org>
-Message-ID: <147020859492.19099.3536038186529840354@concordia>
-Subject: Re: [PATCH] powernv: Search for new flash DT node location
-Date: Wed, 03 Aug 2016 17:16:34 +1000
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Jack Miller (2016-08-02 06:50:35)
-> Skiboot will place the flash device tree node at ibm,opal/flash/flash@0
-> on P9 and later systems, so Linux needs to search for it there as well
-> as ibm,opal/flash@0 for backwards compatibility.
-> =
+On Wednesday, August 3, 2016 10:23:24 AM CEST Stephen Rothwell wrote:
+> Hi Luis,
+> 
+> On Wed, 3 Aug 2016 00:02:43 +0200 "Luis R. Rodriguez" <mcgrof@kernel.org> wrote:
+> >
+> > Thanks for the confirmation. For how long is it known this is broken?
+> > Does anyone care and fix these ? Or is this best effort?
+> 
+> This has been broken for many years 
+> 
+> I have a couple of times almost fixed it, but it requires that we
+> change from using "ld -r" to build the built-in.o objects and some
+> changes to the powerpc head.S code ... I will give it another shot now
+> that the merge window is almost over (and linux-next goes into its
+> quieter time).
 
-> Signed-off-by: Jack Miller <jack@codezen.org>
-> ---
->  arch/powerpc/platforms/powernv/opal.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> =
+Using a different way to link the kernel would also help us with
+the remaining allyesconfig problem on ARM, as the problem is only in
+'ld -r' not producing trampolines for symbols that later cannot get
+them any more. It would probably also help building with ld.gold,
+which is currently not working.
 
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platfor=
-ms/powernv/opal.c
-> index ae29eaf..2847cb0 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -755,9 +755,14 @@ static int __init opal_init(void)
->  =
+What is your suggested alternative?
 
->         /* Initialize platform devices: IPMI backend, PRD & flash interfa=
-ce */
->         opal_pdev_init(opal_node, "ibm,opal-ipmi");
-> -       opal_pdev_init(opal_node, "ibm,opal-flash");
-> +       opal_pdev_init(opal_node, "ibm,opal-flash"); // old <=3D P8 flash=
- location
->         opal_pdev_init(opal_node, "ibm,opal-prd");
->  =
-
-> +       /* New >=3D P9 flash location */
-> +       np =3D of_get_child_by_name(opal_node, "flash");
-> +       if (np)
-> +               opal_pdev_init(np, "ibm,opal-flash");
-
-We could instead just search for all nodes that are compatible with
-"ibm,opal-flash". We do that for i2c, see opal_i2c_create_devs().
-
-Is there a particular reason not to do that?
-
-cheers
+	Arnd
