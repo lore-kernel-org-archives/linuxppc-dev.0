@@ -1,31 +1,24 @@
-Return-Path: <millerjo@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4KY712ykzDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 03:18:50 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u73HInrf081512
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 13:18:49 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkafvm7a-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 13:18:43 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <millerjo@us.ibm.com>;
- Wed, 3 Aug 2016 11:18:42 -0600
-From: Jack Miller <jack@codezen.org>
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Cc: jk@ozlabs.org, stewart@linux.vnet.ibm.com, benh@kernel.crashing.org
-Subject: [PATCH v2] powernv: Simplify searching for compatible device nodes
-Date: Wed,  3 Aug 2016 12:18:00 -0500
-In-Reply-To: <20160803164412.7039-1-jack@codezen.org>
-References: <20160803164412.7039-1-jack@codezen.org>
-Message-Id: <20160803171800.8999-1-jack@codezen.org>
+Return-Path: <dave.hansen@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s4Ls574lSzDqRs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 04:17:45 +1000 (AEST)
+Subject: Re: [PATCH 1/2] mm: Allow disabling deferred struct page
+ initialisation
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1470143947-24443-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
+ <57A0E1D1.8020608@intel.com> <20160803063808.GI6310@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ mahesh@linux.vnet.ibm.com, hbathini@linux.vnet.ibm.com
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <57A23547.1070207@intel.com>
+Date: Wed, 3 Aug 2016 11:17:43 -0700
+MIME-Version: 1.0
+In-Reply-To: <20160803063808.GI6310@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,70 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(rebased on powerpc/next)
+On 08/02/2016 11:38 PM, Srikar Dronamraju wrote:
+> * Dave Hansen <dave.hansen@intel.com> [2016-08-02 11:09:21]:
+>> On 08/02/2016 06:19 AM, Srikar Dronamraju wrote:
+>>> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
+>>> only certain size memory per node. The certain size takes into account
+>>> the dentry and inode cache sizes. However such a kernel when booting a
+>>> secondary kernel will not be able to allocate the required amount of
+>>> memory to suffice for the dentry and inode caches. This results in
+>>> crashes like the below on large systems such as 32 TB systems.
+>>
+>> What's a "secondary kernel"?
+>>
+> I mean the kernel thats booted to collect the crash, On fadump, the
+> first kernel acts as the secondary kernel i.e the same kernel is booted
+> to collect the crash.
 
-This condenses the opal node searching into a single function that finds
-all compatible nodes, instead of just searching the ibm,opal children,
-for ipmi, flash, and prd similar to how opal-i2c nodes are found.
+OK, but I'm still not seeing what the problem is.  You've said that it
+crashes and that it crashes during inode/dentry cache allocation.
 
-Signed-off-by: Jack Miller <jack@codezen.org>
----
- arch/powerpc/platforms/powernv/opal.c | 24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 8b4fc68..9db12ce 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -631,21 +631,11 @@ static void __init opal_dump_region_init(void)
- 			"rc = %d\n", rc);
- }
- 
--static void opal_pdev_init(struct device_node *opal_node,
--		const char *compatible)
-+static void opal_pdev_init(const char *compatible)
- {
- 	struct device_node *np;
- 
--	for_each_child_of_node(opal_node, np)
--		if (of_device_is_compatible(np, compatible))
--			of_platform_device_create(np, NULL, NULL);
--}
--
--static void opal_i2c_create_devs(void)
--{
--	struct device_node *np;
--
--	for_each_compatible_node(np, NULL, "ibm,opal-i2c")
-+	for_each_compatible_node(np, NULL, compatible)
- 		of_platform_device_create(np, NULL, NULL);
- }
- 
-@@ -717,7 +707,7 @@ static int __init opal_init(void)
- 	opal_hmi_handler_init();
- 
- 	/* Create i2c platform devices */
--	opal_i2c_create_devs();
-+	opal_pdev_init("ibm,opal-i2c");
- 
- 	/* Setup a heatbeat thread if requested by OPAL */
- 	opal_init_heartbeat();
-@@ -752,12 +742,12 @@ static int __init opal_init(void)
- 	}
- 
- 	/* Initialize platform devices: IPMI backend, PRD & flash interface */
--	opal_pdev_init(opal_node, "ibm,opal-ipmi");
--	opal_pdev_init(opal_node, "ibm,opal-flash");
--	opal_pdev_init(opal_node, "ibm,opal-prd");
-+	opal_pdev_init("ibm,opal-ipmi");
-+	opal_pdev_init("ibm,opal-flash");
-+	opal_pdev_init("ibm,opal-prd");
- 
- 	/* Initialise platform device: oppanel interface */
--	opal_pdev_init(opal_node, "ibm,opal-oppanel");
-+	opal_pdev_init("ibm,opal-oppanel");
- 
- 	/* Initialise OPAL kmsg dumper for flushing console on panic */
- 	opal_kmsg_init();
--- 
-2.9.2
+But, *why* does the same kernel image crash in when it is used as a
+"secondary kernel"?
