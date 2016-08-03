@@ -1,26 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4PSF0k1wzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 06:14:52 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Fengguang Wu <fengguang.wu@intel.com>, Guenter Roeck <linux@roeck-us.net>
-Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
- next-20160729 build failures
-Date: Wed, 03 Aug 2016 22:13:28 +0200
-Message-ID: <6481373.xtk4H4bKaE@wuerfel>
-In-Reply-To: <20160803194429.GA14627@gate.crashing.org>
-References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
- <3892328.nUGXIq3MaH@wuerfel> <20160803194429.GA14627@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4RDT15MzzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 07:34:48 +1000 (AEST)
+Message-ID: <1470260080.12584.111.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: convert 'iommu_alloc failed' messages to
+ dynamic debug
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Thu, 04 Aug 2016 07:34:40 +1000
+In-Reply-To: <57A2486F.6000208@linux.vnet.ibm.com>
+References: <1465563831-6565-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1465686148.19533.28.camel@kernel.crashing.org>
+ <575EB4DE.9080807@linux.vnet.ibm.com>
+ <1465853216.3022.26.camel@kernel.crashing.org>
+ <57A2486F.6000208@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, August 3, 2016 2:44:29 PM CEST Segher Boessenkool wrote:
-> Hi Arnd,
+On Wed, 2016-08-03 at 16:39 -0300, Mauricio Faria de Oliveira wrote:
+> Hi Ben,
 > 
-> On Wed, Aug 03, 2016 at 08:52:48PM +0200, Arnd Bergmann wrote:
-> > From my first look, it seems that all of lib/*.o is now getting linked
-> > into vmlinux, while we traditionally leave out everything from lib/
-> > that is not referenced.
+> On 06/13/2016 06:26 PM, Benjamin Herrenschmidt wrote:
 > > 
-> > I also see a noticeable overhead in link time, the numbers are for
-> > a cache-hot rebuild after a successful allyesconfig build, using a
-> > 24-way Opteron@2.5Ghz, just relinking vmlinux:
-> > 
-> > $ time make skj30 vmlinux # before
-> > real	2m8.092s
-> > user	3m41.008s
-> > sys	0m48.172s
-> > 
-> > $ time make skj30 vmlinux # after
-> > real	4m10.189s
-> > user	5m43.804s
-> > sys	0m52.988s
+> > Another option would be to use a dma_attr for silencing mapping
+> > errors
+> > which NVME could use provided it does handle them gracefully ...
 > 
-> Is it better when using rcT instead of rcsT?
+> I recently submitted patches that implement your suggestion [1].
+> May you please review/comment if they're OK with you?
 
-It seems to be noticeably better for the clean rebuild case, though
-not as good as the original:
+I think this is best done by the relevant community maintainer,
+I just threw an idea but I'm not that familiar with the details :-)
 
-real	3m34.015s
-user	5m7.104s
-sys	0m49.172s
+Did you send them to the lkml list ?
 
-I've also tried now with my own patch applied as well (linking
-each drivers/*/built-in.o into vmlinux rather than having them
-linked into drivers/built-in.o first), but that makes no
-difference.
-
-	Arnd
+> Thanks!
+> 
+> [1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-August/14685
+> 0.html
+> 
