@@ -2,40 +2,40 @@ Return-Path: <hbathini@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4NXh1l9CzDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 05:33:40 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4NY66K4xzDqbk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 05:34:02 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s4NXf6DVFz9sxb
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 05:33:38 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3s4NY630M9z9stc
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 05:34:02 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u73JNcqU117130
- for <linuxppc-dev@ozlabs.org>; Wed, 3 Aug 2016 15:33:36 -0400
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkaj16qq-1
+ u73JXgJb088822
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Aug 2016 15:34:00 -0400
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkag15ej-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 03 Aug 2016 15:33:36 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Aug 2016 15:34:00 -0400
 Received: from localhost
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Thu, 4 Aug 2016 05:33:33 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5C4853578052
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 05:33:31 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u73JXVCW32440520
- for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 05:33:31 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u73JXUtG024314
- for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 05:33:31 +1000
-Subject: [RESEND][PATCH v2 1/2] kexec: refactor code parsing size based on
- memory range
+ Thu, 4 Aug 2016 05:33:57 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3D11B3578057
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 05:33:55 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u73JXtBY25559072
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 05:33:55 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u73JXsXH007398
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 05:33:55 +1000
+Subject: [RESEND][PATCH v2 2/2] powerpc/fadump: parse fadump reserve memory
+ size based on memory range
 From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, rusty@rustcorp.com.au,
  ebiederm@xmission.com, vgoyal@redhat.com,
@@ -43,12 +43,12 @@ To: Michael Ellerman <mpe@ellerman.id.au>, rusty@rustcorp.com.au,
 Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, kexec@lists.infradead.org,
  lkml <linux-kernel@vger.kernel.org>,
  Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Date: Thu, 04 Aug 2016 01:03:25 +0530
+Date: Thu, 04 Aug 2016 01:03:49 +0530
 In-Reply-To: <147025270324.29229.8322429758761407397.stgit@hbathini.in.ibm.com>
 References: <147025270324.29229.8322429758761407397.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <147025276793.29229.17307767327276387636.stgit@hbathini.in.ibm.com>
+Message-Id: <147025281599.29229.9962999599360876220.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,247 +58,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-crashkernel parameter supports different syntaxes to specify the amount
-of memory to be reserved for kdump kernel. Below is one of the supported
-syntaxes that needs parsing to find the memory size to reserve, based on
-memory range:
+Currently, memory for fadump can be specified with fadump_reserve_mem=size,
+where only a fixed size can be specified. Add the below syntax as well, to
+support conditional reservation based on system memory size:
 
-        crashkernel=<range1>:<size1>[,<range2>:<size2>,...]
+	fadump_reserve_mem=<range1>:<size1>[,<range2>:<size2>,...]
 
-While such parsing is implemented for crashkernel parameter, it applies
-to other parameters, like fadump_reserve_mem=, which could use similar
-syntax. This patch moves crashkernel's parsing code for above syntax to
-to kernel/params.c file for reuse. Two functions is_param_range_based()
-and parse_mem_range_size() are added to kernel/params.c file for this
-purpose.
-
-Any parameter that uses the above syntax can use is_param_range_based()
-function to validate the syntax and parse_mem_range_size() function to
-get the parsed memory size. While some code is moved to kernel/params.c
-file, there is no change functionality wise in parsing the crashkernel
-parameter.
+This syntax helps using the same commandline parameter for different system
+memory sizes.
 
 Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Reviewed-by: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
+ arch/powerpc/kernel/fadump.c |   64 ++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 55 insertions(+), 9 deletions(-)
 
-Changes from v1:
-1. Updated changelog
-
- include/linux/kernel.h |    5 +++
- kernel/kexec_core.c    |   63 +++-----------------------------
- kernel/params.c        |   96 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 106 insertions(+), 58 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index d96a611..2df7ba2 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -435,6 +435,11 @@ extern char *get_options(const char *str, int nints, int *ints);
- extern unsigned long long memparse(const char *ptr, char **retptr);
- extern bool parse_option_str(const char *str, const char *option);
- 
-+extern bool __init is_param_range_based(const char *cmdline);
-+extern unsigned long long __init parse_mem_range_size(const char *param,
-+						      char **str,
-+						      unsigned long long system_ram);
-+
- extern int core_kernel_text(unsigned long addr);
- extern int core_kernel_data(unsigned long addr);
- extern int __kernel_text_address(unsigned long addr);
-diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 5616755..3a74024 100644
---- a/kernel/kexec_core.c
-+++ b/kernel/kexec_core.c
-@@ -1104,59 +1104,9 @@ static int __init parse_crashkernel_mem(char *cmdline,
- 	char *cur = cmdline, *tmp;
- 
- 	/* for each entry of the comma-separated list */
--	do {
--		unsigned long long start, end = ULLONG_MAX, size;
--
--		/* get the start of the range */
--		start = memparse(cur, &tmp);
--		if (cur == tmp) {
--			pr_warn("crashkernel: Memory value expected\n");
--			return -EINVAL;
--		}
--		cur = tmp;
--		if (*cur != '-') {
--			pr_warn("crashkernel: '-' expected\n");
--			return -EINVAL;
--		}
--		cur++;
--
--		/* if no ':' is here, than we read the end */
--		if (*cur != ':') {
--			end = memparse(cur, &tmp);
--			if (cur == tmp) {
--				pr_warn("crashkernel: Memory value expected\n");
--				return -EINVAL;
--			}
--			cur = tmp;
--			if (end <= start) {
--				pr_warn("crashkernel: end <= start\n");
--				return -EINVAL;
--			}
--		}
--
--		if (*cur != ':') {
--			pr_warn("crashkernel: ':' expected\n");
--			return -EINVAL;
--		}
--		cur++;
--
--		size = memparse(cur, &tmp);
--		if (cur == tmp) {
--			pr_warn("Memory value expected\n");
--			return -EINVAL;
--		}
--		cur = tmp;
--		if (size >= system_ram) {
--			pr_warn("crashkernel: invalid size\n");
--			return -EINVAL;
--		}
--
--		/* match ? */
--		if (system_ram >= start && system_ram < end) {
--			*crash_size = size;
--			break;
--		}
--	} while (*cur++ == ',');
-+	*crash_size = parse_mem_range_size("crashkernel", &cur, system_ram);
-+	if (cur == cmdline)
-+		return -EINVAL;
- 
- 	if (*crash_size > 0) {
- 		while (*cur && *cur != ' ' && *cur != '@')
-@@ -1293,7 +1243,6 @@ static int __init __parse_crashkernel(char *cmdline,
- 			     const char *name,
- 			     const char *suffix)
- {
--	char	*first_colon, *first_space;
- 	char	*ck_cmdline;
- 
- 	BUG_ON(!crash_size || !crash_base);
-@@ -1311,12 +1260,10 @@ static int __init __parse_crashkernel(char *cmdline,
- 		return parse_crashkernel_suffix(ck_cmdline, crash_size,
- 				suffix);
- 	/*
--	 * if the commandline contains a ':', then that's the extended
-+	 * if the parameter is range based, then that's the extended
- 	 * syntax -- if not, it must be the classic syntax
- 	 */
--	first_colon = strchr(ck_cmdline, ':');
--	first_space = strchr(ck_cmdline, ' ');
--	if (first_colon && (!first_space || first_colon < first_space))
-+	if (is_param_range_based(ck_cmdline))
- 		return parse_crashkernel_mem(ck_cmdline, system_ram,
- 				crash_size, crash_base);
- 
-diff --git a/kernel/params.c b/kernel/params.c
-index a6d6149..84e40ae 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -268,6 +268,102 @@ char *parse_args(const char *doing,
- 	return err;
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index b3a6633..4661ae6 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -193,6 +193,56 @@ static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+ 	return addr;
  }
  
 +/*
-+ * is_param_range_based - check if current parameter is range based
-+ * @cmdline: points to the parameter to check
++ * This function parses command line for fadump_reserve_mem=
 + *
-+ * Returns true when the current paramer is range based, false otherwise
++ * Supports the below two syntaxes:
++ *    1. fadump_reserve_mem=size
++ *    2. fadump_reserve_mem=ramsize-range:size[,...]
++ *
++ * Sets fw_dump.reserve_bootvar with the memory size
++ * provided, 0 otherwise
++ *
++ * The function returns -EINVAL on failure, 0 otherwise.
 + */
-+bool __init is_param_range_based(const char *cmdline)
++static int __init parse_fadump_reserve_mem(void)
 +{
-+	char    *first_colon, *first_space;
++	char *name = "fadump_reserve_mem=";
++	char *fadump_cmdline = NULL, *cur;
 +
-+	first_colon = strchr(cmdline, ':');
-+	first_space = strchr(cmdline, ' ');
-+	if (first_colon && (!first_space || first_colon < first_space))
-+		return true;
++	fw_dump.reserve_bootvar = 0;
 +
-+	return false;
++	/* find fadump_reserve_mem and use the last one if there are many */
++	cur = strstr(boot_command_line, name);
++	while (cur) {
++		fadump_cmdline = cur;
++		cur = strstr(cur+1, name);
++	}
++
++	/* when no fadump_reserve_mem= cmdline option is provided */
++	if (!fadump_cmdline)
++		return 0;
++
++	fadump_cmdline += strlen(name);
++
++	/* for fadump_reserve_mem=size cmdline syntax */
++	if (!is_param_range_based(fadump_cmdline)) {
++		fw_dump.reserve_bootvar = memparse(fadump_cmdline, NULL);
++		return 0;
++	}
++
++	/* for fadump_reserve_mem=ramsize-range:size[,...] cmdline syntax */
++	cur = fadump_cmdline;
++	fw_dump.reserve_bootvar = parse_mem_range_size("fadump_reserve_mem",
++					&cur, memblock_phys_mem_size());
++	if (cur == fadump_cmdline) {
++		printk(KERN_INFO "fadump_reserve_mem: Invaild syntax!\n");
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 +
-+/*
-+ * parse_mem_range_size - parse size based on memory range
-+ * @param:  the thing being parsed
-+ * @str: (input)  where parse begins
-+ *                expected format - <range1>:<size1>[,<range2>:<size2>,...]
-+ *       (output) On success - next char after parse completes
-+ *                On failure - unchanged
-+ * @system_ram: system ram size to check memory range against
-+ *
-+ * Returns the memory size on success and 0 on failure
-+ */
-+unsigned long long __init parse_mem_range_size(const char *param,
-+					       char **str,
-+					       unsigned long long system_ram)
-+{
-+	char *cur = *str, *tmp;
-+	unsigned long long mem_size = 0;
+ /**
+  * fadump_calculate_reserve_size(): reserve variable boot area 5% of System RAM
+  *
+@@ -212,12 +262,17 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ {
+ 	unsigned long size;
+ 
++	/* sets fw_dump.reserve_bootvar */
++	parse_fadump_reserve_mem();
 +
-+	/* for each entry of the comma-separated list */
-+	do {
-+		unsigned long long start, end = ULLONG_MAX, size;
-+
-+		/* get the start of the range */
-+		start = memparse(cur, &tmp);
-+		if (cur == tmp) {
-+			printk(KERN_INFO "%s: Memory value expected\n", param);
-+			return mem_size;
-+		}
-+		cur = tmp;
-+		if (*cur != '-') {
-+			printk(KERN_INFO "%s: '-' expected\n", param);
-+			return mem_size;
-+		}
-+		cur++;
-+
-+		/* if no ':' is here, than we read the end */
-+		if (*cur != ':') {
-+			end = memparse(cur, &tmp);
-+			if (cur == tmp) {
-+				printk(KERN_INFO "%s: Memory value expected\n",
-+					param);
-+				return mem_size;
-+			}
-+			cur = tmp;
-+			if (end <= start) {
-+				printk(KERN_INFO "%s: end <= start\n", param);
-+				return mem_size;
-+			}
-+		}
-+
-+		if (*cur != ':') {
-+			printk(KERN_INFO "%s: ':' expected\n", param);
-+			return mem_size;
-+		}
-+		cur++;
-+
-+		size = memparse(cur, &tmp);
-+		if (cur == tmp) {
-+			printk(KERN_INFO "%s: Memory value expected\n", param);
-+			return mem_size;
-+		}
-+		cur = tmp;
-+		if (size >= system_ram) {
-+			printk(KERN_INFO "%s: invalid size\n", param);
-+			return mem_size;
-+		}
-+
-+		/* match ? */
-+		if (system_ram >= start && system_ram < end) {
-+			mem_size = size;
-+			*str = cur;
-+			break;
-+		}
-+	} while (*cur++ == ',');
-+
-+	return mem_size;
-+}
-+
- /* Lazy bastard, eh? */
- #define STANDARD_PARAM_DEF(name, type, format, strtolfn)      		\
- 	int param_set_##name(const char *val, const struct kernel_param *kp) \
+ 	/*
+ 	 * Check if the size is specified through fadump_reserve_mem= cmdline
+ 	 * option. If yes, then use that.
+ 	 */
+ 	if (fw_dump.reserve_bootvar)
+ 		return fw_dump.reserve_bootvar;
++	else
++		printk(KERN_INFO "fadump: calculating default boot size\n");
+ 
+ 	/* divide by 20 to get 5% of value */
+ 	size = memblock_end_of_DRAM() / 20;
+@@ -348,15 +403,6 @@ static int __init early_fadump_param(char *p)
+ }
+ early_param("fadump", early_fadump_param);
+ 
+-/* Look for fadump_reserve_mem= cmdline option */
+-static int __init early_fadump_reserve_mem(char *p)
+-{
+-	if (p)
+-		fw_dump.reserve_bootvar = memparse(p, &p);
+-	return 0;
+-}
+-early_param("fadump_reserve_mem", early_fadump_reserve_mem);
+-
+ static void register_fw_dump(struct fadump_mem_struct *fdm)
+ {
+ 	int rc;
