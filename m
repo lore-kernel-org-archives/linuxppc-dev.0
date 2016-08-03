@@ -1,33 +1,52 @@
-Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4MnD6Z8hzDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 04:59:28 +1000 (AEST)
-Received: from mail-wm0-x231.google.com (mail-wm0-x231.google.com
- [IPv6:2a00:1450:400c:c09::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4NWl736RzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 05:32:51 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s4MnD0HJSz9sxR
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 04:59:28 +1000 (AEST)
-Received: by mail-wm0-x231.google.com with SMTP id q128so66569296wma.1
- for <linuxppc-dev@ozlabs.org>; Wed, 03 Aug 2016 11:59:27 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3s4NWl2pnKz9sxR
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 05:32:51 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u73JNeWU145880
+ for <linuxppc-dev@ozlabs.org>; Wed, 3 Aug 2016 15:32:49 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkajh07b-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 03 Aug 2016 15:32:49 -0400
+Received: from localhost
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Thu, 4 Aug 2016 05:32:45 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5F3083578052
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 05:32:43 +1000 (EST)
+Received: from d23av05.au.ibm.com (d23av05.au.ibm.com [9.190.234.119])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u73JWhkY27984054
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 05:32:43 +1000
+Received: from d23av05.au.ibm.com (localhost [127.0.0.1])
+ by d23av05.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u73JWggP006400
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 05:32:43 +1000
+Subject: [RESEND][PATCH v2 0/2] powerpc/fadump: support memory range syntax
+ for fadump memory reservation
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, rusty@rustcorp.com.au,
+ ebiederm@xmission.com, vgoyal@redhat.com,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, kexec@lists.infradead.org,
+ lkml <linux-kernel@vger.kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Date: Thu, 04 Aug 2016 01:02:37 +0530
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1470200371-31565-1-git-send-email-mpe@ellerman.id.au>
-References: <1470200371-31565-1-git-send-email-mpe@ellerman.id.au>
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 3 Aug 2016 11:59:24 -0700
-Message-ID: <CAGXu5jJj8AJp0N23KLFQe9vX1qW0-4jkVqEwkKhGj9Q48T4Wtg@mail.gmail.com>
-Subject: Re: [PATCH] lkdtm: Mark lkdtm_rodata_do_nothing() notrace
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@osdl.org>, Greg Kroah-Hartman <greg@kroah.com>,
- "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>,
- Anton Blanchard <anton@samba.org>,
- Alan Modra <amodra@gmail.com>, Nick Piggin <npiggin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <147025270324.29229.8322429758761407397.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,58 +56,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 2, 2016 at 9:59 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> lkdtm_rodata_do_nothing() is an empty function which is generated in
-> order to test the non-executability of rodata.
->
-> Currently if function tracing is enabled then an mcount callsite will be
-> generated for lkdtm_rodata_do_nothing(), and it will appear in the list
-> of available functions for function tracing (available_filter_functions).
->
-> Given it's purpose purely as a test function, it seems preferable for
-> lkdtm_rodata_do_nothing() to be marked notrace, so it doesn't appear as
-> traceable.
->
-> This also avoids triggering a linker bug on powerpc:
->
->   https://sourceware.org/bugzilla/show_bug.cgi?id=20428
->
-> When the linker sees code that needs to generate a call stub, eg. a
-> branch to mcount(), it assumes the section is executable and
-> dereferences a NULL pointer leading to a linker segfault. Marking
-> lkdtm_rodata_do_nothing() notrace avoids triggering the bug because the
-> function contains no other function calls.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+This patchset adds support to input system memory range based memory size
+for fadump reservation. The crashkernel parameter already supports such
+syntax. The first patch refactors the parsing code of crashkernel parameter
+for reuse. The second patch uses the newly refactored parsing code to reserve
+memory for fadump based on system memory size.
 
-Awesome! Thanks for tracking this down. I've applied it to my tree, it
-should get picked up by Greg on my next pull request.
+---
 
--Kees
-
-> ---
->  drivers/misc/lkdtm_rodata.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/misc/lkdtm_rodata.c b/drivers/misc/lkdtm_rodata.c
-> index 166b1db3969f..3564477b8c2d 100644
-> --- a/drivers/misc/lkdtm_rodata.c
-> +++ b/drivers/misc/lkdtm_rodata.c
-> @@ -4,7 +4,7 @@
->   */
->  #include "lkdtm.h"
->
-> -void lkdtm_rodata_do_nothing(void)
-> +void notrace lkdtm_rodata_do_nothing(void)
->  {
->         /* Does nothing. We just want an architecture agnostic "return". */
->  }
-> --
-> 2.7.4
->
+Hari Bathini (2):
+      kexec: refactor code parsing size based on memory range
+      powerpc/fadump: parse fadump reserve memory size based on memory range
 
 
-
--- 
-Kees Cook
-Brillo & Chrome OS Security
+ arch/powerpc/kernel/fadump.c |   64 ++++++++++++++++++++++++----
+ include/linux/kernel.h       |    5 ++
+ kernel/kexec_core.c          |   63 ++--------------------------
+ kernel/params.c              |   96 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 161 insertions(+), 67 deletions(-)
