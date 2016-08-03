@@ -1,19 +1,16 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (ozlabs.ru [83.169.36.222])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s464C514DzDqTy
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 18:41:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s464F4L47zDqTk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 18:41:33 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH kernel 11/15] powerpc/powernv/iommu: Add real mode version of
- iommu_table_ops::exchange()
-Date: Wed,  3 Aug 2016 18:40:52 +1000
-Message-Id: <1470213656-1042-12-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel 00/15] powerpc/kvm/vfio: Enable in-kernel acceleration
+Date: Wed,  3 Aug 2016 18:40:41 +1000
+Message-Id: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,150 +20,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In real mode, TCE tables are invalidated using special
-cache-inhibited store instructions which are not available in
-virtual mode
 
-This defines and implements exchange_rm() callback. This does not
-define set_rm/clear_rm/flush_rm callbacks as there is no user for those -
-exchange/exchange_rm are only to be used by KVM for VFIO.
+This is my current queue of patches to add acceleration of TCE
+updates in KVM. This has a long history and was rewritten pretty
+much completely again, this time I am teaching KVM about VFIO
+containers. Some patches (such as 01/15) could be posted
+separately but I keep all of them here to make review easier
+(if the concept turns out be wrong - then I might still want
+to have 01/15).
 
-The exchange_rm callback is defined for IODA1/IODA2 powernv platforms.
+Please comment. Thanks.
 
-This replaces list_for_each_entry_rcu with its lockless version as
-from now on pnv_pci_ioda2_tce_invalidate() can be called in
-the real mode too.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/include/asm/iommu.h          |  7 +++++++
- arch/powerpc/kernel/iommu.c               | 23 +++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c | 26 +++++++++++++++++++++++++-
- 3 files changed, 55 insertions(+), 1 deletion(-)
+Alexey Kardashevskiy (15):
+  Revert "iommu: Add a function to find an iommu group by id"
+  KVM: PPC: Finish enabling VFIO KVM device on POWER
+  KVM: PPC: Reserve KVM_CAP_SPAPR_TCE_VFIO capability number
+  powerpc/powernv/ioda: Fix TCE invalidate to work in real mode again
+  powerpc/iommu: Stop using @current in mm_iommu_xxx
+  powerpc/mm/iommu: Put pages on process exit
+  powerpc/iommu: Cleanup iommu_table disposal
+  powerpc/vfio_spapr_tce: Add reference counting to iommu_table
+  powerpc/mmu: Add real mode support for IOMMU preregistered memory
+  KVM: PPC: Use preregistered memory API to access TCE list
+  powerpc/powernv/iommu: Add real mode version of
+    iommu_table_ops::exchange()
+  KVM: PPC: Enable IOMMU_API for KVM_BOOK3S_64 permanently
+  KVM: PPC: Pass kvm* to kvmppc_find_table()
+  vfio/spapr_tce: Export container API for external users
+  KVM: PPC: Add in-kernel acceleration for VFIO
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index cd4df44..a13d207 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -64,6 +64,11 @@ struct iommu_table_ops {
- 			long index,
- 			unsigned long *hpa,
- 			enum dma_data_direction *direction);
-+	/* Real mode */
-+	int (*exchange_rm)(struct iommu_table *tbl,
-+			long index,
-+			unsigned long *hpa,
-+			enum dma_data_direction *direction);
- #endif
- 	void (*clear)(struct iommu_table *tbl,
- 			long index, long npages);
-@@ -209,6 +214,8 @@ extern void iommu_del_device(struct device *dev);
- extern int __init tce_iommu_bus_notifier_init(void);
- extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
- 		unsigned long *hpa, enum dma_data_direction *direction);
-+extern long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
-+		unsigned long *hpa, enum dma_data_direction *direction);
- #else
- static inline void iommu_register_group(struct iommu_table_group *table_group,
- 					int pci_domain_number,
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index a8f017a..65b2dac 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -1020,6 +1020,29 @@ long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
- }
- EXPORT_SYMBOL_GPL(iommu_tce_xchg);
- 
-+long iommu_tce_xchg_rm(struct iommu_table *tbl, unsigned long entry,
-+		unsigned long *hpa, enum dma_data_direction *direction)
-+{
-+	long ret;
-+
-+	ret = tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
-+
-+	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
-+			(*direction == DMA_BIDIRECTIONAL))) {
-+		struct page *pg = realmode_pfn_to_page(*hpa >> PAGE_SHIFT);
-+
-+		if (likely(pg)) {
-+			SetPageDirty(pg);
-+		} else {
-+			tbl->it_ops->exchange_rm(tbl, entry, hpa, direction);
-+			ret = -EFAULT;
-+		}
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(iommu_tce_xchg_rm);
-+
- int iommu_take_ownership(struct iommu_table *tbl)
- {
- 	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index c04afd2..a0b5ea6 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1827,6 +1827,17 @@ static int pnv_ioda1_tce_xchg(struct iommu_table *tbl, long index,
- 
- 	return ret;
- }
-+
-+static int pnv_ioda1_tce_xchg_rm(struct iommu_table *tbl, long index,
-+		unsigned long *hpa, enum dma_data_direction *direction)
-+{
-+	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
-+
-+	if (!ret)
-+		pnv_pci_p7ioc_tce_invalidate(tbl, index, 1, true);
-+
-+	return ret;
-+}
- #endif
- 
- static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
-@@ -1841,6 +1852,7 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
- 	.set = pnv_ioda1_tce_build,
- #ifdef CONFIG_IOMMU_API
- 	.exchange = pnv_ioda1_tce_xchg,
-+	.exchange_rm = pnv_ioda1_tce_xchg_rm,
- #endif
- 	.clear = pnv_ioda1_tce_free,
- 	.get = pnv_tce_get,
-@@ -1915,7 +1927,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
- {
- 	struct iommu_table_group_link *tgl;
- 
--	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
-+	list_for_each_entry_lockless(tgl, &tbl->it_group_list, next) {
- 		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
- 				struct pnv_ioda_pe, table_group);
- 		struct pnv_phb *phb = pe->phb;
-@@ -1973,6 +1985,17 @@ static int pnv_ioda2_tce_xchg(struct iommu_table *tbl, long index,
- 
- 	return ret;
- }
-+
-+static int pnv_ioda2_tce_xchg_rm(struct iommu_table *tbl, long index,
-+		unsigned long *hpa, enum dma_data_direction *direction)
-+{
-+	long ret = pnv_tce_xchg(tbl, index, hpa, direction);
-+
-+	if (!ret)
-+		pnv_pci_ioda2_tce_invalidate(tbl, index, 1, true);
-+
-+	return ret;
-+}
- #endif
- 
- static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
-@@ -1992,6 +2015,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
- 	.set = pnv_ioda2_tce_build,
- #ifdef CONFIG_IOMMU_API
- 	.exchange = pnv_ioda2_tce_xchg,
-+	.exchange_rm = pnv_ioda2_tce_xchg_rm,
- #endif
- 	.clear = pnv_ioda2_tce_free,
- 	.get = pnv_tce_get,
+ arch/powerpc/include/asm/iommu.h          |  12 +-
+ arch/powerpc/include/asm/kvm_host.h       |   8 +
+ arch/powerpc/include/asm/kvm_ppc.h        |   2 +-
+ arch/powerpc/include/asm/mmu_context.h    |  23 +-
+ arch/powerpc/include/uapi/asm/kvm.h       |  12 +
+ arch/powerpc/kernel/iommu.c               |  49 +++-
+ arch/powerpc/kernel/setup-common.c        |   2 +-
+ arch/powerpc/kernel/vio.c                 |   2 +-
+ arch/powerpc/kvm/Kconfig                  |   2 +
+ arch/powerpc/kvm/Makefile                 |   3 +
+ arch/powerpc/kvm/book3s_64_vio.c          | 410 +++++++++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c       | 251 ++++++++++++++++--
+ arch/powerpc/kvm/powerpc.c                |   2 +
+ arch/powerpc/mm/mmu_context_book3s64.c    |   6 +-
+ arch/powerpc/mm/mmu_context_iommu.c       |  96 ++++---
+ arch/powerpc/platforms/powernv/pci-ioda.c |  46 +++-
+ arch/powerpc/platforms/powernv/pci.c      |   1 +
+ arch/powerpc/platforms/pseries/iommu.c    |   3 +-
+ drivers/iommu/iommu.c                     |  29 ---
+ drivers/vfio/vfio.c                       |  30 +++
+ drivers/vfio/vfio_iommu_spapr_tce.c       | 107 ++++++--
+ include/linux/iommu.h                     |   1 -
+ include/linux/vfio.h                      |   6 +
+ include/uapi/linux/kvm.h                  |   1 +
+ 24 files changed, 959 insertions(+), 145 deletions(-)
+
 -- 
 2.5.0.rc3
