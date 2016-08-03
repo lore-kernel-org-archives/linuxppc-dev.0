@@ -1,23 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4B2V5RbmzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 21:40:18 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Luis R. Rodriguez" <mcgrof@do-not-panic.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Fengguang Wu <fengguang.wu@intel.com>,
- Guenter Roeck <linux@roeck-us.net>,
- "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linker tables on powerpc - build issues
-In-Reply-To: <CAB=NE6Xu2t7JYUfvZcPSpX_Yt2yN9ooWgzctZFMr3LZGG1hVzw@mail.gmail.com>
-References: <CAB=NE6Xu2t7JYUfvZcPSpX_Yt2yN9ooWgzctZFMr3LZGG1hVzw@mail.gmail.com>
-Date: Wed, 03 Aug 2016 21:40:17 +1000
-Message-ID: <87popqullq.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4BvN4KXXzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 22:19:12 +1000 (AEST)
+Date: Wed, 3 Aug 2016 22:19:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Fengguang Wu
+ <fengguang.wu@intel.com>, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
+ next-20160729 build failures
+Message-ID: <20160803221911.2f76ccad@canb.auug.org.au>
+In-Reply-To: <1944325.MtNrGQyQle@wuerfel>
+References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
+ <20160802220243.GK3296@wotan.suse.de>
+ <20160803102324.6372e66a@canb.auug.org.au>
+ <1944325.MtNrGQyQle@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Luis R. Rodriguez" <mcgrof@do-not-panic.com> writes:
+Hi Arnd,
 
-> I've run into a few compilation issues with linker tables support [0]
-> [1] on only a few architectures:
+On Wed, 03 Aug 2016 09:52:23 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
 >
-> blackfin - compiler issue it seems, I have a work around now in place
-> arm  - some alignment issue - still need to iron this out
-> powerpc - issue with including <asm/sections.h> on <asm/jump_labels.h>
->
-> The issue with powerpc can be replicated easily with the patch below,
-> and compilation fails even on a 'make defconfig' configuration, the
-> issues are recurring include header ordering issues. I've given this
-> some tries to fix but am still a bit bewildered how to best do this
-> without affecting non-powerpc compilations.  The patch below
-> replicates the changes in question, it does not include the linker
-> table work at all, it just includes <asm/sections.h> instead of
-> <asm/tables.h> to reduce and provide an example of the issues
-> observed. The list of errors are also pretty endless... so was hoping
-> some power folks might be able to take a glance if possible. If you
-> have any ideas, please let me know.
+> Using a different way to link the kernel would also help us with
+> the remaining allyesconfig problem on ARM, as the problem is only in
+> 'ld -r' not producing trampolines for symbols that later cannot get
+> them any more. It would probably also help building with ld.gold,
+> which is currently not working.
+> 
+> What is your suggested alternative?
 
-What is the end goal?
+I have a patch that make the built-in.o files into thin archives (same
+as archives, but the actual objects are replaced with the name of the
+original object file).  That way the final link has all the original
+objects.  I haven't checked to see what the overheads of doing it this
+way is.
 
-You want to be able to include asm/sections.h in asm/jump_labels.h? So
-that you can get some macros to wrap the pushsection etc, am I right?
+Nick Piggin has just today taken my old patch (it was last rebased to
+v4.4-rc1) and tried it on a recent kernel and it still seems to mostly
+work.  It probably needs some tidying up, but you are welcome to test
+it if you want to.
 
-The biggest problem I see is dereference_function_descriptor(), which
-uses probe_kernel(), which pulls in uaccess.h.
-
-But it doesn't really make sense for dereference_function_descriptor()
-to be in sections.h AFAICS.
-
-I'll see if I can unstitch it tomorrow.
-
-cheers
+-- 
+Cheers,
+Stephen Rothwell
