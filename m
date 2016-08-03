@@ -1,47 +1,36 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arvind.yadav.cs@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4DxS1cQtzDqQn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 23:51:08 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u73DnN30086005
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 09:51:06 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24k0bmyamf-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 09:51:06 -0400
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 3 Aug 2016 10:51:03 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 609041DC0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 09:50:52 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u73Dp19Y4485178
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 10:51:01 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u73Dp068013117
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 10:51:00 -0300
-Subject: Re: [PATCH] powerpc/eeh: trivial fix to non-conventional PCI address
- output on EEH log
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <1469207129-21842-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <87fuqy1r3i.fsf@concordia.ellerman.id.au> <20160725014641.GA21781@gwshan>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Wed, 3 Aug 2016 10:50:58 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4F2S2ZlwzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 23:55:28 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id i6so14737581pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 06:55:28 -0700 (PDT)
+Subject: Re: [v4] Fix to avoid IS_ERR_VALUE and IS_ERR abuses on 64bit systems.
+To: Scott Wood <scott.wood@nxp.com>, Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <1469963924-8800-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <1956647.cOmaJREgOE@wuerfel>
+ <DB5PR0401MB19280ACA87C7F5EE2822D5FB91040@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <2484583.95xFmO7xir@wuerfel> <57A0BD8E.9050305@gmail.com>
+ <DB5PR0401MB1928DE1F195A57160DED735D91050@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Cc: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "zajec5@gmail.com" <zajec5@gmail.com>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "David.Laight@aculab.com" <David.Laight@aculab.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "linux@roeck-us.net" <linux@roeck-us.net>, Li Yang <leoli@freescale.com>
+From: arvind Yadav <arvind.yadav.cs@gmail.com>
+Message-ID: <57A1F7C4.1090302@gmail.com>
+Date: Wed, 3 Aug 2016 19:25:16 +0530
 MIME-Version: 1.0
-In-Reply-To: <20160725014641.GA21781@gwshan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <57A1F6C2.7080109@linux.vnet.ibm.com>
+In-Reply-To: <DB5PR0401MB1928DE1F195A57160DED735D91050@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,52 +40,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/24/2016 10:46 PM, Gavin Shan wrote:
-> On Mon, Jul 25, 2016 at 10:47:13AM +1000, Michael Ellerman wrote:
->> "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
+
+
+On Wednesday 03 August 2016 01:27 AM, Scott Wood wrote:
+> On 08/02/2016 10:34 AM, arvind Yadav wrote:
 >>
->>> This is a very minor/trivial fix for the output of PCI address on EEH logs.
->>> The PCI address on "OF node" field currently is using ":" as a separator
->>> for the function, but the usual separator is ".". This patch changes the
->>> separator for dot, so the PCI address is printed as usual.
+>> On Tuesday 02 August 2016 01:15 PM, Arnd Bergmann wrote:
+>>> On Monday, August 1, 2016 4:55:43 PM CEST Scott Wood wrote:
+>>>> On 08/01/2016 02:02 AM, Arnd Bergmann wrote:
+>>>>>> diff --git a/include/linux/err.h b/include/linux/err.h
+>>>>>> index 1e35588..c2a2789 100644
+>>>>>> --- a/include/linux/err.h
+>>>>>> +++ b/include/linux/err.h
+>>>>>> @@ -18,7 +18,17 @@
+>>>>>>   
+>>>>>>   #ifndef __ASSEMBLY__
+>>>>>>   
+>>>>>> -#define IS_ERR_VALUE(x) unlikely((unsigned long)(void *)(x) >= (unsigned long)-MAX_ERRNO)
+>>>>>> +#define IS_ERR_VALUE(x) unlikely(is_error_check(x))
+>>>>>> +
+>>>>>> +static inline int is_error_check(unsigned long error)
+>>>>> Please leave the existing macro alone. I think you were looking for
+>>>>> something specific to the return code of qe_muram_alloc() function,
+>>>>> so please add a helper in that subsystem if you need it, not in
+>>>>> the generic header files.
+>>>> qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.  The
+>>>> problem is certain callers that store the return value in a u32.  Why
+>>>> not just fix those callers to store it in unsigned long (at least until
+>>>> error checking is done)?
+>>>>
+>>> Yes, that would also address another problem with code like
 >>>
->>> No functional changes were introduced.
->>
->> What consumes the log? Can it cope with us changing the formatting?
->>
+>>>           kfree((void *)ugeth->tx_bd_ring_offset[i]);
+>>>
+>>> which is not 64-bit safe when tx_bd_ring_offset is a 32-bit value
+>>> that also holds the return value of qe_muram_alloc.
+> Well, hopefully it doesn't hold a return of qe_muram_alloc() when it's
+> being passed to kfree()...
 >
-> The log is printed by pr_warn() as part of the EEH kernel log. Also,
-> it's argument passed to RTAS call "ibm,slot-error-detail" and it's
-> put into the user data section of the RTAS call's output, which is
-> used by RTAS daemon (rtasd) then. I don't see anyone expects fixed
-> format for it in the user data section.
+> There's also the code that casts kmalloc()'s return to u32, etc.
+> ucc_geth is not 64-bit clean in general.
 >
-> The format was ever adjusted in commit 0ed352dddbfc ("powerpc/eeh:
-> Reduce lines of log dump") on Jul 17 2014. No complains received
-> against it so far. I guess nobody cares about the format or there
-> is a alarm isn't raised yet :)
+>>> 	Arnd
+>> Yes, we will fix caller. Caller api is not safe on 64bit.
+> The API is fine (or at least, I haven't seen a valid issue pointed out
+> yet).  The problem is the ucc_geth driver.
 >
-> Thanks,
-> Gavin
-
-Quick follow-up on this: RTAS daemon stores the information captured via 
-ibm,slot-error-detail in a log file, which can be accessed using the 
-command "rtas_dump -f /var/log/platform". More information on this can 
-be found in 
-https://www.ibm.com/support/knowledgecenter/linuxonibm/liaau/liaau-diagnosing-rtas-events.htm 
-.
-
-I was able to check this log and the EEH PCI address output was there, 
-in ascii text format.
-
-Thanks,
-
-Guilherme
-
-
+>> Even qe_muram_addr(a.k.a. cpm_muram_addr )passing value unsigned int,
+>> but it should be unsigned long.
+> cpm_muram_addr takes unsigned long as a parameter, not that it matters
+> since you can't pass errors into it and a muram offset should never
+> exceed 32 bits.
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+> -Scott
+Yes, It will work for 32bit machine. But will not safe for 64bit.
+
+Example :
+ugeth->tx_bd_ring_offset[j] =
+     qe_muram_alloc(length  UCC_GETH_TX_BD_RING_ALIGNMENT);
+if (!IS_ERR_VALUE(ugeth->tx_bd_ring_offset[j]))
+    ugeth->p_tx_bd_ring[j] =
+    (u8 __iomem *) qe_muram_addr(ugeth-> tx_bd_ring_offset[j]);
+
+If qe_muram_alloc will return any error,  IS_ERR_VALUE will
+always return 0 (IS_ERR_VALUE will always pass for 'unsigned int').
+Now qe_muram_addr will return wrong virtual address. Which
+can cause an error.
+
+-Arvind
