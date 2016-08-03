@@ -1,34 +1,50 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
+Return-Path: <mauricfo@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4RHS3bCCzDqTC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 07:37:24 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4RLJ0gcqzDqgf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 07:39:51 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u73LYDig000815
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 17:37:22 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkahcy48-1
+ u73LdAmP057058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 17:39:50 -0400
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkag5226-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 17:37:22 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 17:39:49 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 3 Aug 2016 15:37:21 -0600
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: james.bottomley@hansenpartnership.com
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, brking@linux.vnet.ibm.com,
- nfont@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- mpe@ellerman.id.au, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: [PATCH] ibmvfc: Set READ FCP_XFER_READY DISABLED bit in PRLI
-Date: Wed,  3 Aug 2016 16:36:52 -0500
-In-Reply-To: <1470260213-19087-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1470260213-19087-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Message-Id: <1470260213-19087-2-git-send-email-tyreld@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Wed, 3 Aug 2016 18:39:47 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id D08931DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 17:39:36 -0400 (EDT)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u73LdjWc29032806
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 18:39:45 -0300
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u73LdjXt013113
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 18:39:45 -0300
+Subject: Re: [PATCH] powerpc: convert 'iommu_alloc failed' messages to dynamic
+ debug
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1465563831-6565-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1465686148.19533.28.camel@kernel.crashing.org>
+ <575EB4DE.9080807@linux.vnet.ibm.com>
+ <1465853216.3022.26.camel@kernel.crashing.org>
+ <57A2486F.6000208@linux.vnet.ibm.com>
+ <1470260080.12584.111.camel@kernel.crashing.org>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Wed, 3 Aug 2016 18:39:44 -0300
+MIME-Version: 1.0
+In-Reply-To: <1470260080.12584.111.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <57A264A0.6020302@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,26 +54,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The READ FCP_XFER_READY DISABLED bit is required to always be set to
-one since FCP-3. Set it in the service parameter page frame during
-process login.
+On 08/03/2016 06:34 PM, Benjamin Herrenschmidt wrote:
+> I think this is best done by the relevant community maintainer,
+> I just threw an idea but I'm not that familiar with the details:-)
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
----
- drivers/scsi/ibmvscsi/ibmvfc.c | 1 +
- 1 file changed, 1 insertion(+)
+Ok, sure; got it.
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index ab67ec4..4a680ce 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -3381,6 +3381,7 @@ static void ibmvfc_tgt_send_prli(struct ibmvfc_target *tgt)
- 	prli->parms.type = IBMVFC_SCSI_FCP_TYPE;
- 	prli->parms.flags = cpu_to_be16(IBMVFC_PRLI_EST_IMG_PAIR);
- 	prli->parms.service_parms = cpu_to_be32(IBMVFC_PRLI_INITIATOR_FUNC);
-+	prli->parms.service_parms |= cpu_to_be32(IBMVFC_PRLI_READ_FCP_XFER_RDY_DISABLED);
- 
- 	ibmvfc_set_tgt_action(tgt, IBMVFC_TGT_ACTION_INIT_WAIT);
- 	if (ibmvfc_send_event(evt, vhost, default_timeout)) {
+> Did you send them to the lkml list ?
+
+Yup, plus a few others lists from get_maintainer.pl iirc.
+
+Mailing list archive links:
+- linux-kernel: http://marc.info/?l=linux-kernel&m=146798084822100&w=2
+- linux-doc: http://marc.info/?l=linux-doc&m=146798085522104&w=2
+- linux-nvme: 
+http://lists.infradead.org/pipermail/linux-nvme/2016-July/005349.html
+- linuxppc-dev: 
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-July/145624.html
+
+Thanks,
+
+
 -- 
-2.7.4
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
