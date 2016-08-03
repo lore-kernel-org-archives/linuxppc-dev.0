@@ -1,33 +1,34 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0084.outbound.protection.outlook.com [104.47.2.84])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s3zF60lcxzDqRJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 13:33:45 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-CC: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Xiaobo Xie
- <xiaobo.xie@nxp.com>, Scott Wood <oss@buserror.net>, Michael Ellerman
- <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>
-Subject: RE: [PATCH v11 4/5] powerpc/fsl: move mpc85xx.h to include/linux/fsl
-Date: Wed, 3 Aug 2016 03:33:38 +0000
-Message-ID: <HE1PR04MB0889DC88175DEEAD41864C08F8060@HE1PR04MB0889.eurprd04.prod.outlook.com>
-References: <1468723822-30457-1-git-send-email-oss@buserror.net>
- <1468723822-30457-5-git-send-email-oss@buserror.net>
- <4016699.uYaV8nWfqC@wuerfel> <1469039508.25630.17.camel@buserror.net>
- <146909676646.16700.8383344640490662952@concordia>
- <1469119526.25630.42.camel@buserror.net>
- <HE1PR04MB088913D39528958C6905D43DF80D0@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <1469579882.25630.168.camel@buserror.net>
- <HE1PR04MB0889EE0A961723541F9904A1F8050@HE1PR04MB0889.eurprd04.prod.outlook.com>
- <1470174043.25630.233.camel@buserror.net>
-In-Reply-To: <1470174043.25630.233.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s40sP53Y2zDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 14:46:49 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: "kernel-hardening\@lists.openwall.com"
+ <kernel-hardening@lists.openwall.com>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Jiri Slaby <jslaby@suse.cz>,
+ Guenter Roeck <linux@roeck-us.net>, LKML <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Alan Modra <amodra@gmail.com>
+Subject: Re: [kernel-hardening] Re: Linker segfault on powerpc when
+ CONFIG_LKDTM=y (was Re: [kernel-hardening] [PATCH 3/5] lkdtm: add function
+ for testing .rodata section)
+In-Reply-To: <CAGXu5j+tc8Q9NkDi7Wf_JV=D65WC=v=y4ormng9nJ6avDKCMZQ@mail.gmail.com>
+References: <1465336628-18219-1-git-send-email-keescook@chromium.org>
+ <1465336628-18219-4-git-send-email-keescook@chromium.org>
+ <87h9b4oebf.fsf@concordia.ellerman.id.au>
+ <CAGXu5jL8UBfs7NjSgKOeqd9toRgtW3gPu53TPLbTMRJiwRUvPg@mail.gmail.com>
+ <87eg67ooe5.fsf@concordia.ellerman.id.au>
+ <CAGXu5j+tc8Q9NkDi7Wf_JV=D65WC=v=y4ormng9nJ6avDKCMZQ@mail.gmail.com>
+Date: Wed, 03 Aug 2016 14:46:49 +1000
+Message-ID: <87lh0elarq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,154 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgVWZmZSwNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFNjb3R0
-IFdvb2QgW21haWx0bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiBTZW50OiBXZWRuZXNkYXksIEF1Z3Vz
-dCAwMywgMjAxNiA1OjQxIEFNDQo+IFRvOiBZYW5nYm8gTHU7IE1pY2hhZWwgRWxsZXJtYW47IEFy
-bmQgQmVyZ21hbm47IFVsZiBIYW5zc29uDQo+IENjOiBsaW51eC1tbWNAdmdlci5rZXJuZWwub3Jn
-OyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxh
-YnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBYaWFvYm8gWGllDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggdjExIDQvNV0gcG93ZXJwYy9mc2w6IG1vdmUgbXBjODV4eC5oIHRvDQo+
-IGluY2x1ZGUvbGludXgvZnNsDQo+IA0KPiBPbiBUdWUsIDIwMTYtMDgtMDIgYXQgMDU6NTcgKzAw
-MDAsIFlhbmdibyBMdSB3cm90ZToNCj4gPiBIaSBTY290dCwNCj4gPg0KPiA+ID4NCj4gPiA+IC0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBTY290dCBXb29kIFttYWlsdG86
-b3NzQGJ1c2Vycm9yLm5ldF0NCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgSnVseSAyNywgMjAxNiA4
-OjM4IEFNDQo+ID4gPiBUbzogWWFuZ2JvIEx1OyBNaWNoYWVsIEVsbGVybWFuOyBBcm5kIEJlcmdt
-YW5uOyBVbGYgSGFuc3Nvbg0KPiA+ID4gQ2M6IGxpbnV4LW1tY0B2Z2VyLmtlcm5lbC5vcmc7IGRl
-dmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gPiA+IGRldkBsaXN0cy5vemxh
-YnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTog
-W1BBVENIIHYxMSA0LzVdIHBvd2VycGMvZnNsOiBtb3ZlIG1wYzg1eHguaCB0bw0KPiA+ID4gaW5j
-bHVkZS9saW51eC9mc2wNCj4gPiA+DQo+ID4gPiBPbiBNb24sIDIwMTYtMDctMjUgYXQgMDY6MTIg
-KzAwMDAsIFlhbmdibyBMdSB3cm90ZToNCj4gPiA+ID4NCj4gPiA+ID4gSGkgU2NvdHQsDQo+ID4g
-PiA+DQo+ID4gPiA+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogU2NvdHQgV29vZCBbbWFpbHRvOm9zc0Bi
-dXNlcnJvci5uZXRdDQo+ID4gPiA+ID4gU2VudDogRnJpZGF5LCBKdWx5IDIyLCAyMDE2IDEyOjQ1
-IEFNDQo+ID4gPiA+ID4gVG86IE1pY2hhZWwgRWxsZXJtYW47IEFybmQgQmVyZ21hbm4NCj4gPiA+
-ID4gPiBDYzogbGludXgtbW1jQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5l
-bC5vcmc7DQo+ID4gPiA+ID4gbGludXhwcGMtIGRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1r
-ZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+IFlhbmdibyBMdQ0KPiA+ID4gPiA+IFN1
-YmplY3Q6IFJlOiBbUEFUQ0ggdjExIDQvNV0gcG93ZXJwYy9mc2w6IG1vdmUgbXBjODV4eC5oIHRv
-DQo+ID4gPiA+ID4gaW5jbHVkZS9saW51eC9mc2wNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIFRo
-dSwgMjAxNi0wNy0yMSBhdCAyMDoyNiArMTAwMCwgTWljaGFlbCBFbGxlcm1hbiB3cm90ZToNCj4g
-PiA+ID4gPiA+DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gUXVvdGluZyBTY290dCBXb29kICgy
-MDE2LTA3LTIxIDA0OjMxOjQ4KQ0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4g
-PiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBPbiBXZWQsIDIwMTYtMDctMjAgYXQgMTM6MjQgKzAyMDAs
-IEFybmQgQmVyZ21hbm4gd3JvdGU6DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPg0K
-PiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gT24gU2F0dXJkYXksIEp1bHkgMTYsIDIw
-MTYgOTo1MDoyMSBQTSBDRVNUIFNjb3R0IFdvb2Qgd3JvdGU6DQo+ID4gPiA+ID4gPiA+ID4gPg0K
-PiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPg0K
-PiA+ID4gPiA+ID4gPiA+ID4gRnJvbTogeWFuZ2JvIGx1IDx5YW5nYm8ubHVAbnhwLmNvbT4NCj4g
-PiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiBNb3ZlIG1wYzg1eHguaCB0byBpbmNs
-dWRlL2xpbnV4L2ZzbCBhbmQgcmVuYW1lIGl0IHRvDQo+ID4gPiA+ID4gPiA+ID4gPiBzdnIuaCBh
-cyBhIGNvbW1vbiBoZWFkZXIgZmlsZS7CoMKgVGhpcyBTVlIgbnVtYmVyc3BhY2UgaXMNCj4gPiA+
-ID4gPiA+ID4gPiA+IHVzZWQgb24gc29tZSBBUk0gY2hpcHMgYXMgd2VsbCBhcyBQUEMsIGFuZCBl
-dmVuIHRvIGNoZWNrDQo+ID4gPiA+ID4gPiA+ID4gPiBmb3IgYSBQUEMgU1ZSIG11bHRpLWFyY2gg
-ZHJpdmVycyB3b3VsZCBvdGhlcndpc2UgbmVlZCB0bw0KPiA+ID4gPiA+ID4gPiA+ID4gaWZkZWYg
-dGhlIGhlYWRlciBpbmNsdXNpb24gYW5kIGFsbCByZWZlcmVuY2VzIHRvIHRoZSBTVlINCj4gc3lt
-Ym9scy4NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5
-OiBZYW5nYm8gTHUgPHlhbmdiby5sdUBueHAuY29tPg0KPiA+ID4gPiA+ID4gPiA+ID4gQWNrZWQt
-Ynk6IFdvbGZyYW0gU2FuZyA8d3NhQHRoZS1kcmVhbXMuZGU+DQo+ID4gPiA+ID4gPiA+ID4gPiBB
-Y2tlZC1ieTogU3RlcGhlbiBCb3lkIDxzYm95ZEBjb2RlYXVyb3JhLm9yZz4NCj4gPiA+ID4gPiA+
-ID4gPiA+IEFja2VkLWJ5OiBKb2VyZyBSb2VkZWwgPGpyb2VkZWxAc3VzZS5kZT4NCj4gPiA+ID4g
-PiA+ID4gPiA+IFtzY290dHdvb2Q6IHVwZGF0ZSBkZXNjcmlwdGlvbl0NCj4gPiA+ID4gPiA+ID4g
-PiA+IFNpZ25lZC1vZmYtYnk6IFNjb3R0IFdvb2QgPG9zc0BidXNlcnJvci5uZXQ+DQo+ID4gPiA+
-ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IEFzIGRpc2N1c3NlZCBiZWZvcmUsIHBsZWFzZSBk
-b24ndCBpbnRyb2R1Y2UgeWV0IGFub3RoZXINCj4gPiA+ID4gPiA+ID4gPiB2ZW5kb3Igc3BlY2lm
-aWMgd2F5IHRvIG1hdGNoIGEgU29DIElEIGZyb20gYSBkZXZpY2UgZHJpdmVyLg0KPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gSSd2ZSBwb3N0ZWQgYSBwYXRjaCBmb3IgYW4gZXh0ZW5z
-aW9uIHRvIHRoZSBzb2NfZGV2aWNlDQo+ID4gPiA+ID4gPiA+ID4gaW5mcmFzdHJ1Y3R1cmUgdG8g
-YWxsb3cgY29tcGFyaW5nIHRoZSBydW5uaW5nIFNvQyB0byBhDQo+ID4gPiA+ID4gPiA+ID4gdGFi
-bGUgb2YgZGV2aWNlcywgdXNlIHRoYXQgaW5zdGVhZC4NCj4gPiA+ID4gPiA+ID4gQXMgSSBhc2tl
-ZCBiZWZvcmUsIGluIHdoaWNoIHJlbGV2YW50IG1haW50YWluZXJzaGlwIGNhcGFjaXR5DQo+ID4g
-PiA+ID4gPiA+IGFyZSB5b3UgTkFDS2luZyB0aGlzPw0KPiA+ID4gPiA+ID4gSSdsbCBuYWNrIHRo
-ZSBwb3dlcnBjIHBhcnQgdW50aWwgeW91IGd1eXMgY2FuIGFncmVlLg0KPiA+ID4gPiA+IE9LLCBJ
-J3ZlIHB1bGxlZCB0aGVzZSBwYXRjaGVzIG91dC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEZvciB0
-aGUgTU1DIGlzc3VlIEkgc3VnZ2VzdCB1c2luZyBpZmRlZiBDT05GSUdfUFBDIGFuZA0KPiA+ID4g
-PiA+IG1mc3ByKFNQUk5fU1ZSKSBsaWtlIHRoZSBjbG9jayBkcml2ZXIgZG9lc1sxXSBhbmQgd2Ug
-Y2FuIHJldmlzaXQNCj4gPiA+ID4gPiB0aGUgaXNzdWUgaWYvd2hlbiB3ZSBuZWVkIHRvIGRvIHNv
-bWV0aGluZyBzaW1pbGFyIG9uIGFuIEFSTSBjaGlwLg0KPiA+ID4gPiBbTHUgWWFuZ2JvLUI0NzA5
-M10gSSByZW1lbWJlcmVkIHRoYXQgVWZmZSBoYWQgb3Bwb3NlZCB1cyB0bw0KPiA+ID4gPiBpbnRy
-b2R1Y2UNCj4gPiA+ID4gbm9uLSBnZW5lcmljIGhlYWRlciBmaWxlcyhsaWtlICcjaW5jbHVkZSA8
-YXNtL21wYzg1eHguaD4nKSBpbiBtbWMNCj4gPiA+ID4gZHJpdmVyIGluaXRpYWxseS4gU28gSSB0
-aGluayBpdCB3aWxsIG5vdCBiZSBhY2NlcHRlZCB0byB1c2UgaWZkZWYNCj4gPiA+ID4gQ09ORklH
-X1BQQyBhbmQgbWZzcHIoU1BSTl9TVlIpLi4uDQo+ID4gPiA+IEFuZCB0aGlzIG1ldGhvZCBzdGls
-bCBjb3VsZG7igJl0IGdldCBTVlIgb2YgQVJNIGNoaXAgbm93Lg0KPiA+ID4gUmlnaHQsIGFzIEkg
-c2FpZCB3ZSdsbCBoYXZlIHRvIHJldmlzaXQgdGhlIGlzc3VlIGlmL3doZW4gd2UgaGF2ZSB0aGUN
-Cj4gPiA+IHNhbWUgcHJvYmxlbSBvbiBhbiBBUk0gY2hpcC4gwqBUaGF0IGFsc28gYXBwbGllcyBp
-ZiB0aGUgUFBDIGlmZGVmIGlzDQo+ID4gPiBzdGlsbCBnZXR0aW5nIE5BQ0tlZCBmcm9tIHRoZSBN
-TUMgc2lkZS4NCj4gPiBbTHUgWWFuZ2JvLUI0NzA5M10gSXQncyBub3QgY2xlYXIgZm9yIG1lIGFi
-b3V0IHlvdXIgaWRlYSA6KCBEbyB5b3UNCj4gPiBtZWFuIHdlIGNhbiBzdGlsbCB1c2UgdGhpcyBt
-ZXRob2QsIG9yIG5vdCA/DQo+ID4gSSB0aGluayBVZmZlIGhhZCBvcHBvc2VkIHRvIHVzZSBpZmRl
-ZiBDT05GSUdfUFBDIGFuZCBtZnNwcihTUFJOX1NWUikuDQo+ID4gSXMgdGhlcmUgYW55IHNvbHV0
-aW9uIHRvIHJlc29sdmUgPw0KPiA+IDopDQo+IA0KPiBBcyBJIHNhaWQsIEknbSBPSyB3aXRoIHVz
-aW5nIHRoZSBTUFIuIMKgSXQncyB1cCB0byB5b3UgdG8gZmluZCBvdXQgd2hldGhlcg0KPiBpdCdz
-IHN0aWxsIHVuYWNjZXB0YWJsZSB3aXRoIHRoZSBNTUMgbWFpbnRhaW5lcnMgZ2l2ZW4gYWxsIHRo
-ZSBkaXNjdXNzaW9uDQo+IChpdCB3b3VsZCBiZSB0aGUgcXVpY2tlc3Qgd2F5IHRvIGdldCB0aGUg
-d29ya2Fyb3VuZCBlbmFibGVkKSwgb3IganVzdCBnbw0KPiB3aXRoIHRoZSBtZXRob2QgYmVsb3cu
-DQoNCltMdSBZYW5nYm8tQjQ3MDkzXSBBcyB5b3Uga25vdywgdGhpcyBwYXRjaHNldChhcyBiZWxv
-dykgaGFzIGJlZW4gZGlzY3Vzc2VkIGZvciBtb3JlIHRoYW4gb25lIHllYXIuDQpXaGF0IEkgd2Fu
-dCBpcyBqdXN0IHRvIGFkZCBhIGZpeCBmb3IgYW4gc3BlY2lmaWMgc29jIHJldmlzaW9uLg0KDQpZ
-YW5nYm8gTHUgKDcpOg0KICBEb2N1bWVudGF0aW9uOiBEVDogdXBkYXRlIEZyZWVzY2FsZSBEQ0ZH
-IGNvbXBhdGlibGUNCiAgQVJNNjQ6IGR0czogbHMyMDgwYTogYWRkIGRldmljZSBjb25maWd1cmF0
-aW9uIG5vZGUNCiAgc29jOiBmc2w6IGFkZCBHVVRTIGRyaXZlciBmb3IgUW9ySVEgcGxhdGZvcm1z
-DQogIGR0OiBtb3ZlIGd1dHMgZGV2aWNldHJlZSBkb2Mgb3V0IG9mIHBvd2VycGMgZGlyZWN0b3J5
-DQogIHBvd2VycGMvZnNsOiBtb3ZlIG1wYzg1eHguaCB0byBpbmNsdWRlL2xpbnV4L2ZzbA0KICBN
-QUlOVEFJTkVSUzogYWRkIGVudHJ5IGZvciBGcmVlc2NhbGUgU29DIGRyaXZlcnMNCiAgbW1jOiBz
-ZGhjaS1vZi1lc2RoYzogZml4IGhvc3QgdmVyc2lvbiBmb3IgVDQyNDAtUjEuMC1SMi4wDQoNCkJ1
-dCB3ZSBoYXZlIHRvIGFiYW5kb24gaXQgc2luY2UgQXJuZCBzdHJvbmdseSBkaXNhZ3JlZSBvdXIg
-Z3V0cyBkcml2ZXIgbWV0aG9kIHRvIGdldCBzb2MgcmV2aXNpb24uDQpOb3cgSSBoYXZlIHRvIGFz
-ayB5b3UgdG8gcmVjb25zaWRlciB0aGUgb3JpZ2luYWwgbWV0aG9kIHRvIGdldCBzb2MgcmV2aXNv
-biBzaW5jZSB3ZSByZWFsbHkgaGF2ZSBubyBiZXR0ZXIgaWRlYS4NCkFzIFNjb3R0IHN1Z2dlc3Rl
-ZCBhYm92ZSwgdXNlIGlmZGVmIENPTkZJR19QUEMgYW5kIG1mc3ByKFNQUk5fU1ZSKSBsaWtlIHRo
-ZSBjbG9jayBkcml2ZXIgZG9lcyB0byBnZXQgU1ZSLg0KSXQncyBxdWlja2VzdCB3YXkgdG8gcmVz
-b2x2ZSBvdXIgZXNkaGMgaXNzdWUuIENvdWxkIHlvdSByZWNvbnNpZGVyIHRvIHVzZSB0aGlzPw0K
-DQpBbHRob3VnaCBBcm5kIHByb3ZpZGVkIGFub3RoZXIgbmV3IG1ldGhvZCBieSBzZW5kaW5nIGEg
-cHJvb2Ytb2YtY29uY2VwdCBwYXRjaCBhcyBiZWxvdywgdGhlcmUgd2VyZSBzdGlsbCBtYW55IGNv
-bnRyb3ZlcnNpYWwgcG9pbnRzLg0KSSdtIHdvcnJpZWQgdGhhdCB3b3VsZCBiZSBkaXNjdXNzZWQg
-Zm9yIGEgcXVpdGUgbG9uZyB0aW1lIGxpa2UgdGhlIGd1dHMgZHJpdmVyLg0KW1BBVENIIDEvNF0g
-IGJhc2U6IHNvYzogaW50cm9kdWNlIHNvY19kZXZpY2VfbWF0Y2goKSBpbnRlcmZhY2UNCltQQVRD
-SCAyLzRdIHNvYzogZnNsOiBhZGQgR1VUUyBkcml2ZXIgZm9yIFFvcklRIHBsYXRmb3Jtcw0KW1BB
-VENIIDMvNF0gbW1jOiBzZGhjaS1vZi1lc2RoYzogZml4IGhvc3QgdmVyc2lvbiBmb3IgVDQyNDAt
-UjEuMC1SMi4wDQpbUEFUQ0ggNC80XSBSZXZlcnQgInBvd2VycGMvZnNsOiBNb3ZlIGZzbF9ndXRz
-Lmggb3V0IG9mIGFyY2gvcG93ZXJwYyINCg0KQW55d2F5LCB3aGF0IEkgd2FudCBpcyBqdXN0IHRv
-IGZpeCB0aGUgZXNkaGMgaXNzdWUgQVNBUC4gDQpVZmZlLCBDb3VsZCB5b3UgcmVjb25zaWRlciB3
-aGV0aGVyIHlvdSBjb3VsZCBhY2NlcHQgdGhlIHdheSB1c2luZyBpZmRlZiBDT05GSUdfUFBDIGFu
-ZCBtZnNwcihTUFJOX1NWUik/DQpPciBkbyB5b3UgaGF2ZSBhbnkgc3VnZ2VzdGlvbi4NCg0KSSB3
-aWxsIGFwcHJlY2lhdGUgeW91ciBzdWdnZXN0aW9uLg0KVGhhbmtzIGEgbG90Lg0KDQotIFlhbmdi
-bw0KPiANCj4gPiA+ID4gQW55IG90aGVyIHN1Z2dlc3Rpb24gaGVyZT8NCj4gPiA+IFRoZSBvdGhl
-ciBvcHRpb24gaXMgdG8gdHJ5IHRvIGNvbWUgdXAgd2l0aCBzb21ldGhpbmcgdGhhdCBmaXRzIGlu
-dG8NCj4gPiA+IEFybmQncyBmcmFtZXdvcmsgd2hpbGUgYWRkcmVzc2luZyB0aGUgY29uY2VybnMg
-SSByYWlzZWQuIMKgVGhlIHNvY19pZA0KPiA+ID4gc3RyaW5nIHNob3VsZCBiZSB3ZWxsLXN0cnVj
-dHVyZWQgdG8gYXZvaWQgbWlzbWF0Y2hlcyBhbmQNCj4gPiA+IGNvbXBhdGliaWxpdHkgcHJvYmxl
-bXMgKGVzcGVjaWFsbHkgc2luY2UgaXQgd291bGQgZ2V0IGV4cG9zZWQgdG8NCj4gPiA+IHVzZXJz
-cGFjZSkuIMKgTWF5YmUgc29tZXRoaW5nIGxpa2U6DQo+ID4gPg0KPiA+ID4gc3ZyOjxTVlIgbWlu
-dXMgRSBiaXQ+LHN2cmU6PGZ1bGwgU1ZSIGluY2x1ZGluZyBFIGJpdD4sbmFtZTo8c29jDQo+ID4g
-PiBuYW1lPixkaWU6PHNvYyBkaWUgbmFtZT4scmV2OlguWSw8dGFnMT4sPHRhZzI+LDwuLi4+LA0K
-PiA+IFtMdSBZYW5nYm8tQjQ3MDkzXSBUaGUgc29jX2RldmljZV9hdHRyaWJ1dCBzdHJ1Y3QgaXMg
-ZGVmaW5lZCBhcyBiZWxvdy4NCj4gPiBzdHJ1Y3Qgc29jX2RldmljZV9hdHRyaWJ1dGUgew0KPiA+
-IMKgwqDCoMKgwqDCoMKgwqBjb25zdCBjaGFyICptYWNoaW5lOw0KPiA+IMKgwqDCoMKgwqDCoMKg
-wqBjb25zdCBjaGFyICpmYW1pbHk7DQo+ID4gwqDCoMKgwqDCoMKgwqDCoGNvbnN0IGNoYXIgKnJl
-dmlzaW9uOw0KPiA+IMKgwqDCoMKgwqDCoMKgwqBjb25zdCBjaGFyICpzb2NfaWQ7DQo+ID4gfTsN
-Cj4gPg0KPiA+IFdlIGNhbiBwdXQgdGhlICdtb2RlbCcgaW4gcm9vdCBub2RlIG9mIGR0cyBhcyBt
-YWNoaW5lLCBwdXQgJ0ZyZWVzY2FsZQ0KPiBRb3JJUScNCj4gPiBhcyBmYW1pbHksDQo+IA0KPiBJ
-J2QganVzdCBwdXQgIlFvcklRIiB0byBhdm9pZCB0aGUgcXVlc3Rpb24gb2Ygd2hldGhlciB0byB1
-c2UgIkZyZWVzY2FsZSINCj4gb3IgIk5YUCIuDQo+IA0KPiA+IGFuZCBwdXQgeC54IGFzIHJldmlz
-aW9uLiBJcyBpdCBvaz8NCj4gPiBBcyB5b3Ugc3VnZ2VzdGVkLCB5b3UgbGlrZSB0byB1c2UgYmVs
-b3cgc3RyaW5nIGFzIHNvY19pZC4gSXQncyBlYXN5IHRvDQo+ID4gZ2V0IHN2ciwgYnV0IGhvdyBk
-b2VzIHRoZSBzb2Z0d2FyZSBrbm93IHRoZSBuYW1lIGFuZCBkaWUsIGFuZCBwdXQgdGhlbQ0KPiA+
-IGludG8gdGhpcyBzdHJpbmcgPyBJdCdzIGEgbGFyZ2UgY29kZSB0byBkZWZpbmUgdGhlbS4NCj4g
-DQo+IFllcywgdGhlcmUgd291bGQgbmVlZCB0byBiZSBhIHRhYmxlIGluIHRoZSBndXRzIGRyaXZl
-ciBmb3IgZWFjaCBTVlIuIMKgSWYNCj4gdGhlIFNWUiBpc24ndCBmb3VuZCBpbiB0aGUgdGFibGUg
-dGhlbiB0aGUgc29jX2lkIHdvdWxkIG9ubHkgY29udGFpbiB0aGUNCj4gc3ZyOiBhbmQNCj4gc3Zy
-ZTogZmllbGRzLg0KPiANCj4gPiA+DQo+ID4gPiBzdnI6PFNWUiBtaW51cyBFIGJpdD4sc3ZyZTo8
-ZnVsbCBTVlIgaW5jbHVkaW5nIEUgYml0PixuYW1lOjxzb2MNCj4gPiA+IG5hbWU+LGRpZTo8c29j
-IGRpZSBuYW1lPixyZXY6WC5ZLDx0YWcxPiw8dGFnMj4sPC4uLj4sDQo+ID4gU2hvdWxkIHdlIHJl
-bW92ZSByZXYgaGVyZSBzaW5jZSB0aGVyZSBpcyBhbHNvIGEgcmV2aXNpb24gbWVtYmVyPw0KPiAN
-Cj4gWWVzLCBJIGZvcmdvdCB0aGVyZSB3YXMgYSByZXZpc2lvbiBmaWVsZCAtLSBpdCBzaG91bGQg
-Z28gdGhlcmUgb2J2aW91c2x5Lg0KPiANCj4gPiBSZWdhcmRpbmcgdGhlIGd1dHNfaW5pdCwgd2Ug
-c3RpbGwgY2FsbCBndXRzX2luaXQgYW5kIHRoZW4gbWF0Y2ggdGhlDQo+ID4gc29jLCBvciB3ZSBj
-aGFuZ2UgdG8gdXNlIHBsYXRmb3JtIGRyaXZlcj8NCj4gPiBPciBkbyB5b3Uga25vdyBhbnkgYmV0
-dGVyIHBsYWNlIHRvIGNhbGwgZ3V0c19pbml0IHRvIGluaXRpYWxpemUgb25seQ0KPiBvbmNlPw0K
-PiANCj4gVXNlIGEgcGxhdGZvcm0gZHJpdmVyIGZvciBub3cuIMKgSWYgd2UgZXZlciBuZWVkIHRv
-IGNoZWNrIGFuIEFSTSBTVlIgaW4NCj4gdGhlIGNsb2NrIGRyaXZlciBvciBzaW1pbGFyIHBsYWNl
-LCB0aGVuIEFybmQgY2FuIGV4cGxhaW4gd2hhdCBoZSB3YW50cyB1cw0KPiB0byBkbyB0aGVuIDot
-KQ0KPiANCj4gLVNjb3R0DQoNCg==
+Kees Cook <keescook@chromium.org> writes:
+> On Mon, Aug 1, 2016 at 8:12 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Kees Cook <keescook@chromium.org> writes:
+>>> On Mon, Aug 1, 2016 at 5:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>>>
+>>>>   scripts/link-vmlinux.sh: line 52: 36260 Segmentation fault      (core dumped) ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2} -T ${lds} ${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
+>>>>
+>>>> Haven't had a chance to debug it further.
+...
+>> Interestingly I *can't* reproduce with the Ubuntu x86->ppc cross
+>> (5.4.0-6ubuntu1~16.04.1).
+>
+> Oh, weird. Well, that does explains my lack of hitting the problem,
+> though: that's the cross compiler I was using. :P
+
+Actually that was a false negative.
+
+The trick is you have to have LKDTM=y *and* FUNCTION_TRACER=y.
+
+It is a linker bug:
+
+  https://sourceware.org/bugzilla/show_bug.cgi?id=20428
+
+Which Alan has already fixed.
+
+But we need to workaround existing linkers that are out there.
+
+We can do that by marking lkdtm_rodata_do_nothing() notrace, which I
+think makes sense for all arches actually.
+
+So I'll send you a patch to do that.
+
+cheers
