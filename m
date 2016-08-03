@@ -1,52 +1,26 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p04-ob.smtp.rzone.de (mo6-p04-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5304::7])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s46ds0Ws1zDqQn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 19:07:12 +1000 (AEST)
-Subject: [pasemi] Radeon HD graphics card not recognised after the
- powerpc-4.8-1 commit
-To: luigi burdo <intermediadc@hotmail.com>,
- Darren Stevens <darren@stevens-zone.net>, Julian Margetson
- <runaway@candw.ms>, Steven Jeffery <sajeffer@gmail.com>,
- "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
- "contact@a-eon.com" <contact@a-eon.com>,
- "matthew@a-eon.biz" <matthew@a-eon.biz>, Kevin Saunders <kfs1971@gmail.com>,
- Lyle Hazelwood <lylehaze@gmail.com>, EntwicklerX <mail@entwickler-x.de>,
- "xray@relec.ch" <xray@relec.ch>, Steve-David Marguet <steve@esdeem.ch>,
- George Sokianos <walkero@gmail.com>, =?UTF-8?Q?Sinan_G=c3=bcrkan?=
- <sinan.amigaone@gmail.com>, Mike <michael.heltne@gmail.com>,
- Thomas Ferreira <macsociety@me.com>, Christian Zigotzky <info@xenosoft.de>,
- "pjs@pjsa.net" <pjs@pjsa.net>, Ben Cato Malkenes <ben.cato@gmail.com>,
- Olof Johansson <olof@lixom.net>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
- <5773AEFD.6070608@xenosoft.de>
- <AM4PR01MB1538D5E894F612122B81991AC8230@AM4PR01MB1538.eurprd01.prod.exchangelabs.com>
- <57752BB3.9060306@xenosoft.de>
- <7072d7cf-4d73-d424-af20-f5e94c8b399e@xenosoft.de>
- <816DC2B4-5B33-4C5E-A09A-F5BF7C7BF1FD@xenosoft.de>
- <aed83bc1-e574-1a9f-de58-480c9164865c@xenosoft.de>
- <2d94a278-d1d8-b484-e9ca-aedf18051e1a@xenosoft.de>
- <a84c2b93-4dac-9148-9ae2-0824491d1f50@xenosoft.de>
- <ae855392-570c-e125-b71f-2d5bf0c33eef@xenosoft.de>
- <d869fc32-ba80-529e-06dd-481ecf533642@xenosoft.de>
- <8b0682d3-866a-31dd-f01b-3510f84307dc@xenosoft.de>
- <2847029a-e3a4-8099-b72f-89d5731baaed@xenosoft.de>
- <4e97a4dd-3fe0-84aa-47f0-29d1544c9f8c@xenosoft.de>
- <72eed836-767c-402a-576a-8049db34d281@xenosoft.de>
- <8878883b-bd51-b7c9-ee5b-927e481e5d30@xenosoft.de>
- <8a3764d2-7fc1-1967-f557-146a3df16894@xenosoft.de>
- <1d98af3c-f585-967b-1413-58d34fad20af@xenosoft.de>
- <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <3fd5ecda-7e1f-52ec-6f11-ed603d2dcd76@xenosoft.de>
-Date: Wed, 3 Aug 2016 11:03:48 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s482Z6VcKzDqQn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 20:10:14 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id g202so14403105pfb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 03:10:14 -0700 (PDT)
+Date: Wed, 3 Aug 2016 20:10:03 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson
+ <alex.williamson@redhat.com>, Paul Mackerras <paulus@samba.org>, David
+ Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel 05/15] powerpc/iommu: Stop using @current in
+ mm_iommu_xxx
+Message-ID: <20160803201003.64773d4c@roar.ozlabs.ibm.com>
+In-Reply-To: <1470213656-1042-6-git-send-email-aik@ozlabs.ru>
+References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
+ <1470213656-1042-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,29 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Wed,  3 Aug 2016 18:40:46 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-I tried to compile the latest Git kernel today. It boots but Xorg 
-doesn't work anymore.
+> In some situations the userspace memory context may live longer than
+> the userspace process itself so if we need to do proper memory context
+> cleanup, we better cache @mm and use it later when the process is gone
+> (@current or @current->mm are NULL).
+> 
+> This changes mm_iommu_xxx API to receive mm_struct instead of using one
+> from @current.
+> 
+> This is needed by the following patch to do proper cleanup in time.
+> This depends on "powerpc/powernv/ioda: Fix endianness when reading TCEs"
+> to do proper cleanup via tce_iommu_clear() patch.
+> 
+> To keep API consistent, this replaces mm_context_t with mm_struct;
+> we stick to mm_struct as mm_iommu_adjust_locked_vm() helper needs
+> access to &mm->mmap_sem.
+> 
+> This should cause no behavioral change.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-     [    41.210] (++) using VT number 7
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-     [    41.341] (II) [KMS] Kernel modesetting enabled.
-     [    41.341] (EE) No devices detected.
-     [    41.341] (EE)
-     Fatal server error:
-     [    41.341] (EE) no screens found(EE)
-     [    41.341] (EE)
-
-I reverted the commit "powerpc-4.8-1" and Xorg works. The commit 
-"powerpc-4.8-1" is the problem.
-
-Link: 
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9
-
-Which source code modification in the commit "powerpc-4.8-1" could be 
-the problem?
-
-Cheers,
-
-Christian
+I still have some questions about the use of mm in the driver, but
+those aren't issues introduced by this patch, so as it is I think
+the bug fix of this and the next patch is good.
