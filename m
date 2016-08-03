@@ -1,52 +1,21 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s43L46dhbzDqQt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 16:38:20 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u736XsnR135765
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 02:38:19 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24k0bmp1k3-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 02:38:18 -0400
-Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 3 Aug 2016 16:38:16 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E0BCE3578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 16:38:12 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u736cClq26804228
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 16:38:12 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u736cBas027504
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Aug 2016 16:38:12 +1000
-Date: Wed, 3 Aug 2016 12:08:08 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
- Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- mahesh@linux.vnet.ibm.com, hbathini@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] mm: Allow disabling deferred struct page
- initialisation
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <1470143947-24443-1-git-send-email-srikar@linux.vnet.ibm.com>
- <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
- <57A0E1D1.8020608@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s445t1cRFzDqQt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Aug 2016 17:12:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: neelegup@linux.vnet.ibm.com, Stewart Smith <stewart@linux.vnet.ibm.com>,
+ stable@vger.kernel.org
+Subject: Re: [PATCH] rtc-opal: Fix handling of firmware error codes,
+ prevent busy loops
+In-Reply-To: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
+References: <1470102616-18346-1-git-send-email-stewart@linux.vnet.ibm.com>
+Date: Wed, 03 Aug 2016 17:12:49 +1000
+Message-ID: <877fbytjf2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <57A0E1D1.8020608@intel.com>
-Message-Id: <20160803063808.GI6310@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,23 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Dave Hansen <dave.hansen@intel.com> [2016-08-02 11:09:21]:
+Stewart Smith <stewart@linux.vnet.ibm.com> writes:
 
-> On 08/02/2016 06:19 AM, Srikar Dronamraju wrote:
-> > Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
-> > only certain size memory per node. The certain size takes into account
-> > the dentry and inode cache sizes. However such a kernel when booting a
-> > secondary kernel will not be able to allocate the required amount of
-> > memory to suffice for the dentry and inode caches. This results in
-> > crashes like the below on large systems such as 32 TB systems.
-> 
-> What's a "secondary kernel"?
-> 
+> According to the OPAL docs:
+> https://github.com/open-power/skiboot/blob/skiboot-5.2.5/doc/opal-api/opal-rtc-read-3.txt
+> https://github.com/open-power/skiboot/blob/skiboot-5.2.5/doc/opal-api/opal-rtc-write-4.txt
+> OPAL_HARDWARE may be returned from OPAL_RTC_READ or OPAL_RTC_WRITE and this
+> indicates either a transient or permanent error.
+>
+> Prior to this patch, Linux was not dealing with OPAL_HARDWARE being a
+> permanent error particularly well, in that you could end up in a busy
+> loop.
+>
+> This was not too hard to trigger on an AMI BMC based OpenPOWER machine
+> doing a continuous "ipmitool mc reset cold" to the BMC, the result of
+> that being that we'd get stuck in an infinite loop in opal_get_rtc_time.
+>
+> We now retry a few times before returning the error higher up the stack.
 
-I mean the kernel thats booted to collect the crash, On fadump, the
-first kernel acts as the secondary kernel i.e the same kernel is booted
-to collect the crash.
+Looks like this has always been broken, so:
 
--- 
-Thanks and Regards
-Srikar Dronamraju
+Fixes: 16b1d26e77b1 ("rtc/tpo: Driver to support rtc and wakeup on PowerNV platform")
+
+> Cc: stable@vger.kernel.org
+
+And therefore that should be:
+
+Cc: stable@vger.kernel.org # v3.19+
+
+> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> ---
+>  drivers/rtc/rtc-opal.c | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
+> index 9c18d6fd8107..fab19e3e2fba 100644
+> --- a/drivers/rtc/rtc-opal.c
+> +++ b/drivers/rtc/rtc-opal.c
+> @@ -58,6 +58,7 @@ static void tm_to_opal(struct rtc_time *tm, u32 *y_m_d, u64 *h_m_s_ms)
+>  static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
+>  {
+>  	long rc = OPAL_BUSY;
+> +	int retries = 10;
+>  	u32 y_m_d;
+>  	u64 h_m_s_ms;
+>  	__be32 __y_m_d;
+> @@ -67,8 +68,11 @@ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
+>  		rc = opal_rtc_read(&__y_m_d, &__h_m_s_ms);
+>  		if (rc == OPAL_BUSY_EVENT)
+>  			opal_poll_events(NULL);
+> -		else
+> +		else if (retries-- && (rc == OPAL_HARDWARE
+> +				       || rc == OPAL_INTERNAL_ERROR))
+>  			msleep(10);
+> +		else if (rc != OPAL_BUSY && rc != OPAL_BUSY_EVENT)
+> +			break;
+>  	}
+
+This is a pretty gross API at this point.
+
+That's basically a score of 2 on Rusty's API usability index ("Read the implementation
+and you'll get it right" - http://ozlabs.org/~rusty/index.cgi/tech/2008-03-30.html).
+
+The docs don't mention OPAL_INTERNAL_ERROR being transient, nor do they mention
+OPAL_BUSY.
+
+Can we at least do a wrapper function in opal.h for drivers to use that handles
+some or all of these cases?
+
+cheers
