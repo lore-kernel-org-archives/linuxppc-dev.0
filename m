@@ -1,24 +1,25 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s4Ls574lSzDqRs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 04:17:45 +1000 (AEST)
-Subject: Re: [PATCH 1/2] mm: Allow disabling deferred struct page
- initialisation
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <1470143947-24443-1-git-send-email-srikar@linux.vnet.ibm.com>
- <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
- <57A0E1D1.8020608@intel.com> <20160803063808.GI6310@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
- Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- mahesh@linux.vnet.ibm.com, hbathini@linux.vnet.ibm.com
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <57A23547.1070207@intel.com>
-Date: Wed, 3 Aug 2016 11:17:43 -0700
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4Mh34ZY2zDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 04:54:58 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Fengguang Wu <fengguang.wu@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
+ next-20160729 build failures
+Date: Wed, 03 Aug 2016 20:52:48 +0200
+Message-ID: <3892328.nUGXIq3MaH@wuerfel>
+In-Reply-To: <20160804013729.7fffa45a@roar.ozlabs.ibm.com>
+References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
+ <5216072.9VpDc0iy8Q@wuerfel> <20160804013729.7fffa45a@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20160803063808.GI6310@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +29,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/02/2016 11:38 PM, Srikar Dronamraju wrote:
-> * Dave Hansen <dave.hansen@intel.com> [2016-08-02 11:09:21]:
->> On 08/02/2016 06:19 AM, Srikar Dronamraju wrote:
->>> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
->>> only certain size memory per node. The certain size takes into account
->>> the dentry and inode cache sizes. However such a kernel when booting a
->>> secondary kernel will not be able to allocate the required amount of
->>> memory to suffice for the dentry and inode caches. This results in
->>> crashes like the below on large systems such as 32 TB systems.
->>
->> What's a "secondary kernel"?
->>
-> I mean the kernel thats booted to collect the crash, On fadump, the
-> first kernel acts as the secondary kernel i.e the same kernel is booted
-> to collect the crash.
+On Thursday, August 4, 2016 1:37:29 AM CEST Nicholas Piggin wrote:
+> 
+> I've attached what I'm using, which builds and runs for me without
+> any work. Your arch obviously has to select the option to use it.
+> 
+>     text      data     bss      dec       hex     filename
+>     11196784  1185024  1923820  14305628  da495c  vmlinuxppc64.before
+>     11187536  1181848  1923176  14292560  da1650  vmlinuxppc64.after
+>     
+> ~9K text saving, ~3K data saving. I assume this comes from fewer
+> branch trampolines and toc entries, but haven't verified exactly.
 
-OK, but I'm still not seeing what the problem is.  You've said that it
-crashes and that it crashes during inode/dentry cache allocation.
+The patch seems to work great, but for me it's getting bigger
+(compared to my older patch, mainline allyesconfig doesn't build):
 
-But, *why* does the same kernel image crash in when it is used as a
-"secondary kernel"?
+   text	   data	    bss	    dec	    hex	filename
+51299868	42599559	23362148	117261575	6fd4507	vmlinuxarm.before
+51302545	42595015	23361884	117259444	6fd3cb4	vmlinuxarm.after
+
+Most of the difference appears to be in branch trampolines (634 added,
+559 removed, 14837 unchanged) as you suspect, but I also see a couple
+of symbols show up in vmlinux that were not there before:
+
+-A __crc_dma_noop_ops
+-D dma_noop_ops
+-R __clz_tab
+-r fdt_errtable
+-r __kcrctab_dma_noop_ops
+-r __kstrtab_dma_noop_ops
+-R __ksymtab_dma_noop_ops
+-t dma_noop_alloc
+-t dma_noop_free
+-t dma_noop_map_page
+-t dma_noop_mapping_error
+-t dma_noop_map_sg
+-t dma_noop_supported
+-T fdt_add_reservemap_entry
+-T fdt_begin_node
+-T fdt_create
+-T fdt_create_empty_tree
+-T fdt_end_node
+-T fdt_finish
+-T fdt_finish_reservemap
+-T fdt_property
+-T fdt_resize
+-T fdt_strerror
+-T find_cpio_data
+
+>From my first look, it seems that all of lib/*.o is now getting linked
+into vmlinux, while we traditionally leave out everything from lib/
+that is not referenced.
+
+I also see a noticeable overhead in link time, the numbers are for
+a cache-hot rebuild after a successful allyesconfig build, using a
+24-way Opteron@2.5Ghz, just relinking vmlinux:
+
+$ time make skj30 vmlinux # before
+real	2m8.092s
+user	3m41.008s
+sys	0m48.172s
+
+$ time make skj30 vmlinux # after
+real	4m10.189s
+user	5m43.804s
+sys	0m52.988s
+
+That is clearly a very sharp difference. Fortunately for the defconfig
+build, the times are much lower, and I see no real difference other
+than the noise between subsequent runs:
+
+$ time make skj30 vmlinux # before
+real	0m5.415s
+user	0m19.716s
+sys	0m9.356s
+$ time make skj30 vmlinux # before
+real	0m9.536s
+user	0m21.320s
+sys	0m9.224s
+
+
+$ time make skj30 vmlinux # after
+real	0m5.539s
+user	0m20.360s
+sys	0m9.224s
+
+$ time make skj30 vmlinux # after
+real	0m9.138s
+user	0m21.932s
+sys	0m8.988s
+
+$ time make skj30 vmlinux # after
+real	0m5.659s
+user	0m20.332s
+sys	0m9.620s
+
+	Arnd
