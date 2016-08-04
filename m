@@ -1,25 +1,16 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4d7R08GxzDqRv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:01:07 +1000 (AEST)
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s4d7Q3bh6z9stY
- for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 15:01:06 +1000 (AEST)
-Date: Thu, 4 Aug 2016 15:00:48 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: herbert@gondor.apana.org.au, <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] crypto: powerpc - CRYPT_CRC32C_VPMSUM should depend on
- ALTIVEC
-Message-ID: <20160804150048.005f5c02@kryten>
-In-Reply-To: <1470048886-8899-1-git-send-email-mpe@ellerman.id.au>
-References: <1470048886-8899-1-git-send-email-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <ruscur@russell.cc>
+Received: from russell.cc (russell.cc [IPv6:2404:9400:2:0:216:3eff:fee0:3370])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4d7y2nVDzDqTg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:01:34 +1000 (AEST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: gwshan@linux.vnet.ibm.com,
+	Russell Currey <ruscur@russell.cc>
+Subject: [PATCH] powerpc/eeh: Fix slot locations on NPU and legacy platforms
+Date: Thu,  4 Aug 2016 15:01:15 +1000
+Message-Id: <20160804050115.9937-1-ruscur@russell.cc>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +20,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+The slot location code as part of EEH has never functioned perfectly on
+every powerpc system.  The device node properties "ibm,slot-loc",
+"ibm,slot-location-code" and "ibm,io-base-loc-code" have all been
+presented in different cases, and in some situations, there are legacy
+platforms not conforming to the conventions of populating root buses with
+"ibm,io-base-loc-code" and child nodes with "ibm,slot-location-code".
 
-> The optimised crc32c implementation depends on VMX (aka. Altivec)
-> instructions, so the kernel must be built with Altivec support in
-> order for the crc32c code to build.
+Specifically, some legacy platforms use "ibm,loc-code" instead, which
+stopped working with 7e56f627768.  In addition, EEH PEs for NPU devices
+have slot locations specified on the devices instead of buses due to their
+architecture, and these were not printed.  This has been fixed by looking
+at the top device of a PE for a slot location before checking its bus.
 
-Thanks for that, looks good.
+Fixes: 7e56f627768 "powerpc/eeh: Fix PE location code"
+Cc: <stable@vger.kernel.org> #4.4+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/kernel/eeh_pe.c | 31 ++++++++++++++++++++++++++-----
+ 1 file changed, 26 insertions(+), 5 deletions(-)
 
-Acked-by: Anton Blanchard <anton@samba.org>
-
-> Fixes: 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  crypto/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/crypto/Kconfig b/crypto/Kconfig
-> index a9377bef25e3..84d71482bf08 100644
-> --- a/crypto/Kconfig
-> +++ b/crypto/Kconfig
-> @@ -439,7 +439,7 @@ config CRYPTO_CRC32C_INTEL
->  
->  config CRYPT_CRC32C_VPMSUM
->  	tristate "CRC32c CRC algorithm (powerpc64)"
-> -	depends on PPC64
-> +	depends on PPC64 && ALTIVEC
->  	select CRYPTO_HASH
->  	select CRC32
->  	help
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index f0520da..034538c 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -881,17 +881,34 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
+  * eeh_pe_loc_get - Retrieve location code binding to the given PE
+  * @pe: EEH PE
+  *
+- * Retrieve the location code of the given PE. If the primary PE bus
+- * is root bus, we will grab location code from PHB device tree node
+- * or root port. Otherwise, the upstream bridge's device tree node
+- * of the primary PE bus will be checked for the location code.
++ * Retrieve the location code of the given PE. The first device associated
++ * with the PE is checked for a slot location.  If missing, the bus of the
++ * device is checked instead.  If this is a root bus, the location code is
++ * taken from the PHB device tree node or root port.  If not, the upstream
++ * bridge's device tree node of the primary PE bus will be checked instead.
++ * If a slot location isn't found on the bus, walk through parent buses
++ * until a location is found.
+  */
+ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+ {
+-	struct pci_bus *bus = eeh_pe_bus_get(pe);
++	struct pci_bus *bus;
+ 	struct device_node *dn;
+ 	const char *loc = NULL;
+ 
++	/* Check the slot location of the first (top) PCI device */
++	struct eeh_dev *edev =
++		list_first_entry_or_null(&pe->edevs, struct eeh_dev, list);
++
++	if (edev) {
++		loc = of_get_property(edev->pdn->node,
++				      "ibm,slot-location-code", NULL);
++		if (loc)
++			return loc;
++	}
++
++	/* If there's nothing on the device, look at the bus */
++	bus = eeh_pe_bus_get(pe);
++
+ 	while (bus) {
+ 		dn = pci_bus_to_OF_node(bus);
+ 		if (!dn) {
+@@ -905,6 +922,10 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
+ 			loc = of_get_property(dn, "ibm,slot-location-code",
+ 					      NULL);
+ 
++		/* Fall back to ibm,loc-code if nothing else is found */
++		if (!loc)
++			loc = of_get_property(dn, "ibm,loc-code", NULL);
++
+ 		if (loc)
+ 			return loc;
+ 
+-- 
+2.9.2
