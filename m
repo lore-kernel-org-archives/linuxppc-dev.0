@@ -1,45 +1,47 @@
 Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4pzs5YFRzDqV1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 22:25:13 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4pzt4kBQzDqZK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 22:25:14 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u74COGbW073315
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 08:25:11 -0400
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkak1gyb-1
+ u74COFJ6129363
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 08:25:13 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkaj9nve-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 08:25:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 08:25:13 -0400
 Received: from localhost
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 4 Aug 2016 22:25:07 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A40EA2CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 22:25:04 +1000 (EST)
+ Thu, 4 Aug 2016 22:25:09 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 226122BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 22:25:08 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u74CP4aW32178212
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 22:25:04 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u74CP8th14090264
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 22:25:08 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u74CP40m019661
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 22:25:04 +1000
+ u74CP74H019735
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 22:25:07 +1000
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-security-module@vger.kernel.org
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
  linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>,
  kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: [PATCH 5/7] ima: on soft reboot, save the measurement list
-Date: Thu,  4 Aug 2016 08:24:33 -0400
+ linux-kernel@vger.kernel.org,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: [PATCH 6/7] ima: store the builtin/custom template definitions in a
+ list
+Date: Thu,  4 Aug 2016 08:24:34 -0400
 In-Reply-To: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
 References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-Id: <1470313475-20090-6-git-send-email-zohar@linux.vnet.ibm.com>
+Message-Id: <1470313475-20090-7-git-send-email-zohar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,177 +51,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+The builtin and single custom templates are currently stored in an
+array.  In preparation for being able to restore a measurement list
+containing multiple builtin/custom templates, this patch stores the
+builtin and custom templates as a linked list.  This will permit
+defining more than one custom template per boot.
 
-This patch uses the kexec buffer passing mechanism to pass the
-serialized IMA binary_runtime_measurements to the next kernel.
-
-Changelog:
-- updated to call IMA functions  (Mimi)
-- move code from ima_template.c to ima_kexec.c (Mimi)
-
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
 ---
- include/linux/ima.h                | 15 +++++++
- kernel/kexec_file.c                |  3 ++
- security/integrity/ima/ima_kexec.c | 83 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 101 insertions(+)
+ security/integrity/ima/ima.h          |  2 ++
+ security/integrity/ima/ima_main.c     |  1 +
+ security/integrity/ima/ima_template.c | 37 +++++++++++++++++++++++++++--------
+ 3 files changed, 32 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/ima.h b/include/linux/ima.h
-index b553367..ba484ed 100644
---- a/include/linux/ima.h
-+++ b/include/linux/ima.h
-@@ -11,6 +11,7 @@
- #define _LINUX_IMA_H
+diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+index f972296..9d7fdd5 100644
+--- a/security/integrity/ima/ima.h
++++ b/security/integrity/ima/ima.h
+@@ -81,6 +81,7 @@ struct ima_template_field {
  
- #include <linux/fs.h>
-+#include <linux/kexec.h>
- struct linux_binprm;
- 
- enum ima_buffer_id {
-@@ -35,6 +36,14 @@ extern int ima_add_measurement_check(const char *hashname, u8 *digest,
- 				     loff_t size, enum ima_buffer_id buffer_id,
- 				     char *hint);
- 
-+#ifdef CONFIG_IMA_KEXEC
-+extern void ima_add_kexec_buffer(struct kimage *image);
-+#else
-+static inline void ima_add_kexec_buffer(struct kimage *image)
-+{
-+}
-+#endif
-+
- #else
- static inline int ima_bprm_check(struct linux_binprm *bprm)
- {
-@@ -85,6 +94,12 @@ static inline int ima_add_measurement_check(const char *hashname, u8 *digest,
- {
- 	return 0;
- }
-+
-+#ifdef CONFIG_IMA_KEXEC
-+static inline void ima_add_kexec_buffer(struct kimage *image)
-+{
-+}
-+#endif
- #endif /* CONFIG_IMA */
- 
- #ifdef CONFIG_IMA_APPRAISE
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 852adb2..622c126 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -202,6 +202,9 @@ kimage_file_prepare_segments(struct kimage *image, int kernel_fd, int initrd_fd,
- 		return ret;
- 	image->kernel_buf_len = size;
- 
-+	/* IMA needs to pass the measurement list to the next kernel. */
-+	ima_add_kexec_buffer(image);
-+
- 	/* Call arch image probe handlers */
- 	ret = arch_kexec_kernel_image_probe(image, image->kernel_buf,
- 					    image->kernel_buf_len);
-diff --git a/security/integrity/ima/ima_kexec.c b/security/integrity/ima/ima_kexec.c
-index e77ca9d..3fed417 100644
---- a/security/integrity/ima/ima_kexec.c
-+++ b/security/integrity/ima/ima_kexec.c
-@@ -23,6 +23,11 @@
- 
- #include "ima.h"
- 
-+#ifdef CONFIG_IMA_KEXEC
-+/* Physical address of the measurement buffer in the next kernel. */
-+static unsigned long kexec_buffer_load_addr;
-+static size_t kexec_segment_size;
-+
- static int ima_dump_measurement_list(unsigned long *buffer_size, void **buffer,
- 				     unsigned long segment_size)
- {
-@@ -75,6 +80,84 @@ out:
- }
+ /* IMA template descriptor definition */
+ struct ima_template_desc {
++	struct list_head list;
+ 	char *name;
+ 	char *fmt;
+ 	int num_fields;
+@@ -135,6 +136,7 @@ int ima_restore_measurement_list(loff_t bufsize, void *buf);
+ int ima_measurements_show(struct seq_file *m, void *v);
+ unsigned long ima_get_binary_runtime_size(void);
+ int ima_init_template(void);
++void ima_init_template_list(void);
  
  /*
-+ * Called during kexec execute so that IMA can save the measurement list.
-+ */
-+static int ima_update_kexec_buffer(struct notifier_block *self,
-+				   unsigned long action, void *data)
+  * used to protect h_table and sha_table
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 596ef61..592f318 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -418,6 +418,7 @@ static int __init init_ima(void)
+ {
+ 	int error;
+ 
++	ima_init_template_list();
+ 	hash_setup(CONFIG_IMA_DEFAULT_HASH);
+ 	error = ima_init();
+ 	if (!error) {
+diff --git a/security/integrity/ima/ima_template.c b/security/integrity/ima/ima_template.c
+index c6510f0..b7bcb62 100644
+--- a/security/integrity/ima/ima_template.c
++++ b/security/integrity/ima/ima_template.c
+@@ -15,16 +15,20 @@
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
++#include <linux/rculist.h>
+ #include "ima.h"
+ #include "ima_template_lib.h"
+ 
+-static struct ima_template_desc defined_templates[] = {
++static struct ima_template_desc builtin_templates[] = {
+ 	{.name = IMA_TEMPLATE_IMA_NAME, .fmt = IMA_TEMPLATE_IMA_FMT},
+ 	{.name = "ima-ng", .fmt = "d-ng|n-ng"},
+ 	{.name = "ima-sig", .fmt = "d-ng|n-ng|sig"},
+ 	{.name = "", .fmt = ""},	/* placeholder for a custom format */
+ };
+ 
++static LIST_HEAD(defined_templates);
++spinlock_t template_list;
++
+ static struct ima_template_field supported_fields[] = {
+ 	{.field_id = "d", .field_init = ima_eventdigest_init,
+ 	 .field_show = ima_show_template_digest},
+@@ -80,7 +84,7 @@ __setup("ima_template=", ima_template_setup);
+ 
+ static int __init ima_template_fmt_setup(char *str)
+ {
+-	int num_templates = ARRAY_SIZE(defined_templates);
++	int num_templates = ARRAY_SIZE(builtin_templates);
+ 
+ 	if (ima_template)
+ 		return 1;
+@@ -91,20 +95,24 @@ static int __init ima_template_fmt_setup(char *str)
+ 		return 1;
+ 	}
+ 
+-	defined_templates[num_templates - 1].fmt = str;
+-	ima_template = defined_templates + num_templates - 1;
++	builtin_templates[num_templates - 1].fmt = str;
++	ima_template = builtin_templates + num_templates - 1;
++
+ 	return 1;
+ }
+ __setup("ima_template_fmt=", ima_template_fmt_setup);
+ 
+ static struct ima_template_desc *lookup_template_desc(const char *name)
+ {
+-	int i;
++	struct ima_template_desc *template_desc;
+ 
+-	for (i = 0; i < ARRAY_SIZE(defined_templates); i++) {
+-		if (strcmp(defined_templates[i].name, name) == 0)
+-			return defined_templates + i;
++	rcu_read_lock();
++	list_for_each_entry_rcu(template_desc, &defined_templates, list) {
++		if ((strcmp(template_desc->name, name) == 0) ||
++		    (strcmp(template_desc->fmt, name) == 0))
++			return template_desc;
+ 	}
++	rcu_read_unlock();
+ 
+ 	return NULL;
+ }
+@@ -190,6 +198,19 @@ struct ima_template_desc *ima_template_desc_current(void)
+ 	return ima_template;
+ }
+ 
++void __init ima_init_template_list(void)
 +{
-+	void *kexec_buffer = NULL;
-+	size_t kexec_buffer_size;
-+	int ret;
++	int i;
 +
-+	if (!kexec_in_progress)
-+		return NOTIFY_OK;
-+
-+	kexec_buffer_size = ima_get_binary_runtime_size();
-+	if (kexec_buffer_size >
-+	    (kexec_segment_size - sizeof(struct ima_kexec_hdr))) {
-+		pr_err("Binary measurement list grew too large.\n");
-+		goto out;
++	spin_lock(&template_list);
++	for (i = 0; i < ARRAY_SIZE(builtin_templates); i++) {
++		list_add_tail_rcu(&builtin_templates[i].list,
++				  &defined_templates);
 +	}
-+
-+	ima_dump_measurement_list(&kexec_buffer_size, &kexec_buffer,
-+				  kexec_segment_size);
-+	if (!kexec_buffer) {
-+		pr_err("Not enough memory for the kexec measurement buffer.\n");
-+		goto out;
-+	}
-+	ret = kexec_update_segment(kexec_buffer, kexec_buffer_size,
-+				   kexec_buffer_load_addr, kexec_segment_size);
-+	if (ret)
-+		pr_err("Error updating kexec buffer: %d\n", ret);
-+out:
-+	return NOTIFY_OK;
++	spin_unlock(&template_list);
++	synchronize_rcu();
 +}
 +
-+struct notifier_block update_buffer_nb = {
-+	.notifier_call = ima_update_kexec_buffer,
-+};
-+
-+/*
-+ * Called during kexec_file_load so that IMA can add a segment to the kexec
-+ * image for the measurement list for the next kernel.
-+ */
-+void ima_add_kexec_buffer(struct kimage *image)
-+{
-+	struct kexec_buf kbuf = { .image = image, .buf_align = PAGE_SIZE,
-+				  .buf_min = 0, .buf_max = ULONG_MAX,
-+				  .top_down = true };
-+	int ret;
-+
-+	if (!kexec_can_hand_over_buffer())
-+		return;
-+
-+	kexec_segment_size = ALIGN(ima_get_binary_runtime_size() + PAGE_SIZE,
-+				   PAGE_SIZE);
-+
-+	if (kexec_segment_size >= (ULONG_MAX - sizeof(long))) {
-+		pr_err("Binary measurement list too large.\n");
-+		return;
-+	}
-+
-+	/* Ask not to checksum the segment, we will update it later. */
-+	kbuf.buffer = NULL;
-+	kbuf.bufsz = 0;
-+	kbuf.memsz = kexec_segment_size;
-+	ret = kexec_add_handover_buffer(&kbuf, false);
-+	if (ret) {
-+		pr_err("Error passing over kexec measurement buffer.\n");
-+		return;
-+	}
-+	kexec_buffer_load_addr = kbuf.mem;
-+
-+	register_reboot_notifier(&update_buffer_nb);
-+
-+	pr_debug("kexec measurement buffer for the loaded kernel at 0x%lx.\n",
-+		 kexec_buffer_load_addr);
-+}
-+#endif /* IMA_KEXEC */
-+
-+/*
-  * Restore the measurement list from the previous kernel.
-  */
- void ima_load_kexec_buffer(void)
+ int __init ima_init_template(void)
+ {
+ 	struct ima_template_desc *template = ima_template_desc_current();
 -- 
 2.1.0
