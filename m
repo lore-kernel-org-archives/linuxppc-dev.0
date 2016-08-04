@@ -1,45 +1,30 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mgorman@techsingularity.net>
+Received: from outbound-smtp07.blacknight.com (outbound-smtp07.blacknight.com
+ [46.22.139.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4s0v73M0zDqd2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 23:56:15 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u74DsN6d009323
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 09:56:13 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24kxmhe8eg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 09:56:13 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Thu, 4 Aug 2016 14:56:11 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 512CB1B08069
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 14:57:40 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u74Du95r8454504
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 13:56:09 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u74Du8Xu021054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 09:56:09 -0400
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com,
- ukrishn@linux.vnet.ibm.com, mpe@ellerman.id.au, imunsie@au1.ibm.com,
- fbarrat@linux.vnet.ibm.com, mikey@neuling.org,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Subject: [PATCH] cxl: Use fixed width predefined types in data structure.
-Date: Thu,  4 Aug 2016 15:56:04 +0200
-Message-Id: <1470318964-19995-1-git-send-email-felix@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4sSl0BkLzDqS9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 00:16:54 +1000 (AEST)
+Received: from mail.blacknight.com (pemlinmail01.blacknight.ie [81.17.254.10])
+ by outbound-smtp07.blacknight.com (Postfix) with ESMTPS id
+ 48A941C1A24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:09:36 +0100 (IST)
+Date: Thu, 4 Aug 2016 15:09:34 +0100
+From: Mel Gorman <mgorman@techsingularity.net>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>,
+ Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
+Message-ID: <20160804140934.GM2799@techsingularity.net>
+References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,34 +34,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes a regression introduced by commit b810253.
-It substitutes the type __u8 to u8 in the uapi header cxl.h,
-because the latter is not always defined in userland build
-environments, in particular when cross-compiling libcxl on
-x86_64 linux machines (RHEL6.7 and Ubuntu 16.04).
+On Thu, Aug 04, 2016 at 07:12:45PM +0530, Srikar Dronamraju wrote:
+> Fadump kernel reserves large chunks of memory even before the pages are
+> initialized. This could mean memory that corresponds to several nodes might
+> fall in memblock reserved regions.
+> 
+> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialize
+> only certain size memory per node. The certain size takes into account
+> the dentry and inode cache sizes. Currently the cache sizes are
+> calculated based on the total system memory including the reserved
+> memory. However such a kernel when booting the same kernel as fadump
+> kernel will not be able to allocate the required amount of memory to
+> suffice for the dentry and inode caches. This results in crashes like
+> the below on large systems such as 32 TB systems.
+> 
+> Dentry cache hash table entries: 536870912 (order: 16, 4294967296 bytes)
+> vmalloc: allocation failure, allocated 4097114112 of 17179934720 bytes
+> swapper/0: page allocation failure: order:0, mode:0x2080020(GFP_ATOMIC)
+> CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.6-master+ #3
+> Call Trace:
+> [c00000000108fb10] [c0000000007fac88] dump_stack+0xb0/0xf0 (unreliable)
+> [c00000000108fb50] [c000000000235264] warn_alloc_failed+0x114/0x160
+> [c00000000108fbf0] [c000000000281484] __vmalloc_node_range+0x304/0x340
+> [c00000000108fca0] [c00000000028152c] __vmalloc+0x6c/0x90
+> [c00000000108fd40] [c000000000aecfb0]
+> alloc_large_system_hash+0x1b8/0x2c0
+> [c00000000108fe00] [c000000000af7240] inode_init+0x94/0xe4
+> [c00000000108fe80] [c000000000af6fec] vfs_caches_init+0x8c/0x13c
+> [c00000000108ff00] [c000000000ac4014] start_kernel+0x50c/0x578
+> [c00000000108ff90] [c000000000008c6c] start_here_common+0x20/0xa8
+> 
+> Register the memory reserved by fadump, so that the cache sizes are
+> calculated based on the free memory (i.e Total memory - reserved
+> memory).
+> 
+> Suggested-by: Mel Gorman <mgorman@techsingularity.net>
 
-It also makes the definition of cxl_event_afu_driver_reserved
-more consistent with the other definitions in the header file.
+I didn't suggest this specifically. While it happens to be safe on ppc64,
+it potentially overwrites any future caller of set_dma_reserve. While the
+only other one is for the e820 map, it may be better to change the API
+to inc_dma_reserve?
 
-Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
----
- include/uapi/misc/cxl.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+It's also unfortunate that it's called dma_reserve because it has
+nothing to do with DMA or ZONE_DMA. inc_kernel_reserve may be more
+appropriate?
 
-diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
-index cbae529..180d526 100644
---- a/include/uapi/misc/cxl.h
-+++ b/include/uapi/misc/cxl.h
-@@ -136,8 +136,8 @@ struct cxl_event_afu_driver_reserved {
- 	 *
- 	 * Of course the contents will be ABI, but that's up the AFU driver.
- 	 */
--	size_t data_size;
--	u8 data[];
-+	__u32 data_size;
-+	__u8 data[];
- };
- 
- struct cxl_event {
 -- 
-2.8.0
+Mel Gorman
+SUSE Labs
