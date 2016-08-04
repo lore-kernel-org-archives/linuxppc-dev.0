@@ -1,23 +1,43 @@
-Return-Path: <oss@buserror.net>
-Received: from host.buserror.net (host.buserror.net [209.198.135.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4bdj0RFmzDqTm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 13:53:45 +1000 (AEST)
-Message-ID: <1470282813.25630.242.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org, antoine.blangy@c-s.fr, segher@kernel.crashing.org,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>
-Date: Wed, 03 Aug 2016 22:53:33 -0500
-In-Reply-To: <20160802080705.69A9F1A2394@localhost.localdomain>
-References: <20160802080705.69A9F1A2394@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4c7p2TYgzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 14:16:22 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3s4c7n4lfRz9stY
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Aug 2016 14:16:21 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u744EuDW039301
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 00:16:19 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkagfr66-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 04 Aug 2016 00:16:19 -0400
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Thu, 4 Aug 2016 00:14:48 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/3] powernv: Fix MCE handler to avoid trashing CR0/CR1
+ registers.
+In-Reply-To: <20160301054817.15714.20605.stgit@mars.in.ibm.com>
+References: <20160301054655.15714.48085.stgit@mars.in.ibm.com>
+ <20160301054817.15714.20605.stgit@mars.in.ibm.com>
+Date: Thu, 04 Aug 2016 14:14:39 +1000
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87mvkt891s.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +47,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
-> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-> based on copy_tofrom_user()") introduced a bug when destination
-> address is odd and initial csum is not null
-> 
-> In that (rare) case the initial csum value has to be rotated one byte
-> as well as the resulting value is
-> 
-> This patch also fixes related comments
-> 
-> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-> based on copy_tofrom_user()")
-> Cc: stable@vger.kernel.org
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  v2: updated comments as suggested by Segher
-> 
->  arch/powerpc/lib/checksum_32.S | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>
+> The current implementation of MCE early handling modifies CR0/1 registers
+> without saving its old values. Fix this by moving early check for
+> powersaving mode to machine_check_handle_early().
 
-Alessio, can you confirm whether this fixes the problem you reported?
+>From (internal bug report) it seems as though in a test where one
+injects continuous SLB Multi Hit errors, this bug could lead to rebooting
+"due to to Platform error" rather than continuing to recover
+successfully. It might be a good idea to mention that in commit message
+here.
 
--Scott
+Also, should this go to stable?
 
-> 
-> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-> index d90870a..0a57fe6 100644
-> --- a/arch/powerpc/lib/checksum_32.S
-> +++ b/arch/powerpc/lib/checksum_32.S
-> @@ -127,8 +127,9 @@ _GLOBAL(csum_partial_copy_generic)
->  	stw	r7,12(r1)
->  	stw	r8,8(r1)
->  
-> -	andi.	r0,r4,1			/* is destination
-> address even ? */
-> -	cmplwi	cr7,r0,0
-> +	rlwinm	r0,r4,3,0x8
-> +	rlwnm	r6,r6,r0,0,31	/* odd destination address:
-> rotate one byte */
-> +	cmplwi	cr7,r0,0	/* is destination address even ? */
->  	addic	r12,r6,0
->  	addi	r6,r4,-4
->  	neg	r0,r4
-> @@ -237,7 +238,7 @@ _GLOBAL(csum_partial_copy_generic)
->  66:	addze	r3,r12
->  	addi	r1,r1,16
->  	beqlr+	cr7
-> -	rlwinm	r3,r3,8,0,31	/* swap bytes for odd destination
-> */
-> +	rlwinm	r3,r3,8,0,31	/* odd destination address:
-> rotate one byte */
->  	blr
->  
->  /* read fault */
+-- 
+Stewart Smith
+OPAL Architect, IBM.
