@@ -1,40 +1,27 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <themoken@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4vRT5mkXzDqWt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 01:45:57 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s4vRT1tMFz9sDG
- for <linuxppc-dev@ozlabs.org>; Fri,  5 Aug 2016 01:45:57 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u74FY66A044238
- for <linuxppc-dev@ozlabs.org>; Thu, 4 Aug 2016 11:45:55 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkakc7sg-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 04 Aug 2016 11:45:54 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Thu, 4 Aug 2016 09:45:54 -0600
-Date: Thu, 4 Aug 2016 10:45:48 -0500
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Mel Gorman <mgorman@techsingularity.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Paul Mackerras <paulus@ozlabs.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: mm: Initialise per_cpu_nodestats for all online pgdats at boot
-References: <20160804092404.GI2799@techsingularity.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4vqW11JczDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 02:03:18 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id x185so5621582qkc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 09:03:18 -0700 (PDT)
+Sender: Jack Miller <themoken@gmail.com>
+Date: Thu, 4 Aug 2016 11:03:12 -0500
+From: Jack Miller <jack@codezen.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ stewart@linux.vnet.ibm.com, jk@ozlabs.org
+Subject: Re: [PATCH v2] powernv: Simplify searching for compatible device nodes
+Message-ID: <20160804160312.GA30161@hypothesis>
+References: <20160803164412.7039-1-jack@codezen.org>
+ <20160803171800.8999-1-jack@codezen.org>
+ <20160804172727.55e81056@camb691>
+ <87k2fxexmr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <20160804092404.GI2799@techsingularity.net>
-Message-Id: <20160804154548.GD28305@arbab-laptop.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k2fxexmr.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,14 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 04, 2016 at 10:24:04AM +0100, Mel Gorman wrote:
->This has been compile-tested and boot-tested on a 32-bit KVM only. A
->memoryless system was not available to test the patch with. A confirmation
->from Paul and Reza that it resolves their problem is welcome.
+On Thu, Aug 04, 2016 at 06:39:24PM +1000, Michael Ellerman wrote:
+> Cyril Bur <cyrilbur@gmail.com> writes:
+> 
+> > On Wed,  3 Aug 2016 12:18:00 -0500
+> > Jack Miller <jack@codezen.org> wrote:
+> >
+> >> (rebased on powerpc/next)
+> >> 
+> >> This condenses the opal node searching into a single function that finds
+> >> all compatible nodes, instead of just searching the ibm,opal children,
+> >> for ipmi, flash, and prd similar to how opal-i2c nodes are found.
+> >> 
+> >> Signed-off-by: Jack Miller <jack@codezen.org>
+> >
+> > Using a version of the related skiboot patch that may not be the final one:
+> > Tested-by: Cyril Bur <cyrilbur@gmail.com>
+> 
+> Thanks. The part I'm still not clear on is *why* we're moving them in
+> skiboot?
 
-Works for me. Thanks, Mel!
+Ostensibly so the actual flash device nodes can inherit the #size-cells /
+#address-cells properties properly set in the flash parent node instead of
+the ibm,opal node (which has them set to 0). This would be more correct if
+anything actually started to honor these settings.
 
-Tested-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+The only concrete effect though is stopping dtc (and thus fwts) from whinging
+when you run skiboot's output DT through it.
 
--- 
-Reza Arbab
+- Jack
