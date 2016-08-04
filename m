@@ -1,21 +1,54 @@
-Return-Path: <sfr@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4dG06VvYzDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:06:48 +1000 (AEST)
-Received: from [127.0.0.2] (localhost [127.0.0.1])
- by hr2.samba.org with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
- (Exim) id 1bVAsD-0003Cb-Lp
- for linuxppc-dev@lists.ozlabs.org; Thu, 04 Aug 2016 05:07:14 +0000
-Date: Thu, 4 Aug 2016 15:06:30 +1000
-From: Stephen Rothwell <sfr@samba.org>
-To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: another test
-Message-ID: <20160804150630.57685b13@gum.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4dgl2Xd6zDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:25:39 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u745ONlU135769
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 01:25:37 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkahsvgg-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 01:25:37 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Thu, 4 Aug 2016 15:25:34 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3D61B2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:25:31 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u745PVMe32440488
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 15:25:31 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u745PUZf007593
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Aug 2016 15:25:31 +1000
+Date: Thu, 4 Aug 2016 10:55:26 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ mahesh@linux.vnet.ibm.com, hbathini@linux.vnet.ibm.com
+Subject: Re: [PATCH 1/2] mm: Allow disabling deferred struct page
+ initialisation
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1470143947-24443-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <1470143947-24443-2-git-send-email-srikar@linux.vnet.ibm.com>
+ <57A0E1D1.8020608@intel.com>
+ <20160803063808.GI6310@linux.vnet.ibm.com>
+ <57A23547.1070207@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/gG.I6EQjGZzlVYzSfp7jUR="; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <57A23547.1070207@intel.com>
+Message-Id: <20160804052526.GB11268@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +58,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/gG.I6EQjGZzlVYzSfp7jUR=
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+* Dave Hansen <dave.hansen@intel.com> [2016-08-03 11:17:43]:
 
-This time with a PGP signature
+> On 08/02/2016 11:38 PM, Srikar Dronamraju wrote:
+> > * Dave Hansen <dave.hansen@intel.com> [2016-08-02 11:09:21]:
+> >> On 08/02/2016 06:19 AM, Srikar Dronamraju wrote:
+> >>> Kernels compiled with CONFIG_DEFERRED_STRUCT_PAGE_INIT will initialise
+> >>> only certain size memory per node. The certain size takes into account
+> >>> the dentry and inode cache sizes. However such a kernel when booting a
+> >>> secondary kernel will not be able to allocate the required amount of
+> >>> memory to suffice for the dentry and inode caches. This results in
+> >>> crashes like the below on large systems such as 32 TB systems.
+> >>
+> >> What's a "secondary kernel"?
+> >>
+> > I mean the kernel thats booted to collect the crash, On fadump, the
+> > first kernel acts as the secondary kernel i.e the same kernel is booted
+> > to collect the crash.
+> 
+> OK, but I'm still not seeing what the problem is.  You've said that it
+> crashes and that it crashes during inode/dentry cache allocation.
+> 
+> But, *why* does the same kernel image crash in when it is used as a
+> "secondary kernel"?
+> 
 
---=20
-Cheers,
-Stephen Rothwell
+I guess you already got it. But let me try to explain it again.
 
---Sig_/gG.I6EQjGZzlVYzSfp7jUR=
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+Lets say we have a 32 TB system with 16 nodes each node having 2T of
+memory. We are assuming deferred page initialisation is configured.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+When the regular kernel boots,
+1. It reserves 5% of the memory for fadump.
+2. It initializes 8GB per node, i.e 128GB
+3. It allocated dentry/inode cache which is around 16GB.
+4. It then kicks the parallel page struct initialization.
 
-iQIcBAEBCAAGBQJXos1WAAoJEDKF7rWSPHPlQUgP/RTx0nLVx3jOUE3iNeoy5ocZ
-gjpK8n9xXdvlsOAT2iWJkVUxsM5W7ux9SUYrr8m11aRHSXQf2ldU6R41UGbWW7a9
-x/1ISOoTLcHpyvI/lL0p+Sohz/WDGuWfdxobUl7wQ3BM6NhAZ6N68RieD4sNZk2J
-226dMX4AJVefJrNeVDL+O1XIOTOWOtfBriXOGJ3I+7xWK19VqH9DS2ft1WxvRc1+
-Swox4FwnLDawJ/Moo69pFp8RLTjmb+X0Es5Ns0mSEAFIkys057qZScONGTot7vKx
-MPd07duGWVc/K7dnZ7+ZJBv2PsKBWPBFoBvcuMZBrKYj411m5ABRJH2gkkDlNzPL
-b+pBihJZPzr/f3P/NjegByuRceFIiMdzcnPMtgbmZQ1nQOhER9TbCB9cbRjlwuMB
-umCCKijHWhmRLIUeBqs2blhQ5Z+/MBgu8e0yz2+RjKWO77+9qdZ6T0AWEGqqjm/c
-mJpuh9H9LqfhPfubSrMaBdQzpduCgedS/TubiWXRz0qhVel++tRH4BROZ6AD0K6i
-hKJoGZtN7GfpCbFRCy86hOZM0eZuEmpSDREwi93NtPmvIQLSEQQXElDG5yrhfBl4
-Dwm69jnVoHBZnIN7LU9qbP2Dm/pml0Gp3n5bOUZ79ifzNlR6c0KwXc/XLl9Vj9ux
-UT9T2HXSUmSvfhJP7Wls
-=ne6C
------END PGP SIGNATURE-----
+Now lets say kernel crashed and fadump was triggered.
 
---Sig_/gG.I6EQjGZzlVYzSfp7jUR=--
+1. The same kernel boots in the 5% reserved space which is 1600GB
+2. It reserves the rest 95% memory.
+3. It tries to initialize 8GB per node but can only initialize 8GB.
+	(since except for 1st node the rest nodes are all reserved)
+4. It tries to allocate dentry/inode cache of 16GB but fails.
+	(tries to reclaim but reclaim needs spinlock 
+	and spinlock is not yet initialized.)
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
