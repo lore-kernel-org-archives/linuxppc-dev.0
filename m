@@ -1,22 +1,24 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s4lyH1rVrzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 20:08:39 +1000 (AEST)
-Date: Thu, 4 Aug 2016 12:01:17 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: York Sun <york.sun@nxp.com>
-Cc: linux-edac@vger.kernel.org, morbidrsa@gmail.com, oss@buserror.net,
- stuart.yoder@nxp.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [Patch v2 01/10] driver/edac/mpc85xx_edac: Fix compiling error
-Message-ID: <20160804100117.GC8093@nazgul.tnic>
-References: <1469745064-26597-1-git-send-email-york.sun@nxp.com>
- <1469745064-26597-2-git-send-email-york.sun@nxp.com>
+Return-Path: <anton@samba.org>
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4mM14dxPzDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 20:26:37 +1000 (AEST)
+Date: Thu, 4 Aug 2016 20:26:01 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, herbert@gondor.apana.org.au, davem@davemloft.net,
+ alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: crc32c-vpmsum - Convert to CPU feature based
+ module autoloading
+Message-ID: <20160804202601.12aa879e@kryten>
+In-Reply-To: <87lh0dexp3.fsf@concordia.ellerman.id.au>
+References: <1470292695-9829-1-git-send-email-anton@ozlabs.org>
+ <87lh0dexp3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1469745064-26597-2-git-send-email-york.sun@nxp.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 28, 2016 at 03:30:55PM -0700, York Sun wrote:
-> Two symbols are missing if mpc85xx_edac driver is compiled as module.
+Hi Michael,
+
+> Is VEC_CRYPTO the right feature?
 > 
-> Signed-off-by: York Sun <york.sun@nxp.com>
-> ---
-> Change log
->   v2: no change
-> 
->  arch/powerpc/kernel/pci-common.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 0f7a60f..86bc484 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -226,6 +226,7 @@ struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
->  	}
->  	return NULL;
->  }
-> +EXPORT_SYMBOL(pci_find_hose_for_OF_device);
->  
->  /*
->   * Reads the interrupt pin to determine if interrupt is use by card.
-> @@ -1585,6 +1586,7 @@ int early_find_capability(struct pci_controller *hose, int bus, int devfn,
->  {
->  	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
->  }
-> +EXPORT_SYMBOL(early_find_capability);
+> That's new power8 crypto stuff.
 
-Please use get_maintainer.pl in order to CC the proper people when
-preparing patches for the kernel.
+The vpmsum* instructions are part of the same pipeline as the vcipher*
+instructions, introduced in POWER8.
 
-I've CCed them now.
+> I thought this only used VMX? (but I haven't looked closely)
 
--- 
-Regards/Gruss,
-    Boris.
+Yes, vcipher* and vpmsum* are VMX instructions.
 
-ECO tip #101: Trim your mails when you reply.
---
+Anton
