@@ -1,23 +1,21 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4hPR31XpzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 17:28:27 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id i6so16928670pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 00:28:27 -0700 (PDT)
-Date: Thu, 4 Aug 2016 17:27:27 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Jack Miller <jack@codezen.org>, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, stewart@linux.vnet.ibm.com, jk@ozlabs.org
-Subject: Re: [PATCH v2] powernv: Simplify searching for compatible device nodes
-Message-ID: <20160804172727.55e81056@camb691>
-In-Reply-To: <20160803171800.8999-1-jack@codezen.org>
-References: <20160803164412.7039-1-jack@codezen.org>
- <20160803171800.8999-1-jack@codezen.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4hsN71J4zDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 17:49:12 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: Align hot loops of memset() and
+ backwards_memcpy()
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, agraf@suse.de
+References: <1470293602-11121-1-git-send-email-anton@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <c1370828-f149-5851-9a6d-3e7aeae54101@c-s.fr>
+Date: Thu, 4 Aug 2016 09:49:07 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1470293602-11121-1-git-send-email-anton@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,75 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  3 Aug 2016 12:18:00 -0500
-Jack Miller <jack@codezen.org> wrote:
 
-> (rebased on powerpc/next)
-> 
-> This condenses the opal node searching into a single function that finds
-> all compatible nodes, instead of just searching the ibm,opal children,
-> for ipmi, flash, and prd similar to how opal-i2c nodes are found.
-> 
-> Signed-off-by: Jack Miller <jack@codezen.org>
+Le 04/08/2016 à 08:53, Anton Blanchard a écrit :
+> From: Anton Blanchard <anton@samba.org>
+>
+> Align the hot loops in our assembly implementation of memset()
+> and backwards_memcpy().
+>
+> backwards_memcpy() is called from tcp_v4_rcv(), so we might
+> want to optimise this a little more.
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Using a version of the related skiboot patch that may not be the final one:
-Tested-by: Cyril Bur <cyrilbur@gmail.com>
+Shouldn't this patch be titled powerpc/64, as powerpc32 has a different 
+memset() ?
+
+Christophe
 
 > ---
->  arch/powerpc/platforms/powernv/opal.c | 24 +++++++-----------------
->  1 file changed, 7 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 8b4fc68..9db12ce 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -631,21 +631,11 @@ static void __init opal_dump_region_init(void)
->  			"rc = %d\n", rc);
->  }
->  
-> -static void opal_pdev_init(struct device_node *opal_node,
-> -		const char *compatible)
-> +static void opal_pdev_init(const char *compatible)
->  {
->  	struct device_node *np;
->  
-> -	for_each_child_of_node(opal_node, np)
-> -		if (of_device_is_compatible(np, compatible))
-> -			of_platform_device_create(np, NULL, NULL);
-> -}
-> -
-> -static void opal_i2c_create_devs(void)
-> -{
-> -	struct device_node *np;
-> -
-> -	for_each_compatible_node(np, NULL, "ibm,opal-i2c")
-> +	for_each_compatible_node(np, NULL, compatible)
->  		of_platform_device_create(np, NULL, NULL);
->  }
->  
-> @@ -717,7 +707,7 @@ static int __init opal_init(void)
->  	opal_hmi_handler_init();
->  
->  	/* Create i2c platform devices */
-> -	opal_i2c_create_devs();
-> +	opal_pdev_init("ibm,opal-i2c");
->  
->  	/* Setup a heatbeat thread if requested by OPAL */
->  	opal_init_heartbeat();
-> @@ -752,12 +742,12 @@ static int __init opal_init(void)
->  	}
->  
->  	/* Initialize platform devices: IPMI backend, PRD & flash interface */
-> -	opal_pdev_init(opal_node, "ibm,opal-ipmi");
-> -	opal_pdev_init(opal_node, "ibm,opal-flash");
-> -	opal_pdev_init(opal_node, "ibm,opal-prd");
-> +	opal_pdev_init("ibm,opal-ipmi");
-> +	opal_pdev_init("ibm,opal-flash");
-> +	opal_pdev_init("ibm,opal-prd");
->  
->  	/* Initialise platform device: oppanel interface */
-> -	opal_pdev_init(opal_node, "ibm,opal-oppanel");
-> +	opal_pdev_init("ibm,opal-oppanel");
->  
->  	/* Initialise OPAL kmsg dumper for flushing console on panic */
->  	opal_kmsg_init();
+>  arch/powerpc/lib/mem_64.S | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
+> index 43435c6..eda7a96 100644
+> --- a/arch/powerpc/lib/mem_64.S
+> +++ b/arch/powerpc/lib/mem_64.S
+> @@ -37,6 +37,7 @@ _GLOBAL(memset)
+>  	clrldi	r5,r5,58
+>  	mtctr	r0
+>  	beq	5f
+> +	.balign 16
+>  4:	std	r4,0(r6)
+>  	std	r4,8(r6)
+>  	std	r4,16(r6)
+> @@ -90,6 +91,7 @@ _GLOBAL(backwards_memcpy)
+>  	andi.	r0,r6,3
+>  	mtctr	r7
+>  	bne	5f
+> +	.balign 16
+>  1:	lwz	r7,-4(r4)
+>  	lwzu	r8,-8(r4)
+>  	stw	r7,-4(r6)
+>
