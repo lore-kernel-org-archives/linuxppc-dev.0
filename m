@@ -1,23 +1,18 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4wpC5qvfzDqS9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 02:47:14 +1000 (AEST)
-Received: by mail-pa0-x230.google.com with SMTP id pp5so84217085pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 09:47:14 -0700 (PDT)
-Date: Thu, 4 Aug 2016 09:47:11 -0700
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-Message-ID: <20160804164711.GE10348@ubuntu>
-References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Return-Path: <"arvind@arvind.yadav.cs"@gmail.com>
+Received: from arvind-ThinkPad-Edge-E431 (unknown [106.51.22.39])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s4x9p6RRQzDqS9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 03:04:14 +1000 (AEST)
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+To: zajec5@gmail.com,
+	leoli@freescale.com
+Cc: qiang.zhao@freescale.com, scottwood@freescale.com, viresh.kumar@linaro.org,
+ akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net,
+ arnd@arndb.de, Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [v5.1] ucc_fast: Fix to avoid IS_ERR_VALUE abuses and dead code on
+ 64bit systems.
+Date: Thu,  4 Aug 2016 22:22:43 +0530
+Message-Id: <1470329563-5464-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +22,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04-08-16, 20:59, Akshay Adiga wrote:
-> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
-> frequency table index")' changes calc_global_pstate() to use
-> cpufreq_table index instead of pstate_id.
-> 
-> But in gpstate_timer_handler() pstate_id was being passed instead
-> of cpufreq_table index, which caused the index_to_pstate() to access
-> out of bound indices, leading to this crash.
-> 
-> Adding sanity check for index and pstate, to ensure only valid pstate
-> and index values are returned.
-> 
-> Call Trace:
-> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
-> (unreliable)
-> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
-> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
-> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
-> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
-> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
-> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
-> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
-> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
-> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
->    interrupt: 300 at gpstate_timer_handler+0x150/0x260
->     LR = gpstate_timer_handler+0x130/0x260
-> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
-> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
-> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
-> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
-> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
-> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
-> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
->    interrupt: 901 at arch_local_irq_restore+0x74/0x90
->   0] [c000000000106b34] call_cpuidle+0x44/0x90
-> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
-> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
-> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
-> 
-> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
-> frequency table index")
-> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
->  1 file changed, 20 insertions(+), 1 deletion(-)
+IS_ERR_VALUE() assumes that parameter is an unsigned long.
+It can not be used to check if 'unsigned int' is passed insted.
+Which tends to reflect an error.
+In 64bit architectures sizeof (int) == 4 && sizeof (long) == 8.
+IS_ERR_VALUE(x) is ((x) >= (unsigned long)-4095).
+IS_ERR_VALUE() of 'unsigned int' is always false because the 32bit
+value is zero extended to 64 bits.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Now Problem In UCC fast protocols -: drivers/soc/fsl/qe/ucc_fast.c
 
+        /* Allocate memory for Tx Virtual Fifo */
+        uccf->ucc_fast_tx_virtual_fifo_base_offset =
+          qe_muram_alloc(uf_info->utfs, UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+        if (IS_ERR_VALUE(uccf->ucc_fast_tx_virtual_fifo_base_offset)) {
+                printk(KERN_ERR "%s: cannot allocate MURAM for TX FIFO\n",
+                        __func__);
+                uccf->ucc_fast_tx_virtual_fifo_base_offset = 0;
+                ucc_fast_free(uccf);
+                return -ENOMEM;
+        }
+
+        /* Allocate memory for Rx Virtual Fifo */
+        uccf->ucc_fast_rx_virtual_fifo_base_offset =
+           qe_muram_alloc(uf_info->urfs +
+                           UCC_FAST_RECEIVE_VIRTUAL_FIFO_SIZE_FUDGE_FACTOR,
+                           UCC_FAST_VIRT_FIFO_REGS_ALIGNMENT);
+        if (IS_ERR_VALUE(uccf->ucc_fast_rx_virtual_fifo_base_offset)) {
+                printk(KERN_ERR "%s: cannot allocate MURAM for RX FIFO\n",
+                        __func__);
+                uccf->ucc_fast_rx_virtual_fifo_base_offset = 0;
+                ucc_fast_free(uccf);
+                return -ENOMEM;
+        }
+
+qe_muram_alloc (a.k.a. cpm_muram_alloc) returns unsigned long.
+Return value store in a u32 (ucc_fast_tx_virtual_fifo_base_offset
+and ucc_fast_rx_virtual_fifo_base_offset).If qe_muram_alloc will
+return any error, Then IS_ERR_VALUE will always return 0. it'll not
+call ucc_fast_free for any failure. Inside 'if code' will be a dead
+code on 64bit.
+This patch is to avoid this problem on 64bit machine.
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ include/soc/fsl/qe/ucc_fast.h | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/include/soc/fsl/qe/ucc_fast.h b/include/soc/fsl/qe/ucc_fast.h
+index df8ea79..ada9070 100644
+--- a/include/soc/fsl/qe/ucc_fast.h
++++ b/include/soc/fsl/qe/ucc_fast.h
+@@ -165,10 +165,12 @@ struct ucc_fast_private {
+ 	int stopped_tx;		/* Whether channel has been stopped for Tx
+ 				   (STOP_TX, etc.) */
+ 	int stopped_rx;		/* Whether channel has been stopped for Rx */
+-	u32 ucc_fast_tx_virtual_fifo_base_offset;/* pointer to base of Tx
+-						    virtual fifo */
+-	u32 ucc_fast_rx_virtual_fifo_base_offset;/* pointer to base of Rx
+-						    virtual fifo */
++	unsigned long ucc_fast_tx_virtual_fifo_base_offset;/* pointer to base of
++							    * Tx virtual fifo
++							    */
++	unsigned long ucc_fast_rx_virtual_fifo_base_offset;/* pointer to base of
++							    * Rx virtual fifo
++							    */
+ #ifdef STATISTICS
+ 	u32 tx_frames;		/* Transmitted frames counter. */
+ 	u32 rx_frames;		/* Received frames counter (only frames
 -- 
-viresh
+1.9.1
