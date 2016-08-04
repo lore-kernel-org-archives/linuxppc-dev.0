@@ -1,27 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4lmH5JW7zDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 19:59:59 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 3/3] powernv: Fix MCE handler to avoid trashing CR0/CR1
- registers.
-In-Reply-To: <5208d498-ffa8-cf5f-dcae-2f8d0d1b0889@linux.vnet.ibm.com>
-References: <20160301054655.15714.48085.stgit@mars.in.ibm.com>
- <20160301054817.15714.20605.stgit@mars.in.ibm.com>
- <87mvkt891s.fsf@linux.vnet.ibm.com>
- <5208d498-ffa8-cf5f-dcae-2f8d0d1b0889@linux.vnet.ibm.com>
-Date: Thu, 04 Aug 2016 19:59:58 +1000
-Message-ID: <878twcg8gx.fsf@concordia.ellerman.id.au>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s4lyH1rVrzDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 20:08:39 +1000 (AEST)
+Date: Thu, 4 Aug 2016 12:01:17 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: York Sun <york.sun@nxp.com>
+Cc: linux-edac@vger.kernel.org, morbidrsa@gmail.com, oss@buserror.net,
+ stuart.yoder@nxp.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [Patch v2 01/10] driver/edac/mpc85xx_edac: Fix compiling error
+Message-ID: <20160804100117.GC8093@nazgul.tnic>
+References: <1469745064-26597-1-git-send-email-york.sun@nxp.com>
+ <1469745064-26597-2-git-send-email-york.sun@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1469745064-26597-2-git-send-email-york.sun@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
-
-> On 08/04/2016 09:44 AM, Stewart Smith wrote:
->> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
->>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>
->>> The current implementation of MCE early handling modifies CR0/1 registers
->>> without saving its old values. Fix this by moving early check for
->>> powersaving mode to machine_check_handle_early().
->> 
->> From (internal bug report) it seems as though in a test where one
->> injects continuous SLB Multi Hit errors, this bug could lead to rebooting
->> "due to to Platform error" rather than continuing to recover
->> successfully. It might be a good idea to mention that in commit message
->> here.
->
-> This patch does not address the specific internal bug that you talking
-> about. I am still chasing that bug.
+On Thu, Jul 28, 2016 at 03:30:55PM -0700, York Sun wrote:
+> Two symbols are missing if mpc85xx_edac driver is compiled as module.
 > 
->> Also, should this go to stable?
->
-> However yes. This should go to stable tree.
+> Signed-off-by: York Sun <york.sun@nxp.com>
+> ---
+> Change log
+>   v2: no change
+> 
+>  arch/powerpc/kernel/pci-common.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 0f7a60f..86bc484 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -226,6 +226,7 @@ struct pci_controller* pci_find_hose_for_OF_device(struct device_node* node)
+>  	}
+>  	return NULL;
+>  }
+> +EXPORT_SYMBOL(pci_find_hose_for_OF_device);
+>  
+>  /*
+>   * Reads the interrupt pin to determine if interrupt is use by card.
+> @@ -1585,6 +1586,7 @@ int early_find_capability(struct pci_controller *hose, int bus, int devfn,
+>  {
+>  	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);
+>  }
+> +EXPORT_SYMBOL(early_find_capability);
 
-Can you please rebase it on to Linus' master.
+Please use get_maintainer.pl in order to CC the proper people when
+preparing patches for the kernel.
 
-cheers
+I've CCed them now.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
+--
