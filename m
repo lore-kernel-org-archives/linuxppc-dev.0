@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4lMM11sRzDqSB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 19:41:50 +1000 (AEST)
-Message-ID: <1470303695.12584.142.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/xics: Properly set Edge/Level type and enable
- resend
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 04 Aug 2016 19:41:35 +1000
-In-Reply-To: <87twf1f8pj.fsf@concordia.ellerman.id.au>
-References: <1470105583.12584.5.camel@kernel.crashing.org>
- <87twf1f8pj.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4lRZ2bhxzDqSB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 19:45:30 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>, rusty@rustcorp.com.au,
+ ebiederm@xmission.com, vgoyal@redhat.com,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, kexec@lists.infradead.org,
+ lkml <linux-kernel@vger.kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [RESEND][PATCH v2 2/2] powerpc/fadump: parse fadump reserve
+ memory size based on memory range
+In-Reply-To: <147025281599.29229.9962999599360876220.stgit@hbathini.in.ibm.com>
+References: <147025270324.29229.8322429758761407397.stgit@hbathini.in.ibm.com>
+ <147025281599.29229.9962999599360876220.stgit@hbathini.in.ibm.com>
+Date: Thu, 04 Aug 2016 19:45:28 +1000
+Message-ID: <87h9b0g953.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-08-04 at 14:40 +1000, Michael Ellerman wrote:
-> > Finally now that edge interrupts are properly identified, we can enable
-> > CONFIG_HARDIRQS_SW_RESEND which will make the core re-send them if
-> > they occur while masked, which some drivers rely upon.
-> >
-> > This fixes issues with lost interrupts on some Mellanox adapters.
-> >
-> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> Broken since forever?
-> 
-> Cc stable?
+Hari Bathini <hbathini@linux.vnet.ibm.com> writes:
+...
+>  /**
+>   * fadump_calculate_reserve_size(): reserve variable boot area 5% of System RAM
+>   *
+> @@ -212,12 +262,17 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+>  {
+>  	unsigned long size;
+>  
+> +	/* sets fw_dump.reserve_bootvar */
+> +	parse_fadump_reserve_mem();
+> +
+>  	/*
+>  	 * Check if the size is specified through fadump_reserve_mem= cmdline
+>  	 * option. If yes, then use that.
+>  	 */
+>  	if (fw_dump.reserve_bootvar)
+>  		return fw_dump.reserve_bootvar;
+> +	else
+> +		printk(KERN_INFO "fadump: calculating default boot size\n");
+>  
+>  	/* divide by 20 to get 5% of value */
+>  	size = memblock_end_of_DRAM() / 20;
 
-Broken since forever but I want a bit more testing before that goes to
-stable. Some drivers like Mellanox had a workaround but they want to
-remove it.
+The code already knows how to reserve 5% based on the size of the machine's
+memory, as long as no commandline parameter is passed. So why can't we
+just use that logic?
 
-Cheers,
-Ben.
+cheers
