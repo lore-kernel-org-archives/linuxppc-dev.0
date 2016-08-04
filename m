@@ -1,36 +1,18 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4gFk318mzDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 16:36:41 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id ez1so16021857pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 23:36:41 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Shuah Khan <shuahkh@osg.samsung.com>,
- Anton Blanchard <anton@samba.org>, Cyril Bur <cyrilbur@gmail.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Ulrich Weigand <ulrich.weigand@de.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Andrew Morton <akpm@linux-foundation.org>,
- Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>,
- Khem Raj <raj.khem@gmail.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Chris Smart <chris@distroguy.com>, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v13 06/30] powerpc/ptrace: Adapt gpr32_get,
- gpr32_set functions for transaction
-In-Reply-To: <1469674679-8580-7-git-send-email-wei.guo.simon@gmail.com>
-References: <1469674679-8580-1-git-send-email-wei.guo.simon@gmail.com>
- <1469674679-8580-7-git-send-email-wei.guo.simon@gmail.com>
-Date: Thu, 04 Aug 2016 16:36:22 +1000
-Message-ID: <877fbxqbvd.fsf@possimpible.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4gHy0PddzDqSM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 16:38:38 +1000 (AEST)
+From: Anton Blanchard <anton@ozlabs.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ herbert@gondor.apana.org.au, davem@davemloft.net
+Cc: alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
+Subject: [PATCH] crypto: crc32c-vpmsum - Convert to CPU feature based module
+ autoloading
+Date: Thu,  4 Aug 2016 16:38:15 +1000
+Message-Id: <1470292695-9829-1-git-send-email-anton@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,96 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+From: Anton Blanchard <anton@samba.org>
 
-Hi all,
+This patch utilises the GENERIC_CPU_AUTOPROBE infrastructure
+to automatically load the crc32c-vpmsum module if the CPU supports
+it.
 
-This is causing cppcheck warnings (having just landed in next):
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/crypto/crc32c-vpmsum_glue.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-[arch/powerpc/kernel/ptrace.c:2062]: (error) Uninitialized variable: ckpt_r=
-egs
-[arch/powerpc/kernel/ptrace.c:2130]: (error) Uninitialized variable: ckpt_r=
-egs
-
-This is from...
-> -static int gpr32_get(struct task_struct *target,
-> +static int gpr32_get_common(struct task_struct *target,
->  		     const struct user_regset *regset,
->  		     unsigned int pos, unsigned int count,
-> -		     void *kbuf, void __user *ubuf)
-> +			    void *kbuf, void __user *ubuf, bool tm_active)
->  {
->  	const unsigned long *regs =3D &target->thread.regs->gpr[0];
-> +	const unsigned long *ckpt_regs;
->  	compat_ulong_t *k =3D kbuf;
->  	compat_ulong_t __user *u =3D ubuf;
->  	compat_ulong_t reg;
->  	int i;
->=20=20
-> -	if (target->thread.regs =3D=3D NULL)
-> -		return -EIO;
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	ckpt_regs =3D &target->thread.ckpt_regs.gpr[0];
-> +#endif
-> +	if (tm_active) {
-> +		regs =3D ckpt_regs;
-... this bit here. If the ifdef doesn't trigger, cppcheck can't find an
-initialisation for ckpt_regs, so it complains.
-
-Techinically it's a false positive as (I assume!) tm_active cannot ever
-be true in the absense of CONFIG_PPC_TRANSACTIONAL_MEM.
-
-Is there a nice simple fix we could deploy to squash this warning, or
-will we just live with it?
-
-> -static int gpr32_set(struct task_struct *target,
-> +static int gpr32_set_common(struct task_struct *target,
->  		     const struct user_regset *regset,
->  		     unsigned int pos, unsigned int count,
-> -		     const void *kbuf, const void __user *ubuf)
-> +		     const void *kbuf, const void __user *ubuf, bool tm_active)
->  {
->  	unsigned long *regs =3D &target->thread.regs->gpr[0];
-> +	unsigned long *ckpt_regs;
->  	const compat_ulong_t *k =3D kbuf;
->  	const compat_ulong_t __user *u =3D ubuf;
->  	compat_ulong_t reg;
->=20=20
-> -	if (target->thread.regs =3D=3D NULL)
-> -		return -EIO;
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +	ckpt_regs =3D &target->thread.ckpt_regs.gpr[0];
-> +#endif
->=20=20
-> -	CHECK_FULL_REGS(target->thread.regs);
-> +	if (tm_active) {
-> +		regs =3D ckpt_regs;
-FWIW it happens again here.
-
-Regards,
-Daniel Axtens
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJXouJnAAoJEPC3R3P2I92Fq0UP/AsHk7wBVLxi1eSPWsIl53Ly
-Z7nHJNeZf0InxxgWKJ41w8WxAzZlGRB3gsbWSbnnPzzdSwLYzOC4K5VT2lmyZDU4
-Yr+JnmVdoBgUOSzUJdBuo650WEHZ7C4A1lN+1ZZWEHLzIM22cJebSesQP/teXx92
-xTdSeYmqjeDuu7rssbmdIxPUeJ1YK79ZS06CqegaLVZdhHGxupBt8X0GEDl9wWu6
-NEjxp+eNB4a+yIi49Y+Jjk8FcUQztb0UQVdb4p6UIsBuxAo4CUDcyi3cC3koi50/
-FSMTOooMQOZNfeEhsTZZkb7Xhs1lPPzyBrbI2cjV6EUh7mNjOuv52MhO8oDQWQQ3
-tQWxecRypt6kH70GKh2dsBKXEcy2ja4+B+FRLql0LHaqieR2G7TYUnwXL/+QK7jw
-WX/a8So1tbJZ2TFmbXIHDXsII2F20Tuczt+d+vCHdugi3bDJ/eybVOSFagOsQnOr
-1aWeLXyFbX7n6dxdGX6PiCLD7z9AfvXtl4T+nCBVZsQqBbYPqBxucU/s7GLPneQj
-1MaSnMastcgYoGf/Xgl06AJLwEDMPCKlFIvboVJjLD0aN3wfgBQOGkqBII9suQXP
-KNG7AY72rfcK6QynTvb3K0CAyGgtIhfg0gPrc3rjxTMBq+PtHArQqO6Q5yEg5puU
-wRHCoCs7s7+rDv/fcIlI
-=7r+e
------END PGP SIGNATURE-----
---=-=-=--
+diff --git a/arch/powerpc/crypto/crc32c-vpmsum_glue.c b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
+index bfe3d37..9fa046d 100644
+--- a/arch/powerpc/crypto/crc32c-vpmsum_glue.c
++++ b/arch/powerpc/crypto/crc32c-vpmsum_glue.c
+@@ -4,6 +4,7 @@
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/kernel.h>
++#include <linux/cpufeature.h>
+ #include <asm/switch_to.h>
+ 
+ #define CHKSUM_BLOCK_SIZE	1
+@@ -157,7 +158,7 @@ static void __exit crc32c_vpmsum_mod_fini(void)
+ 	crypto_unregister_shash(&alg);
+ }
+ 
+-module_init(crc32c_vpmsum_mod_init);
++module_cpu_feature_match(PPC_MODULE_FEATURE_VEC_CRYPTO, crc32c_vpmsum_mod_init);
+ module_exit(crc32c_vpmsum_mod_fini);
+ 
+ MODULE_AUTHOR("Anton Blanchard <anton@samba.org>");
+-- 
+2.7.4
