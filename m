@@ -1,18 +1,19 @@
 Return-Path: <dan.carpenter@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4dwG4YhczDqRt
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:36:30 +1000 (AEST)
-Date: Thu, 4 Aug 2016 08:35:25 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4dxc3mdDzDqf4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 15:37:40 +1000 (AEST)
+Date: Thu, 4 Aug 2016 08:37:03 +0300
 From: Dan Carpenter <dan.carpenter@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexandre Bounine <alexandre.bounine@idt.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Subject: [patch] powerpc/fsl_rio: fix a missing error code
-Message-ID: <20160804053525.GM775@mwanda>
+To: Jeremy Kerr <jk@ozlabs.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+Subject: [patch] ppc/cell: missing error code in spufs_mkgang()
+Message-ID: <20160804053703.GN775@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,19 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We should set the error code here.  Otherwise static checkers complain.
+We should return -ENOMEM if alloc_spu_gang() fails.
 
 Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index 984e816..68e7c0d 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -491,6 +491,7 @@ int fsl_rio_setup(struct platform_device *dev)
- 	rmu_node = of_parse_phandle(dev->dev.of_node, "fsl,srio-rmu-handle", 0);
- 	if (!rmu_node) {
- 		dev_err(&dev->dev, "No valid fsl,srio-rmu-handle property\n");
-+		rc = -ENOENT;
- 		goto err_rmu;
- 	}
- 	rc = of_address_to_resource(rmu_node, 0, &rmu_regs);
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 5be15cf..2975754 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -496,8 +496,10 @@ spufs_mkgang(struct inode *dir, struct dentry *dentry, umode_t mode)
+ 	gang = alloc_spu_gang();
+ 	SPUFS_I(inode)->i_ctx = NULL;
+ 	SPUFS_I(inode)->i_gang = gang;
+-	if (!gang)
++	if (!gang) {
++		ret = -ENOMEM;
+ 		goto out_iput;
++	}
+ 
+ 	inode->i_op = &simple_dir_inode_operations;
+ 	inode->i_fop = &simple_dir_operations;
