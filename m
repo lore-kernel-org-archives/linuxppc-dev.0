@@ -1,24 +1,39 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alessio.bogani@elettra.eu>
+Received: from spamalot.elettra.eu (spamalot.elettra.trieste.it
+ [140.105.206.208])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4fTG36FKzDqRv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 16:01:38 +1000 (AEST)
-Date: Thu, 4 Aug 2016 15:23:19 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 04/15] powerpc/powernv/ioda: Fix TCE invalidate to
- work in real mode again
-Message-ID: <20160804052319.GG9189@voom.fritz.box>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-5-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4fnm6z0DzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 16:15:54 +1000 (AEST)
+Received: from spamalot.elettra.eu (localhost.localdomain [127.0.0.1])
+ by localhost (Email Security Appliance) with SMTP id 7A597440DE6_7A2DD96B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 06:15:50 +0000 (GMT)
+Received: from mail-qk0-f172.google.com (mail-qk0-f172.google.com
+ [209.85.220.172])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client CN "smtp.gmail.com",
+ Issuer "Google Internet Authority G2" (verified OK))
+ by spamalot.elettra.eu (Sophos Email Appliance) with ESMTPSA id
+ AAD4243E0A0_7A2DD94F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 06:15:48 +0000 (GMT)
+Received: by mail-qk0-f172.google.com with SMTP id x185so30435069qkc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Aug 2016 23:15:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="3xoW37o/FfUZJwQG"
-In-Reply-To: <1470213656-1042-5-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1470282813.25630.242.camel@buserror.net>
+References: <20160802080705.69A9F1A2394@localhost.localdomain>
+ <1470282813.25630.242.camel@buserror.net>
+From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
+Date: Thu, 4 Aug 2016 08:15:46 +0200
+Message-ID: <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
+To: Scott Wood <oss@buserror.net>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, antoine.blangy@c-s.fr,
+ segher@kernel.crashing.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,83 +43,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Scott,
 
---3xoW37o/FfUZJwQG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 4 August 2016 at 05:53, Scott Wood <oss@buserror.net> wrote:
+> On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
+>> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+>> based on copy_tofrom_user()") introduced a bug when destination
+>> address is odd and initial csum is not null
+>>
+>> In that (rare) case the initial csum value has to be rotated one byte
+>> as well as the resulting value is
+>>
+>> This patch also fixes related comments
+>>
+>> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+>> based on copy_tofrom_user()")
+>> Cc: stable@vger.kernel.org
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>  v2: updated comments as suggested by Segher
+>>
+>>  arch/powerpc/lib/checksum_32.S | 7 ++++---
+>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> Alessio, can you confirm whether this fixes the problem you reported?
 
-On Wed, Aug 03, 2016 at 06:40:45PM +1000, Alexey Kardashevskiy wrote:
-> "powerpc/powernv/pci: Rework accessing the TCE invalidate register"
-> broke TCE invalidation on IODA2/PHB3 for real mode.
->=20
-> This makes invalidate work again.
->=20
-> Fixes: fd141d1a99a3
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index 53b56c0..59c7e7d 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1877,7 +1877,7 @@ static void pnv_pci_phb3_tce_invalidate(struct pnv_=
-ioda_pe *pe, bool rm,
->  					unsigned shift, unsigned long index,
->  					unsigned long npages)
->  {
-> -	__be64 __iomem *invalidate =3D pnv_ioda_get_inval_reg(pe->phb, false);
-> +	__be64 __iomem *invalidate =3D pnv_ioda_get_inval_reg(pe->phb, rm);
->  	unsigned long start, end, inc;
-> =20
->  	/* We'll invalidate DMA address in PE scope */
-> @@ -1935,10 +1935,12 @@ static void pnv_pci_ioda2_tce_invalidate(struct i=
-ommu_table *tbl,
->  			pnv_pci_phb3_tce_invalidate(pe, rm, shift,
->  						    index, npages);
->  		else if (rm)
-> +		{
->  			opal_rm_pci_tce_kill(phb->opal_id,
->  					     OPAL_PCI_TCE_KILL_PAGES,
->  					     pe->pe_number, 1u << shift,
->  					     index << shift, npages);
-> +		}
+No unfortunately.
 
-These braces look a) unrelated to the actual point of the patch, b)
-unnecessary and c) not in keeping with normal coding style.
-
->  		else
->  			opal_pci_tce_kill(phb->opal_id,
->  					  OPAL_PCI_TCE_KILL_PAGES,
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---3xoW37o/FfUZJwQG
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXotFHAAoJEGw4ysog2bOS1oQQAMUjeHXppo26JyGggINJVaRB
-YpRiUfHgO0I13vVwSF7kjVhkVXW9p88IHBgO12wpXukv+9wmPxZDBeF+8ODwgRNb
-wwfZffOe+KYsOgMuI43hr6gnX7JQ/vcTx+Fug/O+IyJtOeeS4DtDVKC+PPwH+zDw
-H5kimTVNiqVE/uBEPffb4MbxHRMiAFBDQmDDktBrCTc5qhrxXK415OivN7rpuOHf
-VYrYyO0RkDRcoC7MiIpFwB61CIO3Y+mvCxZYZSouK28PrHowCIacLfwvC/U63T7H
-0g8ulQ/6bVBiiqxC7kkUBjdwXNe8F+0I6goPoibSJ4PmzQoe1aC08kirX2LWua4N
-nPrmCCanp/YzG/Unnuh0BXa62echjGK3XKDEIVPWycKNnXXvJuqpH7qZnPZNlVuB
-dBoIZ4bQhvjx41JgcXaJ+oRBLEuAI3xjhtWFEf8l+Y+ON3GdKxkBP2zu8nlaWNTQ
-z7gmrgxJzzb5N5TXxvb0RIC95aRK1vQ+rMrxW6J/pdxcbvRevujDEpwNaNVeEZZX
-+5nO4EOfvb5izlxCOtaNowSX67wjH3Ln/RNwrw04sDCCcwI33UtKFShfjrMGpBis
-C+nKbrf50ockzca0WFQ+MlKRv+J8XE9tACQdEUg5HV4xsa4KRdMopKDBhrKpuaBr
-OE6elM6JJvxPeMIYBd3+
-=/Et+
------END PGP SIGNATURE-----
-
---3xoW37o/FfUZJwQG--
+Ciao,
+Alessio
