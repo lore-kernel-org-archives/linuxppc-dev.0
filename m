@@ -1,22 +1,25 @@
-Return-Path: <anton@samba.org>
-Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s4mZX2f8QzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 20:36:36 +1000 (AEST)
-Date: Thu, 4 Aug 2016 20:36:09 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- agraf@suse.de, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Align hot loops of memset() and
- backwards_memcpy()
-Message-ID: <20160804203609.73b02d85@kryten>
-In-Reply-To: <c1370828-f149-5851-9a6d-3e7aeae54101@c-s.fr>
-References: <1470293602-11121-1-git-send-email-anton@ozlabs.org>
- <c1370828-f149-5851-9a6d-3e7aeae54101@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s4mh42jXPzDqQs
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Aug 2016 20:41:23 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nicholas Piggin <npiggin@gmail.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Fengguang Wu <fengguang.wu@intel.com>, Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
+ next-20160729 build failures
+Date: Thu, 04 Aug 2016 12:37:41 +0200
+Message-ID: <1880505.MpH3ISbtMJ@wuerfel>
+In-Reply-To: <10480058.bD2uPUOBSy@wuerfel>
+References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
+ <20160804101051.39ca1e26@canb.auug.org.au> <10480058.bD2uPUOBSy@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +29,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christophe,
-
-> > Align the hot loops in our assembly implementation of memset()
-> > and backwards_memcpy().
-> >
-> > backwards_memcpy() is called from tcp_v4_rcv(), so we might
-> > want to optimise this a little more.
-> >
-> > Signed-off-by: Anton Blanchard <anton@samba.org>  
+On Thursday, August 4, 2016 11:00:49 AM CEST Arnd Bergmann wrote:
+> I tried this
 > 
-> Shouldn't this patch be titled powerpc/64, as powerpc32 has a
-> different memset() ?
-
-Yeah, good point. Michael can you make this change if you choose to
-merge it? 
-
-Anton
-
-> > ---
-> >  arch/powerpc/lib/mem_64.S | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
-> > index 43435c6..eda7a96 100644
-> > --- a/arch/powerpc/lib/mem_64.S
-> > +++ b/arch/powerpc/lib/mem_64.S
-> > @@ -37,6 +37,7 @@ _GLOBAL(memset)
-> >  	clrldi	r5,r5,58
-> >  	mtctr	r0
-> >  	beq	5f
-> > +	.balign 16
-> >  4:	std	r4,0(r6)
-> >  	std	r4,8(r6)
-> >  	std	r4,16(r6)
-> > @@ -90,6 +91,7 @@ _GLOBAL(backwards_memcpy)
-> >  	andi.	r0,r6,3
-> >  	mtctr	r7
-> >  	bne	5f
-> > +	.balign 16
-> >  1:	lwz	r7,-4(r4)
-> >  	lwzu	r8,-8(r4)
-> >  	stw	r7,-4(r6)
-> >  
+> diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+> index b5e40ed86e60..89bca1a25916 100755
+> --- a/scripts/link-vmlinux.sh
+> +++ b/scripts/link-vmlinux.sh
+> @@ -44,7 +44,7 @@ modpost_link()
+>         local objects
+>  
+>         if [ -n "${CONFIG_THIN_ARCHIVES}" ]; then
+> -               objects="--whole-archive ${KBUILD_VMLINUX_INIT} ${KBUILD_VMLINUX_MAIN} --no-whole-archive"
+> +               objects="${KBUILD_VMLINUX_INIT} ${KBUILD_VMLINUX_MAIN}"
+>         else
+>                 objects="${KBUILD_VMLINUX_INIT} --start-group ${KBUILD_VMLINUX_MAIN} --end-group"
+>         fi
 > 
+> but that did not seem to change anything, the extra symbols are
+> still there. I have not tried to understand what that actually
+> does, so maybe I misunderstood your suggestion.
+> 
+
+On a second attempt, I did the same change for vmlinux instead of the
+module (d'oh), and got a link failure instead:
+
+
+arch/arm/mm/proc-xscale.o: In function `cpu_xscale_do_resume':
+(.text+0x3d4): undefined reference to `cpu_resume_mmu'
+arch/arm/kernel/setup.o: In function `setup_arch':
+setup.c:(.init.text+0x910): undefined reference to `init_uts_ns'
+kernel/nsproxy.o:(.data+0x4): undefined reference to `init_uts_ns'
+kernel/sched/core.o: In function `update_rq_clock':
+core.c:(.text+0x6d8): undefined reference to `paravirt_steal_rq_enabled'
+core.c:(.text+0x6dc): undefined reference to `pv_time_ops'
+kernel/sched/cputime.o: In function `account_process_tick':
+cputime.c:(.text+0x794): undefined reference to `paravirt_steal_enabled'
+cputime.c:(.text+0x7a0): undefined reference to `pv_time_ops'
+kernel/locking/lockdep.o: In function `save_trace':
+lockdep.c:(.text+0xfe8): undefined reference to `save_stack_trace'
+kernel/module.o: In function `load_module':
+module.c:(.text+0x1b54): undefined reference to `elf_check_arch'
+module.c:(.text+0x2024): undefined reference to `apply_relocate'
+kernel/debug/debug_core.o: In function `kgdb_unregister_io_module':
+debug_core.c:(.text+0x2e4): undefined reference to `kgdb_arch_exit'
+kernel/debug/debug_core.o: In function `kgdb_arch_set_breakpoint':
+debug_core.c:(.text+0x3bc): undefined reference to `arch_kgdb_ops'
+kernel/debug/debug_core.o: In function `dbg_remove_all_break':
+debug_core.c:(.text+0x6d0): undefined reference to `arch_kgdb_ops'
+...
+
+However, I also see a link failure in some rare configurations
+with just your patch:
+
+arch/arm/lib/lib.a(io-acorn.o): In function `outsl':
+(.text+0x38): undefined reference to `printk'
+
+The problem being a file in a library object that is not referenced,
+but that references another symbol that is not defined
+(CONFIG_PRINTK=n).
+
+	Arnd
