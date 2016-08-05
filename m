@@ -1,26 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <petkan@mip-labs.com>
+Received: from zztop.nucleusys.com (lan.nucleusys.com [92.247.61.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5Lxd1FQDzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 19:25:09 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
- Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
-In-Reply-To: <20160805072838.GF11268@linux.vnet.ibm.com>
-References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
- <87mvkritii.fsf@concordia.ellerman.id.au>
- <20160805072838.GF11268@linux.vnet.ibm.com>
-Date: Fri, 05 Aug 2016 19:25:03 +1000
-Message-ID: <87h9azin4g.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5M0c0xPtzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 19:27:44 +1000 (AEST)
+Date: Fri, 5 Aug 2016 11:44:25 +0300
+From: Petko Manolov <petkan@mip-labs.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net,
+ Dave Young <dyoung@redhat.com>, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/7] ima: on soft reboot, restore the measurement list
+Message-ID: <20160805084425.GA7572@localhost>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <1470313475-20090-2-git-send-email-zohar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1470313475-20090-2-git-send-email-zohar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+On 16-08-04 08:24:29, Mimi Zohar wrote:
+> The TPM PCRs are only reset on a hard reboot.  In order to validate a
+> TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
+> of the running kernel must be saved and restored on boot.  This patch
+> restores the measurement list.
+> 
+> Changelog:
+> - call ima_load_kexec_buffer() (Thiago)
+> 
+> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> ---
+>  security/integrity/ima/Makefile       |   1 +
+>  security/integrity/ima/ima.h          |  10 ++
+>  security/integrity/ima/ima_init.c     |   2 +
+>  security/integrity/ima/ima_kexec.c    |  55 +++++++++++
+>  security/integrity/ima/ima_queue.c    |  10 ++
+>  security/integrity/ima/ima_template.c | 171 ++++++++++++++++++++++++++++++++++
+>  6 files changed, 249 insertions(+)
+>  create mode 100644 security/integrity/ima/ima_kexec.c
+> 
+> diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
+> index c34599f..c0ce7b1 100644
+> --- a/security/integrity/ima/Makefile
+> +++ b/security/integrity/ima/Makefile
+> @@ -8,4 +8,5 @@ obj-$(CONFIG_IMA) += ima.o
+>  ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
+>  	 ima_policy.o ima_template.o ima_template_lib.o ima_buffer.o
+>  ima-$(CONFIG_IMA_APPRAISE) += ima_appraise.o
+> +ima-$(CONFIG_KEXEC_FILE) += ima_kexec.o
+>  obj-$(CONFIG_IMA_BLACKLIST_KEYRING) += ima_mok.o
+> diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+> index b5728da..84e8d36 100644
+> --- a/security/integrity/ima/ima.h
+> +++ b/security/integrity/ima/ima.h
+> @@ -102,6 +102,13 @@ struct ima_queue_entry {
+>  };
+>  extern struct list_head ima_measurements;	/* list of all measurements */
+>  
+> +/* Some details preceding the binary serialized measurement list */
+> +struct ima_kexec_hdr {
+> +	unsigned short version;
+> +	unsigned long buffer_size;
+> +	unsigned long count;
+> +} __packed;
 
-> * Michael Ellerman <mpe@ellerman.id.au> [2016-08-05 17:07:01]:
->
->> Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
->> 
->> > Fadump kernel reserves large chunks of memory even before the pages are
->> > initialized. This could mean memory that corresponds to several nodes might
->> > fall in memblock reserved regions.
->> >
->> ...
->> > Register the memory reserved by fadump, so that the cache sizes are
->> > calculated based on the free memory (i.e Total memory - reserved
->> > memory).
->> 
->> The memory is reserved, with memblock_reserve(). Why is that not sufficient?
->
-> Because at page initialization time, the kernel doesnt know how many
-> pages are reserved.
+Unless there is no real need for this structure to be packed i suggest dropping 
+the attribute.  When referenced through pointer 32bit ARM and MIPS (and likely 
+all other 32bit RISC CPUs) use rather inefficient byte loads and stores.
 
-The kernel does know, the fadump code that does the memblock reserve
-runs before start_kernel(). AFAIK all calls to alloc_large_system_hash()
-are after that.
+Worse, if, for example, ->count is going to be read/written concurrently from 
+multiple threads we get torn loads/stores thus losing atomicity of the access.
 
-So the problem seems to be just that alloc_large_system_hash() doesn't
-know about reserved memory.
 
-> One way to do that would be to walk through the different memory
-> reserved blocks and calculate the size. But Mel feels thats an
-> overhead (from his reply to the other thread) esp for just one use
-> case.
-
-OK. I think you're referring to this:
-
-  If fadump is reserving memory and alloc_large_system_hash(HASH_EARLY)
-  does not know about then then would an arch-specific callback for
-  arch_reserved_kernel_pages() be more appropriate?
-  ...
-  
-  That approach would limit the impact to ppc64 and would be less costly than
-  doing a memblock walk instead of using nr_kernel_pages for everyone else.
-
-That sounds more robust to me than this solution.
-
-cheers
+		Petko
