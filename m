@@ -1,38 +1,21 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s574n6JSTzDqTn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 10:30:33 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id cf3so18266744pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2016 17:30:33 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>, wei.guo.simon@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Shuah Khan <shuahkh@osg.samsung.com>, Anton Blanchard <anton@samba.org>,
- Cyril Bur <cyrilbur@gmail.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Ulrich Weigand <ulrich.weigand@de.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Andrew Morton <akpm@linux-foundation.org>,
- Kees Cook <keescook@chromium.org>, Rashmica Gupta <rashmicy@gmail.com>,
- Khem Raj <raj.khem@gmail.com>, Jessica Yu <jeyu@redhat.com>,
- Jiri Kosina <jkosina@suse.cz>, Miroslav Benes <mbenes@suse.cz>,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>,
- Chris Smart <chris@distroguy.com>, linux-kselftest@vger.kernel.org
-Subject: Re: [PATCH v13 06/30] powerpc/ptrace: Adapt gpr32_get,
- gpr32_set functions for transaction
-In-Reply-To: <87r3a5ey5i.fsf@concordia.ellerman.id.au>
-References: <1469674679-8580-1-git-send-email-wei.guo.simon@gmail.com>
- <1469674679-8580-7-git-send-email-wei.guo.simon@gmail.com>
- <877fbxqbvd.fsf@possimpible.ozlabs.ibm.com>
- <87r3a5ey5i.fsf@concordia.ellerman.id.au>
-Date: Fri, 05 Aug 2016 10:30:15 +1000
-Message-ID: <874m70qcq0.fsf@possimpible.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5BvC4WJMzDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 13:22:31 +1000 (AEST)
+Date: Fri, 5 Aug 2016 13:22:20 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Mel Gorman <mgorman@techsingularity.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: mm: Initialise per_cpu_nodestats for all online pgdats at boot
+Message-ID: <20160805032220.GA17119@oak.ozlabs.ibm.com>
+References: <20160804092404.GI2799@techsingularity.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160804092404.GI2799@techsingularity.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,46 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
+On Thu, Aug 04, 2016 at 10:24:04AM +0100, Mel Gorman wrote:
+> Paul Mackerras and Reza Arbab reported that machines with memoryless nodes
+> fails when vmstats are refreshed. Paul reported an oops as follows
+> 
+> [    1.713998] Unable to handle kernel paging request for data at address 0xff7a10000
+> [    1.714164] Faulting instruction address: 0xc000000000270cd0
+> [    1.714304] Oops: Kernel access of bad area, sig: 11 [#1]
+> [    1.714414] SMP NR_CPUS=2048 NUMA PowerNV
+> [    1.714530] Modules linked in:
+> [    1.714647] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.7.0-kvm+ #118
+> [    1.714786] task: c000000ff0680010 task.stack: c000000ff0704000
+> [    1.714926] NIP: c000000000270cd0 LR: c000000000270ce8 CTR: 0000000000000000
+> [    1.715093] REGS: c000000ff0707900 TRAP: 0300   Not tainted  (4.7.0-kvm+)
+> [    1.715232] MSR: 9000000102009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 846b6824  XER: 20000000
+> [    1.715748] CFAR: c000000000008768 DAR: 0000000ff7a10000 DSISR: 42000000 SOFTE: 1
+> GPR00: c000000000270d08 c000000ff0707b80 c0000000011fb200 0000000000000000
+> GPR04: 0000000000000800 0000000000000000 0000000000000000 0000000000000000
+> GPR08: ffffffffffffffff 0000000000000000 0000000ff7a10000 c00000000122aae0
+> GPR12: c000000000a1e440 c00000000fb80000 c00000000000c188 0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000000cecad0
+> GPR24: c000000000d035b8 c000000000d6cd18 c000000000d6cd18 c000001fffa86300
+> GPR28: 0000000000000000 c000001fffa96300 c000000001230034 c00000000122eb18
+> [    1.717484] NIP [c000000000270cd0] refresh_zone_stat_thresholds+0x80/0x240
+> [    1.717568] LR [c000000000270ce8] refresh_zone_stat_thresholds+0x98/0x240
+> [    1.717648] Call Trace:
+> [    1.717687] [c000000ff0707b80] [c000000000270d08] refresh_zone_stat_thresholds+0xb8/0x240 (unreliable)
+> 
+> Both supplied potential fixes but one potentially misses checks and another
+> had redundant initialisations. This version initialises per_cpu_nodestats
+> on a per-pgdat basis instead of on a per-zone basis.
+> 
+> Reported-by: Paul Mackerras <paulus@ozlabs.org>
+> Reported-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+> Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+That works, thanks.
 
-
->> Is there a nice simple fix we could deploy to squash this warning, or
->> will we just live with it?
->
-> This series has been nothing but pain. Given we're already at v13, and people
-> really want this support to go in, I'm going to leave it in the tree.
->
-> Once it's in we can refactor the implementation, which is a bit of a mess, and
-> hopefully in the process fix the warnings.
-
-OK, I'll push this onto my stack to look at again in a couple of months.
-
-Regards,
-Daniel
-
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJXo94XAAoJEPC3R3P2I92FdN8QAMGhIDCSkIe2YOdbmDaPKGMu
-r5+zLhkKtajQLVCH7YdgFVcAHqg2zBl4VEw+NrwdvpOlXFgt+Ozr5ykcCxQKYUDQ
-C5El0qUq86qajSkmGQoDjZfT2g/J5lbOF/B9MdeP+nUcMnIo6MLBirehuqcsbXUL
-A+UYWAkeoWzBMWnZpwG/gtQIySMJRx9Agtk3INbL34TFDyZZP76jwUIw9PO1wxuT
-LU3pb/zUWNFfiQjuDIv/plDMxpl2hmZQrRSuyq8mQWnWm/fuTejR0rPI94LmHXT3
-tvIC9V8uE/V9YI+n9pCjizTh0UxfRkN/9rMsOizg/fxqPt5cjKoTerG7h5FDRmGf
-YPLR09OV2LXZUXQOhQrY0iaHiD1/HR91YD9LvupBasYN5FRR6uGswoSpluy450PD
-UviyEH4paKtScaBIlllsReXdqef4koZRAce59yIQOlpAH/96Az8G2lZYrPnm9p1E
-CvosQBobEVLdtGFULD/OG4nm7Pbd5SuzydJzNwyGpwX/xYUAPKRaHt6cAfUkRsQ9
-dLusFEcNMapcJ9xBqNTuWzRSycYUvvBpKFsiPSAjR6Sdqk86qsGMw2axzxi48tBu
-MgY6y8vH3eJ8NgRW0tQwi6orEPWmtBaQaKSH7b/K4vJwooVHBqauTDuX370PwEgz
-0j6sCZS8VSuBjWtJjI6C
-=i0Kk
------END PGP SIGNATURE-----
---=-=-=--
+Tested-by: Paul Mackerras <paulus@ozlabs.org>
