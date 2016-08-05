@@ -2,21 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HXl3BkgzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:51:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5Hdn1XnmzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:56:13 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>
-Cc: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, herbert@gondor.apana.org.au, davem@davemloft.net,
- alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: crc32c-vpmsum - Convert to CPU feature based
- module autoloading
-In-Reply-To: <20160804202601.12aa879e@kryten>
-References: <1470292695-9829-1-git-send-email-anton@ozlabs.org>
- <87lh0dexp3.fsf@concordia.ellerman.id.au> <20160804202601.12aa879e@kryten>
-Date: Fri, 05 Aug 2016 16:51:51 +1000
-Message-ID: <87y44biu7s.fsf@concordia.ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/xics: Properly set Edge/Level type and enable
+ resend
+In-Reply-To: <1470303695.12584.142.camel@kernel.crashing.org>
+References: <1470105583.12584.5.camel@kernel.crashing.org>
+ <87twf1f8pj.fsf@concordia.ellerman.id.au>
+ <1470303695.12584.142.camel@kernel.crashing.org>
+Date: Fri, 05 Aug 2016 16:56:12 +1000
+Message-ID: <87vazfiu0j.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,27 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> writes:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> Hi Michael,
->
->> Is VEC_CRYPTO the right feature?
+> On Thu, 2016-08-04 at 14:40 +1000, Michael Ellerman wrote:
+>> > Finally now that edge interrupts are properly identified, we can enable
+>> > CONFIG_HARDIRQS_SW_RESEND which will make the core re-send them if
+>> > they occur while masked, which some drivers rely upon.
+>> >
+>> > This fixes issues with lost interrupts on some Mellanox adapters.
+>> >
+>> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >> 
->> That's new power8 crypto stuff.
+>> Broken since forever?
+>> 
+>> Cc stable?
 >
-> The vpmsum* instructions are part of the same pipeline as the vcipher*
-> instructions, introduced in POWER8.
+> Broken since forever but I want a bit more testing before that goes to
+> stable. Some drivers like Mellanox had a workaround but they want to
+> remove it.
 
 OK.
 
->> I thought this only used VMX? (but I haven't looked closely)
->
-> Yes, vcipher* and vpmsum* are VMX instructions.
+I've put it in fixes-test (should end up in fixes), and added it to my
+"probably for stable" list:
 
-Right. The confusion is that we have PPC_FEATURE_HAS_ALTIVEC, but that
-doesn't mean we have *these* VMX instructions.
+  https://github.com/linuxppc/linux/issues/51
 
-This is actually an arch/powerpc patch, so I'll merge it unless Herbert
-objects.
 
 cheers
