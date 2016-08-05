@@ -1,27 +1,51 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5JK04FvmzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:26:44 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>,
- Scott Wood <oss@buserror.net>
-References: <20160802080705.69A9F1A2394@localhost.localdomain>
- <1470282813.25630.242.camel@buserror.net>
- <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
- <87shujitxx.fsf@concordia.ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
- antoine.blangy@c-s.fr, segher@kernel.crashing.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <ab39b1b1-2320-31ba-3f19-11a62e3586b8@c-s.fr>
-Date: Fri, 5 Aug 2016 09:26:41 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5JMT3RFjzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:28:53 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u757PZIx128006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 03:28:51 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkajhh4f-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 03:28:51 -0400
+Received: from localhost
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Fri, 5 Aug 2016 17:28:48 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 09DF2357805D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:28:46 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u757SjA226673326
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 17:28:45 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u757ShSg026235
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 17:28:45 +1000
+Date: Fri, 5 Aug 2016 12:58:38 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <87mvkritii.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87shujitxx.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <87mvkritii.fsf@concordia.ellerman.id.au>
+Message-Id: <20160805072838.GF11268@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +55,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Michael Ellerman <mpe@ellerman.id.au> [2016-08-05 17:07:01]:
 
+> Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> 
+> > Fadump kernel reserves large chunks of memory even before the pages are
+> > initialized. This could mean memory that corresponds to several nodes might
+> > fall in memblock reserved regions.
+> >
+> ...
+> > Register the memory reserved by fadump, so that the cache sizes are
+> > calculated based on the free memory (i.e Total memory - reserved
+> > memory).
+> 
+> The memory is reserved, with memblock_reserve(). Why is that not sufficient?
+> 
+> cheers
+> 
 
-Le 05/08/2016 à 08:57, Michael Ellerman a écrit :
-> Alessio Igor Bogani <alessio.bogani@elettra.eu> writes:
->> On 4 August 2016 at 05:53, Scott Wood <oss@buserror.net> wrote:
->>> On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
->>>> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
->>>> based on copy_tofrom_user()") introduced a bug when destination
->>>> address is odd and initial csum is not null
->>>>
->>>> In that (rare) case the initial csum value has to be rotated one byte
->>>> as well as the resulting value is
->>>>
->>>> This patch also fixes related comments
->>>>
->>>> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
->>>> based on copy_tofrom_user()")
->>>> Cc: stable@vger.kernel.org
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> ---
->>>>   v2: updated comments as suggested by Segher
->>>>
->>>>   arch/powerpc/lib/checksum_32.S | 7 ++++---
->>>>   1 file changed, 4 insertions(+), 3 deletions(-)
->>> Alessio, can you confirm whether this fixes the problem you reported?
->> No unfortunately.
-> Thanks for testing.
->
-> I've dropped the patch for now, send me a new one that works.
->
->
+Because at page initialization time, the kernel doesnt know how many
+pages are reserved. One way to do that would be to walk through the
+different memory reserved blocks and calculate the size. But Mel feels
+thats an overhead (from his reply to the other thread) esp for just one
+use case.
 
-The purpose of this patch was not to address Alessio's issue, but to fix 
-a huge issue on checksum calculation which induces breakdown of TCP 
-connections.
-
-I think it is worth commiting it upstream and on impacted stable 
-releases, allthought we don't have yet identified the issue Alessio's has.
-
-Christophe
+-- 
+Thanks and Regards
+Srikar Dronamraju
