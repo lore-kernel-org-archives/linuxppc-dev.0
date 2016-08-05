@@ -1,20 +1,24 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5Hdn1XnmzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:56:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HgZ4Ng8zDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:57:46 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/xics: Properly set Edge/Level type and enable
- resend
-In-Reply-To: <1470303695.12584.142.camel@kernel.crashing.org>
-References: <1470105583.12584.5.camel@kernel.crashing.org>
- <87twf1f8pj.fsf@concordia.ellerman.id.au>
- <1470303695.12584.142.camel@kernel.crashing.org>
-Date: Fri, 05 Aug 2016 16:56:12 +1000
-Message-ID: <87vazfiu0j.fsf@concordia.ellerman.id.au>
+To: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ Scott Wood <oss@buserror.net>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, antoine.blangy@c-s.fr,
+ segher@kernel.crashing.org
+Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
+In-Reply-To: <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
+References: <20160802080705.69A9F1A2394@localhost.localdomain>
+ <1470282813.25630.242.camel@buserror.net>
+ <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
+Date: Fri, 05 Aug 2016 16:57:46 +1000
+Message-ID: <87shujitxx.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,31 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> On Thu, 2016-08-04 at 14:40 +1000, Michael Ellerman wrote:
->> > Finally now that edge interrupts are properly identified, we can enable
->> > CONFIG_HARDIRQS_SW_RESEND which will make the core re-send them if
->> > they occur while masked, which some drivers rely upon.
->> >
->> > This fixes issues with lost interrupts on some Mellanox adapters.
->> >
->> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> 
->> Broken since forever?
->> 
->> Cc stable?
+Alessio Igor Bogani <alessio.bogani@elettra.eu> writes:
+> On 4 August 2016 at 05:53, Scott Wood <oss@buserror.net> wrote:
+>> On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
+>>> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+>>> based on copy_tofrom_user()") introduced a bug when destination
+>>> address is odd and initial csum is not null
+>>>
+>>> In that (rare) case the initial csum value has to be rotated one byte
+>>> as well as the resulting value is
+>>>
+>>> This patch also fixes related comments
+>>>
+>>> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+>>> based on copy_tofrom_user()")
+>>> Cc: stable@vger.kernel.org
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> ---
+>>>  v2: updated comments as suggested by Segher
+>>>
+>>>  arch/powerpc/lib/checksum_32.S | 7 ++++---
+>>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>>
+>> Alessio, can you confirm whether this fixes the problem you reported?
 >
-> Broken since forever but I want a bit more testing before that goes to
-> stable. Some drivers like Mellanox had a workaround but they want to
-> remove it.
+> No unfortunately.
 
-OK.
+Thanks for testing.
 
-I've put it in fixes-test (should end up in fixes), and added it to my
-"probably for stable" list:
-
-  https://github.com/linuxppc/linux/issues/51
-
+I've dropped the patch for now, send me a new one that works.
 
 cheers
