@@ -1,16 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HJG2LL0zDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:41:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: gpiccoli@linux.vnet.ibm.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, chzigotzky@xenosoft.de
-Subject: [PATCH] powerpc/pci: Only do fixed PHB numbering on powernv
-Date: Fri,  5 Aug 2016 16:40:56 +1000
-Message-Id: <1470379256-24266-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HP22yBnzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:45:09 +1000 (AEST)
+Subject: Re: [PATCH V2 1/2] mm/page_alloc: Replace set_dma_reserve to
+ set_memory_reserve
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ Mel Gorman <mgorman@techsingularity.net>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>
+References: <1470330729-6273-1-git-send-email-srikar@linux.vnet.ibm.com>
+Cc: Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Message-ID: <09d5b30e-5956-bf64-5f4c-ea5425d7f7a5@suse.cz>
+Date: Fri, 5 Aug 2016 08:45:03 +0200
+MIME-Version: 1.0
+In-Reply-To: <1470330729-6273-1-git-send-email-srikar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,77 +29,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number
-based on device-tree properties"), added code to read a 64-bit property
-from the device tree, and if not found read a 32-bit property (reg).
+On 08/04/2016 07:12 PM, Srikar Dronamraju wrote:
+> Expand the scope of the existing dma_reserve to accommodate other memory
+> reserves too. Accordingly rename variable dma_reserve to
+> nr_memory_reserve.
+>
+> set_memory_reserve also takes a new parameter that helps to identify if
+> the current value needs to be incremented.
+>
+> Suggested-by: Mel Gorman <mgorman@techsingularity.net>
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
+>  arch/x86/kernel/e820.c |  2 +-
+>  include/linux/mm.h     |  2 +-
+>  mm/page_alloc.c        | 20 ++++++++++++--------
+>  3 files changed, 14 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+> index 621b501..d935983 100644
+> --- a/arch/x86/kernel/e820.c
+> +++ b/arch/x86/kernel/e820.c
+> @@ -1188,6 +1188,6 @@ void __init memblock_find_dma_reserve(void)
+>  			nr_free_pages += end_pfn - start_pfn;
+>  	}
+>
+> -	set_dma_reserve(nr_pages - nr_free_pages);
+> +	set_memory_reserve(nr_pages - nr_free_pages, false);
+>  #endif
+>  }
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 8f468e0..c884ffb 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1886,7 +1886,7 @@ extern int __meminit __early_pfn_to_nid(unsigned long pfn,
+>  					struct mminit_pfnnid_cache *state);
+>  #endif
+>
+> -extern void set_dma_reserve(unsigned long new_dma_reserve);
+> +extern void set_memory_reserve(unsigned long nr_reserve, bool inc);
+>  extern void memmap_init_zone(unsigned long, int, unsigned long,
+>  				unsigned long, enum memmap_context);
+>  extern void setup_per_zone_wmarks(void);
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index c1069ef..a154c2f 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -253,7 +253,7 @@ int watermark_scale_factor = 10;
+>
+>  static unsigned long __meminitdata nr_kernel_pages;
+>  static unsigned long __meminitdata nr_all_pages;
+> -static unsigned long __meminitdata dma_reserve;
+> +static unsigned long __meminitdata nr_memory_reserve;
+>
+>  #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
+>  static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
+> @@ -5493,10 +5493,10 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
+>  		}
+>
+>  		/* Account for reserved pages */
+> -		if (j == 0 && freesize > dma_reserve) {
+> -			freesize -= dma_reserve;
+> +		if (j == 0 && freesize > nr_memory_reserve) {
 
-There was a bug in the 32-bit case, on big endian machines, due to the
-use of the 64-bit value to read the 32-bit property. The cast of &prop
-means we end up writing to the high 32-bit of prop, leaving the low
-32-bits containing whatever junk was on the stack.
+Will this really work (together with patch 2) as intended?
+This j == 0 means that we are doing this only for the first zone, which 
+is ZONE_DMA (or ZONE_DMA32) on node 0 on many systems. I.e. I don't 
+think it's really true that "dma_reserve has nothing to do with DMA or 
+ZONE_DMA".
 
-If that junk value was non-zero, and < MAX_PHBS, we would end up using
-it as the PHB id.
+This zone will have limited amount of memory, so the "freesize > 
+nr_memory_reserve" will easily be false once you set this to many 
+gigabytes, so in fact nothing will get subtracted.
 
-This exposed a second problem, which is that Xorg can't cope with a
-domain number > 256.
+On the other hand if the kernel has both CONFIG_ZONE_DMA and 
+CONFIG_ZONE_DMA32 disabled, then j == 0 will be true for ZONE_NORMAL. 
+This zone might be present on multiple nodes (unless they are configured 
+as movable) and then the value intended to be global will be subtracted 
+from several nodes.
 
-So for now drop the fallback to reg, and only use "ibm,opal-phbid" for
-PHB numbering.
+I don't know what's the exact ppc64 situation here, perhaps there are 
+indeed no DMA/DMA32 zones, and the fadump kernel only uses one node, so 
+it works in the end, but it doesn't seem much robust to me?
 
-Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/pci-common.c | 24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
-
-
-This is my bad. Guilherme limited the reg case to pseries only, but I made it
-generic. I tested it on G5, Cell etc. which all booted - but that's not really
-a good enough test.
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index f93942b4b6a6..f9c2ffaa1884 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -77,29 +77,23 @@ EXPORT_SYMBOL(get_pci_dma_ops);
-  */
- static int get_phb_number(struct device_node *dn)
- {
--	int ret, phb_id = -1;
-+	int ret, phb_id;
- 	u64 prop;
- 
- 	/*
--	 * Try fixed PHB numbering first, by checking archs and reading
--	 * the respective device-tree properties. Firstly, try powernv by
--	 * reading "ibm,opal-phbid", only present in OPAL environment.
-+	 * On powernv machines we should have the "ibm,opal-phbid" property, if
-+	 * so use that so that PHB numbers are predictable.
- 	 */
- 	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
--	if (ret)
--		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
--
--	if (!ret)
-+	if (ret == 0) {
- 		phb_id = (int)(prop & (MAX_PHBS - 1));
- 
--	/* We need to be sure to not use the same PHB number twice. */
--	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
--		return phb_id;
-+		/* Make sure never to use the same PHB number twice. */
-+		if (!test_and_set_bit(phb_id, phb_bitmap))
-+			return phb_id;
-+	}
- 
--	/*
--	 * If not pseries nor powernv, or if fixed PHB numbering tried to add
--	 * the same PHB number twice, then fallback to dynamic PHB numbering.
--	 */
-+	/* If fixed PHB numbering failed, fallback to dynamic PHB numbering. */
- 	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
- 	BUG_ON(phb_id >= MAX_PHBS);
- 	set_bit(phb_id, phb_bitmap);
--- 
-2.7.4
+> +			freesize -= nr_memory_reserve;
+>  			printk(KERN_DEBUG "  %s zone: %lu pages reserved\n",
+> -					zone_names[0], dma_reserve);
+> +					zone_names[0], nr_memory_reserve);
+>  		}
+>
+>  		if (!is_highmem_idx(j))
+> @@ -6186,8 +6186,9 @@ void __init mem_init_print_info(const char *str)
+>  }
+>
+>  /**
+> - * set_dma_reserve - set the specified number of pages reserved in the first zone
+> - * @new_dma_reserve: The number of pages to mark reserved
+> + * set_memory_reserve - set number of pages reserved in the first zone
+> + * @nr_reserve: The number of pages to mark reserved
+> + * @inc: true increment to existing value; false set new value.
+>   *
+>   * The per-cpu batchsize and zone watermarks are determined by managed_pages.
+>   * In the DMA zone, a significant percentage may be consumed by kernel image
+> @@ -6196,9 +6197,12 @@ void __init mem_init_print_info(const char *str)
+>   * first zone (e.g., ZONE_DMA). The effect will be lower watermarks and
+>   * smaller per-cpu batchsize.
+>   */
+> -void __init set_dma_reserve(unsigned long new_dma_reserve)
+> +void __init set_memory_reserve(unsigned long nr_reserve, bool inc)
+>  {
+> -	dma_reserve = new_dma_reserve;
+> +	if (inc)
+> +		nr_memory_reserve += nr_reserve;
+> +	else
+> +		nr_memory_reserve = nr_reserve;
+>  }
+>
+>  void __init free_area_init(unsigned long *zones_size)
+>
