@@ -1,31 +1,24 @@
-Return-Path: <mgorman@techsingularity.net>
-Received: from outbound-smtp08.blacknight.com (outbound-smtp08.blacknight.com
- [46.22.139.13])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HSB1y1SzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:47:53 +1000 (AEST)
-Received: from mail.blacknight.com (pemlinmail05.blacknight.ie [81.17.254.26])
- by outbound-smtp08.blacknight.com (Postfix) with ESMTPS id
- 950471C1AE5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 07:47:49 +0100 (IST)
-Date: Fri, 5 Aug 2016 07:47:47 +0100
-From: Mel Gorman <mgorman@techsingularity.net>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>,
- Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH V2 1/2] mm/page_alloc: Replace set_dma_reserve to
- set_memory_reserve
-Message-ID: <20160805064747.GN2799@techsingularity.net>
-References: <1470330729-6273-1-git-send-email-srikar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HXl3BkgzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:51:51 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anton Blanchard <anton@samba.org>
+Cc: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, herbert@gondor.apana.org.au, davem@davemloft.net,
+ alastair@d-silva.org, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: crc32c-vpmsum - Convert to CPU feature based
+ module autoloading
+In-Reply-To: <20160804202601.12aa879e@kryten>
+References: <1470292695-9829-1-git-send-email-anton@ozlabs.org>
+ <87lh0dexp3.fsf@concordia.ellerman.id.au> <20160804202601.12aa879e@kryten>
+Date: Fri, 05 Aug 2016 16:51:51 +1000
+Message-ID: <87y44biu7s.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1470330729-6273-1-git-send-email-srikar@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,18 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 04, 2016 at 10:42:08PM +0530, Srikar Dronamraju wrote:
-> Expand the scope of the existing dma_reserve to accommodate other memory
-> reserves too. Accordingly rename variable dma_reserve to
-> nr_memory_reserve.
-> 
-> set_memory_reserve also takes a new parameter that helps to identify if
-> the current value needs to be incremented.
-> 
+Anton Blanchard <anton@samba.org> writes:
 
-I think the parameter is ugly and it should have been just
-inc_memory_reserve but at least it works.
+> Hi Michael,
+>
+>> Is VEC_CRYPTO the right feature?
+>> 
+>> That's new power8 crypto stuff.
+>
+> The vpmsum* instructions are part of the same pipeline as the vcipher*
+> instructions, introduced in POWER8.
 
--- 
-Mel Gorman
-SUSE Labs
+OK.
+
+>> I thought this only used VMX? (but I haven't looked closely)
+>
+> Yes, vcipher* and vpmsum* are VMX instructions.
+
+Right. The confusion is that we have PPC_FEATURE_HAS_ALTIVEC, but that
+doesn't mean we have *these* VMX instructions.
+
+This is actually an arch/powerpc patch, so I'll merge it unless Herbert
+objects.
+
+cheers
