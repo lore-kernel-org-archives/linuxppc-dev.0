@@ -1,25 +1,28 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5hYl0BdTzDqWf
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 08:39:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5hZF1gygzDqcy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 08:39:33 +1000 (AEST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s5hYk2Psmz9sC4
- for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2016 08:39:06 +1000 (AEST)
-Message-ID: <1470436733.12584.164.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powernv: Load correct TOC pointer while waking up from
- winkle.
+ by ozlabs.org (Postfix) with ESMTPS id 3s5hZD3k4zz9sC4
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2016 08:39:32 +1000 (AEST)
+Message-ID: <1470436755.12584.165.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/2] powernv: Fix MCE handler to avoid trashing
+ CR0/CR1 registers.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Date: Sat, 06 Aug 2016 08:38:53 +1000
-In-Reply-To: <147040459202.19770.16560483806363144997.stgit@jupiter.in.ibm.com>
-References: <147040459202.19770.16560483806363144997.stgit@jupiter.in.ibm.com>
+ <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>, Michael
+ Ellerman <mpe@ellerman.id.au>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, "Shreyas B. Prabhu"
+ <shreyas@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>
+Date: Sat, 06 Aug 2016 08:39:15 +1000
+In-Reply-To: <147039865296.4007.7482355227065137884.stgit@jupiter.in.ibm.com>
+References: <147039864368.4007.8950616642100181791.stgit@jupiter.in.ibm.com>
+ <147039865296.4007.7482355227065137884.stgit@jupiter.in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,64 +34,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-08-05 at 19:13 +0530, Mahesh J Salgaonkar wrote:
+On Fri, 2016-08-05 at 17:34 +0530, Mahesh J Salgaonkar wrote:
 > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> The function pnv_restore_hyp_resource() loads the TOC into r2 from
-> the invalid PACA pointer before fixing r13 value. This do not affect
-> POWER ISA 3.0 but it does have an impact on POWER ISA 2.07 or less
-> leading CPU to get stuck forever.
+> The current implementation of MCE early handling modifies CR0/1
+> registers
+> without saving its old values. Fix this by moving early check for
+> powersaving mode to machine_check_handle_early().
 
-When was this broken ? Should this get backported to stable ?
+CC stable ?
 
-> 	login: [  471.830433] Processor 120 is stuck.
+> The power architecture 2.06 or later allows the possibility of
+> getting
+> machine check while in nap/sleep/winkle. The last bit of HSPRG0 is
+> set
+> to 1, if thread is woken up from winkle. Hence, clear the last bit of
+> HSPRG0 (r13) before MCE handler starts using it as paca pointer.
 > 
+> Also, the current code always puts the thread into nap state
+> irrespective
+> of whatever idle state it woke up from. Fix that by looking at
+> paca->thread_idle_state and put the thread back into same state where
+> it
+> came from.
 > 
-> This can be easily reproducible using following steps:
-> - Turn off SMT
-> 	$ ppc64_cpu --smt=off
-> - offline/online any online cpu (Thread 0 of any core which is
-> online)
-> 	$ echo 0 > /sys/devices/system/cpu/cpu<num>/online
-> 	$ echo 1 > /sys/devices/system/cpu/cpu<num>/online
-> 
-> For POWER ISA 2.07 or less, the last bit of HSPRG0 is set indicating
-> that thread is waking up from winkle. Hence, the last bit of
-> HSPRG0(r13)
-> needs to be clear before accessing it as PACA to avoid loading
-> invalid
-> values from invalid PACA pointer.
-> 
-> Fix this by loading TOC after r13 register is corrected.
-> 
+> Reported-by: Paul Mackerras <paulus@samba.org>
 > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Reviewed-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/kernel/idle_book3s.S |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+> Change in v3:
+> - Rebase to Linus' master.
 > 
-> diff --git a/arch/powerpc/kernel/idle_book3s.S
-> b/arch/powerpc/kernel/idle_book3s.S
-> index 8a56a51..45784ec 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -363,8 +363,8 @@ _GLOBAL(power9_idle_stop)
->   * cr3 - set to gt if waking up with partial/complete hypervisor
-> state loss
->   */
->  _GLOBAL(pnv_restore_hyp_resource)
-> -	ld	r2,PACATOC(r13);
->  BEGIN_FTR_SECTION
-> +	ld	r2,PACATOC(r13);
->  	/*
->  	 * POWER ISA 3. Use PSSCR to determine if we
->  	 * are waking up from deep idle state
-> @@ -395,6 +395,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> Change in v2:
+> - Call IDLE_STATE_ENTER_SEQ(PPC_NAP) instead of
+> power7_enter_nap_mode()
+>   to be consistent with other part of code.
+> ---
+>  arch/powerpc/kernel/exceptions-64s.S |   69 ++++++++++++++++++++--
+> ------------
+>  1 file changed, 40 insertions(+), 29 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S
+> b/arch/powerpc/kernel/exceptions-64s.S
+> index 694def6..a59c9cc 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -144,29 +144,14 @@ machine_check_pSeries_1:
+>  	 * vector
 >  	 */
->  	clrldi	r5,r13,63
->  	clrrdi	r13,r13,1
+>  	SET_SCRATCH0(r13)		/* save r13 */
+> -#ifdef CONFIG_PPC_P7_NAP
+> -BEGIN_FTR_SECTION
+> -	/* Running native on arch 2.06 or later, check if we are
+> -	 * waking up from nap. We only handle no state loss and
+> -	 * supervisor state loss. We do -not- handle hypervisor
+> -	 * state loss at this time.
+> +	/*
+> +	 * Running native on arch 2.06 or later, we may wakeup from
+> winkle
+> +	 * inside machine check. If yes, then last bit of HSPGR0
+> would be set
+> +	 * to 1. Hence clear it unconditionally.
+>  	 */
+> -	mfspr	r13,SPRN_SRR1
+> -	rlwinm.	r13,r13,47-31,30,31
+> -	OPT_GET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
+> -	beq	9f
+> -
+> -	mfspr	r13,SPRN_SRR1
+> -	rlwinm.	r13,r13,47-31,30,31
+> -	/* waking up from powersave (nap) state */
+> -	cmpwi	cr1,r13,2
+> -	/* Total loss of HV state is fatal. let's just stay stuck
+> here */
+> -	OPT_GET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
+> -	bgt	cr1,.
+> -9:
+> -	OPT_SET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
+> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+> -#endif /* CONFIG_PPC_P7_NAP */
+> +	GET_PACA(r13)
+> +	clrrdi	r13,r13,1
+> +	SET_PACA(r13)
+>  	EXCEPTION_PROLOG_0(PACA_EXMC)
+>  BEGIN_FTR_SECTION
+>  	b	machine_check_powernv_early
+> @@ -1273,25 +1258,51 @@ machine_check_handle_early:
+>  	 * Check if thread was in power saving mode. We come here
+> when any
+>  	 * of the following is true:
+>  	 * a. thread wasn't in power saving mode
+> -	 * b. thread was in power saving mode with no state loss or
+> -	 *    supervisor state loss
+> +	 * b. thread was in power saving mode with no state loss,
+> +	 *    supervisor state loss or hypervisor state loss.
+>  	 *
+> -	 * Go back to nap again if (b) is true.
+> +	 * Go back to nap/sleep/winkle mode again if (b) is true.
+>  	 */
+>  	rlwinm.	r11,r12,47-31,30,31	/* Was it in power
+> saving mode? */
+>  	beq	4f			/* No, it wasn;t */
+>  	/* Thread was in power saving mode. Go back to nap again. */
+>  	cmpwi	r11,2
+> -	bne	3f
+> -	/* Supervisor state loss */
+> +	blt	3f
+> +	/* Supervisor/Hypervisor state loss */
+>  	li	r0,1
+>  	stb	r0,PACA_NAPSTATELOST(r13)
+>  3:	bl	machine_check_queue_event
+>  	MACHINE_CHECK_HANDLER_WINDUP
+>  	GET_PACA(r13)
+>  	ld	r1,PACAR1(r13)
+> -	li	r3,PNV_THREAD_NAP
+> -	b	pnv_enter_arch207_idle_mode
+> +	/*
+> +	 * Check what idle state this CPU was in and go back to same
+> mode
+> +	 * again.
+> +	 */
+> +	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
+> +	cmpwi	r3,PNV_THREAD_NAP
+> +	bgt	10f
+> +	IDLE_STATE_ENTER_SEQ(PPC_NAP)
+> +	/* No return */
+> +10:
+> +	cmpwi	r3,PNV_THREAD_SLEEP
+> +	bgt	2f
+> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
+> +	/* No return */
 > +
-> +	/* Now that we are sure r13 is corrected, load TOC */
-> +	ld	r2,PACATOC(r13);
->  	cmpwi	cr4,r5,1
->  	mtspr	SPRN_HSPRG0,r13
->  
+> +2:
+> +	/*
+> +	 * Go back to winkle. Please note that this thread was woken
+> up in
+> +	 * machine check from winkle and have not restored the per-
+> subcore
+> +	 * state. Hence before going back to winkle, set last bit of
+> HSPGR0
+> +	 * to 1. This will make sure that if this thread gets woken
+> up
+> +	 * again at reset vector 0x100 then it will get chance to
+> restore
+> +	 * the subcore state.
+> +	 */
+> +	ori	r13,r13,1
+> +	SET_PACA(r13)
+> +	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
+> +	/* No return */
+>  4:
+>  #endif
+>  	/*
