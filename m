@@ -1,23 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5Hkp4hyfzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:00:34 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel 05/15] powerpc/iommu: Stop using @current in
- mm_iommu_xxx
-In-Reply-To: <1470213656-1042-6-git-send-email-aik@ozlabs.ru>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-6-git-send-email-aik@ozlabs.ru>
-Date: Fri, 05 Aug 2016 17:00:34 +1000
-Message-ID: <87popnitt9.fsf@concordia.ellerman.id.au>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s5HmC2rFhzDqYb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:01:47 +1000 (AEST)
+Date: Fri, 5 Aug 2016 09:01:26 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: york sun <york.sun@nxp.com>, Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "morbidrsa@gmail.com" <morbidrsa@gmail.com>,
+ "oss@buserror.net" <oss@buserror.net>, Stuart Yoder <stuart.yoder@nxp.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
+ mpc85xx_edac
+Message-ID: <20160805070126.GE25630@nazgul.tnic>
+References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
+ <1470351518-22404-2-git-send-email-york.sun@nxp.com>
+ <877fbvkhi3.fsf@concordia.ellerman.id.au>
+ <AM4PR0401MB17321DA6630E78AF2ED7DA269A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AM4PR0401MB17321DA6630E78AF2ED7DA269A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+On Fri, Aug 05, 2016 at 04:26:26AM +0000, york sun wrote:
+> I don't have deep knowledge of this driver. What I am trying is to 
+> separate the common DDR part and share it with ARM platforms. Along the 
+> way, I found the compiling error if build a module. If exposing these 
+> functions becomes a concern, I can live without it.
 
-> In some situations the userspace memory context may live longer than
-> the userspace process itself so if we need to do proper memory context
-> cleanup, we better cache @mm and use it later when the process is gone
-> (@current or @current->mm are NULL).
->
-> This changes mm_iommu_xxx API to receive mm_struct instead of using one
-> from @current.
->
-> This is needed by the following patch to do proper cleanup in time.
-> This depends on "powerpc/powernv/ioda: Fix endianness when reading TCEs"
-> to do proper cleanup via tce_iommu_clear() patch.
->
-> To keep API consistent, this replaces mm_context_t with mm_struct;
-> we stick to mm_struct as mm_iommu_adjust_locked_vm() helper needs
-> access to &mm->mmap_sem.
->
-> This should cause no behavioral change.
+Perhaps you or Johannes could fix this properly to use pci_get_device()
+as the rest of the EDAC drivers do, instead of exporting core PCI
+functions...
 
-Is this a theoretical bug, or do we hit it in practice?
+-- 
+Regards/Gruss,
+    Boris.
 
-In other words, should I merge this as a fix for 4.8, or can it wait for
-4.9 with the rest of the series?
-
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/mmu_context.h | 20 +++++++------
->  arch/powerpc/kernel/setup-common.c     |  2 +-
->  arch/powerpc/mm/mmu_context_book3s64.c |  4 +--
->  arch/powerpc/mm/mmu_context_iommu.c    | 54 ++++++++++++++--------------------
-
->  drivers/vfio/vfio_iommu_spapr_tce.c    | 41 ++++++++++++++++----------
-
-I'd need an ACK from Alex for that part.
-
-cheers
+ECO tip #101: Trim your mails when you reply.
+--
