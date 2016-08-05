@@ -1,56 +1,31 @@
-Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from host.buserror.net (host.buserror.net [209.198.135.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5f4G6dMSzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 06:46:54 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u75KiiSt042027
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 16:46:52 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkakf2y6-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 16:46:52 -0400
-Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Fri, 5 Aug 2016 17:46:49 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id E501F1DC006E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:46:37 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u75Kkk3w31457580
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 17:46:46 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u75KkjkI009455
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 17:46:46 -0300
-From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-To: kexec@lists.infradead.org
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
- Baoquan He <bhe@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Michael Ellerman <michael@ellerman.id.au>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Mark Rutland <mark.rutland@arm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>,
- Jeremy Kerr <jeremy.kerr@au1.ibm.com>,
- Samuel Mendoza-Jonas <sam@mendozajonas.com>,
- Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 3/3] kexec: extend kexec_file_load system call
-Date: Fri, 05 Aug 2016 17:46:43 -0300
-In-Reply-To: <1469579069-28472-1-git-send-email-bauerman@linux.vnet.ibm.com>
-References: <20160712014201.11456-4-takahiro.akashi@linaro.org>
- <1469579069-28472-1-git-send-email-bauerman@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <1988385.QMVjiCbb5e@hactar>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5fZh3V4jzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 07:09:48 +1000 (AEST)
+Message-ID: <1470431358.25630.249.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: york sun <york.sun@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>
+Cc: "morbidrsa@gmail.com" <morbidrsa@gmail.com>, Stuart Yoder
+ <stuart.yoder@nxp.com>, "bp@alien8.de" <bp@alien8.de>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>,  Yinghai Lu <yinghai@kernel.org>, Bjorn
+ Helgaas <bhelgaas@google.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Date: Fri, 05 Aug 2016 16:09:18 -0500
+In-Reply-To: <AM4PR0401MB1732CBF31450B03C8F5087D19A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
+References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
+ <1470351518-22404-2-git-send-email-york.sun@nxp.com>
+ <877fbvkhi3.fsf@concordia.ellerman.id.au>
+ <AM4PR0401MB1732CBF31450B03C8F5087D19A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
+ mpc85xx_edac
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,35 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 2016-08-05 at 20:29 +0000, york sun wrote:
+> On 08/04/2016 08:43 PM, Michael Ellerman wrote:
+> > 
+> > Does the driver really need to use these routines? They're meant for use
+> > early in boot, before PCI is setup.
+> > 
+> > AFAICS this is just a regular driver, so when it's probed the PCI
+> > devices should have already been scanned. In which case pci_get_device()
+> > could work couldn't it? (I see other edac drivers doing that).
+> I am trying to fix this but need some help. We are dealing with PCIe 
+> controller here. Does it have a bus number assigned at this point? If 
+> yes, how can I find it? I seem not able to find out where the 
+> platform_data is filled as well. Can someone kindly point it out to me?
 
-Am Dienstag, 26 Juli 2016, 21:24:29 schrieb Thiago Jung Bauermann:
-> Notes:
->     This is a new version of the last patch in this series which adds
->     a function where each architecture can verify if the DTB is safe
->     to load:
-> 
->     int __weak arch_kexec_verify_buffer(enum kexec_file_type type,
->                                         const void *buf,
->                                         unsigned long size)
->     {
->             return -EINVAL;
->     }
-> 
->     I will then provide an implementation in my powerpc patch series
->     which checks that the DTB only contains nodes and properties from a
->     whitelist. arch_kexec_kernel_image_load will copy these properties
->     to the device tree blob the kernel was booted with (and perform
->     other changes such as setting /chosen/bootargs, of course).
 
-Is this approach ok? If so, I'll post a patch next week adding an 
-arch_kexec_verify_buffer hook for powerpc to enforce the whitelist, and also 
-a new version of the patches implementing kexec_file_load for powerpc on top 
-of this series.
+The platform data comes from add_err_dev() in arch/powerpc/sysdev/fsl_pci.c.
 
-Eric, does this address your concerns?
-
--- 
-[]'s
-Thiago Jung Bauermann
-IBM Linux Technology Center
+-Scott
