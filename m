@@ -1,31 +1,25 @@
-Return-Path: <york.sun@nxp.com>
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20085.outbound.protection.outlook.com [40.107.2.85])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5byw5ShHzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 05:12:08 +1000 (AEST)
-From: york sun <york.sun@nxp.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>
-CC: "morbidrsa@gmail.com" <morbidrsa@gmail.com>, "oss@buserror.net"
- <oss@buserror.net>, Stuart Yoder <stuart.yoder@nxp.com>, "bp@alien8.de"
- <bp@alien8.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
- Mackerras" <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Kevin
- Hao" <haokexin@gmail.com>, Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas
- <bhelgaas@google.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
- mpc85xx_edac
-Date: Thu, 4 Aug 2016 23:39:14 +0000
-Message-ID: <AM4PR0401MB17322032D82792F305AF63A19A070@AM4PR0401MB1732.eurprd04.prod.outlook.com>
-References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
- <1470351518-22404-2-git-send-email-york.sun@nxp.com>
- <8a1cbb34-1e5a-a7ee-1fc6-e6bd5db34aa1@au1.ibm.com>
-Reply-To: york sun <york.sun@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5c4k5NNQzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 05:17:09 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Fengguang Wu <fengguang.wu@intel.com>,
+ Guenter Roeck <linux@roeck-us.net>
+Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
+ next-20160729 build failures
+Date: Fri, 05 Aug 2016 21:16:00 +0200
+Message-ID: <29606723.2uK9PgjbC3@wuerfel>
+In-Reply-To: <20160806021642.5b53b4bf@roar.ozlabs.ibm.com>
+References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
+ <2852406.SOgyPXcJfO@wuerfel> <20160806021642.5b53b4bf@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +29,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/04/2016 04:36 PM, Andrew Donnellan wrote:=0A=
-> On 05/08/16 08:58, York Sun wrote:=0A=
->> Two symbols are missing if mpc85xx_edac driver is compiled as module.=0A=
->>=0A=
->> Signed-off-by: York Sun <york.sun@nxp.com>=0A=
->=0A=
-> Good catch! One comment below.=0A=
->=0A=
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>=0A=
->=0A=
->>  /*=0A=
->>   * Reads the interrupt pin to determine if interrupt is use by card.=0A=
->> @@ -1585,6 +1586,7 @@ int early_find_capability(struct pci_controller *h=
-ose, int bus, int devfn,=0A=
->>  {=0A=
->>  	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);=
-=0A=
->>  }=0A=
->> +EXPORT_SYMBOL(early_find_capability);=0A=
->=0A=
-> It'd be nicer for this to be renamed as "pci_early_find_capability" or=0A=
-> something like that with a "namespace", I think.=0A=
->=0A=
-=0A=
-I will rename it if I respin this patch for any reason. Otherwise, I =0A=
-will send out another patch to rename it after merging.=0A=
-=0A=
-York=0A=
-=0A=
+On Saturday, August 6, 2016 2:16:42 AM CEST Nicholas Piggin wrote:
+> > 
+> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> > index 0ec807d69f18..7a3ad269fa23 100644
+> > --- a/include/asm-generic/vmlinux.lds.h
+> > +++ b/include/asm-generic/vmlinux.lds.h
+> > @@ -433,7 +433,7 @@
+> >   * during second ld run in second ld pass when generating System.map */
+> >  #define TEXT_TEXT                                                    \
+> >               ALIGN_FUNCTION();                                       \
+> > -             *(.text.hot .text .text.fixup .text.unlikely)           \
+> > +             *(.text.hot .text .text.* .text.fixup .text.unlikely)   \
+> >               *(.ref.text)                                            \
+> >       MEM_KEEP(init.text)                                             \
+> >       MEM_KEEP(exit.text)                                             \
+> > 
+> > 
+> > It also got much faster again, the link time for an allyesconfig
+> > kernel is now 18 minutes instead of 10 hours, but it's still
+> > much worse than the 2 minutes I had earlier or the four minutes
+> > with the previous patch.
+> 
+> Are you using the patches I just sent?
+
+Not yet, I was still busy with the older version, and trying to
+figure out exactly what went wrong in ld.bfd. FWIW, I first tried
+to see if the hash tables were just too small, but as it turned
+out that was not the problem. When I tried to change the default
+hash table sizes, making them bigger only made things slower.
+
+I also found the --hash-size=xxx option, which has a significant
+impact on runtime speed. Interestingly again, using sizes less
+than the default made things faster in practice. If we can
+work out the optimum size for the kernel build, that might
+shave a few minutes off the total build time.
+
+> Either way, you also need
+> to do the same for data and bss sections as you are using
+> -fdata-sections too.
+
+Right.
+
+> I've found virtually no build time regression on powerpc or x86
+> when those are taken care of properly (x86 numbers I sent are typo,
+> it's not 5m20, it's 5m02).
+
+Interesting. I wonder if it's got something to do with the
+generation of the branch trampolines on ARM, as we have a lot
+of them on an allyesconfig.
+
+Is the 5m20 the total build time for the kernel, the time for
+rebuilding after a trivial change, or the time to call 'ld.bfd'
+once?
+
+Are you using ld.bfd on x86 or ld.gold? For me ld.gold either
+works and is really fast, or it crashes, depending on the
+configuration. I also don't think it supports big-endian ARM
+(which is what allyesconfig ends up using).
+
+	Arnd
