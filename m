@@ -1,27 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mgorman@techsingularity.net>
+Received: from outbound-smtp05.blacknight.com (outbound-smtp05.blacknight.com
+ [81.17.249.38])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5MDw1mTHzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 19:38:24 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Alessio Igor Bogani <alessio.bogani@elettra.eu>, Scott Wood <oss@buserror.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, antoine.blangy@c-s.fr,
- segher@kernel.crashing.org
-Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
-In-Reply-To: <ab39b1b1-2320-31ba-3f19-11a62e3586b8@c-s.fr>
-References: <20160802080705.69A9F1A2394@localhost.localdomain>
- <1470282813.25630.242.camel@buserror.net>
- <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
- <87shujitxx.fsf@concordia.ellerman.id.au>
- <ab39b1b1-2320-31ba-3f19-11a62e3586b8@c-s.fr>
-Date: Fri, 05 Aug 2016 19:38:23 +1000
-Message-ID: <87eg63imi8.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5N1Q4Fx0zDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 20:13:30 +1000 (AEST)
+Received: from mail.blacknight.com (pemlinmail03.blacknight.ie [81.17.254.16])
+ by outbound-smtp05.blacknight.com (Postfix) with ESMTPS id EFD5A98DD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 10:06:10 +0000 (UTC)
+Date: Fri, 5 Aug 2016 11:06:09 +0100
+From: Mel Gorman <mgorman@techsingularity.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
+Message-ID: <20160805100609.GP2799@techsingularity.net>
+References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <87mvkritii.fsf@concordia.ellerman.id.au>
+ <20160805072838.GF11268@linux.vnet.ibm.com>
+ <87h9azin4g.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <87h9azin4g.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,26 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Fri, Aug 05, 2016 at 07:25:03PM +1000, Michael Ellerman wrote:
+> > One way to do that would be to walk through the different memory
+> > reserved blocks and calculate the size. But Mel feels thats an
+> > overhead (from his reply to the other thread) esp for just one use
+> > case.
+> 
+> OK. I think you're referring to this:
+> 
+>   If fadump is reserving memory and alloc_large_system_hash(HASH_EARLY)
+>   does not know about then then would an arch-specific callback for
+>   arch_reserved_kernel_pages() be more appropriate?
+>   ...
+>   
+>   That approach would limit the impact to ppc64 and would be less costly than
+>   doing a memblock walk instead of using nr_kernel_pages for everyone else.
+> 
+> That sounds more robust to me than this solution.
+> 
 
-> Le 05/08/2016 =C3=A0 08:57, Michael Ellerman a =C3=A9crit :
->> Alessio Igor Bogani <alessio.bogani@elettra.eu> writes:
->>> On 4 August 2016 at 05:53, Scott Wood <oss@buserror.net> wrote:
->>>> On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
->>>>> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
->>>>> based on copy_tofrom_user()") introduced a bug when destination
->>>>> address is odd and initial csum is not null
->>>>>
->
-> The purpose of this patch was not to address Alessio's issue, but to fix=
-=20
-> a huge issue on checksum calculation which induces breakdown of TCP=20
-> connections.
->
-> I think it is worth commiting it upstream and on impacted stable=20
-> releases, allthought we don't have yet identified the issue Alessio's has.
+It would be the fastest with the least impact but not necessarily the
+best. Ultimately that dma_reserve/memory_reserve is used for the sizing
+calculation of the large system hashes but only the e820 map and fadump
+is taken into account. That's a bit filthy even if it happens to work out ok.
 
-OK. I'll put it back into fixes on Monday if I haven't heard anything
-further.
+Conceptually it would be cleaner, if expensive, to calculate the real
+memblock reserves if HASH_EARLY and ditch the dma_reserve, memory_reserve
+and nr_kernel_pages entirely. Unfortuantely, aside from the calculation,
+there is a potential cost due to a smaller hash table that affects everyone,
+not just ppc64. However, if the hash table is meant to be sized on the
+number of available pages then it really should be based on that and not
+just a made-up number.
 
-cheers
+-- 
+Mel Gorman
+SUSE Labs
