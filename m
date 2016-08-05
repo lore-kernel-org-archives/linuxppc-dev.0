@@ -1,30 +1,24 @@
-Return-Path: <bp@alien8.de>
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s5HmC2rFhzDqYb
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:01:47 +1000 (AEST)
-Date: Fri, 5 Aug 2016 09:01:26 +0200
-From: Borislav Petkov <bp@alien8.de>
-To: york sun <york.sun@nxp.com>, Johannes Thumshirn <jthumshirn@suse.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
- "morbidrsa@gmail.com" <morbidrsa@gmail.com>,
- "oss@buserror.net" <oss@buserror.net>, Stuart Yoder <stuart.yoder@nxp.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Yinghai Lu <yinghai@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
- mpc85xx_edac
-Message-ID: <20160805070126.GE25630@nazgul.tnic>
-References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
- <1470351518-22404-2-git-send-email-york.sun@nxp.com>
- <877fbvkhi3.fsf@concordia.ellerman.id.au>
- <AM4PR0401MB17321DA6630E78AF2ED7DA269A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HtF3x3DzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:07:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>,
+ Michal Hocko <mhocko@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>
+Cc: Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
+In-Reply-To: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+Date: Fri, 05 Aug 2016 17:07:01 +1000
+Message-ID: <87mvkritii.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <AM4PR0401MB17321DA6630E78AF2ED7DA269A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 05, 2016 at 04:26:26AM +0000, york sun wrote:
-> I don't have deep knowledge of this driver. What I am trying is to 
-> separate the common DDR part and share it with ARM platforms. Along the 
-> way, I found the compiling error if build a module. If exposing these 
-> functions becomes a concern, I can live without it.
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
 
-Perhaps you or Johannes could fix this properly to use pci_get_device()
-as the rest of the EDAC drivers do, instead of exporting core PCI
-functions...
+> Fadump kernel reserves large chunks of memory even before the pages are
+> initialized. This could mean memory that corresponds to several nodes might
+> fall in memblock reserved regions.
+>
+...
+> Register the memory reserved by fadump, so that the cache sizes are
+> calculated based on the free memory (i.e Total memory - reserved
+> memory).
 
--- 
-Regards/Gruss,
-    Boris.
+The memory is reserved, with memblock_reserve(). Why is that not sufficient?
 
-ECO tip #101: Trim your mails when you reply.
---
+cheers
