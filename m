@@ -1,26 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HgZ4Ng8zDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:57:46 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>,
- Scott Wood <oss@buserror.net>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s5Hhh1KDKzDrFq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:58:44 +1000 (AEST)
+Date: Fri, 5 Aug 2016 08:58:22 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: york sun <york.sun@nxp.com>
+Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>,
+ "morbidrsa@gmail.com" <morbidrsa@gmail.com>,
+ "oss@buserror.net" <oss@buserror.net>, Stuart Yoder <stuart.yoder@nxp.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, antoine.blangy@c-s.fr,
- segher@kernel.crashing.org
-Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
-In-Reply-To: <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
-References: <20160802080705.69A9F1A2394@localhost.localdomain>
- <1470282813.25630.242.camel@buserror.net>
- <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
-Date: Fri, 05 Aug 2016 16:57:46 +1000
-Message-ID: <87shujitxx.fsf@concordia.ellerman.id.au>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Kevin Hao <haokexin@gmail.com>, Yinghai Lu <yinghai@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
+ mpc85xx_edac
+Message-ID: <20160805065822.GD25630@nazgul.tnic>
+References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
+ <1470351518-22404-2-git-send-email-york.sun@nxp.com>
+ <8a1cbb34-1e5a-a7ee-1fc6-e6bd5db34aa1@au1.ibm.com>
+ <AM4PR0401MB17322032D82792F305AF63A19A070@AM4PR0401MB1732.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <AM4PR0401MB17322032D82792F305AF63A19A070@AM4PR0401MB1732.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +34,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alessio Igor Bogani <alessio.bogani@elettra.eu> writes:
-> On 4 August 2016 at 05:53, Scott Wood <oss@buserror.net> wrote:
->> On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
->>> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
->>> based on copy_tofrom_user()") introduced a bug when destination
->>> address is odd and initial csum is not null
->>>
->>> In that (rare) case the initial csum value has to be rotated one byte
->>> as well as the resulting value is
->>>
->>> This patch also fixes related comments
->>>
->>> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
->>> based on copy_tofrom_user()")
->>> Cc: stable@vger.kernel.org
->>>
->>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>> ---
->>>  v2: updated comments as suggested by Segher
->>>
->>>  arch/powerpc/lib/checksum_32.S | 7 ++++---
->>>  1 file changed, 4 insertions(+), 3 deletions(-)
->>
->> Alessio, can you confirm whether this fixes the problem you reported?
->
-> No unfortunately.
+On Thu, Aug 04, 2016 at 11:39:14PM +0000, york sun wrote:
+> I will rename it if I respin this patch for any reason. Otherwise, I 
+> will send out another patch to rename it after merging.
 
-Thanks for testing.
+Feel free to send an updated one as a reply to this thread.
 
-I've dropped the patch for now, send me a new one that works.
+-- 
+Regards/Gruss,
+    Boris.
 
-cheers
+ECO tip #101: Trim your mails when you reply.
+--
