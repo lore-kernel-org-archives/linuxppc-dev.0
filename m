@@ -3,15 +3,16 @@ Received: from mail2-relais-roc.national.inria.fr
  (mail2-relais-roc.national.inria.fr [192.134.164.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5LjW4zHvzDqQ1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 19:14:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5LjY44RgzDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 19:14:41 +1000 (AEST)
 From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- qiang.zhao@nxp.com, davem@davemloft.net
-Subject: [PATCH 01/11] fsl/qe: use of_property_read_bool
-Date: Fri,  5 Aug 2016 10:56:41 +0200
-Message-Id: <1470387411-15879-2-git-send-email-Julia.Lawall@lip6.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 09/11] powerpc/mpic: use of_property_read_bool
+Date: Fri,  5 Aug 2016 10:56:49 +0200
+Message-Id: <1470387411-15879-10-git-send-email-Julia.Lawall@lip6.fr>
 In-Reply-To: <1470387411-15879-1-git-send-email-Julia.Lawall@lip6.fr>
 References: <1470387411-15879-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,19 +42,19 @@ statement S2,S1;
 Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
 ---
- drivers/soc/fsl/qe/qe_tdm.c |    2 +-
+ arch/powerpc/sysdev/mpic.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
-index 5e48b14..0ac98e6 100644
---- a/drivers/soc/fsl/qe/qe_tdm.c
-+++ b/drivers/soc/fsl/qe/qe_tdm.c
-@@ -99,7 +99,7 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
- 	utdm->tdm_port = val;
- 	ut_info->uf_info.tdm_num = utdm->tdm_port;
- 
--	if (of_get_property(np, "fsl,tdm-internal-loopback", NULL))
-+	if (of_property_read_bool(np, "fsl,tdm-internal-loopback"))
- 		utdm->tdm_mode = TDM_INTERNAL_LOOPBACK;
- 	else
- 		utdm->tdm_mode = TDM_NORMAL;
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 7de45b2..26d9c3f 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1249,7 +1249,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	/* Pick the physical address from the device tree if unspecified */
+ 	if (!phys_addr) {
+ 		/* Check if it is DCR-based */
+-		if (of_get_property(node, "dcr-reg", NULL)) {
++		if (of_property_read_bool(node, "dcr-reg")) {
+ 			flags |= MPIC_USES_DCR;
+ 		} else {
+ 			struct resource r;
