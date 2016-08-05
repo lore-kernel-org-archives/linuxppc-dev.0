@@ -1,33 +1,16 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5Gjk4xkBzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:14:34 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u756E6JK026492
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 02:14:32 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkahy7nn-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 02:14:32 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 5 Aug 2016 00:14:31 -0600
-Date: Thu, 4 Aug 2016 23:14:26 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/pseries: Dynamically increase RMA size
-References: <20160805061041.GA31857@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160805061041.GA31857@us.ibm.com>
-Message-Id: <20160805061426.GB31857@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5HJG2LL0zDqQ1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:41:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: gpiccoli@linux.vnet.ibm.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, chzigotzky@xenosoft.de
+Subject: [PATCH] powerpc/pci: Only do fixed PHB numbering on powernv
+Date: Fri,  5 Aug 2016 16:40:56 +1000
+Message-Id: <1470379256-24266-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,169 +20,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The recent commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number
+based on device-tree properties"), added code to read a 64-bit property
+from the device tree, and if not found read a 32-bit property (reg).
 
->From ddce2a5f439111f08969d66ccc0c7b4d9196b69d Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Thu, 4 Aug 2016 23:13:37 -0400
-Subject: [PATCH 2/2] powerpc/pseries: Dynamically increase RMA size
+There was a bug in the 32-bit case, on big endian machines, due to the
+use of the 64-bit value to read the 32-bit property. The cast of &prop
+means we end up writing to the high 32-bit of prop, leaving the low
+32-bits containing whatever junk was on the stack.
 
-When booting a very large system with a large initrd we run out of space
-for the flattened device tree (FDT). To fix this we must increase the
-space allocated for the RMA region.
+If that junk value was non-zero, and < MAX_PHBS, we would end up using
+it as the PHB id.
 
-The RMA size is hard-coded in the 'ibm_architecture_vec[]' and increasing
-the size there will apply to all systems, large and small, so we want to
-increase the RMA region only when necessary.
+This exposed a second problem, which is that Xorg can't cope with a
+domain number > 256.
 
-When we run out of room for the FDT, set a new OF property, 'ibm,new-rma-size'
-to the new RMA size (512MB) and issue a client-architecture-support (CAS)
-call to the firmware. This will initiate a system reboot. Upon reboot we
-notice the new property and update the RMA size accordingly.
+So for now drop the fallback to reg, and only use "ibm,opal-phbid" for
+PHB numbering.
 
-The CAS call we issue would end up being a second CAS call in the boot
-sequence. Use a static variable, 'fixup_nr_cores_done', to detect this
-second CAS and avoid fixing up nr_cores or hitting the WARNING again.
-
-Fix suggested by Michael Ellerman.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom_init.c | 86 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 85 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/pci-common.c | 24 +++++++++---------------
+ 1 file changed, 9 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f612a99..407cbb9 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -679,6 +679,7 @@ unsigned char ibm_architecture_vec[] = {
- 	W(0xffffffff),			/* virt_base */
- 	W(0xffffffff),			/* virt_size */
- 	W(0xffffffff),			/* load_base */
-+#define IBM_ARCH_VEC_MIN_RMA_OFFSET	108
- 	W(256),				/* 256MB min RMA */
- 	W(0xffffffff),			/* full client load */
- 	0,				/* min RMA percentage of total RAM */
-@@ -867,6 +868,10 @@ static void fixup_nr_cores(void)
+
+This is my bad. Guilherme limited the reg case to pseries only, but I made it
+generic. I tested it on G5, Cell etc. which all booted - but that's not really
+a good enough test.
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index f93942b4b6a6..f9c2ffaa1884 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -77,29 +77,23 @@ EXPORT_SYMBOL(get_pci_dma_ops);
+  */
+ static int get_phb_number(struct device_node *dn)
  {
- 	u32 cores;
- 	unsigned char *ptcores;
-+	static bool fixup_nr_cores_done = false;
-+
-+	if (fixup_nr_cores_done)
-+		return;
+-	int ret, phb_id = -1;
++	int ret, phb_id;
+ 	u64 prop;
  
- 	/* We need to tell the FW about the number of cores we support.
- 	 *
-@@ -898,6 +903,41 @@ static void fixup_nr_cores(void)
- 		ptcores[1] = (cores >> 16) & 0xff;
- 		ptcores[2] = (cores >> 8) & 0xff;
- 		ptcores[3] = cores & 0xff;
-+		fixup_nr_cores_done = true;
+ 	/*
+-	 * Try fixed PHB numbering first, by checking archs and reading
+-	 * the respective device-tree properties. Firstly, try powernv by
+-	 * reading "ibm,opal-phbid", only present in OPAL environment.
++	 * On powernv machines we should have the "ibm,opal-phbid" property, if
++	 * so use that so that PHB numbers are predictable.
+ 	 */
+ 	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
+-	if (ret)
+-		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
+-
+-	if (!ret)
++	if (ret == 0) {
+ 		phb_id = (int)(prop & (MAX_PHBS - 1));
+ 
+-	/* We need to be sure to not use the same PHB number twice. */
+-	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
+-		return phb_id;
++		/* Make sure never to use the same PHB number twice. */
++		if (!test_and_set_bit(phb_id, phb_bitmap))
++			return phb_id;
 +	}
-+}
-+
-+static void __init fixup_rma_size(void)
-+{
-+	int rc;
-+	u64 size;
-+	unsigned char *min_rmap;
-+	phandle optnode;
-+	char str[64];
-+
-+	optnode = call_prom("finddevice", 1, 1, ADDR("/options"));
-+	if (!PHANDLE_VALID(optnode))
-+		prom_panic("Cannot find /options");
-+
-+	/*
-+	 * If a prior boot specified a new RMA size, use that size in
-+	 * ibm_architecture_vec[]. See also increase_rma_size().
-+	 */
-+	size = 0ULL;
-+	memset(str, 0, sizeof(str));
-+	rc = prom_getprop(optnode, "ibm,new-rma-size", &str, sizeof(str));
-+	if (rc <= 0)
-+		return;
-+
-+	size = prom_strtoul(str, NULL);
-+	min_rmap = &ibm_architecture_vec[IBM_ARCH_VEC_MIN_RMA_OFFSET];
-+
-+	if (size) {
-+		prom_printf("Using RMA size %lu from ibm,new-rma-size.\n", size);
-+		min_rmap[0] = (size >> 24) & 0xff;
-+		min_rmap[1] = (size >> 16) & 0xff;
-+		min_rmap[2] = (size >> 8) & 0xff;
-+		min_rmap[3] = size & 0xff;
- 	}
- }
  
-@@ -911,6 +951,8 @@ static void __init prom_send_capabilities(void)
- 
- 		fixup_nr_cores();
- 
-+		fixup_rma_size();
-+
- 		/* try calling the ibm,client-architecture-support method */
- 		prom_printf("Calling ibm,client-architecture-support...");
- 		if (call_prom_ret("call-method", 3, 2, &ret,
-@@ -946,6 +988,46 @@ static void __init prom_send_capabilities(void)
- 	}
- #endif /* __BIG_ENDIAN__ */
- }
-+
-+static void __init increase_rma_size(void)
-+{
-+	int rc;
-+	u64 size;
-+	char str[64];
-+	phandle optnode;
-+
-+	optnode = call_prom("finddevice", 1, 1, ADDR("/options"));
-+	if (!PHANDLE_VALID(optnode))
-+		prom_panic("Cannot find /options");
-+
-+	/*
-+	 * If we already increased the RMA size, return.
-+	 */
-+	size = 0ULL;
-+	memset(str, 0, sizeof(str));
-+	rc = prom_getprop(optnode, "ibm,new-rma-size", &str, sizeof(str));
-+
-+	size = prom_strtoul(str, NULL);
-+	if (size == 512ULL) {
-+		prom_printf("RMA size already at %lu.\n", size);
-+		return;
-+	}
-+	/*
-+	 * Otherwise, set the ibm,new-rma-size property and initiate a CAS
-+	 * reboot so the RMA size can take effect. See also init_rma_size().
-+	 */
-+	memset(str, 0, 4);
-+	memcpy(str, "512", 3);
-+	prom_printf("Setting ibm,new-rma-size property to %s\n", str);
-+	rc = prom_setprop(optnode, "/options", "ibm,new-rma-size", &str,
-+					strlen(str)+1);
-+
-+	/* Force a reboot. Will work only if ibm,fw-override-cas==false */
-+	prom_send_capabilities();
-+
-+	prom_printf("No CAS initiated reboot? Try setting ibm,fw-override-cas to 'false' in Open Firmware\n");
-+}
-+
- #endif /* #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
- 
- /*
-@@ -2027,9 +2109,11 @@ static void __init *make_room(unsigned long *mem_start, unsigned long *mem_end,
- 		room = alloc_top - alloc_bottom;
- 		if (room > DEVTREE_CHUNK_SIZE)
- 			room = DEVTREE_CHUNK_SIZE;
--		if (room < PAGE_SIZE)
-+		if (room < PAGE_SIZE) {
-+			increase_rma_size();
- 			prom_panic("No memory for flatten_device_tree "
- 				   "(no room)\n");
-+		}
- 		chunk = alloc_up(room, 0);
- 		if (chunk == 0)
- 			prom_panic("No memory for flatten_device_tree "
+-	/*
+-	 * If not pseries nor powernv, or if fixed PHB numbering tried to add
+-	 * the same PHB number twice, then fallback to dynamic PHB numbering.
+-	 */
++	/* If fixed PHB numbering failed, fallback to dynamic PHB numbering. */
+ 	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
+ 	BUG_ON(phb_id >= MAX_PHBS);
+ 	set_bit(phb_id, phb_bitmap);
 -- 
-1.8.3.1
+2.7.4
