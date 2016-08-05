@@ -1,53 +1,27 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5JH22W1GzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:25:02 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u757JZSt012031
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 03:25:00 -0400
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [125.16.236.2])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24kkakhg64-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 03:24:59 -0400
-Received: from localhost
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Fri, 5 Aug 2016 12:54:56 +0530
-Received: from d28relay07.in.ibm.com (d28relay07.in.ibm.com [9.184.220.158])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id DDDCDE005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 12:59:15 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay07.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u757OrZP36372720
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 12:54:53 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u757Opxi028688
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 12:54:53 +0530
-Date: Fri, 5 Aug 2016 12:54:50 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Vlastimil Babka <vbabka@suse.cz>
-Cc: linux-mm@kvack.org, Mel Gorman <mgorman@techsingularity.net>,
- Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH V2 1/2] mm/page_alloc: Replace set_dma_reserve to
- set_memory_reserve
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <1470330729-6273-1-git-send-email-srikar@linux.vnet.ibm.com>
- <09d5b30e-5956-bf64-5f4c-ea5425d7f7a5@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5JK04FvmzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 17:26:44 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/32: fix csum_partial_copy_generic()
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Alessio Igor Bogani <alessio.bogani@elettra.eu>,
+ Scott Wood <oss@buserror.net>
+References: <20160802080705.69A9F1A2394@localhost.localdomain>
+ <1470282813.25630.242.camel@buserror.net>
+ <CAPk1OjHjVKOhh_WfnYnkb+1abyBzzHkOO_H2rFx3KMhe0yc+0Q@mail.gmail.com>
+ <87shujitxx.fsf@concordia.ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ antoine.blangy@c-s.fr, segher@kernel.crashing.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <ab39b1b1-2320-31ba-3f19-11a62e3586b8@c-s.fr>
+Date: Fri, 5 Aug 2016 09:26:41 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <09d5b30e-5956-bf64-5f4c-ea5425d7f7a5@suse.cz>
-Message-Id: <20160805072450.GE11268@linux.vnet.ibm.com>
+In-Reply-To: <87shujitxx.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,77 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Vlastimil Babka <vbabka@suse.cz> [2016-08-05 08:45:03]:
-
-> >@@ -5493,10 +5493,10 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
-> > 		}
-> >
-> > 		/* Account for reserved pages */
-> >-		if (j == 0 && freesize > dma_reserve) {
-> >-			freesize -= dma_reserve;
-> >+		if (j == 0 && freesize > nr_memory_reserve) {
-> 
-> Will this really work (together with patch 2) as intended?
-> This j == 0 means that we are doing this only for the first zone, which is
-> ZONE_DMA (or ZONE_DMA32) on node 0 on many systems. I.e. I don't think it's
-> really true that "dma_reserve has nothing to do with DMA or ZONE_DMA".
-> 
-> This zone will have limited amount of memory, so the "freesize >
-> nr_memory_reserve" will easily be false once you set this to many gigabytes,
-> so in fact nothing will get subtracted.
-> 
-> On the other hand if the kernel has both CONFIG_ZONE_DMA and
-> CONFIG_ZONE_DMA32 disabled, then j == 0 will be true for ZONE_NORMAL. This
-> zone might be present on multiple nodes (unless they are configured as
-> movable) and then the value intended to be global will be subtracted from
-> several nodes.
-> 
-> I don't know what's the exact ppc64 situation here, perhaps there are indeed
-> no DMA/DMA32 zones, and the fadump kernel only uses one node, so it works in
-> the end, but it doesn't seem much robust to me?
-> 
-
-At the page initialization time, powerpc seems to have just one zone
-spread across the 16 nodes.
-
->From the dmesg.
-
-[    0.000000] Memory hole size: 0MB
-[    0.000000] Zone ranges:
-[    0.000000]   DMA      [mem 0x0000000000000000-0x00001f5c8fffffff]
-[    0.000000]   DMA32    empty
-[    0.000000]   Normal   empty
-[    0.000000] Movable zone start for each node
-[    0.000000] Early memory node ranges
-[    0.000000]   node   0: [mem 0x0000000000000000-0x000001fb4fffffff]
-[    0.000000]   node   1: [mem 0x000001fb50000000-0x000003fa8fffffff]
-[    0.000000]   node   2: [mem 0x000003fa90000000-0x000005f9cfffffff]
-[    0.000000]   node   3: [mem 0x000005f9d0000000-0x000007f8efffffff]
-[    0.000000]   node   4: [mem 0x000007f8f0000000-0x000009f81fffffff]
-[    0.000000]   node   5: [mem 0x000009f820000000-0x00000bf77fffffff]
-[    0.000000]   node   6: [mem 0x00000bf780000000-0x00000df6dfffffff]
-[    0.000000]   node   7: [mem 0x00000df6e0000000-0x00000ff63fffffff]
-[    0.000000]   node   8: [mem 0x00000ff640000000-0x000011f58fffffff]
-[    0.000000]   node   9: [mem 0x000011f590000000-0x000013644fffffff]
-[    0.000000]   node  10: [mem 0x0000136450000000-0x00001563afffffff]
-[    0.000000]   node  11: [mem 0x00001563b0000000-0x000017630fffffff]
-[    0.000000]   node  12: [mem 0x0000176310000000-0x000019625fffffff]
-[    0.000000]   node  13: [mem 0x0000196260000000-0x00001b5dcfffffff]
-[    0.000000]   node  14: [mem 0x00001b5dd0000000-0x00001d5d2fffffff]
-[    0.000000]   node  15: [mem 0x00001d5d30000000-0x00001f5c8fffffff]
 
 
-The config has the below.
+Le 05/08/2016 à 08:57, Michael Ellerman a écrit :
+> Alessio Igor Bogani <alessio.bogani@elettra.eu> writes:
+>> On 4 August 2016 at 05:53, Scott Wood <oss@buserror.net> wrote:
+>>> On Tue, 2016-08-02 at 10:07 +0200, Christophe Leroy wrote:
+>>>> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+>>>> based on copy_tofrom_user()") introduced a bug when destination
+>>>> address is odd and initial csum is not null
+>>>>
+>>>> In that (rare) case the initial csum value has to be rotated one byte
+>>>> as well as the resulting value is
+>>>>
+>>>> This patch also fixes related comments
+>>>>
+>>>> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
+>>>> based on copy_tofrom_user()")
+>>>> Cc: stable@vger.kernel.org
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> ---
+>>>>   v2: updated comments as suggested by Segher
+>>>>
+>>>>   arch/powerpc/lib/checksum_32.S | 7 ++++---
+>>>>   1 file changed, 4 insertions(+), 3 deletions(-)
+>>> Alessio, can you confirm whether this fixes the problem you reported?
+>> No unfortunately.
+> Thanks for testing.
+>
+> I've dropped the patch for now, send me a new one that works.
+>
+>
 
-CONFIG_ZONE_DMA32=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_FORCE_MAX_ZONEORDER=9
-CONFIG_ZONE_DMA=y
+The purpose of this patch was not to address Alessio's issue, but to fix 
+a huge issue on checksum calculation which induces breakdown of TCP 
+connections.
 
-I tried forcing CONFIG_ZONE_DMA to be not set, but make always pick it.
->From source arch/powerpc/Kconfig marks CONFIG_ZONE_DMA as "default y"
+I think it is worth commiting it upstream and on impacted stable 
+releases, allthought we don't have yet identified the issue Alessio's has.
 
--- 
-Thanks and Regards
-Srikar Dronamraju
+Christophe
