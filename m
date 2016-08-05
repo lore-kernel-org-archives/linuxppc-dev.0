@@ -1,51 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5P2s5trtzDqV1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 20:59:49 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, luigi burdo <intermediadc@hotmail.com>, Darren
- Stevens <darren@stevens-zone.net>, Julian Margetson <runaway@candw.ms>,
- Steven Jeffery <sajeffer@gmail.com>, "R.T.Dickinson" <rtd@a-eon.com>,
- "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat Wall <pjwall@mac.com>, Pat Wall
- <pjwall@me.com>, "contact\@a-eon.com" <contact@a-eon.com>,
- "matthew\@a-eon.biz" <matthew@a-eon.biz>, Kevin Saunders
- <kfs1971@gmail.com>, Lyle Hazelwood <lylehaze@gmail.com>, EntwicklerX
- <mail@entwickler-x.de>, "xray\@relec.ch" <xray@relec.ch>, Steve-David
- Marguet <steve@esdeem.ch>, George Sokianos <walkero@gmail.com>, Sinan
- =?utf-8?Q?G=C3=BCrkan?= <sinan.amigaone@gmail.com>, Mike
- <michael.heltne@gmail.com>, Thomas Ferreira <macsociety@me.com>, Christian
- Zigotzky <info@xenosoft.de>, "pjs\@pjsa.net" <pjs@pjsa.net>, Ben Cato
- Malkenes <ben.cato@gmail.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [pasemi] Radeon HD graphics card not recognised after the
- powerpc-4.8-1 commit
-In-Reply-To: <ec7d4fbb-3823-c4fc-0152-4f5cd6dd9c88@xenosoft.de>
-References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
- <816DC2B4-5B33-4C5E-A09A-F5BF7C7BF1FD@xenosoft.de>
- <aed83bc1-e574-1a9f-de58-480c9164865c@xenosoft.de>
- <2d94a278-d1d8-b484-e9ca-aedf18051e1a@xenosoft.de>
- <a84c2b93-4dac-9148-9ae2-0824491d1f50@xenosoft.de>
- <ae855392-570c-e125-b71f-2d5bf0c33eef@xenosoft.de>
- <d869fc32-ba80-529e-06dd-481ecf533642@xenosoft.de>
- <8b0682d3-866a-31dd-f01b-3510f84307dc@xenosoft.de>
- <2847029a-e3a4-8099-b72f-89d5731baaed@xenosoft.de>
- <4e97a4dd-3fe0-84aa-47f0-29d1544c9f8c@xenosoft.de>
- <72eed836-767c-402a-576a-8049db34d281@xenosoft.de>
- <8878883b-bd51-b7c9-ee5b-927e481e5d30@xenosoft.de>
- <8a3764d2-7fc1-1967-f557-146a3df16894@xenosoft.de>
- <1d98af3c-f585-967b-1413-58d34fad20af@xenosoft.de>
- <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
- <3fd5ecda-7e1f-52ec-6f11-ed603d2dcd76@xenosoft.de>
- <1470221638.12584.82.camel@kernel.crashing.org>
- <57A34254.6090702@xenosoft.de> <871t23k91w.fsf@concordia.ellerman.id.au>
- <ec7d4fbb-3823-c4fc-0152-4f5cd6dd9c88@xenosoft.de >
-Date: Fri, 05 Aug 2016 20:59:48 +1000
-Message-ID: <87r3a3cwgr.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5P4H34KzzDqcy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 21:01:03 +1000 (AEST)
+Received: by mail-pa0-x241.google.com with SMTP id ez1so19148356pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 04:01:03 -0700 (PDT)
+Date: Fri, 5 Aug 2016 21:00:52 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Anton Blanchard <anton@ozlabs.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ agraf@suse.de, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Align hot loops of memset() and
+ backwards_memcpy()
+Message-ID: <20160805210052.0f9a8c43@roar.ozlabs.ibm.com>
+In-Reply-To: <1470293602-11121-1-git-send-email-anton@ozlabs.org>
+References: <1470293602-11121-1-git-send-email-anton@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,37 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+On Thu,  4 Aug 2016 16:53:22 +1000
+Anton Blanchard <anton@ozlabs.org> wrote:
 
-> Hi Michael,
->
-> Thanks a million for your patch! :-)
+> From: Anton Blanchard <anton@samba.org>
+> 
+> Align the hot loops in our assembly implementation of memset()
+> and backwards_memcpy().
+> 
+> backwards_memcpy() is called from tcp_v4_rcv(), so we might
+> want to optimise this a little more.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/powerpc/lib/mem_64.S | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
+> index 43435c6..eda7a96 100644
+> --- a/arch/powerpc/lib/mem_64.S
+> +++ b/arch/powerpc/lib/mem_64.S
+> @@ -37,6 +37,7 @@ _GLOBAL(memset)
+>  	clrldi	r5,r5,58
+>  	mtctr	r0
+>  	beq	5f
+> +	.balign 16
+>  4:	std	r4,0(r6)
+>  	std	r4,8(r6)
+>  	std	r4,16(r6)
 
-No worries :)
+Hmm. If we execute this loop once, we'll only fetch additional nops. Twice, and
+we make up for them by not fetching unused instructions. More than twice and we
+may start winning.
 
-> @All
-> Keep your fingers crossed!
->
-> 1. git clone 
-> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git a
-
-Normally that would be:
-
-$ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux
-
-And this:
-
-> 2. patch -p0 < powerpc-pci-Only-do-fixed-PHB-numbering-on-powernv.patch
-
-Would be:
-
-$ cd linux
-$ patch -p1 < powerpc-pci-Only-do-fixed-PHB-numbering-on-powernv.patch
-
-> 3. patch -p0 < nemo_4.8-3.patch
->
-> 4. yes "" | make oldconfig
-
-And that can be done with 'make olddefconfig'.
-
-cheers
+For large sizes it probably helps, but I'd like to see what sizes memset sees.
