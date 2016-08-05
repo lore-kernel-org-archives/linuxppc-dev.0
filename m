@@ -1,29 +1,35 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p04-ob.smtp.rzone.de (mo6-p04-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5304::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x230.google.com (mail-pf0-x230.google.com
+ [IPv6:2607:f8b0:400e:c00::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5VpQ3nsXzDqV6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 01:19:26 +1000 (AEST)
-Subject: [pasemi] Problem with the PA Semi PWRficient Gigabit Ethernet
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- luigi burdo <intermediadc@hotmail.com>,
- Darren Stevens <darren@stevens-zone.net>, Julian Margetson
- <runaway@candw.ms>, Steven Jeffery <sajeffer@gmail.com>,
- "R.T.Dickinson" <rtd@a-eon.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- Pat Wall <pjwall@mac.com>, Pat Wall <pjwall@me.com>,
- "contact@a-eon.com" <contact@a-eon.com>,
- "matthew@a-eon.biz" <matthew@a-eon.biz>, Kevin Saunders <kfs1971@gmail.com>,
- Lyle Hazelwood <lylehaze@gmail.com>, EntwicklerX <mail@entwickler-x.de>,
- "xray@relec.ch" <xray@relec.ch>, Steve-David Marguet <steve@esdeem.ch>,
- George Sokianos <walkero@gmail.com>, =?UTF-8?Q?Sinan_G=c3=bcrkan?=
- <sinan.amigaone@gmail.com>, Mike <michael.heltne@gmail.com>,
- Thomas Ferreira <macsociety@me.com>, Christian Zigotzky <info@xenosoft.de>,
- "pjs@pjsa.net" <pjs@pjsa.net>, Ben Cato Malkenes <ben.cato@gmail.com>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5Vx61XhdzDqCZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 01:25:14 +1000 (AEST)
+Received: by mail-pf0-x230.google.com with SMTP id x72so98279558pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 08:25:13 -0700 (PDT)
+Date: Sat, 6 Aug 2016 01:24:54 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, luigi burdo <intermediadc@hotmail.com>, Darren
+ Stevens <darren@stevens-zone.net>, Julian Margetson <runaway@candw.ms>,
+ Steven Jeffery <sajeffer@gmail.com>, "R.T.Dickinson" <rtd@a-eon.com>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, Pat Wall <pjwall@mac.com>, Pat Wall
+ <pjwall@me.com>, "contact@a-eon.com" <contact@a-eon.com>,
+ "matthew@a-eon.biz" <matthew@a-eon.biz>, Kevin Saunders
+ <kfs1971@gmail.com>, Lyle Hazelwood <lylehaze@gmail.com>, EntwicklerX
+ <mail@entwickler-x.de>, "xray@relec.ch" <xray@relec.ch>, Steve-David
+ Marguet <steve@esdeem.ch>, George Sokianos <walkero@gmail.com>, Sinan
+ =?UTF-8?B?R8O8cmthbg==?= <sinan.amigaone@gmail.com>, Mike
+ <michael.heltne@gmail.com>, Thomas Ferreira <macsociety@me.com>, Christian
+ Zigotzky <info@xenosoft.de>, "pjs@pjsa.net" <pjs@pjsa.net>, Ben Cato
+ Malkenes <ben.cato@gmail.com>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [pasemi] Internal CompactFlash (CF) card device not recognised
+ after the powerpc-4.8-1 merge
+Message-ID: <20160806012454.0c9a26f9@roar.ozlabs.ibm.com>
+In-Reply-To: <4168bd4c-f895-fd08-0d1a-ca4c999ab6b2@xenosoft.de>
 References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
- <a84c2b93-4dac-9148-9ae2-0824491d1f50@xenosoft.de>
  <ae855392-570c-e125-b71f-2d5bf0c33eef@xenosoft.de>
  <d869fc32-ba80-529e-06dd-481ecf533642@xenosoft.de>
  <8b0682d3-866a-31dd-f01b-3510f84307dc@xenosoft.de>
@@ -36,17 +42,14 @@ References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
  <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
  <3fd5ecda-7e1f-52ec-6f11-ed603d2dcd76@xenosoft.de>
  <1470221638.12584.82.camel@kernel.crashing.org>
- <57A34254.6090702@xenosoft.de> <871t23k91w.fsf@concordia.ellerman.id.au>
- <ec7d4fbb-3823-c4fc-0152-4f5cd6dd9c88@xenosoft.de >
+ <57A34254.6090702@xenosoft.de>
+ <871t23k91w.fsf@concordia.ellerman.id.au>
+ <ec7d4fbb-3823-c4fc-0152-4f5cd6dd9c88@xenosoft.de>
  <87r3a3cwgr.fsf@concordia.ellerman.id.au>
  <030efdf4-7b13-864e-7202-0630a604bcdc@xenosoft.de>
  <4168bd4c-f895-fd08-0d1a-ca4c999ab6b2@xenosoft.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <ce1902d2-e4d3-8c63-bb10-dde9a8efdb6a@xenosoft.de>
-Date: Fri, 5 Aug 2016 17:18:11 +0200
 MIME-Version: 1.0
-In-Reply-To: <4168bd4c-f895-fd08-0d1a-ca4c999ab6b2@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,18 +59,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+On Fri, 5 Aug 2016 16:38:17 +0200
+Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
 
-It seems there is a problem with the PA Semi PWRficient Gigabit 
-Ethernet. It tries very often to connect to the network but there isn't 
-a network cable plugged in. There are two new commits about the PA Semi 
-PWRficient Gigabit Ethernet in the Git source code.
+> Hi All,
 
-- 
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=6cf285de0231e53057726aea1fb87ab772765cb7
-- 
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=80721e7fa68f914a21b2685a01399b3aa80ac116
 
-Cheers,
+Hi Christian,
 
-Christian
+Firstly, thanks for the report. As a suggestion, it can be
+better to reduce the CC list unless you have found a specific
+commit that causes the problem. powerpc developers read this
+list so you can send initial bug reports there.
+
+Have you been able to bisect the exact commit which caused the
+regression? If it's possible, that is the fastest way to get a
+response to your report.
+
+As for your driver support, it would indeed be a good idea to
+get it supported in the upstream kernel. You should post a
+new mail about that. Take a look at these 3 commits:
+
+61f7162117d4767875825abf2f6ed1eeebbcceed
+9cd55be4d22376893d2818ce3c0e5706a3d74121
+ca99140a63b7326ee9a38f64c326317f2c63b594
+
+Your patch comes from code based on the second one. The last
+commit removed it, and says that it is not the best way to
+implement it. You could cc this list and some of the people
+involved with those commits and ask ask for advice about
+getting your driver supported.
+
+Thanks,
+Nick
+
+
+> I have found some information about the electra IDE CF card device: 
+> http://linuxppc-dev.ozlabs.narkive.com/kxQRFqGe/patch-pasemi-electra-ide-pata-platform-glue
+> 
+> I checked the kernel config and the merge but without any success.
+> 
+> Cheers,
+> 
+> Christian
+> 
+> On 05 August 2016 at 1:41 PM, Christian Zigotzky wrote:
+> > Hi All,
+> >
+> > The internal PASEMI CompactFlash (CF) card device doesn't work anymore 
+> > after the powerpc-4.8-1 merge. That means the code for the internal CF 
+> > card device in the Nemo patch doesn't work after the first PowerPC 
+> > merge. The CompactFlash (CF) card slot is wired to the CPU local bus. 
+> > It is typically used to hold the Linux kernel. I know it isn't well to 
+> > use an own patch for that but I think it is a good time to integrate 
+> > the PASEMI internal CompactFlash (CF) card device to the official 
+> > kernel. What do you think? I am not a programmer so I can't integrate 
+> > the source code for the internal CF card device. But maybe you can 
+> > take the patch and integrate it.
+> >
+> > We use the following patch for the kernel 4.7:
