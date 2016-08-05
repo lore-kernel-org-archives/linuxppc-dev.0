@@ -1,31 +1,31 @@
-Return-Path: <york.sun@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0050.outbound.protection.outlook.com [104.47.2.50])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5GPv7418zDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:00:51 +1000 (AEST)
-From: york sun <york.sun@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, "linux-edac@vger.kernel.org"
- <linux-edac@vger.kernel.org>
-CC: "morbidrsa@gmail.com" <morbidrsa@gmail.com>, "oss@buserror.net"
- <oss@buserror.net>, Stuart Yoder <stuart.yoder@nxp.com>, "bp@alien8.de"
- <bp@alien8.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Paul
- Mackerras" <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>, "Andrew
- Donnellan" <andrew.donnellan@au1.ibm.com>, Yinghai Lu <yinghai@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
- mpc85xx_edac
-Date: Fri, 5 Aug 2016 04:26:26 +0000
-Message-ID: <AM4PR0401MB17321DA6630E78AF2ED7DA269A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
-References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
- <1470351518-22404-2-git-send-email-york.sun@nxp.com>
- <877fbvkhi3.fsf@concordia.ellerman.id.au>
-Reply-To: york sun <york.sun@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5GdS5CKgzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2016 16:10:52 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7564IoD066044
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Aug 2016 02:10:50 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24kkam710q-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Aug 2016 02:10:49 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 5 Aug 2016 00:10:49 -0600
+Date: Thu, 4 Aug 2016 23:10:41 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/pseries: Use a helper to fixup nr_cores
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20160805061041.GA31857@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,57 +35,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/04/2016 08:43 PM, Michael Ellerman wrote:=0A=
-> York Sun <york.sun@nxp.com> writes:=0A=
->=0A=
->> Two symbols are missing if mpc85xx_edac driver is compiled as module.=0A=
->>=0A=
->> Signed-off-by: York Sun <york.sun@nxp.com>=0A=
->>=0A=
->> ---=0A=
->> Change log=0A=
->>   v3: Change subject tag=0A=
->>   v2: no change=0A=
->>=0A=
->>  arch/powerpc/kernel/pci-common.c | 2 ++=0A=
->>  1 file changed, 2 insertions(+)=0A=
->>=0A=
->> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-=
-common.c=0A=
->> index 0f7a60f..86bc484 100644=0A=
->> --- a/arch/powerpc/kernel/pci-common.c=0A=
->> +++ b/arch/powerpc/kernel/pci-common.c=0A=
->> @@ -226,6 +226,7 @@ struct pci_controller* pci_find_hose_for_OF_device(s=
-truct device_node* node)=0A=
->>  	}=0A=
->>  	return NULL;=0A=
->>  }=0A=
->> +EXPORT_SYMBOL(pci_find_hose_for_OF_device);=0A=
->>=0A=
->>  /*=0A=
->>   * Reads the interrupt pin to determine if interrupt is use by card.=0A=
->> @@ -1585,6 +1586,7 @@ int early_find_capability(struct pci_controller *h=
-ose, int bus, int devfn,=0A=
->>  {=0A=
->>  	return pci_bus_find_capability(fake_pci_bus(hose, bus), devfn, cap);=
-=0A=
->>  }=0A=
->> +EXPORT_SYMBOL(early_find_capability);=0A=
->=0A=
-> Does the driver really need to use these routines? They're meant for use=
-=0A=
-> early in boot, before PCI is setup.=0A=
->=0A=
-> AFAICS this is just a regular driver, so when it's probed the PCI=0A=
-> devices should have already been scanned. In which case pci_get_device()=
-=0A=
-> could work couldn't it? (I see other edac drivers doing that).=0A=
->=0A=
-=0A=
-I don't have deep knowledge of this driver. What I am trying is to =0A=
-separate the common DDR part and share it with ARM platforms. Along the =0A=
-way, I found the compiling error if build a module. If exposing these =0A=
-functions becomes a concern, I can live without it.=0A=
-=0A=
-York=0A=
-=0A=
+
+>From d49b597623ac58fa1ab61ce0157470b6390e9a67 Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Fri, 5 Aug 2016 00:01:54 -0400
+Subject: [PATCH 1/2] powerpc/pseries: Use a helper to fixup nr_cores.
+
+We have to fixup RMA size also, so using helpers will make it cleaner
+and consistent.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/prom_init.c | 70 ++++++++++++++++++++++-------------------
+ 1 file changed, 38 insertions(+), 32 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 6ee4b72..f612a99 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -863,47 +863,53 @@ static int __init prom_count_smt_threads(void)
+ 
+ }
+ 
++static void fixup_nr_cores(void)
++{
++	u32 cores;
++	unsigned char *ptcores;
++
++	/* We need to tell the FW about the number of cores we support.
++	 *
++	 * To do that, we count the number of threads on the first core
++	 * (we assume this is the same for all cores) and use it to
++	 * divide NR_CPUS.
++	 */
++
++	/* The core value may start at an odd address. If such a word
++	 * access is made at a cache line boundary, this leads to an
++	 * exception which may not be handled at this time.
++	 * Forcing a per byte access to avoid exception.
++	 */
++	ptcores = &ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET];
++	cores = 0;
++	cores |= ptcores[0] << 24;
++	cores |= ptcores[1] << 16;
++	cores |= ptcores[2] << 8;
++	cores |= ptcores[3];
++	if (cores != NR_CPUS) {
++		prom_printf("WARNING ! "
++			    "ibm_architecture_vec structure inconsistent: %lu!\n",
++			    cores);
++	} else {
++		cores = DIV_ROUND_UP(NR_CPUS, prom_count_smt_threads());
++		prom_printf("Max number of cores passed to firmware: %lu (NR_CPUS = %lu)\n",
++			    cores, NR_CPUS);
++		ptcores[0] = (cores >> 24) & 0xff;
++		ptcores[1] = (cores >> 16) & 0xff;
++		ptcores[2] = (cores >> 8) & 0xff;
++		ptcores[3] = cores & 0xff;
++	}
++}
+ 
+ static void __init prom_send_capabilities(void)
+ {
+ 	ihandle root;
+ 	prom_arg_t ret;
+-	u32 cores;
+-	unsigned char *ptcores;
+ 
+ 	root = call_prom("open", 1, 1, ADDR("/"));
+ 	if (root != 0) {
+-		/* We need to tell the FW about the number of cores we support.
+-		 *
+-		 * To do that, we count the number of threads on the first core
+-		 * (we assume this is the same for all cores) and use it to
+-		 * divide NR_CPUS.
+-		 */
+ 
+-		/* The core value may start at an odd address. If such a word
+-		 * access is made at a cache line boundary, this leads to an
+-		 * exception which may not be handled at this time.
+-		 * Forcing a per byte access to avoid exception.
+-		 */
+-		ptcores = &ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET];
+-		cores = 0;
+-		cores |= ptcores[0] << 24;
+-		cores |= ptcores[1] << 16;
+-		cores |= ptcores[2] << 8;
+-		cores |= ptcores[3];
+-		if (cores != NR_CPUS) {
+-			prom_printf("WARNING ! "
+-				    "ibm_architecture_vec structure inconsistent: %lu!\n",
+-				    cores);
+-		} else {
+-			cores = DIV_ROUND_UP(NR_CPUS, prom_count_smt_threads());
+-			prom_printf("Max number of cores passed to firmware: %lu (NR_CPUS = %lu)\n",
+-				    cores, NR_CPUS);
+-			ptcores[0] = (cores >> 24) & 0xff;
+-			ptcores[1] = (cores >> 16) & 0xff;
+-			ptcores[2] = (cores >> 8) & 0xff;
+-			ptcores[3] = cores & 0xff;
+-		}
++		fixup_nr_cores();
+ 
+ 		/* try calling the ibm,client-architecture-support method */
+ 		prom_printf("Calling ibm,client-architecture-support...");
+-- 
+1.8.3.1
