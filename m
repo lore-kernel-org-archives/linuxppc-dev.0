@@ -1,30 +1,44 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <darren@stevens-zone.net>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5hZF1gygzDqcy
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 08:39:33 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s5hZD3k4zz9sC4
- for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2016 08:39:32 +1000 (AEST)
-Message-ID: <1470436755.12584.165.camel@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/2] powernv: Fix MCE handler to avoid trashing
- CR0/CR1 registers.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, "Shreyas B. Prabhu"
- <shreyas@linux.vnet.ibm.com>, Vaidyanathan Srinivasan
- <svaidy@linux.vnet.ibm.com>
-Date: Sat, 06 Aug 2016 08:39:15 +1000
-In-Reply-To: <147039865296.4007.7482355227065137884.stgit@jupiter.in.ibm.com>
-References: <147039864368.4007.8950616642100181791.stgit@jupiter.in.ibm.com>
- <147039865296.4007.7482355227065137884.stgit@jupiter.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5hjT4X6WzDqWf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 08:45:49 +1000 (AEST)
+From: Darren Stevens <darren@stevens-zone.net>
+To: Nicholas Piggin <npiggin@gmail.com>
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>, Pat Wall <pjwall@me.com>,
+ "matthew@a-eon.biz" <matthew@a-eon.biz>,
+ Christian Zigotzky <info@xenosoft.de>,
+ "contact@a-eon.com" <contact@a-eon.com>, R.T.Dickinson <rtd2@xtra.co.nz>,
+ Pat Wall <pjwall@mac.com>, Olof Johansson <olof@lixom.net>,
+ Julian Margetson <runaway@candw.ms>, R.T.Dickinson <rtd@a-eon.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Fri, 05 Aug 2016 22:42:59 +0100 (BST)
+Message-ID: <4898d738ba6.9f2ad89@auth.smtp.1and1.co.uk>
+In-Reply-To: <20160806012454.0c9a26f9@roar.ozlabs.ibm.com>
+References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
+ <ae855392-570c-e125-b71f-2d5bf0c33eef@xenosoft.de>
+ <d869fc32-ba80-529e-06dd-481ecf533642@xenosoft.de>
+ <8b0682d3-866a-31dd-f01b-3510f84307dc@xenosoft.de>
+ <2847029a-e3a4-8099-b72f-89d5731baaed@xenosoft.de>
+ <4e97a4dd-3fe0-84aa-47f0-29d1544c9f8c@xenosoft.de>
+ <72eed836-767c-402a-576a-8049db34d281@xenosoft.de>
+ <8878883b-bd51-b7c9-ee5b-927e481e5d30@xenosoft.de>
+ <8a3764d2-7fc1-1967-f557-146a3df16894@xenosoft.de>
+ <1d98af3c-f585-967b-1413-58d34fad20af@xenosoft.de>
+ <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
+ <3fd5ecda-7e1f-52ec-6f11-ed603d2dcd76@xenosoft.de>
+ <1470221638.12584.82.camel@kernel.crashing.org>
+ <57A34254.6090702@xenosoft.de> <871t23k91w.fsf@concordia.ellerman.id.au>
+ <ec7d4fbb-3823-c4fc-0152-4f5cd6dd9c88@xenosoft.de>
+ <87r3a3cwgr.fsf@concordia.ellerman.id.au>
+ <030efdf4-7b13-864e-7202-0630a604bcdc@xenosoft.de>
+ <4168bd4c-f895-fd08-0d1a-ca4c999ab6b2@xenosoft.de>
+ <20160806012454.0c9a26f9@roar.ozlabs.ibm.com>
+Subject: Re: Internal CompactFlash (CF) card device not recognised after
+ the powerpc-4.8-1 merge
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,155 +48,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-08-05 at 17:34 +0530, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> The current implementation of MCE early handling modifies CR0/1
-> registers
-> without saving its old values. Fix this by moving early check for
-> powersaving mode to machine_check_handle_early().
+Hello Nicholas
 
-CC stable ?
+On 06/08/2016, Nicholas Piggin wrote:
+> On Fri, 5 Aug 2016 16:38:17 +0200
+> Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
+>
+>> Hi All,
+>
+>
+> Hi Christian,
+[...]
+> As for your driver support, it would indeed be a good idea to
+> get it supported in the upstream kernel. You should post a
+> new mail about that. Take a look at these 3 commits:
+>
+> 61f7162117d4767875825abf2f6ed1eeebbcceed
+> 9cd55be4d22376893d2818ce3c0e5706a3d74121
+> ca99140a63b7326ee9a38f64c326317f2c63b594
+>
+> Your patch comes from code based on the second one. The last
+> commit removed it, and says that it is not the best way to
+> implement it. You could cc this list and some of the people
+> involved with those commits and ask ask for advice about
+> getting your driver supported.
 
-> The power architecture 2.06 or later allows the possibility of
-> getting
-> machine check while in nap/sleep/winkle. The last bit of HSPRG0 is
-> set
-> to 1, if thread is woken up from winkle. Hence, clear the last bit of
-> HSPRG0 (r13) before MCE handler starts using it as paca pointer.
-> 
-> Also, the current code always puts the thread into nap state
-> irrespective
-> of whatever idle state it woke up from. Fix that by looking at
-> paca->thread_idle_state and put the thread back into same state where
-> it
-> came from.
-> 
-> Reported-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Reviewed-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
-> Change in v3:
-> - Rebase to Linus' master.
-> 
-> Change in v2:
-> - Call IDLE_STATE_ENTER_SEQ(PPC_NAP) instead of
-> power7_enter_nap_mode()
->   to be consistent with other part of code.
-> ---
->  arch/powerpc/kernel/exceptions-64s.S |   69 ++++++++++++++++++++--
-> ------------
->  1 file changed, 40 insertions(+), 29 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S
-> b/arch/powerpc/kernel/exceptions-64s.S
-> index 694def6..a59c9cc 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -144,29 +144,14 @@ machine_check_pSeries_1:
->  	 * vector
->  	 */
->  	SET_SCRATCH0(r13)		/* save r13 */
-> -#ifdef CONFIG_PPC_P7_NAP
-> -BEGIN_FTR_SECTION
-> -	/* Running native on arch 2.06 or later, check if we are
-> -	 * waking up from nap. We only handle no state loss and
-> -	 * supervisor state loss. We do -not- handle hypervisor
-> -	 * state loss at this time.
-> +	/*
-> +	 * Running native on arch 2.06 or later, we may wakeup from
-> winkle
-> +	 * inside machine check. If yes, then last bit of HSPGR0
-> would be set
-> +	 * to 1. Hence clear it unconditionally.
->  	 */
-> -	mfspr	r13,SPRN_SRR1
-> -	rlwinm.	r13,r13,47-31,30,31
-> -	OPT_GET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
-> -	beq	9f
-> -
-> -	mfspr	r13,SPRN_SRR1
-> -	rlwinm.	r13,r13,47-31,30,31
-> -	/* waking up from powersave (nap) state */
-> -	cmpwi	cr1,r13,2
-> -	/* Total loss of HV state is fatal. let's just stay stuck
-> here */
-> -	OPT_GET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
-> -	bgt	cr1,.
-> -9:
-> -	OPT_SET_SPR(r13, SPRN_CFAR, CPU_FTR_CFAR)
-> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-> -#endif /* CONFIG_PPC_P7_NAP */
-> +	GET_PACA(r13)
-> +	clrrdi	r13,r13,1
-> +	SET_PACA(r13)
->  	EXCEPTION_PROLOG_0(PACA_EXMC)
->  BEGIN_FTR_SECTION
->  	b	machine_check_powernv_early
-> @@ -1273,25 +1258,51 @@ machine_check_handle_early:
->  	 * Check if thread was in power saving mode. We come here
-> when any
->  	 * of the following is true:
->  	 * a. thread wasn't in power saving mode
-> -	 * b. thread was in power saving mode with no state loss or
-> -	 *    supervisor state loss
-> +	 * b. thread was in power saving mode with no state loss,
-> +	 *    supervisor state loss or hypervisor state loss.
->  	 *
-> -	 * Go back to nap again if (b) is true.
-> +	 * Go back to nap/sleep/winkle mode again if (b) is true.
->  	 */
->  	rlwinm.	r11,r12,47-31,30,31	/* Was it in power
-> saving mode? */
->  	beq	4f			/* No, it wasn;t */
->  	/* Thread was in power saving mode. Go back to nap again. */
->  	cmpwi	r11,2
-> -	bne	3f
-> -	/* Supervisor state loss */
-> +	blt	3f
-> +	/* Supervisor/Hypervisor state loss */
->  	li	r0,1
->  	stb	r0,PACA_NAPSTATELOST(r13)
->  3:	bl	machine_check_queue_event
->  	MACHINE_CHECK_HANDLER_WINDUP
->  	GET_PACA(r13)
->  	ld	r1,PACAR1(r13)
-> -	li	r3,PNV_THREAD_NAP
-> -	b	pnv_enter_arch207_idle_mode
-> +	/*
-> +	 * Check what idle state this CPU was in and go back to same
-> mode
-> +	 * again.
-> +	 */
-> +	lbz	r3,PACA_THREAD_IDLE_STATE(r13)
-> +	cmpwi	r3,PNV_THREAD_NAP
-> +	bgt	10f
-> +	IDLE_STATE_ENTER_SEQ(PPC_NAP)
-> +	/* No return */
-> +10:
-> +	cmpwi	r3,PNV_THREAD_SLEEP
-> +	bgt	2f
-> +	IDLE_STATE_ENTER_SEQ(PPC_SLEEP)
-> +	/* No return */
-> +
-> +2:
-> +	/*
-> +	 * Go back to winkle. Please note that this thread was woken
-> up in
-> +	 * machine check from winkle and have not restored the per-
-> subcore
-> +	 * state. Hence before going back to winkle, set last bit of
-> HSPGR0
-> +	 * to 1. This will make sure that if this thread gets woken
-> up
-> +	 * again at reset vector 0x100 then it will get chance to
-> restore
-> +	 * the subcore state.
-> +	 */
-> +	ori	r13,r13,1
-> +	SET_PACA(r13)
-> +	IDLE_STATE_ENTER_SEQ(PPC_WINKLE)
-> +	/* No return */
->  4:
->  #endif
->  	/*
+Actually, it's almost supported by the base PASemi code anyway, there is a
+PCMCIA driver in setup.c, but our hardware has been changed enough to make it
+hang the system when used. I should probably take another look and see If I
+can fix that. The other option would be to move the above patch to where we
+add our rtc platform device. One thing that does confuse me is the interrupt,
+it's attached to GPIO 0, so should be on the mpic int 0 (or maybe 16?)but I
+could never get it to work.
+
+Regards
+Darren
