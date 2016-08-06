@@ -1,44 +1,54 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5hjT4X6WzDqWf
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 08:45:49 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: Nicholas Piggin <npiggin@gmail.com>
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>, Pat Wall <pjwall@me.com>,
- "matthew@a-eon.biz" <matthew@a-eon.biz>,
- Christian Zigotzky <info@xenosoft.de>,
- "contact@a-eon.com" <contact@a-eon.com>, R.T.Dickinson <rtd2@xtra.co.nz>,
- Pat Wall <pjwall@mac.com>, Olof Johansson <olof@lixom.net>,
- Julian Margetson <runaway@candw.ms>, R.T.Dickinson <rtd@a-eon.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Fri, 05 Aug 2016 22:42:59 +0100 (BST)
-Message-ID: <4898d738ba6.9f2ad89@auth.smtp.1and1.co.uk>
-In-Reply-To: <20160806012454.0c9a26f9@roar.ozlabs.ibm.com>
-References: <86E27593-C6C2-4BBA-995E-95A97BB8CB12@xenosoft.de>
- <ae855392-570c-e125-b71f-2d5bf0c33eef@xenosoft.de>
- <d869fc32-ba80-529e-06dd-481ecf533642@xenosoft.de>
- <8b0682d3-866a-31dd-f01b-3510f84307dc@xenosoft.de>
- <2847029a-e3a4-8099-b72f-89d5731baaed@xenosoft.de>
- <4e97a4dd-3fe0-84aa-47f0-29d1544c9f8c@xenosoft.de>
- <72eed836-767c-402a-576a-8049db34d281@xenosoft.de>
- <8878883b-bd51-b7c9-ee5b-927e481e5d30@xenosoft.de>
- <8a3764d2-7fc1-1967-f557-146a3df16894@xenosoft.de>
- <1d98af3c-f585-967b-1413-58d34fad20af@xenosoft.de>
- <f6a4c3c1-f452-f4fc-1d36-b2bed81f32a3@xenosoft.de>
- <3fd5ecda-7e1f-52ec-6f11-ed603d2dcd76@xenosoft.de>
- <1470221638.12584.82.camel@kernel.crashing.org>
- <57A34254.6090702@xenosoft.de> <871t23k91w.fsf@concordia.ellerman.id.au>
- <ec7d4fbb-3823-c4fc-0152-4f5cd6dd9c88@xenosoft.de>
- <87r3a3cwgr.fsf@concordia.ellerman.id.au>
- <030efdf4-7b13-864e-7202-0630a604bcdc@xenosoft.de>
- <4168bd4c-f895-fd08-0d1a-ca4c999ab6b2@xenosoft.de>
- <20160806012454.0c9a26f9@roar.ozlabs.ibm.com>
-Subject: Re: Internal CompactFlash (CF) card device not recognised after
- the powerpc-4.8-1 merge
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s5pM66pLhzDqRs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 13:00:18 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3s5pM62SfCz9t1C
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2016 13:00:18 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u762xB10013279
+ for <linuxppc-dev@ozlabs.org>; Fri, 5 Aug 2016 23:00:16 -0400
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24mud8y4g4-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 05 Aug 2016 23:00:15 -0400
+Received: from localhost
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Sat, 6 Aug 2016 13:00:13 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1E22D2CE8054
+ for <linuxppc-dev@ozlabs.org>; Sat,  6 Aug 2016 13:00:10 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7630AMo28901624
+ for <linuxppc-dev@ozlabs.org>; Sat, 6 Aug 2016 13:00:10 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u76309NQ018455
+ for <linuxppc-dev@ozlabs.org>; Sat, 6 Aug 2016 13:00:09 +1000
+Subject: Re: [PATCH] powernv: Load correct TOC pointer while waking up from
+ winkle.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <147040459202.19770.16560483806363144997.stgit@jupiter.in.ibm.com>
+ <1470436733.12584.164.camel@kernel.crashing.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Sat, 6 Aug 2016 08:30:06 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1470436733.12584.164.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <604967a6-9a17-dae1-b6b3-2aa02f32b3b4@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,38 +58,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Nicholas
+On 08/06/2016 04:08 AM, Benjamin Herrenschmidt wrote:
+> On Fri, 2016-08-05 at 19:13 +0530, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> The function pnv_restore_hyp_resource() loads the TOC into r2 from
+>> the invalid PACA pointer before fixing r13 value. This do not affect
+>> POWER ISA 3.0 but it does have an impact on POWER ISA 2.07 or less
+>> leading CPU to get stuck forever.
+> 
+> When was this broken ? Should this get backported to stable ?
 
-On 06/08/2016, Nicholas Piggin wrote:
-> On Fri, 5 Aug 2016 16:38:17 +0200
-> Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
->
->> Hi All,
->
->
-> Hi Christian,
-[...]
-> As for your driver support, it would indeed be a good idea to
-> get it supported in the upstream kernel. You should post a
-> new mail about that. Take a look at these 3 commits:
->
-> 61f7162117d4767875825abf2f6ed1eeebbcceed
-> 9cd55be4d22376893d2818ce3c0e5706a3d74121
-> ca99140a63b7326ee9a38f64c326317f2c63b594
->
-> Your patch comes from code based on the second one. The last
-> commit removed it, and says that it is not the best way to
-> implement it. You could cc this list and some of the people
-> involved with those commits and ask ask for advice about
-> getting your driver supported.
+This is broken with recent Power9 cpu idle changes (commit bcef83a00)
+that gone in Linus' master after V4.7. We are fine with v4.7
 
-Actually, it's almost supported by the base PASemi code anyway, there is a
-PCMCIA driver in setup.c, but our hardware has been changed enough to make it
-hang the system when used. I should probably take another look and see If I
-can fix that. The other option would be to move the above patch to where we
-add our rtc platform device. One thing that does confuse me is the interrupt,
-it's attached to GPIO 0, so should be on the mpic int 0 (or maybe 16?)but I
-could never get it to work.
+-Mahesh.
 
-Regards
-Darren
+> 
+>> 	login: [  471.830433] Processor 120 is stuck.
+>>
+>>
+>> This can be easily reproducible using following steps:
+>> - Turn off SMT
+>> 	$ ppc64_cpu --smt=off
+>> - offline/online any online cpu (Thread 0 of any core which is
+>> online)
+>> 	$ echo 0 > /sys/devices/system/cpu/cpu<num>/online
+>> 	$ echo 1 > /sys/devices/system/cpu/cpu<num>/online
+>>
+>> For POWER ISA 2.07 or less, the last bit of HSPRG0 is set indicating
+>> that thread is waking up from winkle. Hence, the last bit of
+>> HSPRG0(r13)
+>> needs to be clear before accessing it as PACA to avoid loading
+>> invalid
+>> values from invalid PACA pointer.
+>>
+>> Fix this by loading TOC after r13 register is corrected.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kernel/idle_book3s.S |    5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/idle_book3s.S
+>> b/arch/powerpc/kernel/idle_book3s.S
+>> index 8a56a51..45784ec 100644
+>> --- a/arch/powerpc/kernel/idle_book3s.S
+>> +++ b/arch/powerpc/kernel/idle_book3s.S
+>> @@ -363,8 +363,8 @@ _GLOBAL(power9_idle_stop)
+>>   * cr3 - set to gt if waking up with partial/complete hypervisor
+>> state loss
+>>   */
+>>  _GLOBAL(pnv_restore_hyp_resource)
+>> -	ld	r2,PACATOC(r13);
+>>  BEGIN_FTR_SECTION
+>> +	ld	r2,PACATOC(r13);
+>>  	/*
+>>  	 * POWER ISA 3. Use PSSCR to determine if we
+>>  	 * are waking up from deep idle state
+>> @@ -395,6 +395,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+>>  	 */
+>>  	clrldi	r5,r13,63
+>>  	clrrdi	r13,r13,1
+>> +
+>> +	/* Now that we are sure r13 is corrected, load TOC */
+>> +	ld	r2,PACATOC(r13);
+>>  	cmpwi	cr4,r5,1
+>>  	mtspr	SPRN_HSPRG0,r13
+>>  
+> 
