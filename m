@@ -1,22 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sam@ravnborg.org>
+Received: from asavdk4.altibox.net (asavdk4.altibox.net [109.247.116.15])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s5z0M1Vh0zDqJ4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2016 19:29:37 +1000 (AEST)
-Subject: Re: Suspected regression?
-To: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-References: <CAPk1OjHu7SZ_eOrUx5MQGBTenKAQCUENFeYWVyqWoemqnvo7eA@mail.gmail.com>
- <1468965129.25630.15.camel@buserror.net>
- <601d732a-a137-3ba9-550d-19c7eb10337a@c-s.fr>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Message-ID: <ed8c66dd-c567-35df-4a51-6bb3434fdc2b@c-s.fr>
-Date: Sat, 6 Aug 2016 11:29:30 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s6FLp65d8zDqYj
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Aug 2016 06:16:34 +1000 (AEST)
+Date: Sat, 6 Aug 2016 22:16:29 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 3/5] kbuild: add arch specific post-module-link pass
+Message-ID: <20160806201629.GC25821@ravnborg.org>
+References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
+ <1470399123-8455-4-git-send-email-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <601d732a-a137-3ba9-550d-19c7eb10337a@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1470399123-8455-4-git-send-email-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,81 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alessio,
+On Fri, Aug 05, 2016 at 10:12:01PM +1000, Nicholas Piggin wrote:
+> Add an option for architectures to pass over modules after they are
+> linked. powerpc will use this to fix up alternate instruction patch
+> relocations.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  Documentation/kbuild/makefiles.txt | 6 ++++++
+>  Makefile                           | 1 +
+>  scripts/Makefile.modpost           | 8 ++++++++
+>  3 files changed, 15 insertions(+)
+> 
+> diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+> index 13f888a..f6c065b 100644
+> --- a/Documentation/kbuild/makefiles.txt
+> +++ b/Documentation/kbuild/makefiles.txt
+> @@ -952,6 +952,12 @@ When kbuild executes, the following steps are followed (roughly):
+>  	$(KBUILD_ARFLAGS) set by the top level Makefile to "D" (deterministic
+>  	mode) if this option is supported by $(AR).
+>  
+> +    KBUILD_MODPOST_TOOL   Arch-specific command to run after module link
+> +
+> +        $(KBUILD_MODPOST_TOOL) is used to add an arch-specific pass over
+> +        modules after their final link. E.g., powerpc uses this to adjust
+> +        relative branches of "alternate code patching" sections.
+> +
 
-Le 05/08/2016 à 09:51, Christophe Leroy a écrit :
->
->
-> Le 19/07/2016 à 23:52, Scott Wood a écrit :
->> On Tue, 2016-07-19 at 12:00 +0200, Alessio Igor Bogani wrote:
->>> Hi all,
->>>
->>> I have got two boards MVME5100 (MPC7410 cpu) and MVME7100 (MPC8641D
->>> cpu) for which I use the same cross-compiler (ppc7400).
->>>
->>> I tested these against kernel HEAD to found that these don't boot
->>> anymore (PID 1 crash).
->>>
->>> Bisecting results in first offending commit:
->>> 7aef4136566b0539a1a98391181e188905e33401
->>>
->>> Removing it from HEAD make boards boot properly again.
->>>
->>> A third system based on P2010 isn't affected at all.
->>>
->>> Is it a regression or I have made something wrong?
->>
->> I booted both my next branch, and Linus's master on MPC8641HPCN and
->> didn't see
->> this -- though possibly your RFS is doing something different.  Maybe
->> that's
->> the difference with P2010 as well.
->>
->> Is there any way you can debug the cause of the crash?  Or send me a
->> minimal
->> RFS that demonstrates the problem (ideally with debug symbols on the
->> userspace
->> binaries)?
->>
->
-> I got from Alessio the below information:
->
-> systemd[1]: Caught <BUS>, core dump failed (child 137, code=killed,
-> status=7/BUS).
-> systemd[1]: Freezing execution.
->
->
-> What can generate SIGBUS ?
-> And shouldn't we also get some KERN_ERR trace, something like "unhandled
-> signal 7 at ....." ?
->
+This needs documentation in kbuild.txt, where there is a
+nearly full lst of KBUILD_ variables.
 
-As far as I can see, SIGBUS is mainly generated from alignment exception.
-According to 7410 Reference Manual, alignment exception can happen in 
-the following cases:
-* An operand of a dcbz instruction is on a page that is write-through or
-cache-inhibited for a virtual mode access.
-* An attempt to execute a dcbz instruction occurs when the cache is 
-disabled or locked.
-
-Could try with below patch to check if the dcbz insn is causing the SIGBUS ?
-
-Christophe
-
-diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-index 68f6862..3ad782a 100644
---- a/arch/powerpc/lib/checksum_32.S
-+++ b/arch/powerpc/lib/checksum_32.S
-@@ -192,7 +192,7 @@ _GLOBAL(csum_partial_copy_generic)
-  	mtctr	r8
-
-  53:	dcbt	r3,r4
--54:	dcbz	r11,r6
-+54:	nop
-  /* the main body of the cacheline loop */
-  	CSUM_COPY_16_BYTES_WITHEX(0)
-  #if L1_CACHE_BYTES >= 32
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+	Sam
