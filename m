@@ -1,19 +1,27 @@
-Return-Path: <fedora@leemhuis.info>
-Received: from basicbox7.server-home.net (basicbox7.server-home.net
- [195.137.212.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <sam@ravnborg.org>
+Received: from asavdk3.altibox.net (asavdk3.altibox.net [109.247.116.14])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s6hpB3CP8zDqYk
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Aug 2016 23:53:20 +1000 (AEST)
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Subject: Linux 4.7: Reported regressions as of Sunday, 2016-08-07
-To: Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jonathan Corbet <corbet@lwn.net>
-Message-ID: <aecd3c94-e61a-946e-fb45-b5a4e1eb04db@leemhuis.info>
-Date: Sun, 7 Aug 2016 15:53:13 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s6jsF48mXzDqYk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 00:41:03 +1000 (AEST)
+Date: Sun, 7 Aug 2016 16:40:54 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-kbuild@vger.kernel.org,
+ linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 1/5] kbuild: allow architectures to use thin archives
+ instead of ld -r
+Message-ID: <20160807144054.GA14682@ravnborg.org>
+References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
+ <1470399123-8455-2-git-send-email-npiggin@gmail.com>
+ <20160806201045.GA25821@ravnborg.org>
+ <20160807114946.41b682f3@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160807114946.41b682f3@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,100 +31,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi! Here is my seventh regression report for Linux 4.7. It lists 9
-regressions I'm currently aware of. 4 of them are new; 2 are stalled
-until the reporter provides more feedback.
+On Sun, Aug 07, 2016 at 11:49:46AM +1000, Stephen Rothwell wrote:
+> Hi Sam,
+> 
+> On Sat, 6 Aug 2016 22:10:45 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> > Did you by any chance evalue the use of INPUT in linker files.
+> > Stephen back then (again based on proposal from Alan Modra),
+> > also made an implementation using INPUT.
+> 
+> The problem with that idea was that (at least for some versions of
+> binutils in use at the time) we hit a static limit to the number of
+> object files and ld just stopped at that point. :-(
 
-The report also mentions 3 regressions that were fixed since the last
-report. There is also 1 I plan to remove because it's just referring 
-to new warnings from UBSAN (let me know if you think it should stay).
+The ld bug was caused by opening too many linked definitions files.
+We can workaround this by expanding the files.
+I gave this a quick spin - see below.
 
-As usual: Please let me know about any regressions missing on the list
-or if it contains something which shouldn't be there. Since the 
-release of 4.7 there were quite a few new bugs filed on 
-bugzilla.kernel.org that mentioned 4.7; I briefly looked at them, but
-it looks like most of them are not regression (sometimes it's not 
-pretty clear, but I currently lack the time to investigate further 
-into each of those). 
+Note - I have no idea if using thin archived or this method is better.
+But it seems just wrong to me that we convert to thin archives when
+we really do not need to do so.
 
-I'll send the first regression report for 4.9 next week
+Note - this was a quick spin. It build fine here and thats it.
 
-HTH, CU, Thorsten
+	Sam
 
-P.S.: Gmane, I miss you. A lot. 
-
-== Current regressions ==
-
-Desc: System hang when plug/un-plug USB 3.1 key via thunderbolt port on Dell XPS 13
-Repo: 2016-06-14 https://bugzilla.kernel.org/show_bug.cgi?id=120241
-Stat: 2016-08-05 https://bugzilla.kernel.org/show_bug.cgi?id=120241#c40
-Note: wip
-
-Desc: regression in 8250 uart driver
-Repo: 2016-06-14 http://thread.gmane.org/gmane.linux.kernel/2243130/focus=2243653
-Stat: 2016-07-02 https://lkml.org/lkml/2016/7/2/94
-Note: need to poke andy for a status update
-
-Desc: ath9k/ ar5008 Oopses on v4.7-rc7+
-Repo: 2016-07-17 https://marc.info/?l=linux-wireless&m=146878954223067&w=2
-Stat: 2016-08-04 https://marc.info/?l=linux-wireless&m=147029189600658&w=2
-Note: fix ath9k-fix-accessing-gpio-warning.patch available
-
-Desc: Regression: commit 12549e2 clocksource/drivers/time-armada-370-xp: Convert init function to return error
-Repo: 2016-07-28 https://bugzilla.kernel.org/show_bug.cgi?id=150571
-Stat: 2016-08-06 https://lkml.org/lkml/2016/8/6/65
-Note: proper developer now in the loop
-
-Desc: ath9k cpuidle warnings ath9k_beacon_config (No adverse effects are noticed but this must be from quite a recent commit.)
-Repo: 2016-08-02 https://bugzilla.kernel.org/show_bug.cgi?id=151271
-Stat: n/a 
-Note: needs further investigation; seem I or somebody else need to help here
-
-Desc: /dev/input/by-path links for PS/2 input devices are not created
-Repo: 2016-08-02 https://bugzilla.kernel.org/show_bug.cgi?id=151331
-Stat: n/a 
-Note: needs further investigation; seem I or somebody else need to help here
-
-Desc: performance degradation on Opteron 6272 related to COD technology
-Repo: 2016-06-28 https://marc.info/?l=linux-kernel&m=146715574528055&w=2
-Stat: 2016-07-28 https://marc.info/?l=linux-kernel&m=146974252111026&w=2
-Note: wip
-
-
-== Stalled, waiting for feedback from reporter ==
-
-Desc: 795ae7a0de: pixz.throughput -9.1% regression
-Repo: 2016-06-02 http://thread.gmane.org/gmane.linux.kernel/2233056/
-Stat: 2016-06-22 https://lkml.org/lkml/2016/6/22/754
-Note: stalled; hannes could not reproduce and asked reporter for further feedback weeks ago
-
-Desc: kmemcheck: Caught 64-bit read from uninitialized memory; iptables/nf_register_net_hooks
-Repo: 2016-06-19 https://bugzilla.kernel.org/show_bug.cgi?id=120651
-Stat: 2016-07-17 https://bugzilla.kernel.org/show_bug.cgi?id=120651#c8
-Note: waiting for reporter to check a proposed fix
-
-
-== Going to be removed from the list ==
-
-Desc: UBSAN splat in drivers/acpi/acpica/dsutils.c:641:16
-Repo: 2016-06-15 https://bugzilla.kernel.org/show_bug.cgi?id=120351
-Stat: 2016-06-22 https://bugzilla.kernel.org/show_bug.cgi?id=120411#c3
-Note: this debugging feature found new problems, but it seems the bugs don't get much attention (like many ohters on bugzilla.kernel.org); if nobody complains I'll remove this regression from the report to spend time for more important bugs; related, similar bugs: https://bugzilla.kernel.org/show_bug.cgi?id=120411 https://bugzilla.kernel.org/show_bug.cgi?id=120391 https://bugzilla.kernel.org/show_bug.cgi?id=120371 https://bugzilla.kernel.org/show_bug.cgi?id=120361 Not sure which of them are regressions
-
-
-== Fixed since last report ==
-
-Desc: Multi-thread udp 4.7 regression, bisected to 71d8c47fc653; performance decreased or complete failure with a test
-Repo: 2016-06-27 http://thread.gmane.org/gmane.linux.network/418861/focus=418908
-Stat: 2016-07-12 http://thread.gmane.org/gmane.linux.network/418861/focus=63936
-Note: fixed by https://git.kernel.org/torvalds/c/590b52e10d410e1439ae86be9fe19d75fdab628b
-
-Desc: After commit f21a21983ef13a, the i915 display is turned off
-Repo: 2016-06-16 https://bugs.freedesktop.org/show_bug.cgi?id=96675
-Stat: 2016-07-15 http://thread.gmane.org/gmane.linux.kernel/2266539/focus=94597 https://bugs.freedesktop.org/show_bug.cgi?id=96675#c11
-Note: fixed by https://git.kernel.org/torvalds/c/c71d4d58981bed3366769ef5cf1f20e588fe16d0
-
-Desc: legacy gamma table updates are completely broken for Intel on Linux-4.7-rc7
-Repo: 2016-07-12 http://thread.gmane.org/gmane.comp.video.dri.devel/159323/
-Stat: 2016-07-14 http://thread.gmane.org/gmane.comp.video.dri.devel/159323/focus=159663
-Note: fixed by https://git.kernel.org/torvalds/c/ed2eebbd61af8d378ca39ad7aef7017f29eed6f3
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 11602e5..37b8bc9 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -360,10 +360,16 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
+ ifdef builtin-target
+ quiet_cmd_link_o_target = LD      $@
+ # If the list of objects to link is empty, just create an empty built-in.o
+-cmd_link_o_target = $(if $(strip $(obj-y)),\
+-		      $(LD) $(ld_flags) -r -o $@ $(filter $(obj-y), $^) \
+-		      $(cmd_secanalysis),\
+-		      rm -f $@; $(AR) rcs$(KBUILD_ARFLAGS) $@)
++cmd_link_o_target =                                            \
++$(if $(filter $(obj-y), $^),                                   \
++	echo $(foreach file, $(filter $(obj-y), $^),           \
++		$(if $(filter %/built-in.o, $(file)),          \
++			$(shell cat $(file)),                  \
++			$(file)                                \
++		)                                              \
++	)                                                      \
++        , echo ""                                              \
++) > $@
+ 
+ $(builtin-target): $(obj-y) FORCE
+ 	$(call if_changed,link_o_target)
+@@ -414,10 +420,10 @@ $($(subst $(obj)/,,$(@:.o=-y)))       \
+ $($(subst $(obj)/,,$(@:.o=-m)))), $^)
+ 
+ quiet_cmd_link_multi-y = LD      $@
+-cmd_link_multi-y = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps) $(cmd_secanalysis)
++cmd_link_multi-y = echo INPUT\($(link_multi_deps)\) > $@
+ 
+ quiet_cmd_link_multi-m = LD [M]  $@
+-cmd_link_multi-m = $(cmd_link_multi-y)
++cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(link_multi_deps)
+ 
+ $(multi-used-y): FORCE
+ 	$(call if_changed,link_multi-y)
+diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+index 4f727eb..323c13a 100755
+--- a/scripts/link-vmlinux.sh
++++ b/scripts/link-vmlinux.sh
+@@ -41,8 +41,8 @@ info()
+ # ${1} output file
+ modpost_link()
+ {
+-	${LD} ${LDFLAGS} -r -o ${1} ${KBUILD_VMLINUX_INIT}                   \
+-		--start-group ${KBUILD_VMLINUX_MAIN} --end-group
++	${LD} ${LDFLAGS} -r -o ${1} ${vmlinux_init}            \
++		--start-group ${vmlinux_main} --end-group
+ }
+ 
+ # Link of vmlinux
+@@ -54,13 +54,13 @@ vmlinux_link()
+ 
+ 	if [ "${SRCARCH}" != "um" ]; then
+ 		${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${2}                  \
+-			-T ${lds} ${KBUILD_VMLINUX_INIT}                     \
+-			--start-group ${KBUILD_VMLINUX_MAIN} --end-group ${1}
++			-T ${lds} ${vmlinux_init}                            \
++			--start-group ${vmlinux_main} --end-group ${1}
+ 	else
+ 		${CC} ${CFLAGS_vmlinux} -o ${2}                              \
+-			-Wl,-T,${lds} ${KBUILD_VMLINUX_INIT}                 \
++			-Wl,-T,${lds} ${vmlinux_init}                        \
+ 			-Wl,--start-group                                    \
+-				 ${KBUILD_VMLINUX_MAIN}                      \
++				 ${vmlinux_main}                             \
+ 			-Wl,--end-group                                      \
+ 			-lutil -lrt -lpthread ${1}
+ 		rm -f linux
+@@ -162,6 +162,23 @@ case "${KCONFIG_CONFIG}" in
+ 	. "./${KCONFIG_CONFIG}"
+ esac
+ 
++# Expand built-in.o file as they just list .o files
++for f in ${KBUILD_VMLINUX_INIT}; do
++	if [ $(basename $f) = built-in.o ]; then
++		vmlinux_init="${vmlinux_init} $(cat $f)"
++	else
++		vmlinux_init="${vmlinux_init} $f"
++	fi
++done
++
++for f in ${KBUILD_VMLINUX_MAIN}; do
++	if [ $(basename $f) = built-in.o ]; then
++		vmlinux_main="${vmlinux_main} $(cat $f)"
++	else
++		vmlinux_main="${vmlinux_main} $f"
++	fi
++done
++
+ #link vmlinux.o
+ info LD vmlinux.o
+ modpost_link vmlinux.o
