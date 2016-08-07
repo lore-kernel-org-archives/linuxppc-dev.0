@@ -1,17 +1,25 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s6Jrw3pThzDqYj
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Aug 2016 08:54:24 +1000 (AEST)
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Guenter Roeck <linux@roeck-us.net>, Kevin Hao <haokexin@gmail.com>
-Subject: [PATCH] powerpc: vdso: Add missing include file
-Date: Sat,  6 Aug 2016 15:54:12 -0700
-Message-Id: <1470524052-27133-1-git-send-email-linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s6NlK1SMWzDqRs
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Aug 2016 11:49:49 +1000 (AEST)
+Date: Sun, 7 Aug 2016 11:49:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-kbuild@vger.kernel.org,
+ linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Arnd Bergmann
+ <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>, Segher Boessenkool
+ <segher@kernel.crashing.org>, Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 1/5] kbuild: allow architectures to use thin archives
+ instead of ld -r
+Message-ID: <20160807114946.41b682f3@canb.auug.org.au>
+In-Reply-To: <20160806201045.GA25821@ravnborg.org>
+References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
+ <1470399123-8455-2-git-send-email-npiggin@gmail.com>
+ <20160806201045.GA25821@ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some powerpc builds fail with the following buld error.
+Hi Sam,
 
-In file included from ./arch/powerpc/include/asm/mmu_context.h:11:0,
-                 from arch/powerpc/kernel/vdso.c:28:
-arch/powerpc/include/asm/cputhreads.h: In function 'get_tensr':
-arch/powerpc/include/asm/cputhreads.h:101:2: error:
-	implicit declaration of function 'cpu_has_feature'
+On Sat, 6 Aug 2016 22:10:45 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+>
+> Did you by any chance evalue the use of INPUT in linker files.
+> Stephen back then (again based on proposal from Alan Modra),
+> also made an implementation using INPUT.
 
-Fixes: b92a226e5284 ("powerpc: Move cpu_has_feature() to a separate file")
-Cc: Kevin Hao <haokexin@gmail.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-My apologies for the noise if already reported/fixed.
+The problem with that idea was that (at least for some versions of
+binutils in use at the time) we hit a static limit to the number of
+object files and ld just stopped at that point. :-(
 
- arch/powerpc/kernel/vdso.c | 1 +
- 1 file changed, 1 insertion(+)
+> See below for an updated simple patch on top of mainline.
 
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 6767605ea8da..4111d30badfa 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -22,6 +22,7 @@
- #include <linux/security.h>
- #include <linux/memblock.h>
- 
-+#include <asm/cpu_has_feature.h>
- #include <asm/pgtable.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
+So, I guess it was fixed, but do we know in what version?
+
 -- 
-2.5.0
+Cheers,
+Stephen Rothwell
