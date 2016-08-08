@@ -1,24 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qk0-x229.google.com (mail-qk0-x229.google.com
+ [IPv6:2607:f8b0:400d:c09::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s73S95hsmzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 13:54:01 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id cf3so23125003pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 20:54:01 -0700 (PDT)
-Date: Mon, 8 Aug 2016 13:53:51 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s73sl2ySnzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 14:12:42 +1000 (AEST)
+Received: by mail-qk0-x229.google.com with SMTP id v123so178917423qkh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 21:12:42 -0700 (PDT)
+Date: Mon, 8 Aug 2016 00:12:37 -0400 (EDT)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Nicolas Pitre <nico@linaro.org>, Segher Boessenkool
- <segher@kernel.crashing.org>, Alan Modra <amodra@gmail.com>
-Subject: Re: [RFC][PATCH 0/5] kbuild changes, thin archives, --gc-sections
-Message-ID: <20160808135351.19413e49@roar.ozlabs.ibm.com>
-In-Reply-To: <8649964.jra1Y5q7Kz@wuerfel>
+ Arnd Bergmann <arnd@arndb.de>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
+ code/data elimination
+In-Reply-To: <20160808134235.6f20eacb@roar.ozlabs.ibm.com>
+Message-ID: <alpine.LFD.2.20.1608080004050.17623@knanqh.ubzr>
 References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <8649964.jra1Y5q7Kz@wuerfel>
+ <1470399123-8455-3-git-send-email-npiggin@gmail.com>
+ <alpine.LFD.2.20.1608070018460.17623@knanqh.ubzr>
+ <20160808134235.6f20eacb@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,83 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 07 Aug 2016 22:23:02 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+On Mon, 8 Aug 2016, Nicholas Piggin wrote:
 
-> On Friday, August 5, 2016 10:11:58 PM CEST Nicholas Piggin wrote:
-> > Hello,
+> On Sun, 7 Aug 2016 01:33:45 -0400 (EDT)
+> Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+> 
+> > On Fri, 5 Aug 2016, Nicholas Piggin wrote:
 > > 
-> > I have 3 different things in this patchset. All arch specific, but all
-> > involve kbuild changes, so I'd like to discuss them with kbuild
-> > maintainers. The goal has been to improve long standing linking
-> > difficulties with the powerpc kernel.
+> > > Introduce LINKER_DCE option for architectures to select if they want
+> > > to build with -ffunction-sections, -fdata-sections, and link with
+> > > --gc-sections. It requires some work (documented) to ensure all
+> > > unreferenced entrypoints are live, and requires toolchain and
+> > > build verification, so it is made a per-arch option for now.
+> > > 
+> > > On a random powerpc64le build, this yelds a significant size saving,
+> > > it boots and runs fine, but there is a lot I haven't tested as yet,
+> > > so these savings may be reduced if there are bugs in the link.
+> > > 
+> > >     text      data        bss        dec   filename
+> > > 11169741   1180744    1923176	14273661   vmlinux
+> > > 10445269   1004127    1919707	13369103   vmlinux.dce
+> > > 
+> > > ~700K text, ~170K data, 6% removed from kernel image size.
+> > > 
+> > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > > 
-> > * First, building kernel using thin archives rather than incremental
-> >   linking. This seems quite clean and is per-arch, so I hope it should
-> >   not be too controversial.
+> > I played with that too. However this needs distinct sections for 
+> > exception tables and the like otherwise the backward references from the 
+> > final exception table to those functions responsible for those exception 
+> > entries has the effect of pulling in all those functions even if their 
+> > entry point is never referenced, making --gc-sections less effective.  
+> > I managed to fix this only with a change to gas (accepted upstream).
 > > 
-> > * Second, building kernel using -ffunction-sections -fdata-sections,
-> >   --gc-sections. Yes, I'm spinning the wheel again. It was motivated
-> >   by tiny codesize regression in the first patch, but the results seem
-> >   too good to ignore.
-> > 
-> > * Third, allowing architecture to run a tool over module after it has
-> >   been linked. Powerpc wants to use it in order to relocate "alternate
-> >   code" instructions that get don't get linked at their runtime
-> >   address. No idea if this is the right approach wrt kbuild, but it
-> >   seems to work.
-> > 
-> > I have included the powerpc code for the first two as a reference. The
-> > third is much bigger and mostly uninteresting for this cc list, but it
-> > can be found here:
-> > 
-> >  https://patchwork.ozlabs.org/patch/651006/
-> > 
-> > Comments appreciated.
-> > 
-> >   
+> > But once that is solved, you then have the missing forward reference 
+> > problem i.e. nothing actually references those individual exception 
+> > entry sections and ld happily drops them all. Having a KEEP() on each of 
+> > them is unworkable and defeats the purpose anyway.  That requires a 
+> > dummy reloc to trick ld into pulling in those sections when the parent 
+> > section is also pulled in.
 > 
-> I've started tested this a bit on ARM now. The first things I noticed
-> are:
-> 
-> 1. /home/arnd/cross-gcc/bin/arm-linux-gnueabi-ld: warning: drivers/xen/efi.o uses 2-byte wchar_t yet the output is to use 4-byte wchar_t; use of wchar_t values across objects may fail
-> 
-> (actually this one has been present since the first version that
-> stopped using recursive linking, I did 971a69db7dc0 ("Xen: don't
-> warn about 2-byte wchar_t in efi") when I first saw the bug, but
-> that fix no longer works and we have to do this differently
-> 
-> 2. big-endian builds on ARM stopped working, I now get
-> 
-> 22:53:02   CC      init/do_mounts_md.o
-> 22:53:02   LD      init/mounts.o
-> /home/arnd/cross-gcc/bin/arm-linux-gnueabi-ld: init/do_mounts.o: compiled for a big endian system and target is little endian
-> /home/arnd/cross-gcc/bin/arm-linux-gnueabi-ld: failed to merge target specific data of file init/do_mounts.o
-> 
-> The problem seems to be that we don't pass the correct linker
-> flags any more, it should be using --be8 from
-> 
-> arch/arm/Makefile:LDFLAGS_vmlinux       += --be8
-> arch/arm/Makefile:LDFLAGS_MODULE        += --be8
-> 
-> but that somehow is lost.
+> Right, although we don't *need* those things just for enabling
+> --gc-sections, do we? It may not be 100% optimal, but it's enough
+> to avoid the regression when switching to --whole-archive build
+> option.
 
-These both seem like linker flags are being lost for some reason, but I
-don't really know why. Maybe ARM's Makefile. I don't have an ARM build setup
-but I'll try to help track it down when I get some time.
+Oh absolutely.
+
+> Your results are impressive, and I don't want to stand in the way of
+> either LTO or improving accuracy of --gc-sections. But both are things
+> that can be built on top of this patch, I think.
+
+Indeed.  Those patches are certainly welcome. They represent half of the 
+job already.  I just wanted to provide some insight about the whole 
+picture in case someone else notices those flaws I have identified.
 
 
-> 3. drivers/firmware/efi/libstub/lib.a: error adding symbols: Archive has no index; run ranlib to add one
-> 
-> haven't investigated at all, turned off EFI for now.
-
-Okay this looks like a bug in patch 2 (caused by me, not Stephen!)
-
-For thin archives, cmd_link_l_target should be:
-
-cmd_link_l_target = rm -f $@; $(AR) rcT$(KBUILD_ARFLAGS) $@ $(lib-y)
-
-(note no "S" option).
-
-Thanks,
-Nick
+Nicolas
