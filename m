@@ -1,29 +1,22 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7LXt6LVpzDqTq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 01:14:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7LYn4cnpzDqhN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 01:14:53 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: David Laight <David.Laight@aculab.com>,
- 'Arvind Yadav' <arvind.yadav.cs@gmail.com>,
- "zajec5@gmail.com" <zajec5@gmail.com>,
- "leoli@freescale.com" <leoli@freescale.com>,
- "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
- "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
- "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linux@roeck-us.net" <linux@roeck-us.net>
-Subject: Re: [5.3] ucc_geth: Fix to avoid IS_ERR_VALUE abuses and dead code on
- 64bit systems.
-Date: Mon, 08 Aug 2016 17:13:02 +0200
-Message-ID: <2862487.guU7g5Qkfj@wuerfel>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F50C493@AcuExch.aculab.com>
-References: <1470386442-7208-1-git-send-email-arvind.yadav.cs@gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6D5F50C493@AcuExch.aculab.com>
+To: Alan Modra <amodra@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Nicolas Pitre <nico@linaro.org>, linux-kbuild@vger.kernel.org,
+ Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
+ code/data elimination
+Date: Mon, 08 Aug 2016 17:14:27 +0200
+Message-ID: <1882847.dG563Vieov@wuerfel>
+In-Reply-To: <20160807234947.GV20904@bubble.grove.modra.org>
+References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
+ <12986071.MeSB5hmlsH@wuerfel> <20160807234947.GV20904@bubble.grove.modra.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,31 +28,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, August 8, 2016 2:49:11 PM CEST David Laight wrote:
-> 
-> > If qe_muram_alloc will return any error, Then IS_ERR_VALUE will always
-> > return 0. it'll not call ucc_fast_free for any failure. Inside 'if code'
-> > will be a dead code on 64bit. Even qe_muram_addr will return wrong
-> > virtual address. Which can cause an error.
+On Monday, August 8, 2016 9:19:47 AM CEST Alan Modra wrote:
+> On Sun, Aug 07, 2016 at 10:26:19PM +0200, Arnd Bergmann wrote:
+> > On Sunday, August 7, 2016 7:27:39 PM CEST Alan Modra wrote:
+> > > 
+> > > If it can, then Nicholas' patch should be:
+> > > 
+> > >         *(.text.hot .text.hot.*) *(.text.unlikely .text.unlikely.*) *(.text .text.*)
+> > > 
+> > > If you can't put .text.fixup too far away then you may as well just use
+> > > 
+> > >         *(.text .text.*)
 > > 
-> >  kfree((void *)ugeth->tx_bd_ring_offset[i]);
+> > I tried this version:
+> > 
+> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> > index b1f8828e9eac..fc210dacac9a 100644
+> > --- a/include/asm-generic/vmlinux.lds.h
+> > +++ b/include/asm-generic/vmlinux.lds.h
+> > @@ -438,7 +438,9 @@
+> >   * during second ld run in second ld pass when generating System.map */
+> >  #define TEXT_TEXT                                                    \
+> >               ALIGN_FUNCTION();                                       \
+> > -             *(.text.hot .text .text.fixup .text.unlikely .text.*)   \
+> > +             *(.text.hot .text.hot.*)                                \
+> > +             *(.text.unlikely .text.fixup .text.unlikely.*)          \
+> > +             *(.text .text.*)                                        \
+> >               *(.ref.text)                                            \
+> >       MEM_KEEP(init.text)                                             \
+> >       MEM_KEEP(exit.text)                                             \
+> > 
+> > but that failed to link an allyesconfig kernel because of references
+> > from .fixup to .text.*. Trying your version now:
 > 
-> Erm, kfree() isn't the right function for things allocated by qe_muram_alloc().
+> Well then, that proves you can't put .text.fixup too far aways from
+> the associated input section.
 > 
-> I still thing you need to stop this code using IS_ERR_VALUE() at all.
+> > *(.text.hot .text.hot.*) *(.text.unlikely .text.unlikely.*) *(.text .text.*)
+> 
+> Which means this is guaranteed to fail when you test it properly using
+> gcc's profiling options, in order to generate .text.hot* and/or
+> .text.unlikely* sections.
 
-Those are two separate issues:
+I've investigated further and it seems that "*(.text.fixup) *(.text .text.*)"
+fails just because we list .text.fixup twice. The .text.fixup section
+was originally[1] introduced to work around the same link error that
+it is causing now: if we use recursive linking, merging .text and .text.fixup
+helps avoid the problems of sections that are >32MB before the final
+link.
 
-a) The ucc_geth driver mixing kmalloc() memory with muram, and assigning
-   the result to "u32" and "void __iomem *" variables, both of which
-   are wrong at least half of the time.
+I have reverted that patch now, so ARM uses ".fixup" again like every
+other architecture does, and now "*(.fixup) *(.text .text.*)" works
+correctly, while ""*(.fixup) *(.text .fixup .text.*)" also fails
+the same way that I saw before:
 
-b) calling conventions of qe_muram_alloc() being defined in a way that
-   requires the use of IS_ERR_VALUE(), because '0' is a valid address
-   here.
+drivers/scsi/sg.o:(.fixup+0x4): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0xc): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x14): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x1c): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x24): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x2c): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x34): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x3c): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
+drivers/scsi/sg.o:(.fixup+0x44): relocation truncated to fit: R_ARM_THM_JUMP24 against `.text.sg_ioctl'
 
-The first one can be solved by updating the network driver, ideally
-by getting rid of the casts and using proper types and accessors,
-while the second would require updating all users of that interface.
+I don't understand what led Andi Kleen to also move .text.hot and
+.text.unlikely together with .text [2], but this may have
+been a related issue.
+
+> It seems to me the right thing to do would be to change kernel asm to
+> generate .text.foo.fixup for any .text.foo section.  A gas feature
+> available with binutils-2.26 enabled by --sectname-subst might help
+> with implementing that.
+
+I think this what Nico wanted to use anyway to eliminate more functions
+from the output.
 
 	Arnd
+
+
+[1] http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=8321
+    http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=8322
+
+[2] https://lkml.org/lkml/2015/7/19/377
