@@ -1,37 +1,29 @@
-Return-Path: <arbab@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-wm0-x22c.google.com (mail-wm0-x22c.google.com
+ [IPv6:2a00:1450:400c:c09::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Qr715kgzDqdG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 04:27:34 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u78H5YM1089611
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 14:27:32 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24n8ty988s-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 14:27:32 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Mon, 8 Aug 2016 12:27:31 -0600
-From: Reza Arbab <arbab@linux.vnet.ibm.com>
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Rjr0SGCzDqTq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 05:07:11 +1000 (AEST)
+Received: by mail-wm0-x22c.google.com with SMTP id i5so159375621wmg.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 12:07:11 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <20160808145542.7297-1-dvlasenk@redhat.com>
+References: <20160808145542.7297-1-dvlasenk@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Mon, 8 Aug 2016 12:07:05 -0700
+Message-ID: <CAGXu5j+HYkAweod-CC7QhTr3rB-18fMMzthdu4f_Cg3ykQZXUg@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc: Do not make the entire heap executable
+To: Denys Vlasenko <dvlasenk@redhat.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Jonathan Corbet <corbet@lwn.net>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] dt-bindings: add doc for ibm,hotplug-aperture
-Date: Mon,  8 Aug 2016 13:27:20 -0500
-In-Reply-To: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
-References: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1470680843-28702-2-git-send-email-arbab@linux.vnet.ibm.com>
+ Paul Mackerras <paulus@samba.org>,
+ Oleg Nesterov <oleg@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Florian Weimer <fweimer@redhat.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,43 +33,256 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
----
- .../bindings/powerpc/opal/hotplug-aperture.txt     | 26 ++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
+On Mon, Aug 8, 2016 at 7:55 AM, Denys Vlasenko <dvlasenk@redhat.com> wrote:
+> On 32-bit powerps the ELF PLT sections of binaries (built with --bss-plt,
+> or with a toolchain which defaults to it) look like this:
+>
+>   [17] .sbss             NOBITS          0002aff8 01aff8 000014 00  WA  0   0  4
+>   [18] .plt              NOBITS          0002b00c 01aff8 000084 00 WAX  0   0  4
+>   [19] .bss              NOBITS          0002b090 01aff8 0000a4 00  WA  0   0  4
+>
+> Which results in an ELF load header:
+>
+>   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+>   LOAD           0x019c70 0x00029c70 0x00029c70 0x01388 0x014c4 RWE 0x10000
+>
+> This is all correct, the load region containing the PLT is marked as
+> executable. Note that the PLT starts at 0002b00c but the file mapping ends at
+> 0002aff8, so the PLT falls in the 0 fill section described by the load header,
+> and after a page boundary.
+>
+> Unfortunately the generic ELF loader ignores the X bit in the load headers
+> when it creates the 0 filled non-file backed mappings. It assumes all of these
+> mappings are RW BSS sections, which is not the case for PPC.
+>
+> gcc/ld has an option (--secure-plt) to not do this, this is said to incur
+> a small performance penalty.
+>
+> Currently, to support 32-bit binaries with PLT in BSS kernel maps *entire
+> brk area* with executable rights for all binaries, even --secure-plt ones.
+>
+> Stop doing that.
+>
+> Teach the ELF loader to check the X bit in the relevant load header
+> and create 0 filled anonymous mappings that are executable
+> if the load header requests that.
+>
+> The patch was originally posted in 2012 by Jason Gunthorpe
+> and apparently ignored:
+>
+> https://lkml.org/lkml/2012/9/30/138
+>
+> Lightly run-tested.
+>
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Kees Cook <keescook@chromium.org>
+> CC: Oleg Nesterov <oleg@redhat.com>,
+> CC: Michael Ellerman <mpe@ellerman.id.au>
+> CC: Florian Weimer <fweimer@redhat.com>
+> CC: linux-mm@kvack.org,
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: linux-kernel@vger.kernel.org
+> ---
+> Changes since v1:
+> * wrapped lines to not exceed 79 chars
+> * improved comment
+> * expanded CC list
+>
+>  arch/powerpc/include/asm/page.h    | 10 +------
+>  arch/powerpc/include/asm/page_32.h |  2 --
+>  arch/powerpc/include/asm/page_64.h |  4 ---
+>  fs/binfmt_elf.c                    | 56 ++++++++++++++++++++++++++++++--------
+>  4 files changed, 45 insertions(+), 27 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+> index 56398e7..42d7ea1 100644
+> --- a/arch/powerpc/include/asm/page.h
+> +++ b/arch/powerpc/include/asm/page.h
+> @@ -225,15 +225,7 @@ extern long long virt_phys_offset;
+>  #endif
+>  #endif
+>
+> -/*
+> - * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+> - * and needs to be executable.  This means the whole heap ends
+> - * up being executable.
+> - */
+> -#define VM_DATA_DEFAULT_FLAGS32        (VM_READ | VM_WRITE | VM_EXEC | \
+> -                                VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+> -
+> -#define VM_DATA_DEFAULT_FLAGS64        (VM_READ | VM_WRITE | \
+> +#define VM_DATA_DEFAULT_FLAGS  (VM_READ | VM_WRITE | \
+>                                  VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+>
+>  #ifdef __powerpc64__
+> diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
+> index 6a8e179..6113fa8 100644
+> --- a/arch/powerpc/include/asm/page_32.h
+> +++ b/arch/powerpc/include/asm/page_32.h
+> @@ -9,8 +9,6 @@
+>  #endif
+>  #endif
+>
+> -#define VM_DATA_DEFAULT_FLAGS  VM_DATA_DEFAULT_FLAGS32
+> -
+>  #ifdef CONFIG_NOT_COHERENT_CACHE
+>  #define ARCH_DMA_MINALIGN      L1_CACHE_BYTES
+>  #endif
+> diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+> index dd5f071..52d8e9c 100644
+> --- a/arch/powerpc/include/asm/page_64.h
+> +++ b/arch/powerpc/include/asm/page_64.h
+> @@ -159,10 +159,6 @@ do {                                               \
+>
+>  #endif /* !CONFIG_HUGETLB_PAGE */
+>
+> -#define VM_DATA_DEFAULT_FLAGS \
+> -       (is_32bit_task() ? \
+> -        VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+> -
+>  /*
+>   * This is the default if a program doesn't have a PT_GNU_STACK
+>   * program header entry. The PPC64 ELF ABI has a non executable stack
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index a7a28110..50006d0 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -91,14 +91,25 @@ static struct linux_binfmt elf_format = {
+>
+>  #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
+>
+> -static int set_brk(unsigned long start, unsigned long end)
+> +static int set_brk(unsigned long start, unsigned long end, int prot)
+>  {
+>         start = ELF_PAGEALIGN(start);
+>         end = ELF_PAGEALIGN(end);
+>         if (end > start) {
+> -               int error = vm_brk(start, end - start);
+> -               if (error)
+> -                       return error;
+> +               /* Map the non-file portion of the last load header. If the
+> +                  header is requesting these pages to be executeable then
+> +                  we have to honour that, otherwise assume they are bss. */
+> +               if (prot & PROT_EXEC) {
+> +                       unsigned long addr;
+> +                       addr = vm_mmap(0, start, end - start, prot,
+> +                               MAP_PRIVATE | MAP_FIXED, 0);
+> +                       if (BAD_ADDR(addr))
+> +                               return addr;
+> +               } else {
+> +                       int error = vm_brk(start, end - start);
+> +                       if (error)
+> +                               return error;
+> +               }
 
-diff --git a/Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt b/Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
-new file mode 100644
-index 0000000..b8dffaa
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
-@@ -0,0 +1,26 @@
-+Designated hotplug memory
-+-------------------------
-+
-+This binding describes a region of hotplug memory which is not present at boot,
-+allowing its eventual NUMA associativity to be prespecified.
-+
-+Required properties:
-+
-+- compatible
-+	"ibm,hotplug-aperture"
-+
-+- reg
-+	base address and size of the region (standard definition)
-+
-+- ibm,associativity
-+	NUMA associativity (standard definition)
-+
-+Example:
-+
-+A 2 GiB aperture at 0x100000000, to be part of nid 3 when hotplugged:
-+
-+	hotplug-memory@100000000 {
-+		compatible = "ibm,hotplug-aperture";
-+		reg = <0x0 0x100000000 0x0 0x80000000>;
-+		ibm,associativity = <0x4 0x0 0x0 0x0 0x3>;
-+	};
+Rather than repeating this logic twice, I think this should be a
+helper that both sections can call.
+
+-Kees
+
+>         }
+>         current->mm->start_brk = current->mm->brk = end;
+>         return 0;
+> @@ -524,6 +535,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>         unsigned long load_addr = 0;
+>         int load_addr_set = 0;
+>         unsigned long last_bss = 0, elf_bss = 0;
+> +       int bss_prot = 0;
+>         unsigned long error = ~0UL;
+>         unsigned long total_size;
+>         int i;
+> @@ -606,8 +618,10 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>                          * elf_bss and last_bss is the bss section.
+>                          */
+>                         k = load_addr + eppnt->p_memsz + eppnt->p_vaddr;
+> -                       if (k > last_bss)
+> +                       if (k > last_bss) {
+>                                 last_bss = k;
+> +                               bss_prot = elf_prot;
+> +                       }
+>                 }
+>         }
+>
+> @@ -626,10 +640,27 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+>                 /* What we have mapped so far */
+>                 elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
+>
+> -               /* Map the last of the bss segment */
+> -               error = vm_brk(elf_bss, last_bss - elf_bss);
+> -               if (error)
+> -                       goto out;
+> +               if (last_bss > elf_bss) {
+> +                       /*
+> +                        * Map the non-file portion of the last load header.
+> +                        * If the header is requesting these pages to be
+> +                        * executable, honour that (ppc32 needs this).
+> +                        * Otherwise assume they are bss.
+> +                        */
+> +                       if (bss_prot & PROT_EXEC) {
+> +                               unsigned long addr;
+> +                               addr = vm_mmap(0, elf_bss, last_bss - elf_bss,
+> +                                       bss_prot, MAP_PRIVATE | MAP_FIXED, 0);
+> +                               if (BAD_ADDR(addr)) {
+> +                                       error = addr;
+> +                                       goto out;
+> +                               }
+> +                       } else {
+> +                               error = vm_brk(elf_bss, last_bss - elf_bss);
+> +                               if (error)
+> +                                       goto out;
+> +                       }
+> +               }
+>         }
+>
+>         error = load_addr;
+> @@ -672,6 +700,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>         unsigned long error;
+>         struct elf_phdr *elf_ppnt, *elf_phdata, *interp_elf_phdata = NULL;
+>         unsigned long elf_bss, elf_brk;
+> +       int bss_prot = 0;
+>         int retval, i;
+>         unsigned long elf_entry;
+>         unsigned long interp_load_addr = 0;
+> @@ -879,7 +908,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>                            before this one. Map anonymous pages, if needed,
+>                            and clear the area.  */
+>                         retval = set_brk(elf_bss + load_bias,
+> -                                        elf_brk + load_bias);
+> +                                        elf_brk + load_bias,
+> +                                        bss_prot);
+>                         if (retval)
+>                                 goto out_free_dentry;
+>                         nbyte = ELF_PAGEOFFSET(elf_bss);
+> @@ -973,8 +1003,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>                 if (end_data < k)
+>                         end_data = k;
+>                 k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
+> -               if (k > elf_brk)
+> +               if (k > elf_brk) {
+> +                       bss_prot = elf_prot;
+>                         elf_brk = k;
+> +               }
+>         }
+>
+>         loc->elf_ex.e_entry += load_bias;
+> @@ -990,7 +1022,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
+>          * mapping in the interpreter, to make sure it doesn't wind
+>          * up getting placed where the bss needs to go.
+>          */
+> -       retval = set_brk(elf_bss, elf_brk);
+> +       retval = set_brk(elf_bss, elf_brk, bss_prot);
+>         if (retval)
+>                 goto out_free_dentry;
+>         if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
+> --
+> 2.9.2
+>
+
+
+
 -- 
-1.8.3.1
+Kees Cook
+Nexus Security
