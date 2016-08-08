@@ -1,52 +1,19 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wangkefeng.wang@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [58.251.152.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7HyK6Mk4zDqYt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 23:17:29 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3s7HyK2J8Rz9sRB
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Aug 2016 23:17:29 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u78D9gC4027729
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Aug 2016 09:17:27 -0400
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24n8txv3nu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 08 Aug 2016 09:17:26 -0400
-Received: from localhost
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Mon, 8 Aug 2016 10:17:24 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id EF81A1DC0086
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Aug 2016 09:17:13 -0400 (EDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u78DHMI43239996
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Aug 2016 10:17:22 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u78DHM4S023980
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Aug 2016 10:17:22 -0300
-Subject: Re: [PATCH] powerpc/pci: Only do fixed PHB numbering on powernv
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <1470379256-24266-1-git-send-email-mpe@ellerman.id.au>
- <20160807234824.GA4628@gwshan>
-Cc: linuxppc-dev@ozlabs.org, chzigotzky@xenosoft.de,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Date: Mon, 8 Aug 2016 10:17:21 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7GvQ1b4pzDqTq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 22:29:53 +1000 (AEST)
+Subject: Re: Problem booting Kernel 4.8-rc1 on Sam460ex ( Canyonlands)
+To: Julian Margetson <runaway@candw.ms>, <linuxppc-dev@lists.ozlabs.org>
+References: <ce142972-52a8-452f-8911-70af927ae425@candw.ms>
+CC: <mpe@ellerman.id.au>, <imunsie@au1.ibm.com>, <benh@kernel.crashing.org>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Message-ID: <a9fe88f0-14ba-7ca6-66b4-69b84fa8a823@huawei.com>
+Date: Mon, 8 Aug 2016 20:22:35 +0800
 MIME-Version: 1.0
-In-Reply-To: <20160807234824.GA4628@gwshan>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <57A88661.2000606@linux.vnet.ibm.com>
+In-Reply-To: <ce142972-52a8-452f-8911-70af927ae425@candw.ms>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,123 +23,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/07/2016 08:48 PM, Gavin Shan wrote:
-> On Fri, Aug 05, 2016 at 04:40:56PM +1000, Michael Ellerman wrote:
->> The recent commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number
->> based on device-tree properties"), added code to read a 64-bit property
->>from the device tree, and if not found read a 32-bit property (reg).
->>
->> There was a bug in the 32-bit case, on big endian machines, due to the
->> use of the 64-bit value to read the 32-bit property. The cast of &prop
->> means we end up writing to the high 32-bit of prop, leaving the low
->> 32-bits containing whatever junk was on the stack.
->>
->> If that junk value was non-zero, and < MAX_PHBS, we would end up using
->> it as the PHB id.
->>
->> This exposed a second problem, which is that Xorg can't cope with a
->> domain number > 256.
->>
->> So for now drop the fallback to reg, and only use "ibm,opal-phbid" for
->> PHB numbering.
->>
->> Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->> arch/powerpc/kernel/pci-common.c | 24 +++++++++---------------
->> 1 file changed, 9 insertions(+), 15 deletions(-)
->>
->>
->> This is my bad. Guilherme limited the reg case to pseries only, but I made it
->> generic. I tested it on G5, Cell etc. which all booted - but that's not really
->> a good enough test.
->>
 
-Michael and Gavin, thanks very much for fixing and commenting on the 
-issue. I'm sorry about the bug on Big Endian machines, my mistake! I'll 
-fix it in a future patch, but right now I have 2 questions so I can 
-investigate better the issue found on Xorg:
+On 2016/8/8 19:52, Julian Margetson wrote:
+> Problem booting Kernel 4.8-rc1 on Sam460ex ( Canyonlands) machine .
+> 
+> This is what I get with the bisect.
 
-(i) What is the specific issue? Do you have some logs or at least a 
-"high-level" description of the problem in Xorg? I took a look in its 
-code and PCI domain is coded as u16, which is correct/expected. So it 
-seems a subtle bug we should investigate and hopefully fix.
+Hi Julian
 
-(ii) Why is it related to the absence of pseries check?! You said this 
-was your bad, but as far as I understand, Xorg runs in pSeries too so 
-the issue should also be there heheh
-The bug was reported/found in another platform?
-
-
-As Gavin pointed, the important/interesting part of the patch is related 
-to pSeries, in which we have PHB hotplug and so the patch allows network 
-adapters to work well in PHB hotplug scenario, even if using predictable 
-naming. For now, I guess this fix is pretty good, but would be really 
-important to have this feature on pSeries too - I'll put some effort in 
-solving the Xorg bug.
+I have no Sam460ex machine, could you show the good and bad kernel bootlog?
 
 Thanks,
+Kefeng
 
-
-Guilherme
-
->> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->> index f93942b4b6a6..f9c2ffaa1884 100644
->> --- a/arch/powerpc/kernel/pci-common.c
->> +++ b/arch/powerpc/kernel/pci-common.c
->> @@ -77,29 +77,23 @@ EXPORT_SYMBOL(get_pci_dma_ops);
->>   */
->> static int get_phb_number(struct device_node *dn)
->> {
->> -	int ret, phb_id = -1;
->> +	int ret, phb_id;
->> 	u64 prop;
->>
->> 	/*
->> -	 * Try fixed PHB numbering first, by checking archs and reading
->> -	 * the respective device-tree properties. Firstly, try powernv by
->> -	 * reading "ibm,opal-phbid", only present in OPAL environment.
->> +	 * On powernv machines we should have the "ibm,opal-phbid" property, if
->> +	 * so use that so that PHB numbers are predictable.
->> 	 */
->> 	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
->> -	if (ret)
->> -		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
->> -
->> -	if (!ret)
->> +	if (ret == 0) {
->> 		phb_id = (int)(prop & (MAX_PHBS - 1));
->>
->
-> Michael, It's going to ignore the issue addressed by commit 63a72284b159
-> ("powerpc/pci: Assign fixed PHB number based on device-tree properties").
-> The commit tried to get the PCI domain number from "reg" on pSeries. We
-> still need check "reg" and try to get PCI domain number from it on pSeries
-> only:
->
-> 	if (ret && machine_is(pseries))
-> 		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
->
-> Thanks,
-> Gavin
->
->> -	/* We need to be sure to not use the same PHB number twice. */
->> -	if ((phb_id >= 0) && !test_and_set_bit(phb_id, phb_bitmap))
->> -		return phb_id;
->> +		/* Make sure never to use the same PHB number twice. */
->> +		if (!test_and_set_bit(phb_id, phb_bitmap))
->> +			return phb_id;
->> +	}
->>
->> -	/*
->> -	 * If not pseries nor powernv, or if fixed PHB numbering tried to add
->> -	 * the same PHB number twice, then fallback to dynamic PHB numbering.
->> -	 */
->> +	/* If fixed PHB numbering failed, fallback to dynamic PHB numbering. */
->> 	phb_id = find_first_zero_bit(phb_bitmap, MAX_PHBS);
->> 	BUG_ON(phb_id >= MAX_PHBS);
->> 	set_bit(phb_id, phb_bitmap);
->> --
->> 2.7.4
->>
->
+> 
+> Regards
+> 
+> Julian
+> 
+> 
+> 44a7185c2ae6383c88ff5b1ef2e2969f35d7b8b7 is the first bad commit
+> commit 44a7185c2ae6383c88ff5b1ef2e2969f35d7b8b7
+> Author: Kefeng Wang <wangkefeng.wang@huawei.com>
+> Date:   Wed Jun 1 14:52:54 2016 +0800
+> 
+>     of/platform: Add common method to populate default bus
+> 
+>     The arch code calls of_platform_populate() with default match table
+>     when it wants to populate default bus.
+> 
+>     This patch introduce a new of_platform_default_populate_init() and make it
+>     arch_initcall_sync(it should be later than some iommu configration, eg,
+>     of_iommu_init() and swiotlb_late_init in arm64), then we can finish above
+>     job in common method.
+> 
+>     In order to avoid the default bus being populated twice, simply checking
+>     the flag of bus node whether has be set OF_POPULATED_BUS or not.
+> 
+>     After that, we can safely remove the caller in arch code.
+> 
+>     Btw, add debug print in of_platform_populate(), and use __func__ to
+>     print function's name of of_platform_bus_create().
+> 
+>     Cc: Rob Herring <robh+dt@kernel.org>
+>     Cc: Frank Rowand <frowand.list@gmail.com>
+>     Cc: Grant Likely <grant.likely@linaro.org>
+>     Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+>     Signed-off-by: Rob Herring <robh@kernel.org>
+> 
+> :040000 040000 2d2438c33110bd5d0cba9540357c7e81f74485dd 3ad033aad77298c3a6f50ed4c651d7336825d700 M    drivers
+> root@julian-VirtualBox:/usr/src/linux-test#
+> 
+> 
+> git bisect log
+> git bisect start
+> # good: [523d939ef98fd712632d93a5a2b588e477a7565e] Linux 4.7
+> git bisect good 523d939ef98fd712632d93a5a2b588e477a7565e
+> # bad: [29b4817d4018df78086157ea3a55c1d9424a7cfc] Linux 4.8-rc1
+> git bisect bad 29b4817d4018df78086157ea3a55c1d9424a7cfc
+> # good: [1c88e19b0f6a8471ee50d5062721ba30b8fd4ba9] Merge branch 'akpm' (patches from Andrew)
+> git bisect good 1c88e19b0f6a8471ee50d5062721ba30b8fd4ba9
+> # bad: [77a87824ed676ca8ff8482e4157d3adb284fd381] clocksource/drivers/clps_711x: fixup for "ARM: clps711x:
+> git bisect bad 77a87824ed676ca8ff8482e4157d3adb284fd381
+> # bad: [c9b95e5961c0294e0efffeaa847c1a1e6369204c] Merge tag 'sound-4.8-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound
+> git bisect bad c9b95e5961c0294e0efffeaa847c1a1e6369204c
+> # good: [1056c9bd2702ea1bb79abf9bd1e78c578589d247] Merge tag 'clk-for-linus-4.8' of git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux
+> git bisect good 1056c9bd2702ea1bb79abf9bd1e78c578589d247
+> # bad: [bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9] Merge tag 'powerpc-4.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+> git bisect bad bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9
+> # bad: [bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9] Merge tag 'powerpc-4.8-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
+> git bisect bad bad60e6f259a01cf9f29a1ef8d435ab6c60b2de9
+> # good: [f7b9ebb79e90b19bf6a2cb805a536258437fc3fa] powerpc: Re-order setup_panic()
+> git bisect good f7b9ebb79e90b19bf6a2cb805a536258437fc3fa
+> # good: [f7b9ebb79e90b19bf6a2cb805a536258437fc3fa] powerpc: Re-order setup_panic()
+> git bisect good f7b9ebb79e90b19bf6a2cb805a536258437fc3fa
+> # good: [944171cbf499d3445c749f7c13c46de0a564a905] pNFS: Actively set attributes as invalid if LAYOUTCOMMIT is outstanding
+> git bisect good 944171cbf499d3445c749f7c13c46de0a564a905
+> # bad: [b325e04ea21081439f0f3e7fe1117e883a9031d8] Merge branch 'x86-cpu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+> git bisect bad b325e04ea21081439f0f3e7fe1117e883a9031d8
+> # bad: [b325e04ea21081439f0f3e7fe1117e883a9031d8] Merge branch 'x86-cpu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip
+> git bisect bad b325e04ea21081439f0f3e7fe1117e883a9031d8
+> # bad: [0e13f99d3a4816a3996a69721388b4cf1a982cf8] Documentation: dt: i2c: use correct STMicroelectronics vendor prefix
+> git bisect bad 0e13f99d3a4816a3996a69721388b4cf1a982cf8
+> # bad: [1a1d2f9968660e016883b21c499158c08d9c87bf] mips: use of_platform_default_populate() to populate default bus
+> git bisect bad 1a1d2f9968660e016883b21c499158c08d9c87bf
+> # bad: [db41252cf8b58c8a57226204e113b9dffaebf693] cris: Remove unnecessary of_platform_populate with default match table
+> git bisect bad db41252cf8b58c8a57226204e113b9dffaebf693
+> # bad: [61c78644e7f1bd9445b3d7ddc3d35989a38985ee] arc: Remove unnecessary of_platform_populate with default match table
+> git bisect bad 61c78644e7f1bd9445b3d7ddc3d35989a38985ee
+> # bad: [44a7185c2ae6383c88ff5b1ef2e2969f35d7b8b7] of/platform: Add common method to populate default bus
+> git bisect bad 44a7185c2ae6383c88ff5b1ef2e2969f35d7b8b7
+> # good: [bb8e15d60462a84a25a3bf33e8bc29b46c6d470a] of: iommu: make of_iommu_init() postcore_initcall_sync
+> git bisect good bb8e15d60462a84a25a3bf33e8bc29b46c6d470a
+> # first bad commit: [44a7185c2ae6383c88ff5b1ef2e2969f35d7b8b7] of/platform: Add common method to populate default bus
+> 
+> 
+> 
+> 
+> .
+> 
