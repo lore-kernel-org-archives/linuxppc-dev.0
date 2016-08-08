@@ -1,46 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s6zL35tpszDqYj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 10:48:27 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u780hv9L036386
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Aug 2016 20:48:25 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24na1vfxxx-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 20:48:24 -0400
-Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 8 Aug 2016 10:48:21 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id B8C1A2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 10:48:18 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u780mIxx29229176
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 10:48:18 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u780mI9O009190
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 10:48:18 +1000
-Date: Mon, 8 Aug 2016 10:47:47 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Russell Currey <ruscur@russell.cc>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/eeh: Fix slot locations on NPU and legacy
- platforms
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20160804050115.9937-1-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s6zbX1s4tzDqYj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 11:00:08 +1000 (AEST)
+Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3s6zbW2Y9Sz9sf9
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Aug 2016 11:00:07 +1000 (AEST)
+Date: Mon, 8 Aug 2016 10:59:53 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: <linuxppc-dev@ozlabs.org>, haokexin@gmail.com,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 19/21] powerpc: Add option to use jump label for
+ mmu_has_feature()
+Message-ID: <20160808105953.718262f8@kryten>
+In-Reply-To: <1469629097-30859-19-git-send-email-mpe@ellerman.id.au>
+References: <1469629097-30859-1-git-send-email-mpe@ellerman.id.au>
+ <1469629097-30859-19-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160804050115.9937-1-ruscur@russell.cc>
-Message-Id: <20160808004747.GA6485@gwshan>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,105 +31,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 04, 2016 at 03:01:15PM +1000, Russell Currey wrote:
->The slot location code as part of EEH has never functioned perfectly on
->every powerpc system.  The device node properties "ibm,slot-loc",
->"ibm,slot-location-code" and "ibm,io-base-loc-code" have all been
->presented in different cases, and in some situations, there are legacy
->platforms not conforming to the conventions of populating root buses with
->"ibm,io-base-loc-code" and child nodes with "ibm,slot-location-code".
->
->Specifically, some legacy platforms use "ibm,loc-code" instead, which
->stopped working with 7e56f627768.  In addition, EEH PEs for NPU devices
->have slot locations specified on the devices instead of buses due to their
->architecture, and these were not printed.  This has been fixed by looking
->at the top device of a PE for a slot location before checking its bus.
->
->Fixes: 7e56f627768 "powerpc/eeh: Fix PE location code"
+Hi,
 
-Please describe what the patch is going to do if possible. I didn't completely
-git it from the changelog.
+> From: Kevin Hao <haokexin@gmail.com>
+> 
+> As we just did for CPU features.
 
-Fixes: 7e56f627768 ("powerpc/eeh: Fix PE location code")
+This patch causes an oops when building with the gold linker:
 
->Cc: <stable@vger.kernel.org> #4.4+
->Signed-off-by: Russell Currey <ruscur@russell.cc>
->---
-> arch/powerpc/kernel/eeh_pe.c | 31 ++++++++++++++++++++++++++-----
-> 1 file changed, 26 insertions(+), 5 deletions(-)
->
->diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->index f0520da..034538c 100644
->--- a/arch/powerpc/kernel/eeh_pe.c
->+++ b/arch/powerpc/kernel/eeh_pe.c
->@@ -881,17 +881,34 @@ void eeh_pe_restore_bars(struct eeh_pe *pe)
->  * eeh_pe_loc_get - Retrieve location code binding to the given PE
->  * @pe: EEH PE
->  *
->- * Retrieve the location code of the given PE. If the primary PE bus
->- * is root bus, we will grab location code from PHB device tree node
->- * or root port. Otherwise, the upstream bridge's device tree node
->- * of the primary PE bus will be checked for the location code.
->+ * Retrieve the location code of the given PE. The first device associated
->+ * with the PE is checked for a slot location.  If missing, the bus of the
->+ * device is checked instead.  If this is a root bus, the location code is
->+ * taken from the PHB device tree node or root port.  If not, the upstream
->+ * bridge's device tree node of the primary PE bus will be checked instead.
->+ * If a slot location isn't found on the bus, walk through parent buses
->+ * until a location is found.
->  */
-> const char *eeh_pe_loc_get(struct eeh_pe *pe)
-> {
->-	struct pci_bus *bus = eeh_pe_bus_get(pe);
->+	struct pci_bus *bus;
-> 	struct device_node *dn;
-> 	const char *loc = NULL;
->
->+	/* Check the slot location of the first (top) PCI device */
->+	struct eeh_dev *edev =
->+		list_first_entry_or_null(&pe->edevs, struct eeh_dev, list);
->+
->+	if (edev) {
->+		loc = of_get_property(edev->pdn->node,
->+				      "ibm,slot-location-code", NULL);
->+		if (loc)
->+			return loc;
->+	}
+Unable to handle kernel paging request for data at address 0xf000000000000000
+Faulting instruction address: 0xc000000000971544
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2048 NUMA pSeries
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper Not tainted 4.7.0-07470-gc12e6f2 #15
+task: c000000000db7500 task.stack: c000000000e04000
+NIP: c000000000971544 LR: c00000000097144c CTR: 0000000000000000
+REGS: c000000000e078f0 TRAP: 0300   Not tainted  (4.7.0-07470-gc12e6f2)
+MSR: 8000000000001033 <SF,ME,IR,DR,RI,LE>  CR: 44002422  XER: 00000000
+CFAR: c000000000008768 DAR: f000000000000000 DSISR: 40000000 SOFTE: 0 
+GPR00: c000000000971e8c c000000000e07b70 c000000000dfc700 0000000000000000 
+GPR04: c000000000da5bc0 0000000000000000 0000000000000100 c000000000e3c700 
+GPR08: c0000000fffd2300 0000000000000000 f000000000000000 0000000000000000 
+GPR12: 0000000000000000 c00000000fe00000 c0000000009ab1c0 c000000000b52868 
+GPR16: c000000000b52840 c000000000b52898 c000000000b528a0 0000000000000000 
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001 
+GPR24: 00000000003fffff 0000000000010000 0000000000000001 ffffffffffffffff 
+GPR28: c000000000da5bc0 c000000000da5bc0 0000000000000000 0000000000000000 
+NIP [c000000000971544] memmap_init_zone+0x204/0x2cc
+LR [c00000000097144c] memmap_init_zone+0x10c/0x2cc
+Call Trace:
+[c000000000e07b70] [c000000000971648] init_currently_empty_zone+0x3c/0x11c (unreliable)
+[c000000000e07c00] [c000000000971e8c] free_area_init_node+0x54c/0x694
+[c000000000e07d10] [c000000000c6b108] free_area_init_nodes+0x788/0x838
+[c000000000e07e20] [c000000000c4fc14] paging_init+0x88/0xa4
+[c000000000e07e90] [c000000000c4ac44] setup_arch+0x2d0/0x30c
+[c000000000e07f00] [c000000000c43b04] start_kernel+0x90/0x514
+[c000000000e07f90] [c000000000008f5c] start_here_common+0x1c/0x9c
 
-I don't think it's correct as it's to return the child PE's location code.
-The @edev's "ibm,loc-code" should be used in this case. On PowerNV, we
-needn't check "ibm,loc-code" as it's created based on "ibm,slot-location-code"
-of its bus's node, which is covered by original code. However, "ibm,loc-code"
-should be checked on pSeries as we don't have "ibm,slot-location-code" and
-"ibm,slot-label" there.
+Haven't had a chance to determine if this is a Linux or gold issue yet.
 
-Please use eeh_dev_to_pdn() when getting pdn from a EEH device.
+Anton
+--
 
->+
->+	/* If there's nothing on the device, look at the bus */
->+	bus = eeh_pe_bus_get(pe);
->+
-> 	while (bus) {
-> 		dn = pci_bus_to_OF_node(bus);
-> 		if (!dn) {
->@@ -905,6 +922,10 @@ const char *eeh_pe_loc_get(struct eeh_pe *pe)
-> 			loc = of_get_property(dn, "ibm,slot-location-code",
-> 					      NULL);
->
->+		/* Fall back to ibm,loc-code if nothing else is found */
->+		if (!loc)
->+			loc = of_get_property(dn, "ibm,loc-code", NULL);
->+
-
-We actually need consistent order as above: "ibm,loc-code" has high
-priority than "ibm,slot-location-code" and "ibm,io-base-loc-code".
-
-Thanks,
-Gavin
-
-> 		if (loc)
-> 			return loc;
->
->-- 
->2.9.2
->
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/mmu.h    | 36
+> ++++++++++++++++++++++++++++++++++++
+> arch/powerpc/kernel/cputable.c    | 17 +++++++++++++++++
+> arch/powerpc/lib/feature-fixups.c |  1 + 3 files changed, 54
+> insertions(+)
+> 
+> v3: Rename to mmu_feature_keys, and NUM_MMU_FTR_KEYS.
+>     Use the kconfig.
+> 
+> diff --git a/arch/powerpc/include/asm/mmu.h
+> b/arch/powerpc/include/asm/mmu.h index e3eff365e55d..3900cb7fe7cf
+> 100644 --- a/arch/powerpc/include/asm/mmu.h
+> +++ b/arch/powerpc/include/asm/mmu.h
+> @@ -140,6 +140,41 @@ static inline bool __mmu_has_feature(unsigned
+> long feature) return !!(MMU_FTRS_POSSIBLE &
+> cur_cpu_spec->mmu_features & feature); }
+>  
+> +#ifdef CONFIG_JUMP_LABEL_FEATURE_CHECKS
+> +#include <linux/jump_label.h>
+> +
+> +#define NUM_MMU_FTR_KEYS	32
+> +
+> +extern struct static_key_true mmu_feature_keys[NUM_MMU_FTR_KEYS];
+> +
+> +extern void mmu_feature_keys_init(void);
+> +
+> +static __always_inline bool mmu_has_feature(unsigned long feature)
+> +{
+> +	int i;
+> +
+> +	if (!(MMU_FTRS_POSSIBLE & feature))
+> +		return false;
+> +
+> +	i = __builtin_ctzl(feature);
+> +	return static_branch_likely(&mmu_feature_keys[i]);
+> +}
+> +
+> +static inline void mmu_clear_feature(unsigned long feature)
+> +{
+> +	int i;
+> +
+> +	i = __builtin_ctzl(feature);
+> +	cur_cpu_spec->mmu_features &= ~feature;
+> +	static_branch_disable(&mmu_feature_keys[i]);
+> +}
+> +#else
+> +
+> +static inline void mmu_feature_keys_init(void)
+> +{
+> +
+> +}
+> +
+>  static inline bool mmu_has_feature(unsigned long feature)
+>  {
+>  	return __mmu_has_feature(feature);
+> @@ -149,6 +184,7 @@ static inline void mmu_clear_feature(unsigned
+> long feature) {
+>  	cur_cpu_spec->mmu_features &= ~feature;
+>  }
+> +#endif /* CONFIG_JUMP_LABEL */
+>  
+>  extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
+>  
+> diff --git a/arch/powerpc/kernel/cputable.c
+> b/arch/powerpc/kernel/cputable.c index f268850f8fda..db14efc7d3e0
+> 100644 --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -2243,4 +2243,21 @@ void __init cpu_feature_keys_init(void)
+>  			static_branch_disable(&cpu_feature_keys[i]);
+>  	}
+>  }
+> +
+> +struct static_key_true mmu_feature_keys[NUM_MMU_FTR_KEYS] = {
+> +			[0 ... NUM_MMU_FTR_KEYS - 1] =
+> STATIC_KEY_TRUE_INIT +};
+> +EXPORT_SYMBOL_GPL(mmu_feature_keys);
+> +
+> +void __init mmu_feature_keys_init(void)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < NUM_MMU_FTR_KEYS; i++) {
+> +		unsigned long f = 1ul << i;
+> +
+> +		if (!(cur_cpu_spec->mmu_features & f))
+> +			static_branch_disable(&mmu_feature_keys[i]);
+> +	}
+> +}
+>  #endif
+> diff --git a/arch/powerpc/lib/feature-fixups.c
+> b/arch/powerpc/lib/feature-fixups.c index f90423faade0..8db370cec547
+> 100644 --- a/arch/powerpc/lib/feature-fixups.c
+> +++ b/arch/powerpc/lib/feature-fixups.c
+> @@ -196,6 +196,7 @@ void __init apply_feature_fixups(void)
+>  	 */
+>  	jump_label_init();
+>  	cpu_feature_keys_init();
+> +	mmu_feature_keys_init();
+>  }
+>  
+>  static int __init check_features(void)
