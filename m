@@ -1,28 +1,37 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Q0j6VwQzDqYt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 03:49:57 +1000 (AEST)
-Subject: Re: [PATCH v13 3/6] CPM/QE: use genalloc to manage CPM/QE muram
-To: Qiang Zhao <qiang.zhao@nxp.com>, Zhao Qiang <qiang.zhao@freescale.com>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>
-References: <1448851737-33125-1-git-send-email-qiang.zhao@freescale.com>
- <1448851737-33125-3-git-send-email-qiang.zhao@freescale.com>
- <7730792c-db7f-c644-55dc-0cea5ee65c0b@c-s.fr>
- <AM3PR04MB1185E3251A9323801BBF97AD911B0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-Cc: "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Scott Wood <oss@buserror.net>, "olof@lixom.net" <olof@lixom.net>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "X.xie@freescale.com" <X.xie@freescale.com>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <6724af54-92ef-8d8f-8c2b-c2b4ebfc240c@c-s.fr>
-Date: Mon, 8 Aug 2016 19:49:52 +0200
-MIME-Version: 1.0
-In-Reply-To: <AM3PR04MB1185E3251A9323801BBF97AD911B0@AM3PR04MB1185.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Qr65ZvrzDqd9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 04:27:34 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u78IR0Un113438
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 14:27:32 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24nce8b5m1-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 14:27:32 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Mon, 8 Aug 2016 12:27:31 -0600
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] powerpc/mm: create numa nodes for hotplug memory
+Date: Mon,  8 Aug 2016 13:27:21 -0500
+In-Reply-To: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
+References: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
+Message-Id: <1470680843-28702-3-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,71 +41,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When scanning the device tree to initialize the system NUMA topology,
+process dt elements with compatible id "ibm,hotplug-aperture" to create
+memoryless numa nodes.
 
-Le 08/08/2016 à 05:00, Qiang Zhao a écrit :
-> On 6/8/2016 03:48AM,  Christophe Leroy <christophe.leroy@c-s.fr> wrote :
->
->> -----Original Message-----
->> From: Christophe Leroy [mailto:christophe.leroy@c-s.fr]
->> Sent: Saturday, August 06, 2016 12:59 AM
->> To: Zhao Qiang <qiang.zhao@freescale.com>; lauraa@codeaurora.org
->> Cc: catalin.marinas@arm.com; linux-kernel@vger.kernel.org; Scott Wood
->> <oss@buserror.net>; olof@lixom.net; akpm@linux-foundation.org; linuxppc-
->> dev@lists.ozlabs.org; X.xie@freescale.com
->> Subject: Re: [PATCH v13 3/6] CPM/QE: use genalloc to manage CPM/QE muram
->>
->>
->>
->> Le 30/11/2015 à 03:48, Zhao Qiang a écrit :
->>> Use genalloc to manage CPM/QE muram instead of rheap.
->>>
->>> Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
->>> ---
->>> Changes for v9:
->>> 	- splitted from patch 3/5, modify cpm muram management functions.
->>> Changes for v10:
->>> 	- modify cpm muram first, then move to qe_common
->>> 	- modify commit.
->>> Changes for v11:
->>> 	- factor out the common alloc code
->>> 	- modify min_alloc_order to zero for cpm_muram_alloc_fixed.
->>> Changes for v12:
->>> 	- Nil
->>> Changes for v13:
->>> 	- rebase
->>>
->>>  arch/powerpc/include/asm/cpm.h   |   3 +
->>>  arch/powerpc/platforms/Kconfig   |   4 +-
->>>  arch/powerpc/sysdev/cpm_common.c | 126
->> +++++++++++++++++++++++++++------------
->>>  lib/genalloc.c                   |   2 +-
->>>  4 files changed, 94 insertions(+), 41 deletions(-)
->>>
->>
->> With that patch applied, I get the following Oops on a 8xx (Which has a CPM1).
->>
->> cpm_muram_init() is called from setup_arch()
->>
->> It seems that gen_pool_add() tries to kmalloc() memory but the SLAB is not
->> available yet.
->>
->
-> Thank you for your comments, I can't find a 8xx board, would you like to test the patch
-> Attached on your board?
+These nodes will be filled when hotplug occurs within the associated
+address range.
 
-Thanks for your support (indeed I only received your mail a few minutes, 
-that is after I proposed another patch).
-
-Your patch will not work, because initcalls are called too late. The 8xx 
-needs the SMCs from the CPM for console, that is long before initcalls 
-are called.
-
-I sent a proposed patch approximatly 2 hours ago, it is called "[PATCH] 
-soc: fsl/qe: fix Oops on CPM1 (and likely CPM2)"
-That one works. Could you have a look ?
-
-Christophe
-
+Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 ---
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+ arch/powerpc/mm/numa.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 75b9cd6..80d067d 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -708,6 +708,12 @@ static void __init parse_drconf_memory(struct device_node *memory)
+ 	}
+ }
+ 
++static const struct of_device_id memory_match[] = {
++	{ .type = "memory" },
++	{ .compatible = "ibm,hotplug-aperture" },
++	{ /* sentinel */ }
++};
++
+ static int __init parse_numa_properties(void)
+ {
+ 	struct device_node *memory;
+@@ -752,7 +758,7 @@ static int __init parse_numa_properties(void)
+ 
+ 	get_n_mem_cells(&n_mem_addr_cells, &n_mem_size_cells);
+ 
+-	for_each_node_by_type(memory, "memory") {
++	for_each_matching_node(memory, memory_match) {
+ 		unsigned long start;
+ 		unsigned long size;
+ 		int nid;
+@@ -1080,7 +1086,7 @@ static int hot_add_node_scn_to_nid(unsigned long scn_addr)
+ 	struct device_node *memory;
+ 	int nid = -1;
+ 
+-	for_each_node_by_type(memory, "memory") {
++	for_each_matching_node(memory, memory_match) {
+ 		unsigned long start, size;
+ 		int ranges;
+ 		const __be32 *memcell_buf;
+-- 
+1.8.3.1
