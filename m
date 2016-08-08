@@ -1,30 +1,29 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sam@ravnborg.org>
+Received: from asavdk3.altibox.net (asavdk3.altibox.net [109.247.116.14])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s74CD5GhKzDqQp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 14:27:52 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id x72so114992363pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 21:27:52 -0700 (PDT)
-Date: Mon, 8 Aug 2016 14:27:42 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Arnd Bergmann <arnd@arndb.de>, Segher Boessenkool
- <segher@kernel.crashing.org>, Alan Modra <amodra@gmail.com>
-Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
- code/data elimination
-Message-ID: <20160808142742.52bb4b1e@roar.ozlabs.ibm.com>
-In-Reply-To: <alpine.LFD.2.20.1608080004050.17623@knanqh.ubzr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s74cr1ydQzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 14:46:34 +1000 (AEST)
+Date: Mon, 8 Aug 2016 06:46:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
+ linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 1/5] kbuild: allow architectures to use thin archives
+ instead of ld -r
+Message-ID: <20160808044627.GA12527@ravnborg.org>
 References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <1470399123-8455-3-git-send-email-npiggin@gmail.com>
- <alpine.LFD.2.20.1608070018460.17623@knanqh.ubzr>
- <20160808134235.6f20eacb@roar.ozlabs.ibm.com>
- <alpine.LFD.2.20.1608080004050.17623@knanqh.ubzr>
+ <1470399123-8455-2-git-send-email-npiggin@gmail.com>
+ <20160806201045.GA25821@ravnborg.org>
+ <20160807114946.41b682f3@canb.auug.org.au>
+ <20160807144054.GA14682@ravnborg.org>
+ <20160808131941.27541a33@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20160808131941.27541a33@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,70 +33,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 8 Aug 2016 00:12:37 -0400 (EDT)
-Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-
-> On Mon, 8 Aug 2016, Nicholas Piggin wrote:
+On Mon, Aug 08, 2016 at 01:19:41PM +1000, Nicholas Piggin wrote:
+> On Sun, 7 Aug 2016 16:40:54 +0200
+> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> > On Sun, 7 Aug 2016 01:33:45 -0400 (EDT)
-> > Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> >   
-> > > On Fri, 5 Aug 2016, Nicholas Piggin wrote:
-> > >   
-> > > > Introduce LINKER_DCE option for architectures to select if they want
-> > > > to build with -ffunction-sections, -fdata-sections, and link with
-> > > > --gc-sections. It requires some work (documented) to ensure all
-> > > > unreferenced entrypoints are live, and requires toolchain and
-> > > > build verification, so it is made a per-arch option for now.
-> > > > 
-> > > > On a random powerpc64le build, this yelds a significant size saving,
-> > > > it boots and runs fine, but there is a lot I haven't tested as yet,
-> > > > so these savings may be reduced if there are bugs in the link.
-> > > > 
-> > > >     text      data        bss        dec   filename
-> > > > 11169741   1180744    1923176	14273661   vmlinux
-> > > > 10445269   1004127    1919707	13369103   vmlinux.dce
-> > > > 
-> > > > ~700K text, ~170K data, 6% removed from kernel image size.
-> > > > 
-> > > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
+> > On Sun, Aug 07, 2016 at 11:49:46AM +1000, Stephen Rothwell wrote:
+> > > Hi Sam,
 > > > 
-> > > I played with that too. However this needs distinct sections for 
-> > > exception tables and the like otherwise the backward references from the 
-> > > final exception table to those functions responsible for those exception 
-> > > entries has the effect of pulling in all those functions even if their 
-> > > entry point is never referenced, making --gc-sections less effective.  
-> > > I managed to fix this only with a change to gas (accepted upstream).
+> > > On Sat, 6 Aug 2016 22:10:45 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:  
+> > > >
+> > > > Did you by any chance evalue the use of INPUT in linker files.
+> > > > Stephen back then (again based on proposal from Alan Modra),
+> > > > also made an implementation using INPUT.  
 > > > 
-> > > But once that is solved, you then have the missing forward reference 
-> > > problem i.e. nothing actually references those individual exception 
-> > > entry sections and ld happily drops them all. Having a KEEP() on each of 
-> > > them is unworkable and defeats the purpose anyway.  That requires a 
-> > > dummy reloc to trick ld into pulling in those sections when the parent 
-> > > section is also pulled in.  
+> > > The problem with that idea was that (at least for some versions of
+> > > binutils in use at the time) we hit a static limit to the number of
+> > > object files and ld just stopped at that point. :-(  
 > > 
-> > Right, although we don't *need* those things just for enabling
-> > --gc-sections, do we? It may not be 100% optimal, but it's enough
-> > to avoid the regression when switching to --whole-archive build
-> > option.  
+> > The ld bug was caused by opening too many linked definitions files.
+> > We can workaround this by expanding the files.
+> > I gave this a quick spin - see below.
+> > 
+> > Note - I have no idea if using thin archived or this method is better.
+> > But it seems just wrong to me that we convert to thin archives when
+> > we really do not need to do so.
+> > 
+> > Note - this was a quick spin. It build fine here and thats it.
 > 
-> Oh absolutely.
-> 
-> > Your results are impressive, and I don't want to stand in the way of
-> > either LTO or improving accuracy of --gc-sections. But both are things
-> > that can be built on top of this patch, I think.  
-> 
-> Indeed.  Those patches are certainly welcome. They represent half of the 
-> job already.  I just wanted to provide some insight about the whole 
-> picture in case someone else notices those flaws I have identified.
+> Is there a reason to prefer using linker scripts rather than thin
+> archives? I thought the former was possibly a bit less robust, and
+> the latter a smaller change for scripts and toolchain in terms
+> of "almost behaving like an object file".
 
-Okay thanks, I appreciate you taking a look. I wanted to be sure I
-wasn't missing some bug here.
+The only valid reason I can come up with is that it is simpler
+to build a list of .o files than it is to generate a number
+of thin archives.
 
-Smaller kernel is nice for large systems because it means smaller
-icache/dcache footprint and fewer branch trampolines, so I'm always
-happy to see that effort. I will certainly help test LTO or some of
-these other gc-sections improvements on powerpc.
+I persuaded "linker scripts" mainly because I had the patch floating
+and I was triggered by the powerpc discussions to resurface it again.
 
-Thanks,
-Nick
+> I don't have a strong preference although do have a couple of
+> (out of tree) scripts that expect objdump to work on built-in.o
+
+You are likely not alone here.
+Unless someone else comes up with any good reason lets stay with
+thin archives.
+
+	Sam
