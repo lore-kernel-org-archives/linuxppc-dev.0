@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Qr718n9zDqdc
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Qr7179YzDqdb
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 04:27:34 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u78H5brP015795
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 14:27:32 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24nc30ax1k-1
+ u78H5YTi089582
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 14:27:31 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24n8ty988a-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 14:27:31 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.vnet.ibm.com>;
- Mon, 8 Aug 2016 12:27:31 -0600
+ Mon, 8 Aug 2016 14:27:30 -0400
 From: Reza Arbab <arbab@linux.vnet.ibm.com>
 To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -27,11 +27,11 @@ To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
  linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] mm: enable CONFIG_MOVABLE_NODE on powerpc
-Date: Mon,  8 Aug 2016 13:27:23 -0500
+Subject: [PATCH 3/4] powerpc/mm: allow memory hotplug into a memoryless node
+Date: Mon,  8 Aug 2016 13:27:22 -0500
 In-Reply-To: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
 References: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
-Message-Id: <1470680843-28702-5-git-send-email-arbab@linux.vnet.ibm.com>
+Message-Id: <1470680843-28702-4-git-send-email-arbab@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,41 +41,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Onlining memory into ZONE_MOVABLE requires CONFIG_MOVABLE_NODE.
-
-Enable the use of this config option on PPC64 platforms.
+Remove the check which prevents us from hotplugging into an empty node.
 
 Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
 ---
- Documentation/kernel-parameters.txt | 2 +-
- mm/Kconfig                          | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/numa.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 46c030a..07fefd8 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2344,7 +2344,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			that the amount of memory usable for all allocations
- 			is not too small.
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 80d067d..bc70c4f 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1127,7 +1127,7 @@ static int hot_add_node_scn_to_nid(unsigned long scn_addr)
+ int hot_add_scn_to_nid(unsigned long scn_addr)
+ {
+ 	struct device_node *memory = NULL;
+-	int nid, found = 0;
++	int nid;
  
--	movable_node	[KNL,X86] Boot-time switch to enable the effects
-+	movable_node	[KNL,X86,PPC] Boot-time switch to enable the effects
- 			of CONFIG_MOVABLE_NODE=y. See mm/Kconfig for details.
+ 	if (!numa_enabled || (min_common_depth < 0))
+ 		return first_online_node;
+@@ -1143,17 +1143,6 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ 	if (nid < 0 || !node_online(nid))
+ 		nid = first_online_node;
  
- 	MTD_Partition=	[MTD]
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 78a23c5..4154638 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -153,7 +153,7 @@ config MOVABLE_NODE
- 	bool "Enable to assign a node which has only movable memory"
- 	depends on HAVE_MEMBLOCK
- 	depends on NO_BOOTMEM
--	depends on X86_64
-+	depends on X86_64 || PPC64
- 	depends on NUMA
- 	default n
- 	help
+-	if (NODE_DATA(nid)->node_spanned_pages)
+-		return nid;
+-
+-	for_each_online_node(nid) {
+-		if (NODE_DATA(nid)->node_spanned_pages) {
+-			found = 1;
+-			break;
+-		}
+-	}
+-
+-	BUG_ON(!found);
+ 	return nid;
+ }
+ 
 -- 
 1.8.3.1
