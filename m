@@ -1,18 +1,41 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7C2f345xzDqdh
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 19:35:54 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id vy10so5181756pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 02:35:54 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: rebuild vdsos correctly
-Date: Mon,  8 Aug 2016 19:35:43 +1000
-Message-Id: <1470648943-15643-1-git-send-email-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7CX50rlTzDqQp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 19:57:56 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u789sVDg084323
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 05:57:54 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24nbvvw7yu-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 05:57:54 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
+ Mon, 8 Aug 2016 10:57:52 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CDCB2219005E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 10:57:15 +0100 (BST)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u789vocG10027284
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 09:57:50 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u789vnLu005736
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 03:57:50 -0600
+From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] cxl: Set psl_fir_cntl to production environment value
+Date: Mon,  8 Aug 2016 11:57:48 +0200
+Message-Id: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,83 +45,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When using if_changed, we need to add FORCE to dependencies, otherwise
-we don't get command line change checking amongst other things. This
-has resulted in vdsos not being rebuilt when switching between big and
-little endian.
+Switch the setting of psl_fir_cntl from debug to production
+environment recommended value. It mostly affects the PSL behavior when
+an error is raised in psl_fir1/2.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Tested with cxlflash.
+
+Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 ---
+ drivers/misc/cxl/pci.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-There look to be some other cases in arch/powerpc/ of if_changed
-being used without FORCE too, which should also be investigated.
-Also, why are we using if_changed_deps?
----
- arch/powerpc/kernel/vdso32/Makefile | 8 ++++----
- arch/powerpc/kernel/vdso64/Makefile | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index cbabd14..ae1f245 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -30,7 +30,7 @@ CPPFLAGS_vdso32.lds += -P -C -Upowerpc
- $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index d152e2d..4be25c4 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -379,7 +379,7 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id
  
- # link rule for the .so file, .lds has to be first
--$(obj)/vdso32.so.dbg: $(src)/vdso32.lds $(obj-vdso32)
-+$(obj)/vdso32.so.dbg: $(src)/vdso32.lds $(obj-vdso32) FORCE
- 	$(call if_changed,vdso32ld)
+ static int init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_dev *dev)
+ {
+-	u64 psl_dsnctl;
++	u64 psl_dsnctl, psl_fircntl;
+ 	u64 chipid;
+ 	u64 capp_unit_id;
+ 	int rc;
+@@ -398,8 +398,11 @@ static int init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_
+ 	cxl_p1_write(adapter, CXL_PSL_RESLCKTO, 0x20000000200ULL);
+ 	/* snoop write mask */
+ 	cxl_p1_write(adapter, CXL_PSL_SNWRALLOC, 0x00000000FFFFFFFFULL);
+-	/* set fir_accum */
+-	cxl_p1_write(adapter, CXL_PSL_FIR_CNTL, 0x0800000000000000ULL);
++	/* set fir_cntl to recommended value for production env */
++	psl_fircntl = (0x2ULL << (63-3)); /* ce_report */
++	psl_fircntl |= (0x1ULL << (63-6)); /* FIR_report */
++	psl_fircntl |= 0x1ULL; /* ce_thresh */
++	cxl_p1_write(adapter, CXL_PSL_FIR_CNTL, psl_fircntl);
+ 	/* for debugging with trace arrays */
+ 	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x0000FF7C00000000ULL);
  
- # strip rule for the .so file
-@@ -39,14 +39,14 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 	$(call if_changed,objcopy)
- 
- # assembly rules for the .S files
--$(obj-vdso32): %.o: %.S
-+$(obj-vdso32): %.o: %.S FORCE
- 	$(call if_changed_dep,vdso32as)
- 
- # actual build commands
- quiet_cmd_vdso32ld = VDSO32L $@
--      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -Wl,-T $^ -o $@
-+      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
- quiet_cmd_vdso32as = VDSO32A $@
--      cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
-+      cmd_vdso32as = $(CROSS32CC) $(a_flags) -o $@ -c $<
- 
- # install commands for the unstripped file
- quiet_cmd_vdso_install = INSTALL $@
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index c710802..0d5f04a 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -23,7 +23,7 @@ CPPFLAGS_vdso64.lds += -P -C -U$(ARCH)
- $(obj)/vdso64_wrapper.o : $(obj)/vdso64.so
- 
- # link rule for the .so file, .lds has to be first
--$(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64)
-+$(obj)/vdso64.so.dbg: $(src)/vdso64.lds $(obj-vdso64) FORCE
- 	$(call if_changed,vdso64ld)
- 
- # strip rule for the .so file
-@@ -32,14 +32,14 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 	$(call if_changed,objcopy)
- 
- # assembly rules for the .S files
--$(obj-vdso64): %.o: %.S
-+$(obj-vdso64): %.o: %.S FORCE
- 	$(call if_changed_dep,vdso64as)
- 
- # actual build commands
- quiet_cmd_vdso64ld = VDSO64L $@
--      cmd_vdso64ld = $(CC) $(c_flags) -Wl,-T $^ -o $@
-+      cmd_vdso64ld = $(CC) $(c_flags) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
- quiet_cmd_vdso64as = VDSO64A $@
--      cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
-+      cmd_vdso64as = $(CC) $(a_flags) -o $@ -c $<
- 
- # install commands for the unstripped file
- quiet_cmd_vdso_install = INSTALL $@
 -- 
-2.8.1
+2.7.4
