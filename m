@@ -1,49 +1,31 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7LD433cPzDqYt
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 00:59:32 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u78Es8tN104322
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 10:59:29 -0400
-Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24n9gyym8r-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 10:59:29 -0400
-Received: from localhost
- by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 8 Aug 2016 15:59:28 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id A01B9219004D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 15:58:50 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u78ExPkx6619432
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 14:59:25 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u78ExOdB009117
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 08:59:24 -0600
-Subject: Re: [PATCH v2] cxl: Use fixed width predefined types in data
- structure.
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <1470398520-20463-1-git-send-email-felix@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com,
- ukrishn@linux.vnet.ibm.com, imunsie@au1.ibm.com, David.Laight@ACULAB.COM
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Date: Mon, 8 Aug 2016 16:59:22 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7LXt6LVpzDqTq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 01:14:05 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: David Laight <David.Laight@aculab.com>,
+ 'Arvind Yadav' <arvind.yadav.cs@gmail.com>,
+ "zajec5@gmail.com" <zajec5@gmail.com>,
+ "leoli@freescale.com" <leoli@freescale.com>,
+ "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linux@roeck-us.net" <linux@roeck-us.net>
+Subject: Re: [5.3] ucc_geth: Fix to avoid IS_ERR_VALUE abuses and dead code on
+ 64bit systems.
+Date: Mon, 08 Aug 2016 17:13:02 +0200
+Message-ID: <2862487.guU7g5Qkfj@wuerfel>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F50C493@AcuExch.aculab.com>
+References: <1470386442-7208-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6D5F50C493@AcuExch.aculab.com>
 MIME-Version: 1.0
-In-Reply-To: <1470398520-20463-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <faa68f54-d826-02dd-9265-aeae0d8dc118@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,35 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Monday, August 8, 2016 2:49:11 PM CEST David Laight wrote:
+> 
+> > If qe_muram_alloc will return any error, Then IS_ERR_VALUE will always
+> > return 0. it'll not call ucc_fast_free for any failure. Inside 'if code'
+> > will be a dead code on 64bit. Even qe_muram_addr will return wrong
+> > virtual address. Which can cause an error.
+> > 
+> >  kfree((void *)ugeth->tx_bd_ring_offset[i]);
+> 
+> Erm, kfree() isn't the right function for things allocated by qe_muram_alloc().
+> 
+> I still thing you need to stop this code using IS_ERR_VALUE() at all.
 
-Le 05/08/2016 à 14:02, Philippe Bergheaud a écrit :
-> This patch fixes a regression introduced by commit b810253.
->
-> It substitutes the type __u8 to u8 in the uapi header cxl.h,
-> because the latter is not always defined in userland build
-> environments, in particular when cross-compiling libcxl on
-> x86_64 linux machines (RHEL6.7 and Ubuntu 16.04).
->
-> This patch also changes the size of the field data_size, and
-> makes it constant, to support 32-bit userland applications
-> running on big-endian ppc64 kernels transparently.
->
-> This breaks the (young) API that has been merged in v4.8.
->
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
-> Changes since v1:
->   Added an explanation for the proposed API change in the log.
->
-> Note:
-> As far as I know, cxlflash is the only known user of the API.
+Those are two separate issues:
 
+a) The ucc_geth driver mixing kmalloc() memory with muram, and assigning
+   the result to "u32" and "void __iomem *" variables, both of which
+   are wrong at least half of the time.
 
-Yes, ideally, we'd like to change the type of 'data_size' to something 
-smaller/constant and were expecting it's still doable since the API was 
-merged to 4.8 and the expected user (cxlflash) hasn't started using the 
-API yet.
+b) calling conventions of qe_muram_alloc() being defined in a way that
+   requires the use of IS_ERR_VALUE(), because '0' is a valid address
+   here.
 
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+The first one can be solved by updating the network driver, ideally
+by getting rid of the casts and using proper types and accessors,
+while the second would require updating all users of that interface.
 
-   Fred
+	Arnd
