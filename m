@@ -1,29 +1,27 @@
 Return-Path: <sam@ravnborg.org>
-Received: from asavdk3.altibox.net (asavdk3.altibox.net [109.247.116.14])
+Received: from asavdk4.altibox.net (asavdk4.altibox.net [109.247.116.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s74cr1ydQzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 14:46:34 +1000 (AEST)
-Date: Mon, 8 Aug 2016 06:46:27 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s74hn38H6zDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 14:50:01 +1000 (AEST)
+Date: Mon, 8 Aug 2016 06:49:55 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
 To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
- linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
  Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>,
  Segher Boessenkool <segher@kernel.crashing.org>,
  Alan Modra <amodra@gmail.com>
-Subject: Re: [PATCH 1/5] kbuild: allow architectures to use thin archives
- instead of ld -r
-Message-ID: <20160808044627.GA12527@ravnborg.org>
+Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
+ code/data elimination
+Message-ID: <20160808044955.GA12952@ravnborg.org>
 References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <1470399123-8455-2-git-send-email-npiggin@gmail.com>
- <20160806201045.GA25821@ravnborg.org>
- <20160807114946.41b682f3@canb.auug.org.au>
- <20160807144054.GA14682@ravnborg.org>
- <20160808131941.27541a33@roar.ozlabs.ibm.com>
+ <1470399123-8455-3-git-send-email-npiggin@gmail.com>
+ <20160806201423.GB25821@ravnborg.org>
+ <20160808132903.0e37c967@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160808131941.27541a33@roar.ozlabs.ibm.com>
+In-Reply-To: <20160808132903.0e37c967@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,50 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 08, 2016 at 01:19:41PM +1000, Nicholas Piggin wrote:
-> On Sun, 7 Aug 2016 16:40:54 +0200
+On Mon, Aug 08, 2016 at 01:29:03PM +1000, Nicholas Piggin wrote:
+> On Sat, 6 Aug 2016 22:14:23 +0200
 > Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> > On Sun, Aug 07, 2016 at 11:49:46AM +1000, Stephen Rothwell wrote:
-> > > Hi Sam,
-> > > 
-> > > On Sat, 6 Aug 2016 22:10:45 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:  
-> > > >
-> > > > Did you by any chance evalue the use of INPUT in linker files.
-> > > > Stephen back then (again based on proposal from Alan Modra),
-> > > > also made an implementation using INPUT.  
-> > > 
-> > > The problem with that idea was that (at least for some versions of
-> > > binutils in use at the time) we hit a static limit to the number of
-> > > object files and ld just stopped at that point. :-(  
+> > On Fri, Aug 05, 2016 at 10:12:00PM +1000, Nicholas Piggin wrote:
+> > > Introduce LINKER_DCE option for architectures to select if they want
+> > > to build with -ffunction-sections, -fdata-sections, and link with
+> > > --gc-sections.  
 > > 
-> > The ld bug was caused by opening too many linked definitions files.
-> > We can workaround this by expanding the files.
-> > I gave this a quick spin - see below.
-> > 
-> > Note - I have no idea if using thin archived or this method is better.
-> > But it seems just wrong to me that we convert to thin archives when
-> > we really do not need to do so.
-> > 
-> > Note - this was a quick spin. It build fine here and thats it.
+> > Can you please try to come up with a less cryptic name.
+> > "DCE" may make sense for you today.
+> > Bot the naive reader will benefit from the longer and
+> > more explcit form.
 > 
-> Is there a reason to prefer using linker scripts rather than thin
-> archives? I thought the former was possibly a bit less robust, and
-> the latter a smaller change for scripts and toolchain in terms
-> of "almost behaving like an object file".
+> Yes that's a good idea. The name sucks.
+> 
+> We don't seem to consistently have a prefix for build configuration
+> options, but we could start? KBUILD_LD_DEAD_CODE_DATA_ELIMINATION?
 
-The only valid reason I can come up with is that it is simpler
-to build a list of .o files than it is to generate a number
-of thin archives.
-
-I persuaded "linker scripts" mainly because I had the patch floating
-and I was triggered by the powerpc discussions to resurface it again.
-
-> I don't have a strong preference although do have a couple of
-> (out of tree) scripts that expect objdump to work on built-in.o
-
-You are likely not alone here.
-Unless someone else comes up with any good reason lets stay with
-thin archives.
+For cc related options we sort of have: KCONFIG_CC IIRC.
+So for LD related options we could use the shorter CONFIG_LD_ prefix.
 
 	Sam
