@@ -1,22 +1,33 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <york.sun@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0073.outbound.protection.outlook.com [104.47.2.73])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7NWp4gW4zDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 02:43:18 +1000 (AEST)
-Date: Mon, 8 Aug 2016 10:43:15 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160808104315.77cf22ec@t450s.home>
-In-Reply-To: <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7PMb4QBFzDqYt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 03:21:15 +1000 (AEST)
+From: york sun <york.sun@nxp.com>
+To: Borislav Petkov <bp@alien8.de>, Johannes Thumshirn <jthumshirn@suse.de>
+CC: Michael Ellerman <mpe@ellerman.id.au>, "linux-edac@vger.kernel.org"
+ <linux-edac@vger.kernel.org>, "morbidrsa@gmail.com" <morbidrsa@gmail.com>,
+ "oss@buserror.net" <oss@buserror.net>, Stuart Yoder <stuart.yoder@nxp.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>, Yinghai Lu <yinghai@kernel.org>, "Bjorn
+ Helgaas" <bhelgaas@google.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch v3 01/11] arch/powerpc/pci: Fix compiling error for
+ mpc85xx_edac
+Date: Mon, 8 Aug 2016 15:47:41 +0000
+Message-ID: <AM4PR0401MB17324D8BDE5C77E4FE8C37A79A1B0@AM4PR0401MB1732.eurprd04.prod.outlook.com>
+References: <1470351518-22404-1-git-send-email-york.sun@nxp.com>
+ <1470351518-22404-2-git-send-email-york.sun@nxp.com>
+ <877fbvkhi3.fsf@concordia.ellerman.id.au>
+ <AM4PR0401MB17321DA6630E78AF2ED7DA269A180@AM4PR0401MB1732.eurprd04.prod.outlook.com>
+ <20160805070126.GE25630@nazgul.tnic>
+Reply-To: york sun <york.sun@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,114 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  3 Aug 2016 18:40:55 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> This exports helpers which are needed to keep a VFIO container in
-> memory while there are external users such as KVM.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
->  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
->  include/linux/vfio.h                |  6 ++++++
->  3 files changed, 51 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> index d1d70e0..baf6a9c 100644
-> --- a/drivers/vfio/vfio.c
-> +++ b/drivers/vfio/vfio.c
-> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
->  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
->  
->  /**
-> + * External user API for containers, exported by symbols to be linked
-> + * dynamically.
-> + *
-> + */
-> +struct vfio_container *vfio_container_get_ext(struct file *filep)
-> +{
-> +	struct vfio_container *container = filep->private_data;
-> +
-> +	if (filep->f_op != &vfio_fops)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	vfio_container_get(container);
-> +
-> +	return container;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
-> +
-> +void vfio_container_put_ext(struct vfio_container *container)
-> +{
-> +	vfio_container_put(container);
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
-> +
-> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
-> +{
-> +	return container->iommu_data;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
-> +
-> +/**
->   * Sub-module support
->   */
->  /*
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 3594ad3..fceea3d 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
->  	.detach_group	= tce_iommu_detach_group,
->  };
->  
-> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
-> +		u64 offset)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +	struct iommu_table *tbl = NULL;
-> +
-> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
-> +		return NULL;
-> +
-> +	iommu_table_get(tbl);
-> +
-> +	return tbl;
-> +}
-> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
-> +
->  static int __init tce_iommu_init(void)
->  {
->  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
->  MODULE_LICENSE("GPL v2");
->  MODULE_AUTHOR(DRIVER_AUTHOR);
->  MODULE_DESCRIPTION(DRIVER_DESC);
-> -
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 0ecae0b..1c2138a 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
->  extern int vfio_external_user_iommu_id(struct vfio_group *group);
->  extern long vfio_external_check_extension(struct vfio_group *group,
->  					  unsigned long arg);
-> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
-> +extern void vfio_container_put_ext(struct vfio_container *container);
-> +extern void *vfio_container_get_iommu_data_ext(
-> +		struct vfio_container *container);
-> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
-> +		void *iommu_data, u64 offset);
->  
->  /*
->   * Sub-module helpers
-
-
-I think you need to take a closer look of the lifecycle of a container,
-having a reference means the container itself won't go away, but only
-having a group set within that container holds the actual IOMMU
-references.  container->iommu_data is going to be NULL once the
-groups are lost.  Thanks,
-
-Alex
+On 08/05/2016 12:01 AM, Borislav Petkov wrote:=0A=
+> On Fri, Aug 05, 2016 at 04:26:26AM +0000, york sun wrote:=0A=
+>> I don't have deep knowledge of this driver. What I am trying is to=0A=
+>> separate the common DDR part and share it with ARM platforms. Along the=
+=0A=
+>> way, I found the compiling error if build a module. If exposing these=0A=
+>> functions becomes a concern, I can live without it.=0A=
+>=0A=
+> Perhaps you or Johannes could fix this properly to use pci_get_device()=
+=0A=
+> as the rest of the EDAC drivers do, instead of exporting core PCI=0A=
+> functions...=0A=
+>=0A=
+=0A=
+Boris,=0A=
+=0A=
+I'd like to separate the first two patches from this set. They are not =0A=
+really related to the DDR part I am working on. It will take me a while =0A=
+to sort out the correct fix.=0A=
+=0A=
+York=0A=
