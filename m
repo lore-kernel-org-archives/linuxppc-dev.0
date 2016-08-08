@@ -1,19 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7MmH3H8WzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 02:09:03 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] soc: fsl/qe: fix Oops on CPM1 (and likely CPM2)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Zhao Qiang <qiang.zhao@nxp.com>,
- David S. Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org
-Message-Id: <20160808160858.4B9251A2452@localhost.localdomain>
-Date: Mon,  8 Aug 2016 18:08:58 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7NWp4gW4zDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 02:43:18 +1000 (AEST)
+Date: Mon, 8 Aug 2016 10:43:15 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
+ external users
+Message-ID: <20160808104315.77cf22ec@t450s.home>
+In-Reply-To: <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
+References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
+ <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,159 +26,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE muram")
-has changed the way muram is managed.
-genalloc uses kmalloc(), hence requires the SLAB to be up and running.
+On Wed,  3 Aug 2016 18:40:55 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-On powerpc 8xx, cpm_reset() is called early during startup.
-cpm_reset() then calls cpm_muram_init() before SLAB is available,
-hence the following Oops.
+> This exports helpers which are needed to keep a VFIO container in
+> memory while there are external users such as KVM.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
+>  include/linux/vfio.h                |  6 ++++++
+>  3 files changed, 51 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+> index d1d70e0..baf6a9c 100644
+> --- a/drivers/vfio/vfio.c
+> +++ b/drivers/vfio/vfio.c
+> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
+>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
+>  
+>  /**
+> + * External user API for containers, exported by symbols to be linked
+> + * dynamically.
+> + *
+> + */
+> +struct vfio_container *vfio_container_get_ext(struct file *filep)
+> +{
+> +	struct vfio_container *container = filep->private_data;
+> +
+> +	if (filep->f_op != &vfio_fops)
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	vfio_container_get(container);
+> +
+> +	return container;
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
+> +
+> +void vfio_container_put_ext(struct vfio_container *container)
+> +{
+> +	vfio_container_put(container);
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
+> +
+> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
+> +{
+> +	return container->iommu_data;
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
+> +
+> +/**
+>   * Sub-module support
+>   */
+>  /*
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 3594ad3..fceea3d 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
+>  	.detach_group	= tce_iommu_detach_group,
+>  };
+>  
+> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
+> +		u64 offset)
+> +{
+> +	struct tce_container *container = iommu_data;
+> +	struct iommu_table *tbl = NULL;
+> +
+> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
+> +		return NULL;
+> +
+> +	iommu_table_get(tbl);
+> +
+> +	return tbl;
+> +}
+> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
+> +
+>  static int __init tce_iommu_init(void)
+>  {
+>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
+> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
+>  MODULE_LICENSE("GPL v2");
+>  MODULE_AUTHOR(DRIVER_AUTHOR);
+>  MODULE_DESCRIPTION(DRIVER_DESC);
+> -
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index 0ecae0b..1c2138a 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
+>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
+>  extern long vfio_external_check_extension(struct vfio_group *group,
+>  					  unsigned long arg);
+> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
+> +extern void vfio_container_put_ext(struct vfio_container *container);
+> +extern void *vfio_container_get_iommu_data_ext(
+> +		struct vfio_container *container);
+> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
+> +		void *iommu_data, u64 offset);
+>  
+>  /*
+>   * Sub-module helpers
 
-cpm_reset() cannot be called during initcalls because the CPM is
-needed for console
 
-This patch splits cpm_muram_init() in two parts. The first part,
-related to mappings, is kept as cpm_muram_init()
-The second part is named cpm_muram_pool_init() and is called
-the first time cpm_muram_alloc() is used
+I think you need to take a closer look of the lifecycle of a container,
+having a reference means the container itself won't go away, but only
+having a group set within that container holds the actual IOMMU
+references.  container->iommu_data is going to be NULL once the
+groups are lost.  Thanks,
 
-[    0.000000] Unable to handle kernel paging request for data at address 0x00000008
-[    0.000000] Faulting instruction address: 0xc01acce0
-[    0.000000] Oops: Kernel access of bad area, sig: 11 [#1]
-[    0.000000] PREEMPT CMPC885
-[    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 4.4.14-g0886ed8 #5
-[    0.000000] task: c05183e0 ti: c0536000 task.ti: c0536000
-[    0.000000] NIP: c01acce0 LR: c0011068 CTR: 00000000
-[    0.000000] REGS: c0537e50 TRAP: 0300   Not tainted (4.4.14-s3k-dev-g0886ed8-svn)
-[    0.000000] MSR: 00001032 <ME,IR,DR,RI>  CR: 28044428  XER: 00000000
-[    0.000000] DAR: 00000008 DSISR: c0000000
-GPR00: c0011068 c0537f00 c05183e0 00000000 00009000 ffffffff 00000bc0 ffffffff
-GPR08: ff003000 ff00b000 ff003bbf 00000000 22044422 100d43a8 00000000 07ff94e8
-GPR16: 00000000 07bb5d70 00000000 07ff81f4 07ff81f4 07ff81f4 00000000 00000000
-GPR24: 07ffb3a0 07fe7628 c0550000 c7ffa190 c0540000 ff003bbf 00000000 00000001
-[    0.000000] NIP [c01acce0] gen_pool_add_virt+0x14/0xdc
-[    0.000000] LR [c0011068] cpm_muram_init+0xd4/0x18c
-[    0.000000] Call Trace:
-[    0.000000] [c0537f00] [00000200] 0x200 (unreliable)
-[    0.000000] [c0537f20] [c0011068] cpm_muram_init+0xd4/0x18c
-[    0.000000] [c0537f70] [c0494684] cpm_reset+0xb4/0xc8
-[    0.000000] [c0537f90] [c0494c64] cmpc885_setup_arch+0x10/0x30
-[    0.000000] [c0537fa0] [c0493cd4] setup_arch+0x130/0x168
-[    0.000000] [c0537fb0] [c04906bc] start_kernel+0x88/0x380
-[    0.000000] [c0537ff0] [c0002224] start_here+0x38/0x98
-[    0.000000] Instruction dump:
-[    0.000000] 91430010 91430014 80010014 83e1000c 7c0803a6 38210010 4e800020 7c0802a6
-[    0.000000] 9421ffe0 bf61000c 90010024 7c7e1b78 <80630008> 7c9c2378 7cc31c30 3863001f
-[    0.000000] ---[ end trace dc8fa200cb88537f ]---
-
-fixes: 0e6e01ff694ee ("CPM/QE: use genalloc to manage CPM/QE muram")
-Cc: stable@vger.linux.org
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/soc/fsl/qe/qe_common.c | 58 ++++++++++++++++++++++++++++++++----------
- 1 file changed, 44 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
-index 41eff80..531cfcf 100644
---- a/drivers/soc/fsl/qe/qe_common.c
-+++ b/drivers/soc/fsl/qe/qe_common.c
-@@ -45,6 +45,44 @@ static LIST_HEAD(muram_block_list);
- #define OF_MAX_ADDR_CELLS	4
- #define GENPOOL_OFFSET		(4096 * 8)
- 
-+static int cpm_muram_pool_init(void)
-+{
-+	struct device_node *np;
-+	struct resource r;
-+	int i = 0;
-+	int ret = 0;
-+
-+	if (muram_pool)
-+		return 0;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
-+	if (!np) {
-+		/* try legacy bindings */
-+		np = of_find_node_by_name(NULL, "data-only");
-+		if (!np) {
-+			pr_err("Cannot find CPM muram data node");
-+			ret = -ENODEV;
-+			goto out;
-+		}
-+	}
-+
-+	muram_pool = gen_pool_create(0, -1);
-+
-+	while (of_address_to_resource(np, i++, &r) == 0) {
-+		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
-+				   GENPOOL_OFFSET, resource_size(&r), -1);
-+		if (ret) {
-+			pr_err("QE: couldn't add muram to pool!\n");
-+			gen_pool_destroy(muram_pool);
-+			goto out;
-+		}
-+	}
-+
-+out:
-+	of_node_put(np);
-+	return ret;
-+}
-+
- int cpm_muram_init(void)
- {
- 	struct device_node *np;
-@@ -65,39 +103,28 @@ int cpm_muram_init(void)
- 		if (!np) {
- 			pr_err("Cannot find CPM muram data node");
- 			ret = -ENODEV;
--			goto out_muram;
-+			goto out;
- 		}
- 	}
- 
--	muram_pool = gen_pool_create(0, -1);
- 	muram_pbase = of_translate_address(np, zero);
- 	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
- 		pr_err("Cannot translate zero through CPM muram node");
- 		ret = -ENODEV;
--		goto out_pool;
-+		goto out;
- 	}
- 
- 	while (of_address_to_resource(np, i++, &r) == 0) {
- 		if (r.end > max)
- 			max = r.end;
--		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
--				   GENPOOL_OFFSET, resource_size(&r), -1);
--		if (ret) {
--			pr_err("QE: couldn't add muram to pool!\n");
--			goto out_pool;
--		}
- 	}
- 
- 	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
- 	if (!muram_vbase) {
- 		pr_err("Cannot map QE muram");
- 		ret = -ENOMEM;
--		goto out_pool;
- 	}
--	goto out_muram;
--out_pool:
--	gen_pool_destroy(muram_pool);
--out_muram:
-+out:
- 	of_node_put(np);
- 	return ret;
- }
-@@ -116,6 +143,9 @@ static unsigned long cpm_muram_alloc_common(unsigned long size,
- 	struct muram_block *entry;
- 	unsigned long start;
- 
-+	if (!muram_pool && cpm_muram_pool_init())
-+		goto out2;
-+
- 	start = gen_pool_alloc_algo(muram_pool, size, algo, data);
- 	if (!start)
- 		goto out2;
--- 
-2.1.0
+Alex
