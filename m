@@ -1,37 +1,32 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7TKT41k3zDqd7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 06:19:40 +1000 (AEST)
-Received: from mail.kernel.org (localhost [127.0.0.1])
- by mail.kernel.org (Postfix) with ESMTP id 0FC0B20274
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 20:19:38 +0000 (UTC)
-Received: from mail-yb0-f174.google.com (mail-yb0-f174.google.com
- [209.85.213.174])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 44AD4201DD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 20:19:36 +0000 (UTC)
-Received: by mail-yb0-f174.google.com with SMTP id g133so41627085ybf.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 13:19:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7V2P32ShzDqd7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 06:51:40 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Laight <David.Laight@aculab.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ 'Arvind Yadav' <arvind.yadav.cs@gmail.com>,
+ "zajec5@gmail.com" <zajec5@gmail.com>,
+ "leoli@freescale.com" <leoli@freescale.com>,
+ "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
+ "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>,
+ "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linux@roeck-us.net" <linux@roeck-us.net>
+Subject: Re: [5.3] ucc_geth: Fix to avoid IS_ERR_VALUE abuses and dead code on
+ 64bit systems.
+Date: Mon, 08 Aug 2016 22:49:34 +0200
+Message-ID: <2025175.d8Oyuk2c9k@wuerfel>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F50C532@AcuExch.aculab.com>
+References: <1470386442-7208-1-git-send-email-arvind.yadav.cs@gmail.com>
+ <2862487.guU7g5Qkfj@wuerfel>
+ <063D6719AE5E284EB5DD2968C1650D6D5F50C532@AcuExch.aculab.com>
 MIME-Version: 1.0
-In-Reply-To: <65cd098a-f29d-4b7c-5df1-0a88630d3d21@candw.ms>
-References: <ce142972-52a8-452f-8911-70af927ae425@candw.ms>
- <a9fe88f0-14ba-7ca6-66b4-69b84fa8a823@huawei.com>
- <d5280537-e579-0ee6-9011-f2fa6157204c@candw.ms>
- <5194d5e9-0c2a-004b-f295-b34ece0d9004@huawei.com>
- <65cd098a-f29d-4b7c-5df1-0a88630d3d21@candw.ms>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Mon, 8 Aug 2016 15:19:15 -0500
-Message-ID: <CAL_JsqJxL6KRqpt6nBH_5kLtqW3S34=5WcVwRrKvZ3p0A2OszQ@mail.gmail.com>
-Subject: Re: Problem booting Kernel 4.8-rc1 on Sam460ex ( Canyonlands)
-To: Julian Margetson <runaway@candw.ms>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>, imunsie@au1.ibm.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +36,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 8, 2016 at 2:25 PM, Julian Margetson <runaway@candw.ms> wrote:
-> On 8/8/2016 9:39 AM, Kefeng Wang wrote:
->>
->> +cc Rob
->>
->> On 2016/8/8 20:51, Julian Margetson wrote:
->>>
->>> On 8/8/2016 8:22 AM, Kefeng Wang wrote:
->>>>
->>>> On 2016/8/8 19:52, Julian Margetson wrote:
->>>>>
->>>>> Problem booting Kernel 4.8-rc1 on Sam460ex ( Canyonlands) machine .
->>>>>
->>>>> This is what I get with the bisect.
->>>>
->>>> Hi Julian
->>>>
->>>> I have no Sam460ex machine, could you show the good and bad kernel
->>>> bootlog?
->>
->> I have no experience about PowerPC, the status shows below,
->> version                 boot
->> v4.7                    ok
->> v4.8-rc1                fail
->> v4.7 + this patch       fail(right?)
->>
->> Does PowerPC support earlyprintk/earlycon? Please set it, and let's show
->> somethings from earlyprintk.
+On Monday, August 8, 2016 3:49:22 PM CEST David Laight wrote:
+> From: Arnd Bergmann
+> > Sent: 08 August 2016 16:13
+> > 
+> > On Monday, August 8, 2016 2:49:11 PM CEST David Laight wrote:
+> > >
+> > > > If qe_muram_alloc will return any error, Then IS_ERR_VALUE will always
+> > > > return 0. it'll not call ucc_fast_free for any failure. Inside 'if code'
+> > > > will be a dead code on 64bit. Even qe_muram_addr will return wrong
+> > > > virtual address. Which can cause an error.
+> > > >
+> > > >  kfree((void *)ugeth->tx_bd_ring_offset[i]);
+> > >
+> > > Erm, kfree() isn't the right function for things allocated by qe_muram_alloc().
+> > >
+> > > I still thing you need to stop this code using IS_ERR_VALUE() at all.
+> > 
+> > Those are two separate issues:
+> > 
+> > a) The ucc_geth driver mixing kmalloc() memory with muram, and assigning
+> >    the result to "u32" and "void __iomem *" variables, both of which
+> >    are wrong at least half of the time.
+> > 
+> > b) calling conventions of qe_muram_alloc() being defined in a way that
+> >    requires the use of IS_ERR_VALUE(), because '0' is a valid address
+> >    here.
+> 
+> Yep, it is all a big bag of worms...
+> '0' being valid is going to make tidying up after failure 'problematic'.
+> 
+> > The first one can be solved by updating the network driver, ideally
+> > by getting rid of the casts and using proper types and accessors,
+> > while the second would require updating all users of that interface.
+> 
+> It might be worth (at least as a compilation option) of embedding the
+> 'muram offset' in a structure (passed and returned by value).
+> 
+> The compiler can then check that the driver code is never be looking
+> directly at the value.
 >
-> Not getting any output with earlyprintk so not sure if it works or if my
-> settings are incorrect .
+> For 'b' zero can be made invalid by changing the places where the
+> offset is added/subtracted.
+> It could even be used to offset the saved physical and virtual
+> addresses of the area - so not needing any extra code when the values
+> are converted to physical/virtual addresses.
 
-This should work: earlycon=uart8250,mmio,ef600300,115200n8
+Agreed.
 
-Adding "initcall_debug debug" would also be useful here.
+For this driver, we don't actually seem to use the value returned from
+the allocation function, only the virtual __iomem address we get after
+calling qe_muram_addr(), so it would be a big improvement to just
+store the virtual address as a pointer, and wrap the calls
+to qe_muram_alloc/qe_muram_addr/qe_muram_free with an appropriate
+helper that doesn't even show the offset.
 
-> I tried to revert the commit but the result is the same so I suspect that
-> this one may not really be the problem .
-> Looks like the real problem may be something affecting the the device tree
-> loading .
+However, I'd also separate the normal kmalloc pointer from the
+muram_alloc() pointer because only the latter is __iomem, and
+we shouldn't really call MMIO accessor functions on RAM in
+portable code.
 
-That's strange. If it is this commit, the init order changes as it
-changed from device to arch initcall. I haven't seen any other
-platforms having problems.
-
-Rob
+	Arnd
