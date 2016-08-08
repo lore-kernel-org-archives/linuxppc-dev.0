@@ -1,41 +1,29 @@
-Return-Path: <fbarrat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <qiang.zhao@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0048.outbound.protection.outlook.com [104.47.2.48])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7CX50rlTzDqQp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 19:57:56 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u789sVDg084323
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 05:57:54 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24nbvvw7yu-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 05:57:54 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.vnet.ibm.com>;
- Mon, 8 Aug 2016 10:57:52 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id CDCB2219005E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 10:57:15 +0100 (BST)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u789vocG10027284
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 09:57:50 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u789vnLu005736
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 8 Aug 2016 03:57:50 -0600
-From: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] cxl: Set psl_fir_cntl to production environment value
-Date: Mon,  8 Aug 2016 11:57:48 +0200
-Message-Id: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Fn552lqzDqYt
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 21:39:20 +1000 (AEST)
+From: Qiang Zhao <qiang.zhao@nxp.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Zhao Qiang
+ <qiang.zhao@freescale.com>, "lauraa@codeaurora.org" <lauraa@codeaurora.org>
+CC: "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
+ <oss@buserror.net>, "olof@lixom.net" <olof@lixom.net>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "X.xie@freescale.com" <X.xie@freescale.com>
+Subject: RE: [PATCH v13 3/6] CPM/QE: use genalloc to manage CPM/QE muram
+Date: Mon, 8 Aug 2016 03:00:05 +0000
+Message-ID: <AM3PR04MB1185E3251A9323801BBF97AD911B0@AM3PR04MB1185.eurprd04.prod.outlook.com>
+References: <1448851737-33125-1-git-send-email-qiang.zhao@freescale.com>
+ <1448851737-33125-3-git-send-email-qiang.zhao@freescale.com>
+ <7730792c-db7f-c644-55dc-0cea5ee65c0b@c-s.fr>
+In-Reply-To: <7730792c-db7f-c644-55dc-0cea5ee65c0b@c-s.fr>
+Content-Type: multipart/mixed;
+ boundary="_002_AM3PR04MB1185E3251A9323801BBF97AD911B0AM3PR04MB1185eurp_"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +33,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Switch the setting of psl_fir_cntl from debug to production
-environment recommended value. It mostly affects the PSL behavior when
-an error is raised in psl_fir1/2.
+--_002_AM3PR04MB1185E3251A9323801BBF97AD911B0AM3PR04MB1185eurp_
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 
-Tested with cxlflash.
+T24gNi84LzIwMTYgMDM6NDhBTSwgIENocmlzdG9waGUgTGVyb3kgPGNocmlzdG9waGUubGVyb3lA
+Yy1zLmZyPiB3cm90ZSA6DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
+Q2hyaXN0b3BoZSBMZXJveSBbbWFpbHRvOmNocmlzdG9waGUubGVyb3lAYy1zLmZyXQ0KPiBTZW50
+OiBTYXR1cmRheSwgQXVndXN0IDA2LCAyMDE2IDEyOjU5IEFNDQo+IFRvOiBaaGFvIFFpYW5nIDxx
+aWFuZy56aGFvQGZyZWVzY2FsZS5jb20+OyBsYXVyYWFAY29kZWF1cm9yYS5vcmcNCj4gQ2M6IGNh
+dGFsaW4ubWFyaW5hc0Bhcm0uY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBTY290
+dCBXb29kDQo+IDxvc3NAYnVzZXJyb3IubmV0Pjsgb2xvZkBsaXhvbS5uZXQ7IGFrcG1AbGludXgt
+Zm91bmRhdGlvbi5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgWC54aWVA
+ZnJlZXNjYWxlLmNvbQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMyAzLzZdIENQTS9RRTogdXNl
+IGdlbmFsbG9jIHRvIG1hbmFnZSBDUE0vUUUgbXVyYW0NCj4gDQo+IA0KPiANCj4gTGUgMzAvMTEv
+MjAxNSDDoCAwMzo0OCwgWmhhbyBRaWFuZyBhIMOpY3JpdCA6DQo+ID4gVXNlIGdlbmFsbG9jIHRv
+IG1hbmFnZSBDUE0vUUUgbXVyYW0gaW5zdGVhZCBvZiByaGVhcC4NCj4gPg0KPiA+IFNpZ25lZC1v
+ZmYtYnk6IFpoYW8gUWlhbmcgPHFpYW5nLnpoYW9AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
+PiBDaGFuZ2VzIGZvciB2OToNCj4gPiAJLSBzcGxpdHRlZCBmcm9tIHBhdGNoIDMvNSwgbW9kaWZ5
+IGNwbSBtdXJhbSBtYW5hZ2VtZW50IGZ1bmN0aW9ucy4NCj4gPiBDaGFuZ2VzIGZvciB2MTA6DQo+
+ID4gCS0gbW9kaWZ5IGNwbSBtdXJhbSBmaXJzdCwgdGhlbiBtb3ZlIHRvIHFlX2NvbW1vbg0KPiA+
+IAktIG1vZGlmeSBjb21taXQuDQo+ID4gQ2hhbmdlcyBmb3IgdjExOg0KPiA+IAktIGZhY3RvciBv
+dXQgdGhlIGNvbW1vbiBhbGxvYyBjb2RlDQo+ID4gCS0gbW9kaWZ5IG1pbl9hbGxvY19vcmRlciB0
+byB6ZXJvIGZvciBjcG1fbXVyYW1fYWxsb2NfZml4ZWQuDQo+ID4gQ2hhbmdlcyBmb3IgdjEyOg0K
+PiA+IAktIE5pbA0KPiA+IENoYW5nZXMgZm9yIHYxMzoNCj4gPiAJLSByZWJhc2UNCj4gPg0KPiA+
+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vY3BtLmggICB8ICAgMyArDQo+ID4gIGFyY2gvcG93
+ZXJwYy9wbGF0Zm9ybXMvS2NvbmZpZyAgIHwgICA0ICstDQo+ID4gIGFyY2gvcG93ZXJwYy9zeXNk
+ZXYvY3BtX2NvbW1vbi5jIHwgMTI2DQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0t
+LS0tLS0tLQ0KPiA+ICBsaWIvZ2VuYWxsb2MuYyAgICAgICAgICAgICAgICAgICB8ICAgMiArLQ0K
+PiA+ICA0IGZpbGVzIGNoYW5nZWQsIDk0IGluc2VydGlvbnMoKyksIDQxIGRlbGV0aW9ucygtKQ0K
+PiA+DQo+IA0KPiBXaXRoIHRoYXQgcGF0Y2ggYXBwbGllZCwgSSBnZXQgdGhlIGZvbGxvd2luZyBP
+b3BzIG9uIGEgOHh4IChXaGljaCBoYXMgYSBDUE0xKS4NCj4gDQo+IGNwbV9tdXJhbV9pbml0KCkg
+aXMgY2FsbGVkIGZyb20gc2V0dXBfYXJjaCgpDQo+IA0KPiBJdCBzZWVtcyB0aGF0IGdlbl9wb29s
+X2FkZCgpIHRyaWVzIHRvIGttYWxsb2MoKSBtZW1vcnkgYnV0IHRoZSBTTEFCIGlzIG5vdA0KPiBh
+dmFpbGFibGUgeWV0Lg0KPiANCg0KVGhhbmsgeW91IGZvciB5b3VyIGNvbW1lbnRzLCBJIGNhbid0
+IGZpbmQgYSA4eHggYm9hcmQsIHdvdWxkIHlvdSBsaWtlIHRvIHRlc3QgdGhlIHBhdGNoIA0KQXR0
+YWNoZWQgb24geW91ciBib2FyZD8gDQoNCj4gWyAgICAwLjAwMDAwMF0gVW5hYmxlIHRvIGhhbmRs
+ZSBrZXJuZWwgcGFnaW5nIHJlcXVlc3QgZm9yIGRhdGEgYXQNCj4gYWRkcmVzcyAweDAwMDAwMDA4
+DQo+IFsgICAgMC4wMDAwMDBdIEZhdWx0aW5nIGluc3RydWN0aW9uIGFkZHJlc3M6IDB4YzAxYWNj
+ZTANCj4gWyAgICAwLjAwMDAwMF0gT29wczogS2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2ln
+OiAxMSBbIzFdDQo+IFsgICAgMC4wMDAwMDBdIFBSRUVNUFQgQ01QQzg4NQ0KPiBbICAgIDAuMDAw
+MDAwXSBDUFU6IDAgUElEOiAwIENvbW06IHN3YXBwZXIgTm90IHRhaW50ZWQNCj4gNC40LjE0LXMz
+ay1kZXYtZzA4ODZlZDgtc3ZuICM1DQo+IFsgICAgMC4wMDAwMDBdIHRhc2s6IGMwNTE4M2UwIHRp
+OiBjMDUzNjAwMCB0YXNrLnRpOiBjMDUzNjAwMA0KPiBbICAgIDAuMDAwMDAwXSBOSVA6IGMwMWFj
+Y2UwIExSOiBjMDAxMTA2OCBDVFI6IDAwMDAwMDAwDQo+IFsgICAgMC4wMDAwMDBdIFJFR1M6IGMw
+NTM3ZTUwIFRSQVA6IDAzMDAgICBOb3QgdGFpbnRlZA0KPiAoNC40LjE0LXMzay1kZXYtZzA4ODZl
+ZDgtc3ZuKQ0KPiBbICAgIDAuMDAwMDAwXSBNU1I6IDAwMDAxMDMyIDxNRSxJUixEUixSST4gIENS
+OiAyODA0NDQyOCAgWEVSOiAwMDAwMDAwMA0KPiBbICAgIDAuMDAwMDAwXSBEQVI6IDAwMDAwMDA4
+IERTSVNSOiBjMDAwMDAwMA0KPiBHUFIwMDogYzAwMTEwNjggYzA1MzdmMDAgYzA1MTgzZTAgMDAw
+MDAwMDAgMDAwMDkwMDAgZmZmZmZmZmYgMDAwMDBiYzAgZmZmZmZmZmYNCj4gR1BSMDg6IGZmMDAz
+MDAwIGZmMDBiMDAwIGZmMDAzYmJmIDAwMDAwMDAwIDIyMDQ0NDIyIDEwMGQ0M2E4IDAwMDAwMDAw
+DQo+IDA3ZmY5NGU4DQo+IEdQUjE2OiAwMDAwMDAwMCAwN2JiNWQ3MCAwMDAwMDAwMCAwN2ZmODFm
+NCAwN2ZmODFmNCAwN2ZmODFmNCAwMDAwMDAwMA0KPiAwMDAwMDAwMA0KPiBHUFIyNDogMDdmZmIz
+YTAgMDdmZTc2MjggYzA1NTAwMDAgYzdmZmExOTAgYzA1NDAwMDAgZmYwMDNiYmYgMDAwMDAwMDAN
+Cj4gMDAwMDAwMDENCj4gWyAgICAwLjAwMDAwMF0gTklQIFtjMDFhY2NlMF0gZ2VuX3Bvb2xfYWRk
+X3ZpcnQrMHgxNC8weGRjDQo+IFsgICAgMC4wMDAwMDBdIExSIFtjMDAxMTA2OF0gY3BtX211cmFt
+X2luaXQrMHhkNC8weDE4Yw0KPiBbICAgIDAuMDAwMDAwXSBDYWxsIFRyYWNlOg0KPiBbICAgIDAu
+MDAwMDAwXSBbYzA1MzdmMDBdIFswMDAwMDIwMF0gMHgyMDAgKHVucmVsaWFibGUpDQo+IFsgICAg
+MC4wMDAwMDBdIFtjMDUzN2YyMF0gW2MwMDExMDY4XSBjcG1fbXVyYW1faW5pdCsweGQ0LzB4MThj
+DQo+IFsgICAgMC4wMDAwMDBdIFtjMDUzN2Y3MF0gW2MwNDk0Njg0XSBjcG1fcmVzZXQrMHhiNC8w
+eGM4DQo+IFsgICAgMC4wMDAwMDBdIFtjMDUzN2Y5MF0gW2MwNDk0YzY0XSBjbXBjODg1X3NldHVw
+X2FyY2grMHgxMC8weDMwDQo+IFsgICAgMC4wMDAwMDBdIFtjMDUzN2ZhMF0gW2MwNDkzY2Q0XSBz
+ZXR1cF9hcmNoKzB4MTMwLzB4MTY4DQo+IFsgICAgMC4wMDAwMDBdIFtjMDUzN2ZiMF0gW2MwNDkw
+NmJjXSBzdGFydF9rZXJuZWwrMHg4OC8weDM4MA0KPiBbICAgIDAuMDAwMDAwXSBbYzA1MzdmZjBd
+IFtjMDAwMjIyNF0gc3RhcnRfaGVyZSsweDM4LzB4OTgNCj4gWyAgICAwLjAwMDAwMF0gSW5zdHJ1
+Y3Rpb24gZHVtcDoNCj4gWyAgICAwLjAwMDAwMF0gOTE0MzAwMTAgOTE0MzAwMTQgODAwMTAwMTQg
+ODNlMTAwMGMgN2MwODAzYTYgMzgyMTAwMTANCj4gNGU4MDAwMjAgN2MwODAyYTYNCj4gWyAgICAw
+LjAwMDAwMF0gOTQyMWZmZTAgYmY2MTAwMGMgOTAwMTAwMjQgN2M3ZTFiNzggPDgwNjMwMDA4PiA3
+YzljMjM3OA0KPiA3Y2MzMWMzMCAzODYzMDAxZg0KPiBbICAgIDAuMDAwMDAwXSAtLS1bIGVuZCB0
+cmFjZSBkYzhmYTIwMGNiODg1MzdmIF0tLS0NCg==
 
-Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
----
- drivers/misc/cxl/pci.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+--_002_AM3PR04MB1185E3251A9323801BBF97AD911B0AM3PR04MB1185eurp_
+Content-Type: application/octet-stream;
+	name="0001-CPM1-use-subsys_initcall-to-init-cpm1.patch"
+Content-Description: 0001-CPM1-use-subsys_initcall-to-init-cpm1.patch
+Content-Disposition: attachment;
+	filename="0001-CPM1-use-subsys_initcall-to-init-cpm1.patch"; size=3177;
+	creation-date="Mon, 08 Aug 2016 02:57:03 GMT";
+	modification-date="Mon, 08 Aug 2016 02:43:29 GMT"
+Content-Transfer-Encoding: base64
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index d152e2d..4be25c4 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -379,7 +379,7 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id
- 
- static int init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_dev *dev)
- {
--	u64 psl_dsnctl;
-+	u64 psl_dsnctl, psl_fircntl;
- 	u64 chipid;
- 	u64 capp_unit_id;
- 	int rc;
-@@ -398,8 +398,11 @@ static int init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_
- 	cxl_p1_write(adapter, CXL_PSL_RESLCKTO, 0x20000000200ULL);
- 	/* snoop write mask */
- 	cxl_p1_write(adapter, CXL_PSL_SNWRALLOC, 0x00000000FFFFFFFFULL);
--	/* set fir_accum */
--	cxl_p1_write(adapter, CXL_PSL_FIR_CNTL, 0x0800000000000000ULL);
-+	/* set fir_cntl to recommended value for production env */
-+	psl_fircntl = (0x2ULL << (63-3)); /* ce_report */
-+	psl_fircntl |= (0x1ULL << (63-6)); /* FIR_report */
-+	psl_fircntl |= 0x1ULL; /* ce_thresh */
-+	cxl_p1_write(adapter, CXL_PSL_FIR_CNTL, psl_fircntl);
- 	/* for debugging with trace arrays */
- 	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x0000FF7C00000000ULL);
- 
--- 
-2.7.4
+RnJvbSA0NDdhMzVhNTY4YTEzYTM5ZDllMTdmYjIzNTIyZjVhODQzNjE3ZGE1IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQG54cC5jb20+CkRhdGU6
+IE1vbiwgOCBBdWcgMjAxNiAxMDo0MjowOCArMDgwMApTdWJqZWN0OiBbUEFUQ0hdIENQTTE6IHVz
+ZSBzdWJzeXNfaW5pdGNhbGwgdG8gaW5pdCBjcG0xCgpTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5n
+IDxxaWFuZy56aGFvQG54cC5jb20+Ci0tLQogYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgvYWRk
+ZXI4NzUuYyAgICAgICAgfCAgMSAtCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9lcDg4eGMu
+YyAgICAgICAgICB8ICAxIC0KIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L21wYzg2eGFkc19z
+ZXR1cC5jIHwgIDEgLQogYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgvbXBjODg1YWRzX3NldHVw
+LmMgfCAgMSAtCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC90cW04eHhfc2V0dXAuYyAgICB8
+ICAxIC0KIGFyY2gvcG93ZXJwYy9zeXNkZXYvY3BtMS5jICAgICAgICAgICAgICAgICAgIHwgMTMg
+KysrKysrKysrKysrKwogNiBmaWxlcyBjaGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCA1IGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L2FkZGVyODc1
+LmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9hZGRlcjg3NS5jCmluZGV4IDMzM2RlY2Uu
+LjljZDdmNjQgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L2FkZGVyODc1
+LmMKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgvYWRkZXI4NzUuYwpAQCAtODIsNyAr
+ODIsNiBAQCBzdGF0aWMgdm9pZCBfX2luaXQgaW5pdF9pb3BvcnRzKHZvaWQpCiAKIHN0YXRpYyB2
+b2lkIF9faW5pdCBhZGRlcjg3NV9zZXR1cCh2b2lkKQogewotCWNwbV9yZXNldCgpOwogCWluaXRf
+aW9wb3J0cygpOwogfQogCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9l
+cDg4eGMuYyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L2VwODh4Yy5jCmluZGV4IGNkMGQ5
+MGYuLjU1ZmY1M2IgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L2VwODh4
+Yy5jCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L2VwODh4Yy5jCkBAIC0xMTksNyAr
+MTE5LDYgQEAgc3RhdGljIHZvaWQgX19pbml0IGVwODh4Y19zZXR1cF9hcmNoKHZvaWQpCiB7CiAJ
+c3RydWN0IGRldmljZV9ub2RlICpucDsKIAotCWNwbV9yZXNldCgpOwogCWluaXRfaW9wb3J0cygp
+OwogCiAJbnAgPSBvZl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAiZnNsLGVwODh4
+Yy1iY3NyIik7CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9tcGM4Nnhh
+ZHNfc2V0dXAuYyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L21wYzg2eGFkc19zZXR1cC5j
+CmluZGV4IDhkMDJmNWYuLjdjNWRmNmQgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9y
+bXMvOHh4L21wYzg2eGFkc19zZXR1cC5jCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4
+L21wYzg2eGFkc19zZXR1cC5jCkBAIC05NSw3ICs5NSw2IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBt
+cGM4NnhhZHNfc2V0dXBfYXJjaCh2b2lkKQogCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CiAJdTMy
+IF9faW9tZW0gKmJjc3JfaW87CiAKLQljcG1fcmVzZXQoKTsKIAlpbml0X2lvcG9ydHMoKTsKIAog
+CW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgImZzbCxtcGM4NjZhZHMt
+YmNzciIpOwpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgvbXBjODg1YWRz
+X3NldHVwLmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9tcGM4ODVhZHNfc2V0dXAuYwpp
+bmRleCBlODIxYTQyLi45OWMxYjlhIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1z
+Lzh4eC9tcGM4ODVhZHNfc2V0dXAuYworKysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9t
+cGM4ODVhZHNfc2V0dXAuYwpAQCAtMTMwLDcgKzEzMCw2IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBt
+cGM4ODVhZHNfc2V0dXBfYXJjaCh2b2lkKQogewogCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CiAK
+LQljcG1fcmVzZXQoKTsKIAlpbml0X2lvcG9ydHMoKTsKIAogCW5wID0gb2ZfZmluZF9jb21wYXRp
+YmxlX25vZGUoTlVMTCwgTlVMTCwgImZzbCxtcGM4ODVhZHMtYmNzciIpOwpkaWZmIC0tZ2l0IGEv
+YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgvdHFtOHh4X3NldHVwLmMgYi9hcmNoL3Bvd2VycGMv
+cGxhdGZvcm1zLzh4eC90cW04eHhfc2V0dXAuYwppbmRleCA0Y2VhOGIxLi44ZWI1YTFkIDEwMDY0
+NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC90cW04eHhfc2V0dXAuYworKysgYi9h
+cmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC90cW04eHhfc2V0dXAuYwpAQCAtMTEzLDcgKzExMyw2
+IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBpbml0X2lvcG9ydHModm9pZCkKIAogc3RhdGljIHZvaWQg
+X19pbml0IHRxbTh4eF9zZXR1cF9hcmNoKHZvaWQpCiB7Ci0JY3BtX3Jlc2V0KCk7CiAJaW5pdF9p
+b3BvcnRzKCk7CiB9CiAKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9zeXNkZXYvY3BtMS5jIGIv
+YXJjaC9wb3dlcnBjL3N5c2Rldi9jcG0xLmMKaW5kZXggNmMxMTA5OS4uYTY5NjE3MyAxMDA2NDQK
+LS0tIGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9jcG0xLmMKKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rl
+di9jcG0xLmMKQEAgLTc3Nyw0ICs3NzcsMTcgQEAgc3RhdGljIGludCBjcG1faW5pdF9wYXJfaW8o
+dm9pZCkKIH0KIGFyY2hfaW5pdGNhbGwoY3BtX2luaXRfcGFyX2lvKTsKIAorc3RhdGljIGludCBf
+X2luaXQgY3BtX2luaXQodm9pZCkKK3sKKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOworCisJbnAg
+PSBvZl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAiZnNsLGNwbTEiKTsKKwlpZiAo
+IW5wKQorCQlyZXR1cm4gLUVOT0RFVjsKKwljcG1fcmVzZXQoKTsKKwlvZl9ub2RlX3B1dChucCk7
+CisJcmV0dXJuIDA7Cit9CitzdWJzeXNfaW5pdGNhbGwoY3BtX2luaXQpOworCiAjZW5kaWYgLyog
+Q09ORklHXzh4eF9HUElPICovCi0tIAoyLjEuMC4yNy5nOTZkYjMyNAoK
+
+--_002_AM3PR04MB1185E3251A9323801BBF97AD911B0AM3PR04MB1185eurp_--
