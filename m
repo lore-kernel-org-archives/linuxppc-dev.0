@@ -1,25 +1,26 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s72wf5VX5zDqd1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 13:30:10 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id g202so24215373pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 20:30:10 -0700 (PDT)
-Date: Mon, 8 Aug 2016 13:30:01 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s73CB0VsVzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 13:42:45 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id i6so24197379pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 20:42:45 -0700 (PDT)
+Date: Mon, 8 Aug 2016 13:42:35 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
 Cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>, Segher
- Boessenkool <segher@kernel.crashing.org>, Alan Modra <amodra@gmail.com>
-Subject: Re: [PATCH 3/5] kbuild: add arch specific post-module-link pass
-Message-ID: <20160808133001.3ccf2153@roar.ozlabs.ibm.com>
-In-Reply-To: <20160806201629.GC25821@ravnborg.org>
+ Arnd Bergmann <arnd@arndb.de>, Segher Boessenkool
+ <segher@kernel.crashing.org>, Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
+ code/data elimination
+Message-ID: <20160808134235.6f20eacb@roar.ozlabs.ibm.com>
+In-Reply-To: <alpine.LFD.2.20.1608070018460.17623@knanqh.ubzr>
 References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <1470399123-8455-4-git-send-email-npiggin@gmail.com>
- <20160806201629.GC25821@ravnborg.org>
+ <1470399123-8455-3-git-send-email-npiggin@gmail.com>
+ <alpine.LFD.2.20.1608070018460.17623@knanqh.ubzr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,40 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 6 Aug 2016 22:16:29 +0200
-Sam Ravnborg <sam@ravnborg.org> wrote:
+On Sun, 7 Aug 2016 01:33:45 -0400 (EDT)
+Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
 
-> On Fri, Aug 05, 2016 at 10:12:01PM +1000, Nicholas Piggin wrote:
-> > Add an option for architectures to pass over modules after they are
-> > linked. powerpc will use this to fix up alternate instruction patch
-> > relocations.
+> On Fri, 5 Aug 2016, Nicholas Piggin wrote:
+> 
+> > Introduce LINKER_DCE option for architectures to select if they want
+> > to build with -ffunction-sections, -fdata-sections, and link with
+> > --gc-sections. It requires some work (documented) to ensure all
+> > unreferenced entrypoints are live, and requires toolchain and
+> > build verification, so it is made a per-arch option for now.
+> > 
+> > On a random powerpc64le build, this yelds a significant size saving,
+> > it boots and runs fine, but there is a lot I haven't tested as yet,
+> > so these savings may be reduced if there are bugs in the link.
+> > 
+> >     text      data        bss        dec   filename
+> > 11169741   1180744    1923176	14273661   vmlinux
+> > 10445269   1004127    1919707	13369103   vmlinux.dce
+> > 
+> > ~700K text, ~170K data, 6% removed from kernel image size.
 > > 
 > > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  Documentation/kbuild/makefiles.txt | 6 ++++++
-> >  Makefile                           | 1 +
-> >  scripts/Makefile.modpost           | 8 ++++++++
-> >  3 files changed, 15 insertions(+)
-> > 
-> > diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-> > index 13f888a..f6c065b 100644
-> > --- a/Documentation/kbuild/makefiles.txt
-> > +++ b/Documentation/kbuild/makefiles.txt
-> > @@ -952,6 +952,12 @@ When kbuild executes, the following steps are followed (roughly):
-> >  	$(KBUILD_ARFLAGS) set by the top level Makefile to "D" (deterministic
-> >  	mode) if this option is supported by $(AR).
-> >  
-> > +    KBUILD_MODPOST_TOOL   Arch-specific command to run after module link
-> > +
-> > +        $(KBUILD_MODPOST_TOOL) is used to add an arch-specific pass over
-> > +        modules after their final link. E.g., powerpc uses this to adjust
-> > +        relative branches of "alternate code patching" sections.
-> > +  
 > 
-> This needs documentation in kbuild.txt, where there is a
-> nearly full lst of KBUILD_ variables.
+> I played with that too. However this needs distinct sections for 
+> exception tables and the like otherwise the backward references from the 
+> final exception table to those functions responsible for those exception 
+> entries has the effect of pulling in all those functions even if their 
+> entry point is never referenced, making --gc-sections less effective.  
+> I managed to fix this only with a change to gas (accepted upstream).
+> 
+> But once that is solved, you then have the missing forward reference 
+> problem i.e. nothing actually references those individual exception 
+> entry sections and ld happily drops them all. Having a KEEP() on each of 
+> them is unworkable and defeats the purpose anyway.  That requires a 
+> dummy reloc to trick ld into pulling in those sections when the parent 
+> section is also pulled in.
 
-Thanks, I missed that.
+Right, although we don't *need* those things just for enabling
+--gc-sections, do we? It may not be 100% optimal, but it's enough
+to avoid the regression when switching to --whole-archive build
+option.
+
+
+> Please see attached a subset of the slides I presented at ELC and Linaro 
+> Connect last year to illustrate those issues.
+> 
+> Also attached a sample patch partially implementing those changes.
+> 
+> In short I'm very glad to see that this might steer interest across 
+> multiple architectures.  I felt like this was becoming much more 
+> intrusive than I expected and that maybe LTO was a better bet after all. 
+> But LTO has its evils too and I'm willing to look at gc-sections again 
+> if there is interest from others as well.
+
+Your results are impressive, and I don't want to stand in the way of
+either LTO or improving accuracy of --gc-sections. But both are things
+that can be built on top of this patch, I think. We don't need to do
+the entire intrusive changes all at once.
 
 Thanks,
 Nick
