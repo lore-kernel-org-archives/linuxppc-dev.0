@@ -1,26 +1,26 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
+Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
+ [IPv6:2607:f8b0:400e:c00::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s72qX4r1lzDqS5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 13:25:44 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id ez1so23153821pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 20:25:43 -0700 (PDT)
-Date: Mon, 8 Aug 2016 13:25:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s72vX3HCSzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2016 13:29:12 +1000 (AEST)
+Received: by mail-pf0-x236.google.com with SMTP id h186so114260712pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 07 Aug 2016 20:29:12 -0700 (PDT)
+Date: Mon, 8 Aug 2016 13:29:03 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Sam Ravnborg <sam@ravnborg.org>
 Cc: linux-kbuild@vger.kernel.org, linux-arch@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
  Arnd Bergmann <arnd@arndb.de>, Nicolas Pitre <nico@linaro.org>, Segher
  Boessenkool <segher@kernel.crashing.org>, Alan Modra <amodra@gmail.com>
-Subject: Re: [PATCH 1/5] kbuild: allow architectures to use thin archives
- instead of ld -r
-Message-ID: <20160808132532.3ce8c0b6@roar.ozlabs.ibm.com>
-In-Reply-To: <20160806201045.GA25821@ravnborg.org>
+Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
+ code/data elimination
+Message-ID: <20160808132903.0e37c967@roar.ozlabs.ibm.com>
+In-Reply-To: <20160806201423.GB25821@ravnborg.org>
 References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <1470399123-8455-2-git-send-email-npiggin@gmail.com>
- <20160806201045.GA25821@ravnborg.org>
+ <1470399123-8455-3-git-send-email-npiggin@gmail.com>
+ <20160806201423.GB25821@ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,38 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 6 Aug 2016 22:10:45 +0200
+On Sat, 6 Aug 2016 22:14:23 +0200
 Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> Hi Nicholas.
+> On Fri, Aug 05, 2016 at 10:12:00PM +1000, Nicholas Piggin wrote:
+> > Introduce LINKER_DCE option for architectures to select if they want
+> > to build with -ffunction-sections, -fdata-sections, and link with
+> > --gc-sections.  
 > 
-> On Fri, Aug 05, 2016 at 10:11:59PM +1000, Nicholas Piggin wrote:
-> > From: Stephen Rothwell <sfr@canb.auug.org.au>
-> > 
-> > ld -r is an incremental link used to create built-in.o files in build
-> > subdirectories. It produces relocatable object files containing all
-> > its input files, and these are are then pulled together and relocated
-> > in the final link. Aside from the bloat, this constrains the final
-> > link relocations, which has bitten large powerpc builds with
-> > unresolvable relocations in the final link.
-> > 
-> > Alan Modra has recommended the kernel use thin archives for linking.
-> > This is an alternative and means that the linker has more information
-> > available to it when it links the kernel.
-> > 
-> > This patch enables a config option architectures can select,  
-> If we want to do this, then I suggest to make the logic reverse.
-> Architectures that for some reasons cannot use this should
-> have the possibility to avoid it. But let it be enabled by default.
+> Can you please try to come up with a less cryptic name.
+> "DCE" may make sense for you today.
+> Bot the naive reader will benefit from the longer and
+> more explcit form.
 
-I was thinking the build matrix (architectures x build options x toolchains)
-is a bit too large to switch it for everybody. I've far from even tested it
-for a fraction of powerpc builds. I would prefer arch maintainers to switch
-it themselves, but I do hope we can move everybody and just remove the old
-method within a few releases.
+Yes that's a good idea. The name sucks.
 
-But I'm happy to go with whatever arch and kbuild maintainers prefer, so I
-appreciate any discussion on it.
+We don't seem to consistently have a prefix for build configuration
+options, but we could start? KBUILD_LD_DEAD_CODE_DATA_ELIMINATION?
 
 Thanks,
 Nick
