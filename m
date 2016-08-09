@@ -1,54 +1,20 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mail-wm0-x243.google.com (mail-wm0-x243.google.com
- [IPv6:2a00:1450:400c:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7swn0fqrzDqh5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:48:09 +1000 (AEST)
-Received: by mail-wm0-x243.google.com with SMTP id i138so2569125wmf.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 04:48:08 -0700 (PDT)
-Sender: Peter Korsgaard <jacmet@gmail.com>
-From: Peter Korsgaard <peter@korsgaard.com>
-To: Wolfram Sang <wsa-dev@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org,  linux-i2c@vger.kernel.org,  Jean Delvare
- <jdelvare@suse.com>,  Wolfram Sang <wsa@the-dreams.de>,  Ludovic Desroches
- <ludovic.desroches@atmel.com>,  Ray Jui <rjui@broadcom.com>,  Scott
- Branden <sbranden@broadcom.com>,  Jon Mason <jonmason@broadcom.com>,
- bcm-kernel-feedback-list@broadcom.com,  Florian Fainelli
- <f.fainelli@gmail.com>,  Sonic Zhang <sonic.zhang@analog.com>,  Brian
- Norris <computersforpeace@gmail.com>,  Gregory Fong
- <gregory.0xf0@gmail.com>,  Michal Simek <michal.simek@xilinx.com>,
- =?utf-8?Q?S=C3=B6ren?= Brinkmann <soren.brinkmann@xilinx.com>,  Jochen
- Friedrich <jochen@scram.de>,  Sekhar Nori <nsekhar@ti.com>,  Kevin Hilman
- <khilman@kernel.org>,  Guenter Roeck <linux@roeck-us.net>,  Uwe
- =?utf-8?Q?Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,  Kukjin Kim
- <kgene@kernel.org>,  Krzysztof Kozlowski <k.kozlowski@samsung.com>,  Seth
- Heasley <seth.heasley@intel.com>,  Neil Horman <nhorman@tuxdriver.com>,
- Joachim Eastwood <manabian@gmail.com>,  Carlo Caione <carlo@caione.org>,
- Alessandro Rubini <rubini@unipv.it>,  Linus Walleij
- <linus.walleij@linaro.org>,  Peter Korsgaard <jacmet@sunsite.dk>,  Tony
- Lindgren <tony@atomide.com>,  Vladimir Zapolskiy <vz@mleia.com>,  Sylvain
- Lemieux <slemieux.tyco@gmail.com>,  Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Heiko Stuebner <heiko@sntech.de>,  Barry Song <baohua@kernel.org>,
- Patrice Chotard <patrice.chotard@st.com>,  Laxman Dewangan
- <ldewangan@nvidia.com>,  Stephen Warren <swarren@wwwdotorg.org>,  Thierry
- Reding <thierry.reding@gmail.com>,  Alexandre Courbot <gnurou@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,  Tony Prisk
- <linux@prisktech.co.nz>,  linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org,  linux-samsung-soc@vger.kernel.org,
- linux-amlogic@lists.infradead.org,  linux-omap@vger.kernel.org,
- linux-rockchip@lists.infradead.org,  kernel@stlinux.com,
- linux-tegra@vger.kernel.org
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
-Date: Tue, 09 Aug 2016 13:48:03 +0200
-In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
- (Wolfram Sang's message of "Tue, 9 Aug 2016 13:36:17 +0200")
-Message-ID: <87vaza2mfg.fsf@dell.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7t1Y2WxQzDqgf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:52:17 +1000 (AEST)
+Message-ID: <1470743530.3015.38.camel@kernel.crashing.org>
+Subject: Re: 4.8.0-rc1: Invalid memory access at $SRR0: 0140f86c $SRR1:
+ 00003030
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 09 Aug 2016 21:52:10 +1000
+In-Reply-To: <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
+References: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
+ <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,16 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>> "Wolfram" == Wolfram Sang <wsa-dev@sang-engineering.com> writes:
+On Tue, 2016-08-09 at 02:06 -0700, Christian Kujau wrote:
+> On Mon, 8 Aug 2016, Christian Kujau wrote:
+> > 
+> > while trying to upgrade this PowerBook G4 from 4.7-rc7 to 4.8-rc1,
+> > it's 
+> > unable to boot the Yaboot (v1.3.16 from Debian/stable) boot loader:
 
- > The core will do this for us now.
- > Signed-off-by: Wolfram Sang <wsa-dev@sang-engineering.com>
- > ---
- >  drivers/i2c/busses/i2c-ocores.c         | 4 +---
+There should already be a fix for that:
 
-For i2c-ocores.c:
+http://patchwork.ozlabs.org/patch/654560/
 
-Acked-by: Peter Korsgaard <peter@korsgaard.com>
+It should be in Michael's tree if not already in Linus.
 
--- 
-Bye, Peter Korsgaard
+Cheers,
+Ben.
+
+> > ================================================================
+> > copying OF device tree...
+> > Building dt strings...
+> > Building dt stucture...
+> > Device tree strings 0x01e72000 -> 0x01e73615
+> > Device tree struct  0x01e74000 -> 0x01e7e000
+> > Quiescing Open Firmware...
+> > Bootng Linux via __start()...
+> > 
+> > Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
+> > 
+> > Apple PowerBook6,8 4.9.0f0 BootROM built on 01/10/05 at 10:39:14
+> > [...]
+> > 
+> >  ok
+> > 0:> _
+> > ================================================================
+> > 
+> > Going back to 4.7-rc7 (w/o installing Yaboot again) works just
+> > fine. The 
+> > config is mostly the same (used "make oldconfig" from 4.7), but
+> > I've said 
+> > YES to CONFIG_SLAB_FREELIST_RANDOM - could this be causing the
+> > boot 
+> > failure? Full .config and screen shot: http://nerdbynature.de/bits/
+> > 4.8.0-rc1/
+> 
+> A git-bisect led me to:
+> 
+> =========================================
+> commit 9402c684613163888714df0955fa1f17142b08bf
+> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date:   Tue Jul 5 15:03:41 2016 +1000
+> 
+>     powerpc: Factor do_feature_fixup calls
+>     
+>     32 and 64-bit do a similar set of calls early on, we move it all
+> to
+>     a single common function to make the boot code more readable.
+>     
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> =========================================
+> 
+> But I'm unable to revert just this patch:
+> 
+> $ git revert 9402c684613163888714df0955fa1f17142b08bf
+> error: could not revert 9402c68... powerpc: Factor do_feature_fixup
+> calls
+> hint: after resolving the conflicts, mark the corrected paths
+> 
+> The bisect-log:
+> 
+> =========================================
+> $ git bisect log
+> git bisect start '--' 'arch/powerpc'
+> # good: [523d939ef98fd712632d93a5a2b588e477a7565e] Linux 4.7
+> git bisect good 523d939ef98fd712632d93a5a2b588e477a7565e
+> # bad: [29b4817d4018df78086157ea3a55c1d9424a7cfc] Linux 4.8-rc1
+> git bisect bad 29b4817d4018df78086157ea3a55c1d9424a7cfc
+> # bad: [3808a88985b4f5f5e947c364debce4441a380fb8] powerpc: Move FW
+> feature probing out of pseries probe()
+> git bisect bad 3808a88985b4f5f5e947c364debce4441a380fb8
+> # good: [a203658b5ed37c11e5016d3fbbbab9ce018c1b78] powerpc/opal: Wake
+> up kopald polling thread before waiting for events
+> git bisect good a203658b5ed37c11e5016d3fbbbab9ce018c1b78
+> # good: [0dfffb48cecd8f84c6e649baee9bacd9be925734] powerpc/powernv:
+> abstraction for saving SPRs before entering deep idle states
+> git bisect good 0dfffb48cecd8f84c6e649baee9bacd9be925734
+> # good: [66c570f545e056babdd9510595ce762dcedadd71] powerpc/mm: use
+> _raw variant of page table accessors
+> git bisect good 66c570f545e056babdd9510595ce762dcedadd71
+> # good: [c2ca9f6b4cc4c45eb598b24b8b06beee668052d5] powerpc/powernv:
+> Fix pci-cxl.c build when CONFIG_MODULES=n
+> git bisect good c2ca9f6b4cc4c45eb598b24b8b06beee668052d5
+> # good: [4c91bd6eeabb004f283db8a6854b134e2a2de1bc] powerpc: Merge the
+> RELOCATABLE config entries for ppc32 and ppc64
+> git bisect good 4c91bd6eeabb004f283db8a6854b134e2a2de1bc
+> # bad: [c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48] powerpc: Move 64-
+> bit feature fixup earlier
+> git bisect bad c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48
+> # bad: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor
+> do_feature_fixup calls
+> git bisect bad 9402c684613163888714df0955fa1f17142b08bf
+> # good: [27d1149667352772240655b65372a4294f992ea7] powerpc/32: Remove
+> RELOCATABLE_PPC32
+> git bisect good 27d1149667352772240655b65372a4294f992ea7
+> # first bad commit: [9402c684613163888714df0955fa1f17142b08bf]
+> powerpc: Factor do_feature_fixup calls
+> =========================================
+> 
+> 
+> HTH,
+> Christian.
