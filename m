@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7rNG5xyvzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 20:38:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7rNJ0DlxzDqQ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 20:38:24 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: gwshan@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
  Michael Neuling <mikey@neuling.org>
-Subject: [PATCH stable 4.6 1/4] powerpc/eeh: Fix invalid cached PE primary bus
-Date: Tue,  9 Aug 2016 20:38:05 +1000
-Message-Id: <1470739088-17850-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.6 2/4] powerpc/bpf/jit: Disable classic BPF JIT on
+ ppc64le
+Date: Tue,  9 Aug 2016 20:38:06 +1000
+Message-Id: <1470739088-17850-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1470739088-17850-1-git-send-email-mpe@ellerman.id.au>
 References: <1470739088-17850-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,58 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-commit a3aa256b7258b3d19f8b44557cc64525a993b941 upstream.
+commit 844e3be47693f92a108cb1fb3b0606bf25e9c7a6 upstream.
 
-Backport required due to rename of pcibios_add_pci_devices() to
-pci_hp_add_devices() upstream - mpe.
+Backport required due to rename of HAVE_BPF_JIT to HAVE_CBPF_JIT
+upstream - mpe.
 
-The PE primary bus cannot be got from its child devices when having
-full hotplug in error recovery. The PE primary bus is cached, which
-is done in commit <05ba75f84864> ("powerpc/eeh: Fix stale cached primary
-bus"). In eeh_reset_device(), the flag (EEH_PE_PRI_BUS) is cleared
-before the PCI hot remove. eeh_pe_bus_get() then returns NULL as the
-PE primary bus in pnv_eeh_reset() and it crashes the kernel eventually.
+Classic BPF JIT was never ported completely to work on little endian
+powerpc. However, it can be enabled and will crash the system when used.
+As such, disable use of BPF JIT on ppc64le.
 
-This fixes the issue by clearing the flag (EEH_PE_PRI_BUS) before the
-PCI hot add. With it, the PowerNV EEH reset backend (pnv_eeh_reset())
-can get valid PE primary bus through eeh_pe_bus_get().
-
-Fixes: 67086e32b564 ("powerpc/eeh: powerpc/eeh: Support error recovery for VF PE")
-Reported-by: Pridhiviraj Paidipeddi <ppaiddipe@in.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Fixes: 7c105b63bd98 ("powerpc: Add CONFIG_CPU_LITTLE_ENDIAN kernel config option.")
+Reported-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Acked-by: Thadeu Lima de Souza Cascardo <cascardo@redhat.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/eeh_driver.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 31e4c7e1a4b4..c42627645b54 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -648,7 +648,6 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		if (pe->type & EEH_PE_VF) {
- 			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
- 		} else {
--			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 			pci_lock_rescan_remove();
- 			pcibios_remove_pci_devices(bus);
- 			pci_unlock_rescan_remove();
-@@ -698,10 +697,12 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus,
- 		 */
- 		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
- 		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
--		if (pe->type & EEH_PE_VF)
-+		if (pe->type & EEH_PE_VF) {
- 			eeh_add_virt_device(edev, NULL);
--		else
-+		} else {
-+			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS);
- 			pcibios_add_pci_devices(bus);
-+		}
- 	} else if (frozen_bus && rmv_data->removed) {
- 		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
- 		ssleep(5);
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 7cd32c038286..4e1b060b8481 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -126,7 +126,7 @@ config PPC
+ 	select IRQ_FORCED_THREADING
+ 	select HAVE_RCU_TABLE_FREE if SMP
+ 	select HAVE_SYSCALL_TRACEPOINTS
+-	select HAVE_BPF_JIT
++	select HAVE_BPF_JIT if CPU_BIG_ENDIAN
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
 -- 
 2.7.4
