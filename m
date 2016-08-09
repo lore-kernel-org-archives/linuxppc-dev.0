@@ -1,25 +1,50 @@
-Return-Path: <andrew.smirnov@gmail.com>
-Received: from mail-yb0-x243.google.com (mail-yb0-x243.google.com
- [IPv6:2607:f8b0:4002:c09::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vz@mleia.com>
+Received: from mail.mleia.com (mleia.com [178.79.152.223])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s80C52FpyzDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 02:30:57 +1000 (AEST)
-Received: by mail-yb0-x243.google.com with SMTP id x196so406728ybe.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 09:30:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s80Sv0WWqzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 02:42:54 +1000 (AEST)
+Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
+To: Wolfram Sang <wsa-dev@sang-engineering.com>, linux-kernel@vger.kernel.org
+References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
+ <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
+Cc: linux-i2c@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Ludovic Desroches <ludovic.desroches@atmel.com>, Ray Jui
+ <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ Jon Mason <jonmason@broadcom.com>, bcm-kernel-feedback-list@broadcom.com,
+ Florian Fainelli <f.fainelli@gmail.com>, Sonic Zhang
+ <sonic.zhang@analog.com>, Brian Norris <computersforpeace@gmail.com>,
+ Gregory Fong <gregory.0xf0@gmail.com>, Michal Simek
+ <michal.simek@xilinx.com>, =?UTF-8?Q?S=c3=b6ren_Brinkmann?=
+ <soren.brinkmann@xilinx.com>, Jochen Friedrich <jochen@scram.de>,
+ Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>,
+ Guenter Roeck <linux@roeck-us.net>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?=
+ <kernel@pengutronix.de>, Kukjin Kim <kgene@kernel.org>,
+ Krzysztof Kozlowski <k.kozlowski@samsung.com>,
+ Seth Heasley <seth.heasley@intel.com>, Neil Horman <nhorman@tuxdriver.com>,
+ Joachim Eastwood <manabian@gmail.com>, Carlo Caione <carlo@caione.org>,
+ Alessandro Rubini <rubini@unipv.it>, Linus Walleij
+ <linus.walleij@linaro.org>, Peter Korsgaard <jacmet@sunsite.dk>,
+ Tony Lindgren <tony@atomide.com>, Sylvain Lemieux <slemieux.tyco@gmail.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Heiko Stuebner <heiko@sntech.de>,
+ Barry Song <baohua@kernel.org>, Patrice Chotard <patrice.chotard@st.com>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Alexandre Courbot <gnurou@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-samsung-soc@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-omap@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ kernel@stlinux.com, linux-tegra@vger.kernel.org
+From: Vladimir Zapolskiy <vz@mleia.com>
+Message-ID: <a8dd593f-a38e-9661-22f3-ca5e5dfe53c4@mleia.com>
+Date: Tue, 9 Aug 2016 19:36:55 +0300
 MIME-Version: 1.0
-In-Reply-To: <20160801134031.7dcb7c82@roar.ozlabs.ibm.com>
-References: <1469747238-17432-1-git-send-email-andrew.smirnov@gmail.com>
- <20160801134031.7dcb7c82@roar.ozlabs.ibm.com>
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Date: Tue, 9 Aug 2016 09:30:54 -0700
-Message-ID: <CAHQ1cqH650Ef9mdoKiWvy4ubz=sx32bDjgQ9sYQRRve+q8rKMQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/3] powerpc: Factor out common code in setup-common.c
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Scott Wood <oss@buserror.net>, Alessio Igor Bogani <alessio.bogani@elettra.eu>,
- Paul Mackerras <paulus@samba.org>, Daniel Axtens <dja@axtens.net>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +54,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 31, 2016 at 8:40 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Thu, 28 Jul 2016 16:07:16 -0700
-> Andrey Smirnov <andrew.smirnov@gmail.com> wrote:
->
->> Factor out a small bit of common code in machine_restart(),
->> machine_power_off() and machine_halt().
->>
->> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
->> ---
->>
->> No changes compared to v1.
->>
->>  arch/powerpc/kernel/setup-common.c | 23 ++++++++++++++---------
->>  1 file changed, 14 insertions(+), 9 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/setup-common.c
->> b/arch/powerpc/kernel/setup-common.c index 714b4ba..5cd3283 100644
->> --- a/arch/powerpc/kernel/setup-common.c
->> +++ b/arch/powerpc/kernel/setup-common.c
->> @@ -130,15 +130,22 @@ void machine_shutdown(void)
->>               ppc_md.machine_shutdown();
->>  }
->>
->> +static void machine_hang(void)
->> +{
->> +     pr_emerg("System Halted, OK to turn off power\n");
->> +     local_irq_disable();
->> +     while (1)
->> +             ;
->> +}
->
-> What's the intended semantics of this function? A default power
-> off handler when the platform supplies none?
+On 09.08.2016 14:36, Wolfram Sang wrote:
+> The core will do this for us now.
+> 
+> Signed-off-by: Wolfram Sang <wsa-dev@sang-engineering.com>
+> ---
 
-I was mostly trying to avoid code duplication in
-machine_halt/machine_restart/machine_power_off and didn't intend that
-function to be used outside. The semantics is just - to hang the CPU
-when things didn't go as expected and code that was supposed to
-restart/halt/power off the machine failed.
+For 
 
-> Would ppc_power_off()
-> be a good name?
+>  drivers/i2c/busses/i2c-pnx.c            | 4 +---
 
-Calling it "power_off" seems a bit misleading, the function doesn't
-really try to do anything related to powering off, really.
+[snip]
 
-Thanks,
-Andrey
+> diff --git a/drivers/i2c/busses/i2c-pnx.c b/drivers/i2c/busses/i2c-pnx.c
+> index 7ea67aa46fb730..fd5f9d2bf6d94e 100644
+> --- a/drivers/i2c/busses/i2c-pnx.c
+> +++ b/drivers/i2c/busses/i2c-pnx.c
+> @@ -714,10 +714,8 @@ static int i2c_pnx_probe(struct platform_device *pdev)
+>  
+>  	/* Register this adapter with the I2C subsystem */
+>  	ret = i2c_add_numbered_adapter(&alg_data->adapter);
+> -	if (ret < 0) {
+> -		dev_err(&pdev->dev, "I2C: Failed to add bus\n");
+> +	if (ret < 0)
+>  		goto out_clock;
+> -	}
+>  
+>  	dev_dbg(&pdev->dev, "%s: Master at %#8x, irq %d.\n",
+>  		alg_data->adapter.name, res->start, alg_data->irq);
+
+Acked-by: Vladimir Zapolskiy <vz@mleia.com>
+
+--
+With best wishes,
+Vladimir
