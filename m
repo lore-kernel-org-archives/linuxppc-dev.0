@@ -1,16 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7lRQ5HMkzDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 16:55:46 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: gpiccoli@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/pci: Fix endian bug in fixed PHB numbering
-Date: Tue,  9 Aug 2016 16:55:41 +1000
-Message-Id: <1470725741-26118-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7pLj2Z6SzDqdv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 19:06:51 +1000 (AEST)
+Date: Tue, 9 Aug 2016 02:06:45 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: 4.8.0-rc1: Invalid memory access at $SRR0: 0140f86c $SRR1:
+ 00003030
+In-Reply-To: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
+Message-ID: <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
+References: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,52 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number
-based on device-tree properties"), added code to read a 64-bit property
-from the device tree, and if not found read a 32-bit property (reg).
+On Mon, 8 Aug 2016, Christian Kujau wrote:
+> while trying to upgrade this PowerBook G4 from 4.7-rc7 to 4.8-rc1, it's 
+> unable to boot the Yaboot (v1.3.16 from Debian/stable) boot loader:
+> 
+> ================================================================
+> copying OF device tree...
+> Building dt strings...
+> Building dt stucture...
+> Device tree strings 0x01e72000 -> 0x01e73615
+> Device tree struct  0x01e74000 -> 0x01e7e000
+> Quiescing Open Firmware...
+> Bootng Linux via __start()...
+> 
+> Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
+> 
+> Apple PowerBook6,8 4.9.0f0 BootROM built on 01/10/05 at 10:39:14
+> [...]
+> 
+>  ok
+> 0:> _
+> ================================================================
+> 
+> Going back to 4.7-rc7 (w/o installing Yaboot again) works just fine. The 
+> config is mostly the same (used "make oldconfig" from 4.7), but I've said 
+> YES to CONFIG_SLAB_FREELIST_RANDOM - could this be causing the boot 
+> failure? Full .config and screen shot: http://nerdbynature.de/bits/4.8.0-rc1/
 
-There was a bug in the 32-bit case, on big endian machines, due to the
-use of the 64-bit value to read the 32-bit property. The cast of &prop
-means we end up writing to the high 32-bit of prop, leaving the low
-32-bits containing whatever junk was on the stack.
+A git-bisect led me to:
 
-If that junk value was non-zero, and < MAX_PHBS, we would end up using
-it as the PHB id. This results in users seeing what appear to be random
-PHB ids.
+=========================================
+commit 9402c684613163888714df0955fa1f17142b08bf
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Tue Jul 5 15:03:41 2016 +1000
 
-Fix it by reading into a u32 property and then assigning that to the
-u64 value, letting the CPU do the correct conversions for us.
+    powerpc: Factor do_feature_fixup calls
+    
+    32 and 64-bit do a similar set of calls early on, we move it all to
+    a single common function to make the boot code more readable.
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+=========================================
 
-Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/pci-common.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+But I'm unable to revert just this patch:
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index a5c0153ede37..7fdf324d5b51 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -78,6 +78,7 @@ EXPORT_SYMBOL(get_pci_dma_ops);
- static int get_phb_number(struct device_node *dn)
- {
- 	int ret, phb_id = -1;
-+	u32 prop_32;
- 	u64 prop;
- 
- 	/*
-@@ -86,8 +87,10 @@ static int get_phb_number(struct device_node *dn)
- 	 * reading "ibm,opal-phbid", only present in OPAL environment.
- 	 */
- 	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
--	if (ret)
--		ret = of_property_read_u32_index(dn, "reg", 1, (u32 *)&prop);
-+	if (ret) {
-+		ret = of_property_read_u32_index(dn, "reg", 1, &prop_32);
-+		prop = prop_32;
-+	}
- 
- 	if (!ret)
- 		phb_id = (int)(prop & (MAX_PHBS - 1));
+$ git revert 9402c684613163888714df0955fa1f17142b08bf
+error: could not revert 9402c68... powerpc: Factor do_feature_fixup calls
+hint: after resolving the conflicts, mark the corrected paths
+
+The bisect-log:
+
+=========================================
+$ git bisect log
+git bisect start '--' 'arch/powerpc'
+# good: [523d939ef98fd712632d93a5a2b588e477a7565e] Linux 4.7
+git bisect good 523d939ef98fd712632d93a5a2b588e477a7565e
+# bad: [29b4817d4018df78086157ea3a55c1d9424a7cfc] Linux 4.8-rc1
+git bisect bad 29b4817d4018df78086157ea3a55c1d9424a7cfc
+# bad: [3808a88985b4f5f5e947c364debce4441a380fb8] powerpc: Move FW feature probing out of pseries probe()
+git bisect bad 3808a88985b4f5f5e947c364debce4441a380fb8
+# good: [a203658b5ed37c11e5016d3fbbbab9ce018c1b78] powerpc/opal: Wake up kopald polling thread before waiting for events
+git bisect good a203658b5ed37c11e5016d3fbbbab9ce018c1b78
+# good: [0dfffb48cecd8f84c6e649baee9bacd9be925734] powerpc/powernv: abstraction for saving SPRs before entering deep idle states
+git bisect good 0dfffb48cecd8f84c6e649baee9bacd9be925734
+# good: [66c570f545e056babdd9510595ce762dcedadd71] powerpc/mm: use _raw variant of page table accessors
+git bisect good 66c570f545e056babdd9510595ce762dcedadd71
+# good: [c2ca9f6b4cc4c45eb598b24b8b06beee668052d5] powerpc/powernv: Fix pci-cxl.c build when CONFIG_MODULES=n
+git bisect good c2ca9f6b4cc4c45eb598b24b8b06beee668052d5
+# good: [4c91bd6eeabb004f283db8a6854b134e2a2de1bc] powerpc: Merge the RELOCATABLE config entries for ppc32 and ppc64
+git bisect good 4c91bd6eeabb004f283db8a6854b134e2a2de1bc
+# bad: [c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48] powerpc: Move 64-bit feature fixup earlier
+git bisect bad c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48
+# bad: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor do_feature_fixup calls
+git bisect bad 9402c684613163888714df0955fa1f17142b08bf
+# good: [27d1149667352772240655b65372a4294f992ea7] powerpc/32: Remove RELOCATABLE_PPC32
+git bisect good 27d1149667352772240655b65372a4294f992ea7
+# first bad commit: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor do_feature_fixup calls
+=========================================
+
+
+HTH,
+Christian.
 -- 
-2.7.4
+BOFH excuse #409:
+
+The vulcan-death-grip ping has been applied.
