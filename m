@@ -1,26 +1,26 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
- [IPv6:2607:f8b0:400e:c03::242])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7jJX244RzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 15:19:39 +1000 (AEST)
-Received: by mail-pa0-x242.google.com with SMTP id cf3so310809pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 22:19:39 -0700 (PDT)
-Subject: Re: [PATCH 0/7] ima: carry the measurement list across kexec
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>,
- linux-security-module@vger.kernel.org
-References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <91fa2f95-4d70-a056-d599-01cb3bbe6771@gmail.com>
-Date: Tue, 9 Aug 2016 15:19:31 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7jJg1cFdzDqh6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 15:19:46 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id y134so217527pfg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 22:19:46 -0700 (PDT)
+Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
+ external users
+To: Alex Williamson <alex.williamson@redhat.com>
+References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
+ <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
+ <20160808104315.77cf22ec@t450s.home>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, Paul Mackerras <paulus@samba.org>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
+Date: Tue, 9 Aug 2016 15:19:39 +1000
 MIME-Version: 1.0
-In-Reply-To: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20160808104315.77cf22ec@t450s.home>
+Content-Type: text/plain; charset=koi8-r
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +30,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 04/08/16 22:24, Mimi Zohar wrote:
-> The TPM PCRs are only reset on a hard reboot.  In order to validate a
-> TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
-> of the running kernel must be saved and then restored on the subsequent
-> boot.
+On 09/08/16 02:43, Alex Williamson wrote:
+> On Wed,  3 Aug 2016 18:40:55 +1000
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 > 
-> The existing securityfs binary_runtime_measurements file conveniently
-> provides a serialized format of the IMA measurement list. This patch
-> set serializes the measurement list in this format and restores it.
+>> This exports helpers which are needed to keep a VFIO container in
+>> memory while there are external users such as KVM.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
+>>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
+>>  include/linux/vfio.h                |  6 ++++++
+>>  3 files changed, 51 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+>> index d1d70e0..baf6a9c 100644
+>> --- a/drivers/vfio/vfio.c
+>> +++ b/drivers/vfio/vfio.c
+>> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
+>>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
+>>  
+>>  /**
+>> + * External user API for containers, exported by symbols to be linked
+>> + * dynamically.
+>> + *
+>> + */
+>> +struct vfio_container *vfio_container_get_ext(struct file *filep)
+>> +{
+>> +	struct vfio_container *container = filep->private_data;
+>> +
+>> +	if (filep->f_op != &vfio_fops)
+>> +		return ERR_PTR(-EINVAL);
+>> +
+>> +	vfio_container_get(container);
+>> +
+>> +	return container;
+>> +}
+>> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
+>> +
+>> +void vfio_container_put_ext(struct vfio_container *container)
+>> +{
+>> +	vfio_container_put(container);
+>> +}
+>> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
+>> +
+>> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
+>> +{
+>> +	return container->iommu_data;
+>> +}
+>> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
+>> +
+>> +/**
+>>   * Sub-module support
+>>   */
+>>  /*
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> index 3594ad3..fceea3d 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
+>>  	.detach_group	= tce_iommu_detach_group,
+>>  };
+>>  
+>> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
+>> +		u64 offset)
+>> +{
+>> +	struct tce_container *container = iommu_data;
+>> +	struct iommu_table *tbl = NULL;
+>> +
+>> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
+>> +		return NULL;
+>> +
+>> +	iommu_table_get(tbl);
+>> +
+>> +	return tbl;
+>> +}
+>> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
+>> +
+>>  static int __init tce_iommu_init(void)
+>>  {
+>>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
+>> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
+>>  MODULE_LICENSE("GPL v2");
+>>  MODULE_AUTHOR(DRIVER_AUTHOR);
+>>  MODULE_DESCRIPTION(DRIVER_DESC);
+>> -
+>> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+>> index 0ecae0b..1c2138a 100644
+>> --- a/include/linux/vfio.h
+>> +++ b/include/linux/vfio.h
+>> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
+>>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
+>>  extern long vfio_external_check_extension(struct vfio_group *group,
+>>  					  unsigned long arg);
+>> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
+>> +extern void vfio_container_put_ext(struct vfio_container *container);
+>> +extern void *vfio_container_get_iommu_data_ext(
+>> +		struct vfio_container *container);
+>> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
+>> +		void *iommu_data, u64 offset);
+>>  
+>>  /*
+>>   * Sub-module helpers
 > 
-> This patch set pre-req's Thiago Bauermann's "kexec_file: Add buffer
-> hand-over for the next kernel" patch set* for actually carrying the
-> serialized measurement list across the kexec.
 > 
-> Mimi
-> 
-
-Hi, Mimi
-
-I am trying to convince myself of the security of the solution. I asked
-Thiago as well, but may be I am be lagging behind in understanding.
-
-We trust the kernel to hand over PCR values of the old kernel (which
-cannot be validated) to the IMA subsystem in the new kernel for storage.
-I guess the idea is for ima_add_boot_aggregate to do the right thing?
-How do we validate what the old kernel is giving us? Why do we care for
-the old measurement list? Is it still of significance in the new kernel?
+> I think you need to take a closer look of the lifecycle of a container,
+> having a reference means the container itself won't go away, but only
+> having a group set within that container holds the actual IOMMU
+> references.  container->iommu_data is going to be NULL once the
+> groups are lost.  Thanks,
 
 
-Balbir Singh.
+Container owns the iommu tables and this is what I care about here, groups
+attached or not - this is handled separately via IOMMU group list in a
+specific iommu_table struct, these groups get detached from iommu_table
+when they are removed from a container.
+
+
+-- 
+Alexey
