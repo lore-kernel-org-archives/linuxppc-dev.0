@@ -1,51 +1,29 @@
-Return-Path: <grygorii.strashko@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [198.47.19.12])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7tvj6MTWzDqSr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 22:32:17 +1000 (AEST)
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-To: Wolfram Sang <wsa-dev@sang-engineering.com>, <linux-kernel@vger.kernel.org>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
-CC: <linux-i2c@vger.kernel.org>, Jean Delvare <jdelvare@suse.com>, Wolfram
- Sang <wsa@the-dreams.de>, Ludovic Desroches <ludovic.desroches@atmel.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- Jon Mason <jonmason@broadcom.com>, <bcm-kernel-feedback-list@broadcom.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Sonic Zhang <sonic.zhang@analog.com>, Brian
- Norris <computersforpeace@gmail.com>,
- Gregory Fong <gregory.0xf0@gmail.com>,
- Michal Simek <michal.simek@xilinx.com>, =?UTF-8?Q?S=c3=b6ren_Brinkmann?=
- <soren.brinkmann@xilinx.com>,
- Jochen Friedrich <jochen@scram.de>, Sekhar Nori <nsekhar@ti.com>,
- Kevin Hilman <khilman@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
- =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <kernel@pengutronix.de>,
- Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski
- <k.kozlowski@samsung.com>, Seth Heasley <seth.heasley@intel.com>,
- Neil Horman <nhorman@tuxdriver.com>, Joachim Eastwood <manabian@gmail.com>,
- Carlo Caione <carlo@caione.org>, Alessandro Rubini <rubini@unipv.it>,
- Linus Walleij <linus.walleij@linaro.org>,
- Peter Korsgaard <jacmet@sunsite.dk>, Tony Lindgren <tony@atomide.com>,
- Vladimir Zapolskiy <vz@mleia.com>, Sylvain
- Lemieux <slemieux.tyco@gmail.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>, Heiko
- Stuebner <heiko@sntech.de>, Barry Song <baohua@kernel.org>, Patrice Chotard
- <patrice.chotard@st.com>, Laxman Dewangan <ldewangan@nvidia.com>, Stephen
- Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>,
- Alexandre Courbot <gnurou@gmail.com>, Masahiro Yamada
- <yamada.masahiro@socionext.com>, Tony Prisk <linux@prisktech.co.nz>,
- <linux-arm-kernel@lists.infradead.org>,
- <adi-buildroot-devel@lists.sourceforge.net>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-samsung-soc@vger.kernel.org>,
- <linux-amlogic@lists.infradead.org>, <linux-omap@vger.kernel.org>,
- <linux-rockchip@lists.infradead.org>, <kernel@stlinux.com>,
- <linux-tegra@vger.kernel.org>
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Message-ID: <e4e906fe-1362-1199-de42-a16b58800de6@ti.com>
-Date: Tue, 9 Aug 2016 14:47:03 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7wLm3dMRzDrH9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 23:37:20 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Thiago Jung Bauermann' <bauerman@linux.vnet.ibm.com>, Mimi Zohar
+ <zohar@linux.vnet.ibm.com>
+CC: Dave Young <dyoung@redhat.com>, "kexec@lists.infradead.org"
+ <kexec@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>,
+ "linux-ima-devel@lists.sourceforge.net"
+ <linux-ima-devel@lists.sourceforge.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 1/7] ima: on soft reboot, restore the measurement list
+Date: Tue, 9 Aug 2016 13:35:13 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F50D431@AcuExch.aculab.com>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <87wpjqtdg8.fsf@concordia.ellerman.id.au>
+ <1470747673.2881.118.camel@linux.vnet.ibm.com> <3544655.o5QPxko4Ba@hactar>
+In-Reply-To: <3544655.o5QPxko4Ba@hactar>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,19 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2016 02:36 PM, Wolfram Sang wrote:
-> The core will do this for us now.
->
-> Signed-off-by: Wolfram Sang <wsa-dev@sang-engineering.com>
-> ---
+From: Thiago Jung Bauermann
+> Sent: 09 August 2016 14:19
+...
+> > > > +/* Some details preceding the binary serialized measurement list *=
+/
+> > > > +struct ima_kexec_hdr {
+> > > > +	unsigned short version;
+> > > > +	unsigned long buffer_size;
+> > > > +	unsigned long count;
+> > > > +} __packed;
+> > > > +
+> > >
+> > > Am I understanding it correctly that this structure is passed between
+> > > kernels?
+> > Yes, the header prefixes the measurement list, which is being passed on
+> > the same computer to the next kernel.  Could the architecture (eg.
+> > LE/BE) change between soft re-boots?
+>=20
+> Yes. I am able to boot a BE kernel from an LE kernel with my patches.
 
-For:
->  drivers/i2c/busses/i2c-davinci.c        | 4 +---
->  drivers/i2c/busses/i2c-omap.c           | 4 +---
+64bit kernel to/from 32bit one? (if that makes sense on the hardware).
 
-Reviewed-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> Whether we want to support that or not is another question...
 
+In which case shouldn't they be annotated with the endianness??
 
--- 
-regards,
--grygorii
+Also why '__packed' - guarantees sub-optimal code generation.
+Much better to include explicit padding to align everything.
+
+	David
