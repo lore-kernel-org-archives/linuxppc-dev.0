@@ -1,58 +1,54 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7wvP1MJ8zDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 00:02:08 +1000 (AEST)
-Date: Tue, 9 Aug 2016 15:59:52 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Wolfram Sang <wsa-dev@sang-engineering.com>,
- linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
- Jean Delvare <jdelvare@suse.com>,
- Ludovic Desroches <ludovic.desroches@atmel.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- Jon Mason <jonmason@broadcom.com>, bcm-kernel-feedback-list@broadcom.com,
- Florian Fainelli <f.fainelli@gmail.com>,
- Sonic Zhang <sonic.zhang@analog.com>,
- Brian Norris <computersforpeace@gmail.com>,
- Gregory Fong <gregory.0xf0@gmail.com>,
- Michal Simek <michal.simek@xilinx.com>,
- =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>,
- Jochen Friedrich <jochen@scram.de>, Sekhar Nori <nsekhar@ti.com>,
- Kevin Hilman <khilman@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
- Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,
- Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <k.kozlowski@samsung.com>,
- Seth Heasley <seth.heasley@intel.com>, Neil Horman <nhorman@tuxdriver.com>,
- Joachim Eastwood <manabian@gmail.com>, Carlo Caione <carlo@caione.org>,
- Alessandro Rubini <rubini@unipv.it>,
- Linus Walleij <linus.walleij@linaro.org>,
- Peter Korsgaard <jacmet@sunsite.dk>,
- Tony Lindgren <tony@atomide.com>, Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Heiko Stuebner <heiko@sntech.de>,
- Barry Song <baohua@kernel.org>, Patrice Chotard <patrice.chotard@st.com>,
- Laxman Dewangan <ldewangan@nvidia.com>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- Alexandre Courbot <gnurou@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
- linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
- linux-rockchip@lists.infradead.org, kernel@stlinux.com,
- linux-tegra@vger.kernel.org
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-Message-ID: <20160809135952.GA1666@katana>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
- <20160809115740.GA5528@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
-In-Reply-To: <20160809115740.GA5528@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7wwq681HzDrKs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 00:03:23 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u79DsVbO040426
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 10:03:21 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24nc23tekx-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 10:03:21 -0400
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Tue, 9 Aug 2016 19:33:18 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 023EA3940066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 19:33:16 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u79E34rE23593370
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 19:33:04 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u79E3CbQ029355
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 19:33:15 +0530
+Subject: Re: [PATCH 1/7] ima: on soft reboot, restore the measurement list
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: "'Thiago Jung Bauermann'" <bauerman@linux.vnet.ibm.com>, Dave Young
+ <dyoung@redhat.com>, "kexec@lists.infradead.org"
+ <kexec@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>,
+ "linux-ima-devel@lists.sourceforge.net"
+ <linux-ima-devel@lists.sourceforge.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 09 Aug 2016 10:02:57 -0400
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F50D431@AcuExch.aculab.com>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <87wpjqtdg8.fsf@concordia.ellerman.id.au>
+ <1470747673.2881.118.camel@linux.vnet.ibm.com> <3544655.o5QPxko4Ba@hactar>
+ <063D6719AE5E284EB5DD2968C1650D6D5F50D431@AcuExch.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1470751377.2881.137.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,45 +58,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2016-08-09 at 13:35 +0000, David Laight wrote:
 
---KsGdsel6WgEHnImy
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Also why '__packed' - guarantees sub-optimal code generation.
+> Much better to include explicit padding to align everything.
 
-On Tue, Aug 09, 2016 at 01:57:40PM +0200, Uwe Kleine-K=C3=B6nig wrote:
-> Hello Wolfram,
->=20
-> On Tue, Aug 09, 2016 at 01:36:17PM +0200, Wolfram Sang wrote:
-> > The core will do this for us now.
->=20
-> Would be nice to point out the relevant commit that changed the core in
-> the commit log.
+This patch set does not define a new format, but piggy backs on top of
+the existing <securityfs>/ima/binary_runtime_measurements list.  The
+prefixed buffer header includes a version, so that if in the future we
+need to modify the format, we would be able to.
 
-I agree, but it was a series of commits[1] so I skipped that idea.
+In terms of the prefixed header, how would you define the fields:
+version, buffer size, number of measurements? 
 
-[1] http://www.spinics.net/lists/linux-i2c/msg25496.html
-
-
---KsGdsel6WgEHnImy
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXqeHYAAoJEBQN5MwUoCm2NckQAJyW/JvI0urSd/AbV7A333of
-X12IGIzG1Uw3qrR5t5D5v5/V1XRSY8Bv8EbxcRHDhQwtIG7llvZrN0Lu8dFW8KLc
-b0NiNapsFPkv7tgyOcDKvcB2f6YeTWuznWTcfCO4emNAKOt4W581rYp+NHidDNkd
-WvauJi7ZRXof0JXh6PyyjN3OBGeQZ7uBVKtxsHMi7VkLxnBjIHIqs4Qfy3UJ8t2w
-Mc0Q5oFU2XjhE57SkZYxdtOu+LSolckROvKtsCVMi1s3Nec1M1P9RD5HIIrlvah3
-H86mjmZRs+3pWwEPuhgwChmFzGdYMMO0YewET5UeZLWIxag3vl6mdii62GKLA12L
-txu2xrIWYzAk8L8ID/u40kjOe7ToNauzeqFjUHSQHctzxafjmy0nIEq5huMlFCWI
-LOlienxQBDwcEwBNJLNyxAJCfM1U8rM2qj8NOWITqySCBh7a7ETPGNe4p34s+/kD
-sdSks0LjcnSMQaVLKfKYrv7c31d6Edc2pu31SzF5R+gyeDajVXs05Zwh3/nbeMCM
-kliHCZ3S79VNBs3lKQJRCt2lI/6oorJH4cvYx8gsu1E744R4PZ9siueAvmJB1zKT
-ABziT6BTjt+PGNinBwtR/5zQ8klSTqcEPa0Kw+I1b8KXE8392yqDy3UVE7dIdWhW
-dFPYJIiAo2AgTDmSbAHT
-=kjW1
------END PGP SIGNATURE-----
-
---KsGdsel6WgEHnImy--
+Mimi
