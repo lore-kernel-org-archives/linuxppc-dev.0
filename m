@@ -1,21 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sRt3KqJzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:34 +1000 (AEST)
-In-Reply-To: <147039865296.4007.7482355227065137884.stgit@jupiter.in.ibm.com>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sRv24kQzDqQ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:35 +1000 (AEST)
+In-Reply-To: <1470292695-9829-1-git-send-email-anton@ozlabs.org>
+To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
+ paulus@samba.org, herbert@gondor.apana.org.au, davem@davemloft.net
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [v3,
- 2/2] powernv: Fix MCE handler to avoid trashing CR0/CR1 registers.
-Message-Id: <3s7sRt1mFFz9t1Q@ozlabs.org>
-Date: Tue,  9 Aug 2016 21:26:34 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ alastair@d-silva.org
+Subject: Re: crypto: crc32c-vpmsum - Convert to CPU feature based module
+ autoloading
+Message-Id: <3s7sRv1923z9t1n@ozlabs.org>
+Date: Tue,  9 Aug 2016 21:26:35 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-05-08 at 12:04:13 UTC, Mahesh Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, 2016-04-08 at 06:38:15 UTC, Anton Blanchard wrote:
+> From: Anton Blanchard <anton@samba.org>
 > 
-> The current implementation of MCE early handling modifies CR0/1 registers
-> without saving its old values. Fix this by moving early check for
-> powersaving mode to machine_check_handle_early().
+> This patch utilises the GENERIC_CPU_AUTOPROBE infrastructure
+> to automatically load the crc32c-vpmsum module if the CPU supports
+> it.
 > 
-> The power architecture 2.06 or later allows the possibility of getting
-> machine check while in nap/sleep/winkle. The last bit of HSPRG0 is set
-> to 1, if thread is woken up from winkle. Hence, clear the last bit of
-> HSPRG0 (r13) before MCE handler starts using it as paca pointer.
-> 
-> Also, the current code always puts the thread into nap state irrespective
-> of whatever idle state it woke up from. Fix that by looking at
-> paca->thread_idle_state and put the thread back into same state where it
-> came from.
-> 
-> Reported-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Reviewed-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/bc14c49195e49b3231c01e4c44
+https://git.kernel.org/powerpc/c/d2cf5be07ff7c7cde8bef8551a
 
 cheers
