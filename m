@@ -1,24 +1,24 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s891R5w5RzDqJ4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:08:11 +1000 (AEST)
-Date: Tue, 9 Aug 2016 16:08:09 -0700
-From: Andi Kleen <ak@linux.intel.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Alan Modra <amodra@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Nicolas Pitre <nico@linaro.org>, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
- code/data elimination
-Message-ID: <20160809230809.GH3078@tassilo.jf.intel.com>
-References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <1882847.dG563Vieov@wuerfel>
- <20160809031605.GF3078@tassilo.jf.intel.com>
- <3076474.M72Ro1h3RL@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3076474.M72Ro1h3RL@wuerfel>
+Return-Path: <sam@mendozajonas.com>
+Received: from mendozajonas.com (mendozajonas.com [188.166.185.233])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s89MX1jQ4zDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:23:52 +1000 (AEST)
+Message-ID: <1470784396.2301.2.camel@mendozajonas.com>
+Subject: Re: [PATCH 1/7] ima: on soft reboot, restore the measurement list
+From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, Mimi Zohar
+ <zohar@linux.vnet.ibm.com>
+Cc: Dave Young <dyoung@redhat.com>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 10 Aug 2016 09:13:16 +1000
+In-Reply-To: <3544655.o5QPxko4Ba@hactar>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <87wpjqtdg8.fsf@concordia.ellerman.id.au>
+ <1470747673.2881.118.camel@linux.vnet.ibm.com> <3544655.o5QPxko4Ba@hactar>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 10, 2016 at 12:29:29AM +0200, Arnd Bergmann wrote:
-> On Monday, August 8, 2016 8:16:05 PM CEST Andi Kleen wrote:
-> > > I don't understand what led Andi Kleen to also move .text.hot and
-> > > .text.unlikely together with .text [2], but this may have
-> > > been a related issue.
-> > >
-> > > [2] https://lkml.org/lkml/2015/7/19/377
-> >
-> > The goal was just to move .hot and .unlikely all together, so that
-> > they are clustered and use the minimum amount of cache. On x86 doesn't
-> > matter where they are exactly, as long as each is together.
-> > If they are not explicitely listed then the linker interleaves
-> > them with the normal text, which defeats the purpose.
+On Tue, 2016-08-09 at 10:19 -0300, Thiago Jung Bauermann wrote:
+> Am Dienstag, 09 August 2016, 09:01:13 schrieb Mimi Zohar:
+> > 
+> > On Tue, 2016-08-09 at 20:59 +1000, Michael Ellerman wrote:
+> > > 
+> > > Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> > > > 
+> > > > diff --git a/security/integrity/ima/ima.h
+> > > > b/security/integrity/ima/ima.h
+> > > > index b5728da..84e8d36 100644
+> > > > --- a/security/integrity/ima/ima.h
+> > > > +++ b/security/integrity/ima/ima.h
+> > > > @@ -102,6 +102,13 @@ struct ima_queue_entry {
+> > > > 
+> > > >  };
+> > > >  extern struct list_head ima_measurements;	/* list of all 
+> measurements
+> > 
+> > > 
+> > > > 
+> > > >  */
+> > > > 
+> > > > +/* Some details preceding the binary serialized measurement list */
+> > > > +struct ima_kexec_hdr {
+> > > > +	unsigned short version;
+> > > > +	unsigned long buffer_size;
+> > > > +	unsigned long count;
+> > > > +} __packed;
+> > > > +
+> > > 
+> > > Am I understanding it correctly that this structure is passed between
+> > > kernels?
+> > Yes, the header prefixes the measurement list, which is being passed on
+> > the same computer to the next kernel.  Could the architecture (eg.
+> > LE/BE) change between soft re-boots?
 > 
-> I still don't see it, my reading of your patch is that you did
-> the opposite, by changing the description that puts all .text.hot
-> in front of .text, and all .text.unlikely after exit.text into
-> one that mixes them with .text. What am I missing here?
+> Yes. I am able to boot a BE kernel from an LE kernel with my patches. 
+> Whether we want to support that or not is another question...
 
-.text.hot is actually not used, the critical part is .text.unlikely
-which was not listed and was interleaved before the patch.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only
+The answer to that question is almost certainly yes - on POWER the most
+immediate example would be soft-rebooting from a BE host into an LE
+Petitboot kernel, or vice versa.
