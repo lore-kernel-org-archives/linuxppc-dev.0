@@ -1,27 +1,26 @@
-Return-Path: <andrew.smirnov@gmail.com>
-Received: from mail-yb0-x241.google.com (mail-yb0-x241.google.com
- [IPv6:2607:f8b0:4002:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dvlasenk@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s83Ds2mPXzDqh7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 04:47:41 +1000 (AEST)
-Received: by mail-yb0-x241.google.com with SMTP id e125so496266ybc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 11:47:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s83gc0nHWzDqh7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 05:07:23 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc: Do not make the entire heap executable
+To: Kees Cook <keescook@chromium.org>
+References: <20160808145542.7297-1-dvlasenk@redhat.com>
+ <CAGXu5j+HYkAweod-CC7QhTr3rB-18fMMzthdu4f_Cg3ykQZXUg@mail.gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Oleg Nesterov <oleg@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Florian Weimer <fweimer@redhat.com>, Linux-MM <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>
+From: Denys Vlasenko <dvlasenk@redhat.com>
+Message-ID: <c03a9255-0d5e-2715-51bd-f9fc143539cc@redhat.com>
+Date: Tue, 9 Aug 2016 21:07:17 +0200
 MIME-Version: 1.0
-In-Reply-To: <20160801140351.49119867@roar.ozlabs.ibm.com>
-References: <1469747238-17432-1-git-send-email-andrew.smirnov@gmail.com>
- <1469747238-17432-3-git-send-email-andrew.smirnov@gmail.com>
- <20160801140351.49119867@roar.ozlabs.ibm.com>
-From: Andrey Smirnov <andrew.smirnov@gmail.com>
-Date: Tue, 9 Aug 2016 11:47:37 -0700
-Message-ID: <CAHQ1cqFCfS52zaGEPJU-KRTRc7rjnFmUQwQgZYms3jaaYb41bQ@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3] powerpc: Convert fsl_rstcr_restart to a reset
- handler
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Scott Wood <oss@buserror.net>, Alessio Igor Bogani <alessio.bogani@elettra.eu>,
- Paul Mackerras <paulus@samba.org>, Daniel Axtens <dja@axtens.net>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <CAGXu5j+HYkAweod-CC7QhTr3rB-18fMMzthdu4f_Cg3ykQZXUg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +30,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 31, 2016 at 9:03 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Thu, 28 Jul 2016 16:07:18 -0700
-> Andrey Smirnov <andrew.smirnov@gmail.com> wrote:
->
->> Convert fsl_rstcr_restart into a function to be registered with
->> register_reset_handler().
+
+
+On 08/08/2016 09:07 PM, Kees Cook wrote:
+> On Mon, Aug 8, 2016 at 7:55 AM, Denys Vlasenko <dvlasenk@redhat.com> wrote:
+>> On 32-bit powerps the ELF PLT sections of binaries (built with --bss-plt,
+>> or with a toolchain which defaults to it) look like this:
 >>
->> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
+>>   [17] .sbss             NOBITS          0002aff8 01aff8 000014 00  WA  0   0  4
+>>   [18] .plt              NOBITS          0002b00c 01aff8 000084 00 WAX  0   0  4
+>>   [19] .bss              NOBITS          0002b090 01aff8 0000a4 00  WA  0   0  4
+>>
+>> Which results in an ELF load header:
+>>
+>>   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+>>   LOAD           0x019c70 0x00029c70 0x00029c70 0x01388 0x014c4 RWE 0x10000
+>>
+>> This is all correct, the load region containing the PLT is marked as
+>> executable. Note that the PLT starts at 0002b00c but the file mapping ends at
+>> 0002aff8, so the PLT falls in the 0 fill section described by the load header,
+>> and after a page boundary.
+>>
+>> Unfortunately the generic ELF loader ignores the X bit in the load headers
+>> when it creates the 0 filled non-file backed mappings. It assumes all of these
+>> mappings are RW BSS sections, which is not the case for PPC.
+>>
+>> gcc/ld has an option (--secure-plt) to not do this, this is said to incur
+>> a small performance penalty.
+>>
+>> Currently, to support 32-bit binaries with PLT in BSS kernel maps *entire
+>> brk area* with executable rights for all binaries, even --secure-plt ones.
+>>
+>> Stop doing that.
+>>
+>> Teach the ELF loader to check the X bit in the relevant load header
+>> and create 0 filled anonymous mappings that are executable
+>> if the load header requests that.
+>>
+>> The patch was originally posted in 2012 by Jason Gunthorpe
+>> and apparently ignored:
+>>
+>> https://lkml.org/lkml/2012/9/30/138
+>>
+>> Lightly run-tested.
+>>
+>> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+>> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: Paul Mackerras <paulus@samba.org>
+>> CC: Kees Cook <keescook@chromium.org>
+>> CC: Oleg Nesterov <oleg@redhat.com>,
+>> CC: Michael Ellerman <mpe@ellerman.id.au>
+>> CC: Florian Weimer <fweimer@redhat.com>
+>> CC: linux-mm@kvack.org,
+>> CC: linuxppc-dev@lists.ozlabs.org
+>> CC: linux-kernel@vger.kernel.org
 >> ---
->>
 >> Changes since v1:
+>> * wrapped lines to not exceed 79 chars
+>> * improved comment
+>> * expanded CC list
 >>
->>       - fsl_rstcr_restart is registered as a reset handler in
->>           setup_rstcr, replacing per-board arch_initcall approach
+>>  arch/powerpc/include/asm/page.h    | 10 +------
+>>  arch/powerpc/include/asm/page_32.h |  2 --
+>>  arch/powerpc/include/asm/page_64.h |  4 ---
+>>  fs/binfmt_elf.c                    | 56 ++++++++++++++++++++++++++++++--------
+>>  4 files changed, 45 insertions(+), 27 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+>> index 56398e7..42d7ea1 100644
+>> --- a/arch/powerpc/include/asm/page.h
+>> +++ b/arch/powerpc/include/asm/page.h
+>> @@ -225,15 +225,7 @@ extern long long virt_phys_offset;
+>>  #endif
+>>  #endif
+>>
+>> -/*
+>> - * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+>> - * and needs to be executable.  This means the whole heap ends
+>> - * up being executable.
+>> - */
+>> -#define VM_DATA_DEFAULT_FLAGS32        (VM_READ | VM_WRITE | VM_EXEC | \
+>> -                                VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+>> -
+>> -#define VM_DATA_DEFAULT_FLAGS64        (VM_READ | VM_WRITE | \
+>> +#define VM_DATA_DEFAULT_FLAGS  (VM_READ | VM_WRITE | \
+>>                                  VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+>>
+>>  #ifdef __powerpc64__
+>> diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
+>> index 6a8e179..6113fa8 100644
+>> --- a/arch/powerpc/include/asm/page_32.h
+>> +++ b/arch/powerpc/include/asm/page_32.h
+>> @@ -9,8 +9,6 @@
+>>  #endif
+>>  #endif
+>>
+>> -#define VM_DATA_DEFAULT_FLAGS  VM_DATA_DEFAULT_FLAGS32
+>> -
+>>  #ifdef CONFIG_NOT_COHERENT_CACHE
+>>  #define ARCH_DMA_MINALIGN      L1_CACHE_BYTES
+>>  #endif
+>> diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+>> index dd5f071..52d8e9c 100644
+>> --- a/arch/powerpc/include/asm/page_64.h
+>> +++ b/arch/powerpc/include/asm/page_64.h
+>> @@ -159,10 +159,6 @@ do {                                               \
+>>
+>>  #endif /* !CONFIG_HUGETLB_PAGE */
+>>
+>> -#define VM_DATA_DEFAULT_FLAGS \
+>> -       (is_32bit_task() ? \
+>> -        VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+>> -
+>>  /*
+>>   * This is the default if a program doesn't have a PT_GNU_STACK
+>>   * program header entry. The PPC64 ELF ABI has a non executable stack
+>> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+>> index a7a28110..50006d0 100644
+>> --- a/fs/binfmt_elf.c
+>> +++ b/fs/binfmt_elf.c
+>> @@ -91,14 +91,25 @@ static struct linux_binfmt elf_format = {
+>>
+>>  #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
+>>
+>> -static int set_brk(unsigned long start, unsigned long end)
+>> +static int set_brk(unsigned long start, unsigned long end, int prot)
+>>  {
+>>         start = ELF_PAGEALIGN(start);
+>>         end = ELF_PAGEALIGN(end);
+>>         if (end > start) {
+>> -               int error = vm_brk(start, end - start);
+>> -               if (error)
+>> -                       return error;
+>> +               /* Map the non-file portion of the last load header. If the
+>> +                  header is requesting these pages to be executeable then
+>> +                  we have to honour that, otherwise assume they are bss. */
+>> +               if (prot & PROT_EXEC) {
+>> +                       unsigned long addr;
+>> +                       addr = vm_mmap(0, start, end - start, prot,
+>> +                               MAP_PRIVATE | MAP_FIXED, 0);
+>> +                       if (BAD_ADDR(addr))
+>> +                               return addr;
+>> +               } else {
+>> +                       int error = vm_brk(start, end - start);
+>> +                       if (error)
+>> +                               return error;
+>> +               }
 >
-> Bear in mind I don't know much about the embedded or platform code!
->
-> The documentation for reset notifiers says that they are expected
-> to be registered from drivers, not arch code. That seems to only be
-> intended to mean that the standard ISA or platform reset would
-> normally be handled directly by the arch, whereas if you have an
-> arch specific driver for a reset hardware that just happens to live
-> under arch/, then fsl_rstcr_restart / mpc85xx_cds_restart would be
-> valid use of reset notifier.
+> Rather than repeating this logic twice, I think this should be a
+> helper that both sections can call.
 
-Yeah, IMHO there's quite a bit of code in sysdev/ which in ideal world
-would go into drivers/ and I think fsl_rstcr_restart is among it
-(similar example on MIPS is drivers/power/reset/brcmstb-reboot.c).
+I propose to teach vm_brk() to be able to optionally set some VM_foo bits,
+such as VM_EXEC. Then there will be no need for conditional vm_mmap/vm_brk here.
 
->
-> So this change seems reasonable to me. One small question:
->
->
->> +static int mpc85xx_cds_restart_register(void)
->> +{
->> +     static struct notifier_block restart_handler;
->> +
->> +     restart_handler.notifier_call = mpc85xx_cds_restart;
->> +     restart_handler.priority = 192;
->
-> Should there be a header with #define's for these priorities?
-
-I don't have any strong preference either way, I do however think that
-introducing such #define should go into a separate patch-set, since
-you'd probably want to propagate that change across all of the users
-of the API.
-
-Thanks,
-Andrey
+Patch v3 is on the way.
