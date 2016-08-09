@@ -1,19 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sRv24kQzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:35 +1000 (AEST)
-In-Reply-To: <1470292695-9829-1-git-send-email-anton@ozlabs.org>
-To: Anton Blanchard <anton@ozlabs.org>, benh@kernel.crashing.org,
- paulus@samba.org, herbert@gondor.apana.org.au, davem@davemloft.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sRw4n1szDqdw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:36 +1000 (AEST)
+In-Reply-To: <1469684381-22354-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- alastair@d-silva.org
-Subject: Re: crypto: crc32c-vpmsum - Convert to CPU feature based module
- autoloading
-Message-Id: <3s7sRv1923z9t1n@ozlabs.org>
-Date: Tue,  9 Aug 2016 21:26:35 +1000 (AEST)
+Cc: huyn@mellanox.com, imunsie@au1.ibm.com, fbarrat@linux.vnet.ibm.com
+Subject: Re: cxl: fix NULL dereference in cxl_context_init() on PowerVM guests
+Message-Id: <3s7sRw317hz9t1L@ozlabs.org>
+Date: Tue,  9 Aug 2016 21:26:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,17 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-04-08 at 06:38:15 UTC, Anton Blanchard wrote:
-> From: Anton Blanchard <anton@samba.org>
+On Thu, 2016-28-07 at 05:39:41 UTC, Andrew Donnellan wrote:
+> Commit f67a6722d650 ("cxl: Workaround PE=0 hardware limitation in Mellanox
+> CX4") added a "min_pe" field to struct cxl_service_layer_ops, to allow us
+> to work around a Mellanox CX-4 hardware limitation.
 > 
-> This patch utilises the GENERIC_CPU_AUTOPROBE infrastructure
-> to automatically load the crc32c-vpmsum module if the CPU supports
-> it.
+> When allocating the PE number in cxl_context_init(), we read from
+> ctx->afu->adapter->native->sl_ops->min_pe to get the minimum PE number.
+> Unsurprisingly, in a PowerVM guest ctx->afu->adapter->native is NULL, and
+> guests don't have a cxl_service_layer_ops struct anywhere.
 > 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Move min_pe from struct cxl_service_layer_ops to struct cxl so it's
+> accessible in both native and PowerVM environments. For the Mellanox CX-4,
+> set the min_pe value in set_sl_ops().
+> 
+> Fixes: f67a6722d650 ("cxl: Workaround PE=0 hardware limitation in Mellanox CX4")
+> Reported-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/d2cf5be07ff7c7cde8bef8551a
+https://git.kernel.org/powerpc/c/164793379ad3b7ef5fc5a28260
 
 cheers
