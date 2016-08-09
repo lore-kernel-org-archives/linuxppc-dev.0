@@ -1,29 +1,23 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Z0b4QYXzDqWf
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 09:50:23 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id i6so25840414pfe.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 16:50:23 -0700 (PDT)
-Date: Tue, 9 Aug 2016 09:20:16 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
- linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- Nicolas Pitre <nico@linaro.org>, linux-kbuild@vger.kernel.org,
- Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH 2/5] kbuild: allow archs to select build for link dead
- code/data elimination
-Message-ID: <20160808235016.GD20904@bubble.grove.modra.org>
-References: <1470399123-8455-1-git-send-email-npiggin@gmail.com>
- <12986071.MeSB5hmlsH@wuerfel>
- <20160807234947.GV20904@bubble.grove.modra.org>
- <1882847.dG563Vieov@wuerfel>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Zlw2JwCzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 10:24:28 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Philippe Bergheaud <felix@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com,
+ ukrishn@linux.vnet.ibm.com, imunsie@au1.ibm.com, David.Laight@ACULAB.COM
+Subject: Re: [PATCH v2] cxl: Use fixed width predefined types in data
+ structure.
+In-Reply-To: <faa68f54-d826-02dd-9265-aeae0d8dc118@linux.vnet.ibm.com>
+References: <1470398520-20463-1-git-send-email-felix@linux.vnet.ibm.com>
+ <faa68f54-d826-02dd-9265-aeae0d8dc118@linux.vnet.ibm.com>
+Date: Tue, 09 Aug 2016 10:24:25 +1000
+Message-ID: <87eg5yssau.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1882847.dG563Vieov@wuerfel>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,63 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 08, 2016 at 05:14:27PM +0200, Arnd Bergmann wrote:
-> I have reverted that patch now, so ARM uses ".fixup" again like every
-> other architecture does, and now "*(.fixup) *(.text .text.*)" works
-> correctly, while ""*(.fixup) *(.text .fixup .text.*)" also fails
-> the same way that I saw before:
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
-That is really odd.  The linker isn't supposed to treat those script
-snippets differently.  First match for .fixup wins.
+> Le 05/08/2016 =C3=A0 14:02, Philippe Bergheaud a =C3=A9crit :
+>> This patch fixes a regression introduced by commit b810253.
+>>
+>> It substitutes the type __u8 to u8 in the uapi header cxl.h,
+>> because the latter is not always defined in userland build
+>> environments, in particular when cross-compiling libcxl on
+>> x86_64 linux machines (RHEL6.7 and Ubuntu 16.04).
+>>
+>> This patch also changes the size of the field data_size, and
+>> makes it constant, to support 32-bit userland applications
+>> running on big-endian ppc64 kernels transparently.
+>>
+>> This breaks the (young) API that has been merged in v4.8.
+>>
+>> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+>> ---
+>> Changes since v1:
+>>   Added an explanation for the proposed API change in the log.
+>>
+>> Note:
+>> As far as I know, cxlflash is the only known user of the API.
+>
+>
+> Yes, ideally, we'd like to change the type of 'data_size' to something=20
+> smaller/constant and were expecting it's still doable since the API was=20
+> merged to 4.8 and the expected user (cxlflash) hasn't started using the=20
+> API yet.
 
-$ cat > fixup1.s <<\EOF
- .global _start
- .text
-_start:
- .dc.a .L2
-.L1:
- .section ".fixup","ax",%progbits
-.L2:
- .dc.a .L1
-EOF
-$ cat > fixup2.s <<\EOF
- .section ".text.xyz","ax",%progbits
- .dc.a .L2
-.L1:
+Yep that's fine, it just needed to be mentioned in the change log.
 
- .section ".fixup","ax",%progbits
-.L2:
- .dc.a .L1
-EOF
-$ cat > fixup.lnk <<\EOF
-SECTIONS {
-  .text : { *(.fixup) *(.text .fixup .text.*) }
-}
-EOF
-$ as -o fixup1.o fixup1.s 
-$ as -o fixup2.o fixup2.s 
-$ ld -o fixup -T fixup.lnk -Map fixup.map fixup1.o fixup2.o
-$ cat fixup.map
+We don't guarantee that an ABI merged in -rc1 doesn't change in -rc2.
+But we do (in general) guarantee that an ABI in a released kernel (ie.
+4.8 final), never changes.
 
-Memory Configuration
-
-Name             Origin             Length             Attributes
-*default*        0x0000000000000000 0xffffffffffffffff
-
-Linker script and memory map
-
-
-.text           0x0000000000000000       0x10
- *(.fixup)
- .fixup         0x0000000000000000        0x4 fixup1.o
- .fixup         0x0000000000000004        0x4 fixup2.o
- *(.text .fixup .text.*)
- .text          0x0000000000000008        0x4 fixup1.o
-                0x0000000000000008                _start
- .text          0x000000000000000c        0x0 fixup2.o
- .text.xyz      0x000000000000000c        0x4 fixup2.o
-[snip]
-
--- 
-Alan Modra
-Australia Development Lab, IBM
+cheers
