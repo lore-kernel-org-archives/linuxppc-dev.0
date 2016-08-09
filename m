@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sRy1JkBzDqfK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:38 +1000 (AEST)
-In-Reply-To: <1470398520-20463-1-git-send-email-felix@linux.vnet.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sRz66k1zDqf0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:39 +1000 (AEST)
+In-Reply-To: <1470725741-26118-1-git-send-email-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, mrochs@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- manoj@linux.vnet.ibm.com, ukrishn@linux.vnet.ibm.com, imunsie@au1.ibm.com,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>, David.Laight@ACULAB.COM
-Subject: Re: [v2] cxl: Use fixed width predefined types in data structure.
-Message-Id: <3s7sRy07Clz9t1m@ozlabs.org>
-Date: Tue,  9 Aug 2016 21:26:37 +1000 (AEST)
+Cc: gwshan@linux.vnet.ibm.com, gpiccoli@linux.vnet.ibm.com
+Subject: Re: powerpc/pci: Fix endian bug in fixed PHB numbering
+Message-Id: <3s7sRz247bz9t1q@ozlabs.org>
+Date: Tue,  9 Aug 2016 21:26:38 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,24 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2016-05-08 at 12:02:00 UTC, Philippe Bergheaud wrote:
-> This patch fixes a regression introduced by commit b810253.
+On Tue, 2016-09-08 at 06:55:41 UTC, Michael Ellerman wrote:
+> The recent commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number
+> based on device-tree properties"), added code to read a 64-bit property
+> from the device tree, and if not found read a 32-bit property (reg).
 > 
-> It substitutes the type __u8 to u8 in the uapi header cxl.h,
-> because the latter is not always defined in userland build
-> environments, in particular when cross-compiling libcxl on
-> x86_64 linux machines (RHEL6.7 and Ubuntu 16.04).
+> There was a bug in the 32-bit case, on big endian machines, due to the
+> use of the 64-bit value to read the 32-bit property. The cast of &prop
+> means we end up writing to the high 32-bit of prop, leaving the low
+> 32-bits containing whatever junk was on the stack.
 > 
-> This patch also changes the size of the field data_size, and
-> makes it constant, to support 32-bit userland applications
-> running on big-endian ppc64 kernels transparently.
+> If that junk value was non-zero, and < MAX_PHBS, we would end up using
+> it as the PHB id. This results in users seeing what appear to be random
+> PHB ids.
 > 
-> This breaks the (young) API that has been merged in v4.8.
+> Fix it by reading into a u32 property and then assigning that to the
+> u64 value, letting the CPU do the correct conversions for us.
 > 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+> Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/cbd74e1bc8129efb9908f130a8
+https://git.kernel.org/powerpc/c/61e8a0d5a0270b91581f6c7150
 
 cheers
