@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sS06dQFzDqfS
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:40 +1000 (AEST)
-In-Reply-To: <488c970c5ae.f93db6b@auth.smtp.1and1.co.uk>
-To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7sS160rPzDqgS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 21:26:41 +1000 (AEST)
+In-Reply-To: <147040459202.19770.16560483806363144997.stgit@jupiter.in.ibm.com>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: olof@lixom.net, Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: pasemi: Fix coherent_dma_mask for dma engine
-Message-Id: <3s7sS05dmxz9t1y@ozlabs.org>
-Date: Tue,  9 Aug 2016 21:26:40 +1000 (AEST)
+Cc: Paul Mackerras <paulus@samba.org>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: powernv: Load correct TOC pointer while waking up from winkle.
+Message-Id: <3s7sS14Sxkz9t23@ozlabs.org>
+Date: Tue,  9 Aug 2016 21:26:41 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-27-07 at 14:41:29 UTC, Darren Stevens wrote:
-> Commit 817820b0226a ("powerpc/iommu: Support "hybrid" iommu/direct DMA
->     ops for coherent_mask < dma_mask) adds a check of coherent_dma_mask
->     for dma allocations.
->     Unfortunately current PASemi code does not set this value for the DMA
->     engine, which ends up with the default value of 0xffffffff, the result 
->     is on a PASemi system with >2Gb ram and iommu enabled the the onboard 
->     ethernet stops working due to an inability to allocate memory.
->     Add an initialisation to pci_dma_dev_setup_pasemi()
->   
->     Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+On Fri, 2016-05-08 at 13:43:12 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> The function pnv_restore_hyp_resource() loads the TOC into r2 from
+> the invalid PACA pointer before fixing r13 value. This do not affect
+> POWER ISA 3.0 but it does have an impact on POWER ISA 2.07 or less
+> leading CPU to get stuck forever.
+> 
+> 	login: [  471.830433] Processor 120 is stuck.
+> 
+> 
+> This can be easily reproducible using following steps:
+> - Turn off SMT
+> 	$ ppc64_cpu --smt=off
+> - offline/online any online cpu (Thread 0 of any core which is online)
+> 	$ echo 0 > /sys/devices/system/cpu/cpu<num>/online
+> 	$ echo 1 > /sys/devices/system/cpu/cpu<num>/online
+> 
+> For POWER ISA 2.07 or less, the last bit of HSPRG0 is set indicating
+> that thread is waking up from winkle. Hence, the last bit of HSPRG0(r13)
+> needs to be clear before accessing it as PACA to avoid loading invalid
+> values from invalid PACA pointer.
+> 
+> Fix this by loading TOC after r13 register is corrected.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/416f37d0816b9720b8227953e5
+https://git.kernel.org/powerpc/c/e325d76f8bd2d222a1f577aba0
 
 cheers
