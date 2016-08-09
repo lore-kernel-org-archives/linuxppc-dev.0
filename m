@@ -1,26 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
+ [IPv6:2607:f8b0:400e:c03::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7jXQ5myJzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 15:29:58 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id g202so237914pfb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 22:29:58 -0700 (PDT)
-Subject: Re: [PATCH kernel 05/15] powerpc/iommu: Stop using @current in
- mm_iommu_xxx
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-6-git-send-email-aik@ozlabs.ru>
- <87popnitt9.fsf@concordia.ellerman.id.au>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <ff83db64-2d77-81db-3228-0e814ee6194e@ozlabs.ru>
-Date: Tue, 9 Aug 2016 15:29:52 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7k3z5Y6CzDqQ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 15:53:51 +1000 (AEST)
+Received: by mail-pa0-x244.google.com with SMTP id vy10so361770pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 22:53:51 -0700 (PDT)
+Date: Tue, 9 Aug 2016 15:53:42 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: rebuild vdsos correctly
+Message-ID: <20160809155342.06731f98@roar.ozlabs.ibm.com>
+In-Reply-To: <87y446r1gq.fsf@concordia.ellerman.id.au>
+References: <1470648943-15643-1-git-send-email-npiggin@gmail.com>
+ <87y446r1gq.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87popnitt9.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/08/16 17:00, Michael Ellerman wrote:
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+On Tue, 09 Aug 2016 14:49:25 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
->> In some situations the userspace memory context may live longer than
->> the userspace process itself so if we need to do proper memory context
->> cleanup, we better cache @mm and use it later when the process is gone
->> (@current or @current->mm are NULL).
->>
->> This changes mm_iommu_xxx API to receive mm_struct instead of using one
->> from @current.
->>
->> This is needed by the following patch to do proper cleanup in time.
->> This depends on "powerpc/powernv/ioda: Fix endianness when reading TCEs"
->> to do proper cleanup via tce_iommu_clear() patch.
->>
->> To keep API consistent, this replaces mm_context_t with mm_struct;
->> we stick to mm_struct as mm_iommu_adjust_locked_vm() helper needs
->> access to &mm->mmap_sem.
->>
->> This should cause no behavioral change.
+> > diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
+> > index cbabd14..ae1f245 100644
+> > --- a/arch/powerpc/kernel/vdso32/Makefile
+> > +++ b/arch/powerpc/kernel/vdso32/Makefile
+> > @@ -39,14 +39,14 @@ $(obj)/%.so: $(obj)/%.so.dbg FORCE
+> >  	$(call if_changed,objcopy)
+> >  
+> >  # assembly rules for the .S files
+> > -$(obj-vdso32): %.o: %.S
+> > +$(obj-vdso32): %.o: %.S FORCE
+> >  	$(call if_changed_dep,vdso32as)
+> >  
+> >  # actual build commands
+> >  quiet_cmd_vdso32ld = VDSO32L $@
+> > -      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -Wl,-T $^ -o $@
+> > +      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
+> >  quiet_cmd_vdso32as = VDSO32A $@
+> > -      cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
+> > +      cmd_vdso32as = $(CROSS32CC) $(a_flags) -o $@ -c $<  
 > 
-> Is this a theoretical bug, or do we hit it in practice?
+> Are the two changes above required, they aren't obviously related.
 
-Actual bug.
-
-> 
-> In other words, should I merge this as a fix for 4.8, or can it wait for
-> 4.9 with the rest of the series?
-
-Assuming this does not have "rb" or "ab" from anyone familiar with IOMMU on
-powernv, this has to wait :-/
-
-> 
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>  arch/powerpc/include/asm/mmu_context.h | 20 +++++++------
->>  arch/powerpc/kernel/setup-common.c     |  2 +-
->>  arch/powerpc/mm/mmu_context_book3s64.c |  4 +--
->>  arch/powerpc/mm/mmu_context_iommu.c    | 54 ++++++++++++++--------------------
-> 
->>  drivers/vfio/vfio_iommu_spapr_tce.c    | 41 ++++++++++++++++----------
-> 
-> I'd need an ACK from Alex for that part.
-
-
-
--- 
-Alexey
+The vdso32ld change is required because otherwise "FORCE" gets put on
+the end of the command line. vdso32as... I think is not required. Want
+a new version without it?
