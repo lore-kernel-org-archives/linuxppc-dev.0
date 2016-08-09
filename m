@@ -1,58 +1,49 @@
-Return-Path: <thierry.reding@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <zohar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7vVP0BY7zDqSr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 22:58:53 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id y134so863093pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 05:58:52 -0700 (PDT)
-Date: Tue, 9 Aug 2016 14:58:46 +0200
-From: Thierry Reding <thierry.reding@gmail.com>
-To: Wolfram Sang <wsa-dev@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
- Jean Delvare <jdelvare@suse.com>, Wolfram Sang <wsa@the-dreams.de>,
- Ludovic Desroches <ludovic.desroches@atmel.com>,
- Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
- Jon Mason <jonmason@broadcom.com>, bcm-kernel-feedback-list@broadcom.com,
- Florian Fainelli <f.fainelli@gmail.com>,
- Sonic Zhang <sonic.zhang@analog.com>,
- Brian Norris <computersforpeace@gmail.com>,
- Gregory Fong <gregory.0xf0@gmail.com>,
- Michal Simek <michal.simek@xilinx.com>,
- =?utf-8?B?U8O2cmVu?= Brinkmann <soren.brinkmann@xilinx.com>,
- Jochen Friedrich <jochen@scram.de>, Sekhar Nori <nsekhar@ti.com>,
- Kevin Hilman <khilman@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
- Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,
- Kukjin Kim <kgene@kernel.org>,
- Krzysztof Kozlowski <k.kozlowski@samsung.com>,
- Seth Heasley <seth.heasley@intel.com>, Neil Horman <nhorman@tuxdriver.com>,
- Joachim Eastwood <manabian@gmail.com>, Carlo Caione <carlo@caione.org>,
- Alessandro Rubini <rubini@unipv.it>,
- Linus Walleij <linus.walleij@linaro.org>,
- Peter Korsgaard <jacmet@sunsite.dk>,
- Tony Lindgren <tony@atomide.com>, Vladimir Zapolskiy <vz@mleia.com>,
- Sylvain Lemieux <slemieux.tyco@gmail.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Heiko Stuebner <heiko@sntech.de>,
- Barry Song <baohua@kernel.org>, Patrice Chotard <patrice.chotard@st.com>,
- Laxman Dewangan <ldewangan@nvidia.com>,
- Stephen Warren <swarren@wwwdotorg.org>,
- Alexandre Courbot <gnurou@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
- linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
- linux-rockchip@lists.infradead.org, kernel@stlinux.com,
- linux-tegra@vger.kernel.org
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-Message-ID: <20160809125846.GA17535@ulmo.ba.sec>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
-In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7vYp1tzgzDqSr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 23:01:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u79Csj1m072614
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 09:01:47 -0400
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [125.16.236.9])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qe85mkxs-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 09:01:47 -0400
+Received: from localhost
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
+ Tue, 9 Aug 2016 18:31:31 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 16DFEE0063
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 18:35:54 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u79D1RPf38797356
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 18:31:27 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u79D1PcV010586
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 18:31:26 +0530
+Subject: Re: [PATCH 1/7] ima: on soft reboot, restore the measurement list
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-security-module@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Thiago Jung
+ Bauermann <bauerman@linux.vnet.ibm.com>,
+ linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
+Date: Tue, 09 Aug 2016 09:01:13 -0400
+In-Reply-To: <87wpjqtdg8.fsf@concordia.ellerman.id.au>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <1470313475-20090-2-git-send-email-zohar@linux.vnet.ibm.com>
+ <87wpjqtdg8.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1470747673.2881.118.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,54 +53,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2016-08-09 at 20:59 +1000, Michael Ellerman wrote:
+> Mimi Zohar <zohar@linux.vnet.ibm.com> writes:
+> 
+> > diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+> > index b5728da..84e8d36 100644
+> > --- a/security/integrity/ima/ima.h
+> > +++ b/security/integrity/ima/ima.h
+> > @@ -102,6 +102,13 @@ struct ima_queue_entry {
+> >  };
+> >  extern struct list_head ima_measurements;	/* list of all measurements */
+> >  
+> > +/* Some details preceding the binary serialized measurement list */
+> > +struct ima_kexec_hdr {
+> > +	unsigned short version;
+> > +	unsigned long buffer_size;
+> > +	unsigned long count;
+> > +} __packed;
+> > +
+> 
+> Am I understanding it correctly that this structure is passed between kernels?
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, the header prefixes the measurement list, which is being passed on
+the same computer to the next kernel.  Could the architecture (eg.
+LE/BE) change between soft re-boots?
 
-On Tue, Aug 09, 2016 at 01:36:17PM +0200, Wolfram Sang wrote:
-[...]
-> diff --git a/drivers/i2c/busses/i2c-tegra.c b/drivers/i2c/busses/i2c-tegr=
-a.c
-> index b126dbaa47e370..d9979da11485ae 100644
-> --- a/drivers/i2c/busses/i2c-tegra.c
-> +++ b/drivers/i2c/busses/i2c-tegra.c
-> @@ -932,10 +932,8 @@ static int tegra_i2c_probe(struct platform_device *p=
-dev)
->  	i2c_dev->adapter.dev.of_node =3D pdev->dev.of_node;
-> =20
->  	ret =3D i2c_add_numbered_adapter(&i2c_dev->adapter);
-> -	if (ret) {
-> -		dev_err(&pdev->dev, "Failed to add I2C adapter\n");
-> +	if (ret)
->  		goto disable_div_clk;
-> -	}
-> =20
->  	return 0;
-> =20
+> If so it's an ABI and should use types with well defined sizes, as if it was
+> going out to userspace, shouldn't it?
 
-Acked-by: Thierry Reding <treding@nvidia.com>
+Ok
 
---3V7upXqbjpZ4EhLz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJXqdOEAAoJEN0jrNd/PrOhSNIP/RQ75Esfs8mPoEh7M/5DOHO2
-+MZA5wZFAjAq9Fs0Fa9an7cdEdBzl08eV9pTSMbIPFnWbsUJEdxslWL3DSzEo4C4
-unceavytjzf22ZcNmqumed4culNlRrXlTXFIUkm0h+tV2ihE9WcSuIGQKzlvukxy
-3RK+D1sqgBwfdU12IUnTkcd0wVY2nn0+6anihxSHX5GiEmt/a8hpYE47C/aRs+IE
-HIljoV10JSV5iDufUnxxvvnqXo/yG0F/8kPz3lD/zdMaBFvHmcJntUiEWf/6vHd2
-rqz+6KeEX8fHuPsfGy8HQx/LceZRGVo6bQX5i1DH6DBoq4UVbzgPe4At6h4pQpCh
-W1EXyM8D98tVsXK0zb5L7+nPPdid+d8hulME8184DA0DXS3okVKV5sP2NPkRFKiG
-/1eHD6rmyBweZcfMJv/kkJc5OFEzoe0fVeIpq/+c1BdkSBBLQEDAeAAE99diFgMz
-nETfb+IqVqjknOh37oEgw66bo1Xgv3lQWM4YxLEu5Y2FZXeQlAs5Z99NkXd0LnXT
-e2IMgYn0a0qGU+mp7qjA4CCxqYoxtIByqr3B7bQmVRvIRXvQbVKRcZz2a1r/zhj7
-Y0RSO9me3E8zF8LkaxoCPhkNNP2r5Bbufh3TOx42WCBCq1N0JyplaDSJRdOM6GjK
-eLEXDPBaPNV2IKKCm1xm
-=n1jF
------END PGP SIGNATURE-----
-
---3V7upXqbjpZ4EhLz--
+Mimi
