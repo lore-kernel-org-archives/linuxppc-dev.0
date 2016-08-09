@@ -1,17 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7rjb4NM4zDqfv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 20:53:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7rkH2S4DzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 20:53:59 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64be: must build vdso32 as BE on LE host
-In-Reply-To: <1470648927-15590-1-git-send-email-npiggin@gmail.com>
-References: <1470648927-15590-1-git-send-email-npiggin@gmail.com>
-Date: Tue, 09 Aug 2016 20:53:22 +1000
-Message-ID: <8737meusbh.fsf@concordia.ellerman.id.au>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] cxl: Set psl_fir_cntl to production environment value
+In-Reply-To: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+References: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Date: Tue, 09 Aug 2016 20:53:57 +1000
+Message-ID: <87ziomtdq2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,11 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
 
-> vdso32 should be built with `gcc -m32 --big-endian` when compiling a big
-> endian kernel.
+> Switch the setting of psl_fir_cntl from debug to production
+> environment recommended value. It mostly affects the PSL behavior when
+> an error is raised in psl_fir1/2.
+>
+> Tested with cxlflash.
 
-I think I have a better solution. Patch coming RSN.
+Is this a fix you want in rc1, or something for 4.9 ?
 
 cheers
