@@ -2,22 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7Zlw2JwCzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 10:24:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7ZxH579GzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 10:32:35 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Philippe Bergheaud <felix@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org, mrochs@linux.vnet.ibm.com, manoj@linux.vnet.ibm.com,
- ukrishn@linux.vnet.ibm.com, imunsie@au1.ibm.com, David.Laight@ACULAB.COM
-Subject: Re: [PATCH v2] cxl: Use fixed width predefined types in data
- structure.
-In-Reply-To: <faa68f54-d826-02dd-9265-aeae0d8dc118@linux.vnet.ibm.com>
-References: <1470398520-20463-1-git-send-email-felix@linux.vnet.ibm.com>
- <faa68f54-d826-02dd-9265-aeae0d8dc118@linux.vnet.ibm.com>
-Date: Tue, 09 Aug 2016 10:24:25 +1000
-Message-ID: <87eg5yssau.fsf@concordia.ellerman.id.au>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, chzigotzky@xenosoft.de,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci: Only do fixed PHB numbering on powernv
+In-Reply-To: <57A88661.2000606@linux.vnet.ibm.com>
+References: <1470379256-24266-1-git-send-email-mpe@ellerman.id.au>
+ <20160807234824.GA4628@gwshan> <57A88661.2000606@linux.vnet.ibm.com>
+Date: Tue, 09 Aug 2016 10:32:35 +1000
+Message-ID: <87bn12srx8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +26,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.vnet.ibm.com> writes:
+"Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com> writes:
 
-> Le 05/08/2016 =C3=A0 14:02, Philippe Bergheaud a =C3=A9crit :
->> This patch fixes a regression introduced by commit b810253.
->>
->> It substitutes the type __u8 to u8 in the uapi header cxl.h,
->> because the latter is not always defined in userland build
->> environments, in particular when cross-compiling libcxl on
->> x86_64 linux machines (RHEL6.7 and Ubuntu 16.04).
->>
->> This patch also changes the size of the field data_size, and
->> makes it constant, to support 32-bit userland applications
->> running on big-endian ppc64 kernels transparently.
->>
->> This breaks the (young) API that has been merged in v4.8.
->>
->> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
->> ---
->> Changes since v1:
->>   Added an explanation for the proposed API change in the log.
->>
->> Note:
->> As far as I know, cxlflash is the only known user of the API.
+> On 08/07/2016 08:48 PM, Gavin Shan wrote:
+>> On Fri, Aug 05, 2016 at 04:40:56PM +1000, Michael Ellerman wrote:
+>>> The recent commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number
+>>> based on device-tree properties"), added code to read a 64-bit property
+>>>from the device tree, and if not found read a 32-bit property (reg).
+>>>
+>>> There was a bug in the 32-bit case, on big endian machines, due to the
+>>> use of the 64-bit value to read the 32-bit property. The cast of &prop
+>>> means we end up writing to the high 32-bit of prop, leaving the low
+>>> 32-bits containing whatever junk was on the stack.
+>>>
+>>> If that junk value was non-zero, and < MAX_PHBS, we would end up using
+>>> it as the PHB id.
+>>>
+>>> This exposed a second problem, which is that Xorg can't cope with a
+>>> domain number > 256.
+>>>
+>>> So for now drop the fallback to reg, and only use "ibm,opal-phbid" for
+>>> PHB numbering.
+>>>
+>>> Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> ---
+>>> arch/powerpc/kernel/pci-common.c | 24 +++++++++---------------
+>>> 1 file changed, 9 insertions(+), 15 deletions(-)
+>>>
+>>>
+>>> This is my bad. Guilherme limited the reg case to pseries only, but I made it
+>>> generic. I tested it on G5, Cell etc. which all booted - but that's not really
+>>> a good enough test.
 >
+> Michael and Gavin, thanks very much for fixing and commenting on the 
+> issue. I'm sorry about the bug on Big Endian machines, my mistake! I'll 
+> fix it in a future patch, but right now I have 2 questions so I can 
+> investigate better the issue found on Xorg:
 >
-> Yes, ideally, we'd like to change the type of 'data_size' to something=20
-> smaller/constant and were expecting it's still doable since the API was=20
-> merged to 4.8 and the expected user (cxlflash) hasn't started using the=20
-> API yet.
+> (i) What is the specific issue? Do you have some logs or at least a 
+> "high-level" description of the problem in Xorg? I took a look in its 
+> code and PCI domain is coded as u16, which is correct/expected. So it 
+> seems a subtle bug we should investigate and hopefully fix.
 
-Yep that's fine, it just needed to be mentioned in the change log.
+It was reported here:
 
-We don't guarantee that an ABI merged in -rc1 doesn't change in -rc2.
-But we do (in general) guarantee that an ABI in a released kernel (ie.
-4.8 final), never changes.
+  https://lists.ozlabs.org/pipermail/linuxppc-dev/2016-August/147062.html
+
+It seems xorg just has a hard coded limit of 256 domains.
+
+> (ii) Why is it related to the absence of pseries check?! You said this 
+> was your bad, but as far as I understand, Xorg runs in pSeries too so 
+> the issue should also be there heheh
+
+Well yes I guess it would, if anyone had tested Xorg on pseries :)
+
+> The bug was reported/found in another platform?
+
+Yeah pasemi, see the email above.
+
+On closer inspection I also see it on my G5, ie. the domain numbers are
+random, but the machine doesn't mind (because I don't run xorg).
+
+> As Gavin pointed, the important/interesting part of the patch is related 
+> to pSeries, in which we have PHB hotplug and so the patch allows network 
+> adapters to work well in PHB hotplug scenario, even if using predictable 
+> naming. For now, I guess this fix is pretty good, but would be really 
+> important to have this feature on pSeries too - I'll put some effort in 
+> solving the Xorg bug.
+
+I think for now I'm going to apply this, and we'll work out something
+else later.
 
 cheers
