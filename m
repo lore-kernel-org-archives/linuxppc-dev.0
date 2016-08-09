@@ -1,29 +1,33 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <ukrishn@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7xl23m4JzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 00:39:58 +1000 (AEST)
-Date: Tue, 9 Aug 2016 16:39:15 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Wolfram Sang <wsa-dev@sang-engineering.com>,
- linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
- linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
- linux-rockchip@lists.infradead.org, kernel@stlinux.com,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
-Message-ID: <20160809143915.GB1666@katana>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
- <32d25618-83f6-b876-07b0-adb988516173@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7yZf0JJkzDqdv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 01:17:45 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u79FE5O7129076
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 11:17:44 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24na7h145w-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 11:17:43 -0400
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
+ Tue, 9 Aug 2016 09:17:42 -0600
+Subject: Re: [PATCH] cxl: Set psl_fir_cntl to production environment value
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+References: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Date: Tue, 9 Aug 2016 10:17:35 -0500
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ftEhullJWpWg/VHq"
-In-Reply-To: <32d25618-83f6-b876-07b0-adb988516173@roeck-us.net>
+In-Reply-To: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <20371186-2e15-a80e-2cff-090185fba4fa@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,60 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Reviewed-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
---ftEhullJWpWg/VHq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
-> >@@ -550,15 +550,10 @@ static int uniphier_fi2c_probe(struct platform_dev=
-ice *pdev)
-> > 	}
-> >
-> > 	ret =3D i2c_add_adapter(&priv->adap);
-> >-	if (ret) {
-> >-		dev_err(dev, "failed to add I2C adapter\n");
-> >-		goto err;
-> >-	}
-> >-
-> >-err:
-> > 	if (ret)
-> > 		clk_disable_unprepare(priv->clk);
-> >
-> >+ err:
->=20
-> You sure about that one ? It leaves the clock enabled in some of the erro=
-r paths.
-
-Uh, ehrm, where is the brown paper bag? Thanks, Guenter!
-
-> Note: I dropped all individuals from Cc:; my mailer refused to accept the=
- reply because there
-> were too many.
-
-Yes, the disadvantage of not breaking out.
-
-
---ftEhullJWpWg/VHq
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXqesTAAoJEBQN5MwUoCm2fdIQAKsMhNBydvOJrt8SvVKc4fd8
-39601dtUJkADzbUDKqrQm08buBble9GQe38/YIQXiPO1pRY1RQBmPLbdNTlEWMFW
-Rc2RFmg1L469UhoDgrarWvT/VFMPBGOXEVEMe/0HFX+xKXfzWwYtFHvoUBtWVv0a
-rmuq47nYitymT9AS2Pul4Jn93hT2iMiIXoqhsEoNC8NiW/JR2okn64C8dUhx+tYv
-cjwClAbJwCpd+hBwSYR6CCunZTUUMcpHxjVtgfckNHc6TPBGxwHRVGpye0dd176M
-z69gqUsx5ny+iNFeCZzgynfX0U0yzFYjNeyNFm9MuXDGD4cr6qB1PonvkStV4vKu
-cxomrG2RjT/36NHlJIbXklT2PSB0QOPjGkS+apvPlQ9eM4u24j+WlXyCtszOr/qP
-19wm6SZ+0rvlM56aPgpA935XkdCQJ8KffRTbqHxrXEthtKwhmRR1IFC1zSX7/1a9
-dA6AOB2i1fQ+FgZ/0vhmWQr72DvmTnM+T3HLWq/IK9u16j1tHRD2HA8IKDb4yY8W
-cVD511wu8qkLta47lkOVbLwxyWDBeLOT0Ekn67y6PvXoPItoFO7ormtLUkvaL7AW
-VYPILEWfsj/CAdATGEU2j//OIYakDl66HUp3yM9VxH+39gTboiHV1aFJ8/dfVZuF
-OGDTbDBP2wxqJac3m7M3
-=0rq4
------END PGP SIGNATURE-----
-
---ftEhullJWpWg/VHq--
+On 8/8/2016 4:57 AM, Frederic Barrat wrote:
+> Switch the setting of psl_fir_cntl from debug to production
+> environment recommended value. It mostly affects the PSL behavior when
+> an error is raised in psl_fir1/2.
+>
+> Tested with cxlflash.
+>
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> ---
+>  drivers/misc/cxl/pci.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index d152e2d..4be25c4 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -379,7 +379,7 @@ static int calc_capp_routing(struct pci_dev *dev, u64 *chipid, u64 *capp_unit_id
+>
+>  static int init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_dev *dev)
+>  {
+> -	u64 psl_dsnctl;
+> +	u64 psl_dsnctl, psl_fircntl;
+>  	u64 chipid;
+>  	u64 capp_unit_id;
+>  	int rc;
+> @@ -398,8 +398,11 @@ static int init_implementation_adapter_psl_regs(struct cxl *adapter, struct pci_
+>  	cxl_p1_write(adapter, CXL_PSL_RESLCKTO, 0x20000000200ULL);
+>  	/* snoop write mask */
+>  	cxl_p1_write(adapter, CXL_PSL_SNWRALLOC, 0x00000000FFFFFFFFULL);
+> -	/* set fir_accum */
+> -	cxl_p1_write(adapter, CXL_PSL_FIR_CNTL, 0x0800000000000000ULL);
+> +	/* set fir_cntl to recommended value for production env */
+> +	psl_fircntl = (0x2ULL << (63-3)); /* ce_report */
+> +	psl_fircntl |= (0x1ULL << (63-6)); /* FIR_report */
+> +	psl_fircntl |= 0x1ULL; /* ce_thresh */
+> +	cxl_p1_write(adapter, CXL_PSL_FIR_CNTL, psl_fircntl);
+>  	/* for debugging with trace arrays */
+>  	cxl_p1_write(adapter, CXL_PSL_TRACE, 0x0000FF7C00000000ULL);
+>
