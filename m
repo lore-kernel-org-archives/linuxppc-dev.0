@@ -1,24 +1,56 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7tYY4tQ1zDqQp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 22:16:33 +1000 (AEST)
-Date: Tue, 9 Aug 2016 06:16:30 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160809061630.50ed5536@t450s.home>
-In-Reply-To: <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
- <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7tYz36Y8zDqQp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 22:16:55 +1000 (AEST)
+Date: Tue, 9 Aug 2016 13:57:40 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Wolfram Sang <wsa-dev@sang-engineering.com>
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ Jean Delvare <jdelvare@suse.com>, Wolfram Sang <wsa@the-dreams.de>,
+ Ludovic Desroches <ludovic.desroches@atmel.com>,
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ Jon Mason <jonmason@broadcom.com>, bcm-kernel-feedback-list@broadcom.com,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Sonic Zhang <sonic.zhang@analog.com>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Gregory Fong <gregory.0xf0@gmail.com>,
+ Michal Simek <michal.simek@xilinx.com>,
+ =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>,
+ Jochen Friedrich <jochen@scram.de>, Sekhar Nori <nsekhar@ti.com>,
+ Kevin Hilman <khilman@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
+ Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <kernel@pengutronix.de>,
+ Kukjin Kim <kgene@kernel.org>,
+ Krzysztof Kozlowski <k.kozlowski@samsung.com>,
+ Seth Heasley <seth.heasley@intel.com>, Neil Horman <nhorman@tuxdriver.com>,
+ Joachim Eastwood <manabian@gmail.com>, Carlo Caione <carlo@caione.org>,
+ Alessandro Rubini <rubini@unipv.it>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Peter Korsgaard <jacmet@sunsite.dk>,
+ Tony Lindgren <tony@atomide.com>, Vladimir Zapolskiy <vz@mleia.com>,
+ Sylvain Lemieux <slemieux.tyco@gmail.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Heiko Stuebner <heiko@sntech.de>,
+ Barry Song <baohua@kernel.org>, Patrice Chotard <patrice.chotard@st.com>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Alexandre Courbot <gnurou@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linuxppc-dev@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
+ linux-amlogic@lists.infradead.org, linux-omap@vger.kernel.org,
+ linux-rockchip@lists.infradead.org, kernel@stlinux.com,
+ linux-tegra@vger.kernel.org
+Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
+Message-ID: <20160809115740.GA5528@pengutronix.de>
+References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
+ <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,129 +60,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 9 Aug 2016 15:19:39 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+Hello Wolfram,
 
-> On 09/08/16 02:43, Alex Williamson wrote:
-> > On Wed,  3 Aug 2016 18:40:55 +1000
-> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >   
-> >> This exports helpers which are needed to keep a VFIO container in
-> >> memory while there are external users such as KVM.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
-> >>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
-> >>  include/linux/vfio.h                |  6 ++++++
-> >>  3 files changed, 51 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> >> index d1d70e0..baf6a9c 100644
-> >> --- a/drivers/vfio/vfio.c
-> >> +++ b/drivers/vfio/vfio.c
-> >> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
-> >>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
-> >>  
-> >>  /**
-> >> + * External user API for containers, exported by symbols to be linked
-> >> + * dynamically.
-> >> + *
-> >> + */
-> >> +struct vfio_container *vfio_container_get_ext(struct file *filep)
-> >> +{
-> >> +	struct vfio_container *container = filep->private_data;
-> >> +
-> >> +	if (filep->f_op != &vfio_fops)
-> >> +		return ERR_PTR(-EINVAL);
-> >> +
-> >> +	vfio_container_get(container);
-> >> +
-> >> +	return container;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
-> >> +
-> >> +void vfio_container_put_ext(struct vfio_container *container)
-> >> +{
-> >> +	vfio_container_put(container);
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
-> >> +
-> >> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
-> >> +{
-> >> +	return container->iommu_data;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
-> >> +
-> >> +/**
-> >>   * Sub-module support
-> >>   */
-> >>  /*
-> >> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >> index 3594ad3..fceea3d 100644
-> >> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
-> >>  	.detach_group	= tce_iommu_detach_group,
-> >>  };
-> >>  
-> >> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
-> >> +		u64 offset)
-> >> +{
-> >> +	struct tce_container *container = iommu_data;
-> >> +	struct iommu_table *tbl = NULL;
-> >> +
-> >> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
-> >> +		return NULL;
-> >> +
-> >> +	iommu_table_get(tbl);
-> >> +
-> >> +	return tbl;
-> >> +}
-> >> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
-> >> +
-> >>  static int __init tce_iommu_init(void)
-> >>  {
-> >>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> >> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
-> >>  MODULE_LICENSE("GPL v2");
-> >>  MODULE_AUTHOR(DRIVER_AUTHOR);
-> >>  MODULE_DESCRIPTION(DRIVER_DESC);
-> >> -
-> >> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> >> index 0ecae0b..1c2138a 100644
-> >> --- a/include/linux/vfio.h
-> >> +++ b/include/linux/vfio.h
-> >> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
-> >>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
-> >>  extern long vfio_external_check_extension(struct vfio_group *group,
-> >>  					  unsigned long arg);
-> >> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
-> >> +extern void vfio_container_put_ext(struct vfio_container *container);
-> >> +extern void *vfio_container_get_iommu_data_ext(
-> >> +		struct vfio_container *container);
-> >> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
-> >> +		void *iommu_data, u64 offset);
-> >>  
-> >>  /*
-> >>   * Sub-module helpers  
-> > 
-> > 
-> > I think you need to take a closer look of the lifecycle of a container,
-> > having a reference means the container itself won't go away, but only
-> > having a group set within that container holds the actual IOMMU
-> > references.  container->iommu_data is going to be NULL once the
-> > groups are lost.  Thanks,  
-> 
-> 
-> Container owns the iommu tables and this is what I care about here, groups
-> attached or not - this is handled separately via IOMMU group list in a
-> specific iommu_table struct, these groups get detached from iommu_table
-> when they are removed from a container.
+On Tue, Aug 09, 2016 at 01:36:17PM +0200, Wolfram Sang wrote:
+> The core will do this for us now.
 
-The container doesn't own anything, the container is privileged by the
-groups being attached to it.  When groups are closed, they detach from
-the container and once the container group list is empty the iommu
-backend is released and iommu_data is NULL.  A container reference
-doesn't give you what you're looking for.  It implies nothing about the
-iommu backend.
+Would be nice to point out the relevant commit that changed the core in
+the commit log.
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
