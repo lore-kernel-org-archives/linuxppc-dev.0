@@ -1,26 +1,19 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7jJg1cFdzDqh6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 15:19:46 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id y134so217527pfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Aug 2016 22:19:46 -0700 (PDT)
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-To: Alex Williamson <alex.williamson@redhat.com>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, Paul Mackerras <paulus@samba.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
-Date: Tue, 9 Aug 2016 15:19:39 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7jSz2zGxzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 15:26:58 +1000 (AEST)
+Received: from localhost (localhost [IPv6:::1])
+ by trent.utfs.org (Postfix) with ESMTPS id 80C5865F18
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 07:19:34 +0200 (CEST)
+Date: Mon, 8 Aug 2016 22:19:34 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: 4.8.0-rc1: Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
+Message-ID: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
 MIME-Version: 1.0
-In-Reply-To: <20160808104315.77cf22ec@t450s.home>
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,123 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/16 02:43, Alex Williamson wrote:
-> On Wed,  3 Aug 2016 18:40:55 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> This exports helpers which are needed to keep a VFIO container in
->> memory while there are external users such as KVM.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
->>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
->>  include/linux/vfio.h                |  6 ++++++
->>  3 files changed, 51 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
->> index d1d70e0..baf6a9c 100644
->> --- a/drivers/vfio/vfio.c
->> +++ b/drivers/vfio/vfio.c
->> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
->>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
->>  
->>  /**
->> + * External user API for containers, exported by symbols to be linked
->> + * dynamically.
->> + *
->> + */
->> +struct vfio_container *vfio_container_get_ext(struct file *filep)
->> +{
->> +	struct vfio_container *container = filep->private_data;
->> +
->> +	if (filep->f_op != &vfio_fops)
->> +		return ERR_PTR(-EINVAL);
->> +
->> +	vfio_container_get(container);
->> +
->> +	return container;
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
->> +
->> +void vfio_container_put_ext(struct vfio_container *container)
->> +{
->> +	vfio_container_put(container);
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
->> +
->> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
->> +{
->> +	return container->iommu_data;
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
->> +
->> +/**
->>   * Sub-module support
->>   */
->>  /*
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index 3594ad3..fceea3d 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
->>  	.detach_group	= tce_iommu_detach_group,
->>  };
->>  
->> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
->> +		u64 offset)
->> +{
->> +	struct tce_container *container = iommu_data;
->> +	struct iommu_table *tbl = NULL;
->> +
->> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
->> +		return NULL;
->> +
->> +	iommu_table_get(tbl);
->> +
->> +	return tbl;
->> +}
->> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
->> +
->>  static int __init tce_iommu_init(void)
->>  {
->>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
->> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
->>  MODULE_LICENSE("GPL v2");
->>  MODULE_AUTHOR(DRIVER_AUTHOR);
->>  MODULE_DESCRIPTION(DRIVER_DESC);
->> -
->> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
->> index 0ecae0b..1c2138a 100644
->> --- a/include/linux/vfio.h
->> +++ b/include/linux/vfio.h
->> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
->>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
->>  extern long vfio_external_check_extension(struct vfio_group *group,
->>  					  unsigned long arg);
->> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
->> +extern void vfio_container_put_ext(struct vfio_container *container);
->> +extern void *vfio_container_get_iommu_data_ext(
->> +		struct vfio_container *container);
->> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
->> +		void *iommu_data, u64 offset);
->>  
->>  /*
->>   * Sub-module helpers
-> 
-> 
-> I think you need to take a closer look of the lifecycle of a container,
-> having a reference means the container itself won't go away, but only
-> having a group set within that container holds the actual IOMMU
-> references.  container->iommu_data is going to be NULL once the
-> groups are lost.  Thanks,
+Hi,
 
+while trying to upgrade this PowerBook G4 from 4.7-rc7 to 4.8-rc1, it's 
+unable to boot the Yaboot (v1.3.16 from Debian/stable) boot loader:
 
-Container owns the iommu tables and this is what I care about here, groups
-attached or not - this is handled separately via IOMMU group list in a
-specific iommu_table struct, these groups get detached from iommu_table
-when they are removed from a container.
+================================================================
+copying OF device tree...
+Building dt strings...
+Building dt stucture...
+Device tree strings 0x01e72000 -> 0x01e73615
+Device tree struct  0x01e74000 -> 0x01e7e000
+Quiescing Open Firmware...
+Bootng Linux via __start()...
 
+Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
 
+Apple PowerBook6,8 4.9.0f0 BootROM built on 01/10/05 at 10:39:14
+[...]
+
+ ok
+0:> _
+================================================================
+
+Going back to 4.7-rc7 (w/o installing Yaboot again) works just fine. The 
+config is mostly the same (used "make oldconfig" from 4.7), but I've said 
+YES to CONFIG_SLAB_FREELIST_RANDOM - could this be causing the boot 
+failure? Full .config and screen shot: http://nerdbynature.de/bits/4.8.0-rc1/
+
+Thanks,
+Christian.
 -- 
-Alexey
+BOFH excuse #319:
+
+Your computer hasn't been returning all the bits it gets from the Internet.
