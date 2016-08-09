@@ -1,48 +1,17 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7v1L6PMyzDqQp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 22:37:10 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u79CUWAM113198
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 08:37:08 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24nce9dwea-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 08:37:07 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Tue, 9 Aug 2016 18:07:04 +0530
-Received: from d28relay09.in.ibm.com (d28relay09.in.ibm.com [9.184.220.160])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 29DB7125805B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 18:10:09 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay09.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u79Cb0M037879844
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 18:07:00 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u79Caw2h006536
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 18:07:00 +0530
-Subject: Re: [PATCH 0/7] ima: carry the measurement list across kexec
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linux-security-module@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Thiago Jung
- Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
-Date: Tue, 09 Aug 2016 08:36:44 -0400
-In-Reply-To: <91fa2f95-4d70-a056-d599-01cb3bbe6771@gmail.com>
-References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
- <91fa2f95-4d70-a056-d599-01cb3bbe6771@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1470746204.2881.101.camel@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7v966MlNzDqQp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 22:43:54 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Nick Piggin <npiggin@gmail.com>, Anton Blanchard <anton@samba.org>,
+ <imunsie@au.ibm.com>
+Subject: [PATCH] powerpc/Makefile: Use cflags-y/aflags-y for setting endian
+ options
+Date: Tue,  9 Aug 2016 22:43:46 +1000
+Message-Id: <1470746626-1989-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,50 +21,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-08-09 at 15:19 +1000, Balbir Singh wrote:
-> 
-> On 04/08/16 22:24, Mimi Zohar wrote:
-> > The TPM PCRs are only reset on a hard reboot.  In order to validate a
-> > TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
-> > of the running kernel must be saved and then restored on the subsequent
-> > boot.
-> > 
-> > The existing securityfs binary_runtime_measurements file conveniently
-> > provides a serialized format of the IMA measurement list. This patch
-> > set serializes the measurement list in this format and restores it.
-> > 
-> > This patch set pre-req's Thiago Bauermann's "kexec_file: Add buffer
-> > hand-over for the next kernel" patch set* for actually carrying the
-> > serialized measurement list across the kexec.
-> > 
-> > Mimi
-> > 
-> 
-> Hi, Mimi
-> 
-> I am trying to convince myself of the security of the solution. I asked
-> Thiago as well, but may be I am be lagging behind in understanding.
-> 
-> We trust the kernel to hand over PCR values of the old kernel (which
-> cannot be validated) to the IMA subsystem in the new kernel for storage.
-> I guess the idea is for ima_add_boot_aggregate to do the right thing?
-> How do we validate what the old kernel is giving us? Why do we care for
-> the old measurement list? Is it still of significance in the new kernel?
-> 
+When we introduced the little endian support, we added the endian flags
+to CC directly using override. I don't know the history of why we did
+that, I suspect no one does.
 
-Hi Balbir,
+Although this mostly works, it has one bug, which is that CROSS32CC
+doesn't get -mbig-endian. That means when the compiler is little endian
+by default and the user is building big endian, vdso32 is incorrectly
+compiled as little endian and the kernel fails to build.
 
-To validate the hardware TPM PCR values requires walking the measurement
-list simulating the TPM extend operation.  The resulting values should
-match the hardware TPM PCRs.
+Instead we can add the endian flags to cflags-y/aflags-y, and then
+append those to KBUILD_CFLAGS/KBUILD_AFLAGS.
 
-In the case of a soft reboot, the TPM PCRs are not reset to 0, so all
-the measurements of the running system, including those from previous
-soft reboots, need to be included in the measurement list.   Without
-these measurements, the simulated PCR values will not match the hardware
-TPM PCR values.  Thus the need for this patch set.
+This has the advantage of being 1) less ugly, 2) the documented way of
+adding flags in the arch Makefile and 3) it fixes building vdso32 with a
+LE toolchain.
 
-Measurements can not be added/removed/changed in the measurement list
-without it being detectable.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Makefile | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-Mimi
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index ca254546cd05..1934707bf321 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -66,29 +66,28 @@ endif
+ UTS_MACHINE := $(OLDARCH)
+ 
+ ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+-override CC	+= -mlittle-endian
+-ifneq ($(cc-name),clang)
+-override CC	+= -mno-strict-align
+-endif
+-override AS	+= -mlittle-endian
+ override LD	+= -EL
+-override CROSS32CC += -mlittle-endian
+ override CROSS32AS += -mlittle-endian
+ LDEMULATION	:= lppc
+ GNUTARGET	:= powerpcle
+ MULTIPLEWORD	:= -mno-multiple
+ KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
+ else
+-ifeq ($(call cc-option-yn,-mbig-endian),y)
+-override CC	+= -mbig-endian
+-override AS	+= -mbig-endian
+-endif
+ override LD	+= -EB
+ LDEMULATION	:= ppc
+ GNUTARGET	:= powerpc
+ MULTIPLEWORD	:= -mmultiple
+ endif
+ 
++cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
++cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
++ifneq ($(cc-name),clang)
++  cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
++endif
++
++aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
++aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
++
+ ifeq ($(HAS_BIARCH),y)
+ override AS	+= -a$(CONFIG_WORD_SIZE)
+ override LD	+= -m elf$(CONFIG_WORD_SIZE)$(LDEMULATION)
+@@ -232,6 +231,9 @@ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+ KBUILD_AFLAGS += $(cpu-as-y)
+ KBUILD_CFLAGS += $(cpu-as-y)
+ 
++KBUILD_AFLAGS += $(aflags-y)
++KBUILD_CFLAGS += $(cflags-y)
++
+ head-y				:= arch/powerpc/kernel/head_$(CONFIG_WORD_SIZE).o
+ head-$(CONFIG_8xx)		:= arch/powerpc/kernel/head_8xx.o
+ head-$(CONFIG_40x)		:= arch/powerpc/kernel/head_40x.o
+-- 
+2.7.4
