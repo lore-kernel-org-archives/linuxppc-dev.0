@@ -1,19 +1,21 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s7pLj2Z6SzDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 19:06:51 +1000 (AEST)
-Date: Tue, 9 Aug 2016 02:06:45 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: 4.8.0-rc1: Invalid memory access at $SRR0: 0140f86c $SRR1:
- 00003030
-In-Reply-To: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
-Message-ID: <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
-References: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s7rLC2Fj0zDqdv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Aug 2016 20:36:35 +1000 (AEST)
+Date: Tue, 9 Aug 2016 18:36:25 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH v2] crypto: powerpc - CRYPT_CRC32C_VPMSUM should depend
+ on ALTIVEC
+Message-ID: <20160809103625.GB6934@gondor.apana.org.au>
+References: <1470696375-22023-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1470696375-22023-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 8 Aug 2016, Christian Kujau wrote:
-> while trying to upgrade this PowerBook G4 from 4.7-rc7 to 4.8-rc1, it's 
-> unable to boot the Yaboot (v1.3.16 from Debian/stable) boot loader:
+On Tue, Aug 09, 2016 at 08:46:15AM +1000, Michael Ellerman wrote:
+> The optimised crc32c implementation depends on VMX (aka. Altivec)
+> instructions, so the kernel must be built with Altivec support in order
+> for the crc32c code to build.
 > 
-> ================================================================
-> copying OF device tree...
-> Building dt strings...
-> Building dt stucture...
-> Device tree strings 0x01e72000 -> 0x01e73615
-> Device tree struct  0x01e74000 -> 0x01e7e000
-> Quiescing Open Firmware...
-> Bootng Linux via __start()...
-> 
-> Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
-> 
-> Apple PowerBook6,8 4.9.0f0 BootROM built on 01/10/05 at 10:39:14
-> [...]
-> 
->  ok
-> 0:> _
-> ================================================================
-> 
-> Going back to 4.7-rc7 (w/o installing Yaboot again) works just fine. The 
-> config is mostly the same (used "make oldconfig" from 4.7), but I've said 
-> YES to CONFIG_SLAB_FREELIST_RANDOM - could this be causing the boot 
-> failure? Full .config and screen shot: http://nerdbynature.de/bits/4.8.0-rc1/
+> Fixes: 6dd7a82cc54e ("crypto: powerpc - Add POWER8 optimised crc32c")
+> Acked-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-A git-bisect led me to:
-
-=========================================
-commit 9402c684613163888714df0955fa1f17142b08bf
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Tue Jul 5 15:03:41 2016 +1000
-
-    powerpc: Factor do_feature_fixup calls
-    
-    32 and 64-bit do a similar set of calls early on, we move it all to
-    a single common function to make the boot code more readable.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-=========================================
-
-But I'm unable to revert just this patch:
-
-$ git revert 9402c684613163888714df0955fa1f17142b08bf
-error: could not revert 9402c68... powerpc: Factor do_feature_fixup calls
-hint: after resolving the conflicts, mark the corrected paths
-
-The bisect-log:
-
-=========================================
-$ git bisect log
-git bisect start '--' 'arch/powerpc'
-# good: [523d939ef98fd712632d93a5a2b588e477a7565e] Linux 4.7
-git bisect good 523d939ef98fd712632d93a5a2b588e477a7565e
-# bad: [29b4817d4018df78086157ea3a55c1d9424a7cfc] Linux 4.8-rc1
-git bisect bad 29b4817d4018df78086157ea3a55c1d9424a7cfc
-# bad: [3808a88985b4f5f5e947c364debce4441a380fb8] powerpc: Move FW feature probing out of pseries probe()
-git bisect bad 3808a88985b4f5f5e947c364debce4441a380fb8
-# good: [a203658b5ed37c11e5016d3fbbbab9ce018c1b78] powerpc/opal: Wake up kopald polling thread before waiting for events
-git bisect good a203658b5ed37c11e5016d3fbbbab9ce018c1b78
-# good: [0dfffb48cecd8f84c6e649baee9bacd9be925734] powerpc/powernv: abstraction for saving SPRs before entering deep idle states
-git bisect good 0dfffb48cecd8f84c6e649baee9bacd9be925734
-# good: [66c570f545e056babdd9510595ce762dcedadd71] powerpc/mm: use _raw variant of page table accessors
-git bisect good 66c570f545e056babdd9510595ce762dcedadd71
-# good: [c2ca9f6b4cc4c45eb598b24b8b06beee668052d5] powerpc/powernv: Fix pci-cxl.c build when CONFIG_MODULES=n
-git bisect good c2ca9f6b4cc4c45eb598b24b8b06beee668052d5
-# good: [4c91bd6eeabb004f283db8a6854b134e2a2de1bc] powerpc: Merge the RELOCATABLE config entries for ppc32 and ppc64
-git bisect good 4c91bd6eeabb004f283db8a6854b134e2a2de1bc
-# bad: [c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48] powerpc: Move 64-bit feature fixup earlier
-git bisect bad c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48
-# bad: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor do_feature_fixup calls
-git bisect bad 9402c684613163888714df0955fa1f17142b08bf
-# good: [27d1149667352772240655b65372a4294f992ea7] powerpc/32: Remove RELOCATABLE_PPC32
-git bisect good 27d1149667352772240655b65372a4294f992ea7
-# first bad commit: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor do_feature_fixup calls
-=========================================
-
-
-HTH,
-Christian.
+Patch applied.  Thanks.
 -- 
-BOFH excuse #409:
-
-The vulcan-death-grip ping has been applied.
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
