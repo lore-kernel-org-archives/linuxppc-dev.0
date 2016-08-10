@@ -1,26 +1,37 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8cVy1hyTzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 02:46:49 +1000 (AEST)
-Date: Wed, 10 Aug 2016 10:46:30 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-Message-ID: <20160810104630.21ab4bc5@t450s.home>
-In-Reply-To: <4d1ea52b-ecb5-5f9b-6cdc-00a73677cc2f@ozlabs.ru>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
- <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
- <20160809061630.50ed5536@t450s.home>
- <4d1ea52b-ecb5-5f9b-6cdc-00a73677cc2f@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8dp772DCzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 03:45:03 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7AHdJxS052449
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 13:45:00 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9s8ktw-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 13:44:59 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 10 Aug 2016 11:44:59 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CDC531FF001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:44:39 -0600 (MDT)
+Subject: Re: [PATCH V3 3/8] powerpc/memory: Parse new memory property to
+ initialize structures.
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <ce21356b-c588-bb8f-8f61-1092b919e5fb@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Wed, 10 Aug 2016 12:44:56 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <ce21356b-c588-bb8f-8f61-1092b919e5fb@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c9065592-93ae-e8a7-4158-cb3529008ad9@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,195 +41,260 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 10 Aug 2016 15:37:17 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> On 09/08/16 22:16, Alex Williamson wrote:
-> > On Tue, 9 Aug 2016 15:19:39 +1000
-> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >   
-> >> On 09/08/16 02:43, Alex Williamson wrote:  
-> >>> On Wed,  3 Aug 2016 18:40:55 +1000
-> >>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>>     
-> >>>> This exports helpers which are needed to keep a VFIO container in
-> >>>> memory while there are external users such as KVM.
-> >>>>
-> >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>> ---
-> >>>>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
-> >>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
-> >>>>  include/linux/vfio.h                |  6 ++++++
-> >>>>  3 files changed, 51 insertions(+), 1 deletion(-)
-> >>>>
-> >>>> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
-> >>>> index d1d70e0..baf6a9c 100644
-> >>>> --- a/drivers/vfio/vfio.c
-> >>>> +++ b/drivers/vfio/vfio.c
-> >>>> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
-> >>>>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
-> >>>>  
-> >>>>  /**
-> >>>> + * External user API for containers, exported by symbols to be linked
-> >>>> + * dynamically.
-> >>>> + *
-> >>>> + */
-> >>>> +struct vfio_container *vfio_container_get_ext(struct file *filep)
-> >>>> +{
-> >>>> +	struct vfio_container *container = filep->private_data;
-> >>>> +
-> >>>> +	if (filep->f_op != &vfio_fops)
-> >>>> +		return ERR_PTR(-EINVAL);
-> >>>> +
-> >>>> +	vfio_container_get(container);
-> >>>> +
-> >>>> +	return container;
-> >>>> +}
-> >>>> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
-> >>>> +
-> >>>> +void vfio_container_put_ext(struct vfio_container *container)
-> >>>> +{
-> >>>> +	vfio_container_put(container);
-> >>>> +}
-> >>>> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
-> >>>> +
-> >>>> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
-> >>>> +{
-> >>>> +	return container->iommu_data;
-> >>>> +}
-> >>>> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
-> >>>> +
-> >>>> +/**
-> >>>>   * Sub-module support
-> >>>>   */
-> >>>>  /*
-> >>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> index 3594ad3..fceea3d 100644
-> >>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
-> >>>>  	.detach_group	= tce_iommu_detach_group,
-> >>>>  };
-> >>>>  
-> >>>> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
-> >>>> +		u64 offset)
-> >>>> +{
-> >>>> +	struct tce_container *container = iommu_data;
-> >>>> +	struct iommu_table *tbl = NULL;
-> >>>> +
-> >>>> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
-> >>>> +		return NULL;
-> >>>> +
-> >>>> +	iommu_table_get(tbl);
-> >>>> +
-> >>>> +	return tbl;
-> >>>> +}
-> >>>> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
-> >>>> +
-> >>>>  static int __init tce_iommu_init(void)
-> >>>>  {
-> >>>>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> >>>> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
-> >>>>  MODULE_LICENSE("GPL v2");
-> >>>>  MODULE_AUTHOR(DRIVER_AUTHOR);
-> >>>>  MODULE_DESCRIPTION(DRIVER_DESC);
-> >>>> -
-> >>>> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> >>>> index 0ecae0b..1c2138a 100644
-> >>>> --- a/include/linux/vfio.h
-> >>>> +++ b/include/linux/vfio.h
-> >>>> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
-> >>>>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
-> >>>>  extern long vfio_external_check_extension(struct vfio_group *group,
-> >>>>  					  unsigned long arg);
-> >>>> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
-> >>>> +extern void vfio_container_put_ext(struct vfio_container *container);
-> >>>> +extern void *vfio_container_get_iommu_data_ext(
-> >>>> +		struct vfio_container *container);
-> >>>> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
-> >>>> +		void *iommu_data, u64 offset);
-> >>>>  
-> >>>>  /*
-> >>>>   * Sub-module helpers    
-> >>>
-> >>>
-> >>> I think you need to take a closer look of the lifecycle of a container,
-> >>> having a reference means the container itself won't go away, but only
-> >>> having a group set within that container holds the actual IOMMU
-> >>> references.  container->iommu_data is going to be NULL once the
-> >>> groups are lost.  Thanks,    
-> >>
-> >>
-> >> Container owns the iommu tables and this is what I care about here, groups
-> >> attached or not - this is handled separately via IOMMU group list in a
-> >> specific iommu_table struct, these groups get detached from iommu_table
-> >> when they are removed from a container.  
-> > 
-> > The container doesn't own anything, the container is privileged by the
-> > groups being attached to it.  When groups are closed, they detach from
-> > the container and once the container group list is empty the iommu
-> > backend is released and iommu_data is NULL.  A container reference
-> > doesn't give you what you're looking for.  It implies nothing about the
-> > iommu backend.  
+On 08/01/2016 07:42 PM, Michael Bringmann wrote:
+> powerpc/memory: Add parallel routines to parse the new property
+> "ibm,dynamic-memory-v2" property when it is present, and then to
+> finish initialization of the relevant memory structures with the
+> operating system.  This code is shared between the boot-time
+> initialization functions and the runtime functions for memory
+> hotplug, so it needs to be able to handle both formats.
 > 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 669a15e..18b4ee7 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -407,9 +407,8 @@
+>  
+>  	*cellp = cp + 4;
+>  }
+> - 
+> - /*
+> - * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+> +
+> +/*
+
+Shouldn't this be a part of the previous patch?
+
+>   * Read the next memory block set entry from the ibm,dynamic-memory-v2 property
+>   * and return the information in the provided of_drconf_cell_v2 structure.
+>   */
+> @@ -427,30 +426,55 @@
+>  EXPORT_SYMBOL(read_drconf_cell_v2);
+>  
+>  /*
+> - * Retrieve and validate the ibm,dynamic-memory property of the device tree.
+> + * Retrieve and validate the ibm,dynamic-memory[-v2] property of the
+> + * device tree.
+> + *
+> + * The layout of the ibm,dynamic-memory property is a number N of memory
+> + * block description list entries followed by N memory block description
+> + * list entries.  Each memory block description list entry contains
+> + * information as laid out in the of_drconf_cell struct above.
+>   *
+> - * The layout of the ibm,dynamic-memory property is a number N of memblock
+> - * list entries followed by N memblock list entries.  Each memblock list entry
+> - * contains information as laid out in the of_drconf_cell struct above.
+> + * The layout of the ibm,dynamic-memory-v2 property is a number N of memory
+> + * block set description list entries, followed by N memory block set
+> + * description set entries.
+>   */
+>  static int of_get_drconf_memory(struct device_node *memory, const __be32 **dm)
+>  {
+>  	const __be32 *prop;
+>  	u32 len, entries;
+>  
+> -	prop = of_get_property(memory, "ibm,dynamic-memory", &len);
+> -	if (!prop || len < sizeof(unsigned int))
+> -		return 0;
+> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2)) {
+>  
+> -	entries = of_read_number(prop++, 1);
+> +		prop = of_get_property(memory, "ibm,dynamic-memory-v2", &len);
+> +		if (!prop || len < sizeof(unsigned int))
+> +			return 0;
+>  
+> -	/* Now that we know the number of entries, revalidate the size
+> -	 * of the property read in to ensure we have everything
+> -	 */
+> -	if (len < (entries * (n_mem_addr_cells + 4) + 1) * sizeof(unsigned int))
+> -		return 0;
+> +		entries = of_read_number(prop++, 1);
+> +
+> +		/* Now that we know the number of set entries, revalidate the
+> +		 * size of the property read in to ensure we have everything.
+> +		 */
+> +		if (len < dyn_mem_v2_len(entries))
+> +			return 0;
+> +
+> +		*dm = prop;
+> +	} else {
+> +		prop = of_get_property(memory, "ibm,dynamic-memory", &len);
+> +		if (!prop || len < sizeof(unsigned int))
+> +			return 0;
+> +
+> +		entries = of_read_number(prop++, 1);
+> +
+> +		/* Now that we know the number of entries, revalidate the size
+> +		 * of the property read in to ensure we have everything
+> +		 */
+> +		if (len < (entries * (n_mem_addr_cells + 4) + 1) *
+> +			   sizeof(unsigned int))
+> +			return 0;
+> +
+> +		*dm = prop;
+> +	}
+>  
+> -	*dm = prop;
+>  	return entries;
+>  }
+>  
+> @@ -513,7 +537,7 @@
+>   * This is like of_node_to_nid_single() for memory represented in the
+>   * ibm,dynamic-reconfiguration-memory node.
+>   */
+> -static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
+> +static int of_drconf_to_nid_single(u32 drmem_flags, u32 drmem_aa_index,
+>  				   struct assoc_arrays *aa)
+>  {
+>  	int default_nid = 0;
+> @@ -521,16 +545,16 @@
+>  	int index;
+>  
+>  	if (min_common_depth > 0 && min_common_depth <= aa->array_sz &&
+> -	    !(drmem->flags & DRCONF_MEM_AI_INVALID) &&
+> -	    drmem->aa_index < aa->n_arrays) {
+> -		index = drmem->aa_index * aa->array_sz + min_common_depth - 1;
+> +	    !(drmem_flags & DRCONF_MEM_AI_INVALID) &&
+> +	    drmem_aa_index < aa->n_arrays) {
+> +		index = drmem_aa_index * aa->array_sz + min_common_depth - 1;
+>  		nid = of_read_number(&aa->arrays[index], 1);
+>  
+>  		if (nid == 0xffff || nid >= MAX_NUMNODES)
+>  			nid = default_nid;
+>  
+>  		if (nid > 0) {
+> -			index = drmem->aa_index * aa->array_sz;
+> +			index = drmem_aa_index * aa->array_sz;
+>  			initialize_distance_lookup_table(nid,
+>  							&aa->arrays[index]);
+>  		}
+> @@ -665,7 +697,7 @@
+>   * Extract NUMA information from the ibm,dynamic-reconfiguration-memory
+>   * node.  This assumes n_mem_{addr,size}_cells have been set.
+>   */
+> -static void __init parse_drconf_memory(struct device_node *memory)
+> +static void __init parse_drconf_memory_v1(struct device_node *memory)
+>  {
+>  	const __be32 *uninitialized_var(dm), *usm;
+>  	unsigned int n, rc, ranges, is_kexec_kdump = 0;
+> @@ -715,10 +747,11 @@
+>  				base = read_n_cells(n_mem_addr_cells, &usm);
+>  				size = read_n_cells(n_mem_size_cells, &usm);
+>  			}
+> -			nid = of_drconf_to_nid_single(&drmem, &aa);
+> +			nid = of_drconf_to_nid_single(drmem.flags,
+> +							drmem.aa_index, &aa);
+>  			fake_numa_create_new_node(
+>  				((base + size) >> PAGE_SHIFT),
+> -					   &nid);
+> +					    &nid);
+
+Is this just a whitespace change? or did I miss something.
+
+>  			node_set_online(nid);
+>  			sz = numa_enforce_memory_limit(base, size);
+>  			if (sz)
+> @@ -728,6 +761,78 @@
+>  	}
+>  }
+>  
+> +static void __init parse_drconf_memory_v2(struct device_node *memory)
+> +{
+> +	const __be32 *uninitialized_var(dm);
+> +	unsigned int num_lmb_sets, rc;
+> +	unsigned long lmb_size, base;
+> +	unsigned long size, sz;
+> +	int nid;
+> +	struct assoc_arrays aa = { .arrays = NULL };
+> +	const __be32 *prop, *p;
+> +	u32	len;
+> +
+> +	prop = of_get_property(memory, "ibm,dynamic-memory-v2", &len);
+> +	if (!prop)
+> +		return;
+> +	p = prop;
+
+You call of_get_property and set p, but it doesn't appear prop or p
+are used anywhere.
+
+-Nathan
+
+> +
+> +	num_lmb_sets = of_get_drconf_memory(memory, &dm);
+> +	if (!num_lmb_sets)
+> +		return;
+> +
+> +	lmb_size = of_get_lmb_size(memory);
+> +	if (!lmb_size)
+> +		return;
+> +
+> +	rc = of_get_assoc_arrays(memory, &aa);
+> +	if (rc)
+> +		return;
+> +
+> +	for (; num_lmb_sets != 0; num_lmb_sets--) {
+> +		struct of_drconf_cell_v2 drmem;
+> +		unsigned long nsl;
+> +
+> +		/* Get the current LMB set */
+> +		read_drconf_cell_v2(&drmem, &dm);
+> +		base = drmem.base_addr;
+> +		nsl = drmem.num_seq_lmbs;
+> +
+> +		/* Skip this block if the reserved bit is set in
+> +		 * flags (0x80) or if the block is not assigned
+> +		 * to this partition (0x8)
+> +		 */
+> +		if ((drmem.flags & DRCONF_MEM_RESERVED)
+> +		    || !(drmem.flags & DRCONF_MEM_ASSIGNED))
+> +			continue;
+> +
+> +		for (; nsl != 0; nsl--) {
+> +			size = lmb_size;
+> +
+> +			nid = of_drconf_to_nid_single(drmem.flags,
+> +						drmem.aa_index, &aa);
+> +			fake_numa_create_new_node(
+> +					((base + size) >> PAGE_SHIFT),
+> +					&nid);
+> +			node_set_online(nid);
+> +			sz = numa_enforce_memory_limit(base, size);
+> +			if (sz)
+> +				memblock_set_node(base, sz,
+> +						&memblock.memory, nid);
+> +
+> +			base += sz;
+> +		}
+> +	}
+> +}
+> +
+> +static void __init parse_drconf_memory(struct device_node *memory)
+> +{
+> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
+> +		parse_drconf_memory_v2(memory);
+> +	else
+> +		parse_drconf_memory_v1(memory);
+> +}
+> +
+>  static int __init parse_numa_properties(void)
+>  {
+>  	struct device_node *memory;
+> @@ -1082,8 +1211,8 @@ static int hot_add_drconf_scn_to_nid(struct device_node *memory,
+>  		if ((scn_addr < drmem.base_addr)
+>  		    || (scn_addr >= (drmem.base_addr + lmb_size)))
+>  			continue;
+> -
+> -		nid = of_drconf_to_nid_single(&drmem, &aa);
+> +		nid = of_drconf_to_nid_single(drmem.flags,
+> +						drmem.aa_index, &aa);
+>  		break;
+>  	}
+>  
 > 
-> Well. Backend is a part of a container and since a backend owns tables, a
-> container owns them too.
-
-The IOMMU backend is accessed through the container, but that backend
-is privileged by the groups it contains.  Once those groups are gone,
-the IOMMU backend is released, regardless of whatever reference you
-have to the container itself such as you're attempting to do here.  In
-that sense, the container does not own those tables.
-
-> The problem I am trying to solve here is when KVM may release the
-> iommu_table objects.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
-> "Set" ioctl() to KVM-spapr-tce-table (or KVM itself, does not really
-> matter) makes a link between KVM-spapr-tce-table and container and KVM can
-> start using tables (with referencing them).
-> 
-> First I tried adding an "unset" ioctl to KVM-spapr-tce-table, called it
-> from region_del() and this works if QEMU removes a window. However if QEMU
-> removes a vfio-pci device, region_del() is not called and KVM does not get
-> notified that it can release the iommu_table's because the
-> KVM-spapr-tce-table remains alive and does not get destroyed (as it is
-> still used by emulated devices or other containers).
-> 
-> So it was suggested that we could do such "unset" somehow later assuming,
-> for example, on every "set" I could check if some of currently attached
-> containers are no more used - and this is where being able to know if there
-> is no backend helps - KVM remembers a container pointer and can check this
-> via vfio_container_get_iommu_data_ext().
-> 
-> The other option would be changing vfio_container_get_ext() to take a
-> callback+opaque which container would call when it destroys iommu_data.
-> This looks more intrusive and not very intuitive how to make it right -
-> container would have to keep track of all registered external users and
-> vfio_container_put_ext() would have to pass the same callback+opaque to
-> unregister the exact external user.
-
-I'm not in favor of anything resembling the code above or extensions
-beyond it, the container is the wrong place to do this.
-
-> Or I could store container file* in KVM. Then iommu_data would never be
-> released until KVM-spapr-tce-table is destroyed.
-
-See above, holding a file pointer to the container doesn't do squat.
-The groups that are held by the container empower the IOMMU backend,
-references to the container itself don't matter.  Those references will
-not maintain the IOMMU data.
- 
-> Recreating KVM-spapr-tce-table on every vfio-pci hotunplug (closing its fd
-> would "unset" container from KVM-spapr-tce-table) is not an option as there
-> still may be devices using this KVM-spapr-tce-table.
-> 
-> What obvious and nice solution am I missing here? Thanks.
-
-The interactions with the IOMMU backend that seem relevant are
-vfio_iommu_drivers_ops.{detach_group,release}.  The kvm-vfio pseudo
-device is also used to tell kvm about groups as they come and go and
-has a way to check extensions, and thus properties of the IOMMU
-backend.  All of these are available for your {ab}use.  Thanks,
-
-Alex
