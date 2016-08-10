@@ -1,28 +1,23 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8CT728HvzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:58:51 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id hh10so1803733pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 17:58:51 -0700 (PDT)
-Date: Wed, 10 Aug 2016 10:58:43 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Scott Wood
- <oss@buserror.net>, Alessio Igor Bogani <alessio.bogani@elettra.eu>, Paul
- Mackerras <paulus@samba.org>, Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v2 3/3] powerpc: Convert fsl_rstcr_restart to a reset
- handler
-Message-ID: <20160810105843.0941fecb@roar.ozlabs.ibm.com>
-In-Reply-To: <CAHQ1cqFCfS52zaGEPJU-KRTRc7rjnFmUQwQgZYms3jaaYb41bQ@mail.gmail.com>
-References: <1469747238-17432-1-git-send-email-andrew.smirnov@gmail.com>
- <1469747238-17432-3-git-send-email-andrew.smirnov@gmail.com>
- <20160801140351.49119867@roar.ozlabs.ibm.com>
- <CAHQ1cqFCfS52zaGEPJU-KRTRc7rjnFmUQwQgZYms3jaaYb41bQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8DN92Lq8zDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:39:36 +1000 (AEST)
+Date: Tue, 9 Aug 2016 18:39:29 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: 4.8.0-rc1: Invalid memory access at $SRR0: 0140f86c $SRR1:
+ 00003030
+In-Reply-To: <1470743530.3015.38.camel@kernel.crashing.org>
+Message-ID: <alpine.DEB.2.20.14.1608091834500.8131@trent.utfs.org>
+References: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
+ <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
+ <1470743530.3015.38.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +27,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 9 Aug 2016 11:47:37 -0700
-Andrey Smirnov <andrew.smirnov@gmail.com> wrote:
-
-> On Sun, Jul 31, 2016 at 9:03 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > On Thu, 28 Jul 2016 16:07:18 -0700
-> > Andrey Smirnov <andrew.smirnov@gmail.com> wrote:
-> >  
-> >> Convert fsl_rstcr_restart into a function to be registered with
-> >> register_reset_handler().
-> >>
-> >> Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
-> >> ---
-> >>
-> >> Changes since v1:
-> >>
-> >>       - fsl_rstcr_restart is registered as a reset handler in
-> >>           setup_rstcr, replacing per-board arch_initcall approach  
-> >
-> > Bear in mind I don't know much about the embedded or platform code!
-> >
-> > The documentation for reset notifiers says that they are expected
-> > to be registered from drivers, not arch code. That seems to only be
-> > intended to mean that the standard ISA or platform reset would
-> > normally be handled directly by the arch, whereas if you have an
-> > arch specific driver for a reset hardware that just happens to live
-> > under arch/, then fsl_rstcr_restart / mpc85xx_cds_restart would be
-> > valid use of reset notifier.  
+On Tue, 9 Aug 2016, Benjamin Herrenschmidt wrote:
+> On Tue, 2016-08-09 at 02:06 -0700, Christian Kujau wrote:
+> > On Mon, 8 Aug 2016, Christian Kujau wrote:
+> > > 
+> > > while trying to upgrade this PowerBook G4 from 4.7-rc7 to 4.8-rc1,
+> > > it's 
+> > > unable to boot the Yaboot (v1.3.16 from Debian/stable) boot loader:
 > 
-> Yeah, IMHO there's quite a bit of code in sysdev/ which in ideal world
-> would go into drivers/ and I think fsl_rstcr_restart is among it
-> (similar example on MIPS is drivers/power/reset/brcmstb-reboot.c).
-> 
-> >
-> > So this change seems reasonable to me. One small question:
-> >
-> >  
-> >> +static int mpc85xx_cds_restart_register(void)
-> >> +{
-> >> +     static struct notifier_block restart_handler;
-> >> +
-> >> +     restart_handler.notifier_call = mpc85xx_cds_restart;
-> >> +     restart_handler.priority = 192;  
-> >
-> > Should there be a header with #define's for these priorities?  
-> 
-> I don't have any strong preference either way, I do however think that
-> introducing such #define should go into a separate patch-set, since
-> you'd probably want to propagate that change across all of the users
-> of the API.
+> There should already be a fix for that:
+> http://patchwork.ozlabs.org/patch/654560/
 
-You're probably right. I was thinking because powerpc has not used it
-before we could use local defines, but it really does need a global
-location.
+2c0f99516f539 ("powerpc/32: Fix early access to cpu_spec relocation") is 
+in mainline, but my machine is still unable to boot, same error, different address:
 
-Thanks,
-Nick
+ > Invalid memory access at $SRR0: 0121686c $SRR1: 00003030 
+
+Happy to test more patches :-)
+
+Christian.
+
+> It should be in Michael's tree if not already in Linus.
+> 
+> Cheers,
+> Ben.
+> 
+> > > ================================================================
+> > > copying OF device tree...
+> > > Building dt strings...
+> > > Building dt stucture...
+> > > Device tree strings 0x01e72000 -> 0x01e73615
+> > > Device tree struct  0x01e74000 -> 0x01e7e000
+> > > Quiescing Open Firmware...
+> > > Bootng Linux via __start()...
+> > > 
+> > > Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
+> > > 
+> > > Apple PowerBook6,8 4.9.0f0 BootROM built on 01/10/05 at 10:39:14
+> > > [...]
+> > > 
+> > >  ok
+> > > 0:> _
+> > > ================================================================
+> > > 
+> > > Going back to 4.7-rc7 (w/o installing Yaboot again) works just
+> > > fine. The 
+> > > config is mostly the same (used "make oldconfig" from 4.7), but
+> > > I've said 
+> > > YES to CONFIG_SLAB_FREELIST_RANDOM - could this be causing the
+> > > boot 
+> > > failure? Full .config and screen shot: http://nerdbynature.de/bits/
+> > > 4.8.0-rc1/
+> > 
+> > A git-bisect led me to:
+> > 
+> > =========================================
+> > commit 9402c684613163888714df0955fa1f17142b08bf
+> > Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Date:   Tue Jul 5 15:03:41 2016 +1000
+> > 
+> >     powerpc: Factor do_feature_fixup calls
+> >     
+> >     32 and 64-bit do a similar set of calls early on, we move it all
+> > to
+> >     a single common function to make the boot code more readable.
+> >     
+> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > =========================================
+> > 
+> > But I'm unable to revert just this patch:
+> > 
+> > $ git revert 9402c684613163888714df0955fa1f17142b08bf
+> > error: could not revert 9402c68... powerpc: Factor do_feature_fixup
+> > calls
+> > hint: after resolving the conflicts, mark the corrected paths
+> > 
+> > The bisect-log:
+> > 
+> > =========================================
+> > $ git bisect log
+> > git bisect start '--' 'arch/powerpc'
+> > # good: [523d939ef98fd712632d93a5a2b588e477a7565e] Linux 4.7
+> > git bisect good 523d939ef98fd712632d93a5a2b588e477a7565e
+> > # bad: [29b4817d4018df78086157ea3a55c1d9424a7cfc] Linux 4.8-rc1
+> > git bisect bad 29b4817d4018df78086157ea3a55c1d9424a7cfc
+> > # bad: [3808a88985b4f5f5e947c364debce4441a380fb8] powerpc: Move FW
+> > feature probing out of pseries probe()
+> > git bisect bad 3808a88985b4f5f5e947c364debce4441a380fb8
+> > # good: [a203658b5ed37c11e5016d3fbbbab9ce018c1b78] powerpc/opal: Wake
+> > up kopald polling thread before waiting for events
+> > git bisect good a203658b5ed37c11e5016d3fbbbab9ce018c1b78
+> > # good: [0dfffb48cecd8f84c6e649baee9bacd9be925734] powerpc/powernv:
+> > abstraction for saving SPRs before entering deep idle states
+> > git bisect good 0dfffb48cecd8f84c6e649baee9bacd9be925734
+> > # good: [66c570f545e056babdd9510595ce762dcedadd71] powerpc/mm: use
+> > _raw variant of page table accessors
+> > git bisect good 66c570f545e056babdd9510595ce762dcedadd71
+> > # good: [c2ca9f6b4cc4c45eb598b24b8b06beee668052d5] powerpc/powernv:
+> > Fix pci-cxl.c build when CONFIG_MODULES=n
+> > git bisect good c2ca9f6b4cc4c45eb598b24b8b06beee668052d5
+> > # good: [4c91bd6eeabb004f283db8a6854b134e2a2de1bc] powerpc: Merge the
+> > RELOCATABLE config entries for ppc32 and ppc64
+> > git bisect good 4c91bd6eeabb004f283db8a6854b134e2a2de1bc
+> > # bad: [c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48] powerpc: Move 64-
+> > bit feature fixup earlier
+> > git bisect bad c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48
+> > # bad: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor
+> > do_feature_fixup calls
+> > git bisect bad 9402c684613163888714df0955fa1f17142b08bf
+> > # good: [27d1149667352772240655b65372a4294f992ea7] powerpc/32: Remove
+> > RELOCATABLE_PPC32
+> > git bisect good 27d1149667352772240655b65372a4294f992ea7
+> > # first bad commit: [9402c684613163888714df0955fa1f17142b08bf]
+> > powerpc: Factor do_feature_fixup calls
+> > =========================================
+> > 
+> > 
+> > HTH,
+> > Christian.
+> 
+
+-- 
+BOFH excuse #62:
+
+need to wrap system in aluminum foil to fix problem
