@@ -1,24 +1,52 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <hbathini@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8RJV1r2VzDqTm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 19:52:10 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
- linux-security-module@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
-Subject: Re: [PATCH 1/7] ima: on soft reboot, restore the measurement list
-In-Reply-To: <18857164.IzlezsQllh@hactar>
-References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
- <3544655.o5QPxko4Ba@hactar> <87r39xthnv.fsf@concordia.ellerman.id.au>
- <18857164.IzlezsQllh@hactar>
-Date: Wed, 10 Aug 2016 19:52:09 +1000
-Message-ID: <87vaz9rlx2.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8RbR4X7pzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 20:05:07 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3s8RbQ3nZJz9stc
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 20:05:06 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7AA4x1x038147
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 06:05:05 -0400
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [125.16.236.8])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9sx6bj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 06:05:04 -0400
+Received: from localhost
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Wed, 10 Aug 2016 15:35:01 +0530
+Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 114AB125804F
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 15:38:08 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7AA4w6238994092
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 15:34:58 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7AA4sG8025973
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 15:34:57 +0530
+Subject: [PATCH v3 0/2] powerpc/fadump: support memory range syntax for
+ fadump memory reservation
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, dyoung@redhat.com,
+ ebiederm@xmission.com, vgoyal@redhat.com,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, kexec@lists.infradead.org,
+ lkml <linux-kernel@vger.kernel.org>,
+ Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Date: Wed, 10 Aug 2016 15:34:51 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <147082324660.4631.6557186560310369015.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,63 +56,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+This patchset adds support to input system memory range based memory size
+for fadump reservation. The crashkernel parameter already supports such
+syntax. The first patch refactors the parsing code of crashkernel parameter
+for reuse. The second patch uses the newly refactored parsing code to reserve
+memory for fadump based on system memory size.
 
-> Am Mittwoch, 10 August 2016, 13:41:08 schrieb Michael Ellerman:
->> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
->> > Am Dienstag, 09 August 2016, 09:01:13 schrieb Mimi Zohar:
->> >> On Tue, 2016-08-09 at 20:59 +1000, Michael Ellerman wrote:
->> >> > Mimi Zohar <zohar@linux.vnet.ibm.com> writes: 
->> >> > > +/* Some details preceding the binary serialized measurement list
->> >> > > */
->> >> > > +struct ima_kexec_hdr {
->> >> > > +	unsigned short version;
->> >> > > +	unsigned long buffer_size;
->> >> > > +	unsigned long count;
->> >> > > +} __packed;
->> >> > > +
->> >> > 
->> >> > Am I understanding it correctly that this structure is passed between
->> >> > kernels?
->> >> 
->> >> Yes, the header prefixes the measurement list, which is being passed on
->> >> the same computer to the next kernel.  Could the architecture (eg.
->> >> LE/BE) change between soft re-boots?
->> > 
->> > Yes. I am able to boot a BE kernel from an LE kernel with my patches.
->> > Whether we want to support that or not is another question...
->> 
->> Yes you must support that. BE -> LE and vice versa.
->
-> I didn't test BE - LE yet, but will do.
+---
 
-Thanks.
+Hari Bathini (2):
+      kexec: refactor code parsing size based on memory range
+      powerpc/fadump: parse fadump reserve memory size based on memory range
 
->> You should also consider the possibility that the next kernel is not
->> Linux.
->
-> If the next kernel is an ELF binary and it supports the kexec "calling 
-> convention", it should work too. What could possibly go wrong? I can try 
-> FreeBSD (I suppose it's an ELF kernel) and see what happens.
 
-At least for old style kexec (not sys_kexec_load()) I don't think it
-even needs to be an ELF binary.
-
-I think there are folks working on FreeBSD (or $?BSD), so I think the
-basic kexec part works.
-
-There's nothing (yet) that wants to use this measurement list obviously,
-but it should be designed such that it could be used by an unknown
-future kernel that knows the ABI.
-
-So given what you have above, you'd use something like:
-
-struct ima_kexec_hdr {
-	u16 version;
-	u16 _reserved0;
-	u32 _reserved1;
-	u64 buffer_size;
-	u64 count;
-};
-
-cheers
+ arch/powerpc/kernel/fadump.c |   63 ++++++++++++++++++++++---
+ include/linux/kernel.h       |    5 ++
+ kernel/kexec_core.c          |   63 ++-----------------------
+ lib/cmdline.c                |  104 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 168 insertions(+), 67 deletions(-)
