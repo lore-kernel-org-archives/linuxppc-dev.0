@@ -1,23 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8W3m5QCzzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:41:24 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-In-Reply-To: <9902339.J95Mxqndi6@vostro.rjw.lan>
-References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20160804164711.GE10348@ubuntu> <87oa51tfgg.fsf@concordia.ellerman.id.au>
- <9902339.J95Mxqndi6@vostro.rjw.lan>
-Date: Wed, 10 Aug 2016 22:41:21 +1000
-Message-ID: <87mvkkssni.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8W9j1DY0zDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:46:33 +1000 (AEST)
+In-Reply-To: <1470650268-25085-1-git-send-email-fbarrat@linux.vnet.ibm.com>
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, imunsie@au1.ibm.com,
+ mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: cxl: Set psl_fir_cntl to production environment value
+Message-Id: <3s8W9j0RCmz9t1d@ozlabs.org>
+Date: Wed, 10 Aug 2016 22:46:32 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,11 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-> On Wednesday, August 10, 2016 02:28:47 PM Michael Ellerman wrote:
->> 
->> Who's merging this?
->
-> I am.
+On Mon, 2016-08-08 at 09:57:48 UTC, Frederic Barrat wrote:
+> Switch the setting of psl_fir_cntl from debug to production
+> environment recommended value. It mostly affects the PSL behavior when
+> an error is raised in psl_fir1/2.
+> 
+> Tested with cxlflash.
+> 
+> Signed-off-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Reviewed-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 
-Thanks!
+Applied to powerpc fixes, thanks.
+
+https://git.kernel.org/powerpc/c/c6d2ee09c2fffd3efdd31be2b2
+
+cheers
