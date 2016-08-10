@@ -1,55 +1,19 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8M452w9czDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:41:09 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7A6d4Ve027933
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 02:41:06 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9q6de5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 02:41:06 -0400
-Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 10 Aug 2016 16:41:03 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4162D3578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:41:01 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7A6f1cQ15335646
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:41:01 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
- by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7A6excM011898
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:41:00 +1000
-Date: Wed, 10 Aug 2016 12:10:56 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mel Gorman <mgorman@techsingularity.net>, linux-mm@kvack.org,
- Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
- <87mvkritii.fsf@concordia.ellerman.id.au>
- <20160805072838.GF11268@linux.vnet.ibm.com>
- <87h9azin4g.fsf@concordia.ellerman.id.au>
- <20160805100609.GP2799@techsingularity.net>
- <87d1lhtb3s.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8MKJ70JszDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:52:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: ptrace: tm_reclaim_current() in
+ flush_tmregs_to_thread()
+In-Reply-To: <20160810054446.5624-1-cyrilbur@gmail.com>
+References: <20160810054446.5624-1-cyrilbur@gmail.com>
+Date: Wed, 10 Aug 2016 16:52:36 +1000
+Message-ID: <87a8glt8sr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <87d1lhtb3s.fsf@concordia.ellerman.id.au>
-Message-Id: <20160810064056.GB24800@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,51 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> 
-> > Conceptually it would be cleaner, if expensive, to calculate the real
-> > memblock reserves if HASH_EARLY and ditch the dma_reserve, memory_reserve
-> > and nr_kernel_pages entirely.
-> 
-> Why is it expensive? memblock tracks the totals for all memory and
-> reserved memory AFAIK, so it should just be a case of subtracting one
-> from the other?
+Cyril Bur <cyrilbur@gmail.com> writes:
 
-Are you suggesting that we use something like
-memblock_phys_mem_size() but one which returns
-memblock.reserved.total_size ? Maybe a new function like
-memblock_reserved_mem_size()?
+> There was an assumption that flush_tmregs_to_thread() would only be
+> called for a task which is not current. And a warning could be shown
+> to indicate that current is being ptraced.
+>
+> In the event of a core dump the current threads state is needed. This
+> means that flush_tmregs_to_thread() must do its best to flush even for
+> current.
+>
+> This patch also moves flush_tmregs_to_thread() into ptrace.c as it is
+> only called from that file.
+>
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 
-> 
-> > Unfortuantely, aside from the calculation,
-> > there is a potential cost due to a smaller hash table that affects everyone,
-> > not just ppc64.
-> 
-> Yeah OK. We could make it an arch hook, or controlled by a CONFIG.
+I munged the change log a bunch:
 
-If its based on memblock.reserved.total_size, then should it be arch
-specific?
+  powerpc/ptrace: Fix coredump since ptrace TM changes
+  
+  Commit 8d460f6156cd ("powerpc/process: Add the function
+  flush_tmregs_to_thread") added flush_tmregs_to_thread() and included
+  the assumption that it would only be called for a task which is not
+  current.
+  
+  Although this is correct for ptrace, when generating a core dump, some
+  of the routines which call flush_tmregs_to_thread() are called. This
+  leads to a WARNing such as:
+  
+    Not expecting ptrace on self: TM regs may be incorrect
+    ------------[ cut here ]------------
+    WARNING: CPU: 123 PID: 7727 at arch/powerpc/kernel/process.c:1088 flush_tmregs_to_thread+0x78/0x80
+    CPU: 123 PID: 7727 Comm: libvirtd Not tainted 4.8.0-rc1-gcc6x-g61e8a0d #1
+    task: c000000fe631b600 task.stack: c000000fe63b0000
+    NIP: c00000000001a1a8 LR: c00000000001a1a4 CTR: c000000000717780
+    REGS: c000000fe63b3420 TRAP: 0700   Not tainted  (4.8.0-rc1-gcc6x-g61e8a0d)
+    MSR: 900000010282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 28004222  XER: 20000000
+    ...
+    NIP [c00000000001a1a8] flush_tmregs_to_thread+0x78/0x80
+    LR [c00000000001a1a4] flush_tmregs_to_thread+0x74/0x80
+    Call Trace:
+     flush_tmregs_to_thread+0x74/0x80 (unreliable)
+     vsr_get+0x64/0x1a0
+     elf_core_dump+0x604/0x1430
+     do_coredump+0x5fc/0x1200
+     get_signal+0x398/0x740
+     do_signal+0x54/0x2b0
+     do_notify_resume+0x98/0xb0
+     ret_from_except_lite+0x70/0x74
+  
+  So fix flush_tmregs_to_thread() to detect the case where it is called on
+  current, and a transaction is active, and in that case flush the TM regs
+  to the thread_struct.
+  
+  This patch also moves flush_tmregs_to_thread() into ptrace.c as it is
+  only called from that file.
+  
+  Fixes: 8d460f6156cd ("powerpc/process: Add the function flush_tmregs_to_thread")
+  Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+  [mpe: Flesh out change log]
+  Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> 
-> > However, if the hash table is meant to be sized on the
-> > number of available pages then it really should be based on that and not
-> > just a made-up number.
-> 
-> Yeah that seems to make sense.
-> 
-> The one complication I think is that we may have memory that's marked
-> reserved in memblock, but is later freed to the page allocator (eg.
-> initrd).
 
-Yes, this is a possibility, for example lets say we want fadump to
-continue to run instead of rebooting to a new kernel as it does today.
-
-> 
-> I'm not sure if that's actually a concern in practice given the relative
-> size of the initrd and memory on most systems. But possibly there are
-> other things that get reserved and then freed which could skew the hash
-> table size calculation.
-> 
-
--- 
-Thanks and Regards
-Srikar Dronamraju
+cheers
