@@ -1,28 +1,40 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8KfY5F91zDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 15:37:25 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id h186so2176106pfg.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 22:37:25 -0700 (PDT)
-Subject: Re: [PATCH kernel 14/15] vfio/spapr_tce: Export container API for
- external users
-To: Alex Williamson <alex.williamson@redhat.com>
-References: <1470213656-1042-1-git-send-email-aik@ozlabs.ru>
- <1470213656-1042-15-git-send-email-aik@ozlabs.ru>
- <20160808104315.77cf22ec@t450s.home>
- <f338a1d3-438a-9004-9645-87a16b9baf79@ozlabs.ru>
- <20160809061630.50ed5536@t450s.home>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, Paul Mackerras <paulus@samba.org>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <4d1ea52b-ecb5-5f9b-6cdc-00a73677cc2f@ozlabs.ru>
-Date: Wed, 10 Aug 2016 15:37:17 +1000
-MIME-Version: 1.0
-In-Reply-To: <20160809061630.50ed5536@t450s.home>
-Content-Type: text/plain; charset=koi8-r
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8Kqc4LYJzDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 15:45:16 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7A5cmDX020035
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 01:45:14 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9scrhj-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 01:45:14 -0400
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Wed, 10 Aug 2016 15:45:11 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 80C0C2BB005D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 15:45:09 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7A5j9w428770460
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 15:45:09 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7A5j9Jh013807
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 15:45:09 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: ptrace: tm_reclaim_current() in
+ flush_tmregs_to_thread()
+Date: Wed, 10 Aug 2016 15:44:46 +1000
+Message-Id: <20160810054446.5624-1-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,175 +44,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/16 22:16, Alex Williamson wrote:
-> On Tue, 9 Aug 2016 15:19:39 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> On 09/08/16 02:43, Alex Williamson wrote:
->>> On Wed,  3 Aug 2016 18:40:55 +1000
->>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>   
->>>> This exports helpers which are needed to keep a VFIO container in
->>>> memory while there are external users such as KVM.
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> ---
->>>>  drivers/vfio/vfio.c                 | 30 ++++++++++++++++++++++++++++++
->>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 16 +++++++++++++++-
->>>>  include/linux/vfio.h                |  6 ++++++
->>>>  3 files changed, 51 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
->>>> index d1d70e0..baf6a9c 100644
->>>> --- a/drivers/vfio/vfio.c
->>>> +++ b/drivers/vfio/vfio.c
->>>> @@ -1729,6 +1729,36 @@ long vfio_external_check_extension(struct vfio_group *group, unsigned long arg)
->>>>  EXPORT_SYMBOL_GPL(vfio_external_check_extension);
->>>>  
->>>>  /**
->>>> + * External user API for containers, exported by symbols to be linked
->>>> + * dynamically.
->>>> + *
->>>> + */
->>>> +struct vfio_container *vfio_container_get_ext(struct file *filep)
->>>> +{
->>>> +	struct vfio_container *container = filep->private_data;
->>>> +
->>>> +	if (filep->f_op != &vfio_fops)
->>>> +		return ERR_PTR(-EINVAL);
->>>> +
->>>> +	vfio_container_get(container);
->>>> +
->>>> +	return container;
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(vfio_container_get_ext);
->>>> +
->>>> +void vfio_container_put_ext(struct vfio_container *container)
->>>> +{
->>>> +	vfio_container_put(container);
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(vfio_container_put_ext);
->>>> +
->>>> +void *vfio_container_get_iommu_data_ext(struct vfio_container *container)
->>>> +{
->>>> +	return container->iommu_data;
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(vfio_container_get_iommu_data_ext);
->>>> +
->>>> +/**
->>>>   * Sub-module support
->>>>   */
->>>>  /*
->>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> index 3594ad3..fceea3d 100644
->>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> @@ -1331,6 +1331,21 @@ const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
->>>>  	.detach_group	= tce_iommu_detach_group,
->>>>  };
->>>>  
->>>> +struct iommu_table *vfio_container_spapr_tce_table_get_ext(void *iommu_data,
->>>> +		u64 offset)
->>>> +{
->>>> +	struct tce_container *container = iommu_data;
->>>> +	struct iommu_table *tbl = NULL;
->>>> +
->>>> +	if (tce_iommu_find_table(container, offset, &tbl) < 0)
->>>> +		return NULL;
->>>> +
->>>> +	iommu_table_get(tbl);
->>>> +
->>>> +	return tbl;
->>>> +}
->>>> +EXPORT_SYMBOL_GPL(vfio_container_spapr_tce_table_get_ext);
->>>> +
->>>>  static int __init tce_iommu_init(void)
->>>>  {
->>>>  	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
->>>> @@ -1348,4 +1363,3 @@ MODULE_VERSION(DRIVER_VERSION);
->>>>  MODULE_LICENSE("GPL v2");
->>>>  MODULE_AUTHOR(DRIVER_AUTHOR);
->>>>  MODULE_DESCRIPTION(DRIVER_DESC);
->>>> -
->>>> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
->>>> index 0ecae0b..1c2138a 100644
->>>> --- a/include/linux/vfio.h
->>>> +++ b/include/linux/vfio.h
->>>> @@ -91,6 +91,12 @@ extern void vfio_group_put_external_user(struct vfio_group *group);
->>>>  extern int vfio_external_user_iommu_id(struct vfio_group *group);
->>>>  extern long vfio_external_check_extension(struct vfio_group *group,
->>>>  					  unsigned long arg);
->>>> +extern struct vfio_container *vfio_container_get_ext(struct file *filep);
->>>> +extern void vfio_container_put_ext(struct vfio_container *container);
->>>> +extern void *vfio_container_get_iommu_data_ext(
->>>> +		struct vfio_container *container);
->>>> +extern struct iommu_table *vfio_container_spapr_tce_table_get_ext(
->>>> +		void *iommu_data, u64 offset);
->>>>  
->>>>  /*
->>>>   * Sub-module helpers  
->>>
->>>
->>> I think you need to take a closer look of the lifecycle of a container,
->>> having a reference means the container itself won't go away, but only
->>> having a group set within that container holds the actual IOMMU
->>> references.  container->iommu_data is going to be NULL once the
->>> groups are lost.  Thanks,  
->>
->>
->> Container owns the iommu tables and this is what I care about here, groups
->> attached or not - this is handled separately via IOMMU group list in a
->> specific iommu_table struct, these groups get detached from iommu_table
->> when they are removed from a container.
-> 
-> The container doesn't own anything, the container is privileged by the
-> groups being attached to it.  When groups are closed, they detach from
-> the container and once the container group list is empty the iommu
-> backend is released and iommu_data is NULL.  A container reference
-> doesn't give you what you're looking for.  It implies nothing about the
-> iommu backend.
+There was an assumption that flush_tmregs_to_thread() would only be
+called for a task which is not current. And a warning could be shown
+to indicate that current is being ptraced.
 
+In the event of a core dump the current threads state is needed. This
+means that flush_tmregs_to_thread() must do its best to flush even for
+current.
 
-Well. Backend is a part of a container and since a backend owns tables, a
-container owns them too.
+This patch also moves flush_tmregs_to_thread() into ptrace.c as it is
+only called from that file.
 
-The problem I am trying to solve here is when KVM may release the
-iommu_table objects.
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+---
+ arch/powerpc/include/asm/switch_to.h |  8 --------
+ arch/powerpc/kernel/process.c        | 20 --------------------
+ arch/powerpc/kernel/ptrace.c         | 19 +++++++++++++++++++
+ 3 files changed, 19 insertions(+), 28 deletions(-)
 
-"Set" ioctl() to KVM-spapr-tce-table (or KVM itself, does not really
-matter) makes a link between KVM-spapr-tce-table and container and KVM can
-start using tables (with referencing them).
-
-First I tried adding an "unset" ioctl to KVM-spapr-tce-table, called it
-from region_del() and this works if QEMU removes a window. However if QEMU
-removes a vfio-pci device, region_del() is not called and KVM does not get
-notified that it can release the iommu_table's because the
-KVM-spapr-tce-table remains alive and does not get destroyed (as it is
-still used by emulated devices or other containers).
-
-So it was suggested that we could do such "unset" somehow later assuming,
-for example, on every "set" I could check if some of currently attached
-containers are no more used - and this is where being able to know if there
-is no backend helps - KVM remembers a container pointer and can check this
-via vfio_container_get_iommu_data_ext().
-
-The other option would be changing vfio_container_get_ext() to take a
-callback+opaque which container would call when it destroys iommu_data.
-This looks more intrusive and not very intuitive how to make it right -
-container would have to keep track of all registered external users and
-vfio_container_put_ext() would have to pass the same callback+opaque to
-unregister the exact external user.
-
-
-Or I could store container file* in KVM. Then iommu_data would never be
-released until KVM-spapr-tce-table is destroyed.
-
-Recreating KVM-spapr-tce-table on every vfio-pci hotunplug (closing its fd
-would "unset" container from KVM-spapr-tce-table) is not an option as there
-still may be devices using this KVM-spapr-tce-table.
-
-What obvious and nice solution am I missing here? Thanks.
-
-
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 0a74ebe..17c8380 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -75,14 +75,6 @@ static inline void disable_kernel_spe(void)
+ static inline void __giveup_spe(struct task_struct *t) { }
+ #endif
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-extern void flush_tmregs_to_thread(struct task_struct *);
+-#else
+-static inline void flush_tmregs_to_thread(struct task_struct *t)
+-{
+-}
+-#endif
+-
+ static inline void clear_task_ebb(struct task_struct *t)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 58ccf86..9ee2623 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1074,26 +1074,6 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ #endif
+ }
+ 
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-void flush_tmregs_to_thread(struct task_struct *tsk)
+-{
+-	/*
+-	 * Process self tracing is not yet supported through
+-	 * ptrace interface. Ptrace generic code should have
+-	 * prevented this from happening in the first place.
+-	 * Warn once here with the message, if some how it
+-	 * is attempted.
+-	 */
+-	WARN_ONCE(tsk == current,
+-		"Not expecting ptrace on self: TM regs may be incorrect\n");
+-
+-	/*
+-	 * If task is not current, it should have been flushed
+-	 * already to it's thread_struct during __switch_to().
+-	 */
+-}
+-#endif
+-
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+ {
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 4f3c575..bf91658 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -38,6 +38,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/switch_to.h>
++#include <asm/tm.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/syscalls.h>
+@@ -118,6 +119,24 @@ static const struct pt_regs_offset regoffset_table[] = {
+ 	REG_OFFSET_END,
+ };
+ 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++static void flush_tmregs_to_thread(struct task_struct *tsk)
++{
++	/*
++	 * If task is not current, it will have been flushed already to
++	 * it's thread_struct during __switch_to().
++	 *
++	 * A reclaim flushes ALL the state.
++	 */
++
++	if (tsk == current && MSR_TM_SUSPENDED(mfmsr()))
++		tm_reclaim_current(TM_CAUSE_SIGNAL);
++
++}
++#else
++static inline void flush_tmregs_to_thread(struct task_struct *tsk) { }
++#endif
++
+ /**
+  * regs_query_register_offset() - query register offset from its name
+  * @name:	the name of a register
 -- 
-Alexey
+2.9.2
