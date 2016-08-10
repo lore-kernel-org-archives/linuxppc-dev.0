@@ -1,25 +1,46 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8XHR09xLzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 23:36:34 +1000 (AEST)
-Date: Wed, 10 Aug 2016 15:36:21 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Denys Vlasenko <dvlasenk@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Florian Weimer <fweimer@redhat.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] powerpc: Do not make the entire heap executable
-Message-ID: <20160810133621.GA30167@redhat.com>
-References: <20160810130030.5268-1-dvlasenk@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8Xg90RMRzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 23:53:40 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7ADncYn092694
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:53:38 -0400
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9qqnm5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:53:37 -0400
+Received: from localhost
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Wed, 10 Aug 2016 10:53:36 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id B89FB1DC0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:53:24 -0400 (EDT)
+Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7ADrXWf13697336
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:53:33 -0300
+Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
+ by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7ADrW5q030178
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:53:33 -0300
+Subject: Re: [PATCH v2 1/2] powerpc: add refcount to struct pci_controller
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1470789844-16401-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1470789844-16401-2-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Wed, 10 Aug 2016 10:53:30 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160810130030.5268-1-dvlasenk@redhat.com>
+In-Reply-To: <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <3106d6ec-96b3-1fdd-5384-4f133f2df559@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +50,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10, Denys Vlasenko wrote:
->
-> Currently, to support 32-bit binaries with PLT in BSS kernel maps *entire
-> brk area* with executable rights for all binaries, even --secure-plt ones.
->
-> Stop doing that.
+On 08/09/2016 10:45 PM, Andrew Donnellan wrote:
+> I'm currently working on a cxl defect found by an IBM test team where we
+> run into this - will review this patch more thoroughly and test it shortly.
 
-Can't really review this patch, but at least the change in mm/mmap.c looks
-technically correct to me... One nit below, feel free to ignore.
+Gavin provided a review/suggestions via chat, pointing to rely on the
+refcount that already exists in the PCI subsystem (not reinvent another)
+and leverage the release of the PCI root bus -- which is much simpler!
 
-> @@ -2668,7 +2668,7 @@ static int do_brk(unsigned long addr, unsigned long request)
->  	if (!len)
->  		return 0;
->
-> -	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
-> +	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+He replied there should be no problems w/ the EEH reset path (PCI root
+bus not released) nor w/ other structs w/ refs to the PHB (PCI DN, EEH
+PE, EEH DEV).
 
-OK. But note that we have
+I'll go down that path for a PATCH v3.
 
-	mlock_future_check(mm->def_flags);
-
-a few lines below and after this change this _looks_ wrong because
-VM_LOCKED can come from the new "flags" argument passed to do_brk().
-Nobody does this right now, still this looks wrong/confusing.
-
-I'd suggest to add another change
-
-	-	mlock_future_check(mm->def_flags);
-	+	mlock_future_check(flags);
-
-or add a sanity check at the start to deny VM_LOCKED and perhaps
-something else...
-
-The same for vm_brk_flags() which after your change does
-
-	do_brk_flags(flags);
-	populate = (mm->def_flags & VM_LOCKED);
-
-again, this is just a nit, I do not think it will be ever called
-with VM_LOCKED in "flags".
-
-Oleg.
+-- 
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
