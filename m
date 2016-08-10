@@ -1,28 +1,46 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ludovic.desroches@atmel.com>
+Received: from email.microchip.com (exsmtp03.microchip.com [198.175.253.49])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8LCw0FDRzDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:02:52 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mel Gorman <mgorman@techsingularity.net>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
- Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
-In-Reply-To: <20160805100609.GP2799@techsingularity.net>
-References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
- <87mvkritii.fsf@concordia.ellerman.id.au>
- <20160805072838.GF11268@linux.vnet.ibm.com>
- <87h9azin4g.fsf@concordia.ellerman.id.au>
- <20160805100609.GP2799@techsingularity.net>
-Date: Wed, 10 Aug 2016 16:02:47 +1000
-Message-ID: <87d1lhtb3s.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8LgP2QC6zDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:23:12 +1000 (AEST)
+Date: Wed, 10 Aug 2016 08:17:15 +0200
+From: Ludovic Desroches <ludovic.desroches@atmel.com>
+To: Wolfram Sang <wsa-dev@sang-engineering.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-i2c@vger.kernel.org>, Jean Delvare
+ <jdelvare@suse.com>, Wolfram Sang <wsa@the-dreams.de>, Ludovic Desroches
+ <ludovic.desroches@atmel.com>, Ray Jui <rjui@broadcom.com>, Scott Branden
+ <sbranden@broadcom.com>, Jon Mason <jonmason@broadcom.com>,
+ <bcm-kernel-feedback-list@broadcom.com>, Florian Fainelli
+ <f.fainelli@gmail.com>, Sonic Zhang <sonic.zhang@analog.com>, Brian Norris
+ <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>,
+ "Michal Simek" <michal.simek@xilinx.com>, =?iso-8859-1?Q?S=F6ren?= Brinkmann
+ <soren.brinkmann@xilinx.com>, Jochen Friedrich <jochen@scram.de>, Sekhar Nori
+ <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Guenter Roeck
+ <linux@roeck-us.net>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
+ <kernel@pengutronix.de>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski
+ <k.kozlowski@samsung.com>, Seth Heasley <seth.heasley@intel.com>, Neil Horman
+ <nhorman@tuxdriver.com>, Joachim Eastwood <manabian@gmail.com>, Carlo Caione
+ <carlo@caione.org>, Alessandro Rubini <rubini@unipv.it>, Linus Walleij
+ <linus.walleij@linaro.org>, Peter Korsgaard <jacmet@sunsite.dk>, "Tony
+ Lindgren" <tony@atomide.com>, Vladimir Zapolskiy <vz@mleia.com>, "Sylvain
+ Lemieux" <slemieux.tyco@gmail.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ "Heiko Stuebner" <heiko@sntech.de>, Barry Song <baohua@kernel.org>, Patrice
+ Chotard <patrice.chotard@st.com>, Laxman Dewangan <ldewangan@nvidia.com>,
+ "Thierry Reding" <thierry.reding@gmail.com>, Alexandre Courbot
+ <gnurou@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Tony
+ Prisk <linux@prisktech.co.nz>, <linux-arm-kernel@lists.infradead.org>,
+ <adi-buildroot-devel@lists.sourceforge.net>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-samsung-soc@vger.kernel.org>, <linux-amlogic@lists.infradead.org>,
+ <linux-omap@vger.kernel.org>, <linux-rockchip@lists.infradead.org>,
+ <kernel@stlinux.com>, <linux-tegra@vger.kernel.org>
+Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
+Message-ID: <20160810061715.GH12809@odux.rfo.atmel.com>
+References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
+ <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,60 +50,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mel Gorman <mgorman@techsingularity.net> writes:
+On Tue, Aug 09, 2016 at 01:36:17PM +0200, Wolfram Sang wrote:
+> The core will do this for us now.
+> 
+> Signed-off-by: Wolfram Sang <wsa-dev@sang-engineering.com>
+> ---
 
-> On Fri, Aug 05, 2016 at 07:25:03PM +1000, Michael Ellerman wrote:
->> > One way to do that would be to walk through the different memory
->> > reserved blocks and calculate the size. But Mel feels thats an
->> > overhead (from his reply to the other thread) esp for just one use
->> > case.
->> 
->> OK. I think you're referring to this:
->> 
->>   If fadump is reserving memory and alloc_large_system_hash(HASH_EARLY)
->>   does not know about then then would an arch-specific callback for
->>   arch_reserved_kernel_pages() be more appropriate?
->>   ...
->>   
->>   That approach would limit the impact to ppc64 and would be less costly than
->>   doing a memblock walk instead of using nr_kernel_pages for everyone else.
->> 
->> That sounds more robust to me than this solution.
->
-> It would be the fastest with the least impact but not necessarily the
-> best. Ultimately that dma_reserve/memory_reserve is used for the sizing
-> calculation of the large system hashes but only the e820 map and fadump
-> is taken into account. That's a bit filthy even if it happens to work out ok.
+[...]
 
-Right.
+>  drivers/i2c/busses/i2c-at91.c           | 2 --
 
-> Conceptually it would be cleaner, if expensive, to calculate the real
-> memblock reserves if HASH_EARLY and ditch the dma_reserve, memory_reserve
-> and nr_kernel_pages entirely.
+Acked-by: Ludovic Desroches <ludovic.desroches@atmel.com>
 
-Why is it expensive? memblock tracks the totals for all memory and
-reserved memory AFAIK, so it should just be a case of subtracting one
-from the other?
+[...]
 
-> Unfortuantely, aside from the calculation,
-> there is a potential cost due to a smaller hash table that affects everyone,
-> not just ppc64.
-
-Yeah OK. We could make it an arch hook, or controlled by a CONFIG.
-
-> However, if the hash table is meant to be sized on the
-> number of available pages then it really should be based on that and not
-> just a made-up number.
-
-Yeah that seems to make sense.
-
-The one complication I think is that we may have memory that's marked
-reserved in memblock, but is later freed to the page allocator (eg.
-initrd).
-
-I'm not sure if that's actually a concern in practice given the relative
-size of the initrd and memory on most systems. But possibly there are
-other things that get reserved and then freed which could skew the hash
-table size calculation.
-
-cheers
+> diff --git a/drivers/i2c/busses/i2c-at91.c b/drivers/i2c/busses/i2c-at91.c
+> index f23372669f770f..03a519d29616d7 100644
+> --- a/drivers/i2c/busses/i2c-at91.c
+> +++ b/drivers/i2c/busses/i2c-at91.c
+> @@ -1118,8 +1118,6 @@ static int at91_twi_probe(struct platform_device *pdev)
+>  
+>  	rc = i2c_add_numbered_adapter(&dev->adapter);
+>  	if (rc) {
+> -		dev_err(dev->dev, "Adapter %s registration failed\n",
+> -			dev->adapter.name);
+>  		clk_disable_unprepare(dev->clk);
+>  
+>  		pm_runtime_disable(dev->dev);
