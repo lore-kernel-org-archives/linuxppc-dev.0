@@ -1,23 +1,24 @@
-Return-Path: <paubert@iram.es>
-Received: from marchena.puc.rediris.es (marchena.puc.rediris.es
- [IPv6:2001:720:418:ca00::4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8RDd37mXzDqTm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 19:48:49 +1000 (AEST)
-Date: Wed, 10 Aug 2016 10:56:05 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/32: Remove one insn in __bswapdi2
-Message-ID: <20160810085605.GB2117@visitor2.iram.es>
-References: <20160805112803.36D3B1A2399@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8RJV1r2VzDqTm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 19:52:10 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+ linux-security-module@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
+Subject: Re: [PATCH 1/7] ima: on soft reboot, restore the measurement list
+In-Reply-To: <18857164.IzlezsQllh@hactar>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <3544655.o5QPxko4Ba@hactar> <87r39xthnv.fsf@concordia.ellerman.id.au>
+ <18857164.IzlezsQllh@hactar>
+Date: Wed, 10 Aug 2016 19:52:09 +1000
+Message-ID: <87vaz9rlx2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20160805112803.36D3B1A2399@localhost.localdomain>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 05, 2016 at 01:28:02PM +0200, Christophe Leroy wrote:
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/kernel/misc_32.S | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-> index e025230..e18055c 100644
-> --- a/arch/powerpc/kernel/misc_32.S
-> +++ b/arch/powerpc/kernel/misc_32.S
-> @@ -578,9 +578,8 @@ _GLOBAL(__bswapdi2)
->  	rlwimi  r9,r4,24,0,7
->  	rlwimi  r10,r3,24,0,7
->  	rlwimi  r9,r4,24,16,23
-> -	rlwimi  r10,r3,24,16,23
-> +	rlwimi  r4,r3,24,16,23
->  	mr      r3,r9
-> -	mr      r4,r10
->  	blr
->  
+Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
 
-Hmmm, are you sure that it works? rlwimi is a bit special since the
-first operand is both an input and an output of the instruction.
+> Am Mittwoch, 10 August 2016, 13:41:08 schrieb Michael Ellerman:
+>> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+>> > Am Dienstag, 09 August 2016, 09:01:13 schrieb Mimi Zohar:
+>> >> On Tue, 2016-08-09 at 20:59 +1000, Michael Ellerman wrote:
+>> >> > Mimi Zohar <zohar@linux.vnet.ibm.com> writes: 
+>> >> > > +/* Some details preceding the binary serialized measurement list
+>> >> > > */
+>> >> > > +struct ima_kexec_hdr {
+>> >> > > +	unsigned short version;
+>> >> > > +	unsigned long buffer_size;
+>> >> > > +	unsigned long count;
+>> >> > > +} __packed;
+>> >> > > +
+>> >> > 
+>> >> > Am I understanding it correctly that this structure is passed between
+>> >> > kernels?
+>> >> 
+>> >> Yes, the header prefixes the measurement list, which is being passed on
+>> >> the same computer to the next kernel.  Could the architecture (eg.
+>> >> LE/BE) change between soft re-boots?
+>> > 
+>> > Yes. I am able to boot a BE kernel from an LE kernel with my patches.
+>> > Whether we want to support that or not is another question...
+>> 
+>> Yes you must support that. BE -> LE and vice versa.
+>
+> I didn't test BE - LE yet, but will do.
 
+Thanks.
 
-In other words, did you test the code?
+>> You should also consider the possibility that the next kernel is not
+>> Linux.
+>
+> If the next kernel is an ELF binary and it supports the kexec "calling 
+> convention", it should work too. What could possibly go wrong? I can try 
+> FreeBSD (I suppose it's an ELF kernel) and see what happens.
 
-    Gabriel
+At least for old style kexec (not sys_kexec_load()) I don't think it
+even needs to be an ELF binary.
+
+I think there are folks working on FreeBSD (or $?BSD), so I think the
+basic kexec part works.
+
+There's nothing (yet) that wants to use this measurement list obviously,
+but it should be designed such that it could be used by an unknown
+future kernel that knows the ABI.
+
+So given what you have above, you'd use something like:
+
+struct ima_kexec_hdr {
+	u16 version;
+	u16 _reserved0;
+	u32 _reserved1;
+	u64 buffer_size;
+	u64 count;
+};
+
+cheers
