@@ -1,17 +1,28 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8MKJ70JszDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:52:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8MRT4bqzzDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 16:57:57 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: ptrace: tm_reclaim_current() in
- flush_tmregs_to_thread()
-In-Reply-To: <20160810054446.5624-1-cyrilbur@gmail.com>
-References: <20160810054446.5624-1-cyrilbur@gmail.com>
-Date: Wed, 10 Aug 2016 16:52:36 +1000
-Message-ID: <87a8glt8sr.fsf@concordia.ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Mel Gorman <mgorman@techsingularity.net>, linux-mm@kvack.org,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
+In-Reply-To: <20160810064056.GB24800@linux.vnet.ibm.com>
+References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <87mvkritii.fsf@concordia.ellerman.id.au>
+ <20160805072838.GF11268@linux.vnet.ibm.com>
+ <87h9azin4g.fsf@concordia.ellerman.id.au>
+ <20160805100609.GP2799@techsingularity.net>
+ <87d1lhtb3s.fsf@concordia.ellerman.id.au>
+ <20160810064056.GB24800@linux.vnet.ibm.com>
+Date: Wed, 10 Aug 2016 16:57:57 +1000
+Message-ID: <877fbpt8ju.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,66 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cyril Bur <cyrilbur@gmail.com> writes:
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
 
-> There was an assumption that flush_tmregs_to_thread() would only be
-> called for a task which is not current. And a warning could be shown
-> to indicate that current is being ptraced.
+>> 
+>> > Conceptually it would be cleaner, if expensive, to calculate the real
+>> > memblock reserves if HASH_EARLY and ditch the dma_reserve, memory_reserve
+>> > and nr_kernel_pages entirely.
+>> 
+>> Why is it expensive? memblock tracks the totals for all memory and
+>> reserved memory AFAIK, so it should just be a case of subtracting one
+>> from the other?
 >
-> In the event of a core dump the current threads state is needed. This
-> means that flush_tmregs_to_thread() must do its best to flush even for
-> current.
+> Are you suggesting that we use something like
+> memblock_phys_mem_size() but one which returns
+> memblock.reserved.total_size ? Maybe a new function like
+> memblock_reserved_mem_size()?
+
+Yeah, something like that. I'm not sure if it actually needs a function,
+AFAIK you can just look at the structure directly.
+
+>> > Unfortuantely, aside from the calculation,
+>> > there is a potential cost due to a smaller hash table that affects everyone,
+>> > not just ppc64.
+>> 
+>> Yeah OK. We could make it an arch hook, or controlled by a CONFIG.
 >
-> This patch also moves flush_tmregs_to_thread() into ptrace.c as it is
-> only called from that file.
+> If its based on memblock.reserved.total_size, then should it be arch
+> specific?
+
+Yes I think so. Otherwise you have to test it on every architecture :)
+
+>> > However, if the hash table is meant to be sized on the
+>> > number of available pages then it really should be based on that and not
+>> > just a made-up number.
+>> 
+>> Yeah that seems to make sense.
+>> 
+>> The one complication I think is that we may have memory that's marked
+>> reserved in memblock, but is later freed to the page allocator (eg.
+>> initrd).
 >
-> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> Yes, this is a possibility, for example lets say we want fadump to
+> continue to run instead of rebooting to a new kernel as it does today.
 
-I munged the change log a bunch:
+But that's a bad idea and no one should ever do it.
 
-  powerpc/ptrace: Fix coredump since ptrace TM changes
-  
-  Commit 8d460f6156cd ("powerpc/process: Add the function
-  flush_tmregs_to_thread") added flush_tmregs_to_thread() and included
-  the assumption that it would only be called for a task which is not
-  current.
-  
-  Although this is correct for ptrace, when generating a core dump, some
-  of the routines which call flush_tmregs_to_thread() are called. This
-  leads to a WARNing such as:
-  
-    Not expecting ptrace on self: TM regs may be incorrect
-    ------------[ cut here ]------------
-    WARNING: CPU: 123 PID: 7727 at arch/powerpc/kernel/process.c:1088 flush_tmregs_to_thread+0x78/0x80
-    CPU: 123 PID: 7727 Comm: libvirtd Not tainted 4.8.0-rc1-gcc6x-g61e8a0d #1
-    task: c000000fe631b600 task.stack: c000000fe63b0000
-    NIP: c00000000001a1a8 LR: c00000000001a1a4 CTR: c000000000717780
-    REGS: c000000fe63b3420 TRAP: 0700   Not tainted  (4.8.0-rc1-gcc6x-g61e8a0d)
-    MSR: 900000010282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 28004222  XER: 20000000
-    ...
-    NIP [c00000000001a1a8] flush_tmregs_to_thread+0x78/0x80
-    LR [c00000000001a1a4] flush_tmregs_to_thread+0x74/0x80
-    Call Trace:
-     flush_tmregs_to_thread+0x74/0x80 (unreliable)
-     vsr_get+0x64/0x1a0
-     elf_core_dump+0x604/0x1430
-     do_coredump+0x5fc/0x1200
-     get_signal+0x398/0x740
-     do_signal+0x54/0x2b0
-     do_notify_resume+0x98/0xb0
-     ret_from_except_lite+0x70/0x74
-  
-  So fix flush_tmregs_to_thread() to detect the case where it is called on
-  current, and a transaction is active, and in that case flush the TM regs
-  to the thread_struct.
-  
-  This patch also moves flush_tmregs_to_thread() into ptrace.c as it is
-  only called from that file.
-  
-  Fixes: 8d460f6156cd ("powerpc/process: Add the function flush_tmregs_to_thread")
-  Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-  [mpe: Flesh out change log]
-  Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
+For starters all your caches will be undersized, and anything that is
+allocated per-node early in boot will not be allocated on the nodes
+which were reserved, so the system's performance will potentially differ
+from a normal boot in weird and unpredictable ways.
 
 cheers
