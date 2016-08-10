@@ -1,23 +1,45 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8DN92Lq8zDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:39:36 +1000 (AEST)
-Date: Tue, 9 Aug 2016 18:39:29 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: 4.8.0-rc1: Invalid memory access at $SRR0: 0140f86c $SRR1:
- 00003030
-In-Reply-To: <1470743530.3015.38.camel@kernel.crashing.org>
-Message-ID: <alpine.DEB.2.20.14.1608091834500.8131@trent.utfs.org>
-References: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
- <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
- <1470743530.3015.38.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8DW80JMQzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:45:39 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7A1hibJ007168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Aug 2016 21:45:37 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9s62v0-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Aug 2016 21:45:37 -0400
+Received: from localhost
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 10 Aug 2016 11:45:35 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9E04B2CE8057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:45:29 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7A1jTHJ31653934
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:45:29 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7A1jSqv024286
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:45:29 +1000
+Subject: Re: [PATCH v2 1/2] powerpc: add refcount to struct pci_controller
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1470789844-16401-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1470789844-16401-2-git-send-email-mauricfo@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 10 Aug 2016 11:45:27 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1470789844-16401-2-git-send-email-mauricfo@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,128 +49,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 9 Aug 2016, Benjamin Herrenschmidt wrote:
-> On Tue, 2016-08-09 at 02:06 -0700, Christian Kujau wrote:
-> > On Mon, 8 Aug 2016, Christian Kujau wrote:
-> > > 
-> > > while trying to upgrade this PowerBook G4 from 4.7-rc7 to 4.8-rc1,
-> > > it's 
-> > > unable to boot the Yaboot (v1.3.16 from Debian/stable) boot loader:
-> 
-> There should already be a fix for that:
-> http://patchwork.ozlabs.org/patch/654560/
+On 10/08/16 10:44, Mauricio Faria de Oliveira wrote:
+> This commit introduces the 'refcount' field in struct pci_controller,
+> along with the corresponding functions 'controller_(get|put|free)()'.
+>
+> The functions 'pcibios_(alloc|free)_controller()' are modified to use
+> that in a backwards compatible manner. (i.e., kfree(phb) is performed
+> when pcibios_free_controller() is called.)
+>
+> So, this patch adds the infrastructure with no functional differences
+> to current users of pcibios_(alloc|free)_controller().  Notably, only
+> the pseries platform calls pcibios_free_controller() for some purpose
+> other than to release the pci_controller in case of errors just after
+> the call to pcibios_alloc_controller() (i.e., 'goto error' scenarios).
 
-2c0f99516f539 ("powerpc/32: Fix early access to cpu_spec relocation") is 
-in mainline, but my machine is still unable to boot, same error, different address:
+cxl's vPHB API also uses pcibios_free_controller() (which is why we 
+export the symbol, as it's called from within the cxl module). When we 
+remove/shutdown the underlying cxl device, we remove all the devices 
+sitting on the vPHB and then free the vPHB.
 
- > Invalid memory access at $SRR0: 0121686c $SRR1: 00003030 
+I'm currently working on a cxl defect found by an IBM test team where we 
+run into this - will review this patch more thoroughly and test it shortly.
 
-Happy to test more patches :-)
 
-Christian.
-
-> It should be in Michael's tree if not already in Linus.
-> 
-> Cheers,
-> Ben.
-> 
-> > > ================================================================
-> > > copying OF device tree...
-> > > Building dt strings...
-> > > Building dt stucture...
-> > > Device tree strings 0x01e72000 -> 0x01e73615
-> > > Device tree struct  0x01e74000 -> 0x01e7e000
-> > > Quiescing Open Firmware...
-> > > Bootng Linux via __start()...
-> > > 
-> > > Invalid memory access at $SRR0: 0140f86c  $SRR1: 00003030
-> > > 
-> > > Apple PowerBook6,8 4.9.0f0 BootROM built on 01/10/05 at 10:39:14
-> > > [...]
-> > > 
-> > >  ok
-> > > 0:> _
-> > > ================================================================
-> > > 
-> > > Going back to 4.7-rc7 (w/o installing Yaboot again) works just
-> > > fine. The 
-> > > config is mostly the same (used "make oldconfig" from 4.7), but
-> > > I've said 
-> > > YES to CONFIG_SLAB_FREELIST_RANDOM - could this be causing the
-> > > boot 
-> > > failure? Full .config and screen shot: http://nerdbynature.de/bits/
-> > > 4.8.0-rc1/
-> > 
-> > A git-bisect led me to:
-> > 
-> > =========================================
-> > commit 9402c684613163888714df0955fa1f17142b08bf
-> > Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Date:   Tue Jul 5 15:03:41 2016 +1000
-> > 
-> >     powerpc: Factor do_feature_fixup calls
-> >     
-> >     32 and 64-bit do a similar set of calls early on, we move it all
-> > to
-> >     a single common function to make the boot code more readable.
-> >     
-> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > =========================================
-> > 
-> > But I'm unable to revert just this patch:
-> > 
-> > $ git revert 9402c684613163888714df0955fa1f17142b08bf
-> > error: could not revert 9402c68... powerpc: Factor do_feature_fixup
-> > calls
-> > hint: after resolving the conflicts, mark the corrected paths
-> > 
-> > The bisect-log:
-> > 
-> > =========================================
-> > $ git bisect log
-> > git bisect start '--' 'arch/powerpc'
-> > # good: [523d939ef98fd712632d93a5a2b588e477a7565e] Linux 4.7
-> > git bisect good 523d939ef98fd712632d93a5a2b588e477a7565e
-> > # bad: [29b4817d4018df78086157ea3a55c1d9424a7cfc] Linux 4.8-rc1
-> > git bisect bad 29b4817d4018df78086157ea3a55c1d9424a7cfc
-> > # bad: [3808a88985b4f5f5e947c364debce4441a380fb8] powerpc: Move FW
-> > feature probing out of pseries probe()
-> > git bisect bad 3808a88985b4f5f5e947c364debce4441a380fb8
-> > # good: [a203658b5ed37c11e5016d3fbbbab9ce018c1b78] powerpc/opal: Wake
-> > up kopald polling thread before waiting for events
-> > git bisect good a203658b5ed37c11e5016d3fbbbab9ce018c1b78
-> > # good: [0dfffb48cecd8f84c6e649baee9bacd9be925734] powerpc/powernv:
-> > abstraction for saving SPRs before entering deep idle states
-> > git bisect good 0dfffb48cecd8f84c6e649baee9bacd9be925734
-> > # good: [66c570f545e056babdd9510595ce762dcedadd71] powerpc/mm: use
-> > _raw variant of page table accessors
-> > git bisect good 66c570f545e056babdd9510595ce762dcedadd71
-> > # good: [c2ca9f6b4cc4c45eb598b24b8b06beee668052d5] powerpc/powernv:
-> > Fix pci-cxl.c build when CONFIG_MODULES=n
-> > git bisect good c2ca9f6b4cc4c45eb598b24b8b06beee668052d5
-> > # good: [4c91bd6eeabb004f283db8a6854b134e2a2de1bc] powerpc: Merge the
-> > RELOCATABLE config entries for ppc32 and ppc64
-> > git bisect good 4c91bd6eeabb004f283db8a6854b134e2a2de1bc
-> > # bad: [c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48] powerpc: Move 64-
-> > bit feature fixup earlier
-> > git bisect bad c4bd6cb87c9e28a7d9f4a97db5a06cc538eb5e48
-> > # bad: [9402c684613163888714df0955fa1f17142b08bf] powerpc: Factor
-> > do_feature_fixup calls
-> > git bisect bad 9402c684613163888714df0955fa1f17142b08bf
-> > # good: [27d1149667352772240655b65372a4294f992ea7] powerpc/32: Remove
-> > RELOCATABLE_PPC32
-> > git bisect good 27d1149667352772240655b65372a4294f992ea7
-> > # first bad commit: [9402c684613163888714df0955fa1f17142b08bf]
-> > powerpc: Factor do_feature_fixup calls
-> > =========================================
-> > 
-> > 
-> > HTH,
-> > Christian.
-> 
+Andrew
 
 -- 
-BOFH excuse #62:
-
-need to wrap system in aluminum foil to fix problem
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
