@@ -1,46 +1,29 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <petkan@mip-labs.com>
+Received: from zztop.nucleusys.com (lan.nucleusys.com [92.247.61.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8Xg90RMRzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 23:53:40 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7ADncYn092694
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:53:38 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9qqnm5-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:53:37 -0400
-Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Wed, 10 Aug 2016 10:53:36 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id B89FB1DC0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:53:24 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7ADrXWf13697336
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:53:33 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7ADrW5q030178
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:53:33 -0300
-Subject: Re: [PATCH v2 1/2] powerpc: add refcount to struct pci_controller
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8YXf50ndzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 00:33:06 +1000 (AEST)
+Date: Wed, 10 Aug 2016 17:32:30 +0300
+From: Petko Manolov <petkan@mip-labs.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ima-devel@lists.sourceforge.net,
+ linux-security-module@vger.kernel.org,
+ Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
-References: <1470789844-16401-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <1470789844-16401-2-git-send-email-mauricfo@linux.vnet.ibm.com>
- <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Date: Wed, 10 Aug 2016 10:53:30 -0300
+Subject: Re: [Linux-ima-devel] [PATCH 1/7] ima: on soft reboot, restore the
+ measurement list
+Message-ID: <20160810143230.GD4087@localhost>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <3544655.o5QPxko4Ba@hactar>
+ <87r39xthnv.fsf@concordia.ellerman.id.au>
+ <18857164.IzlezsQllh@hactar>
+ <87vaz9rlx2.fsf@concordia.ellerman.id.au>
+ <1470833676.2881.183.camel@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Message-Id: <3106d6ec-96b3-1fdd-5384-4f133f2df559@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1470833676.2881.183.camel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,20 +33,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2016 10:45 PM, Andrew Donnellan wrote:
-> I'm currently working on a cxl defect found by an IBM test team where we
-> run into this - will review this patch more thoroughly and test it shortly.
+On 16-08-10 08:54:36, Mimi Zohar wrote:
+> On Wed, 2016-08-10 at 19:52 +1000, Michael Ellerman wrote:
+> > Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> > 
+> > > Am Mittwoch, 10 August 2016, 13:41:08 schrieb Michael Ellerman:
+> > >> Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com> writes:
+> > >> > Am Dienstag, 09 August 2016, 09:01:13 schrieb Mimi Zohar:
+> > >> >> On Tue, 2016-08-09 at 20:59 +1000, Michael Ellerman wrote:
+> > >> >> > Mimi Zohar <zohar@linux.vnet.ibm.com> writes: 
+> > >> >> > > +/* Some details preceding the binary serialized measurement list
+> > >> >> > > */
+> > >> >> > > +struct ima_kexec_hdr {
+> > >> >> > > +	unsigned short version;
+> > >> >> > > +	unsigned long buffer_size;
+> > >> >> > > +	unsigned long count;
+> > >> >> > > +} __packed;
+> > >> >> > > +
+> > >> >> > 
+> > >> >> > Am I understanding it correctly that this structure is passed between
+> > >> >> > kernels?
+> > >> >> 
+> > >> >> Yes, the header prefixes the measurement list, which is being passed on
+> > >> >> the same computer to the next kernel.  Could the architecture (eg.
+> > >> >> LE/BE) change between soft re-boots?
+> > >> > 
+> > >> > Yes. I am able to boot a BE kernel from an LE kernel with my patches.
+> > >> > Whether we want to support that or not is another question...
+> > >> 
+> > >> Yes you must support that. BE -> LE and vice versa.
+> > >
+> > > I didn't test BE - LE yet, but will do.
+> > 
+> > Thanks.
+> 
+> Ok. There have been requests for making the binary_runtime_measurements
+> architecture independent.  As this was not a network facing interface,
+> we left it in native format.  With the kernel now consuming this data,
+> it makes sense for the binary_runtime_measurements to be in an
+> architecture independent format.
+> 
+> Unfortunately, as the <securityfs>/ima/binary_runtime_measurements is
+> not prefixed with any metadata, this change would need to be Kconfig
+> based, but kexec would always use the architecture independent format.
+> 
+> > >> You should also consider the possibility that the next kernel is not
+> > >> Linux.
+> 
+> Oh!
+> 
+> > > If the next kernel is an ELF binary and it supports the kexec "calling 
+> > > convention", it should work too. What could possibly go wrong? I can try 
+> > > FreeBSD (I suppose it's an ELF kernel) and see what happens.
+> > 
+> > At least for old style kexec (not sys_kexec_load()) I don't think it
+> > even needs to be an ELF binary.
+> > 
+> > I think there are folks working on FreeBSD (or $?BSD), so I think the
+> > basic kexec part works.
+> > 
+> > There's nothing (yet) that wants to use this measurement list obviously,
+> > but it should be designed such that it could be used by an unknown
+> > future kernel that knows the ABI.
+> > 
+> > So given what you have above, you'd use something like:
+> > 
+> > struct ima_kexec_hdr {
+> > 	u16 version;
+> > 	u16 _reserved0;
+> > 	u32 _reserved1;
+> > 	u64 buffer_size;
+> > 	u64 count;
+> > };
+> > 
+> > cheers
+> 
+> Thanks, I'll make this change.
 
-Gavin provided a review/suggestions via chat, pointing to rely on the
-refcount that already exists in the PCI subsystem (not reinvent another)
-and leverage the release of the PCI root bus -- which is much simpler!
+I would suggest:
 
-He replied there should be no problems w/ the EEH reset path (PCI root
-bus not released) nor w/ other structs w/ refs to the PHB (PCI DN, EEH
-PE, EEH DEV).
+struct ima_kexec_hdr {
+	u64 buffer_size;
+	u64 count;
+	u16 version;
+};
 
-I'll go down that path for a PATCH v3.
+and let the compiler add the proper padding, depending on the architecture.  On 
+32bit machine we'll have 4 bytes smaller allocations (compared to 64bit) while 
+retaining the same functionality.
 
--- 
-Mauricio Faria de Oliveira
-IBM Linux Technology Center
+
+cheers,
+Petko
