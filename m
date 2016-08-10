@@ -1,25 +1,55 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <k.kozlowski@samsung.com>
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8PCv0j05zDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 18:18:02 +1000 (AEST)
-Date: Wed, 10 Aug 2016 01:17:55 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: Fix crash during static key init on ppc32
-In-Reply-To: <1470814054.3015.98.camel@kernel.crashing.org>
-Message-ID: <alpine.DEB.2.20.14.1608100113430.8131@trent.utfs.org>
-References: <alpine.DEB.2.20.14.1608082213450.8131@trent.utfs.org>
- <alpine.DEB.2.20.14.1608090157090.8131@trent.utfs.org>
- <1470743530.3015.38.camel@kernel.crashing.org>
- <87inv9te2n.fsf@concordia.ellerman.id.au>
- <alpine.DEB.2.20.14.1608092224220.8131@trent.utfs.org>
- <874m6tt8d0.fsf@concordia.ellerman.id.au>
- <1470814054.3015.98.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8PX921hqzDqRR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 18:32:08 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout4.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0OBO00GVJQDFL180@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 10 Aug 2016 09:32:03 +0100 (BST)
+Subject: Re: [PATCH] i2c: don't print error when adding adapter fails
+To: Wolfram Sang <wsa-dev@sang-engineering.com>, linux-kernel@vger.kernel.org
+References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
+ <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
+Cc: linux-i2c@vger.kernel.org, Jean Delvare <jdelvare@suse.com>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Ludovic Desroches <ludovic.desroches@atmel.com>, Ray Jui <rjui@broadcom.com>,
+ Scott Branden <sbranden@broadcom.com>, Jon Mason <jonmason@broadcom.com>,
+ bcm-kernel-feedback-list@broadcom.com,
+ Florian Fainelli <f.fainelli@gmail.com>, Sonic Zhang <sonic.zhang@analog.com>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Gregory Fong <gregory.0xf0@gmail.com>, Michal Simek <michal.simek@xilinx.com>,
+ =?UTF-8?Q?S=c3=b6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ Jochen Friedrich <jochen@scram.de>, Sekhar Nori <nsekhar@ti.com>,
+ Kevin Hilman <khilman@kernel.org>, Guenter Roeck <linux@roeck-us.net>,
+ =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <kernel@pengutronix.de>,
+ Kukjin Kim <kgene@kernel.org>, Seth Heasley <seth.heasley@intel.com>,
+ Neil Horman <nhorman@tuxdriver.com>, Joachim Eastwood <manabian@gmail.com>,
+ Carlo Caione <carlo@caione.org>, Alessandro Rubini <rubini@unipv.it>,
+ Linus Walleij <linus.walleij@linaro.org>, Peter Korsgaard <jacmet@sunsite.dk>,
+ Tony Lindgren <tony@atomide.com>, Vladimir Zapolskiy <vz@mleia.com>,
+ Sylvain Lemieux <slemieux.tyco@gmail.com>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Heiko Stuebner <heiko@sntech.de>, Barry Song <baohua@kernel.org>,
+ Patrice Chotard <patrice.chotard@st.com>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Alexandre Courbot <gnurou@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-samsung-soc@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-omap@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ kernel@stlinux.com, linux-tegra@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Message-id: <35fd8f31-2fa1-7220-8ed9-13bad638fe6f@samsung.com>
+Date: Wed, 10 Aug 2016 10:32:00 +0200
+MIME-version: 1.0
+In-reply-to: <1470742581-12971-2-git-send-email-wsa-dev@sang-engineering.com>
+Content-type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,85 +59,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 10 Aug 2016, Benjamin Herrenschmidt wrote:
-> We cannot do those initializations from apply_feature_fixups() as
-> this function runs in a very restricted environment in 32-bit where
-> the kernel isn't running at its linked address and the PTRRELOC()
-> macro must be used for any global accesss.
+On 08/09/2016 01:36 PM, Wolfram Sang wrote:
+> The core will do this for us now.
 > 
-> Instead, split them into a separtate steup_feature_keys() function
-> which is called in a more suitable spot on ppc32.
-
-Wow, cool. With that applied (on top of mainline from some minutes ago), 
-this PowerPC G4 boots again. Thanks!
-
-  Tested-by: Christian Kujau <lists@nerdbynature.de>
-
-@Michael: thanks for the git-bisect tutorial, although I'm glad that I was 
-able to skip it this time.
-
-Christian.
-
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Wolfram Sang <wsa-dev@sang-engineering.com>
 > ---
-> 
-> diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-> index 57fec8a..ddf54f5 100644
-> --- a/arch/powerpc/include/asm/feature-fixups.h
-> +++ b/arch/powerpc/include/asm/feature-fixups.h
-> @@ -186,6 +186,7 @@ label##3:					       	\
->  
->  #ifndef __ASSEMBLY__
->  void apply_feature_fixups(void);
-> +void setup_feature_keys(void);
->  #endif
->  
->  #endif /* __ASM_POWERPC_FEATURE_FIXUPS_H */
-> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> index c3e861d..9a2ae96 100644
-> --- a/arch/powerpc/kernel/setup_32.c
-> +++ b/arch/powerpc/kernel/setup_32.c
-> @@ -102,6 +102,9 @@ extern unsigned int memset_nocache_branch; /* Insn to be replaced by NOP */
->  
->  notrace void __init machine_init(u64 dt_ptr)
->  {
-> +	/* Configure static keys first */
-> +	setup_feature_keys();
-> +
->  	/* Enable early debugging if any specified (see udbg.h) */
->  	udbg_early_init();
->  
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index eafb9a7..7ac8e6e 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -300,6 +300,7 @@ void __init early_setup(unsigned long dt_ptr)
->  
->  	/* Apply all the dynamic patching */
->  	apply_feature_fixups();
-> +	setup_feature_keys();
->  
->  	/* Initialize the hash table or TLB handling */
->  	early_init_mmu();
-> diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-> index 74145f0..043415f 100644
-> --- a/arch/powerpc/lib/feature-fixups.c
-> +++ b/arch/powerpc/lib/feature-fixups.c
-> @@ -188,7 +188,10 @@ void __init apply_feature_fixups(void)
->  			  &__start___fw_ftr_fixup, &__stop___fw_ftr_fixup);
->  #endif
->  	do_final_fixups();
-> +}
->  
-> +void __init setup_feature_keys(void)
-> +{
->  	/*
->  	 * Initialise jump label. This causes all the cpu/mmu_has_feature()
->  	 * checks to take on their correct polarity based on the current set of
-> 
 
--- 
-BOFH excuse #135:
+(...)
 
-You put the disk in upside down.
+>  drivers/i2c/busses/i2c-exynos5.c        | 4 +---
+>  drivers/i2c/busses/i2c-s3c2410.c        | 1 -
+
+For Exynos and S3C2410:
+Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+Best regards,
+Krzysztof
