@@ -1,19 +1,46 @@
-Return-Path: <sojkam1@fel.cvut.cz>
-Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 3s8VC76Z9nzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:02:43 +1000 (AEST)
-From: Michal Sojka <sojkam1@fel.cvut.cz>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: MPC5200 does not boot
-In-Reply-To: <1470116323.12584.11.camel@kernel.crashing.org>
-References: <874m74w1m7.fsf@steelpick.2x.cz>
- <1470116323.12584.11.camel@kernel.crashing.org>
-Date: Wed, 10 Aug 2016 12:52:57 +0200
-Message-ID: <87twesq4ja.fsf@steelpick.2x.cz>
+Return-Path: <mauricfo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8VDh6l4XzDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:04:04 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7ABwS9F010861
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 08:04:02 -0400
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9rthf3-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 08:04:02 -0400
+Received: from localhost
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
+ Wed, 10 Aug 2016 09:03:59 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 8E6C83520068
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 08:03:36 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7AC3uJd5189688
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:03:56 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ u7AC3uAu027559
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 09:03:56 -0300
+Subject: Re: [PATCH v2 1/2] powerpc: add refcount to struct pci_controller
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+References: <1470789844-16401-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <1470789844-16401-2-git-send-email-mauricfo@linux.vnet.ibm.com>
+ <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Date: Wed, 10 Aug 2016 09:03:52 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <5c42993e-208e-34a5-0d5e-48d9df86fa49@au1.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Message-Id: <d1fd4576-8011-45b5-0bf8-0b1045e932db@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,90 +50,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-
-my MPC5200 still does not boot even with the fix bellow applied. I dug a
-bit into it and now it seems that commit
-309b315b6ec686ce050758cc4e29f6ad1125a83f is to blame.
-
-commit 309b315b6ec686ce050758cc4e29f6ad1125a83f
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Sat Jul 23 14:42:38 2016 +0530
-
-    powerpc: Call jump_label_init() in apply_feature_fixups()
-=20=20=20=20
-    Call jump_label_init() early so that we can use static keys for CPU and
-    MMU feature checks.
-=20=20=20=20
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-The following summarizes the situation from my point of view:
-
-1) My system does not boot with 9402c684613163888714df0955fa1f17142b08bf
-   "powerpc: Factor do_feature_fixup calls"
-
-2) When the fix bellow is applied on top of
-   9402c684613163888714df0955fa1f17142b08bf my system boots.
-
-3) My system does not boot 2c0f99516f53911c3f2f81ab3815841e3408f11e
-   which is the mainline commit containing the fix below.
-
-4) I bisected the commits between
-   9402c684613163888714df0955fa1f17142b08bf and
-   2c0f99516f53911c3f2f81ab3815841e3408f11e with manually applying the
-   fix bellow and 309b315b6ec686ce050758cc4e29f6ad1125a83f was the first
-   bad commit that didn't boot.
-
-Let me know if you need more information.
-
-Thanks.
--Michal
-
-On Tue, Aug 02 2016, Benjamin Herrenschmidt wrote:
-> On Tue, 2016-08-02 at 00:44 +0200, Michal Sojka wrote:
->> Hi Benjamin,
->>=20
->> the following commit causes my MPC5200 not to boot.
->>=20
->> =C2=A0=C2=A0=C2=A0=C2=A0commit 9402c684613163888714df0955fa1f17142b08bf
->> =C2=A0=C2=A0=C2=A0=C2=A0Author: Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org>
->> =C2=A0=C2=A0=C2=A0=C2=A0Date:=C2=A0=C2=A0=C2=A0Tue Jul 5 15:03:41 2016 +=
-1000
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc: Factor do_featu=
-re_fixup calls
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A032 and 64-bit do a simil=
-ar set of calls early on, we move it
->> all to
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0a single common function=
- to make the boot code more readable.
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Benjamin =
-Herrenschmidt <benh@kernel.crashing.o
->> rg>
->> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Michael E=
-llerman <mpe@ellerman.id.au>
->>=20
->> I suspect that the cause will be similar as described in commit
->> 1cd03890ea64795e53f17a94928cca22495acb2a. Unfortunately, I don't have
->> much time to debug this, but I can easily test patches.
+On 08/09/2016 10:45 PM, Andrew Donnellan wrote:
+>> [snip] Notably, only
+>> the pseries platform calls pcibios_free_controller() for some purpose
+>> other than to release the pci_controller in case of errors just after
+>> the call to pcibios_alloc_controller() (i.e., 'goto error' scenarios).
 >
-> Does this fixes it for you ?
->
-> diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature=
--fixups.c
-> index defb299..fd36e13 100644
-> --- a/arch/powerpc/lib/feature-fixups.c
-> +++ b/arch/powerpc/lib/feature-fixups.c
-> @@ -154,7 +154,7 @@ static void do_final_fixups(void)
->=20=20
->  void apply_feature_fixups(void)
->  {
-> -	struct cpu_spec *spec =3D *PTRRELOC(&cur_cpu_spec);
-> +	struct cpu_spec *spec =3D PTRRELOC(*PTRRELOC(&cur_cpu_spec));
->=20=20
->  	/*
->  	 * Apply the CPU-specific and firmware specific fixups to kernel text
+> cxl's vPHB API also uses pcibios_free_controller() [snip]
+
+Cool. I see I missed this report line from grep; thanks. I was mostly
+biased at arch/powerpc/ and driver/pci/ these days.
+
+> I'm currently working on a cxl defect found by an IBM test team where we
+> run into this - will review this patch more thoroughly and test it shortly.
+
+That's great; thanks!
+
+-- 
+Mauricio Faria de Oliveira
+IBM Linux Technology Center
