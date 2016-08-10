@@ -1,40 +1,33 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8Ygl754fzDq5f
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 00:39:15 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7AEW54Y124855
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:39:13 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9u9qma-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 10:39:13 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 10 Aug 2016 08:39:12 -0600
-Subject: Re: [PATCH 0/4] powerpc/mm: movable hotplug memory nodes
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Reza Arbab <arbab@linux.vnet.ibm.com>,
- Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Jonathan Corbet <corbet@lwn.net>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
- <87shucsypn.fsf@concordia.ellerman.id.au>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 10 Aug 2016 09:39:05 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8YlJ0xhhzDq5f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 00:42:20 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Petko Manolov' <petkan@mip-labs.com>, Mimi Zohar
+ <zohar@linux.vnet.ibm.com>
+CC: "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Thiago Jung
+ Bauermann" <bauerman@linux.vnet.ibm.com>,
+ "linux-security-module@vger.kernel.org"
+ <linux-security-module@vger.kernel.org>,
+ "linux-ima-devel@lists.sourceforge.net"
+ <linux-ima-devel@lists.sourceforge.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [Linux-ima-devel] [PATCH 1/7] ima: on soft reboot, restore the
+ measurement list
+Date: Wed, 10 Aug 2016 14:40:13 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F50F2BB@AcuExch.aculab.com>
+References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
+ <3544655.o5QPxko4Ba@hactar> <87r39xthnv.fsf@concordia.ellerman.id.au>
+ <18857164.IzlezsQllh@hactar> <87vaz9rlx2.fsf@concordia.ellerman.id.au>
+ <1470833676.2881.183.camel@linux.vnet.ibm.com>
+ <20160810143230.GD4087@localhost>
+In-Reply-To: <20160810143230.GD4087@localhost>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-In-Reply-To: <87shucsypn.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <76b4ef23-be57-8138-8117-77531750539e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,19 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2016 05:30 AM, Michael Ellerman wrote:
-> Reza Arbab <arbab@linux.vnet.ibm.com> writes:
-> 
->> These changes enable onlining memory into ZONE_MOVABLE on power, and the
->> creation of discrete nodes of movable memory.
->>
->> Node hotplug is not supported on power [1].
-> 
-> But maybe it should be?
-> 
-Yes, it should be supported.
+From: Linuxppc-dev [mailto:linuxppc-dev-bounces+david.laight=3Daculab.com@l=
+ists.ozlabs.org] On Behalf Of
+> > > So given what you have above, you'd use something like:
+> > >
+> > > struct ima_kexec_hdr {
+> > > 	u16 version;
+> > > 	u16 _reserved0;
+> > > 	u32 _reserved1;
+> > > 	u64 buffer_size;
+> > > 	u64 count;
+> > > };
+> > >
+> > > cheers
+> >
+> > Thanks, I'll make this change.
+>=20
+> I would suggest:
+>=20
+> struct ima_kexec_hdr {
+> 	u64 buffer_size;
+> 	u64 count;
+> 	u16 version;
+> };
+>=20
+> and let the compiler add the proper padding, depending on the architectur=
+e.  On
+> 32bit machine we'll have 4 bytes smaller allocations (compared to 64bit) =
+while
+> retaining the same functionality.
 
-I have briefly looked into this recently only to find
-this will not be a simple update.
+AAAArrrrgggg.....
 
--Nathan 
+That doesn't work for 32bit applications on 64bit hosts.
+The extra bytes will make 0 difference to the allocation cost and
+lots to the processing.
+
+	David
