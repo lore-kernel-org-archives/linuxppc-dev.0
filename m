@@ -1,19 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8W9k1xFYzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:46:34 +1000 (AEST)
-In-Reply-To: <20160802080705.69A9F1A2394@localhost.localdomain>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8W9l0HYFzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:46:35 +1000 (AEST)
+In-Reply-To: <1467957343.2874.21.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: antoine.blangy@c-s.fr, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [v2] powerpc/32: fix csum_partial_copy_generic()
-Message-Id: <3s8W9k03Pwz9t1m@ozlabs.org>
-Date: Wed, 10 Aug 2016 22:46:33 +1000 (AEST)
+Subject: Re: [v2] powerpc/pnv/pci: Fix incorrect PE reservation attempt on
+ some 64-bit BARs
+Message-Id: <3s8W9k6ZtJz9t23@ozlabs.org>
+Date: Wed, 10 Aug 2016 22:46:34 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2016-02-08 at 08:07:05 UTC, Christophe Leroy wrote:
-> commit 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic()
-> based on copy_tofrom_user()") introduced a bug when destination
-> address is odd and initial csum is not null
+On Fri, 2016-08-07 at 05:55:43 UTC, Benjamin Herrenschmidt wrote:
+> The generic allocation code may sometimes decide to assign a prefetchable
+> 64-bit BAR to the M32 window. In fact it may also decide to allocate
+> a 64-bit non-prefetchable BAR to the M64 one ! So using the resource
+> flags as a test to decide which window was used for PE allocation is
+> just wrong and leads to insane PE numbers.
 > 
-> In that (rare) case the initial csum value has to be rotated one byte
-> as well as the resulting value is
+> Instead, compare the addresses to figure it out.
 > 
-> This patch also fixes related comments
-> 
-> Fixes: 7aef4136566b0 ("powerpc32: rewrite csum_partial_copy_generic() based on copy_tofrom_user()")
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/1bc8b816cb8058c31f61fe7844
+https://git.kernel.org/powerpc/c/5958d19a143eb229e9ece20bd4
 
 cheers
