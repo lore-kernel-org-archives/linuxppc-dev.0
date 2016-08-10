@@ -1,37 +1,40 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
+Return-Path: <arbab@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8f7F1Lf9zDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 03:59:53 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8dtV5vxSzDqJ5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 03:48:50 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 3s8f7D33bVz9sRB
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2016 03:59:52 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7AHdNJv122621
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 13:48:48 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9t1vsx-1
+ u7AHrp0F138901
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 13:59:50 -0400
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9tjagw-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 13:48:48 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Aug 2016 13:59:50 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 10 Aug 2016 11:48:48 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1F8AE1FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 11:48:27 -0600 (MDT)
-Subject: Re: [PATCH V3 4/8] pseries/hotplug init: Convert new DRC memory
- property for hotplug runtime
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <43c1648a-ee12-6725-cce6-b2e66d0ec57c@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 10 Aug 2016 12:48:44 -0500
+ for <linuxppc-dev@ozlabs.org> from <arbab@linux.vnet.ibm.com>;
+ Wed, 10 Aug 2016 13:59:48 -0400
+Date: Wed, 10 Aug 2016 12:59:40 -0500
+From: Reza Arbab <arbab@linux.vnet.ibm.com>
+To: Mel Gorman <mgorman@techsingularity.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Paul Mackerras <paulus@ozlabs.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: mm: Initialise per_cpu_nodestats for all online pgdats at boot
+References: <20160804092404.GI2799@techsingularity.net>
 MIME-Version: 1.0
-In-Reply-To: <43c1648a-ee12-6725-cce6-b2e66d0ec57c@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <a8002c92-110c-90b9-e17c-c164797d4ee4@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <20160804092404.GI2799@techsingularity.net>
+Message-Id: <20160810175940.GA12039@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,174 +44,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/01/2016 07:42 PM, Michael Bringmann wrote:
-> hotplug_init: Simplify the code needed for runtime memory hotplug and
-> maintenance with a conversion routine that transforms the compressed
-> property "ibm,dynamic-memory-v2" to the form of "ibm,dynamic-memory"
-> within the "ibm,dynamic-reconfiguration-memory" property.  Thus only
-> a single set of routines should be required at runtime to parse, edit,
-> and manipulate the memory representation in the device tree.  Similarly,
-> any userspace applications that need this information will only need
-> to recognize the older format to be able to continue to operate.
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 2ce1385..0c46fbc 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -24,6 +24,8 @@
->  #include <asm/sparsemem.h>
->  #include "pseries.h"
->  
-> +#ifdef CONFIG_MEMORY_HOTPLUG
-> +
->  static bool rtas_hp_event;
->  
->  unsigned long pseries_memory_block_size(void)
-> @@ -887,11 +889,105 @@ static int pseries_memory_notifier(struct notifier_block *nb,
->  static struct notifier_block pseries_mem_nb = {
->  	.notifier_call = pseries_memory_notifier,
->  };
-> +#endif /* CONFIG_MEMORY_HOTPLUG */
-> +
-> +static int pseries_rewrite_dynamic_memory_v2(void)
-> +{
-> +	unsigned long memblock_size;
-> +	struct device_node *dn;
-> +	struct property *prop, *prop_v2;
-> +	__be32 *p;
-> +	struct of_drconf_cell *lmbs;
-> +	u32 num_lmb_desc_sets, num_lmbs;
-> +	int i;
-> +
-> +	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-> +	if (!dn)
-> +		return -EINVAL;
-> +
-> +	prop_v2 = of_find_property(dn, "ibm,dynamic-memory-v2", NULL);
-> +	if (!prop_v2)
-> +		return -EINVAL;
-> +
-> +	memblock_size = pseries_memory_block_size();
-> +	if (!memblock_size)
-> +		return -EINVAL;
-> +
-> +	/* The first int of the property is the number of lmb sets
-> +	 * described by the property.
-> +	 */
-> +	p = (__be32 *)prop_v2->value;
-> +	num_lmb_desc_sets = be32_to_cpu(*p++);
-> +
-> +	/* Count the number of LMBs for generating the alternate format
-> +	 */
-> +	for (i = 0, num_lmbs = 0; i < num_lmb_desc_sets; i++) {
-> +		struct of_drconf_cell_v2 drmem;
-> +
-> +		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-> +		num_lmbs += drmem.num_seq_lmbs;
-> +	}
-> +
-> +	/* Create an empty copy of the new 'ibm,dynamic-memory' property
-> +	 */
-> +	{
-> +		prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-> +		if (!prop)
-> +			return -ENOMEM;
-> +		prop->name = kstrdup("ibm,dynamic-memory", GFP_KERNEL);
-> +		prop->length = dyn_mem_v2_len(num_lmbs);
+On Thu, Aug 04, 2016 at 10:24:04AM +0100, Mel Gorman wrote:
+>[    1.713998] Unable to handle kernel paging request for data at address 0xff7a10000
+>[    1.714164] Faulting instruction address: 0xc000000000270cd0
+>[    1.714304] Oops: Kernel access of bad area, sig: 11 [#1]
+>[    1.714414] SMP NR_CPUS=2048 NUMA PowerNV
+>[    1.714530] Modules linked in:
+>[    1.714647] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.7.0-kvm+ #118
+>[    1.714786] task: c000000ff0680010 task.stack: c000000ff0704000
+>[    1.714926] NIP: c000000000270cd0 LR: c000000000270ce8 CTR: 0000000000000000
+>[    1.715093] REGS: c000000ff0707900 TRAP: 0300   Not tainted  (4.7.0-kvm+)
+>[    1.715232] MSR: 9000000102009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 846b6824  XER: 20000000
+>[    1.715748] CFAR: c000000000008768 DAR: 0000000ff7a10000 DSISR: 42000000 SOFTE: 1
+>GPR00: c000000000270d08 c000000ff0707b80 c0000000011fb200 0000000000000000
+>GPR04: 0000000000000800 0000000000000000 0000000000000000 0000000000000000
+>GPR08: ffffffffffffffff 0000000000000000 0000000ff7a10000 c00000000122aae0
+>GPR12: c000000000a1e440 c00000000fb80000 c00000000000c188 0000000000000000
+>GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000000cecad0
+>GPR24: c000000000d035b8 c000000000d6cd18 c000000000d6cd18 c000001fffa86300
+>GPR28: 0000000000000000 c000001fffa96300 c000000001230034 c00000000122eb18
+>[    1.717484] NIP [c000000000270cd0] refresh_zone_stat_thresholds+0x80/0x240
+>[    1.717568] LR [c000000000270ce8] refresh_zone_stat_thresholds+0x98/0x240
+>[    1.717648] Call Trace:
+>[    1.717687] [c000000ff0707b80] [c000000000270d08] refresh_zone_stat_thresholds+0xb8/0x240 (unreliable)
 
-Why use a routine to compute the v2 len for v1 property?
+I've been investigating node hotplug. That path is also going to require 
+initialization of per_cpu_nodestats. This worked for me:
 
-> +		prop->value = kzalloc(prop->length, GFP_KERNEL);
-> +	}
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 3894b65..41266dc 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1219,6 +1219,7 @@ static pg_data_t __ref *hotadd_new_pgdat(int nid, u64 start)
+  
+  	/* init node's zones as empty zones, we don't have any present pages.*/
+  	free_area_init_node(nid, zones_size, start_pfn, zholes_size);
++	pgdat->per_cpu_nodestats = alloc_percpu(struct per_cpu_nodestat);
+  
+  	/*
+  	 * The node we allocated has no zone fallback lists. For avoiding
+@@ -1249,6 +1250,7 @@ static pg_data_t __ref *hotadd_new_pgdat(int nid, u64 start)
+  static void rollback_node_hotadd(int nid, pg_data_t *pgdat)
+  {
+  	arch_refresh_nodedata(nid, NULL);
++	free_percpu(pgdat->per_cpu_nodestats);
+  	arch_free_nodedata(pgdat);
+  	return;
+  }
 
-Also, why is this in its own block?
-
-> +
-> +	/* Copy/expand the ibm,dynamic-memory-v2 format to produce the
-> +	 * ibm,dynamic-memory format.
-> +	 */
-> +	p = (__be32 *)prop->value;
-> +	*p = cpu_to_be32(num_lmbs);
-> +	p++;
-> +	lmbs = (struct of_drconf_cell *)p;
-> +
-> +	p = (__be32 *)prop_v2->value;
-> +	p++;
-> +
-> +	for (i = 0; i < num_lmb_desc_sets; i++) {
-> +		struct of_drconf_cell_v2 drmem;
-> +		int j, k = 0;
-
-Won't this reset k every time through the loop?
-
-This version of the patch look just like the V2 patch, was
-anything changed?
-
--Nathan
-> +
-> +		read_drconf_cell_v2(&drmem, (const __be32 **)&p);
-> +
-> +		for (j = 0; j < drmem.num_seq_lmbs; j++) {
-> +			lmbs[k+j].base_addr = be64_to_cpu(drmem.base_addr);
-> +			lmbs[k+j].drc_index = be32_to_cpu(drmem.drc_index);
-> +			lmbs[k+j].reserved  = 0;
-> +			lmbs[k+j].aa_index  = be32_to_cpu(drmem.aa_index);
-> +			lmbs[k+i].flags     = be32_to_cpu(drmem.flags);
-> +
-> +			drmem.base_addr += memblock_size;
-> +			drmem.drc_index++;
-> +		}
-> +
-> +		k += drmem.num_seq_lmbs;
-> +	}
-> +
-> +	of_remove_property(dn, prop_v2);
-> +
-> +	of_add_property(dn, prop);
-> +
-> +	/* And disable feature flag since the property has gone away */
-> +	powerpc_firmware_features &= ~FW_FEATURE_DYN_MEM_V2;
-> +
-> +	return 0;
-> +}
->  
->  static int __init pseries_memory_hotplug_init(void)
->  {
-> +	if (firmware_has_feature(FW_FEATURE_DYN_MEM_V2))
-> +		pseries_rewrite_dynamic_memory_v2();
-> +#ifdef CONFIG_MEMORY_HOTPLUG
->  	if (firmware_has_feature(FW_FEATURE_LPAR))
->  		of_reconfig_notifier_register(&pseries_mem_nb);
-> +#endif /* CONFIG_MEMORY_HOTPLUG */
->  
->  	return 0;
->  }
-> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-> index fedc2ccf0..e74cf6c 100644
-> --- a/arch/powerpc/platforms/pseries/Makefile
-> +++ b/arch/powerpc/platforms/pseries/Makefile
-> @@ -5,14 +5,14 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
->  			   of_helpers.o \
->  			   setup.o iommu.o event_sources.o ras.o \
->  			   firmware.o power.o dlpar.o mobility.o rng.o \
-> -			   pci.o pci_dlpar.o eeh_pseries.o msi.o
-> +			   pci.o pci_dlpar.o eeh_pseries.o msi.o \
-> +			   hotplug-memory.o
->  obj-$(CONFIG_SMP)	+= smp.o
->  obj-$(CONFIG_SCANLOG)	+= scanlog.o
->  obj-$(CONFIG_KEXEC)	+= kexec.o
->  obj-$(CONFIG_PSERIES_ENERGY)	+= pseries_energy.o
->  
->  obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
-> -obj-$(CONFIG_MEMORY_HOTPLUG)	+= hotplug-memory.o
->  
->  obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
->  obj-$(CONFIG_HVCS)		+= hvcserver.o
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+-- 
+Reza Arbab
