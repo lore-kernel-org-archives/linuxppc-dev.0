@@ -1,26 +1,33 @@
-Return-Path: <patrice.chotard@st.com>
-Received: from mx07-00178001.pphosted.com (mx07-00178001.pphosted.com
- [62.209.51.94])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mgorman@techsingularity.net>
+Received: from outbound-smtp03.blacknight.com (outbound-smtp03.blacknight.com
+ [81.17.249.16])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8NYC3LHRzDqQb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 17:47:57 +1000 (AEST)
-Subject: Re: [STLinux Kernel] [PATCH] i2c: don't print error when adding
- adapter fails
-To: Wolfram Sang <wsa-dev@sang-engineering.com>, <linux-kernel@vger.kernel.org>
-References: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
-CC: <linux-samsung-soc@vger.kernel.org>, <kernel@stlinux.com>,
- <adi-buildroot-devel@lists.sourceforge.net>,
- <linux-rockchip@lists.infradead.org>, <linux-i2c@vger.kernel.org>,
- <linux-tegra@vger.kernel.org>, <linux-amlogic@lists.infradead.org>,
- <linux-omap@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>
-From: Patrice Chotard <patrice.chotard@st.com>
-Message-ID: <dda2b522-0257-17c7-1332-cbc026b74603@st.com>
-Date: Wed, 10 Aug 2016 08:50:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8Ndf0TJ0zDqQb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 17:51:49 +1000 (AEST)
+Received: from mail.blacknight.com (pemlinmail04.blacknight.ie [81.17.254.17])
+ by outbound-smtp03.blacknight.com (Postfix) with ESMTPS id 9AA3B991BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 07:51:44 +0000 (UTC)
+Date: Wed, 10 Aug 2016 08:51:43 +0100
+From: Mel Gorman <mgorman@techsingularity.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ Vlastimil Babka <vbabka@suse.cz>, Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] fadump: Register the memory reserved by fadump
+Message-ID: <20160810075142.GC8119@techsingularity.net>
+References: <1470318165-2521-1-git-send-email-srikar@linux.vnet.ibm.com>
+ <87mvkritii.fsf@concordia.ellerman.id.au>
+ <20160805072838.GF11268@linux.vnet.ibm.com>
+ <87h9azin4g.fsf@concordia.ellerman.id.au>
+ <20160805100609.GP2799@techsingularity.net>
+ <87d1lhtb3s.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <1470742581-12971-1-git-send-email-wsa-dev@sang-engineering.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <87d1lhtb3s.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2016 01:36 PM, Wolfram Sang wrote:
-> Since v4.8-rc1, the I2C core will print detailed information when adding an I2C
-> adapter fails. So, drivers can skip this now.
->
-> I am still undecided if I apply this as a single patch or break it out. But for
-> reviewing, avoiding the patch bomb is probably a good thing.
->
-> Should go via subsystem tree, I'd think.
->
-> Wolfram Sang (1):
->   i2c: don't print error when adding adapter fails
->
->  drivers/i2c/busses/i2c-st.c             | 4 +---
->
+On Wed, Aug 10, 2016 at 04:02:47PM +1000, Michael Ellerman wrote:
+> > Conceptually it would be cleaner, if expensive, to calculate the real
+> > memblock reserves if HASH_EARLY and ditch the dma_reserve, memory_reserve
+> > and nr_kernel_pages entirely.
+> 
+> Why is it expensive? memblock tracks the totals for all memory and
+> reserved memory AFAIK, so it should just be a case of subtracting one
+> from the other?
+> 
 
-For i2c-st.c
+I didn't actually check that it tracks the totals. If it does, then the cost
+will be negligible in comparison to the total cost of initialising memory.
 
-Acked-by: Patrice Chotard <patrice.chotard@st.com>
+> > Unfortuantely, aside from the calculation,
+> > there is a potential cost due to a smaller hash table that affects everyone,
+> > not just ppc64.
+> 
+> Yeah OK. We could make it an arch hook, or controlled by a CONFIG.
+> 
+> > However, if the hash table is meant to be sized on the
+> > number of available pages then it really should be based on that and not
+> > just a made-up number.
+> 
+> Yeah that seems to make sense.
+> 
+> The one complication I think is that we may have memory that's marked
+> reserved in memblock, but is later freed to the page allocator (eg.
+> initrd).
+> 
 
-Thanks
+It would be ideal if the amount of reserved memory that is freed later
+in the normal case was estimated. If it's a small percentage of memory
+then the difference is unlikely to be detectable and avoids ppc64 being
+special.
+
+-- 
+Mel Gorman
+SUSE Labs
