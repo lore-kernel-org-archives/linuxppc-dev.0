@@ -2,19 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8J7M41PgzDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 14:28:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8JJg4tBZzDqQb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 14:36:51 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Viresh Kumar <viresh.kumar@linaro.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-In-Reply-To: <20160804164711.GE10348@ubuntu>
-References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20160804164711.GE10348@ubuntu>
-Date: Wed, 10 Aug 2016 14:28:47 +1000
-Message-ID: <87oa51tfgg.fsf@concordia.ellerman.id.au>
+To: Denys Vlasenko <dvlasenk@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Denys Vlasenko <dvlasenk@redhat.com>,
+ Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Kees Cook <keescook@chromium.org>,
+ Oleg Nesterov <oleg@redhat.com>, Florian Weimer <fweimer@redhat.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] powerpc: Do not make the entire heap executable
+In-Reply-To: <20160809190822.28856-1-dvlasenk@redhat.com>
+References: <20160809190822.28856-1-dvlasenk@redhat.com>
+Date: Wed, 10 Aug 2016 14:36:51 +1000
+Message-ID: <87lh05tf30.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,57 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+Denys Vlasenko <dvlasenk@redhat.com> writes:
 
-> On 04-08-16, 20:59, Akshay Adiga wrote:
->> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
->> frequency table index")' changes calc_global_pstate() to use
->> cpufreq_table index instead of pstate_id.
->> 
->> But in gpstate_timer_handler() pstate_id was being passed instead
->> of cpufreq_table index, which caused the index_to_pstate() to access
->> out of bound indices, leading to this crash.
->> 
->> Adding sanity check for index and pstate, to ensure only valid pstate
->> and index values are returned.
->> 
->> Call Trace:
->> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
->> (unreliable)
->> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
->> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
->> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
->> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
->> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
->> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
->> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
->> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
->> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
->>    interrupt: 300 at gpstate_timer_handler+0x150/0x260
->>     LR = gpstate_timer_handler+0x130/0x260
->> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
->> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
->> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
->> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
->> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
->> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
->> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
->>    interrupt: 901 at arch_local_irq_restore+0x74/0x90
->>   0] [c000000000106b34] call_cpuidle+0x44/0x90
->> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
->> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
->> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
->> 
->> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
->> frequency table index")
->> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
->> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
->>  1 file changed, 20 insertions(+), 1 deletion(-)
+> On 32-bit powerps the ELF PLT sections of binaries (built with --bss-plt,
+> or with a toolchain which defaults to it) look like this:
+...
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>  arch/powerpc/include/asm/page.h    | 10 +---------
+>  arch/powerpc/include/asm/page_32.h |  2 --
+>  arch/powerpc/include/asm/page_64.h |  4 ----
+>  fs/binfmt_elf.c                    | 34 ++++++++++++++++++++++++++--------
+>  include/linux/mm.h                 |  1 +
+>  mm/mmap.c                          | 20 +++++++++++++++-----
+>  6 files changed, 43 insertions(+), 28 deletions(-)
 
-Who's merging this?
+What tree is this against?
+
+I can't get it to apply to either Linus' tree or linux-next.
 
 cheers
+
+$ patch --dry-run -p1 < diff.diff
+checking file arch/powerpc/include/asm/page.h
+checking file arch/powerpc/include/asm/page_32.h
+checking file arch/powerpc/include/asm/page_64.h
+checking file fs/binfmt_elf.c
+Hunk #3 FAILED at 613.
+Hunk #4 FAILED at 633.
+Hunk #5 succeeded at 681 (offset 2 lines).
+Hunk #6 succeeded at 889 (offset 2 lines).
+Hunk #7 succeeded at 984 (offset 2 lines).
+Hunk #8 succeeded at 1003 (offset 2 lines).
+2 out of 8 hunks FAILED
+checking file include/linux/mm.h
+checking file mm/mmap.c
+Hunk #1 FAILED at 2653.
+Hunk #2 succeeded at 2668 (offset 2 lines).
+Hunk #3 succeeded at 2736 (offset 2 lines).
+Hunk #4 succeeded at 2750 (offset 2 lines).
+1 out of 4 hunks FAILED
