@@ -1,21 +1,19 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.net.pl (cloudserver094114.home.net.pl
- [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 3s8TzR0QmYzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 21:52:33 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-Date: Wed, 10 Aug 2016 13:57:47 +0200
-Message-ID: <9902339.J95Mxqndi6@vostro.rjw.lan>
-In-Reply-To: <87oa51tfgg.fsf@concordia.ellerman.id.au>
-References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20160804164711.GE10348@ubuntu> <87oa51tfgg.fsf@concordia.ellerman.id.au>
+Return-Path: <sojkam1@fel.cvut.cz>
+Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3s8VC76Z9nzDqPn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 22:02:43 +1000 (AEST)
+From: Michal Sojka <sojkam1@fel.cvut.cz>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: MPC5200 does not boot
+In-Reply-To: <1470116323.12584.11.camel@kernel.crashing.org>
+References: <874m74w1m7.fsf@steelpick.2x.cz>
+ <1470116323.12584.11.camel@kernel.crashing.org>
+Date: Wed, 10 Aug 2016 12:52:57 +0200
+Message-ID: <87twesq4ja.fsf@steelpick.2x.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,61 +23,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, August 10, 2016 02:28:47 PM Michael Ellerman wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
-> 
-> > On 04-08-16, 20:59, Akshay Adiga wrote:
-> >> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
-> >> frequency table index")' changes calc_global_pstate() to use
-> >> cpufreq_table index instead of pstate_id.
-> >> 
-> >> But in gpstate_timer_handler() pstate_id was being passed instead
-> >> of cpufreq_table index, which caused the index_to_pstate() to access
-> >> out of bound indices, leading to this crash.
-> >> 
-> >> Adding sanity check for index and pstate, to ensure only valid pstate
-> >> and index values are returned.
-> >> 
-> >> Call Trace:
-> >> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
-> >> (unreliable)
-> >> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
-> >> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
-> >> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
-> >> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
-> >> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
-> >> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
-> >> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
-> >> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
-> >> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
-> >>    interrupt: 300 at gpstate_timer_handler+0x150/0x260
-> >>     LR = gpstate_timer_handler+0x130/0x260
-> >> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
-> >> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
-> >> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
-> >> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
-> >> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
-> >> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
-> >> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
-> >>    interrupt: 901 at arch_local_irq_restore+0x74/0x90
-> >>   0] [c000000000106b34] call_cpuidle+0x44/0x90
-> >> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
-> >> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
-> >> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
-> >> 
-> >> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
-> >> frequency table index")
-> >> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> >> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> >> ---
-> >>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
-> >>  1 file changed, 20 insertions(+), 1 deletion(-)
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Who's merging this?
+Hi all,
 
-I am.
+my MPC5200 still does not boot even with the fix bellow applied. I dug a
+bit into it and now it seems that commit
+309b315b6ec686ce050758cc4e29f6ad1125a83f is to blame.
 
-Thanks,
-Rafael
+commit 309b315b6ec686ce050758cc4e29f6ad1125a83f
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Sat Jul 23 14:42:38 2016 +0530
+
+    powerpc: Call jump_label_init() in apply_feature_fixups()
+=20=20=20=20
+    Call jump_label_init() early so that we can use static keys for CPU and
+    MMU feature checks.
+=20=20=20=20
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+The following summarizes the situation from my point of view:
+
+1) My system does not boot with 9402c684613163888714df0955fa1f17142b08bf
+   "powerpc: Factor do_feature_fixup calls"
+
+2) When the fix bellow is applied on top of
+   9402c684613163888714df0955fa1f17142b08bf my system boots.
+
+3) My system does not boot 2c0f99516f53911c3f2f81ab3815841e3408f11e
+   which is the mainline commit containing the fix below.
+
+4) I bisected the commits between
+   9402c684613163888714df0955fa1f17142b08bf and
+   2c0f99516f53911c3f2f81ab3815841e3408f11e with manually applying the
+   fix bellow and 309b315b6ec686ce050758cc4e29f6ad1125a83f was the first
+   bad commit that didn't boot.
+
+Let me know if you need more information.
+
+Thanks.
+-Michal
+
+On Tue, Aug 02 2016, Benjamin Herrenschmidt wrote:
+> On Tue, 2016-08-02 at 00:44 +0200, Michal Sojka wrote:
+>> Hi Benjamin,
+>>=20
+>> the following commit causes my MPC5200 not to boot.
+>>=20
+>> =C2=A0=C2=A0=C2=A0=C2=A0commit 9402c684613163888714df0955fa1f17142b08bf
+>> =C2=A0=C2=A0=C2=A0=C2=A0Author: Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org>
+>> =C2=A0=C2=A0=C2=A0=C2=A0Date:=C2=A0=C2=A0=C2=A0Tue Jul 5 15:03:41 2016 +=
+1000
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0powerpc: Factor do_featu=
+re_fixup calls
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A032 and 64-bit do a simil=
+ar set of calls early on, we move it
+>> all to
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0a single common function=
+ to make the boot code more readable.
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Benjamin =
+Herrenschmidt <benh@kernel.crashing.o
+>> rg>
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Signed-off-by: Michael E=
+llerman <mpe@ellerman.id.au>
+>>=20
+>> I suspect that the cause will be similar as described in commit
+>> 1cd03890ea64795e53f17a94928cca22495acb2a. Unfortunately, I don't have
+>> much time to debug this, but I can easily test patches.
+>
+> Does this fixes it for you ?
+>
+> diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature=
+-fixups.c
+> index defb299..fd36e13 100644
+> --- a/arch/powerpc/lib/feature-fixups.c
+> +++ b/arch/powerpc/lib/feature-fixups.c
+> @@ -154,7 +154,7 @@ static void do_final_fixups(void)
+>=20=20
+>  void apply_feature_fixups(void)
+>  {
+> -	struct cpu_spec *spec =3D *PTRRELOC(&cur_cpu_spec);
+> +	struct cpu_spec *spec =3D PTRRELOC(*PTRRELOC(&cur_cpu_spec));
+>=20=20
+>  	/*
+>  	 * Apply the CPU-specific and firmware specific fixups to kernel text
