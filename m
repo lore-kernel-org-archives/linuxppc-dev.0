@@ -1,50 +1,28 @@
-Return-Path: <zohar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-oi0-x234.google.com (mail-oi0-x234.google.com
+ [IPv6:2607:f8b0:4003:c06::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s95LG5TyszDqpR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 21:25:58 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BBOTwK077253
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 07:25:56 -0400
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24rqx11vu7-1
- (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 07:25:56 -0400
-Received: from localhost
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zohar@linux.vnet.ibm.com>;
- Thu, 11 Aug 2016 16:55:51 +0530
-Received: from d28relay08.in.ibm.com (d28relay08.in.ibm.com [9.184.220.159])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C5B64E0069
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 17:00:12 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay08.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BBPiFa15532032
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 16:55:44 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BBPfNA003388
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 16:55:43 +0530
-Subject: Re: [PATCH 0/7] ima: carry the measurement list across kexec
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linux-security-module@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Thiago Jung
- Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
-Date: Thu, 11 Aug 2016 07:25:36 -0400
-In-Reply-To: <46d115a8-de96-1e9f-9d08-b0e9b6cca93a@gmail.com>
-References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
- <91fa2f95-4d70-a056-d599-01cb3bbe6771@gmail.com>
- <1470746204.2881.101.camel@linux.vnet.ibm.com>
- <46d115a8-de96-1e9f-9d08-b0e9b6cca93a@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1470914736.10123.34.camel@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s95z71dR4zDqhH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 21:54:26 +1000 (AEST)
+Received: by mail-oi0-x234.google.com with SMTP id 4so1602233oih.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 04:54:26 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20160811085040.2EC561A2456@localhost.localdomain>
+References: <20160811085040.2EC561A2456@localhost.localdomain>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 11 Aug 2016 13:54:23 +0200
+Message-ID: <CACRpkdZYZNyNRZMCNNUc=2FRqvb1nUjn5kZjuA8CHS=FG8G0MQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: sysdev: cpm: fix gpio save_regs functions
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+ stable <stable@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,71 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2016-08-11 at 17:38 +1000, Balbir Singh wrote:
-> 
-> On 09/08/16 22:36, Mimi Zohar wrote:
-> > On Tue, 2016-08-09 at 15:19 +1000, Balbir Singh wrote:
-> >>
-> >> On 04/08/16 22:24, Mimi Zohar wrote:
-> >>> The TPM PCRs are only reset on a hard reboot.  In order to validate a
-> >>> TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
-> >>> of the running kernel must be saved and then restored on the subsequent
-> >>> boot.
-> >>>
-> >>> The existing securityfs binary_runtime_measurements file conveniently
-> >>> provides a serialized format of the IMA measurement list. This patch
-> >>> set serializes the measurement list in this format and restores it.
-> >>>
-> >>> This patch set pre-req's Thiago Bauermann's "kexec_file: Add buffer
-> >>> hand-over for the next kernel" patch set* for actually carrying the
-> >>> serialized measurement list across the kexec.
-> >>>
-> >>> Mimi
-> >>>
-> >>
-> >> Hi, Mimi
-> >>
-> >> I am trying to convince myself of the security of the solution. I asked
-> >> Thiago as well, but may be I am be lagging behind in understanding.
-> >>
-> >> We trust the kernel to hand over PCR values of the old kernel (which
-> >> cannot be validated) to the IMA subsystem in the new kernel for storage.
-> >> I guess the idea is for ima_add_boot_aggregate to do the right thing?
-> >> How do we validate what the old kernel is giving us? Why do we care for
-> >> the old measurement list? Is it still of significance in the new kernel?
-> >>
-> > 
-> > Hi Balbir,
-> > 
-> > To validate the hardware TPM PCR values requires walking the measurement
-> > list simulating the TPM extend operation.  The resulting values should
-> > match the hardware TPM PCRs.
-> > 
-> > In the case of a soft reboot, the TPM PCRs are not reset to 0, so all
-> > the measurements of the running system, including those from previous
-> > soft reboots, need to be included in the measurement list.   Without
-> > these measurements, the simulated PCR values will not match the hardware
-> > TPM PCR values.  Thus the need for this patch set.
-> > 
-> > Measurements can not be added/removed/changed in the measurement list
-> > without it being detectable.
-> > 
-> 
-> Thanks Mimi
-> 
-> I think that makes sense
-> 
-> So effectively we do
-> 
-> first kernel boot -> <measurements match PCR and measurements are saved>
-> second kernel boot -> <new PCR = first save measurements + new measurements>
-> 
-> and so on
+On Thu, Aug 11, 2016 at 10:50 AM, Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
 
-No, the running system doesn't verify the measurement list against the
-PCRs, before saving and carrying it across kexec. If the system has been
-compromised, it can't be trusted to verify itself.  Verifying the
-measurement list needs to be done by a trusted third party.  The system
-just carries the measurement list(s) across kexec.
+> of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
+> setting the data. Therefore ->save_regs() cannot use
+> gpiochip_get_data()
+>
+> [    0.275940] Unable to handle kernel paging request for data at address 0x00000130
+> [    0.283120] Faulting instruction address: 0xc01b44cc
+> [    0.288175] Oops: Kernel access of bad area, sig: 11 [#1]
+> [    0.293343] PREEMPT CMPC885
+> [    0.296141] CPU: 0 PID: 1 Comm: swapper Not tainted 4.7.0-g65124df-dirty #68
+> [    0.304131] task: c6074000 ti: c6080000 task.ti: c6080000
+> [    0.309459] NIP: c01b44cc LR: c0011720 CTR: c0011708
+> [    0.314372] REGS: c6081d90 TRAP: 0300   Not tainted  (4.7.0-g65124df-dirty)
+> [    0.322267] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24000028  XER: 20000000
+> [    0.328813] DAR: 00000130 DSISR: c0000000
+> GPR00: c01b6d0c c6081e40 c6074000 c6017000 c9028000 c601d028 c6081dd8 00000000
+> GPR08: c601d028 00000000 ffffffff 00000001 24000044 00000000 c0002790 00000000
+> GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c05643b0 00000083
+> GPR24: c04a1a6c c0560000 c04a8308 c04c6480 c0012498 c6017000 c7ffcc78 c6017000
+> [    0.360806] NIP [c01b44cc] gpiochip_get_data+0x4/0xc
+> [    0.365684] LR [c0011720] cpm1_gpio16_save_regs+0x18/0x44
+> [    0.370972] Call Trace:
+> [    0.373451] [c6081e50] [c01b6d0c] of_mm_gpiochip_add_data+0x70/0xdc
+> [    0.379624] [c6081e70] [c00124c0] cpm_init_par_io+0x28/0x118
+> [    0.385238] [c6081e80] [c04a8ac0] do_one_initcall+0xb0/0x17c
+> [    0.390819] [c6081ef0] [c04a8cbc] kernel_init_freeable+0x130/0x1dc
+> [    0.396924] [c6081f30] [c00027a4] kernel_init+0x14/0x110
+> [    0.402177] [c6081f40] [c000b424] ret_from_kernel_thread+0x5c/0x64
+> [    0.408233] Instruction dump:
+> [    0.411168] 4182fafc 3f80c040 48234c6d 3bc0fff0 3b9c5ed0 4bfffaf4 81290020 712a0004
+> [    0.418825] 4182fb34 48234c51 4bfffb2c 81230004 <80690130> 4e800020 7c0802a6 9421ffe0
+> [    0.426763] ---[ end trace fe4113ee21d72ffa ]---
+>
+> fixes: e65078f1f3490 ("powerpc: sysdev: cpm1: use gpiochip data pointer")
+> fixes: a14a2d484b386 ("powerpc: cpm_common: use gpiochip data pointer")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Mimi
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+Sorry for screwing stuff up :(
+
+Yours,
+Linus Walleij
