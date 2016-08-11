@@ -3,41 +3,40 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9PNp2krVzDr8q
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9PNp2jPTzDr8c
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:14 +1000 (AEST)
 Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BNSauo081091
+ u7BNSZq7081048
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:12 -0400
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24rqx1x7aj-1
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24rqx1x78x-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:07 -0400
 Received: from localhost
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 12 Aug 2016 09:29:09 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5A7563578052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:06 +1000 (EST)
+ Fri, 12 Aug 2016 09:29:04 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B000D3578056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:01 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BNT6CH25493696
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:06 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BNT1tV32964692
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:01 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BNT6PW003542
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:06 +1000
+ u7BNT1hb003473
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:01 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, wei.guo.simon@gmail.com
 Cc: anton@samba.org, mikey@neuling.org
-Subject: [PATCH v2 07/20] selftests/powerpc: Rework FPU stack placement macros
- and move to header file
-Date: Fri, 12 Aug 2016 09:28:06 +1000
+Subject: [PATCH v2 04/20] powerpc: Return the new MSR from msr_check_and_set()
+Date: Fri, 12 Aug 2016 09:28:03 +1000
 In-Reply-To: <20160811232819.11453-1-cyrilbur@gmail.com>
 References: <20160811232819.11453-1-cyrilbur@gmail.com>
-Message-Id: <20160811232819.11453-8-cyrilbur@gmail.com>
+Message-Id: <20160811232819.11453-5-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,224 +46,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The FPU regs are placed at the top of the stack frame. Currently the
-position expected to be passed to the macro. The macros now should be
-passed the stack frame size and from there they can calculate where to
-put the regs, this makes the use simpler.
+mfmsr() is a fairly expensive call and callers of msr_check_and_set()
+may want to make decisions bits in the MSR that it did not change but
+may not know the value of.
 
-Also move them to a header file to be used in an different area of the
-powerpc selftests
+This patch would avoid a two calls to mfmsr().
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/fpu_asm.h      | 81 ++++++++++++++++++++++++++
- tools/testing/selftests/powerpc/math/fpu_asm.S | 73 ++---------------------
- 2 files changed, 86 insertions(+), 68 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/fpu_asm.h
+ arch/powerpc/include/asm/reg.h | 2 +-
+ arch/powerpc/kernel/process.c  | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/fpu_asm.h b/tools/testing/selftests/powerpc/fpu_asm.h
-new file mode 100644
-index 0000000..24061b8
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/fpu_asm.h
-@@ -0,0 +1,81 @@
-+/*
-+ * Copyright 2016, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _SELFTESTS_POWERPC_FPU_ASM_H
-+#define _SELFTESTS_POWERPC_FPU_ASM_H
-+#include "basic_asm.h"
-+
-+#define PUSH_FPU(stack_size) \
-+	stfd	f31,(stack_size + STACK_FRAME_MIN_SIZE)(%r1); \
-+	stfd	f30,(stack_size + STACK_FRAME_MIN_SIZE - 8)(%r1); \
-+	stfd	f29,(stack_size + STACK_FRAME_MIN_SIZE - 16)(%r1); \
-+	stfd	f28,(stack_size + STACK_FRAME_MIN_SIZE - 24)(%r1); \
-+	stfd	f27,(stack_size + STACK_FRAME_MIN_SIZE - 32)(%r1); \
-+	stfd	f26,(stack_size + STACK_FRAME_MIN_SIZE - 40)(%r1); \
-+	stfd	f25,(stack_size + STACK_FRAME_MIN_SIZE - 48)(%r1); \
-+	stfd	f24,(stack_size + STACK_FRAME_MIN_SIZE - 56)(%r1); \
-+	stfd	f23,(stack_size + STACK_FRAME_MIN_SIZE - 64)(%r1); \
-+	stfd	f22,(stack_size + STACK_FRAME_MIN_SIZE - 72)(%r1); \
-+	stfd	f21,(stack_size + STACK_FRAME_MIN_SIZE - 80)(%r1); \
-+	stfd	f20,(stack_size + STACK_FRAME_MIN_SIZE - 88)(%r1); \
-+	stfd	f19,(stack_size + STACK_FRAME_MIN_SIZE - 96)(%r1); \
-+	stfd	f18,(stack_size + STACK_FRAME_MIN_SIZE - 104)(%r1); \
-+	stfd	f17,(stack_size + STACK_FRAME_MIN_SIZE - 112)(%r1); \
-+	stfd	f16,(stack_size + STACK_FRAME_MIN_SIZE - 120)(%r1); \
-+	stfd	f15,(stack_size + STACK_FRAME_MIN_SIZE - 128)(%r1); \
-+	stfd	f14,(stack_size + STACK_FRAME_MIN_SIZE - 136)(%r1);
-+
-+#define POP_FPU(stack_size) \
-+	lfd	f31,(stack_size + STACK_FRAME_MIN_SIZE)(%r1); \
-+	lfd	f30,(stack_size + STACK_FRAME_MIN_SIZE - 8)(%r1); \
-+	lfd	f29,(stack_size + STACK_FRAME_MIN_SIZE - 16)(%r1); \
-+	lfd	f28,(stack_size + STACK_FRAME_MIN_SIZE - 24)(%r1); \
-+	lfd	f27,(stack_size + STACK_FRAME_MIN_SIZE - 32)(%r1); \
-+	lfd	f26,(stack_size + STACK_FRAME_MIN_SIZE - 40)(%r1); \
-+	lfd	f25,(stack_size + STACK_FRAME_MIN_SIZE - 48)(%r1); \
-+	lfd	f24,(stack_size + STACK_FRAME_MIN_SIZE - 56)(%r1); \
-+	lfd	f23,(stack_size + STACK_FRAME_MIN_SIZE - 64)(%r1); \
-+	lfd	f22,(stack_size + STACK_FRAME_MIN_SIZE - 72)(%r1); \
-+	lfd	f21,(stack_size + STACK_FRAME_MIN_SIZE - 80)(%r1); \
-+	lfd	f20,(stack_size + STACK_FRAME_MIN_SIZE - 88)(%r1); \
-+	lfd	f19,(stack_size + STACK_FRAME_MIN_SIZE - 96)(%r1); \
-+	lfd	f18,(stack_size + STACK_FRAME_MIN_SIZE - 104)(%r1); \
-+	lfd	f17,(stack_size + STACK_FRAME_MIN_SIZE - 112)(%r1); \
-+	lfd	f16,(stack_size + STACK_FRAME_MIN_SIZE - 120)(%r1); \
-+	lfd	f15,(stack_size + STACK_FRAME_MIN_SIZE - 128)(%r1); \
-+	lfd	f14,(stack_size + STACK_FRAME_MIN_SIZE - 136)(%r1);
-+
-+/*
-+ * Careful calling this, it will 'clobber' fpu (by design)
-+ * Don't call this from C
-+ */
-+FUNC_START(load_fpu)
-+	lfd	f14,0(r3)
-+	lfd	f15,8(r3)
-+	lfd	f16,16(r3)
-+	lfd	f17,24(r3)
-+	lfd	f18,32(r3)
-+	lfd	f19,40(r3)
-+	lfd	f20,48(r3)
-+	lfd	f21,56(r3)
-+	lfd	f22,64(r3)
-+	lfd	f23,72(r3)
-+	lfd	f24,80(r3)
-+	lfd	f25,88(r3)
-+	lfd	f26,96(r3)
-+	lfd	f27,104(r3)
-+	lfd	f28,112(r3)
-+	lfd	f29,120(r3)
-+	lfd	f30,128(r3)
-+	lfd	f31,136(r3)
-+	blr
-+FUNC_END(load_fpu)
-+
-+#endif /* _SELFTESTS_POWERPC_FPU_ASM_H */
-+
-diff --git a/tools/testing/selftests/powerpc/math/fpu_asm.S b/tools/testing/selftests/powerpc/math/fpu_asm.S
-index f3711d8..241f067 100644
---- a/tools/testing/selftests/powerpc/math/fpu_asm.S
-+++ b/tools/testing/selftests/powerpc/math/fpu_asm.S
-@@ -8,70 +8,7 @@
-  */
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index f69f40f..0a3dde9 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1247,7 +1247,7 @@ static inline void mtmsr_isync(unsigned long val)
+ 				     : "memory")
+ #endif
  
- #include "../basic_asm.h"
--
--#define PUSH_FPU(pos) \
--	stfd	f14,pos(sp); \
--	stfd	f15,pos+8(sp); \
--	stfd	f16,pos+16(sp); \
--	stfd	f17,pos+24(sp); \
--	stfd	f18,pos+32(sp); \
--	stfd	f19,pos+40(sp); \
--	stfd	f20,pos+48(sp); \
--	stfd	f21,pos+56(sp); \
--	stfd	f22,pos+64(sp); \
--	stfd	f23,pos+72(sp); \
--	stfd	f24,pos+80(sp); \
--	stfd	f25,pos+88(sp); \
--	stfd	f26,pos+96(sp); \
--	stfd	f27,pos+104(sp); \
--	stfd	f28,pos+112(sp); \
--	stfd	f29,pos+120(sp); \
--	stfd	f30,pos+128(sp); \
--	stfd	f31,pos+136(sp);
--
--#define POP_FPU(pos) \
--	lfd	f14,pos(sp); \
--	lfd	f15,pos+8(sp); \
--	lfd	f16,pos+16(sp); \
--	lfd	f17,pos+24(sp); \
--	lfd	f18,pos+32(sp); \
--	lfd	f19,pos+40(sp); \
--	lfd	f20,pos+48(sp); \
--	lfd	f21,pos+56(sp); \
--	lfd	f22,pos+64(sp); \
--	lfd	f23,pos+72(sp); \
--	lfd	f24,pos+80(sp); \
--	lfd	f25,pos+88(sp); \
--	lfd	f26,pos+96(sp); \
--	lfd	f27,pos+104(sp); \
--	lfd	f28,pos+112(sp); \
--	lfd	f29,pos+120(sp); \
--	lfd	f30,pos+128(sp); \
--	lfd	f31,pos+136(sp);
--
--# Careful calling this, it will 'clobber' fpu (by design)
--# Don't call this from C
--FUNC_START(load_fpu)
--	lfd	f14,0(r3)
--	lfd	f15,8(r3)
--	lfd	f16,16(r3)
--	lfd	f17,24(r3)
--	lfd	f18,32(r3)
--	lfd	f19,40(r3)
--	lfd	f20,48(r3)
--	lfd	f21,56(r3)
--	lfd	f22,64(r3)
--	lfd	f23,72(r3)
--	lfd	f24,80(r3)
--	lfd	f25,88(r3)
--	lfd	f26,96(r3)
--	lfd	f27,104(r3)
--	lfd	f28,112(r3)
--	lfd	f29,120(r3)
--	lfd	f30,128(r3)
--	lfd	f31,136(r3)
--	blr
--FUNC_END(load_fpu)
-+#include "../fpu_asm.h"
+-extern void msr_check_and_set(unsigned long bits);
++extern unsigned long msr_check_and_set(unsigned long bits);
+ extern bool strict_msr_control;
+ extern void __msr_check_and_clear(unsigned long bits);
+ static inline void msr_check_and_clear(unsigned long bits)
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 79f0615..216cf05 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -104,7 +104,7 @@ static int __init enable_strict_msr_control(char *str)
+ }
+ early_param("ppc_strict_facility_enable", enable_strict_msr_control);
  
- FUNC_START(check_fpu)
- 	mr r4,r3
-@@ -138,9 +75,9 @@ FUNC_START(test_fpu)
- 	# r4 holds pointer to the pid
- 	# f14-f31 are non volatiles
- 	PUSH_BASIC_STACK(256)
-+	PUSH_FPU(256)
- 	std	r3,STACK_FRAME_PARAM(0)(sp) # Address of darray
- 	std r4,STACK_FRAME_PARAM(1)(sp) # Address of pid
--	PUSH_FPU(STACK_FRAME_LOCAL(2,0))
+-void msr_check_and_set(unsigned long bits)
++unsigned long msr_check_and_set(unsigned long bits)
+ {
+ 	unsigned long oldmsr = mfmsr();
+ 	unsigned long newmsr;
+@@ -118,6 +118,8 @@ void msr_check_and_set(unsigned long bits)
  
- 	bl load_fpu
- 	nop
-@@ -155,7 +92,7 @@ FUNC_START(test_fpu)
- 	bl check_fpu
- 	nop
+ 	if (oldmsr != newmsr)
+ 		mtmsr_isync(newmsr);
++
++	return newmsr;
+ }
  
--	POP_FPU(STACK_FRAME_LOCAL(2,0))
-+	POP_FPU(256)
- 	POP_BASIC_STACK(256)
- 	blr
- FUNC_END(test_fpu)
-@@ -166,10 +103,10 @@ FUNC_END(test_fpu)
- # registers while running is not zero.
- FUNC_START(preempt_fpu)
- 	PUSH_BASIC_STACK(256)
-+	PUSH_FPU(256)
- 	std r3,STACK_FRAME_PARAM(0)(sp) # double *darray
- 	std r4,STACK_FRAME_PARAM(1)(sp) # int *threads_starting
- 	std r5,STACK_FRAME_PARAM(2)(sp) # int *running
--	PUSH_FPU(STACK_FRAME_LOCAL(3,0))
- 
- 	bl load_fpu
- 	nop
-@@ -192,7 +129,7 @@ FUNC_START(preempt_fpu)
- 	cmpwi r5,0
- 	bne 2b
- 
--3:	POP_FPU(STACK_FRAME_LOCAL(3,0))
-+3:	POP_FPU(256)
- 	POP_BASIC_STACK(256)
- 	blr
- FUNC_END(preempt_fpu)
+ void __msr_check_and_clear(unsigned long bits)
 -- 
 2.9.2
