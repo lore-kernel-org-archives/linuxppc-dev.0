@@ -1,34 +1,34 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Nx72t22zDqdG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:08:43 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BN8fnI049160
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:41 -0400
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24rmj7ea6h-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Nx824VxzDqdG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:08:44 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7BN8ejE086791
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:42 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24ryurx4wm-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:41 -0400
 Received: from localhost
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 11 Aug 2016 20:08:34 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 864693520068
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:11 -0400 (EDT)
+ Thu, 11 Aug 2016 20:08:37 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id CEB9A1DC0051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:25 -0400 (EDT)
 Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BN8Wsg18088428
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:32 -0300
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BN8YOd4784238
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:34 -0300
 Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
  by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BN8Uq1026942
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:31 -0300
+ u7BN8XmV027049
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:34 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -42,12 +42,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "H. Peter Anvin" <hpa@zytor.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v5 01/13] kexec_file: Allow arch-specific memory walking for
- kexec_add_buffer
-Date: Thu, 11 Aug 2016 20:08:06 -0300
+Subject: [PATCH v5 03/13] kexec_file: Factor out kexec_locate_mem_hole from
+ kexec_add_buffer.
+Date: Thu, 11 Aug 2016 20:08:08 -0300
 In-Reply-To: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1470956898-5991-2-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1470956898-5991-4-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,129 +57,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow architectures to specify a different memory walking function for
-kexec_add_buffer. x86 uses iomem to track reserved memory ranges, but
-PowerPC uses the memblock subsystem.
+kexec_locate_mem_hole will be used by the PowerPC kexec_file_load
+implementation to find free memory for the purgatory stack.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 Acked-by: Dave Young <dyoung@redhat.com>
 ---
- include/linux/kexec.h   | 26 ++++++++++++++++++++++++++
- kernel/kexec_file.c     | 30 ++++++++++++++++++++++--------
- kernel/kexec_internal.h | 16 ----------------
- 3 files changed, 48 insertions(+), 24 deletions(-)
+ include/linux/kexec.h |  1 +
+ kernel/kexec_file.c   | 25 ++++++++++++++++++++-----
+ 2 files changed, 21 insertions(+), 5 deletions(-)
 
 diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 29202935055d..5ffd0011395c 100644
+index 28bc9f335d0d..ceccc5856aab 100644
 --- a/include/linux/kexec.h
 +++ b/include/linux/kexec.h
-@@ -149,6 +149,32 @@ struct kexec_file_ops {
- #endif
- };
- 
-+/**
-+ * struct kexec_buf - parameters for finding a place for a buffer in memory
-+ * @image:	kexec image in which memory to search.
-+ * @buffer:	Contents which will be copied to the allocated memory.
-+ * @bufsz:	Size of @buffer.
-+ * @mem:	On return will have address of the buffer in memory.
-+ * @memsz:	Size for the buffer in memory.
-+ * @buf_align:	Minimum alignment needed.
-+ * @buf_min:	The buffer can't be placed below this address.
-+ * @buf_max:	The buffer can't be placed above this address.
-+ * @top_down:	Allocate from top of memory.
-+ */
-+struct kexec_buf {
-+	struct kimage *image;
-+	char *buffer;
-+	unsigned long bufsz;
-+	unsigned long mem;
-+	unsigned long memsz;
-+	unsigned long buf_align;
-+	unsigned long buf_min;
-+	unsigned long buf_max;
-+	bool top_down;
-+};
-+
-+int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
-+			       int (*func)(u64, u64, void *));
+@@ -176,6 +176,7 @@ struct kexec_buf {
+ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
+ 			       int (*func)(u64, u64, void *));
+ extern int kexec_add_buffer(struct kexec_buf *kbuf);
++int kexec_locate_mem_hole(struct kexec_buf *kbuf);
  int __weak arch_kexec_verify_buffer(enum kexec_file_type type, const void *buf,
  				    unsigned long size);
  #endif /* CONFIG_KEXEC_FILE */
 diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index c32d1d65bb77..e63fd4592e20 100644
+index 58818264ad0e..772cb491715e 100644
 --- a/kernel/kexec_file.c
 +++ b/kernel/kexec_file.c
-@@ -502,6 +502,27 @@ static int locate_mem_hole_callback(u64 start, u64 end, void *arg)
- 	return locate_mem_hole_bottom_up(start, end, kbuf);
+@@ -524,6 +524,23 @@ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
  }
  
-+/**
-+ * arch_kexec_walk_mem - call func(data) on free memory regions
-+ * @kbuf:	Context info for the search. Also passed to @func.
-+ * @func:	Function to call for each memory region.
+ /**
++ * kexec_locate_mem_hole - find free memory for the purgatory or the next kernel
++ * @kbuf:	Parameters for the memory search.
 + *
-+ * Return: The memory walk will stop when func returns a non-zero value
-+ * and that value will be returned. If all free regions are visited without
-+ * func returning non-zero, then zero will be returned.
++ * On success, kbuf->mem will have the start address of the memory region found.
++ *
++ * Return: 0 on success, negative errno on error.
 + */
-+int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
-+			       int (*func)(u64, u64, void *))
++int kexec_locate_mem_hole(struct kexec_buf *kbuf)
 +{
-+	if (kbuf->image->type == KEXEC_TYPE_CRASH)
-+		return walk_iomem_res_desc(crashk_res.desc,
-+					   IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
-+					   crashk_res.start, crashk_res.end,
-+					   kbuf, func);
-+	else
-+		return walk_system_ram_res(0, ULONG_MAX, kbuf, func);
++	int ret;
++
++	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
++
++	return ret == 1 ? 0 : -EADDRNOTAVAIL;
 +}
 +
- /*
-  * Helper function for placing a buffer in a kexec segment. This assumes
-  * that kexec_mutex is held.
-@@ -548,14 +569,7 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
- 	kbuf->top_down = top_down;
++/**
+  * kexec_add_buffer - place a buffer in a kexec segment
+  * @kbuf:	Buffer contents and memory parameters.
+  *
+@@ -563,11 +580,9 @@ int kexec_add_buffer(struct kexec_buf *kbuf)
+ 	kbuf->buf_align = max(kbuf->buf_align, PAGE_SIZE);
  
  	/* Walk the RAM ranges and allocate a suitable range for the buffer */
--	if (image->type == KEXEC_TYPE_CRASH)
--		ret = walk_iomem_res_desc(crashk_res.desc,
--				IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
--				crashk_res.start, crashk_res.end, kbuf,
--				locate_mem_hole_callback);
--	else
--		ret = walk_system_ram_res(0, -1, kbuf,
--					  locate_mem_hole_callback);
-+	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
- 	if (ret != 1) {
- 		/* A suitable memory range could not be found for buffer */
- 		return -EADDRNOTAVAIL;
-diff --git a/kernel/kexec_internal.h b/kernel/kexec_internal.h
-index 0a52315d9c62..4cef7e4706b0 100644
---- a/kernel/kexec_internal.h
-+++ b/kernel/kexec_internal.h
-@@ -20,22 +20,6 @@ struct kexec_sha_region {
- 	unsigned long len;
- };
+-	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
+-	if (ret != 1) {
+-		/* A suitable memory range could not be found for buffer */
+-		return -EADDRNOTAVAIL;
+-	}
++	ret = kexec_locate_mem_hole(kbuf);
++	if (ret)
++		return ret;
  
--/*
-- * Keeps track of buffer parameters as provided by caller for requesting
-- * memory placement of buffer.
-- */
--struct kexec_buf {
--	struct kimage *image;
--	char *buffer;
--	unsigned long bufsz;
--	unsigned long mem;
--	unsigned long memsz;
--	unsigned long buf_align;
--	unsigned long buf_min;
--	unsigned long buf_max;
--	bool top_down;		/* allocate from top of memory hole */
--};
--
- void kimage_file_post_load_cleanup(struct kimage *image);
- #else /* CONFIG_KEXEC_FILE */
- static inline void kimage_file_post_load_cleanup(struct kimage *image) { }
+ 	/* Found a suitable memory range */
+ 	ksegment = &kbuf->image->segment[kbuf->image->nr_segments];
 -- 
 1.9.1
