@@ -1,43 +1,43 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9PNy3dRVzDr4g
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9PNy5h41zDr5T
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:22 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BNSbpI035363
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:20 -0400
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24rty4418h-1
+ u7BNScBS092616
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:21 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9vfyqg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:21 -0400
 Received: from localhost
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 12 Aug 2016 09:29:16 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 506BB2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:15 +1000 (EST)
+ Fri, 12 Aug 2016 09:29:18 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 37E642BB005A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:16 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BNTFEV26804404
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:15 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BNTGlA23658570
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:16 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BNTFBw023330
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:15 +1000
+ u7BNTFwZ023370
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:16 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, wei.guo.simon@gmail.com
 Cc: anton@samba.org, mikey@neuling.org
-Subject: [PATCH v2 15/20] selftests/powerpc: Add checks for transactional FPUs
+Subject: [PATCH v2 16/20] selftests/powerpc: Add checks for transactional VMXs
  in signal contexts
-Date: Fri, 12 Aug 2016 09:28:14 +1000
+Date: Fri, 12 Aug 2016 09:28:15 +1000
 In-Reply-To: <20160811232819.11453-1-cyrilbur@gmail.com>
 References: <20160811232819.11453-1-cyrilbur@gmail.com>
-Message-Id: <20160811232819.11453-16-cyrilbur@gmail.com>
+Message-Id: <20160811232819.11453-17-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,27 +54,28 @@ the expected values are in the signal context.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
- .../powerpc/tm/tm-signal-context-chk-fpu.c         | 92 ++++++++++++++++++++++
- 2 files changed, 93 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
+ tools/testing/selftests/powerpc/tm/Makefile        |   3 +-
+ .../powerpc/tm/tm-signal-context-chk-vmx.c         | 110 +++++++++++++++++++++
+ 2 files changed, 112 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
 
 diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 2b6fe8f..103648f 100644
+index 103648f..06c44aa 100644
 --- a/tools/testing/selftests/powerpc/tm/Makefile
 +++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,4 +1,4 @@
--SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr
-+SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu
+@@ -1,4 +1,5 @@
+-SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu
++SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu \
++	tm-signal-context-chk-vmx
  
  TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
  	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
 new file mode 100644
-index 0000000..c760deb
+index 0000000..f0ee55f
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
-@@ -0,0 +1,92 @@
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-vmx.c
+@@ -0,0 +1,110 @@
 +/*
 + * Copyright 2016, Cyril Bur, IBM Corp.
 + *
@@ -100,6 +101,7 @@ index 0000000..c760deb
 +
 +#include <stdlib.h>
 +#include <stdio.h>
++#include <string.h>
 +#include <signal.h>
 +#include <unistd.h>
 +
@@ -110,17 +112,22 @@ index 0000000..c760deb
 +
 +#define MAX_ATTEMPT 500000
 +
-+#define NV_FPU_REGS 18
++#define NV_VMX_REGS 12
 +
 +long tm_signal_self_context_load(pid_t pid, long *gprs, double *fps, vector int *vms, vector int *vss);
 +
-+/* Be sure there are 2x as many as there are NV FPU regs (2x18) */
-+static double fps[] = {
-+	 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-+	-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18
-+};
-+
 +static sig_atomic_t fail;
++
++vector int vms[] = {
++	{1, 2, 3, 4 },{5, 6, 7, 8 },{9, 10,11,12},
++	{13,14,15,16},{17,18,19,20},{21,22,23,24},
++	{25,26,27,28},{29,30,31,32},{33,34,35,36},
++	{37,38,39,40},{41,42,43,44},{45,46,47,48},
++	{-1, -2, -3, -4}, {-5, -6, -7, -8}, {-9, -10,-11,-12},
++	{-13,-14,-15,-16},{-17,-18,-19,-20},{-21,-22,-23,-24},
++	{-25,-26,-27,-28},{-29,-30,-31,-32},{-33,-34,-35,-36},
++	{-37,-38,-39,-40},{-41,-42,-43,-44},{-45,-46,-47,-48}
++};
 +
 +static void signal_usr1(int signum, siginfo_t *info, void *uc)
 +{
@@ -128,15 +135,27 @@ index 0000000..c760deb
 +	ucontext_t *ucp = uc;
 +	ucontext_t *tm_ucp = ucp->uc_link;
 +
-+	for (i = 0; i < NV_FPU_REGS && !fail; i++) {
-+		fail = (ucp->uc_mcontext.fp_regs[i + 14] != fps[i]);
-+		fail |= (tm_ucp->uc_mcontext.fp_regs[i + 14] != fps[i + NV_FPU_REGS]);
-+		if (fail)
-+			printf("Failed on %d FP %g or %g\n", i, ucp->uc_mcontext.fp_regs[i + 14], tm_ucp->uc_mcontext.fp_regs[i + 14]);
++	for (i = 0; i < NV_VMX_REGS && !fail; i++) {
++		fail = memcmp(ucp->uc_mcontext.v_regs->vrregs[i + 20],
++				&vms[i], sizeof(vector int));
++		fail |= memcmp(tm_ucp->uc_mcontext.v_regs->vrregs[i + 20],
++				&vms[i + NV_VMX_REGS], sizeof (vector int));
++
++		if (fail) {
++			int j;
++
++			fprintf(stderr, "Failed on %d vmx 0x", i);
++			for (j = 0; j < 4; j++)
++				fprintf(stderr, "%04x", ucp->uc_mcontext.v_regs->vrregs[i + 20][j]);
++			fprintf(stderr, " vs 0x");
++			for (j = 0 ; j < 4; j++)
++				fprintf(stderr, "%04x", tm_ucp->uc_mcontext.v_regs->vrregs[i + 20][j]);
++			fprintf(stderr, "\n");
++		}
 +	}
 +}
 +
-+static int tm_signal_context_chk_fpu()
++static int tm_signal_context_chk()
 +{
 +	struct sigaction act;
 +	int i;
@@ -155,7 +174,7 @@ index 0000000..c760deb
 +
 +	i = 0;
 +	while (i < MAX_ATTEMPT && !fail) {
-+		rc = tm_signal_self_context_load(pid, NULL, fps, NULL, NULL);
++		rc = tm_signal_self_context_load(pid, NULL, NULL, vms, NULL);
 +		FAIL_IF(rc != pid);
 +		i++;
 +	}
@@ -165,7 +184,7 @@ index 0000000..c760deb
 +
 +int main(void)
 +{
-+	return test_harness(tm_signal_context_chk_fpu, "tm_signal_context_chk_fpu");
++	return test_harness(tm_signal_context_chk, "tm_signal_context_chk_vmx");
 +}
 -- 
 2.9.2
