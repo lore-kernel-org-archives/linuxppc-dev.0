@@ -1,28 +1,24 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-oi0-x234.google.com (mail-oi0-x234.google.com
- [IPv6:2607:f8b0:4003:c06::234])
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s95z71dR4zDqhH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 21:54:26 +1000 (AEST)
-Received: by mail-oi0-x234.google.com with SMTP id 4so1602233oih.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 04:54:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s96j53LbQzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 22:27:21 +1000 (AEST)
+Date: Thu, 11 Aug 2016 14:27:10 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Yury Norov <ynorov@caviumnetworks.com>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Jiri Olsa <jolsa@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] perf/core: Fix the mask in perf_output_sample_regs
+Message-ID: <20160811122710.GP6879@twins.programming.kicks-ass.net>
+References: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20160811085040.2EC561A2456@localhost.localdomain>
-References: <20160811085040.2EC561A2456@localhost.localdomain>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 11 Aug 2016 13:54:23 +0200
-Message-ID: <CACRpkdZYZNyNRZMCNNUc=2FRqvb1nUjn5kZjuA8CHS=FG8G0MQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: sysdev: cpm: fix gpio save_regs functions
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- stable <stable@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1467568918-24377-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,49 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 11, 2016 at 10:50 AM, Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
 
-> of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
-> setting the data. Therefore ->save_regs() cannot use
-> gpiochip_get_data()
->
-> [    0.275940] Unable to handle kernel paging request for data at address 0x00000130
-> [    0.283120] Faulting instruction address: 0xc01b44cc
-> [    0.288175] Oops: Kernel access of bad area, sig: 11 [#1]
-> [    0.293343] PREEMPT CMPC885
-> [    0.296141] CPU: 0 PID: 1 Comm: swapper Not tainted 4.7.0-g65124df-dirty #68
-> [    0.304131] task: c6074000 ti: c6080000 task.ti: c6080000
-> [    0.309459] NIP: c01b44cc LR: c0011720 CTR: c0011708
-> [    0.314372] REGS: c6081d90 TRAP: 0300   Not tainted  (4.7.0-g65124df-dirty)
-> [    0.322267] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24000028  XER: 20000000
-> [    0.328813] DAR: 00000130 DSISR: c0000000
-> GPR00: c01b6d0c c6081e40 c6074000 c6017000 c9028000 c601d028 c6081dd8 00000000
-> GPR08: c601d028 00000000 ffffffff 00000001 24000044 00000000 c0002790 00000000
-> GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c05643b0 00000083
-> GPR24: c04a1a6c c0560000 c04a8308 c04c6480 c0012498 c6017000 c7ffcc78 c6017000
-> [    0.360806] NIP [c01b44cc] gpiochip_get_data+0x4/0xc
-> [    0.365684] LR [c0011720] cpm1_gpio16_save_regs+0x18/0x44
-> [    0.370972] Call Trace:
-> [    0.373451] [c6081e50] [c01b6d0c] of_mm_gpiochip_add_data+0x70/0xdc
-> [    0.379624] [c6081e70] [c00124c0] cpm_init_par_io+0x28/0x118
-> [    0.385238] [c6081e80] [c04a8ac0] do_one_initcall+0xb0/0x17c
-> [    0.390819] [c6081ef0] [c04a8cbc] kernel_init_freeable+0x130/0x1dc
-> [    0.396924] [c6081f30] [c00027a4] kernel_init+0x14/0x110
-> [    0.402177] [c6081f40] [c000b424] ret_from_kernel_thread+0x5c/0x64
-> [    0.408233] Instruction dump:
-> [    0.411168] 4182fafc 3f80c040 48234c6d 3bc0fff0 3b9c5ed0 4bfffaf4 81290020 712a0004
-> [    0.418825] 4182fb34 48234c51 4bfffb2c 81230004 <80690130> 4e800020 7c0802a6 9421ffe0
-> [    0.426763] ---[ end trace fe4113ee21d72ffa ]---
->
-> fixes: e65078f1f3490 ("powerpc: sysdev: cpm1: use gpiochip data pointer")
-> fixes: a14a2d484b386 ("powerpc: cpm_common: use gpiochip data pointer")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Sorry, found it in my inbox while clearing out backlog..
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+On Sun, Jul 03, 2016 at 11:31:58PM +0530, Madhavan Srinivasan wrote:
+> When decoding the perf_regs mask in perf_output_sample_regs(),
+> we loop through the mask using find_first_bit and find_next_bit functions.
+> While the exisitng code works fine in most of the case,
+> the logic is broken for 32bit kernel (Big Endian).
+> When reading u64 mask using (u32 *)(&val)[0], find_*_bit() assumes it gets
+> lower 32bits of u64 but instead gets upper 32bits which is wrong.
+> Proposed fix is to swap the words of the u64 to handle this case.
 
-Sorry for screwing stuff up :(
+> This is _not_ endianness swap.
 
-Yours,
-Linus Walleij
+But it looks an awful lot like it..
+
+> +++ b/kernel/events/core.c
+> @@ -5205,8 +5205,10 @@ perf_output_sample_regs(struct perf_output_handle *handle,
+>  			struct pt_regs *regs, u64 mask)
+>  {
+>  	int bit;
+> +	DECLARE_BITMAP(_mask, 64);
+>  
+> -	for_each_set_bit(bit, (const unsigned long *) &mask,
+> +	bitmap_from_u64(_mask, mask);
+> +	for_each_set_bit(bit, _mask,
+>  			 sizeof(mask) * BITS_PER_BYTE) {
+>  		u64 val;
+
+> +++ b/lib/bitmap.c
+
+> +void bitmap_from_u64(unsigned long *dst, u64 mask)
+> +{
+> +	dst[0] = mask & ULONG_MAX;
+> +
+> +	if (sizeof(mask) > sizeof(unsigned long))
+> +		dst[1] = mask >> 32;
+> +}
+> +EXPORT_SYMBOL(bitmap_from_u64);
+
+Looks small enough for an inline.
+
+Alternatively you can go all the way and add bitmap_from_u64array(), but
+that seems massive overkill.
+
+Tedious stuff.. I can't come up with anything prettier :/
