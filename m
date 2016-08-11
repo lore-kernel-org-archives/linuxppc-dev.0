@@ -1,31 +1,33 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s97jg1FCyzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 23:12:54 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id cf3so197491pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 06:12:54 -0700 (PDT)
-Date: Thu, 11 Aug 2016 23:12:40 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Segher Boessenkool
- <segher@kernel.crashing.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Luis R.
- Rodriguez" <mcgrof@kernel.org>, linux-next@vger.kernel.org, Paul Mackerras
- <paulus@samba.org>, Fengguang Wu <fengguang.wu@intel.com>, Guenter Roeck
- <linux@roeck-us.net>, Alan Modra <amodra@gmail.com>
-Subject: Re: powerpc allyesconfig / allmodconfig linux-next next-20160729 -
- next-20160729 build failures
-Message-ID: <20160811231240.4ba73123@roar.ozlabs.ibm.com>
-In-Reply-To: <6327068.NbTmhQA6XD@wuerfel>
-References: <CAB=NE6U18jv89pxqAeZY8eTj44mq90kyXGaQO-108+ZMTyxQiQ@mail.gmail.com>
- <6481373.xtk4H4bKaE@wuerfel>
- <20160811224320.52950a5c@roar.ozlabs.ibm.com>
- <6327068.NbTmhQA6XD@wuerfel>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s97qw5tgHzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 23:18:19 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id 6F578202EC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 13:18:16 +0000 (UTC)
+Received: from mail-yw0-f176.google.com (mail-yw0-f176.google.com
+ [209.85.161.176])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5DBB82024D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 13:18:13 +0000 (UTC)
+Received: by mail-yw0-f176.google.com with SMTP id z8so1979856ywa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 06:18:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1470913781-9204-1-git-send-email-haokexin@gmail.com>
+References: <1470913781-9204-1-git-send-email-haokexin@gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 11 Aug 2016 08:17:52 -0500
+Message-ID: <CAL_JsqKSQ2pUNEm+1_skkOM=gYihYBztcJusnZ=PCOvo+TkV6A@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: populate the default bus with
+ machine_arch_initcall
+To: Kevin Hao <haokexin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Kefeng Wang <wangkefeng.wang@huawei.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,45 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 11 Aug 2016 15:04:00 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+On Thu, Aug 11, 2016 at 6:09 AM, Kevin Hao <haokexin@gmail.com> wrote:
+> With the commit 44a7185c2ae6 ("of/platform: Add common method to
+> populate default bus"), a default function is introduced to populate
+> the default bus and this function is invoked at the arch_initcall_sync
+> level. This will override the arch specific population of default bus
+> which run at a lower level than arch_initcall_sync. Since not all
+> powerpc specific buses are added to the of_default_bus_match_table[],
+> this causes some powerpc specific bus are not probed. Fix this by
+> using a more preceding initcall.
+>
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> ---
+> Of course we can adjust the powerpc arch codes to use the
+> of_platform_default_populate_init(), but it has high risk to break
+> other boards given the complicated powerpc specific buses. So I would
+> like just to fix the broken boards in the current release, and cook
+> a patch to change to of_platform_default_populate_init() for linux-next.
 
-> On Thursday, August 11, 2016 10:43:20 PM CEST Nicholas Piggin wrote:
-> > On Wed, 03 Aug 2016 22:13:28 +0200
+The patch that broke things was sitting in -next for some time and no
+one reported anything. Are all these boards broken?
 
-> > Final ld time
-> > inclink
-> > real	0m0.378s
-> > user	0m0.304s
-> > sys	0m0.076s
-> > 
-> > thinarc
-> > real    0m0.894s
-> > user    0m0.684s
-> > sys     0m0.200s  
-> 
-> This also still seems fine.
-> 
-> > For both cases final link gets slower with thin archives. I guess there is some
-> > per-file overhead but I thought with --whole-archive it should not be that much
-> > slower. Still, overall time for main ar/ld phases comes out about the same in
-> > the end so I don't think it's too much problem. Unless ARM blows up significantly
-> > worse with a bigger config.  
-> 
-> Unfortunately I think it does. I haven't tried your latest series yet,
-> but I think the total time for removing built-in.o and relinking went
-> up from around 4 minutes (already way too much) to 18 minutes for me.
-> 
-> > Linking with thin archives takes significantly more time in bfd hash lookup code.
-> > I haven't dug much further yet.  
-> 
-> Can you try the ARM allyesconfig with thin archives? I'll follow up with two
-> patches: one to get ARM to link without thin archives, and one that I used
-> to get --gc-sections to work.
+I'm fine to just disable the default call for PPC instead if there's
+some chance this does not fix some boards. There could be some other
+initcall ordering dependencies.
 
-Okay send them over, I'll try digging into it. There is not much kbuild
-code to maintain so we don't have to switch every arch. It would be nice
-to though.
+>
+> Only boot test on a mpc8315erdb board.
 
-Thanks,
-Nick
+Curious, what would it take to remove the of_platform_bus_probe and
+use the default here? We can add additional bus compatibles to match.
+The difference between of_platform_bus_probe and
+of_platform_bus_populate is the former will match root nodes with no
+compatible string. Most platforms should not need that behavior and it
+would be nice to know which ones.
+
+Rob
