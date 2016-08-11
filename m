@@ -3,32 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Nx92HfrzDr1G
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Nx93KDVzDqdG
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:08:45 +1000 (AEST)
 Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BN8hRT016623
+ u7BN8ecw016427
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:43 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24r5ugx50g-1
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24r5ugx505-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:43 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 11 Aug 2016 20:08:39 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 5685A1DC0072
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:24 -0400 (EDT)
+ Thu, 11 Aug 2016 20:08:38 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id CD69F352006E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:15 -0400 (EDT)
 Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BN8X224636676
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:33 -0300
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BN8auu25755970
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:36 -0300
 Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
  by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BN8WTL026975
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:33 -0300
+ u7BN8Z05027122
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:36 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -42,12 +42,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "H. Peter Anvin" <hpa@zytor.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v5 02/13] kexec_file: Change kexec_add_buffer to take
- kexec_buf as argument.
-Date: Thu, 11 Aug 2016 20:08:07 -0300
+Subject: [PATCH v5 04/13] powerpc: Factor out relocation code from module_64.c
+ to elf_util_64.c.
+Date: Thu, 11 Aug 2016 20:08:09 -0300
 In-Reply-To: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1470956898-5991-3-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1470956898-5991-5-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,415 +57,905 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adapt all callers to the new function prototype.
+The kexec_file_load system call needs to relocate the purgatory, so
+factor out the module relocation code so that it can be shared.
 
-In addition, change the type of kexec_buf.buffer from char * to void *.
-There is no particular reason for it to be a char *, and the change
-allows us to get rid of 3 existing casts to char * in the code.
+This patch's purpose is to move the ELF relocation logic from
+apply_relocate_add to elf_util_64.c with as few changes as
+possible. The following changes were needed:
+
+To avoid having module-specific code in a general purpose utility
+function, struct elf_info was created to contain the information
+needed for ELF binaries manipulation.
+
+my_r2, stub_for_addr and create_stub were changed to use it instead of
+having to receive a struct module, since they are called from
+elf64_apply_relocate_add.
+
+local_entry_offset and squash_toc_save_inst were only used by
+apply_rellocate_add, so they were moved to elf_util_64.c as well.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Acked-by: Dave Young <dyoung@redhat.com>
 ---
- arch/x86/kernel/crash.c           | 37 ++++++++--------
- arch/x86/kernel/kexec-bzimage64.c | 48 +++++++++++----------
- include/linux/kexec.h             |  8 +---
- kernel/kexec_file.c               | 88 ++++++++++++++++++---------------------
- 4 files changed, 87 insertions(+), 94 deletions(-)
+ arch/powerpc/include/asm/elf_util.h |  70 ++++++++
+ arch/powerpc/include/asm/module.h   |  14 +-
+ arch/powerpc/kernel/Makefile        |   4 +
+ arch/powerpc/kernel/elf_util_64.c   | 269 +++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/module_64.c     | 312 ++++--------------------------------
+ 5 files changed, 386 insertions(+), 283 deletions(-)
 
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 9616cf76940c..38a1cdf6aa05 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -615,9 +615,9 @@ static int determine_backup_region(u64 start, u64 end, void *arg)
+diff --git a/arch/powerpc/include/asm/elf_util.h b/arch/powerpc/include/asm/elf_util.h
+new file mode 100644
+index 000000000000..37372559fe62
+--- /dev/null
++++ b/arch/powerpc/include/asm/elf_util.h
+@@ -0,0 +1,70 @@
++/*
++ * Utility functions to work with ELF files.
++ *
++ * Copyright (C) 2016, IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _ASM_POWERPC_ELF_UTIL_H
++#define _ASM_POWERPC_ELF_UTIL_H
++
++#include <linux/elf.h>
++
++struct elf_info {
++	struct elf_shdr *sechdrs;
++
++	/* Index of stubs section. */
++	unsigned int stubs_section;
++	/* Index of TOC section. */
++	unsigned int toc_section;
++};
++
++#ifdef __powerpc64__
++#ifdef PPC64_ELF_ABI_v2
++
++/* An address is simply the address of the function. */
++typedef unsigned long func_desc_t;
++#else
++
++/* An address is address of the OPD entry, which contains address of fn. */
++typedef struct ppc64_opd_entry func_desc_t;
++#endif /* PPC64_ELF_ABI_v2 */
++
++/* Like PPC32, we need little trampolines to do > 24-bit jumps (into
++   the kernel itself).  But on PPC64, these need to be used for every
++   jump, actually, to reset r2 (TOC+0x8000). */
++struct ppc64_stub_entry
++{
++	/* 28 byte jump instruction sequence (7 instructions). We only
++	 * need 6 instructions on ABIv2 but we always allocate 7 so
++	 * so we don't have to modify the trampoline load instruction. */
++	u32 jump[7];
++	/* Used by ftrace to identify stubs */
++	u32 magic;
++	/* Data for the above code */
++	func_desc_t funcdata;
++};
++#endif
++
++/* r2 is the TOC pointer: it actually points 0x8000 into the TOC (this
++   gives the value maximum span in an instruction which uses a signed
++   offset) */
++static inline unsigned long my_r2(const struct elf_info *elf_info)
++{
++	return elf_info->sechdrs[elf_info->toc_section].sh_addr + 0x8000;
++}
++
++int elf64_apply_relocate_add(const struct elf_info *elf_info,
++			     const char *strtab, unsigned int symindex,
++			     unsigned int relsec, const char *obj_name);
++
++#endif /* _ASM_POWERPC_ELF_UTIL_H */
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index cd4ffd86765f..f2073115d518 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -12,7 +12,14 @@
+ #include <linux/list.h>
+ #include <asm/bug.h>
+ #include <asm-generic/module.h>
++#include <asm/elf_util.h>
  
- int crash_load_segments(struct kimage *image)
- {
--	unsigned long src_start, src_sz, elf_sz;
--	void *elf_addr;
- 	int ret;
-+	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
-+				  .buf_max = ULONG_MAX, .top_down = false };
++/* Both low and high 16 bits are added as SIGNED additions, so if low
++   16 bits has high bit set, high 16 bits must be adjusted.  These
++   macros do that (stolen from binutils). */
++#define PPC_LO(v) ((v) & 0xffff)
++#define PPC_HI(v) (((v) >> 16) & 0xffff)
++#define PPC_HA(v) PPC_HI ((v) + 0x8000)
  
- 	/*
- 	 * Determine and load a segment for backup area. First 640K RAM
-@@ -631,43 +631,44 @@ int crash_load_segments(struct kimage *image)
- 	if (ret < 0)
- 		return ret;
+ #ifndef __powerpc64__
+ /*
+@@ -33,8 +40,7 @@ struct ppc_plt_entry {
  
--	src_start = image->arch.backup_src_start;
--	src_sz = image->arch.backup_src_sz;
--
- 	/* Add backup segment. */
--	if (src_sz) {
-+	if (image->arch.backup_src_sz) {
-+		kbuf.buffer = &crash_zero_bytes;
-+		kbuf.bufsz = sizeof(crash_zero_bytes);
-+		kbuf.memsz = image->arch.backup_src_sz;
-+		kbuf.buf_align = PAGE_SIZE;
- 		/*
- 		 * Ideally there is no source for backup segment. This is
- 		 * copied in purgatory after crash. Just add a zero filled
- 		 * segment for now to make sure checksum logic works fine.
- 		 */
--		ret = kexec_add_buffer(image, (char *)&crash_zero_bytes,
--				       sizeof(crash_zero_bytes), src_sz,
--				       PAGE_SIZE, 0, -1, 0,
--				       &image->arch.backup_load_addr);
-+		ret = kexec_add_buffer(&kbuf);
- 		if (ret)
- 			return ret;
-+		image->arch.backup_load_addr = kbuf.mem;
- 		pr_debug("Loaded backup region at 0x%lx backup_start=0x%lx memsz=0x%lx\n",
--			 image->arch.backup_load_addr, src_start, src_sz);
-+			 image->arch.backup_load_addr,
-+			 image->arch.backup_src_start, kbuf.memsz);
- 	}
- 
- 	/* Prepare elf headers and add a segment */
--	ret = prepare_elf_headers(image, &elf_addr, &elf_sz);
-+	ret = prepare_elf_headers(image, &kbuf.buffer, &kbuf.bufsz);
- 	if (ret)
- 		return ret;
- 
--	image->arch.elf_headers = elf_addr;
--	image->arch.elf_headers_sz = elf_sz;
-+	image->arch.elf_headers = kbuf.buffer;
-+	image->arch.elf_headers_sz = kbuf.bufsz;
- 
--	ret = kexec_add_buffer(image, (char *)elf_addr, elf_sz, elf_sz,
--			ELF_CORE_HEADER_ALIGN, 0, -1, 0,
--			&image->arch.elf_load_addr);
-+	kbuf.memsz = kbuf.bufsz;
-+	kbuf.buf_align = ELF_CORE_HEADER_ALIGN;
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret) {
- 		vfree((void *)image->arch.elf_headers);
- 		return ret;
- 	}
-+	image->arch.elf_load_addr = kbuf.mem;
- 	pr_debug("Loaded ELF headers at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
--		 image->arch.elf_load_addr, elf_sz, elf_sz);
-+		 image->arch.elf_load_addr, kbuf.bufsz, kbuf.bufsz);
- 
- 	return ret;
+ struct mod_arch_specific {
+ #ifdef __powerpc64__
+-	unsigned int stubs_section;	/* Index of stubs section in module */
+-	unsigned int toc_section;	/* What section is the TOC? */
++	struct elf_info elf_info;
+ 	bool toc_fixed;			/* Have we fixed up .TOC.? */
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 	unsigned long toc;
+@@ -90,6 +96,10 @@ static inline int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sec
  }
-diff --git a/arch/x86/kernel/kexec-bzimage64.c b/arch/x86/kernel/kexec-bzimage64.c
-index f2356bda2b05..4b3a75329fb6 100644
---- a/arch/x86/kernel/kexec-bzimage64.c
-+++ b/arch/x86/kernel/kexec-bzimage64.c
-@@ -331,17 +331,17 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
+ #endif
  
- 	struct setup_header *header;
- 	int setup_sects, kern16_size, ret = 0;
--	unsigned long setup_header_size, params_cmdline_sz, params_misc_sz;
-+	unsigned long setup_header_size, params_cmdline_sz;
- 	struct boot_params *params;
- 	unsigned long bootparam_load_addr, kernel_load_addr, initrd_load_addr;
- 	unsigned long purgatory_load_addr;
--	unsigned long kernel_bufsz, kernel_memsz, kernel_align;
--	char *kernel_buf;
- 	struct bzimage64_data *ldata;
- 	struct kexec_entry64_regs regs64;
- 	void *stack;
- 	unsigned int setup_hdr_offset = offsetof(struct boot_params, hdr);
- 	unsigned int efi_map_offset, efi_map_sz, efi_setup_data_offset;
-+	struct kexec_buf kbuf = { .image = image, .buf_max = ULONG_MAX,
-+				  .top_down = true };
++unsigned long stub_for_addr(const struct elf_info *elf_info, unsigned long addr,
++			    const char *obj_name);
++int restore_r2(u32 *instruction, const char *obj_name);
++
+ struct exception_table_entry;
+ void sort_ex_table(struct exception_table_entry *start,
+ 		   struct exception_table_entry *finish);
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index b2027a5cf508..e38aace0a6e7 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -123,6 +123,10 @@ ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
+ obj-y				+= iomap.o
+ endif
  
- 	header = (struct setup_header *)(kernel + setup_hdr_offset);
- 	setup_sects = header->setup_sects;
-@@ -402,11 +402,11 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
- 	params_cmdline_sz = sizeof(struct boot_params) + cmdline_len +
- 				MAX_ELFCOREHDR_STR_LEN;
- 	params_cmdline_sz = ALIGN(params_cmdline_sz, 16);
--	params_misc_sz = params_cmdline_sz + efi_map_sz +
-+	kbuf.bufsz = params_cmdline_sz + efi_map_sz +
- 				sizeof(struct setup_data) +
- 				sizeof(struct efi_setup_data);
++ifeq ($(CONFIG_MODULES)$(CONFIG_WORD_SIZE),y64)
++obj-y				+= elf_util_64.o
++endif
++
+ obj64-$(CONFIG_PPC_TRANSACTIONAL_MEM)	+= tm.o
  
--	params = kzalloc(params_misc_sz, GFP_KERNEL);
-+	params = kzalloc(kbuf.bufsz, GFP_KERNEL);
- 	if (!params)
- 		return ERR_PTR(-ENOMEM);
- 	efi_map_offset = params_cmdline_sz;
-@@ -418,37 +418,41 @@ static void *bzImage64_load(struct kimage *image, char *kernel,
- 	/* Is there a limit on setup header size? */
- 	memcpy(&params->hdr, (kernel + setup_hdr_offset), setup_header_size);
+ obj-$(CONFIG_PPC64)		+= $(obj64-y)
+diff --git a/arch/powerpc/kernel/elf_util_64.c b/arch/powerpc/kernel/elf_util_64.c
+new file mode 100644
+index 000000000000..decad2c34f38
+--- /dev/null
++++ b/arch/powerpc/kernel/elf_util_64.c
+@@ -0,0 +1,269 @@
++/*
++ * Utility functions to work with ELF files.
++ *
++ * Copyright (C) 2016, IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <asm/ppc-opcode.h>
++#include <asm/elf_util.h>
++
++/*
++ * We just need to use the functions defined in <asm/module.h>, so just declare
++ * struct module here and avoid having to import <linux/module.h>.
++ */
++struct module;
++#include <asm/module.h>
++
++#ifdef PPC64_ELF_ABI_v2
++/* PowerPC64 specific values for the Elf64_Sym st_other field.  */
++#define STO_PPC64_LOCAL_BIT	5
++#define STO_PPC64_LOCAL_MASK	(7 << STO_PPC64_LOCAL_BIT)
++#define PPC64_LOCAL_ENTRY_OFFSET(other)					\
++ (((1 << (((other) & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT)) >> 2) << 2)
++
++static unsigned int local_entry_offset(const Elf64_Sym *sym)
++{
++	/* sym->st_other indicates offset to local entry point
++	 * (otherwise it will assume r12 is the address of the start
++	 * of function and try to derive r2 from it). */
++	return PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
++}
++#else
++static unsigned int local_entry_offset(const Elf64_Sym *sym)
++{
++	return 0;
++}
++#endif
++
++#ifdef CC_USING_MPROFILE_KERNEL
++/*
++ * In case of _mcount calls, do not save the current callee's TOC (in r2) into
++ * the original caller's stack frame. If we did we would clobber the saved TOC
++ * value of the original caller.
++ */
++static void squash_toc_save_inst(const char *name, unsigned long addr)
++{
++	struct ppc64_stub_entry *stub = (struct ppc64_stub_entry *)addr;
++
++	/* Only for calls to _mcount */
++	if (strcmp("_mcount", name) != 0)
++		return;
++
++	stub->jump[2] = PPC_INST_NOP;
++}
++#else
++static void squash_toc_save_inst(const char *name, unsigned long addr) { }
++#endif
++
++/**
++ * elf64_apply_relocate_add - apply 64 bit RELA relocations
++ * @elf_info:		Support information for the ELF binary being relocated.
++ * @strtab:		String table for the associated symbol table.
++ * @symindex:		Section header index for the associated symbol table.
++ * @relsec:		Section header index for the relocations to apply.
++ * @obj_name:		The name of the ELF binary, for information messages.
++ */
++int elf64_apply_relocate_add(const struct elf_info *elf_info,
++			     const char *strtab, unsigned int symindex,
++			     unsigned int relsec, const char *obj_name)
++{
++	unsigned int i;
++	Elf64_Shdr *sechdrs = elf_info->sechdrs;
++	Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
++	Elf64_Sym *sym;
++	unsigned long *location;
++	unsigned long value;
++
++
++	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
++		/* This is where to make the change */
++		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
++			+ rela[i].r_offset;
++		/* This is the symbol it is referring to */
++		sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
++			+ ELF64_R_SYM(rela[i].r_info);
++
++		pr_debug("RELOC at %p: %li-type as %s (0x%lx) + %li\n",
++		       location, (long)ELF64_R_TYPE(rela[i].r_info),
++		       strtab + sym->st_name, (unsigned long)sym->st_value,
++		       (long)rela[i].r_addend);
++
++		/* `Everything is relative'. */
++		value = sym->st_value + rela[i].r_addend;
++
++		switch (ELF64_R_TYPE(rela[i].r_info)) {
++		case R_PPC64_ADDR32:
++			/* Simply set it */
++			*(u32 *)location = value;
++			break;
++
++		case R_PPC64_ADDR64:
++			/* Simply set it */
++			*(unsigned long *)location = value;
++			break;
++
++		case R_PPC64_TOC:
++			*(unsigned long *)location = my_r2(elf_info);
++			break;
++
++		case R_PPC64_TOC16:
++			/* Subtract TOC pointer */
++			value -= my_r2(elf_info);
++			if (value + 0x8000 > 0xffff) {
++				pr_err("%s: bad TOC16 relocation (0x%lx)\n",
++				       obj_name, value);
++				return -ENOEXEC;
++			}
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
++
++		case R_PPC64_TOC16_LO:
++			/* Subtract TOC pointer */
++			value -= my_r2(elf_info);
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
++
++		case R_PPC64_TOC16_DS:
++			/* Subtract TOC pointer */
++			value -= my_r2(elf_info);
++			if ((value & 3) != 0 || value + 0x8000 > 0xffff) {
++				pr_err("%s: bad TOC16_DS relocation (0x%lx)\n",
++				       obj_name, value);
++				return -ENOEXEC;
++			}
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xfffc)
++				| (value & 0xfffc);
++			break;
++
++		case R_PPC64_TOC16_LO_DS:
++			/* Subtract TOC pointer */
++			value -= my_r2(elf_info);
++			if ((value & 3) != 0) {
++				pr_err("%s: bad TOC16_LO_DS relocation (0x%lx)\n",
++				       obj_name, value);
++				return -ENOEXEC;
++			}
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xfffc)
++				| (value & 0xfffc);
++			break;
++
++		case R_PPC64_TOC16_HA:
++			/* Subtract TOC pointer */
++			value -= my_r2(elf_info);
++			value = ((value + 0x8000) >> 16);
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
++
++		case R_PPC_REL24:
++			/* FIXME: Handle weak symbols here --RR */
++			if (sym->st_shndx == SHN_UNDEF) {
++				/* External: go via stub */
++				value = stub_for_addr(elf_info, value, obj_name);
++				if (!value)
++					return -ENOENT;
++				if (!restore_r2((u32 *)location + 1, obj_name))
++					return -ENOEXEC;
++
++				squash_toc_save_inst(strtab + sym->st_name, value);
++			} else
++				value += local_entry_offset(sym);
++
++			/* Convert value to relative */
++			value -= (unsigned long)location;
++			if (value + 0x2000000 > 0x3ffffff || (value & 3) != 0){
++				pr_err("%s: REL24 %li out of range!\n",
++				       obj_name, (long int)value);
++				return -ENOEXEC;
++			}
++
++			/* Only replace bits 2 through 26 */
++			*(uint32_t *)location
++				= (*(uint32_t *)location & ~0x03fffffc)
++				| (value & 0x03fffffc);
++			break;
++
++		case R_PPC64_REL64:
++			/* 64 bits relative (used by features fixups) */
++			*location = value - (unsigned long)location;
++			break;
++
++		case R_PPC64_TOCSAVE:
++			/*
++			 * Marker reloc indicates we don't have to save r2.
++			 * That would only save us one instruction, so ignore
++			 * it.
++			 */
++			break;
++
++		case R_PPC64_ENTRY:
++			/*
++			 * Optimize ELFv2 large code model entry point if
++			 * the TOC is within 2GB range of current location.
++			 */
++			value = my_r2(elf_info) - (unsigned long)location;
++			if (value + 0x80008000 > 0xffffffff)
++				break;
++			/*
++			 * Check for the large code model prolog sequence:
++			 *	ld r2, ...(r12)
++			 *	add r2, r2, r12
++			 */
++			if ((((uint32_t *)location)[0] & ~0xfffc)
++			    != 0xe84c0000)
++				break;
++			if (((uint32_t *)location)[1] != 0x7c426214)
++				break;
++			/*
++			 * If found, replace it with:
++			 *	addis r2, r12, (.TOC.-func)@ha
++			 *	addi r2, r12, (.TOC.-func)@l
++			 */
++			((uint32_t *)location)[0] = 0x3c4c0000 + PPC_HA(value);
++			((uint32_t *)location)[1] = 0x38420000 + PPC_LO(value);
++			break;
++
++		case R_PPC64_REL16_HA:
++			/* Subtract location pointer */
++			value -= (unsigned long)location;
++			value = ((value + 0x8000) >> 16);
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
++
++		case R_PPC64_REL16_LO:
++			/* Subtract location pointer */
++			value -= (unsigned long)location;
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
++
++		default:
++			pr_err("%s: Unknown ADD relocation: %lu\n",
++			       obj_name,
++			       (unsigned long)ELF64_R_TYPE(rela[i].r_info));
++			return -ENOEXEC;
++		}
++	}
++
++	return 0;
++}
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 183368e008cf..b929560ecd5b 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -19,7 +19,7 @@
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
  
--	ret = kexec_add_buffer(image, (char *)params, params_misc_sz,
--			       params_misc_sz, 16, MIN_BOOTPARAM_ADDR,
--			       ULONG_MAX, 1, &bootparam_load_addr);
-+	kbuf.buffer = params;
-+	kbuf.memsz = kbuf.bufsz;
-+	kbuf.buf_align = 16;
-+	kbuf.buf_min = MIN_BOOTPARAM_ADDR;
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out_free_params;
-+	bootparam_load_addr = kbuf.mem;
- 	pr_debug("Loaded boot_param, command line and misc at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
--		 bootparam_load_addr, params_misc_sz, params_misc_sz);
-+		 bootparam_load_addr, kbuf.bufsz, kbuf.bufsz);
+ #include <linux/module.h>
+-#include <linux/elf.h>
++#include <asm/elf_util.h>
+ #include <linux/moduleloader.h>
+ #include <linux/err.h>
+ #include <linux/vmalloc.h>
+@@ -43,9 +43,6 @@
  
- 	/* Load kernel */
--	kernel_buf = kernel + kern16_size;
--	kernel_bufsz =  kernel_len - kern16_size;
--	kernel_memsz = PAGE_ALIGN(header->init_size);
--	kernel_align = header->kernel_alignment;
+ #ifdef PPC64_ELF_ABI_v2
+ 
+-/* An address is simply the address of the function. */
+-typedef unsigned long func_desc_t;
 -
--	ret = kexec_add_buffer(image, kernel_buf,
--			       kernel_bufsz, kernel_memsz, kernel_align,
--			       MIN_KERNEL_LOAD_ADDR, ULONG_MAX, 1,
--			       &kernel_load_addr);
-+	kbuf.buffer = kernel + kern16_size;
-+	kbuf.bufsz =  kernel_len - kern16_size;
-+	kbuf.memsz = PAGE_ALIGN(header->init_size);
-+	kbuf.buf_align = header->kernel_alignment;
-+	kbuf.buf_min = MIN_KERNEL_LOAD_ADDR;
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out_free_params;
-+	kernel_load_addr = kbuf.mem;
+ static func_desc_t func_desc(unsigned long addr)
+ {
+ 	return addr;
+@@ -58,25 +55,8 @@ static unsigned long stub_func_addr(func_desc_t func)
+ {
+ 	return func;
+ }
+-
+-/* PowerPC64 specific values for the Elf64_Sym st_other field.  */
+-#define STO_PPC64_LOCAL_BIT	5
+-#define STO_PPC64_LOCAL_MASK	(7 << STO_PPC64_LOCAL_BIT)
+-#define PPC64_LOCAL_ENTRY_OFFSET(other)					\
+- (((1 << (((other) & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT)) >> 2) << 2)
+-
+-static unsigned int local_entry_offset(const Elf64_Sym *sym)
+-{
+-	/* sym->st_other indicates offset to local entry point
+-	 * (otherwise it will assume r12 is the address of the start
+-	 * of function and try to derive r2 from it). */
+-	return PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
+-}
+ #else
  
- 	pr_debug("Loaded 64bit kernel at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
--		 kernel_load_addr, kernel_memsz, kernel_memsz);
-+		 kernel_load_addr, kbuf.bufsz, kbuf.memsz);
+-/* An address is address of the OPD entry, which contains address of fn. */
+-typedef struct ppc64_opd_entry func_desc_t;
+-
+ static func_desc_t func_desc(unsigned long addr)
+ {
+ 	return *(struct ppc64_opd_entry *)addr;
+@@ -89,29 +69,10 @@ static unsigned long stub_func_addr(func_desc_t func)
+ {
+ 	return func.funcaddr;
+ }
+-static unsigned int local_entry_offset(const Elf64_Sym *sym)
+-{
+-	return 0;
+-}
+ #endif
  
- 	/* Load initrd high */
- 	if (initrd) {
--		ret = kexec_add_buffer(image, initrd, initrd_len, initrd_len,
--				       PAGE_SIZE, MIN_INITRD_LOAD_ADDR,
--				       ULONG_MAX, 1, &initrd_load_addr);
-+		kbuf.buffer = initrd;
-+		kbuf.bufsz = kbuf.memsz = initrd_len;
-+		kbuf.buf_align = PAGE_SIZE;
-+		kbuf.buf_min = MIN_INITRD_LOAD_ADDR;
-+		ret = kexec_add_buffer(&kbuf);
- 		if (ret)
- 			goto out_free_params;
-+		initrd_load_addr = kbuf.mem;
+ #define STUB_MAGIC 0x73747562 /* stub */
  
- 		pr_debug("Loaded initrd at 0x%lx bufsz=0x%lx memsz=0x%lx\n",
- 				initrd_load_addr, initrd_len, initrd_len);
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 5ffd0011395c..28bc9f335d0d 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -163,7 +163,7 @@ struct kexec_file_ops {
-  */
- struct kexec_buf {
- 	struct kimage *image;
--	char *buffer;
-+	void *buffer;
- 	unsigned long bufsz;
- 	unsigned long mem;
- 	unsigned long memsz;
-@@ -175,6 +175,7 @@ struct kexec_buf {
+-/* Like PPC32, we need little trampolines to do > 24-bit jumps (into
+-   the kernel itself).  But on PPC64, these need to be used for every
+-   jump, actually, to reset r2 (TOC+0x8000). */
+-struct ppc64_stub_entry
+-{
+-	/* 28 byte jump instruction sequence (7 instructions). We only
+-	 * need 6 instructions on ABIv2 but we always allocate 7 so
+-	 * so we don't have to modify the trampoline load instruction. */
+-	u32 jump[7];
+-	/* Used by ftrace to identify stubs */
+-	u32 magic;
+-	/* Data for the above code */
+-	func_desc_t funcdata;
+-};
+-
+ /*
+  * PPC64 uses 24 bit jumps, but we need to jump into other modules or
+  * the kernel which may be further.  So we jump to a stub.
+@@ -346,9 +307,9 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 	for (i = 1; i < hdr->e_shnum; i++) {
+ 		char *p;
+ 		if (strcmp(secstrings + sechdrs[i].sh_name, ".stubs") == 0)
+-			me->arch.stubs_section = i;
++			me->arch.elf_info.stubs_section = i;
+ 		else if (strcmp(secstrings + sechdrs[i].sh_name, ".toc") == 0)
+-			me->arch.toc_section = i;
++			me->arch.elf_info.toc_section = i;
+ 		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
+ 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+ 					  sechdrs[i].sh_size);
+@@ -364,7 +325,7 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 				 + sechdrs[sechdrs[i].sh_link].sh_offset);
+ 	}
  
- int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
- 			       int (*func)(u64, u64, void *));
-+extern int kexec_add_buffer(struct kexec_buf *kbuf);
- int __weak arch_kexec_verify_buffer(enum kexec_file_type type, const void *buf,
- 				    unsigned long size);
- #endif /* CONFIG_KEXEC_FILE */
-@@ -244,11 +245,6 @@ extern asmlinkage long sys_kexec_load(unsigned long entry,
- 					struct kexec_segment __user *segments,
- 					unsigned long flags);
- extern int kernel_kexec(void);
--extern int kexec_add_buffer(struct kimage *image, char *buffer,
--			    unsigned long bufsz, unsigned long memsz,
--			    unsigned long buf_align, unsigned long buf_min,
--			    unsigned long buf_max, bool top_down,
--			    unsigned long *load_addr);
- extern struct page *kimage_alloc_control_pages(struct kimage *image,
- 						unsigned int order);
- extern int kexec_load_purgatory(struct kimage *image, unsigned long min,
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index e63fd4592e20..58818264ad0e 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -523,25 +523,27 @@ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
- 		return walk_system_ram_res(0, ULONG_MAX, kbuf, func);
+-	if (!me->arch.stubs_section) {
++	if (!me->arch.elf_info.stubs_section) {
+ 		pr_err("%s: doesn't contain .stubs.\n", me->name);
+ 		return -ENOEXEC;
+ 	}
+@@ -373,44 +334,32 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 	   to some reasonable value in case the module calls out to
+ 	   other functions via a stub, or if a function pointer escapes
+ 	   the module by some means.  */
+-	if (!me->arch.toc_section)
+-		me->arch.toc_section = me->arch.stubs_section;
++	if (!me->arch.elf_info.toc_section)
++		me->arch.elf_info.toc_section = me->arch.elf_info.stubs_section;
+ 
+ 	/* Override the stubs size */
+-	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs);
+-	return 0;
+-}
++	sechdrs[me->arch.elf_info.stubs_section].sh_size = get_stubs_size(hdr, sechdrs);
+ 
+-/* r2 is the TOC pointer: it actually points 0x8000 into the TOC (this
+-   gives the value maximum span in an instruction which uses a signed
+-   offset) */
+-static inline unsigned long my_r2(const Elf64_Shdr *sechdrs, struct module *me)
+-{
+-	return sechdrs[me->arch.toc_section].sh_addr + 0x8000;
+-}
++	/* For the elf_util functions. */
++	me->arch.elf_info.sechdrs = sechdrs;
+ 
+-/* Both low and high 16 bits are added as SIGNED additions, so if low
+-   16 bits has high bit set, high 16 bits must be adjusted.  These
+-   macros do that (stolen from binutils). */
+-#define PPC_LO(v) ((v) & 0xffff)
+-#define PPC_HI(v) (((v) >> 16) & 0xffff)
+-#define PPC_HA(v) PPC_HI ((v) + 0x8000)
++	return 0;
++}
+ 
+ /* Patch stub to reference function and correct r2 value. */
+-static inline int create_stub(const Elf64_Shdr *sechdrs,
++static inline int create_stub(const struct elf_info *elf_info,
+ 			      struct ppc64_stub_entry *entry,
+-			      unsigned long addr,
+-			      struct module *me)
++			      unsigned long addr, const char *obj_name)
+ {
+ 	long reladdr;
+ 
+ 	memcpy(entry->jump, ppc64_stub_insns, sizeof(ppc64_stub_insns));
+ 
+ 	/* Stub uses address relative to r2. */
+-	reladdr = (unsigned long)entry - my_r2(sechdrs, me);
++	reladdr = (unsigned long)entry - my_r2(elf_info);
+ 	if (reladdr > 0x7FFFFFFF || reladdr < -(0x80000000L)) {
+ 		pr_err("%s: Address %p of stub out of range of %p.\n",
+-		       me->name, (void *)reladdr, (void *)my_r2);
++		       obj_name, (void *)reladdr, (void *)my_r2);
+ 		return 0;
+ 	}
+ 	pr_debug("Stub %p get data from reladdr %li\n", entry, reladdr);
+@@ -425,17 +374,17 @@ static inline int create_stub(const Elf64_Shdr *sechdrs,
+ 
+ /* Create stub to jump to function described in this OPD/ptr: we need the
+    stub to set up the TOC ptr (r2) for the function. */
+-static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
+-				   unsigned long addr,
+-				   struct module *me)
++unsigned long stub_for_addr(const struct elf_info *elf_info, unsigned long addr,
++			    const char *obj_name)
+ {
++	struct elf_shdr *stubs_sec = &elf_info->sechdrs[elf_info->stubs_section];
+ 	struct ppc64_stub_entry *stubs;
+ 	unsigned int i, num_stubs;
+ 
+-	num_stubs = sechdrs[me->arch.stubs_section].sh_size / sizeof(*stubs);
++	num_stubs = stubs_sec->sh_size / sizeof(*stubs);
+ 
+ 	/* Find this stub, or if that fails, the next avail. entry */
+-	stubs = (void *)sechdrs[me->arch.stubs_section].sh_addr;
++	stubs = (void *) stubs_sec->sh_addr;
+ 	for (i = 0; stub_func_addr(stubs[i].funcdata); i++) {
+ 		BUG_ON(i >= num_stubs);
+ 
+@@ -443,7 +392,7 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
+ 			return (unsigned long)&stubs[i];
+ 	}
+ 
+-	if (!create_stub(sechdrs, &stubs[i], addr, me))
++	if (!create_stub(elf_info, &stubs[i], addr, obj_name))
+ 		return 0;
+ 
+ 	return (unsigned long)&stubs[i];
+@@ -465,24 +414,7 @@ static bool is_early_mcount_callsite(u32 *instruction)
+ 	return false;
  }
  
 -/*
-- * Helper function for placing a buffer in a kexec segment. This assumes
-- * that kexec_mutex is held.
-+/**
-+ * kexec_add_buffer - place a buffer in a kexec segment
-+ * @kbuf:	Buffer contents and memory parameters.
-+ *
-+ * This function assumes that kexec_mutex is held.
-+ * On successful return, @kbuf->mem will have the physical address of
-+ * the buffer in memory.
-+ *
-+ * Return: 0 on success, negative errno on error.
-  */
--int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
--		     unsigned long memsz, unsigned long buf_align,
--		     unsigned long buf_min, unsigned long buf_max,
--		     bool top_down, unsigned long *load_addr)
-+int kexec_add_buffer(struct kexec_buf *kbuf)
- {
- 
- 	struct kexec_segment *ksegment;
--	struct kexec_buf buf, *kbuf;
- 	int ret;
- 
- 	/* Currently adding segment this way is allowed only in file mode */
--	if (!image->file_mode)
-+	if (!kbuf->image->file_mode)
- 		return -EINVAL;
- 
--	if (image->nr_segments >= KEXEC_SEGMENT_MAX)
-+	if (kbuf->image->nr_segments >= KEXEC_SEGMENT_MAX)
- 		return -EINVAL;
- 
- 	/*
-@@ -551,22 +553,14 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
- 	 * logic goes through list of segments to make sure there are
- 	 * no destination overlaps.
- 	 */
--	if (!list_empty(&image->control_pages)) {
-+	if (!list_empty(&kbuf->image->control_pages)) {
- 		WARN_ON(1);
- 		return -EINVAL;
- 	}
- 
--	memset(&buf, 0, sizeof(struct kexec_buf));
--	kbuf = &buf;
--	kbuf->image = image;
--	kbuf->buffer = buffer;
--	kbuf->bufsz = bufsz;
+- * In case of _mcount calls, do not save the current callee's TOC (in r2) into
+- * the original caller's stack frame. If we did we would clobber the saved TOC
+- * value of the original caller.
+- */
+-static void squash_toc_save_inst(const char *name, unsigned long addr)
+-{
+-	struct ppc64_stub_entry *stub = (struct ppc64_stub_entry *)addr;
 -
--	kbuf->memsz = ALIGN(memsz, PAGE_SIZE);
--	kbuf->buf_align = max(buf_align, PAGE_SIZE);
--	kbuf->buf_min = buf_min;
--	kbuf->buf_max = buf_max;
--	kbuf->top_down = top_down;
-+	/* Ensure minimum alignment needed for segments. */
-+	kbuf->memsz = ALIGN(kbuf->memsz, PAGE_SIZE);
-+	kbuf->buf_align = max(kbuf->buf_align, PAGE_SIZE);
- 
- 	/* Walk the RAM ranges and allocate a suitable range for the buffer */
- 	ret = arch_kexec_walk_mem(kbuf, locate_mem_hole_callback);
-@@ -576,13 +570,12 @@ int kexec_add_buffer(struct kimage *image, char *buffer, unsigned long bufsz,
- 	}
- 
- 	/* Found a suitable memory range */
--	ksegment = &image->segment[image->nr_segments];
-+	ksegment = &kbuf->image->segment[kbuf->image->nr_segments];
- 	ksegment->kbuf = kbuf->buffer;
- 	ksegment->bufsz = kbuf->bufsz;
- 	ksegment->mem = kbuf->mem;
- 	ksegment->memsz = kbuf->memsz;
--	image->nr_segments++;
--	*load_addr = ksegment->mem;
-+	kbuf->image->nr_segments++;
- 	return 0;
- }
- 
-@@ -704,13 +697,15 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 				  unsigned long max, int top_down)
+-	/* Only for calls to _mcount */
+-	if (strcmp("_mcount", name) != 0)
+-		return;
+-
+-	stub->jump[2] = PPC_INST_NOP;
+-}
+ #else
+-static void squash_toc_save_inst(const char *name, unsigned long addr) { }
+-
+ /* without -mprofile-kernel, mcount calls are never early */
+ static bool is_early_mcount_callsite(u32 *instruction)
  {
- 	struct purgatory_info *pi = &image->purgatory_info;
--	unsigned long align, buf_align, bss_align, buf_sz, bss_sz, bss_pad;
--	unsigned long memsz, entry, load_addr, curr_load_addr, bss_addr, offset;
-+	unsigned long align, bss_align, bss_sz, bss_pad;
-+	unsigned long entry, load_addr, curr_load_addr, bss_addr, offset;
- 	unsigned char *buf_addr, *src;
- 	int i, ret = 0, entry_sidx = -1;
- 	const Elf_Shdr *sechdrs_c;
- 	Elf_Shdr *sechdrs = NULL;
--	void *purgatory_buf = NULL;
-+	struct kexec_buf kbuf = { .image = image, .bufsz = 0, .buf_align = 1,
-+				  .buf_min = min, .buf_max = max,
-+				  .top_down = top_down };
+@@ -492,14 +424,14 @@ static bool is_early_mcount_callsite(u32 *instruction)
  
- 	/*
- 	 * sechdrs_c points to section headers in purgatory and are read
-@@ -776,9 +771,7 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
+ /* We expect a noop next: if it is, replace it with instruction to
+    restore r2. */
+-static int restore_r2(u32 *instruction, struct module *me)
++int restore_r2(u32 *instruction, const char *obj_name)
+ {
+ 	if (is_early_mcount_callsite(instruction - 1))
+ 		return 1;
+ 
+ 	if (*instruction != PPC_INST_NOP) {
+ 		pr_err("%s: Expect noop after relocate, got %08x\n",
+-		       me->name, *instruction);
++		       obj_name, *instruction);
+ 		return 0;
+ 	}
+ 	/* ld r2,R2_STACK_OFFSET(r1) */
+@@ -513,11 +445,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		       unsigned int relsec,
+ 		       struct module *me)
+ {
+-	unsigned int i;
+-	Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
+ 	Elf64_Sym *sym;
+-	unsigned long *location;
+-	unsigned long value;
+ 
+ 	pr_debug("Applying ADD relocate section %u to %u\n", relsec,
+ 	       sechdrs[relsec].sh_info);
+@@ -528,191 +456,12 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		/* It's theoretically possible that a module doesn't want a
+ 		 * .TOC. so don't fail it just for that. */
+ 		if (sym)
+-			sym->st_value = my_r2(sechdrs, me);
++			sym->st_value = my_r2(&me->arch.elf_info);
+ 		me->arch.toc_fixed = true;
  	}
  
- 	/* Determine how much memory is needed to load relocatable object. */
--	buf_align = 1;
- 	bss_align = 1;
--	buf_sz = 0;
- 	bss_sz = 0;
- 
- 	for (i = 0; i < pi->ehdr->e_shnum; i++) {
-@@ -787,10 +780,10 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 
- 		align = sechdrs[i].sh_addralign;
- 		if (sechdrs[i].sh_type != SHT_NOBITS) {
--			if (buf_align < align)
--				buf_align = align;
--			buf_sz = ALIGN(buf_sz, align);
--			buf_sz += sechdrs[i].sh_size;
-+			if (kbuf.buf_align < align)
-+				kbuf.buf_align = align;
-+			kbuf.bufsz = ALIGN(kbuf.bufsz, align);
-+			kbuf.bufsz += sechdrs[i].sh_size;
- 		} else {
- 			/* bss section */
- 			if (bss_align < align)
-@@ -802,32 +795,31 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 
- 	/* Determine the bss padding required to align bss properly */
- 	bss_pad = 0;
--	if (buf_sz & (bss_align - 1))
--		bss_pad = bss_align - (buf_sz & (bss_align - 1));
-+	if (kbuf.bufsz & (bss_align - 1))
-+		bss_pad = bss_align - (kbuf.bufsz & (bss_align - 1));
- 
--	memsz = buf_sz + bss_pad + bss_sz;
-+	kbuf.memsz = kbuf.bufsz + bss_pad + bss_sz;
- 
- 	/* Allocate buffer for purgatory */
--	purgatory_buf = vzalloc(buf_sz);
--	if (!purgatory_buf) {
-+	kbuf.buffer = vzalloc(kbuf.bufsz);
-+	if (!kbuf.buffer) {
- 		ret = -ENOMEM;
- 		goto out;
- 	}
- 
--	if (buf_align < bss_align)
--		buf_align = bss_align;
-+	if (kbuf.buf_align < bss_align)
-+		kbuf.buf_align = bss_align;
- 
- 	/* Add buffer to segment list */
--	ret = kexec_add_buffer(image, purgatory_buf, buf_sz, memsz,
--				buf_align, min, max, top_down,
--				&pi->purgatory_load_addr);
-+	ret = kexec_add_buffer(&kbuf);
- 	if (ret)
- 		goto out;
-+	pi->purgatory_load_addr = kbuf.mem;
- 
- 	/* Load SHF_ALLOC sections */
--	buf_addr = purgatory_buf;
-+	buf_addr = kbuf.buffer;
- 	load_addr = curr_load_addr = pi->purgatory_load_addr;
--	bss_addr = load_addr + buf_sz + bss_pad;
-+	bss_addr = load_addr + kbuf.bufsz + bss_pad;
- 
- 	for (i = 0; i < pi->ehdr->e_shnum; i++) {
- 		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-@@ -873,11 +865,11 @@ static int __kexec_load_purgatory(struct kimage *image, unsigned long min,
- 	 * Used later to identify which section is purgatory and skip it
- 	 * from checksumming.
- 	 */
--	pi->purgatory_buf = purgatory_buf;
-+	pi->purgatory_buf = kbuf.buffer;
- 	return ret;
- out:
- 	vfree(sechdrs);
--	vfree(purgatory_buf);
-+	vfree(kbuf.buffer);
- 	return ret;
+-	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
+-		/* This is where to make the change */
+-		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
+-			+ rela[i].r_offset;
+-		/* This is the symbol it is referring to */
+-		sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
+-			+ ELF64_R_SYM(rela[i].r_info);
+-
+-		pr_debug("RELOC at %p: %li-type as %s (0x%lx) + %li\n",
+-		       location, (long)ELF64_R_TYPE(rela[i].r_info),
+-		       strtab + sym->st_name, (unsigned long)sym->st_value,
+-		       (long)rela[i].r_addend);
+-
+-		/* `Everything is relative'. */
+-		value = sym->st_value + rela[i].r_addend;
+-
+-		switch (ELF64_R_TYPE(rela[i].r_info)) {
+-		case R_PPC64_ADDR32:
+-			/* Simply set it */
+-			*(u32 *)location = value;
+-			break;
+-
+-		case R_PPC64_ADDR64:
+-			/* Simply set it */
+-			*(unsigned long *)location = value;
+-			break;
+-
+-		case R_PPC64_TOC:
+-			*(unsigned long *)location = my_r2(sechdrs, me);
+-			break;
+-
+-		case R_PPC64_TOC16:
+-			/* Subtract TOC pointer */
+-			value -= my_r2(sechdrs, me);
+-			if (value + 0x8000 > 0xffff) {
+-				pr_err("%s: bad TOC16 relocation (0x%lx)\n",
+-				       me->name, value);
+-				return -ENOEXEC;
+-			}
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xffff)
+-				| (value & 0xffff);
+-			break;
+-
+-		case R_PPC64_TOC16_LO:
+-			/* Subtract TOC pointer */
+-			value -= my_r2(sechdrs, me);
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xffff)
+-				| (value & 0xffff);
+-			break;
+-
+-		case R_PPC64_TOC16_DS:
+-			/* Subtract TOC pointer */
+-			value -= my_r2(sechdrs, me);
+-			if ((value & 3) != 0 || value + 0x8000 > 0xffff) {
+-				pr_err("%s: bad TOC16_DS relocation (0x%lx)\n",
+-				       me->name, value);
+-				return -ENOEXEC;
+-			}
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xfffc)
+-				| (value & 0xfffc);
+-			break;
+-
+-		case R_PPC64_TOC16_LO_DS:
+-			/* Subtract TOC pointer */
+-			value -= my_r2(sechdrs, me);
+-			if ((value & 3) != 0) {
+-				pr_err("%s: bad TOC16_LO_DS relocation (0x%lx)\n",
+-				       me->name, value);
+-				return -ENOEXEC;
+-			}
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xfffc)
+-				| (value & 0xfffc);
+-			break;
+-
+-		case R_PPC64_TOC16_HA:
+-			/* Subtract TOC pointer */
+-			value -= my_r2(sechdrs, me);
+-			value = ((value + 0x8000) >> 16);
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xffff)
+-				| (value & 0xffff);
+-			break;
+-
+-		case R_PPC_REL24:
+-			/* FIXME: Handle weak symbols here --RR */
+-			if (sym->st_shndx == SHN_UNDEF) {
+-				/* External: go via stub */
+-				value = stub_for_addr(sechdrs, value, me);
+-				if (!value)
+-					return -ENOENT;
+-				if (!restore_r2((u32 *)location + 1, me))
+-					return -ENOEXEC;
+-
+-				squash_toc_save_inst(strtab + sym->st_name, value);
+-			} else
+-				value += local_entry_offset(sym);
+-
+-			/* Convert value to relative */
+-			value -= (unsigned long)location;
+-			if (value + 0x2000000 > 0x3ffffff || (value & 3) != 0){
+-				pr_err("%s: REL24 %li out of range!\n",
+-				       me->name, (long int)value);
+-				return -ENOEXEC;
+-			}
+-
+-			/* Only replace bits 2 through 26 */
+-			*(uint32_t *)location
+-				= (*(uint32_t *)location & ~0x03fffffc)
+-				| (value & 0x03fffffc);
+-			break;
+-
+-		case R_PPC64_REL64:
+-			/* 64 bits relative (used by features fixups) */
+-			*location = value - (unsigned long)location;
+-			break;
+-
+-		case R_PPC64_TOCSAVE:
+-			/*
+-			 * Marker reloc indicates we don't have to save r2.
+-			 * That would only save us one instruction, so ignore
+-			 * it.
+-			 */
+-			break;
+-
+-		case R_PPC64_ENTRY:
+-			/*
+-			 * Optimize ELFv2 large code model entry point if
+-			 * the TOC is within 2GB range of current location.
+-			 */
+-			value = my_r2(sechdrs, me) - (unsigned long)location;
+-			if (value + 0x80008000 > 0xffffffff)
+-				break;
+-			/*
+-			 * Check for the large code model prolog sequence:
+-		         *	ld r2, ...(r12)
+-			 *	add r2, r2, r12
+-			 */
+-			if ((((uint32_t *)location)[0] & ~0xfffc)
+-			    != 0xe84c0000)
+-				break;
+-			if (((uint32_t *)location)[1] != 0x7c426214)
+-				break;
+-			/*
+-			 * If found, replace it with:
+-			 *	addis r2, r12, (.TOC.-func)@ha
+-			 *	addi r2, r12, (.TOC.-func)@l
+-			 */
+-			((uint32_t *)location)[0] = 0x3c4c0000 + PPC_HA(value);
+-			((uint32_t *)location)[1] = 0x38420000 + PPC_LO(value);
+-			break;
+-
+-		case R_PPC64_REL16_HA:
+-			/* Subtract location pointer */
+-			value -= (unsigned long)location;
+-			value = ((value + 0x8000) >> 16);
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xffff)
+-				| (value & 0xffff);
+-			break;
+-
+-		case R_PPC64_REL16_LO:
+-			/* Subtract location pointer */
+-			value -= (unsigned long)location;
+-			*((uint16_t *) location)
+-				= (*((uint16_t *) location) & ~0xffff)
+-				| (value & 0xffff);
+-			break;
+-
+-		default:
+-			pr_err("%s: Unknown ADD relocation: %lu\n",
+-			       me->name,
+-			       (unsigned long)ELF64_R_TYPE(rela[i].r_info));
+-			return -ENOEXEC;
+-		}
+-	}
+-
+-	return 0;
++	return elf64_apply_relocate_add(&me->arch.elf_info, strtab, symindex,
++					relsec, me->name);
  }
  
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -746,10 +495,10 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module
+ 	};
+ 	long reladdr;
+ 
+-	num_stubs = sechdrs[me->arch.stubs_section].sh_size / sizeof(*entry);
++	num_stubs = sechdrs[me->arch.elf_info.stubs_section].sh_size / sizeof(*entry);
+ 
+ 	/* Find the next available stub entry */
+-	entry = (void *)sechdrs[me->arch.stubs_section].sh_addr;
++	entry = (void *)sechdrs[me->arch.elf_info.stubs_section].sh_addr;
+ 	for (i = 0; i < num_stubs && stub_func_addr(entry->funcdata); i++, entry++);
+ 
+ 	if (i >= num_stubs) {
+@@ -778,13 +527,14 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module
+ #else
+ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs, struct module *me)
+ {
+-	return stub_for_addr(sechdrs, (unsigned long)ftrace_caller, me);
++	return stub_for_addr(&me->arch.elf_info, (unsigned long)ftrace_caller,
++			     me->name);
+ }
+ #endif
+ 
+ int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs)
+ {
+-	mod->arch.toc = my_r2(sechdrs, mod);
++	mod->arch.toc = my_r2(&mod->arch.elf_info);
+ 	mod->arch.tramp = create_ftrace_stub(sechdrs, mod);
+ 
+ 	if (!mod->arch.tramp)
 -- 
 1.9.1
