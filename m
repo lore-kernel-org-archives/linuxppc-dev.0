@@ -2,14 +2,14 @@ Return-Path: <sfr@samba.org>
 Received: from hr2.samba.org (hr2.samba.org [144.76.82.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8q6J4xy7zDqgN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 10:44:40 +1000 (AEST)
-Date: Thu, 11 Aug 2016 10:44:21 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8qBs2PS7zDqh7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 10:48:37 +1000 (AEST)
+Date: Thu, 11 Aug 2016 10:48:25 +1000
 From: Stephen Rothwell <sfr@samba.org>
-To: sfr@ozlabs.org
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: test, please ignore
-Message-ID: <20160811104421.30fffc54@gum.ozlabs.ibm.com>
+To: <sfr@ozlabs.org>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+Subject: test again, please ignore
+Message-ID: <20160811104825.72151e93@gum.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
