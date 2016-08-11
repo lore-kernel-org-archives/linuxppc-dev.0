@@ -1,27 +1,18 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x244.google.com (mail-pa0-x244.google.com
- [IPv6:2607:f8b0:400e:c03::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s90J423SCzDqfj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 17:38:44 +1000 (AEST)
-Received: by mail-pa0-x244.google.com with SMTP id ez1so4280001pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 00:38:44 -0700 (PDT)
-Subject: Re: [PATCH 0/7] ima: carry the measurement list across kexec
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-References: <1470313475-20090-1-git-send-email-zohar@linux.vnet.ibm.com>
- <91fa2f95-4d70-a056-d599-01cb3bbe6771@gmail.com>
- <1470746204.2881.101.camel@linux.vnet.ibm.com>
-Cc: linux-security-module@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- linux-ima-devel@lists.sourceforge.net, Dave Young <dyoung@redhat.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <46d115a8-de96-1e9f-9d08-b0e9b6cca93a@gmail.com>
-Date: Thu, 11 Aug 2016 17:38:35 +1000
-MIME-Version: 1.0
-In-Reply-To: <1470746204.2881.101.camel@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s91v85ZDzzDqfj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 18:50:44 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc: sysdev: cpm: fix gpio save_regs functions
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-gpio@vger.kernel.org, stable@vger.kernel.org
+Message-Id: <20160811085040.2EC561A2456@localhost.localdomain>
+Date: Thu, 11 Aug 2016 10:50:40 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +22,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
+setting the data. Therefore ->save_regs() cannot use
+gpiochip_get_data()
 
+[    0.275940] Unable to handle kernel paging request for data at address 0x00000130
+[    0.283120] Faulting instruction address: 0xc01b44cc
+[    0.288175] Oops: Kernel access of bad area, sig: 11 [#1]
+[    0.293343] PREEMPT CMPC885
+[    0.296141] CPU: 0 PID: 1 Comm: swapper Not tainted 4.7.0-g65124df-dirty #68
+[    0.304131] task: c6074000 ti: c6080000 task.ti: c6080000
+[    0.309459] NIP: c01b44cc LR: c0011720 CTR: c0011708
+[    0.314372] REGS: c6081d90 TRAP: 0300   Not tainted  (4.7.0-g65124df-dirty)
+[    0.322267] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24000028  XER: 20000000
+[    0.328813] DAR: 00000130 DSISR: c0000000
+GPR00: c01b6d0c c6081e40 c6074000 c6017000 c9028000 c601d028 c6081dd8 00000000
+GPR08: c601d028 00000000 ffffffff 00000001 24000044 00000000 c0002790 00000000
+GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c05643b0 00000083
+GPR24: c04a1a6c c0560000 c04a8308 c04c6480 c0012498 c6017000 c7ffcc78 c6017000
+[    0.360806] NIP [c01b44cc] gpiochip_get_data+0x4/0xc
+[    0.365684] LR [c0011720] cpm1_gpio16_save_regs+0x18/0x44
+[    0.370972] Call Trace:
+[    0.373451] [c6081e50] [c01b6d0c] of_mm_gpiochip_add_data+0x70/0xdc
+[    0.379624] [c6081e70] [c00124c0] cpm_init_par_io+0x28/0x118
+[    0.385238] [c6081e80] [c04a8ac0] do_one_initcall+0xb0/0x17c
+[    0.390819] [c6081ef0] [c04a8cbc] kernel_init_freeable+0x130/0x1dc
+[    0.396924] [c6081f30] [c00027a4] kernel_init+0x14/0x110
+[    0.402177] [c6081f40] [c000b424] ret_from_kernel_thread+0x5c/0x64
+[    0.408233] Instruction dump:
+[    0.411168] 4182fafc 3f80c040 48234c6d 3bc0fff0 3b9c5ed0 4bfffaf4 81290020 712a0004
+[    0.418825] 4182fb34 48234c51 4bfffb2c 81230004 <80690130> 4e800020 7c0802a6 9421ffe0
+[    0.426763] ---[ end trace fe4113ee21d72ffa ]---
 
-On 09/08/16 22:36, Mimi Zohar wrote:
-> On Tue, 2016-08-09 at 15:19 +1000, Balbir Singh wrote:
->>
->> On 04/08/16 22:24, Mimi Zohar wrote:
->>> The TPM PCRs are only reset on a hard reboot.  In order to validate a
->>> TPM's quote after a soft reboot (eg. kexec -e), the IMA measurement list
->>> of the running kernel must be saved and then restored on the subsequent
->>> boot.
->>>
->>> The existing securityfs binary_runtime_measurements file conveniently
->>> provides a serialized format of the IMA measurement list. This patch
->>> set serializes the measurement list in this format and restores it.
->>>
->>> This patch set pre-req's Thiago Bauermann's "kexec_file: Add buffer
->>> hand-over for the next kernel" patch set* for actually carrying the
->>> serialized measurement list across the kexec.
->>>
->>> Mimi
->>>
->>
->> Hi, Mimi
->>
->> I am trying to convince myself of the security of the solution. I asked
->> Thiago as well, but may be I am be lagging behind in understanding.
->>
->> We trust the kernel to hand over PCR values of the old kernel (which
->> cannot be validated) to the IMA subsystem in the new kernel for storage.
->> I guess the idea is for ima_add_boot_aggregate to do the right thing?
->> How do we validate what the old kernel is giving us? Why do we care for
->> the old measurement list? Is it still of significance in the new kernel?
->>
-> 
-> Hi Balbir,
-> 
-> To validate the hardware TPM PCR values requires walking the measurement
-> list simulating the TPM extend operation.  The resulting values should
-> match the hardware TPM PCRs.
-> 
-> In the case of a soft reboot, the TPM PCRs are not reset to 0, so all
-> the measurements of the running system, including those from previous
-> soft reboots, need to be included in the measurement list.   Without
-> these measurements, the simulated PCR values will not match the hardware
-> TPM PCR values.  Thus the need for this patch set.
-> 
-> Measurements can not be added/removed/changed in the measurement list
-> without it being detectable.
-> 
+fixes: e65078f1f3490 ("powerpc: sysdev: cpm1: use gpiochip data pointer")
+fixes: a14a2d484b386 ("powerpc: cpm_common: use gpiochip data pointer")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/sysdev/cpm1.c       | 6 ++++--
+ arch/powerpc/sysdev/cpm_common.c | 3 ++-
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-Thanks Mimi
-
-I think that makes sense
-
-So effectively we do
-
-first kernel boot -> <measurements match PCR and measurements are saved>
-second kernel boot -> <new PCR = first save measurements + new measurements>
-
-and so on
-
-Balbir Singh
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+index 6c11099..81d4947 100644
+--- a/arch/powerpc/sysdev/cpm1.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -534,7 +534,8 @@ struct cpm1_gpio16_chip {
+ 
+ static void cpm1_gpio16_save_regs(struct of_mm_gpio_chip *mm_gc)
+ {
+-	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
++	struct cpm1_gpio16_chip *cpm1_gc =
++		container_of(mm_gc, struct cpm1_gpio16_chip, mm_gc);
+ 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
+ 
+ 	cpm1_gc->cpdata = in_be16(&iop->dat);
+@@ -649,7 +650,8 @@ struct cpm1_gpio32_chip {
+ 
+ static void cpm1_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
+ {
+-	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
++	struct cpm1_gpio32_chip *cpm1_gc =
++		container_of(mm_gc, struct cpm1_gpio32_chip, mm_gc);
+ 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
+ 
+ 	cpm1_gc->cpdata = in_be32(&iop->dat);
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 911456d..947f420 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -94,7 +94,8 @@ struct cpm2_gpio32_chip {
+ 
+ static void cpm2_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
+ {
+-	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(&mm_gc->gc);
++	struct cpm2_gpio32_chip *cpm2_gc =
++		container_of(mm_gc, struct cpm2_gpio32_chip, mm_gc);
+ 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
+ 
+ 	cpm2_gc->cpdata = in_be32(&iop->dat);
+-- 
+2.1.0
