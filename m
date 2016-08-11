@@ -1,34 +1,34 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9NrH1FBZzDqQq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:04:30 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BN4DAS031718
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:04:28 -0400
-Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9v7dg2-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9NrK00gGzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:04:32 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7BN4LeX094856
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:04:30 -0400
+Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9wwry5-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:04:28 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:04:30 -0400
 Received: from localhost
- by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 11 Aug 2016 20:04:25 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 91A723520068
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:04:03 -0400 (EDT)
+ Thu, 11 Aug 2016 20:04:28 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 683001DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:04:16 -0400 (EDT)
 Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BN4OQr15663544
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:04:24 -0300
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BN4PIA4771976
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:04:25 -0300
 Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
  by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BN4MJT019197
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:04:23 -0300
+ u7BN4NET019223
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:04:25 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
@@ -41,11 +41,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Stewart Smith <stewart@linux.vnet.ibm.com>,
  Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
  Russell King - ARM Linux <linux@armlinux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v2 0/2] extend kexec_file_load system call
-Date: Thu, 11 Aug 2016 20:03:56 -0300
-Message-Id: <1470956638-3589-1-git-send-email-bauerman@linux.vnet.ibm.com>
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 1/2] kexec: add dtb info to struct kimage
+Date: Thu, 11 Aug 2016 20:03:57 -0300
+In-Reply-To: <1470956638-3589-1-git-send-email-bauerman@linux.vnet.ibm.com>
+References: <1470956638-3589-1-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1470956638-3589-2-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,65 +56,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series is from AKASHI Takahiro. I will use it in my next
-version of the kexec_file_load implementation for powerpc, so I am
-rebasing it on top of v4.8-rc1.
-
-I dropped the patch which adds __NR_kexec_file_load to
-<asm-generic/unistd.h> for simplicity, since the powerpc patches already
-add it to powerpc's <asm/unistd.h>. I don't know which approach is
-better.
-
-The first patch in this series is unchanged from v1.
-
-The second patch is the same one I posted on July 26th. It has the
-following changes from v1:
-
-- Added the arch_kexec_verify_buffer hook, where each architecture can
-  verify if the DTB is safe to load.
-- Renamed KEXEC_FILE_TYPE_DTB to KEXEC_FILE_TYPE_PARTIAL_DTB.
-- Limited max number of fds to KEXEC_SEGMENT_MAX.
-- Changed to use fixed size buffer for fdset instead of allocating it.
-- Changed to return -EINVAL if an unknown file type is found in fdset.
-
-I am also posting a new version of the kexec_file_load syscall
-implementation for powerpc which uses the arch_kexec_verify_buffer hook
-to enforce a whitelist of nodes and properties that userspace can pass to
-the next kernel, as suggested by Michael Ellerman.
-
-You can find it in a new patch in the powerpc series called
-"powerpc: Allow userspace to set device tree properties in kexec_file_load"
-
-Original cover letter:
+From: AKASHI Takahiro <takahiro.akashi@linaro.org>
 
 Device tree blob must be passed to a second kernel on DTB-capable
 archs, like powerpc and arm64, but the current kernel interface
 lacks this support.
 
-This patch extends kexec_file_load system call by adding an extra
-argument to this syscall so that an arbitrary number of file descriptors
-can be handed out from user space to the kernel.
+This patch adds dtb buffer information to struct kimage.
+When users don't specify dtb explicitly and the one used for the current
+kernel can be re-used, this change will be good enough for implementing
+kexec_file_load feature.
 
-See the background [1].
+Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+---
+ include/linux/kexec.h | 3 +++
+ kernel/kexec_file.c   | 3 +++
+ 2 files changed, 6 insertions(+)
 
-Please note that the new interface looks quite similar to the current
-system call, but that it won't always mean that it provides the "binary
-compatibility."
-
-[1] http://lists.infradead.org/pipermail/kexec/2016-June/016276.html
-
-AKASHI Takahiro (1):
-  kexec: add dtb info to struct kimage
-
-Thiago Jung Bauermann (1):
-  kexec: extend kexec_file_load system call
-
- include/linux/fs.h         |  1 +
- include/linux/kexec.h      | 10 ++++--
- include/linux/syscalls.h   |  4 ++-
- include/uapi/linux/kexec.h | 22 ++++++++++++
- kernel/kexec_file.c        | 86 ++++++++++++++++++++++++++++++++++++++++++----
- 5 files changed, 114 insertions(+), 9 deletions(-)
-
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index d7437777baaa..4f85d284ed0b 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -192,6 +192,9 @@ struct kimage {
+ 	char *cmdline_buf;
+ 	unsigned long cmdline_buf_len;
+ 
++	void *dtb_buf;
++	unsigned long dtb_buf_len;
++
+ 	/* File operations provided by image loader */
+ 	struct kexec_file_ops *fops;
+ 
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index 503bc2d348e5..113af2f219b9 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -92,6 +92,9 @@ void kimage_file_post_load_cleanup(struct kimage *image)
+ 	vfree(image->initrd_buf);
+ 	image->initrd_buf = NULL;
+ 
++	vfree(image->dtb_buf);
++	image->dtb_buf = NULL;
++
+ 	kfree(image->cmdline_buf);
+ 	image->cmdline_buf = NULL;
+ 
 -- 
 1.9.1
