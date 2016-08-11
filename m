@@ -1,17 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8qd33fR6zDqfj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 11:07:51 +1000 (AEST)
-Date: Thu, 11 Aug 2016 11:07:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Anton Blanchard <anton@samba.org>
-Subject: Mailman and DKIM
-Message-ID: <20160811110750.27f37f35@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8rsJ6LS3zDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 12:03:32 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Paolo Bonzini
+ <pbonzini@redhat.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH] powerpc: move hmi.c to arch/powerpc/kvm/
+In-Reply-To: <20160810184127.GA27257@potion>
+References: <1470224194-15412-1-git-send-email-pbonzini@redhat.com>
+ <20160810184127.GA27257@potion>
+Date: Thu, 11 Aug 2016 12:03:32 +1000
+Message-ID: <87vaz8t62z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,27 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+Radim Kr=C4=8Dm=C3=A1=C5=99 <rkrcmar@redhat.com> writes:
 
-I have made Mailman work mostly with DKIM (and therefore DMARC).  The
-one remaining trick is this: Mailman will "simplify" mail addresses in
-Cc (and maybe From and To) headers in some circumstances - which breaks
-DKIM signatures.
+> 2016-08-03 13:36+0200, Paolo Bonzini:
+>> hmi.c functions are unused unless sibling_subcore_state is nonzero, and
+>> that in turn happens only if KVM is in use.  So move the code to
+>> arch/powerpc/kvm/, putting it under CONFIG_KVM_BOOK3S_64_HANDLER
+>> rather than CONFIG_PPC_BOOK3S_64.  The sibling_subcore_state is also
+>> included in struct paca_struct only if KVM is supported by the kernel.
+>>=20
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: kvm-ppc@vger.kernel.org
+>> Cc: kvm@vger.kernel.org
+>> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+>> ---
+>> 	It would be nice to have this in 4.8, to minimize any 4.9 conflicts.
+>> 	Build-tested only, with and without KVM enabled.
+>
+> If you agree with the change, would you prefer to have this patch merged
+> through the PowerPC tree?
 
-So, for an email address like:
+Yeah I'll pull it into my fixes branch.
 
-	Name <address@example.com>
-
-if the "Name" is missing, Mailman will remove the "<" and ">".  To get
-around this, you can either always put a "Name", or lease out both the
-"Name" and the "<>".
-
-Sorry for the pain, hopefully most people can fix this in their address
-books etc.
-
-And to be clear, this only matters where the originating site uses
-DMARC with a strict policy (which includes samba.org).
-
--- 
-Cheers,
-Stephen Rothwell
+cheers
