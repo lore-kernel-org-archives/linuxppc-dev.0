@@ -3,41 +3,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9PNx2Zy3zDr2n
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:21 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BNSaXG081059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:19 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- by mx0b-001b2d01.pphosted.com with ESMTP id 24rqx1x7cw-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9PNy3dRVzDr4g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:22 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7BNSbpI035363
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:20 -0400
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24rty4418h-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:29:19 -0400
 Received: from localhost
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
  Fri, 12 Aug 2016 09:29:16 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A814E3578053
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:14 +1000 (EST)
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 506BB2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:15 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BNTEmL31916122
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:14 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BNTFEV26804404
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:15 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BNTE9v023313
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:14 +1000
+ u7BNTFBw023330
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:29:15 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org, wei.guo.simon@gmail.com
 Cc: anton@samba.org, mikey@neuling.org
-Subject: [PATCH v2 14/20] selftests/powerpc: Add checks for transactional GPRs
+Subject: [PATCH v2 15/20] selftests/powerpc: Add checks for transactional FPUs
  in signal contexts
-Date: Fri, 12 Aug 2016 09:28:13 +1000
+Date: Fri, 12 Aug 2016 09:28:14 +1000
 In-Reply-To: <20160811232819.11453-1-cyrilbur@gmail.com>
 References: <20160811232819.11453-1-cyrilbur@gmail.com>
-Message-Id: <20160811232819.11453-15-cyrilbur@gmail.com>
+Message-Id: <20160811232819.11453-16-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,42 +54,27 @@ the expected values are in the signal context.
 
 Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 ---
- tools/testing/selftests/powerpc/tm/Makefile        |   7 +-
- .../powerpc/tm/tm-signal-context-chk-gpr.c         |  90 ++++++++++++++++
- tools/testing/selftests/powerpc/tm/tm-signal.S     | 114 +++++++++++++++++++++
- 3 files changed, 210 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal.S
+ tools/testing/selftests/powerpc/tm/Makefile        |  2 +-
+ .../powerpc/tm/tm-signal-context-chk-fpu.c         | 92 ++++++++++++++++++++++
+ 2 files changed, 93 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
 
 diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 9d301d7..2b6fe8f 100644
+index 2b6fe8f..103648f 100644
 --- a/tools/testing/selftests/powerpc/tm/Makefile
 +++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -1,5 +1,7 @@
-+SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr
-+
+@@ -1,4 +1,4 @@
+-SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr
++SIGNAL_CONTEXT_CHK_TESTS := tm-signal-context-chk-gpr tm-signal-context-chk-fpu
+ 
  TEST_PROGS := tm-resched-dscr tm-syscall tm-signal-msr-resv tm-signal-stack \
--	tm-vmxcopy tm-fork tm-tar tm-tmspr tm-exec tm-execed
-+	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
- 
- all: $(TEST_PROGS)
- 
-@@ -11,6 +13,9 @@ tm-syscall: tm-syscall-asm.S
- tm-syscall: CFLAGS += -I../../../../../usr/include
- tm-tmspr: CFLAGS += -pthread
- 
-+$(SIGNAL_CONTEXT_CHK_TESTS): tm-signal.S
-+$(SIGNAL_CONTEXT_CHK_TESTS): CFLAGS += -mhtm -m64
-+
- include ../../lib.mk
- 
- clean:
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
+ 	tm-vmxcopy tm-fork tm-tar tm-tmspr $(SIGNAL_CONTEXT_CHK_TESTS)
+diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
 new file mode 100644
-index 0000000..df91330
+index 0000000..c760deb
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-gpr.c
-@@ -0,0 +1,90 @@
++++ b/tools/testing/selftests/powerpc/tm/tm-signal-context-chk-fpu.c
+@@ -0,0 +1,92 @@
 +/*
 + * Copyright 2016, Cyril Bur, IBM Corp.
 + *
@@ -125,14 +110,17 @@ index 0000000..df91330
 +
 +#define MAX_ATTEMPT 500000
 +
-+#define NV_GPR_REGS 18
++#define NV_FPU_REGS 18
 +
 +long tm_signal_self_context_load(pid_t pid, long *gprs, double *fps, vector int *vms, vector int *vss);
 +
-+static sig_atomic_t fail;
++/* Be sure there are 2x as many as there are NV FPU regs (2x18) */
++static double fps[] = {
++	 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
++	-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18
++};
 +
-+static long gps[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-+					 -1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18};
++static sig_atomic_t fail;
 +
 +static void signal_usr1(int signum, siginfo_t *info, void *uc)
 +{
@@ -140,16 +128,15 @@ index 0000000..df91330
 +	ucontext_t *ucp = uc;
 +	ucontext_t *tm_ucp = ucp->uc_link;
 +
-+	for (i = 0; i < NV_GPR_REGS && !fail; i++) {
-+		fail = (ucp->uc_mcontext.gp_regs[i + 14] != gps[i]);
-+		fail |= (tm_ucp->uc_mcontext.gp_regs[i + 14] != gps[i + NV_GPR_REGS]);
++	for (i = 0; i < NV_FPU_REGS && !fail; i++) {
++		fail = (ucp->uc_mcontext.fp_regs[i + 14] != fps[i]);
++		fail |= (tm_ucp->uc_mcontext.fp_regs[i + 14] != fps[i + NV_FPU_REGS]);
 +		if (fail)
-+			printf("Failed on %d GPR %lu or %lu\n", i,
-+					ucp->uc_mcontext.gp_regs[i + 14], tm_ucp->uc_mcontext.gp_regs[i + 14]);
++			printf("Failed on %d FP %g or %g\n", i, ucp->uc_mcontext.fp_regs[i + 14], tm_ucp->uc_mcontext.fp_regs[i + 14]);
 +	}
 +}
 +
-+static int tm_signal_context_chk_gpr()
++static int tm_signal_context_chk_fpu()
 +{
 +	struct sigaction act;
 +	int i;
@@ -168,7 +155,7 @@ index 0000000..df91330
 +
 +	i = 0;
 +	while (i < MAX_ATTEMPT && !fail) {
-+		rc = tm_signal_self_context_load(pid, gps, NULL, NULL, NULL);
++		rc = tm_signal_self_context_load(pid, NULL, fps, NULL, NULL);
 +		FAIL_IF(rc != pid);
 +		i++;
 +	}
@@ -178,127 +165,7 @@ index 0000000..df91330
 +
 +int main(void)
 +{
-+	return test_harness(tm_signal_context_chk_gpr, "tm_signal_context_chk_gpr");
++	return test_harness(tm_signal_context_chk_fpu, "tm_signal_context_chk_fpu");
 +}
-diff --git a/tools/testing/selftests/powerpc/tm/tm-signal.S b/tools/testing/selftests/powerpc/tm/tm-signal.S
-new file mode 100644
-index 0000000..4e13e8b
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-signal.S
-@@ -0,0 +1,114 @@
-+/*
-+ * Copyright 2015, Cyril Bur, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include "../basic_asm.h"
-+#include "../gpr_asm.h"
-+#include "../fpu_asm.h"
-+#include "../vmx_asm.h"
-+#include "../vsx_asm.h"
-+
-+/*
-+ * Large caveat here being that the caller cannot expect the
-+ * signal to always be sent! The hardware can (AND WILL!) abort
-+ * the transaction between the tbegin and the tsuspend (however
-+ * unlikely it seems or infrequently it actually happens).
-+ * You have been warned.
-+ */
-+/* long tm_signal_self(pid_t pid, long *gprs, double *fps, vector *vms, vector *vss); */
-+FUNC_START(tm_signal_self_context_load)
-+	PUSH_BASIC_STACK(512)
-+	/*
-+	 * Don't strictly need to save and restore as it depends on if
-+	 * we're going to use them, however this reduces messy logic
-+	 */
-+	PUSH_VMX(STACK_FRAME_LOCAL(5,0),r8)
-+	PUSH_FPU(512)
-+	PUSH_NVREGS_BELOW_FPU(512)
-+	std r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	std r4, STACK_FRAME_PARAM(1)(sp) /* gps */
-+	std r5, STACK_FRAME_PARAM(2)(sp) /* fps */
-+	std r6, STACK_FRAME_PARAM(3)(sp) /* vms */
-+	std r7, STACK_FRAME_PARAM(4)(sp) /* vss */
-+
-+	ld r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi r3, 0
-+	beq skip_gpr_lc
-+	bl load_gpr
-+skip_gpr_lc:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lc
-+	bl load_fpu
-+skip_fpu_lc:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lc
-+	bl load_vmx
-+skip_vmx_lc:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lc
-+	bl load_vsx
-+skip_vsx_lc:
-+	/*
-+	 * Set r3 (return value) before tbegin. Use the pid as a known
-+	 * 'all good' return value, zero is used to indicate a non-doomed
-+	 * transaction.
-+	 */
-+	ld	r3, STACK_FRAME_PARAM(0)(sp)
-+	tbegin.
-+	beq	1f
-+	tsuspend. /* Can't enter a syscall transactionally */
-+	ld	r3, STACK_FRAME_PARAM(1)(sp)
-+	cmpdi	r3, 0
-+	beq skip_gpr_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_gpr
-+skip_gpr_lt:
-+	ld r3, STACK_FRAME_PARAM(2)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_fpu_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 8 * 18
-+	bl load_fpu
-+skip_fpu_lt:
-+	ld r3, STACK_FRAME_PARAM(3)(sp)
-+	cmpdi r3, 0
-+	beq	skip_vmx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vmx
-+skip_vmx_lt:
-+	ld r3, STACK_FRAME_PARAM(4)(sp)
-+	cmpdi	r3, 0
-+	beq	skip_vsx_lt
-+	/* Get the second half of the array */
-+	addi	r3, r3, 16 * 12
-+	bl load_vsx
-+skip_vsx_lt:
-+	li	r0, 37 /* sys_kill */
-+	ld r3, STACK_FRAME_PARAM(0)(sp) /* pid */
-+	li r4, 10 /* SIGUSR1 */
-+	sc /* Taking the signal will doom the transaction */
-+	tabort. 0
-+	tresume. /* Be super sure we abort */
-+	/*
-+	 * This will cause us to resume doomed transaction and cause
-+	 * hardware to cleanup, we'll end up at 1: anything between
-+	 * tresume. and 1: shouldn't ever run.
-+	 */
-+	li r3, 0
-+	1:
-+	POP_VMX(STACK_FRAME_LOCAL(5,0),r4)
-+	POP_FPU(512)
-+	POP_NVREGS_BELOW_FPU(512)
-+	POP_BASIC_STACK(512)
-+	blr
-+FUNC_END(tm_signal_self_context_load)
 -- 
 2.9.2
