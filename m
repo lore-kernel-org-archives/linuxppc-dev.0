@@ -1,31 +1,44 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8vkN4jd0zDqfj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 14:12:44 +1000 (AEST)
-Received: by mail-pa0-x241.google.com with SMTP id cf3so3933790pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Aug 2016 21:12:44 -0700 (PDT)
-Subject: Re: [PATCH 1/4] dt-bindings: add doc for ibm,hotplug-aperture
-To: Reza Arbab <arbab@linux.vnet.ibm.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8wKT15WRzDqJ4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 14:39:40 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7B4cncs029381
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 00:39:38 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9vmh32-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 00:39:38 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 10 Aug 2016 22:39:37 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>,
+ Reza Arbab <arbab@linux.vnet.ibm.com>,
+ Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Jonathan Corbet <corbet@lwn.net>, Bharata B Rao
- <bharata@linux.vnet.ibm.com>, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-doc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+ Jonathan Corbet <corbet@lwn.net>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: Alistair Popple <apopple@au1.ibm.com>
+Subject: Re: [PATCH 1/4] dt-bindings: add doc for ibm,hotplug-aperture
+In-Reply-To: <92e34173-b2e2-bac0-3bbb-fc5407cbb8a5@gmail.com>
 References: <1470680843-28702-1-git-send-email-arbab@linux.vnet.ibm.com>
  <1470680843-28702-2-git-send-email-arbab@linux.vnet.ibm.com>
-Cc: Alistair Popple <apopple@au1.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <92e34173-b2e2-bac0-3bbb-fc5407cbb8a5@gmail.com>
-Date: Thu, 11 Aug 2016 14:12:31 +1000
+ <92e34173-b2e2-bac0-3bbb-fc5407cbb8a5@gmail.com>
+Date: Thu, 11 Aug 2016 14:39:23 +1000
 MIME-Version: 1.0
-In-Reply-To: <1470680843-28702-2-git-send-email-arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
+Message-Id: <874m6r2a2s.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,51 +48,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Balbir Singh <bsingharora@gmail.com> writes:
+> On 09/08/16 04:27, Reza Arbab wrote:
+>> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
+>> ---
+>>  .../bindings/powerpc/opal/hotplug-aperture.txt     | 26 ++++++++++++++++++++++
+>>  1 file changed, 26 insertions(+)
+>>  create mode 100644
+>> Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
 
+Forgive me for being absent on the whole discussion here, but is this an
+OPAL specific binding? If so, shouldn't the docs also appear in the
+skiboot tree?
 
-On 09/08/16 04:27, Reza Arbab wrote:
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-> ---
->  .../bindings/powerpc/opal/hotplug-aperture.txt     | 26 ++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt b/Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
-> new file mode 100644
-> index 0000000..b8dffaa
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/opal/hotplug-aperture.txt
-> @@ -0,0 +1,26 @@
-> +Designated hotplug memory
-> +-------------------------
-> +
-> +This binding describes a region of hotplug memory which is not present at boot,
-> +allowing its eventual NUMA associativity to be prespecified.
-> +
-> +Required properties:
-> +
-> +- compatible
-> +	"ibm,hotplug-aperture"
-> +
-> +- reg
-> +	base address and size of the region (standard definition)
-> +
-> +- ibm,associativity
-> +	NUMA associativity (standard definition)
-> +
-> +Example:
-> +
-> +A 2 GiB aperture at 0x100000000, to be part of nid 3 when hotplugged:
-> +
-> +	hotplug-memory@100000000 {
-> +		compatible = "ibm,hotplug-aperture";
-> +		reg = <0x0 0x100000000 0x0 0x80000000>;
-> +		ibm,associativity = <0x4 0x0 0x0 0x0 0x3>;
-> +	};
-> 
-
-+Stewart and Alistair
-
-Looks good to me!
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+-- 
+Stewart Smith
+OPAL Architect, IBM.
