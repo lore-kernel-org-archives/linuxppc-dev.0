@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s8yB2725rzDqfj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 16:03:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s8yB41klCzDqwH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 16:03:24 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: npiggin@gmail.com
-Subject: [PATCH 2/5] powerpc/vdso64: Drop vdso64as
-Date: Thu, 11 Aug 2016 16:03:12 +1000
-Message-Id: <1470895395-10007-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/5] powerpc/boot: Use $(Q) to quiet build rules not @
+Date: Thu, 11 Aug 2016 16:03:13 +1000
+Message-Id: <1470895395-10007-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1470895395-10007-1-git-send-email-mpe@ellerman.id.au>
 References: <1470895395-10007-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,36 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can just use the standard .S -> .o rule, cmd_as_o_S.
+Some of the rules in the boot Makefile use @ to hide the command, this
+means "make V=1" doesn't show them, which is confusing.
 
-That also fixes the bug we had in the vdso64as rule which is that it
-didn't depend on FORCE, which it should have because it used
-if_changed_dep.
+So use the Kbuild standard $(Q) which means KBUILD_VERBOSE=1 or V=1 will
+work as expected.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/vdso64/Makefile | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/powerpc/boot/Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
-index c710802b8fb6..1cf554258eb0 100644
---- a/arch/powerpc/kernel/vdso64/Makefile
-+++ b/arch/powerpc/kernel/vdso64/Makefile
-@@ -31,15 +31,9 @@ $(obj)/%.so: OBJCOPYFLAGS := -S
- $(obj)/%.so: $(obj)/%.so.dbg FORCE
- 	$(call if_changed,objcopy)
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 1a2a6e8dc40d..df0fd406aed1 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -150,14 +150,14 @@ $(addprefix $(obj)/,$(libfdt) $(libfdtheader)): $(obj)/%: $(srctree)/scripts/dtc
+ 	$(call cmd,copy_libfdt)
  
--# assembly rules for the .S files
--$(obj-vdso64): %.o: %.S
--	$(call if_changed_dep,vdso64as)
--
- # actual build commands
- quiet_cmd_vdso64ld = VDSO64L $@
-       cmd_vdso64ld = $(CC) $(c_flags) -Wl,-T $^ -o $@
--quiet_cmd_vdso64as = VDSO64A $@
--      cmd_vdso64as = $(CC) $(a_flags) -c -o $@ $<
+ $(obj)/empty.c:
+-	@touch $@
++	$(Q)touch $@
  
- # install commands for the unstripped file
- quiet_cmd_vdso_install = INSTALL $@
+ $(obj)/zImage.lds: $(obj)/%: $(srctree)/$(src)/%.S
+ 	$(CROSS32CC) $(cpp_flags) -E -Wp,-MD,$(depfile) -P -Upowerpc \
+ 		-D__ASSEMBLY__ -DLINKER_SCRIPT -o $@ $<
+ 
+ $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds : $(obj)/%: $(srctree)/$(src)/%.S
+-	@cp $< $@
++	$(Q)cp $< $@
+ 
+ clean-files := $(zlib) $(zlibheader) $(zliblinuxheader) \
+ 		$(libfdt) $(libfdtheader) \
+@@ -391,9 +391,9 @@ image-y := vmlinux.strip
+ endif
+ 
+ $(obj)/zImage:		$(addprefix $(obj)/, $(image-y))
+-	@rm -f $@; ln $< $@
++	$(Q)rm -f $@; ln $< $@
+ $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
+-	@rm -f $@; ln $< $@
++	$(Q)rm -f $@; ln $< $@
+ 
+ # Only install the vmlinux
+ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
 -- 
 2.7.4
