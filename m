@@ -2,14 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s957d1ztpzDqh7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 21:16:45 +1000 (AEST)
-In-Reply-To: <1470814169.3015.100.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s957f21lvzDqh7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 21:16:46 +1000 (AEST)
+In-Reply-To: <1470648943-15643-1-git-send-email-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: Print the kernel load address at the end of prom_init
-Message-Id: <3s957d16rqz9t1H@ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc: rebuild vdsos correctly
+Message-Id: <3s957f0gHyz9t1P@ozlabs.org>
 Date: Thu, 11 Aug 2016 21:16:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,15 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2016-10-08 at 07:29:29 UTC, Benjamin Herrenschmidt wrote:
-> This makes it easier to debug crashes that happen very early before
-> the kernel takes over Open Firmware by allowing us to relate the OF
-> reported crashing addresses to offsets within the kernel.
+On Mon, 2016-08-08 at 09:35:43 UTC, Nicholas Piggin wrote:
+> When using if_changed, we need to add FORCE to dependencies, otherwise
+> we don't get command line change checking amongst other things. This
+> has resulted in vdsos not being rebuilt when switching between big and
+> little endian.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/7d70c63c7132eb95e428e94524
+https://git.kernel.org/powerpc/c/b9a4a0d02c5b8d9a1397c11d74
 
 cheers
