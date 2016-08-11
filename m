@@ -1,18 +1,32 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <mgorman@techsingularity.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s91v85ZDzzDqfj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 18:50:44 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: sysdev: cpm: fix gpio save_regs functions
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-gpio@vger.kernel.org, stable@vger.kernel.org
-Message-Id: <20160811085040.2EC561A2456@localhost.localdomain>
-Date: Thu, 11 Aug 2016 10:50:40 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s92kR41fpzDqfj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:28:15 +1000 (AEST)
+Received: from outbound-smtp08.blacknight.com (outbound-smtp08.blacknight.com
+ [46.22.139.13])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3s92kR0HQLz9sR8
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2016 19:28:13 +1000 (AEST)
+Received: from mail.blacknight.com (pemlinmail03.blacknight.ie [81.17.254.16])
+ by outbound-smtp08.blacknight.com (Postfix) with ESMTPS id
+ DE9441C21B9
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Aug 2016 10:28:09 +0100 (IST)
+Date: Thu, 11 Aug 2016 10:28:08 +0100
+From: Mel Gorman <mgorman@techsingularity.net>
+To: Reza Arbab <arbab@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Paul Mackerras <paulus@ozlabs.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: mm: Initialise per_cpu_nodestats for all online pgdats at boot
+Message-ID: <20160811092808.GD8119@techsingularity.net>
+References: <20160804092404.GI2799@techsingularity.net>
+ <20160810175940.GA12039@arbab-laptop.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20160810175940.GA12039@arbab-laptop.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,84 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_mm_gpiochip_add_data() calls mm_gc->save_regs() before
-setting the data. Therefore ->save_regs() cannot use
-gpiochip_get_data()
+On Wed, Aug 10, 2016 at 12:59:40PM -0500, Reza Arbab wrote:
+> On Thu, Aug 04, 2016 at 10:24:04AM +0100, Mel Gorman wrote:
+> >[    1.713998] Unable to handle kernel paging request for data at address 0xff7a10000
+> >[    1.714164] Faulting instruction address: 0xc000000000270cd0
+> >[    1.714304] Oops: Kernel access of bad area, sig: 11 [#1]
+> >[    1.714414] SMP NR_CPUS=2048 NUMA PowerNV
+> >[    1.714530] Modules linked in:
+> >[    1.714647] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.7.0-kvm+ #118
+> >[    1.714786] task: c000000ff0680010 task.stack: c000000ff0704000
+> >[    1.714926] NIP: c000000000270cd0 LR: c000000000270ce8 CTR: 0000000000000000
+> >[    1.715093] REGS: c000000ff0707900 TRAP: 0300   Not tainted  (4.7.0-kvm+)
+> >[    1.715232] MSR: 9000000102009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE,TM[E]>  CR: 846b6824  XER: 20000000
+> >[    1.715748] CFAR: c000000000008768 DAR: 0000000ff7a10000 DSISR: 42000000 SOFTE: 1
+> >GPR00: c000000000270d08 c000000ff0707b80 c0000000011fb200 0000000000000000
+> >GPR04: 0000000000000800 0000000000000000 0000000000000000 0000000000000000
+> >GPR08: ffffffffffffffff 0000000000000000 0000000ff7a10000 c00000000122aae0
+> >GPR12: c000000000a1e440 c00000000fb80000 c00000000000c188 0000000000000000
+> >GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> >GPR20: 0000000000000000 0000000000000000 0000000000000000 c000000000cecad0
+> >GPR24: c000000000d035b8 c000000000d6cd18 c000000000d6cd18 c000001fffa86300
+> >GPR28: 0000000000000000 c000001fffa96300 c000000001230034 c00000000122eb18
+> >[    1.717484] NIP [c000000000270cd0] refresh_zone_stat_thresholds+0x80/0x240
+> >[    1.717568] LR [c000000000270ce8] refresh_zone_stat_thresholds+0x98/0x240
+> >[    1.717648] Call Trace:
+> >[    1.717687] [c000000ff0707b80] [c000000000270d08] refresh_zone_stat_thresholds+0xb8/0x240 (unreliable)
+> 
+> I've been investigating node hotplug. That path is also going to require
+> initialization of per_cpu_nodestats. This worked for me:
+> 
 
-[    0.275940] Unable to handle kernel paging request for data at address 0x00000130
-[    0.283120] Faulting instruction address: 0xc01b44cc
-[    0.288175] Oops: Kernel access of bad area, sig: 11 [#1]
-[    0.293343] PREEMPT CMPC885
-[    0.296141] CPU: 0 PID: 1 Comm: swapper Not tainted 4.7.0-g65124df-dirty #68
-[    0.304131] task: c6074000 ti: c6080000 task.ti: c6080000
-[    0.309459] NIP: c01b44cc LR: c0011720 CTR: c0011708
-[    0.314372] REGS: c6081d90 TRAP: 0300   Not tainted  (4.7.0-g65124df-dirty)
-[    0.322267] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24000028  XER: 20000000
-[    0.328813] DAR: 00000130 DSISR: c0000000
-GPR00: c01b6d0c c6081e40 c6074000 c6017000 c9028000 c601d028 c6081dd8 00000000
-GPR08: c601d028 00000000 ffffffff 00000001 24000044 00000000 c0002790 00000000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c05643b0 00000083
-GPR24: c04a1a6c c0560000 c04a8308 c04c6480 c0012498 c6017000 c7ffcc78 c6017000
-[    0.360806] NIP [c01b44cc] gpiochip_get_data+0x4/0xc
-[    0.365684] LR [c0011720] cpm1_gpio16_save_regs+0x18/0x44
-[    0.370972] Call Trace:
-[    0.373451] [c6081e50] [c01b6d0c] of_mm_gpiochip_add_data+0x70/0xdc
-[    0.379624] [c6081e70] [c00124c0] cpm_init_par_io+0x28/0x118
-[    0.385238] [c6081e80] [c04a8ac0] do_one_initcall+0xb0/0x17c
-[    0.390819] [c6081ef0] [c04a8cbc] kernel_init_freeable+0x130/0x1dc
-[    0.396924] [c6081f30] [c00027a4] kernel_init+0x14/0x110
-[    0.402177] [c6081f40] [c000b424] ret_from_kernel_thread+0x5c/0x64
-[    0.408233] Instruction dump:
-[    0.411168] 4182fafc 3f80c040 48234c6d 3bc0fff0 3b9c5ed0 4bfffaf4 81290020 712a0004
-[    0.418825] 4182fb34 48234c51 4bfffb2c 81230004 <80690130> 4e800020 7c0802a6 9421ffe0
-[    0.426763] ---[ end trace fe4113ee21d72ffa ]---
+Fix looks ok. Can you add a proper changelog to it including an example
+oops or do you need me to do it?
 
-fixes: e65078f1f3490 ("powerpc: sysdev: cpm1: use gpiochip data pointer")
-fixes: a14a2d484b386 ("powerpc: cpm_common: use gpiochip data pointer")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/sysdev/cpm1.c       | 6 ++++--
- arch/powerpc/sysdev/cpm_common.c | 3 ++-
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
-index 6c11099..81d4947 100644
---- a/arch/powerpc/sysdev/cpm1.c
-+++ b/arch/powerpc/sysdev/cpm1.c
-@@ -534,7 +534,8 @@ struct cpm1_gpio16_chip {
- 
- static void cpm1_gpio16_save_regs(struct of_mm_gpio_chip *mm_gc)
- {
--	struct cpm1_gpio16_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
-+	struct cpm1_gpio16_chip *cpm1_gc =
-+		container_of(mm_gc, struct cpm1_gpio16_chip, mm_gc);
- 	struct cpm_ioport16 __iomem *iop = mm_gc->regs;
- 
- 	cpm1_gc->cpdata = in_be16(&iop->dat);
-@@ -649,7 +650,8 @@ struct cpm1_gpio32_chip {
- 
- static void cpm1_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
- {
--	struct cpm1_gpio32_chip *cpm1_gc = gpiochip_get_data(&mm_gc->gc);
-+	struct cpm1_gpio32_chip *cpm1_gc =
-+		container_of(mm_gc, struct cpm1_gpio32_chip, mm_gc);
- 	struct cpm_ioport32b __iomem *iop = mm_gc->regs;
- 
- 	cpm1_gc->cpdata = in_be32(&iop->dat);
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 911456d..947f420 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -94,7 +94,8 @@ struct cpm2_gpio32_chip {
- 
- static void cpm2_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
- {
--	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(&mm_gc->gc);
-+	struct cpm2_gpio32_chip *cpm2_gc =
-+		container_of(mm_gc, struct cpm2_gpio32_chip, mm_gc);
- 	struct cpm2_ioports __iomem *iop = mm_gc->regs;
- 
- 	cpm2_gc->cpdata = in_be32(&iop->dat);
 -- 
-2.1.0
+Mel Gorman
+SUSE Labs
