@@ -1,34 +1,34 @@
 Return-Path: <bauerman@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9NxK1w8gzDr1P
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:08:53 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
- u7BN8f9q016468
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9NxL34RlzDr2C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 09:08:54 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7BN8gYQ044513
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:51 -0400
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- by mx0a-001b2d01.pphosted.com with ESMTP id 24r5ugx549-1
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 24qm9wctfg-1
  (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:51 -0400
 Received: from localhost
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.vnet.ibm.com>;
- Thu, 11 Aug 2016 20:08:48 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id AFB6D1DC006D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:36 -0400 (EDT)
+ Thu, 11 Aug 2016 20:08:49 -0300
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id BBE5A1DC006F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:08:38 -0400 (EDT)
 Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- u7BN8j4Q16253236
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:45 -0300
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ u7BN8lDF757766
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:47 -0300
 Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
  by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- u7BN8iG4027366
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:45 -0300
+ u7BN8ks9027435
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 20:08:47 -0300
 From: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 To: kexec@lists.infradead.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -42,12 +42,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "H. Peter Anvin" <hpa@zytor.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-Subject: [PATCH v5 09/13] powerpc: Add code to work with device trees in
+Subject: [PATCH v5 10/13] powerpc: Add support for loading ELF kernels with
  kexec_file_load.
-Date: Thu, 11 Aug 2016 20:08:14 -0300
+Date: Thu, 11 Aug 2016 20:08:15 -0300
 In-Reply-To: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
 References: <1470956898-5991-1-git-send-email-bauerman@linux.vnet.ibm.com>
-Message-Id: <1470956898-5991-10-git-send-email-bauerman@linux.vnet.ibm.com>
+Message-Id: <1470956898-5991-11-git-send-email-bauerman@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,260 +57,356 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kexec_file_load needs to set up the device tree that will be used
-by the next kernel and check whether it provides a console
-that can be used by the purgatory.
+This uses all the infrastructure built up by the previous patches
+in the series to load an ELF vmlinux file and an initrd. It uses the
+flattened device tree at initial_boot_params as a base and adjusts memory
+reservations and its /chosen node for the next kernel.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kexec.h       |   3 +
- arch/powerpc/kernel/machine_kexec_64.c | 222 +++++++++++++++++++++++++++++++++
- 2 files changed, 225 insertions(+)
+ arch/powerpc/include/asm/kexec_elf_64.h |  10 ++
+ arch/powerpc/kernel/Makefile            |   1 +
+ arch/powerpc/kernel/kexec_elf_64.c      | 284 ++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/machine_kexec_64.c  |   5 +-
+ 4 files changed, 299 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index 83b81b7bdca1..f263cc867891 100644
---- a/arch/powerpc/include/asm/kexec.h
-+++ b/arch/powerpc/include/asm/kexec.h
-@@ -96,6 +96,9 @@ int setup_purgatory(struct kimage *image, const void *slave_code,
- 		    const void *fdt, unsigned long kernel_load_addr,
- 		    unsigned long fdt_load_addr, unsigned long stack_top,
- 		    int debug);
-+int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
-+		  unsigned long initrd_len, const char *cmdline);
-+bool find_debug_console(const void *fdt, int chosen_node);
- #endif /* CONFIG_KEXEC_FILE */
+diff --git a/arch/powerpc/include/asm/kexec_elf_64.h b/arch/powerpc/include/asm/kexec_elf_64.h
+new file mode 100644
+index 000000000000..30da6bc0ccf8
+--- /dev/null
++++ b/arch/powerpc/include/asm/kexec_elf_64.h
+@@ -0,0 +1,10 @@
++#ifndef __POWERPC_KEXEC_ELF_64_H__
++#define __POWERPC_KEXEC_ELF_64_H__
++
++#ifdef CONFIG_KEXEC_FILE
++
++extern struct kexec_file_ops kexec_elf64_ops;
++
++#endif /* CONFIG_KEXEC_FILE */
++
++#endif /* __POWERPC_KEXEC_ELF_64_H__ */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index ce18a985bcfc..d149f5ebac90 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -109,6 +109,7 @@ obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
+ obj-$(CONFIG_PCI_MSI)		+= msi.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o \
+ 				   machine_kexec_$(CONFIG_WORD_SIZE).o
++obj-$(CONFIG_KEXEC_FILE)	+= kexec_elf_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_AUDIT)		+= audit.o
+ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
  
- #else /* !CONFIG_KEXEC */
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 1e678dc5096a..897b724ea9fd 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -683,4 +683,226 @@ int setup_purgatory(struct kimage *image, const void *slave_code,
- 	return 0;
- }
- 
+diff --git a/arch/powerpc/kernel/kexec_elf_64.c b/arch/powerpc/kernel/kexec_elf_64.c
+new file mode 100644
+index 000000000000..49cba9509464
+--- /dev/null
++++ b/arch/powerpc/kernel/kexec_elf_64.c
+@@ -0,0 +1,284 @@
 +/*
-+ * setup_new_fdt() - modify /chosen and memory reservation for the next kernel
-+ * @fdt:
-+ * @initrd_load_addr:	Address where the next initrd will be loaded.
-+ * @initrd_len:		Size of the next initrd, or 0 if there will be none.
-+ * @cmdline:		Command line for the next kernel, or NULL if there will
-+ * 			be none.
++ * Load ELF vmlinux file for the kexec_file_load syscall.
 + *
-+ * Return: 0 on success, or negative errno on error.
++ * Copyright (C) 2004  Adam Litke (agl@us.ibm.com)
++ * Copyright (C) 2004  IBM Corp.
++ * Copyright (C) 2005  R Sharada (sharada@in.ibm.com)
++ * Copyright (C) 2006  Mohan Kumar M (mohan@in.ibm.com)
++ * Copyright (C) 2016  IBM Corporation
++ *
++ * Based on kexec-tools' kexec-elf-exec.c and kexec-elf-ppc64.c.
++ * Heavily modified for the kernel by
++ * Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation (version 2 of the License).
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
-+int setup_new_fdt(void *fdt, unsigned long initrd_load_addr,
-+		  unsigned long initrd_len, const char *cmdline)
++
++#define pr_fmt(fmt)	"kexec_elf: " fmt
++
++#include <linux/types.h>
++#include <linux/slab.h>
++#include <linux/kexec.h>
++#include <linux/elf.h>
++#include <linux/kexec.h>
++#include <linux/of_fdt.h>
++#include <linux/libfdt.h>
++#include <asm/elf_util.h>
++
++extern size_t kexec_purgatory_size;
++
++#define PURGATORY_STACK_SIZE	(16 * 1024)
++
++/**
++ * build_elf_exec_info - read ELF executable and check that we can use it
++ */
++static int build_elf_exec_info(const char *buf, size_t len, struct elfhdr *ehdr,
++			       struct elf_info *elf_info)
 +{
-+	uint64_t oldfdt_addr;
-+	int i, ret, chosen_node;
-+	const void *prop;
++	int i;
++	int ret;
 +
-+	/* Remove memory reservation for the current device tree. */
-+	oldfdt_addr = __pa(initial_boot_params);
-+	for (i = 0; i < fdt_num_mem_rsv(fdt); i++) {
-+		uint64_t rsv_start, rsv_size;
++	ret = elf_read_from_buffer(buf, len, ehdr, elf_info);
++	if (ret)
++		return ret;
 +
-+		ret = fdt_get_mem_rsv(fdt, i, &rsv_start, &rsv_size);
-+		if (ret) {
-+			pr_err("Malformed device tree.\n");
-+			return -EINVAL;
-+		}
-+
-+		if (rsv_start == oldfdt_addr &&
-+		    rsv_size == fdt_totalsize(initial_boot_params)) {
-+			ret = fdt_del_mem_rsv(fdt, i);
-+			if (ret) {
-+				pr_err("Error deleting fdt reservation.\n");
-+				return -EINVAL;
-+			}
-+
-+			pr_debug("Removed old device tree reservation.\n");
-+			break;
-+		}
++	/* Big endian vmlinux has type ET_DYN. */
++	if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
++		pr_err("Not an ELF executable.\n");
++		goto error;
++	} else if (!elf_info->proghdrs) {
++		pr_err("No ELF program header.\n");
++		goto error;
 +	}
 +
-+	chosen_node = fdt_path_offset(fdt, "/chosen");
-+	if (chosen_node == -FDT_ERR_NOTFOUND) {
-+		chosen_node = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"),
-+					      "chosen");
-+		if (chosen_node < 0) {
-+			pr_err("Error creating /chosen.\n");
-+			return -EINVAL;
-+		}
-+	} else if (chosen_node < 0) {
-+		pr_err("Malformed device tree: error reading /chosen.\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Did we boot using an initrd? */
-+	prop = fdt_getprop(fdt, chosen_node, "linux,initrd-start", NULL);
-+	if (prop) {
-+		uint64_t tmp_start, tmp_end, tmp_size, tmp_sizepg;
-+
-+		tmp_start = fdt64_to_cpu(*((const fdt64_t *) prop));
-+
-+		prop = fdt_getprop(fdt, chosen_node, "linux,initrd-end", NULL);
-+		if (!prop) {
-+			pr_err("Malformed device tree.\n");
-+			return -EINVAL;
-+		}
-+		tmp_end = fdt64_to_cpu(*((const fdt64_t *) prop));
-+
++	for (i = 0; i < ehdr->e_phnum; i++) {
 +		/*
-+		 * kexec reserves exact initrd size, while firmware may
-+		 * reserve a multiple of PAGE_SIZE, so check for both.
++		 * Kexec does not support loading interpreters.
++		 * In addition this check keeps us from attempting
++		 * to kexec ordinay executables.
 +		 */
-+		tmp_size = tmp_end - tmp_start;
-+		tmp_sizepg = round_up(tmp_size, PAGE_SIZE);
-+
-+		/* Remove memory reservation for the current initrd. */
-+		for (i = 0; i < fdt_num_mem_rsv(fdt); i++) {
-+			uint64_t rsv_start, rsv_size;
-+
-+			ret = fdt_get_mem_rsv(fdt, i, &rsv_start, &rsv_size);
-+			if (ret) {
-+				pr_err("Malformed device tree.\n");
-+				return -EINVAL;
-+			}
-+
-+			if (rsv_start == tmp_start &&
-+			    (rsv_size == tmp_size || rsv_size == tmp_sizepg)) {
-+				ret = fdt_del_mem_rsv(fdt, i);
-+				if (ret) {
-+					pr_err("Error deleting fdt reservation.\n");
-+					return -EINVAL;
-+				}
-+				pr_debug("Removed old initrd reservation.\n");
-+
-+				/* fdt was modified, offsets may have changed. */
-+				chosen_node = fdt_path_offset(fdt, "/chosen");
-+				if (chosen_node < 0) {
-+					pr_err("Malformed device tree.\n");
-+					return -EINVAL;
-+				}
-+
-+				break;
-+			}
++		if (elf_info->proghdrs[i].p_type == PT_INTERP) {
++			pr_err("Requires an ELF interpreter.\n");
++			goto error;
 +		}
-+
-+		/* If there's no new initrd, delete the old initrd's info. */
-+		if (initrd_len == 0) {
-+			ret = fdt_delprop(fdt, chosen_node, "linux,initrd-start");
-+			if (ret) {
-+				pr_err("Error deleting linux,initrd-start.\n");
-+				return -EINVAL;
-+			}
-+
-+			ret = fdt_delprop(fdt, chosen_node, "linux,initrd-end");
-+			if (ret) {
-+				pr_err("Error deleting linux,initrd-end.\n");
-+				return -EINVAL;
-+			}
-+		}
-+	}
-+
-+	if (initrd_len) {
-+		ret = fdt_setprop_u64(fdt, chosen_node,
-+				      "linux,initrd-start",
-+				      initrd_load_addr);
-+		if (ret < 0) {
-+			pr_err("Error setting up the new device tree.\n");
-+			return -EINVAL;
-+		}
-+
-+		/* initrd-end is the first address after the initrd image. */
-+		ret = fdt_setprop_u64(fdt, chosen_node, "linux,initrd-end",
-+				      initrd_load_addr + initrd_len);
-+		if (ret < 0) {
-+			pr_err("Error setting up the new device tree.\n");
-+			return -EINVAL;
-+		}
-+
-+		ret = fdt_add_mem_rsv(fdt, initrd_load_addr, initrd_len);
-+		if (ret) {
-+			pr_err("Error reserving initrd memory: %s\n",
-+			       fdt_strerror(ret));
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (cmdline != NULL) {
-+		ret = fdt_setprop_string(fdt, chosen_node, "bootargs", cmdline);
-+		if (ret < 0) {
-+			pr_err("Error setting up the new device tree.\n");
-+			return -EINVAL;
-+		}
-+	} else {
-+		ret = fdt_delprop(fdt, chosen_node, "bootargs");
-+		if (ret && ret != -FDT_ERR_NOTFOUND) {
-+			pr_err("Error deleting bootargs.\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	ret = fdt_setprop(fdt, chosen_node, "linux,booted-from-kexec", NULL, 0);
-+	if (ret) {
-+		pr_err("Error setting up the new device tree.\n");
-+		return -EINVAL;
 +	}
 +
 +	return 0;
++error:
++	elf_free_info(elf_info);
++	return -ENOEXEC;
++}
++
++static int elf64_probe(const char *buf, unsigned long len)
++{
++	struct elfhdr ehdr;
++	struct elf_info elf_info;
++	int ret;
++
++	ret = build_elf_exec_info(buf, len, &ehdr, &elf_info);
++	if (ret)
++		return ret;
++
++	elf_free_info(&elf_info);
++
++	return elf_check_arch(&ehdr) ? 0 : -ENOEXEC;
 +}
 +
 +/**
-+ * find_debug_console() - find out whether there is a console for the purgatory
-+ * @fdt:		Flattened device tree to search.
-+ * @chosen_node:	Offset of /chosen in @fdt.
++ * elf_exec_load - load ELF executable image
++ * @lowest_load_addr:	On return, will be the address where the first PT_LOAD
++ *			section will be loaded in memory.
++ *
++ * Return:
++ * 0 on success, negative value on failure.
 + */
-+bool find_debug_console(const void *fdt, int chosen_node)
++static int elf_exec_load(struct kimage *image, struct elfhdr *ehdr,
++			 struct elf_info *elf_info,
++			 unsigned long *lowest_load_addr)
 +{
-+	int len;
-+	int console_node;
-+	const void *prop, *colon;
++	unsigned long base = 0, lowest_addr = UINT_MAX;
++	int ret;
++	size_t i;
++	struct kexec_buf kbuf = { .image = image, .buf_max = ppc64_rma_size,
++				  .top_down = false };
 +
-+	prop = fdt_getprop(fdt, chosen_node, "stdout-path", &len);
-+	if (prop == NULL) {
-+		if (len == -FDT_ERR_NOTFOUND) {
-+			prop = fdt_getprop(fdt, chosen_node, "linux,stdout-path",
-+					   &len);
-+			if (prop == NULL) {
-+				pr_debug("Unable to find [linux,]stdout-path.\n");
-+				return false;
-+			}
-+		} else {
-+			pr_debug("Error finding console: %s\n",
-+				 fdt_strerror(len));
-+			return false;
-+		}
++	/* Read in the PT_LOAD segments. */
++	for (i = 0; i < ehdr->e_phnum; i++) {
++		unsigned long load_addr;
++		size_t size;
++		const struct elf_phdr *phdr;
++
++		phdr = &elf_info->proghdrs[i];
++		if (phdr->p_type != PT_LOAD)
++			continue;
++
++		size = phdr->p_filesz;
++		if (size > phdr->p_memsz)
++			size = phdr->p_memsz;
++
++		kbuf.buffer = (void *) elf_info->buffer + phdr->p_offset;
++		kbuf.bufsz = size;
++		kbuf.memsz = phdr->p_memsz;
++		kbuf.buf_align = phdr->p_align;
++		kbuf.buf_min = phdr->p_paddr + base;
++		ret = kexec_add_buffer(&kbuf);
++		if (ret)
++			goto out;
++		load_addr = kbuf.mem;
++
++		if (load_addr < lowest_addr)
++			lowest_addr = load_addr;
 +	}
 +
-+	/*
-+	 * stdout-path can have a ':' separating the path from device-specific
-+	 * information, so we should only consider what's before it.
-+	 */
-+	colon = strchr(prop, ':');
-+	if (colon != NULL)
-+		len = colon - prop;
-+	else
-+		len -= 1;	/* Ignore the terminating NUL. */
++	/* Update entry point to reflect new load address. */
++	ehdr->e_entry += base;
 +
-+	console_node = fdt_path_offset_namelen(fdt, prop, len);
-+	if (console_node < 0) {
-+		pr_debug("Error finding console: %s\n",
-+			 fdt_strerror(console_node));
-+		return false;
-+	}
-+
-+	if (fdt_node_check_compatible(fdt, console_node, "hvterm1") == 0)
-+		return true;
-+	else if (fdt_node_check_compatible(fdt, console_node,
-+					   "hvterm-protocol") == 0)
-+		return true;
-+
-+	return false;
++	*lowest_load_addr = lowest_addr;
++	ret = 0;
++ out:
++	return ret;
 +}
 +
- #endif /* CONFIG_KEXEC_FILE */
++void *elf64_load(struct kimage *image, char *kernel_buf,
++		 unsigned long kernel_len, char *initrd,
++		 unsigned long initrd_len, char *cmdline,
++		 unsigned long cmdline_len)
++{
++	int i;
++	int ret = 0, chosen_node;
++	unsigned int fdt_size;
++	unsigned long kernel_load_addr, purgatory_load_addr;
++	unsigned long initrd_load_addr, fdt_load_addr, stack_top;
++	void *fdt;
++	const void *slave_code;
++	struct elfhdr ehdr;
++	struct elf_info elf_info;
++	struct fdt_reserve_entry *rsvmap;
++	struct kexec_buf kbuf = { .image = image, .buf_min = 0,
++				  .buf_max = ppc64_rma_size };
++
++	ret = build_elf_exec_info(kernel_buf, kernel_len, &ehdr, &elf_info);
++	if (ret)
++		goto out;
++
++	ret = elf_exec_load(image, &ehdr, &elf_info, &kernel_load_addr);
++	if (ret)
++		goto out;
++
++	pr_debug("Loaded the kernel at 0x%lx\n", kernel_load_addr);
++
++	ret = kexec_load_purgatory(image, 0, ppc64_rma_size, true,
++				   &purgatory_load_addr);
++	if (ret) {
++		pr_err("Loading purgatory failed.\n");
++		goto out;
++	}
++
++	pr_debug("Loaded purgatory at 0x%lx\n", purgatory_load_addr);
++
++	if (initrd != NULL) {
++		kbuf.buffer = initrd;
++		kbuf.bufsz = kbuf.memsz = initrd_len;
++		kbuf.buf_align = PAGE_SIZE;
++		kbuf.top_down = false;
++		ret = kexec_add_buffer(&kbuf);
++		if (ret)
++			goto out;
++		initrd_load_addr = kbuf.mem;
++
++		pr_debug("Loaded initrd at 0x%lx\n", initrd_load_addr);
++	}
++
++	fdt_size = fdt_totalsize(initial_boot_params) * 2;
++	fdt = kmalloc(fdt_size, GFP_KERNEL);
++	if (!fdt) {
++		pr_err("Not enough memory for the device tree.\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++	ret = fdt_open_into(initial_boot_params, fdt, fdt_size);
++	if (ret < 0) {
++		pr_err("Error setting up the new device tree.\n");
++		ret = -EINVAL;
++		goto out;
++	}
++
++	ret = setup_new_fdt(fdt, initrd_load_addr, initrd_len, cmdline);
++	if (ret)
++		goto out;
++
++	/*
++	 * Documentation/devicetree/booting-without-of.txt says we need to
++	 * add a reservation entry for the device tree block, but
++	 * early_init_fdt_reserve_self reserves the memory even if there's no
++	 * such entry. We'll add a reservation entry anyway, to be safe and
++	 * compliant.
++	 *
++	 * Use dummy values, we will correct them in a moment.
++	 */
++	ret = fdt_add_mem_rsv(fdt, 1, 1);
++	if (ret) {
++		pr_err("Error reserving device tree memory: %s\n",
++		       fdt_strerror(ret));
++		ret = -EINVAL;
++		goto out;
++	}
++	fdt_pack(fdt);
++
++	kbuf.buffer = fdt;
++	kbuf.bufsz = kbuf.memsz = fdt_size;
++	kbuf.buf_align = PAGE_SIZE;
++	kbuf.top_down = true;
++	ret = kexec_add_buffer(&kbuf);
++	if (ret)
++		goto out;
++	fdt_load_addr = kbuf.mem;
++
++	/*
++	 * Fix fdt reservation, now that we now where it will be loaded
++	 * and how big it is.
++	 */
++	rsvmap = fdt + fdt_off_mem_rsvmap(fdt);
++	i = fdt_num_mem_rsv(fdt) - 1;
++	rsvmap[i].address = cpu_to_fdt64(fdt_load_addr);
++	rsvmap[i].size = cpu_to_fdt64(fdt_totalsize(fdt));
++
++	pr_debug("Loaded device tree at 0x%lx\n", fdt_load_addr);
++
++	kbuf.memsz = PURGATORY_STACK_SIZE;
++	kbuf.buf_align = PAGE_SIZE;
++	kbuf.top_down = true;
++	ret = kexec_locate_mem_hole(&kbuf);
++	if (ret) {
++		pr_err("Couldn't find free memory for the purgatory stack.\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++	stack_top = kbuf.mem + PURGATORY_STACK_SIZE - 1;
++	pr_debug("Purgatory stack is at 0x%lx\n", stack_top);
++
++	slave_code = elf_info.buffer + elf_info.proghdrs[0].p_offset;
++	ret = setup_purgatory(image, slave_code, fdt, kernel_load_addr,
++			      fdt_load_addr, stack_top,
++			      find_debug_console(fdt, chosen_node));
++	if (ret)
++		pr_err("Error setting up the purgatory.\n");
++
++out:
++	elf_free_info(&elf_info);
++
++	/* Make kimage_file_post_load_cleanup free the fdt buffer for us. */
++	return ret ? ERR_PTR(ret) : fdt;
++}
++
++struct kexec_file_ops kexec_elf64_ops = {
++	.probe = elf64_probe,
++	.load = elf64_load,
++};
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 897b724ea9fd..527f98efe651 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -32,11 +32,14 @@
+ #include <asm/smp.h>
+ #include <asm/hw_breakpoint.h>
+ #include <asm/asm-prototypes.h>
++#include <asm/kexec_elf_64.h>
+ 
+ #define SLAVE_CODE_SIZE		256
+ 
+ #ifdef CONFIG_KEXEC_FILE
+-static struct kexec_file_ops *kexec_file_loaders[] = { };
++static struct kexec_file_ops *kexec_file_loaders[] = {
++	&kexec_elf64_ops,
++};
+ #endif
+ 
+ #ifdef CONFIG_PPC_BOOK3E
 -- 
 1.9.1
