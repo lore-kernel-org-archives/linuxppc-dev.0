@@ -1,21 +1,35 @@
-Return-Path: <peter.chen@nxp.com>
-Received: from NAM01-BN3-obe.outbound.protection.outlook.com
- (mail-bn3nam01on0085.outbound.protection.outlook.com [104.47.33.85])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xyjxie@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Wr83y86zDr1l
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 14:19:51 +1000 (AEST)
-From: Peter Chen <peter.chen@nxp.com>
-To: <minghuan.Lian@freescale.com>, <mingkai.hu@freescale.com>,
- <tie-fei.zang@freescale.com>
-CC: <bhelgaas@google.com>, <linux-pci@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 1/1] pci: host: pci-layerscape: add missing of_node_put after
- calling of_parse_phandle
-Date: Fri, 12 Aug 2016 09:34:41 +0800
-Message-ID: <1470965681-30496-1-git-send-email-peter.chen@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9YgT5DQZzDqQq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 15:42:29 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id
+ u7C5Xd5p033027
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 01:42:27 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 24qm9v99c5-1
+ (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 01:42:27 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <xyjxie@linux.vnet.ibm.com>;
+ Thu, 11 Aug 2016 23:42:27 -0600
+From: Yongji Xie <xyjxie@linux.vnet.ibm.com>
+To: bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alex.williamson@redhat.com, paulus@samba.org, aik@ozlabs.ru,
+ gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, zhong@linux.vnet.ibm.com
+Subject: [PATCH v4 1/5] PCI: Ignore enforced alignment when kernel uses
+ existing firmware setup
+Date: Fri, 12 Aug 2016 13:42:22 +0800
+In-Reply-To: <1470980546-2918-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+References: <1470980546-2918-1-git-send-email-xyjxie@linux.vnet.ibm.com>
+Message-Id: <1470980546-2918-2-git-send-email-xyjxie@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_node_put needs to be called when the device node which is got
-from of_parse_phandle has finished using.
+PCI resources allocator will use firmware setup and not try to
+reassign resource when PCI_PROBE_ONLY or IORESOURCE_PCI_FIXED
+is set.
 
-Cc: Minghuan Lian <minghuan.Lian@freescale.com>
-Cc: Mingkai Hu <mingkai.hu@freescale.com>
-Cc: Roy Zang <tie-fei.zang@freescale.com>
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
+The enforced alignment in pci_reassigndev_resource_alignment()
+should be ignored in this case. Otherwise, some PCI devices'
+resources would be released here and not re-allocated.
+
+Signed-off-by: Yongji Xie <xyjxie@linux.vnet.ibm.com>
 ---
- drivers/pci/host/pci-layerscape.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/pci/pci.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/pci/host/pci-layerscape.c b/drivers/pci/host/pci-layerscape.c
-index 114ba81..573b996 100644
---- a/drivers/pci/host/pci-layerscape.c
-+++ b/drivers/pci/host/pci-layerscape.c
-@@ -173,6 +173,8 @@ static int ls_pcie_msi_host_init(struct pcie_port *pp,
- 		return -EINVAL;
- 	}
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index aab9d51..2d85a96 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -4959,6 +4959,13 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev)
  
-+	of_node_put(msi_node);
+ 	spin_lock(&resource_alignment_lock);
+ 	p = resource_alignment_param;
++	if (pci_has_flag(PCI_PROBE_ONLY)) {
++		if (*p)
++			pr_info_once("PCI: resource_alignment ignored with PCI_PROBE_ONLY\n");
++		spin_unlock(&resource_alignment_lock);
++		return 0;
++	}
 +
- 	return 0;
- }
- 
+ 	while (*p) {
+ 		count = 0;
+ 		if (sscanf(p, "%d%n", &align_order, &count) == 1 &&
+@@ -5063,6 +5070,12 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+ 		r = &dev->resource[i];
+ 		if (!(r->flags & IORESOURCE_MEM))
+ 			continue;
++		if (r->flags & IORESOURCE_PCI_FIXED) {
++			dev_info(&dev->dev, "No alignment for fixed BAR%d: %pR\n",
++				i, r);
++			continue;
++		}
++
+ 		size = resource_size(r);
+ 		if (size < align) {
+ 			size = align;
 -- 
-1.9.1
+1.7.9.5
