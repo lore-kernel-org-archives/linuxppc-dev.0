@@ -1,23 +1,27 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3s9Sw25Dw6zDr1k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 12:08:02 +1000 (AEST)
-Subject: Re: [PATCH] mm: Initialize per_cpu_nodestats for hotadded pgdats
-To: Reza Arbab <arbab@linux.vnet.ibm.com>,
- Mel Gorman <mgorman@techsingularity.net>,
- Andrew Morton <akpm@linux-foundation.org>, Paul Mackerras
- <paulus@ozlabs.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-References: <20160811092808.GD8119@techsingularity.net>
- <1470931473-7090-1-git-send-email-arbab@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <17913beb-a3b3-6ef3-ba64-787d0fde88ea@gmail.com>
-Date: Fri, 12 Aug 2016 12:07:51 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3s9TSz6JRrzDr1k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2016 12:33:07 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id i6so690546pfe.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2016 19:33:07 -0700 (PDT)
+Date: Fri, 12 Aug 2016 10:32:55 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Rob Herring <robh@kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Kefeng Wang <wangkefeng.wang@huawei.com>
+Subject: Re: [PATCH] powerpc: populate the default bus with
+ machine_arch_initcall
+Message-ID: <20160812023254.GI17275@pek-khao-d1>
+References: <1470913781-9204-1-git-send-email-haokexin@gmail.com>
+ <CAL_JsqKSQ2pUNEm+1_skkOM=gYihYBztcJusnZ=PCOvo+TkV6A@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1470931473-7090-1-git-send-email-arbab@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="BWWlCdgt6QLN7tv3"
+In-Reply-To: <CAL_JsqKSQ2pUNEm+1_skkOM=gYihYBztcJusnZ=PCOvo+TkV6A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +32,126 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--BWWlCdgt6QLN7tv3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 12/08/16 02:04, Reza Arbab wrote:
-> The following oops occurs after a pgdat is hotadded:
-> 
-> [   86.839956] Unable to handle kernel paging request for data at address 0x00c30001
-> [   86.840132] Faulting instruction address: 0xc00000000022f8f4
-> [   86.840328] Oops: Kernel access of bad area, sig: 11 [#1]
-> [   86.840468] SMP NR_CPUS=2048 NUMA pSeries
-> [   86.840612] Modules linked in: ip6t_rpfilter ip6t_REJECT nf_reject_ipv6 ipt_REJECT nf_reject_ipv4 xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter nls_utf8 isofs sg virtio_balloon uio_pdrv_genirq uio ip_tables xfs libcrc32c sr_mod cdrom sd_mod virtio_net ibmvscsi scsi_transport_srp virtio_pci virtio_ring virtio dm_mirror dm_region_hash dm_log dm_mod
-> [   86.842955] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G        W 4.8.0-rc1-device #110
-> [   86.843140] task: c000000000ef3080 task.stack: c000000000f6c000
-> [   86.843323] NIP: c00000000022f8f4 LR: c00000000022f948 CTR: 0000000000000000
-> [   86.843595] REGS: c000000000f6fa50 TRAP: 0300   Tainted: G        W (4.8.0-rc1-device)
-> [   86.843889] MSR: 800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 84002028  XER: 20000000
-> [   86.844624] CFAR: d000000001d2013c DAR: 0000000000c30001 DSISR: 40000000 SOFTE: 0
-> GPR00: c00000000022f948 c000000000f6fcd0 c000000000f71400 0000000000000001
-> GPR04: 0000000000000100 0000000000000000 0000000000000000 0000000000c30000
-> GPR08: ffffffffffffffff 0000000000000001 0000000000c30000 00000000ffffffff
-> GPR12: 0000000000002200 c000000001300000 c000000000faefb4 c000000000faefa8
-> GPR16: c000000000f6c000 c000000000f6c080 c000000000bf15b0 c000000000f6c080
-> GPR20: c000000000bf4928 0000000000000000 0000000000000003 c000000000bf4968
-> GPR24: c0000000ffed0000 0000000000000000 0000000000000000 c000000000f6fd58
-> GPR28: 0000000000000001 0000000000000001 c000000000f6fcf0 c0000000ffed9c08
-> [   86.847747] NIP [c00000000022f8f4] refresh_cpu_vm_stats+0x1a4/0x2f0
-> [   86.847897] LR [c00000000022f948] refresh_cpu_vm_stats+0x1f8/0x2f0
-> [   86.848060] Call Trace:
-> [   86.848183] [c000000000f6fcd0] [c00000000022f948] refresh_cpu_vm_stats+0x1f8/0x2f0 (unreliable)
-> 
-> Add per_cpu_nodestats initialization to the hotplug codepath.
-> 
-> Signed-off-by: Reza Arbab <arbab@linux.vnet.ibm.com>
-> ---
->  mm/memory_hotplug.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 3894b65..41266dc 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1219,6 +1219,7 @@ static pg_data_t __ref *hotadd_new_pgdat(int nid, u64 start)
->  
->  	/* init node's zones as empty zones, we don't have any present pages.*/
->  	free_area_init_node(nid, zones_size, start_pfn, zholes_size);
-> +	pgdat->per_cpu_nodestats = alloc_percpu(struct per_cpu_nodestat);
->  
->  	/*
->  	 * The node we allocated has no zone fallback lists. For avoiding
-> @@ -1249,6 +1250,7 @@ static pg_data_t __ref *hotadd_new_pgdat(int nid, u64 start)
->  static void rollback_node_hotadd(int nid, pg_data_t *pgdat)
->  {
->  	arch_refresh_nodedata(nid, NULL);
-> +	free_percpu(pgdat->per_cpu_nodestats);
->  	arch_free_nodedata(pgdat);
->  	return;
->  }
-> 
+On Thu, Aug 11, 2016 at 08:17:52AM -0500, Rob Herring wrote:
+> On Thu, Aug 11, 2016 at 6:09 AM, Kevin Hao <haokexin@gmail.com> wrote:
+> > With the commit 44a7185c2ae6 ("of/platform: Add common method to
+> > populate default bus"), a default function is introduced to populate
+> > the default bus and this function is invoked at the arch_initcall_sync
+> > level. This will override the arch specific population of default bus
+> > which run at a lower level than arch_initcall_sync. Since not all
+> > powerpc specific buses are added to the of_default_bus_match_table[],
+> > this causes some powerpc specific bus are not probed. Fix this by
+> > using a more preceding initcall.
+> >
+> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> > ---
+> > Of course we can adjust the powerpc arch codes to use the
+> > of_platform_default_populate_init(), but it has high risk to break
+> > other boards given the complicated powerpc specific buses. So I would
+> > like just to fix the broken boards in the current release, and cook
+> > a patch to change to of_platform_default_populate_init() for linux-next.
+>=20
+> The patch that broke things was sitting in -next for some time and no
+> one reported anything. Are all these boards broken?
 
-I wonder if node_set_online() should do the allocation and offline should free.
-But that would be a larger change
+At least in theory. :-)
+The effect may be different due to what devices are missed. For me, the
+Gianfar Ethernet on my mpc8315erdb board is malfunction due to the MIDIO bus
+is not probed.
 
-Balbir
+>=20
+> I'm fine to just disable the default call for PPC instead if there's
+> some chance this does not fix some boards.
+
+I have tried to cover all the invocation of of_platform_bus_probe() via
+machine_device_initcall(). Yes, I maybe missed some boards. But won't
+we want to take this as a step to use the default populate function since
+it does remove some reduplication codes?
+
+> There could be some other
+> initcall ordering dependencies.
+>=20
+> >
+> > Only boot test on a mpc8315erdb board.
+>=20
+> Curious, what would it take to remove the of_platform_bus_probe and
+> use the default here? We can add additional bus compatibles to match.
+
+I thought about this. But the bus compatibles list seems a bit longer and
+it may cause some side effects on some boards due to all these additional
+buses. So that changes seem a bit aggressive to me. It does seem a feature
+for linux-next. The following is the compatible buses list which are needed
+to be added to the default match table if we want fix all the current broken
+boards:
+	{ .compatible =3D "fsl,ep8248e-bcsr", },
+	{ .compatible =3D "fsl,pq2pro-localbus", },
+	{ .compatible =3D "fsl,qe", },
+	{ .compatible =3D "fsl,srio", },
+	{ .compatible =3D "gianfar", },
+	{ .compatible =3D "gpio-leds", },
+	{ .compatible =3D "hawk-bridge", },
+	{ .compatible =3D "ibm,ebc", },
+	{ .compatible =3D "ibm,opb", },
+	{ .compatible =3D "ibm,plb3", },
+	{ .compatible =3D "ibm,plb4", },
+	{ .compatible =3D "ibm,plb6", },
+	{ .compatible =3D "nintendo,flipper", },
+	{ .compatible =3D "nintendo,hollywood", },
+	{ .compatible =3D "pasemi,localbus", },
+	{ .compatible =3D "pasemi,sdc", },
+	{ .compatible =3D "soc", },
+	{ .compatible =3D "xlnx,compound", },
+	{ .compatible =3D "xlnx,dcr-v29-1.00.a", },
+	{ .compatible =3D "xlnx,opb-v20-1.10.c", },
+	{ .compatible =3D "xlnx,plb-v34-1.01.a", },
+	{ .compatible =3D "xlnx,plb-v34-1.02.a", },
+	{ .compatible =3D "xlnx,plb-v46-1.00.a", },
+	{ .compatible =3D "xlnx,plb-v46-1.02.a", },
+	{ .name =3D "cpm", },
+	{ .name =3D "localbus", },
+	{ .name =3D "soc", },
+	{ .type =3D "axon", },
+	{ .type =3D "ebc", },
+	{ .type =3D "opb", },
+	{ .type =3D "plb4", },
+	{ .type =3D "plb5", },
+	{ .type =3D "qe", },
+	{ .type =3D "soc", },
+	{ .type =3D "spider", },
+
+Of course I can choose to use the default function if all you guys think it=
+ is
+better. :-)
+
+> The difference between of_platform_bus_probe and
+> of_platform_bus_populate is the former will match root nodes with no
+> compatible string. Most platforms should not need that behavior and it
+> would be nice to know which ones.
+
+I don't think this difference would cause any real side effect for these bo=
+ards.
+
+Thanks,
+Kevin
+
+--BWWlCdgt6QLN7tv3
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXrTVWAAoJEJNY7TDerrFxmdUH/2Q7b4VkIRypfDK2F7dW2SoG
+QWRr0Wtne1OhPpb56hW4DFXj27hRPiSMpkF/X8uuVaos0wDL3UBHr21Bbz9Jm0Bm
+0K792LY4oB8S8TgWBmgoyvyg0aw6QZoXlNVJUkInMVfH2A8+7hsKN4/AC5DQnyLS
+pJzKSTdpq9YeQ9COVaJ1nC+VF/xL+X8Tq7N38MudXacrUIc89DUegPysEFSQNhBD
+mM6RxvCHezXFkAOvG1STmdxUboT992ar6yZ0zRRnIaeTGCqUG8vTxiYgPXktsuqv
+RTVXbL/wmwLwnnzU0JZUdOK23EgYuUYNsVHR7EbFzCQJLucaIgMCzDfHyUIgyO8=
+=KtVJ
+-----END PGP SIGNATURE-----
+
+--BWWlCdgt6QLN7tv3--
